@@ -87,3 +87,9 @@
   bindings, controllers, resolvers, shared components and host independence remain
   mandatory. The exception does not change the primary language of other Gramlot
   applications or authorize publication, deployment or core port acceptance.
+
+- **11.7 — 2026-09-16:** Owner requires every demo to expose a Show source button
+  and the shared Inspector launcher in a bottom corner, with polished, engaging
+  visual presentation. This adds a demo presentation requirement to section 3;
+  it does not supersede Gramlot-only authoring or change documentation-site themes.
+  Existing demos outside gramlot-nodejs have not yet been audited for compliance.
