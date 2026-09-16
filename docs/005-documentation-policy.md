@@ -14,7 +14,12 @@ Constitution section 9 governs documentation across Gramlot, including host
 adapters. This policy generalizes the owner-approved Django directive recorded in
 `gramlot-django` commit `902fcbd`, document **GD-055**, block **GD-055-020**.
 Each repository retains ownership of its technical content and documentation
-builder; this policy does not require a switch between Sphinx and MkDocs.
+builder. All Gramlot documentation sites use the classic Read the Docs visual
+theme shown by Genro Bag: blue header, dark navigation sidebar, light content
+area and the theme's default typography. Sphinx uses `sphinx_rtd_theme`; MkDocs
+uses its `readthedocs` port. Preserve project logos and accurate status notices.
+This owner decision supersedes the earlier Material/Furo choices. Future
+documentation sites follow the same rule; application UI themes are separate.
 
 Use **GC** for the clean Gramlot core, preserve **GD** for Django, and use **GF**
 for FastAPI. Other repositories must choose distinct namespaces before assigning

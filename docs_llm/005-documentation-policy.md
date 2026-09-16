@@ -11,8 +11,11 @@ Document ID: **GC-005**.
 Block ID: **GC-005-005**.
 
 Constitution §9 generalizes owner-approved Django `902fcbd`, **GD-055-020**, to all
-Gramlot repositories. Content/builders remain locally owned; no Sphinx/MkDocs
-migration required. Namespaces: core **GC**, Django **GD**, FastAPI **GF**; other
+Gramlot repositories. Content/builders remain locally owned. All documentation
+sites use the classic Read the Docs appearance from Genro Bag: blue header, dark
+sidebar, light content, default typography. Use `sphinx_rtd_theme` for Sphinx or
+`readthedocs` for MkDocs; preserve logos/status notices. Supersedes Material/Furo;
+applies to future doc sites, not application UI. Namespaces: core **GC**, Django **GD**, FastAPI **GF**; other
 repos choose distinct ones. Public reference = `main`; new work = `develop` until
 verified/accepted. Publication still needs authorization.
 

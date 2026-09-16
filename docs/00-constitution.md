@@ -136,6 +136,12 @@ are exempt from guide numbering. Record legacy coverage gaps explicitly and add
 missing mirrors when guides are substantially revised. See the
 [documentation policy](005-documentation-policy.md) for namespaces and migration status.
 
+All Gramlot documentation sites share the classic Read the Docs theme illustrated
+by Genro Bag: blue header, dark sidebar and light content with default theme
+typography. Use `sphinx_rtd_theme` for Sphinx or the `readthedocs` port for MkDocs.
+Preserve each project's logo and accurate status notices. This applies to current
+and future documentation sites; application UI themes remain a separate concern.
+
 Do not claim an API, implementation, compatibility level, release or verification
 before the corresponding artifact and meaningful tests exist in its owning repository.
 
@@ -171,3 +177,6 @@ workarounds.
   instruction is refined by three-digit guide ordering, repository namespaces,
   shared document/block IDs, explicit anchors and preservation across moves.
   Existing pairing and claim-accuracy requirements remain in force.
+- **11.4 — 2026-09-16:** Owner selected the Genro Bag classic Read the Docs
+  appearance for all Gramlot documentation. Section 9 now mandates that shared
+  theme, superseding the earlier per-repository Material/Furo selections.

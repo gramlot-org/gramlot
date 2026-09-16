@@ -75,6 +75,10 @@
   never reuse retired IDs. Update links: IDs do not redirect URLs. Entry points,
   config, requirements, assets and historical exports are exempt. Track legacy
   gaps and add mirrors on substantial revision. See [policy](005-documentation-policy.md).
+- **9.6** All current/future Gramlot doc sites use classic Read the Docs, as in
+  Genro Bag: blue header, dark sidebar, light content, default typography.
+  Sphinx: `sphinx_rtd_theme`; MkDocs: `readthedocs`. Preserve logos/status notices.
+  Application UI themes are separate.
 
 ## 10. Acceptance
 
@@ -98,3 +102,5 @@
   directive. Refines section 9's generic numbered references with three-digit
   ordering, repository namespaces, shared document/block IDs, explicit anchors
   and preservation across moves. Pairing and accurate-claim rules remain.
+- **11.4 — 2026-09-16:** Owner selected Genro Bag's classic Read the Docs
+  appearance for all Gramlot docs. Section 9 supersedes prior Material/Furo choices.

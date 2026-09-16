@@ -4,7 +4,7 @@
 
 ## 1. Sources and scope
 
-The documentation site uses MkDocs with Material and contains the repository
+The documentation site uses MkDocs with its classic Read the Docs theme and contains the repository
 README, product documents, concise mirrors and port records. It describes the
 current bootstrap state; it does not imply an available package or runtime API.
 Documentation dependencies are separate from any future core installation.
@@ -34,7 +34,8 @@ The generated site is in `build/docs-site/`. To preview it:
 
 Open the local address printed by MkDocs. After editing maintained documents,
 rerun the preparation command to refresh the staged sources. Mermaid diagrams
-render in the browser through Material's Mermaid integration.
+render in the browser through `docs/_static/mermaid.mjs`, loading Mermaid 10.9.3
+from jsDelivr. Diagram rendering requires access to that CDN.
 
 ## 3. Read the Docs setup
 

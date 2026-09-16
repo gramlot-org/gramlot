@@ -1,16 +1,16 @@
 site_name: Gramlot
 site_description: Declarative application interfaces authored in Python
 repo_url: https://github.com/gramlot-org/gramlot
+edit_uri: ""
 docs_dir: build/docs-source
 site_dir: build/docs-site
 
 theme:
-  name: material
-  palette:
-    primary: indigo
-  features:
-    - navigation.sections
-    - navigation.top
+  name: readthedocs
+  highlightjs: false
+
+extra_javascript:
+  - docs/_static/mermaid.mjs
 
 nav:
   - Home: index.md

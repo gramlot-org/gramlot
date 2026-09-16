@@ -33,6 +33,9 @@ Before changing this repository, read `docs/00-constitution.md`,
   prefixes initially spaced by five, mirrored paths, repository namespaces and
   shared stable document/block IDs with explicit anchors. Preserve IDs across moves,
   update links and record legacy migration gaps. Core uses GC, Django GD, FastAPI GF.
+- Use the classic Read the Docs theme for all Gramlot documentation sites:
+  `sphinx_rtd_theme` with Sphinx, `readthedocs` with MkDocs. Follow constitution §9;
+  retain project logos/status notices and the default blue/dark/light appearance.
 - Do not claim APIs, runtime behavior, compatibility, releases or verification that
   the repository does not contain and test.
 - Do not publish packages, create releases or deploy applications without explicit

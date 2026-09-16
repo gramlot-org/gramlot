@@ -4,7 +4,8 @@
 
 ## 1. Scope and sources
 
-MkDocs + Material publish the root README, `docs/`, `docs_llm/` and `ports/`.
+MkDocs + the classic Read the Docs theme publish the root README, `docs/`,
+`docs_llm/` and `ports/`.
 The site describes bootstrap status, not an implemented runtime or installable API.
 Documentation dependencies remain separate from core. Edit maintained sources,
 update paired documents together and add navigation in `mkdocs.yml` as needed.
@@ -16,7 +17,8 @@ Use Python 3.12 and a virtual environment. Install `requirements-docs.txt`, run
 The script regenerates disposable `build/docs-source/`, preserving relative links
 and mapping the root README to `index.md`. Output is `build/docs-site/`.
 Use `python -m mkdocs serve` for preview; rerun preparation after source edits.
-Material renders Mermaid in the browser.
+`docs/_static/mermaid.mjs` renders diagrams using Mermaid 10.9.3 from jsDelivr;
+browser access to that CDN is required.
 
 ## 3. Hosting and remaining setup
 
