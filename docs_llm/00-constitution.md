@@ -68,10 +68,21 @@
 - **9.2** Compact docs remain human-readable and preserve decisions/status/open points.
 - **9.3** Number references; Mermaid for useful diagrams; maintained code/docs English.
 - **9.4** No unsupported API, compatibility, release or verification claims.
+- **9.5** All repositories: three-digit guide prefixes initially 005/010/015;
+  paired paths/order/document IDs/block IDs and explicit level-two anchors match.
+  Use distinct repository namespaces; IDs are global within each repo, even across
+  mirrored folders. Insert into gaps; preserve IDs/anchors across moves/reordering;
+  never reuse retired IDs. Update links: IDs do not redirect URLs. Entry points,
+  config, requirements, assets and historical exports are exempt. Track legacy
+  gaps and add mirrors on substantial revision. See [policy](005-documentation-policy.md).
 
 ## 10. Acceptance
 
-- **10.1** `main` consolidated; `develop` new work.
+- **10.1** Across Gramlot, `main` is the consolidated public reference for code,
+  docs, configuration and other maintained artifacts. New work stays on `develop`
+  until verified and accepted, then joins `main`. Public docs default to `main`;
+  optional development previews follow `develop`. This is a general rule, not
+  specific to Read the Docs, and does not authorize publication/releases/deployment.
 - **10.2** Contract, code, tests and paired docs agree before admission.
 - **10.3** Relevant adapters may advance with core; first slice need not cover all pairs.
 - **10.4** Real apps expose gaps; fix them in reusable layers, never local workarounds.
@@ -79,3 +90,11 @@
 ## 11. Amendments
 
 - **11.1 — 2026-09-16:** Initial constitution from approved owner decisions.
+- **11.2 — 2026-09-16:** Owner clarified section 10 for all Gramlot artifacts:
+  `main` is the consolidated public reference; `develop` holds new work until
+  verified and accepted. Supersedes the shorter "`main` consolidated; `develop`
+  new work" rule. Publication/releases/deployment still require authorization.
+- **11.3 — 2026-09-16:** Owner generalized Django's ordering/stable-reference
+  directive. Refines section 9's generic numbered references with three-digit
+  ordering, repository namespaces, shared document/block IDs, explicit anchors
+  and preservation across moves. Pairing and accurate-claim rules remain.

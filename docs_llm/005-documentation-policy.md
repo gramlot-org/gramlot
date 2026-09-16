@@ -1,0 +1,48 @@
+# 005 · Documentation policy
+
+Document ID: **GC-005**.
+
+[Expanded counterpart](../docs/005-documentation-policy.md).
+
+<a id="gc-005-005"></a>
+
+## 005 · Shared policy and ownership
+
+Block ID: **GC-005-005**.
+
+Constitution §9 generalizes owner-approved Django `902fcbd`, **GD-055-020**, to all
+Gramlot repositories. Content/builders remain locally owned; no Sphinx/MkDocs
+migration required. Namespaces: core **GC**, Django **GD**, FastAPI **GF**; other
+repos choose distinct ones. Public reference = `main`; new work = `develop` until
+verified/accepted. Publication still needs authorization.
+
+<a id="gc-005-010"></a>
+
+## 010 · Pairing, ordering and identity
+
+Block ID: **GC-005-010**.
+
+1. Mirror `docs/<path>` and `docs_llm/<path>`, including folders; update together.
+   Both readable/English; preserve decisions, constraints, status, limits, questions.
+2. Guide prefixes initially 005/010/015; insert in gaps. Exempt entry points,
+   config, requirements, assets and historical standalone exports.
+3. Repository-wide document IDs (GF-005), level-two block IDs (GF-005-010), initially
+   sections spaced by five; shared logical IDs and explicit lowercase HTML anchors.
+4. Cite ID + view link. Preserve IDs/anchors across moves/reordering, even if
+   filename prefixes change. Never reuse retired IDs or restart per folder.
+   Update links; stable IDs do not redirect URLs.
+5. Run local docs checks; verify mirrors, links, anchors. Never strengthen claims.
+
+<a id="gc-005-015"></a>
+
+## 015 · Adoption status
+
+Block ID: **GC-005-015**.
+
+Django policy exists; mirror coverage remains partial. This core policy is paired
+with matching IDs/anchors. Core 00-constitution/01-overview/02-documentation retain
+legacy paths/references; three-digit/stable-block migration is pending and must
+preserve constitutional references. FastAPI must inventory guides and adopt GF
+with paired paths while preserving existing references; adoption is unverified.
+Track actual gaps; add missing mirrors on substantial revision. New architecture
+and product-contract guides require both forms immediately.

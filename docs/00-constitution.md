@@ -123,12 +123,32 @@ Use numbered sections and points for stable references. Use Mermaid when a diagr
 clarifies architecture or application flow; use text for folder trees. Maintained
 technical documentation and code are in English.
 
+Across Gramlot repositories, maintained guides use three-digit filename prefixes,
+initially spaced by five (`005`, `010`, `015`). Expanded and concise views share
+paths, ordering prefixes, logical document IDs and section block IDs. Each
+repository uses a distinct namespace; IDs remain repository-wide across folders.
+Level-two sections have explicit stable HTML anchors shared by both views.
+Insert into numbering gaps without renumbering or reusing existing IDs. Reordering
+or moving content preserves IDs and anchors and requires link updates; IDs do not
+redirect old URLs. Mirror any folder structure between the two documentation trees.
+Entry points, configuration, requirements, assets and historical standalone exports
+are exempt from guide numbering. Record legacy coverage gaps explicitly and add
+missing mirrors when guides are substantially revised. See the
+[documentation policy](005-documentation-policy.md) for namespaces and migration status.
+
 Do not claim an API, implementation, compatibility level, release or verification
 before the corresponding artifact and meaningful tests exist in its owning repository.
 
 ## 10. Development and acceptance
 
-`main` is the consolidated line; `develop` carries new development. A port advances
+Across Gramlot, `main` is the consolidated, public reference line for code,
+documentation, configuration and other maintained artifacts. `develop` carries new
+work until it is verified and accepted, then that work is consolidated into `main`.
+Public documentation uses `main` by default; a development preview may follow
+`develop` separately. This is a general project rule, not a Read the Docs exception,
+and does not itself authorize package publication, releases or deployment.
+
+A port advances
 only after its contract, code, tests and paired documentation agree. Relevant server
 or database adapters may advance alongside a core increment; acceptance does not
 require every host/backend combination in the first slice.
@@ -141,3 +161,13 @@ workarounds.
 
 - **11.1 — 2026-09-16:** Initial clean-repository constitution, consolidated from
   approved owner decisions. No prior product-constitution document is superseded.
+- **11.2 — 2026-09-16:** Owner clarified the branch policy in section 10 for all
+  Gramlot artifacts: `main` is the consolidated public reference; `develop` holds
+  new work until verified and accepted. This supersedes the shorter section 10
+  statement, "`main` is the consolidated line; `develop` carries new development."
+  Separate publication, release and deployment authorization remains required.
+- **11.3 — 2026-09-16:** Owner extended Django's documentation ordering and stable
+  reference directive to Gramlot generally. Section 9's generic numbered-reference
+  instruction is refined by three-digit guide ordering, repository namespaces,
+  shared document/block IDs, explicit anchors and preservation across moves.
+  Existing pairing and claim-accuracy requirements remain in force.
