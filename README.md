@@ -13,6 +13,7 @@ Start with:
 
 - [Product constitution](docs/00-constitution.md)
 - [Product overview](docs/01-overview.md)
+- [Common showcase contract](docs/010-showcase.md)
 - [Port protocol](ports/README.md)
 
 The living laboratory and historical evidence remain in
