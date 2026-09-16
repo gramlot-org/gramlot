@@ -141,3 +141,11 @@ workarounds.
 
 - **11.1 — 2026-09-16:** Initial clean-repository constitution, consolidated from
   approved owner decisions. No prior product-constitution document is superseded.
+
+- **11.6 — 2026-09-16:** The owner explicitly authorizes JavaScript-first page
+  authoring for the local/private `gramlot-nodejs` PoC, hosted with native
+  `node:http` and without database integration. For this bounded experiment only,
+  this supersedes sections 2–3's Python-first requirement. Source, Data Bags,
+  bindings, controllers, resolvers, shared components and host independence remain
+  mandatory. The exception does not change the primary language of other Gramlot
+  applications or authorize publication, deployment or core port acceptance.
