@@ -15,13 +15,17 @@ Start with:
 - [Product overview](docs/01-overview.md)
 - [Common showcase contract](docs/010-showcase.md)
 - [Port protocol](ports/README.md)
+- [Documentation build and Read the Docs setup](docs/02-documentation.md)
 
 The living laboratory and historical evidence remain in
 [`gramlot-org/gramlot-poc`](https://github.com/gramlot-org/gramlot-poc). Code enters
 this repository through bounded, reviewed ports; PoC behavior is evidence rather
 than automatic product behavior.
 
-`main` is the consolidated line. New development proceeds on `develop` and reaches
-`main` only after its contract, implementation, tests and documentation agree.
+Across Gramlot, `main` is the consolidated public reference for code, documentation,
+configuration and other maintained artifacts. New work proceeds on `develop` and
+reaches `main` after verification and acceptance, with contract, implementation,
+tests and documentation aligned where applicable. Public documentation follows
+`main` by default; development previews may follow `develop` separately.
 
 Gramlot is licensed under the Apache License 2.0.

@@ -1,0 +1,47 @@
+site_name: Gramlot
+site_description: Declarative application interfaces authored in Python
+repo_url: https://github.com/gramlot-org/gramlot
+edit_uri: ""
+docs_dir: build/docs-source
+site_dir: build/docs-site
+
+theme:
+  name: readthedocs
+  highlightjs: false
+
+extra_javascript:
+  - docs/_static/mermaid.mjs
+
+nav:
+  - Home: index.md
+  - Product:
+      - Overview: docs/01-overview.md
+      - Constitution: docs/00-constitution.md
+  - Contributing:
+      - Documentation policy: docs/005-documentation-policy.md
+      - Documentation: docs/02-documentation.md
+      - Port protocol: ports/README.md
+      - Port template: ports/TEMPLATE.md
+  - Concise documentation:
+      - Documentation policy: docs_llm/005-documentation-policy.md
+      - Overview: docs_llm/01-overview.md
+      - Constitution: docs_llm/00-constitution.md
+      - Documentation: docs_llm/02-documentation.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+validation:
+  links:
+    not_found: warn
+    anchors: warn
