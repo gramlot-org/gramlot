@@ -72,6 +72,11 @@ Gramlot grows through small, reviewed ports. Each accepted increment has a bound
 contract, assigned responsibilities, implementation, meaningful verification,
 documented omissions and destination review.
 
+The owner explicitly authorized making `gramlot-org/gramlot-poc` public on
+2026-09-17, superseding the temporary privacy decision of 2026-09-16. The
+repository is public. This specific authorization does not authorize visibility
+changes for other repositories or imply product acceptance of PoC evidence.
+
 ## 6. Components, recipes and composition
 
 A component exposes a control through parameters, values, events and lifecycle. A
@@ -182,6 +187,11 @@ workarounds.
   theme, superseding the earlier per-repository Material/Furo selections.
 
 
+- **11.5 — 2026-09-16:** Owner keeps the PoC private until further instruction.
+  Section 5 records this visibility constraint; section 10's public-reference
+  wording does not grant permission to expose private repositories. No product
+  architecture or port acceptance rule is superseded.
+
 - **11.6 — 2026-09-16:** The owner explicitly authorizes JavaScript-first page
   authoring for the local/private `gramlot-nodejs` PoC, hosted with native
   `node:http` and without database integration. For this bounded experiment only,
@@ -195,3 +205,14 @@ workarounds.
   visual presentation. This adds a demo presentation requirement to section 3;
   it does not supersede Gramlot-only authoring or change documentation-site themes.
   Existing demos outside gramlot-nodejs have not yet been audited for compliance.
+
+- **11.8 — 2026-09-17:** Owner explicitly authorizes public visibility for
+  `gramlot-org/gramlot-poc`. Section 5 supersedes the temporary privacy constraint
+  recorded in amendment 11.5. Architecture, port acceptance and authorization
+  requirements for other publications remain unchanged.
+
+- **11.9 — 2026-09-17:** Owner authorizes public repositories and source pushes
+  for `gramlot-standalone`, `gramlot-flask` and `gramlot-nodejs` in gramlot-org.
+  This supersedes the local/private restriction for the Node.js PoC in amendment
+  11.6; its bounded authoring exception remains unchanged. No package release
+  or application deployment is authorized by this source-publication decision.

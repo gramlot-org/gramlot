@@ -41,6 +41,9 @@
   Inventory distinguishes observed/proposed/agreed/verified; census is no commitment.
 - **5.3** Admit small ports with bounded contract, responsibilities, code, meaningful
   tests, omissions and destination review.
+- **5.4** Owner 2026-09-17 explicitly authorizes public `gramlot-org/gramlot-poc`;
+  repository is public. Supersedes temporary privacy decision of 2026-09-16.
+  No authorization for other repository visibility changes or product acceptance.
 
 ## 6. Building blocks
 
@@ -106,6 +109,10 @@
   appearance for all Gramlot docs. Section 9 supersedes prior Material/Furo choices.
 
 
+- **11.5 — 2026-09-16:** Owner keeps PoC private. Section 5 adds visibility constraint;
+  section 10's public-reference wording does not authorize exposing private repos.
+  Architecture and port acceptance are unchanged.
+
 - **11.6 — 2026-09-16:** The owner explicitly authorizes JavaScript-first page
   authoring for the local/private `gramlot-nodejs` PoC, hosted with native
   `node:http` and without database integration. For this bounded experiment only,
@@ -119,3 +126,13 @@
   visual presentation. This adds a demo presentation requirement to section 3;
   it does not supersede Gramlot-only authoring or change documentation-site themes.
   Existing demos outside gramlot-nodejs have not yet been audited for compliance.
+
+- **11.8 — 2026-09-17:** Owner authorizes public `gramlot-org/gramlot-poc`.
+  Section 5 supersedes amendment 11.5 privacy constraint. Architecture, port
+  acceptance and other publication authorization requirements are unchanged.
+
+- **11.9 — 2026-09-17:** Owner authorizes public repositories and source pushes
+  for `gramlot-standalone`, `gramlot-flask` and `gramlot-nodejs` in gramlot-org.
+  This supersedes the local/private restriction for the Node.js PoC in amendment
+  11.6; its bounded authoring exception remains unchanged. No package release
+  or application deployment is authorized by this source-publication decision.

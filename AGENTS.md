@@ -42,3 +42,7 @@ Before changing this repository, read `docs/00-constitution.md`,
   owner authorization.
 
 No formal Live Object Tree semantics have been approved. Do not infer or invent them.
+
+- Owner 2026-09-17: public gramlot-poc, gramlot-standalone, gramlot-flask and
+  gramlot-nodejs are authorized; this supersedes earlier local/private restrictions.
+  Source pushes do not authorize package releases or application deployments.
