@@ -1,0 +1,42 @@
+{
+  "status": "Owner-approved brand colors and supporting application UI palette; not installed runtime defaults",
+  "colors": {
+    "brand.blue": "#456BC4",
+    "brand.yellow": "#FFC400",
+    "ink": "#243449",
+    "background": "#F7F8F5",
+    "surface": "#FFFFFF",
+    "surface.subtle": "#EDF1F7",
+    "text.secondary": "#566579",
+    "border": "#D5DCE5",
+    "border.control": "#7A8798",
+    "navigation": "#182333",
+    "navigation.text": "#EDF2FA",
+    "action": "#456BC4",
+    "action.hover": "#3557AB",
+    "selected": "#EAF0FC",
+    "success": "#23745B",
+    "success.background": "#EAF5EF",
+    "warning": "#785000",
+    "warning.background": "#FFF4CF",
+    "error": "#B13D48",
+    "error.background": "#FCEEF0"
+  },
+  "wordmark": {
+    "text": "gramlot",
+    "font": "Arial Rounded MT Bold",
+    "trackingEm": -0.025,
+    "placement": "below symbol"
+  },
+  "uiFont": "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+  "spacing": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48
+  ],
+  "approvedOn": "2026-09-18"
+}

@@ -16,6 +16,7 @@ nav:
   - Home: index.md
   - Product:
       - Overview: docs/01-overview.md
+      - Visual identity: docs/015-visual-identity.md
       - Constitution: docs/00-constitution.md
   - Contributing:
       - Documentation policy: docs/005-documentation-policy.md
@@ -25,6 +26,7 @@ nav:
   - Concise documentation:
       - Documentation policy: docs_llm/005-documentation-policy.md
       - Overview: docs_llm/01-overview.md
+      - Visual identity: docs_llm/015-visual-identity.md
       - Constitution: docs_llm/00-constitution.md
       - Documentation: docs_llm/02-documentation.md
 
@@ -32,6 +34,7 @@ plugins:
   - search
 
 markdown_extensions:
+  - attr_list
   - tables
   - toc:
       permalink: true

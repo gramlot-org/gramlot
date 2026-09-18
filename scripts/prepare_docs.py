@@ -11,7 +11,7 @@ def main():
         shutil.rmtree(destination)
     destination.mkdir(parents=True)
     shutil.copy2(root / "README.md", destination / "index.md")
-    for directory in ("docs", "docs_llm", "ports"):
+    for directory in ("docs", "docs_llm", "ports", "assets"):
         shutil.copytree(
             root / directory,
             destination / directory,

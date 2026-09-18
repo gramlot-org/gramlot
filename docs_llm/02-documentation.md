@@ -30,3 +30,9 @@ new work belongs on `develop`, with an optional separate preview version.
 Read the Docs assigns the URL.
 Preparation neither creates the hosted project nor authorizes publication.
 App access and a successful hosted build remain to be verified in Read the Docs.
+
+## Brand assets
+
+The preparation step also copies `assets/` so README logos and the shared graphic
+coordination guide remain available in the generated site. Edit the original
+files under `assets/branding/`, not their generated copies.

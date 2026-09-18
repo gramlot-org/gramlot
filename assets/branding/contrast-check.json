@@ -1,0 +1,50 @@
+[
+  {
+    "foreground": "ink",
+    "background": "background",
+    "ratio": 11.85,
+    "passesNormalText": true
+  },
+  {
+    "foreground": "text.secondary",
+    "background": "surface",
+    "ratio": 5.94,
+    "passesNormalText": true
+  },
+  {
+    "foreground": "surface",
+    "background": "action",
+    "ratio": 5.06,
+    "passesNormalText": true
+  },
+  {
+    "foreground": "navigation.text",
+    "background": "navigation",
+    "ratio": 14.08,
+    "passesNormalText": true
+  },
+  {
+    "foreground": "ink",
+    "background": "brand.yellow",
+    "ratio": 7.91,
+    "passesNormalText": true
+  },
+  {
+    "foreground": "success",
+    "background": "success.background",
+    "ratio": 5.05,
+    "passesNormalText": true
+  },
+  {
+    "foreground": "warning",
+    "background": "warning.background",
+    "ratio": 6.48,
+    "passesNormalText": true
+  },
+  {
+    "foreground": "error",
+    "background": "error.background",
+    "ratio": 5.13,
+    "passesNormalText": true
+  }
+]

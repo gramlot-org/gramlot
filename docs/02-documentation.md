@@ -58,3 +58,9 @@ An actual hosted build and GitHub App access must be verified in Read the Docs.
 
 See the official [MkDocs integration guide](https://docs.readthedocs.com/platform/stable/intro/mkdocs.html)
 and [GitHub integration guide](https://docs.readthedocs.com/platform/latest/reference/git-integration.html).
+
+## Brand assets
+
+The preparation step also copies `assets/` so README logos and the shared graphic
+coordination guide remain available in the generated site. Edit the original
+files under `assets/branding/`, not their generated copies.

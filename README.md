@@ -1,5 +1,12 @@
 # Gramlot
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/branding/gramlot-logo-dark.svg">
+    <img src="assets/branding/gramlot-logo.svg" alt="gramlot" width="220">
+  </picture>
+</p>
+
 Gramlot is a framework for declarative application interfaces authored primarily
 in Python and executed by a JavaScript browser runtime.
 
@@ -13,6 +20,7 @@ Start with:
 
 - [Product constitution](docs/00-constitution.md)
 - [Product overview](docs/01-overview.md)
+- [Visual identity and graphic coordination](docs/015-visual-identity.md)
 - [Common showcase contract](docs/010-showcase.md)
 - [Port protocol](ports/README.md)
 - [Documentation build and Read the Docs setup](docs/02-documentation.md)
