@@ -419,3 +419,31 @@ agreed implementation, documentation and verification locally only. Do not push,
 rename GitHub repositories, create tags/releases or publish packages until the
 owner explicitly reopens publication. The already published core 0.1.0 release
 remains unchanged. This does not authorize bulk ports of unapproved PoC behavior.
+
+
+### Amendment 11.22 — Core examples, runner and shared theme — 2026-09-24
+
+Owner authorizes a local, usable HTML/SVG teaching suite in core: twelve paired
+Python/JavaScript pages under `examples/html_svg`, each with its own README,
+progressing from Hello World to methods and loops. Python remains the first
+explanation; equivalent JavaScript is explicitly part of this suite. This supersedes
+GC-140's earlier Hello-World-only example scope and its blanket allocation of all
+example pages to the separate integration example repository. The existing
+`gramlot-examples` integration smoke application remains separate and unchanged.
+
+The owner separates examples from their runner: code viewing and Inspector access
+are runner responsibilities, superseding amendment 11.7's interpretation as controls
+inside every example. The initial runner lives in `examples/00-runner`, with an
+example list, native HTML/CSS language panels containing iframes, and an initial
+HTML element catalogue. This does not approve a new Gramlot tab component or
+application-local DOM events, fetches or parallel state. Missing Inspector APIs
+remain explicit gaps, not permission to import the PoC or invent an Inspector.
+
+The shared application theme lives outside examples in `themes/gramlot-base`, uses
+the approved Gramlot palette, modern CSS and semantic tokens, and documents the
+model for future themes. Runner and examples consume the same theme. HTML/SVG
+construction, native browser controls and static local data are the bounded scope;
+bindings, controllers, databases and PoC transfers remain excluded. Host adapters
+remain in their owning integration repositories; development launch composition
+belongs to the runner, never to the core runtime. All work stays local; no new
+publication, release, dependency-source edits or deployment is authorized.

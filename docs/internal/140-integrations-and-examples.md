@@ -5,7 +5,7 @@ Document ID: **GC-140**. Updated: **2026-09-24**.
 [Concise counterpart](../../docs_llm/internal/140-integrations-and-examples.md).
 
 This is the shared reminder of the agreed integration repositories and reference
-example. It records responsibilities and current status, not a new implementation
+examples. It records responsibilities and current status, not a new implementation
 plan. Authority: [constitution §7 and amendments 11.19–11.21](../00-constitution.md).
 Current verification and work status: [GC-070 §040](070-work-status.md#gc-070-040).
 
@@ -35,7 +35,7 @@ JavaScript pages. Database integration is a separate responsibility.
 <a id="gc-140-010"></a>
 ## 010 · Agreed reference example
 
-The agreed reference application is **Hello World** in
+The integration smoke application is **Hello World** in
 [`gramlot-examples/apps/hello-world`](../../../gramlot-examples/apps/hello-world/README.md).
 It has equivalent Python and JavaScript pages, using real Gramlot typed Source and
 the shared execution contracts. The execution profiles are configurations of this
@@ -52,8 +52,11 @@ same example, not eight different applications.
 | JavaScript | Bun | `gramlot-nodejs` |
 | JavaScript | Browser Worker / standalone HTML | `gramlot-minimal` |
 
-Application pages, launch configurations and application tests belong in
-`gramlot-examples`. Reusable adapters belong in their integration repositories;
+The existing integration smoke pages, launch configurations and application tests
+belong in `gramlot-examples`. The owner-approved teaching suite now lives in core
+`examples/html_svg`, with its runner in `examples/00-runner` and its theme in
+`themes/gramlot-base`; see [GC-145](145-html-svg-examples.md).
+Reusable adapters belong in their integration repositories;
 shared runtime behavior belongs in core. Installation and launch commands are
 maintained in the example's README rather than duplicated here.
 
@@ -87,3 +90,16 @@ accepted native examples merely because they exist in a repository.
 No list of further transfers from `gramlot-poc` has been agreed. Select and review
 each proposed transfer separately, naming its destination, responsibility and
 acceptance checks. This reminder does not authorize any such transfer.
+
+
+<a id="gc-140-025"></a>
+## 025 · Core teaching suite — approved 2026-09-24
+
+The owner has selected twelve paired Python/JavaScript HTML/SVG examples inside
+core, each with an explanatory README. A runner provides a list, language iframe
+panels and an initial HTML element catalogue. The shared `gramlot-base` theme lives
+outside examples under `themes`. Code viewing belongs to the runner, not each page.
+This work supersedes the earlier Hello-World-only teaching scope; the integration
+smoke application above is unchanged. Implementation and verification status are
+tracked in [GC-145](145-html-svg-examples.md) and [GC-070](070-work-status.md#gc-070-045).
+PoC transfers are set aside; no new release or publication is authorized.

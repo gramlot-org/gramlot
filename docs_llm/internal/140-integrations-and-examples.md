@@ -35,8 +35,9 @@ real typed Source. One application has eight execution profiles:
 - Python: Uvicorn/Minimal, FastAPI, Flask, Kajenn, Django.
 - JavaScript: Node.js and Bun through `gramlot-nodejs`; browser Worker through Minimal.
 
-Examples own application pages/configuration/tests; integration repos own adapters;
-core owns shared runtime. Use the example README for maintained launch commands.
+The separate integration example owns its pages/configuration/tests; core now also
+owns the approved teaching suite (§025). Integration repos own adapters; core owns
+shared runtime. Use the example README for maintained launch commands.
 Minimal's `examples/hello-world` and `examples/source-live` are focused verification
 fixtures, not additional feature or application commitments.
 
@@ -59,3 +60,16 @@ Database folders are placeholders. Historical showcase, Microblog, Django ORM,
 site and Rosetta are PoC evidence, not accepted native examples. No further PoC
 transfer list has been agreed. Each transfer needs its own destination,
 responsibility, review and acceptance checks; this inventory authorizes none.
+
+
+<a id="gc-140-025"></a>
+## 025 · Core teaching suite — approved 2026-09-24
+
+The owner has selected twelve paired Python/JavaScript HTML/SVG examples inside
+core, each with an explanatory README. A runner provides a list, language iframe
+panels and an initial HTML element catalogue. The shared `gramlot-base` theme lives
+outside examples under `themes`. Code viewing belongs to the runner, not each page.
+This work supersedes the earlier Hello-World-only teaching scope; the integration
+smoke application above is unchanged. Implementation and verification status are
+tracked in [GC-145](145-html-svg-examples.md) and [GC-070](070-work-status.md#gc-070-045).
+PoC transfers are set aside; no new release or publication is authorized.

@@ -32,7 +32,7 @@ Published native Gramlot 0.1.0 is a reviewed, locally installable foundation wit
 
 The earlier documentary and dependency blockers are closed; their dated evidence remains in GC-120, GC-125 and GC-130.
 
-**Released — 2026-09-24:** [native 0.1.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0) is accepted and publicly available through GitHub archives. All nine downloaded packages, bundle checksums and source provenance match the verified delivery. Core documentation CI and all three native adapter CI matrices pass (Python 3.11/3.12). See [GC-135 §040](135-release-handoff.md#gc-135-040). GC-110 is complete. Next: review the local integration work and select bounded PoC transfer/cleanup steps (§040); no 0.2.0 feature contract has been approved yet. Registry publication, deployments and legacy-consumer migrations were not performed.
+**Released — 2026-09-24:** [native 0.1.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0) is accepted and publicly available through GitHub archives. All nine downloaded packages, bundle checksums and source provenance match the verified delivery. Core documentation CI and all three native adapter CI matrices pass (Python 3.11/3.12). See [GC-135 §040](135-release-handoff.md#gc-135-040). GC-110 is complete. Next: implement and verify the owner-approved core examples/theme/runner (§045); no 0.2.0 feature contract has been approved yet. Registry publication, deployments and legacy-consumer migrations were not performed.
 
 <a id="gc-070-020"></a>
 ## 020 · Deferred work
@@ -92,3 +92,18 @@ six integration repositories, the agreed Hello World application and its eight
 execution profiles, plus publication and historical-example boundaries. No further
 PoC transfer list has been agreed. This is documentation only; runtime and
 verification results above are unchanged.
+
+
+<a id="gc-070-045"></a>
+## 045 · Core HTML/SVG examples — 2026-09-24
+
+Owner authorizes the [GC-145](145-html-svg-examples.md) local workstream: twelve
+paired examples, shared `themes/gramlot-base`, and `examples/00-runner` with an
+HTML catalogue, list and iframe panels. PoC work is set aside. Three Sol agents completed theme, examples and runner; root reviewed and integrated
+the work. Verified 26 catalogue/example pages in Chromium with exact Python/JS DOM
+parity, native controls, keyboard language switching, iframe navigation, source/README
+links and light/dark/narrow layouts. Strict Sphinx and documentation checks pass.
+The catalogue inventories all 117 grammar entries, with non-rendered contexts and
+the ruby annotation grammar gap explicit. Owner visual acceptance remains pending.
+Code viewing belongs to the runner; missing Inspector capability remains explicit.
+No publication or changes to the already released archives are authorized.
