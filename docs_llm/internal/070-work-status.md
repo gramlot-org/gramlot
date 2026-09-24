@@ -88,3 +88,9 @@ minimal source to be published; it is not remotely verified in this local phase.
 Next phase, requiring owner-selected scope: review the remaining PoC transfers and
 cleanup. Historical modules are evidence, not approved core capabilities. Publication
 requires a new explicit owner instruction after those steps.
+
+Owner-requested reminder: [GC-140](140-integrations-and-examples.md) records the
+six integration repositories, the agreed Hello World application and its eight
+execution profiles, plus publication and historical-example boundaries. No further
+PoC transfer list has been agreed. This is documentation only; runtime and
+verification results above are unchanged.

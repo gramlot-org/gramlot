@@ -115,3 +115,7 @@ integration. Core owns shared runtime contracts. This classification does not
 assert that every integration supports each core release; Django native alignment
 is newly authorized and must establish its own verification beyond the original
 0.1.0 matrix. See constitution section 7 for the approved ownership.
+
+[GC-140 · Agreed integrations and examples](internal/140-integrations-and-examples.md)
+is the shared inventory of integration environments, the Hello World profiles and
+their verification/publication status. It does not define further PoC transfers.

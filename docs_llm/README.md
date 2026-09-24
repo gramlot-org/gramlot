@@ -10,6 +10,10 @@ These draft chapters describe the development foundation and explicitly mark gap
 
 ## Repository map
 
+[GC-140 · Agreed integrations and examples](internal/140-integrations-and-examples.md):
+the six integration repositories, Hello World profiles, local/publication status
+and the boundary between agreed examples and historical PoC material.
+
 [Current repository map](internal/086-repository-map.md). Agreed target JavaScript
 ownership and local extraction: [GC-087](internal/087-javascript-layer-boundaries.md).
 
