@@ -52,6 +52,7 @@ notices.sort((a, b) => a.name.localeCompare(b.name));
 await writeFile(path('dist/runtime-notices.json'), JSON.stringify(notices, null, 2) + '\n');
 await mkdir(path('../build/assets/'), {recursive: true});
 await copyFile(path('dist/gramlot.js'), path('../build/assets/gramlot.js'));
+await mkdir(path('../src/gramlot/resources/'), {recursive: true});
 for (const name of ['gramlot.js', 'standalone.js', 'runtime-notices.json']) {
     await copyFile(path(`dist/${name}`), path(`../src/gramlot/resources/${name}`));
 }

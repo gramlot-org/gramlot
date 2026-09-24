@@ -599,3 +599,9 @@ develop into main. Native adapter CI/check runners now exercise the native
 protocol, lint and strict documentation; all three local runners pass.
 Publication receipt belongs in GC-070 and GC-135. No registry release, application
 deployment or 0.2.0 feature work is included.
+
+Release-gate follow-up: a pristine source checkout exposed a missing generated
+resource directory in the JS build; the build now creates it explicitly. Adapter
+native tests require their imports (no collection skips); hooks use the active
+native environment and obsolete first-party lockfiles are removed. These changes
+affect build/check tooling only; the delivered runtime is unchanged.
