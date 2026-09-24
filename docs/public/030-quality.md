@@ -28,11 +28,16 @@ explicitly selects that interpreter for JS interop. Runner dependencies use the
 public Minimal and JS Server main branches alongside this repository, following
 the examples' declared file dependencies. The runner unit suite does not verify
 adapter behavior, standalone exports or the browser matrix. Coverage collection
-is not yet included. [GitHub run 36058922420](https://github.com/gramlot-org/gramlot/actions/runs/36058922420)
-passed Python 18/18, JavaScript 76/76 and runner 8/8 on the CI integration revision
-`edce6cb`. The workflow is now integrated into main/develop; their first branch-specific
-runs are pending. Main excludes unfinished binding tests, so its core JS count
-is expected to be 72 while develop retains 76.
+is not yet included. Verified GitHub runs on 2026-09-24:
+
+- [main](https://github.com/gramlot-org/gramlot/actions/runs/36059477892), revision
+  `76321ac`: Python 18/18, JavaScript 72/72 and runner 8/8.
+- [develop](https://github.com/gramlot-org/gramlot/actions/runs/36059479696), revision
+  `361dcca`: Python 18/18, JavaScript 76/76 and runner 8/8.
+
+Both branches also passed their documentation workflow. The four extra JS tests
+on develop cover the unfinished binding prerequisite reserved for 0.2.0; their
+success does not imply full binding implementation or acceptance.
 
 <a id="gc-030-010"></a>
 
