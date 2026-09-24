@@ -12,8 +12,8 @@ from ._grammar_load import load_grammar
 
 HTML5_COLLECTION = json.loads(files("gramlot").joinpath("collections/html5.json").read_text())
 
-# The Source wire type is part of Gramlot's transport contract. Registering the
-# existing class also supports Builder releases predating its TYTX registration.
+# Gramlot owns the SOURCE wire registration for its typed transport contract.
+# Register the existing Builder SourceBag class (constitution amendment 11.16).
 SourceBag.__tytx_suffix__ = "SOURCE"
 register_class(SourceBag)
 
@@ -59,7 +59,7 @@ class GramlotBuilder(BuilderBase):
         return None
 
     def _validate_call_args(self, info, node_value, attr, node_tag=""):
-        """Preserve portable required-field validation on older Builders."""
+        """Enforce required parameters declared by Gramlot's loaded grammar."""
         supplied = set(attr)
         if node_value is not None:
             supplied.add("node_value")

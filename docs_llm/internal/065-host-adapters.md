@@ -36,7 +36,10 @@ Python @source methods create fresh page/builder instances. Typed Source inserts
 An unmarked override hides inherited source exposure. Python Page imports from gramlot or gramlot.page; JS
 from adapters/index.js. JS files export named Page. Python div('homer', id='panel')
 corresponds to JS div('homer', {id:'panel'}). Python and JS serialize registered SourceBag roots directly through TYTX. Native tags only, no CSS shorthand.
-Host operations: openPage/main/closePage; Python snake_case. Override resolution
+JS operations: openPage/main/source/closePage; Python open_page/main/source/close_page.
+JS source receives `(pageId, method, params, {owner})`; Python receives
+`(page_id, method, params, owner=...)`. Parameter/error differences are documented
+in [GC-090 §017](../public/090-classes-and-hosts.md#gc-090-017). Override resolution
 in subclasses. FileHost confines real paths, maps / to index.js, uses ESM caching;
 no live reload. Python loader uses .py files.
 
@@ -68,3 +71,6 @@ page. No application launch/deployment, database/bindings/controllers/CSS claim.
 Owner dependency policy: no first-party pins or lockfiles; follow upstream Git default branches and unconstrained package releases. Refresh during setup/update; historical version records are evidence only.
 
 Python host imports use `from gramlot.server import Host`; public page imports remain `from gramlot import Page`. Internal pre-release adapters/model/root-builder paths have been replaced by server/page ownership.
+
+Python default file loading executes the module on each page opening. Both Hosts
+create fresh Page instances for main/remote Source requests, independently of module caching.

@@ -22,7 +22,6 @@ gramlot/
 │   └── __init__.py                     Public Python exports
 ├── js/src/                             JavaScript
 │   ├── gramlot.js                      Hosted/embedded Source bootstrap
-│   ├── standalone.js                   Worker startup · main via message transport
 │   ├── builder/
 │   │   └── gramlot-builder.js          GramlotBuilder
 │   ├── renderer/
@@ -30,13 +29,11 @@ gramlot/
 │   ├── view/
 │   │   └── html.js                     HtmlElement · native HTML/SVG DOM
 │   ├── transport.js                   MainTransport · main/remote Source HTTP
-│   ├── worker-transport.js            Worker messages · cancellation · termination
 │   ├── references.js                  Mounted Source/DOM reference registry
 │   ├── adapters/
 │   │   ├── page.js                     Page · source
 │   │   ├── host.js                     Host · page execution, no HTTP
 │   │   ├── file-host.js                FileHost
-│   │   ├── worker-host.js              WorkerHost · shared Host execution
 │   │   └── index.js                    Server exports
 │   └── index.js                        Browser exports
 ├── tests/                              Python contracts · host fixtures
@@ -93,3 +90,6 @@ Python dialect loading and Collection composition remain in Gramlot under
 constitution amendment 11.16. JavaScript uses generic Builder loading and
 Collection composition. SourceBag/SourceBagNode stay generic dependency classes
 in both languages; these Python modules do not introduce a second Source type.
+
+Standalone WorkerHost, WorkerTransport and mount now belong to gramlot-minimal
+(amendment 11.46). Shared Host execution and rendering remain in core.

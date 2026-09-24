@@ -9,18 +9,18 @@ export class MainTransport {
         this.navigator = navigator;
     }
     async main(pageId, signal) {
-        return this.request(this.url, {pageId}, signal);
+        return this.request('main', this.url, {pageId}, signal);
     }
     async source(pageId, method, params, signal) {
-        return this.request(this.sourceUrl, {pageId, method, params}, signal);
+        return this.request('source', this.sourceUrl, {pageId, method, params}, signal);
     }
-    async request(url, payload, signal) {
+    async request(operation, url, payload, signal) {
         const response = await this.fetcher(url, {
             method: 'POST', credentials: 'same-origin', signal,
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload),
         });
-        if (!response.ok) throw new Error(`main failed: HTTP ${response.status}`);
+        if (!response.ok) throw new Error(`${operation} failed: HTTP ${response.status}`);
         return response.text();
     }
     close(pageId, {beacon = false} = {}) {

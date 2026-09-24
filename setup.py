@@ -8,7 +8,7 @@ from setuptools.errors import SetupError
 class BuildWithRuntime(build_py):
     def run(self):
         resources = Path(__file__).parent / "src" / "gramlot" / "resources"
-        missing = [name for name in ("gramlot.js", "standalone.js", "runtime-notices.json") if not (resources / name).is_file()]
+        missing = [name for name in ("gramlot.js", "runtime-notices.json") if not (resources / name).is_file()]
         if missing:
             raise SetupError(
                 "Missing browser assets: " + ", ".join(missing) + ". Run npm --prefix js run build before building Gramlot."

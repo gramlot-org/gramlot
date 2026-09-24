@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {JSDOM} from 'jsdom';
 import {Bag, GramlotBuilder, GramlotRenderer, Gramlot, MainTransport} from '../src/index.js';
-import {SourceBag} from 'genro-builders-js';
+import {SourceBag} from '@jsr/genro__builders';
 
 function setup() {
     const document = new JSDOM('<div id="gramlot-root"><i id="host-owned"></i></div>').window.document;
@@ -169,5 +169,7 @@ test('transport passes identity, cancellation and failures through the host cont
         return {ok: true, text: async () => 'wire'};
     });
     assert.equal(await transport.main('page', signal), 'wire');
-    await assert.rejects(new MainTransport('/main', async () => ({ok: false, status: 403})).main('p'), /403/);
+    const failing = new MainTransport('/main', async () => ({ok: false, status: 403}));
+    await assert.rejects(failing.main('p'), {message: 'main failed: HTTP 403'});
+    await assert.rejects(failing.source('p', 'details', {}), {message: 'source failed: HTTP 403'});
 });

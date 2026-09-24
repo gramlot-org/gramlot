@@ -1,4 +1,4 @@
-import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder, svgAttributes} from 'genro-builders-js';
+import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder, svgAttributes} from '@jsr/genro__builders';
 
 const HTML_NS = 'http://www.w3.org/1999/xhtml';
 const SVG_NS = 'http://www.w3.org/2000/svg';

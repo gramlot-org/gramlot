@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Bag} from 'genro-bag-js';
+import {Bag} from '@jsr/genro__bag';
 
 test('observed root activates prebuilt nested Bags without builder assistance', () => {
     const root = new Bag();

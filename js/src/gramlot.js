@@ -1,5 +1,5 @@
-import {Bag} from 'genro-bag-js';
-import {SourceBag, sourceBagFromTytx} from 'genro-builders-js';
+import {Bag} from '@jsr/genro__bag';
+import {SourceBag, sourceBagFromTytx} from '@jsr/genro__builders';
 import {GramlotBuilder} from './builder/gramlot-builder.js';
 import {GramlotRenderer} from './renderer/gramlot-renderer.js';
 import {MainTransport} from './transport.js';

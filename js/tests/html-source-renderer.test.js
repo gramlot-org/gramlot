@@ -4,7 +4,7 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import { GramlotRenderer } from '../src/renderer/gramlot-renderer.js';
 import { HtmlElement } from '../src/view/html.js';
-import { HtmlBuilder, SourceBag } from 'genro-builders-js';
+import { HtmlBuilder, SourceBag } from '@jsr/genro__builders';
 import html5 from '../../src/gramlot/collections/html5.json' with {type: 'json'};
 
 function sourceBlock(builder) {

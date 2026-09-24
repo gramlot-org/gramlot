@@ -141,6 +141,8 @@ def _signature(desc: Any, path: str, *, component: bool = False) -> tuple[dict[s
     params = item.get("parameters", [])
     if type(params) is not list:
         _fail(path, "parameters must be an array")
+    for index, param in enumerate(params):
+        _object(param, f"{path}.parameters[{index}]")
     item = {"parameters": params,
             "accepts_var_keyword": any(p.get("kind") == "var_keyword" for p in params),
             "accepts_var_positional": any(p.get("kind") == "var_positional" for p in params), **item}
@@ -153,9 +155,8 @@ def _signature(desc: Any, path: str, *, component: bool = False) -> tuple[dict[s
     seen: set[str] = set()
     required_names: set[str] = set()
     found_var_kw = found_var_pos = False
-    for index, raw in enumerate(item["parameters"]):
+    for index, param in enumerate(item["parameters"]):
         ppath = f"{path}.parameters[{index}]"
-        param = _object(raw, ppath)
         required = {"name", "kind", "role", "annotation", "has_default"}
         if not required <= set(param) or set(param) - (required | {"default"}):
             _fail(ppath, "invalid parameter shape")

@@ -1,7 +1,6 @@
-import {RendererBase, BuilderBase, HtmlBuilder, SvgBuilder, SourceBag, SourceBagNode, sourceTarget} from 'genro-builders-js';
+import {RendererBase, BuilderBase, HtmlBuilder, SvgBuilder, SourceBag, SourceBagNode, sourceTarget} from '@jsr/genro__builders';
 import {HtmlElement} from '../view/html.js';
 import {References} from '../references.js';
-import {HtmlTabs} from '../components/html-tabs.js';
 
 /** Own the live DOM lifecycle driven by typed Source insert/update/delete events. */
 export class GramlotRenderer extends RendererBase {
@@ -95,10 +94,6 @@ export class GramlotRenderer extends RendererBase {
             child.parent = record;
             child.container = record.element;
             record.children.add(child.node);
-        }
-        if (node.getAttr('data_gramlot_tabs') != null) {
-            const tabs = new HtmlTabs(this, node).mount();
-            record.cleanup.push(() => tabs.dispose());
         }
         return record.element;
     }

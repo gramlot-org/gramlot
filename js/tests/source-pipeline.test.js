@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {fromTytx, toTytx} from 'genro-tytx';
+import {fromTytx, toTytx} from '@jsr/genro__tytx';
 import {
     SourceBag,
     SourceBagNode,
     sourceBagToTytx,
-} from 'genro-builders-js';
+} from '@jsr/genro__builders';
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 
 function wire(author) { const builder = new GramlotBuilder(); author(builder.root); return builder.toTytx(); }

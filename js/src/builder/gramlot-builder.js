@@ -1,5 +1,5 @@
-import {HtmlBuilder, SourceBagNode, sourceTarget} from 'genro-builders-js';
-import {toTytx} from 'genro-tytx';
+import {HtmlBuilder, SourceBagNode, sourceTarget} from '@jsr/genro__builders';
+import {toTytx} from '@jsr/genro__tytx';
 
 /** Gramlot vocabulary and inert authoring on the shared builder grammar. */
 export class GramlotBuilder extends HtmlBuilder {

@@ -4,7 +4,7 @@ from importlib.resources import files
 
 def runtime_asset(name="gramlot.js"):
     """Return a packaged browser asset; never fall back to another checkout."""
-    if name not in {"gramlot.js", "standalone.js", "runtime-notices.json"}:
+    if name not in {"gramlot.js", "runtime-notices.json"}:
         raise ValueError(f"Unknown Gramlot runtime asset: {name}")
     asset = files("gramlot").joinpath("resources", name)
     if not asset.is_file():

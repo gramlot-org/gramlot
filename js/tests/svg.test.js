@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {JSDOM} from 'jsdom';
-import {SvgBuilder, sourceTarget, sourceBagToTytx} from 'genro-builders-js';
+import {SvgBuilder, sourceTarget, sourceBagToTytx} from '@jsr/genro__builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 
 const SVG = 'http://www.w3.org/2000/svg';

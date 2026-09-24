@@ -1,4 +1,4 @@
-import {HtmlBuilder} from 'genro-builders-js';
+import {HtmlBuilder} from '@jsr/genro__builders';
 import {Page, sourceMethod} from './page.js';
 
 export class PageExpired extends Error {}

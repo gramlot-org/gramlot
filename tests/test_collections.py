@@ -7,6 +7,27 @@ CONTROLS = json.loads((Path(__file__).parent / 'fixtures/collections/controls.js
 
 
 class CollectionTests(unittest.TestCase):
+    def test_malformed_signature_parameters_report_their_path(self):
+        for component in (False, True):
+            for malformed in (42, None, 'parameter', []):
+                with self.subTest(component=component, parameter=malformed):
+                    builder = GramlotBuilder()
+                    invalid = json.loads(json.dumps(CONTROLS))
+                    entry = invalid['elements']['statusText']
+                    if component:
+                        entry['_meta']['component'] = True
+                    entry['attributes']['parameters'].append(malformed)
+                    index = len(entry['attributes']['parameters']) - 1
+                    with self.assertRaises(ValueError) as error:
+                        builder.load_collection(invalid)
+                    self.assertIn(
+                        f'statusText.attributes.parameters[{index}]: must be an object',
+                        str(error.exception),
+                    )
+                    builder.root.div('still valid')
+                    with self.assertRaises(AttributeError):
+                        builder.root.statusText('not registered', required_label='Status')
+
     def test_complete_html_collection_and_declared_structure(self):
         builder = GramlotBuilder()
         builder.root.canvas('fallback', id='canvas')

@@ -20,6 +20,20 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a host; the core is
 independent of server and database technology.
 
+## JavaScript package on JSR
+
+The JavaScript distribution is `@genro/gramlot` on JSR. Install it with
+`bunx jsr add @genro/gramlot` or `npx jsr add @genro/gramlot`.
+Node.js 22 or later and Bun are supported server runtimes; the browser runtime
+is bundled separately. In current development, core provides `server`, `host`, `page` and `runtime`.
+Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/minimal`.
+Use the matching development packages; published 0.1.0 artifacts are unchanged.
+Python pages still require the Python distribution and a Python server.
+
+The 0.1.1 candidate keeps runner UI dependencies in the example runner, which uses
+DOMPurify 3.4.16. Binding implementation is reserved for 0.2.0 and is excluded
+from this candidate. Published 0.1.0 artifacts remain unchanged.
+
 ## Can I use it today?
 
 [Download the native 0.1.0 archive set](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0).
@@ -34,7 +48,7 @@ showcase remain in [gramlot-poc](https://github.com/gramlot-org/gramlot-poc).
 
 To evaluate the bounded foundation, start with [Try Gramlot](docs/public/025-try.md)
 and [Writing pages](docs/public/095-writing-pages.md). Its current packages have
-passed a local seven-host Chromium matrix; the release keeps that bounded scope. The [offline showcase](https://github.com/gramlot-org/gramlot-standalone/tree/main/examples/showcase)
+passed a local seven-host Chromium matrix; the release keeps that bounded scope. The [offline showcase](https://github.com/gramlot-org/gramlot-minimal/tree/main/examples/showcase)
 demonstrates a richer experimental runtime with different scope.
 
 ## Start here
@@ -62,10 +76,13 @@ reference. Gramlot is licensed under Apache 2.0.
 ## Integration repositories
 
 Environment-specific adapters and setup instructions live in `gramlot-fastapi`,
-`gramlot-flask`, `gramlot-kajenn`, `gramlot-minimal`, `gramlot-nodejs` (Node.js/Bun),
+`gramlot-flask`, `gramlot-kajenn`, `gramlot-minimal`, `gramlot-js-server` (Node.js/Bun),
 and `gramlot-django`. Minimal covers Python/ASGI/Uvicorn and browser/Worker
 standalone. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
 These development names do not rename the already published 0.1.0 archives.
 
-The integration names and reorganization above are local development targets.
-GitHub renames and publication await further reviewed PoC transfer and cleanup.
+`gramlot-minimal` and `gramlot-js-server` are the current local and GitHub repository
+names. `gramlot-kajenn` is the approved destination name. The inspected local checkout
+and its configured origin still use `gramlot-genro-asgi`; a remote rename is not
+verified. This naming distinction does not change Kajenn's approved ownership.
+Repository naming does not imply a package release or deployment.

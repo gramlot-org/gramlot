@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
-import {fromTytx} from 'genro-tytx';
-import {SourceBag, SourceBagNode, sourceBagToTytx} from 'genro-builders-js';
+import {fromTytx} from '@jsr/genro__tytx';
+import {SourceBag, SourceBagNode, sourceBagToTytx} from '@jsr/genro__builders';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
 for (const transport of ['json', 'msgpack']) {

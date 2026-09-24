@@ -3,6 +3,20 @@
 Before changing this repository, read `docs/00-constitution.md`,
 `docs/01-overview.md` and `ports/README.md`. The constitution is authoritative.
 
+- Owner 2026-09-24, constitution amendment 11.44: remove runner-specific core
+  behavior; retain the provisional implementation in `examples/00-runner` using
+  existing Source/Bag/lifecycle APIs. The bounded runner-local browser exception
+  does not authorize new framework capabilities or general application bypasses.
+  Report any blocking gap; future web components require a separate confirmed design.
+- Owner 2026-09-24, constitution amendment 11.43: every decision requires explicit
+  owner confirmation before implementation or recording it as approved. Agent
+  proposals, interpretations, silence, working code and passing tests are not
+  confirmation. Record the concrete decision, scope and owner's confirming words
+  or a retrievable reference. Ask one decision question at a time and wait for
+  the answer; address owner questions before proceeding. Do not ask again for an
+  already explicit decision. An examples-only assignment permits changes only to
+  examples; report missing framework capabilities and stop the affected work.
+  It does not reopen a frozen framework release.
 - Owner 2026-09-21, clarified 2026-09-22 by constitution §14: work only in Gramlot, including explicitly approved connected adapter work. Do not directly modify Builder JS or
   Bag JS repositories or their installed source copies. Read-only inspection is
   allowed. Report dependency defects for resolution in their owning projects;
@@ -78,3 +92,7 @@ No formal Live Object Tree semantics have been approved. Do not infer or invent 
 - Owner 2026-09-17: public gramlot-poc, gramlot-standalone, gramlot-flask and
   gramlot-nodejs are authorized; this supersedes earlier local/private restrictions.
   Source pushes do not authorize package releases or application deployments.
+
+- Owner 2026-09-24, constitution 11.46: standalone WorkerTransport, WorkerHost and
+  startup belong to gramlot-minimal. Bounded connected edits there are authorized
+  for this transfer. Core retains shared Host/Page execution, Source and rendering.

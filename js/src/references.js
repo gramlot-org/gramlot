@@ -1,5 +1,5 @@
 /** Opaque references to mounted Source nodes and their DOM elements. */
-import {SourceBag} from 'genro-builders-js';
+import {SourceBag} from '@jsr/genro__builders';
 
 export class References {
     constructor(sourceRoot = null) { this.entries = new Map(); this.sourceRoot = sourceRoot; }

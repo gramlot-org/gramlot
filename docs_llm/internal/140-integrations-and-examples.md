@@ -17,8 +17,8 @@ instructions. Core owns shared Page, Host, Source and browser contracts.
 | `gramlot-fastapi` | Python / FastAPI; native integration in original 0.1.0 delivery. |
 | `gramlot-flask` | Python / Flask; native integration in original 0.1.0 delivery. |
 | `gramlot-kajenn` | Python / Kajenn; consumes Minimal ASGI. Local alignment; actual repo name remains `gramlot-genro-asgi`. |
-| `gramlot-minimal` | Python / generic ASGI/Uvicorn and JS / browser Worker packaging. Local alignment; actual repo name remains `gramlot-standalone`. |
-| `gramlot-nodejs` | JavaScript / Node.js and Bun; both belong here, original 0.1.0 profiles. |
+| `gramlot-minimal` | Python / generic ASGI/Uvicorn and JS / browser Worker packaging. Local alignment; local and GitHub repository now named `gramlot-minimal`. |
+| `gramlot-js-server` | JavaScript / Node.js and Bun; both belong here, original 0.1.0 profiles. |
 | `gramlot-django` | Python / Django; local native `NativeHtmlPages` views/URLconf. Old Page/ORM code is historical. |
 
 Kajenn names the former Genro ASGI product; upstream distribution/import still
@@ -33,7 +33,7 @@ reference application in `gramlot-examples`, with equivalent Python/JS pages and
 real typed Source. One application has eight execution profiles:
 
 - Python: Uvicorn/Minimal, FastAPI, Flask, Kajenn, Django.
-- JavaScript: Node.js and Bun through `gramlot-nodejs`; browser Worker through Minimal.
+- JavaScript: Node.js and Bun through `gramlot-js-server`; browser Worker through Minimal.
 
 The separate integration example owns its pages/configuration/tests; core now also
 owns the approved teaching suite (§025). Integration repos own adapters; core owns
@@ -73,3 +73,16 @@ This work supersedes the earlier Hello-World-only teaching scope; the integratio
 smoke application above is unchanged. Implementation and verification status are
 tracked in [GC-145](145-html-svg-examples.md) and [GC-070](070-work-status.md#gc-070-045).
 PoC transfers are set aside; no new release or publication is authorized.
+
+
+<a id="gc-140-040"></a>
+
+## 040 · Single upstream teaching suite
+
+Owner confirmed Gramlot as the single source for teaching pages, READMEs, runner,
+logo and theme. Downstream integrations consume these through the core dependency
+and own environment configuration and launchers. Updating that dependency and
+restarting or regenerating exports propagates changes; copied teaching suites
+are not maintained downstream. This supersedes any broader reading of the older
+smoke-application ownership notes. Uniform packaging and launch rollout remains
+pending. See [GC-025 §020](../public/025-try.md#gc-025-020).

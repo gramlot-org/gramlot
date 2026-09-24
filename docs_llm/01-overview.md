@@ -32,6 +32,11 @@
   Application-local DOM/event/request/state bypasses are excluded; native browser
   operations belong inside framework implementation.
 
+The provisional example runner has a bounded owner-approved exception (constitution
+11.44): its local JavaScript attaches behavior through ordinary HTML IDs and uses
+existing Source/Bag/lifecycle APIs. This is not a general core component facility;
+future web components require separate approval.
+
 ## 5. Adapters
 
 - **5.1** Server adapters handle host integration; DB adapters handle backend/model
@@ -51,7 +56,10 @@
 
 Integration repos provide environment-specific adapters and instructions to install,
 configure and try Gramlot: `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn`,
-`gramlot-minimal`, `gramlot-nodejs` (Node.js and Bun), and `gramlot-django`.
+`gramlot-minimal`, `gramlot-js-server` (Node.js and Bun), and `gramlot-django`.
+`gramlot-kajenn` is the approved destination name. The inspected local checkout
+and its configured origin still use `gramlot-genro-asgi`; a remote rename is not
+verified. This naming distinction does not change Kajenn's approved ownership.
 Minimal combines Python/ASGI/Uvicorn hosting and browser/Worker standalone packaging.
 Kajenn consumes minimal's generic ASGI adapter and owns only its host-specific
 integration. Core owns shared runtime contracts. This classification does not

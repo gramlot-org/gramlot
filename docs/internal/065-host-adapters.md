@@ -78,12 +78,15 @@ Python declares `root.div('homer', id='panel')`; JS declares
 scalar values through registered TYTX transport. Mixed prefix text uses `_text`;
 there is no ordinary-Bag snapshot or hydration boundary. No CSS shorthand translation is included.
 
-The JS Host contract is `openPage(path, {owner})`, `main(pageId, {owner})` and
-`closePage(pageId, {owner})`; Python uses snake_case equivalents. A host subclass
+The JS Host operations are `openPage(path, {owner})`, `main(pageId, {owner})`,
+`source(pageId, method, params, {owner})` and `closePage(pageId, {owner})`.
+Python uses `open_page`, `main`, `source` and `close_page`, with keyword `owner`.
+These are corresponding responsibilities, not identical parameter/error contracts;
+see [GC-090 §017](../public/090-classes-and-hosts.md#gc-090-017). A host subclass
 can replace page resolution. FileHost maps `/` to `index.js` and `/a/b` to
 `a/b.js`, confines real paths to the page directory and uses ordinary ESM imports.
-ESM caching applies; live reload is not implemented. Python's default loader uses
-`.py` files. Package-specific resolution belongs in a host subclass.
+ESM caching applies; live reload is not implemented. Python's default loader
+executes the `.py` module on each page opening. Package-specific resolution belongs in a host subclass.
 
 <a id="gc-065-020"></a>
 

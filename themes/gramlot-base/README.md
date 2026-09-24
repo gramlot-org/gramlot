@@ -24,3 +24,7 @@ Rules are grouped in cascade layers (`gramlot.reset`, `gramlot.tokens`, `gramlot
 The logo assets in `assets/branding/` have opaque white or navy backgrounds. Choose the matching file for the surface and respect the [asset limitations](../../assets/branding/theme-guide.md#2-asset-files-and-limitations); the theme does not recolor them. The application theme does not replace the required classic Read the Docs appearance of documentation sites.
 
 Modern evergreen browsers are the intended target. Cascade layers, `clamp()`, CSS grid, logical properties, `color-scheme`, and container queries are used; no legacy browser fallback is included. This stylesheet is an application presentation layer, not a claim that every Gramlot component or integration has been visually verified.
+
+Syntax highlighting uses `.hljs-*` token classes mapped to the same semantic colors in light and dark mode. Python and JavaScript detection belongs to the runtime; the theme only styles the resulting code spans.
+
+The base text size is 14px with compact headings and spacing. Runner navigation uses the approved navy navigation surface, blue selected item and yellow brand accent; these are the existing palette tokens, not new colors.

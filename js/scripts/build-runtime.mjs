@@ -1,6 +1,6 @@
 /** Build installed browser entry points and preserve their dependency notices. */
 import {build} from 'esbuild';
-import {mkdir, copyFile, readFile, readdir, writeFile} from 'node:fs/promises';
+import {mkdir, copyFile, readFile, readdir, writeFile, rm} from 'node:fs/promises';
 import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root = new URL('../', import.meta.url);
@@ -12,10 +12,11 @@ const options = {
     legalComments: 'inline',
 };
 const hosted = await build({...options, entryPoints: [path('src/index.js')], format: 'esm', outfile: path('dist/gramlot.js')});
-const offline = await build({...options, entryPoints: [path('src/standalone.js')], format: 'iife',
-    globalName: 'GramlotStandalone', outfile: path('dist/standalone.js')});
+// Standalone startup and Worker integration now belong to gramlot-minimal.
+await rm(path('dist/standalone.js'), {force: true});
+await rm(path('../src/gramlot/resources/standalone.js'), {force: true});
 const packages = new Map();
-for (const input of new Set([...Object.keys(hosted.metafile.inputs), ...Object.keys(offline.metafile.inputs)])) {
+for (const input of new Set(Object.keys(hosted.metafile.inputs))) {
     let directory = dirname(resolve(input));
     while (directory !== dirname(directory)) {
         let metadata;
@@ -53,6 +54,6 @@ await writeFile(path('dist/runtime-notices.json'), JSON.stringify(notices, null,
 await mkdir(path('../build/assets/'), {recursive: true});
 await copyFile(path('dist/gramlot.js'), path('../build/assets/gramlot.js'));
 await mkdir(path('../src/gramlot/resources/'), {recursive: true});
-for (const name of ['gramlot.js', 'standalone.js', 'runtime-notices.json']) {
+for (const name of ['gramlot.js', 'runtime-notices.json']) {
     await copyFile(path(`dist/${name}`), path(`../src/gramlot/resources/${name}`));
 }

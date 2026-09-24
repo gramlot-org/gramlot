@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {RendererBase, SourceBag} from 'genro-builders-js';
+import {RendererBase, SourceBag} from '@jsr/genro__builders';
 import {GramlotBuilder} from '../src/builder/gramlot-builder.js';
 import {GramlotRenderer} from '../src/renderer/gramlot-renderer.js';
-import {sourceTarget} from 'genro-builders-js';
+import {sourceTarget} from '@jsr/genro__builders';
 import html5 from '../../src/gramlot/collections/html5.json' with {type: 'json'};
 
 function setup() {

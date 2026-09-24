@@ -46,6 +46,7 @@ test('pagehide sends a JSON beacon, but a retained page stays active', async () 
     assert.equal(requests.length, 1);
     assert.equal(beacons.length, 1);
     assert.equal(beacons[0].url, '/prefix/close');
-    assert.equal(beacons[0].body.type, 'application/json');
+    // Bun may append a charset parameter to a JSON Blob.
+    assert.equal(beacons[0].body.type.split(';', 1)[0], 'application/json');
     assert.equal(await beacons[0].body.text(), '{"pageId":"page"}');
 });

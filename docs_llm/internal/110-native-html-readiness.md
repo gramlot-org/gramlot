@@ -1,14 +1,21 @@
-# 110 · Native HTML 0.1.0 readiness plan
+# 110 · Completed native HTML 0.1.0 release plan
 
 Document ID: **GC-110**. Updated: **2026-09-24**.
 
 <a id="gc-110-010"></a>
 ## 1. Objective and constraints
 
-Deliver a reviewed, locally installable Gramlot 0.1.0 foundation for native HTML
-and live Source, suitable for subsequent bounded work. This is the current execution
-plan; earlier plans remain historical evidence where superseded by the constitution.
-Implementation, verification and owner acceptance are separate statuses.
+This is the completed execution plan for the bounded native HTML and live Source
+0.1.0 foundation delivered as GitHub archives. On 2026-09-24 the owner authorized
+release closure; [GC-135 §035](135-release-handoff.md#gc-135-035) records that
+authorization and [§040](135-release-handoff.md#gc-135-040) records publication and
+artifact verification. Implementation, verification and acceptance apply to that
+release scope only; they do not accept every historical port or excluded feature.
+
+The original objectives, gates and dated implementation notes below are retained
+as release evidence. References there to current behavior or pending authorization
+belong to their recorded checkpoint. For later development and remaining work, use
+[GC-070](070-work-status.md); this plan does not reopen frozen 0.1.0 work.
 
 Included: typed SourceBag/SourceBagNode, Python and JS Page authoring, bootstrap
 through the owning HtmlBuilder, main/marked remote Source, synchronous FIFO live
@@ -61,7 +68,7 @@ not installation pins. Unresolved architecture stops only the affected work.
 | 3. Host and grammar decisions | Resolve HTTP versus shared Host duties, HTTP page closure, and Python HTML grammar distribution with concrete examples. | Owner decisions implemented in the owning layer; one documented execution contract across relevant hosts. | Complete; artifact comparison completed in §5.1 |
 | 4. Current matrix | Fresh packaged installations; Python Uvicorn/FastAPI/Kajenn/Flask; JS Node/Bun/Worker. Exercise same bounded behavior. | Seven current profiles verified or explicit blockers; old eight-profile result not reused. | Complete; fresh local packages and Chromium 7/7 in §3.1 |
 | 5. Documentation and packaging | Review README, public Sphinx, internal operating guide, repository maps, mirrors, exports, package contents and notices. | Documentation matches actual code; examples install without sibling-source imports; internal architecture excluded from public site. | Complete; §5.1 records evidence and external notice gaps |
-| 6. Local version closure | After preceding gates, prepare 0.1.0 artifacts, verify installation and record final diff review, limitations and handoff. | Versioned artifacts verified; unresolved blockers clearly separate from deferred features; owner acceptance requested. | Complete locally; §6.1–6.2, owner acceptance pending |
+| 6. Local version closure | After preceding gates, prepare 0.1.0 artifacts, verify installation and record final diff review, limitations and handoff. | Versioned artifacts verified; unresolved blockers clearly separate from deferred features; owner acceptance requested. | Complete; bounded 0.1.0 closure accepted and GitHub archives published on 2026-09-24; [GC-135 §035–040](135-release-handoff.md#gc-135-035) |
 
 Each phase records files changed, architectural rationale, verification evidence,
 remaining questions and next action here and in GC-070. A passing test cannot close

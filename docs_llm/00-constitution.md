@@ -9,6 +9,13 @@
 - **1.2** Check requests/ports before affected work. Cite conflicts. Resolve by adapting
   work or explicit owner amendment; LLMs/reviewers cannot amend architecture.
 - **1.3** Record amendment date, changed principle and superseded decision in both docs.
+- **1.4** Every decision needs explicit owner confirmation before implementation or
+  recording approval. Proposals, agent interpretations, silence, existing code and
+  passing tests are not confirmation. Record decision, scope and confirming owner
+  words or a retrievable reference; an agent-authored record is not independent
+  approval evidence. Ask one decision question at a time, wait, and address owner
+  questions first. Explicit instructions already settle their stated decision;
+  do not request redundant confirmation. See 11.43.
 
 ## 2. Identity
 
@@ -22,7 +29,10 @@
 - **3.1** Gramlot apps/examples/demos/PoCs use Source, Data Bags, bindings, controllers,
   resolvers and shared components for UI, state, interaction and requests.
 - **3.2** No app-local DOM construction/manipulation, manual event wiring, input
-  scraping, ad hoc fetch or parallel UI/state. Implement missing reusable capability.
+  scraping, ad hoc fetch or parallel UI/state. Report missing capabilities and stop
+  affected work pending explicit owner confirmation. An application assignment does
+  not authorize framework implementation. See 11.44 for the bounded provisional
+  runner exception using ordinary HTML IDs.
 - **3.3** Show Python first. Small local JS expressions are allowed; do not hide apps
   in large JS strings/support files.
 
@@ -64,14 +74,16 @@ and database technology; an integration may depend on core, never the reverse.
 | `gramlot-flask` | Flask |
 | `gramlot-kajenn` | Kajenn, the new product name for Genro ASGI |
 | `gramlot-minimal` | Python with Uvicorn through the generic ASGI adapter; JavaScript in a browser Worker without a server |
-| `gramlot-nodejs` | Node.js and Bun |
+| `gramlot-js-server` | Node.js and Bun |
 | `gramlot-django` | Django |
 
 `gramlot-minimal` replaces the repository name `gramlot-standalone`; standalone
 remains the browser/Worker profile name. It owns the generic Python ASGI adapter
-and the existing single-HTML exporter. Core retains Host/Page execution and the
-Worker runtime. `gramlot-kajenn` replaces `gramlot-genro-asgi` and owns Kajenn-specific
-integration, consuming the generic ASGI adapter from minimal without duplicating it.
+and the existing single-HTML exporter. Core retains shared Host/Page execution and rendering. Minimal owns standalone
+Worker integration and startup (amendment 11.46). `gramlot-kajenn` is the approved destination name for `gramlot-genro-asgi` and owns
+Kajenn-specific integration, consuming the generic ASGI adapter from Minimal. The
+inspected local checkout and configured origin still use `gramlot-genro-asgi`;
+the remote rename is not verified. This clarification does not rename a repository.
 The upstream Python distribution/import remains `genro-asgi`/`genro_asgi` until
 its owning project actually renames it. Do not invent an upstream package alias.
 
@@ -221,6 +233,12 @@ Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes
 <a id="gc-000-140"></a>
 
 ## 14. Current repository work boundary
+
+**Current naming clarification — 2026-09-24:** In the dated decisions below,
+`gramlot-nodejs` is now `gramlot-js-server` (11.32), and `gramlot-standalone` is now
+`gramlot-minimal` (11.19). Kajenn's approved destination name is `gramlot-kajenn`;
+the inspected checkout/configured origin remain `gramlot-genro-asgi`. Historical
+names preserve the original decision scope and do not identify additional repos.
 
 Owner decision, 2026-09-21: subsequent work is restricted to Gramlot. Builder JS
 and Bag JS are dependencies to inspect read-only, not repositories to modify
@@ -467,3 +485,337 @@ Runner pages contain no application-local DOM handlers or fetch. This is not
 a generic binding/controller API, a new grammar dialect, a component registry,
 closeable/reorderable tabs or an Inspector. Existing runtime/dependency/publication
 boundaries remain unchanged; no PoC code is involved.
+
+
+### Amendment 11.24 — Runner introduction, split preview and source — 2026-09-24
+
+The owner requests an initial introduction tab containing only a brief explanation
+of the runner and its use, without an iframe. All example titles remain in the
+left navigation. Example panels keep their explanation above a horizontally split
+area: preview iframe on the left and the integration-selected source code on the
+right. The divider is adjustable. Syntax highlighting uses `hljs.highlightAuto`;
+the owner explicitly withdrew the accidental `th_symbo` reference.
+
+This supersedes the automatic catalogue opening in 11.22–11.23. A bounded shared
+HTML splitter and code-highlighting view belong to the reusable browser runtime;
+Source declares their content, the splitter keeps its position in a Bag, and the
+renderer owns their lifecycle. Runner pages read their own example source on the
+host and declare it as text; they do not add browser requests or event handlers.
+This does not authorize an Inspector, general component registry, dependency-source
+edits or publication.
+
+
+### Amendment 11.25 — Remove catalogue from runner — 2026-09-24
+
+The owner explicitly rejects the HTML catalogue as confusing. Remove it from the
+runner navigation and host routes. The runner exposes only its introduction and
+the twelve numbered examples. This supersedes 11.24's catalogue list entry; the
+old specimen files remain historical material, not a served example.
+
+
+### Amendment 11.26 — Compact runner and rendered README — 2026-09-24
+
+The owner requests compact typography and spacing, each README rendered above
+the preview/code panes, removal of redundant source/README links, and an opt-in
+keyboard-navigation checkbox at the bottom of the sidebar. Shared tab behavior
+owns the checkbox state in a Bag and Source attributes; keyboard navigation and
+its sidebar focus decoration are initially disabled. A reusable Markdown view
+renders host-provided README text, with sanitization, under renderer lifecycle
+ownership. This bounded view is not application-local DOM construction. Theme
+colors must follow the existing approved brand and application palette.
+
+
+### Amendment 11.27 — Runner theme selector and logo — 2026-09-24
+
+The owner adds the Gramlot logo above the example list and a light/dark selector
+at its bottom. Shared theme behavior owns the selection in a Bag, projects it
+to Source and applies the theme to the runner document and its same-origin example
+iframes, including frames opened later. This is bounded presentation behavior
+with renderer-owned listener cleanup; no application event wiring or persistence.
+
+
+### Amendment 11.28 — Example categories and preview proportion — 2026-09-24
+
+The owner requests a 65% preview / 35% source default and slightly smaller code
+type. The sidebar groups the current examples below an HTML / SVG category.
+Selecting the category opens its folder README as a Markdown-only tab, without
+an iframe. Shared tab behavior explicitly supports category panels. Future
+binding categories will use the same structure; no binding examples are added
+in this increment.
+
+
+### Amendment 11.29 — Static-directory runner export — 2026-09-24
+
+The owner requests the complete examples runner standalone and explicitly selects
+a static directory rather than a single offline HTML file. This authorizes a
+bounded multi-page static export in the Minimal integration: a runner document,
+one document/Worker per JavaScript example, and local theme/source/README/logo
+assets. It supersedes the earlier exclusion of multi-page packaging only for
+this directory profile. A plain HTTP file server is sufficient; no application
+server, Node/Bun execution at runtime, database or file:// guarantee is implied.
+
+Core keeps Worker/Page/main ownership and loads declared Page.css stylesheets
+in standalone documents. Minimal owns bundling and HTML generation via HtmlBuilder.
+Runner UI is shared by hosted and standalone configuration, with README/source
+text supplied before bundling rather than filesystem access inside the Worker.
+Do not strip Page.css, simulate Node APIs in the browser, precompute Page Source
+or modify Builder/Bag dependencies. Connected Minimal adapter edits are within
+this request; all publication restrictions remain in force.
+
+
+### Amendment 11.30 — Direct local-file standalone directory — 2026-09-24
+
+The owner corrects 11.29: selecting a directory did not mean accepting a server
+requirement. The standalone export must open directly from its local index.html.
+This supersedes the static-HTTP-only restriction. Minimal packages classic
+bootstrap scripts containing bundled Worker text and starts Blob Workers, using
+relative asset/page URLs rather than fetching Worker source or using file Workers.
+Core standalone accepts an explicit export asset root for declared CSS resolution;
+Page.css remains unchanged. Runner host configuration supplies its logo and frame
+URLs without a second UI implementation.
+
+File documents may have opaque origins. Shared core theme synchronization uses
+a bounded parent/owned-frame postMessage protocol with sender-window checks and
+light/dark values, for hosted and local-file execution alike. No application
+event wiring, disabled browser security, dependency-source edits or protocol
+fallback is authorized. Verify direct file URLs in the tested browsers and report
+the actual evidence without claiming universal browser compatibility.
+
+
+### Amendment 11.31 — Shared teaching sources and downstream integrations — 2026-09-24
+
+The owner confirms Gramlot as the single source of framework documentation,
+teaching pages, example READMEs, runner, logo and theme. Integration repositories
+consume this material through their Gramlot dependency and own only their
+environment-specific adapters, configuration, launch instructions and commands.
+Do not maintain copied teaching suites downstream. Generated package/export
+assets are permitted outputs, not independent sources. Update the dependency
+and restart or regenerate exports to receive upstream changes; no automatic
+refresh of installed environments is implied. This refines section 7 and
+supersedes any interpretation that teaching examples should be independently
+maintained per integration. Uniform packaging/launch implementation remains
+pending; documentation of this decision does not authorize publication or
+claim rollout completion. Historical fixtures remain separate evidence.
+
+
+### Amendment 11.32 — JavaScript server integration name — 2026-09-24
+
+Owner renames gramlot-nodejs to gramlot-js-server to describe both Node.js and
+Bun. The repository, development package and current consumer imports use the
+new name; native and bun entry-point responsibilities are unchanged. This
+supersedes the name in section 7 and earlier development integration records.
+Historical published archives remain unchanged. No compatibility alias, source
+push, package release or deployment is authorized by this rename.
+
+
+### Amendment 11.33 — JSR ecosystem migration authorized — 2026-09-24
+
+The owner explicitly authorizes publishing TYTX to JSR and then migrating the
+remaining Genro JavaScript packages in dependency order to remove GitHub package
+dependencies. This supersedes section 14's read-only restriction for Bag/Builder
+only for JSR packaging, necessary compatibility corrections, verification and
+consumer dependency updates. First-party dependencies remain unpinned. This is
+not approval for unrelated architecture changes, source pushes or application
+deployments. Validate actual JSR artifacts before migrating downstream consumers.
+
+
+### Amendment 11.34 — JSR minimum versions — 2026-09-24
+
+Owner approves an exception to section 12 for JSR dependencies: declare a tested
+minimum version without an upper bound when the registry rejects unconstrained
+wildcards. TYTX starts at >=0.15.1, excluding the defective 0.15.0 artifact.
+Exact pins, upper caps and first-party lockfiles remain prohibited. Owner also
+approves Node.js 22 as the minimum supported Node runtime for the JSR packages,
+alongside Bun and modern browsers.
+
+
+### Amendment 11.35 — Compatible JSR dependency ranges — 2026-09-24
+
+Owner approves compatible caret ranges for dependencies distributed through JSR,
+e.g. ^0.15.1 for TYTX. This supersedes section 12 and amendment 11.34's prohibition
+of upper bounds only for these dependencies: the publisher rejects minimum-only
+native specifiers. When a new dependency series falls outside the range, update
+the range, run the consumer tests and publish a new consumer version. Exact pins
+and first-party lockfiles remain prohibited. Other dependency policy is unchanged.
+
+
+### Amendment 11.36 — Genro JSR cooldown exemption — 2026-09-24
+
+Owner approves a persistent minimumDependencyAge policy with age P1D and
+exclusions jsr:@genro/* and npm:@jsr/genro__* for present and future Genro JSR
+packages. External dependencies retain the 24-hour cooldown. The npm pattern
+is JSR's compatibility distribution, not authorization to publish on npmjs.com.
+Publish only to JSR in this migration. Published-artifact verification remains
+required before downstream adoption. This supersedes the pending authorization
+and waiting requirement in GC-070-150/155; no global protection disablement.
+
+
+### Amendment 11.37 — Standalone example download ownership — 2026-09-24
+
+The owner confirms that the ready-to-use standalone example ZIP belongs in
+GitHub releases of gramlot-minimal, not core Gramlot releases. Gramlot remains
+the sole maintained source of example pages, runner, READMEs, logo and theme.
+Minimal owns the exporter and generated distribution, identifying the Gramlot
+version used. Core documentation links to the Minimal download. This clarifies
+section 7 and amendment 11.31; generated archives are not a separately maintained
+example suite. The download is not yet published.
+
+
+### Amendment 11.38 — Bounded live card removal example — 2026-09-24
+
+The owner requests an × button on example cards to remove them using the browser
+Builder/Source APIs, following the discussion of JavaScript-only actions. This
+approves a short native onclick expression in both Python and JavaScript versions
+of example 10. The action uses the existing browser Gramlot instance and labelled
+Source path, calling SourceBag.popNode; only the renderer removes DOM nodes.
+This narrowly supersedes section 3 and amendment 11.22's exclusion of application
+DOM events for this demonstration. It does not authorize a general event/controller
+API, Data binding, direct DOM manipulation, application listeners, timers, server
+synchronization or a script-loading framework. No script import is needed for
+this single expression. Hosted and standalone browser behavior must be verified.
+
+
+### Amendment 11.39 — Richer live Source example with animation — 2026-09-24
+
+Owner extends the live Source trial with a richer page and explicitly requests a
+small setInterval animation. Example 13 uses paired Python/JavaScript declarations,
+short native onclick actions for list creation/deletion/clear and text/SVG changes,
+and a script that updates a circle's Source cx attribute every 50 ms. Browser
+Builder.wrapSource creates elements; Source Bag/node APIs perform mutations.
+The script registers clearInterval with renderer.onDispose on the animation
+section; removing the section or disposing its page clears the timer. A microtask
+lets the initial Source mount finish before registering cleanup. This extends
+11.38's bounded exception to this example, including its script and timer. No
+Data binding, general controller API, direct DOM updates, server synchronization
+or relaxed standalone CSP is authorized. Hosted profiles are the verified target;
+standalone inline-script restrictions remain a documented gap.
+
+
+### Amendment 11.40 — Remove directory-export CSP — 2026-09-24
+
+Owner explicitly requests removing the CSP introduced by the directory exporter:
+the examples execute our own JavaScript. Minimal's generated directory documents
+therefore omit that CSP meta tag. This supersedes the CSP-preservation wording in
+11.39 and the pending CSP limitations in GC-070-210/215. Browser security settings
+are unchanged. Standalone exposes its existing global Gramlot instance before
+starting main, matching hosted bootstrap so inserted page scripts can access it.
+Verify trusted inline actions, animation and cleanup from local files offline.
+
+
+### Amendment 11.41 — Binding implementation requested — 2026-09-24
+
+Following the legacy/PoC investigation, the owner requests a detailed plan and
+Sol agents implementing the necessary binding work for 0.2.0. This opens core
+implementation beyond the HTML/SVG-only scope of the 0.1.0 examples. SourceNode
+context, relative/symbolic pointers, Data operations, dataFormula, dataController
+and delayed execution belong together in this effort. GC-165 records execution
+packages and gates. Preserve the existing public syntax decisions and owning-library
+boundaries; unresolved transport, namespace and vocabulary differences are not
+authorization to introduce alternate representations or aliases. Section 14's
+Bag/Builder write restriction remains pending a specific binding scope extension.
+No package publication, release or deployment is authorized by this instruction.
+
+
+### Amendment 11.42 — Specialization versus upstream defects — 2026-09-24
+
+Owner clarifies that Gramlot uses the Python and JavaScript Builder base classes
+and is free to specialize them for its framework semantics. Differences from
+GenroPy are not by themselves upstream defects or prerequisites for modifying
+Builder/Bag. Implement Gramlot-specific behavior in its subclasses using the
+existing public dependency APIs; this is the primary integration path, not a
+compatibility workaround. Genuine dependency defects require a minimal executable
+test and an issue in the owning repository. This clarifies sections 13–14 and
+supersedes the blanket upstream-change gate in the initial GC-165 plan. Direct
+dependency-source changes remain unauthorized for binding.
+
+
+### Amendment 11.43 — Explicit confirmation of every decision — 2026-09-24
+
+Owner instruction in the current review: "ogni decisione deve essere esplicitamente
+confermata" (every decision must be explicitly confirmed). Strengthens section 1;
+supersedes interpretations allowing proposals or implementation choices to become
+approved decisions without explicit owner confirmation. Preserve confirmed scope
+and owner evidence. Unresolved attribution remains pending; this does not
+retroactively approve or reject all earlier recorded decisions.
+
+Owner also clarifies: examples-only assignments authorize only example changes.
+If frozen 0.1.0 lacks a required capability, report it and stop affected work;
+do not modify the framework or infer that its freeze is lifted. Clarifies sections
+3 and 13: finding a gap does not authorize implementing it. Runner behavior requests
+do not imply approval for core components. Review earlier runner/core decisions
+against explicit owner confirmation, not agent-written amendments alone. No runtime
+change, release or publication is authorized by this rule.
+
+### Amendment 11.44 — Remove runner-specific behavior from core — 2026-09-24
+
+Owner explicitly directs removal of the core changes introduced for the current
+runner, retaining their implementation inside the provisional runner where possible.
+The runner will simplify when web components become available; this does not
+approve a web-component API or authorize implementing those future components now.
+Owner confirmation is the current task message following the reopening provenance
+check (GC-070-260): remove those changes and keep the implementation in the runner.
+
+Supersedes the core placement of runner tabs, splitter, highlighting, Markdown,
+keyboard navigation and theme synchronization in amendments 11.23–11.28 and the
+core placement of the frame-theme bridge in 11.30. Preserve historical records as
+evidence, not approval for continued core ownership. The bounded exception to
+section 3 permits these existing provisional browser behaviors, listeners and
+sanitized text views in `examples/00-runner`, including runner-owned launch wrappers
+for its frames. Keep HTML authoring in Gramlot Source and retain Bag state, Source
+updates and existing lifecycle APIs. The owner additionally confirms using ordinary HTML `id` attributes to connect
+runner behavior or embedded events. Use those IDs instead of introducing special
+framework markers. This is not a general application-authoring exception or a new
+marker/component contract in the framework.
+
+If a behavior cannot be retained there with existing capabilities, report the gap
+and stop that affected change rather than adding framework support. Preserve the
+separately requested binding work and unrelated source changes. No dependency-source
+edit, package publication or deployment is authorized. Future general components
+require their own explicitly confirmed design.
+
+
+### Amendment 11.45 — Standalone startup belongs in Minimal — 2026-09-24
+
+**Superseded in part by 11.46:** Worker integration also moves to Minimal; the
+proposal to export WorkerTransport from core was not approved.
+
+Owner corrects the proposed destination of standalone integration support:
+“più che nel runner, nel gramlot minimal” (current task, 2026-09-24).
+The approved destination for stylesheet loading, export asset-root resolution and
+making the app available during standalone startup is `gramlot-minimal`, rather
+than the example runner or Gramlot core. This authorizes bounded connected adapter
+work in Minimal under section 14 and refines amendment 11.44. It supersedes the
+core placement of these additions in amendments 11.29, 11.30 and 11.40.
+
+Core retains Source, rendering, Host/Page execution and Worker communication;
+Minimal orchestrates standalone startup using core capabilities, without copying
+or replacing the runtime. Runner UI behavior remains in the example runner.
+The current core does not export WorkerTransport. Exposing that existing class
+is a proposal requiring separate owner confirmation, not an approval implied by
+this ownership decision. Implementation of this relocation remains pending that
+contract decision. No publication, deployment or dependency-source edit is approved.
+
+
+### Amendment 11.46 — Standalone Worker integration belongs in Minimal — 2026-09-24
+
+Owner resolves the proposal left open by 11.45: “quindi a tutti gli effetti è il
+server dello standalone e nello standalone deve stare”, followed by the explicit
+instruction to perform the work (current task, 2026-09-24). Inspection finds no
+operational consumer of WorkerTransport other than standalone mount. Hypothetical
+future reuse does not justify retaining it in core.
+
+Move WorkerTransport, its WorkerHost counterpart and standalone mount into
+gramlot-minimal. Minimal owns Worker messaging, request correlation, termination,
+startup and CSS/export asset handling. Shared Host/Page execution, Source, Data and
+rendering stay in core. The neutral Host is exposed through a browser-safe `/host`
+entry so Minimal consumes the existing execution class without Node filesystem
+imports. No replacement runtime or duplicated page execution is introduced.
+
+This supersedes section 7, the 2026-09-21 standalone packaging ownership, and
+amendments 11.29, 11.30, 11.40 and 11.45 where inconsistent. The proposal to expose
+WorkerTransport from core is withdrawn. Remove the development core standalone
+and Worker-specific entries; Minimal provides its own `/standalone` and
+`/worker-host` entries. Published 0.1.0 artifacts are unchanged. The new development
+integration requires the matching development core; no compatibility alias is
+introduced. This is bounded connected Minimal work, not a general framework
+reopening. Runner-local UI ownership from 11.44 remains unchanged.

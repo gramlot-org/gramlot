@@ -1,7 +1,7 @@
 /** Real browser integration: static HtmlBuilder shell and dedicated Worker host. */
 import {build} from '../js/node_modules/esbuild/lib/main.js';
-import {HtmlBuilder} from '../js/node_modules/genro-builders-js/src/index.js';
-import {mkdtemp, writeFile, rm} from 'node:fs/promises';
+import {HtmlBuilder} from '../js/node_modules/@jsr/genro__builders/src/index.js';
+import {mkdtemp, writeFile, readFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
@@ -11,10 +11,11 @@ const [playwrightPath, engineName = 'chromium', executablePath] = process.argv.s
 if (!playwrightPath) throw new Error('Usage: node scripts/verify_worker_host_browser.mjs PLAYWRIGHT_ENTRY [ENGINE] [EXECUTABLE]');
 const engine = (await import(pathToFileURL(playwrightPath)))[engineName];
 const js = fileURLToPath(new URL('../js/', import.meta.url));
-const worker = (await build({entryPoints: [join(js, 'tests/fixtures/worker/host.js')],
+const worker = (await build({stdin: {resolveDir: fileURLToPath(new URL('../examples/', import.meta.url)), contents: `import {WorkerHost} from '@gramlot/minimal/worker-host'; ${await readFile(join(js, 'tests/fixtures/worker/page.js'), 'utf8')}
+new WorkerHost(Page);`},
     bundle: true, platform: 'browser', format: 'iife', write: false})).outputFiles[0].text;
-const runtime = (await build({stdin: {resolveDir: js, contents: `
-    import {mount} from '@gramlot/native-html/standalone';
+const runtime = (await build({stdin: {resolveDir: fileURLToPath(new URL('../examples/', import.meta.url)), contents: `
+    import {mount} from '@gramlot/minimal/standalone';
     const url = URL.createObjectURL(new Blob([${JSON.stringify(worker)}], {type:'text/javascript'}));
     mount({workerUrl:url}).then(app => { window.gramlot=app; }, error => { window.startupError=String(error); })
         .finally(() => URL.revokeObjectURL(url));

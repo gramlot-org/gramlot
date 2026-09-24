@@ -69,3 +69,23 @@ paths and stable block anchors. Existing legacy migration gaps remain unchanged.
 Present Gramlot as one framework: this repository contains the bounded native HTML/typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the current 0.1.0 implementation or operating plan. Keep
 implementation and verification claims tied to the repository and revision that
 contain the evidence; transfer tests and guides with reviewed code.
+
+
+<a id="gc-005-025"></a>
+## 025 · Evidence provenance before implementation
+
+Owner direction, 2026-09-24: verify documents used as implementation inputs before
+they propagate incorrect assumptions. Historical manuals, PoC tests, agent reports
+and conversation summaries are evidence/indexes, not independent authority.
+Distinguish current owner decisions, observed runtime facts, proposals and unresolved
+claims. When a summary attributes a decision to the owner, check the original user
+message and its scope; an assistant recommendation or a request for explanation is
+not approval. Later owner corrections take precedence.
+
+For each consequential requirement record its source, date/revision, verification
+and status. A dependency defect requires a contract-based reproducer; a difference
+from legacy alone does not establish a defect. Mark superseded interpretations
+where readers enter the affected document and correct active plans in place.
+Preserve historical evidence without silently rewriting external archives.
+See [GC-170](internal/170-binding-source-audit.md) for the first binding source audit
+and its explicitly limited coverage.

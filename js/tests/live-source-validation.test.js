@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {HtmlBuilder, SourceBag} from 'genro-builders-js';
-import {Bag, BagNode} from 'genro-bag-js';
+import {HtmlBuilder, SourceBag} from '@jsr/genro__builders';
+import {Bag, BagNode} from '@jsr/genro__bag';
 import {GramlotRenderer} from '../src/renderer/gramlot-renderer.js';
 
 test('a scalar update validates only its node; insertion creates one DOM element', () => {

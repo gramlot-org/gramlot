@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/native-html",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,9 +10,9 @@
     "prepack": "node scripts/build-runtime.mjs"
   },
   "dependencies": {
-    "genro-bag-js": "github:genropy/genro-bag-js",
-    "genro-tytx": "github:genropy/genro-tytx",
-    "genro-builders-js": "github:genropy/genro-builders-js"
+    "@jsr/genro__bag": "^0.5.3",
+    "@jsr/genro__builders": "^0.1.5",
+    "@jsr/genro__tytx": "^0.15.1"
   },
   "devDependencies": {
     "c8": "10.1.3",
@@ -23,15 +23,16 @@
     ".": "./src/index.js",
     "./server": "./src/adapters/index.js",
     "./runtime": "./dist/gramlot.js",
-    "./standalone-runtime": "./dist/standalone.js",
-    "./standalone": "./src/standalone.js",
-    "./worker-host": "./src/adapters/worker-host.js",
-    "./page": "./src/adapters/page.js"
+    "./page": "./src/adapters/page.js",
+    "./host": "./src/adapters/host.js"
   },
   "files": [
     "LICENSE",
     "NOTICE",
     "src",
     "dist"
-  ]
+  ],
+  "engines": {
+    "node": ">=22"
+  }
 }

@@ -22,8 +22,8 @@ integration repositories own environment-specific adaptation and setup.
 | `gramlot-fastapi` | Python / FastAPI | Native FastAPI integration and setup; included in the original 0.1.0 delivery. |
 | `gramlot-flask` | Python / Flask | Native Flask integration and setup; included in the original 0.1.0 delivery. |
 | `gramlot-kajenn` | Python / Kajenn | Kajenn-specific integration, consuming the generic ASGI adapter from Minimal. Locally aligned; repository still named `gramlot-genro-asgi`. |
-| `gramlot-minimal` | Python / Uvicorn and JavaScript / browser Worker | Generic ASGI hosting for Python and single-HTML packaging for the browser standalone profile. Locally aligned; repository still named `gramlot-standalone`. |
-| `gramlot-nodejs` | JavaScript / Node.js and Bun | Both server runtimes belong to this integration repository; included in the original 0.1.0 delivery. |
+| `gramlot-minimal` | Python / Uvicorn and JavaScript / browser Worker | Generic ASGI hosting for Python and single-HTML packaging for the browser standalone profile. Locally aligned; local and GitHub repository renamed to `gramlot-minimal`. |
+| `gramlot-js-server` | JavaScript / Node.js and Bun | Both server runtimes belong to this integration repository; included in the original 0.1.0 delivery. |
 | `gramlot-django` | Python / Django | Native Django views and URLconf integration through `NativeHtmlPages`. Locally aligned and checked; the older Page/ORM implementation is historical. |
 
 Kajenn is the new product name for Genro ASGI. Its upstream Python dependency still
@@ -48,8 +48,8 @@ same example, not eight different applications.
 | Python | Flask | `gramlot-flask` |
 | Python | Kajenn | `gramlot-kajenn` |
 | Python | Django | `gramlot-django` |
-| JavaScript | Node.js | `gramlot-nodejs` |
-| JavaScript | Bun | `gramlot-nodejs` |
+| JavaScript | Node.js | `gramlot-js-server` |
+| JavaScript | Bun | `gramlot-js-server` |
 | JavaScript | Browser Worker / standalone HTML | `gramlot-minimal` |
 
 The existing integration smoke pages, launch configurations and application tests
@@ -103,3 +103,16 @@ This work supersedes the earlier Hello-World-only teaching scope; the integratio
 smoke application above is unchanged. Implementation and verification status are
 tracked in [GC-145](145-html-svg-examples.md) and [GC-070](070-work-status.md#gc-070-045).
 PoC transfers are set aside; no new release or publication is authorized.
+
+
+<a id="gc-140-040"></a>
+
+## 040 · Single upstream teaching suite
+
+Owner confirmed Gramlot as the single source for teaching pages, READMEs, runner,
+logo and theme. Downstream integrations consume these through the core dependency
+and own environment configuration and launchers. Updating that dependency and
+restarting or regenerating exports propagates changes; copied teaching suites
+are not maintained downstream. This supersedes any broader reading of the older
+smoke-application ownership notes. Uniform packaging and launch rollout remains
+pending. See [GC-025 §020](../public/025-try.md#gc-025-020).

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {sourceTarget} from 'genro-builders-js';
+import {sourceTarget} from '@jsr/genro__builders';
 import {GramlotBuilder, GramlotRenderer} from '../src/index.js';
 
 function setup() {

@@ -46,7 +46,8 @@ assets and documentation; it is not an application source directory.
 ## 015 · Classes you work with
 
 JavaScript pages must extend `Page` in hosted and standalone execution.
-`Page.css` is an array; standalone currently requires it to be empty.
+`Page.css` is an array of stylesheet URLs. Standalone loads them before starting
+the Page and releases its stylesheet links on disposal.
 
 Rendering requires `SourceBag` and `SourceBagNode`, associated with their builder.
 Their methods are part of the contract. Plain Bags are valid for Data, not Source;
@@ -60,11 +61,34 @@ Their methods are part of the contract. Plain Bags are valid for Data, not Sourc
 | JS `Gramlot` | Prepares Data/Source roots and coordinates main and remote responses | Browser runtime bootstrap |
 | JS `GramlotRenderer` | Extends generic `RendererBase`; owns live DOM and application references | Framework runtime |
 | JS `MainTransport` | Main and remote Source requests | Runtime transport |
-| JS `Host`, `Page`, `FileHost` | Equivalent server-side authoring and host boundary | Node/Bun adapter implementations |
+| JS `Host`, `Page`, `FileHost` | Same execution role; language-specific contracts below | Node/Bun adapter implementations |
 
 `SourceBag`, typed serialization and generic grammar/rendering belong to dependency
 libraries. Page code builds Source; it does not construct DOM. Data roots exist,
 but bindings, controllers and resolvers are not yet implemented in this slice.
+
+<a id="gc-090-017"></a>
+
+## 017 · Python and JavaScript Host boundaries
+
+Python Host and JS Host/FileHost have the same execution responsibility, not an
+identical language-level API. Both create a fresh Page and builder for each main
+or remote Source request; module loading is a separate lifecycle.
+
+| Aspect | Python Host | JavaScript Host / FileHost |
+| --- | --- | --- |
+| Named Source parameters | Passed as keyword arguments: `details(root, name=...)` | Passed as one object: `details(root, {name})` |
+| Omitted parameters | Empty dictionary | Empty object |
+| Explicit `None` / `null` | `None` is treated as empty parameters | `null` is rejected with `TypeError` |
+| Missing exposed Source method | `SourceNotFound` | `PageNotFound` |
+| Page module loading | Default file loader executes the module on each page opening | FileHost uses cached ESM imports; no live reload |
+
+Valid named parameters produce the same Source result in the bounded comparison.
+The error classes and explicit-null behavior are current differences, not a promise
+of cross-language interchangeability. Module caching does not reuse Page instances
+between Source requests. Custom page resolution belongs to the host integration;
+the filesystem comparison above does not describe Minimal's bundled Worker loader.
+
 
 <a id="gc-090-020"></a>
 
@@ -90,8 +114,8 @@ folder. Each module exports a `Page` subclass. Each main/source invocation uses 
 fresh page and builder; instance fields are not persistent session state.
 
 The JS Host provides `openPage`, `main`, `source` and `closePage`; HTTP
-`Request`/`Response` translation belongs to the adapter. `FileHost` resolves JS page modules. Reusable Node and Bun bridges now live in `gramlot-nodejs/native` and
-`gramlot-nodejs/bun`. Bounded Python integrations live in FastAPI, Flask and Genro
+`Request`/`Response` translation belongs to the adapter. `FileHost` resolves JS page modules. Reusable Node and Bun bridges now live in `gramlot-js-server/native` and
+`gramlot-js-server/bun`. Bounded Python integrations live in FastAPI, Flask and Genro
 ASGI adapter packages; generic ASGI and the Kajenn-specific wrapper are distinct.
 These are development implementations with a local artifact verification gate,
 not production-certified integrations; delivery uses GitHub archives.
@@ -112,11 +136,44 @@ same renderer; it does not execute a Page. Standalone Page execution uses the Wo
 host described below, not a build-time compiler.
 
 Hosts obtain browser code from packaged assets (`gramlot.server.runtime_asset`
-in Python; `@gramlot/native-html/runtime` in JS), never from a sibling checkout.
+in Python; `@genro/gramlot/runtime` after JSR installation, or
+`@gramlot/native-html/runtime` for the local development package in JS). See the
+installation contexts below; adapters serve the assets of their installed package.
 Python `PageNotFound`, `SourceNotFound`, `PageExpired` and `HostCapacity` distinguish
 framework failures from unexpected application exceptions. The current dependency
 sources are available through the declared installation paths; Gramlot 0.1.0 itself
 is owner-accepted for GitHub archive delivery.
+
+
+<a id="gc-090-022"></a>
+
+## 022 · Published package and local development names
+
+The public JSR package is `@genro/gramlot`. After installing it with
+`npx jsr add @genro/gramlot`, use its public name in application imports:
+
+```javascript
+import {Page as BasePage, source} from '@genro/gramlot/page';
+```
+
+| Installation | Core name used in imports | Scope |
+| --- | --- | --- |
+| JSR via `jsr add` | `@genro/gramlot` | Published registry package |
+| Repository examples (`file:../js`) | `@gramlot/native-html` | Local development package declared in `js/package.json` |
+| Original GitHub 0.1.0 archives | Follow the archive README and package manifest | Frozen archive delivery, separate from JSR |
+
+The [JSR installation documentation](https://jsr.io/docs/npm-compatibility)
+explains how its CLI installs the public import name through npm compatibility.
+The repository's local package name is not automatically provided by that install.
+The names above identify different installation contexts; do not mix them within
+one application's core dependency graph.
+
+The standalone examples below explicitly use the local development installation:
+matching core and `@gramlot/minimal` packages, as configured by the repository
+examples. Minimal now owns standalone startup and Worker integration. This new
+boundary is not supplied by installing the published JSR 0.1.0 package alone;
+unchanged GitHub archives also retain their original boundary. No package rename
+or compatibility alias is introduced by this guide.
 
 
 <a id="gc-090-025"></a>
@@ -128,7 +185,8 @@ and reuses its page registration, `main`, explicitly marked Source methods, type
 serialization, fresh instance per call, expiry and error rules. There is no separate
 standalone Page compiler. Python pages execute on Python servers only.
 
-Use the browser-safe Page entry for pages shared by Node, Bun and standalone:
+For the local development installation described above, use the browser-safe
+Page entry for pages shared by Node, Bun and standalone:
 
 ```javascript
 import {Page as BasePage, source} from '@gramlot/native-html/page';
@@ -140,24 +198,30 @@ export class Page extends BasePage {
 source(Page.prototype.details);
 ```
 
-The Worker entry belongs to the host configuration:
+The Worker entry belongs to Minimal host configuration. This development boundary
+requires the matching core with the browser-safe `/host` export; unchanged 0.1.0
+archives do not provide it:
 
 ```javascript
-import {WorkerHost} from '@gramlot/native-html/worker-host';
+import {WorkerHost} from '@gramlot/minimal/worker-host';
 import {Page} from './page.js';
 new WorkerHost(Page);
 ```
 
 Bundle this entry and its imports into a classic Worker script. The browser runtime
-starts it with `await mount({workerUrl})` from `@gramlot/native-html/standalone`.
+starts it with `await mount({workerUrl})` from `@gramlot/minimal/standalone`.
 The document must already contain `gramlot-root`, or pass an explicit `element`.
 `mount` opens the Page, prepares Gramlot roots/subscriptions, then requests `main`.
+For an exported directory, `mount({workerUrl, assetRoot})` accepts an absolute
+file/HTTP/HTTPS directory URL ending in `/`. With this option, declared CSS URLs
+must be root-relative paths and are resolved inside that export directory.
+The exporter supplies the directory URL; it does not rewrite `Page.css`.
 The returned Gramlot instance uses its ordinary `remoteSource` and live Source APIs.
 `app.dispose()` terminates its dedicated Worker and rejects outstanding requests.
 An optional mount `signal` cancels startup. A cancelled remote request drops its
 reply; it does not interrupt JavaScript already executing inside the host.
 
-Current scope: one Page, native HTML, Source live, empty `Page.css`, no database or
+Current scope: one Page per Worker, native HTML, Source live, declared `Page.css`, no database or
 Data binding. Node-only imports cannot run in the Worker. The current packaged
 Worker profile passes in Chromium; an earlier local file check also passed in
 Playwright WebKit. WebKit is not Safari. Safari and Firefox remain unverified.
@@ -173,6 +237,13 @@ It bundles the Page without executing it and generates the complete HTML through
 HtmlBuilder. Python's old standalone compiler/provider has been removed. The
 exported file is locally verified on Chrome and Playwright WebKit; these packages
 are delivered as GitHub archives; no npm registry release is claimed.
+
+The development Minimal integration also exports a static directory containing
+multiple documents, each with its own Worker. `Page.css` URLs are loaded before
+`main` runs; assets must be included by the exporter and served at their declared
+paths. The examples runner directory opens directly through `file://`: relative
+classic scripts start Blob Workers, and an explicit export root resolves local
+stylesheets. A server is not required.
 
 The published 0.1.0 archive retains `@gramlot/standalone` and its
 `gramlot-standalone` command; use its bundled README for that immutable release.
