@@ -101,9 +101,9 @@ export class HtmlElement {
     update(record, node, attrs = node.attr) {
         const {element, text} = record;
         const isHtml = element.namespaceURI === HTML_NS;
-        const defaults = this.definition(node).meta.render_attributes ?? {};
+        const renderAttributes = this.definition(node).meta.render_attributes ?? {};
         const previous = record.attrs ?? {};
-        attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...defaults}));
+        attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...renderAttributes}));
         if (element.namespaceURI === SVG_NS) {
             attrs = svgAttributes(attrs);
         }

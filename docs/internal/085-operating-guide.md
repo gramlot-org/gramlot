@@ -91,6 +91,16 @@ not install pins or claims about future resolution. `js/.npmrc` selects the JSR
 npm endpoint and disables package-lock. Local dependency wheels used in the older
 working venv are not prerequisites for the tested current core paths.
 
+**Local environment observed on 2026-09-24:** this working checkout's `.venv`
+still contains `genro-builders` 0.23.4 installed from
+`/private/tmp/builder-template-artifacts/genro_builders-0.23.4-py3-none-any.whl`.
+It is not the clean PyPI environment described above and is not a setup requirement.
+The latest separate clean check resolved Builder 0.23.2, Bag 0.25.1 and TYTX 0.15.0
+and passed Python 18/18 and JS 76/76. The owner-supplied independent review also
+reports runner 8/8 with those Python dependencies. Earlier provenance was already
+recorded in [GC-070 §320](070-work-status.md#gc-070-320); this note makes the
+working-environment distinction explicit in the operating guide as well.
+
 A pre-existing venv or node_modules directory does not establish clean installation.
 Use a separate checkout copy/environment when verifying reproducibility. Setup of
 the runner and adapter dependencies is separate: follow the
@@ -156,3 +166,17 @@ copies canonical exported JSON; its default still refers to the older
 required by the verified setup. Do not claim that default was checked or use it as
 a reason to regenerate owning-library sources. Any regeneration needs its own
 confirmed scope; there is no independently maintained tag list.
+
+
+Before preparing a JSR release, run from the repository root:
+
+```sh
+deno run --config jsr.json --allow-read scripts/verify_jsr_examples.mjs
+```
+
+This checks all thirteen example imports, shared Page identity, typed Source and
+Host cleanup through the publishing import map. After publication, verify the
+actual downloaded registry payload without that local map. The current develop
+checkout preserves unfinished 0.2.0 binding work; its aligned 0.1.2 metadata is a
+maintenance baseline, not permission to publish this mixed development state.
+Use the identified release source and explicit owner approval for publication.
