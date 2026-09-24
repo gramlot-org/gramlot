@@ -3,7 +3,7 @@
 Document ID: **GC-070**. Updated: **2026-09-24**.
 
 
-**Current checkpoint:** isolated 0.1.1 candidate verified; binding remains 0.2.0. See [§355](#gc-070-355).
+**Current checkpoint:** JSR 0.1.1 published; bundled example import defect found in post-publication verification. See [§360](#gc-070-360).
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
 
 This is the current checkpoint. [GC-110](110-native-html-readiness.md#gc-110-020) is the completed release plan; [GC-125](125-execution-history.md) preserves dated execution history. The PoC and old handoffs are evidence, not startup instructions.
@@ -1365,3 +1365,25 @@ Publication remains pending separate confirmation. No original tag or published 
 new constitutional amendment was not applied after automatic approval review
 rejected adding it without explicit confirmation of its text; existing approved
 ownership rules continue to govern the candidate.
+
+
+<a id="gc-070-360"></a>
+## 360 · JSR 0.1.1 published; bundled example import defect — 2026-09-24
+
+Owner explicitly approved JSR publication after source consolidation.
+`@genro/gramlot` 0.1.1 is published at https://jsr.io/@genro/gramlot@0.1.1
+from source commit `ba868c4ba061bfd4afceec4613b2810598ec73a4`.
+All 74 downloaded registry files match the registry checksums. Their contents
+match that candidate with the publisher's import rewrites; generated hosted
+runtime bytes are unchanged. Direct imports from published core, `/page` and
+`/host` pass using the existing first-party dependency-age exclusions.
+The local release receipt and published manifest preserve this evidence.
+
+Post-publication inspection found a defect missed by the successful dry-run:
+the 13 bundled example `page.js` files import `./@gramlot/native-html/page`,
+a nonexistent relative target produced from the local package name. The core's
+Genro imports are correctly rewritten to JSR specifiers. The successful offline
+runner checks used local packages and do not establish that these registry example
+files execute. Published examples require correction in a subsequent release;
+no such version or publication is authorized yet. Do not claim the entire published
+payload is defect-free. Binding remains excluded and preserved for 0.2.0.
