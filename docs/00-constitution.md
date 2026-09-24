@@ -88,14 +88,34 @@ These responsibility categories guide review. Concrete bases, mixins, collaborat
 method precedence and initialization/cleanup order are approved incrementally rather
 than inferred from prototypes.
 
-## 7. Server adapters
+## 7. Integration repositories
 
-Gramlot owns the shared responsibilities and contracts required of server adapters.
-The separate `gramlot-fastapi`, `gramlot-django` and `gramlot-genro-asgi` projects own
-their host-specific implementation, architecture and documentation.
+**Integration repositories** (short: **integration repos**) own the adapters and
+instructions needed to install, configure and try Gramlot in specific execution
+environments. Gramlot core owns shared contracts and remains independent of server
+and database technology; an integration may depend on core, never the reverse.
 
-Core imports and installations remain server-independent. A host adapter may depend
-on Gramlot; Gramlot core does not depend on FastAPI, Django or Genro ASGI.
+| Repository | Integration environment |
+| --- | --- |
+| `gramlot-fastapi` | FastAPI |
+| `gramlot-flask` | Flask |
+| `gramlot-kajenn` | Kajenn, the new product name for Genro ASGI |
+| `gramlot-minimal` | Python with Uvicorn through the generic ASGI adapter; JavaScript in a browser Worker without a server |
+| `gramlot-nodejs` | Node.js and Bun |
+| `gramlot-django` | Django |
+
+`gramlot-minimal` replaces the repository name `gramlot-standalone`; standalone
+remains the browser/Worker profile name. It owns the generic Python ASGI adapter
+and the existing single-HTML exporter. Core retains Host/Page execution and the
+Worker runtime. `gramlot-kajenn` replaces `gramlot-genro-asgi` and owns Kajenn-specific
+integration, consuming the generic ASGI adapter from minimal without duplicating it.
+The upstream Python distribution/import remains `genro-asgi`/`genro_asgi` until
+its owning project actually renames it. Do not invent an upstream package alias.
+
+Category membership does not establish release compatibility. The owner has
+authorized bounded Django native alignment; its acceptance requires its own tests. Published 0.1.0 archives retain their original names and contents;
+new development uses the reorganized package ownership. No compatibility wrappers,
+registry releases, deployment or new core feature contract are implied.
 
 ## 8. Database adapters
 
@@ -450,3 +470,35 @@ adapter shares that HTTP implementation; Host retains page registration, bootstr
 main/source execution and owner checks. Worker uses the same neutral methods.
 This supersedes Host.fetch/ownerForRequest ownership; no compatibility forwarding
 method or new class is required. No page-close protocol or grammar policy change.
+
+
+### Amendment 11.19 — Integration repositories — 2026-09-24
+
+Owner defines the six integration repositories in section 7, accepts the names
+`gramlot-minimal` and `gramlot-kajenn`, and authorizes their reorganization with Sol
+agents. This supersedes section 7's earlier three-repository server-only list and
+the standalone repository's browser-only scope: minimal also owns generic Python
+ASGI/Uvicorn integration, transferred from the Kajenn repository. Core host
+independence, the Worker runtime boundary and section 13 remain unchanged.
+
+
+### Amendment 11.20 — Django native integration — 2026-09-24
+
+Owner explicitly adds alignment, correction and publication of `gramlot-django`
+to the integration-repository work. This authorizes its native HTML/Host/Page
+integration and GitHub source/archive delivery, superseding the earlier decision
+to leave Django entirely outside this implementation phase. It does not expand
+the immutable core 0.1.0 release evidence, approve migration of PoC ORM/features,
+authorize registry publication or application deployment, or change core ownership.
+
+
+### Amendment 11.21 — Integration publication deferred — 2026-09-24
+
+Owner clarifies that GitHub publication of the integration repositories is
+premature and must follow additional reviewed transfer and cleanup steps from
+`gramlot-poc`. This supersedes the publication authorization in 11.20 and any
+inferred permission to publish the current minimal/Kajenn reorganization. Continue
+agreed implementation, documentation and verification locally only. Do not push,
+rename GitHub repositories, create tags/releases or publish packages until the
+owner explicitly reopens publication. The already published core 0.1.0 release
+remains unchanged. This does not authorize bulk ports of unapproved PoC behavior.

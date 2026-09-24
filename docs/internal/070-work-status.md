@@ -32,7 +32,7 @@ Published native Gramlot 0.1.0 is a reviewed, locally installable foundation wit
 
 The earlier documentary and dependency blockers are closed; their dated evidence remains in GC-120, GC-125 and GC-130.
 
-**Released — 2026-09-24:** [native 0.1.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0) is accepted and publicly available through GitHub archives. All nine downloaded packages, bundle checksums and source provenance match the verified delivery. Core documentation CI and all three native adapter CI matrices pass (Python 3.11/3.12). See [GC-135 §040](135-release-handoff.md#gc-135-040). GC-110 is complete. Next: define bounded 0.2.0 work on develop; no feature contract has been approved yet. Registry publication, deployments and legacy-consumer migrations were not performed.
+**Released — 2026-09-24:** [native 0.1.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0) is accepted and publicly available through GitHub archives. All nine downloaded packages, bundle checksums and source provenance match the verified delivery. Core documentation CI and all three native adapter CI matrices pass (Python 3.11/3.12). See [GC-135 §040](135-release-handoff.md#gc-135-040). GC-110 is complete. Next: review the local integration work and select bounded PoC transfer/cleanup steps (§040); no 0.2.0 feature contract has been approved yet. Registry publication, deployments and legacy-consumer migrations were not performed.
 
 <a id="gc-070-020"></a>
 ## 020 · Deferred work
@@ -53,3 +53,36 @@ The former GC-070 chronology, including original decisions, rejected paths, arti
 ## 035 · Superseded status snapshots
 
 Earlier GC-094 phase states and eight-profile checkpoints are in [GC-125](125-execution-history.md); they do not define the current release gate.
+
+
+<a id="gc-070-040"></a>
+## 040 · Integration repository reorganization — 2026-09-24
+
+Owner approved the six integration repositories, minimal/Kajenn reorganization
+and native Django alignment (constitution 11.19–11.20). Implementation is local:
+minimal owns the unchanged generic ASGI adapter plus browser/Worker packaging;
+Kajenn imports minimal and exposes its host integration; Django uses ordinary
+views/URLconf with the neutral core Host. Hello World has five Python host profiles
+and uses the new local package names. The original core 0.1.0 assets are unchanged.
+
+Verified locally: installed minimal ASGI protocol with Kajenn imports blocked;
+exporter 3/3 and installed CLI/Chromium file-origin live Source/Worker without
+HTTP(S); Kajenn native checks 2/2, Ruff, strict Sphinx, wheel imports and sdist
+mirror contents; Hello World Python/JS checks and all five installed Python profile
+imports; Django installed page/asset and Chromium heading/disposal smoke. Django native tests pass 3/3, covering lifecycle/ownership, request rejection,
+capacity and application error mapping; Ruff, strict docs and package builds pass.
+Its local CI configuration now builds core browser assets before installation
+and checks the installed native wheel; it has not been executed remotely. Core strict Sphinx
+and public link/search/mirror checks pass. This is targeted integration evidence,
+not a newly rerun full eight-profile browser matrix.
+
+The owner deferred all integration GitHub publication until further reviewed PoC
+transfer/cleanup (constitution 11.21), superseding the earlier Django publication
+instruction. No push, remote rename, tag, release, registry publication or deployment
+was performed. Physical repository paths and GitHub names remain unchanged; minimal
+and Kajenn are local development package identities. Future Kajenn CI needs the
+minimal source to be published; it is not remotely verified in this local phase.
+
+Next phase, requiring owner-selected scope: review the remaining PoC transfers and
+cleanup. Historical modules are evidence, not approved core capabilities. Publication
+requires a new explicit owner instruction after those steps.

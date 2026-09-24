@@ -126,13 +126,19 @@ Data binding. Node-only imports cannot run in Worker. Current packaged Worker
 passes in Chromium; an earlier local file check passed in Playwright WebKit.
 WebKit is not Safari. Safari and Firefox remain unverified.
 
-The standalone repository now supplies a Node/npm exporter, `@gramlot/standalone`:
+The minimal integration repository supplies a Node/npm exporter, `@gramlot/minimal`,
+for its browser standalone profile (development naming after 0.1.0):
 
 ```sh
-gramlot-standalone build js/pages/index.js -o dist/app.html
+gramlot-minimal build js/pages/index.js -o dist/app.html
 ```
 
 It bundles the Page without executing it and generates the complete HTML through
 HtmlBuilder. Python's old standalone compiler/provider has been removed. The
 exported file is locally verified on Chrome and Playwright WebKit; these packages
 are delivered as GitHub archives; no npm registry release is claimed.
+
+The published 0.1.0 archive retains `@gramlot/standalone` and its
+`gramlot-standalone` command; use its bundled README for that immutable release.
+The minimal integration also owns generic Python ASGI/Uvicorn hosting. Kajenn
+extends that integration in its own repository.

@@ -72,7 +72,7 @@ shared database contracts to backend or application-model services. These choice
 are independent: hosting a selector on FastAPI does not make database search
 part of FastAPI.
 
-Gramlot defines shared server-adapter responsibilities. FastAPI, Genro ASGI and
+Gramlot defines shared server-adapter responsibilities. FastAPI, Kajenn and
 Django integration projects document their host-specific behavior.
 
 ### 5.1. Database responsibilities
@@ -102,3 +102,16 @@ flowchart LR
 The standard dbSelect search contract provides prefix search followed by
 containment and supports both case-sensitive and case-insensitive matching.
 Detailed component and adapter contracts specify parameters and result behavior.
+
+
+## 6. Integration repositories
+
+Integration repos provide environment-specific adapters and instructions to install,
+configure and try Gramlot: `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn`,
+`gramlot-minimal`, `gramlot-nodejs` (Node.js and Bun), and `gramlot-django`.
+Minimal combines Python/ASGI/Uvicorn hosting and browser/Worker standalone packaging.
+Kajenn consumes minimal's generic ASGI adapter and owns only its host-specific
+integration. Core owns shared runtime contracts. This classification does not
+assert that every integration supports each core release; Django native alignment
+is newly authorized and must establish its own verification beyond the original
+0.1.0 matrix. See constitution section 7 for the approved ownership.

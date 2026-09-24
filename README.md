@@ -58,3 +58,14 @@ Maintainers keep architecture decisions, port reviews and concise working docume
 in the repository, outside the public user manual. Public source files remain
 readable on GitHub. New work starts from `develop`; `main` is the consolidated
 reference. Gramlot is licensed under Apache 2.0.
+
+## Integration repositories
+
+Environment-specific adapters and setup instructions live in `gramlot-fastapi`,
+`gramlot-flask`, `gramlot-kajenn`, `gramlot-minimal`, `gramlot-nodejs` (Node.js/Bun),
+and `gramlot-django`. Minimal covers Python/ASGI/Uvicorn and browser/Worker
+standalone. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
+These development names do not rename the already published 0.1.0 archives.
+
+The integration names and reorganization above are local development targets.
+GitHub renames and publication await further reviewed PoC transfer and cleanup.

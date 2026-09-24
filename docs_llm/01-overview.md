@@ -36,7 +36,7 @@
 
 - **5.1** Server adapters handle host integration; DB adapters handle backend/model
   services. These choices are independent.
-- **5.2** Gramlot defines the server contract; FastAPI, Genro ASGI and Django
+- **5.2** Gramlot defines the server contract; FastAPI, Kajenn and Django
   integration projects document host-specific behavior.
 - **5.3** DB areas: `common` contracts/behavior; `fake` controlled contract checks;
   `genropy` and `sqlalchemy` implementations. SQLite is a SQLAlchemy backend.
@@ -45,3 +45,16 @@
 - **5.5** Selector delegates through server integration to shared DB policy and
   backend access. Standard dbSelect: prefix then containment, both case modes;
   detailed contracts specify parameters/results.
+
+
+## 6. Integration repositories
+
+Integration repos provide environment-specific adapters and instructions to install,
+configure and try Gramlot: `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn`,
+`gramlot-minimal`, `gramlot-nodejs` (Node.js and Bun), and `gramlot-django`.
+Minimal combines Python/ASGI/Uvicorn hosting and browser/Worker standalone packaging.
+Kajenn consumes minimal's generic ASGI adapter and owns only its host-specific
+integration. Core owns shared runtime contracts. This classification does not
+assert that every integration supports each core release; Django native alignment
+is newly authorized and must establish its own verification beyond the original
+0.1.0 matrix. See constitution section 7 for the approved ownership.
