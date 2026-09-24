@@ -3,7 +3,7 @@
 Document ID: **GC-070**. Updated: **2026-09-24**.
 
 
-**Current checkpoint:** CI integrated into main and develop with distinct maintenance/binding scope; branch-specific GitHub verification pending. See [§405](#gc-070-405).
+**Current checkpoint:** CI integrated and verified on main/develop; core, runner and documentation checks pass on both. Binding remains on develop for 0.2.0. See [§410](#gc-070-410).
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
 **Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
@@ -1611,3 +1611,26 @@ branches remain pending at this checkpoint; the earlier successful run in sectio
 400 verifies the CI integration snapshot only. No package publication or binding
 acceptance is implied by integrating the workflow. Historical checkpoint statements
 about pending integration are superseded by this entry.
+
+
+<a id="gc-070-410"></a>
+## 410 · Integrated main/develop CI verified on GitHub — 2026-09-24
+
+All four post-integration GitHub runs succeeded:
+
+| Branch and tested revision | Core/runner tests | Documentation |
+| --- | --- | --- |
+| main `76321ac969062f4bb8fd89cbb58072596a5dca2f` | [36059477892](https://github.com/gramlot-org/gramlot/actions/runs/36059477892): Python 18/18, JS 72/72, runner 8/8 | [36059477783](https://github.com/gramlot-org/gramlot/actions/runs/36059477783): passed |
+| develop `361dcca571fd00737eb28cd0640f2ea535680ae9` | [36059479696](https://github.com/gramlot-org/gramlot/actions/runs/36059479696): Python 18/18, JS 76/76, runner 8/8 | [36059479702](https://github.com/gramlot-org/gramlot/actions/runs/36059479702): passed |
+
+Core and runner CI is now present and verified on both branches. The four-test JS
+difference is the explicit unfinished binding baseline retained on develop for
+0.2.0; main contains the maintenance runtime without those binding changes.
+Both run the runner-isolation checks and eight runner unit tests. Runtime source
+comparison confirms the intended binding boundary. Documentation builds and public
+link/boundary checks also passed on GitHub for each tested revision.
+
+This completes the authorized integration and branch-specific verification.
+No package was republished and no release tag moved. Browser/host integration and
+coverage collection remain outside the bounded CI suites. This result receipt is
+a documentation-only follow-up to the exact verified revisions listed above.
