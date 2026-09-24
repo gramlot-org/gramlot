@@ -2,12 +2,12 @@
 
 Document ID: **GC-070**. Updated: **2026-09-24**.
 
-[GC-110](110-native-html-readiness.md#gc-110-020) is the sole active release plan; [GC-125](125-execution-history.md) preserves historical evidence. PoC and old handoffs are not startup instructions.
+[GC-110](110-native-html-readiness.md#gc-110-020) is the completed release plan; [GC-125](125-execution-history.md) preserves historical evidence. PoC and old handoffs are not startup instructions.
 
 <a id="gc-070-005"></a>
 ## 005 · Current milestone
 
-Reviewed, locally installable 0.1.0: native HTML, live typed SourceBag/SourceBagNode, Python/JS Page, main/marked remote Source, FIFO updates, freeze/unfreeze and cleanup. Seven profiles: Uvicorn, FastAPI, Kajenn, Flask, Node, Bun, Worker. Recipes, reactive Data bindings, database integration and new components are deferred; Safari/Firefox and grammar-drift CI are follow-up work.
+Published and accepted native 0.1.0: native HTML, live typed SourceBag/SourceBagNode, Python/JS Page, main/marked remote Source, FIFO updates, freeze/unfreeze and cleanup. Seven profiles: Uvicorn, FastAPI, Kajenn, Flask, Node, Bun, Worker. Recipes, reactive Data bindings, database integration and new components are deferred; Safari/Firefox and grammar-drift CI are follow-up work.
 
 <a id="gc-070-010"></a>
 ## 010 · Implemented and verified
@@ -32,11 +32,9 @@ resource/export checks, Python 17/17 and JS 75/75 pass. At that phase-6 checkpoi
 <a id="gc-070-015"></a>
 ## 015 · Blocker, acceptance and next action
 
-B1–B5 documentary repair and A1–A12 closure are recorded in [GC-120 §045](120-continuity-audit.md#gc-120-045); strict Sphinx and public checks pass. Release gates remain open.
+The earlier documentary and dependency blockers are closed; their dated evidence remains in GC-120, GC-125 and GC-130.
 
-Builder distribution and TYTX browser bundling are resolved. GC-110 phases 1–6 are complete locally; owner acceptance remains open. TYTX LICENSE/NOTICE are on GitHub and fresh Gramlot artifacts carry their full text after the nested-manifest collector fix ([GC-110 §6.2](110-native-html-readiness.md#gc-110-065)). NodeJS/example notices remain local. No release or deployment.
-
-**Release authorized — 2026-09-24:** owner accepted the native 0.1.0 closure and GitHub archive distribution. Consolidating the verified core/adapter sources and preparing the release tag and nine-package delivery. Registry publication, deployment and legacy-consumer migration are excluded. Next: verify the published GitHub assets and record the release receipt; no repeated owner approval is required for this authorized delivery.
+**Released — 2026-09-24:** [native 0.1.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0) is accepted and publicly available through GitHub archives. All nine downloaded packages, bundle checksums and source provenance match the verified delivery. Core documentation CI and all three native adapter CI matrices pass (Python 3.11/3.12). See [GC-135 §040](135-release-handoff.md#gc-135-040). GC-110 is complete. Next: define bounded 0.2.0 work on develop; no feature contract has been approved yet. Registry publication, deployments and legacy-consumer migrations were not performed.
 
 <a id="gc-070-020"></a>
 ## 020 · Deferred work

@@ -4,12 +4,12 @@ Document ID: **GC-070**. Updated: **2026-09-24**.
 
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
 
-This is the current checkpoint. [GC-110](110-native-html-readiness.md#gc-110-020) is the sole active release plan; [GC-125](125-execution-history.md) preserves dated execution history. The PoC and old handoffs are evidence, not startup instructions.
+This is the current checkpoint. [GC-110](110-native-html-readiness.md#gc-110-020) is the completed release plan; [GC-125](125-execution-history.md) preserves dated execution history. The PoC and old handoffs are evidence, not startup instructions.
 
 <a id="gc-070-005"></a>
 ## 005 · Current milestone
 
-The target is a reviewed, locally installable Gramlot 0.1.0 with native HTML and live typed SourceBag/SourceBagNode. Python and JavaScript Page authoring, bootstrap/main/marked remote Source, synchronous FIFO updates, branch freeze/unfreeze and cleanup are in scope. Recipes, reactive Data binding, database integration and new components are deferred. Safari/Firefox and grammar-drift CI are follow-up work, not 0.1.0 gates.
+Published native Gramlot 0.1.0 is a reviewed, locally installable foundation with native HTML and live typed SourceBag/SourceBagNode. Python and JavaScript Page authoring, bootstrap/main/marked remote Source, synchronous FIFO updates, branch freeze/unfreeze and cleanup are in scope. Recipes, reactive Data binding, database integration and new components are deferred. Safari/Firefox and grammar-drift CI are follow-up work, not 0.1.0 gates.
 
 <a id="gc-070-010"></a>
 ## 010 · Implemented and verified
@@ -30,11 +30,9 @@ The target is a reviewed, locally installable Gramlot 0.1.0 with native HTML and
 <a id="gc-070-015"></a>
 ## 015 · Blocker, acceptance and next action
 
-Documentary continuity repair B1–B5 completed on 2026-09-22: twelve audit findings have closure evidence in [GC-120 §045](120-continuity-audit.md#gc-120-045). The strict public Sphinx build and boundary/link/mirror check pass; semantic reader exercise passes. This changes documentation only and does not close any release gate.
+The earlier documentary and dependency blockers are closed; their dated evidence remains in GC-120, GC-125 and GC-130.
 
-Builder JS distribution and TYTX browser bundling are resolved through their owning projects. GC-110 phases 1–6 are complete locally; owner acceptance remains open. TYTX LICENSE/NOTICE are now on GitHub and a fresh Gramlot build carries their complete text after correcting nested-manifest notice discovery ([GC-110 §6.2](110-native-html-readiness.md#gc-110-065)). NodeJS/example notice changes still need owning-source distribution. No package release, application deployment or 0.1.0 acceptance has occurred.
-
-**Release authorized — 2026-09-24:** owner accepted the native 0.1.0 closure and GitHub archive distribution. Consolidating the verified core/adapter sources and preparing the release tag and nine-package delivery. Registry publication, deployment and legacy-consumer migration are excluded. Next: verify the published GitHub assets and record the release receipt; no repeated owner approval is required for this authorized delivery.
+**Released — 2026-09-24:** [native 0.1.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0) is accepted and publicly available through GitHub archives. All nine downloaded packages, bundle checksums and source provenance match the verified delivery. Core documentation CI and all three native adapter CI matrices pass (Python 3.11/3.12). See [GC-135 §040](135-release-handoff.md#gc-135-040). GC-110 is complete. Next: define bounded 0.2.0 work on develop; no feature contract has been approved yet. Registry publication, deployments and legacy-consumer migrations were not performed.
 
 <a id="gc-070-020"></a>
 ## 020 · Deferred work

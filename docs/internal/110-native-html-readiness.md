@@ -605,3 +605,12 @@ resource directory in the JS build; the build now creates it explicitly. Adapter
 native tests require their imports (no collection skips); hooks use the active
 native environment and obsolete first-party lockfiles are removed. These changes
 affect build/check tooling only; the delivered runtime is unchanged.
+
+
+<a id="gc-110-075"></a>
+## 8. Closure
+
+Native 0.1.0 is accepted and published through GitHub archives (2026-09-24).
+All stated gates and the downloaded-asset verification pass. GC-135 §040 records
+the tag, source revision, public receipt and remote checks. GC-110 is complete;
+new feature work requires its own bounded 0.2.0 scope on develop.

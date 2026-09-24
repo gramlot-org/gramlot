@@ -136,3 +136,16 @@ Local payload: build/release-candidate/0.1.0 with artifact hashes. Temporary log
 consumers/matrix/artifacts: /private/tmp/gramlot-alignment-*. Phase complete; owner
 acceptance, public-reference consolidation and publication are separate. No release
 or deployment performed.
+
+
+<a id="gc-130-040"></a>
+## 040 · Release closure — 2026-09-24
+
+The owner accepted native 0.1.0 and GitHub archive distribution. The accepted
+core and six native companion repositories are consolidated and published;
+primary-path documentation and exports are aligned. Native adapter gates now
+require imports without skipping, exclude old first-party locks and pass locally
+and in GitHub CI. A pristine-source core build gap is fixed without changing
+the verified runtime. The nine downloaded release packages and bundle checksums
+match. See [GC-135 §040](135-release-handoff.md#gc-135-040) for the public receipt.
+Excluded Django/site/Rosetta migrations and 0.2.0 features remain separate work.

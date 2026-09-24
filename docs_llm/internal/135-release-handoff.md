@@ -98,3 +98,27 @@ revisions and all nine artifact hashes accompany the delivery. No dependency pin
 registry publication, deployment or new 0.2.0 implementation are authorized.
 Native adapter check runners/CI are aligned to the already agreed release gate;
 legacy PoC tests are retained separately. Record the public receipt after upload.
+
+
+<a id="gc-135-040"></a>
+## 040 · Published release receipt
+
+[Gramlot 0.1.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0) was published on 2026-09-24 at 04:29:41 UTC.
+Tag `v0.1.0` identifies core revision `c23929a6e6ea2869e1f3395d1c1db50cecd87bcf`.
+GitHub delivers the complete bundle, all nine package archives, artifact manifest,
+source provenance and bundle SHA-256. All assets were downloaded again: package
+sizes/hashes, bundle hash, embedded checksums and provenance match the local delivery.
+Bundle SHA-256: `46ec462d36c219d6a86f3afdaa4fd4e2ef68c7828b15bb2f22a3ac82769b871c`.
+
+Remote checks passed: [core documentation](https://github.com/gramlot-org/gramlot/actions/runs/35955653211),
+[FastAPI native](https://github.com/gramlot-org/gramlot-fastapi/actions/runs/35955657945),
+[Flask native](https://github.com/gramlot-org/gramlot-flask/actions/runs/35955663036),
+and [ASGI/Kajenn native](https://github.com/gramlot-org/gramlot-genro-asgi/actions/runs/35955749898).
+Each native adapter matrix covers Python 3.11 and 3.12, builds current core with
+floating dependencies, and validates its distributions and installed exports.
+
+The seven participating source repositories are consolidated on main and develop.
+No PyPI/npm publication or application deployment occurred. Django/site/Rosetta
+remain excluded; their local explanatory notices were not pushed as part of this
+release. Site/Rosetta main pushes can trigger deployment and are outside this scope.
+New work belongs on develop; 0.2.0 feature scope is not yet approved.
