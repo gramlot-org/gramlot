@@ -1,0 +1,32 @@
+classDiagram
+    direction TB
+    HTMLElement <|-- GramlotElement : Element parameter
+    GramlotElement <|-- ControlElement : through mixins
+    Decorated ..> ControlElement : inner mixin
+    FieldState ..> ControlElement : outer mixin
+    GramlotElement <|-- GroupBox : through Decorated
+    Decorated ..> GroupBox : applied
+    GramlotElement <|-- DateCalendar
+    ControlElement <|-- GnrTextBox
+    ControlElement <|-- GnrTextBoxArea
+    ControlElement <|-- GnrPasswordbox
+    ControlElement <|-- GnrNumberTextBox
+    ControlElement <|-- GnrDateTextBox
+    ControlElement <|-- GnrTimeTextBox
+    ControlElement <|-- GnrCheckbox
+    ControlElement <|-- GnrColorpicker
+    ControlElement <|-- GnrHorizontalSlider
+    GnrHorizontalSlider <|-- GnrVerticalSlider
+    ControlElement <|-- GnrComboBox
+    GnrComboBox <|-- GnrFilteringSelect
+    ControlElement --> WidgetLabel : decoration collaborator
+    ControlElement --> InputNullState : value state
+    ControlElement --> ControlTools : optional tools
+    GnrNumberTextBox --> NumberEditor
+    GnrDateTextBox --> SymbolicDateEditor
+    class Decorated {
+        <<mixin>>
+    }
+    class FieldState {
+        <<mixin>>
+    }

@@ -66,3 +66,23 @@ the `GF` namespace while preserving any existing stable references. Its adoption
 is not verified here. Each repository records actual coverage and outstanding
 migration, adding missing mirrors when existing guides are substantially revised.
 New architecture and product-contract guides require both views immediately.
+
+<a id="gc-005-020"></a>
+
+## 020 · Public manual selection
+
+Block ID: **GC-005-020**.
+
+Owner direction, 2026-09-18: the public manual addresses developers deciding
+whether and how to try Gramlot. Architecture decisions, working documents,
+concise mirrors and port records remain repository documentation rather than
+public manual pages. This does not make files in a public repository private.
+
+Core now uses Sphinx with the classic Read the Docs theme. The staging script's
+explicit page and asset allowlists define the site boundary, including search
+and downloadable sources. The public guides GC-020, GC-025, GC-030, GC-090, GC-095 and GC-100 have paired
+paths and stable block anchors. Existing legacy migration gaps remain unchanged.
+
+Present Gramlot as one framework: this repository contains the bounded native HTML/typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the current 0.1.0 implementation or operating plan. Keep
+implementation and verification claims tied to the repository and revision that
+contain the evidence; transfer tests and guides with reviewed code.

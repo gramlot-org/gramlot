@@ -1,0 +1,27 @@
+flowchart TB
+    DESC["Description contract<br/>static metadata; inheritance rules to define"]
+    E["Lifecycle-aware component base<br/>evidence: GramlotElement"]
+    E --> FIELD["Field adapter base · proposed"]
+    FIELD --> SINGLE["Single-control base<br/>evidence: ControlElement"]
+    FIELD --> COMPOSITE["Composite-field base · proposed"]
+    SINGLE --> TEXT["Text family"]
+    SINGLE --> TYPED["Number / date / time family"]
+    SINGLE --> CHOICE["Choice family"]
+    SINGLE --> OTHER["Checkbox / range / color families"]
+    COMPOSITE --> DT["Date + time / multi-value fields · candidates"]
+    E --> POPUP["Popup-trigger base · proposed"]
+    E --> MENU["Menu / menu-item bases · proposed"]
+    CT["Controller base · proposed<br/>no DOM requirement"] --> REACTIVE["Reactive local controller"]
+    CT --> ASYNC["Async provider controller"]
+    M1["Decorated / FieldState · existing mixins"] -. capabilities .-> FIELD
+    M2["Lockable / Actionable · candidate mixins"] -. capabilities .-> SINGLE
+    M2 -. capabilities .-> MENU
+    S1["WidgetLabel / InputNullState<br/>existing collaborators"] -. used by .-> SINGLE
+    S2["Shared Validator / FormField<br/>one validation engine"] -. used by .-> FIELD
+    S3["Owned subscriptions / cancellation<br/>composition contract to define"] -. used by .-> CT
+    DESC -. shared descriptive interface .-> E
+    DESC -. shared descriptive interface .-> CT
+    classDef existing fill:#e3f3ed,color:#143d2e,stroke:#39866b;
+    classDef proposed fill:#f0e8fa,color:#4f2e70,stroke:#9670b3,stroke-dasharray:5 4;
+    class E,SINGLE,M1,S1,S2 existing;
+    class DESC,FIELD,COMPOSITE,TEXT,TYPED,CHOICE,OTHER,DT,POPUP,MENU,CT,REACTIVE,ASYNC,M2,S3 proposed;

@@ -1,0 +1,323 @@
+{
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "grammar": {
+    "name": "collection_test_controls",
+    "version": null,
+    "title": null,
+    "description": null
+  },
+  "abstracts": {},
+  "elements": {
+    "ratingPanel": {
+      "doc": null,
+      "sub_tags": "rating[0:2]",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "title",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "type",
+              "module": "builtins",
+              "name": "str"
+            },
+            "has_default": true,
+            "default": ""
+          }
+        ],
+        "accepts_var_keyword": false,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "render_tag": "section"
+      }
+    },
+    "rating": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": "ratingPanel",
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "amount",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "type",
+                "module": "builtins",
+                "name": "int"
+              },
+              "metadata": [
+                {
+                  "kind": "range",
+                  "ge": 0,
+                  "le": 10,
+                  "gt": null,
+                  "lt": null
+                }
+              ]
+            },
+            "has_default": false
+          },
+          {
+            "name": "code",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "type",
+                "module": "builtins",
+                "name": "str"
+              },
+              "metadata": [
+                {
+                  "kind": "regex",
+                  "pattern": "[A-Z]{2}",
+                  "flags": 0
+                }
+              ]
+            },
+            "has_default": false
+          },
+          {
+            "name": "mode",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "literal",
+              "values": [
+                "compact",
+                "full"
+              ]
+            },
+            "has_default": true,
+            "default": "compact"
+          },
+          {
+            "name": "caption",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": null,
+            "has_default": true,
+            "default": ""
+          }
+        ],
+        "accepts_var_keyword": false,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "render_tag": "gramlot-rating"
+      }
+    },
+    "statusText": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "node_value",
+            "kind": "positional_or_keyword",
+            "role": "value",
+            "annotation": {
+              "kind": "type",
+              "module": "builtins",
+              "name": "str"
+            },
+            "has_default": false
+          },
+          {
+            "name": "required_label",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": null,
+            "has_default": false
+          },
+          {
+            "name": "optional_label",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": null,
+            "has_default": true,
+            "default": null
+          }
+        ],
+        "accepts_var_keyword": false,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "render_tag": "gramlot-status"
+      }
+    },
+    "dataSetter": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "destination",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "type",
+              "module": "builtins",
+              "name": "str"
+            },
+            "has_default": false
+          },
+          {
+            "name": "value",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "data_element": true
+      }
+    },
+    "dataFormula": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "destination",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "type",
+              "module": "builtins",
+              "name": "str"
+            },
+            "has_default": false
+          },
+          {
+            "name": "func",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "str"
+                },
+                {
+                  "kind": "type",
+                  "module": "collections.abc",
+                  "name": "Callable"
+                }
+              ]
+            },
+            "has_default": false
+          },
+          {
+            "name": "kwargs",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": null,
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "data_element": true
+      }
+    },
+    "dataController": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "func",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "str"
+                },
+                {
+                  "kind": "type",
+                  "module": "collections.abc",
+                  "name": "Callable"
+                }
+              ]
+            },
+            "has_default": false
+          },
+          {
+            "name": "kwargs",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": null,
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "data_element": true
+      }
+    }
+  }
+}

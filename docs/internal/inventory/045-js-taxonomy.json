@@ -1,0 +1,5417 @@
+{
+  "revision": "10478b57ce3f22e6445eb6b72eba343520cbebac",
+  "scope": [
+    "js/dom/src/**/*.js",
+    "js/dom/src/**/*.mjs",
+    "js/pages/src/**/*.js",
+    "gramlot_inventory/legacy-census/cards/*.md",
+    "components/builtin-components.json"
+  ],
+  "tools": {
+    "tree-sitter": "0.25.2",
+    "tree-sitter-javascript": "0.25.0"
+  },
+  "limitations": [
+    "External dependencies not scanned",
+    "Legacy cards are discovery evidence, not JS classes or accepted behavior",
+    "Factory base expressions retained, not dynamically evaluated",
+    "Exported arrow helpers are covered by file inventory, not function-declaration count"
+  ],
+  "files": [
+    {
+      "file": "js/dom/src/application.js",
+      "classes": [
+        "Application"
+      ]
+    },
+    {
+      "file": "js/dom/src/builder-base.js",
+      "classes": [
+        "BuilderBase"
+      ]
+    },
+    {
+      "file": "js/dom/src/builder-handler.js",
+      "classes": [
+        "RowContext",
+        "BuilderHandler"
+      ]
+    },
+    {
+      "file": "js/dom/src/charts/d3.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/codemirror-cdn.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/collections/chart.js",
+      "classes": [
+        "Chart"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/checkbox-text.js",
+      "classes": [
+        "GnrCheckBoxText"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/clipboard.js",
+      "classes": [
+        "CopyButton"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/colorpicker.js",
+      "classes": [
+        "GnrColorpicker"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/date-calendar.js",
+      "classes": [
+        "DateCalendar"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/db-select.js",
+      "classes": [
+        "GnrDbSelect"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/decoration/labled-box.js",
+      "classes": [
+        "GnrLabledBox"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/decoration/widget-label.js",
+      "classes": [
+        "WidgetLabel"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/file-icons.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/collections/forms.js",
+      "classes": [
+        "GnrForm"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/frame-channel.js",
+      "classes": [
+        "FrameChannel"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/gramlot-ide.js",
+      "classes": [
+        "GramlotIde"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/grid-authoring.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/collections/grid-bands.js",
+      "classes": [
+        "GridBands"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/grid-cell-popup.js",
+      "classes": [
+        "GridCellPopup"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/grid-editor.js",
+      "classes": [
+        "GridEditor"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "classes": [
+        "GridChangeManager"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/grid-interactions.js",
+      "classes": [
+        "GridInteractions"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/grid-status.js",
+      "classes": [
+        "GridStatus"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/grid-store.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/collections/grid-structure.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/collections/grid.js",
+      "classes": [
+        "GnrGrid"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/html-editor.js",
+      "classes": [
+        "anonymous:gnr-proseeditor"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/inputs.js",
+      "classes": [
+        "GnrTextBox",
+        "GnrTextBoxArea",
+        "GnrComboBox",
+        "GnrFilteringSelect",
+        "GnrPasswordbox",
+        "GnrNumberTextBox",
+        "GnrDateTextBox",
+        "GnrTimeTextBox",
+        "GnrHorizontalSlider",
+        "GnrVerticalSlider",
+        "GnrCheckbox"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/jodit-dependencies.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/collections/jodit-style.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/collections/layout/formlet.js",
+      "classes": [
+        "GnrFormlet"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/layout/group-box.js",
+      "classes": [
+        "GroupBox"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/layout.js",
+      "classes": [
+        "GnrPanel",
+        "GnrBox",
+        "GnrBorderContainer",
+        "GnrTab",
+        "GnrTabContainer",
+        "GnrStackContainer",
+        "GnrContentPane",
+        "GnrStackButtons"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/markdown-editor.js",
+      "classes": [
+        "anonymous:gnr-markdowneditor"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/number-editor.js",
+      "classes": [
+        "NumberEditor"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/palette.js",
+      "classes": [
+        "Palette"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/storetree.js",
+      "classes": [
+        "GnrStoreTree",
+        "GnrRelationTree",
+        "FileSystemTree"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections/symbolic-date-editor.js",
+      "classes": [
+        "SymbolicDateEditor"
+      ]
+    },
+    {
+      "file": "js/dom/src/collections.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/components/bases.js",
+      "classes": [
+        "Decorated",
+        "FieldState",
+        "GramlotElement",
+        "ControlElement"
+      ]
+    },
+    {
+      "file": "js/dom/src/components/builtin-components.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/components/clipboard.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/components/control-tools.js",
+      "classes": [
+        "ControlTools"
+      ]
+    },
+    {
+      "file": "js/dom/src/components/data-scope.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/components/field-state.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/components/registry.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/components/validation-style.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/contrib/html/html-attributes.js",
+      "classes": [
+        "HtmlAttributes"
+      ]
+    },
+    {
+      "file": "js/dom/src/contrib/html/html-builder.js",
+      "classes": [
+        "HtmlBuilder",
+        "HtmlRenderer"
+      ]
+    },
+    {
+      "file": "js/dom/src/contrib/html/html5-elements.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/contrib/svg/svg-builder.js",
+      "classes": [
+        "SvgBuilder",
+        "SvgRenderer"
+      ]
+    },
+    {
+      "file": "js/dom/src/contrib/svg/svg-elements.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/database/common/bagdb.js",
+      "classes": [
+        "BagDB"
+      ]
+    },
+    {
+      "file": "js/dom/src/database/common/model.mjs",
+      "classes": [
+        "ModelCatalog"
+      ]
+    },
+    {
+      "file": "js/dom/src/database/common/read-adapter.mjs",
+      "classes": [
+        "DataError",
+        "ModelProvider",
+        "ReadAdapter"
+      ]
+    },
+    {
+      "file": "js/dom/src/database/common/stores.mjs",
+      "classes": [
+        "BaseStore",
+        "CollectionStore",
+        "SelectorStore",
+        "RecordStore"
+      ]
+    },
+    {
+      "file": "js/dom/src/database/fake/bagdb-read-adapter.mjs",
+      "classes": [
+        "BagDbReadAdapter"
+      ]
+    },
+    {
+      "file": "js/dom/src/database/model-tree-bag.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/database/service.js",
+      "classes": [
+        "DatabaseService"
+      ]
+    },
+    {
+      "file": "js/dom/src/date-parser/civil.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/date-parser/index.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/date-parser/locales.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/display-format.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/editor-dependencies.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/forms/controller.js",
+      "classes": [
+        "FormController"
+      ]
+    },
+    {
+      "file": "js/dom/src/forms/field.js",
+      "classes": [
+        "FormField"
+      ]
+    },
+    {
+      "file": "js/dom/src/forms/service.js",
+      "classes": [
+        "FormService"
+      ]
+    },
+    {
+      "file": "js/dom/src/forms/stores.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/forms/validator.js",
+      "classes": [
+        "Validator"
+      ]
+    },
+    {
+      "file": "js/dom/src/forms/value-snapshot.js",
+      "classes": [
+        "ValueSnapshot",
+        "MemoryStore"
+      ]
+    },
+    {
+      "file": "js/dom/src/index.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/input-null-state.js",
+      "classes": [
+        "InputNullState"
+      ]
+    },
+    {
+      "file": "js/dom/src/logic/expression.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/logic/runtime.js",
+      "classes": [
+        "LogicRuntime"
+      ]
+    },
+    {
+      "file": "js/dom/src/number-format.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/pointer.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/recipe-defaults.js",
+      "classes": [
+        "RecipeDefaults"
+      ]
+    },
+    {
+      "file": "js/dom/src/recipe-policies.js",
+      "classes": [
+        "RecipePolicies"
+      ]
+    },
+    {
+      "file": "js/dom/src/renderer/base.js",
+      "classes": [
+        "RendererBase"
+      ]
+    },
+    {
+      "file": "js/dom/src/resolvers/http.js",
+      "classes": [
+        "UrlResolver",
+        "OpenApiResolver"
+      ]
+    },
+    {
+      "file": "js/dom/src/resolvers/rpc.js",
+      "classes": [
+        "RpcResolver"
+      ]
+    },
+    {
+      "file": "js/dom/src/resolvers/service.js",
+      "classes": [
+        "ResolverService"
+      ]
+    },
+    {
+      "file": "js/dom/src/services/ide-documents.js",
+      "classes": [
+        "IdeDocuments"
+      ]
+    },
+    {
+      "file": "js/dom/src/services/interaction-feedback.js",
+      "classes": [
+        "InteractionFeedback"
+      ]
+    },
+    {
+      "file": "js/dom/src/services/openapi-client.js",
+      "classes": [
+        "OpenApiClientService"
+      ]
+    },
+    {
+      "file": "js/dom/src/services/openapi-schema.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/services/recipe-runtime.js",
+      "classes": [
+        "RecipeRuntime"
+      ]
+    },
+    {
+      "file": "js/dom/src/services/server-call.js",
+      "classes": [
+        "ServerCallError",
+        "ServerCallService"
+      ]
+    },
+    {
+      "file": "js/dom/src/services/topics.js",
+      "classes": [
+        "TopicService"
+      ]
+    },
+    {
+      "file": "js/dom/src/source-bag.js",
+      "classes": [
+        "SourceBagNode",
+        "SourceBag"
+      ]
+    },
+    {
+      "file": "js/dom/src/stores/bag-rows.js",
+      "classes": [
+        "BagRows",
+        "ValuesBagRows",
+        "AttributesBagRows"
+      ]
+    },
+    {
+      "file": "js/dom/src/stores/collection-stores.js",
+      "classes": [
+        "CollectionStores"
+      ]
+    },
+    {
+      "file": "js/dom/src/target-wrapper.js",
+      "classes": [
+        "TargetWrapper",
+        "DomTarget"
+      ]
+    },
+    {
+      "file": "js/dom/src/utils.js",
+      "classes": []
+    },
+    {
+      "file": "js/dom/src/widget-label.js",
+      "classes": []
+    },
+    {
+      "file": "js/pages/src/bag-xml-view.js",
+      "classes": []
+    },
+    {
+      "file": "js/pages/src/builder.js",
+      "classes": [
+        "GramlotBuilder"
+      ]
+    },
+    {
+      "file": "js/pages/src/codemirror-component.js",
+      "classes": [
+        "CodeMirrorElement"
+      ]
+    },
+    {
+      "file": "js/pages/src/dev.js",
+      "classes": [
+        "DeveloperTools"
+      ]
+    },
+    {
+      "file": "js/pages/src/inspector-component.js",
+      "classes": [
+        "GramlotInspector"
+      ]
+    },
+    {
+      "file": "js/pages/src/inspector-controller.js",
+      "classes": [
+        "InspectorController"
+      ]
+    },
+    {
+      "file": "js/pages/src/inspector-editor.js",
+      "classes": [
+        "InspectorEditor"
+      ]
+    },
+    {
+      "file": "js/pages/src/inspector-origins.js",
+      "classes": []
+    },
+    {
+      "file": "js/pages/src/inspector.js",
+      "classes": []
+    },
+    {
+      "file": "js/pages/src/lab-session.js",
+      "classes": [
+        "EmptyPage",
+        "LabSession"
+      ]
+    },
+    {
+      "file": "js/pages/src/module.js",
+      "classes": []
+    },
+    {
+      "file": "js/pages/src/playground-page.js",
+      "classes": [
+        "PlaygroundBuilder"
+      ]
+    },
+    {
+      "file": "js/pages/src/playground.js",
+      "classes": []
+    },
+    {
+      "file": "js/pages/src/recipe-highlight.js",
+      "classes": []
+    },
+    {
+      "file": "js/pages/src/shortcuts.js",
+      "classes": [
+        "Shortcuts"
+      ]
+    },
+    {
+      "file": "js/pages/src/standalone-page.js",
+      "classes": [
+        "PythonPageBuilder"
+      ]
+    },
+    {
+      "file": "js/pages/src/xmldom.js",
+      "classes": [
+        "DOMParser"
+      ]
+    }
+  ],
+  "classes": [
+    {
+      "name": "Application",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/application.js",
+      "line": 37
+    },
+    {
+      "name": "BuilderBase",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/builder-base.js",
+      "line": 68
+    },
+    {
+      "name": "RowContext",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/builder-handler.js",
+      "line": 37
+    },
+    {
+      "name": "BuilderHandler",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/builder-handler.js",
+      "line": 81
+    },
+    {
+      "name": "Chart",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/chart.js",
+      "line": 10
+    },
+    {
+      "name": "GnrCheckBoxText",
+      "kind": "class",
+      "base_expression": "Base",
+      "scope": "defineCheckBoxText",
+      "file": "js/dom/src/collections/checkbox-text.js",
+      "line": 41
+    },
+    {
+      "name": "CopyButton",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/clipboard.js",
+      "line": 9
+    },
+    {
+      "name": "GnrColorpicker",
+      "kind": "class",
+      "base_expression": "ControlElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/colorpicker.js",
+      "line": 20
+    },
+    {
+      "name": "DateCalendar",
+      "kind": "class",
+      "base_expression": "GramlotElement",
+      "scope": "defineDateCalendar",
+      "file": "js/dom/src/collections/date-calendar.js",
+      "line": 15
+    },
+    {
+      "name": "GnrDbSelect",
+      "kind": "class",
+      "base_expression": "Base",
+      "scope": "defineDbSelect",
+      "file": "js/dom/src/collections/db-select.js",
+      "line": 4
+    },
+    {
+      "name": "GnrLabledBox",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineLabledBoxComponent",
+      "file": "js/dom/src/collections/decoration/labled-box.js",
+      "line": 9
+    },
+    {
+      "name": "WidgetLabel",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/decoration/widget-label.js",
+      "line": 25
+    },
+    {
+      "name": "GnrForm",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/forms.js",
+      "line": 11
+    },
+    {
+      "name": "FrameChannel",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/frame-channel.js",
+      "line": 16
+    },
+    {
+      "name": "GramlotIde",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineGramlotIde",
+      "file": "js/dom/src/collections/gramlot-ide.js",
+      "line": 10
+    },
+    {
+      "name": "GridBands",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/grid-bands.js",
+      "line": 8
+    },
+    {
+      "name": "GridCellPopup",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/grid-cell-popup.js",
+      "line": 3
+    },
+    {
+      "name": "GridEditor",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/grid-editor.js",
+      "line": 9
+    },
+    {
+      "name": "GridChangeManager",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 132
+    },
+    {
+      "name": "GridInteractions",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/grid-interactions.js",
+      "line": 3
+    },
+    {
+      "name": "GridStatus",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/grid-status.js",
+      "line": 3
+    },
+    {
+      "name": "GnrGrid",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/grid.js",
+      "line": 60
+    },
+    {
+      "name": "anonymous:gnr-proseeditor",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineHtmlEditor",
+      "file": "js/dom/src/collections/html-editor.js",
+      "line": 67
+    },
+    {
+      "name": "GnrTextBox",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 37
+    },
+    {
+      "name": "GnrTextBoxArea",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 39
+    },
+    {
+      "name": "GnrComboBox",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 148
+    },
+    {
+      "name": "GnrFilteringSelect",
+      "kind": "class",
+      "base_expression": "GnrComboBox",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 362
+    },
+    {
+      "name": "GnrPasswordbox",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 363
+    },
+    {
+      "name": "GnrNumberTextBox",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 364
+    },
+    {
+      "name": "GnrDateTextBox",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 376
+    },
+    {
+      "name": "GnrTimeTextBox",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 395
+    },
+    {
+      "name": "GnrHorizontalSlider",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 407
+    },
+    {
+      "name": "GnrVerticalSlider",
+      "kind": "class",
+      "base_expression": "GnrHorizontalSlider",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 470
+    },
+    {
+      "name": "GnrCheckbox",
+      "kind": "class",
+      "base_expression": "GnrInput",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 472
+    },
+    {
+      "name": "GnrFormlet",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineFormletComponent",
+      "file": "js/dom/src/collections/layout/formlet.js",
+      "line": 8
+    },
+    {
+      "name": "GroupBox",
+      "kind": "class",
+      "base_expression": "Decorated(GramlotElement)",
+      "scope": "defineGroupBoxComponent",
+      "file": "js/dom/src/collections/layout/group-box.js",
+      "line": 13
+    },
+    {
+      "name": "GnrPanel",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 112
+    },
+    {
+      "name": "GnrBox",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 142
+    },
+    {
+      "name": "GnrBorderContainer",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 159
+    },
+    {
+      "name": "GnrTab",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 339
+    },
+    {
+      "name": "GnrTabContainer",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 354
+    },
+    {
+      "name": "GnrStackContainer",
+      "kind": "class",
+      "base_expression": "GnrTabContainer",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 564
+    },
+    {
+      "name": "GnrContentPane",
+      "kind": "class",
+      "base_expression": "GnrTab",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 567
+    },
+    {
+      "name": "GnrStackButtons",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 570
+    },
+    {
+      "name": "anonymous:gnr-markdowneditor",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineMarkdownEditor",
+      "file": "js/dom/src/collections/markdown-editor.js",
+      "line": 42
+    },
+    {
+      "name": "NumberEditor",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/number-editor.js",
+      "line": 7
+    },
+    {
+      "name": "Palette",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/palette.js",
+      "line": 9
+    },
+    {
+      "name": "GnrStoreTree",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/storetree.js",
+      "line": 110
+    },
+    {
+      "name": "GnrRelationTree",
+      "kind": "class",
+      "base_expression": "GnrStoreTree",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/storetree.js",
+      "line": 425
+    },
+    {
+      "name": "FileSystemTree",
+      "kind": "class",
+      "base_expression": "GnrStoreTree",
+      "scope": "defineComponents",
+      "file": "js/dom/src/collections/storetree.js",
+      "line": 550
+    },
+    {
+      "name": "SymbolicDateEditor",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/collections/symbolic-date-editor.js",
+      "line": 16
+    },
+    {
+      "name": "Decorated",
+      "kind": "functional mixin",
+      "base_expression": "Base",
+      "scope": "Decorated",
+      "file": "js/dom/src/components/bases.js",
+      "line": 9
+    },
+    {
+      "name": "FieldState",
+      "kind": "functional mixin",
+      "base_expression": "Base",
+      "scope": "FieldState",
+      "file": "js/dom/src/components/bases.js",
+      "line": 20
+    },
+    {
+      "name": "GramlotElement",
+      "kind": "class",
+      "base_expression": "Element",
+      "scope": "getComponentBases",
+      "file": "js/dom/src/components/bases.js",
+      "line": 30
+    },
+    {
+      "name": "ControlElement",
+      "kind": "class",
+      "base_expression": "FieldState(Decorated(GramlotElement))",
+      "scope": "getComponentBases",
+      "file": "js/dom/src/components/bases.js",
+      "line": 51
+    },
+    {
+      "name": "ControlTools",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/components/control-tools.js",
+      "line": 7
+    },
+    {
+      "name": "HtmlAttributes",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/contrib/html/html-attributes.js",
+      "line": 53
+    },
+    {
+      "name": "HtmlBuilder",
+      "kind": "class",
+      "base_expression": "BuilderBase",
+      "scope": "",
+      "file": "js/dom/src/contrib/html/html-builder.js",
+      "line": 31
+    },
+    {
+      "name": "HtmlRenderer",
+      "kind": "class",
+      "base_expression": "RendererBase",
+      "scope": "",
+      "file": "js/dom/src/contrib/html/html-builder.js",
+      "line": 46
+    },
+    {
+      "name": "SvgBuilder",
+      "kind": "class",
+      "base_expression": "BuilderBase",
+      "scope": "",
+      "file": "js/dom/src/contrib/svg/svg-builder.js",
+      "line": 15
+    },
+    {
+      "name": "SvgRenderer",
+      "kind": "class",
+      "base_expression": "RendererBase",
+      "scope": "",
+      "file": "js/dom/src/contrib/svg/svg-builder.js",
+      "line": 27
+    },
+    {
+      "name": "BagDB",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/database/common/bagdb.js",
+      "line": 12
+    },
+    {
+      "name": "ModelCatalog",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/database/common/model.mjs",
+      "line": 31
+    },
+    {
+      "name": "DataError",
+      "kind": "class",
+      "base_expression": "Error",
+      "scope": "",
+      "file": "js/dom/src/database/common/read-adapter.mjs",
+      "line": 2
+    },
+    {
+      "name": "ModelProvider",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/database/common/read-adapter.mjs",
+      "line": 16
+    },
+    {
+      "name": "ReadAdapter",
+      "kind": "class",
+      "base_expression": "ModelProvider",
+      "scope": "",
+      "file": "js/dom/src/database/common/read-adapter.mjs",
+      "line": 19
+    },
+    {
+      "name": "BaseStore",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/database/common/stores.mjs",
+      "line": 18
+    },
+    {
+      "name": "CollectionStore",
+      "kind": "class",
+      "base_expression": "BaseStore",
+      "scope": "",
+      "file": "js/dom/src/database/common/stores.mjs",
+      "line": 77
+    },
+    {
+      "name": "SelectorStore",
+      "kind": "class",
+      "base_expression": "CollectionStore",
+      "scope": "",
+      "file": "js/dom/src/database/common/stores.mjs",
+      "line": 89
+    },
+    {
+      "name": "RecordStore",
+      "kind": "class",
+      "base_expression": "BaseStore",
+      "scope": "",
+      "file": "js/dom/src/database/common/stores.mjs",
+      "line": 124
+    },
+    {
+      "name": "BagDbReadAdapter",
+      "kind": "class",
+      "base_expression": "ReadAdapter",
+      "scope": "",
+      "file": "js/dom/src/database/fake/bagdb-read-adapter.mjs",
+      "line": 16
+    },
+    {
+      "name": "DatabaseService",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/database/service.js",
+      "line": 11
+    },
+    {
+      "name": "FormController",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/forms/controller.js",
+      "line": 8
+    },
+    {
+      "name": "FormField",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/forms/field.js",
+      "line": 7
+    },
+    {
+      "name": "FormService",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/forms/service.js",
+      "line": 12
+    },
+    {
+      "name": "Validator",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/forms/validator.js",
+      "line": 7
+    },
+    {
+      "name": "ValueSnapshot",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/forms/value-snapshot.js",
+      "line": 8
+    },
+    {
+      "name": "MemoryStore",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/forms/value-snapshot.js",
+      "line": 57
+    },
+    {
+      "name": "InputNullState",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/input-null-state.js",
+      "line": 3
+    },
+    {
+      "name": "LogicRuntime",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/logic/runtime.js",
+      "line": 14
+    },
+    {
+      "name": "RecipeDefaults",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/recipe-defaults.js",
+      "line": 9
+    },
+    {
+      "name": "RecipePolicies",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/recipe-policies.js",
+      "line": 4
+    },
+    {
+      "name": "RendererBase",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/renderer/base.js",
+      "line": 25
+    },
+    {
+      "name": "UrlResolver",
+      "kind": "class",
+      "base_expression": "BagResolver",
+      "scope": "",
+      "file": "js/dom/src/resolvers/http.js",
+      "line": 19
+    },
+    {
+      "name": "OpenApiResolver",
+      "kind": "class",
+      "base_expression": "UrlResolver",
+      "scope": "",
+      "file": "js/dom/src/resolvers/http.js",
+      "line": 61
+    },
+    {
+      "name": "RpcResolver",
+      "kind": "class",
+      "base_expression": "BagResolver",
+      "scope": "",
+      "file": "js/dom/src/resolvers/rpc.js",
+      "line": 5
+    },
+    {
+      "name": "ResolverService",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/resolvers/service.js",
+      "line": 5
+    },
+    {
+      "name": "IdeDocuments",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/services/ide-documents.js",
+      "line": 5
+    },
+    {
+      "name": "InteractionFeedback",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/services/interaction-feedback.js",
+      "line": 3
+    },
+    {
+      "name": "OpenApiClientService",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/services/openapi-client.js",
+      "line": 12
+    },
+    {
+      "name": "RecipeRuntime",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/services/recipe-runtime.js",
+      "line": 5
+    },
+    {
+      "name": "ServerCallError",
+      "kind": "class",
+      "base_expression": "Error",
+      "scope": "",
+      "file": "js/dom/src/services/server-call.js",
+      "line": 7
+    },
+    {
+      "name": "ServerCallService",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/services/server-call.js",
+      "line": 18
+    },
+    {
+      "name": "TopicService",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/services/topics.js",
+      "line": 3
+    },
+    {
+      "name": "SourceBagNode",
+      "kind": "class",
+      "base_expression": "BagNode",
+      "scope": "",
+      "file": "js/dom/src/source-bag.js",
+      "line": 43
+    },
+    {
+      "name": "SourceBag",
+      "kind": "class",
+      "base_expression": "Bag",
+      "scope": "",
+      "file": "js/dom/src/source-bag.js",
+      "line": 335
+    },
+    {
+      "name": "BagRows",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/stores/bag-rows.js",
+      "line": 7
+    },
+    {
+      "name": "ValuesBagRows",
+      "kind": "class",
+      "base_expression": "BagRows",
+      "scope": "",
+      "file": "js/dom/src/stores/bag-rows.js",
+      "line": 210
+    },
+    {
+      "name": "AttributesBagRows",
+      "kind": "class",
+      "base_expression": "BagRows",
+      "scope": "",
+      "file": "js/dom/src/stores/bag-rows.js",
+      "line": 213
+    },
+    {
+      "name": "CollectionStores",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/stores/collection-stores.js",
+      "line": 26
+    },
+    {
+      "name": "TargetWrapper",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/dom/src/target-wrapper.js",
+      "line": 17
+    },
+    {
+      "name": "DomTarget",
+      "kind": "class",
+      "base_expression": "TargetWrapper",
+      "scope": "",
+      "file": "js/dom/src/target-wrapper.js",
+      "line": 38
+    },
+    {
+      "name": "GramlotBuilder",
+      "kind": "class",
+      "base_expression": "HtmlBuilder",
+      "scope": "",
+      "file": "js/pages/src/builder.js",
+      "line": 17
+    },
+    {
+      "name": "CodeMirrorElement",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "defineComponents",
+      "file": "js/pages/src/codemirror-component.js",
+      "line": 17
+    },
+    {
+      "name": "DeveloperTools",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/pages/src/dev.js",
+      "line": 3
+    },
+    {
+      "name": "GramlotInspector",
+      "kind": "class",
+      "base_expression": "HTMLElement",
+      "scope": "",
+      "file": "js/pages/src/inspector-component.js",
+      "line": 7
+    },
+    {
+      "name": "InspectorController",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/pages/src/inspector-controller.js",
+      "line": 9
+    },
+    {
+      "name": "InspectorEditor",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/pages/src/inspector-editor.js",
+      "line": 7
+    },
+    {
+      "name": "EmptyPage",
+      "kind": "class",
+      "base_expression": "GramlotBuilder",
+      "scope": "",
+      "file": "js/pages/src/lab-session.js",
+      "line": 15
+    },
+    {
+      "name": "LabSession",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/pages/src/lab-session.js",
+      "line": 19
+    },
+    {
+      "name": "PlaygroundBuilder",
+      "kind": "class",
+      "base_expression": "GramlotBuilder",
+      "scope": "",
+      "file": "js/pages/src/playground-page.js",
+      "line": 6
+    },
+    {
+      "name": "Shortcuts",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/pages/src/shortcuts.js",
+      "line": 3
+    },
+    {
+      "name": "PythonPageBuilder",
+      "kind": "class",
+      "base_expression": "GramlotBuilder",
+      "scope": "mountPythonPage",
+      "file": "js/pages/src/standalone-page.js",
+      "line": 11
+    },
+    {
+      "name": "DOMParser",
+      "kind": "class",
+      "base_expression": "",
+      "scope": "",
+      "file": "js/pages/src/xmldom.js",
+      "line": 5
+    }
+  ],
+  "module_functions": [
+    {
+      "name": "load",
+      "file": "js/dom/src/codemirror-cdn.js",
+      "line": 14
+    },
+    {
+      "name": "loadCodeMirrorFromCdn",
+      "file": "js/dom/src/codemirror-cdn.js",
+      "line": 24
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/chart.js",
+      "line": 8
+    },
+    {
+      "name": "selectionCodes",
+      "file": "js/dom/src/collections/checkbox-text.js",
+      "line": 5
+    },
+    {
+      "name": "checkboxOptions",
+      "file": "js/dom/src/collections/checkbox-text.js",
+      "line": 8
+    },
+    {
+      "name": "checkboxCaption",
+      "file": "js/dom/src/collections/checkbox-text.js",
+      "line": 34
+    },
+    {
+      "name": "defineCheckBoxText",
+      "file": "js/dom/src/collections/checkbox-text.js",
+      "line": 40
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/clipboard.js",
+      "line": 7
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/colorpicker.js",
+      "line": 14
+    },
+    {
+      "name": "formatCivil",
+      "file": "js/dom/src/collections/date-calendar.js",
+      "line": 5
+    },
+    {
+      "name": "defineDateCalendar",
+      "file": "js/dom/src/collections/date-calendar.js",
+      "line": 12
+    },
+    {
+      "name": "defineDbSelect",
+      "file": "js/dom/src/collections/db-select.js",
+      "line": 3
+    },
+    {
+      "name": "defineLabledBoxComponent",
+      "file": "js/dom/src/collections/decoration/labled-box.js",
+      "line": 7
+    },
+    {
+      "name": "fileIcon",
+      "file": "js/dom/src/collections/file-icons.js",
+      "line": 3
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/frame-channel.js",
+      "line": 14
+    },
+    {
+      "name": "defineGramlotIde",
+      "file": "js/dom/src/collections/gramlot-ide.js",
+      "line": 6
+    },
+    {
+      "name": "GridStruct",
+      "file": "js/dom/src/collections/grid-authoring.js",
+      "line": 5
+    },
+    {
+      "name": "identifiers",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 7
+    },
+    {
+      "name": "compileJavascript",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 11
+    },
+    {
+      "name": "tokenize",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 17
+    },
+    {
+      "name": "compileDecimal",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 36
+    },
+    {
+      "name": "decimalValue",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 70
+    },
+    {
+      "name": "evaluateDecimal",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 77
+    },
+    {
+      "name": "sameValue",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 96
+    },
+    {
+      "name": "addNumeric",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 104
+    },
+    {
+      "name": "dividePercent",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 115
+    },
+    {
+      "name": "eventPath",
+      "file": "js/dom/src/collections/grid-formulas.js",
+      "line": 126
+    },
+    {
+      "name": "gridColumnsFromStruct",
+      "file": "js/dom/src/collections/grid-structure.js",
+      "line": 3
+    },
+    {
+      "name": "gridColumnDefinitionsFromStruct",
+      "file": "js/dom/src/collections/grid-structure.js",
+      "line": 7
+    },
+    {
+      "name": "normalizeGridColumns",
+      "file": "js/dom/src/collections/grid-structure.js",
+      "line": 23
+    },
+    {
+      "name": "layoutGridColumns",
+      "file": "js/dom/src/collections/grid-structure.js",
+      "line": 42
+    },
+    {
+      "name": "gridTemplate",
+      "file": "js/dom/src/collections/grid-structure.js",
+      "line": 49
+    },
+    {
+      "name": "gridCellValue",
+      "file": "js/dom/src/collections/grid-structure.js",
+      "line": 53
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/grid.js",
+      "line": 58
+    },
+    {
+      "name": "richBody",
+      "file": "js/dom/src/collections/html-editor.js",
+      "line": 3
+    },
+    {
+      "name": "richRegions",
+      "file": "js/dom/src/collections/html-editor.js",
+      "line": 4
+    },
+    {
+      "name": "serializeRichDocument",
+      "file": "js/dom/src/collections/html-editor.js",
+      "line": 13
+    },
+    {
+      "name": "prepareRichContent",
+      "file": "js/dom/src/collections/html-editor.js",
+      "line": 18
+    },
+    {
+      "name": "defineHtmlEditor",
+      "file": "js/dom/src/collections/html-editor.js",
+      "line": 64
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/inputs.js",
+      "line": 29
+    },
+    {
+      "name": "loadJodit",
+      "file": "js/dom/src/collections/jodit-dependencies.js",
+      "line": 8
+    },
+    {
+      "name": "defineFormletComponent",
+      "file": "js/dom/src/collections/layout/formlet.js",
+      "line": 6
+    },
+    {
+      "name": "defineGroupBoxComponent",
+      "file": "js/dom/src/collections/layout/group-box.js",
+      "line": 10
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/layout.js",
+      "line": 103
+    },
+    {
+      "name": "markdownDependencies",
+      "file": "js/dom/src/collections/markdown-editor.js",
+      "line": 5
+    },
+    {
+      "name": "renderMarkdown",
+      "file": "js/dom/src/collections/markdown-editor.js",
+      "line": 9
+    },
+    {
+      "name": "markdownCodec",
+      "file": "js/dom/src/collections/markdown-editor.js",
+      "line": 13
+    },
+    {
+      "name": "defineMarkdownEditor",
+      "file": "js/dom/src/collections/markdown-editor.js",
+      "line": 40
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/palette.js",
+      "line": 7
+    },
+    {
+      "name": "defineComponents",
+      "file": "js/dom/src/collections/storetree.js",
+      "line": 103
+    },
+    {
+      "name": "typedDate",
+      "file": "js/dom/src/collections/symbolic-date-editor.js",
+      "line": 7
+    },
+    {
+      "name": "registerCollection",
+      "file": "js/dom/src/collections.js",
+      "line": 22
+    },
+    {
+      "name": "getCollection",
+      "file": "js/dom/src/collections.js",
+      "line": 26
+    },
+    {
+      "name": "webcomponent",
+      "file": "js/dom/src/collections.js",
+      "line": 36
+    },
+    {
+      "name": "injectCollectionCss",
+      "file": "js/dom/src/collections.js",
+      "line": 55
+    },
+    {
+      "name": "getComponentBases",
+      "file": "js/dom/src/components/bases.js",
+      "line": 27
+    },
+    {
+      "name": "builtinComponents",
+      "file": "js/dom/src/components/builtin-components.js",
+      "line": 1102
+    },
+    {
+      "name": "writeClipboardText",
+      "file": "js/dom/src/components/clipboard.js",
+      "line": 5
+    },
+    {
+      "name": "createDataScopeReader",
+      "file": "js/dom/src/components/data-scope.js",
+      "line": 5
+    },
+    {
+      "name": "dataScopeJson",
+      "file": "js/dom/src/components/data-scope.js",
+      "line": 20
+    },
+    {
+      "name": "setFieldState",
+      "file": "js/dom/src/components/field-state.js",
+      "line": 5
+    },
+    {
+      "name": "clearFieldState",
+      "file": "js/dom/src/components/field-state.js",
+      "line": 45
+    },
+    {
+      "name": "registerComponentCollection",
+      "file": "js/dom/src/components/registry.js",
+      "line": 7
+    },
+    {
+      "name": "getComponentDescriptions",
+      "file": "js/dom/src/components/registry.js",
+      "line": 44
+    },
+    {
+      "name": "isStyleAttr",
+      "file": "js/dom/src/contrib/html/html-attributes.js",
+      "line": 20
+    },
+    {
+      "name": "parseStyleString",
+      "file": "js/dom/src/contrib/html/html-attributes.js",
+      "line": 34
+    },
+    {
+      "name": "validateTable",
+      "file": "js/dom/src/database/common/model.mjs",
+      "line": 8
+    },
+    {
+      "name": "requireRequest",
+      "file": "js/dom/src/database/common/read-adapter.mjs",
+      "line": 5
+    },
+    {
+      "name": "checkAbort",
+      "file": "js/dom/src/database/common/read-adapter.mjs",
+      "line": 8
+    },
+    {
+      "name": "normalizeError",
+      "file": "js/dom/src/database/common/read-adapter.mjs",
+      "line": 11
+    },
+    {
+      "name": "abortable",
+      "file": "js/dom/src/database/common/stores.mjs",
+      "line": 6
+    },
+    {
+      "name": "keys",
+      "file": "js/dom/src/database/fake/bagdb-read-adapter.mjs",
+      "line": 5
+    },
+    {
+      "name": "typed",
+      "file": "js/dom/src/database/fake/bagdb-read-adapter.mjs",
+      "line": 8
+    },
+    {
+      "name": "compare",
+      "file": "js/dom/src/database/fake/bagdb-read-adapter.mjs",
+      "line": 13
+    },
+    {
+      "name": "modelTreeBag",
+      "file": "js/dom/src/database/model-tree-bag.js",
+      "line": 5
+    },
+    {
+      "name": "daysInMonth",
+      "file": "js/dom/src/date-parser/civil.js",
+      "line": 3
+    },
+    {
+      "name": "civil",
+      "file": "js/dom/src/date-parser/civil.js",
+      "line": 8
+    },
+    {
+      "name": "parts",
+      "file": "js/dom/src/date-parser/civil.js",
+      "line": 16
+    },
+    {
+      "name": "ordinal",
+      "file": "js/dom/src/date-parser/civil.js",
+      "line": 25
+    },
+    {
+      "name": "addDays",
+      "file": "js/dom/src/date-parser/civil.js",
+      "line": 33
+    },
+    {
+      "name": "monday",
+      "file": "js/dom/src/date-parser/civil.js",
+      "line": 51
+    },
+    {
+      "name": "monthPeriod",
+      "file": "js/dom/src/date-parser/civil.js",
+      "line": 55
+    },
+    {
+      "name": "decodeYear",
+      "file": "js/dom/src/date-parser/index.js",
+      "line": 10
+    },
+    {
+      "name": "parseOne",
+      "file": "js/dom/src/date-parser/index.js",
+      "line": 19
+    },
+    {
+      "name": "splitRange",
+      "file": "js/dom/src/date-parser/index.js",
+      "line": 76
+    },
+    {
+      "name": "parseDateExpression",
+      "file": "js/dom/src/date-parser/index.js",
+      "line": 102
+    },
+    {
+      "name": "normalize",
+      "file": "js/dom/src/date-parser/locales.js",
+      "line": 28
+    },
+    {
+      "name": "localeContext",
+      "file": "js/dom/src/date-parser/locales.js",
+      "line": 32
+    },
+    {
+      "name": "temporal",
+      "file": "js/dom/src/display-format.js",
+      "line": 12
+    },
+    {
+      "name": "patternDate",
+      "file": "js/dom/src/display-format.js",
+      "line": 21
+    },
+    {
+      "name": "formatDisplay",
+      "file": "js/dom/src/display-format.js",
+      "line": 42
+    },
+    {
+      "name": "displayLocale",
+      "file": "js/dom/src/display-format.js",
+      "line": 62
+    },
+    {
+      "name": "loadCodeMirrorCore",
+      "file": "js/dom/src/editor-dependencies.js",
+      "line": 7
+    },
+    {
+      "name": "loadCodeMirror",
+      "file": "js/dom/src/editor-dependencies.js",
+      "line": 29
+    },
+    {
+      "name": "loadProseMirrorCore",
+      "file": "js/dom/src/editor-dependencies.js",
+      "line": 40
+    },
+    {
+      "name": "loadHtmlEditorDependencies",
+      "file": "js/dom/src/editor-dependencies.js",
+      "line": 53
+    },
+    {
+      "name": "loadMarkdownEditorDependencies",
+      "file": "js/dom/src/editor-dependencies.js",
+      "line": 62
+    },
+    {
+      "name": "loadPythonHighlighter",
+      "file": "js/dom/src/editor-dependencies.js",
+      "line": 75
+    },
+    {
+      "name": "loadJoditLibrary",
+      "file": "js/dom/src/editor-dependencies.js",
+      "line": 87
+    },
+    {
+      "name": "formStore",
+      "file": "js/dom/src/forms/stores.js",
+      "line": 6
+    },
+    {
+      "name": "argumentNames",
+      "file": "js/dom/src/logic/expression.js",
+      "line": 20
+    },
+    {
+      "name": "compiled",
+      "file": "js/dom/src/logic/expression.js",
+      "line": 24
+    },
+    {
+      "name": "isFunctionText",
+      "file": "js/dom/src/logic/expression.js",
+      "line": 35
+    },
+    {
+      "name": "evaluateExpression",
+      "file": "js/dom/src/logic/expression.js",
+      "line": 39
+    },
+    {
+      "name": "compileInlineExpression",
+      "file": "js/dom/src/logic/expression.js",
+      "line": 45
+    },
+    {
+      "name": "executeScript",
+      "file": "js/dom/src/logic/expression.js",
+      "line": 63
+    },
+    {
+      "name": "compileFunctionText",
+      "file": "js/dom/src/logic/expression.js",
+      "line": 69
+    },
+    {
+      "name": "resolveInlineExpressions",
+      "file": "js/dom/src/logic/expression.js",
+      "line": 81
+    },
+    {
+      "name": "numericOptions",
+      "file": "js/dom/src/number-format.js",
+      "line": 4
+    },
+    {
+      "name": "formatNumber",
+      "file": "js/dom/src/number-format.js",
+      "line": 23
+    },
+    {
+      "name": "numberSymbols",
+      "file": "js/dom/src/number-format.js",
+      "line": 33
+    },
+    {
+      "name": "parseNumberText",
+      "file": "js/dom/src/number-format.js",
+      "line": 38
+    },
+    {
+      "name": "isPointer",
+      "file": "js/dom/src/pointer.js",
+      "line": 18
+    },
+    {
+      "name": "parsePointer",
+      "file": "js/dom/src/pointer.js",
+      "line": 34
+    },
+    {
+      "name": "scanForPointers",
+      "file": "js/dom/src/pointer.js",
+      "line": 57
+    },
+    {
+      "name": "jsonBag",
+      "file": "js/dom/src/resolvers/http.js",
+      "line": 5
+    },
+    {
+      "name": "plainJson",
+      "file": "js/dom/src/resolvers/http.js",
+      "line": 12
+    },
+    {
+      "name": "bindRpcResolvers",
+      "file": "js/dom/src/resolvers/rpc.js",
+      "line": 29
+    },
+    {
+      "name": "resolverDeclaration",
+      "file": "js/dom/src/resolvers/service.js",
+      "line": 59
+    },
+    {
+      "name": "dereference",
+      "file": "js/dom/src/services/openapi-schema.js",
+      "line": 3
+    },
+    {
+      "name": "compileOperation",
+      "file": "js/dom/src/services/openapi-schema.js",
+      "line": 16
+    },
+    {
+      "name": "validate",
+      "file": "js/dom/src/services/openapi-schema.js",
+      "line": 43
+    },
+    {
+      "name": "buildRequest",
+      "file": "js/dom/src/services/openapi-schema.js",
+      "line": 72
+    },
+    {
+      "name": "canonicalName",
+      "file": "js/dom/src/source-bag.js",
+      "line": 35
+    },
+    {
+      "name": "splitArgs",
+      "file": "js/dom/src/source-bag.js",
+      "line": 354
+    },
+    {
+      "name": "wrapSource",
+      "file": "js/dom/src/source-bag.js",
+      "line": 370
+    },
+    {
+      "name": "elementCall",
+      "file": "js/dom/src/source-bag.js",
+      "line": 441
+    },
+    {
+      "name": "selectionBag",
+      "file": "js/dom/src/stores/collection-stores.js",
+      "line": 6
+    },
+    {
+      "name": "isBag",
+      "file": "js/dom/src/utils.js",
+      "line": 9
+    },
+    {
+      "name": "bagXmlView",
+      "file": "js/pages/src/bag-xml-view.js",
+      "line": 3
+    },
+    {
+      "name": "createInspector",
+      "file": "js/pages/src/inspector-component.js",
+      "line": 68
+    },
+    {
+      "name": "normalizeInspectorOrigins",
+      "file": "js/pages/src/inspector-origins.js",
+      "line": 4
+    },
+    {
+      "name": "resolveOrigin",
+      "file": "js/pages/src/inspector.js",
+      "line": 12
+    },
+    {
+      "name": "mountInspector",
+      "file": "js/pages/src/inspector.js",
+      "line": 32
+    },
+    {
+      "name": "createRequire",
+      "file": "js/pages/src/module.js",
+      "line": 8
+    },
+    {
+      "name": "mountPlayground",
+      "file": "js/pages/src/playground.js",
+      "line": 6
+    },
+    {
+      "name": "highlightRecipes",
+      "file": "js/pages/src/recipe-highlight.js",
+      "line": 4
+    },
+    {
+      "name": "mountPythonPage",
+      "file": "js/pages/src/standalone-page.js",
+      "line": 8
+    }
+  ],
+  "legacy_cards": [
+    {
+      "name": "AccordionContainer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/AccordionContainer.md"
+    },
+    {
+      "name": "AccordionPane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/AccordionPane.md"
+    },
+    {
+      "name": "BagNodeEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/BagNodeEditor.md"
+    },
+    {
+      "name": "BoxForm",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/BoxForm.md"
+    },
+    {
+      "name": "CallBackSelect",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/CallBackSelect.md"
+    },
+    {
+      "name": "CharCounterTextarea",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/CharCounterTextarea.md"
+    },
+    {
+      "name": "CheckBoxText",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/CheckBoxText.md"
+    },
+    {
+      "name": "CodeEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/CodeEditor.md"
+    },
+    {
+      "name": "ColorFiltering",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ColorFiltering.md"
+    },
+    {
+      "name": "ColorTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ColorTextBox.md"
+    },
+    {
+      "name": "ComboArrow",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ComboArrow.md"
+    },
+    {
+      "name": "ComboMenu",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ComboMenu.md"
+    },
+    {
+      "name": "ContentPane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/ContentPane.md"
+    },
+    {
+      "name": "DbComboBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DbComboBox.md"
+    },
+    {
+      "name": "DbField",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DbField.md"
+    },
+    {
+      "name": "DbForm",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DbForm.md"
+    },
+    {
+      "name": "DbQuery",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DbQuery.md"
+    },
+    {
+      "name": "DbSelect",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/DbSelect.md"
+    },
+    {
+      "name": "DbView",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DbView.md"
+    },
+    {
+      "name": "DocumentFrame",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DocumentFrame.md"
+    },
+    {
+      "name": "DownloadButton",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DownloadButton.md"
+    },
+    {
+      "name": "DropUploader",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DropUploader.md"
+    },
+    {
+      "name": "DropUploaderGrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/DropUploaderGrid.md"
+    },
+    {
+      "name": "ExtendedCkeditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ExtendedCkeditor.md"
+    },
+    {
+      "name": "ExtendedTinyMCE",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ExtendedTinyMCE.md"
+    },
+    {
+      "name": "FieldsTree",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/FieldsTree.md"
+    },
+    {
+      "name": "FlatBagEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/FlatBagEditor.md"
+    },
+    {
+      "name": "GeoCoderField",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/GeoCoderField.md"
+    },
+    {
+      "name": "GeoSearch",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/GeoSearch.md"
+    },
+    {
+      "name": "GridGallery",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/GridGallery.md"
+    },
+    {
+      "name": "IframeDiv",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/IframeDiv.md"
+    },
+    {
+      "name": "ImgUploader",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ImgUploader.md"
+    },
+    {
+      "name": "LayoutContainer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/LayoutContainer.md"
+    },
+    {
+      "name": "MenuDiv",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/MenuDiv.md"
+    },
+    {
+      "name": "ModalUploader",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ModalUploader.md"
+    },
+    {
+      "name": "MultiButton",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/MultiButton.md"
+    },
+    {
+      "name": "MultiLanguageTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/MultiLanguageTextBox.md"
+    },
+    {
+      "name": "MultiLineTextbox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/MultiLineTextbox.md"
+    },
+    {
+      "name": "MultiValueEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/MultiValueEditor.md"
+    },
+    {
+      "name": "PackageSelect",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/PackageSelect.md"
+    },
+    {
+      "name": "PagedHtml",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/PagedHtml.md"
+    },
+    {
+      "name": "Palette",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/Palette.md"
+    },
+    {
+      "name": "PaletteBagNodeEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/PaletteBagNodeEditor.md"
+    },
+    {
+      "name": "PaletteImporter",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/PaletteImporter.md"
+    },
+    {
+      "name": "PaletteMap",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/PaletteMap.md"
+    },
+    {
+      "name": "PasswordTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/PasswordTextBox.md"
+    },
+    {
+      "name": "QuickEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/QuickEditor.md"
+    },
+    {
+      "name": "QuickTree",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/QuickTree.md"
+    },
+    {
+      "name": "RadioButtonText",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/RadioButtonText.md"
+    },
+    {
+      "name": "RemoteSelect",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/RemoteSelect.md"
+    },
+    {
+      "name": "SearchBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/SearchBox.md"
+    },
+    {
+      "name": "SplitContainer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/SplitContainer.md"
+    },
+    {
+      "name": "StackButtons",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/StackButtons.md"
+    },
+    {
+      "name": "StackContainer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/StackContainer.md"
+    },
+    {
+      "name": "StaticMap",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/StaticMap.md"
+    },
+    {
+      "name": "TabContainer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/TabContainer.md"
+    },
+    {
+      "name": "TableSelect",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/TableSelect.md"
+    },
+    {
+      "name": "TemplateChunk",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/TemplateChunk.md"
+    },
+    {
+      "name": "TextboxMenu",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/TextboxMenu.md"
+    },
+    {
+      "name": "TooltipPane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/TooltipPane.md"
+    },
+    {
+      "name": "TracebackViewer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/TracebackViewer.md"
+    },
+    {
+      "name": "TreeFrame",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/TreeFrame.md"
+    },
+    {
+      "name": "TreeGrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/TreeGrid.md"
+    },
+    {
+      "name": "UserObjectBar",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/UserObjectBar.md"
+    },
+    {
+      "name": "UserObjectLayout",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/UserObjectLayout.md"
+    },
+    {
+      "name": "VideoPickerPalette",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/VideoPickerPalette.md"
+    },
+    {
+      "name": "VideoPlayer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/VideoPlayer.md"
+    },
+    {
+      "name": "__call__",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/__call__.md"
+    },
+    {
+      "name": "__getattr__",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/__getattr__.md"
+    },
+    {
+      "name": "__init__",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/__init__.md"
+    },
+    {
+      "name": "_addSlot",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_addSlot.md"
+    },
+    {
+      "name": "_collist",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_collist.md"
+    },
+    {
+      "name": "_fillRows",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_fillRows.md"
+    },
+    {
+      "name": "_formCell",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_formCell.md"
+    },
+    {
+      "name": "_formRow",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_formRow.md"
+    },
+    {
+      "name": "_get_maintable",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_get_maintable.md"
+    },
+    {
+      "name": "_get_page",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_get_page.md"
+    },
+    {
+      "name": "_get_parentfb",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_get_parentfb.md"
+    },
+    {
+      "name": "_get_tbl",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_get_tbl.md"
+    },
+    {
+      "name": "_get_tblobj",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_get_tblobj.md"
+    },
+    {
+      "name": "_lblCellPath",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_lblCellPath.md"
+    },
+    {
+      "name": "_selected_defaultFrom",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_selected_defaultFrom.md"
+    },
+    {
+      "name": "_storeParentFrame",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/_storeParentFrame.md"
+    },
+    {
+      "name": "a",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/a.md"
+    },
+    {
+      "name": "abbr",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/abbr.md"
+    },
+    {
+      "name": "acronym",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/acronym.md"
+    },
+    {
+      "name": "address",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/address.md"
+    },
+    {
+      "name": "area",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/area.md"
+    },
+    {
+      "name": "audio",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/audio.md"
+    },
+    {
+      "name": "autoslot",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/autoslot.md"
+    },
+    {
+      "name": "b",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/b.md"
+    },
+    {
+      "name": "bagEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/bagEditor.md"
+    },
+    {
+      "name": "bagField",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/bagField.md"
+    },
+    {
+      "name": "bagStore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/bagStore.md"
+    },
+    {
+      "name": "base",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/base.md"
+    },
+    {
+      "name": "bdo",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/bdo.md"
+    },
+    {
+      "name": "big",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/big.md"
+    },
+    {
+      "name": "blockquote",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/blockquote.md"
+    },
+    {
+      "name": "body",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/body.md"
+    },
+    {
+      "name": "borderContainer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/borderContainer.md"
+    },
+    {
+      "name": "br",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/br.md"
+    },
+    {
+      "name": "button",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/button.md"
+    },
+    {
+      "name": "calendar",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/calendar.md"
+    },
+    {
+      "name": "callBack",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/callBack.md"
+    },
+    {
+      "name": "canvas",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/canvas.md"
+    },
+    {
+      "name": "caption",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/caption.md"
+    },
+    {
+      "name": "cell",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/cell.md"
+    },
+    {
+      "name": "cellFromField",
+      "type": "internal/reference helper",
+      "level": "N/A",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/cellFromField.md"
+    },
+    {
+      "name": "chart",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/chart.md"
+    },
+    {
+      "name": "chartjs",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/chartjs.md"
+    },
+    {
+      "name": "chartpane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/chartpane.md"
+    },
+    {
+      "name": "checkBoxSet",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/checkBoxSet.md"
+    },
+    {
+      "name": "checkNodeId",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/checkNodeId.md"
+    },
+    {
+      "name": "checkbox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/checkbox.md"
+    },
+    {
+      "name": "checkboxcell",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/checkboxcell.md"
+    },
+    {
+      "name": "checkboxcolumn",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/checkboxcolumn.md"
+    },
+    {
+      "name": "child",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/child.md"
+    },
+    {
+      "name": "cite",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/cite.md"
+    },
+    {
+      "name": "ckeditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ckeditor.md"
+    },
+    {
+      "name": "code",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/code.md"
+    },
+    {
+      "name": "codemirror",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/codemirror.md"
+    },
+    {
+      "name": "col",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/col.md"
+    },
+    {
+      "name": "colgroup",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/colgroup.md"
+    },
+    {
+      "name": "colorPalette",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/colorPalette.md"
+    },
+    {
+      "name": "colorPicker",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/colorPicker.md"
+    },
+    {
+      "name": "columnset",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/columnset.md"
+    },
+    {
+      "name": "columnsets",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/columnsets.md"
+    },
+    {
+      "name": "comboBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/comboBox.md"
+    },
+    {
+      "name": "comboButton",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/comboButton.md"
+    },
+    {
+      "name": "connect",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/connect.md"
+    },
+    {
+      "name": "css",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/css.md"
+    },
+    {
+      "name": "cssrule",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/cssrule.md"
+    },
+    {
+      "name": "currencyTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/currencyTextBox.md"
+    },
+    {
+      "name": "data",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/data.md"
+    },
+    {
+      "name": "dataController",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/dataController.md"
+    },
+    {
+      "name": "dataFormula",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/dataFormula.md"
+    },
+    {
+      "name": "dataRecord",
+      "type": "controller",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dataRecord.md"
+    },
+    {
+      "name": "dataRemote",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dataRemote.md"
+    },
+    {
+      "name": "dataResource",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dataResource.md"
+    },
+    {
+      "name": "dataRpc",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/dataRpc.md"
+    },
+    {
+      "name": "dataScript",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dataScript.md"
+    },
+    {
+      "name": "dataSelection",
+      "type": "controller",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dataSelection.md"
+    },
+    {
+      "name": "datarpc_addcallback",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/datarpc_addcallback.md"
+    },
+    {
+      "name": "datarpc_adderrback",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/datarpc_adderrback.md"
+    },
+    {
+      "name": "dateTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/dateTextBox.md"
+    },
+    {
+      "name": "datetimeTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/datetimeTextBox.md"
+    },
+    {
+      "name": "dd",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dd.md"
+    },
+    {
+      "name": "deck",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/deck.md"
+    },
+    {
+      "name": "del",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/del.md"
+    },
+    {
+      "name": "details",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/details.md"
+    },
+    {
+      "name": "dfn",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dfn.md"
+    },
+    {
+      "name": "dialog",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dialog.md"
+    },
+    {
+      "name": "directoryStore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/directoryStore.md"
+    },
+    {
+      "name": "div",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/div.md"
+    },
+    {
+      "name": "dl",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dl.md"
+    },
+    {
+      "name": "docItem",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/docItem.md"
+    },
+    {
+      "name": "dock",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dock.md"
+    },
+    {
+      "name": "dojoGrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dojoGrid.md"
+    },
+    {
+      "name": "dropdownbutton",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dropdownbutton.md"
+    },
+    {
+      "name": "dt",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dt.md"
+    },
+    {
+      "name": "dygraph",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dygraph.md"
+    },
+    {
+      "name": "dynamicGrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/dynamicGrid.md"
+    },
+    {
+      "name": "editor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/editor.md"
+    },
+    {
+      "name": "em",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/em.md"
+    },
+    {
+      "name": "embed",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/embed.md"
+    },
+    {
+      "name": "errorPane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/errorPane.md"
+    },
+    {
+      "name": "expandbox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/expandbox.md"
+    },
+    {
+      "name": "externalStore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/externalStore.md"
+    },
+    {
+      "name": "field",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/field.md"
+    },
+    {
+      "name": "fieldcell",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fieldcell.md"
+    },
+    {
+      "name": "fields",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fields.md"
+    },
+    {
+      "name": "fieldset",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fieldset.md"
+    },
+    {
+      "name": "fileInput",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fileInput.md"
+    },
+    {
+      "name": "fileInputAuto",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fileInputAuto.md"
+    },
+    {
+      "name": "fileInputBlind",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fileInputBlind.md"
+    },
+    {
+      "name": "fileUploader",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fileUploader.md"
+    },
+    {
+      "name": "filteringSelect",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/filteringSelect.md"
+    },
+    {
+      "name": "fisheyeList",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fisheyeList.md"
+    },
+    {
+      "name": "flexbox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/flexbox.md"
+    },
+    {
+      "name": "floatingPane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/floatingPane.md"
+    },
+    {
+      "name": "footer",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/footer.md"
+    },
+    {
+      "name": "footer_item",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/footer_item.md"
+    },
+    {
+      "name": "form",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/form.md"
+    },
+    {
+      "name": "formbuilder",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/formbuilder.md"
+    },
+    {
+      "name": "formbuilder_formlet",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/formbuilder_formlet.md"
+    },
+    {
+      "name": "formbuilder_table",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/formbuilder_table.md"
+    },
+    {
+      "name": "formlet",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/formlet.md"
+    },
+    {
+      "name": "formstore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/formstore.md"
+    },
+    {
+      "name": "formstore_handler",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/formstore_handler.md"
+    },
+    {
+      "name": "formstore_handler_addcallback",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/formstore_handler_addcallback.md"
+    },
+    {
+      "name": "frame",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/frame.md"
+    },
+    {
+      "name": "frameform",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/frameform.md"
+    },
+    {
+      "name": "framepane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/framepane.md"
+    },
+    {
+      "name": "frameset",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/frameset.md"
+    },
+    {
+      "name": "fsStore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/fsStore.md"
+    },
+    {
+      "name": "fullScreenDialog",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fullScreenDialog.md"
+    },
+    {
+      "name": "fullcalendar",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/fullcalendar.md"
+    },
+    {
+      "name": "func",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/func.md"
+    },
+    {
+      "name": "gallery",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/gallery.md"
+    },
+    {
+      "name": "getAttach",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/getAttach.md"
+    },
+    {
+      "name": "getField",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/getField.md"
+    },
+    {
+      "name": "getFieldNames",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/getFieldNames.md"
+    },
+    {
+      "name": "getFormBuilder",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/getFormBuilder.md"
+    },
+    {
+      "name": "getMainFormBuilder",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/getMainFormBuilder.md"
+    },
+    {
+      "name": "getRow",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/getRow.md"
+    },
+    {
+      "name": "getRowNode",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/getRowNode.md"
+    },
+    {
+      "name": "googleMap",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/googleMap.md"
+    },
+    {
+      "name": "googleVisualization",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/googleVisualization.md"
+    },
+    {
+      "name": "googlechart",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/googlechart.md"
+    },
+    {
+      "name": "googlechart_column",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/googlechart_column.md"
+    },
+    {
+      "name": "gridEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/gridEditor.md"
+    },
+    {
+      "name": "gridStruct",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/gridStruct.md"
+    },
+    {
+      "name": "gridView",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/gridView.md"
+    },
+    {
+      "name": "gridbox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/gridbox.md"
+    },
+    {
+      "name": "grouplet",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/grouplet.md"
+    },
+    {
+      "name": "groupletform",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/groupletform.md"
+    },
+    {
+      "name": "h1",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/h1.md"
+    },
+    {
+      "name": "h2",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/h2.md"
+    },
+    {
+      "name": "h3",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/h3.md"
+    },
+    {
+      "name": "h4",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/h4.md"
+    },
+    {
+      "name": "h5",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/h5.md"
+    },
+    {
+      "name": "h6",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/h6.md"
+    },
+    {
+      "name": "head",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/head.md"
+    },
+    {
+      "name": "horizontalSlider",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/horizontalSlider.md"
+    },
+    {
+      "name": "hr",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/hr.md"
+    },
+    {
+      "name": "html",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/html.md"
+    },
+    {
+      "name": "htmlChild",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/htmlChild.md"
+    },
+    {
+      "name": "htmlform",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/htmlform.md"
+    },
+    {
+      "name": "htmliframe",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/htmliframe.md"
+    },
+    {
+      "name": "i",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/i.md"
+    },
+    {
+      "name": "iframe",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/iframe.md"
+    },
+    {
+      "name": "img",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/img.md"
+    },
+    {
+      "name": "includedview",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/includedview.md"
+    },
+    {
+      "name": "includedview_draganddrop",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/includedview_draganddrop.md"
+    },
+    {
+      "name": "includedview_inframe",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/includedview_inframe.md"
+    },
+    {
+      "name": "includedview_legacy",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/includedview_legacy.md"
+    },
+    {
+      "name": "info",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/info.md"
+    },
+    {
+      "name": "inlineEditBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/inlineEditBox.md"
+    },
+    {
+      "name": "input",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/input.md"
+    },
+    {
+      "name": "ins",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ins.md"
+    },
+    {
+      "name": "item",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/item.md"
+    },
+    {
+      "name": "iterator",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/iterator.md"
+    },
+    {
+      "name": "js_domNode",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/js_domNode.md"
+    },
+    {
+      "name": "js_form",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/js_form.md"
+    },
+    {
+      "name": "js_sourceNode",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/js_sourceNode.md"
+    },
+    {
+      "name": "js_widget",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/js_widget.md"
+    },
+    {
+      "name": "kbd",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/kbd.md"
+    },
+    {
+      "name": "label",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/label.md"
+    },
+    {
+      "name": "labledbox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/labledbox.md"
+    },
+    {
+      "name": "legend",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/legend.md"
+    },
+    {
+      "name": "li",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/li.md"
+    },
+    {
+      "name": "lightbox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/lightbox.md"
+    },
+    {
+      "name": "lightbutton",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/lightbutton.md"
+    },
+    {
+      "name": "link",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/link.md"
+    },
+    {
+      "name": "loader",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/loader.md"
+    },
+    {
+      "name": "macro",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/macro.md"
+    },
+    {
+      "name": "makeRoot",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/makeRoot.md"
+    },
+    {
+      "name": "map",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/map.md"
+    },
+    {
+      "name": "mdeditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/mdeditor.md"
+    },
+    {
+      "name": "menu",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/menu.md"
+    },
+    {
+      "name": "menuItem",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/menuItem.md"
+    },
+    {
+      "name": "menubar",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/menubar.md"
+    },
+    {
+      "name": "menuline",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/menuline.md"
+    },
+    {
+      "name": "meta",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/meta.md"
+    },
+    {
+      "name": "mobileFormBuilder",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/mobileFormBuilder.md"
+    },
+    {
+      "name": "multiSelect",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/multiSelect.md"
+    },
+    {
+      "name": "multibutton_item",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/multibutton_item.md"
+    },
+    {
+      "name": "multibutton_plusitem",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/multibutton_plusitem.md"
+    },
+    {
+      "name": "multibutton_store",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/multibutton_store.md"
+    },
+    {
+      "name": "newincludedview_draganddrop",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/newincludedview_draganddrop.md"
+    },
+    {
+      "name": "newincludedview_footer",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/newincludedview_footer.md"
+    },
+    {
+      "name": "nextCell",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/nextCell.md"
+    },
+    {
+      "name": "nodeById",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/nodeById.md"
+    },
+    {
+      "name": "noframes",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/noframes.md"
+    },
+    {
+      "name": "noscript",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/noscript.md"
+    },
+    {
+      "name": "numberSpinner",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/numberSpinner.md"
+    },
+    {
+      "name": "numberTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/numberTextBox.md"
+    },
+    {
+      "name": "object",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/object.md"
+    },
+    {
+      "name": "ol",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ol.md"
+    },
+    {
+      "name": "onDbChanges",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/onDbChanges.md"
+    },
+    {
+      "name": "optgroup",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/optgroup.md"
+    },
+    {
+      "name": "option",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/option.md"
+    },
+    {
+      "name": "p",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/p.md"
+    },
+    {
+      "name": "paletteGrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/paletteGrid.md"
+    },
+    {
+      "name": "paletteGroup",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/paletteGroup.md"
+    },
+    {
+      "name": "palettePane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/palettePane.md"
+    },
+    {
+      "name": "paletteTree",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/paletteTree.md"
+    },
+    {
+      "name": "palettechart",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/palettechart.md"
+    },
+    {
+      "name": "palettestats",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/palettestats.md"
+    },
+    {
+      "name": "param",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/param.md"
+    },
+    {
+      "name": "partitionController",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/partitionController.md"
+    },
+    {
+      "name": "partitionSubscriber",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/partitionSubscriber.md"
+    },
+    {
+      "name": "place",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/place.md"
+    },
+    {
+      "name": "placeFields",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/placeFields.md"
+    },
+    {
+      "name": "pre",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/pre.md"
+    },
+    {
+      "name": "prepareFieldAttributes",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/prepareFieldAttributes.md"
+    },
+    {
+      "name": "progressBar",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/progressBar.md"
+    },
+    {
+      "name": "proseMirrorEditor",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/proseMirrorEditor.md"
+    },
+    {
+      "name": "protovis",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/protovis.md"
+    },
+    {
+      "name": "q",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/q.md"
+    },
+    {
+      "name": "qrscanner",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/qrscanner.md"
+    },
+    {
+      "name": "quickgrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/quickgrid.md"
+    },
+    {
+      "name": "quickgrid_column",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/quickgrid_column.md"
+    },
+    {
+      "name": "quickgrid_selectionstore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/quickgrid_selectionstore.md"
+    },
+    {
+      "name": "quickgrid_tools",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/quickgrid_tools.md"
+    },
+    {
+      "name": "radioButtonSet",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/radioButtonSet.md"
+    },
+    {
+      "name": "radiobutton",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/radiobutton.md"
+    },
+    {
+      "name": "radiogroup",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/radiogroup.md"
+    },
+    {
+      "name": "record",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/record.md"
+    },
+    {
+      "name": "register_nodeId",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/register_nodeId.md"
+    },
+    {
+      "name": "remote",
+      "type": "controller",
+      "level": "COMPOSED",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/remote.md"
+    },
+    {
+      "name": "resizeHandle",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/resizeHandle.md"
+    },
+    {
+      "name": "rows",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/rows.md"
+    },
+    {
+      "name": "rpcStore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/rpcStore.md"
+    },
+    {
+      "name": "samp",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/samp.md"
+    },
+    {
+      "name": "script",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/script.md"
+    },
+    {
+      "name": "scrollPane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/scrollPane.md"
+    },
+    {
+      "name": "select",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/select.md"
+    },
+    {
+      "name": "selectionStore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/selectionStore.md"
+    },
+    {
+      "name": "selectionstore_addcallback",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/selectionstore_addcallback.md"
+    },
+    {
+      "name": "semaphore",
+      "type": "component/helper",
+      "level": "COMPOSED",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/semaphore.md"
+    },
+    {
+      "name": "setField",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/setField.md"
+    },
+    {
+      "name": "setFields",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/setFields.md"
+    },
+    {
+      "name": "setHelperData",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/setHelperData.md"
+    },
+    {
+      "name": "setRow",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/setRow.md"
+    },
+    {
+      "name": "setRowAttr",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/setRowAttr.md"
+    },
+    {
+      "name": "sharedObject",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/sharedObject.md"
+    },
+    {
+      "name": "simpleTextarea",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/simpleTextarea.md"
+    },
+    {
+      "name": "sizingPane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/sizingPane.md"
+    },
+    {
+      "name": "slide",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slide.md"
+    },
+    {
+      "name": "slideShow",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slideShow.md"
+    },
+    {
+      "name": "slot",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slot.md"
+    },
+    {
+      "name": "slotBar",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slotBar.md"
+    },
+    {
+      "name": "slotButton",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slotButton.md"
+    },
+    {
+      "name": "slotFooter",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slotFooter.md"
+    },
+    {
+      "name": "slotToolbar",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slotToolbar.md"
+    },
+    {
+      "name": "slotbar_replaceslots",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slotbar_replaceslots.md"
+    },
+    {
+      "name": "slotbar_updateslotsattr",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/slotbar_updateslotsattr.md"
+    },
+    {
+      "name": "small",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/small.md"
+    },
+    {
+      "name": "sortList",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/sortList.md"
+    },
+    {
+      "name": "span",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/span.md"
+    },
+    {
+      "name": "staticGrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/staticGrid.md"
+    },
+    {
+      "name": "statspane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/statspane.md"
+    },
+    {
+      "name": "strong",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/strong.md"
+    },
+    {
+      "name": "struct_method",
+      "type": "recipe/registration contract",
+      "level": "COMPOSED",
+      "recorded_status": "solo riferimento legacy",
+      "file": "gramlot_inventory/legacy-census/cards/struct_method.md"
+    },
+    {
+      "name": "style",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/style.md"
+    },
+    {
+      "name": "styleSheet",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/styleSheet.md"
+    },
+    {
+      "name": "sub",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/sub.md"
+    },
+    {
+      "name": "subscribe",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/subscribe.md"
+    },
+    {
+      "name": "summary",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/summary.md"
+    },
+    {
+      "name": "sup",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/sup.md"
+    },
+    {
+      "name": "table",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/table.md"
+    },
+    {
+      "name": "tableAnalyzeStore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tableAnalyzeStore.md"
+    },
+    {
+      "name": "tbody",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tbody.md"
+    },
+    {
+      "name": "td",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/td.md"
+    },
+    {
+      "name": "templatecell",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/templatecell.md"
+    },
+    {
+      "name": "textBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/textBox.md"
+    },
+    {
+      "name": "textarea",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/textarea.md"
+    },
+    {
+      "name": "tfoot",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tfoot.md"
+    },
+    {
+      "name": "th",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/th.md"
+    },
+    {
+      "name": "thead",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/thead.md"
+    },
+    {
+      "name": "thumbnailPicker",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/thumbnailPicker.md"
+    },
+    {
+      "name": "timeSpinner",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/timeSpinner.md"
+    },
+    {
+      "name": "timeTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/timeTextBox.md"
+    },
+    {
+      "name": "tinyMCE",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tinyMCE.md"
+    },
+    {
+      "name": "title",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/title.md"
+    },
+    {
+      "name": "titlePane",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/titlePane.md"
+    },
+    {
+      "name": "toaster",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/toaster.md"
+    },
+    {
+      "name": "togglebutton",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/togglebutton.md"
+    },
+    {
+      "name": "toolbar",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/toolbar.md"
+    },
+    {
+      "name": "toolbarSeparator",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/toolbarSeparator.md"
+    },
+    {
+      "name": "tooltip",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tooltip.md"
+    },
+    {
+      "name": "tooltipDialog",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tooltipDialog.md"
+    },
+    {
+      "name": "tr",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tr.md"
+    },
+    {
+      "name": "tree",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tree.md"
+    },
+    {
+      "name": "treeframe_column",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/treeframe_column.md"
+    },
+    {
+      "name": "treegrid_column",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/treegrid_column.md"
+    },
+    {
+      "name": "tt",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/tt.md"
+    },
+    {
+      "name": "ul",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/ul.md"
+    },
+    {
+      "name": "validationTextBox",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/validationTextBox.md"
+    },
+    {
+      "name": "var",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/var.md"
+    },
+    {
+      "name": "verticalSlider",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "implementato; corrispondenza di portata da verificare",
+      "file": "gramlot_inventory/legacy-census/cards/verticalSlider.md"
+    },
+    {
+      "name": "video",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/video.md"
+    },
+    {
+      "name": "view",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/view.md"
+    },
+    {
+      "name": "viewHeader",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/viewHeader.md"
+    },
+    {
+      "name": "viewRow",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/viewRow.md"
+    },
+    {
+      "name": "virtualGrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/virtualGrid.md"
+    },
+    {
+      "name": "virtualSelectionStore",
+      "type": "controller",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/virtualSelectionStore.md"
+    },
+    {
+      "name": "virtualStaticGrid",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/virtualStaticGrid.md"
+    },
+    {
+      "name": "wdgAttributesFromColumn",
+      "type": "component",
+      "level": "LOW-LEVEL",
+      "recorded_status": "da implementare",
+      "file": "gramlot_inventory/legacy-census/cards/wdgAttributesFromColumn.md"
+    }
+  ],
+  "reviewed_cards": [
+    "gramlot_inventory/components/low-level/textBox.md",
+    "gramlot_inventory/controllers/composed/apiResolver.md",
+    "gramlot_inventory/controllers/composed/dataRecord.md",
+    "gramlot_inventory/controllers/composed/dataSelection.md",
+    "gramlot_inventory/controllers/low-level/dataFormula.md",
+    "gramlot_inventory/proxy-integration/DbHandler.md"
+  ],
+  "collections": [
+    {
+      "name": "inputs",
+      "components": [
+        {
+          "name": "textBox",
+          "tag": "gnr-textbox",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "textBoxArea",
+          "tag": "gnr-textboxarea",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "checkBoxText",
+          "tag": "gnr-checkboxtext",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "filteringSelect",
+          "tag": "gnr-filteringselect",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "dbSelect",
+          "tag": "gnr-dbselect",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "remoteSelect",
+          "tag": "gnr-remoteselect",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "callbackSelect",
+          "tag": "gnr-callbackselect",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "comboBox",
+          "tag": "gnr-combobox",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "passwordbox",
+          "tag": "gnr-passwordbox",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "numberTextBox",
+          "tag": "gnr-numbertextbox",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "dateTextBox",
+          "tag": "gnr-datetextbox",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "timeTextBox",
+          "tag": "gnr-timetextbox",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "horizontalSlider",
+          "tag": "gnr-horizontalslider",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "verticalSlider",
+          "tag": "gnr-verticalslider",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "checkbox",
+          "tag": "gnr-checkbox",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        },
+        {
+          "name": "dateCalendar",
+          "tag": "gnr-datecalendar",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "calendar"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "colorpicker",
+      "components": [
+        {
+          "name": "colorpicker",
+          "tag": "gnr-colorpicker",
+          "pythonGroup": "InputDeclarations",
+          "capabilities": [
+            "control",
+            "decoration",
+            "null",
+            "field-state"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "layout",
+      "components": [
+        {
+          "name": "formlet",
+          "tag": "gnr-formlet",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "labledBox",
+          "tag": "gnr-labledbox",
+          "pythonGroup": "DecorationDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "panel",
+          "tag": "gnr-panel",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "box",
+          "tag": "gnr-box",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "borderContainer",
+          "tag": "gnr-bordercontainer",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "tabContainer",
+          "tag": "gnr-tabcontainer",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "tab",
+          "tag": "gnr-tab",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "contentPane",
+          "tag": "gnr-contentpane",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "stackContainer",
+          "tag": "gnr-stackcontainer",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "stackButtons",
+          "tag": "gnr-stackbuttons",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "groupBox",
+          "tag": "gnr-groupbox",
+          "pythonGroup": "LayoutDeclarations",
+          "capabilities": [
+            "decoration",
+            "data-scope",
+            "clipboard",
+            "drag-source"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "clipboard",
+      "components": [
+        {
+          "name": "copyButton",
+          "tag": "gnr-copybutton",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "palette",
+      "components": [
+        {
+          "name": "palette",
+          "tag": "gnr-palette",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "storeTree",
+      "components": [
+        {
+          "name": "storeTree",
+          "tag": "gnr-storetree",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "relationTree",
+          "tag": "gnr-relationtree",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "fileSystemTree",
+          "tag": "gnr-filesystemtree",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "data-widget"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "forms",
+      "components": [
+        {
+          "name": "form",
+          "tag": "gnr-form",
+          "pythonGroup": "FormDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "labEditors",
+      "components": [
+        {
+          "name": "codeMirror",
+          "tag": "gnr-codemirror",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        },
+        {
+          "name": "gramlotIde",
+          "tag": "gnr-gramlotide",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "grid",
+      "components": [
+        {
+          "name": "grid",
+          "tag": "gnr-grid",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "chart",
+      "components": [
+        {
+          "name": "chart",
+          "tag": "gnr-chart",
+          "pythonGroup": "AdjacentWidgetDeclarations",
+          "capabilities": [
+            "adapter"
+          ]
+        }
+      ]
+    }
+  ]
+}

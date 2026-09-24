@@ -1,0 +1,240 @@
+flowchart LR
+  note["Complete syntactic class tree: factory parameters and mixin expressions remain explicit"]
+  c0["Application"]
+  note -. no superclass declared .-> c0
+  c1["BuilderBase"]
+  note -. no superclass declared .-> c1
+  c2["RowContext"]
+  note -. no superclass declared .-> c2
+  c3["BuilderHandler"]
+  note -. no superclass declared .-> c3
+  c4["Chart"]
+  b0["HTMLElement · external or unresolved expression"]
+  b0 -->|extends| c4
+  c5["GnrCheckBoxText"]
+  b1["Base · external or unresolved expression"]
+  b1 -->|extends| c5
+  c6["CopyButton"]
+  b0 -->|extends| c6
+  c7["GnrColorpicker"]
+  c54 -->|extends| c7
+  c8["DateCalendar"]
+  c53 -->|extends| c8
+  c9["GnrDbSelect"]
+  b1 -->|extends| c9
+  c10["GnrLabledBox"]
+  b0 -->|extends| c10
+  c11["WidgetLabel"]
+  note -. no superclass declared .-> c11
+  c12["GnrForm"]
+  b0 -->|extends| c12
+  c13["FrameChannel"]
+  b0 -->|extends| c13
+  c14["GramlotIde"]
+  b0 -->|extends| c14
+  c15["GridBands"]
+  note -. no superclass declared .-> c15
+  c16["GridCellPopup"]
+  note -. no superclass declared .-> c16
+  c17["GridEditor"]
+  note -. no superclass declared .-> c17
+  c18["GridChangeManager"]
+  note -. no superclass declared .-> c18
+  c19["GridInteractions"]
+  note -. no superclass declared .-> c19
+  c20["GridStatus"]
+  note -. no superclass declared .-> c20
+  c21["GnrGrid"]
+  b0 -->|extends| c21
+  c22["anonymous:gnr-proseeditor"]
+  b0 -->|extends| c22
+  c23["GnrTextBox"]
+  b2["GnrInput · external or unresolved expression"]
+  b2 -->|extends| c23
+  c24["GnrTextBoxArea"]
+  b2 -->|extends| c24
+  c25["GnrComboBox"]
+  b2 -->|extends| c25
+  c26["GnrFilteringSelect"]
+  c25 -->|extends| c26
+  c27["GnrPasswordbox"]
+  b2 -->|extends| c27
+  c28["GnrNumberTextBox"]
+  b2 -->|extends| c28
+  c29["GnrDateTextBox"]
+  b2 -->|extends| c29
+  c30["GnrTimeTextBox"]
+  b2 -->|extends| c30
+  c31["GnrHorizontalSlider"]
+  b2 -->|extends| c31
+  c32["GnrVerticalSlider"]
+  c31 -->|extends| c32
+  c33["GnrCheckbox"]
+  b2 -->|extends| c33
+  c34["GnrFormlet"]
+  b0 -->|extends| c34
+  c35["GroupBox"]
+  b3["Decorated(GramlotElement) · external or unresolved expression"]
+  b3 -->|extends| c35
+  c36["GnrPanel"]
+  b0 -->|extends| c36
+  c37["GnrBox"]
+  b0 -->|extends| c37
+  c38["GnrBorderContainer"]
+  b0 -->|extends| c38
+  c39["GnrTab"]
+  b0 -->|extends| c39
+  c40["GnrTabContainer"]
+  b0 -->|extends| c40
+  c41["GnrStackContainer"]
+  c40 -->|extends| c41
+  c42["GnrContentPane"]
+  c39 -->|extends| c42
+  c43["GnrStackButtons"]
+  b0 -->|extends| c43
+  c44["anonymous:gnr-markdowneditor"]
+  b0 -->|extends| c44
+  c45["NumberEditor"]
+  note -. no superclass declared .-> c45
+  c46["Palette"]
+  b0 -->|extends| c46
+  c47["GnrStoreTree"]
+  b0 -->|extends| c47
+  c48["GnrRelationTree"]
+  c47 -->|extends| c48
+  c49["FileSystemTree"]
+  c47 -->|extends| c49
+  c50["SymbolicDateEditor"]
+  note -. no superclass declared .-> c50
+  c51["Decorated"]
+  b1 -->|extends| c51
+  c52["FieldState"]
+  b1 -->|extends| c52
+  c53["GramlotElement"]
+  b4["Element · external or unresolved expression"]
+  b4 -->|extends| c53
+  c54["ControlElement"]
+  b5["FieldState(Decorated(GramlotElement)) · external or unresolved expression"]
+  b5 -->|extends| c54
+  c55["ControlTools"]
+  note -. no superclass declared .-> c55
+  c56["HtmlAttributes"]
+  note -. no superclass declared .-> c56
+  c57["HtmlBuilder"]
+  c1 -->|extends| c57
+  c58["HtmlRenderer"]
+  c82 -->|extends| c58
+  c59["SvgBuilder"]
+  c1 -->|extends| c59
+  c60["SvgRenderer"]
+  c82 -->|extends| c60
+  c61["BagDB"]
+  note -. no superclass declared .-> c61
+  c62["ModelCatalog"]
+  note -. no superclass declared .-> c62
+  c63["DataError"]
+  b6["Error · external or unresolved expression"]
+  b6 -->|extends| c63
+  c64["ModelProvider"]
+  note -. no superclass declared .-> c64
+  c65["ReadAdapter"]
+  c64 -->|extends| c65
+  c66["BaseStore"]
+  note -. no superclass declared .-> c66
+  c67["CollectionStore"]
+  c66 -->|extends| c67
+  c68["SelectorStore"]
+  c67 -->|extends| c68
+  c69["RecordStore"]
+  c66 -->|extends| c69
+  c70["BagDbReadAdapter"]
+  c65 -->|extends| c70
+  c71["DatabaseService"]
+  note -. no superclass declared .-> c71
+  c72["FormController"]
+  note -. no superclass declared .-> c72
+  c73["FormField"]
+  note -. no superclass declared .-> c73
+  c74["FormService"]
+  note -. no superclass declared .-> c74
+  c75["Validator"]
+  note -. no superclass declared .-> c75
+  c76["ValueSnapshot"]
+  note -. no superclass declared .-> c76
+  c77["MemoryStore"]
+  note -. no superclass declared .-> c77
+  c78["InputNullState"]
+  note -. no superclass declared .-> c78
+  c79["LogicRuntime"]
+  note -. no superclass declared .-> c79
+  c80["RecipeDefaults"]
+  note -. no superclass declared .-> c80
+  c81["RecipePolicies"]
+  note -. no superclass declared .-> c81
+  c82["RendererBase"]
+  note -. no superclass declared .-> c82
+  c83["UrlResolver"]
+  b7["BagResolver · external or unresolved expression"]
+  b7 -->|extends| c83
+  c84["OpenApiResolver"]
+  c83 -->|extends| c84
+  c85["RpcResolver"]
+  b7 -->|extends| c85
+  c86["ResolverService"]
+  note -. no superclass declared .-> c86
+  c87["IdeDocuments"]
+  note -. no superclass declared .-> c87
+  c88["InteractionFeedback"]
+  note -. no superclass declared .-> c88
+  c89["OpenApiClientService"]
+  note -. no superclass declared .-> c89
+  c90["RecipeRuntime"]
+  note -. no superclass declared .-> c90
+  c91["ServerCallError"]
+  b6 -->|extends| c91
+  c92["ServerCallService"]
+  note -. no superclass declared .-> c92
+  c93["TopicService"]
+  note -. no superclass declared .-> c93
+  c94["SourceBagNode"]
+  b8["BagNode · external or unresolved expression"]
+  b8 -->|extends| c94
+  c95["SourceBag"]
+  b9["Bag · external or unresolved expression"]
+  b9 -->|extends| c95
+  c96["BagRows"]
+  note -. no superclass declared .-> c96
+  c97["ValuesBagRows"]
+  c96 -->|extends| c97
+  c98["AttributesBagRows"]
+  c96 -->|extends| c98
+  c99["CollectionStores"]
+  note -. no superclass declared .-> c99
+  c100["TargetWrapper"]
+  note -. no superclass declared .-> c100
+  c101["DomTarget"]
+  c100 -->|extends| c101
+  c102["GramlotBuilder"]
+  c57 -->|extends| c102
+  c103["CodeMirrorElement"]
+  b0 -->|extends| c103
+  c104["DeveloperTools"]
+  note -. no superclass declared .-> c104
+  c105["GramlotInspector"]
+  b0 -->|extends| c105
+  c106["InspectorController"]
+  note -. no superclass declared .-> c106
+  c107["InspectorEditor"]
+  note -. no superclass declared .-> c107
+  c108["EmptyPage"]
+  c102 -->|extends| c108
+  c109["LabSession"]
+  note -. no superclass declared .-> c109
+  c110["PlaygroundBuilder"]
+  c102 -->|extends| c110
+  c111["Shortcuts"]
+  note -. no superclass declared .-> c111
+  c112["PythonPageBuilder"]
+  c102 -->|extends| c112
+  c113["DOMParser"]
+  note -. no superclass declared .-> c113

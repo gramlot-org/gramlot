@@ -1,66 +1,84 @@
-# Building and publishing documentation
+# Building the developer documentation
 
 [Concise version](../docs_llm/02-documentation.md).
 
-## 1. Sources and scope
+## 1. Audience and publication boundary
 
-The documentation site uses MkDocs with its classic Read the Docs theme and contains the repository
-README, product documents, concise mirrors and port records. It describes the
-current bootstrap state; it does not imply an available package or runtime API.
-Documentation dependencies are separate from any future core installation.
+The public manual helps a developer assess the current native HTML foundation and
+distinguish richer experimental examples. It uses Sphinx, MyST Markdown and the
+classic Read the Docs theme. Draft development chapters describe classes,
+server adapters, page authoring and extension gaps. They do not claim a stable release.
 
-Edit maintained Markdown in `docs/`, `docs_llm/` and `ports/`, or the root README.
-Update paired product documents together. `scripts/prepare_docs.py` copies these
-sources into the disposable `build/docs-source/` directory, preserving relative
-links between directories. The root README becomes the home page. Never edit
-generated copies. Add new navigation entries to `mkdocs.yml` where appropriate.
+`scripts/prepare_docs.py` stages the README as the home page, an explicit
+`PUBLIC_PAGES` allowlist and two logo assets in `build/docs-source/`. Only the
+six guides under `docs/public/` are currently selected. Add a page explicitly
+when it is suitable for users; merely adding a file under `docs/` does not publish it.
 
-## 2. Local build
+Architecture decisions, constitution, port records, working documents and
+`docs_llm/` remain repository material. They are absent from generated pages,
+downloadable Sphinx sources and site search. This is an editorial boundary, not
+access control: files in the public Git repository remain publicly readable.
+All guides still require paired documents and stable IDs. Public pages do not
+link their internal concise counterparts.
 
-Run from the repository root with Python 3.12:
+## 2. Local build and validation
+
+Use Python 3.12 from the repository root:
 
 ```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-docs.txt
 .venv/bin/python scripts/prepare_docs.py
-.venv/bin/python -m mkdocs build --strict
+.venv/bin/python -m sphinx -W --keep-going -n -b html build/docs-source build/docs-site
+.venv/bin/python scripts/check_public_docs.py
 ```
 
-The generated site is in `build/docs-site/`. To preview it:
+Preparation deletes previous staged sources **and site output**, including pages
+left by the former MkDocs build. Never edit generated copies. The boundary check
+verifies the staged file allowlist, generated HTML pages and search document set.
+Preview with `python3 -m http.server 8000 --directory build/docs-site` and open
+`http://localhost:8000`. Rerun preparation and Sphinx after editing sources.
 
-```sh
-.venv/bin/python -m mkdocs serve
-```
+The `Documentation` GitHub Actions workflow runs these checks on main/develop
+pushes and pull requests, and retains the HTML as an artifact. It does not deploy.
+The README build badge follows `main` and may show no status until the workflow
+has reached that branch and run. It is not a runtime test badge.
 
-Open the local address printed by MkDocs. After editing maintained documents,
-rerun the preparation command to refresh the staged sources. Mermaid diagrams
-render in the browser through `docs/_static/mermaid.mjs`, loading Mermaid 10.9.3
-from jsDelivr. Diagram rendering requires access to that CDN.
+## 3. Read the Docs and coverage
 
-## 3. Read the Docs setup
+Root `.readthedocs.yaml` selects Python 3.12, installs the documentation
+requirements, stages the allowlist and runs Sphinx with warnings as failures.
+Use `main` for the public version; `develop` can have a separate preview.
+The repository configuration does not establish the hosted project's identity,
+GitHub App access or successful remote builds. Verify these before adding a
+Read the Docs status badge. Repository preparation does not publish a site.
 
-1. Push the configuration and documentation to the branch to be built.
-2. Install the Read the Docs GitHub App for `gramlot-org` and grant it access to
-   `gramlot`. The importing GitHub account needs repository administration rights.
-3. In Read the Docs, choose **Projects → Add project** and select
-   `gramlot-org/gramlot`.
-4. Use `.readthedocs.yaml` at the repository root. It selects Ubuntu 24.04 and
-   Python 3.12, installs documentation requirements, stages the sources and runs
-   MkDocs with warnings treated as failures.
-5. Select `main` for the default public documentation version. New work belongs
-   on `develop`; enable it as a separate documentation version only if a preview
-   of development work is wanted.
-6. Run a build and inspect its log and rendered pages. The hosted address is
-   assigned by Read the Docs; it is not assumed by this configuration.
+See the official [Sphinx configuration reference](https://www.sphinx-doc.org/en/master/usage/configuration.html)
+and [Read the Docs configuration reference](https://docs.readthedocs.com/platform/stable/config-file/v2.html).
 
-Repository preparation does not create a hosted project or authorize publication.
-An actual hosted build and GitHub App access must be verified in Read the Docs.
+There is no runtime coverage job yet. Core foundation tests exist; collect JavaScript coverage over first-party runtime sources including
+unimported files, and collect Python coverage separately. Upload separate reports
+and flags; never substitute Python coverage for browser-runtime coverage or import
+PoC percentages into the core badge. See [the public quality guide](public/030-quality.md).
 
-See the official [MkDocs integration guide](https://docs.readthedocs.com/platform/stable/intro/mkdocs.html)
-and [GitHub integration guide](https://docs.readthedocs.com/platform/latest/reference/git-integration.html).
+## 4. Italian collaborator guide
 
-## Brand assets
+The owner-requested Italian internal guide is maintained in
+`docs/internal/055-guida-collaboratori.md`, with a concise counterpart under
+`docs_llm/`. Its paired HTML exports embed 17 rendered Mermaid SVGs, RTD styling,
+fonts and logo for offline reading; the full version includes inventory appendices.
+The Italian edition is explicitly requested by the owner; other maintained
+technical documentation remains in English.
 
-The preparation step also copies `assets/` so README logos and the shared graphic
-coordination guide remain available in the generated site. Edit the original
-files under `assets/branding/`, not their generated copies.
+Regenerate with `scripts/build_collaborator_guide.py --tools <node-tool-directory>
+--browser <chromium-executable> --sphinx-python <docs-python>`. The runner needs
+BeautifulSoup; the separate Node tool directory needs Mermaid and playwright-core;
+the documentation Python needs `requirements-docs.txt`. Dependencies are build-time
+only. The script uses `scripts/render_guide_diagrams.mjs`, stages a dedicated
+Sphinx build under `build/collaborator-guide/` and writes the full/concise HTML
+exports beside their Markdown sources. The public staging allowlist is unchanged.
+
+Verify both strict Sphinx builds, document/mirror anchors, embedded resources,
+links, diagram readability and desktop/mobile navigation before delivery.
+
+The repository documentation entry is `docs/README.md`; GC-085 is the internal operating guide. Public draft chapters GC-090/095/100 cover the repository/classes/host map, page authoring and extension points. They are explicitly allowlisted; internal guides remain excluded.

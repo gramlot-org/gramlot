@@ -216,3 +216,237 @@ workarounds.
   This supersedes the local/private restriction for the Node.js PoC in amendment
   11.6; its bounded authoring exception remains unchanged. No package release
   or application deployment is authorized by this source-publication decision.
+
+
+## 12. First-party dependency updates
+
+Owner decision, 2026-09-19: never pin or cap dependencies owned by the Genro/Gramlot
+team. Do not freeze them through exact versions, bounded version ranges, Git tags,
+commit hashes or lockfiles. Follow the upstream default/development branch for Git
+dependencies and unconstrained published versions for package dependencies.
+Setup/update must refresh them; installed environments do not update themselves.
+Detect regressions with tests and fix/report them rather than silently restoring
+an old pin. Third-party dependency policy is unchanged.
+
+Amendment 11.10 — 2026-09-19: adds this first-party dependency rule; supersedes
+first-party pins introduced during PORT-0001 preparation. No earlier constitutional
+rule is superseded. Test records may retain exact revisions as historical evidence.
+
+
+<a id="gc-000-130"></a>
+
+## 13. One agreed primary path
+
+Owner decision, 2026-09-20: implement only the agreed primary path. An agent must
+not independently add compatibility layers, parallel input representations, aliases,
+coercion/normalization fallbacks or permissive dispatch for unsupported inputs.
+Use the declared classes and their methods directly. Reject inputs outside the
+contract at the relevant boundary; do not silently adapt them to make them work.
+This does not forbid expressly agreed adapters, dialects or extension points.
+
+For Gramlot rendering, Source is a `SourceBag` containing `SourceBagNode` objects.
+Their additional methods are required. Ordinary Bags remain valid Data containers,
+but are not an alternative Source representation. Reading `attr.tag` as a fallback
+for `node.nodeTag`, accepting any object with `getNodes`, or converting a plain Bag
+into Source to hide a caller defect is outside this contract.
+
+A missing capability belongs to its owning library. Fix it there when the agreed
+contract is clear. Otherwise report the gap and ask the owner before implementing
+an alternative; unaffected agreed work can continue. Tests passing, existing code,
+PoC behavior and imagined future consumers do not authorize an extra path.
+
+Every new class, stored state or execution path must have an agreed responsibility
+and a concrete consumer. Review the actual diff against those decisions before
+acceptance, including delegated work. Unrequested compatibility is a design defect,
+not an optional cleanup. Tests for a corrected boundary must establish both the
+supported behavior and rejection of unsupported representations; tests alone do
+not establish architectural necessity.
+
+Only an explicit owner decision may authorize an exception or relax this rule.
+Record its scope and amendment here before implementation; agents cannot grant
+exceptions to themselves or their delegates. This is a maintained project contract,
+not a claim that instructions technically prevent every possible agent mistake.
+
+Amendment 11.11 — 2026-09-20: adds §13 at the owner's direction. It reinforces
+§4 and §10 and supersedes earlier preservation of ordinary-Bag Source compatibility
+and the open SourceBag-versus-Bag choice in GC-093/GC-094. It does not authorize
+new compatibility elsewhere. Recipes and their related defects remain deferred.
+
+
+Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes approved Gramlot adapter work while Builder/Bag remain read-only for this workstream. Amendments 11.14 and 11.16 assign ordered Collection composition and bounded Python authoring; 11.18 supersedes 11.17 for JavaScript `sourceTarget`. Dated Builder corrections below were bounded exceptions, not general permission. The active release plan is [GC-110](internal/110-native-html-readiness.md#gc-110-020), with current status in [GC-070](internal/070-work-status.md).
+
+<a id="gc-000-140"></a>
+
+## 14. Current repository work boundary
+
+Owner decision, 2026-09-21: subsequent work is restricted to Gramlot. Builder JS
+and Bag JS are dependencies to inspect read-only, not repositories to modify
+from this workstream. Do not edit their installed source copies either. Report
+missing capabilities or defects to their owning projects; do not compensate with
+Gramlot compatibility paths or duplicated implementations. Only an explicit owner
+instruction can reopen direct changes to these dependencies.
+
+Owner clarification, 2026-09-22: for agreed Gramlot work, "Gramlot" includes its
+connected adapter repositories. The native HTML lifecycle work may update
+`gramlot-nodejs`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-genro-asgi` in
+their owning layers. Builder JS and Bag JS remain read-only dependencies under
+this work boundary.
+
+Amendment 11.15 — 2026-09-22: clarifies the scope of section 14 and supersedes
+its interpretation as restricting all work to the central `gramlot` repository.
+It does not reopen direct Builder JS or Bag JS edits or permit consumer workarounds.
+
+Amendment 11.16 — 2026-09-22: the owner directs that the Python authoring fix for
+0.1.0 be implemented in Gramlot's `GramlotBuilder`, not generic Builder Python.
+For this bounded dialect, Gramlot owns loading its packaged `builder_grammar` 1.1
+HTML collection and additional collections, registering the existing `SourceBag`
+for typed transport, and preserving mixed text and atomic child insertion. This
+supersedes section 13's generic-library ownership rule and the prior GC-092
+assignment only for these Python authoring responsibilities. It does not authorize
+alternate Source representations, dependency source edits or publication.
+
+Amendment 11.17 — 2026-09-22: the owner extends the same 0.1.0 ownership choice
+to Gramlot's JavaScript builder. Gramlot owns the mapping from its fluent authoring
+handles to their Source targets, including handles created by native sub-builders.
+Gramlot must not require the generic Builder's `sourceTarget` export for this task.
+This narrowly extends amendment 11.16; generic Builder source remains read-only and
+its BuilderBase, SourceBag, grammars and render traversal remain dependencies.
+
+Amendment 11.18 — 2026-09-22: the owner requires Gramlot JavaScript and fresh
+installers to consume the latest maintained generic Builder JS implementation.
+This supersedes amendment 11.17's local handle mapping: Gramlot uses the generic
+`sourceTarget` export and does not maintain a duplicate. The maintained generic
+source must be made available to installers before 0.1.0 can pass a clean install.
+This decision alone does not authorize package publication or a release.
+
+Amendment 11.12 — 2026-09-21: supersedes earlier authorization to modify Builder JS
+and Bag JS directly during consolidation. This narrows execution scope without
+changing their architectural responsibilities or the no-workaround rule in §13.
+
+
+Amendment 11.13 — 2026-09-21: the owner reopens Builder JS solely to remove
+functionality outside the Python-port contract and verify remaining implementation
+against Python and explicitly accepted adaptations. Keep version 0.1.1 unchanged.
+This bounded exception supersedes section 14 only for that correction; Bag JS
+remains read-only. No publication or general dependency-development authorization
+is implied.
+
+
+Amendment 11.14 — 2026-09-21: the owner authorizes changes to both Python and
+JavaScript Builder JSON loading for ordered Collection composition. Additional
+collections contain only additions and changes. Omitted/null fields preserve
+previous definitions; matching declarations merge, named attributes/child rules
+are added or updated. No removal marker or replacement marker is introduced.
+Collection owns the JSON document, composition and export in both languages;
+removal methods and HTML documentation generation are deferred. This supersedes
+the earlier full-declaration replacement proposal and reopens section 14 solely
+for this shared implementation. No version bump, Bag changes or publication.
+
+
+### Local version refresh authorization — 2026-09-21
+
+Owner authorizes patch bumps to Builder Python 0.23.3 and Builder JS 0.1.2 and
+local installation in Gramlot. This supersedes only the unchanged-version
+constraints of the preceding Builder cleanup and Collection amendments. It does
+not authorize publication, unrelated Builder changes or Bag changes.
+
+
+### Event-driven rendering decision — 2026-09-21
+
+Owner explicitly removes speculative DOM construction and whole-Source validation
+on each mutation. Gramlot consumes native Bag events and updates the affected
+node/subtree. Incoming main/remote Source is validated at reception. No Source
+projection, prepared-DOM token cache, renderer pre-write veto or Source rollback
+is part of this contract. This supersedes the provisional pre-write DOM guarantee
+recorded in earlier review documents; it adds no binding or Bag/Builder changes.
+
+
+### Explicit branch freeze/unfreeze — 2026-09-21
+
+Owner approves synchronous FIFO rendering normally and explicit branch-local
+freeze/unfreeze. While frozen, Source continues changing and rendering events for
+the branch are discarded, not deferred for replay. Unfreeze releases the branch
+and all descendants and renders its current Source once; a still-frozen ancestor
+keeps rendering suspended until its own unfreeze. There is no automatic timer,
+transaction, rollback or Data binding. This settles the overlap question in GC-070.
+Implementation belongs to Gramlot's live renderer, not generic Bag or Builder.
+
+
+### Standalone execution language and host direction — 2026-09-21
+
+Owner chooses Python pages on Python servers only. JavaScript pages can execute
+on Node, Bun or a browser-local standalone host using the same Page/main/remote
+Source contracts. This supersedes Python-to-static-standalone compilation as the
+target architecture; the existing implementation has not yet been migrated.
+A Worker is a candidate for that local host, authorized for feasibility evaluation.
+IndexedDB persistence is exploratory; no database adapter or universal file://
+compatibility is approved or implied.
+
+
+### Worker standalone implementation approved — 2026-09-21
+
+Owner approves implementing the dedicated Worker as the standalone JS host, with
+database work excluded. This supersedes the feasibility-only scope above. Reuse
+Host/Page/main/remote Source execution; replace build-time Python/JS page compilation.
+Python pages require a Python server. Single-HTML packaging remains unresolved where
+it requires a missing generic Builder capability; this does not authorize dependency
+changes, handwritten production HTML generation or a compatibility fallback.
+
+
+### Attribute templates and explicit raw HTML — 2026-09-21
+
+Owner explicitly authorizes changes and patch bumps in both Builder Python and JS,
+overriding section14 for this scope. Explicit later owner authorization is an
+override, not a reason to ask for repeated approval. `${name}` substitution applies
+only to attributes; a preceding backslash escapes the token and is removed. Node
+values retain template text verbatim (pointer/resolver resolution is unchanged).
+In static HTML rendering, a terminal `::HTML` marks raw markup and is stripped;
+it does not enable template evaluation. Update Gramlot's local dependencies after
+bumping both libraries; no publication is authorized.
+
+
+### Standalone packaging command — 2026-09-21
+
+Owner approves one Node/npm exporter replacing the Python packaging command.
+No Python-to-Node compatibility bridge is retained. Standalone owns bundling and
+HTML packaging using HtmlBuilder; core owns Worker hosting and Page execution.
+This supersedes the provisional Python compiler-provider/complete-v1 packaging
+path, without authorizing database, multipage or recipe implementations.
+
+
+### Source subclass ownership correction approved — 2026-09-21
+
+Owner explicitly authorizes applying the verified Python-inspired ownership
+correction to Builder JS. This reopens §14 solely to initialize SourceBagNode
+ownership through upstream Bag's existing nodeClass construction and remove
+Builder's dependency on the local Bag._createNode hook. Bag remains unchanged.
+No compatibility fallback, unrelated tag API, version bump or publication is
+authorized. This supersedes the inspection-only boundary for this correction.
+
+
+### Live element-type replacement — 2026-09-21
+
+Owner approves deletion followed by insertion when changing an element's type
+in this step. In-place tag-only mutation is outside the current live contract,
+matching the absence of tag-only notification in Python and upstream JS Bag.
+This supersedes tests relying on the local extended BagNode.setValue tag argument;
+it does not authorize changing Bag or introducing a Source tag-mutation API.
+
+
+### Builder validator-test cleanup approved — 2026-09-21
+
+Owner authorizes the reviewed Builder JS cleanup: remove tests/parts requiring
+the unapproved local Bag mutation-validator API, preserve insertion ownership and
+subscriber-error checks, and assess pre-insertion ownership restoration against
+actual upstream failures. This extends the bounded §14 exception to that cleanup;
+Bag remains unchanged. No new validation API, bump or publication is authorized.
+
+
+### JavaScript Host / HTTP boundary approved — 2026-09-21
+
+Owner approves separating HTTP request parsing, endpoint routing, request identity
+extraction and response mapping from neutral JS Host execution. The Node/Bun
+adapter shares that HTTP implementation; Host retains page registration, bootstrap,
+main/source execution and owner checks. Worker uses the same neutral methods.
+This supersedes Host.fetch/ownerForRequest ownership; no compatibility forwarding
+method or new class is required. No page-close protocol or grammar policy change.

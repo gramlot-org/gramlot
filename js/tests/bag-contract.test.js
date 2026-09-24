@@ -1,0 +1,30 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Bag} from 'genro-bag-js';
+
+test('observed root activates prebuilt nested Bags without builder assistance', () => {
+    const root = new Bag();
+    root.setBackref();
+    const events = [];
+    root.subscribe('contract', {any: event => events.push(event)});
+    const incoming = new Bag(), children = new Bag();
+    children.setItem('span', new Bag());
+    incoming.setItem('div', children);
+    root.setItem('main', incoming);
+    assert.equal(events.length, 1);
+    events.length = 0;
+    children.setItem('second', new Bag());
+    children.getNode('span').setAttr({title: 'changed'});
+    children.popNode('second');
+    assert.deepEqual(events.map(event => event.evt), ['ins', 'upd_attrs', 'del']);
+    assert.equal(children.parentNode, incoming.getNode('div'));
+    assert.equal(children.parent, incoming);
+    const replacement = new Bag(), nested = new Bag();
+    replacement.setItem('nested', nested);
+    incoming.getNode('div').setValue(replacement);
+    events.length = 0;
+    nested.setItem('deep', new Bag());
+    assert.equal(events.length, 1);
+    assert.equal(events[0].node.label, 'deep');
+    assert.deepEqual(events[0].pathlist, ['main', 'div', 'nested']);
+});

@@ -1,0 +1,25 @@
+classDiagram
+    direction TB
+    Bag <|-- SourceBag
+    BagNode <|-- SourceBagNode
+    BagResolver <|-- UrlResolver
+    UrlResolver <|-- OpenApiResolver
+    BagResolver <|-- RpcResolver
+    BuilderBase <|-- HtmlBuilder
+    BuilderBase <|-- SvgBuilder
+    HtmlBuilder <|-- GramlotBuilder
+    GramlotBuilder <|-- PlaygroundBuilder
+    GramlotBuilder <|-- PythonPageBuilder
+    GramlotBuilder <|-- EmptyPage
+    RendererBase <|-- HtmlRenderer
+    RendererBase <|-- SvgRenderer
+    TargetWrapper <|-- DomTarget
+    ModelProvider <|-- ReadAdapter
+    ReadAdapter <|-- BagDbReadAdapter
+    BaseStore <|-- CollectionStore
+    CollectionStore <|-- SelectorStore
+    BaseStore <|-- RecordStore
+    BagRows <|-- ValuesBagRows
+    BagRows <|-- AttributesBagRows
+    Error <|-- DataError
+    Error <|-- ServerCallError

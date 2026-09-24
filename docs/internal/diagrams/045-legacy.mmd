@@ -1,0 +1,21 @@
+flowchart TB
+    L["GenroPy inventory · discovery evidence"]
+    L --> INPUT["Input and selection<br/>textBox · dbSelect · multiSelect · radiobutton"]
+    L --> LAYOUT["Layout and composition<br/>formbuilder · framepane · grouplet · palettePane"]
+    L --> GRID["Grid and collections<br/>includedview · gridView · checkboxcolumn · cell"]
+    L --> STORE["Stores and providers<br/>selectionStore · virtualSelectionStore · dataRecord"]
+    L --> ACTION["Actions and overlays<br/>menu · tooltip · dropDownButton · toaster"]
+    L --> MEDIA["Editors and media<br/>bagEditor · codemirror · qrscanner · fileUploader"]
+    L --> LOGIC["Data and remote logic<br/>dataFormula · dataController · dataRpc · remote"]
+    L --> HTML["Native HTML declarations<br/>not one JS class per HTML tag"]
+    INPUT -. review for .-> F["Field families and adapters"]
+    LAYOUT -. review for .-> R["Recipes / layout components"]
+    GRID -. review for .-> G["Grid collaborators and cell contracts"]
+    STORE -. review for .-> D["Database-common / stores / resolvers"]
+    ACTION -. review for .-> A["Action / popup capabilities"]
+    MEDIA -. review for .-> P["Optional collections and dependencies"]
+    LOGIC -. review for .-> C["Controller contracts"]
+    classDef legacy fill:#fff3d8,color:#674b12,stroke:#c89b39;
+    classDef proposed fill:#f0e8fa,color:#4f2e70,stroke:#9670b3,stroke-dasharray:5 4;
+    class L,INPUT,LAYOUT,GRID,STORE,ACTION,MEDIA,LOGIC,HTML legacy;
+    class F,R,G,D,A,P,C proposed;

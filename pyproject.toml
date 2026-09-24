@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gramlot"
+version = "0.1.0"
+description = "Portable declarative interface foundations"
+requires-python = ">=3.11"
+dependencies = ["genro-bag", "genro-builders", "genro-tytx"]
+
+[project.optional-dependencies]
+test = ["genro-tytx[msgpack]"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+gramlot = ["resources/*.json", "resources/*.js", "collections/*.json"]

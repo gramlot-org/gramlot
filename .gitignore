@@ -15,9 +15,19 @@ __pycache__/
 htmlcov/
 
 node_modules/
+js/package-lock.json
 coverage/
 
 build/
 dist/
 *.egg-info/
 docs/_build/
+
+js/resources/
+js/dist/
+js/LICENSE
+js/NOTICE
+src/gramlot/resources/*.js
+src/gramlot/resources/runtime-notices.json
+
+js/collections/

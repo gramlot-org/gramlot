@@ -1,0 +1,57 @@
+# 070 · Current 0.1.0 work status
+
+Document ID: **GC-070**. Updated: **2026-09-24**.
+
+[Concise counterpart](../../docs_llm/internal/070-work-status.md).
+
+This is the current checkpoint. [GC-110](110-native-html-readiness.md#gc-110-020) is the sole active release plan; [GC-125](125-execution-history.md) preserves dated execution history. The PoC and old handoffs are evidence, not startup instructions.
+
+<a id="gc-070-005"></a>
+## 005 · Current milestone
+
+The target is a reviewed, locally installable Gramlot 0.1.0 with native HTML and live typed SourceBag/SourceBagNode. Python and JavaScript Page authoring, bootstrap/main/marked remote Source, synchronous FIFO updates, branch freeze/unfreeze and cleanup are in scope. Recipes, reactive Data binding, database integration and new components are deferred. Safari/Firefox and grammar-drift CI are follow-up work, not 0.1.0 gates.
+
+<a id="gc-070-010"></a>
+## 010 · Implemented and verified
+
+- Implemented: strict typed Source, native HTML live rendering, shared Page/Host execution, Worker standalone, adapter-owned HTTP and page-close lifecycle. HTTP close is best effort with TTL; Worker termination releases its own registry. Neutral Host has no HTTP fetch dispatcher.
+- Implemented: Python dialect grammar/transport/mixed-text/atomic insertion responsibilities under constitution 11.16; JavaScript consumes generic Builder `sourceTarget` under 11.18. Ordered Collection composition follows 11.14. Bag uses unchanged upstream source; element-type replacement uses delete/insert.
+- Verified on 2026-09-22: core Python 16/16, installed Python wheel 16/16 with published Builder 0.23.2, and generic Builder JS 0.1.3 109/109 with freshly installed GitHub Bag/TYTX. The owner-authorized 0.1.3 source is now at `genropy/genro-builders-js` on `main` (a3a5860). A fresh Gramlot JS dependency installation resolves that source and passes core Node 74/74 with the existing Python test environment. The owner-authorized TYTX browser correction is available on GitHub at c8016d4. A second clean GitHub installation resolves it; Gramlot JS passes 74/74 and its browser bundle builds. TYTX passes 850/850 JS and 731/731 Python checks. These checks do not verify the seven-host matrix.
+- Older eight-profile results are dated historical evidence in [GC-125](125-execution-history.md). The current matrix has seven profiles: Uvicorn, FastAPI, Kajenn, Flask, Node, Bun and Worker.
+- GC-110 phase 2 implementation/ownership review is complete (2026-09-23). Both neutral Hosts now reject TTLs that cannot expire and invalid registry capacities. Local core checks pass Node 75/75 and Python 17/17; the reviewed state and limits are recorded in [GC-110 §2.1](110-native-html-readiness.md#gc-110-025).
+- GC-110 phase 4 is complete (2026-09-23): newly built local Python wheels and JS archives installed in fresh Python 3.12/npm environments; Chromium passes Uvicorn, FastAPI, Kajenn, Flask, Node, Bun and Worker (7/7). The same bounded Source, remote, live update, freeze and disposal checks pass; server page closure and Worker termination pass. Installed adapter protocol checks pass FastAPI 3/3, Flask 3/3, ASGI/Kajenn 2/2. See [GC-110 §3.1](110-native-html-readiness.md#gc-110-035). This is not a registry release or Safari/Firefox verification.
+- GC-110 phase 5 is complete (2026-09-23): public/internal documentation and mirrors now match the implemented core and 7/7 evidence; strict Sphinx and public boundary/link checks pass. Gramlot JS archive includes its LICENSE/NOTICE, all seven exports and bundles; Python wheel resources/collections match their owning packages byte for byte. Separate TYTX, NodeJS and Hello World notice gaps were corrected in local owning checkouts; new npm archives and relevant Python wheels include both files. See [GC-110 §5.1](110-native-html-readiness.md#gc-110-055). At that checkpoint those source changes were local; TYTX's later GitHub correction is verified in [GC-110 §6.2](110-native-html-readiness.md#gc-110-065).
+- GC-110 phase 6 is complete locally (2026-09-23): Python/JS manifests and fresh wheel/npm archive are 0.1.0. Clean Python 3.12/npm installations and package contents pass; Python 17/17 and JS 75/75 pass after the SVG namespace correction. At that phase-6 checkpoint the earlier Chromium 7/7 matrix had not been rerun on versioned artifacts; the later GC-130 alignment below closes that verification gap. See [GC-110 §6.1](110-native-html-readiness.md#gc-110-060).
+
+2026-09-23 ecosystem review: [GC-130](130-release-ecosystem-review.md) confirms the bounded core ownership and reports incompatible PoC entry points in current adapter packages, stale primary documentation and older-consumer exclusions. Rechecked core Python 17/17, Node 75/75, native Python adapters 8/8, standalone exporter 3/3 and strict Sphinx for core plus four adapters. The latest local 0.1.0 wheel/archive also pass Chromium 7/7 over the existing dependency graph; this is a versioned-artifact rerun, not a new clean network installation. No runtime changes or acceptance.
+
+2026-09-23 approved alignment completed: native-only Python adapter public exports and paired primary documentation now agree with core 0.1.0. Fresh network-resolved installation of all five wheels/four npm archives passes; installed core Python 17/17, native adapters 8/8, four launcher HTTP checks, final-graph Chromium 7/7 and standalone file checks pass. Strict core/three native adapter Sphinx checks pass. Local payload is in `build/release-candidate/0.1.0`; owner acceptance and publication remain pending. See [GC-130 §035](130-release-ecosystem-review.md#gc-130-035).
+
+<a id="gc-070-015"></a>
+## 015 · Blocker, acceptance and next action
+
+Documentary continuity repair B1–B5 completed on 2026-09-22: twelve audit findings have closure evidence in [GC-120 §045](120-continuity-audit.md#gc-120-045). The strict public Sphinx build and boundary/link/mirror check pass; semantic reader exercise passes. This changes documentation only and does not close any release gate.
+
+Builder JS distribution and TYTX browser bundling are resolved through their owning projects. GC-110 phases 1–6 are complete locally; owner acceptance remains open. TYTX LICENSE/NOTICE are now on GitHub and a fresh Gramlot build carries their complete text after correcting nested-manifest notice discovery ([GC-110 §6.2](110-native-html-readiness.md#gc-110-065)). NodeJS/example notice changes still need owning-source distribution. No package release, application deployment or 0.1.0 acceptance has occurred.
+
+**Release authorized — 2026-09-24:** owner accepted the native 0.1.0 closure and GitHub archive distribution. Consolidating the verified core/adapter sources and preparing the release tag and nine-package delivery. Registry publication, deployment and legacy-consumer migration are excluded. Next: verify the published GitHub assets and record the release receipt; no repeated owner approval is required for this authorized delivery.
+
+<a id="gc-070-020"></a>
+## 020 · Deferred work
+
+Application-led 0.1.1/0.1.2 corrections precede 0.2.0 features. Recipes, Data bindings, databases, richer components and broader browser claims require later bounded contracts; old plans do not add them to 0.1.0.
+
+<a id="gc-070-025"></a>
+## 025 · Updating this checkpoint
+
+Update this file and its mirror after meaningful progress, checks, scope changes or blockers. Separate implemented, locally verified, clean-installed and owner-accepted states. Append dated evidence to GC-125 without promoting old “current” or “next” text. Report result, remaining work and next action without routine Git summaries.
+
+<a id="gc-070-030"></a>
+## 030 · Historical execution checkpoints
+
+The former GC-070 chronology, including original decisions, rejected paths, artifacts and test counts, is preserved in [GC-125](125-execution-history.md). Its past-tense and present-tense snapshots are historical.
+
+<a id="gc-070-035"></a>
+## 035 · Superseded status snapshots
+
+Earlier GC-094 phase states and eight-profile checkpoints are in [GC-125](125-execution-history.md); they do not define the current release gate.

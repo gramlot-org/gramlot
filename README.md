@@ -3,37 +3,58 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/branding/gramlot-logo-dark.svg">
-    <img src="assets/branding/gramlot-logo.svg" alt="gramlot" width="220">
+    <img src="assets/branding/gramlot-logo.svg" alt="Gramlot" width="220">
   </picture>
 </p>
 
-Gramlot is a framework for declarative application interfaces authored primarily
-in Python and executed by a JavaScript browser runtime.
+[![Documentation build](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml)
+[![Status: consolidation in progress](https://img.shields.io/badge/status-consolidation%20in%20progress-orange)](docs/public/020-evaluate.md)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
-This repository is in its clean bootstrap stage. It currently contains the
-authoritative product constitution, product overview and port-review protocol.
-It does **not** yet contain an installable package, browser runtime or supported
-application API. Runtime claims begin only when reviewed code and its tests are
-accepted here.
+**Describe application interfaces in Python; let a JavaScript runtime handle
+interaction in the browser.** Gramlot's model connects a declared interface
+(Source) to structured application state (Data Bags), using bindings, controllers
+and reusable components.
 
-Start with:
+Gramlot is intended for Python developers building interactive forms, data tools
+and application interfaces. Server adapters connect it to a host; the core is
+independent of server and database technology.
 
-- [Product constitution](docs/00-constitution.md)
-- [Product overview](docs/01-overview.md)
-- [Visual identity and graphic coordination](docs/015-visual-identity.md)
-- [Common showcase contract](docs/010-showcase.md)
-- [Port protocol](ports/README.md)
-- [Documentation build and Read the Docs setup](docs/02-documentation.md)
+## Can I use it today?
 
-The living laboratory and historical evidence remain in
-[`gramlot-org/gramlot-poc`](https://github.com/gramlot-org/gramlot-poc). Code enters
-this repository through bounded, reviewed ports; PoC behavior is evidence rather
-than automatic product behavior.
+[Download the native 0.1.0 archive set](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0).
+Install all supplied Python wheels or npm archives together, following its release instructions.
+This is GitHub archive delivery; no PyPI/npm release or application deployment is claimed.
 
-Across Gramlot, `main` is the consolidated public reference for code, documentation,
-configuration and other maintained artifacts. New work proceeds on `develop` and
-reaches `main` after verification and acceptance, with contract, implementation,
-tests and documentation aligned where applicable. Public documentation follows
-`main` by default; development previews may follow `develop` separately.
+**A bounded native HTML foundation is implemented in this development checkout.**
+It supports Python and JavaScript page authoring, typed Source, live browser updates
+and the documented host adapters. Local 0.1.0 artifacts have been built and
+installed in clean environments; the owner accepted the native scope on 2026-09-24. GitHub archive delivery is the selected release channel. The broader experimental implementation and
+showcase remain in [gramlot-poc](https://github.com/gramlot-org/gramlot-poc).
 
-Gramlot is licensed under the Apache License 2.0.
+To evaluate the bounded foundation, start with [Try Gramlot](docs/public/025-try.md)
+and [Writing pages](docs/public/095-writing-pages.md). Its current packages have
+passed a local seven-host Chromium matrix; the release keeps that bounded scope. The [offline showcase](https://github.com/gramlot-org/gramlot-standalone/tree/main/examples/showcase)
+demonstrates a richer experimental runtime with different scope.
+
+## Start here
+
+- [Is Gramlot a fit?](docs/public/020-evaluate.md) — the development model and its current limits.
+- [Try Gramlot](docs/public/025-try.md) — inspect the showcase, then choose a Python host.
+- [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.
+
+- [Classes and server adapters](docs/public/090-classes-and-hosts.md) — repository map and responsibilities.
+- [Writing pages](docs/public/095-writing-pages.md) — native HTML pages, lifecycle and remote blocks.
+- [Extending Gramlot](docs/public/100-extensions.md) — current extension points and contracts still to define.
+
+## Project status
+
+The documentation badge reports this repository's documentation checks. This
+checkout has Python and JavaScript foundation tests; the broader experimental
+implementation has separate tests in `gramlot-poc`. Coverage must identify the
+repository and revision measured, with JavaScript and Python reported separately.
+
+Maintainers keep architecture decisions, port reviews and concise working documents
+in the repository, outside the public user manual. Public source files remain
+readable on GitHub. New work starts from `develop`; `main` is the consolidated
+reference. Gramlot is licensed under Apache 2.0.

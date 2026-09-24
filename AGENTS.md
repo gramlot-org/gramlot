@@ -3,7 +3,39 @@
 Before changing this repository, read `docs/00-constitution.md`,
 `docs/01-overview.md` and `ports/README.md`. The constitution is authoritative.
 
+- Owner 2026-09-21, clarified 2026-09-22 by constitution §14: work only in Gramlot, including explicitly approved connected adapter work. Do not directly modify Builder JS or
+  Bag JS repositories or their installed source copies. Read-only inspection is
+  allowed. Report dependency defects for resolution in their owning projects;
+  do not introduce Gramlot workarounds. Resume dependency edits only after an
+  explicit owner instruction changing this boundary.
+- Implement only the agreed primary path (constitution §13). Do not add compatibility
+  layers, alternate representations, aliases, coercion/normalization fallbacks or
+  permissive method checks for unsupported inputs without explicit owner approval.
+  If the agreed class provides a method, call it directly; do not invent a substitute
+  when it is missing. Gramlot rendering requires SourceBag and SourceBagNode.
+- A missing capability is a defect/gap to report and fix in its owning library,
+  not permission to add a consumer workaround. If the contract is unclear, stop
+  that change and ask before implementing an alternative. Passing tests, old code,
+  PoC behavior and hypothetical consumers are not authorization.
+- Apply the same constraint to delegated agents. Review the actual diff for added
+  paths and state before accepting it; each must trace to an agreed responsibility.
+  Flag violations as defects, not optional cleanup. Only the owner may approve an
+  exception or weaken this rule; record the exact scope in the constitution.
 - Keep code and maintained technical documentation in English.
+- Use docs/internal/070-work-status.md for current status and GC-110 for the sole 0.1.0 execution plan. GC-094, older handoffs, and PoC/context are historical evidence. Keep docs/internal/070-work-status.md and its docs_llm mirror current after
+  meaningful progress, checks, scope changes or blockers. Proactively report
+  status and the next action; distinguish implemented, verified and accepted work.
+- Owner 2026-09-22: in user-facing progress and final replies, do not report Git
+  status, diff summaries or lists of changed files unless asked. State the result
+  and remaining work instead. If the objective is complete, say "Ho finito tutto";
+  otherwise give a short remaining TODO list and ask for confirmation of the next
+  phase before starting it. Do not ask again for a decision already given. When
+  asked what a proposed repository change entails, name the actual change; do not
+  seek write authorization if no source change is planned.
+- Never pin or cap first-party Genro/Gramlot dependencies, including through
+  lockfiles. Follow their upstream development/default branch or unconstrained
+  package releases and refresh them during setup/update. Fix regressions instead
+  of silently restoring old pins. This does not change third-party dependency policy.
 - Author applications and examples in Python first. Small local JavaScript
   expressions are acceptable; reusable browser behavior belongs in Gramlot.
 - Anything presented as a Gramlot application, example, demo or PoC must use
