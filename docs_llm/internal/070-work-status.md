@@ -3,7 +3,7 @@
 Document ID: **GC-070**. Updated: **2026-09-24**.
 
 
-**Current checkpoint:** 0.1.2 corrects the bundled example imports; all 13 pass the new JSR configuration check. Publication pending. See [§365](#gc-070-365).
+**Current checkpoint:** JSR 0.1.2 published; all 13 registry examples verified. Binding remains 0.2.0. See [§370](#gc-070-370).
 [GC-110](110-native-html-readiness.md#gc-110-020) is the completed release plan; [GC-125](125-execution-history.md) preserves historical evidence. PoC and old handoffs are not startup instructions.
 
 **Decision review — 2026-09-24:** Amendment 11.43 requires explicit owner confirmation
@@ -1414,3 +1414,25 @@ Python, local JavaScript and JSR version metadata are 0.1.2. Candidate archives
 and their source revision will be recorded in `build/release-candidate/0.1.2`.
 Publication requires the owner's separate confirmation; no 0.1.2 registry upload
 has been performed. The historical 0.1.1 defect remains recorded in section 360.
+
+
+<a id="gc-070-370"></a>
+## 370 · JSR 0.1.2 published and registry examples verified — 2026-09-24
+
+Owner explicitly confirmed publication. `@genro/gramlot` 0.1.2 is published at
+https://jsr.io/@genro/gramlot@0.1.2 from source revision
+`47de64c67151095f14744d355b494d1f4488d49e`.
+Downloaded all 74 published files and verified their sizes and SHA-256 checksums.
+Contents match the identified candidate after the configured publisher import
+rewrites; generated hosted runtime bytes match exactly.
+
+All 13 downloaded example modules now import `../../../js/src/adapters/page.js`.
+They pass shared Page identity, nonempty typed Source generation through Host and
+page cleanup without the local import map. The catalog supplies only the list of
+example folders; executable example/core modules come from the downloaded registry
+payload. Direct registry imports of core, `/page` and `/host` also pass.
+This closes the bundled example import defect recorded for 0.1.1 in section 360.
+The local 0.1.2 release receipt includes source revision, artifact hashes and the
+published manifest. Binding remains outside this release, preserved for 0.2.0.
+No Python registry release, Minimal package release or application deployment was
+performed. The existing seven-host/Safari/Firefox verification limits still apply.
