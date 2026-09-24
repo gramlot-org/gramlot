@@ -4,6 +4,7 @@ Document ID: **GC-070**. Updated: **2026-09-24**.
 
 
 **Current checkpoint:** JSR 0.1.2 published; all 13 registry examples verified. Binding remains 0.2.0. See [§370](#gc-070-370).
+**Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
 
 This is the current checkpoint. [GC-110](110-native-html-readiness.md#gc-110-020) is the completed release plan; [GC-125](125-execution-history.md) preserves dated execution history. The PoC and old handoffs are evidence, not startup instructions.
@@ -1434,3 +1435,21 @@ The local 0.1.2 release receipt includes source revision, artifact hashes and th
 published manifest. Binding remains outside this release, preserved for 0.2.0.
 No Python registry release, Minimal package release or application deployment was
 performed. The existing seven-host/Safari/Firefox verification limits still apply.
+
+
+<a id="gc-070-380"></a>
+## 380 · Release source revisions publicly available; N3 closed — 2026-09-24
+
+Owner asks to resolve the remaining source-availability issue N3. Published the
+existing `codex/release-0.1.2` branch and annotated source tags to origin:
+
+- [v0.1.1](https://github.com/gramlot-org/gramlot/tree/v0.1.1) points to
+  `ba868c4ba061bfd4afceec4613b2810598ec73a4`, the published JSR 0.1.1 source.
+- [v0.1.2](https://github.com/gramlot-org/gramlot/tree/v0.1.2) points to
+  `47de64c67151095f14744d355b494d1f4488d49e`, the published JSR 0.1.2 source.
+
+Remote tag targets were checked against the recorded release source commits.
+The branch includes the existing publication receipts. These are public source
+references for already published JSR versions, not new package publications or
+GitHub release asset sets. No main/develop consolidation, binding changes or
+0.1.0 tag movement was performed. N3 is closed; other audit tasks remain separate.
