@@ -107,3 +107,18 @@ The catalogue inventories all 117 grammar entries, with non-rendered contexts an
 the ruby annotation grammar gap explicit. Owner visual acceptance remains pending.
 Code viewing belongs to the runner; missing Inspector capability remains explicit.
 No publication or changes to the already released archives are authorized.
+
+
+<a id="gc-070-050"></a>
+## 050 · Runner correction — 2026-09-24
+
+Owner rejected the earlier runner presentation: language tabs and sidebar cards
+were not the intended interface. The corrected contract is a compact title list
+and persistent example tabs, each with explanation above the iframe. The serving
+integration selects the language. Implemented and verified: 80/80 JavaScript tests, both integration-specific
+runners in Chromium, and all 26 example/catalogue pages. Checks include one tab
+per example, explanation above iframe, lazy loading and preserved form state on
+reactivation. The in-app browser was refreshed and checked. Earlier browser tests
+did not establish owner acceptance of the old UX; corrected visual acceptance
+remains with the owner.
+See constitution amendment 11.23.

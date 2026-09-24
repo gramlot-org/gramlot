@@ -8,10 +8,9 @@ Document ID: **GC-150**. Updated: **2026-09-24**.
 ## 005 · Start with the runner
 
 Follow the [runner setup](../../examples/00-runner/README.md). The local launcher
-composes Minimal/Uvicorn and Node adapters outside the runtime package. Select a
-language, then a page; native radio controls/CSS select independent iframe panels.
-Source/README links open original files. No synchronized frame state, new tab
-component or Inspector implementation is implied.
+composes Minimal/Uvicorn and Node adapters outside the runtime package. Select a title to open/reactivate an example tab with explanation above its iframe.
+The integration selects the language. Shared runtime behavior keeps open frames.
+Source/README links open original files. No synchronized example state or Inspector implementation is implied.
 
 <a id="gc-150-010"></a>
 ## 010 · Learn from paired pages

@@ -12,11 +12,11 @@ The local [runner README](../../examples/00-runner/README.md) is reached from th
 command. The native runtime has no adapter dependency: the development launcher
 composes Minimal/Uvicorn and Node integration hosts outside the runtime package.
 
-Use the Python/JavaScript language selector, then open an example in that language's
-iframe. The two frames keep independent browser state. Source links open the
-original files; README links explain the page. This first runner uses native radio
-controls, links and CSS, not a new Gramlot tab component. It does not synchronize
-frame selection or input state. Inspector remains a missing framework capability.
+Select a title in the left list to open or reactivate its example tab. Each panel
+contains teaching text above its iframe. The serving integration determines the
+language; relative frame URLs stay under it. Open examples preserve frame state. Source links open the
+original files; README links explain the page. The shared runtime tab behavior owns activation and keyboard navigation; pages
+only declare Source. It does not synchronize example input state. Inspector remains a missing framework capability.
 
 <a id="gc-150-010"></a>
 ## 010 · Learn from paired pages

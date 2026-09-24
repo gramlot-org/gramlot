@@ -530,3 +530,23 @@ bindings, controllers, databases and PoC transfers remain excluded. Host adapter
 remain in their owning integration repositories; development launch composition
 belongs to the runner, never to the core runtime. All work stays local; no new
 publication, release, dependency-source edits or deployment is authorized.
+
+
+### Amendment 11.23 — Runner example tabs and integration-owned language — 2026-09-24
+
+The owner rejects the language-tab interpretation in 11.22 and directs a compact
+list of titles on the left, with one opened/active example tab on the right. Each
+tab contains a description and explanation above its iframe. Selecting another
+example keeps previously opened tabs; selecting an existing tab reactivates it.
+The serving integration determines Python or JavaScript, with no language selector.
+The subsequent instruction is to implement this correction.
+
+This supersedes 11.22's language-panel design and, solely for the requested
+open/reactivate behavior, its exclusion of a shared HTML tab implementation.
+The implementation belongs to Gramlot's reusable browser layer: HTML Source
+declares the buttons/panels/frames, a bounded tab component owns its active/open
+state in a Bag and updates Source attributes, and renderer cleanup owns listeners.
+Runner pages contain no application-local DOM handlers or fetch. This is not
+a generic binding/controller API, a new grammar dialect, a component registry,
+closeable/reorderable tabs or an Inspector. Existing runtime/dependency/publication
+boundaries remain unchanged; no PoC code is involved.

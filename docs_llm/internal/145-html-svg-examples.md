@@ -10,14 +10,14 @@ Authority: constitution 11.22. New local example workstream; GC-110 remains comp
 
 - `themes/gramlot-base`: shared modern CSS from the approved brand palette, plus
   theme extension documentation. No duplicated theme in examples.
-- `examples/00-runner`: catalogue, example list, native language iframe panels,
+- `examples/00-runner`: catalogue, example list, persistent example tabs with explanation and iframe,
   source links and local launcher composing existing integration adapters.
 - `examples/html_svg/<number>_<name>`: equivalent Python/JS Page modules, README,
   optional geometry-only CSS. No host dependencies in core runtime.
 
 Code display belongs to the runner. Inspector remains unavailable in native core;
-no PoC import or invented implementation. Native radio controls/CSS select panels;
-links target named iframes without application DOM events or fetch.
+no PoC import or invented implementation. The integration owns language selection. Shared runtime tab behavior updates Source;
+runner pages contain no DOM handlers or fetch.
 
 <a id="gc-145-010"></a>
 ## 010 · Catalogue and twelve-page progression
@@ -81,3 +81,24 @@ as a grammar gap, with no dependency-source changes or workaround. Inspector
 is not implemented in native core. Source links open original files; language
 frames retain independent state. Theme is repository material, not yet a
 separately published package. Owner visual acceptance is pending; no publication.
+
+
+<a id="gc-145-030"></a>
+## 030 · Owner correction of runner behavior
+
+The owner rejected the first runner UI. Earlier successful checks describe the
+old implementation, not acceptance of its design. Constitution 11.23 supersedes
+language tabs: a compact title list opens/reactivates persistent example tabs;
+each panel has explanation above its iframe. The integration chooses language
+through relative URLs; there is no language selector. A bounded shared runtime
+HTML tab behavior owns Bag state, Source updates, keyboard interaction and cleanup.
+Only the catalogue starts loaded. Corrected implementation verified locally: 80/80 JavaScript tests pass, including
+open/reuse, iframe identity, keyboard navigation, isolation, cleanup, strict
+declarations and Source-state restoration after renderer rebuild. Browser checks
+pass for both `/py/index` and `/js/index`: integration-owned language, compact
+title list, one tab per opened example, explanation above iframe, lazy loading,
+no duplicate tabs, and preserved form input/page identity when switching tabs.
+All 26 catalogue/example pages retain Python/JS parity; source/README links and
+light/dark/narrow checks pass with no browser errors. The updated in-app runner
+was reloaded and visually checked with Hello World and SVG shapes open.
+This closes implementation, not owner visual acceptance or release authorization.
