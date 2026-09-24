@@ -1,6 +1,6 @@
 {
   "name": "@genro/gramlot",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
@@ -12,7 +12,8 @@
   "imports": {
     "@jsr/genro__bag": "jsr:@genro/bag@^0.5.3",
     "@jsr/genro__builders": "jsr:@genro/builders@^0.1.5",
-    "@jsr/genro__tytx": "jsr:@genro/tytx@^0.15.1"
+    "@jsr/genro__tytx": "jsr:@genro/tytx@^0.15.1",
+    "@gramlot/native-html/page": "./js/src/adapters/page.js"
   },
   "publish": {
     "include": [

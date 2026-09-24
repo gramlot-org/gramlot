@@ -3,7 +3,7 @@
 Document ID: **GC-070**. Updated: **2026-09-24**.
 
 
-**Current checkpoint:** JSR 0.1.1 published; bundled example import defect found in post-publication verification. See [§360](#gc-070-360).
+**Current checkpoint:** 0.1.2 corrects the bundled example imports; all 13 pass the new JSR configuration check. Publication pending. See [§365](#gc-070-365).
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
 
 This is the current checkpoint. [GC-110](110-native-html-readiness.md#gc-110-020) is the completed release plan; [GC-125](125-execution-history.md) preserves dated execution history. The PoC and old handoffs are evidence, not startup instructions.
@@ -1387,3 +1387,28 @@ runner checks used local packages and do not establish that these registry examp
 files execute. Published examples require correction in a subsequent release;
 no such version or publication is authorized yet. Do not claim the entire published
 payload is defect-free. Binding remains excluded and preserved for 0.2.0.
+
+
+<a id="gc-070-365"></a>
+## 365 · 0.1.2 example import correction prepared — 2026-09-24
+
+Owner confirms preparing 0.1.2 to correct the bundled example imports found after
+0.1.1 publication. The JSR import map now resolves the examples' existing
+`@gramlot/native-html/page` specifier to `./js/src/adapters/page.js` in this same
+package. No runtime behavior, application code or dependency source is changed.
+Binding stays outside this maintenance candidate and remains reserved for 0.2.0.
+
+New release check: run `deno run --config jsr.json --allow-read
+scripts/verify_jsr_examples.mjs` before publishing. It imports all 13 shipped
+examples using the actual JSR configuration, checks their shared Page identity,
+builds nonempty typed Source through Host and closes every registered page.
+All 13 pass. A negative run with the previous import map fails on the first example's
+unresolved import, proving this check detects the original failure. The 0.1.2 JSR
+publish dry-run also passes. These are pre-publication checks, not inspection of
+a registry artifact that does not yet exist. After publication, download and
+compare the registry files and execute the examples from that published payload.
+
+Python, local JavaScript and JSR version metadata are 0.1.2. Candidate archives
+and their source revision will be recorded in `build/release-candidate/0.1.2`.
+Publication requires the owner's separate confirmation; no 0.1.2 registry upload
+has been performed. The historical 0.1.1 defect remains recorded in section 360.

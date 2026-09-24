@@ -30,7 +30,7 @@ Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/minimal`.
 Use the matching development packages; published 0.1.0 artifacts are unchanged.
 Python pages still require the Python distribution and a Python server.
 
-The 0.1.1 candidate keeps runner UI dependencies in the example runner, which uses
+The 0.1.2 candidate keeps runner UI dependencies in the example runner, which uses
 DOMPurify 3.4.16. Binding implementation is reserved for 0.2.0 and is excluded
 from this candidate. Published 0.1.0 artifacts remain unchanged.
 
