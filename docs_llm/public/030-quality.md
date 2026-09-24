@@ -8,6 +8,15 @@ Document ID: **GC-030**.
 
 The README documentation badge follows main and measures docs, not runtime correctness. Status/license badges are labels. The experimental runtime is tested in gramlot-poc. Core has Python/JS tests and a current local packaged Chromium 7/7 matrix (Uvicorn, FastAPI, Kajenn, Flask, Node, Bun, Worker), not release or Safari/Firefox evidence. Identify repository/revision in any coverage result; no runtime percentage is measured here. Verify hosted connections before adding Read the Docs or Codecov badges.
 
+The `Core and runner tests` workflow runs Python, core JavaScript and runner
+unit tests on main/develop pushes, the CI integration branch, pull requests and
+manual dispatch. It builds browser resources, installs the Python package and
+explicitly selects that interpreter for JS interop. Runner dependencies use the
+public Minimal and JS Server main branches alongside this repository, following
+the examples' declared file dependencies. The runner unit suite does not verify
+adapter behavior, standalone exports or the browser matrix. Coverage collection
+is not yet included. The first GitHub execution is pending verification.
+
 <a id="gc-030-010"></a>
 
 ## 010 · JavaScript is the primary runtime measure

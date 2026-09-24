@@ -2,6 +2,7 @@ import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilde
 
 const HTML_NS = 'http://www.w3.org/1999/xhtml';
 const SVG_NS = 'http://www.w3.org/2000/svg';
+const DEFAULT_TEXT = Symbol('source text');
 const ATTRIBUTE_NS = {
     xmlns: 'http://www.w3.org/2000/xmlns/',
     xlink: 'http://www.w3.org/1999/xlink',
@@ -98,16 +99,18 @@ export class HtmlElement {
         for (const child of children) record.element.append(child);
     }
 
-    update(record, node, attrs = node.attr) {
+    update(record, node, attrs = node.attr, textValue = DEFAULT_TEXT) {
         const {element, text} = record;
         const isHtml = element.namespaceURI === HTML_NS;
-        const defaults = this.definition(node).meta.render_attributes ?? {};
+        const renderAttributes = this.definition(node).meta.render_attributes ?? {};
         const previous = record.attrs ?? {};
-        attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...defaults}));
+        attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...renderAttributes}));
         if (element.namespaceURI === SVG_NS) {
             attrs = svgAttributes(attrs);
         }
-        text.data = this.text(node);
+        if (textValue === DEFAULT_TEXT) textValue = this.text(node);
+        const nextText = textValue == null ? '' : String(textValue);
+        if (text.data !== nextText) text.data = nextText;
         for (const key of new Set([...Object.keys(previous), ...Object.keys(attrs)])) {
             if (this.metadataAttributes.has(key)) continue;
             const value = attrs[key];
@@ -118,13 +121,16 @@ export class HtmlElement {
             const prefix = attrName === 'xmlns' ? 'xmlns'
                 : (attrName.includes(':') ? attrName.split(':')[0] : '');
             const namespace = Object.hasOwn(ATTRIBUTE_NS, prefix) ? ATTRIBUTE_NS[prefix] : null;
-            if (value == null || (isBoolean && !value)) {
-                if (namespace) element.removeAttributeNS(namespace, attrName.split(':').at(-1));
-                else element.removeAttribute(attrName);
-            } else if (namespace) element.setAttributeNS(namespace, attrName, String(value));
-            else element.setAttribute(attrName, isBoolean ? '' : String(value));
+            if (!Object.is(previous[key], value)) {
+                if (value == null || (isBoolean && !value)) {
+                    if (namespace) element.removeAttributeNS(namespace, attrName.split(':').at(-1));
+                    else element.removeAttribute(attrName);
+                } else if (namespace) element.setAttributeNS(namespace, attrName, String(value));
+                else element.setAttribute(attrName, isBoolean ? '' : String(value));
+            }
             if (isHtml && (isBoolean || REFLECTED_PROPERTIES.has(propertyName)) && propertyName in element) {
-                element[propertyName] = value ?? (propertyName === 'value' ? '' : false);
+                const target = propertyName === 'value' ? (value == null ? '' : String(value)) : Boolean(value);
+                if (element[propertyName] !== target) element[propertyName] = target;
             }
         }
         // Retain what was applied, including metadata, so later updates can remove it.

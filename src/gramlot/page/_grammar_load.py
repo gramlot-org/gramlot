@@ -18,8 +18,6 @@ from genro_builders.builder._validators import Range, Regex
 
 from ._collection import Collection
 
-FORMAT_NAME = "builder_grammar"
-FORMAT_VERSION = "1.1"
 
 _ENTRY_KEYS = {"doc", "sub_tags", "parent_tags", "inherits_from", "ns", "attributes", "_meta"}
 _ELEMENT_KEYS = _ENTRY_KEYS | {"node_label", "collection_key"}
@@ -200,11 +198,10 @@ def _signature(desc: Any, path: str, *, component: bool = False) -> tuple[dict[s
 
 def _entry(raw: Any, path: str, *, abstract: bool) -> dict[str, Any]:
     item = _object(raw, path)
-    allowed = _ENTRY_KEYS if abstract else _ELEMENT_KEYS
-    required = _ENTRY_KEYS if abstract else _ELEMENT_KEYS
-    if set(item) - allowed:
-        _fail(path, f"unknown fields {sorted(set(item) - allowed)!r}")
-    item = {**dict.fromkeys(required), **item}
+    fields = _ENTRY_KEYS if abstract else _ELEMENT_KEYS
+    if set(item) - fields:
+        _fail(path, f"unknown fields {sorted(set(item) - fields)!r}")
+    item = {**dict.fromkeys(fields), **item}
     for key in ("doc", "sub_tags", "parent_tags", "inherits_from", "ns", "node_label", "collection_key"):
         if key in item and item[key] is not None and type(item[key]) is not str:
             _fail(path + "." + key, "must be a string or null")
@@ -241,18 +238,14 @@ def load_grammar(builder: Any, document: Any, *, replace: bool = False) -> Any:
     current = builder._collection
     collection = Collection(document) if replace or current is None else Collection(current.to_document()).update(document)
     doc = collection.to_document()
-    root = _object(doc, "document")
-    if set(root) != {"document_format", "grammar", "abstracts", "elements"}:
-        _fail("document", "must contain exactly document_format, grammar, abstracts and elements")
-    fmt, grammar = _object(root["document_format"], "document_format"), _object(root["grammar"], "grammar")
-    if fmt != {"name": FORMAT_NAME, "version": FORMAT_VERSION}:
-        _fail("document_format", f"expected name={FORMAT_NAME!r}, version={FORMAT_VERSION!r}")
+    # Collection validates the document envelope before composition; compile its declarations here.
+    grammar = doc["grammar"]
     if set(grammar) != {"name", "version", "title", "description"} or type(grammar.get("name")) is not str or not grammar["name"]:
         _fail("grammar", "must contain name (non-empty string), version, title and description")
     for key in ("version", "title", "description"):
         if grammar[key] is not None and type(grammar[key]) is not str:
             _fail("grammar." + key, "must be a string or null")
-    abstracts, elements = _object(root["abstracts"], "abstracts"), _object(root["elements"], "elements")
+    abstracts, elements = _object(doc["abstracts"], "abstracts"), _object(doc["elements"], "elements")
     for section_name, section in (("abstracts", abstracts), ("elements", elements)):
         for key in section:
             if type(key) is not str or not key or key.startswith("_"):

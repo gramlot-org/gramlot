@@ -1,0 +1,58 @@
+name: Core and runner tests
+
+on:
+  push:
+    branches: [main, develop, 'codex/core-runner-ci']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: gramlot
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: gramlot
+      - name: Check out Minimal example dependency
+        uses: actions/checkout@v4
+        with:
+          repository: gramlot-org/gramlot-minimal
+          ref: main
+          path: gramlot-minimal
+          persist-credentials: false
+      - name: Check out JS Server example dependency
+        uses: actions/checkout@v4
+        with:
+          repository: gramlot-org/gramlot-js-server
+          ref: main
+          path: gramlot-js-server
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install JavaScript dependencies
+        run: npm --prefix js install --ignore-scripts --package-lock=false
+      - name: Build browser resources
+        run: npm --prefix js run build
+      - name: Install Python package and test dependencies
+        run: python -m pip install '.[test]'
+      - name: Select Python for JavaScript interoperability tests
+        run: python -c 'import os, sys; open(os.environ["GITHUB_ENV"], "a").write("GRAMLOT_TEST_PYTHON=" + sys.executable + "\n")'
+      - name: Test Python
+        run: python -m unittest discover -s tests
+      - name: Test JavaScript
+        run: npm --prefix js test
+      - name: Install runner dependencies
+        run: npm --prefix examples install --ignore-scripts --install-links --package-lock=false
+      - name: Test runner
+        run: npm --prefix examples test

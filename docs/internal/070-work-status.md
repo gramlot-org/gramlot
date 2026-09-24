@@ -3,7 +3,8 @@
 Document ID: **GC-070**. Updated: **2026-09-24**.
 
 
-**Current checkpoint:** JSR 0.1.2 published; all 13 registry examples verified. Binding remains 0.2.0. See [§370](#gc-070-370).
+**Current checkpoint:** local develop includes 0.1.2 maintenance corrections and preserved unfinished 0.2.0 binding; it is not the published release source. See [§375](#gc-070-375). Publication evidence is in [§370](#gc-070-370).
+**Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
 
@@ -1359,10 +1360,11 @@ Artifacts and SHA256SUMS are under the candidate's `build/release-candidate/0.1.
 These are candidate checks, not a rerun of the seven-host installed-artifact
 matrix, not Safari/Firefox verification and not package publication. Minimal
 remains a matching development companion, not a newly published release.
-Owner explicitly confirms source consolidation before publication. This checkpoint
-is included in the candidate consolidation commit on `codex/release-0.1.1`; its
-commit identity and artifact hashes are recorded in the local release receipt.
-Publication remains pending separate confirmation. No original tag or published 0.1.0 artifact was changed. The proposed
+Owner confirmed consolidation. The isolated 0.1.1 source is committed as
+`ba868c4ba061bfd4afceec4613b2810598ec73a4` on `codex/release-0.1.1`.
+Artifacts were rebuilt from that revision; source snapshot, SHA256SUMS and
+`release-receipt.json` are in the candidate artifact directory. The original
+binding implementation is preserved. Publication remains pending confirmation. No original tag or published 0.1.0 artifact was changed. The proposed
 new constitutional amendment was not applied after automatic approval review
 rejected adding it without explicit confirmation of its text; existing approved
 ownership rules continue to govern the candidate.
@@ -1414,6 +1416,8 @@ and their source revision will be recorded in `build/release-candidate/0.1.2`.
 Publication requires the owner's separate confirmation; no 0.1.2 registry upload
 has been performed. The historical 0.1.1 defect remains recorded in section 360.
 
+Prepared source revision: `47de64c67151095f14744d355b494d1f4488d49e`. Candidate archives, source snapshot and SHA256SUMS are built and checked.
+
 
 <a id="gc-070-370"></a>
 ## 370 · JSR 0.1.2 published and registry examples verified — 2026-09-24
@@ -1437,6 +1441,39 @@ No Python registry release, Minimal package release or application deployment wa
 performed. The existing seven-host/Safari/Firefox verification limits still apply.
 
 
+<a id="gc-070-375"></a>
+## 375 · Local develop aligned with maintenance corrections — 2026-09-24
+
+Owner confirms local develop alignment with 0.1.2 corrections and documentation,
+preserving unfinished binding work for 0.2.0. The core-only wheel asset check,
+Python/JS/JSR version metadata, Page import mapping and JSR example verification
+script now match release source 47de64c. Runtime and binding code were not replaced.
+README distinguishes runner-owned Markdown/DOMPurify and the mixed development
+checkout from the published release. GC-025 and its mirror assign standalone
+Worker integration/exporter to Minimal; GC-085 and its mirror document the JSR
+example check and release boundary.
+
+Verified: Python 18/18, JavaScript 76/76, JSR example imports/typed Source/cleanup
+13/13, runtime build, wheel build, strict Sphinx and seven-page public docs checks.
+All 52 protected source, test and binding-record files retain their pre-alignment
+SHA-256 values, including the binding prerequisite and four baseline tests.
+The development environment lacks the Python build frontend; the frontend in the
+isolated release environment built this checkout without changing its virtualenv.
+Wheel inspection exposed a stale `build/lib/gramlot/resources/standalone.js` from
+an earlier build. Removed that generated file and rebuilt: the verified wheel now
+contains the matching hosted runtime and no standalone asset. Build success alone
+is insufficient evidence of package contents when stale build outputs exist.
+
+The aligned 0.1.2 metadata identifies the maintenance baseline. This checkout also
+contains unfinished 0.2.0 binding and is NOT the published 0.1.2 source, which
+remains 47de64c. The wheel in `build/develop-alignment-check` is a verification
+artifact, not a release candidate. Sections 355/365 describe the isolated release
+candidate at their historical checkpoints. No commit, push, tag, new publication,
+dependency refresh or port acceptance was performed in this local alignment.
+Public availability of release revisions (N3) and other audit observations remain
+separate open tasks.
+
+
 <a id="gc-070-380"></a>
 ## 380 · Release source revisions publicly available; N3 closed — 2026-09-24
 
@@ -1453,3 +1490,75 @@ The branch includes the existing publication receipts. These are public source
 references for already published JSR versions, not new package publications or
 GitHub release asset sets. No main/develop consolidation, binding changes or
 0.1.0 tag movement was performed. N3 is closed; other audit tasks remain separate.
+
+
+<a id="gc-070-385"></a>
+## 385 · Confirmed audit cleanup and disputed findings — 2026-09-24
+
+Owner authorizes corrections to confirmed findings and asks that disagreements
+be reported explicitly. Added a local Core tests workflow for Python 3.12 and
+Node 22 on main/develop pushes, pull requests and manual dispatch. It installs
+floating dependencies, builds runtime resources before installing Python, selects
+the Python executable explicitly and runs both core suites. No coverage or hosted
+CI success is claimed; the workflow has not been pushed or run on GitHub.
+
+Renamed HTML rendering `defaults` to `renderAttributes` without changing precedence.
+Runner routes and folder paths now come from catalog.json, removing FOLDER_NAMES
+and independent route numbering. In the grammar loader, one field set replaces
+the identical allowed/required sets. Collection remains responsible for envelope
+and format validation; redundant loader checks were removed, preserving declaration
+validation and atomic application. No new Collection capability was introduced.
+
+Verification: local Python 18/18, JS 76/76 and runner 8/8; all 13 paired runner
+routes match catalog keys/folders and existing files. Invalid grammar formats are
+still rejected and subsequent valid authoring succeeds. A fresh scratch copy with
+registry dependencies also passes runtime build, Python 18/18 and JS 76/76.
+Workflow YAML and shell syntax pass local checks; this is not a GitHub-hosted Linux
+run. Strict Sphinx and public documentation checks pass. Binding source and tests
+are preserved; html.js differs only in the reviewed local variable rename.
+
+Findings not treated as defects: 5a describes an unsupported interpreter setup
+rather than failure of the documented command; 5b correctly identifies an older
+local-wheel environment but the clean install does not require it; 13's destination
+name caveat is already present; 15 quotes explicitly historical port statuses and
+cannot establish missing current acceptance; B5 identifies private-style members
+without an applicable prohibition or demonstrated failure; B9 identifies differing
+copyright years without evidence they are incorrect. No dependency environment,
+port acceptance, copyright policy or Builder API was changed. No push or release
+was performed in this cleanup.
+
+
+<a id="gc-070-390"></a>
+## 390 · Environment note made explicit in GC-085 — 2026-09-24
+
+Follow-up review confirms the audit corrections and fresh-install test results.
+GC-085 and its mirror now explicitly record the existing development venv's
+Builder 0.23.4 temporary wheel, separately from the verified clean PyPI setup
+with Builder 0.23.2, Bag 0.25.1 and TYTX 0.15.0. Section 320 already held the
+local provenance; the operating guide now links it and records the clean evidence.
+Removed the unused `root = doc` alias in the grammar loader; Python 18/18 passes.
+
+The local Core tests workflow is still uncommitted and has not run on GitHub.
+Runner tests are outside its current core-only scope. The local 76-test JS count
+includes untracked binding-lifecycle-baseline and runner-isolation tests; a hosted
+CI claim must identify the committed source and tests actually executed, not copy
+the working-tree count. Publishing source and testing it on GitHub remain pending;
+no binding implementation or release artifact changed in this follow-up.
+
+
+<a id="gc-070-395"></a>
+## 395 · Core and runner CI publication authorized — 2026-09-24
+
+Owner explicitly confirms completing CI with the runner, publishing it and
+verifying execution on GitHub. An isolated development integration branch,
+`codex/core-runner-ci`, captures the current working sources and tests, including
+the binding baseline and runner-isolation tests. This branch is development work,
+not a 0.1.x release or binding acceptance. Published release tags remain unchanged.
+
+The workflow uses Python 3.12 and Node 22, builds resources before Python install,
+selects the Python interpreter for JS tests and installs the examples' declared
+file dependencies from public Minimal/JS Server main checkouts. It runs the core
+Python, core JS and runner unit suites. The adapter checkouts supply dependencies;
+this does not verify their hosted/standalone behavior. A push on the CI integration
+branch triggers the first run. Expected local counts are 18 Python, 76 core JS
+and 8 runner tests; hosted execution and outcome remain pending at this checkpoint.

@@ -37,7 +37,7 @@ export class GramlotRenderer extends RendererBase {
 
     /** Strip wire-only names after RendererBase has resolved runtime attrs. */
     adaptAttrs(attrs) {
-        const {_meta, _text, ...result} = attrs;
+        const {_meta, ...result} = attrs;
         return result;
     }
 
@@ -75,7 +75,7 @@ export class GramlotRenderer extends RendererBase {
     /** RendererBase's dialect hook: create one detached element. */
     renderedItem(node, item, runtimeAttrs, {tag, document = this.destination.ownerDocument} = {}) {
         const children = Array.isArray(item) ? item : [];
-        const text = Array.isArray(item) ? node.getAttr('_text') : item;
+        const text = Array.isArray(item) ? runtimeAttrs._text : item;
         const record = {
             node,
             container: null,
@@ -267,7 +267,10 @@ export class GramlotRenderer extends RendererBase {
             && record.element && record.children.size === 0 && this.html.matches(record, node);
         if ((event === 'upd_attrs' || scalarValueUpdate) && record.element && this.html.matches(record, node)) {
             if (node.nodeTag) this.html.validate(node, node._getMeta('subbuilder') ? node.parentBag._builder : node.builder);
-            this.html.update(record, node);
+            const [value, runtimeAttrs] = node.builder.runtimeValues(node);
+            const [, resolvedAttrs] = this._handleMeta(node, runtimeAttrs);
+            const attrs = node._getMeta('subbuilder') ? resolvedAttrs : this.adaptAttrs(resolvedAttrs);
+            this.html.update(record, node, attrs, node.value instanceof SourceBag ? attrs._text : value);
             if (event === 'upd_attrs') {
                 this.references?.remove(node);
                 this.references?.register(node, record.element);

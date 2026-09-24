@@ -30,9 +30,12 @@ Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/minimal`.
 Use the matching development packages; published 0.1.0 artifacts are unchanged.
 Python pages still require the Python distribution and a Python server.
 
-The 0.1.2 candidate keeps runner UI dependencies in the example runner, which uses
-DOMPurify 3.4.16. Binding implementation is reserved for 0.2.0 and is excluded
-from this candidate. Published 0.1.0 artifacts remain unchanged.
+The JavaScript core is published on JSR as 0.1.2. Markdown, highlighting and
+DOMPurify belong to the example runner; its current DOMPurify version is 3.4.16.
+This development checkout includes unfinished binding work reserved for 0.2.0.
+Its aligned 0.1.2 version metadata identifies the maintenance baseline, not byte
+identity with the published release. The published 0.1.2 source is revision
+`47de64c67151095f14744d355b494d1f4488d49e`, which excludes that binding work.
 
 ## Can I use it today?
 
