@@ -15,7 +15,9 @@ explicitly selects that interpreter for JS interop. Runner dependencies use the
 public Minimal and JS Server main branches alongside this repository, following
 the examples' declared file dependencies. The runner unit suite does not verify
 adapter behavior, standalone exports or the browser matrix. Coverage collection
-is not yet included. The first GitHub execution is pending verification.
+is not yet included. [GitHub run 36058922420](https://github.com/gramlot-org/gramlot/actions/runs/36058922420)
+passed Python 18/18, JavaScript 76/76 and runner 8/8 on the CI integration revision
+`edce6cb`. Integration into main/develop remains separate.
 
 <a id="gc-030-010"></a>
 

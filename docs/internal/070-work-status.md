@@ -4,6 +4,7 @@ Document ID: **GC-070**. Updated: **2026-09-24**.
 
 
 **Current checkpoint:** local develop includes 0.1.2 maintenance corrections and preserved unfinished 0.2.0 binding; it is not the published release source. See [§375](#gc-070-375). Publication evidence is in [§370](#gc-070-370).
+**Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
 **Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
@@ -1562,3 +1563,31 @@ Python, core JS and runner unit suites. The adapter checkouts supply dependencie
 this does not verify their hosted/standalone behavior. A push on the CI integration
 branch triggers the first run. Expected local counts are 18 Python, 76 core JS
 and 8 runner tests; hosted execution and outcome remain pending at this checkpoint.
+
+
+<a id="gc-070-400"></a>
+## 400 · Published core and runner CI passes on GitHub — 2026-09-24
+
+The owner-authorized workflow is published on `codex/core-runner-ci` and its first
+[GitHub run 36058922420](https://github.com/gramlot-org/gramlot/actions/runs/36058922420)
+completed successfully on source revision
+`edce6cb2b8fd4bbc2ceda720bc8d3ec42b79a324`.
+
+Verified on GitHub Ubuntu with Python 3.12 and Node 22: resource build, fresh
+Python package installation, Python 18/18, JavaScript 76/76 and runner 8/8.
+Python dependencies resolved from PyPI include Builder 0.23.2, Bag 0.25.1 and
+TYTX 0.15.0. Both previously untracked JS test files are present in the committed
+snapshot (runner-isolation inherited from the release branch, binding baseline
+included in this development commit). The counts refer to actual hosted results.
+
+Minimal and JS Server main checkouts satisfy the examples' declared dependencies;
+only runner unit behavior is asserted, not host integration or standalone exports.
+The workflow is available for push on main/develop and the CI integration branch,
+pull requests and manual dispatch. It must be integrated into main/develop before
+those branches gain this workflow; neither branch was merged in this task.
+Coverage and real-browser/adapter matrix checks remain outside this workflow.
+
+The isolated CI branch preserves the current unfinished binding work for 0.2.0;
+this is not a new package release or binding acceptance. Original working-tree
+binding sources remain intact; published 0.1.x source tags were not moved.
+The CI publication and first hosted verification requested in section 395 are complete.
