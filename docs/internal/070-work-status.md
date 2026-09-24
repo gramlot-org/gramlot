@@ -3,7 +3,7 @@
 Document ID: **GC-070**. Updated: **2026-09-24**.
 
 
-**Current checkpoint:** local develop includes 0.1.2 maintenance corrections and preserved unfinished 0.2.0 binding; it is not the published release source. See [§375](#gc-070-375). Publication evidence is in [§370](#gc-070-370).
+**Current checkpoint:** CI integrated into main and develop with distinct maintenance/binding scope; branch-specific GitHub verification pending. See [§405](#gc-070-405).
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
 **Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
@@ -1591,3 +1591,23 @@ The isolated CI branch preserves the current unfinished binding work for 0.2.0;
 this is not a new package release or binding acceptance. Original working-tree
 binding sources remain intact; published 0.1.x source tags were not moved.
 The CI publication and first hosted verification requested in section 395 are complete.
+
+
+<a id="gc-070-405"></a>
+## 405 · Owner-approved CI integration into develop and main — 2026-09-24
+
+Owner confirms proceeding with integration after the successful hosted CI run.
+Develop advances to the complete tested development snapshot, including its
+unfinished 0.2.0 binding prerequisite and tests. Main advances from the verified
+0.1.2 release source and receipts, adding the approved audit corrections and CI.
+Main excludes binding runtime changes and the four binding baseline tests.
+The original development files matched the tested snapshot before integration;
+no uncommitted source work was discarded. Published release tags remain unchanged.
+
+Both branches contain the Core and runner tests workflow and all tests appropriate
+to their source. Expected counts are Python 18, JS 76 and runner 8 on develop;
+Python 18, JS 72 and runner 8 on main. Fresh GitHub executions for these integrated
+branches remain pending at this checkpoint; the earlier successful run in section
+400 verifies the CI integration snapshot only. No package publication or binding
+acceptance is implied by integrating the workflow. Historical checkpoint statements
+about pending integration are superseded by this entry.
