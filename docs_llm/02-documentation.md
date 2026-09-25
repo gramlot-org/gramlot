@@ -4,7 +4,7 @@
 
 ## 1. Audience and sources
 
-Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Core contains a development native HTML foundation; draft API chapters distinguish it from a stable release. `prepare_docs.py` stages README, six explicit `PUBLIC_PAGES`
+Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Core contains a development native HTML foundation; draft API chapters distinguish it from a stable release. Public guides describe 0.2.0 (HTML/SVG data binding), in development, state that 0.1.2 is the latest published release, and mark planned 0.2.0 behavior without implementation claims. `prepare_docs.py` stages README, six explicit `PUBLIC_PAGES`
 guides and two logo assets. New files are not automatically public. Constitution,
 architecture, ports and docs_llm are excluded from pages, source downloads and
 search, but remain readable in the public Git repository. Pair guides and preserve

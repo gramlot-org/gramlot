@@ -1,6 +1,10 @@
 # Classes, repository and server adapters
 
-Document ID: **GC-090**. Native 0.1.0 APIs; future capabilities remain explicitly deferred.
+Document ID: **GC-090**. Native 0.1.2 APIs; planned 0.2.0 changes are marked.
+
+> **Release status.** Describes **0.2.0 (HTML/SVG data binding), in development**:
+> an approved plan, not yet implemented, tested or released. Latest published
+> release: **0.1.2**. Unmarked text is 0.1.2; section 030 is planned 0.2.0 only.
 
 <a id="gc-090-005"></a>
 
@@ -19,6 +23,8 @@ transport.js and bootstrap. `tests`/`js/tests`: contracts and fixtures. `docs/pu
 manual; `docs/internal`: working decisions; `docs_llm`: concise mirrors; `ports`:
 bounded reviews. Generic Bag/builders live separately; `build` is generated output.
 This tree does not imply a component inventory.
+*0.2.0:* planned `js/src/builder/source.js`, `js/src/binding/`, `js/src/bootstrap.js`, `js/src/adapters/resources.js`,
+`src/gramlot/server/resources.py` and grammar `src/gramlot/collections/binding.json`.
 
 <a id="gc-090-015"></a>
 
@@ -27,6 +33,8 @@ This tree does not imply a component inventory.
 JavaScript pages must extend `Page` in hosted and standalone execution.
 `Page.css` is an array of stylesheet URLs. Standalone loads them before starting
 the Page and releases its stylesheet links on disposal.
+*0.2.0:* `css_requires` replaces `Page.css` without alias; Python and JS pages
+declare `css_requires`/`js_requires` name strings (030).
 
 Rendering requires `SourceBag` and `SourceBagNode`, associated with their builder.
 Their methods are part of the contract. Plain Bags are valid for Data, not Source;
@@ -44,6 +52,12 @@ Their methods are part of the contract. Plain Bags are valid for Data, not Sourc
 
 Dependency libraries own SourceBag, typed serialization and generic grammar/rendering. Pages
 author Source, never DOM. Data roots exist; bindings/controllers/resolvers do not.
+*0.2.0:* bindings and controllers enter, resolvers stay deferred; `Gramlot` gains
+`getBaseSourceNode`/`getDomNode` and per-instance logic groups in `app.logic`
+([GC-095 060](095-writing-pages.md)). Browser Source uses `GramlotBuilderBag`/
+`GramlotBuilderBagNode` (extend `SourceBag`/`SourceBagNode`) for `PUT`, `FIRE`,
+`FIRE_AFTER` and variable datapath; Builder/Bag unmodified; not needed in Python.
+Other binding classes stay internal.
 
 <a id="gc-090-017"></a>
 
@@ -79,6 +93,8 @@ authenticated owner identity and maps failures. `PageExpired` means expired,
 unknown or unowned ID. Host starts no server: its bounded registry is process-local
 and IDs are not credentials. `/` maps to `index.py`, `/catalog` to `catalog.py`;
 each exports `Page`. Every main or remote Source request creates fresh page/builder state.
+*0.2.0:* `a/b` → `pages/a/b.py` or `pages/a/b/b.py`, both = error (030);
+`open_page` adds a nonce distinct from the page ID.
 
 JS Host exposes `openPage`, `main`, `source` and `closePage`; adapters own HTTP
 translation and identity extraction. FileHost loads JS
@@ -189,6 +205,9 @@ Current scope: one Page per Worker, native HTML, Source live, declared `Page.css
 Data binding. Node-only imports cannot run in Worker. Current packaged Worker
 passes in Chromium; an earlier local file check passed in Playwright WebKit.
 WebKit is not Safari. Safari and Firefox remain unverified.
+*0.2.0:* all host paths, Minimal included, move to `css_requires`/`js_requires`;
+the companion loads in the window, never in the WorkerHost, which compiles no code
+(server side). Standalone uses a hash instead of a nonce.
 
 The minimal integration repository supplies a Node/npm exporter, `@gramlot/minimal`,
 for its browser standalone profile (development naming after 0.1.0):
@@ -213,3 +232,36 @@ The published 0.1.0 archive retains `@gramlot/standalone` and its
 `gramlot-standalone` command; use its bundled README for that immutable release.
 The minimal integration also owns generic Python ASGI/Uvicorn hosting. Kajenn
 extends that integration in its own repository.
+
+
+<a id="gc-090-030"></a>
+
+## 030 · Page resources and file layout (0.2.0)
+
+Planned 0.2.0 behavior. Python `css_requires = ""`/`js_requires = ""`; JS
+`static css_requires = ''`/`static js_requires = ''`. Authors write names only
+(`"business,gui"`); the framework adds extensions, paths, tags and nonce.
+Parsing: empty/missing = none; `,` separator, spaces ignored; empty tokens and
+duplicates ignored (first position kept); `/` separates subfolders, segments
+`^[A-Za-z0-9_-]+$`, no `.`, `..`, leading/trailing `/` or extensions; `:`
+(`name:media`) = error.
+
+Lookup per name: page folder, then `_resources` folders up to the application root;
+all levels kept. Load order: generic → specific, names in string order. JS: last
+registration (most specific) wins; CSS: all load, cascade favours specific. The
+folder hierarchy belongs to the adapter/integration; default is page folder plus
+`_resources` above it.
+
+Page files: `pages/orders.py`, or `pages/orders/orders.py` when it has own files;
+both = error. Companion = same-name `orders.js`/`orders.css` in the page folder,
+both forms, loaded after all requires. JS pages (Node/Bun) live in a folder separate
+from Python pages; a JS page file (`orders.js`) exports `Page` (host builds Source)
+and `Logic` (browser), so it must import in both environments, without server-only
+imports. The companion is public (served to the browser); server-only
+logic lives in modules it does not import.
+
+Bootstrap: CSS links in order; import all JS modules; create `Gramlot`; register each
+module's `Logic` in received order; start. Import failure or page close before start
+mounts nothing. Bootstrap scripts carry a nonce separate from the page ID, placed by
+the adapter in the CSP header; standalone uses a hash. CSP profiles for named and
+inline logic are still to be confirmed.

@@ -2,6 +2,11 @@
 
 Document ID: **GC-020**.
 
+> **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
+> binding), in development**. 0.2.0 is an approved plan: its code is not yet
+> implemented, tested or released. The latest published release is **0.1.2**.
+> Text without a *0.2.0* mark describes 0.1.2 behavior.
+
 <a id="gc-020-005"></a>
 
 ## 005 · Who it is for
@@ -15,6 +20,11 @@ This repository implements a bounded native HTML and typed Source foundation.
 It is verified and owner-accepted as the bounded native 0.1.0. The richer
 `gramlot-poc` remains experimental evidence; account for API changes when
 evaluating either path for an application.
+
+*0.2.0:* the next release adds HTML/SVG data binding to this core: initial
+values with `dataSetter`, `^`/`=` pointers, formulas and controllers with named
+logic, native controls and button controllers. It is in development and not yet
+available.
 
 <a id="gc-020-010"></a>
 
@@ -36,6 +46,9 @@ Bindings, controllers, resolvers and shared controls describe the wider Gramlot
 model; the current native HTML increment implements typed Source and live rendering,
 not those higher-level application capabilities.
 
+*0.2.0:* bindings and controllers are planned for 0.2.0. Resolvers and shared
+controls stay outside it; components are planned for 0.3.0.
+
 <a id="gc-020-015"></a>
 
 ## 015 · What is available
@@ -47,6 +60,9 @@ components are not part of this increment. The richer
 [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) has separate examples and
 tests; its behavior is not a contract for this core. Check each integration's
 documented scope before using it.
+
+*0.2.0:* [Writing pages](095-writing-pages.md) describes the planned
+binding syntax and its exclusions.
 
 Continue with [Try Gramlot](025-try.md).
 

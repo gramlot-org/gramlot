@@ -1,6 +1,11 @@
 # Extending Gramlot
 
-Document ID: **GC-100**. Native 0.1.0 APIs; future capabilities remain explicitly deferred.
+Document ID: **GC-100**. Native 0.1.2 APIs; planned 0.2.0 changes are marked.
+
+> **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
+> binding), in development**. 0.2.0 is an approved plan: its code is not yet
+> implemented, tested or released. The latest published release is **0.1.2**.
+> Text without a *0.2.0* mark describes 0.1.2 behavior.
 
 <a id="gc-100-005"></a>
 
@@ -15,6 +20,7 @@ Document ID: **GC-100**. Native 0.1.0 APIs; future capabilities remain explicitl
 | Reactive Source realization | Gramlot | `GramlotRenderer` (extends `RendererBase`) and `HtmlElement` |
 | Serialization, types and notifications | Bag/TYTX | Their registered-type and subscription contracts |
 | Source grammar and builder association | Generic Builder JS | `SourceBag`, `BuilderBase`, `RendererBase` |
+| *0.2.0:* page behavior | Application | `class Logic` in the companion or a `js_requires` resource |
 
 The class extension points above exist, but their public compatibility is not
 frozen. Keep host technology out of core. Missing shared behavior belongs in its
@@ -38,6 +44,8 @@ The following sections deliberately remain outlines:
 - **Third-party collection discovery:** package loading, class registration and extension of native content models.
 - **Python authoring from JS descriptions:** metadata transport and generated authoring surface.
 - **Controllers and resolvers:** declarations, lifecycle and Data ownership.
+  *0.2.0:* the plan defines `dataFormula`, `dataController` and named logic
+  ([Writing pages](095-writing-pages.md)); resolvers remain open.
 - **Database adapters:** shared operations and technology-specific implementations.
 
 Do not infer a plugin loader, package naming convention or finalized class hierarchy
@@ -88,6 +96,9 @@ An existing wildcard remains open when a later collection adds bare child names.
 Mixed wildcard/cardinality rules remain unsupported. Defaults are descriptive, not automatically inserted attributes. Browser
 `Gramlot` accepts the same `collections` option.
 This is explicit loading, not automatic discovery or custom-element registration.
+*0.2.0:* Gramlot redefines `dataSetter`, `dataFormula` and `dataController` in its
+own collection, `binding.json`, loaded after the HTML5 collection in Python and
+JavaScript. The binding attributes it declares never reach the DOM.
 Native HTML's open parameter signatures do not become a manual attribute whitelist.
 Custom children must satisfy their parent's declared content model; this API does
 not automatically amend HTML child lists.
