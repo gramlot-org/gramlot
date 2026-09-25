@@ -64,24 +64,9 @@ unimported files, and collect Python coverage separately. Upload separate report
 and flags; never substitute Python coverage for browser-runtime coverage or import
 PoC percentages into the core badge. See [the public quality guide](public/030-quality.md).
 
-## 4. Italian collaborator guide
+## 4. Retired collaborator guide
 
-The owner-requested Italian internal guide is maintained in
-`docs/internal/055-guida-collaboratori.md`, with a concise counterpart under
-`docs_llm/`. Its paired HTML exports embed 17 rendered Mermaid SVGs, RTD styling,
-fonts and logo for offline reading; the full version includes inventory appendices.
-The Italian edition is explicitly requested by the owner; other maintained
-technical documentation remains in English.
-
-Regenerate with `scripts/build_collaborator_guide.py --tools <node-tool-directory>
---browser <chromium-executable> --sphinx-python <docs-python>`. The runner needs
-BeautifulSoup; the separate Node tool directory needs Mermaid and playwright-core;
-the documentation Python needs `requirements-docs.txt`. Dependencies are build-time
-only. The script uses `scripts/render_guide_diagrams.mjs`, stages a dedicated
-Sphinx build under `build/collaborator-guide/` and writes the full/concise HTML
-exports beside their Markdown sources. The public staging allowlist is unchanged.
-
-Verify both strict Sphinx builds, document/mirror anchors, embedded resources,
-links, diagram readability and desktop/mobile navigation before delivery.
-
-The repository documentation entry is `docs/README.md`; GC-085 is the internal operating guide. Public draft chapters GC-090/095/100 cover the repository/classes/host map, page authoring and extension points. They are explicitly allowlisted; internal guides remain excluded.
+GC-055, an earlier Italian explanatory guide with paired HTML exports, was removed
+from the maintained documentation on 2026-09-25 by owner decision. It served to
+explain the project and is superseded by the 0.2.0 documentation. The ID GC-055 is
+retired and is never reused.

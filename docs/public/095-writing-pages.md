@@ -213,8 +213,9 @@ panel.input(value="^.name", live=True)  # edits customer.name
 
 **Variable datapath.** `datapath='^.foo'` makes the value stored at `.foo` the
 datapath of the branch. When `.foo` changes, every relative path of the branch
-changes and its registrations are redone. The plan lists a genro-builders change
-as a prerequisite for this feature.
+changes and its registrations are redone. An empty value gives a null path.
+Gramlot implements this rule in `absDatapath` of `GramlotBuilderBagNode`, which
+also keeps `?attr` on symbolic paths. Builder and Bag are not modified.
 
 **Attributes ending in `_path`.** An attribute whose name ends in `_path`, such
 as `destination_path` or `result_path`, holds a bare path without `^` or `=`. If
@@ -403,7 +404,7 @@ lookup and file layout.
 
 ## 065 · Writing Data from code and inline code (0.2.0)
 
-Code writes Data through the methods of the Builder Source node. Gramlot adds no
+Code writes Data through the methods of the Source node. Gramlot adds no
 separate set of operations.
 
 | Method | Effect |
@@ -411,11 +412,15 @@ separate set of operations.
 | `node.GET(path)` / `getRelativeData` | Reads a value |
 | `node.SET(path, value)` / `setRelativeData` | Writes and triggers reactions |
 | `node.PUT(path, value)` | Writes without triggering reactions |
-| `node.FIRE(path, value)` | Triggers even with an equal value, then resets the path to null silently |
+| `node.FIRE(path, value=true)` | Triggers even with an equal value, then resets the path to null silently |
 | `node.FIRE_AFTER(path, value=true, delay=10)` | Fires after `delay` ms; 10 ms is the legacy default |
 
-The plan lists genro-builders and genro-bag changes as prerequisites for the
-silent `PUT`, for the `FIRE` information in change events and for `FIRE_AFTER`.
+In the browser every Source node is a `GramlotBuilderBagNode`, in a
+`GramlotBuilderBag`. These Gramlot classes extend Builder's `SourceBagNode` and
+`SourceBag`. `GET`, `SET`, `getRelativeData` and `setRelativeData` are Builder's.
+Gramlot's node class provides the silent `PUT`, the `FIRE` that marks its write
+for the Data router, `FIRE_AFTER` with its timer tied to the node, and
+`absDatapath`. Builder and Bag are not modified.
 
 **Inline code** is allowed but discouraged, and may be deprecated. `formula` and
 `script` strings are compiled only in the page runtime in the browser, with

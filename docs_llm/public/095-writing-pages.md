@@ -161,7 +161,9 @@ Example: `panel = root.div(datapath=".customer")`; `panel.h2("^.name")`;
 `panel.input(value="^.name", live=True)`.
 
 Variable datapath: `datapath='^.foo'` uses the value at `.foo` as the branch
-datapath and re-registers when it changes; prerequisite genro-builders change.
+datapath and re-registers when it changes; empty value = null path. Implemented by
+`absDatapath` of Gramlot's `GramlotBuilderBagNode`, which also keeps `?attr` on
+symbolic paths; Builder and Bag unchanged.
 Attributes ending in `_path` hold a bare path; a written `^`/`=` is removed with one
 `console.warn` per declaration. `foopath` is ordinary; `datapath` has its own rule.
 
@@ -242,12 +244,14 @@ without `'unsafe-eval'`. Lookup/layout: [GC-090 030](090-classes-and-hosts.md).
 
 ## 065 · Writing Data from code and inline code (0.2.0)
 
-Builder Source node methods, no Gramlot operation set: `GET`/`getRelativeData`
-read; `SET`/`setRelativeData` write and trigger; `PUT` writes silently; `FIRE`
+Source node methods, no Gramlot operation set: `GET`/`getRelativeData`
+read; `SET`/`setRelativeData` write and trigger; `PUT` writes silently; `FIRE(path, value=true)`
 triggers even with an equal value then resets to null silently;
 `FIRE_AFTER(path, value=true, delay=10)` fires after `delay` ms (legacy default 10).
-Silent `PUT`, `FIRE` information in events and `FIRE_AFTER` need prerequisite
-genro-builders/genro-bag changes.
+Browser Source nodes are `GramlotBuilderBagNode` in `GramlotBuilderBag` (extending
+Builder `SourceBagNode`/`SourceBag`). `GET`/`SET`/`get|setRelativeData` are Builder's;
+Gramlot provides silent `PUT`, `FIRE` marking its write for the router, `FIRE_AFTER`
+(timer tied to the node) and `absDatapath`. Builder and Bag are not modified.
 
 Inline code is allowed, discouraged, possibly deprecated: compiled only in the
 browser page runtime with `this` = Source node, e.g.

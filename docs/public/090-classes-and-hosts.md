@@ -47,7 +47,8 @@ These are existing folders, not a proposed component inventory. Generic Bag and
 builder implementations live in their own libraries. `build/` contains generated
 assets and documentation; it is not an application source directory.
 
-*0.2.0:* the plan adds `js/src/binding/` (Data routing, installation, formulas
+*0.2.0:* the plan adds `js/src/builder/source.js` (`GramlotBuilderBag` and
+`GramlotBuilderBagNode`), `js/src/binding/` (Data routing, installation, formulas
 and controllers, named logic, inline code), `js/src/bootstrap.js`,
 `js/src/adapters/resources.js`, `src/gramlot/server/resources.py` and the
 data-element grammar `src/gramlot/collections/binding.json`.
@@ -85,8 +86,11 @@ but bindings, controllers and resolvers are not yet implemented in this slice.
 *0.2.0:* bindings and controllers enter with 0.2.0; resolvers stay deferred.
 `Gramlot` gains `getBaseSourceNode(domNode)` and `getDomNode(sourceNode)`, and
 each instance owns its named logic groups in `app.logic`
-([Writing pages](095-writing-pages.md)). The planned binding classes
-are internal to the runtime.
+([Writing pages](095-writing-pages.md)). In the browser, Source is built from
+`GramlotBuilderBag` and `GramlotBuilderBagNode`, which extend `SourceBag` and
+`SourceBagNode`. They provide `PUT`, `FIRE`, `FIRE_AFTER` and the variable
+datapath; Builder and Bag are not modified. Python authoring does not need them.
+The other planned binding classes are internal to the runtime.
 
 <a id="gc-090-017"></a>
 

@@ -23,7 +23,7 @@ transport.js and bootstrap. `tests`/`js/tests`: contracts and fixtures. `docs/pu
 manual; `docs/internal`: working decisions; `docs_llm`: concise mirrors; `ports`:
 bounded reviews. Generic Bag/builders live separately; `build` is generated output.
 This tree does not imply a component inventory.
-*0.2.0:* planned `js/src/binding/`, `js/src/bootstrap.js`, `js/src/adapters/resources.js`,
+*0.2.0:* planned `js/src/builder/source.js`, `js/src/binding/`, `js/src/bootstrap.js`, `js/src/adapters/resources.js`,
 `src/gramlot/server/resources.py` and grammar `src/gramlot/collections/binding.json`.
 
 <a id="gc-090-015"></a>
@@ -54,7 +54,10 @@ Dependency libraries own SourceBag, typed serialization and generic grammar/rend
 author Source, never DOM. Data roots exist; bindings/controllers/resolvers do not.
 *0.2.0:* bindings and controllers enter, resolvers stay deferred; `Gramlot` gains
 `getBaseSourceNode`/`getDomNode` and per-instance logic groups in `app.logic`
-([GC-095 060](095-writing-pages.md)); binding classes stay internal.
+([GC-095 060](095-writing-pages.md)). Browser Source uses `GramlotBuilderBag`/
+`GramlotBuilderBagNode` (extend `SourceBag`/`SourceBagNode`) for `PUT`, `FIRE`,
+`FIRE_AFTER` and variable datapath; Builder/Bag unmodified; not needed in Python.
+Other binding classes stay internal.
 
 <a id="gc-090-017"></a>
 
