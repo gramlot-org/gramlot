@@ -10,6 +10,8 @@
 
 Document ID: **GC-087**. Decision date: **2026-09-19**. Status: **historical ownership sequence; current 0.1.0 boundary stated above**.
 
+**Release scope:** the current code is release **0.1.2**. Section 085 adds the layer boundaries of the 0.2.0 HTML/SVG binding plan. **The 0.2.0 parts are planned and not implemented.**
+
 [Expanded counterpart](../../docs/internal/087-javascript-layer-boundaries.md).
 
 <a id="gc-087-005"></a>
@@ -328,3 +330,49 @@ collections. These are destinations for the same format, not alternate notations
 Executable methods remain code; removing grammar helpers does not remove existing
 container/component execution or Python's own decorators/exporter. The deferred
 recipe implementation and Source replace decision are unchanged.
+
+<a id="gc-087-085"></a>
+
+## 085 · Planned 0.2.0 binding layer boundaries
+
+**Planned, not implemented; current code 0.1.2.** Source: owner-confirmed 0.2.0 plan and decision D7, 2026-09-25; S00 records GC-210 and an amendment. Classes: [GC-045 §055](045-js-taxonomy.md#gc-045-055).
+
+Current 0.1.2: Bag JS/TYTX own tree, events, transport. Builder JS owns grammar, `SourceBag`/`SourceBagNode`, `RendererBase`, `HtmlBuilder`/`SvgBuilder`, static rendering, `svgAttributes`. Gramlot owns `GramlotBuilder`, `GramlotRenderer`, `HtmlElement`, `Gramlot`, `MainTransport`, `References`, host adapters. Browser entry `js/src/index.js` (Gramlot, GramlotBuilder, GramlotRenderer, Bag, BagNode, References, MainTransport) does not import server entry `js/src/adapters/index.js` (Page, source, Host, errors, GramlotBuilder, FileHost). `compute_logic` (`page/builder.py:52`) and `computeLogic` (`gramlot-builder.js:17`) empty; no binding.
+
+Planned 0.2.0:
+- Builder/Bag read-only (§14); writes via Builder node methods; U1-U4 ([GC-045 §060](045-js-taxonomy.md#gc-045-060)) in genro-builders/genro-bag; no local substitute.
+- Authoring: grammar only; `binding.json` redefines `dataSetter`, `dataFormula`, `dataController`, loaded after `html5.json`; logic hooks stay empty; `GramlotBuilder` unchanged for logic resolution.
+- Host side (`Host`, `FileHost`, `server/resources.py`, `adapters/resources.js`): page and resource resolution, bootstrap with nonce; never evaluates code. Standalone WorkerHost (gramlot-minimal) is server side: no eval.
+- Page runtime (`bootstrap.js`, `gramlot.js`, `renderer/*`, `binding/*`, `view/*`): only layer executing logic and compiling inline code.
+- `binding/inline.js` imported only by page runtime; never by `adapters/*`, `builder/*` or WorkerHost; S07/S09 test import graphs.
+- Named mode (`func`) primary, CSP without `'unsafe-eval'`; inline (`formula`, `script`, `==`) for compatibility, may be deprecated; macros = deprecated preprocessor in `InlineCompiler`; two modes = owner exception to §13; inline CSP profile open (Q3).
+- `LogicRegistry.resolve`, not `_resolveLogicFunc`; missing name = error, no inline fallback.
+- Source `script` stays native HTML5, no eval.
+- Bootstrap scripts on the Page; today host script imports `Gramlot` (`host.py:102-104`, `adapters/host.js:59-61`); 0.2.0 imports and runs `PageBootstrap`.
+
+Solid = exists in 0.1.2 (label may name planned additions); dashed box = not yet present; dashed arrows = forbidden imports.
+
+```mermaid
+flowchart TB
+    BAG["Bag JS · TYTX<br/>tree, events, typed transport"]
+    BLD["Builder JS<br/>grammar · SourceBag · RendererBase<br/>node methods SET · GET · PUT · FIRE"]
+    AUTH["Authoring<br/>GramlotBuilder · html5.json · svg.json<br/>binding.json planned"]
+    HOST["Host side<br/>Page · Host · FileHost<br/>ResourceResolver planned"]
+    WH["WorkerHost in gramlot-minimal<br/>server side"]
+    PAGE["Page runtime in the browser<br/>Gramlot · GramlotRenderer · HtmlElement<br/>PageBootstrap · binding · view planned"]
+    INL["binding/inline.js<br/>InlineCompiler planned"]
+    BLD --> BAG
+    AUTH --> BLD
+    HOST --> AUTH
+    WH --> AUTH
+    PAGE --> AUTH
+    PAGE --> BLD
+    PAGE --> INL
+    HOST -. never imports .-> INL
+    WH -. never imports .-> INL
+    AUTH -. never imports .-> INL
+    classDef current fill:#e3f3ed,color:#143d2e,stroke:#39866b;
+    classDef planned fill:#f0e8fa,color:#4f2e70,stroke:#9670b3,stroke-dasharray:5 4;
+    class BAG,BLD,AUTH,HOST,WH,PAGE current;
+    class INL planned;
+```

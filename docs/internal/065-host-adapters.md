@@ -2,6 +2,8 @@
 
 Document ID: **GC-065**.
 
+**Release scope:** the current code is release **0.1.2**. Section 030 adds the page resource and bootstrap changes of the 0.2.0 HTML/SVG binding plan. **The 0.2.0 parts are planned and not implemented.**
+
 **Current 0.1.0 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-native-html-readiness.md#gc-110-020) for current release gates.
 
 [Concise counterpart](../../docs_llm/internal/065-host-adapters.md).
@@ -138,3 +140,67 @@ These are verification commands, not application launch or deployment commands.
 
 
 Python host imports use `from gramlot.server import Host`; public page imports remain `from gramlot import Page`. Internal pre-release adapters/model/root-builder paths have been replaced by server/page ownership.
+
+<a id="gc-065-030"></a>
+
+## 030 · Planned 0.2.0 page resources and bootstrap
+
+**Status: planned and not implemented. The current code is 0.1.2.** Source: the
+owner-confirmed 0.2.0 binding plan of 2026-09-25 (phases S06, S07 and S14). Phase S00
+records it as GC-210 and a constitution amendment.
+
+**Current 0.1.2:**
+
+- Python `Page.css = ()` (`src/gramlot/page/base.py:17`) and JS `static css = []`
+  (`js/src/adapters/page.js:24`) hold stylesheet URLs.
+- `Host.open_page` writes one `<link>` per URL (`src/gramlot/server/host.py:98`) and a
+  module script that imports `Gramlot` and calls `start()` (`host.py:102-104`). JS
+  `Host.openPage` does the same (`js/src/adapters/host.js:56`, `59-61`).
+- Page resolution: Python `resolve_page` maps `a/b` to `pages/a/b.py`
+  (`host.py:64-77`); `FileHost.resolvePage` maps `a/b` to `a/b.js`
+  (`js/src/adapters/file-host.js:15-35`).
+- `Bootstrap` (`host.py:33-36`) has `page_id` and `html`. There is no nonce.
+
+**Planned 0.2.0:**
+
+- `css_requires = ""` and `js_requires = ""` replace `Page.css`, with the same names in
+  Python and JS (P23). No alias. Each is one comma-separated string of names (P13).
+- `parse_requires` (`src/gramlot/server/resources.py`) and `parseRequires`
+  (`js/src/adapters/resources.js`), legacy-aligned (P7): `''` or absent means no
+  resource; `,` separates; spaces around a name and empty tokens are ignored;
+  duplicates are ignored and the first position stays; `/` separates subfolders;
+  each segment matches `^[A-Za-z0-9_-]+$`; `.`, `..`, leading or trailing `/` and
+  extensions are errors; `:` (`name:media`) is an error in 0.2.0.
+- `ResourceResolver` in both languages: `resolve(page_path, names, kind)` returns URLs
+  in load order.
+  - Search order per name: the page folder, then the `_resources` folders upward to
+    the application root. All levels found are collected.
+  - Load order: the reverse, from the most generic to the most specific. Names follow
+    the string order. The companion (`foo.js`, `foo.css`) loads last.
+  - JS: every level loads and the last registration wins. This differs intentionally
+    from legacy, which loads only the most generic JS. CSS: every level loads and the
+    cascade applies, as in legacy.
+- Page location (P14): `pages/ordini.py`, or `pages/ordini/ordini.py` when the page
+  has own files. Both present is an error. The companion is the file with the same
+  name in the page folder. JS pages (Node or Bun) live in a folder separate from Python
+  pages. The two forms are an owner exception to §13. The companion is public by
+  definition; server-only logic lives in modules the companion does not import.
+- Nonce: `secrets.token_urlsafe(16)` in `open_page`, distinct from `page_id`.
+  `Bootstrap` gains a `nonce` field. The nonce applies to the bootstrap scripts and to
+  `<script>` elements that the renderer creates from the Source. The standalone uses a
+  hash of the final bytes (S14).
+- Bootstrap script: `import {PageBootstrap} from runtime; await new PageBootstrap({…}).run()`.
+  `PageBootstrap.run()` (`js/src/bootstrap.js`):
+  1. appends the CSS `<link>` elements in the received order;
+  2. imports all JS modules and waits for all of them, in any completion order;
+  3. creates `new Gramlot(config)`;
+  4. registers `module.Logic` of each module **in the received order** with
+     `app.logicRegistry.register(module.Logic, {group, resource: url})`; `group` is the
+     `js_requires` name, or null for the companion;
+  5. sets `window.gramlot = app` and awaits `app.start()`.
+  If the page closes or an import fails before step 5, nothing mounts.
+- Host and WorkerHost never evaluate code strings. The companion loads in the window
+  and never runs in the WorkerHost.
+- S06 implements the core contract only. Minimal and the connected adapters
+  (FastAPI, Kajenn, Flask, Django, Node, Bun, standalone) migrate in S14, after
+  authorization Q4. S00 inventories their current use of `Page.css`.

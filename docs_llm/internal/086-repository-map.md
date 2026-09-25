@@ -3,6 +3,9 @@
 <!-- Document ID: GC-086 -->
 <a id="gc-086-005"></a>
 
+**Release scope:** the tree in this section is the current release **0.1.2**. Section 010 lists the files of the 0.2.0 HTML/SVG binding plan. **The 0.2.0 parts are planned and not implemented.**
+
+
 ```text
 gramlot/
 ├── src/gramlot/                         Python
@@ -93,3 +96,43 @@ in both languages; these Python modules do not introduce a second Source type.
 
 Standalone WorkerHost, WorkerTransport and mount now belong to gramlot-minimal
 (amendment 11.46). Shared Host execution and rendering remain in core.
+
+<a id="gc-086-010"></a>
+
+## 010 · Planned 0.2.0 files
+
+**Status: planned and not implemented.** The tree above is the current 0.1.2
+repository. The files below do not exist yet. They come from the owner-confirmed
+0.2.0 HTML/SVG binding plan of 2026-09-25; phase S00 records it as GC-210. Classes and
+layer rules: [GC-045 §055](045-js-taxonomy.md#gc-045-055) and
+[GC-087 §085](087-javascript-layer-boundaries.md#gc-087-085).
+
+```text
+gramlot/
+├── src/gramlot/
+│   ├── server/
+│   │   └── resources.py                ResourceResolver · parse_requires (S06)
+│   └── collections/
+│       └── binding.json                Data-element and binding grammar (S02)
+└── js/src/
+    ├── bootstrap.js                    PageBootstrap (S07)
+    ├── binding/
+    │   ├── runtime.js                  BindingRuntime · NodeBinding (S03)
+    │   ├── router.js                   DataRouter · DataRegistration · DataChange (S04)
+    │   ├── installation.js             DataInstaller (S05)
+    │   ├── providers.js                Provider · FormulaProvider · ControllerProvider (S08)
+    │   ├── logic.js                    LogicRegistry · LogicGroup (S07)
+    │   └── inline.js                   InlineCompiler, page runtime only (S09)
+    ├── view/
+    │   ├── controls.js                 ControlAdapter and subclasses · RadioGroups (S10, S11)
+    │   ├── button.js                   ButtonBinding (S12)
+    │   └── events.js                   NativeEventBinding (S12)
+    └── adapters/
+        └── resources.js                ResourceResolver · parseRequires (S06)
+```
+
+There is no planned `operations.js`. Existing files that change in 0.2.0 include
+`js/src/gramlot.js`, `js/src/renderer/gramlot-renderer.js`, `js/src/view/html.js`,
+`js/src/index.js`, `js/src/builder/gramlot-builder.js`,
+`js/src/adapters/page.js`, `host.js`, `file-host.js`, `src/gramlot/page/base.py`,
+`builder.py`, `src/gramlot/server/host.py` and `assets.py`.

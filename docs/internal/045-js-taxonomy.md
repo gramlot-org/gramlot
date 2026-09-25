@@ -2,6 +2,11 @@
 
 Document ID: **GC-045**. Status: **source inventory and design proposal; no new hierarchy approved**.
 
+**Release scope:** sections 005–050 describe `gramlot-poc` evidence, not the core.
+The core code is release **0.1.2**. Sections 055 and 060 describe the core runtime
+classes: the current 0.1.2 classes, and the classes of the 0.2.0 HTML/SVG binding
+plan. **The 0.2.0 parts are planned and not implemented.**
+
 [Concise counterpart](../../docs_llm/internal/045-js-taxonomy.md).
 [Complete inventory](050-js-taxonomy-census.md). [Full syntactic class tree](diagrams/045-all-classes.mmd). [Machine-readable evidence](inventory/045-js-taxonomy.json).
 
@@ -164,6 +169,7 @@ classDiagram
 
 ## 025 · Runtime, controllers and services
 
+This section is PoC evidence. The planned core runtime for 0.2.0 is in §055, not in this diagram.
 Arrows here mean assembly or use, not inheritance or a claim of exclusive ownership. Logic declarations are executed by LogicRuntime and collaborating services; the source does not contain a generic GramlotController base with one subclass for every declaration. FormController and InspectorController are existing specialized controllers.
 
 ```mermaid
@@ -345,3 +351,226 @@ Evidence: PoC `js/dom/src/components/bases.js`, `collections/inputs.js`, `collec
 
 Before implementation, select the first component/controller families, define mixin ordering and member conflicts, agree composition/disposal ownership, and test the static metadata contract including inherited/mixin descriptions. Legacy-only capabilities remain candidates; core acceptance proceeds through bounded ports. No formal Live Object Tree semantics are inferred. These internal documents remain excluded from public Sphinx staging.
 
+
+<a id="gc-045-055"></a>
+
+## 055 · Core runtime classes: current 0.1.2 and planned 0.2.0
+
+**Status: the 0.2.0 part is planned and not implemented. The current code is 0.1.2.**
+Source of the 0.2.0 part: the owner-confirmed binding plan of 2026-09-25
+(revision 2, proposals confirmed "for now"). Phase S00 records it in the repository
+as GC-210 and as a constitution amendment; neither exists yet. Use
+[GC-070](070-work-status.md) for status. This section describes the core
+repository, not `gramlot-poc`.
+
+**Current 0.1.2 (`js/src`):**
+
+- `Gramlot` (`gramlot.js:8-112`) creates `GramlotBuilder`, sets `data = builder.data`,
+  writes an empty `main` Bag inside `builder.data` (`gramlot.js:14`), then creates
+  `GramlotRenderer` and `MainTransport`. It has no Data subscription and no binding.
+- `GramlotRenderer extends RendererBase` (`renderer/gramlot-renderer.js`) owns the
+  node → record `Map` (line 20), the element → record `WeakMap` (line 25), one Source
+  subscription (line 27) and the `pending` FIFO in `receive` (lines 199-229). It
+  filters frozen nodes before queuing (lines 201-205).
+- `HtmlElement` (`view/html.js`) creates and updates native HTML/SVG elements. It
+  also writes the `value` property of controls (`html.js:131-134`).
+- `References` (`references.js`) and `MainTransport` (`transport.js`) are collaborators.
+- `GramlotBuilder extends HtmlBuilder` (`builder/gramlot-builder.js`); `computeLogic()`
+  is empty (line 17). Authoring stays inert.
+
+**Planned 0.2.0 files and classes:**
+
+| File | Classes and exports | Phase |
+| --- | --- | --- |
+| `js/src/binding/runtime.js` | `BindingRuntime`, `NodeBinding` | S03 |
+| `js/src/binding/router.js` | `DataRouter`, `DataRegistration`, `DataChange` | S04 |
+| `js/src/binding/installation.js` | `DataInstaller` | S05 |
+| `js/src/binding/providers.js` | `Provider`, `FormulaProvider`, `ControllerProvider` | S08 |
+| `js/src/binding/logic.js` | `LogicRegistry`, `LogicGroup` | S07 |
+| `js/src/binding/inline.js` | `InlineCompiler` | S09 |
+| `js/src/view/controls.js` | `ControlAdapter` and subclasses, `RadioGroups` | S10, S11 |
+| `js/src/view/button.js` | `ButtonBinding` | S12 |
+| `js/src/view/events.js` | `NativeEventBinding` | S12 |
+| `js/src/bootstrap.js` | `PageBootstrap` | S07 |
+| `js/src/adapters/resources.js` | `ResourceResolver`, `parseRequires` | S06 |
+| `src/gramlot/server/resources.py` | `ResourceResolver`, `parse_requires` | S06 |
+| `src/gramlot/collections/binding.json` | grammar of data-elements and binding attributes | S02 |
+
+There is no `operations.js`. Code writes Data through the Builder Source node methods
+(`setRelativeData`, `getRelativeData`, `SET`, `GET`, `PUT`, `FIRE`, `FIRE_AFTER`).
+
+**Planned composition rules:**
+
+- Construction order in the `Gramlot` constructor: `LogicRegistry(this)` →
+  `GramlotBuilder` → `BindingRuntime(this)` → `data = builder.data` →
+  `binding.attach()` → `source = builder.source` →
+  `GramlotRenderer(builder, source, destination, {binding})`.
+- `binding.attach()` sets `main` of an outer Data root to the document Bag without a
+  copy, and subscribes once to the outer root. `gramlot.data === builder.data`.
+  Author paths never contain `main`. `DataRouter` is the only subscriber of the outer root.
+- Parent passes `this` to the child; the child exposes it with a getter (`runtime`,
+  `binding`, `gramlot`). State lives in instances only.
+- No `SourceBagNode` subclass and no prototype change (P17). Semantic state lives in
+  `NodeBinding`, stored in a `Map` of `BindingRuntime` keyed by the `SourceBagNode`.
+- Semantic lifetime is `NodeBinding`: registrations, providers, timers, click counter,
+  stamps (`installed`, `init`, `built`, `start`) and the `remoteSource` request.
+- DOM lifetime stays the renderer record (`record.cleanup`, `gramlot-renderer.js:84`):
+  element, listeners, `ControlAdapter`, `ButtonBinding`, `NativeEventBinding`.
+  A rebuild of the same node closes only the DOM lifetime.
+- `FormulaProvider` and `ControllerProvider` extend `Provider`. `dataSetter` is not a
+  provider: `DataInstaller` owns it.
+- `func` resolves through `LogicRegistry.resolve`, not through Builder's
+  `_resolveLogicFunc`, which looks up static methods only. `GramlotBuilder` does not change.
+- `LogicGroup` has one own member, `page`. `gramlot.logic` is the root group with
+  the companion methods; each `js_requires` name is a child group; a name with `/`
+  is a nested group.
+- `GramlotRenderer` and `Gramlot` gain `getBaseSourceNode(domNode)` and
+  `getDomNode(sourceNode)`, built on the existing `records` and `elements` maps.
+  No property is added to Source nodes or DOM elements.
+
+Diagram source: [045-core-runtime-0.2.0.mmd](diagrams/045-core-runtime-0.2.0.mmd).
+`<<planned>>` marks classes that do not exist in 0.1.2. Arrows `-->` are use or
+ownership; `<|--` is inheritance.
+
+```mermaid
+classDiagram
+    direction TB
+    HtmlBuilder <|-- GramlotBuilder
+    RendererBase <|-- GramlotRenderer
+    Gramlot --> GramlotBuilder : builder
+    Gramlot --> GramlotRenderer : renderer
+    Gramlot --> MainTransport : transport
+    GramlotRenderer --> HtmlElement : html
+    GramlotRenderer --> References : references
+    Gramlot --> LogicRegistry : logicRegistry
+    Gramlot --> BindingRuntime : binding
+    GramlotRenderer --> BindingRuntime : binding option
+    LogicRegistry --> LogicGroup : logic tree
+    BindingRuntime --> DataRouter : router
+    BindingRuntime --> DataInstaller : installer
+    BindingRuntime --> RadioGroups : radioGroups
+    BindingRuntime --> NodeBinding : Map keyed by SourceBagNode
+    DataRouter --> DataRegistration : register
+    DataRouter --> DataChange : deliver
+    NodeBinding --> DataRegistration : registrations
+    NodeBinding --> Provider : providers
+    Provider <|-- FormulaProvider
+    Provider <|-- ControllerProvider
+    Provider --> LogicRegistry : resolve func
+    Provider --> InlineCompiler : inline mode
+    ControlAdapter <|-- TextControl
+    ControlAdapter <|-- NumberControl
+    ControlAdapter <|-- RangeControl
+    ControlAdapter <|-- SelectControl
+    ControlAdapter <|-- TemporalControl
+    ControlAdapter <|-- ColorControl
+    ControlAdapter <|-- CheckboxControl
+    ControlAdapter <|-- RadioControl
+    RadioControl --> RadioGroups : join
+    GramlotRenderer --> ControlAdapter : record cleanup
+    GramlotRenderer --> ButtonBinding : record cleanup
+    GramlotRenderer --> NativeEventBinding : record cleanup
+    ButtonBinding --> ControllerProvider : click trigger
+    PageBootstrap --> Gramlot : creates
+    PageBootstrap --> LogicRegistry : register Logic
+    <<planned>> LogicRegistry
+    <<planned>> LogicGroup
+    <<planned>> BindingRuntime
+    <<planned>> NodeBinding
+    <<planned>> DataRouter
+    <<planned>> DataRegistration
+    <<planned>> DataChange
+    <<planned>> DataInstaller
+    <<planned>> Provider
+    <<planned>> FormulaProvider
+    <<planned>> ControllerProvider
+    <<planned>> InlineCompiler
+    <<planned>> ControlAdapter
+    <<planned>> TextControl
+    <<planned>> NumberControl
+    <<planned>> RangeControl
+    <<planned>> SelectControl
+    <<planned>> TemporalControl
+    <<planned>> ColorControl
+    <<planned>> CheckboxControl
+    <<planned>> RadioControl
+    <<planned>> RadioGroups
+    <<planned>> ButtonBinding
+    <<planned>> NativeEventBinding
+    <<planned>> PageBootstrap
+```
+
+<a id="gc-045-060"></a>
+
+## 060 · Planned 0.2.0 runtime sequences
+
+**Status: planned and not implemented. The current code is 0.1.2.**
+
+**Branch installation (P2, P3, P5).** It applies to `mountMainSource`
+(`gramlot.js:56-62`), to `remoteSource` (`gramlot.js:87`) and to every Source event
+that brings a new branch. Installation starts from `BindingRuntime.handleSourceEvent`,
+inside the renderer FIFO.
+
+1. Validation of the whole branch, without effects (`renderer.validateCandidate`).
+2. `dataSetter` nodes in document order, parent before children; `applySetter` on each (rule R1).
+   Observers already active receive these writes synchronously.
+3. Defaults (`default`, `default_value`, `default_<attr>`, `attr_*`) on empty paths only.
+4. Registration: `openBinding` per node; `registerPointers` for visual nodes;
+   `Provider.register` for `dataFormula` and `dataController`.
+5. `_init`, once per node, invoked by `BindingRuntime`.
+6. DOM build with the current values. Under freeze this step waits for the thaw.
+7. `_onBuilt`, after the first successful build.
+8. `_onStart`: after page readiness for the initial Source; right after step 7 for a
+   branch inserted later. A node never built keeps waiting.
+
+On error the new `NodeBinding` objects close. Data are not rolled back. Under freeze,
+steps 1-5 run at once; DOM and `_onBuilt` run at the thaw (P3).
+
+**Source event entry (P4).** Current 0.1.2 `receive` filters frozen nodes before
+queuing (`gramlot-renderer.js:199-229`). The planned entry is:
+
+1. If the renderer is disposed, return. Otherwise push the event on `pending`.
+   If a build is running, return.
+2. Process `pending` one event at a time, in arrival order:
+   - an event whose node is no longer attached to the Source is dropped, except `del`;
+   - an event on a node under construction is ignored, as in legacy;
+   - semantic work, always, also under freeze: `binding.handleSourceEvent(event)`;
+   - structural work (`insert`, `remove`, `update`) only outside a frozen branch.
+3. An exception empties `pending` and propagates, as in 0.1.2.
+
+Source mutations made during semantic work (by `_init`, an observer or a provider)
+enter the FIFO and run after the current event.
+
+| Source event | Planned semantic work |
+| --- | --- |
+| `ins` | `installer.install(node)` |
+| `del` (node or array) | `closeBranch` of each node |
+| `upd_value`, old value `SourceBag` | `closeBranch` of the children of `event.oldvalue` |
+| `upd_value`, new value `SourceBag` | `installer.install(new value)` |
+| `upd_value`, new scalar or null | only closure of the old branch, if any |
+| `upd_attrs` | `rebind()` of the node; `rebindBranch(node)` if `attrs_diff` touches `datapath`, `_anchor`, `node_id`, `form` or `formId` |
+| `upd_value_attr` | old branch closure, then `upd_attrs`, then new branch installation |
+
+**Data write.** A write reaches the document Bag; the event propagates to the outer
+root with `pathlist` starting with `main`; `BindingRuntime.receiveData` calls
+`DataRouter.deliver`; the router computes path, level (`node`, `container`, `child`)
+and `fired`, copies the candidates and calls `recipient.receive(change)`.
+`NodeBinding.receive` calls `renderer.project(node, change)`; `Provider.receive`
+calls `invoke`. A fired event at level `child` is not delivered. `reason === 'autocreate'` is ignored.
+
+**Removal and freeze.** A Source `del` closes the branch semantically, also under
+freeze. Thaw builds the current Source once, with no reinstallation and no repeated
+`_init` or `_onStart`.
+
+**Upstream dependencies, not existing features.** These fixes belong to the owning
+libraries (constitution §14). They are not in the installed Builder JS 0.1.5 or Bag JS 0.5.3:
+
+- **U1, genro-builders:** `setRelativeData` with reason `false` writes without
+  notifying anyone. Today `PUT` emits the event. Required before S08.
+- **U2, genro-bag:** the update event carries `fired`. Today it does not. The router
+  reads `fired` from the event after U2. Required before S08.
+- **U3, genro-builders:** a `delay` parameter in `setRelativeData` and
+  `FIRE_AFTER(path, value = true, delay = 10)` on the Source node. Required before S08.
+- **U4, genro-builders:** `absDatapath` resolves a variable datapath
+  (`datapath='^.foo'`) by reading the Data. Today `_composeRelativeDatapath` uses the
+  raw value. Required before S04.

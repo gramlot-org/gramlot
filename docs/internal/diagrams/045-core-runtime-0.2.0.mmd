@@ -1,0 +1,65 @@
+classDiagram
+    direction TB
+    HtmlBuilder <|-- GramlotBuilder
+    RendererBase <|-- GramlotRenderer
+    Gramlot --> GramlotBuilder : builder
+    Gramlot --> GramlotRenderer : renderer
+    Gramlot --> MainTransport : transport
+    GramlotRenderer --> HtmlElement : html
+    GramlotRenderer --> References : references
+    Gramlot --> LogicRegistry : logicRegistry
+    Gramlot --> BindingRuntime : binding
+    GramlotRenderer --> BindingRuntime : binding option
+    LogicRegistry --> LogicGroup : logic tree
+    BindingRuntime --> DataRouter : router
+    BindingRuntime --> DataInstaller : installer
+    BindingRuntime --> RadioGroups : radioGroups
+    BindingRuntime --> NodeBinding : Map keyed by SourceBagNode
+    DataRouter --> DataRegistration : register
+    DataRouter --> DataChange : deliver
+    NodeBinding --> DataRegistration : registrations
+    NodeBinding --> Provider : providers
+    Provider <|-- FormulaProvider
+    Provider <|-- ControllerProvider
+    Provider --> LogicRegistry : resolve func
+    Provider --> InlineCompiler : inline mode
+    ControlAdapter <|-- TextControl
+    ControlAdapter <|-- NumberControl
+    ControlAdapter <|-- RangeControl
+    ControlAdapter <|-- SelectControl
+    ControlAdapter <|-- TemporalControl
+    ControlAdapter <|-- ColorControl
+    ControlAdapter <|-- CheckboxControl
+    ControlAdapter <|-- RadioControl
+    RadioControl --> RadioGroups : join
+    GramlotRenderer --> ControlAdapter : record cleanup
+    GramlotRenderer --> ButtonBinding : record cleanup
+    GramlotRenderer --> NativeEventBinding : record cleanup
+    ButtonBinding --> ControllerProvider : click trigger
+    PageBootstrap --> Gramlot : creates
+    PageBootstrap --> LogicRegistry : register Logic
+    <<planned>> LogicRegistry
+    <<planned>> LogicGroup
+    <<planned>> BindingRuntime
+    <<planned>> NodeBinding
+    <<planned>> DataRouter
+    <<planned>> DataRegistration
+    <<planned>> DataChange
+    <<planned>> DataInstaller
+    <<planned>> Provider
+    <<planned>> FormulaProvider
+    <<planned>> ControllerProvider
+    <<planned>> InlineCompiler
+    <<planned>> ControlAdapter
+    <<planned>> TextControl
+    <<planned>> NumberControl
+    <<planned>> RangeControl
+    <<planned>> SelectControl
+    <<planned>> TemporalControl
+    <<planned>> ColorControl
+    <<planned>> CheckboxControl
+    <<planned>> RadioControl
+    <<planned>> RadioGroups
+    <<planned>> ButtonBinding
+    <<planned>> NativeEventBinding
+    <<planned>> PageBootstrap

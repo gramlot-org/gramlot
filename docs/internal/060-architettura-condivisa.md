@@ -4,6 +4,8 @@
 
 **GC-060 · Guida essenziale per collaborare · 18 settembre 2026**
 
+**Release 0.2.0:** il codice attuale è la **0.1.2**. La sezione 045 descrive l’architettura del binding HTML/SVG della 0.2.0. **Le parti 0.2.0 sono pianificate e non implementate.**
+
 Questo documento raccoglie i principi concordati e la direzione di lavoro condivisa.
 I diagrammi descrivono responsabilità e flussi, non una gerarchia definitiva di classi.
 
@@ -163,3 +165,37 @@ scritti, risorse possedute, errori e test di accettazione. La documentazione pub
 racconta ciò che è disponibile per gli sviluppatori; i documenti architetturali
 restano materiale interno di lavoro. La pubblicazione di pacchetti o applicazioni
 è un’azione distinta dal consolidamento del sorgente.
+
+<a id="gc-060-045"></a>
+
+## 045 · Binding HTML/SVG nella 0.2.0: architettura pianificata
+
+**Stato: pianificato, non implementato. Il codice attuale è la 0.1.2.** Fonte: il
+piano del binding 0.2.0 confermato dall'owner il 2026-09-25. La fase S00 lo registra
+come GC-210 e come amendment della costituzione. Il dettaglio tecnico, in inglese, sta
+in [GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060),
+[GC-087 §085](087-javascript-layer-boundaries.md#gc-087-085) e
+[GC-065 §030](065-host-adapters.md#gc-065-030).
+
+Nella 0.1.2 le dichiarazioni restano inerti e non esiste binding. La 0.2.0 aggiunge:
+
+- **Data:** una radice esterna contiene `main`, che è la Bag del documento
+  (`builder.data`). Gramlot ha una sola sottoscrizione ai Data e un solo router
+  (`DataRouter`). I path scritti dall'autore non contengono `main`.
+- **Durate separate:** `NodeBinding` possiede la durata semantica di un nodo Source
+  (registrazioni, provider, timer). Il record del renderer possiede la durata del DOM
+  (elemento, listener). Nessuna sottoclasse di `SourceBagNode`.
+- **Installazione di un ramo in 8 passi:** validazione, `dataSetter`, default,
+  registrazione, `_init`, DOM, `_onBuilt`, `_onStart`. I `dataSetter` si installano
+  prima di costruire il DOM.
+- **Eventi Source in un FIFO:** il lavoro semantico avviene sempre, anche sotto freeze.
+  Il lavoro strutturale sul DOM avviene solo fuori dai rami congelati.
+- **Logica per nome** (`func`) come percorso primario: gruppi di logica per risorsa
+  (`LogicRegistry`, `LogicGroup`). L'inline si compila solo nel runtime della pagina,
+  mai nell'Host o nel WorkerHost.
+- **Scritture nei Data** con i metodi del nodo Source di Builder (`SET`, `PUT`, `FIRE`,
+  `FIRE_AFTER`). Gramlot non aggiunge un proprio insieme di operazioni.
+- **Risorse della pagina:** `css_requires` e `js_requires` sostituiscono `Page.css`;
+  `PageBootstrap` carica le risorse e registra la logica prima dell'avvio.
+- **Dipendenze:** servono le correzioni U1-U4 in genro-builders e genro-bag. Oggi non
+  esistono; Gramlot non le sostituisce con codice locale.
