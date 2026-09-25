@@ -93,4 +93,5 @@ Planned 0.2.0:
 - Nonce `secrets.token_urlsafe(16)`, distinct from `page_id`; `Bootstrap.nonce`; applies to bootstrap scripts and renderer-created `<script>`; standalone uses a hash (S14).
 - Script `import {PageBootstrap} from runtime; await new PageBootstrap({…}).run()`. `run()`: CSS links in order; import all JS, any completion order; `new Gramlot(config)`; register `module.Logic` in received order (`group` = `js_requires` name or null for companion); `window.gramlot = app; await app.start()`. Close or import failure before the last step → nothing mounts.
 - Host and WorkerHost never evaluate code; companion runs only in the window.
+- Source transport: Python authoring inert, no Gramlot Source classes; browser-decoded Source = `GramlotBuilderBag`/`GramlotBuilderBagNode` (`js/src/builder/source.js`); TYTX `SOURCE` suffix on `SourceBag` today (`builder.py:17-18`); S01 confirms Python → JS transport produces the Gramlot classes.
 - S06 = core contract only; Minimal and adapters migrate in S14 after Q4; S00 inventories their `Page.css` use.

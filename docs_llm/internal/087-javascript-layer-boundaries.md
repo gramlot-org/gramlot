@@ -340,7 +340,8 @@ recipe implementation and Source replace decision are unchanged.
 Current 0.1.2: Bag JS/TYTX own tree, events, transport. Builder JS owns grammar, `SourceBag`/`SourceBagNode`, `RendererBase`, `HtmlBuilder`/`SvgBuilder`, static rendering, `svgAttributes`. Gramlot owns `GramlotBuilder`, `GramlotRenderer`, `HtmlElement`, `Gramlot`, `MainTransport`, `References`, host adapters. Browser entry `js/src/index.js` (Gramlot, GramlotBuilder, GramlotRenderer, Bag, BagNode, References, MainTransport) does not import server entry `js/src/adapters/index.js` (Page, source, Host, errors, GramlotBuilder, FileHost). `compute_logic` (`page/builder.py:52`) and `computeLogic` (`gramlot-builder.js:17`) empty; no binding.
 
 Planned 0.2.0:
-- Builder/Bag read-only (§14); writes via Builder node methods; U1-U4 ([GC-045 §060](045-js-taxonomy.md#gc-045-060)) in genro-builders/genro-bag; no local substitute.
+- Builder/Bag read-only (§14); upstream fixes forbidden by the owner (2026-09-25); missing behavior goes into the Gramlot Source classes ([GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060)).
+- Builder layer `js/src/builder/source.js`: `GramlotBuilderBag extends SourceBag`, `GramlotBuilderBagNode extends SourceBagNode`; node adds silent `PUT`, `FIRE` marked for the router (`takeFire`), `FIRE_AFTER`, `absDatapath`; `SET`, `GET`, `setRelativeData`, `getRelativeData` stay Builder's. Every browser path creates them, no prototype change (S01). Never imports `binding/inline.js`, like every `builder/*`. `FIRE` mark belongs to the runtime, `FIRE_AFTER` timer on `NodeBinding`; the plan does not say how the node reaches them.
 - Authoring: grammar only; `binding.json` redefines `dataSetter`, `dataFormula`, `dataController`, loaded after `html5.json`; logic hooks stay empty; `GramlotBuilder` unchanged for logic resolution.
 - Host side (`Host`, `FileHost`, `server/resources.py`, `adapters/resources.js`): page and resource resolution, bootstrap with nonce; never evaluates code. Standalone WorkerHost (gramlot-minimal) is server side: no eval.
 - Page runtime (`bootstrap.js`, `gramlot.js`, `renderer/*`, `binding/*`, `view/*`): only layer executing logic and compiling inline code.
@@ -352,12 +353,13 @@ Planned 0.2.0:
 - Source `script` stays native HTML5, no eval.
 - Bootstrap scripts on the Page; today host script imports `Gramlot` (`host.py:102-104`, `adapters/host.js:59-61`); 0.2.0 imports and runs `PageBootstrap`.
 
-Solid = exists in 0.1.2 (label may name planned additions); dashed box = not yet present; dashed arrows = forbidden imports.
+Solid = exists in 0.1.2 (label may name planned additions); dashed boxes = not yet present; dashed arrows = forbidden imports.
 
 ```mermaid
 flowchart TB
     BAG["Bag JS · TYTX<br/>tree, events, typed transport"]
-    BLD["Builder JS<br/>grammar · SourceBag · RendererBase<br/>node methods SET · GET · PUT · FIRE"]
+    BLD["Builder JS<br/>grammar · SourceBag · RendererBase<br/>node methods SET · GET"]
+    SRC["builder/source.js<br/>GramlotBuilderBag · GramlotBuilderBagNode planned<br/>PUT · FIRE · FIRE_AFTER · absDatapath"]
     AUTH["Authoring<br/>GramlotBuilder · html5.json · svg.json<br/>binding.json planned"]
     HOST["Host side<br/>Page · Host · FileHost<br/>ResourceResolver planned"]
     WH["WorkerHost in gramlot-minimal<br/>server side"]
@@ -370,11 +372,15 @@ flowchart TB
     PAGE --> AUTH
     PAGE --> BLD
     PAGE --> INL
+    SRC --> BLD
+    AUTH --> SRC
+    PAGE --> SRC
     HOST -. never imports .-> INL
     WH -. never imports .-> INL
     AUTH -. never imports .-> INL
+    SRC -. never imports .-> INL
     classDef current fill:#e3f3ed,color:#143d2e,stroke:#39866b;
     classDef planned fill:#f0e8fa,color:#4f2e70,stroke:#9670b3,stroke-dasharray:5 4;
     class BAG,BLD,AUTH,HOST,WH,PAGE current;
-    class INL planned;
+    class INL,SRC planned;
 ```

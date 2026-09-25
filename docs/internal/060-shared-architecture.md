@@ -184,7 +184,12 @@ In 0.1.2 declarations remain inert and no binding exists. 0.2.0 adds:
   (`DataRouter`). Paths written by the author do not contain `main`.
 - **Separate lifetimes:** `NodeBinding` owns the semantic lifetime of a Source node
   (registrations, providers, timers). The renderer record owns the DOM lifetime
-  (element, listeners). No subclass of `SourceBagNode`.
+  (element, listeners). `NodeBinding` stays in a `Map` of `BindingRuntime` for now.
+- **Gramlot Source classes:** `GramlotBuilderBag extends SourceBag` and
+  `GramlotBuilderBagNode extends SourceBagNode` (`js/src/builder/source.js`). They add
+  what Builder lacks: silent `PUT`, `FIRE` marked for the router, `FIRE_AFTER` with the
+  timer on the `NodeBinding`, `absDatapath` with a variable datapath and `?attr` on
+  symbolic paths. Every browser path creates these classes; S01 verifies it.
 - **Branch installation in 8 steps:** validation, `dataSetter`, defaults,
   registration, `_init`, DOM, `_onBuilt`, `_onStart`. The `dataSetter` nodes are
   installed before the DOM is built.
@@ -193,9 +198,10 @@ In 0.1.2 declarations remain inert and no binding exists. 0.2.0 adds:
 - **Named logic** (`func`) as the primary path: logic groups per resource
   (`LogicRegistry`, `LogicGroup`). Inline code compiles only in the page runtime,
   never in the Host or the WorkerHost.
-- **Data writes** with the Builder Source node methods (`SET`, `PUT`, `FIRE`,
-  `FIRE_AFTER`). Gramlot does not add its own set of operations.
+- **Data writes** with the Source node methods: `SET` and `GET` from Builder; `PUT`,
+  `FIRE` and `FIRE_AFTER` from `GramlotBuilderBagNode`. Gramlot does not add a separate
+  set of operations.
 - **Page resources:** `css_requires` and `js_requires` replace `Page.css`;
   `PageBootstrap` loads the resources and registers the logic before startup.
-- **Dependencies:** the fixes U1-U4 in genro-builders and genro-bag are required.
-  They do not exist today; Gramlot does not replace them with local code.
+- **Dependencies:** genro-builders and genro-bag stay read-only. The owner forbids
+  upstream fixes (2026-09-25). What they lack goes into the Gramlot Source classes.

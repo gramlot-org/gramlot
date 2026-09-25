@@ -116,6 +116,8 @@ gramlot/
 │       └── binding.json                Data-element and binding grammar (S02)
 └── js/src/
     ├── bootstrap.js                    PageBootstrap (S07)
+    ├── builder/
+    │   └── source.js                   GramlotBuilderBag · GramlotBuilderBagNode (S01)
     ├── binding/
     │   ├── runtime.js                  BindingRuntime · NodeBinding (S03)
     │   ├── router.js                   DataRouter · DataRegistration · DataChange (S04)
@@ -131,7 +133,10 @@ gramlot/
         └── resources.js                ResourceResolver · parseRequires (S06)
 ```
 
-There is no planned `operations.js`. Existing files that change in 0.2.0 include
+`js/src/builder/source.js` holds the Gramlot Source classes. They add what Builder
+lacks (silent `PUT`, `FIRE` marked for the router, `FIRE_AFTER`, `absDatapath`), because
+fixes in genro-builders and genro-bag are forbidden. There is no planned `operations.js`.
+Existing files that change in 0.2.0 include
 `js/src/gramlot.js`, `js/src/renderer/gramlot-renderer.js`, `js/src/view/html.js`,
 `js/src/index.js`, `js/src/builder/gramlot-builder.js`,
 `js/src/adapters/page.js`, `host.js`, `file-host.js`, `src/gramlot/page/base.py`,

@@ -2,6 +2,10 @@ classDiagram
     direction TB
     HtmlBuilder <|-- GramlotBuilder
     RendererBase <|-- GramlotRenderer
+    SourceBag <|-- GramlotBuilderBag
+    SourceBagNode <|-- GramlotBuilderBagNode
+    GramlotBuilderBag --> GramlotBuilderBagNode : nodeClass
+    GramlotBuilder --> GramlotBuilderBag : browser Source
     Gramlot --> GramlotBuilder : builder
     Gramlot --> GramlotRenderer : renderer
     Gramlot --> MainTransport : transport
@@ -15,7 +19,9 @@ classDiagram
     BindingRuntime --> DataRouter : router
     BindingRuntime --> DataInstaller : installer
     BindingRuntime --> InlineCompiler : inlineCompiler
-    BindingRuntime --> NodeBinding : Map keyed by SourceBagNode
+    BindingRuntime --> NodeBinding : Map keyed by GramlotBuilderBagNode
+    DataRouter --> GramlotBuilderBagNode : takeFire on FIRE mark
+    GramlotBuilderBagNode --> NodeBinding : FIRE_AFTER timer
     DataRouter --> DataRegistration : register
     DataRouter --> DataChange : deliver
     NodeBinding --> DataRegistration : registrations
@@ -40,6 +46,8 @@ classDiagram
     ButtonBinding --> ControllerProvider : click trigger
     PageBootstrap --> Gramlot : creates
     PageBootstrap --> LogicRegistry : register Logic
+    <<planned>> GramlotBuilderBag
+    <<planned>> GramlotBuilderBagNode
     <<planned>> LogicRegistry
     <<planned>> LogicGroup
     <<planned>> BindingRuntime

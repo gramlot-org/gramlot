@@ -412,10 +412,17 @@ are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
 
 **Planned 0.2.0 boundaries:**
 
-- **Builder and Bag stay read-only for Gramlot** (constitution §14). Gramlot code
-  writes Data with the Builder Source node methods. The upstream fixes U1-U4
-  ([GC-045 §060](045-js-taxonomy.md#gc-045-060)) belong to genro-builders and
-  genro-bag. Gramlot adds no local substitute.
+- **Builder and Bag stay read-only for Gramlot** (constitution §14). The owner forbids
+  upstream fixes (2026-09-25). What Builder lacks goes into the Gramlot Source classes
+  ([GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060)).
+- **Builder layer** (`js/src/builder/source.js`): `GramlotBuilderBag extends SourceBag`
+  and `GramlotBuilderBagNode extends SourceBagNode`. The node adds silent `PUT`, `FIRE`
+  marked for the router (`takeFire`), `FIRE_AFTER` and `absDatapath`. `SET`, `GET`,
+  `setRelativeData` and `getRelativeData` stay those of Builder. Every browser path
+  creates these classes, with no prototype change; S01 verifies it. Like every
+  `builder/*` module, it never imports `binding/inline.js`. The `FIRE` mark belongs to
+  the runtime and the `FIRE_AFTER` timer is tracked on the `NodeBinding`. The plan does
+  not say how the node reaches them.
 - **Authoring** (Python and JS `GramlotBuilder`, `binding.json`): grammar only.
   `binding.json` redefines `dataSetter`, `dataFormula`, `dataController` and loads
   after `html5.json`. `compute_logic`/`computeLogic` stay empty. `GramlotBuilder` does
@@ -449,12 +456,13 @@ are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
   runtime and runs it.
 
 Solid boxes exist in 0.1.2, possibly with planned additions named in the label.
-The dashed box does not exist yet. Dashed arrows are forbidden imports.
+Dashed boxes do not exist yet. Dashed arrows are forbidden imports.
 
 ```mermaid
 flowchart TB
     BAG["Bag JS · TYTX<br/>tree, events, typed transport"]
-    BLD["Builder JS<br/>grammar · SourceBag · RendererBase<br/>node methods SET · GET · PUT · FIRE"]
+    BLD["Builder JS<br/>grammar · SourceBag · RendererBase<br/>node methods SET · GET"]
+    SRC["builder/source.js<br/>GramlotBuilderBag · GramlotBuilderBagNode planned<br/>PUT · FIRE · FIRE_AFTER · absDatapath"]
     AUTH["Authoring<br/>GramlotBuilder · html5.json · svg.json<br/>binding.json planned"]
     HOST["Host side<br/>Page · Host · FileHost<br/>ResourceResolver planned"]
     WH["WorkerHost in gramlot-minimal<br/>server side"]
@@ -467,11 +475,15 @@ flowchart TB
     PAGE --> AUTH
     PAGE --> BLD
     PAGE --> INL
+    SRC --> BLD
+    AUTH --> SRC
+    PAGE --> SRC
     HOST -. never imports .-> INL
     WH -. never imports .-> INL
     AUTH -. never imports .-> INL
+    SRC -. never imports .-> INL
     classDef current fill:#e3f3ed,color:#143d2e,stroke:#39866b;
     classDef planned fill:#f0e8fa,color:#4f2e70,stroke:#9670b3,stroke-dasharray:5 4;
     class BAG,BLD,AUTH,HOST,WH,PAGE current;
-    class INL planned;
+    class INL,SRC planned;
 ```

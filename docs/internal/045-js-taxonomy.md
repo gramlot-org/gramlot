@@ -358,7 +358,8 @@ Before implementation, select the first component/controller families, define mi
 
 **Status: the 0.2.0 part is planned and not implemented. The current code is 0.1.2.**
 Source of the 0.2.0 part: the owner-confirmed binding plan of 2026-09-25
-(revision 3; approved by the owner on 2026-09-25, proposals confirmed "for now"). Phase S00 records it in the repository
+(revision 3; approved by the owner on 2026-09-25, proposals confirmed "for now";
+updated on the same date with the owner decision that forbids upstream fixes). Phase S00 records it in the repository
 as GC-210 and as a constitution amendment; neither exists yet. Use
 [GC-070](070-work-status.md) for status. This section describes the core
 repository, not `gramlot-poc`.
@@ -382,6 +383,7 @@ repository, not `gramlot-poc`.
 
 | File | Classes and exports | Phase |
 | --- | --- | --- |
+| `js/src/builder/source.js` | `GramlotBuilderBag`, `GramlotBuilderBagNode` | S01 |
 | `js/src/binding/runtime.js` | `BindingRuntime`, `NodeBinding` | S03 |
 | `js/src/binding/router.js` | `DataRouter`, `DataRegistration`, `DataChange` | S04 |
 | `js/src/binding/installation.js` | `DataInstaller` | S05 |
@@ -396,8 +398,36 @@ repository, not `gramlot-poc`.
 | `src/gramlot/server/resources.py` | `ResourceResolver`, `parse_requires` | S06 |
 | `src/gramlot/collections/binding.json` | grammar of data-elements and binding attributes | S02 |
 
-There is no `operations.js`. Code writes Data through the Builder Source node methods
-(`setRelativeData`, `getRelativeData`, `SET`, `GET`, `PUT`, `FIRE`, `FIRE_AFTER`).
+There is no `operations.js`. Code writes Data through the Source node methods.
+`setRelativeData`, `getRelativeData`, `SET` and `GET` stay those of Builder.
+`PUT`, `FIRE`, `FIRE_AFTER` and `absDatapath` come from `GramlotBuilderBagNode`.
+
+**Planned Source classes (`js/src/builder/source.js`).** The owner forbids fixes in
+genro-builders and genro-bag (decision of 2026-09-25). What Builder lacks goes into
+two Gramlot classes:
+
+- `GramlotBuilderBag extends SourceBag`. Its `nodeClass` getter returns
+  `GramlotBuilderBagNode` (`source-bag.js:252-254`).
+- `GramlotBuilderBagNode extends SourceBagNode` provides:
+  - `PUT(path, value)`: silent write with `doTrigger=false` (`bag.js:387-389`).
+    Today the Builder `PUT` emits the event (`source-bag.js:237`).
+  - `FIRE(path, value = true)`: marks its own write for the router, then writes with
+    `fired=true`. The mark is a `FireMark` on the absolute path. The router consumes
+    it with `takeFire(path)` at the first event on that path. A nested `SET` on the
+    same path during delivery finds the mark consumed and is not fired. The mark is
+    removed in a `finally`. The Bag event does not carry `fired` (`bag.js:601-604`).
+  - `FIRE_AFTER(path, value = true, delay = 10)`: `FIRE` after `delay` ms. The timer
+    is tracked on the `NodeBinding` and is cancelled when it closes.
+  - `absDatapath(path)`: resolves a variable datapath (`datapath='^.foo'` reads the
+    value in `.foo`; an empty value gives a null path, as `gnrdomsource.js:735-739`).
+    It keeps `?attr` on symbolic paths. Today Builder uses the raw datapath
+    (`source-bag.js:132-145`) and loses `?attr`.
+- S01 verifies that every browser path creates the Gramlot classes: JS authoring,
+  `sourceBagFromTytx`, `bindBuilder`, insertion and `remoteSource`. The TYTX `SOURCE`
+  suffix is registered on `SourceBag` today (`builder.py:17-18`, `source-bag.js`).
+  No prototype change.
+- Python does not need these classes: authoring stays inert and the methods run only
+  in the browser.
 
 **Planned composition rules:**
 
@@ -411,8 +441,10 @@ There is no `operations.js`. Code writes Data through the Builder Source node me
   Author paths never contain `main`. `DataRouter` is the only subscriber of the outer root.
 - Parent passes `this` to the child; the child exposes it with a getter (`runtime`,
   `binding`, `gramlot`). State lives in instances only.
-- No `SourceBagNode` subclass and no prototype change (P17). Semantic state lives in
-  `NodeBinding`, stored in a `Map` of `BindingRuntime` keyed by the `SourceBagNode`.
+- Methods live in `GramlotBuilderBagNode` and `GramlotBuilderBag` (P17). No prototype
+  change. Semantic state (registrations, timers, counter, stamps) stays for now in
+  `NodeBinding`, stored in a `Map` of `BindingRuntime` keyed by the Source node. It can
+  move onto the node later, as in legacy, with no effect for authors.
 - Semantic lifetime is `NodeBinding`: registrations, providers, timers, click counter,
   stamps (`installed`, `init`, `built`, `start`) and the `remoteSource` request.
 - DOM lifetime stays the renderer record (`record.cleanup`, `gramlot-renderer.js:84`):
@@ -447,6 +479,10 @@ classDiagram
     direction TB
     HtmlBuilder <|-- GramlotBuilder
     RendererBase <|-- GramlotRenderer
+    SourceBag <|-- GramlotBuilderBag
+    SourceBagNode <|-- GramlotBuilderBagNode
+    GramlotBuilderBag --> GramlotBuilderBagNode : nodeClass
+    GramlotBuilder --> GramlotBuilderBag : browser Source
     Gramlot --> GramlotBuilder : builder
     Gramlot --> GramlotRenderer : renderer
     Gramlot --> MainTransport : transport
@@ -460,7 +496,9 @@ classDiagram
     BindingRuntime --> DataRouter : router
     BindingRuntime --> DataInstaller : installer
     BindingRuntime --> InlineCompiler : inlineCompiler
-    BindingRuntime --> NodeBinding : Map keyed by SourceBagNode
+    BindingRuntime --> NodeBinding : Map keyed by GramlotBuilderBagNode
+    DataRouter --> GramlotBuilderBagNode : takeFire on FIRE mark
+    GramlotBuilderBagNode --> NodeBinding : FIRE_AFTER timer
     DataRouter --> DataRegistration : register
     DataRouter --> DataChange : deliver
     NodeBinding --> DataRegistration : registrations
@@ -485,6 +523,8 @@ classDiagram
     ButtonBinding --> ControllerProvider : click trigger
     PageBootstrap --> Gramlot : creates
     PageBootstrap --> LogicRegistry : register Logic
+    <<planned>> GramlotBuilderBag
+    <<planned>> GramlotBuilderBagNode
     <<planned>> LogicRegistry
     <<planned>> LogicGroup
     <<planned>> BindingRuntime
@@ -569,7 +609,8 @@ enter the FIFO and run after the current event.
 **Data write.** A write reaches the document Bag; the event propagates to the outer
 root with `pathlist` starting with `main`; `BindingRuntime.receiveData` calls
 `DataRouter.deliver`; the router computes path, level (`node`, `container`, `child`)
-and `fired`, copies the candidates and calls `recipient.receive(change)`.
+and `fired` (`takeFire(path)`, once per event, on the mark opened by
+`GramlotBuilderBagNode.FIRE`), copies the candidates and calls `recipient.receive(change)`.
 `NodeBinding.receive` calls `renderer.project(node, change)`, which does nothing if
 the node has no element yet; `Provider.receive` calls `invoke`. A fired event at level `child` is not delivered. `reason === 'autocreate'` is ignored.
 
@@ -581,6 +622,7 @@ freeze. Thaw builds the current Source once, with no reinstallation and no repea
 
 - Symbolic paths already resolved by Builder: `#parent`, `#FORM` (first ancestor with
   `formId` or `form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<node_id>`.
+  `GramlotBuilderBagNode.absDatapath` keeps `?attr` on them.
   Legacy `#WORKSPACE`, `#ROW`, `#DATA` are out of 0.2.0.
 - Button click mechanisms, one per button (P10): nested `dataController` (primary);
   `action='…'` (inline code, `this` = button node, page runtime only); `fire='.path'`
@@ -591,15 +633,18 @@ freeze. Thaw builds the current Source once, with no reinstallation and no repea
   `func`, `formula`, `script`, `_if`, `_else`, `_init`, `_onStart`, `_onBuilt`,
   `_delay`, `_timing`, `_userChanges` (P20).
 
-**Upstream dependencies, not existing features.** These fixes belong to the owning
-libraries (constitution §14). They are not in the installed Builder JS 0.1.5 or Bag JS 0.5.3:
+**Builder behavior missing today, planned in the Gramlot Source classes.** No fix goes
+into genro-builders or genro-bag (constitution §14, owner decision of 2026-09-25). The
+installed Builder JS 0.1.5 and Bag JS 0.5.3 lack these behaviors; `GramlotBuilderBagNode`
+provides them:
 
-- **U1, genro-builders:** `setRelativeData` with reason `false` writes without
-  notifying anyone. Today `PUT` emits the event. Required before S08.
-- **U2, genro-bag:** the update event carries `fired`. Today it does not. The router
-  reads `fired` from the event after U2. Required before S08.
-- **U3, genro-builders:** a `delay` parameter in `setRelativeData` and
-  `FIRE_AFTER(path, value = true, delay = 10)` on the Source node. Required before S08.
-- **U4, genro-builders:** `absDatapath` resolves a variable datapath
-  (`datapath='^.foo'`) by reading the Data. Today `_composeRelativeDatapath` uses the
-  raw value. Required before S04.
+- silent `PUT`: today the Builder `PUT` emits the event (`source-bag.js:237`). Needed by S08;
+- `fired` for the router: `FIRE` marks its write and the router reads it with
+  `takeFire(path)`, not from the Bag event. Needed by S04 and S08;
+- `FIRE_AFTER(path, value = true, delay = 10)` with the timer on the `NodeBinding`.
+  Needed by S08;
+- variable datapath and `?attr` on symbolic paths in `absDatapath`. Today
+  `_composeRelativeDatapath` uses the raw value. Needed by S04.
+
+If a Builder or Bag hook proves insufficient, the solution goes into the Gramlot classes
+and is decided with the owner.

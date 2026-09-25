@@ -203,6 +203,11 @@ records it as GC-210 and a constitution amendment.
   If the page closes or an import fails before step 5, nothing mounts.
 - Host and WorkerHost never evaluate code strings. The companion loads in the window
   and never runs in the WorkerHost.
+- Source transport: Python authoring stays inert and does not use the Gramlot Source
+  classes. In the browser, the decoded Source is made of `GramlotBuilderBag` and
+  `GramlotBuilderBagNode` (`js/src/builder/source.js`). Today the TYTX `SOURCE` suffix
+  is registered on `SourceBag` (`builder.py:17-18`). S01 confirms that the Python → JS
+  transport produces the Gramlot classes in the browser.
 - S06 implements the core contract only. Minimal and the connected adapters
   (FastAPI, Kajenn, Flask, Django, Node, Bun, standalone) migrate in S14, after
   authorization Q4. S00 inventories their current use of `Page.css`.
