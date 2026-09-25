@@ -427,6 +427,8 @@ are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
 - **Page runtime** (browser: `bootstrap.js`, `gramlot.js`, `renderer/*`,
   `binding/*`, `view/*`): the only layer that executes declared logic. Only this layer
   compiles inline code.
+- **`binding/` does not import `view/`.** The renderer creates `RadioGroups`; the
+  view layer keeps it. `BindingRuntime` owns `InlineCompiler`.
 - **Import rule for `binding/inline.js`:** only the page runtime imports it. Never
   `adapters/*`, `builder/*` or the WorkerHost. S07 and S09 test the import graphs of
   server and Worker.
@@ -437,6 +439,9 @@ are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
   The CSP profile for inline pages is open question Q3.
 - **Logic resolution:** `LogicRegistry.resolve`, not Builder `_resolveLogicFunc`.
   A missing name is an error, never a fallback to inline.
+- **JS pages:** `ordini.js` exports `Page` (used by the Node or Bun host to build the
+  Source) and `Logic` (used in the browser). It must be importable in both
+  environments, without server-only imports. S07 and S14 verify it.
 - **`script` in the Source** stays the native HTML5 element, without eval semantics.
 - **Bootstrap scripts** are declared on the Page, not in the Source. Today the host
   script imports `Gramlot` (`src/gramlot/server/host.py:102-104`,

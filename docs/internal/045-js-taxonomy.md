@@ -358,7 +358,7 @@ Before implementation, select the first component/controller families, define mi
 
 **Status: the 0.2.0 part is planned and not implemented. The current code is 0.1.2.**
 Source of the 0.2.0 part: the owner-confirmed binding plan of 2026-09-25
-(revision 2, proposals confirmed "for now"). Phase S00 records it in the repository
+(revision 3; approved by the owner on 2026-09-25, proposals confirmed "for now"). Phase S00 records it in the repository
 as GC-210 and as a constitution amendment; neither exists yet. Use
 [GC-070](070-work-status.md) for status. This section describes the core
 repository, not `gramlot-poc`.
@@ -405,6 +405,7 @@ There is no `operations.js`. Code writes Data through the Builder Source node me
   `GramlotBuilder` → `BindingRuntime(this)` → `data = builder.data` →
   `binding.attach()` → `source = builder.source` →
   `GramlotRenderer(builder, source, destination, {binding})`.
+- The current line `this.data.setItem('main', new Bag())` (`gramlot.js:14`) disappears.
 - `binding.attach()` sets `main` of an outer Data root to the document Bag without a
   copy, and subscribes once to the outer root. `gramlot.data === builder.data`.
   Author paths never contain `main`. `DataRouter` is the only subscriber of the outer root.
@@ -417,6 +418,15 @@ There is no `operations.js`. Code writes Data through the Builder Source node me
 - DOM lifetime stays the renderer record (`record.cleanup`, `gramlot-renderer.js:84`):
   element, listeners, `ControlAdapter`, `ButtonBinding`, `NativeEventBinding`.
   A rebuild of the same node closes only the DOM lifetime.
+- Registrations happen at step 4 of the branch installation (§060), before the DOM.
+  `renderedItem` only links the renderer record to the `NodeBinding` already opened
+  (`binding.bindingFor(node)`). `renderer.project(node, change)` does nothing while
+  the node has no record yet (steps 4-5, or under freeze).
+- `BindingRuntime` owns `InlineCompiler` (`get inlineCompiler()`). Attributes with
+  `==` are evaluated by `NodeBinding.evaluateFormulas()` through
+  `InlineCompiler.compileExpression`, at every projection.
+- The renderer creates `RadioGroups` (`constructor(renderer)`); it stays in the view
+  layer. `BindingRuntime` has no `radioGroups`, so `binding/` does not import `view/`.
 - `FormulaProvider` and `ControllerProvider` extend `Provider`. `dataSetter` is not a
   provider: `DataInstaller` owns it.
 - `func` resolves through `LogicRegistry.resolve`, not through Builder's
@@ -445,10 +455,11 @@ classDiagram
     Gramlot --> LogicRegistry : logicRegistry
     Gramlot --> BindingRuntime : binding
     GramlotRenderer --> BindingRuntime : binding option
+    GramlotRenderer --> NodeBinding : record link via bindingFor
     LogicRegistry --> LogicGroup : logic tree
     BindingRuntime --> DataRouter : router
     BindingRuntime --> DataInstaller : installer
-    BindingRuntime --> RadioGroups : radioGroups
+    BindingRuntime --> InlineCompiler : inlineCompiler
     BindingRuntime --> NodeBinding : Map keyed by SourceBagNode
     DataRouter --> DataRegistration : register
     DataRouter --> DataChange : deliver
@@ -467,6 +478,7 @@ classDiagram
     ControlAdapter <|-- CheckboxControl
     ControlAdapter <|-- RadioControl
     RadioControl --> RadioGroups : join
+    GramlotRenderer --> RadioGroups : creates
     GramlotRenderer --> ControlAdapter : record cleanup
     GramlotRenderer --> ButtonBinding : record cleanup
     GramlotRenderer --> NativeEventBinding : record cleanup
@@ -514,7 +526,10 @@ inside the renderer FIFO.
 1. Validation of the whole branch, without effects (`renderer.validateCandidate`).
 2. `dataSetter` nodes in document order, parent before children; `applySetter` on each (rule R1).
    Observers already active receive these writes synchronously.
-3. Defaults (`default`, `default_value`, `default_<attr>`, `attr_*`) on empty paths only.
+3. Defaults (`default`, `default_value`, `default_<attr>`) on empty paths only. Then
+   `attr_<name>=v`, as in legacy, sets attribute `<name>` on the Data node of the
+   control's `value` (or `src`) path, only if that Data node exists, without an
+   emptiness check. `v` can be a pointer. A default just written creates the Data node.
 4. Registration: `openBinding` per node; `registerPointers` for visual nodes;
    `Provider.register` for `dataFormula` and `dataController`.
 5. `_init`, once per node, invoked by `BindingRuntime`.
@@ -555,12 +570,26 @@ enter the FIFO and run after the current event.
 root with `pathlist` starting with `main`; `BindingRuntime.receiveData` calls
 `DataRouter.deliver`; the router computes path, level (`node`, `container`, `child`)
 and `fired`, copies the candidates and calls `recipient.receive(change)`.
-`NodeBinding.receive` calls `renderer.project(node, change)`; `Provider.receive`
-calls `invoke`. A fired event at level `child` is not delivered. `reason === 'autocreate'` is ignored.
+`NodeBinding.receive` calls `renderer.project(node, change)`, which does nothing if
+the node has no element yet; `Provider.receive` calls `invoke`. A fired event at level `child` is not delivered. `reason === 'autocreate'` is ignored.
 
 **Removal and freeze.** A Source `del` closes the branch semantically, also under
 freeze. Thaw builds the current Source once, with no reinstallation and no repeated
 `_init` or `_onStart`.
+
+**Planned authoring semantics used by the runtime:**
+
+- Symbolic paths already resolved by Builder: `#parent`, `#FORM` (first ancestor with
+  `formId` or `form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<node_id>`.
+  Legacy `#WORKSPACE`, `#ROW`, `#DATA` are out of 0.2.0.
+- Button click mechanisms, one per button (P10): nested `dataController` (primary);
+  `action='…'` (inline code, `this` = button node, page runtime only); `fire='.path'`
+  (`FIRE` with the modifier string or `true`; the Data node gets `modifier` and
+  `_counter`); `fire_<name>='.path'` (`FIRE` with value `'<name>'`; several fire in
+  attribute order). A combination of controller, `action` and the `fire` family is an error.
+- Control attributes do not enter `kwargs`: `destination_path`, `result_path`,
+  `func`, `formula`, `script`, `_if`, `_else`, `_init`, `_onStart`, `_onBuilt`,
+  `_delay`, `_timing`, `_userChanges` (P20).
 
 **Upstream dependencies, not existing features.** These fixes belong to the owning
 libraries (constitution §14). They are not in the installed Builder JS 0.1.5 or Bag JS 0.5.3:

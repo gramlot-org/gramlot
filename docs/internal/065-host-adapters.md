@@ -183,7 +183,9 @@ records it as GC-210 and a constitution amendment.
 - Page location (P14): `pages/ordini.py`, or `pages/ordini/ordini.py` when the page
   has own files. Both present is an error. The companion is the file with the same
   name in the page folder. JS pages (Node or Bun) live in a folder separate from Python
-  pages. The two forms are an owner exception to §13. The companion is public by
+  pages. A JS page `ordini.js` exports `Page` (for the Node or Bun host) and `Logic`
+  (for the browser), so it must be importable in both environments without
+  server-only imports. The two forms are an owner exception to §13. The companion is public by
   definition; server-only logic lives in modules the companion does not import.
 - Nonce: `secrets.token_urlsafe(16)` in `open_page`, distinct from `page_id`.
   `Bootstrap` gains a `nonce` field. The nonce applies to the bootstrap scripts and to

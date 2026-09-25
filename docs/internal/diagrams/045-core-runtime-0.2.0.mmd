@@ -10,10 +10,11 @@ classDiagram
     Gramlot --> LogicRegistry : logicRegistry
     Gramlot --> BindingRuntime : binding
     GramlotRenderer --> BindingRuntime : binding option
+    GramlotRenderer --> NodeBinding : record link via bindingFor
     LogicRegistry --> LogicGroup : logic tree
     BindingRuntime --> DataRouter : router
     BindingRuntime --> DataInstaller : installer
-    BindingRuntime --> RadioGroups : radioGroups
+    BindingRuntime --> InlineCompiler : inlineCompiler
     BindingRuntime --> NodeBinding : Map keyed by SourceBagNode
     DataRouter --> DataRegistration : register
     DataRouter --> DataChange : deliver
@@ -32,6 +33,7 @@ classDiagram
     ControlAdapter <|-- CheckboxControl
     ControlAdapter <|-- RadioControl
     RadioControl --> RadioGroups : join
+    GramlotRenderer --> RadioGroups : creates
     GramlotRenderer --> ControlAdapter : record cleanup
     GramlotRenderer --> ButtonBinding : record cleanup
     GramlotRenderer --> NativeEventBinding : record cleanup

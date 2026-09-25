@@ -344,9 +344,11 @@ Planned 0.2.0:
 - Authoring: grammar only; `binding.json` redefines `dataSetter`, `dataFormula`, `dataController`, loaded after `html5.json`; logic hooks stay empty; `GramlotBuilder` unchanged for logic resolution.
 - Host side (`Host`, `FileHost`, `server/resources.py`, `adapters/resources.js`): page and resource resolution, bootstrap with nonce; never evaluates code. Standalone WorkerHost (gramlot-minimal) is server side: no eval.
 - Page runtime (`bootstrap.js`, `gramlot.js`, `renderer/*`, `binding/*`, `view/*`): only layer executing logic and compiling inline code.
+- `binding/` does not import `view/`: renderer creates `RadioGroups`; `BindingRuntime` owns `InlineCompiler`.
 - `binding/inline.js` imported only by page runtime; never by `adapters/*`, `builder/*` or WorkerHost; S07/S09 test import graphs.
 - Named mode (`func`) primary, CSP without `'unsafe-eval'`; inline (`formula`, `script`, `==`) for compatibility, may be deprecated; macros = deprecated preprocessor in `InlineCompiler`; two modes = owner exception to §13; inline CSP profile open (Q3).
 - `LogicRegistry.resolve`, not `_resolveLogicFunc`; missing name = error, no inline fallback.
+- JS page `ordini.js` exports `Page` (Node/Bun host) and `Logic` (browser); importable in both, no server-only imports; S07/S14 verify.
 - Source `script` stays native HTML5, no eval.
 - Bootstrap scripts on the Page; today host script imports `Gramlot` (`host.py:102-104`, `adapters/host.js:59-61`); 0.2.0 imports and runs `PageBootstrap`.
 
