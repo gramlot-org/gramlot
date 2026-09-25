@@ -942,7 +942,8 @@ it does not claim runtime implementation or acceptance of the S00 transcription.
    data remains HTML5. This supersedes `.data(path, value)`, setter destination
    and formula destination. Destination/result paths reject ?attr. `_path`
    fields contain bare paths; strip an authored pointer prefix with one warning.
-   Variable datapath follows its Data value and rebinds the branch (upstream U4).
+   Variable datapath follows its Data value and rebinds the branch, through
+   `GramlotBuilderBagNode.absDatapath` (item 10).
    Authoring dictionaries/plain objects use Bag(value); lists stay lists and JSON
    strings stay strings. These are bounded confirmed conversions, not general fallbacks.
 3. A2 installs every setter of the initial/inserted branch before DOM in document
@@ -959,11 +960,12 @@ it does not claim runtime implementation or acceptance of the S00 transcription.
    reinstall. Keep the earlier separately recorded freeze decision unchanged.
 5. Named logic is primary; inline compilation only in the page runtime, never
    Python/JS Host, WorkerHost or DevTools. This is a bounded §13 exception.
-   Both forms use Builder Source-node methods; no Gramlot operations layer.
+   Both forms use Source-node methods; no Gramlot operations layer. SET, GET,
+   setRelativeData and getRelativeData are Builder's; silent PUT, router-marked
+   FIRE and FIRE_AFTER come from GramlotBuilderBagNode (item 10).
    Legacy macros become a deprecated regex compatibility preprocessor with one
    warning, superseding macro-only inline writes. FIRE_AFTER defaults to 10 ms
-   with explicit delay; U1 quiet writes, U2 fired metadata and U3 delayed methods
-   remain upstream gates, not permission to patch dependencies here.
+   with explicit delay; its timer is tracked on the NodeBinding and cancelled at close.
 6. Nested button controller is ordinary reactive logic plus click (B7), with
    button-prefixed counter/modifiers. One click mechanism; connect_onclick follows.
    R3 remains provisional: implicit type=button only for Gramlot-enabled buttons,
@@ -979,7 +981,7 @@ it does not claim runtime implementation or acceptance of the S00 transcription.
    or page mixin. Nonce differs from page_id; standalone hashes final bytes.
 8. Source/DOM lookup uses getBaseSourceNode/getDomNode on renderer and Gramlot;
    no added object properties. NodeBinding owns semantic lifetime separately from
-   DOM, without SourceBagNode subclassing. FIFO semantics precede freeze filtering;
+   DOM, in a BindingRuntime Map keyed by the actual node (P17, see item 10). FIFO semantics precede freeze filtering;
    complete builds before queued mutations, ignore changes to currently building
    nodes. Anti-echo suppresses only redundant origin value, never other attributes
    or providers. remoteSource follows semantic lifetime, latest request wins.
@@ -988,6 +990,17 @@ it does not claim runtime implementation or acceptance of the S00 transcription.
    server/shared/remote Data, subscriptions, PUBLISH and ask declarations, not
    same-named keys in user Data. Q2 cycles, Q3 CSP profiles, Q4 connected writes
    and Q5 native conversions remain open at their phases; no new decision implied.
+10. Owner rule, 2026-09-25: no upstream fixes for Gramlot; missing Builder/Bag
+    behavior goes into GramlotBuilderBag/GramlotBuilderBagNode. The earlier planned
+    genro-builders/genro-bag fixes are withdrawn. `js/src/builder/source.js` (S01)
+    holds `GramlotBuilderBag extends SourceBag`, whose nodeClass returns
+    `GramlotBuilderBagNode extends SourceBagNode`, with silent PUT, FIRE marked for
+    the router, FIRE_AFTER with a NodeBinding-tracked timer and absDatapath with
+    variable datapath and symbolic ?attr. S01 proves every browser path produces
+    these classes, without prototype mutation or Builder/Bag changes; Python needs
+    no counterpart. S04 and S08 wait for no external release. S01 measures the
+    Bag.fromTytx null-attribute loss; any solution needs owner approval and goes into
+    these classes. This supersedes the P17 wording "no SourceBagNode subclass".
 
 This supersedes obsolete authoring/ownership/initialization gates in GC-155–175 and
 PORT-0005; preserve their dated evidence and legacy assertions. GC-210 replaces

@@ -5,6 +5,7 @@ Document ID: **GC-070**. Updated: **2026-09-25**.
 
 **Current checkpoint:** S00 records the 0.2.0 contract, baseline and inventories; delivery awaits owner review. See [§490](#gc-070-490).
 **Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. Only S00 is authorized in this task; do not start S01.
+**Dependency fixes:** forbidden by owner decision, 2026-09-25; missing Builder behavior goes into GramlotBuilderBag/GramlotBuilderBagNode (S01). See [§495](#gc-070-495).
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
 **Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
@@ -2018,3 +2019,26 @@ S08/S14/S10. P20 excludes result_path from kwargs, and S06 depends on S00 only, 
 the current plan. No arbitrary resolution or dependency workaround is authorized.
 No S01 or connected-repository phase starts here. One S00 commit, no push; write
 the S00 final report outside the repository and stop, as requested.
+
+
+<a id="gc-070-495"></a>
+## 495 · Gramlot source classes replace dependency fixes — 2026-09-25
+
+Block ID: **GC-070-495**.
+
+**Decided:** owner, 2026-09-25: no genro-builders/genro-bag fixes; the earlier planned
+dependency fixes are withdrawn and gate nothing. `GramlotBuilderBag` and
+`GramlotBuilderBagNode` (`js/src/builder/source.js`) supply silent PUT, router-marked
+FIRE, NodeBinding-tracked FIRE_AFTER and absDatapath (variable datapath, symbolic
+?attr); SET/GET/setRelativeData/getRelativeData stay Builder's. P17 updated; semantic
+state stays in NodeBinding. See [GC-210 §018](210-binding-contract.md#gc-210-018),
+constitution 11.47 item 10.
+
+**Implemented:** documentation only; classes planned for S01, not implemented.
+
+**Remaining:** S01 proves all browser paths (JS authoring, sourceBagFromTytx,
+bindBuilder, insertion, remoteSource) yield the Gramlot classes, no prototype
+mutation or Builder/Bag change, and measures Bag.fromTytx null-attribute loss (any
+solution after owner approval). S04/S08 wait for no external release. Both nested
+tests stay out of CI until silent PUT and symbolic ?attr exist (S01). S01 needs its
+own owner authorization.

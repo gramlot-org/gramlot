@@ -58,7 +58,9 @@ Current runtimeValues projection alone is not reactive binding or provider lifet
 ## Remaining gates
 
 Follow GC-210, not historical GC-165 B3: S01 verifies dependency hooks including
-null-attribute transport; U4 gates variable datapath/S04; U1–U3 gate S08 writes.
+null-attribute transport. Upstream fixes are forbidden (owner, 2026-09-25):
+variable datapath (S04) and silent PUT/marked FIRE/FIRE_AFTER (S08) come from
+GramlotBuilderBag/GramlotBuilderBagNode (GC-210 §018), planned for S01.
 Q2 provider cycles, Q3 CSP profiles, Q4 adapter authorization and Q5 control
 conversion remain open for their phases. Initial ownership, authoring, R1 and
 Source-only transport are not open choices. R3 is provisional for S12 evidence.
