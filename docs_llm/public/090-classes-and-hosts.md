@@ -252,7 +252,9 @@ folder hierarchy belongs to the adapter/integration; default is page folder plus
 Page files: `pages/orders.py`, or `pages/orders/orders.py` when it has own files;
 both = error. Companion = same-name `orders.js`/`orders.css` in the page folder,
 both forms, loaded after all requires. JS pages (Node/Bun) live in a folder separate
-from Python pages. The companion is public (served to the browser); server-only
+from Python pages; a JS page file (`orders.js`) exports `Page` (host builds Source)
+and `Logic` (browser), so it must import in both environments, without server-only
+imports. The companion is public (served to the browser); server-only
 logic lives in modules it does not import.
 
 Bootstrap: CSS links in order; import all JS modules; create `Gramlot`; register each

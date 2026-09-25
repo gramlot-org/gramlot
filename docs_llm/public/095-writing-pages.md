@@ -151,8 +151,12 @@ One Data Bag per page instance: `app.data === app.builder.data`. Author paths ne
 contain the internal `main`. One Gramlot subscription routes changes by path.
 Pointers in attributes or node values: `^path` reads and reacts; `=path` reads at
 call time without triggering; `==expr` is an inline JS expression compiled only in
-the page runtime; `^path?attr` points to a Data node attribute. `.path` is relative
+the page runtime and evaluated at each projection; `^path?attr` points to a Data node attribute. `.path` is relative
 to the branch `datapath`; Source or context changes re-register pointers.
+Symbolic origins (Builder): `#parent` (one level up), `#FORM` (first ancestor with
+`formId`/`form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<node_id>`;
+e.g. `value='^#FORM.customer.name'`. `#WORKSPACE`, `#ROW`, `#DATA` and aliases are
+outside 0.2.0.
 Example: `panel = root.div(datapath=".customer")`; `panel.h2("^.name")`;
 `panel.input(value="^.name", live=True)`.
 
@@ -186,10 +190,13 @@ value moves into Data without copy and leaves the Source node.
 ## 050 · Build-time defaults and data defaults (0.2.0)
 
 `default`/`default_value` (for `value`; `default_value` prevails), `default_<attr>`
-(pointer in `<attr>`) and `attr_*` (same legacy syntax) apply after all
-`dataSetter`, only on empty paths. Empty = null or missing; `false`, `0`, `''` are
-values. A default never overrides any `dataSetter`. `attr_*` is evaluated before
-the control's own default. Example: `input(type="number", value="^.font_size", default_value=14)`.
+(pointer in `<attr>`) apply after all `dataSetter`, only on empty paths. Empty =
+null or missing; `false`, `0`, `''` are values. A default never overrides any
+`dataSetter`. Example: `input(type="number", value="^.font_size", default_value=14)`.
+`attr_<name>=v` (legacy rule; `v` may be a pointer) sets `<name>` on the Data node
+of the control's `value` (or `src`), only if that node exists, without emptiness
+check, after the node's own defaults: `input(value="^.price", attr_dtype="N")` puts
+`dtype='N'` on `.price`.
 
 These are build-time defaults for structure parameters (font size, colour). Record
 data arrives after construction through load/edit/save/reload; a new record loads a
@@ -223,7 +230,7 @@ is a group (`page.logic.business`); `/` makes nested groups. Source:
 `func='business.discount'` or `func='add'` (companion). Formula: `method(kwargs)`
 returns the value; controller: `method(node, kwargs)`. `kwargs` = resolved author
 attributes plus `_node`, `_triggerpars`, `_reason` and, for buttons, `_evt` and
-`button_*`; control attributes (`destination_path`, `func`, `formula`, `script`,
+`button_*`; control attributes (`destination_path`, `result_path`, `func`, `formula`, `script`,
 `_if`, `_else`, `_init`, `_onStart`, `_onBuilt`, `_delay`, `_timing`,
 `_userChanges`) are excluded. `this` = group, `this.page` = page instance. The same
 resource at several levels fills one group from generic to specific; specific wins.
@@ -281,9 +288,13 @@ Main click path: a `dataController` nested in `button`, e.g.
 ordinary controller (also `^`, `_init`, `_onStart`, `_timing`); the click is one more
 trigger. It receives `_evt`, `button_counter`, `button_shift`, `button_ctrl`,
 `button_alt`, `button_meta`; the counter lives as long as the Source node, across
-rebuilds. Alternatives: `action`, `fire`, `fire_*`. One mechanism per button:
-several `dataController` children or two mechanisms = error; several `fire_*` all
-fire in attribute order. `connect_on<event>` attaches native listeners on any
+rebuilds. Alternatives: `action='…'` = inline code on click, `this` = button node,
+receives current button attributes plus `event`, `_counter`, `modifiers` (inline
+rules apply); `fire='.path'` = `FIRE` with the modifier string (`'Shift'`,
+`'CtrlAlt'`, …) or `true`, Data node gets `modifier` and `_counter`;
+`fire_<name>='.path'` = `FIRE` with value `'<name>'`. One mechanism per button:
+several `dataController` children or any combination of nested controller, `action`
+and the `fire` family = error; several `fire_*` all fire in attribute order. `connect_on<event>` attaches native listeners on any
 element; on a button it runs after the Gramlot mechanism.
 
 R3, provisional pending tests, only for buttons with a Gramlot mechanism: set
@@ -332,7 +343,8 @@ attributes on null (legacy skipped the whole write); all branch `dataSetter` bef
 DOM (legacy: node and direct children); no `?attr` in `destination_path`/`result_path`;
 R3 provisional, `stopPropagation` without `preventDefault` (legacy both); `js_requires`
 loads all levels, specific wins (legacy: only the most generic JS); `name:media`
-error; methods instead of `domNode`/`sourceNode` properties; Source `script` without
+error; controller/`action`/`fire` combinations are errors (legacy chained them and
+also ran the nested controller); no `#WORKSPACE`/`#ROW`/`#DATA`; methods instead of `domNode`/`sourceNode` properties; Source `script` without
 `dojo.eval`; macros only via the deprecated preprocessor.
 Migration: `data(...)` → `dataSetter(...)`; `Page.css` URL list → `css_requires`
 name string (Python and JS); inline controllers → named logic; macros →

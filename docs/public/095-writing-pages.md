@@ -189,11 +189,21 @@ A native attribute or a node value can hold a pointer to a Data path:
 | --- | --- |
 | `'^.name'` | Reads the value and reacts when it changes |
 | `'=.name'` | Reads the value when the declaration runs; a change does not trigger it |
-| `'==expression'` | Inline JavaScript expression, compiled only by the page runtime in the browser |
+| `'==expression'` | Inline JavaScript expression, compiled only by the page runtime in the browser and evaluated at each projection of the node |
 | `'^.name?color'` | Pointer to the `color` attribute of the Data node at `.name` |
 
 A path starting with `.` is relative to the `datapath` of the enclosing branch.
 A change of the Source or of the context re-registers the affected pointers.
+
+**Symbolic paths.** A path can start from a symbolic origin resolved by Builder:
+
+- `#parent` goes up one level;
+- `#FORM` is the first ancestor with `formId` or `form=True`;
+- `#ANCHOR` is the first ancestor with `_anchor`;
+- `#<node_id>` is the node with that `node_id`.
+
+Example: `value='^#FORM.customer.name'`. The legacy origins `#WORKSPACE`, `#ROW`
+and `#DATA` and their aliases are outside 0.2.0.
 
 ```python
 panel = root.div(datapath=".customer")
@@ -270,16 +280,22 @@ A declaration can give a default to its own pointers:
 - `default` and `default_value` give the default of the `value` pointer;
   `default_value` prevails over `default`;
 - `default_<attr>` gives the default of the pointer in attribute `<attr>`;
-- `attr_*` attributes belong to the same legacy default syntax.
+- `attr_<name>=v` sets the attribute `<name>` on the Data node of the control's
+  `value` (or `src`). `v` can be a pointer.
 
 Defaults are applied after all `dataSetter` declarations of the branch, and only
 on empty paths. Null and a missing path count as empty. `false`, `0` and the
 empty string are values. A default never overrides a `dataSetter`, even one
-declared later. `attr_*` is evaluated on the state before the control's own
-default.
+declared later.
+
+`attr_*` follows the legacy rule. It applies only if the Data node of the
+`value` exists, and without an emptiness check. It applies after the node's own
+defaults, so a default that has just created the Data node receives the
+attribute.
 
 ```python
 root.input(type="number", value="^.font_size", default_value=14)
+root.input(value="^.price", attr_dtype="N")   # dtype='N' on the Data node .price
 ```
 
 These are **build-time defaults**: parameters of the page structure, such as a
@@ -367,7 +383,7 @@ export class Logic {
   controller method is called as `method(node, kwargs)`.
 - `kwargs` contains the resolved author attributes, plus `_node`, `_triggerpars`,
   `_reason` and, for a button, `_evt` and the `button_*` arguments. Control
-  attributes (`destination_path`, `func`, `formula`, `script`, `_if`, `_else`,
+  attributes (`destination_path`, `result_path`, `func`, `formula`, `script`, `_if`, `_else`,
   `_init`, `_onStart`, `_onBuilt`, `_delay`, `_timing`, `_userChanges`) are not
   in `kwargs`.
 - Inside a method, `this` is the group and `this.page` is the page instance.
@@ -476,10 +492,19 @@ btn.dataController(func="orders.save", total="=.total")
 - It receives `_evt`, `button_counter`, `button_shift`, `button_ctrl`,
   `button_alt` and `button_meta`. The counter lasts as long as the Source node,
   including across rebuilds.
-- `action`, `fire` and `fire_*` are alternatives to the nested controller.
-- A button has one mechanism only. Several `dataController` children, or two
-  mechanisms together, produce an error. Several `fire_*` attributes on the same
-  button all fire, in attribute order.
+- `action`, `fire` and `fire_*` are alternatives to the nested controller:
+  - `action='…'` is inline code run on click, with `this` bound to the button
+    node. It receives the current button attributes plus `event`, `_counter` and
+    `modifiers`. The inline code rules of section 065 apply;
+  - `fire='.path'` calls `FIRE` on `.path` at each click. The value is the
+    modifier string (`'Shift'`, `'CtrlAlt'`, …), or `true` without modifiers.
+    The Data node receives the attributes `modifier` and `_counter`;
+  - `fire_<name>='.path'` calls `FIRE` on `.path` with the value `'<name>'`, for
+    example `fire_save='.action', fire_close='.closing'`.
+- A button has one mechanism only. Several `dataController` children, or any
+  combination of nested controller, `action` and the `fire` family, produce an
+  error. Several `fire_*` attributes on the same button all fire, in attribute
+  order.
 - `connect_on<event>`, for example `connect_onclick`, attaches a native event
   listener to any element. On a button it runs after the Gramlot mechanism.
 
@@ -563,6 +588,10 @@ Intentional differences:
 - `js_requires` loads every level found and the most specific registration wins.
   Legacy loaded only the most generic JavaScript file.
 - `name:media` in `css_requires` is an error.
+- Combining a nested controller, `action` and the `fire` family on one button is
+  an error. Legacy chained them (`action`, then `fire`, then `fire_*`) and also
+  ran the nested controller.
+- `#WORKSPACE`, `#ROW` and `#DATA` are not available.
 - No `sourceNode.domNode` or `element.sourceNode` properties: use
   `getBaseSourceNode` and `getDomNode`.
 - `script` in the Source is native HTML5, without `dojo.eval`.

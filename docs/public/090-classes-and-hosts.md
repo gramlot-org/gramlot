@@ -318,7 +318,10 @@ folders above it.
 file with the page's name in the page folder, `orders.js` and `orders.css`, for
 both forms. The companion loads after all `js_requires` and `css_requires`
 resources. JavaScript pages, for Node or Bun, live in a folder separate from the
-Python pages.
+Python pages. A JavaScript page file, such as `orders.js`, exports both `Page`,
+used by the Node or Bun host to build the Source, and `Logic`, used in the
+browser. The file must therefore import in both environments, without
+server-only imports.
 
 **Companion visibility.** The companion is served to the browser, so it is public.
 Server-only logic, such as queries, keys and data access, belongs in separate
