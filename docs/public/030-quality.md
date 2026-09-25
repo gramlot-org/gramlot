@@ -2,6 +2,11 @@
 
 Document ID: **GC-030**.
 
+> **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
+> binding), in development**. 0.2.0 is an approved plan: its code is not yet
+> implemented, tested or released. The latest published release is **0.1.2**.
+> Text without a *0.2.0* mark describes 0.1.2 behavior.
+
 <a id="gc-030-005"></a>
 
 ## 005 · Read badges in context
@@ -39,6 +44,13 @@ Both branches also passed their documentation workflow. The four extra JS tests
 on develop cover the unfinished binding prerequisite reserved for 0.2.0; their
 success does not imply full binding implementation or acceptance.
 
+*0.2.0:* the plan's qualification runs the complete suites with dependencies
+installed in clean environments, in Chromium, Firefox and WebKit, on eight hosts:
+Minimal ASGI/Uvicorn, FastAPI, Kajenn, Flask, Django, Node, Bun and Minimal
+standalone. An unavailable environment is reported as not verified and blocks
+qualification unless the owner records an explicit exception. Qualification is
+separate from acceptance and publication.
+
 <a id="gc-030-010"></a>
 
 ## 010 · JavaScript is the primary runtime measure
@@ -66,3 +78,6 @@ For adoption decisions, look for tests of observable binding behavior, lifecycle
 cleanup and request failures, together with real-browser checks for the components
 you intend to use. Do not interpret a coverage percentage as a compatibility or
 production-readiness guarantee.
+
+*0.2.0:* real-browser binding tests use a separate runner; jsdom does not replace
+them.

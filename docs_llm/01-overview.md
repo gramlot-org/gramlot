@@ -2,6 +2,10 @@
 
 [Constitution](00-constitution.md). [Expanded version](../docs/01-overview.md).
 
+> **Release status.** Model overview including **0.2.0 (HTML/SVG data binding), in
+> development**: approved plan, not yet implemented or released. Latest published
+> release: **0.1.2**, without Data bindings or controllers.
+
 ## 1. Purpose
 
 - **1.1** Declarative application interfaces: Python authoring, JavaScript browser runtime.
@@ -14,6 +18,8 @@
   resolvers provide data. Not every Source node creates DOM.
 - **2.3** Bound input: Python declares a Data path; runtime manages rendering,
   user edits and external updates through the binding contract.
+  *0.2.0:* `root.input(value='^.name')`; `live=False` (default) writes on `change`,
+  `live=True` on `input` ([GC-095](public/095-writing-pages.md#gc-095-070)).
 
 ## 3. Building blocks
 
@@ -31,6 +37,9 @@
 - **4.2** Reusable browser behavior belongs in framework services/components.
   Application-local DOM/event/request/state bypasses are excluded; native browser
   operations belong inside framework implementation.
+- **4.3** *0.2.0:* named logic (`class Logic` files, called by name) is primary;
+  inline code is allowed, discouraged, browser page runtime only
+  ([GC-095](public/095-writing-pages.md#gc-095-060)).
 
 The provisional example runner has a bounded owner-approved exception (constitution
 11.44): its local JavaScript attaches behavior through ordinary HTML IDs and uses

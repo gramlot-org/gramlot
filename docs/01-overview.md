@@ -2,6 +2,11 @@
 
 [Constitution](00-constitution.md). [Concise version](../docs_llm/01-overview.md).
 
+> **Release status.** This overview describes the Gramlot model, including
+> release **0.2.0 (HTML/SVG data binding), in development**. 0.2.0 is an approved
+> plan, not yet implemented or released. The latest published release is
+> **0.1.2**, which has no Data bindings or controllers.
+
 ## 1. Purpose
 
 Gramlot is a framework for declarative application interfaces. Python describes
@@ -32,6 +37,10 @@ and connects its value to that path. User edits and external Data changes follow
 the binding contract; application code does not scrape the input or install a
 parallel event and state system.
 
+*0.2.0:* the planned declaration is `root.input(value='^.name')`. With the
+default `live=False` the edit is written to the Data on `change`; `live=True`
+writes on every `input` ([GC-095](public/095-writing-pages.md#gc-095-070)).
+
 ## 3. Building blocks
 
 | Element | Responsibility |
@@ -59,6 +68,11 @@ Applications use Python declarations and Gramlot Source, Data Bags, bindings,
 controllers, resolvers and shared components. Small local JavaScript expressions
 can complement these declarations. Reusable browser behavior belongs in the
 framework's JavaScript services and components.
+
+*0.2.0:* named logic is the primary path for page behavior: each logic file
+exports `class Logic`, and declarations call its methods by name. Inline code is
+allowed but discouraged, and runs only in the browser page runtime
+([GC-095](public/095-writing-pages.md#gc-095-060)).
 
 Application UI, state, events and requests use Gramlot mechanisms. Direct DOM
 construction, manual event wiring and separate request/state machinery are not

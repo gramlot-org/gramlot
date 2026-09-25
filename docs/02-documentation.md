@@ -8,6 +8,9 @@ The public manual helps a developer assess the current native HTML foundation an
 distinguish richer experimental examples. It uses Sphinx, MyST Markdown and the
 classic Read the Docs theme. Draft development chapters describe classes,
 server adapters, page authoring and extension gaps. They do not claim a stable release.
+The public guides describe release 0.2.0 (HTML/SVG data binding), in development,
+and state that the latest published release is 0.1.2. Planned 0.2.0 behavior is
+marked in each guide and is not an implementation claim.
 
 `scripts/prepare_docs.py` stages the README as the home page, an explicit
 `PUBLIC_PAGES` allowlist and two logo assets in `build/docs-source/`. Only the
