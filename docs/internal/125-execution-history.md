@@ -1,5 +1,11 @@
 # 125 · Historical Gramlot execution record
 
+> **Historical evidence:** legacy/earlier Data declaration vocabulary and API
+> statements below retain their original scope. For 0.2.0 use
+> [GC-210](210-binding-contract.md) and constitution 11.47: dataSetter with
+> destination_path, R1 and full-branch installation. Do not rewrite dated records.
+
+
 Document ID: **GC-125**. Updated: **2026-09-23**.
 
 **Historical record — do not execute past “Next” instructions.** The current checkpoint is [GC-070](070-work-status.md); the active release plan is [GC-110](110-native-html-readiness.md).

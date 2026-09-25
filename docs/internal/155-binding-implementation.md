@@ -1,5 +1,13 @@
 # 155 · Binding recovery and maintainable implementation
 
+> **Historical reference — superseded for execution on 2026-09-25:**
+> [GC-210](210-binding-contract.md) records the owner-confirmed 0.2.0 contract
+> and phase plan; [GC-070 §490](070-work-status.md#gc-070-490) records current work.
+> GC-175 is a historical handoff, not the current checkpoint. The body below
+> preserves earlier proposals, observations and dated evidence; its pause/next-step
+> language is historical. Legacy data/path quotations do not define the new API.
+> Source provenance rules remain valid and do not reopen later owner decisions.
+
 > **Source audit (2026-09-24):** Read [GC-170](170-binding-source-audit.md) first.
 > Historical observations and proposed compatibility cases below are not owner
 > decisions. Segmented Data is excluded as a requirement; Gramlot may specialize

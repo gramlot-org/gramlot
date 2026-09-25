@@ -1,5 +1,14 @@
 # Gramlot: architettura e guida per collaborare
 
+> **0.2.0 contract update — 2026-09-25:** initial values use
+> `dataSetter(destination_path, value=None, **attr)`, not the legacy data declaration;
+> `dataFormula(result_path, formula=None, func=None, **params)` and
+> `dataController(script=None, func=None, **params)` are the canonical logic signatures.
+> See [GC-210](210-binding-contract.md). This is a planned contract, not delivered
+> binding; historical component examples and standalone HTML exports retain their
+> dated scope and do not establish 0.2.0 support.
+
+
 **Edizione storica del 18 settembre 2026.** Il core attuale implementa il perimetro limitato HTML nativo e Source live; PoC, binding e ricette restano evidenza o lavoro futuro. Per lo stato corrente vedere [GC-070](070-work-status.md) e per la release [GC-110](110-native-html-readiness.md#gc-110-020).
 
 **GC-055 · Edizione di lavoro · 18 settembre 2026**
@@ -78,12 +87,13 @@ campo non implica automaticamente una nuova esecuzione Python o un salvataggio
 nel database. Una chiamata remota avviene quando una dichiarazione o un servizio
 la richiede esplicitamente.
 
-Nel frammento seguente, coerente con l’authoring del PoC, i due elementi osservano
-lo stesso dato. È un frammento di pagina, non un’applicazione completa:
+The historical component example below now uses the planned 0.2.0 dataSetter
+spelling. textBox remains PoC component evidence, outside the native 0.2.0 scope;
+this fragment is not an executable example of the current core:
 
 ```python
 pane = root.div(datapath="persona")
-pane.data(".nome", "Ada")
+pane.dataSetter(".nome", "Ada")
 pane.textBox(value="^.nome", lbl="Nome")
 pane.div("^.nome")
 ```

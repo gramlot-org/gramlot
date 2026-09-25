@@ -1,9 +1,10 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-09-24**.
+Document ID: **GC-070**. Updated: **2026-09-25**.
 
 
-**Current checkpoint:** CI integrated and verified on main/develop; core, runner and documentation checks pass on both. Binding remains on develop for 0.2.0. See [§410](#gc-070-410).
+**Current checkpoint:** S00 records the 0.2.0 contract, baseline and inventories; delivery awaits owner review. See [§490](#gc-070-490).
+**Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. Only S00 is authorized in this task; do not start S01.
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
 **Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
@@ -35,8 +36,8 @@ contents or a source-commit match for JSR.
 Current development includes the owner-requested 0.2.0 binding work (constitution
 11.41), with the implementation boundaries clarified by 11.42. A Source-projection
 prerequisite is implemented and tested ([§245](#gc-070-245)); the full binding flow
-is not complete or accepted. [GC-165](165-binding-execution.md) currently pauses
-implementation for source/contract review under [GC-170](170-binding-source-audit.md).
+is not complete or accepted. The owner-confirmed [GC-210](210-binding-contract.md) supersedes the historical
+GC-165/GC-170 contract-review pause; runtime phases still need individual authorization.
 Runner isolation and the transfer of standalone integration to Minimal are
 implemented and verified separately ([§270](#gc-070-270)); they do not change the
 published artifacts or establish binding acceptance.
@@ -80,15 +81,20 @@ that no registry publication occurred describes only the GitHub closure checkpoi
 JSR artifact-to-commit traceability remains a separate open report item; neither
 GitHub provenance nor current local tests close it.
 
-**Development:** binding implementation was explicitly requested for 0.2.0, but
-full binding remains unfinished and paused for source/contract review (GC-165,
-GC-170). Runner/standalone ownership remediation is implemented and verified in
-§270. The remaining report findings are not closed by that remediation. Continue
-review one confirmed decision at a time; no binding resumption, release or deployment
-is authorized by this documentary correction.
+**Development:** S00 transcribes the confirmed 0.2.0 contract in GC-210 and
+constitution 11.47. Root/ownership, Source-only delivery, canonical dataSetter
+vocabulary and R1 are settled; R3 is provisional for S12 tests. Q2–Q5 remain for
+their phases. Full reactive binding is not implemented or accepted. Runner/standalone
+ownership remediation in §270 and published 0.1.x evidence retain their scope.
+Current verification and the enrollment decision gate are in §490. Stop after S00
+report; later implementation, acceptance and publication are separate decisions.
 
 <a id="gc-070-020"></a>
 ## 020 · Deferred scope and pending binding decisions
+
+**Historical scope note:** GC-210 now settles the 0.2.0 contract; the earlier
+review gates below are superseded. Only Q2–Q5 and recorded implementation questions
+remain open for their consuming phases. Frozen 0.1.0 exclusions remain unchanged.
 
 Recipes, databases, richer general components and broader browser support are not
 added to the frozen 0.1.0 scope by historical plans. Binding is separately authorized
@@ -1636,3 +1642,379 @@ This completes the authorized integration and branch-specific verification.
 No package was republished and no release tag moved. Browser/host integration and
 coverage collection remain outside the bounded CI suites. This result receipt is
 a documentation-only follow-up to the exact verified revisions listed above.
+
+
+<a id="gc-070-415"></a>
+## 415 · Binding-focused continuation handoff prepared — 2026-09-24
+
+Owner requests a complete handoff focused on binding. [GC-175](175-binding-handoff.md)
+and its concise counterpart collect the current source baseline, binding-versus-
+maintenance boundary, approved direction, unresolved decisions, code map, diagnostic
+results, commands, hosted evidence and next-step review sequence. The binding
+planning documents and PORT-0005 now link that checkpoint without rewriting their
+historical investigations. This is documentation, not authorization to resume
+paused implementation or adopt a Data/initialization/provider contract.
+
+Reverified for the handoff: binding prerequisite 4/4; current-nonreactivity 1/1
+(the passing diagnostic confirms missing Data-to-DOM reactivity); dependency probes
+1 match/6 gaps; symbolic attribute regression 0/3 and quiet-write comparison 1/2.
+These diagnostic failures are expected observations outside the passing npm suite,
+not six newly established upstream defects. Builder issue #1 remains OPEN when
+checked on GitHub. No runtime/dependency source was changed by this handoff.
+
+
+<a id="gc-070-420"></a>
+## 420 · Builder-owned Data rechecked against Python and JS — 2026-09-24
+
+Owner clarification in the current conversation: "il nostro punti di partenza è
+il builder python da cui abbiamo ricavato il builder js ... non dal poc".
+The owner also states that the multi-builder application model was discarded.
+The PoC handler's remaining segmentation is not the design basis.
+
+Read-only inspection of the installed genro_builders Python base/source and
+@jsr/genro__builders JS base/source confirms that each document builder creates
+its own Data Bag; SourceNode.data returns that same Bag. Dialect sub-builders
+receive the host builder's identical Data Bag. Absolute paths have no automatic
+builder-name prefix; relative paths use Source datapath ancestry. Both Gramlot
+subclasses inherit this ownership. Gramlot's browser constructor separately adds
+an empty main child to the shared app.data/builder.data Bag; the Builder bases do
+not require that child.
+
+Verification: six executable assertions passed in Python and six in JS using
+Gramlot subclasses with a non-main builder name: node/Builder Bag identity,
+unchanged absolute path, relative path composition, GET, SET and absence of an
+automatically created builder-name segment. Sub-builder sharing was inspected
+in source, not exercised by these probes. No dependency or runtime edits made.
+This corrects the investigation basis; it does not establish reactive binding,
+initial delivery or approval to remove Gramlot's main child. Next review should
+start from these actual Builder contracts. Binding implementation remains paused.
+
+
+<a id="gc-070-425"></a>
+## 425 · Stable Data subscription root confirmed — 2026-09-24
+
+Owner confirmation in the current conversation: "si devi gestirein analogia a
+source", following the clarification that the outer Data/Source container keeps
+the subscription active. Approved scope: Data must have a stable outer container
+for observation, analogous to Source, so replacement of the contained document
+Data does not replace the subscription owner. This is not multi-builder Data
+segmentation. Python/JS Builder document-relative addressing remains the basis.
+
+Observed source: legacy GenroClient places _data under _dataroot.main and subscribes
+to _dataroot; legacy GnrSrcHandler subscribes to its stable _main Source root.
+Current Gramlot subscribes its renderer to app.source and inserts the received
+Source under main. Its app.data currently equals builder.data and contains an
+empty main child; it does not yet install a Data binding subscription.
+
+Recorded and accepted: stable outer Data subscription ownership as above.
+Not implemented by this checkpoint: Data root restructuring, reactive dispatch
+or replacement lifecycle. The public app.data versus builder.data relationship
+must be stated explicitly before changing it; the confirmed analogy does not
+select that API shape. Next decision: whether app.data continues exposing the
+Builder's document Data while an internal root owns the main node/subscriptions.
+No new runtime or dependency changes, and no new runtime checks in this checkpoint.
+
+
+<a id="gc-070-430"></a>
+## 430 · Gramlot owns the Data subscription and routing — 2026-09-25
+
+Owner decision in the current conversation: "a questo punto dire che se ne
+occupa gramlot ?", followed by "ok deciso" after the explicit responsibility
+summary. Confirmed scope: Gramlot owns the subscription on the stable outer Data
+root and routes events to the interested SourceNodes. The Builder retains access
+to the document Data Bag and value/path resolution; each SourceNode retains its
+specific reaction. This follows the inspected legacy split: GenroClient subscribes
+to _dataroot, its Source handler identifies recipients, and SourceNodes react.
+The starting contract is the Python Builder and its JS derivative, not the obsolete
+PoC multi-builder segmentation.
+
+Accepted: subscription/routing ownership and the existing stable-root principle
+from section 425. No new routing class, event protocol, scheduling semantics,
+public root property names or initial-delivery shape is approved by this decision.
+The app.data versus builder.data exposure question from section 425 remains open.
+Implementation remains paused for the remaining bounded contract decisions.
+This checkpoint records the decision only; no runtime changes or new runtime tests.
+
+
+<a id="gc-070-435"></a>
+## 435 · Document Data beneath the stable main node confirmed — 2026-09-25
+
+Owner confirmation: "ok allora va bene", in the current conversation immediately
+after the explicit clarification that the stable container is retained, its main
+node contains the document Data Bag, and gramlot.data and builder.data both refer
+to that inner Bag. The main container is structural and is excluded from authored
+Data paths such as cliente.nome. This closes the exposure question in sections
+425 and 430; it does not restore PoC per-builder segmentation. Gramlot owns the
+outer-root subscription and routing as accepted in section 430. SourceNodes keep
+using the shared Builder Data contract. The owner also directs continuing without
+adding a Builder parent reference for now.
+
+Accepted structure: stable outer Data root -> main node -> document Data Bag;
+gramlot.data === builder.data === that document Bag. This is a recorded contract,
+not a claim that the runtime has been changed. Current code still adds an empty
+main child inside builder.data, and therefore needs alignment with the accepted
+structure. No subscription/router implementation, initialization authoring API,
+initial transport shape or replacement scheduling is established by this receipt.
+Next contract review: Python/JS initial Data declarations, followed by host-neutral
+delivery. No runtime changes or new runtime tests in this documentation checkpoint.
+
+
+<a id="gc-070-440"></a>
+## 440 · Source-authored initial Data recovered from PoC — 2026-09-25
+
+> **2026-09-25 supersession note:** The dated `.data(path, value)` choice below is superseded by owner-confirmed
+> dataSetter(destination_path, value) in constitution 11.47 and GC-210. Preserve the
+> original receipt; it is not the current API.
+
+Owner chooses initial Data declarations: "i dati vengono passati con .data
+(path, valorre...", then directs "sono cose gia scritte . vedi il poc come lo
+gestiva e procediamo". The review therefore recovers the existing declaration
+behavior instead of inventing a Page.setup API. This does not reinstate the
+obsolete PoC segmented Data model.
+
+Read-only evidence: PoC src/gramlot/grammar/logic.py LogicDeclarations.data calls
+dataSetter, creating a nonvisual Source declaration with destination, value and
+user attributes. Explicit None is retained. The JS authoring facade maps the same
+call to dataSetter. PoC js/dom/src/logic/runtime.js prepares fresh setters before
+control defaults and rendering; it resolves destination through SourceNode,
+writes the declared value and user attributes, and marks the declaration installed.
+An ordinary rerender does not reapply an installed setter. Inserted branches are
+prepared before their first patch. The declaration travels in Source, so this
+mechanism itself needs no separate initial-Data transport envelope.
+
+Verification: reran the two existing PoC local-logic tests selected by
+'branch preparation|inserted branch': 2/2 passed. They cover explicit null before
+defaults, inserted-branch initialization and preservation of edited values on
+rerender. Other setter cases are source observations, not newly executed tests.
+
+Current Python and JS Builder bases already provide dataSetter grammar/execution;
+Gramlot authoring is intentionally inert and its renderer still needs nonvisual
+installation handling. The generic HTML data tag/property collision must be
+handled in Gramlot's authoring specialization, as the PoC facade did, without
+editing dependency sources or bulk-copying that facade. No new runtime behavior
+was implemented in this recovery step. Next bounded implementation is the chosen
+.data declaration and its nonvisual branch initialization using the accepted
+single-document Data structure; provider startup/timing remains separate review.
+
+
+<a id="gc-070-445"></a>
+## 445 · Legacy data arguments and PoC differences checked — 2026-09-25
+
+> **2026-09-25 supersession note:** The observed legacy null/attribute skip below is historical; 0.2.0 R1 preserves
+> existing value while applying declaration attributes. See GC-210 and constitution 11.47.
+
+Owner requests checking the legacy parameters before proceeding. Inspected
+Genropy gnrpy/gnr/web/gnrwebstruct/base.py:data (line 793), matching the older
+sourcerer clone gnrwebstruct.py:data (line 872), and browser genro_src.js:moveData
+(line 602). The Python signature is data(self, *args, **kwargs). Two positional
+arguments supply path/value; one argument without kwargs supplies value with no
+explicit path; one with kwargs supplies path and null value. No positional
+arguments leaves path/value null. dict values become Bags. The emitted Source
+has tag data, attribute path, and the value as child content, not as a value
+attribute. Other kwargs are carried as attributes. serverpath/_serverpath are
+special: server context registration and canonical serverpath in Source.
+
+Browser moveData resolves path through SourceNode. It writes only if the Data
+node is absent or the declared value is non-null. Thus explicit null does not
+overwrite an existing value, unlike the inspected PoC setter. It consumes
+serverpath and shared_id/shared_* for server/shared-object services; a truthy
+remote routes to dataRemote rather than ordinary initialization. These are
+legacy observations, not authorization to add server synchronization or services.
+
+Seven assertions passed on the extracted original Python data method with
+stubbed child/Page/Bag dependencies: argument dispatch, attributes, dict-to-Bag
+construction and _serverpath handling. This is not a full legacy integration
+run. Browser conditions were inspected, not browser-tested in this checkpoint.
+
+This qualifies section 440: PoC is not an exact legacy implementation. Its
+Source dataSetter destination/value shape and null-overwrite semantics must
+not be silently adopted as legacy parity. Runtime implementation remains paused
+on those concrete differences; no upstream or runtime edits were made.
+
+
+<a id="gc-070-450"></a>
+## 450 · Legacy Data browser flow traced and exercised — 2026-09-25
+
+> **2026-09-25 supersession note:** The legacy probe and per-level stripping below are unchanged evidence. R1 fixes
+> legacy null attribute loss and A2 installs the whole branch before DOM (GC-210).
+
+Owner rejects the prior parameter-only investigation as incomplete and requests
+following the legacy JS flow. The [full trace](../../ports/PORT-0005-data-binding/legacy-data-declaration-flow.md)
+now follows main delivery, Source insertion/build/stripData, payload transfer,
+parameter processing, Bag events, Data routing, SourceNode reactions and cleanup.
+It distinguishes ordinary data from provider/resolver branches and records the
+initial global Data subscription being installed after initial Source construction.
+
+The retained read-only diagnostic executes original legacy Bag/SourceNode/handler
+methods: 22 assertions passed, including payload identity/backrefs, null metadata
+preservation, literal values, root merge, actual routing, origin suppression and
+cleanup. DOM/RPC/topic endpoints are stubbed; startup/remote behavior is source
+inspection, not end-to-end verification. An isolated remote handoff probe observes
+undefined method for data(remote=...) versus the correct method for direct
+ dataRemote(method=...); this is not permission to patch legacy or add a workaround.
+
+Corrections to §440/445: ordinary data is transferred from Source, not copied;
+null with an existing node skips attributes too; ^ metadata is initially raw;
+legacy stripping is per build level and includes control defaults, not the PoC
+all-setters-first pass. The report preserves the exact PoC differences. No binding
+runtime was changed or accepted by these observations. Next review must use this
+flow rather than claim PoC initialization is already legacy-equivalent.
+
+
+<a id="gc-070-455"></a>
+## 455 · Independent 0.2.0 release proposal — 2026-09-25
+
+The owner requested two independent, detailed HTML5/SVG binding release proposals,
+prepared separately and outside the repository. One proposal was completed first;
+the second was not read before both were finished. Comparison was deferred.
+
+The completed proposal covers scope and exclusions, approved ownership versus new
+proposals, legacy compatibility, eleven execution phases, observable acceptance
+cases, native control/SVG contracts, lifecycle, host/browser checks and separate
+publication gates. It retains the public-API specialization/selector dependency
+gate. It is a proposal, not an approved execution plan or a constitutional
+amendment. Runtime is unchanged. No release-wide test run or release claim is made.
+
+Owner refinement: native edit timing is controlled by a flag. The owner answered
+"si" to the default question: omitting the flag means false, so Data updates on
+committed changes rather than during typing. Owner confirmations recorded on
+2026-09-25: `live` is the edit-timing flag, default false (the owner answered "si"
+to both default and naming questions). After the actual legacy freeze/Data paths
+were inspected, the owner answered "ok" to retaining controller and existing-element
+binding reactions while freezing structural rebuilds. Removed nodes still require
+immediate cleanup. An earlier broader visual-freeze proposal is superseded. Both
+constitution views record the bounded extension; no runtime implementation or
+release verification is claimed.
+
+
+<a id="gc-070-460"></a>
+## 460 · Independent binding plans frozen and exchange prepared — 2026-09-25
+
+At the owner's request both independent plans were frozen as read-only copies with
+recorded hashes, outside the repository. A written comparison, answers and open
+questions were exchanged between the two plans. No runtime changed and no
+synthesized plan was approved at this point.
+
+The owner explicitly recognizes the earlier recorded decisions on page-only eval,
+WorkerHost as server, named logic, bootstrap/companion, nonce and js_requires/css_requires.
+The exchange treats those as owner decisions, with detailed execution contracts
+still to be incorporated into the synthesis. New diagnostics: 9 Bag/Builder
+assertions and 12 cross-language array assertions passed; one existing renderer
+precedence test passed; the three known symbolic-selector tests still fail.
+
+Two independent scope proposals were then prepared and compared. The comparison
+separated the complete local HTML/SVG binding scope from deferred components,
+stores, forms and remote Data, distinguished current convergence from historical
+plan differences and isolated the remaining scope choices without approving them.
+No implementation or final synthesis was started.
+
+
+<a id="gc-070-465"></a>
+## 465 · Closed 0.2.0 scope and second independent implementation plan — 2026-09-25
+
+The owner declared the 0.2.0 perimeter closed, referring to section 1 and both final
+updates of the common scope draft. These final decisions supersede earlier scope
+proposals: full-branch data before construction, later duplicate wins,
+defaults/attr_* after data, exact _userChanges filter, Boolean value-bound
+checkbox/radio, visible mapped to visibility, primary nested button controller and
+css_requires replacing Page.css.
+
+A second independent implementation plan was prepared with 17 phases (files,
+activities, acceptance tests, completion criteria, dependencies, difficulty),
+plus residual contract/authorization gates and their blocked phases. It was frozen
+read-only with a recorded hash. Phase fields, acyclic dependencies and decision
+references were verified. The plan was a proposal, not an accepted synthesis.
+No runtime implementation or new product test execution occurred.
+
+
+<a id="gc-070-470"></a>
+## 470 · Implementation-plan comparison — 2026-09-25
+
+The two independent implementation plans were compared. The comparison
+distinguishes convergence, behavioral conflicts, phase/test gaps and corrections.
+One plan's historical seven-profile attribution was wrong: GC-130 lists Kajenn,
+not Django; the synthesis must preserve Kajenn and identify Django qualification
+separately.
+
+The proposed synthesis combines early semantic lifetime and complete phase gates
+with precise public-API/FIRE/trigger probes. Null duplicate initialization,
+notifications to existing observers during branch installation, button alternatives
+and deferred behavior still needed explicit resolution. No synthesis was approved,
+no runtime changed and no new product tests were run.
+
+
+<a id="gc-070-475"></a>
+## 475 · Independent synthesis proposals — 2026-09-25
+
+Two independent synthesis proposals were prepared from the two frozen plans and
+their comparison. One has 18 fully specified phases. Named providers/native
+editing are decoupled from inline compiler implementation; full integration still
+requires both. Kajenn is restored and Django qualification is separately identified.
+Semantic lifetime precedes registration; deferred inspector and automatic button
+disable remain outside mandatory binding work. Proposed behavior resolutions were
+not owner approvals. No implementation or product tests were started.
+
+
+<a id="gc-070-480"></a>
+## 480 · Synthesis version 2 — 2026-09-25
+
+After comparing the syntheses, the owner requested an updated version 2. Version 2
+adopts router/projection development before the installer while retaining
+full-branch data-before-DOM runtime ordering and a separate inline compiler phase.
+It includes explicit acceptance cases for null declarations, existing observers
+during branch installation and attribute-specific visual anti-echo. Kajenn remains
+in the host inventory; Django qualification is distinguished from historical
+evidence. Constitution amendments and the technical decision register are
+complementary. All 18 phase field sets and acyclic ordering were verified. No
+scope or implementation approval is inferred; no runtime implementation or product
+tests were started.
+
+
+<a id="gc-070-485"></a>
+## 485 · Remaining synthesis differences and recommendations — 2026-09-25
+
+The remaining differences between the two syntheses were documented with
+recommendations, acceptance examples and affected phases. The three remaining
+behavioral differences are explicit null writes, automatic warnings for valid
+duplicate data declarations, and implicit button-event cancellation. Shared open
+contracts and editorial corrections are separate. Recommendations remained
+unapproved, including explicit null overwrite and preserving native button
+defaults. No implementation or product tests were started. The owner then approved
+the unified plan transcribed in GC-210 (see §490).
+
+
+<a id="gc-070-490"></a>
+## 490 · S00: binding contract, baseline and inventories — 2026-09-25
+
+Block ID: **GC-070-490**.
+
+**Implemented:** documentary S00 scope only: constitution 11.47, paired GC-210,
+version-series ID allocation in GC-005, canonical declaration vocabulary and
+historical supersession notes. Retained pre-existing freeze decision, dated
+receipts, legacy evidence/probe; excluded unrelated GC-180/185. No runtime,
+existing-test assertion or dependency edits. Eight-host/read-only inventory,
+positive-test migration map and end-to-end fixture design are in GC-210 §§065–075.
+GC-210 is aligned with unified plan revision 3 and its later additions (§012 added).
+
+**Verified:** initial develop HEAD cbd80deed1b097ffbe778d05cb092c8338c5a9e7 matches
+the brief. Python 18/18 and ordinary JavaScript 76/76 pass before edits. Expanded
+npm discovery runs 81 tests: 77 pass, 4 fail (quiet PUT emits ins; FORM/ANCHOR/target
+lose ?caption). Exact versions and failures are in GC-210 §080. This is not full
+binding verification. The enrollment patch is prepared separately and withheld
+under the brief's red-CI gate pending owner decision; no expectations were weakened.
+After documentation edits, Python 18/18 and ordinary JavaScript 76/76 pass again.
+Strict Sphinx/public boundary checks pass (7 pages); 11 edited document pairs have
+matching anchors and valid local links. Legacy probe and GC-180/185 byte hashes
+are unchanged. Commands, grep classification and full suite output are in the
+S00 final report.
+
+**Accepted:** owner confirmed the plan's decisions/proposals on 2026-09-25 and
+explicitly authorized S00. This transcription and its delivery have not yet been
+accepted after review. Baseline test success is not product acceptance.
+
+**Remaining:** review S00 amendment/contract and decide red-CI enrollment; S01 must
+verify dependency hooks before dependent implementation. Q2–Q5 remain assigned to
+S08/S14/S10. P20 excludes result_path from kwargs, and S06 depends on S00 only, as in
+the current plan. No arbitrary resolution or dependency workaround is authorized.
+No S01 or connected-repository phase starts here. One S00 commit, no push; write
+the S00 final report outside the repository and stop, as requested.

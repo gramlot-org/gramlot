@@ -48,6 +48,14 @@ Block ID: **GC-005-010**.
 5. Run the owning repository's documentation checks and verify paired coverage,
    links and anchors. A concise view must never strengthen an implementation claim.
 
+Owner decision, 2026-09-25: version-specific core guides use the hundreds digit
+as the release series: 0.2 uses **210–295**, 0.3 starts at **310**. **190–205**
+remain reserved for guides not tied to a release. Verify availability before
+allocation; existing/retired document IDs are never reused. The first 0.2.0 contract
+is [GC-210](internal/210-binding-contract.md); section IDs inside older documents
+(such as GC-070-210) do not occupy document ID GC-210. Preserve paired anchors and
+five-step spacing. This extends allocation policy without renumbering older guides.
+
 <a id="gc-005-015"></a>
 
 ## 015 · Adoption status

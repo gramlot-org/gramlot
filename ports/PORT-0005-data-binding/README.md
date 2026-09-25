@@ -1,5 +1,13 @@
 # PORT-0005-data-binding
 
+> **Current execution contract — 2026-09-25:**
+> [GC-210](../../docs/internal/210-binding-contract.md) and constitution 11.47
+> supersede this historical investigation's proposals/gates. GC-175 is a dated
+> handoff. dataSetter(destination_path, value), Source-only delivery and R1 are
+> settled; R3 is provisional for S12 tests, not an undecided alternative.
+> Current continuation is [GC-070 §490](../../docs/internal/070-work-status.md#gc-070-490).
+> The evidence and prior proposals below are preserved, not execution instructions.
+
 > **Authority review:** [GC-170](../../docs/internal/170-binding-source-audit.md)
 > supersedes normative inferences in this dated report. Code observations are
 > evidence, not approved requirements. In particular, volume paths, fired metadata
@@ -107,6 +115,10 @@ not desired semantics.
 
 ## Destination review and remaining decisions
 
+**Historical checkpoint:** the following continuation is superseded by GC-210.
+Current S00 delivery, the enrollment gate and subsequent phase boundaries are in
+GC-070 §490; published 0.1.0 delivery is already complete.
+
 - **Result:** recovery evidence assembled; runtime port not implemented/accepted.
 - First close the compatibility matrix against executable cases: expressions,
   volume/root paths, symbolic attribute tails, moving datapaths, typed writeback,
@@ -169,3 +181,8 @@ probe's legacy comparison gaps are not all library defects. Only the symbolic
 attribute loss is currently reported as a reproduced upstream defect:
 https://github.com/genropy/genro-builders-js/issues/1 . The issue contains its
 full public-API test. No upstream code was changed.
+
+
+## Legacy Data browser trace — 2026-09-25
+
+[Complete data declaration flow](legacy-data-declaration-flow.md) records installation, arguments, Bag transfer, events, cleanup, PoC differences and the 22-assertion diagnostic.

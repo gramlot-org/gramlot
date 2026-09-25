@@ -411,6 +411,18 @@ transaction, rollback or Data binding. This settles the overlap question in GC-0
 Implementation belongs to Gramlot's live renderer, not generic Bag or Builder.
 
 
+Binding extension confirmed 2026-09-25: freeze suspends structural Source rebuilding,
+not Data reactivity. Formulas/controllers and Data-driven binding updates to already
+built elements remain active; discarded nodes are cleaned up immediately even while
+frozen. Owner confirmation: "ok" after the legacy code trace and the explicit
+recommendation to freeze structural rebuilding while retaining controllers and
+bindings on existing elements. This extends the previously unassigned Data-binding
+behavior; it preserves the existing Source FIFO, frozen-event discard and nested
+unfreeze rules. It supersedes only an unapproved independent proposal to suspend all visual
+updates, not an earlier owner decision. This is an approved 0.2.0 contract, not a
+claim that binding has been implemented.
+
+
 ### Standalone execution language and host direction — 2026-09-21
 
 Owner chooses Python pages on Python servers only. JavaScript pages can execute
@@ -906,3 +918,79 @@ and Worker-specific entries; Minimal provides its own `/standalone` and
 integration requires the matching development core; no compatibility alias is
 introduced. This is bounded connected Minimal work, not a general framework
 reopening. Runner-local UI ownership from 11.44 remains unchanged.
+
+
+### Amendment 11.47 — HTML/SVG binding 0.2.0 contract — 2026-09-25
+
+Owner confirms the unified plan's section 2 decisions and section 3 proposals
+“per ora” (for now), and explicitly authorizes S00 transcription through the S00 brief, kept outside the
+repository, and the owner's instruction to execute S00.
+The retrievable evidence and source hashes are recorded in
+[GC-210 §005](internal/210-binding-contract.md#gc-210-005).
+[GC-210 §§010–015](internal/210-binding-contract.md#gc-210-010) are the paired
+per-decision register: owner/date, concrete scope, superseded proposal, phase and
+required test. This amendment incorporates those tables as the 0.2.0 contract;
+it does not claim runtime implementation or acceptance of the S00 transcription.
+
+1. Data: one stable outer root with main containing the document Bag, shared by
+   Gramlot and Builder; authored paths omit main. Gramlot owns one subscription
+   and routing. Source carries initial values, without a second Data envelope.
+2. Canonical declarations: `dataSetter(destination_path, value=None, **attr)`,
+   `dataFormula(result_path, formula=None, func=None, **params)`,
+   `dataController(script=None, func=None, **params)`. Named func and inline
+   formula/script are mutually exclusive. No legacy dispatch or data alias;
+   data remains HTML5. This supersedes `.data(path, value)`, setter destination
+   and formula destination. Destination/result paths reject ?attr. `_path`
+   fields contain bare paths; strip an authored pointer prefix with one warning.
+   Variable datapath follows its Data value and rebinds the branch (upstream U4).
+   Authoring dictionaries/plain objects use Bag(value); lists stay lists and JSON
+   strings stay strings. These are bounded confirmed conversions, not general fallbacks.
+3. A2 installs every setter of the initial/inserted branch before DOM in document
+   order, superseding per-level installation. R1: non-null writes; existing null
+   declaration keeps value and applies attributes; missing null creates a node.
+   This supersedes null-overwrite and legacy attribute loss, not runtime setData.
+   Defaults follow setters; only null/missing are empty. attr_* follows the legacy
+   rule: after the node's own defaults, only on the existing Data node of the
+   control's value/src (correcting the earlier P15 clause). No duplicate warning.
+4. Boolean checkbox/radio use value pointers, radio also group; this supersedes
+   checked='^x'. visible=false sets visibility hidden; hidden stays native; live
+   defaults false. Freeze suspends structural rebuilding only; existing Data
+   reactions continue, semantic removal cleanup is immediate, rebuild/thaw never
+   reinstall. Keep the earlier separately recorded freeze decision unchanged.
+5. Named logic is primary; inline compilation only in the page runtime, never
+   Python/JS Host, WorkerHost or DevTools. This is a bounded §13 exception.
+   Both forms use Builder Source-node methods; no Gramlot operations layer.
+   Legacy macros become a deprecated regex compatibility preprocessor with one
+   warning, superseding macro-only inline writes. FIRE_AFTER defaults to 10 ms
+   with explicit delay; U1 quiet writes, U2 fired metadata and U3 delayed methods
+   remain upstream gates, not permission to patch dependencies here.
+6. Nested button controller is ordinary reactive logic plus click (B7), with
+   button-prefixed counter/modifiers. One click mechanism; connect_onclick follows.
+   R3 remains provisional: implicit type=button only for Gramlot-enabled buttons,
+   explicit type preserved, stopPropagation, no preventDefault; plain buttons
+   native. S12 must report form/keyboard/parent/native-listener effects to owner.
+7. Both Page languages use css_requires/js_requires. All hierarchical JS levels
+   register generic-to-specific, last wins; CSS cascades; public same-name companion
+   last. Supersedes Page.css, camelCase and legacy first-JS-only selection. Parsing
+   trims comma-separated names, ignores empty/duplicate entries, allows valid slash
+   segments and rejects colon/traversal/extensions. File or same-name-folder pages
+   are explicitly allowed (§13 exception), both together error; supersedes folder-only.
+   Logic groups are per instance/resource, this.page accesses page, no static holder
+   or page mixin. Nonce differs from page_id; standalone hashes final bytes.
+8. Source/DOM lookup uses getBaseSourceNode/getDomNode on renderer and Gramlot;
+   no added object properties. NodeBinding owns semantic lifetime separately from
+   DOM, without SourceBagNode subclassing. FIFO semantics precede freeze filtering;
+   complete builds before queued mutations, ignore changes to currently building
+   nodes. Anti-echo suppresses only redundant origin value, never other attributes
+   or providers. remoteSource follows semantic lifetime, latest request wins.
+9. All remaining P1–P25 rules, exclusions and exact startup/routing/provider/resource
+   sequences are as registered in GC-210. Explicit errors cover unsupported
+   server/shared/remote Data, subscriptions, PUBLISH and ask declarations, not
+   same-named keys in user Data. Q2 cycles, Q3 CSP profiles, Q4 connected writes
+   and Q5 native conversions remain open at their phases; no new decision implied.
+
+This supersedes obsolete authoring/ownership/initialization gates in GC-155–175 and
+PORT-0005; preserve their dated evidence and legacy assertions. GC-210 replaces
+GC-165 for 0.2.0 execution. Each later phase still needs owner authorization.
+S00 is documentation/baseline work only. No runtime, dependency-source edit,
+connected-repository migration, push, publication or deployment is authorized here.

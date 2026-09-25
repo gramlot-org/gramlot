@@ -1,4 +1,10 @@
 **Native 0.1.0 acceptance — 2026-09-24:** owner accepted the bounded result recorded
+
+> **Historical delivery record:** Data declaration and Page.css statements retain
+> their dated scope. The 0.2.0 contract is [GC-210](../../docs/internal/210-binding-contract.md)
+> and constitution 11.47: dataSetter(destination_path, value), R1 and full-branch
+> installation; css_requires migration belongs to later phases.
+
 in GC-110/GC-130 and authorized GitHub archives. Acceptance covers only the current
 typed Source, native HTML, Page/Host, live lifecycle and seven-profile contract.
 Earlier recipes, retired compilers, speculative rendering and broader PoC behavior
