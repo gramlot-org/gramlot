@@ -3,7 +3,7 @@
 Document ID: **GC-210**. Recorded: **2026-09-25**.
 
 [Expanded counterpart](../../docs/internal/210-binding-contract.md).
-[Constitution](../00-constitution.md) · [Current status](070-work-status.md#gc-070-490).
+[Constitution](../00-constitution.md) · [Current status](070-work-status.md#gc-070-495).
 
 <a id="gc-210-005"></a>
 ## 005 · Authority, provenance and delivery boundary
