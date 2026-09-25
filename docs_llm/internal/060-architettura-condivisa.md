@@ -1,90 +1,90 @@
-# Gramlot: l’architettura condivisa
+# Gramlot: the shared architecture
 
-**Edizione storica del 18 settembre 2026.** Il core attuale implementa il perimetro limitato HTML nativo e Source live; PoC, binding e ricette restano evidenza o lavoro futuro. Per lo stato corrente vedere [GC-070](070-work-status.md) e per la release [GC-110](110-native-html-readiness.md#gc-110-020).
+**Historical edition of 18 September 2026.** The current core implements the bounded native HTML and live Source scope; PoC, bindings and recipes remain evidence or future work. For the current status see [GC-070](070-work-status.md) and for the release [GC-110](110-native-html-readiness.md#gc-110-020).
 
-**GC-060 · Guida essenziale per collaborare · 18 settembre 2026**
+**GC-060 · Essential guide for collaborating · 18 September 2026**
 
-**Release 0.2.0:** il codice attuale è la **0.1.2**. La sezione 045 descrive l’architettura del binding HTML/SVG della 0.2.0. **Le parti 0.2.0 sono pianificate e non implementate.**
+**Release 0.2.0:** the current code is **0.1.2**. Section 045 describes the architecture of the 0.2.0 HTML/SVG binding. **The 0.2.0 parts are planned and not implemented.**
 
-Questo documento raccoglie i principi concordati e la direzione di lavoro condivisa.
-I diagrammi descrivono responsabilità e flussi, non una gerarchia definitiva di classi.
+This document collects the agreed principles and the shared direction of work.
+The diagrams describe responsibilities and flows, not a final class hierarchy.
 
 <a id="gc-060-005"></a>
 
-## 005 · Un framework, una destinazione
+## 005 · One framework, one destination
 
-Gramlot è la destinazione definitiva; implementazione temporanea in gramlot-poc. Consolidare comportamento, responsabilità, test e documenti per incrementi revisionati. Main consolidato, develop per lavoro da verificare.
+Gramlot is the final destination; temporary implementation in gramlot-poc. Consolidate behavior, responsibilities, tests and documents through reviewed increments. Main consolidated, develop for work to verify.
 
 <a id="gc-060-010"></a>
 
-## 010 · Python descrive l’applicazione, JavaScript la fa funzionare
+## 010 · Python describes the application, JavaScript makes it work
 
-Python autore principale; JS runtime browser. Source descrive, Data contiene stato, binding collega, controller reagisce, resolver procura dati, componente espone controllo. Non tutti i nodi producono DOM. Nessun sistema applicativo parallelo: colmare le lacune nel framework.
+Python main author; JS browser runtime. Source describes, Data holds state, binding connects, controller reacts, resolver obtains data, component exposes a control. Not all nodes produce DOM. No parallel application system: fill the gaps in the framework.
 
 ```mermaid
 flowchart TB
- P["Applicazione Python"] --> S["Source<br/>struttura e comportamento"]
- S --> J["Runtime JavaScript"]
- J <--> D["Data Bag<br/>stato e binding"]
- J <--> U["Interfaccia nel browser"]
+ P["Python application"] --> S["Source<br/>structure and behavior"]
+ S --> J["JavaScript runtime"]
+ J <--> D["Data Bag<br/>state and binding"]
+ J <--> U["Interface in the browser"]
 ```
 
 <a id="gc-060-015"></a>
 
-## 015 · Il componente si definisce in JavaScript
+## 015 · The component is defined in JavaScript
 
-Direzione condivisa: definizione e descrizione del componente in JS; JSON consumato da Python per dichiarare controlli senza wrapper manuali per ogni componente. JSON descrittivo distinto da implementazione; distribuzione coerente con JS.
+Shared direction: component definition and description in JS; JSON consumed by Python to declare controls without manual wrappers for each component. Descriptive JSON distinct from implementation; distribution consistent with JS.
 
 ```mermaid
 flowchart TB
- C["Definizione del componente in JS"] --> M["Descrizione esportata in JSON"]
- M --> P["Authoring Python<br/>dichiara l’uso del controllo"]
- P --> S["Source della pagina"]
- S --> R["Runtime JS<br/>esegue il componente"]
+ C["Component definition in JS"] --> M["Description exported as JSON"]
+ M --> P["Python authoring<br/>declares the use of the control"]
+ P --> S["Page Source"]
+ S --> R["JS runtime<br/>executes the component"]
 ```
 
 <a id="gc-060-020"></a>
 
-## 020 · Il catalogo è un artefatto di build
+## 020 · The catalogue is a build artifact
 
-Catalogo generato dai sorgenti in build locale/CI, non mantenuto a mano. Generazione non implica commit/push. Pacchetto con JSON e risorse JS; Python legge senza eseguire JS sul server.
+Catalogue generated from sources in local build/CI, not maintained by hand. Generation does not imply commit/push. Package with JSON and JS resources; Python reads without executing JS on the server.
 
 ```mermaid
 flowchart TB
- S["Sorgenti versionati"] --> B["Build locale o CI"]
- B --> J["Catalogo JSON generato"]
- J --> P["Pacchetto con JSON e risorse JS"]
- P --> U["Utilizzo da Python e dal browser"]
+ S["Versioned sources"] --> B["Local build or CI"]
+ B --> J["Generated JSON catalogue"]
+ J --> P["Package with JSON and JS resources"]
+ P --> U["Use from Python and from the browser"]
 ```
 
 <a id="gc-060-025"></a>
 
-## 025 · Riuso: basi, mixin e funzioni comuni
+## 025 · Reuse: bases, mixins and common functions
 
-Basi per contratti comuni, mixin per capacità, servizi/collaboratori per comportamento e risorse, utility come libreria, recipe per Source. Esplicitare dipendenze, scritture Data, lifecycle, cleanup, errori/conflitti e isolamento. Distinguere authoring Python, browser JS e server; controparti solo per superfici/contratti condivisi.
+Bases for common contracts, mixins for capabilities, services/collaborators for behavior and resources, utilities as library, recipes for Source. Make explicit dependencies, Data writes, lifecycle, cleanup, errors/conflicts and isolation. Distinguish Python authoring, browser JS and server; counterparts only for shared surfaces/contracts.
 
 <a id="gc-060-030"></a>
 
-## 030 · Collezioni e contributi esterni
+## 030 · Collections and external contributions
 
-Collezioni organizzano ed espongono oggetti e consentono contributi esterni; non sono superclassi. Estensioni con definizione JS, descrizione per Python e contratti condivisi. Ruoli distinti anche nelle collezioni esterne.
+Collections organize and expose objects and allow external contributions; they are not superclasses. Extensions with JS definition, description for Python and shared contracts. Distinct roles also in external collections.
 
 <a id="gc-060-035"></a>
 
-## 035 · Server e database restano indipendenti
+## 035 · Server and database remain independent
 
-Core indipendente da server/database, integrazioni per host/backend. Database common/fake/genropy/sqlalchemy; SQLite via SQLAlchemy. Estensioni specifiche non diventano requisiti universali.
+Core independent of server/database, integrations for host/backend. Database common/fake/genropy/sqlalchemy; SQLite via SQLAlchemy. Specific extensions do not become universal requirements.
 
 <a id="gc-060-040"></a>
 
-## 040 · Come si consolida un contributo
+## 040 · How a contribution is consolidated
 
-Port accettati con contratto/codice/test/docs allineati; registrare limiti, differenze e feedback. Coverage JS distinta da Python e riferita alla revisione misurata. Test accompagnano il codice. Docs pubbliche per sviluppatori, architettura interna. Pubblicazione distinta da consolidamento.
+Ports accepted with contract/code/tests/docs aligned; record limits, differences and feedback. JS coverage distinct from Python and tied to the measured revision. Tests accompany the code. Public docs for developers, architecture internal. Publishing distinct from consolidation.
 
 <a id="gc-060-045"></a>
 
-## 045 · Binding HTML/SVG nella 0.2.0: architettura pianificata
+## 045 · HTML/SVG binding in 0.2.0: planned architecture
 
-**Pianificato, non implementato; codice attuale 0.1.2.** Fonte: piano binding 0.2.0 confermato dall'owner il 2026-09-25; S00 lo registra come GC-210 e amendment. Dettaglio in inglese: [GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060), [GC-087 §085](087-javascript-layer-boundaries.md#gc-087-085), [GC-065 §030](065-host-adapters.md#gc-065-030).
+**Planned, not implemented; current code 0.1.2.** Source: 0.2.0 binding plan confirmed by the owner on 2026-09-25; S00 records it as GC-210 and amendment. Detail in English: [GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060), [GC-087 §085](087-javascript-layer-boundaries.md#gc-087-085), [GC-065 §030](065-host-adapters.md#gc-065-030).
 
-0.1.2: dichiarazioni inerti, nessun binding. 0.2.0: radice esterna → `main` = Bag del documento, una sottoscrizione, un `DataRouter`, path senza `main`; `NodeBinding` = durata semantica, record del renderer = durata DOM, nessuna sottoclasse di `SourceBagNode`; installazione in 8 passi (validazione, `dataSetter`, default, registrazione, `_init`, DOM, `_onBuilt`, `_onStart`); eventi Source in FIFO, lavoro semantico anche sotto freeze; logica per nome primaria (`LogicRegistry`, `LogicGroup`), inline solo nel runtime della pagina; scritture con i metodi del nodo Source di Builder; `css_requires`/`js_requires` al posto di `Page.css`, `PageBootstrap`; correzioni upstream U1-U4 necessarie, oggi assenti, nessun sostituto locale.
+0.1.2: inert declarations, no binding. 0.2.0: outer root → `main` = document Bag, one subscription, one `DataRouter`, paths without `main`; `NodeBinding` = semantic lifetime, renderer record = DOM lifetime, no subclass of `SourceBagNode`; installation in 8 steps (validation, `dataSetter`, defaults, registration, `_init`, DOM, `_onBuilt`, `_onStart`); Source events in FIFO, semantic work also under freeze; named logic primary (`LogicRegistry`, `LogicGroup`), inline only in the page runtime; writes with the Builder Source node methods; `css_requires`/`js_requires` instead of `Page.css`, `PageBootstrap`; upstream fixes U1-U4 required, absent today, no local substitute.

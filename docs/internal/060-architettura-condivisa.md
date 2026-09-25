@@ -1,201 +1,201 @@
-# Gramlot: l’architettura condivisa
+# Gramlot: the shared architecture
 
-**Edizione storica del 18 settembre 2026.** Il core attuale implementa il perimetro limitato HTML nativo e Source live; PoC, binding e ricette restano evidenza o lavoro futuro. Per lo stato corrente vedere [GC-070](070-work-status.md) e per la release [GC-110](110-native-html-readiness.md#gc-110-020).
+**Historical edition of 18 September 2026.** The current core implements the bounded native HTML and live Source scope; PoC, bindings and recipes remain evidence or future work. For the current status see [GC-070](070-work-status.md) and for the release [GC-110](110-native-html-readiness.md#gc-110-020).
 
-**GC-060 · Guida essenziale per collaborare · 18 settembre 2026**
+**GC-060 · Essential guide for collaborating · 18 September 2026**
 
-**Release 0.2.0:** il codice attuale è la **0.1.2**. La sezione 045 descrive l’architettura del binding HTML/SVG della 0.2.0. **Le parti 0.2.0 sono pianificate e non implementate.**
+**Release 0.2.0:** the current code is **0.1.2**. Section 045 describes the architecture of the 0.2.0 HTML/SVG binding. **The 0.2.0 parts are planned and not implemented.**
 
-Questo documento raccoglie i principi concordati e la direzione di lavoro condivisa.
-I diagrammi descrivono responsabilità e flussi, non una gerarchia definitiva di classi.
+This document collects the agreed principles and the shared direction of work.
+The diagrams describe responsibilities and flows, not a final class hierarchy.
 
 <a id="gc-060-005"></a>
 
-## 005 · Un framework, una destinazione
+## 005 · One framework, one destination
 
-Gramlot è un framework indipendente per interfacce applicative dichiarative.
-Il repository `gramlot` è la destinazione della versione definitiva e consolidata;
-per il momento l’implementazione si trova in `gramlot-poc`.
+Gramlot is an independent framework for declarative application interfaces.
+The `gramlot` repository is the destination of the final, consolidated version;
+for the moment the implementation is in `gramlot-poc`.
 
-Portare il codice in Gramlot significa consolidare insieme comportamento,
-responsabilità, test e documentazione. Il lavoro procede attraverso incrementi
-circoscritti e revisionati. Il riferimento consolidato è `main`; `develop`
-accoglie il lavoro prima della verifica e dell’accettazione.
+Porting code into Gramlot means consolidating behavior, responsibilities, tests
+and documentation together. Work proceeds through bounded, reviewed increments.
+The consolidated reference is `main`; `develop` receives work before verification
+and acceptance.
 
 <a id="gc-060-010"></a>
 
-## 010 · Python descrive l’applicazione, JavaScript la fa funzionare
+## 010 · Python describes the application, JavaScript makes it work
 
-Python è il linguaggio principale per scrivere applicazioni. Il runtime JavaScript
-realizza nel browser il comportamento dichiarato. Le due parti condividono un
-contratto: Python non deve reimplementare ogni controllo del browser.
+Python is the main language for writing applications. The JavaScript runtime
+realizes the declared behavior in the browser. The two parts share a contract:
+Python must not reimplement every browser control.
 
-- **Source** descrive la struttura dell’interfaccia e il comportamento richiesto.
-- **Data Bag** contiene lo stato applicativo.
-- **Binding** collega le dichiarazioni ai dati.
-- **Controller** reagisce a cambiamenti ed eventi.
-- **Resolver** procura dati attraverso un contratto esplicito.
-- **Componente** espone un controllo con parametri, valori, eventi e ciclo di vita.
+- **Source** describes the interface structure and the required behavior.
+- **Data Bag** contains the application state.
+- **Binding** connects declarations to data.
+- **Controller** reacts to changes and events.
+- **Resolver** obtains data through an explicit contract.
+- **Component** exposes a control with parameters, values, events and lifecycle.
 
-Non tutti i nodi Source producono DOM: anche una dichiarazione di comportamento
-può appartenere a Source. Le applicazioni usano questi meccanismi; non costruiscono
-una gestione parallela di DOM, eventi, richieste o stato. Quando manca una capacità,
-la si realizza nel livello riutilizzabile del framework.
+Not all Source nodes produce DOM: a behavior declaration can also belong to
+Source. Applications use these mechanisms; they do not build a parallel handling
+of DOM, events, requests or state. When a capability is missing, it is built in
+the reusable layer of the framework.
 
 ```mermaid
 flowchart TB
- P["Applicazione Python"] --> S["Source<br/>struttura e comportamento"]
- S --> J["Runtime JavaScript"]
- J <--> D["Data Bag<br/>stato e binding"]
- J <--> U["Interfaccia nel browser"]
+ P["Python application"] --> S["Source<br/>structure and behavior"]
+ S --> J["JavaScript runtime"]
+ J <--> D["Data Bag<br/>state and binding"]
+ J <--> U["Interface in the browser"]
 ```
 
 <a id="gc-060-015"></a>
 
-## 015 · Il componente si definisce in JavaScript
+## 015 · The component is defined in JavaScript
 
-La direzione condivisa è mantenere in JS la definizione del componente e la sua
-descrizione pubblica. Python riceve descrizioni JSON e le usa per esporre i controlli
-nell’authoring delle pagine. La stessa funzionalità non richiede quindi un wrapper
-Python scritto a mano per ogni controllo.
+The shared direction is to keep the component definition and its public
+description in JS. Python receives JSON descriptions and uses them to expose the
+controls in page authoring. The same functionality therefore does not require a
+hand-written Python wrapper for each control.
 
-Il catalogo descrive il contratto dichiarativo; l’implementazione eseguibile resta
-JavaScript. Il JSON e il codice JS corrispondente devono accompagnarsi nella
-distribuzione. Chi scrive l’applicazione continua a comporre la pagina in Python.
+The catalogue describes the declarative contract; the executable implementation
+remains JavaScript. The JSON and the corresponding JS code must travel together in
+distribution. Whoever writes the application keeps composing the page in Python.
 
 ```mermaid
 flowchart TB
- C["Definizione del componente in JS"] --> M["Descrizione esportata in JSON"]
- M --> P["Authoring Python<br/>dichiara l’uso del controllo"]
- P --> S["Source della pagina"]
- S --> R["Runtime JS<br/>esegue il componente"]
+ C["Component definition in JS"] --> M["Description exported as JSON"]
+ M --> P["Python authoring<br/>declares the use of the control"]
+ P --> S["Page Source"]
+ S --> R["JS runtime<br/>executes the component"]
 ```
 
 <a id="gc-060-020"></a>
 
-## 020 · Il catalogo è un artefatto di build
+## 020 · The catalogue is a build artifact
 
-Le descrizioni derivano dai sorgenti, senza diventare un secondo catalogo da
-aggiornare manualmente. La generazione può avvenire nel build locale o nella CI.
-Gli artefatti generati vengono inclusi nel pacchetto destinato ai consumatori.
+The descriptions derive from the sources, without becoming a second catalogue to
+update by hand. Generation can happen in the local build or in CI. The generated
+artifacts are included in the package intended for consumers.
 
-Generare il JSON in CI non modifica automaticamente la storia Git: non implica
-commit o push. Python deve poter leggere il catalogo distribuito senza richiedere
-l’esecuzione di JavaScript sul server.
+Generating the JSON in CI does not automatically change the Git history: it does
+not imply commit or push. Python must be able to read the distributed catalogue
+without requiring JavaScript execution on the server.
 
 ```mermaid
 flowchart TB
- S["Sorgenti versionati"] --> B["Build locale o CI"]
- B --> J["Catalogo JSON generato"]
- J --> P["Pacchetto con JSON e risorse JS"]
- P --> U["Utilizzo da Python e dal browser"]
+ S["Versioned sources"] --> B["Local build or CI"]
+ B --> J["Generated JSON catalogue"]
+ J --> P["Package with JSON and JS resources"]
+ P --> U["Use from Python and from the browser"]
 ```
 
 <a id="gc-060-025"></a>
 
-## 025 · Riuso: basi, mixin e funzioni comuni
+## 025 · Reuse: bases, mixins and common functions
 
-Le responsabilità sono distinte:
+The responsibilities are distinct:
 
-| Strumento | Compito |
+| Tool | Task |
 | --- | --- |
-| Classe base | Stabilisce il contratto e il comportamento comune di una famiglia. |
-| Mixin | Aggiunge una capacità riutilizzabile a una classe. |
-| Collaboratore o servizio | Fornisce comportamento attraverso un contratto e, quando necessario, gestisce stato o risorse. |
-| Funzione comune | Offre codice di libreria riutilizzabile dalle varie classi. |
-| Recipe | Compone normali nodi Source. |
+| Base class | Establishes the contract and the common behavior of a family. |
+| Mixin | Adds a reusable capability to a class. |
+| Collaborator or service | Provides behavior through a contract and, when needed, manages state or resources. |
+| Common function | Offers library code reusable by the various classes. |
+| Recipe | Composes ordinary Source nodes. |
 
-Ogni oggetto deve rendere esplicite le proprie dipendenze, la proprietà delle
-scritture nei Data e la gestione del ciclo di vita. Chi acquisisce listener,
-sottoscrizioni, timer o richieste deve avere una responsabilità chiara per il cleanup.
-Errori, conflitti fra capacità e isolamento fra istanze fanno parte del contratto.
+Every object must make explicit its dependencies, the ownership of its Data
+writes and its lifecycle handling. Whoever acquires listeners, subscriptions,
+timers or requests must have a clear responsibility for cleanup. Errors,
+conflicts between capabilities and isolation between instances are part of the contract.
 
-La composizione Python per l’authoring, quella JS nel browser e quella lato server
-sono meccanismi distinti. Il riuso non richiede di replicare le stesse classi nei due
-linguaggi: le controparti Python servono dove esiste una superficie dichiarativa
-o un contratto effettivamente condiviso.
+Python composition for authoring, JS composition in the browser and server-side
+composition are distinct mechanisms. Reuse does not require replicating the same
+classes in both languages: Python counterparts serve where a declarative surface
+or an actually shared contract exists.
 
 <a id="gc-060-030"></a>
 
-## 030 · Collezioni e contributi esterni
+## 030 · Collections and external contributions
 
-Le collezioni organizzano gli oggetti JS esposti e costituiscono il punto di ingresso
-per estendere il framework anche con contributi di terzi. La loro organizzazione
-va distinta dalla gerarchia delle classi: una collezione non è una superclasse.
+Collections organize the exposed JS objects and are the entry point for extending
+the framework, also with third-party contributions. Their organization must be
+kept distinct from the class hierarchy: a collection is not a superclass.
 
-Il percorso di estensione deve mantenere la definizione in JS, rendere disponibile
-la descrizione a Python e usare i contratti condivisi del framework. Componenti,
-controller e codice comune conservano le rispettive responsabilità anche quando
-provengono da una collezione esterna.
+The extension path must keep the definition in JS, make the description available
+to Python and use the shared framework contracts. Components, controllers and
+common code keep their respective responsibilities also when they come from an
+external collection.
 
 <a id="gc-060-035"></a>
 
-## 035 · Server e database restano indipendenti
+## 035 · Server and database remain independent
 
-Il core non dipende da uno specifico server o database. Gramlot definisce i contratti
-comuni; le integrazioni implementano le parti proprie dell’host o del backend.
-Scegliere un server non deve imporre la scelta del database.
+The core does not depend on a specific server or database. Gramlot defines the
+common contracts; integrations implement the parts specific to the host or the
+backend. Choosing a server must not impose the choice of database.
 
-Per i database distinguiamo:
+For databases we distinguish:
 
-- **common**: contratti e comportamento condiviso;
-- **fake**: verifiche controllate senza un database reale;
-- **genropy**: implementazione e capacità specifiche GenroPy;
-- **sqlalchemy**: implementazione attraverso SQLAlchemy.
+- **common**: contracts and shared behavior;
+- **fake**: controlled checks without a real database;
+- **genropy**: GenroPy-specific implementation and capabilities;
+- **sqlalchemy**: implementation through SQLAlchemy.
 
-SQLite è un backend utilizzabile tramite SQLAlchemy. Le estensioni specifiche di
-un’implementazione mantengono il proprio confine; non diventano automaticamente
-requisiti universali.
+SQLite is a backend usable through SQLAlchemy. The specific extensions of an
+implementation keep their own boundary; they do not automatically become
+universal requirements.
 
 <a id="gc-060-040"></a>
 
-## 040 · Come si consolida un contributo
+## 040 · How a contribution is consolidated
 
-Un incremento entra nel core quando contratto, codice, test e documentazione
-concordano sul comportamento incluso. Le differenze rispetto al PoC e al legacy
-si registrano, insieme ai limiti e al feedback della revisione.
+An increment enters the core when contract, code, tests and documentation agree
+on the included behavior. Differences from the PoC and from legacy are recorded,
+together with the limits and the review feedback.
 
-La verifica deve misurare il comportamento nel livello che lo realizza. Per Gramlot
-la coverage del runtime JavaScript è centrale e va distinta da quella dell’authoring
-Python. Un risultato del PoC resta riferito al codice e alla revisione misurati;
-test e verifiche accompagnano il trasferimento nel core.
+Verification must measure behavior in the layer that realizes it. For Gramlot
+the coverage of the JavaScript runtime is central and must be kept distinct from
+that of Python authoring. A PoC result stays tied to the measured code and
+revision; tests and checks accompany the transfer into the core.
 
-Chi collabora parte quindi da un perimetro chiaro: responsabilità, dati letti e
-scritti, risorse possedute, errori e test di accettazione. La documentazione pubblica
-racconta ciò che è disponibile per gli sviluppatori; i documenti architetturali
-restano materiale interno di lavoro. La pubblicazione di pacchetti o applicazioni
-è un’azione distinta dal consolidamento del sorgente.
+A collaborator therefore starts from a clear scope: responsibilities, data read
+and written, resources owned, errors and acceptance tests. The public
+documentation tells what is available to developers; the architectural documents
+remain internal working material. Publishing packages or applications is an
+action distinct from consolidating the source.
 
 <a id="gc-060-045"></a>
 
-## 045 · Binding HTML/SVG nella 0.2.0: architettura pianificata
+## 045 · HTML/SVG binding in 0.2.0: planned architecture
 
-**Stato: pianificato, non implementato. Il codice attuale è la 0.1.2.** Fonte: il
-piano del binding 0.2.0 confermato dall'owner il 2026-09-25. La fase S00 lo registra
-come GC-210 e come amendment della costituzione. Il dettaglio tecnico, in inglese, sta
+**Status: planned, not implemented. The current code is 0.1.2.** Source: the
+0.2.0 binding plan confirmed by the owner on 2026-09-25. Phase S00 records it
+as GC-210 and as a constitution amendment. The technical detail, in English, is
 in [GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060),
-[GC-087 §085](087-javascript-layer-boundaries.md#gc-087-085) e
+[GC-087 §085](087-javascript-layer-boundaries.md#gc-087-085) and
 [GC-065 §030](065-host-adapters.md#gc-065-030).
 
-Nella 0.1.2 le dichiarazioni restano inerti e non esiste binding. La 0.2.0 aggiunge:
+In 0.1.2 declarations remain inert and no binding exists. 0.2.0 adds:
 
-- **Data:** una radice esterna contiene `main`, che è la Bag del documento
-  (`builder.data`). Gramlot ha una sola sottoscrizione ai Data e un solo router
-  (`DataRouter`). I path scritti dall'autore non contengono `main`.
-- **Durate separate:** `NodeBinding` possiede la durata semantica di un nodo Source
-  (registrazioni, provider, timer). Il record del renderer possiede la durata del DOM
-  (elemento, listener). Nessuna sottoclasse di `SourceBagNode`.
-- **Installazione di un ramo in 8 passi:** validazione, `dataSetter`, default,
-  registrazione, `_init`, DOM, `_onBuilt`, `_onStart`. I `dataSetter` si installano
-  prima di costruire il DOM.
-- **Eventi Source in un FIFO:** il lavoro semantico avviene sempre, anche sotto freeze.
-  Il lavoro strutturale sul DOM avviene solo fuori dai rami congelati.
-- **Logica per nome** (`func`) come percorso primario: gruppi di logica per risorsa
-  (`LogicRegistry`, `LogicGroup`). L'inline si compila solo nel runtime della pagina,
-  mai nell'Host o nel WorkerHost.
-- **Scritture nei Data** con i metodi del nodo Source di Builder (`SET`, `PUT`, `FIRE`,
-  `FIRE_AFTER`). Gramlot non aggiunge un proprio insieme di operazioni.
-- **Risorse della pagina:** `css_requires` e `js_requires` sostituiscono `Page.css`;
-  `PageBootstrap` carica le risorse e registra la logica prima dell'avvio.
-- **Dipendenze:** servono le correzioni U1-U4 in genro-builders e genro-bag. Oggi non
-  esistono; Gramlot non le sostituisce con codice locale.
+- **Data:** an outer root contains `main`, which is the document Bag
+  (`builder.data`). Gramlot has a single Data subscription and a single router
+  (`DataRouter`). Paths written by the author do not contain `main`.
+- **Separate lifetimes:** `NodeBinding` owns the semantic lifetime of a Source node
+  (registrations, providers, timers). The renderer record owns the DOM lifetime
+  (element, listeners). No subclass of `SourceBagNode`.
+- **Branch installation in 8 steps:** validation, `dataSetter`, defaults,
+  registration, `_init`, DOM, `_onBuilt`, `_onStart`. The `dataSetter` nodes are
+  installed before the DOM is built.
+- **Source events in a FIFO:** semantic work always happens, also under freeze.
+  Structural DOM work happens only outside frozen branches.
+- **Named logic** (`func`) as the primary path: logic groups per resource
+  (`LogicRegistry`, `LogicGroup`). Inline code compiles only in the page runtime,
+  never in the Host or the WorkerHost.
+- **Data writes** with the Builder Source node methods (`SET`, `PUT`, `FIRE`,
+  `FIRE_AFTER`). Gramlot does not add its own set of operations.
+- **Page resources:** `css_requires` and `js_requires` replace `Page.css`;
+  `PageBootstrap` loads the resources and registers the logic before startup.
+- **Dependencies:** the fixes U1-U4 in genro-builders and genro-bag are required.
+  They do not exist today; Gramlot does not replace them with local code.
