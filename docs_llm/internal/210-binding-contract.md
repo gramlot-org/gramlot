@@ -3,15 +3,16 @@
 Document ID: **GC-210**. Recorded: **2026-09-25**.
 
 [Expanded counterpart](../../docs/internal/210-binding-contract.md).
-[Constitution](../00-constitution.md) · [Current status](070-work-status.md#gc-070-495).
+[Constitution](../00-constitution.md) · [Current status](070-work-status.md#gc-070-500).
 
 <a id="gc-210-005"></a>
 ## 005 · Authority, provenance and delivery boundary
 
 Block ID: **GC-210-005**.
 
-This is the English repository transcription of the unified 0.2.0 plan, revision 3 with
-its later additions, including its approved decisions, architecture, phases and acceptance gates. It
+This is the English repository transcription of the unified 0.2.0 plan, revision 4
+(revision 3 with later additions, plus the owner decision of 2026-09-25 that the live
+renderer reuses Builder by inheritance, phase S03bis), including its approved decisions, architecture, phases and acceptance gates. It
 supersedes GC-165 as the binding execution plan; GC-110 remains the completed 0.1.0
 plan. The earlier plans, handoffs and legacy probes remain historical evidence.
 This contract is planned behavior, not a claim that reactive binding is implemented.
@@ -29,6 +30,7 @@ sections 2–10) and the S00 brief, both kept outside this repository. The brief
 (section “Decisioni dell'owner” through the document-ID decision) and the review
 section 3 disposition table. SHA-256 at transcription:
 
+- Unified plan, revision 4: `77a9fb2aebede13be865da8b7c54c8afc2a0f29635c3e09fe1ff002e44c53151`.
 - Unified plan, revision 3 with later additions: `9d7251c4d0ad0a1eb02b7ce6aa3a9b8f198f862a62c93a37c69d840212ead035`.
 - Unified plan, revision 2 (first transcription): `a9eda5d9f9f1541b3851ff7fc93e37bfbc74658df67ad5a9794929e6622c8b33`.
 - Owner-decision record: `40de3e54e8a9e2ef02ef88a5b5c3261f41345506bd17563aae6835b824b649b1`.
@@ -126,7 +128,7 @@ settle previously unapproved proposals, not older approved behavior.
 | P3 | Frozen inserted branch executes steps 1–5 immediately; DOM/built at thaw, start waits for first build | S05/S13 → never-built and nested-freeze cases |
 | P4 | Settled, aligned with legacy `nodeTrigger` (`genro_src.js:167-203`) and `_isBuilding` (`gnrdomsource.js:982-992`): finish each build; queue Source mutations and run them after the build; ignore changes to a currently building node (§025); queue in arrival order as today (`gramlot-renderer.js:211`), where legacy uses pop(); onBuilt after complete construction (`onBuiltCall`). Supersedes error-on-reentrancy and legacy LIFO | S03/S05 → observer/init mutation traces |
 | P5 | Existing observers see setter writes synchronously; new branch providers wait through setters/defaults | S05 → external sees 1 then 2, internal sees final state |
-| P6 | Finite style vocabulary in §030 | S04 → types, removal, SVG and precedence |
+| P6 | Finite style vocabulary in §030; settled (owner, 2026-09-25): legacy style shortcuts in 0.2.0 via Builder HtmlRenderer.adaptAttrs, legacy noConvertStyle kept; supersedes the shortcut exclusion | S03bis → composition, null, SVG, noConvertStyle; S04 → reactivity, removal, precedence |
 | P7 | Comma parsing, trim, ignore empty tokens/duplicates preserving first position; slash-separated segments match `^[A-Za-z0-9_-]+$`; reject dot segments, leading/trailing slash, extensions and colon. Supersedes slash ban and errors on empty/duplicate tokens | S06 → parser parity and invalid names |
 | P8 | No duplicate-setter warning; future warning Bag deferred | S05 → deterministic writes without warning |
 | P9 | button_counter, button_shift, button_ctrl, button_alt, button_meta; counter lasts for semantic node | S12 → modifiers, rebuild retains counter |
@@ -196,7 +198,7 @@ Contract errors identify node/tag/attribute; new names require phase rationale.
 
 Construction order: LogicRegistry/root logic group → GramlotBuilder → BindingRuntime
 (router/installer/inlineCompiler) → data=builder.data → binding.attach (outer main,
-one subscription) → source=builder.source → GramlotRenderer with binding.
+one subscription) → source=builder.source → GramlotHtmlRenderer with binding.
 Register logic after construction, before start. No provisional registry or generic
 static-only _resolveLogicFunc. Authoring stays inert. The gramlot.js:14 line
 `this.data.setItem('main', new Bag())` is removed; attach creates main in the outer root.
@@ -204,7 +206,9 @@ BindingRuntime has an inlineCompiler getter (S09) and no radio-group state.
 NodeBinding.evaluateFormulas evaluates == attributes at each projection (S09).
 
 Planned modules/classes: builder/source.js (GramlotBuilderBag, GramlotBuilderBagNode,
-§018), binding/runtime.js (BindingRuntime, NodeBinding), router.js
+§018), renderer/gramlot-html-renderer.js (GramlotHtmlRenderer extends HtmlRenderer;
+today gramlot-renderer.js, GramlotRenderer extends RendererBase) and
+renderer/gramlot-svg-renderer.js (GramlotSvgRenderer extends SvgRenderer) in S03bis, binding/runtime.js (BindingRuntime, NodeBinding), router.js
 (DataRouter/Registration/Change), installation.js (DataInstaller), providers.js
 (Provider/FormulaProvider/ControllerProvider), logic.js (LogicRegistry/Group), inline.js
 (InlineCompiler); view/controls.js (ControlAdapter/subclasses/RadioGroups), button.js
@@ -259,9 +263,15 @@ other attributes/providers still react. Existing built views react while frozen.
 
 Style/class: string or null (remove), otherwise error; visible=false sets hidden
 visibility, removal restores current style; hidden remains native. SVG presentation
-uses Builder svgAttributes and namespaces; null removes. Other native attributes
-retain existing boolean/reflected/data_/aria_/xmlns_ rules. No style Bags/dicts,
-legacy shortcuts/themes/root.css. Safe text, SVG/XLink/foreignObject, stable DOM.
+uses Builder SvgRenderer.adaptAttrs (svgAttributes) through GramlotSvgRenderer and
+namespaces, no style shortcuts; null removes. HTML style shortcuts (style_*, roots such
+as width/color/font_*/margin_*, macros rounded/shadow/transform/filter/transition/zoom/
+gradient) compose one style through Builder HtmlRenderer.adaptAttrs; a shortcut wins
+over the same property in style; null drops that property. Legacy noConvertStyle keeps
+width/height on img/canvas/embed, width/border on table, height on editor as
+attributes. _class → class. data_/aria_/xmlns_ → data-/aria-/xmlns: in both renderers'
+adaptAttrs. Projection uses getRender(node.builder). No style Bags/dicts,
+themes/root.css, or format/mask/places in the live renderer. Safe text, SVG/XLink/foreignObject, stable DOM.
 
 Renderer/Gramlot getBaseSourceNode climbs to generated element, skipping fragments;
 getDomNode uses records, null for fragment/nonvisual/unbuilt/removed. No object props.
@@ -380,7 +390,8 @@ touches different files. Owner authorization still precedes S06. This does not l
 | S01 / S00 | New js/src/builder/source.js (GramlotBuilderBag, GramlotBuilderBagNode, §018); new source-extension-contract.test.js; bag-contract.test.js, two nested regressions, test_python_builder.py. Builder and Bag read-only | Complete Python grammar→Source→TYTX→browser bindBuilder route; node identity in one runtime; legacy HTML5 data call; Bag/scalar/array/null value attribute roundtrip; symbolic selectors; null-attribute loss; silent insert/update/attrs; Gramlot classes on JS authoring, sourceBagFromTytx, bindBuilder, insertion and remoteSource without prototype mutation; silent PUT, FIRE mark, FIRE_AFTER, absDatapath with variable datapath and symbolic ?attr; fired/reset, reason string conversion; root backrefs/ins-del paths; runtimeValues/pointers incl empty value key; static-only _resolveLogicFunc; RendererBase runtimeValues on nonvisual declarations. Every hook proved directly or through the Gramlot classes; no Builder or Bag change |
 | S02 / S01 | Python page/builder.py, _collection.py/_grammar_load.py if needed; JS gramlot-builder.js; binding.json after HTML grammar; renderer validation; exporter only if needed | test_binding_authoring.py, binding-authoring.test.js, collections and transport-interop: signatures, optional value, invalid missing path/?attr, dict→Bag, four-direction typed/null/false/0/empty/Bag/array transport. Mark data_element, recognize binding attributes, validate nonvisual before visual; hosts compute_logic/computeLogic inert; no alias/dispatch/evaluator/host serializer |
 | S03 / S01 | Gramlot, renderer, runtime.js and root-only LogicRegistry; remoteSource semantic lifetime, FIFO before freeze | binding-lifetime.test.js and lifecycle/page-close/freeze/render-failure/source-pipeline: roots/identity/isolation, disposal twice, counters, DOM rebuild vs semantic lifetime, complete event matrix, reentrant mutation, building-node suppression, remote rebuild/remove/late/frozen target. One owner/subscription per app |
-| S04 / S03 | router.js/runtime.js, renderer.project and lookup methods, view/html.js | binding-router/projection and renderer/svg/native-html/live-source-validation: exact recipient counts, paths/selectors, rebinding, nested writes/removal, user main field, safe text/SVG/XLink/foreignObject, render_attributes precedence/removal, visible/style/class null, stable DOM, title/class origin updates, variable datapath through absDatapath (change, empty gives null path, nested) and lookup edge cases. Work independent of unrelated branch count |
+| S03bis / S03 | gramlot-html-renderer.js (renamed; extends HtmlRenderer, DOM renderedItem), new gramlot-svg-renderer.js (extends SvgRenderer, delegates renderedItem); adaptAttrs: _meta, null style drop, data_/aria_/xmlns_; render override for noConvertStyle; update via getRender(node.builder); html.js DOM only; gramlot.js/index.js names | style-shortcuts.test.js and renderer/svg/native-html/live-source-validation/freeze/lifecycle: composition, precedence, null, _class, names in HTML/SVG, SVG attributes unchanged, canvas/img/table attributes, foreignObject, setAttr on the same element |
+| S04 / S03bis | router.js/runtime.js, renderer.project and lookup methods, view/html.js | binding-router/projection and renderer/svg/native-html/live-source-validation: exact recipient counts, paths/selectors, rebinding, nested writes/removal, user main field, safe text/SVG/XLink/foreignObject, render_attributes precedence/removal, visible/style/class null, stable DOM, title/class origin updates, variable datapath through absDatapath (change, empty gives null path, nested) and lookup edge cases. Work independent of unrelated branch count |
 | S05 / S02, S04 | installation.js/runtime.js, Gramlot/renderer through FIFO only | data-installation/binding-defaults, Python authoring/interop fixtures: A2/R1/P15, Bag backref and Source attribute removal without event, later defaults/setters, remote branch, synchronous old observers, new provider activation after final state, init inserting/removing/replacing ancestors and observer mutation also frozen, no duplicate install/removed-node DOM, no reinstall/reinit on thaw. First render proves values |
 | S06 / S00 | Python Page/Host/assets/resources.py; JS Page/Host/FileHost/resources.js | test_page_resources.py/page-resources.test.js plus native-html/host: two layouts/ambiguity, same-name companions, parser parity, three levels and companion last, traversal/symlink/name safety, CSS cascade, distinct fresh nonce, migrate fixtures from css, preserve TTL/capacity/owner. Core only; adapters S14 |
 | S07 / S02, S03, S06 | bootstrap.js/logic.js, Gramlot/index/runtime/builder, both host bootstrap generators, build-runtime.mjs and companion fixtures | named-logic/bootstrap tests: specific override, reversed import completion, isolated groups/nested names/this.page, cross-group calls, constructor/collision/missing errors, companion before init, close during import no mount, server/Worker graph no compiler, named CSP. Real Python Source through real bootstrap |
@@ -430,8 +441,8 @@ Block ID: **GC-210-065**.
 | A03 initialization/A2/R1/defaults/no reinstall | S05, S13 |
 | A04 relative/attribute/symbolic/context paths | S01, S04 |
 | A05 routing/levels/rebind/removal in delivery | S04, S08, S13 |
-| A06 safe projection/booleans/visible/render_attributes | S04 |
-| A07 SVG | S04, S16 |
+| A06 safe projection/booleans/visible/render_attributes/style shortcuts | S03bis, S04 |
+| A07 SVG | S03bis, S04, S16 |
 | A08 SET/PUT/FIRE/FIRE_AFTER | S01, S08 |
 | A09 providers/^/=/==/_userChanges | S08, S09 |
 | A10 timing/startup | S08, S13 |

@@ -359,7 +359,8 @@ Before implementation, select the first component/controller families, define mi
 **Status: the 0.2.0 part is planned and not implemented. The current code is 0.1.2.**
 Source of the 0.2.0 part: the owner-confirmed binding plan of 2026-09-25
 (revision 3; approved by the owner on 2026-09-25, proposals confirmed "for now";
-updated on the same date with the owner decision that forbids upstream fixes). Phase S00 records it in the repository
+updated on the same date with the owner decisions that forbid upstream fixes and
+reuse Builder renderers by inheritance, revision 4). Phase S00 records it in the repository
 as GC-210 and as a constitution amendment; neither exists yet. Use
 [GC-070](070-work-status.md) for status. This section describes the core
 repository, not `gramlot-poc`.
@@ -434,7 +435,13 @@ two Gramlot classes:
 - Construction order in the `Gramlot` constructor: `LogicRegistry(this)` →
   `GramlotBuilder` → `BindingRuntime(this)` → `data = builder.data` →
   `binding.attach()` → `source = builder.source` →
-  `GramlotRenderer(builder, source, destination, {binding})`.
+  `GramlotHtmlRenderer(builder, source, destination, {binding})`.
+- S03bis renames `GramlotRenderer extends RendererBase` to
+  `GramlotHtmlRenderer extends HtmlRenderer` (`renderer/gramlot-html-renderer.js`)
+  and adds `GramlotSvgRenderer extends SvgRenderer` for SvgBuilder nodes. Both inherit
+  Builder's `adaptAttrs`, including the legacy style shortcuts; `renderedItem` stays
+  the DOM override in `GramlotHtmlRenderer`, and `GramlotSvgRenderer` delegates to it.
+  `HtmlElement` keeps DOM application only (GC-210 §030).
 - The current line `this.data.setItem('main', new Bag())` (`gramlot.js:14`) disappears.
 - `binding.attach()` sets `main` of an outer Data root to the document Bag without a
   copy, and subscribes once to the outer root. `gramlot.data === builder.data`.
@@ -466,7 +473,7 @@ two Gramlot classes:
 - `LogicGroup` has one own member, `page`. `gramlot.logic` is the root group with
   the companion methods; each `js_requires` name is a child group; a name with `/`
   is a nested group.
-- `GramlotRenderer` and `Gramlot` gain `getBaseSourceNode(domNode)` and
+- `GramlotHtmlRenderer` and `Gramlot` gain `getBaseSourceNode(domNode)` and
   `getDomNode(sourceNode)`, built on the existing `records` and `elements` maps.
   No property is added to Source nodes or DOM elements.
 
@@ -478,20 +485,23 @@ ownership; `<|--` is inheritance.
 classDiagram
     direction TB
     HtmlBuilder <|-- GramlotBuilder
-    RendererBase <|-- GramlotRenderer
+    HtmlRenderer <|-- GramlotHtmlRenderer
+    SvgRenderer <|-- GramlotSvgRenderer
+    GramlotHtmlRenderer --> GramlotSvgRenderer : getRender for SvgBuilder
+    GramlotSvgRenderer --> GramlotHtmlRenderer : owner renderedItem
     SourceBag <|-- GramlotBuilderBag
     SourceBagNode <|-- GramlotBuilderBagNode
     GramlotBuilderBag --> GramlotBuilderBagNode : nodeClass
     GramlotBuilder --> GramlotBuilderBag : browser Source
     Gramlot --> GramlotBuilder : builder
-    Gramlot --> GramlotRenderer : renderer
+    Gramlot --> GramlotHtmlRenderer : renderer
     Gramlot --> MainTransport : transport
-    GramlotRenderer --> HtmlElement : html
-    GramlotRenderer --> References : references
+    GramlotHtmlRenderer --> HtmlElement : html
+    GramlotHtmlRenderer --> References : references
     Gramlot --> LogicRegistry : logicRegistry
     Gramlot --> BindingRuntime : binding
-    GramlotRenderer --> BindingRuntime : binding option
-    GramlotRenderer --> NodeBinding : record link via bindingFor
+    GramlotHtmlRenderer --> BindingRuntime : binding option
+    GramlotHtmlRenderer --> NodeBinding : record link via bindingFor
     LogicRegistry --> LogicGroup : logic tree
     BindingRuntime --> DataRouter : router
     BindingRuntime --> DataInstaller : installer
@@ -516,13 +526,15 @@ classDiagram
     ControlAdapter <|-- CheckboxControl
     ControlAdapter <|-- RadioControl
     RadioControl --> RadioGroups : join
-    GramlotRenderer --> RadioGroups : creates
-    GramlotRenderer --> ControlAdapter : record cleanup
-    GramlotRenderer --> ButtonBinding : record cleanup
-    GramlotRenderer --> NativeEventBinding : record cleanup
+    GramlotHtmlRenderer --> RadioGroups : creates
+    GramlotHtmlRenderer --> ControlAdapter : record cleanup
+    GramlotHtmlRenderer --> ButtonBinding : record cleanup
+    GramlotHtmlRenderer --> NativeEventBinding : record cleanup
     ButtonBinding --> ControllerProvider : click trigger
     PageBootstrap --> Gramlot : creates
     PageBootstrap --> LogicRegistry : register Logic
+    <<planned>> GramlotHtmlRenderer
+    <<planned>> GramlotSvgRenderer
     <<planned>> GramlotBuilderBag
     <<planned>> GramlotBuilderBagNode
     <<planned>> LogicRegistry

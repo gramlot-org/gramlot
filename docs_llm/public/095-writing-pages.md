@@ -28,8 +28,9 @@ class Page(BasePage):
 Python calls return real SourceBagNode objects; JS uses the generic builder handles. Text is literal, not parsed HTML.
 Native attributes work; `class_` escapes the keyword. Use the exported HTML5 collection; its open signatures accept native attributes.
 CSS conveniences such as `color`/`background` are absent.
-*0.2.0:* legacy shortcuts (`color=`, `font_size=`, `_class`) stay excluded;
-reactive styling uses `style`, `class`, `visible` (070).
+*0.2.0:* legacy style shortcuts (`color=`, `font_size=`, `margin_top=`, `style_*`,
+`rounded=`) compose one `style` with `style='…'`, as static Builder `HtmlRenderer`;
+`_class` is `class`; all react to Data (070).
 
 <a id="gc-095-010"></a>
 
@@ -279,9 +280,11 @@ with components in 0.3.0.
 
 Reactive attributes: `style`/`class` strings (null removes; other types error);
 `visible=false` → `style.visibility='hidden'`, keeps space, null restores current
-`style`; `hidden` native boolean; SVG presentation attributes (null removes); other
-native attributes as in 0.1.2. Excluded: style as Bag/dict, legacy shortcuts,
-themes, `root.css()`.
+`style`; `hidden` native boolean; style shortcuts compose `style`, win over the same
+property in `style`, null removes that property; `width`/`height` on img/canvas/embed
+and `width`/`border` on table stay attributes (legacy); SVG presentation attributes,
+no style shortcuts on SVG (null removes); `data_*`/`aria_*` → `data-*`/`aria-*`; other
+native attributes as in 0.1.2. Excluded: style as Bag/dict, themes, `root.css()`.
 
 <a id="gc-095-075"></a>
 

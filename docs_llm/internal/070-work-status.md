@@ -2042,3 +2042,22 @@ mutation or Builder/Bag change, and measures Bag.fromTytx null-attribute loss (a
 solution after owner approval). S04/S08 wait for no external release. Both nested
 tests stay out of CI until silent PUT and symbolic ?attr exist (S01). S01 needs its
 own owner authorization.
+
+<a id="gc-070-500"></a>
+## 500 · Live renderer reuses Builder by inheritance — 2026-09-25
+
+Block ID: **GC-070-500**.
+
+**Decided:** owner, 2026-09-25: reuse Builder by inheritance. `GramlotRenderer
+extends RendererBase` → `GramlotHtmlRenderer extends HtmlRenderer`; new
+`GramlotSvgRenderer extends SvgRenderer` for SvgBuilder nodes, delegating
+`renderedItem`. Inherited `adaptAttrs` brings legacy style shortcuts into 0.2.0;
+Gramlot adds `_meta` removal, null style drop, `data_`/`aria_`/`xmlns_` names, legacy
+`noConvertStyle`. No `format`/`mask`/`places` in the live renderer. Phase S03bis
+between S03 and S04. See [GC-210 §030](210-binding-contract.md#gc-210-030),
+constitution 11.47 item 11.
+
+**Implemented:** documentation only.
+
+**Remaining:** S03bis needs owner authorization, after S03. Python `renderer_html`
+and `data_role` stay in the static-site analysis.

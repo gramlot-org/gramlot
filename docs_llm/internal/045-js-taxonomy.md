@@ -285,7 +285,7 @@ Regenerate evidence with inventory_js_taxonomy.py and Tree-sitter JS; tool versi
 
 ## 055 · Core runtime classes: current 0.1.2 and planned 0.2.0
 
-**0.2.0 part planned, not implemented; current code 0.1.2.** Source: owner-confirmed binding plan, 2026-09-25, revision 3, approved by the owner 2026-09-25 (proposals confirmed "for now"); updated the same date: upstream fixes forbidden. S00 records it as GC-210 plus a constitution amendment; neither exists yet. Status: [GC-070](070-work-status.md). Core repository, not PoC.
+**0.2.0 part planned, not implemented; current code 0.1.2.** Source: owner-confirmed binding plan, 2026-09-25, revision 3, approved by the owner 2026-09-25 (proposals confirmed "for now"); updated the same date: upstream fixes forbidden; Builder renderers reused by inheritance (revision 4). S00 records it as GC-210 plus a constitution amendment; neither exists yet. Status: [GC-070](070-work-status.md). Core repository, not PoC.
 
 Current 0.1.2: `Gramlot` (`gramlot.js:8-112`) builds `GramlotBuilder`, `data = builder.data`, empty `main` Bag inside `builder.data` (`gramlot.js:14`), `GramlotRenderer`, `MainTransport`; no Data subscription, no binding. `GramlotRenderer extends RendererBase`: `records` Map (line 20), `elements` WeakMap (line 25), one Source subscription (line 27), `pending` FIFO in `receive` (199-229), freeze filter before queuing (201-205). `HtmlElement` writes control `value` (`html.js:131-134`). `References`, `MainTransport` collaborators. `GramlotBuilder.computeLogic()` empty (line 17).
 
@@ -293,7 +293,7 @@ Planned 0.2.0 files: `builder/source.js` (`GramlotBuilderBag`, `GramlotBuilderBa
 
 Planned Source classes (`js/src/builder/source.js`); owner forbids fixes in genro-builders/genro-bag (2026-09-25): `GramlotBuilderBag extends SourceBag`, `nodeClass` → `GramlotBuilderBagNode` (`source-bag.js:252-254`). `GramlotBuilderBagNode extends SourceBagNode`: `PUT(path, value)` silent, `doTrigger=false` (`bag.js:387-389`; Builder `PUT` emits today, `source-bag.js:237`); `FIRE(path, value = true)` opens a `FireMark` on the absolute path, then writes with `fired=true`; router consumes it with `takeFire(path)` at the first event on that path; nested `SET` on the same path during delivery is not fired; mark removed in `finally`; Bag event has no `fired` (`bag.js:601-604`); `FIRE_AFTER(path, value = true, delay = 10)`, timer tracked on `NodeBinding`, cancelled at close; `absDatapath(path)` with variable datapath (`datapath='^.foo'` reads `.foo`; empty → null path, `gnrdomsource.js:735-739`) and `?attr` kept on symbolic paths (today raw datapath, `source-bag.js:132-145`, `?attr` lost). S01 verifies every browser path creates Gramlot classes: JS authoring, `sourceBagFromTytx`, `bindBuilder`, insertion, `remoteSource`; TYTX `SOURCE` suffix is on `SourceBag` today (`builder.py:17-18`); no prototype change. Python does not need them: authoring inert, methods browser-only.
 
-Planned rules: `this.data.setItem('main', new Bag())` (`gramlot.js:14`) disappears. Constructor order `LogicRegistry` → `GramlotBuilder` → `BindingRuntime` → `data` → `binding.attach()` → `source` → `GramlotRenderer(..., {binding})`. Outer root `main` = document Bag, no copy, one subscription; `gramlot.data === builder.data`; author paths without `main`; router sole subscriber. Parent passes `this`, child getter. Methods in `GramlotBuilderBagNode`/`GramlotBuilderBag` (P17), no prototype change; semantic state stays for now in `NodeBinding`, `Map` of `BindingRuntime` keyed by node; may move onto the node later, no author effect. Semantic lifetime `NodeBinding` (registrations, providers, timers, counter, stamps, `remoteSource` request); DOM lifetime renderer record (`record.cleanup`, `gramlot-renderer.js:84`: element, listeners, controls, button, events). Rebuild closes only DOM lifetime. Registrations at step 4, before the DOM; `renderedItem` only links the record to the open `NodeBinding` (`bindingFor`); `renderer.project` no-op without a record (steps 4-5, freeze). `BindingRuntime` owns `InlineCompiler` (`inlineCompiler`); `==` via `NodeBinding.evaluateFormulas()` → `compileExpression`, every projection. Renderer creates `RadioGroups` (`constructor(renderer)`, view layer); no `radioGroups` on `BindingRuntime`; `binding/` does not import `view/`. `dataSetter` belongs to `DataInstaller`, not a provider. `func` via `LogicRegistry.resolve`, not Builder `_resolveLogicFunc` (static methods only); `GramlotBuilder` unchanged. `LogicGroup` own member only `page`; `gramlot.logic` root = companion; child group per `js_requires` name; `/` nests. `getBaseSourceNode`/`getDomNode` on renderer and `Gramlot`, from `records`/`elements`; no added properties.
+Planned rules: `this.data.setItem('main', new Bag())` (`gramlot.js:14`) disappears. Constructor order `LogicRegistry` → `GramlotBuilder` → `BindingRuntime` → `data` → `binding.attach()` → `source` → `GramlotHtmlRenderer(..., {binding})`. S03bis: `GramlotRenderer extends RendererBase` becomes `GramlotHtmlRenderer extends HtmlRenderer` (DOM `renderedItem`); new `GramlotSvgRenderer extends SvgRenderer` for SvgBuilder nodes, delegating `renderedItem`; inherited `adaptAttrs` brings legacy style shortcuts; `HtmlElement` DOM only. Outer root `main` = document Bag, no copy, one subscription; `gramlot.data === builder.data`; author paths without `main`; router sole subscriber. Parent passes `this`, child getter. Methods in `GramlotBuilderBagNode`/`GramlotBuilderBag` (P17), no prototype change; semantic state stays for now in `NodeBinding`, `Map` of `BindingRuntime` keyed by node; may move onto the node later, no author effect. Semantic lifetime `NodeBinding` (registrations, providers, timers, counter, stamps, `remoteSource` request); DOM lifetime renderer record (`record.cleanup`, `gramlot-renderer.js:84`: element, listeners, controls, button, events). Rebuild closes only DOM lifetime. Registrations at step 4, before the DOM; `renderedItem` only links the record to the open `NodeBinding` (`bindingFor`); `renderer.project` no-op without a record (steps 4-5, freeze). `BindingRuntime` owns `InlineCompiler` (`inlineCompiler`); `==` via `NodeBinding.evaluateFormulas()` → `compileExpression`, every projection. Renderer creates `RadioGroups` (`constructor(renderer)`, view layer); no `radioGroups` on `BindingRuntime`; `binding/` does not import `view/`. `dataSetter` belongs to `DataInstaller`, not a provider. `func` via `LogicRegistry.resolve`, not Builder `_resolveLogicFunc` (static methods only); `GramlotBuilder` unchanged. `LogicGroup` own member only `page`; `gramlot.logic` root = companion; child group per `js_requires` name; `/` nests. `getBaseSourceNode`/`getDomNode` on `GramlotHtmlRenderer` and `Gramlot`, from `records`/`elements`; no added properties.
 
 Diagram source: [045-core-runtime-0.2.0.mmd](diagrams/045-core-runtime-0.2.0.mmd). `<<planned>>` = absent in 0.1.2.
 
@@ -301,20 +301,23 @@ Diagram source: [045-core-runtime-0.2.0.mmd](diagrams/045-core-runtime-0.2.0.mmd
 classDiagram
     direction TB
     HtmlBuilder <|-- GramlotBuilder
-    RendererBase <|-- GramlotRenderer
+    HtmlRenderer <|-- GramlotHtmlRenderer
+    SvgRenderer <|-- GramlotSvgRenderer
+    GramlotHtmlRenderer --> GramlotSvgRenderer : getRender for SvgBuilder
+    GramlotSvgRenderer --> GramlotHtmlRenderer : owner renderedItem
     SourceBag <|-- GramlotBuilderBag
     SourceBagNode <|-- GramlotBuilderBagNode
     GramlotBuilderBag --> GramlotBuilderBagNode : nodeClass
     GramlotBuilder --> GramlotBuilderBag : browser Source
     Gramlot --> GramlotBuilder : builder
-    Gramlot --> GramlotRenderer : renderer
+    Gramlot --> GramlotHtmlRenderer : renderer
     Gramlot --> MainTransport : transport
-    GramlotRenderer --> HtmlElement : html
-    GramlotRenderer --> References : references
+    GramlotHtmlRenderer --> HtmlElement : html
+    GramlotHtmlRenderer --> References : references
     Gramlot --> LogicRegistry : logicRegistry
     Gramlot --> BindingRuntime : binding
-    GramlotRenderer --> BindingRuntime : binding option
-    GramlotRenderer --> NodeBinding : record link via bindingFor
+    GramlotHtmlRenderer --> BindingRuntime : binding option
+    GramlotHtmlRenderer --> NodeBinding : record link via bindingFor
     LogicRegistry --> LogicGroup : logic tree
     BindingRuntime --> DataRouter : router
     BindingRuntime --> DataInstaller : installer
@@ -339,13 +342,15 @@ classDiagram
     ControlAdapter <|-- CheckboxControl
     ControlAdapter <|-- RadioControl
     RadioControl --> RadioGroups : join
-    GramlotRenderer --> RadioGroups : creates
-    GramlotRenderer --> ControlAdapter : record cleanup
-    GramlotRenderer --> ButtonBinding : record cleanup
-    GramlotRenderer --> NativeEventBinding : record cleanup
+    GramlotHtmlRenderer --> RadioGroups : creates
+    GramlotHtmlRenderer --> ControlAdapter : record cleanup
+    GramlotHtmlRenderer --> ButtonBinding : record cleanup
+    GramlotHtmlRenderer --> NativeEventBinding : record cleanup
     ButtonBinding --> ControllerProvider : click trigger
     PageBootstrap --> Gramlot : creates
     PageBootstrap --> LogicRegistry : register Logic
+    <<planned>> GramlotHtmlRenderer
+    <<planned>> GramlotSvgRenderer
     <<planned>> GramlotBuilderBag
     <<planned>> GramlotBuilderBagNode
     <<planned>> LogicRegistry

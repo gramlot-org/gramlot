@@ -17,6 +17,7 @@ Document ID: **GC-100**. Native 0.1.2 APIs; planned 0.2.0 changes are marked.
 | Reusable Source macros | Deferred; no active recipe API |
 | Static HTML text | Generic HtmlBuilder + HtmlRenderer |
 | Reactive DOM | GramlotRenderer (extends RendererBase) + HtmlElement |
+| *0.2.0:* reactive DOM | GramlotHtmlRenderer (extends HtmlRenderer), GramlotSvgRenderer (extends SvgRenderer) + HtmlElement |
 | Types, serialization, notifications | Bag/TYTX contracts |
 | Source grammar/association | Generic SourceBag, BuilderBase, RendererBase |
 | *0.2.0:* page behavior | Application `class Logic` in companion or `js_requires` resource |

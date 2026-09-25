@@ -37,9 +37,11 @@ supported; `class_` escapes the Python keyword. Convenience attributes such as
 accept attributes without a separate Gramlot whitelist; accepting `color` as a
 literal attribute does not turn it into CSS styling.
 
-*0.2.0:* the legacy style shortcuts (`color=`, `font_size=`, `_class`) stay
-excluded. Reactive styling uses `style`, `class` and `visible`
-(section 070).
+*0.2.0:* the legacy style shortcuts become CSS styling in the browser:
+`color='red'`, `font_size='12px'`, `margin_top=4`, `style_aspect_ratio='16/9'`,
+`rounded=8`. They compose one `style` attribute with `style='…'`, as the static
+Builder `HtmlRenderer` already does. `_class` is `class`. They react to Data like
+any attribute (section 070).
 
 <a id="gc-095-010"></a>
 
@@ -474,12 +476,14 @@ with the components in 0.3.0.
 | `class='…'` | `class` attribute, a string | removes `class` |
 | `visible=…` | `false` sets `style.visibility='hidden'`; the element keeps its space | the current `style` returns |
 | `hidden=…` | native boolean attribute | as any native boolean |
-| SVG presentation attributes | SVG attribute | removes the attribute |
+| style shortcuts: `style_*`, `color`, `width`, `background_*`, `font_*`, `margin_*`, `padding_*`, `border_*`, …; `rounded`, `shadow`, `transform`, `filter`, `transition`, `zoom`, `gradient` | one CSS property in the composed `style`; a shortcut wins over the same property in `style='…'` | removes that property only |
+| `width`/`height` on `img`, `canvas`, `embed`; `width`/`border` on `table` | native attribute, not CSS, as in legacy GenroPy | removes the attribute |
+| SVG presentation attributes | SVG attribute; no style shortcuts on SVG | removes the attribute |
+| `data_*`, `aria_*` | `data-*`, `aria-*` attribute | removes the attribute |
 | other native attributes | existing native projection | as in 0.1.2 |
 
 For `style` and `class`, a value other than a string or null is an error.
-Excluded: `style` as a Bag or dictionary, the legacy shortcuts, themes and
-`root.css()`.
+Excluded: `style` as a Bag or dictionary, themes and `root.css()`.
 
 <a id="gc-095-075"></a>
 

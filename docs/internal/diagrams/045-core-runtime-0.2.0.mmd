@@ -1,20 +1,23 @@
 classDiagram
     direction TB
     HtmlBuilder <|-- GramlotBuilder
-    RendererBase <|-- GramlotRenderer
+    HtmlRenderer <|-- GramlotHtmlRenderer
+    SvgRenderer <|-- GramlotSvgRenderer
+    GramlotHtmlRenderer --> GramlotSvgRenderer : getRender for SvgBuilder
+    GramlotSvgRenderer --> GramlotHtmlRenderer : owner renderedItem
     SourceBag <|-- GramlotBuilderBag
     SourceBagNode <|-- GramlotBuilderBagNode
     GramlotBuilderBag --> GramlotBuilderBagNode : nodeClass
     GramlotBuilder --> GramlotBuilderBag : browser Source
     Gramlot --> GramlotBuilder : builder
-    Gramlot --> GramlotRenderer : renderer
+    Gramlot --> GramlotHtmlRenderer : renderer
     Gramlot --> MainTransport : transport
-    GramlotRenderer --> HtmlElement : html
-    GramlotRenderer --> References : references
+    GramlotHtmlRenderer --> HtmlElement : html
+    GramlotHtmlRenderer --> References : references
     Gramlot --> LogicRegistry : logicRegistry
     Gramlot --> BindingRuntime : binding
-    GramlotRenderer --> BindingRuntime : binding option
-    GramlotRenderer --> NodeBinding : record link via bindingFor
+    GramlotHtmlRenderer --> BindingRuntime : binding option
+    GramlotHtmlRenderer --> NodeBinding : record link via bindingFor
     LogicRegistry --> LogicGroup : logic tree
     BindingRuntime --> DataRouter : router
     BindingRuntime --> DataInstaller : installer
@@ -39,13 +42,15 @@ classDiagram
     ControlAdapter <|-- CheckboxControl
     ControlAdapter <|-- RadioControl
     RadioControl --> RadioGroups : join
-    GramlotRenderer --> RadioGroups : creates
-    GramlotRenderer --> ControlAdapter : record cleanup
-    GramlotRenderer --> ButtonBinding : record cleanup
-    GramlotRenderer --> NativeEventBinding : record cleanup
+    GramlotHtmlRenderer --> RadioGroups : creates
+    GramlotHtmlRenderer --> ControlAdapter : record cleanup
+    GramlotHtmlRenderer --> ButtonBinding : record cleanup
+    GramlotHtmlRenderer --> NativeEventBinding : record cleanup
     ButtonBinding --> ControllerProvider : click trigger
     PageBootstrap --> Gramlot : creates
     PageBootstrap --> LogicRegistry : register Logic
+    <<planned>> GramlotHtmlRenderer
+    <<planned>> GramlotSvgRenderer
     <<planned>> GramlotBuilderBag
     <<planned>> GramlotBuilderBagNode
     <<planned>> LogicRegistry

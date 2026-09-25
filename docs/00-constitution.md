@@ -979,7 +979,7 @@ it does not claim runtime implementation or acceptance of the S00 transcription.
    are explicitly allowed (§13 exception), both together error; supersedes folder-only.
    Logic groups are per instance/resource, this.page accesses page, no static holder
    or page mixin. Nonce differs from page_id; standalone hashes final bytes.
-8. Source/DOM lookup uses getBaseSourceNode/getDomNode on renderer and Gramlot;
+8. Source/DOM lookup uses getBaseSourceNode/getDomNode on GramlotHtmlRenderer and Gramlot;
    no added object properties. NodeBinding owns semantic lifetime separately from
    DOM, in a BindingRuntime Map keyed by the actual node (P17, see item 10). FIFO semantics precede freeze filtering;
    complete builds before queued mutations, ignore changes to currently building
@@ -1001,6 +1001,15 @@ it does not claim runtime implementation or acceptance of the S00 transcription.
     no counterpart. S04 and S08 wait for no external release. S01 measures the
     Bag.fromTytx null-attribute loss; any solution needs owner approval and goes into
     these classes. This supersedes the P17 wording "no SourceBagNode subclass".
+11. Owner rule, 2026-09-25: Gramlot reuses Builder by inheritance and never
+    re-implements it. The live renderer becomes `GramlotHtmlRenderer extends
+    HtmlRenderer` (renamed from `GramlotRenderer extends RendererBase`) with its DOM
+    renderedItem, and `GramlotSvgRenderer extends SvgRenderer` serves SvgBuilder
+    nodes. Builder's inherited adaptAttrs brings the legacy style shortcuts into 0.2.0;
+    Gramlot adds `_meta` removal, null style drop, data_/aria_/xmlns_ names and the
+    legacy noConvertStyle attributes. HtmlElement keeps DOM application only. Phase
+    S03bis, before S04. This supersedes the P6 exclusion of color/font_size/_class
+    shortcuts.
 
 This supersedes obsolete authoring/ownership/initialization gates in GC-155–175 and
 PORT-0005; preserve their dated evidence and legacy assertions. GC-210 replaces
