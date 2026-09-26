@@ -2061,3 +2061,18 @@ constitution 11.47 item 11.
 
 **Remaining:** S03bis needs owner authorization, after S03. Python `renderer_html`
 and `data_role` stay in the static-site analysis.
+
+<a id="gc-070-505"></a>
+## 505 · Binding example family phase — 2026-09-26
+
+Block ID: **GC-070-505**.
+
+**Decided:** owner, 2026-09-26: `html_svg` stays native, only `css` → `css_requires`
+in S15 (examples 10/13 unchanged). New S14bis between S14 and S15: binding family with
+some `html_svg` examples rewritten plus examples for 0.2.0 features. Names: generic
+`div` in `pane`; `html_main` in `main_content`; never `page` for an element. P7
+confirmed (`css_requires`/`js_requires`). See [GC-210 §060](210-binding-contract.md#gc-210-060).
+
+**Implemented:** documentation only.
+
+**Remaining:** family name to confirm; S14bis needs owner authorization, after S14.

@@ -2063,3 +2063,22 @@ New phase S03bis, between S03 and S04. Recorded in
 
 **Remaining:** S03bis needs its own owner authorization, after S03. The Python
 `renderer_html` and `data_role` naming stay in the static-site analysis.
+
+<a id="gc-070-505"></a>
+## 505 · Binding example family phase — 2026-09-26
+
+Block ID: **GC-070-505**.
+
+**Decided:** owner decision, 2026-09-26: `examples/html_svg` stays native HTML/SVG
+without binding and receives only the mechanical `css` → `css_requires` migration
+in S15; examples 10 and 13 stay unchanged. New phase S14bis, between S14 and S15,
+adds a binding example family: some `html_svg` examples rewritten with binding, plus
+the examples needed for 0.2.0 features. Example names: a generic `div` in `pane`,
+the `main` tag as `html_main` held in `main_content`, never `page` for an element.
+P7 is confirmed: `css_requires`/`js_requires` stay. Recorded in
+[GC-210 §060](210-binding-contract.md#gc-210-060).
+
+**Implemented:** documentation only.
+
+**Remaining:** the family name is to be confirmed. S14bis needs its own owner
+authorization, after S14.

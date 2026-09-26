@@ -3,16 +3,17 @@
 Document ID: **GC-210**. Recorded: **2026-09-25**.
 
 [Concise counterpart](../../docs_llm/internal/210-binding-contract.md).
-[Constitution](../00-constitution.md) · [Current status](070-work-status.md#gc-070-500).
+[Constitution](../00-constitution.md) · [Current status](070-work-status.md#gc-070-505).
 
 <a id="gc-210-005"></a>
 ## 005 · Authority, provenance and delivery boundary
 
 Block ID: **GC-210-005**.
 
-This is the English repository transcription of the unified 0.2.0 plan, revision 4
+This is the English repository transcription of the unified 0.2.0 plan, revision 5
 (revision 3 with its later additions, plus the owner decision of 2026-09-25 that the live
-renderer reuses Builder by inheritance, phase S03bis), including its approved decisions, architecture, phases and acceptance gates. It
+renderer reuses Builder by inheritance, phase S03bis, and the 2026-09-26 example
+family phase S14bis), including its approved decisions, architecture, phases and acceptance gates. It
 supersedes GC-165 as the binding execution plan; GC-110 remains the completed 0.1.0
 plan. The earlier plans, handoffs and legacy probes remain historical evidence.
 This contract is planned behavior, not a claim that reactive binding is implemented.
@@ -30,6 +31,7 @@ sections 2–10) and the S00 brief, both kept outside this repository. The brief
 (section “Decisioni dell'owner” through the document-ID decision) and the review
 section 3 disposition table. SHA-256 at transcription:
 
+- Unified plan, revision 5: `71f9878eb6a0783714ef2945d6f7e01c28b0f66cc99733ffdcdf6638fb93a6ea`.
 - Unified plan, revision 4: `77a9fb2aebede13be865da8b7c54c8afc2a0f29635c3e09fe1ff002e44c53151`.
 - Unified plan, revision 3 with later additions: `9d7251c4d0ad0a1eb02b7ce6aa3a9b8f198f862a62c93a37c69d840212ead035`.
 - Unified plan, revision 2 (first transcription): `a9eda5d9f9f1541b3851ff7fc93e37bfbc74658df67ad5a9794929e6622c8b33`.
@@ -512,7 +514,8 @@ Block ID: **GC-210-060**.
 | S12 / S08, S11 | button.js/events.js, controls/providers/renderer; button-controller/native-events tests | One invocation, disabled button, modifiers/count across rebuild, removal in callback, handler replacement, ambiguity and multiple controllers, B7 pointer/init plus click, ordered fire_*; all R3 form/submit/parent/Enter/Space/native-listener effects. Owner confirms or revises R3 |
 | S13 / S09–S12 | Gramlot/renderer/binding only for defects; freeze/source-pipeline/embedded-source/render-failure/page-close, new binding-integration/cleanup tests | Exact install/default/start/timer/subscription traces for mount/rebuild/new identity/remove/insert/nested freeze/dispose; stale remote, validation/install/first-render/provider/cleanup failures; failing disposer does not stop others; 100 mount/remove cycles restore counters; no special thaw/remote path |
 | S14 / S06–S09, S13; Q3/Q4 | Authorized Minimal WorkerHost/transport/standalone/build/build-directory/ASGI; JS Server native-fetch/node/bun; Django/FastAPI/Flask/Kajenn native adapters and tests | Same fixture on eight paths, resource descriptors and companion before Source, no Page.css/eval in Host, Worker sentinel, actual CSP headers, nonce on bootstrap/Source scripts, final-byte standalone hashes, altered nonce/hash blocked, named without unsafe-eval, inline blocked where forbidden. Blocked host prevents its S16 qualification |
-| S15 / S12–S14 | examples/html_svg/01–13 and runner, new examples/binding; public GC-090/095 and related paired guides, prepare_docs only for approved guides | Migrate css_requires/companions, examples 10/13 to named nested controller; Python-first paired initialization/default/formula/live/boolean/SVG/dynamic/freeze examples. Packaged-runtime examples, no manual DOM/state, ID/link/allowlist checks. Document signatures, types/events/cleanup/CSP/exports, construction vs newrecord defaults, intentional legacy differences and migration from 0.1.x |
+| S14bis / S12–S14 | New binding example family (examples/binding, name to be confirmed), runner and catalog. html_svg stays native HTML/SVG without binding (owner, 2026-09-26) | Some html_svg examples rewritten with binding, plus the examples needed for 0.2.0 features without an html_svg counterpart: dataSetter before DOM, defaults, formula, controller and named logic, live, checkbox/radio, button, bound SVG, variable datapath, dynamic Source, freeze, reactive style shortcuts. Python-first with JS equivalent; names: generic div in `pane`, `html_main` for main held in `main_content`, never `page` for an element. Packaged runtime, no manual DOM/state. Every listed 0.2.0 feature has an example |
+| S15 / S14bis | examples/html_svg/01–13 migration only; public GC-090/095 and related paired guides, prepare_docs only for approved guides | html_svg: css → css_requires (and same-name companion where needed), content unchanged including examples 10/13. Document signatures, types/events/cleanup/CSP/exports, construction vs newrecord defaults, intentional legacy differences and migration from 0.1.x, referencing S14bis examples. ID/link/allowlist checks |
 | S16 / S15 | Qualification report and clean installed artifacts with updated unconstrained dependencies | Complete suites incl enrolled regressions, Chromium/Firefox/WebKit, all eight hosts, two fixtures with same active path but different unrelated branch counts, revisions/hashes/versions/commands/skip reasons. Every mandatory acceptance executed and passed, or explicit owner waiver; unavailable is unverified, never success. No publication |
 | S17 / S16 | Explicit owner acceptance receipt, consolidation to main, version 0.2.0 only if authorized | Distinguish implemented/accepted/packaged/published/distributed. Publication requires separate authorization |
 
