@@ -80,10 +80,10 @@ and database technology; an integration may depend on core, never the reverse.
 `gramlot-minimal` replaces the repository name `gramlot-standalone`; standalone
 remains the browser/Worker profile name. It owns the generic Python ASGI adapter
 and the existing single-HTML exporter. Core retains shared Host/Page execution and rendering. Minimal owns standalone
-Worker integration and startup (amendment 11.46). `gramlot-kajenn` is the approved destination name for `gramlot-genro-asgi` and owns
+Worker integration and startup (amendment 11.46). `gramlot-kajenn` (formerly `gramlot-genro-asgi`) owns
 Kajenn-specific integration, consuming the generic ASGI adapter from Minimal. The
-inspected local checkout and configured origin still use `gramlot-genro-asgi`;
-the remote rename is not verified. This clarification does not rename a repository.
+GitHub repository, local checkout and configured origin were renamed to
+`gramlot-kajenn` on 2026-09-26.
 The upstream Python distribution/import remains `genro-asgi`/`genro_asgi` until
 its owning project actually renames it. Do not invent an upstream package alias.
 
@@ -236,8 +236,8 @@ Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes
 
 **Current naming clarification — 2026-09-24:** In the dated decisions below,
 `gramlot-nodejs` is now `gramlot-js-server` (11.32), and `gramlot-standalone` is now
-`gramlot-minimal` (11.19). Kajenn's approved destination name is `gramlot-kajenn`;
-the inspected checkout/configured origin remain `gramlot-genro-asgi`. Historical
+`gramlot-minimal` (11.19). `gramlot-genro-asgi` is now
+`gramlot-kajenn` (repository renamed 2026-09-26). Historical
 names preserve the original decision scope and do not identify additional repos.
 
 Owner decision, 2026-09-21: subsequent work is restricted to Gramlot. Builder JS

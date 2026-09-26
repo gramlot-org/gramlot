@@ -21,7 +21,7 @@ integration repositories own environment-specific adaptation and setup.
 | --- | --- | --- |
 | `gramlot-fastapi` | Python / FastAPI | Native FastAPI integration and setup; included in the original 0.1.0 delivery. |
 | `gramlot-flask` | Python / Flask | Native Flask integration and setup; included in the original 0.1.0 delivery. |
-| `gramlot-kajenn` | Python / Kajenn | Kajenn-specific integration, consuming the generic ASGI adapter from Minimal. Locally aligned; repository still named `gramlot-genro-asgi`. |
+| `gramlot-kajenn` | Python / Kajenn | Kajenn-specific integration, consuming the generic ASGI adapter from Minimal. Repository renamed from `gramlot-genro-asgi` on 2026-09-26. |
 | `gramlot-minimal` | Python / Uvicorn and JavaScript / browser Worker | Generic ASGI hosting for Python and single-HTML packaging for the browser standalone profile. Locally aligned; local and GitHub repository renamed to `gramlot-minimal`. |
 | `gramlot-js-server` | JavaScript / Node.js and Bun | Both server runtimes belong to this integration repository; included in the original 0.1.0 delivery. |
 | `gramlot-django` | Python / Django | Native Django views and URLconf integration through `NativeHtmlPages`. Locally aligned and checked; the older Page/ORM implementation is historical. |

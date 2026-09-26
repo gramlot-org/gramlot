@@ -110,7 +110,6 @@ standalone. See [the ownership contract](https://github.com/gramlot-org/gramlot/
 These development names do not rename the already published 0.1.0 archives.
 
 `gramlot-minimal` and `gramlot-js-server` are the current local and GitHub repository
-names. `gramlot-kajenn` is the approved destination name. The inspected local checkout
-and its configured origin still use `gramlot-genro-asgi`; a remote rename is not
-verified. This naming distinction does not change Kajenn's approved ownership.
+names. `gramlot-kajenn` was renamed from `gramlot-genro-asgi` on 2026-09-26, on GitHub
+and locally.
 Repository naming does not imply a package release or deployment.

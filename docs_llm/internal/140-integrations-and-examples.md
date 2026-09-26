@@ -16,7 +16,7 @@ instructions. Core owns shared Page, Host, Source and browser contracts.
 | --- | --- |
 | `gramlot-fastapi` | Python / FastAPI; native integration in original 0.1.0 delivery. |
 | `gramlot-flask` | Python / Flask; native integration in original 0.1.0 delivery. |
-| `gramlot-kajenn` | Python / Kajenn; consumes Minimal ASGI. Local alignment; actual repo name remains `gramlot-genro-asgi`. |
+| `gramlot-kajenn` | Python / Kajenn; consumes Minimal ASGI. Renamed from `gramlot-genro-asgi` on 2026-09-26. |
 | `gramlot-minimal` | Python / generic ASGI/Uvicorn and JS / browser Worker packaging. Local alignment; local and GitHub repository now named `gramlot-minimal`. |
 | `gramlot-js-server` | JavaScript / Node.js and Bun; both belong here, original 0.1.0 profiles. |
 | `gramlot-django` | Python / Django; local native `NativeHtmlPages` views/URLconf. Old Page/ORM code is historical. |

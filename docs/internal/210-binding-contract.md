@@ -630,7 +630,7 @@ adapters inherit Page.css indirectly even when they contain no literal `.css`.
 | --- | --- | --- |
 | Minimal ASGI/Uvicorn | gramlot-minimal, src/gramlot_minimal/asgi.py: NativeHtmlASGI, create_asgi_application | NativeHtmlASGI.host=core Host; __call__ uses open_page. Migrate resource serving/bootstrap/CSP contract |
 | FastAPI | gramlot-fastapi, src/gramlot_fastapi/native_html.py: NativeHtmlPages, NativeHtmlApplication, mount_native_html | Core Host.open_page supplies CSS/bootstrap; adapter serves responses and runtime |
-| Kajenn | gramlot-genro-asgi (approved name gramlot-kajenn), src/gramlot_kajenn/native_html.py: KajennNativeHtmlApplication, _KajennASGI | _KajennASGI derives Minimal NativeHtmlASGI, inherits core CSS path; custom runtime source remains adapter-owned |
+| Kajenn | gramlot-kajenn (formerly gramlot-genro-asgi), src/gramlot_kajenn/native_html.py: KajennNativeHtmlApplication, _KajennASGI | _KajennASGI derives Minimal NativeHtmlASGI, inherits core CSS path; custom runtime source remains adapter-owned |
 | Flask | gramlot-flask, src/gramlot_flask/native_html.py: NativeHtmlPages, mount_native_html | asyncio.run(core Host.open_page) returns bootstrap containing cls.css |
 | Django | gramlot-django, src/gramlot_django/native_html.py: NativeHtmlPages | async_to_sync(core Host.open_page); needs new 0.2.0 qualification, not inferred from seven-profile history |
 | Node | gramlot-js-server, src/native-node.mjs: startNativeServer → src/native-fetch.mjs:createNativeDispatch | Core FileHost/Host.openPage reads Page.css; shared HTTP adapter migration. Obsolete src/bootstrap.mjs is not the entry |
