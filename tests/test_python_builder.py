@@ -3,11 +3,13 @@ import unittest
 import json
 from pathlib import Path
 
-from genro_builders.builder import SourceBag
+from genro_bag import Bag
+from genro_builders.builder import SourceBag, SourceBagNode
 from genro_builders import BuilderBase
 from genro_tytx import from_tytx, to_tytx
 
 from gramlot import GramlotBuilder
+from gramlot.page.source import GramlotBuilderBag, GramlotBuilderBagNode
 from gramlot.server import Host
 
 CONTROLS = json.loads(
@@ -74,6 +76,78 @@ class BuilderTests(unittest.TestCase):
             parent.rating(amount=11, code="IT")
         self.assertEqual(parent.value, "fallback")
         self.assertNotIn("_text", parent.attr)
+
+
+class GramlotSourceClassTests(unittest.TestCase):
+    def test_empty_counterparts_use_the_builder_node_class_hook(self):
+        self.assertTrue(issubclass(GramlotBuilderBag, SourceBag))
+        self.assertTrue(issubclass(GramlotBuilderBagNode, SourceBagNode))
+        self.assertIs(GramlotBuilderBag._node_class, GramlotBuilderBagNode)
+        own = {cls: {name for name in vars(cls) if not name.startswith("__")}
+               for cls in (GramlotBuilderBag, GramlotBuilderBagNode)}
+        self.assertEqual(own[GramlotBuilderBagNode], set())
+        self.assertEqual(own[GramlotBuilderBag], {"_node_class"})
+
+    def test_authoring_on_a_gramlot_bag_propagates_the_classes_to_branches(self):
+        builder = GramlotBuilder()
+        branch = GramlotBuilderBag(builder=builder)
+        panel = branch.div("before", id="panel")
+        child = panel.span("after")
+        self.assertIsInstance(panel, GramlotBuilderBagNode)
+        self.assertIs(type(panel.value), GramlotBuilderBag)
+        self.assertIsInstance(child, GramlotBuilderBagNode)
+        self.assertEqual(panel.attr["_text"], "before")
+
+    def test_builder_source_and_its_wire_are_not_gramlot_classes_today(self):
+        builder = GramlotBuilder()
+        builder.root.div("x").span("y")
+        self.assertIs(type(builder.source), SourceBag)
+        self.assertIs(type(builder.source.nodes[0].value), SourceBag)
+        root = GramlotBuilderBag(builder=builder)
+        root.div("x")
+        with self.assertRaises(TypeError):
+            to_tytx(root)
+        holder = SourceBag()
+        holder["branch"] = GramlotBuilderBag()
+        self.assertIs(type(from_tytx(to_tytx(holder))["branch"]), SourceBag)
+
+
+class LegacyTransportProbeTests(unittest.TestCase):
+    def test_legacy_data_call_builds_the_html5_data_element(self):
+        builder = GramlotBuilder()
+        builder.root.data(".nome", "Ada")
+        builder.root.data(".nome", value="Ada")
+        positional, named = builder.source.nodes
+        self.assertEqual(positional.node_tag, "data")
+        self.assertEqual(positional.value, ".nome")
+        self.assertEqual(dict(positional.attr), {})
+        self.assertEqual(named.node_tag, "data")
+        self.assertEqual(named.value, ".nome")
+        self.assertEqual(dict(named.attr), {"value": "Ada"})
+
+    def test_value_attribute_roundtrip_keeps_bag_scalar_and_array(self):
+        builder = GramlotBuilder()
+        bag = Bag()
+        bag["a"] = 1
+        bag["b.c"] = "x"
+        for destination, value in ((".bag", bag), (".n", 7), (".arr", [1, "a", None]), (".nul", None)):
+            builder.root.dataSetter(destination, value=value)
+        self.assertNotIn("value", builder.source.nodes[3].attr)
+        decoded = from_tytx(to_tytx(builder.source))
+        attrs = {node.attr["destination"]: node.attr for node in decoded.nodes}
+        self.assertIsInstance(attrs[".bag"]["value"], Bag)
+        self.assertEqual(attrs[".bag"]["value"]["b.c"], "x")
+        self.assertEqual(attrs[".n"]["value"], 7)
+        self.assertEqual(attrs[".arr"]["value"], [1, "a", None])
+        self.assertNotIn("value", attrs[".nul"])
+
+    def test_from_tytx_drops_null_attributes_that_the_wire_carries(self):
+        bag = Bag()
+        bag["x"] = 1
+        bag.get_node("x").attr.update({"keep": 1, "gone": None})
+        wire = to_tytx(bag)
+        self.assertIn('"gone": null', wire)
+        self.assertEqual(dict(from_tytx(wire).get_node("x").attr), {"keep": 1})
 
 
 class SourceMethodTests(unittest.IsolatedAsyncioTestCase):

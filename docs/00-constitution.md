@@ -997,8 +997,11 @@ it does not claim runtime implementation or acceptance of the S00 transcription.
     `GramlotBuilderBagNode extends SourceBagNode`, with silent PUT, FIRE marked for
     the router, FIRE_AFTER with a NodeBinding-tracked timer and absDatapath with
     variable datapath and symbolic ?attr. S01 proves every browser path produces
-    these classes, without prototype mutation or Builder/Bag changes; Python needs
-    no counterpart. S04 and S08 wait for no external release. S01 measures the
+    these classes, without prototype mutation or Builder/Bag changes. Owner rule,
+    2026-09-26 (symmetry): Python has empty counterparts, `GramlotBuilderBagNode(
+    SourceBagNode)` and `GramlotBuilderBag(SourceBag)` with `_node_class`, to be used by
+    the Python GramlotBuilder for the Source; runtime methods stay in JS. This supersedes
+    "Python needs no counterpart". S04 and S08 wait for no external release. S01 measures the
     Bag.fromTytx null-attribute loss; any solution needs owner approval and goes into
     these classes. This supersedes the P17 wording "no SourceBagNode subclass".
 11. Owner rule, 2026-09-25: Gramlot reuses Builder by inheritance and never

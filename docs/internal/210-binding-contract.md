@@ -170,7 +170,10 @@ Block ID: **GC-210-018**.
 Owner decision, 2026-09-25: fixes to genro-builders and genro-bag are forbidden for
 Gramlot. The previously planned dependency fixes are withdrawn. Behavior that
 Builder lacks goes into two Gramlot classes in the new file
-`js/src/builder/source.js`. They are planned for S01 and not yet implemented.
+`js/src/builder/source.js`. S01 status (2026-09-26, not yet accepted): the classes
+exist with silent `PUT`, `FIRE_AFTER` and `absDatapath`; the `FIRE` mark and the
+production of these classes on every browser path are stopped at the S01 gate
+([GC-070 §515](070-work-status.md#gc-070-515)).
 
 ```js
 export class GramlotBuilderBag extends SourceBag {
@@ -199,8 +202,14 @@ export class GramlotBuilderBagNode extends SourceBagNode {
   onto the node later without author-visible effects.
 - S01 verifies that every browser path produces the Gramlot classes: JS authoring,
   `sourceBagFromTytx`, `bindBuilder`, insertion and `remoteSource`. No prototype
-  mutation. No change to Builder or Bag. Python needs no counterpart: authoring stays
-  inert and these methods run only in the browser.
+  mutation. No change to Builder or Bag.
+- Owner decision, 2026-09-26 (symmetry): Python has empty counterparts in
+  `src/gramlot/page/source.py`: `class GramlotBuilderBagNode(SourceBagNode)` and
+  `class GramlotBuilderBag(SourceBag)` with `_node_class = GramlotBuilderBagNode`
+  (Builder Python hook, `genro_builders/builder/source_bag.py:645`). The Python
+  `GramlotBuilder` is to use them for the Source, and the Python → JS transport is to
+  yield the Gramlot classes in the browser. The runtime methods stay in JS; Python authoring
+  stays inert. This supersedes "Python needs no counterpart".
 - S01 measures the null-attribute loss in `Bag.fromTytx`. Any solution goes into
   these classes after owner approval.
 
@@ -660,7 +669,9 @@ red-CI decision; the final report preserves the patch and failure output. No ski
 continue-on-error or changed expected values hide these failures. Passing ordinary
 suites must never be called full 0.2.0 qualification. Owner decision, 2026-09-25:
 both nested tests stay out of CI until GramlotBuilderBagNode provides silent PUT
-and symbolic ?attr in S01.
+and symbolic ?attr in S01. S01 (2026-09-26): both nested tests now reach PUT and
+absDatapath through GramlotBuilderBag/GramlotBuilderBagNode with unchanged assertions,
+pass, and are enrolled with the S00 patch; npm test runs 102 cases, all passing.
 
 Other stops: unresolved Q2–Q5, a hook the Gramlot source classes cannot provide
 without an owner decision, any new unapproved contract,

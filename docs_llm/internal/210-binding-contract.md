@@ -172,7 +172,9 @@ Block ID: **GC-210-018**.
 
 Owner, 2026-09-25: no fixes to genro-builders or genro-bag for Gramlot; the earlier
 planned dependency fixes are withdrawn. Missing Builder behavior goes into
-`js/src/builder/source.js` (planned S01, not implemented):
+`js/src/builder/source.js`. S01 (2026-09-26, not accepted): silent PUT, FIRE_AFTER
+and absDatapath exist; FIRE mark and every-path production stopped at the S01 gate
+([GC-070 §515](070-work-status.md#gc-070-515)):
 
 - `GramlotBuilderBag extends SourceBag`; its `nodeClass` returns `GramlotBuilderBagNode`.
 - `GramlotBuilderBagNode extends SourceBagNode`: `PUT(path, value)` silent
@@ -187,8 +189,13 @@ planned dependency fixes are withdrawn. Missing Builder behavior goes into
   onto the node later (P17).
 - S01 proves every browser path (JS authoring, `sourceBagFromTytx`, `bindBuilder`,
   insertion, `remoteSource`) yields the Gramlot classes; no prototype mutation, no
-  Builder/Bag change, no Python counterpart. S01 measures `Bag.fromTytx` null-attribute
-  loss; any solution goes into these classes after owner approval.
+  Builder/Bag change. S01 measures `Bag.fromTytx` null-attribute loss; any solution
+  goes into these classes after owner approval.
+- Owner, 2026-09-26 (symmetry): empty Python counterparts in `src/gramlot/page/source.py`,
+  `GramlotBuilderBagNode(SourceBagNode)` and `GramlotBuilderBag(SourceBag)` with
+  `_node_class` (`source_bag.py:645`), to be used by the Python GramlotBuilder; Python → JS
+  transport is to yield the Gramlot classes. Runtime methods only in JS. Supersedes
+  "no Python counterpart".
 
 <a id="gc-210-020"></a>
 ## 020 · Modules, instance ownership and construction
@@ -557,7 +564,9 @@ red-CI decision; the final report preserves the patch and failure output. No ski
 continue-on-error or changed expected values hide these failures. Passing ordinary
 suites must never be called full 0.2.0 qualification. Owner decision, 2026-09-25:
 both nested tests stay out of CI until GramlotBuilderBagNode provides silent PUT
-and symbolic ?attr in S01.
+and symbolic ?attr in S01. S01 (2026-09-26): both nested tests reach PUT/absDatapath
+through the Gramlot classes with unchanged assertions, pass and are enrolled with the
+S00 patch; npm test runs 102 cases, all passing.
 
 Other stops: unresolved Q2–Q5, a hook the Gramlot source classes cannot provide
 without an owner decision, any new unapproved contract,

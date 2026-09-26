@@ -1,10 +1,10 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-09-25**.
+Document ID: **GC-070**. Updated: **2026-09-26**.
 
 
-**Current checkpoint:** S00 records the 0.2.0 contract, baseline and inventories; delivery awaits owner review. See [§490](#gc-070-490).
-**Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. Only S00 is authorized in this task; do not start S01.
+**Current checkpoint:** S01 feasibility gate delivered; Gramlot Source classes partly implemented, gate questions await the owner. See [§515](#gc-070-515).
+**Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 delivered for review; do not start S02 without authorization.
 **Dependency fixes:** forbidden by owner decision, 2026-09-25; missing Builder behavior goes into GramlotBuilderBag/GramlotBuilderBagNode (S01). See [§495](#gc-070-495).
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
 **Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
@@ -2106,3 +2106,52 @@ GC-210 §§065–080 inventories. The nested regressions stay out of CI until S0
 
 **Remaining:** S01 brief and owner authorization. S03bis settles how JS offers string
 rendering with Gramlot adaptAttrs.
+
+<a id="gc-070-515"></a>
+## 515 · S01 feasibility gate: Gramlot Source classes and dependency hooks — 2026-09-26
+
+Block ID: **GC-070-515**.
+
+**Implemented:** `js/src/builder/source.js` with `GramlotBuilderBag extends SourceBag`
+(`nodeClass` returns `GramlotBuilderBagNode`) and `GramlotBuilderBagNode extends
+SourceBagNode`: silent `PUT` (Bag `doTrigger=false`, reason = the node);
+`FIRE_AFTER(path, value = true, delay = 10)`, which returns a cancel function to the
+caller; `absDatapath` with variable datapath (absolute or symbolic pointer; empty or
+null value gives a null path) and `?attr` kept on symbolic paths. `SET`, `GET`,
+`setRelativeData`, `getRelativeData` and `FIRE` remain Builder's. Empty Python
+counterparts in `src/gramlot/page/source.py` (`_node_class`). The two nested
+regressions now reach `PUT`/`absDatapath` through the Gramlot classes, with their
+assertions unchanged, and are enrolled in `npm test` and CI with the S00 patch.
+New `js/tests/source-extension-contract.test.js`; extended `bag-contract.test.js` and
+`tests/test_python_builder.py`. No Builder, Bag, prototype or `index.js` change.
+
+**Verified:** before edits Python 18/18, JavaScript 76/76, expanded discovery 81 with
+the 4 known failures. After: Python 24/24, JavaScript 102/102 (the 4 former failures
+pass), runner 8/8. Probes: Python → TYTX → `sourceBagFromTytx`/`bindBuilder` keeps node
+identity as a Map key after insertion and reference resolution; the legacy
+`data(path, value)` call silently builds the HTML5 `data` element (Python drops the
+second argument; JavaScript spreads the string into index attributes); the `value`
+attribute keeps Bag, scalar and array in four directions, while a null `value` is not
+authored; `Bag.fromTytx` drops null attributes in Python and JavaScript; `doTrigger=false`
+is silent for insert/update/attributes, but autocreated intermediate nodes still emit
+`ins` with reason `autocreate`; a fired write emits only when the value changes, then
+resets to null silently; `setAttr` and `?attr` writes stringify the reason, value
+events keep it; `root.setItem('main', builder.data)` keeps identity and backrefs, with
+`main`-prefixed paths; `runtimeValues`, `pointers()` and the static-only
+`_resolveLogicFunc` behave as recorded; `RendererBase.render` on data-elements throws
+for an unknown `${name}` template in a script string and for a relative pointer without
+a datapath. No other Data subscriber exists in Builder or Gramlot.
+
+**Stopped at the gate (owner questions):** Builder hardcodes `new SourceBag` for the
+JavaScript document root and scalar promotion (`builder-base.js:121-125, 308`) and the
+Python root (`base.py:389-390`); TYTX encodes by exact constructor, the `SOURCE` suffix
+belongs to `SourceBag`, and decoded branches are `SourceBag`. No path produces the
+Gramlot classes without a new decision (own wire suffix, post-decode copy or
+re-implemented construction). The `FIRE` router mark needs the node-to-runtime
+reach that GC-087 §085 leaves open. A relative variable datapath (`'^.foo'`) has no
+defined resolution (the legacy code recurses) and raises an explicit error.
+
+**Accepted:** not yet; the delivery awaits review and owner decisions.
+
+**Remaining:** owner decisions on the gate questions; S02/S03 start only with their
+own authorization.

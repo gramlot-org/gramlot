@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BuilderBase, SourceBag} from '@jsr/genro__builders';
+import {BuilderBase} from '@jsr/genro__builders';
+import {GramlotBuilderBag} from '../../src/builder/source.js';
 
 for (const symbol of ['FORM', 'ANCHOR', 'target']) {
-    test(`symbolic #${symbol} reads preserve the attribute selector`, () => {
+    test(`symbolic #${symbol} reads preserve the attribute selector through GramlotBuilderBagNode`, () => {
         const builder = new BuilderBase();
-        const scope = new SourceBag(null, builder);
+        const scope = new GramlotBuilderBag(null, builder);
         builder.source.setItem('scope', scope, {
             datapath: 'main.form', form: true, _anchor: true, node_id: 'target',
         });

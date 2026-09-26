@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BuilderBase} from '@jsr/genro__builders';
+import {GramlotBuilderBag} from '../../src/builder/source.js';
 
 test('Bag supports a silent write through doTrigger=false', () => {
     const builder = new BuilderBase();
@@ -11,9 +12,11 @@ test('Bag supports a silent write through doTrigger=false', () => {
     assert.deepEqual(events, []);
 });
 
-test('SourceNode PUT should implement the recovered quiet-write contract', () => {
+test('GramlotBuilderBagNode PUT implements the recovered quiet-write contract', () => {
     const builder = new BuilderBase();
-    const node = builder.source.setItem('writer', null);
+    const branch = new GramlotBuilderBag(null, builder);
+    builder.source.setItem('scope', branch);
+    const node = branch.setItem('writer', null);
     const events = [];
     builder.data.subscribe('proof', {any: event => events.push(event.evt)});
     node.PUT('quiet', 7);

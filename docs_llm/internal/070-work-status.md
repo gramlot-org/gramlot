@@ -1,10 +1,10 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-09-25**.
+Document ID: **GC-070**. Updated: **2026-09-26**.
 
 
-**Current checkpoint:** S00 records the 0.2.0 contract, baseline and inventories; delivery awaits owner review. See [§490](#gc-070-490).
-**Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. Only S00 is authorized in this task; do not start S01.
+**Current checkpoint:** S01 feasibility gate delivered; Gramlot Source classes partly implemented, gate questions await the owner. See [§515](#gc-070-515).
+**Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 delivered for review; do not start S02 without authorization.
 **Dependency fixes:** forbidden by owner decision, 2026-09-25; missing Builder behavior goes into GramlotBuilderBag/GramlotBuilderBagNode (S01). See [§495](#gc-070-495).
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
 **Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
@@ -2095,3 +2095,35 @@ PORT-0001 records the resolved backref correction.
 
 **Remaining:** S01 brief and authorization; S03bis settles JS string rendering with
 Gramlot adaptAttrs.
+
+<a id="gc-070-515"></a>
+## 515 · S01 feasibility gate: Gramlot Source classes and dependency hooks — 2026-09-26
+
+Block ID: **GC-070-515**.
+
+**Implemented:** `js/src/builder/source.js`: `GramlotBuilderBag` (nodeClass) and
+`GramlotBuilderBagNode` with silent PUT, FIRE_AFTER returning a cancel function,
+absDatapath with variable datapath (empty gives null) and symbolic ?attr. SET, GET,
+set/getRelativeData and FIRE stay Builder's. Empty Python counterparts in
+`src/gramlot/page/source.py`. Nested regressions pass through the Gramlot classes,
+assertions unchanged, enrolled in npm test/CI. New source-extension-contract test;
+bag-contract and test_python_builder extended. No Builder/Bag/prototype change.
+
+**Verified:** before Python 18/18, JS 76/76, expanded 81 with 4 known failures; after
+Python 24/24, JS 102/102, runner 8/8. Probe facts: identity as Map key after
+insertion/references; legacy data(path, value) silently yields HTML5 data (Python
+drops the value, JS spreads the string); value attribute Bag/scalar/array roundtrip
+in four directions, null not authored; fromTytx drops null attributes (both);
+doTrigger=false silent but autocreated intermediates emit ins/autocreate; fired emits
+only on change then resets; setAttr/?attr stringify reason; main mount keeps identity
+and main-prefixed paths; runtimeValues/pointers/static-only _resolveLogicFunc as
+recorded; RendererBase.render throws on unknown `${name}` in scripts and on relative
+pointers without datapath. No other Data subscriber.
+
+**Stopped at the gate:** Builder hardcodes SourceBag for the JS root/promotion and
+Python root; TYTX matches exact constructors and SOURCE belongs to SourceBag, so no
+path yields Gramlot classes without a new decision. FIRE mark needs the node→runtime
+reach left open by GC-087 §085. Relative variable datapath has no defined resolution
+(legacy recurses); explicit error.
+
+**Accepted:** not yet. **Remaining:** owner decisions; S02/S03 need authorization.

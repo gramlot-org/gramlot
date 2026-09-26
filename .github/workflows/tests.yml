@@ -50,7 +50,7 @@ jobs:
         run: python -c 'import os, sys; open(os.environ["GITHUB_ENV"], "a").write("GRAMLOT_TEST_PYTHON=" + sys.executable + "\n")'
       - name: Test Python
         run: python -m unittest discover -s tests
-      - name: Test JavaScript
+      - name: Test JavaScript including quiet-write and symbolic-attribute contracts
         run: npm --prefix js test
       - name: Install runner dependencies
         run: npm --prefix examples install --ignore-scripts --install-links --package-lock=false
