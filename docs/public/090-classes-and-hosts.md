@@ -77,6 +77,7 @@ Their methods are part of the contract. Plain Bags are valid for Data, not Sourc
 | JS `Gramlot` | Prepares Data/Source roots and coordinates main and remote responses | Browser runtime bootstrap |
 | JS `GramlotRenderer` | Extends generic `RendererBase`; owns live DOM and application references | Framework runtime |
 | *0.2.0:* JS `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Replace `GramlotRenderer`; extend Builder `HtmlRenderer` and `SvgRenderer`, inheriting their attribute and style adaptation; own live DOM and application references | Framework runtime |
+| *0.2.0:* Python `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Render a Gramlot Source to static HTML/SVG with the same attribute and style rules as JS | Static pages, pre-rendering |
 | JS `MainTransport` | Main and remote Source requests | Runtime transport |
 | JS `Host`, `Page`, `FileHost` | Same execution role; language-specific contracts below | Node/Bun adapter implementations |
 

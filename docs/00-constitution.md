@@ -1009,7 +1009,11 @@ it does not claim runtime implementation or acceptance of the S00 transcription.
     Gramlot adds `_meta` removal, null style drop, data_/aria_/xmlns_ names and the
     legacy noConvertStyle attributes. HtmlElement keeps DOM application only. Phase
     S03bis, before S04. This supersedes the P6 exclusion of color/font_size/_class
-    shortcuts.
+    shortcuts. Owner rule, 2026-09-26: asymmetries between Python and JS are errors.
+    The Python GramlotBuilder may render static HTML/SVG through Python
+    GramlotHtmlRenderer/GramlotSvgRenderer with the same naming rule, delivered in
+    S03bis; authoring stays inert. A render option adds `<!doctype html>` and `<html>`
+    when missing. This supersedes "Python describes Source without rendering it".
 
 This supersedes obsolete authoring/ownership/initialization gates in GC-155–175 and
 PORT-0005; preserve their dated evidence and legacy assertions. GC-210 replaces

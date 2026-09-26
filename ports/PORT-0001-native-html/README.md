@@ -38,6 +38,10 @@ Owner is handling the upstream fix separately. Retest initial nested insertion,
 deep mutation, replacement, detachment and disposal without the workaround before
 acceptance. Do not label the current native HTML port consolidated or release it.
 
+**Resolved — 2026-09-26:** genro-bag-js 0.5.x propagates child backrefs in the
+`parentBag` setter; the workaround is removed. Future missing Builder or Bag behavior
+goes into Gramlot classes (constitution 11.47 item 10).
+
 ## Legacy Python references
 
 gnrpy/gnr/web/gnrwebstruct/base.py js_sourceNode generates __ref and pyref expressions;

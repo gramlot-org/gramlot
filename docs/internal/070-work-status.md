@@ -2082,3 +2082,27 @@ P7 is confirmed: `css_requires`/`js_requires` stay. Recorded in
 
 **Remaining:** the family name is to be confirmed. S14bis needs its own owner
 authorization, after S14.
+
+<a id="gc-070-510"></a>
+## 510 · S00 accepted; Python renderers and example families — 2026-09-26
+
+Block ID: **GC-070-510**.
+
+**Accepted:** the owner accepted S00 on 2026-09-26 after review: constitution 11.47,
+GC-210, GC-005 ID allocation, historical notes on GC-155–175 and PORT-0005, and the
+GC-210 §§065–080 inventories. The nested regressions stay out of CI until S01.
+
+**Decided:** owner decisions, 2026-09-26:
+- asymmetries between Python and JS are errors. The Python GramlotBuilder may render
+  static HTML/SVG; S03bis delivers Python `GramlotHtmlRenderer`/`GramlotSvgRenderer`
+  with the same naming rule as JS, `_text` as text, and a render option that adds
+  `<!doctype html>` and `<html>`. A symmetry test compares Python and JS output.
+  Constitution 11.47 item 11;
+- S14bis produces two example families, `examples/binding` and `examples/controllers`
+  ([GC-210 §060](210-binding-contract.md#gc-210-060));
+- PORT-0001 records the resolved backref correction.
+
+**Implemented:** documentation only.
+
+**Remaining:** S01 brief and owner authorization. S03bis settles how JS offers string
+rendering with Gramlot adaptAttrs.

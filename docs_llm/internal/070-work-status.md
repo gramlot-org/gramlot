@@ -2076,3 +2076,22 @@ confirmed (`css_requires`/`js_requires`). See [GC-210 §060](210-binding-contrac
 **Implemented:** documentation only.
 
 **Remaining:** family name to confirm; S14bis needs owner authorization, after S14.
+
+<a id="gc-070-510"></a>
+## 510 · S00 accepted; Python renderers and example families — 2026-09-26
+
+Block ID: **GC-070-510**.
+
+**Accepted:** owner accepted S00 on 2026-09-26 (11.47, GC-210, GC-005 IDs, historical
+notes, §§065–080 inventories). Nested regressions stay out of CI until S01.
+
+**Decided:** owner, 2026-09-26: Python/JS asymmetries are errors; Python may render
+static HTML/SVG; S03bis adds Python `GramlotHtmlRenderer`/`GramlotSvgRenderer`, same
+naming rule, `_text` as text, doctype/`<html>` option, symmetry test (11.47 item 11).
+S14bis: `examples/binding` and `examples/controllers` ([GC-210 §060](210-binding-contract.md#gc-210-060)).
+PORT-0001 records the resolved backref correction.
+
+**Implemented:** documentation only.
+
+**Remaining:** S01 brief and authorization; S03bis settles JS string rendering with
+Gramlot adaptAttrs.
