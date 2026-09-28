@@ -7,7 +7,7 @@ name = "gramlot"
 version = "0.1.2"
 description = "Portable declarative interface foundations"
 requires-python = ">=3.11"
-dependencies = ["genro-bag>=0.26.0", "genro-builders>=0.24.0", "genro-tytx>=0.16.0"]
+dependencies = ["genro-bag>=0.26.0", "genro-builders>=0.25.0", "genro-tytx>=0.16.0"]
 
 [project.optional-dependencies]
 test = ["genro-tytx[msgpack]"]

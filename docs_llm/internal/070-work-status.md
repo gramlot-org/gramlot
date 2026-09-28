@@ -3,7 +3,7 @@
 Document ID: **GC-070**. Updated: **2026-09-28**.
 
 
-**Current checkpoint:** S01 closed by the owner with proof 11 as debt; debt work delivered for review: libraries aligned, wire keeps the Gramlot classes, authoring root awaits the owner. See [§520](#gc-070-520).
+**Current checkpoint:** S01 proof 11 closed, delivered for review: GramlotBuilder declares `GramlotBuilderBag` as its Source class (genro-builders 0.25.0, genro-builders-js 0.3.0); authoring and wire keep the Gramlot classes in Python and JS. See [§525](#gc-070-525).
 **Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 closed by the owner with proof 11 as debt, S02 and S03 start (2026-09-28).
 **Dependency fixes:** forbidden by owner decision, 2026-09-25; missing Builder behavior goes into GramlotBuilderBag/GramlotBuilderBagNode (S01). See [§495](#gc-070-495).
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
@@ -2159,6 +2159,35 @@ JS. `deno publish --dry-run` succeeds with caret import map and exact exclusions
 **Not closed:** GramlotBuilder authoring still yields `SourceBag` (Builder root in both
 languages, JS scalar promotion, no documented class hook; Python branches follow the
 parent class, JS promotion does not): owner decision. Runner tests import `js/src`;
-`examples/node_modules` still holds old packaged Gramlot JS and libraries.
+`examples/node_modules` still holds old packaged Gramlot JS and libraries. Authoring
+closed in [§525](#gc-070-525).
+
+**Accepted:** not yet.
+
+<a id="gc-070-525"></a>
+## 525 · S01 proof 11 closed: the builder declares the Source class — 2026-09-28
+
+Block ID: **GC-070-525**.
+
+**Decided:** owner, 2026-09-28: builder declares the Source class, Source declares the
+node class (legacy `domSrcFactory`). genro-builders `_source_class` (#46, PR #47);
+genro-builders-js `static _sourceClass` (#5, PR #6), JS promotion follows the parent
+class as in Python. Gramlot uses it by inheritance. `jsr.json` keeps the caret (Deno
+rejects `>=` in `jsr:` specifiers).
+
+**Implemented:** genro-builders 0.25.0 (`>=0.25.0`); JS Builder 0.3.0 (`js/package.json`
+`>=0.3.0`, `jsr.json` `^0.3.0`). `GramlotBuilder._source_class = GramlotBuilderBag`
+(Python), `static _sourceClass = GramlotBuilderBag` (JS); no Builder method rewritten;
+builder modules import from `source.py`/`source.js`, not the reverse. "Authoring today"
+probes become proof 11 authoring tests: `_sourceroot`, root, nested branches, scalar
+promotion are Gramlot classes in both languages; wire `__cls: "GramlotBuilderBag"` on
+the payload only; same wire from Python and JS. Bundle regenerated.
+
+**Verified:** before Python 26/26, JS 106/106, runner 8/8; new versions before edits:
+Python 26/26, JS 105/106 ("authoring today" probe: promotion follows the parent). After:
+Python 26/26, JS 106/106, runner 8/8. `deno publish --dry-run` succeeds.
+
+**Not closed:** `examples/node_modules` still holds old packaged Gramlot JS and libraries
+([§520](#gc-070-520)).
 
 **Accepted:** not yet.

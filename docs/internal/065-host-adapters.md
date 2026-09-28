@@ -207,8 +207,8 @@ records it as GC-210 and a constitution amendment.
   classes (`src/gramlot/page/source.py`, owner 2026-09-26). The Source travels as
   `::X`; `__cls` names its class, and the browser decodes the class the wire names.
   A `GramlotBuilderBag` Source decodes as `GramlotBuilderBag`/`GramlotBuilderBagNode`
-  (`js/src/builder/source.js`). GramlotBuilder authoring still produces `SourceBag`
-  ([GC-070 §520](070-work-status.md#gc-070-520)).
+  (`js/src/builder/source.js`). GramlotBuilder authoring produces `GramlotBuilderBag`
+  in Python and JS ([GC-070 §525](070-work-status.md#gc-070-525)).
 - S06 implements the core contract only. Minimal and the connected adapters
   (FastAPI, Kajenn, Flask, Django, Node, Bun, standalone) migrate in S14, after
   authorization Q4. S00 inventories their current use of `Page.css`.

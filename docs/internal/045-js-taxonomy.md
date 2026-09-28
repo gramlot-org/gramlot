@@ -425,14 +425,17 @@ two Gramlot classes:
     (`source-bag.js:132-145`) and loses `?attr`.
 - Every browser path is to create the Gramlot classes: JS authoring,
   `sourceBagFromTytx`, `bindBuilder`, insertion and `remoteSource`. No prototype
-  change. Status 2026-09-28 ([GC-070 §520](070-work-status.md#gc-070-520)): a Bag of
+  change. Status 2026-09-28 ([GC-070 §520](070-work-status.md#gc-070-520),
+  [§525](070-work-status.md#gc-070-525)): a Bag of
   any class travels as `::X`. `__cls` names the class on a branch (row attributes)
   or on a root (payload), only when it differs from the inherited class (genro-bag
   0.26.0, genro-bag-js 0.9.0). Gramlot adds `GramlotBuilderBag` to the TYTX subtype
   dictionary of `X` under that name, in Python and JS. Decoding, `bindBuilder`,
-  insertion and `remoteSource` keep the class named by the wire. Builder authoring
-  still creates `SourceBag` for the document root and, in JS, for scalar promotion;
-  this point awaits an owner decision.
+  insertion and `remoteSource` keep the class named by the wire. `GramlotBuilder`
+  declares `GramlotBuilderBag` as its Source class (`static _sourceClass`,
+  genro-builders-js 0.3.0; Python `_source_class`, genro-builders 0.25.0). JS
+  authoring creates `GramlotBuilderBag` for the document root, nested branches and
+  scalar promotion.
 - Owner decision, 2026-09-26 (symmetry): Python has empty counterparts in
   `src/gramlot/page/source.py`. The runtime methods run only in the browser. This
   supersedes "Python does not need these classes".

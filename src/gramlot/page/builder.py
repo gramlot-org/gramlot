@@ -11,7 +11,7 @@ from ._grammar_load import load_grammar
 
 # Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 # dictionary of X, so every GramlotBuilder user can encode and decode it.
-from . import source  # noqa: F401
+from .source import GramlotBuilderBag
 
 HTML5_COLLECTION = json.loads(files("gramlot").joinpath("collections/html5.json").read_text())
 
@@ -20,6 +20,7 @@ class GramlotBuilder(BuilderBase):
     """Describe browser Source without rendering or evaluating it in Python."""
 
     _name = "gramlot"
+    _source_class = GramlotBuilderBag
 
     def __init__(self, name=None, *, collections=()):
         super().__init__(name)

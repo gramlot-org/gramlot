@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@jsr/genro__bag": ">=0.9.0",
-    "@jsr/genro__builders": ">=0.2.1",
+    "@jsr/genro__builders": ">=0.3.0",
     "@jsr/genro__tytx": ">=0.16.0"
   },
   "devDependencies": {

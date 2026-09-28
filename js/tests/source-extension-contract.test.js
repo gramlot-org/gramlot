@@ -266,7 +266,7 @@ test('RendererBase.render resolves data-element pointers, leaves ${...} literal 
     assert.throws(() => renderer.render(sourceTarget(outside)), /unresolved relative datapath: \^\.a/);
 });
 
-/** Python authoring of the same Source on a GramlotBuilder root, on a GramlotBuilderBag root, or decoding a wire. */
+/** Python authoring of the same Source on a GramlotBuilder root (also nested), on a GramlotBuilderBag root, or decoding a wire. */
 const SOURCE_AUTHORING = `
 import sys
 from genro_tytx import from_tytx, to_tytx
@@ -275,6 +275,9 @@ from gramlot.page.source import GramlotBuilderBag
 builder = GramlotBuilder()
 if sys.argv[1] == 'builder':
     builder.root.div(id="panel").span("after")
+    print(to_tytx(builder.source))
+elif sys.argv[1] == 'nested':
+    builder.root.div(id="panel").div("x").span("y")
     print(to_tytx(builder.source))
 elif sys.argv[1] == 'gramlot':
     root = GramlotBuilderBag(builder=builder)
@@ -359,19 +362,33 @@ test('a JavaScript GramlotBuilderBag Source decodes in Python as GramlotBuilderB
 test('Python and JavaScript write the same wire for the same Source', () => {
     const builder = new GramlotBuilder();
     builder.root.div({id: 'panel'}).span('after');
-    assert.equal(payload(builder.toTytx()).__cls, 'SourceBag');
+    assert.equal(payload(builder.toTytx()).__cls, 'GramlotBuilderBag');
     assert.deepEqual(payload(builder.toTytx()), payload(pythonWire('builder')));
     assert.deepEqual(payload(toTytx(gramlotSource(new GramlotBuilder()))), payload(pythonWire('gramlot')));
 });
 
-test('authoring today: GramlotBuilder roots are SourceBag and JavaScript promotion creates SourceBag branches', () => {
+test('GramlotBuilder authoring produces Gramlot classes at the root, in nested branches and on promotion', () => {
+    assert.equal(GramlotBuilder._sourceClass, GramlotBuilderBag);
     const builder = new GramlotBuilder();
-    builder.root.div('x').span('y');
-    assert.equal(builder.source.constructor, SourceBag);
-    assert.equal(builder.source.getNodes()[0].value.constructor, SourceBag);
+    assert.equal(builder._sourceroot.constructor, GramlotBuilderBag);
+    assert.equal(builder.source.constructor, GramlotBuilderBag);
+    builder.root.div({id: 'panel'}).div('x').span('y');
+    const panel = builder.source.getNodes()[0];
+    assert.equal(panel.constructor, GramlotBuilderBagNode);
+    assert.equal(panel.value.constructor, GramlotBuilderBag);
+    const inner = panel.value.getNodes()[0];
+    assert.equal(inner.constructor, GramlotBuilderBagNode);
+    assert.equal(inner.getAttr('_text'), 'x');
+    assert.equal(inner.value.constructor, GramlotBuilderBag);
+    assert.equal(inner.value.getNodes()[0].constructor, GramlotBuilderBagNode);
+    const wire = payload(builder.toTytx());
+    assert.equal(wire.__cls, 'GramlotBuilderBag');
+    assert.equal(wire.rows.some(row => Object.hasOwn(row[4], '__cls')), false);
+    assert.deepEqual(wire, payload(pythonWire('nested')));
+    assert.equal(pythonClasses(builder.toTytx()),
+        'GramlotBuilderBag GramlotBuilderBagNode GramlotBuilderBag GramlotBuilderBagNode');
     const root = new GramlotBuilderBag(null, builder);
     builder.wrapSource(root).div({id: 'panel'}).span('after');
-    assert.equal(root.getNodes()[0].value.constructor, SourceBag);
-    assert.equal(payload(toTytx(root)).rows[0][4].__cls, 'SourceBag');
-    assert.equal(payload(pythonWire('gramlot')).rows[0][4].__cls, undefined);
+    assert.equal(root.getNodes()[0].value.constructor, GramlotBuilderBag);
+    assert.deepEqual(payload(toTytx(root)), payload(pythonWire('gramlot')));
 });

@@ -175,8 +175,9 @@ exist with silent `PUT`, `FIRE_AFTER` and `absDatapath`; the `FIRE` mark and the
 production of these classes on every browser path are stopped at the S01 gate
 ([GC-070 §515](070-work-status.md#gc-070-515)). Owner, 2026-09-28: S01 is closed
 with proof 11 as debt. Debt work (2026-09-28, not yet accepted,
-[GC-070 §520](070-work-status.md#gc-070-520)): the wire carries the class; the
-authoring root remains open.
+[GC-070 §520](070-work-status.md#gc-070-520)): the wire carries the class. Proof 11
+closed (2026-09-28, not yet accepted, [GC-070 §525](070-work-status.md#gc-070-525)):
+GramlotBuilder declares `GramlotBuilderBag` as its Source class.
 
 ```js
 export class GramlotBuilderBag extends SourceBag {
@@ -218,9 +219,13 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 - Status 2026-09-28: a `GramlotBuilderBag` Source keeps `GramlotBuilderBag` and
   `GramlotBuilderBagNode` through Python → JS and JS → Python, `sourceBagFromTytx`,
   `bindBuilder`, insertion and `remoteSource`; Python and JS write the same wire for
-  the same Source. GramlotBuilder authoring still creates `SourceBag`: Builder
-  instantiates it for the document root (Python and JS) and for JS scalar promotion,
-  with no documented class hook. This point awaits an owner decision.
+  the same Source. Authoring (2026-09-28, [GC-070 §525](070-work-status.md#gc-070-525)):
+  the builder declares the class of its Source, as legacy `domSrcFactory`.
+  `GramlotBuilder` sets `_source_class = GramlotBuilderBag` (genro-builders 0.25.0)
+  and `static _sourceClass = GramlotBuilderBag` (genro-builders-js 0.3.0). The
+  document root, nested branches and JS scalar promotion (which follows the parent
+  Bag class, as Python branches do) hold `GramlotBuilderBag`/`GramlotBuilderBagNode`.
+  The GramlotBuilder wire carries `__cls: "GramlotBuilderBag"` on the payload only.
 - Owner decision, 2026-09-26 (symmetry): Python has empty counterparts in
   `src/gramlot/page/source.py`: `class GramlotBuilderBagNode(SourceBagNode)` and
   `class GramlotBuilderBag(SourceBag)` with `_node_class = GramlotBuilderBagNode`
@@ -697,6 +702,11 @@ versions, before Gramlot edits: the Python `SOURCE` registration breaks 7 JS tra
 cases; the two proof 11 "today" cases (Python, JS) fail because they record behavior
 superseded by the owner's wire decisions; the proof 10 template probe no longer throws.
 After: Python 26/26, JS 106/106, runner 8/8 ([GC-070 §520](070-work-status.md#gc-070-520)).
+Proof 11 closure (2026-09-28): genro-builders 0.25.0 (PyPI) and JS Builder 0.3.0
+(npm.jsr.io). Before edits: Python 26/26, JS 106/106, runner 8/8. New versions before
+Gramlot edits: the JS "authoring today" case fails, because JS promotion now follows
+the parent class. After: Python 26/26, JS 106/106, runner 8/8
+([GC-070 §525](070-work-status.md#gc-070-525)).
 
 Other stops: unresolved Q2–Q5, a hook the Gramlot source classes cannot provide
 without an owner decision, any new unapproved contract,

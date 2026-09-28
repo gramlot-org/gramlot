@@ -176,7 +176,9 @@ planned dependency fixes are withdrawn. Missing Builder behavior goes into
 and absDatapath exist; FIRE mark and every-path production stopped at the S01 gate
 ([GC-070 §515](070-work-status.md#gc-070-515)). Owner, 2026-09-28: S01 closed with
 proof 11 as debt; debt work (not accepted, [GC-070 §520](070-work-status.md#gc-070-520)):
-wire carries the class, authoring root open:
+wire carries the class; proof 11 closed (not accepted,
+[GC-070 §525](070-work-status.md#gc-070-525)): GramlotBuilder declares
+`GramlotBuilderBag` as its Source class:
 
 - `GramlotBuilderBag extends SourceBag`; its `nodeClass` returns `GramlotBuilderBagNode`.
 - `GramlotBuilderBagNode extends SourceBagNode`: `PUT(path, value)` silent
@@ -201,8 +203,11 @@ wire carries the class, authoring root open:
   `source.py`/`source.js`, loaded by the builder modules; nodes follow the Bag.
 - Status 2026-09-28: a `GramlotBuilderBag` Source keeps the Gramlot classes Python ↔ JS,
   through `sourceBagFromTytx`, `bindBuilder`, insertion, `remoteSource`; same wire from
-  Python and JS. GramlotBuilder authoring still yields `SourceBag` (Builder root in both
-  languages, JS scalar promotion; no documented class hook): owner decision pending. S01 measures `Bag.fromTytx` null-attribute loss; any solution
+  Python and JS. Authoring ([GC-070 §525](070-work-status.md#gc-070-525)): builder
+  declares the Source class (legacy `domSrcFactory`); `GramlotBuilder`
+  `_source_class`/`static _sourceClass = GramlotBuilderBag` (genro-builders 0.25.0,
+  genro-builders-js 0.3.0); root, nested branches, JS promotion (follows the parent
+  class) are Gramlot classes; wire `__cls: "GramlotBuilderBag"` on the payload only. S01 measures `Bag.fromTytx` null-attribute loss; any solution
   goes into these classes after owner approval.
 - Owner, 2026-09-26 (symmetry): empty Python counterparts in `src/gramlot/page/source.py`,
   `GramlotBuilderBagNode(SourceBagNode)` and `GramlotBuilderBag(SourceBag)` with
@@ -585,7 +590,11 @@ dependencies on genro-tytx 0.16.0, genro-bag 0.26.0, genro-builders 0.24.0 and J
 runner 8/8; new versions before Gramlot edits: `SOURCE` registration breaks 7 JS
 transport cases, the two proof 11 "today" cases fail (superseded wire behavior), proof 10
 template probe no longer throws. After: Python 26/26,
-JS 106/106, runner 8/8 ([GC-070 §520](070-work-status.md#gc-070-520)).
+JS 106/106, runner 8/8 ([GC-070 §520](070-work-status.md#gc-070-520)). Proof 11
+closure (2026-09-28): genro-builders 0.25.0, JS Builder 0.3.0; before Python 26/26,
+JS 106/106, runner 8/8; new versions before edits: JS "authoring today" case fails
+(promotion follows the parent); after Python 26/26, JS 106/106, runner 8/8
+([GC-070 §525](070-work-status.md#gc-070-525)).
 
 Other stops: unresolved Q2–Q5, a hook the Gramlot source classes cannot provide
 without an owner decision, any new unapproved contract,

@@ -127,12 +127,23 @@ class GramlotSourceClassTests(unittest.TestCase):
         self.assertEqual(json.loads(wire[: -len("::X")])["rows"][0][4]["__cls"], "GramlotBuilderBag")
         self.assertIs(type(from_tytx(wire)["branch"]), GramlotBuilderBag)
 
-    def test_gramlot_builder_authoring_is_still_source_bag(self):
+    def test_gramlot_builder_authoring_produces_gramlot_classes(self):
+        self.assertIs(GramlotBuilder._source_class, GramlotBuilderBag)
         builder = GramlotBuilder()
-        builder.root.div("x").span("y")
-        self.assertIs(type(builder.source), SourceBag)
-        self.assertIs(type(builder.source.nodes[0].value), SourceBag)
-        self.assertEqual(json.loads(to_tytx(builder.source)[: -len("::X")])["__cls"], "SourceBag")
+        self.assertIs(type(builder._sourceroot), GramlotBuilderBag)
+        self.assertIs(type(builder.source), GramlotBuilderBag)
+        panel = builder.root.div(id="panel")
+        panel.div("x").span("y")
+        self.assertIs(type(panel), GramlotBuilderBagNode)
+        self.assertIs(type(panel.value), GramlotBuilderBag)
+        inner = panel.value.nodes[0]
+        self.assertIs(type(inner), GramlotBuilderBagNode)
+        self.assertEqual(inner.attr["_text"], "x")
+        self.assertIs(type(inner.value), GramlotBuilderBag)
+        self.assertIs(type(inner.value.nodes[0]), GramlotBuilderBagNode)
+        payload = json.loads(to_tytx(builder.source)[: -len("::X")])
+        self.assertEqual(payload["__cls"], "GramlotBuilderBag")
+        self.assertFalse(any("__cls" in row[4] for row in payload["rows"]))
 
 
 class LegacyTransportProbeTests(unittest.TestCase):
