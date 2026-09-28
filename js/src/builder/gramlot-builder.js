@@ -1,5 +1,8 @@
 import {HtmlBuilder, SourceBagNode, sourceTarget} from '@jsr/genro__builders';
 import {toTytx} from '@jsr/genro__tytx';
+// Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
+// dictionary of X, so every GramlotBuilder user can encode and decode it.
+import './source.js';
 
 /** Gramlot vocabulary and inert authoring on the shared builder grammar. */
 export class GramlotBuilder extends HtmlBuilder {

@@ -1,4 +1,5 @@
 import {SourceBag, SourceBagNode} from '@jsr/genro__builders';
+import {getSubtypeDict, setSubtypeDict} from '@jsr/genro__tytx';
 
 /**
  * Gramlot Source node: Builder's SourceBagNode plus the Data behavior Builder lacks.
@@ -69,3 +70,11 @@ export class GramlotBuilderBag extends SourceBag {
         return GramlotBuilderBagNode;
     }
 }
+
+// GramlotBuilderBag travels on the TYTX wire as "::X" with __cls "GramlotBuilderBag":
+// its name joins the subtype dictionary of its type, as Builder does for SourceBag.
+// The name already owned by another class is a collision.
+if ((getSubtypeDict(GramlotBuilderBag.tytxSuffix).GramlotBuilderBag ?? GramlotBuilderBag) !== GramlotBuilderBag) {
+    throw new Error("TYTX subtype name 'GramlotBuilderBag' is already registered for another class");
+}
+setSubtypeDict(GramlotBuilderBag.tytxSuffix, {...getSubtypeDict(GramlotBuilderBag.tytxSuffix), GramlotBuilderBag});

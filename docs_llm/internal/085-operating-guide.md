@@ -41,7 +41,7 @@ No future component/controller/database contract is implied by a folder name.
 
 Bag and TYTX own Bag behavior and typed serialization. Builder owns generic
 BuilderBase, SourceBag/SourceBagNode, grammar and static HTML/SVG rendering.
-Gramlot's Python dialect owns collection loading, SOURCE registration, mixed text
+Gramlot's Python dialect owns collection loading, mixed text
 and atomic insertion under constitution 11.16. JS consumes Builder's sourceTarget.
 Core owns GramlotRenderer, HtmlElement, Source subscriptions, rendering lifecycle
 and shared Host/Page execution. These shared classes are not copied into adapters.

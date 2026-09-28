@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {setTimeout as sleep} from 'node:timers/promises';
 import {JSDOM} from 'jsdom';
 import {Bag} from '@jsr/genro__bag';
-import {fromTytx} from '@jsr/genro__tytx';
+import {fromTytx, getSubtypeDict, toTytx} from '@jsr/genro__tytx';
 import {RendererBase, SourceBag, SourceBagNode, sourceBagFromTytx, sourceTarget} from '@jsr/genro__builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag, GramlotBuilderBagNode} from '../src/builder/source.js';
@@ -243,7 +243,7 @@ test('Builder _resolveLogicFunc finds static functions only', () => {
     assert.throws(() => builder._resolveLogicFunc('onInstance'), /not found on any data_logic source/);
 });
 
-test('RendererBase.render resolves data-element attributes before returning null', () => {
+test('RendererBase.render resolves data-element pointers, leaves ${...} literal and returns null', () => {
     const builder = new GramlotBuilder();
     const root = builder.wrapSource(builder.source);
     builder.data.setItem('ctx.a', 1);
@@ -260,23 +260,118 @@ test('RendererBase.render resolves data-element attributes before returning null
     assert.equal(renderer.render(setter), null);
     assert.equal(renderer.render(formula), null);
     assert.equal(renderer.render(controller), null);
-    assert.throws(() => renderer.render(template), /Unknown template parameter 'missing'/);
+    assert.equal(renderer.render(template), null);
+    assert.equal(builder.runtimeValues(controller)[1].script, 'this.SET(".z", `${a}`)');
+    assert.equal(builder.runtimeValues(template)[1].script, 'console.log(`${missing}`)');
     assert.throws(() => renderer.render(sourceTarget(outside)), /unresolved relative datapath: \^\.a/);
 });
 
-test('decoded Source and Builder-authored Source are Builder classes, not Gramlot classes', () => {
+/** Python authoring of the same Source on a GramlotBuilder root, on a GramlotBuilderBag root, or decoding a wire. */
+const SOURCE_AUTHORING = `
+import sys
+from genro_tytx import from_tytx, to_tytx
+from gramlot import GramlotBuilder
+from gramlot.page.source import GramlotBuilderBag
+builder = GramlotBuilder()
+if sys.argv[1] == 'builder':
+    builder.root.div(id="panel").span("after")
+    print(to_tytx(builder.source))
+elif sys.argv[1] == 'gramlot':
+    root = GramlotBuilderBag(builder=builder)
+    root.div(id="panel").span("after")
+    print(to_tytx(root))
+else:
+    source = from_tytx(sys.stdin.read())
+    panel = source.nodes[0]
+    print(" ".join(type(item).__name__ for item in (source, panel, panel.value, panel.value.nodes[0])))
+`;
+
+const pythonWire = kind => execFileSync(python, ['-c', SOURCE_AUTHORING, kind], {encoding: 'utf8'}).trim();
+const pythonClasses = wire => execFileSync(python, ['-c', SOURCE_AUTHORING, 'decode'], {input: wire, encoding: 'utf8'}).trim();
+/** The JSON payload of a Bag wire, without its "::X" suffix. */
+function payload(wire) {
+    assert.ok(wire.endsWith('::X'), wire);
+    return JSON.parse(wire.slice(0, -'::X'.length));
+}
+/** The same Source as SOURCE_AUTHORING 'gramlot', with the branch built explicitly as a GramlotBuilderBag. */
+function gramlotSource(builder) {
+    const root = new GramlotBuilderBag(null, builder);
+    const branch = new GramlotBuilderBag(null, builder);
+    builder.wrapSource(branch).span('after');
+    builder.wrapSource(root).div(branch, {id: 'panel'});
+    return root;
+}
+function assertGramlotClasses(source) {
+    const panel = source.getNodes()[0];
+    assert.equal(source.constructor, GramlotBuilderBag);
+    assert.equal(panel.constructor, GramlotBuilderBagNode);
+    assert.equal(panel.value.constructor, GramlotBuilderBag);
+    assert.equal(panel.value.getNodes()[0].constructor, GramlotBuilderBagNode);
+}
+
+test('Bag, SourceBag and GramlotBuilderBag share the TYTX subtype dictionary of X under their class names', () => {
+    const subtypes = getSubtypeDict('X');
+    assert.equal(GramlotBuilderBag.tytxSuffix, 'X');
+    assert.equal(subtypes.Bag, Bag);
+    assert.equal(subtypes.SourceBag, SourceBag);
+    assert.equal(subtypes.GramlotBuilderBag, GramlotBuilderBag);
+});
+
+test('a Python GramlotBuilderBag Source reaches the browser as Gramlot classes through every path', async () => {
+    const wire = pythonWire('gramlot');
+    const rows = payload(wire);
+    assert.equal(rows.__cls, 'GramlotBuilderBag');
+    assert.equal(rows.rows.some(row => Object.hasOwn(row[4], '__cls')), false);
+    const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
+    const app = new Gramlot({document, pageId: 'test', transport: {
+        main: async () => wire,
+        source: async () => wire,
+    }});
+    const decoded = sourceBagFromTytx(wire, app.builder);
+    assertGramlotClasses(decoded);
+    const bound = fromTytx(wire);
+    assert.equal(app.prepareSource(bound), bound);
+    assertGramlotClasses(bound);
+    assert.equal(bound.getNodes()[0].builder, app.builder);
+    await app.start();
+    const mounted = app.source.getItem('main');
+    assertGramlotClasses(mounted);
+    const target = mounted.getNodes()[0];
+    assert.ok(app.renderer.records.has(target.value.getNodes()[0]));
+    await app.remoteSource(target, 'details', {});
+    assert.equal(target.value.constructor, GramlotBuilderBag);
+    assertGramlotClasses(target.value);
+    assert.equal(app.renderer.destination.textContent, 'after');
+    app.dispose();
+});
+
+test('a JavaScript GramlotBuilderBag Source decodes in Python as GramlotBuilderBag and GramlotBuilderBagNode', () => {
+    const source = gramlotSource(new GramlotBuilder());
+    assert.equal(pythonClasses(toTytx(source)),
+        'GramlotBuilderBag GramlotBuilderBagNode GramlotBuilderBag GramlotBuilderBagNode');
+    const holder = new SourceBag();
+    holder.setItem('branch', new GramlotBuilderBag());
+    const wire = toTytx(holder);
+    assert.equal(payload(wire).rows[0][4].__cls, 'GramlotBuilderBag');
+    assert.equal(fromTytx(wire).getItem('branch').constructor, GramlotBuilderBag);
+});
+
+test('Python and JavaScript write the same wire for the same Source', () => {
+    const builder = new GramlotBuilder();
+    builder.root.div({id: 'panel'}).span('after');
+    assert.equal(payload(builder.toTytx()).__cls, 'SourceBag');
+    assert.deepEqual(payload(builder.toTytx()), payload(pythonWire('builder')));
+    assert.deepEqual(payload(toTytx(gramlotSource(new GramlotBuilder()))), payload(pythonWire('gramlot')));
+});
+
+test('authoring today: GramlotBuilder roots are SourceBag and JavaScript promotion creates SourceBag branches', () => {
     const builder = new GramlotBuilder();
     builder.root.div('x').span('y');
     assert.equal(builder.source.constructor, SourceBag);
     assert.equal(builder.source.getNodes()[0].value.constructor, SourceBag);
-    const decoded = sourceBagFromTytx(builder.toTytx(), new GramlotBuilder());
-    assert.equal(decoded.constructor, SourceBag);
-    assert.equal(decoded.getNodes()[0].value.constructor, SourceBag);
-    const wire = builder.toTytx();
-    const rooted = GramlotBuilderBag.fromTytx(wire.slice(0, wire.lastIndexOf('::')));
-    assert.equal(rooted.constructor, GramlotBuilderBag);
-    assert.equal(rooted.getNodes()[0].value.constructor, SourceBag);
-    const mixed = new SourceBag();
-    mixed.setItem('branch', new GramlotBuilderBag());
-    assert.throws(() => mixed.toTytx(), /Unregistered Bag branch type: GramlotBuilderBag/);
+    const root = new GramlotBuilderBag(null, builder);
+    builder.wrapSource(root).div({id: 'panel'}).span('after');
+    assert.equal(root.getNodes()[0].value.constructor, SourceBag);
+    assert.equal(payload(toTytx(root)).rows[0][4].__cls, 'SourceBag');
+    assert.equal(payload(pythonWire('gramlot')).rows[0][4].__cls, undefined);
 });

@@ -6,16 +6,14 @@ from uuid import uuid4
 
 from genro_builders.builder import SourceBag, SourceBagNode
 from genro_builders import BuilderBase
-from genro_tytx import register_class
 
 from ._grammar_load import load_grammar
 
-HTML5_COLLECTION = json.loads(files("gramlot").joinpath("collections/html5.json").read_text())
+# Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
+# dictionary of X, so every GramlotBuilder user can encode and decode it.
+from . import source  # noqa: F401
 
-# Gramlot owns the SOURCE wire registration for its typed transport contract.
-# Register the existing Builder SourceBag class (constitution amendment 11.16).
-SourceBag.__tytx_suffix__ = "SOURCE"
-register_class(SourceBag)
+HTML5_COLLECTION = json.loads(files("gramlot").joinpath("collections/html5.json").read_text())
 
 
 class GramlotBuilder(BuilderBase):

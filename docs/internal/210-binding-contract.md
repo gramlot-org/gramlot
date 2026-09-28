@@ -173,7 +173,10 @@ Builder lacks goes into two Gramlot classes in the new file
 `js/src/builder/source.js`. S01 status (2026-09-26, not yet accepted): the classes
 exist with silent `PUT`, `FIRE_AFTER` and `absDatapath`; the `FIRE` mark and the
 production of these classes on every browser path are stopped at the S01 gate
-([GC-070 §515](070-work-status.md#gc-070-515)).
+([GC-070 §515](070-work-status.md#gc-070-515)). Owner, 2026-09-28: S01 is closed
+with proof 11 as debt. Debt work (2026-09-28, not yet accepted,
+[GC-070 §520](070-work-status.md#gc-070-520)): the wire carries the class; the
+authoring root remains open.
 
 ```js
 export class GramlotBuilderBag extends SourceBag {
@@ -203,6 +206,21 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 - S01 verifies that every browser path produces the Gramlot classes: JS authoring,
   `sourceBagFromTytx`, `bindBuilder`, insertion and `remoteSource`. No prototype
   mutation. No change to Builder or Bag.
+- Wire class (owner decisions 2026-09-26, libraries aligned 2026-09-28): the TYTX
+  suffix stays the type, so a Bag of any class travels as `::X`. `__cls` names the
+  class on a branch (row attributes) and on a root (payload), only when the class
+  differs from the inherited one; only the payload decides the root class. Symbolic
+  names are the real class names, identical in Python and JS: `Bag`, `SourceBag`,
+  `GramlotBuilderBag`. The `SOURCE` suffix is gone from Builder and Gramlot.
+  Gramlot adds `GramlotBuilderBag` to the TYTX subtype dictionary of `X` in
+  `src/gramlot/page/source.py` and `js/src/builder/source.js` (read, add, set again);
+  the builder modules load it. Nodes take their class from the Bag.
+- Status 2026-09-28: a `GramlotBuilderBag` Source keeps `GramlotBuilderBag` and
+  `GramlotBuilderBagNode` through Python → JS and JS → Python, `sourceBagFromTytx`,
+  `bindBuilder`, insertion and `remoteSource`; Python and JS write the same wire for
+  the same Source. GramlotBuilder authoring still creates `SourceBag`: Builder
+  instantiates it for the document root (Python and JS) and for JS scalar promotion,
+  with no documented class hook. This point awaits an owner decision.
 - Owner decision, 2026-09-26 (symmetry): Python has empty counterparts in
   `src/gramlot/page/source.py`: `class GramlotBuilderBagNode(SourceBagNode)` and
   `class GramlotBuilderBag(SourceBag)` with `_node_class = GramlotBuilderBagNode`
@@ -672,6 +690,13 @@ both nested tests stay out of CI until GramlotBuilderBagNode provides silent PUT
 and symbolic ?attr in S01. S01 (2026-09-26): both nested tests now reach PUT and
 absDatapath through GramlotBuilderBag/GramlotBuilderBagNode with unchanged assertions,
 pass, and are enrolled with the S00 patch; npm test runs 102 cases, all passing.
+Proof 11 debt (2026-09-28): dependencies move to genro-tytx 0.16.0, genro-bag 0.26.0,
+genro-builders 0.24.0 (PyPI) and JS TYTX 0.16.0, Bag 0.9.0, Builder 0.2.1 (npm.jsr.io).
+Before edits, on the old versions: Python 24/24, JS 102/102, runner 8/8. On the new
+versions, before Gramlot edits: the Python `SOURCE` registration breaks 7 JS transport
+cases; the two proof 11 "today" cases (Python, JS) fail because they record behavior
+superseded by the owner's wire decisions; the proof 10 template probe no longer throws.
+After: Python 26/26, JS 106/106, runner 8/8 ([GC-070 §520](070-work-status.md#gc-070-520)).
 
 Other stops: unresolved Q2–Q5, a hook the Gramlot source classes cannot provide
 without an owner decision, any new unapproved contract,

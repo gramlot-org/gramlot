@@ -6,7 +6,7 @@ from pathlib import Path
 from genro_bag import Bag
 from genro_builders.builder import SourceBag, SourceBagNode
 from genro_builders import BuilderBase
-from genro_tytx import from_tytx, to_tytx
+from genro_tytx import from_tytx, get_subtype_dict, to_tytx
 
 from gramlot import GramlotBuilder
 from gramlot.page.source import GramlotBuilderBag, GramlotBuilderBagNode
@@ -98,18 +98,41 @@ class GramlotSourceClassTests(unittest.TestCase):
         self.assertIsInstance(child, GramlotBuilderBagNode)
         self.assertEqual(panel.attr["_text"], "before")
 
-    def test_builder_source_and_its_wire_are_not_gramlot_classes_today(self):
+    def test_bag_classes_share_the_subtype_dictionary_of_x_under_their_class_names(self):
+        subtypes = get_subtype_dict("X")
+        self.assertEqual(GramlotBuilderBag.__tytx_suffix__, "X")
+        self.assertIs(subtypes["Bag"], Bag)
+        self.assertIs(subtypes["SourceBag"], SourceBag)
+        self.assertIs(subtypes["GramlotBuilderBag"], GramlotBuilderBag)
+
+    def test_gramlot_source_travels_as_x_with_cls_and_decodes_to_gramlot_classes(self):
+        builder = GramlotBuilder()
+        root = GramlotBuilderBag(builder=builder)
+        root.div(id="panel").span("after")
+        wire = to_tytx(root)
+        self.assertTrue(wire.endswith("::X"))
+        payload = json.loads(wire[: -len("::X")])
+        self.assertEqual(payload["__cls"], "GramlotBuilderBag")
+        self.assertFalse(any("__cls" in row[4] for row in payload["rows"]))
+        decoded = from_tytx(wire)
+        panel = decoded.nodes[0]
+        self.assertIs(type(decoded), GramlotBuilderBag)
+        self.assertIs(type(panel), GramlotBuilderBagNode)
+        self.assertIs(type(panel.value), GramlotBuilderBag)
+        self.assertIs(type(panel.value.nodes[0]), GramlotBuilderBagNode)
+        self.assertNotIn("__cls", panel.attr)
+        holder = SourceBag()
+        holder["branch"] = GramlotBuilderBag()
+        wire = to_tytx(holder)
+        self.assertEqual(json.loads(wire[: -len("::X")])["rows"][0][4]["__cls"], "GramlotBuilderBag")
+        self.assertIs(type(from_tytx(wire)["branch"]), GramlotBuilderBag)
+
+    def test_gramlot_builder_authoring_is_still_source_bag(self):
         builder = GramlotBuilder()
         builder.root.div("x").span("y")
         self.assertIs(type(builder.source), SourceBag)
         self.assertIs(type(builder.source.nodes[0].value), SourceBag)
-        root = GramlotBuilderBag(builder=builder)
-        root.div("x")
-        with self.assertRaises(TypeError):
-            to_tytx(root)
-        holder = SourceBag()
-        holder["branch"] = GramlotBuilderBag()
-        self.assertIs(type(from_tytx(to_tytx(holder))["branch"]), SourceBag)
+        self.assertEqual(json.loads(to_tytx(builder.source)[: -len("::X")])["__cls"], "SourceBag")
 
 
 class LegacyTransportProbeTests(unittest.TestCase):

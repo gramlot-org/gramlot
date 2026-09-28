@@ -72,7 +72,8 @@ Gramlot specializes the renderer with its reference collaborator and metadata.
 This supersedes the old retirement restriction for this bounded development work;
 it does not rename/create a remote repository or authorize publication.
 
-SOURCE remains the single currently integrated Python/JS wire suffix. Plain ESM
+The Source travels as the Bag type `X` with `__cls` naming its class; the `SOURCE`
+suffix is gone (2026-09-28, [GC-070 §520](070-work-status.md#gc-070-520)). Plain ESM
 declaration helpers avoid a mandatory decorator transform. Historical internal DOM
 module paths re-export generic classes rather than registering a second SourceBag.
 Full upstream availability, clean floating installs and acceptance remain open.

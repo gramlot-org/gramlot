@@ -1,10 +1,10 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-09-26**.
+Document ID: **GC-070**. Updated: **2026-09-28**.
 
 
-**Current checkpoint:** S01 feasibility gate delivered; Gramlot Source classes partly implemented, gate questions await the owner. See [§515](#gc-070-515).
-**Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 delivered for review; do not start S02 without authorization.
+**Current checkpoint:** S01 closed by the owner with proof 11 as debt; debt work delivered for review: libraries aligned, wire keeps the Gramlot classes, authoring root awaits the owner. See [§520](#gc-070-520).
+**Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 closed by the owner with proof 11 as debt, S02 and S03 start (2026-09-28).
 **Dependency fixes:** forbidden by owner decision, 2026-09-25; missing Builder behavior goes into GramlotBuilderBag/GramlotBuilderBagNode (S01). See [§495](#gc-070-495).
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
 **Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
@@ -2127,3 +2127,38 @@ reach left open by GC-087 §085. Relative variable datapath has no defined resol
 (legacy recurses); explicit error.
 
 **Accepted:** not yet. **Remaining:** owner decisions; S02/S03 need authorization.
+
+
+<a id="gc-070-520"></a>
+## 520 · S01 proof 11 debt: library alignment and Gramlot Source subtype — 2026-09-28
+
+Block ID: **GC-070-520**.
+
+**Decided:** owner, 2026-09-28: S01 closed without proof 11 (debt); S02/S03 may start.
+Wire (owner 2026-09-26): suffix stays the type, every Bag class travels as `::X`,
+`__cls` on branch (row attributes) and root (payload) only when the class differs from
+the inherited one, payload alone decides the root, names = real class names (`Bag`,
+`SourceBag`, `GramlotBuilderBag`), `SOURCE` gone. Genro dependencies use `>=` (owner,
+2026-09-28).
+
+**Implemented:** genro-tytx 0.16.0, genro-bag 0.26.0, genro-builders 0.24.0 (`>=`);
+JS Bag 0.9.0, Builder 0.2.1, TYTX 0.16.0 (`js/package.json` `>=`; `jsr.json` caret,
+Deno 2.9.6 rejects `>=` in `jsr:` specifiers); exact `minimumDependencyAge` exclusions
+in both forms. Python `SOURCE` registration removed. `source.py`/`source.js` add
+`GramlotBuilderBag` to the TYTX subtype dictionary of `X` (read, collision check, set),
+loaded by the builder modules. Proof 11 tests replace the "today" probes; proof 10
+probe records literal `${...}` in data-element attributes. Bundle regenerated.
+
+**Verified:** before (old versions) Python 24/24, JS 102/102, runner 8/8; new versions
+before edits: 7 JS transport failures from `SOURCE`, two "today" probes and the proof 10
+template probe record superseded behavior. After: Python 26/26, JS 106/106, runner 8/8.
+A `GramlotBuilderBag` Source keeps the Gramlot classes Python ↔ JS, through
+`sourceBagFromTytx`, `bindBuilder`, insertion, `remoteSource`; same wire from Python and
+JS. `deno publish --dry-run` succeeds with caret import map and exact exclusions.
+
+**Not closed:** GramlotBuilder authoring still yields `SourceBag` (Builder root in both
+languages, JS scalar promotion, no documented class hook; Python branches follow the
+parent class, JS promotion does not): owner decision. Runner tests import `js/src`;
+`examples/node_modules` still holds old packaged Gramlot JS and libraries.
+
+**Accepted:** not yet.
