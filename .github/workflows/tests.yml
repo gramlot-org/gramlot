@@ -20,12 +20,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: gramlot
-      - name: Check out Minimal example dependency
+      - name: Check out Serverless example dependency
         uses: actions/checkout@v4
         with:
-          repository: gramlot-org/gramlot-minimal
+          repository: gramlot-org/gramlot-serverless
           ref: main
-          path: gramlot-minimal
+          path: gramlot-serverless
           persist-credentials: false
       - name: Check out JS Server example dependency
         uses: actions/checkout@v4

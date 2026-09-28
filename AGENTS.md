@@ -95,4 +95,6 @@ No formal Live Object Tree semantics have been approved. Do not infer or invent 
 
 - Owner 2026-09-24, constitution 11.46: standalone WorkerTransport, WorkerHost and
   startup belong to gramlot-minimal. Bounded connected edits there are authorized
-  for this transfer. Core retains shared Host/Page execution, Source and rendering.
+  for this transfer. Owner 2026-09-28: gramlot-minimal is retired; its successors
+  are gramlot-serverless (browser/Worker standalone) and gramlot-uvicorn
+  (Python/ASGI/Uvicorn). Core retains shared Host/Page execution, Source and rendering.

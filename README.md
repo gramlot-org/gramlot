@@ -31,7 +31,7 @@ The JavaScript distribution is `@genro/gramlot` on JSR. Install it with
 `bunx jsr add @genro/gramlot` or `npx jsr add @genro/gramlot`.
 Node.js 22 or later and Bun are supported server runtimes; the browser runtime
 is bundled separately. In current development, core provides `server`, `host`, `page` and `runtime`.
-Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/minimal`.
+Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/serverless`.
 Use the matching development packages; published 0.1.0 artifacts are unchanged.
 Python pages still require the Python distribution and a Python server.
 
@@ -56,7 +56,7 @@ showcase remain in [gramlot-poc](https://github.com/gramlot-org/gramlot-poc).
 
 To evaluate the bounded foundation, start with [Try Gramlot](docs/public/025-try.md)
 and [Writing pages](docs/public/095-writing-pages.md). Its current packages have
-passed a local seven-host Chromium matrix; the release keeps that bounded scope. The [offline showcase](https://github.com/gramlot-org/gramlot-minimal/tree/main/examples/showcase)
+passed a local seven-host Chromium matrix; the release keeps that bounded scope. The [offline showcase](https://github.com/gramlot-org/gramlot-serverless/tree/main/examples/showcase)
 demonstrates a richer experimental runtime with different scope.
 
 ## Release 0.2.0 in development
@@ -104,12 +104,13 @@ reference. Gramlot is licensed under Apache 2.0.
 ## Integration repositories
 
 Environment-specific adapters and setup instructions live in `gramlot-fastapi`,
-`gramlot-flask`, `gramlot-kajenn`, `gramlot-minimal`, `gramlot-js-server` (Node.js/Bun),
-and `gramlot-django`. Minimal covers Python/ASGI/Uvicorn and browser/Worker
-standalone. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
+`gramlot-flask`, `gramlot-kajenn`, `gramlot-uvicorn`, `gramlot-serverless`,
+`gramlot-js-server` (Node.js/Bun) and `gramlot-django`. `gramlot-uvicorn` covers
+Python/ASGI/Uvicorn; `gramlot-serverless` covers browser/Worker standalone. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
 These development names do not rename the already published 0.1.0 archives.
 
-`gramlot-minimal` and `gramlot-js-server` are the current local and GitHub repository
-names. `gramlot-kajenn` was renamed from `gramlot-genro-asgi` on 2026-09-26, on GitHub
+`gramlot-uvicorn`, `gramlot-serverless` and `gramlot-js-server` are the current local
+and GitHub repository names. They replace `gramlot-minimal`, retired on 2026-09-28.
+`gramlot-kajenn` was renamed from `gramlot-genro-asgi` on 2026-09-26, on GitHub
 and locally.
 Repository naming does not imply a package release or deployment.
