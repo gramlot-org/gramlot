@@ -79,14 +79,26 @@ class BuilderTests(unittest.TestCase):
 
 
 class GramlotSourceClassTests(unittest.TestCase):
-    def test_empty_counterparts_use_the_builder_node_class_hook(self):
+    def test_counterparts_use_the_builder_node_class_hook(self):
         self.assertTrue(issubclass(GramlotBuilderBag, SourceBag))
         self.assertTrue(issubclass(GramlotBuilderBagNode, SourceBagNode))
         self.assertIs(GramlotBuilderBag._node_class, GramlotBuilderBagNode)
         own = {cls: {name for name in vars(cls) if not name.startswith("__")}
                for cls in (GramlotBuilderBag, GramlotBuilderBagNode)}
-        self.assertEqual(own[GramlotBuilderBagNode], set())
+        self.assertEqual(own[GramlotBuilderBagNode], {"pointer_type"})
         self.assertEqual(own[GramlotBuilderBag], {"_node_class"})
+
+    def test_a_double_equals_value_is_not_a_pointer(self):
+        builder = GramlotBuilder()
+        builder.data["x"] = "X"
+        builder.data["y"] = "Y"
+        node = builder.root.div(title="==1+1", alt="^x", lang="=y")
+        self.assertIs(type(node), GramlotBuilderBagNode)
+        self.assertIsNone(node.pointer_type("==1+1"))
+        self.assertEqual(node.pointer_type("^x"), "^")
+        self.assertEqual(node.pointer_type("=y"), "=")
+        self.assertEqual(node.pointers(), [("alt", "^x")])
+        self.assertEqual(builder.runtime_values(node), (None, {"title": "==1+1", "alt": "X", "lang": "Y"}))
 
     def test_authoring_on_a_gramlot_bag_propagates_the_classes_to_branches(self):
         builder = GramlotBuilder()

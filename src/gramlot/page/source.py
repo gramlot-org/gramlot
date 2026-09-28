@@ -1,8 +1,11 @@
 """Gramlot Source classes, symmetric with ``js/src/builder/source.js``.
 
-The runtime methods (PUT, FIRE, FIRE_AFTER, absDatapath) exist only in the
-browser classes; Python authoring stays inert.
+The Python classes carry no runtime methods: PUT, FIRE, FIRE_AFTER and
+absDatapath stay in the browser classes. They may carry the value
+classification shared with JS (``pointer_type``).
 """
+
+from typing import Any
 
 from genro_builders.builder import SourceBag, SourceBagNode
 from genro_tytx import get_subtype_dict, set_subtype_dict
@@ -10,6 +13,12 @@ from genro_tytx import get_subtype_dict, set_subtype_dict
 
 class GramlotBuilderBagNode(SourceBagNode):
     """Source node of a Gramlot document."""
+
+    def pointer_type(self, v: Any) -> str | None:
+        """Builder's ``pointer_type``, except that a string starting with ``==`` is not a pointer."""
+        if isinstance(v, str) and v.startswith("=="):
+            return None
+        return super().pointer_type(v)
 
 
 class GramlotBuilderBag(SourceBag):

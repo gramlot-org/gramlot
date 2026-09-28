@@ -7,6 +7,12 @@ import {getSubtypeDict, setSubtypeDict} from '@jsr/genro__tytx';
  * SET, GET, setRelativeData and getRelativeData remain Builder's.
  */
 export class GramlotBuilderBagNode extends SourceBagNode {
+    /** Builder's pointerType, except that a string starting with `==` is not a pointer. */
+    pointerType(v) {
+        if (typeof v === 'string' && v.startsWith('==')) return null;
+        return super.pointerType(v);
+    }
+
     /** Write without any Data event (Bag doTrigger=false). */
     PUT(path, value) {
         this.data.setItem(this.absDatapath(path), value, null, '>', false, true, this, false, false);

@@ -233,6 +233,20 @@ test('runtimeValues resolves pointers; pointers() lists only reactive ones with 
     assert.deepEqual(builder.runtimeValues(node), ['V', {title: 'X', alt: 'Y', tabindex: 3}]);
 });
 
+test('a value starting with == is not a pointer: runtimeValues keeps it and pointers() skips it', () => {
+    const builder = new GramlotBuilder();
+    builder.data.setItem('x', 'X');
+    builder.data.setItem('y', 'Y');
+    builder.root.div({title: '==1+1', alt: '^x', lang: '=y'});
+    const node = builder.source.getNodes()[0];
+    assert.equal(node.constructor, GramlotBuilderBagNode);
+    assert.equal(node.pointerType('==1+1'), null);
+    assert.equal(node.pointerType('^x'), '^');
+    assert.equal(node.pointerType('=y'), '=');
+    assert.deepEqual(node.pointers(), [['alt', '^x']]);
+    assert.deepEqual(builder.runtimeValues(node), [null, {title: '==1+1', alt: 'X', lang: 'Y'}]);
+});
+
 test('Builder _resolveLogicFunc finds static functions only', () => {
     class LogicBuilder extends GramlotBuilder {
         static onStatic() { return 'static'; }
@@ -266,7 +280,7 @@ test('RendererBase.render resolves data-element pointers, leaves ${...} literal 
     assert.throws(() => renderer.render(sourceTarget(outside)), /unresolved relative datapath: \^\.a/);
 });
 
-/** Python authoring of the same Source on a GramlotBuilder root (also nested), on a GramlotBuilderBag root, or decoding a wire. */
+/** Python authoring of the same Source on a GramlotBuilder root (also nested, or with a == expression), on a GramlotBuilderBag root, or decoding a wire. */
 const SOURCE_AUTHORING = `
 import sys
 from genro_tytx import from_tytx, to_tytx
@@ -278,6 +292,9 @@ if sys.argv[1] == 'builder':
     print(to_tytx(builder.source))
 elif sys.argv[1] == 'nested':
     builder.root.div(id="panel").div("x").span("y")
+    print(to_tytx(builder.source))
+elif sys.argv[1] == 'expression':
+    builder.root.div(title="==1+1", alt="^x", lang="=y")
     print(to_tytx(builder.source))
 elif sys.argv[1] == 'gramlot':
     root = GramlotBuilderBag(builder=builder)
@@ -391,4 +408,15 @@ test('GramlotBuilder authoring produces Gramlot classes at the root, in nested b
     builder.wrapSource(root).div({id: 'panel'}).span('after');
     assert.equal(root.getNodes()[0].value.constructor, GramlotBuilderBag);
     assert.deepEqual(payload(toTytx(root)), payload(pythonWire('gramlot')));
+});
+
+test('a Python Source reaches the browser as GramlotBuilderBagNode and classifies == as no pointer', () => {
+    const builder = new GramlotBuilder();
+    builder.data.setItem('x', 'X');
+    builder.data.setItem('y', 'Y');
+    const node = sourceBagFromTytx(pythonWire('expression'), builder).getNodes()[0];
+    assert.equal(node.constructor, GramlotBuilderBagNode);
+    assert.equal(node.pointerType(node.getAttr('title')), null);
+    assert.deepEqual(node.pointers(), [['alt', '^x']]);
+    assert.deepEqual(builder.runtimeValues(node), [null, {title: '==1+1', alt: 'X', lang: 'Y'}]);
 });
