@@ -8,7 +8,7 @@
 </p>
 
 [![Documentation build](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml)
-[![Status: consolidation in progress](https://img.shields.io/badge/status-consolidation%20in%20progress-orange)](docs/public/020-evaluate.md)
+[![Status: 0.2.0 qualified, not yet published](https://img.shields.io/badge/status-0.2.0%20qualified%2C%20not%20yet%20published-yellow)](docs/public/020-evaluate.md)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
 **Describe application interfaces in Python; let a JavaScript runtime handle
@@ -20,64 +20,63 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a host; the core is
 independent of server and database technology.
 
-> **Release status.** The latest published release is **0.1.2**. This
-> documentation also describes **0.2.0 (HTML/SVG data binding), in development**:
-> an approved plan whose code is not yet implemented, tested or released.
-> Planned 0.2.0 behavior is marked as such in each guide.
+> **Release status.** **0.2.0 (HTML/SVG data binding)** is implemented, qualified on
+> Chromium, WebKit and Firefox, accepted by the owner on 2026-09-30 and consolidated on
+> `main` with version 0.2.0. It is **not yet published**: the latest published release
+> is **0.1.2** on JSR.
 
 ## JavaScript package on JSR
 
 The JavaScript distribution is `@genro/gramlot` on JSR. Install it with
 `bunx jsr add @genro/gramlot` or `npx jsr add @genro/gramlot`.
 Node.js 22 or later and Bun are supported server runtimes; the browser runtime
-is bundled separately. In current development, core provides `server`, `host`, `page` and `runtime`.
-Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/serverless`.
-Use the matching development packages; published 0.1.0 artifacts are unchanged.
-Python pages still require the Python distribution and a Python server.
+is bundled separately. The core provides `server`, `host`, `page` and `runtime`.
+Standalone startup, WorkerHost and WorkerTransport belong to `gramlot-serverless`.
+Python pages require the Python distribution and a Python server.
 
-The JavaScript core is published on JSR as 0.1.2. Markdown, highlighting and
-DOMPurify belong to the example runner; its current DOMPurify version is 3.4.16.
-This development checkout includes unfinished binding work reserved for 0.2.0.
-Its aligned 0.1.2 version metadata identifies the maintenance baseline, not byte
-identity with the published release. The published 0.1.2 source is revision
-`47de64c67151095f14744d355b494d1f4488d49e`, which excludes that binding work.
+The published JSR version is 0.1.2 (source revision
+`47de64c67151095f14744d355b494d1f4488d49e`, without the binding). The `main` branch
+carries 0.2.0. Markdown, highlighting and DOMPurify belong to the example runner.
 
 ## Can I use it today?
 
-[Download the native 0.1.0 archive set](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0).
-Install all supplied Python wheels or npm archives together, following its release instructions.
-This is GitHub archive delivery; no PyPI/npm release or application deployment is claimed.
+- **0.2.0 from source:** clone this repository at `main`, install the Python package
+  (`pip install .`) and the JavaScript core (`js/`), and run the example runner
+  (`examples/00-runner/`). Until the publication, the three verified adapters are
+  used from their repositories in the same way.
+- **Published:** the JSR package `@genro/gramlot` 0.1.2 and the
+  [native 0.1.0 archive set](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0)
+  on GitHub, both without the binding.
 
-**A bounded native HTML foundation is implemented in this development checkout.**
-It supports Python and JavaScript page authoring, typed Source, live browser updates
-and the documented host adapters. Local 0.1.0 artifacts have been built and
-installed in clean environments; the owner accepted the native scope on 2026-09-24. GitHub archive delivery is the selected release channel. The broader experimental implementation and
-showcase remain in [gramlot-poc](https://github.com/gramlot-org/gramlot-poc).
+Start with [Try Gramlot](docs/public/025-try.md) and
+[Writing pages](docs/public/095-writing-pages.md). The broader experimental
+implementation remains in [gramlot-poc](https://github.com/gramlot-org/gramlot-poc).
 
-To evaluate the bounded foundation, start with [Try Gramlot](docs/public/025-try.md)
-and [Writing pages](docs/public/095-writing-pages.md). Its current packages have
-passed a local seven-host Chromium matrix; the release keeps that bounded scope. The [offline showcase](https://github.com/gramlot-org/gramlot-serverless/tree/main/examples/showcase)
-demonstrates a richer experimental runtime with different scope.
+## Gramlot 0.2.0
 
-## Release 0.2.0 in development
+0.2.0 adds HTML/SVG data binding to the native foundation. The DOM depends on the
+Source and the Data; Data changes reach the DOM, and native controls write back.
 
-0.2.0 adds HTML/SVG data binding to the native foundation. The approved plan
-includes:
+- `dataSetter(destination_path, value=None, **attr)` writes initial Data values,
+  replacing the legacy `data(path, value)`; the HTML5 `<data>` element is
+  `html_data(...)`;
+- `^`, `=` and `==` pointers, relative, symbolic and `?attr` paths, variable datapaths;
+- `dataFormula`, `dataController` and `remoteSource`, with named logic as the primary
+  path (`class Logic` in the page companion `foo_aux.js`) and inline code only under a
+  permissive Content Security Policy (a clear error under a strict one);
+- native controls bound with `value='^path'`, `live`, checkbox and radio groups,
+  `visible`, reactive `style` and `class`, bound SVG attributes, freeze and thaw;
+- buttons with a nested `dataController` and `connect_on<event>`;
+- a minimal Host contract (`resolve_page`, `resolve_resources`, `open_page` with a
+  mount prefix) with `FileHost` as reference; pages keep `Page.css` and same-name
+  companions (`foo.css`, `foo_aux.js`).
 
-- `dataSetter(destination_path, value=None, **attr)` for initial Data values,
-  replacing the legacy `data(path, value)`; all `dataSetter` declarations of a
-  branch are installed before its DOM is built;
-- `^`, `=` and `==` pointers, relative paths and variable datapaths;
-- `dataFormula` and `dataController`, with named logic as the primary path:
-  `class Logic` in the page companion or in `js_requires` resources;
-- native controls bound with `value='^path'`, boolean checkboxes and radios,
-  `live`, `visible`, reactive `style` and `class`, bound SVG attributes;
-- buttons driven by a nested `dataController`;
-- `css_requires` and `js_requires` in place of `Page.css`.
-
-None of this is available in 0.1.2. [Writing pages](docs/public/095-writing-pages.md)
-describes the plan, its exclusions and the differences from legacy GenroPy.
-Components are planned for 0.3.0.
+Examples: [`examples/binding/`](https://github.com/gramlot-org/gramlot/tree/main/examples/binding) and
+[`examples/controllers/`](https://github.com/gramlot-org/gramlot/tree/main/examples/controllers), each page in Python with its
+JavaScript equivalent. [Writing pages](docs/public/095-writing-pages.md) and
+[Classes and server adapters](docs/public/090-classes-and-hosts.md) describe the
+contract, its exclusions and the differences from legacy GenroPy. Components start
+with 0.3.0.
 
 ## Start here
 
@@ -86,7 +85,7 @@ Components are planned for 0.3.0.
 - [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.
 
 - [Classes and server adapters](docs/public/090-classes-and-hosts.md) — repository map and responsibilities.
-- [Writing pages](docs/public/095-writing-pages.md) — native HTML pages, lifecycle, remote blocks and the planned 0.2.0 data binding.
+- [Writing pages](docs/public/095-writing-pages.md) — native HTML pages, lifecycle, remote blocks and the 0.2.0 data binding.
 - [Extending Gramlot](docs/public/100-extensions.md) — current extension points and contracts still to define.
 
 ## Project status
@@ -106,7 +105,10 @@ reference. Gramlot is licensed under Apache 2.0.
 Environment-specific adapters and setup instructions live in `gramlot-fastapi`,
 `gramlot-flask`, `gramlot-kajenn`, `gramlot-uvicorn`, `gramlot-serverless`,
 `gramlot-js-server` (Node.js/Bun) and `gramlot-django`. `gramlot-uvicorn` covers
-Python/ASGI/Uvicorn; `gramlot-serverless` covers browser/Worker standalone. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
+Python/ASGI/Uvicorn; `gramlot-serverless` covers browser/Worker standalone.
+For 0.2.0, `gramlot-uvicorn`, `gramlot-js-server` and `gramlot-serverless` are
+verified; `gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn`
+are deferred to after 0.2.0. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
 These development names do not rename the already published 0.1.0 archives.
 
 `gramlot-uvicorn`, `gramlot-serverless` and `gramlot-js-server` are the current local
