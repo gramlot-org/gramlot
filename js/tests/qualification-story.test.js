@@ -11,11 +11,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {createInterface} from 'node:readline';
+import {createRequire} from 'node:module';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {JSDOM} from 'jsdom';
-import {PageBootstrap} from '../src/index.js';
-import {FileHost} from '../src/adapters/index.js';
 import {counters, liveListeners, liveTimers} from './fixtures/lifecycle.js';
+
+// The core as the example page resolves it: `examples/node_modules/@gramlot/native-html` is a symlink to
+// `js/` locally and a copy of it in CI (`--install-links`); loading FileHost and PageBootstrap from the same
+// installation keeps one `Page` class, so the host's `instanceof Page` check holds in both.
+const fromExamples = createRequire(new URL('../../examples/package.json', import.meta.url));
+const {PageBootstrap} = await import(pathToFileURL(fromExamples.resolve('@gramlot/native-html')).href);
+const {FileHost} = await import(pathToFileURL(fromExamples.resolve('@gramlot/native-html/server')).href);
 
 const PAGES = fileURLToPath(new URL('../../examples/controllers/', import.meta.url)).replace(/\/$/, '');
 const PATH = '/09_end_to_end';
