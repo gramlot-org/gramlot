@@ -126,4 +126,4 @@ Block ID: **GC-215-040**.
 
 Block ID: **GC-215-045**.
 
-Implemented yes (`ac5c08f`); accepted yes (owner, 2026-09-30, GC-070 §620); packaged locally (version 0.2.0 authorized 2026-09-30; wheel `79e48b9e…`, sdist `5717f9bb…`, npm pack `2a13efcc…`; C07: bundle in wheel and npm package = fresh build `a35d468f…`); published not yet (separate authorization); distributed not yet.
+Implemented yes (`ac5c08f`); accepted yes (owner, 2026-09-30, GC-070 §620); packaged locally (version 0.2.0 authorized 2026-09-30; wheel `79e48b9e…`, sdist `5717f9bb…`, npm pack `2a13efcc…`; C07: bundle in wheel and npm package = fresh build `a35d468f…`); published 2026-09-30: tag `v0.2.0` (`eabf2f0`), GitHub release, PyPI `gramlot` 0.2.0 (trusted publisher, run 36761273989), JSR `@genro/gramlot` 0.2.0 (owner); distributed from PyPI, JSR, GitHub; adapters not yet pushed.

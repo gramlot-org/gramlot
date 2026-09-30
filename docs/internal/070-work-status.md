@@ -2904,4 +2904,4 @@ before `/finalize-workflow`, because two independent reviews of the whole code (
 Phase 18 notes) and a verifier on Phases 18 and 19 took its place; the sequence is version,
 finalize on `develop`, push, merge into `main`, publication, then the adapter pushes.
 
-**Status:** implemented yes; accepted yes; version 0.2.0 authorized by the owner (2026-09-30) and packaged locally with the C07 re-check; published and distributed not yet (GC-215 §045).
+**Status:** implemented yes; accepted yes; version 0.2.0 authorized by the owner (2026-09-30) and packaged locally with the C07 re-check; published on 2026-09-30 as tag `v0.2.0`, GitHub release, PyPI `gramlot` 0.2.0 and JSR `@genro/gramlot` 0.2.0 (GC-215 §045).

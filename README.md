@@ -8,7 +8,7 @@
 </p>
 
 [![Documentation build](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml)
-[![Status: 0.2.0 qualified, not yet published](https://img.shields.io/badge/status-0.2.0%20qualified%2C%20not%20yet%20published-yellow)](docs/public/020-evaluate.md)
+[![Status: 0.2.0 released](https://img.shields.io/badge/status-0.2.0%20released-green)](docs/public/020-evaluate.md)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
 **Describe application interfaces in Python; let a JavaScript runtime handle
@@ -20,10 +20,11 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a host; the core is
 independent of server and database technology.
 
-> **Release status.** **0.2.0 (HTML/SVG data binding)** is implemented, qualified on
-> Chromium, WebKit and Firefox, accepted by the owner on 2026-09-30 and consolidated on
-> `main` with version 0.2.0. It is **not yet published**: the latest published release
-> is **0.1.2** on JSR.
+> **Release status.** **0.2.0 (HTML/SVG data binding)** is released (2026-09-30):
+> qualified on Chromium, WebKit and Firefox, accepted by the owner, published on
+> [PyPI](https://pypi.org/project/gramlot/0.2.0/) (`gramlot`), on
+> [JSR](https://jsr.io/@genro/gramlot@0.2.0) (`@genro/gramlot`) and as the
+> [GitHub release v0.2.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.0).
 
 ## JavaScript package on JSR
 
@@ -34,19 +35,17 @@ is bundled separately. The core provides `server`, `host`, `page` and `runtime`.
 Standalone startup, WorkerHost and WorkerTransport belong to `gramlot-serverless`.
 Python pages require the Python distribution and a Python server.
 
-The published JSR version is 0.1.2 (source revision
-`47de64c67151095f14744d355b494d1f4488d49e`, without the binding). The `main` branch
-carries 0.2.0. Markdown, highlighting and DOMPurify belong to the example runner.
+The published JSR version is 0.2.0, from the tag `v0.2.0`. Markdown, highlighting and
+DOMPurify belong to the example runner.
 
 ## Can I use it today?
 
-- **0.2.0 from source:** clone this repository at `main`, install the Python package
-  (`pip install .`) and the JavaScript core (`js/`), and run the example runner
-  (`examples/00-runner/`). Until the publication, the three verified adapters are
-  used from their repositories in the same way.
-- **Published:** the JSR package `@genro/gramlot` 0.1.2 and the
-  [native 0.1.0 archive set](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0)
-  on GitHub, both without the binding.
+- **Python:** `pip install gramlot` (0.2.0).
+- **JavaScript:** `npx jsr add @genro/gramlot` or `bunx jsr add @genro/gramlot` (0.2.0).
+- **Archives:** the [GitHub release v0.2.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.0)
+  carries the wheel, the sdist, the npm package of `js/` and `SHA256SUMS`.
+- **Adapters:** `gramlot-uvicorn`, `gramlot-js-server` and `gramlot-serverless` are
+  used from their repositories.
 
 Start with [Try Gramlot](docs/public/025-try.md) and
 [Writing pages](docs/public/095-writing-pages.md). The broader experimental
