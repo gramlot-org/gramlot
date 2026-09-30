@@ -9,6 +9,12 @@ description = "Portable declarative interface foundations"
 requires-python = ">=3.11"
 dependencies = ["genro-bag>=0.27.0", "genro-builders>=0.27.0", "genro-tytx>=0.16.0"]
 
+[project.urls]
+Homepage = "https://github.com/gramlot-org/gramlot"
+Repository = "https://github.com/gramlot-org/gramlot"
+Issues = "https://github.com/gramlot-org/gramlot/issues"
+Documentation = "https://github.com/gramlot-org/gramlot/tree/main/docs/public"
+
 [project.optional-dependencies]
 test = ["genro-tytx[msgpack]"]
 
