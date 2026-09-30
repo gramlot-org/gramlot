@@ -75,13 +75,22 @@ test('direct live authoring enters SVG before the insert event is rendered', () 
 test('remote SVG children use the destination dialect and preserve the existing container', async () => {
     const authored = new GramlotBuilder();
     authored.root.svg({id:'drawing'}).g({id:'slot'}).circle({r:1});
-    const replacement = new SvgBuilder();
-    replacement.root.rect({id:'new', width:30, height:20});
-    const {document, app} = setup({main:async () => authored.toTytx(),
-        source:async () => sourceBagToTytx(replacement.source)});
+    // The replacement is the SVG branch of a Gramlot Source: GramlotBuilderBag with SVG nodes.
+    const replacement = new GramlotBuilder();
+    const drawing = replacement.root.svg();
+    drawing.rect({id:'new', width:30, height:20});
+    const branch = sourceTarget(drawing);
+    // R07: a Source produced by SvgBuilder is not a Gramlot Source.
+    const generic = new SvgBuilder();
+    generic.root.rect({id:'generic', width:30, height:20});
+    let wire = sourceBagToTytx(generic.source);
+    const {document, app} = setup({main:async () => authored.toTytx(), source:async () => wire});
     await app.start();
     const target = app.source.getItem('main').getNodes()[0].value.getNodes()[0];
     const parent = document.getElementById('drawing');
+    await assert.rejects(app.remoteSource(target, 'details'), /GramlotBuilderBags/);
+    assert.ok(document.querySelector('circle'));
+    wire = sourceBagToTytx(branch.value);
     await app.remoteSource(target, 'details');
     assert.strictEqual(document.getElementById('drawing'), parent);
     assert.equal(document.querySelector('circle'), null);

@@ -1,12 +1,21 @@
 # Writing pages
 
-Document ID: **GC-095**. Native 0.1.2 APIs plus the planned 0.2.0 data binding.
+Document ID: **GC-095**. Native 0.1.2 APIs plus the 0.2.0 data binding.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding), in development**. 0.2.0 is an approved plan: its code is not yet
-> implemented, tested or released. The latest published release is **0.1.2**.
-> Sections 005-035 describe 0.1.2 behavior, with explicit *0.2.0* notes where the
-> plan changes it. Sections 040-090 describe planned 0.2.0 behavior only.
+> binding)**. The code is implemented on the development branch and is in
+> qualification; it is not released. The latest published release is **0.1.2**.
+> Sections 005-035 describe behavior that comes from 0.1.2, with explicit *0.2.0*
+> notes where 0.2.0 changes it. Sections 040-090 describe 0.2.0 behavior.
+
+**Examples.** Two example families run the features of sections 040-080, each
+page in Python with its JavaScript equivalent: `examples/binding/` (routes
+`b01`-`b11` in the local runner) and `examples/controllers/` (routes `c01`-`c09`).
+The sections below name the example they illustrate. These features have no
+example: `js_requires` groups, `connect_on<event>` by name, `_userChanges`,
+`_onBuilt` and `#ANCHOR`. The `html_svg` family is
+native HTML and SVG without binding. A reader follows the Python-first example
+using only the functions documented here.
 
 <a id="gc-095-005"></a>
 
@@ -57,11 +66,13 @@ Later Source insertions, removals and updates use the same subscription. Native
 attribute updates can update an existing element; structural changes rebuild the
 affected subtree and release its owned objects. Framework code owns this work.
 
-*0.2.0:* before the Source is mounted, the bootstrap loads the page's
-`css_requires` and `js_requires` resources and its companion files, then
-registers the named logic ([GC-090 section 030](090-classes-and-hosts.md)).
-Between validation and DOM construction, each branch installs its Data
-declarations (section 080).
+*0.2.0:* the bootstrap document carries a script that creates `PageBootstrap`
+with the page's resources. In the browser it writes the stylesheet links (the
+`Page.css` URLs, then the same-name `foo.css`), imports the page's JavaScript
+modules, creates the `Gramlot` instance, registers the named logic and then
+starts the page ([GC-090 section 030](090-classes-and-hosts.md)). Between
+validation and DOM construction, each branch installs its Data declarations
+(section 080).
 
 <a id="gc-095-015"></a>
 
@@ -77,14 +88,16 @@ The browser framework currently exposes
 target's body after incoming Source validation. Invalid incoming Source is rejected before
 insertion; rendering errors after insertion do not roll back Source; stale responses and removed targets are ignored.
 
-This is the runtime API, not yet a declarative page button API. The Python
-controller/binding declaration that will trigger it from an application is still
-missing. A page example must not fill that gap with manual DOM events or fetches.
+This is the runtime API, not a declarative page API. A page example must not
+fill that gap with manual DOM events or fetches.
 
 *0.2.0:* a branch received through `remoteSource` installs its own `dataSetter`
-declarations before its DOM is built, like the initial Source. The 0.2.0 plan
-adds button controllers (section 075); it does not define a
-declarative remote Source request.
+declarations before its DOM is built, like the initial Source. A button
+controller (section 075) can call `this.page.remoteSource(...)` from its named
+logic; 0.2.0 defines no declarative remote Source request. The pending request
+lives as long as its target: if the target is removed first, the late answer is
+ignored, and of two overlapping requests the latest wins. Example:
+`examples/controllers/08_remote_source` (`c08`).
 
 <a id="gc-095-020"></a>
 
@@ -207,6 +220,9 @@ A change of the Source or of the context re-registers the affected pointers.
 Example: `value='^#FORM.customer.name'`. The legacy origins `#WORKSPACE`, `#ROW`
 and `#DATA` and their aliases are outside 0.2.0.
 
+Examples: `examples/binding/01_pointers` (`b01`, every pointer form and symbolic
+origin) and `02_variable_datapath` (`b02`).
+
 ```python
 panel = root.div(datapath=".customer")
 panel.h2("^.name")                      # shows customer.name
@@ -235,8 +251,17 @@ dataSetter(destination_path, value=None, **attr)
 ```
 
 `dataSetter` writes an initial value into the Data. It replaces the legacy
-`data(path, value)` declaration. There is no alias: in Gramlot, `data` remains
-the HTML5 `<data>` element.
+`data(path, value)` declaration. There is no alias. `root.data(...)` raises an error that names
+`dataSetter` and `html_data`. On any other Source node `data` is the
+genro-builders property that returns the Data Bag; it does not declare a value and a
+call does not raise that error. The HTML5
+`<data>` element is written `html_data(...)`, in Python and JavaScript:
+`root.html_data("one", value="1")` gives `<data value="1">`.
+
+In JavaScript the parameters go in one object:
+`root.dataSetter({destination_path: '.settings.caption', value: 'Orders'})`. The
+same rule holds for `dataFormula` and `dataController`; JavaScript positional
+arguments of the data elements are not available yet.
 
 ```python
 def main(self, root):
@@ -270,9 +295,13 @@ Duplicate declarations produce no warning.
 So `dataSetter('x', 7)` followed by `dataSetter('x', None)` leaves 7. Writes at
 runtime are not affected by R1.
 
+`value` and the attributes are stored as written: `'^y'`, `'==a+b'` and
+`'a${b}'` stay strings. A computed value comes from `dataFormula`.
+
 Removing a `dataSetter` from the Source does not delete its Data. A rebuild or a
 thaw does not install it again. A `Bag` value moves into the Data without a copy;
-the Source node then no longer carries it.
+the Source node then no longer carries it. Example:
+`examples/binding/03_setters_and_defaults` (`b03`).
 
 <a id="gc-095-050"></a>
 
@@ -307,7 +336,8 @@ page Data arrives after construction, in a cycle of loading (for example from a
 remote call), editing, saving and loading again. When a user inserts a new
 record, a "newrecord" is loaded, and the record defaults belong to it. Forms,
 records and newrecord are outside 0.2.0, so 0.2.0 offers only build-time defaults.
-Do not use build-time defaults to model record defaults.
+Do not use build-time defaults to model record defaults. Example:
+`examples/binding/03_setters_and_defaults` (`b03`).
 
 <a id="gc-095-055"></a>
 
@@ -328,7 +358,8 @@ dataController(script=None, func=None, **params)
 
 Keyword arguments with `^` trigger the declaration; with `=` they are only read.
 The legacy form `dataFormula('.total', 'a + b', a='^.a', b='^.b')` keeps working
-as inline code.
+as inline code. Examples: `examples/controllers/01_formula` (`c01`) and
+`02_controller` (`c02`).
 
 Control attributes:
 
@@ -341,6 +372,9 @@ Control attributes:
 | `_delay` | Debounce in ms; the last call wins |
 | `_timing` | Repeats every given number of seconds |
 | `_userChanges` | Runs only when the changed path is the registered path itself; changes of a containing path or of a path below it are skipped |
+
+`_init`, `_onBuilt` and `_onStart` accept `true`, `false`, null or a number; any other
+value, a pointer included, is an error naming node and attribute.
 
 `_userChanges` separates edits from the loading of a whole structure. It does not
 distinguish the user from the program. Removing the declaration stops its timers.
@@ -400,7 +434,13 @@ the methods.
 
 Named logic works under a Content Security Policy without `'unsafe-eval'`.
 [GC-090 section 030](090-classes-and-hosts.md) describes resource
-lookup and file layout.
+lookup and file layout. With the minimal `FileHost` only the companion
+`foo_aux.js` exists, and its methods are the root group: `func='add'`. A dotted
+name such as `business.discount` needs a `js_requires` group, that is a Host
+with a resource system. Example: `examples/controllers/03_named_logic` (`c03`).
+
+The same method name registered twice in the same group: the last registration
+wins. The companion registers after the `js_requires` names.
 
 <a id="gc-095-065"></a>
 
@@ -434,7 +474,13 @@ root.dataController("this.SET('.count', 0)", _fired="^.reset")
 
 No host compiles code: not the Python Host, the JavaScript Host, the WorkerHost
 nor the DevTools panel. A page with inline code needs `'unsafe-eval'` when its
-host sets a Content Security Policy.
+host sets a Content Security Policy. Under a policy without it, the browser
+refuses the compilation and Gramlot raises an `EvalError` that names the node and
+the attribute and points to named logic or to the permissive profile
+([GC-090 section 035](090-classes-and-hosts.md)). The error covers every inline
+declaration: `formula`, `script`, `_if`/`_else`, `==`, `action` and
+`connect_on<event>`. Examples: `examples/controllers/04_inline_expressions`
+(`c04`) and `05_node_methods` (`c05`).
 
 **Legacy macros** (`GET .a`, `SET .a = v`, `PUT`, `FIRE`, `FIRE_AFTER`, `$1`)
 are accepted only by a deprecated compatibility preprocessor for inline code. It
@@ -448,15 +494,37 @@ written as `this.SET(...)` passes unchanged and without warning.
 
 ## 070 · Native controls and reactive attributes (0.2.0)
 
-`value='^path'` binds a native control to a Data path in both directions: text
-and textarea, number, range, select (single and multiple), date, time, month,
-week, datetime-local and color. The conversion between control values and Data
-types is still to be confirmed.
+`value='^path'` binds a native control to a Data path in both directions. The
+Data representation of each control:
+
+| Control | Data value | Boundary behavior |
+| --- | --- | --- |
+| text, textarea (and `password`, `email`, `url`, `tel`, `search`) | string, or null shown empty | an empty string is kept; a Data change during an IME composition is shown when it ends |
+| number | finite number, or null | an empty field writes null; an invalid draft stays in the DOM and writes nothing, never `NaN` |
+| range | finite number, or null | the browser clamp writes nothing |
+| select (single) | string, or null | a missing option selects nothing and leaves the Data unchanged |
+| select (multiple) | array of strings, `[]` included, or null | null selects nothing; no delimiter strings; any other value is an error |
+| date, time, month, week, datetime-local | string in the native lexical form, or null | no `Date` object, no time-zone conversion |
+| color | string as serialized by the browser | a browser normalization writes nothing |
+
+`hidden` and `file` inputs have no adapter; checkbox and radio are below; button
+inputs stay native. An input type the browser does not know behaves as text. A
+literal or `=` value sets the control and never writes. A literal `value` (neither
+`^` nor `=`) is also written as the control's default: `defaultValue` for an input,
+the text for a textarea, so a native form Reset restores the value written in the
+page. A `^` value sets the property only. Select, checkbox and radio keep the
+default of their authored `selected` or `checked` attribute.
 
 - `live=False` is the default: the Data is written on `change`. `live=True`
-  writes on every `input`.
+  writes on every `input`, for text, textarea, number and range. Select, color
+  and the temporal types always write on `change`.
 - A correction written by a controller is shown on the control that produced the
   edit. Other attributes bound to the same path update while the user types.
+- Changing `type`, `multiple` or `group` rebuilds the element and keeps its
+  binding.
+
+Examples: `examples/binding/04_native_editing` (`b04`), `05_checkbox_radio`
+(`b05`), `06_style_and_visibility` (`b06`) and `07_bound_svg` (`b07`).
 
 **Checkbox:** `input(type='checkbox', value='^.flag')` holds a boolean. Data
 receives only `true` or `false`, never `'on'`.
@@ -513,20 +581,36 @@ btn.dataController(func="orders.save", total="=.total")
 - A button has one mechanism only. Several `dataController` children, or any
   combination of nested controller, `action` and the `fire` family, produce an
   error. Several `fire_*` attributes on the same button all fire, in attribute
-  order.
+  order. `fire` together with `fire_*` is one mechanism: `fire` wins and the
+  `fire_*` are ignored, as in the legacy chain. The `fire_*` attributes also
+  write `modifier` and `_counter` on their Data nodes.
 - `connect_on<event>`, for example `connect_onclick`, attaches a native event
   listener to any element. On a button it runs after the Gramlot mechanism.
 
-**Provisional rule (R3)**, to be confirmed by tests. For a button with a Gramlot
-mechanism only:
+**Rule R3.** For a button with a Gramlot mechanism only:
 
 - without a `type` written by the author, the framework sets `type="button"`; an
-  author's `type` stays;
+  author's `type` stays, and `type="button"` stays if the mechanism is removed
+  later;
 - the click calls `stopPropagation`, as in legacy;
-- no `preventDefault`.
+- no `preventDefault`;
+- a disabled button does nothing and does not count the click.
 
-A button without a Gramlot mechanism stays native. The 200 ms automatic disable,
-click bursts and LightButton are not part of 0.2.0.
+A button without a Gramlot mechanism stays native, also when a parent node holds
+a `dataController`. Only the `<button>` tag gets this behavior: `input`
+elements of type button, submit, reset and image stay native. The 200 ms
+automatic disable, click bursts and LightButton are not part of 0.2.0.
+
+Known effect of R3: in a form with a single text field whose only button has a
+Gramlot mechanism (and so `type="button"`), Enter submits the form natively and
+the mechanism does not run. A form with a native submit button keeps the native
+behavior. The owner accepted R3 as built for 0.2.0 and reviews it after the
+release.
+
+Examples: `examples/controllers/06_button_controller` (`c06`) and `07_events`
+(`c07`). A `connect_on<event>` value made of dotted names (`group.method`) is
+named logic; any other value is inline code. The event name is the text after
+`connect_on`, lower-cased.
 
 `Gramlot` relates Source and DOM through two methods with the legacy names.
 `getBaseSourceNode(domNode)` climbs the DOM to the first rendered element and
@@ -564,6 +648,27 @@ freeze runs steps 1-5 at once; its DOM and `_onBuilt` wait for the thaw; `_onSta
 waits for the first build. A thaw performs one build of the current Source,
 without installing Data again and without repeating `_init` or `_onStart`.
 Removing a branch closes its registrations and timers, also under freeze.
+Example: `examples/binding/08_freeze` (`b08`).
+
+**Cleanup.** Removing a Source node closes its bindings: providers, timers,
+registrations, event listeners and pending requests stop, and the renderer removes
+the DOM. Closing the page disposes the `Gramlot` instance and does the same for
+the whole page.
+
+- Handlers of a node removed under freeze do nothing: a control does not write
+  the Data, a button and a `connect_on<event>` do not run.
+- A callback that removes its own node runs to its end: a `SET` after the removal
+  still writes. Only the Gramlot handlers stop: the `fire_*` loop, the radio peer
+  loop and the listeners.
+- A failing disposer does not stop the others. The renderer completes the removal
+  and then throws the closing errors: one error as it is, several as an
+  `AggregateError`.
+- A first render that fails removes the records its children created before the
+  error (listeners, controls, radio groups, references); the Data is not rolled
+  back.
+
+Example: `examples/controllers/09_end_to_end` (`c09`) walks the lifecycle from
+the first render to the close.
 
 <a id="gc-095-085"></a>
 
@@ -592,10 +697,16 @@ Intentional differences:
 - All `dataSetter` declarations of a branch are installed before its DOM. Legacy
   prepared only a node and its direct children before building it.
 - `destination_path` and `result_path` do not accept `?attr`.
-- R3 (provisional): a Gramlot button calls `stopPropagation` but not
-  `preventDefault`. Legacy called both.
-- `js_requires` loads every level found and the most specific registration wins.
-  Legacy loaded only the most generic JavaScript file.
+- R3: a Gramlot button calls `stopPropagation` but not `preventDefault`, and gets
+  `type="button"` when the author wrote none. Legacy called both and set no
+  type. In a one-field form Enter then submits natively (section 075).
+- `css_requires` and `js_requires` need a Host with a resource system
+  (gramlot-kajenn); the minimal `FileHost` raises an error for any name. When
+  the same method name is registered twice in a group, the last registration
+  wins.
+- `data(...)` is not a declaration: `root.data(...)` raises an error naming
+  `dataSetter` and `html_data`; on other nodes `data` is the Data Bag property. The
+  HTML5 `<data>` element is `html_data(...)`.
 - `name:media` in `css_requires` is an error.
 - Combining a nested controller, `action` and the `fire` family on one button is
   an error. Legacy chained them (`action`, then `fire`, then `fire_*`) and also
@@ -606,15 +717,30 @@ Intentional differences:
 - `script` in the Source is native HTML5, without `dojo.eval`.
 - Legacy macros work only through the deprecated preprocessor.
 
-Migration from legacy pages and from 0.1.x:
+Migration from legacy pages:
 
 - replace each `data(path, value, …)` with `dataSetter(path, value, …)`;
-- in Python and JavaScript pages, replace `Page.css` (a list of URLs) with
-  `css_requires` (a comma-separated string of resource names);
+- `Page.css` (a list of URLs) stays; a stylesheet of the page alone can move to
+  the same-name file `foo.css` beside the page;
 - move inline controller code to named logic in the companion or in a
   `js_requires` resource;
 - write Data with `node.SET(...)` and the matching methods instead of macros.
 
-The plan decides during implementation whether a legacy `data(path, value)` call
-produces an error or creates an HTML5 `<data>` element. Check migrated pages for
-remaining `data(` calls.
+Migration from 0.1.x:
+
+- a 0.1.x page without binding runs unchanged: native HTML and SVG, `Page.css`,
+  `@source` methods and `remoteSource` keep their behavior;
+- a call `data(...)` in a 0.1.x page created the HTML5 `<data>` element; on `root`
+  it now raises an error, on other nodes `data` is the Data Bag property. Write
+  `html_data(...)` for the element;
+- custom hosts implement `resolve_page`/`resolvePage` and
+  `resolve_resources`/`resolveResources`, pass the mount prefix to `open_page`
+  and serve the page companions; the bootstrap now writes the stylesheet links
+  in the browser ([GC-090](090-classes-and-hosts.md));
+- the standalone integration and the ASGI integration moved from
+  `gramlot-minimal` (retired) to `gramlot-serverless` and `gramlot-uvicorn`;
+- the Python and JavaScript renderers of the static HTML now share the attribute
+  and style rules, so `style_*`, `color` and the other shortcuts compose a
+  `style` attribute in both.
+
+Check migrated pages for remaining `data(` calls.

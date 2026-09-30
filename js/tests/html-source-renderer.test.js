@@ -2,13 +2,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
-import { GramlotRenderer } from '../src/renderer/gramlot-renderer.js';
+import { Gramlot } from '../src/gramlot.js';
+import { GramlotBuilderBag } from '../src/builder/source.js';
 import { HtmlElement } from '../src/view/html.js';
-import { HtmlBuilder, SourceBag } from '@jsr/genro__builders';
 import html5 from '../../src/gramlot/collections/html5.json' with {type: 'json'};
 
 function sourceBlock(builder) {
-    return new SourceBag(null, builder);
+    return new GramlotBuilderBag(null, builder);
+}
+
+/** A Gramlot page: its Source reaches the renderer as events while it is filled. */
+function page(collections = []) {
+    const document = new JSDOM('<main id="root"></main>').window.document;
+    const app = new Gramlot({document, element: document.getElementById('root'), transport: false, collections});
+    return {document, builder: app.builder, source: app.source, renderer: app.renderer};
 }
 
 function element(builder, bag, label, tag, value = '', attrs = {}) {
@@ -16,12 +23,9 @@ function element(builder, bag, label, tag, value = '', attrs = {}) {
 }
 
 test('HTML source renderer mounts and reacts with ordered records and cleanup', () => {
-    const document = new JSDOM('<main id="root"></main>').window.document;
-    const builder = new HtmlBuilder();
-    const source = builder.source;
+    const {document, builder, source, renderer} = page();
     const section = element(builder, source, 'section', 'section', sourceBlock(builder), { id: 'panel' });
     element(builder, section.value, 'a', 'span', 'A');
-    const renderer = new GramlotRenderer(builder, source, document.getElementById('root')).mount();
     assert.equal(document.getElementById('panel').textContent, 'A');
     let cleaned = 0;
     renderer.onDispose(section, () => cleaned += 1);
@@ -37,20 +41,15 @@ test('HTML source renderer mounts and reacts with ordered records and cleanup', 
 });
 
 test('same-tag scalar value update preserves element, reference and cleanup ownership', () => {
-    const document = new JSDOM('<main id="root"></main>').window.document;
-    const builder = new HtmlBuilder();
-    const source = builder.source;
-    const heading = element(builder, source, 'heading', 'h1', 'old', {__ref: 'heading'});
+    const {document, builder, source, renderer} = page();
     const entries = new Map();
     let removed = 0;
-    const references = {
+    renderer.references = {
         validate() {},
         register(node, element) { entries.set(node, element); },
         remove(node) { removed += 1; entries.delete(node); },
     };
-    const renderer = new GramlotRenderer(builder, source, document.getElementById('root'), {
-        html: new HtmlElement({metadataAttributes: ['__ref']}), references,
-    }).mount();
+    const heading = element(builder, source, 'heading', 'h1', 'old', {__ref: 'heading'});
     const original = document.querySelector('h1');
     let cleaned = 0;
     renderer.onDispose(heading, () => cleaned += 1);
@@ -65,13 +64,9 @@ test('same-tag scalar value update preserves element, reference and cleanup owne
 });
 
 test('dialect metadata is validated separately and never leaks into HTML', () => {
-    const document = new JSDOM('<main id="root"></main>').window.document;
-    const builder = new HtmlBuilder();
-    const source = builder.source;
+    const {document, builder, source, renderer} = page();
+    renderer.html = new HtmlElement({ metadataAttributes: ['__ref'] });
     element(builder, source, 'p', 'p', 'text', { __ref: 'owned' });
-    const renderer = new GramlotRenderer(builder, source, document.getElementById('root'), {
-        html: new HtmlElement({ metadataAttributes: ['__ref'] }),
-    }).mount();
     assert.equal(document.querySelector('p').hasAttribute('__ref'), false);
     const openAttrs = sourceBlock(builder); element(builder, openAttrs, 'p', 'p', 'text', { definitelyUnknown: 'x' });
     assert.doesNotThrow(() => renderer.validateCandidate(openAttrs));
@@ -86,11 +81,9 @@ test('events render each inserted or replaced element once', () => {
         constructor() { super(); this.creates = 0; }
         create(...args) { this.creates += 1; return super.create(...args); }
     }
-    const document = new JSDOM('<main id="root"></main>').window.document;
-    const builder = new HtmlBuilder();
-    const source = builder.source;
+    const {document, builder, source, renderer} = page();
     const html = new CountingHtml();
-    const renderer = new GramlotRenderer(builder, source, document.getElementById('root'), {html});
+    renderer.html = html;
     const initial = sourceBlock(builder); element(builder, initial, 'p', 'p', 'old');
     source.setItem('main', initial);
     assert.equal(html.creates, 1);
@@ -112,14 +105,9 @@ test('active grammar renders native and collection-mapped tags without a DOM whi
             fancyBox: {...html5.elements.div, sub_tags: '*', _meta: {render_tag: 'gramlot-fancy-box'}},
         },
     };
-    const document = new JSDOM('<main id="root"></main>').window.document;
-    const builder = new HtmlBuilder().loadGrammar(collection);
-    const source = builder.source;
+    const {document, builder, source, renderer} = page([collection]);
     element(builder, source, 'canvas', 'canvas', 'fallback', {class_: 'surface', data_owner_id: '42'});
     element(builder, source, 'custom', 'fancyBox', 'content', {enabled: true});
-    const renderer = new GramlotRenderer(
-        builder, source, document.getElementById('root'),
-    ).mount();
     assert.equal(document.querySelector('canvas.surface').dataset.ownerId, '42');
     assert.equal(document.querySelector('gramlot-fancy-box').textContent, 'content');
     assert.equal(document.querySelector('gramlot-fancy-box').getAttribute('enabled'), 'true');
@@ -127,13 +115,8 @@ test('active grammar renders native and collection-mapped tags without a DOM whi
 });
 
 test('native boolean attributes use presence semantics and reflected properties', () => {
-    const document = new JSDOM('<main id="root"></main>').window.document;
-    const builder = new HtmlBuilder();
-    const source = builder.source;
+    const {document, builder, source, renderer} = page();
     const input = element(builder, source, 'input', 'input', '', {checked: true, readonly: true});
-    const renderer = new GramlotRenderer(
-        builder, source, document.getElementById('root'),
-    ).mount();
     const domInput = document.querySelector('input');
     assert.equal(domInput.checked, true);
     assert.equal(domInput.readOnly, true);

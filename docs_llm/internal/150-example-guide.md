@@ -12,22 +12,22 @@ and handles Source lifetime. Future web components remain separately scoped.
 ## 005 · Start with the runner
 
 Follow the [runner setup](../../examples/00-runner/README.md). The local launcher
-composes Minimal/Uvicorn and Node adapters outside the runtime package. Select a title to open/reactivate an example tab with explanation above its split preview and highlighted source.
+composes the `gramlot-uvicorn` and `gramlot-js-server` adapters outside the runtime package. Select a title to open/reactivate an example tab with explanation above its split preview and highlighted source.
 The integration selects the language. Runner-local behavior keeps open frames.
 Source/README links open original files. No synchronized example state or Inspector implementation is implied.
 
 <a id="gc-150-010"></a>
 ## 010 · Learn from paired pages
 
-The [thirteen examples](../../examples/html_svg/README.md) each provide `page.py`,
-`page.js` and a README. Progress: Hello World, text, lists, semantics, tables, forms,
+The [thirteen examples](../../examples/html_svg/README.md) are file pages
+`NN_name.py`, `NN_name.js` and a README `NN_name.md` (same-name `.css` where needed; originally folders with `page.py`, `page.js`, `README.md`). Progress: Hello World, text, lists, semantics, tables, forms,
 disclosure, SVG shapes/composition, cards, report and complete event page. Methods
 and loops compose local data. Example 10 has an approved short onclick action
 calling popNode on the browser Builder's Source to remove a card; the renderer
 updates the DOM. No persistence, server synchronization, direct DOM manipulation,
 fetch, Data binding, controllers or database. Other controls use native interactions;
 submit is disabled.
-The [catalogue](../../examples/00-runner/catalog/README.md) classifies actual grammar
+The [catalogue](../../examples/00-runner/catalog/catalog.md) classifies actual grammar
 coverage and gaps; a declaration is not evidence of an implemented behavior.
 
 <a id="gc-150-015"></a>
@@ -65,7 +65,7 @@ The approved Gramlot logo appears above the list. The Light/Dark selector below
 the keyboard option controls the runner and all its preview frames, including
 examples opened after the selection. Theme choice lasts for the runner session.
 
-The sidebar groups examples under HTML / SVG. Select the category for its folder
+The sidebar groups examples under HTML / SVG, Binding and Controllers (0.2.0, same layout; GC-070 §600). Select the category for its folder
 README, or a child title for its example. New example panels start at 65% preview
 and 35% source; the divider remains adjustable.
 

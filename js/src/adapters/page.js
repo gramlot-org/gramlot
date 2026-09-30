@@ -22,6 +22,8 @@ export function sourceMethod(page, name) {
 export class Page {
     static title = 'Gramlot';
     static css = [];
+    static css_requires = '';
+    static js_requires = '';
     static sourceBuilder = GramlotBuilder;
 
     main(root) {

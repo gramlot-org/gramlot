@@ -10,7 +10,7 @@
 
 Document ID: **GC-087**. Decision date: **2026-09-19**. Status: **historical ownership sequence; current 0.1.2 boundary stated above**.
 
-**Release scope:** the current code is release **0.1.2**. Section 085 adds the layer boundaries of the 0.2.0 HTML/SVG binding plan. **The 0.2.0 parts are planned and not implemented.**
+**Release scope:** the published release is **0.1.2**. Section 085 records the layer boundaries of the 0.2.0 HTML/SVG binding, **implemented on the development branch and in qualification; 0.2.0 is not released.**
 
 [Concise counterpart](../../docs_llm/internal/087-javascript-layer-boundaries.md).
 
@@ -390,11 +390,12 @@ recipe implementation and Source replace decision are unchanged.
 
 <a id="gc-087-085"></a>
 
-## 085 · Planned 0.2.0 binding layer boundaries
+## 085 · 0.2.0 binding layer boundaries
 
-**Status: planned and not implemented. The current code is 0.1.2.** Source: the
-owner-confirmed 0.2.0 binding plan of 2026-09-25 and owner decision D7 of the same
-date. Phase S00 records them as GC-210 and a constitution amendment. Class details
+**Status (2026-09-30): implemented on the development branch, in qualification.** Source:
+the owner-confirmed 0.2.0 binding plan of 2026-09-25 and owner decision D7 of the same
+date. Phase S00 records them as GC-210 and a constitution amendment. The class and
+file names below are those of the implementation; the 0.1.2 boundaries are listed as history. Class details
 are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
 
 **Current 0.1.2 boundaries:**
@@ -411,7 +412,7 @@ are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
 - Declarations are inert: `compute_logic` (`src/gramlot/page/builder.py:52`) and
   `computeLogic` (`js/src/builder/gramlot-builder.js:17`) are empty. No binding exists.
 
-**Planned 0.2.0 boundaries:**
+**0.2.0 boundaries (implemented):**
 
 - **Builder and Bag stay read-only for Gramlot** (constitution §14). The owner forbids
   upstream fixes (2026-09-25). What Builder lacks goes into the Gramlot Source classes
@@ -429,9 +430,11 @@ are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
   after `html5.json`. `compute_logic`/`computeLogic` stay empty. `GramlotBuilder` does
   not change for logic resolution.
 - **Host side** (Python `Host`, JS `Host`/`FileHost`, `server/resources.py`,
-  `adapters/resources.js`): resolves the page, resolves `js_requires`/`css_requires`
-  names to ordered URLs and writes the bootstrap with a nonce. It never evaluates code
-  strings. The standalone WorkerHost (gramlot-minimal) counts as server side: no eval there.
+  `adapters/resources.js`): resolves the page, gets the ordered resource URLs from
+  the concrete Host (`resolve_resources`/`resolveResources`) and writes the bootstrap
+  with a nonce; the core parses and orders names but has no resolver (minimal Host
+  contract, GC-210 §010). It never evaluates code
+  strings. The standalone WorkerHost (`gramlot-serverless`, heir of the retired `gramlot-minimal`) counts as server side: no eval there.
 - **Page runtime** (browser: `bootstrap.js`, `gramlot.js`, `renderer/*`,
   `binding/*`, `view/*`): the only layer that executes declared logic. Only this layer
   compiles inline code.
@@ -444,31 +447,30 @@ are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
   without `'unsafe-eval'`. Inline mode (`formula`, `script`, `==`) stays for legacy
   compatibility and may be deprecated. The legacy macros are a deprecated preprocessor
   inside `InlineCompiler`. The pair of modes is an owner-approved exception to §13.
-  The CSP profile for inline pages is open question Q3.
+  The CSP profiles were settled by decision Q3: strict (named logic only) and permissive (plus `'unsafe-eval'`), [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035).
 - **Logic resolution:** `LogicRegistry.resolve`, not Builder `_resolveLogicFunc`.
   A missing name is an error, never a fallback to inline.
 - **JS pages:** `ordini.js` exports `Page` (used by the Node or Bun host to build the
   Source) and `Logic` (used in the browser). It must be importable in both
   environments, without server-only imports. S07 and S14 verify it.
 - **`script` in the Source** stays the native HTML5 element, without eval semantics.
-- **Bootstrap scripts** are declared on the Page, not in the Source. Today the host
+- **Bootstrap scripts** are declared on the Page, not in the Source. In 0.1.2 the host
   script imports `Gramlot` (`src/gramlot/server/host.py:102-104`,
   `js/src/adapters/host.js:59-61`). In 0.2.0 it imports `PageBootstrap` from the
   runtime and runs it.
 
-Solid boxes exist in 0.1.2, possibly with planned additions named in the label.
-Dashed boxes do not exist yet. Dashed arrows are forbidden imports.
+All boxes exist in the 0.2.0 implementation; dashed arrows are forbidden imports.
 
 ```mermaid
 flowchart TB
     BAG["Bag JS · TYTX<br/>tree, events, typed transport"]
     BLD["Builder JS<br/>grammar · SourceBag · RendererBase<br/>node methods SET · GET"]
-    SRC["builder/source.js<br/>GramlotBuilderBag · GramlotBuilderBagNode planned<br/>PUT · FIRE · FIRE_AFTER · absDatapath"]
-    AUTH["Authoring<br/>GramlotBuilder · html5.json · svg.json<br/>binding.json planned"]
-    HOST["Host side<br/>Page · Host · FileHost<br/>ResourceResolver planned"]
-    WH["WorkerHost in gramlot-minimal<br/>server side"]
-    PAGE["Page runtime in the browser<br/>Gramlot · GramlotRenderer · HtmlElement<br/>PageBootstrap · binding · view planned"]
-    INL["binding/inline.js<br/>InlineCompiler planned"]
+    SRC["builder/source.js<br/>GramlotBuilderBag · GramlotBuilderBagNode<br/>PUT · FIRE · FIRE_AFTER · absDatapath"]
+    AUTH["Authoring<br/>GramlotBuilder · html5.json · svg.json<br/>binding.json"]
+    HOST["Host side<br/>Page · Host · FileHost<br/>parseRequires · loadOrder"]
+    WH["WorkerHost in gramlot-serverless<br/>server side"]
+    PAGE["Page runtime in the browser<br/>Gramlot · GramlotRenderer · HtmlElement<br/>PageBootstrap · binding · view"]
+    INL["binding/inline.js<br/>InlineCompiler"]
     BLD --> BAG
     AUTH --> BLD
     HOST --> AUTH
@@ -485,6 +487,5 @@ flowchart TB
     SRC -. never imports .-> INL
     classDef current fill:#e3f3ed,color:#143d2e,stroke:#39866b;
     classDef planned fill:#f0e8fa,color:#4f2e70,stroke:#9670b3,stroke-dasharray:5 4;
-    class BAG,BLD,AUTH,HOST,WH,PAGE current;
-    class INL,SRC planned;
+    class BAG,BLD,AUTH,HOST,WH,PAGE,INL,SRC current;
 ```

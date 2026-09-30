@@ -18,6 +18,15 @@ plan and dated receipts below retain their original twelve-example counts; they
 are not evidence of thirteen-page verification. Later checks, including the live
 playground, are recorded in [GC-070 §270](070-work-status.md#gc-070-270).
 
+**Layout update — 2026-09-30:** the text below describes the original layout, one
+folder per example (`<number>_<name>/` with `page.py`, `page.js`, `README.md` and
+`style.css`). Since S06 (2026-09-28) every example is a file page: `NN_name.py`, its
+JavaScript equivalent `NN_name.js`, its README `NN_name.md` and, where needed, a
+same-name stylesheet `NN_name.css` (Q10: examples keep `Page.css`). Two families
+follow the same layout: `examples/binding/` and `examples/controllers/`
+([GC-070 §600](070-work-status.md#gc-070-600)). Folder names in the tables below are
+the stems of the file pages.
+
 <a id="gc-145-005"></a>
 ## 005 · Outcome and responsibilities
 
@@ -29,8 +38,10 @@ iframe panels. Every example has an English README and comparable source files.
   derived from `assets/branding/theme-tokens.json` and the approved visual guide.
 - `examples/00-runner/`: development launcher, list, example tabs, source
   links and provisional browser behavior. No duplicate HTTP/Host implementation.
-- `examples/html_svg/<number>_<name>/`: `page.py`, `page.js`, `README.md`, and
-  optional `style.css` for example-specific geometry/layout only.
+- `examples/html_svg/NN_name.py`, `NN_name.js`, `NN_name.md` and optional
+  `NN_name.css` (file pages; the original layout was a folder `<number>_<name>/`
+  with `page.py`, `page.js`, `README.md` and `style.css`) for example-specific
+  geometry/layout only.
 - Existing integration repositories: environment adapters. No new core dependency
   on an ASGI server, Node adapter or database.
 
@@ -49,7 +60,7 @@ services, DOM canvas drawing or invented controls. The initial twelve examples
 focus on static/native HTML; example 13 adds the approved live Source actions
 and SVG animation (constitution 11.39).
 
-| Folder | Content and teaching focus |
+| Example (file stem) | Content and teaching focus |
 | --- | --- |
 | `01_hello_world` | Page/main, heading and paragraph; minimal source. |
 | `02_text_and_links` | Text hierarchy, mixed inline text, quotations, code, links. |

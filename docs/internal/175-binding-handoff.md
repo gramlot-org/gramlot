@@ -152,6 +152,11 @@ Current local Minimal development contains the relocation; a newly published
 Minimal package has not been established by the core release/CI work. Inspect the
 actual matching adapter revision before end-to-end standalone work.
 
+*Update 2026-09-30:* `gramlot-minimal` was retired (constitution 11.48 item 5,
+2026-09-26/28). Standalone startup, WorkerTransport and WorkerHost belong to its heir
+`gramlot-serverless`; generic ASGI/Uvicorn hosting belongs to `gramlot-uvicorn`. The
+paragraph above keeps the 2026-09-25 wording as history.
+
 Runner UI lives in `examples/00-runner/browser/`. Its bounded exception uses
 ordinary Source-authored HTML IDs and page-local events/Bag state. This is not an
 application binding API and does not authorize framework components, custom source

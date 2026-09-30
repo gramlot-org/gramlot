@@ -10,7 +10,7 @@ from genro_tytx import from_tytx, get_subtype_dict, to_tytx
 
 from gramlot import GramlotBuilder
 from gramlot.page.source import GramlotBuilderBag, GramlotBuilderBagNode
-from gramlot.server import Host
+from gramlot.server import FileHost, SourceNotFound
 
 CONTROLS = json.loads(
     (Path(__file__).parent / "fixtures/collections/controls.json").read_text()
@@ -76,6 +76,15 @@ class BuilderTests(unittest.TestCase):
             parent.rating(amount=11, code="IT")
         self.assertEqual(parent.value, "fallback")
         self.assertNotIn("_text", parent.attr)
+
+    def test_promoted_text_keeps_its_type(self):
+        """Phase 18 (ASTRA-07): no str(); the browser renderer converts the value once, as in JS."""
+        builder = GramlotBuilder()
+        for value in (True, False, 1.5, "text"):
+            builder.root.p(value).span("child")
+        self.assertEqual([node.attr["_text"] for node in builder.root], [True, False, 1.5, "text"])
+        self.assertEqual([type(node.attr["_text"]) for node in builder.root], [bool, bool, float, str])
+        self.assertIn("<p>true<span>child</span></p>", builder.render())
 
 
 class GramlotSourceClassTests(unittest.TestCase):
@@ -159,28 +168,16 @@ class GramlotSourceClassTests(unittest.TestCase):
 
 
 class LegacyTransportProbeTests(unittest.TestCase):
-    def test_legacy_data_call_builds_the_html5_data_element(self):
-        builder = GramlotBuilder()
-        builder.root.data(".nome", "Ada")
-        builder.root.data(".nome", value="Ada")
-        positional, named = builder.source.nodes
-        self.assertEqual(positional.node_tag, "data")
-        self.assertEqual(positional.value, ".nome")
-        self.assertEqual(dict(positional.attr), {})
-        self.assertEqual(named.node_tag, "data")
-        self.assertEqual(named.value, ".nome")
-        self.assertEqual(dict(named.attr), {"value": "Ada"})
-
     def test_value_attribute_roundtrip_keeps_bag_scalar_and_array(self):
         builder = GramlotBuilder()
         bag = Bag()
         bag["a"] = 1
         bag["b.c"] = "x"
-        for destination, value in ((".bag", bag), (".n", 7), (".arr", [1, "a", None]), (".nul", None)):
-            builder.root.dataSetter(destination, value=value)
+        for destination_path, value in ((".bag", bag), (".n", 7), (".arr", [1, "a", None]), (".nul", None)):
+            builder.root.dataSetter(destination_path, value=value)
         self.assertNotIn("value", builder.source.nodes[3].attr)
         decoded = from_tytx(to_tytx(builder.source))
-        attrs = {node.attr["destination"]: node.attr for node in decoded.nodes}
+        attrs = {node.attr["destination_path"]: node.attr for node in decoded.nodes}
         self.assertIsInstance(attrs[".bag"]["value"], Bag)
         self.assertEqual(attrs[".bag"]["value"]["b.c"], "x")
         self.assertEqual(attrs[".n"]["value"], 7)
@@ -213,12 +210,16 @@ class Page(Parent):
     @source
     async def fragment(self, root, label):
         root.div(label).span("details")
+
+    @source
+    def plain(self, root):
+        root.p("plain")
 '''
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "index.py").write_text(source)
-            host = Host(directory)
+            host = FileHost(directory)
             opened = await host.open_page("/")
-            self.assertIn('"sourceUrl": "/gramlot/source"', opened.html)
+            self.assertIn('"sourceUrl":"/gramlot/source"', opened.html)
             first = from_tytx(await host.source(
                 opened.page_id, "fragment", {"label": "one"}))
             second = from_tytx(await host.source(
@@ -232,6 +233,13 @@ class Page(Parent):
                 await host.source(opened.page_id, "main")
             with self.assertRaises(TypeError):
                 await host.source(opened.page_id, "fragment", [])
+            # Phase 18 (Fable R4): the same errors and messages as the JS Host (js/tests/host.test.js).
+            with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method$"):
+                await host.source(opened.page_id, "main")
+            with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method: hidden$"):
+                await host.source(opened.page_id, "hidden")
+            plain = from_tytx(await host.source(opened.page_id, "plain", None))
+            self.assertEqual([(node.node_tag, node.value) for node in plain.nodes], [("p", "plain")])
 
     async def test_source_method_must_return_none(self):
         source = '''
@@ -243,7 +251,7 @@ class Page(BasePage):
 '''
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "index.py").write_text(source)
-            host = Host(directory)
+            host = FileHost(directory)
             opened = await host.open_page("/")
             with self.assertRaises(TypeError):
                 await host.source(opened.page_id, "bad")

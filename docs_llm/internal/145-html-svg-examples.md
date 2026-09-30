@@ -17,6 +17,12 @@ plan and dated receipts below retain their original twelve-example counts; they
 are not evidence of thirteen-page verification. Later checks, including the live
 playground, are recorded in [GC-070 §270](070-work-status.md#gc-070-270).
 
+**Layout update — 2026-09-30:** the text below describes the original one-folder-per-example
+layout (`page.py`, `page.js`, `README.md`, `style.css`). Since S06 every example is a file
+page: `NN_name.py`, `NN_name.js`, `NN_name.md` and, where needed, `NN_name.css`; `Page.css`
+stays (Q10). `examples/binding/` and `examples/controllers/` use the same layout
+([GC-070 §600](070-work-status.md#gc-070-600)).
+
 <a id="gc-145-005"></a>
 ## 005 · Outcome and responsibilities
 
@@ -24,8 +30,9 @@ playground, are recorded in [GC-070 §270](070-work-status.md#gc-070-270).
   theme extension documentation. No duplicated theme in examples.
 - `examples/00-runner`: introduction, example list, persistent example tabs with explanation and iframe,
   source links and local launcher composing existing integration adapters.
-- `examples/html_svg/<number>_<name>`: equivalent Python/JS Page modules, README,
-  optional geometry-only CSS. No host dependencies in core runtime.
+- `examples/html_svg/NN_name.py`/`.js`/`.md` (file pages; originally a folder
+  `<number>_<name>`): equivalent Python/JS Page modules, README, optional geometry-only
+  `NN_name.css`. No host dependencies in core runtime.
 
 Code display belongs to the runner. Inspector remains unavailable in native core;
 no PoC import or invented implementation. The integration owns language selection. Runner-local handlers use ordinary HTML

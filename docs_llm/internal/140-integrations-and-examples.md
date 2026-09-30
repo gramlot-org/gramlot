@@ -1,6 +1,6 @@
 # 140 · Agreed integrations and examples
 
-Document ID: **GC-140**. Updated: **2026-09-24**.
+Document ID: **GC-140**. Updated: **2026-09-30**.
 
 [Expanded counterpart](../../docs/internal/140-integrations-and-examples.md).
 Agreed inventory, not a new implementation plan. Authority: constitution §7 and
@@ -16,8 +16,9 @@ instructions. Core owns shared Page, Host, Source and browser contracts.
 | --- | --- |
 | `gramlot-fastapi` | Python / FastAPI; native integration in original 0.1.0 delivery. |
 | `gramlot-flask` | Python / Flask; native integration in original 0.1.0 delivery. |
-| `gramlot-kajenn` | Python / Kajenn; consumes Minimal ASGI. Renamed from `gramlot-genro-asgi` on 2026-09-26. |
-| `gramlot-minimal` | Python / generic ASGI/Uvicorn and JS / browser Worker packaging. Local alignment; local and GitHub repository now named `gramlot-minimal`. |
+| `gramlot-kajenn` | Python / Kajenn; depends only on Kajenn besides the core (11.48 item 5). Renamed from `gramlot-genro-asgi` on 2026-09-26. Not migrated yet: its `pyproject.toml` still declares the retired repository replaced by `gramlot-uvicorn` and `gramlot-serverless`. Migration and minimal Host contract deferred to after 0.2.0. |
+| `gramlot-uvicorn` | Python / generic ASGI/Uvicorn; heir of the ASGI part of retired `gramlot-minimal` (11.48 item 5). Verified on the 0.2.0 minimal Host contract ([GC-070 §595](070-work-status.md#gc-070-595)). |
+| `gramlot-serverless` | JS / browser Worker and single-HTML packaging; heir of the standalone part of retired `gramlot-minimal`. Verified on the 0.2.0 minimal Host contract. |
 | `gramlot-js-server` | JavaScript / Node.js and Bun; both belong here, original 0.1.0 profiles. |
 | `gramlot-django` | Python / Django; local native `NativeHtmlPages` views/URLconf. Old Page/ORM code is historical. |
 
@@ -32,20 +33,20 @@ repo. Python pages require Python hosting; Worker runs JS. Database work is sepa
 reference application in `gramlot-examples`, with equivalent Python/JS pages and
 real typed Source. One application has eight execution profiles:
 
-- Python: Uvicorn/Minimal, FastAPI, Flask, Kajenn, Django.
-- JavaScript: Node.js and Bun through `gramlot-js-server`; browser Worker through Minimal.
+- Python: Uvicorn (`gramlot-uvicorn`), FastAPI, Flask, Kajenn, Django.
+- JavaScript: Node.js and Bun through `gramlot-js-server`; browser Worker through `gramlot-serverless`.
 
 The separate integration example owns its pages/configuration/tests; core now also
 owns the approved teaching suite (§025). Integration repos own adapters; core owns
 shared runtime. Use the example README for maintained launch commands.
-Minimal's `examples/hello-world` and `examples/source-live` are focused verification
-fixtures, not additional feature or application commitments.
+The retired `gramlot-minimal` had `examples/hello-world` and `examples/source-live` as focused verification
+fixtures (historical, 2026-09-24), not additional feature or application commitments.
 
 <a id="gc-140-015"></a>
 ## 015 · Verification and publication boundary
 
 Original core 0.1.0: seven Chromium profiles, without Django. Later local work:
-Minimal/Kajenn ownership alignment and native Django protocol/install/browser
+Minimal (since retired)/Kajenn ownership alignment and native Django protocol/install/browser
 checks; not a complete eight-profile browser-matrix rerun. GC-070 records evidence.
 
 Published core 0.1.0 archives remain unchanged. New integration packages/names and
@@ -66,7 +67,11 @@ responsibility, review and acceptance checks; this inventory authorizes none.
 ## 025 · Core teaching suite — approved 2026-09-24
 
 The owner has selected twelve paired Python/JavaScript HTML/SVG examples inside
-core, each with an explanatory README. A runner provides a list, language iframe
+core, each with an explanatory README. *Update 2026-09-30:* three families in core:
+`examples/html_svg` (13 pages, native), `examples/binding` (11), `examples/controllers` (9);
+every example is a file page `NN_name.py`/`.js`/`.md` with same-name `.css` and logic
+companion `NN_name_aux.js` where needed ([GC-145](145-html-svg-examples.md)); originally
+one folder per example. A runner provides a list, language iframe
 panels and an initial HTML element catalogue. The shared `gramlot-base` theme lives
 outside examples under `themes`. Code viewing belongs to the runner, not each page.
 This work supersedes the earlier Hello-World-only teaching scope; the integration

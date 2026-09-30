@@ -2,9 +2,9 @@
 
 Document ID: **GC-030**.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding), in development**:
-> an approved plan, not yet implemented, tested or released. Latest published
-> release: **0.1.2**. Unmarked text is 0.1.2.
+> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: implemented on the
+> development branch, in qualification, not released. Latest published release:
+> **0.1.2**. Unmarked text is behavior from 0.1.2.
 
 <a id="gc-030-005"></a>
 
@@ -16,7 +16,7 @@ The `Core and runner tests` workflow runs Python, core JavaScript and runner
 unit tests on main/develop pushes, the CI integration branch, pull requests and
 manual dispatch. It builds browser resources, installs the Python package and
 explicitly selects that interpreter for JS interop. Runner dependencies use the
-public Minimal and JS Server main branches alongside this repository, following
+public `gramlot-serverless` and `gramlot-js-server` main branches alongside this repository, following
 the examples' declared file dependencies. The runner unit suite does not verify
 adapter behavior, standalone exports or the browser matrix. Coverage collection
 is not yet included. Verified GitHub runs on 2026-09-24:
@@ -29,10 +29,12 @@ is not yet included. Verified GitHub runs on 2026-09-24:
 Both branches also passed their documentation workflow. The four extra JS tests
 on develop cover the unfinished binding prerequisite reserved for 0.2.0; their
 success does not imply full binding implementation or acceptance.
-*0.2.0:* qualification plan: complete suites, clean-environment installs, Chromium,
-Firefox and WebKit, eight hosts (Minimal ASGI/Uvicorn, FastAPI, Kajenn, Flask, Django,
-Node, Bun, Minimal standalone). Unavailable = not verified and blocks qualification
-unless the owner records an exception. Separate from acceptance and publication.
+*0.2.0:* qualification: complete suites, clean-environment installs, Chromium,
+Firefox and WebKit, hosts of the inventory (`gramlot-uvicorn`, FastAPI, Kajenn, Flask,
+Django, Node, Bun, `gramlot-serverless`). `gramlot-uvicorn`, `gramlot-js-server` and
+`gramlot-serverless` verified on the minimal Host contract; FastAPI, Flask, Django and
+Kajenn deferred to after 0.2.0 and excluded. Unavailable = not verified and blocks
+qualification unless the owner records an exception. Separate from acceptance and publication.
 
 <a id="gc-030-010"></a>
 

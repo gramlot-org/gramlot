@@ -233,10 +233,14 @@ def _parents(raw: str | None) -> list[str]:
     return [part.strip() for part in (raw or "").split(",") if part.strip()]
 
 
-def load_grammar(builder: Any, document: Any, *, replace: bool = False) -> Any:
-    """Validate and atomically load or merge one v1.1 grammar collection."""
+def load_grammar(builder: Any, document: Any) -> Any:
+    """Validate and atomically merge one v1.1 grammar collection over the class grammar.
+
+    The instance collections compose among themselves; each of their
+    declarations replaces the class declaration of the same name whole.
+    """
     current = builder._collection
-    collection = Collection(document) if replace or current is None else Collection(current.to_document()).update(document)
+    collection = Collection(document) if current is None else Collection(current.to_document()).update(document)
     doc = collection.to_document()
     # Collection validates the document envelope before composition; compile its declarations here.
     grammar = doc["grammar"]
@@ -253,9 +257,13 @@ def load_grammar(builder: Any, document: Any, *, replace: bool = False) -> Any:
     parsed_abs = {name: _entry(raw, f"abstracts.{name}", abstract=True) for name, raw in abstracts.items()}
     parsed_elements = {name: _entry(raw, f"elements.{name}", abstract=False) for name, raw in elements.items()}
 
-    schema = Bag()
-    schema.set_item("_abstracts", Bag())
+    schema = Bag(source=type(builder)._class_schema)
+    # The copy carries the class ``_get_schema_info`` cache; a declaration below may replace an abstract.
+    for node in schema:
+        node.attr.pop("_cached_info", None)
     abs_bag = schema["_abstracts"]
+    for node in abs_bag:
+        node.attr.pop("_cached_info", None)
     for parsed, target in ((parsed_abs, abs_bag), (parsed_elements, schema)):
         for key, attrs in parsed.items():
             target.set_item(key, None, **attrs)

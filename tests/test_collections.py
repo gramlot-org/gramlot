@@ -4,6 +4,8 @@ import unittest
 from gramlot import GramlotBuilder
 
 CONTROLS = json.loads((Path(__file__).parent / 'fixtures/collections/controls.json').read_text())
+# Shared with js/tests/collections.test.js: a second collection that redefines statusText (Phase 18, ASTRA-03).
+REDEFINED = json.loads((Path(__file__).parent / 'fixtures/collections/controls-redefined.json').read_text())
 
 
 class CollectionTests(unittest.TestCase):
@@ -66,3 +68,18 @@ class CollectionTests(unittest.TestCase):
         with self.assertRaises((ValueError, TypeError)):
             left.load_collection(invalid)
         left.root.statusText('still ready', required_label='Status')
+
+    def test_a_later_collection_replaces_a_named_declaration_whole(self):
+        """Phase 18 (ASTRA-03): the rule of genro-builders JS, the same fixture as js/tests/collections.test.js."""
+        builder = GramlotBuilder()
+        builder.load_collection(CONTROLS)
+        builder.load_collection(REDEFINED)
+        builder.root.statusText('ready')
+        with self.assertRaisesRegex(ValueError, r"^Element 'statusText' does not accept 'required_label'\."):
+            builder.root.statusText('ready', required_label='Status')
+        document = builder._collection.to_document()
+        self.assertEqual(document['elements']['statusText'], REDEFINED['elements']['statusText'])
+        self.assertEqual(document['elements']['rating'], CONTROLS['elements']['rating'])
+        self.assertEqual(document['grammar']['title'], 'Redefined controls')
+        self.assertEqual(document['grammar']['name'], CONTROLS['grammar']['name'])
+        self.assertEqual(list(document['elements']), list(CONTROLS['elements']))

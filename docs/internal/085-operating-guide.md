@@ -46,8 +46,8 @@ scripts/                 Build/documentation/browser verification helpers
 ```
 
 Generated build outputs, virtual environments, installed modules and caches are
-not source architecture. In `gramlot-minimal`, `src/worker-host.js`,
-`src/worker-transport.js` and `src/standalone.js` own standalone integration.
+not source architecture. In `gramlot-serverless` (heir of the retired `gramlot-minimal`),
+`src/worker-host.js`, `src/worker-transport.js` and `src/standalone.js` own standalone integration.
 No future component/controller/database contract is implied by a folder name.
 
 <a id="gc-085-015"></a>
@@ -90,6 +90,13 @@ Bag 0.25.1 and TYTX 0.15.0. JS resolved `@jsr/genro__builders` 0.1.5,
 not install pins or claims about future resolution. `js/.npmrc` selects the JSR
 npm endpoint and disables package-lock. Local dependency wheels used in the older
 working venv are not prerequisites for the tested current core paths.
+
+*Update 2026-09-30 (0.2.0 branch):* the versions above are the observations of 2026-09-24 and
+are superseded. The development branch declares `genro-bag>=0.27.0`,
+`genro-builders>=0.27.0`, `genro-tytx>=0.16.0` (Python) and `@jsr/genro__bag >=0.10.0`,
+`@jsr/genro__builders >=0.4.0`, `@jsr/genro__tytx >=0.16.0` (JS); the working checkout
+resolves Bag 0.27.0, Builders 0.27.0, TYTX 0.16.0, and JS Bag 0.10.0, Builders 0.4.0,
+TYTX 0.16.0. The qualification report of S16 records the versions of a clean install.
 
 **Local environment observed on 2026-09-24:** this working checkout's `.venv`
 still contains `genro-builders` 0.23.4 installed from

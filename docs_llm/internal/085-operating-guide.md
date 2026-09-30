@@ -32,8 +32,8 @@ provisional runner; `tests`/`js/tests` hold core tests, `ports` holds port recor
 and `scripts` holds verification/build helpers.
 
 Generated build outputs, virtual environments, installed modules and caches are
-not source architecture. In `gramlot-minimal`, `src/worker-host.js`,
-`src/worker-transport.js` and `src/standalone.js` own standalone integration.
+not source architecture. In `gramlot-serverless` (heir of the retired `gramlot-minimal`),
+`src/worker-host.js`, `src/worker-transport.js` and `src/standalone.js` own standalone integration.
 No future component/controller/database contract is implied by a folder name.
 
 <a id="gc-085-015"></a>
@@ -86,6 +86,13 @@ and passed Python 18/18 and JS 76/76. The owner-supplied independent review also
 reports runner 8/8 with those Python dependencies. Earlier provenance was already
 recorded in [GC-070 §320](070-work-status.md#gc-070-320); this note makes the
 working-environment distinction explicit in the operating guide as well.
+
+*Update 2026-09-30 (0.2.0 branch):* the versions above are the observations of 2026-09-24 and
+are superseded. The development branch declares `genro-bag>=0.27.0`,
+`genro-builders>=0.27.0`, `genro-tytx>=0.16.0` (Python) and `@jsr/genro__bag >=0.10.0`,
+`@jsr/genro__builders >=0.4.0`, `@jsr/genro__tytx >=0.16.0` (JS); the working checkout
+resolves Bag 0.27.0, Builders 0.27.0, TYTX 0.16.0, and JS Bag 0.10.0, Builders 0.4.0,
+TYTX 0.16.0. The qualification report of S16 records the versions of a clean install.
 
 A pre-existing venv or node_modules directory does not establish clean installation.
 Use a separate checkout copy/environment when verifying reproducibility. Setup of

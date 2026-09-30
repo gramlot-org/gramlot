@@ -1,6 +1,6 @@
 /** Local examples acceptance check; uses an already installed Playwright and Chrome. */
 import assert from 'node:assert/strict';
-import {mkdir} from 'node:fs/promises';
+import {mkdir, readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 
@@ -9,23 +9,43 @@ if (!url || !playwrightEntry || !executablePath) {
     throw new Error('Usage: node scripts/verify_examples_browser.mjs URL PLAYWRIGHT_ENTRY CHROME [OUTPUT]');
 }
 const {chromium} = await import(pathToFileURL(resolve(playwrightEntry)));
+const families = JSON.parse(await readFile(new URL('../examples/00-runner/catalog.json', import.meta.url), 'utf8'));
+const bound = families.filter(({key}) => key !== 'html_svg');
 await mkdir(output, {recursive: true});
 const browser = await chromium.launch({headless: true, executablePath});
 console.log(`Browser: ${browser.version()}`);
 const errors = [];
 const context = await browser.newContext({viewport: {width: 1440, height: 1000}, colorScheme: 'light'});
-context.on('page', page => page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`)));
+context.on('page', page => {
+    page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`));
+    page.on('console', message => {
+        // The browser's own favicon request is not a page resource.
+        if (message.type() === 'error' && !message.location().url.endsWith('/favicon.ico')) {
+            errors.push(`${page.url()}: console ${message.text()} ${message.location().url}`);
+        }
+    });
+});
 context.on('response', response => {
     if (response.url().startsWith(url) && response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
 });
 const page = await context.newPage();
+const familyDetails = key => page.locator(`.runner-sidebar details:has(> summary > #open-${key})`);
+const isOpen = key => familyDetails(key).evaluate(details => details.open);
+// A click on the summary marker, left of the family link inside the summary.
+const toggleFamily = async key => {
+    const summary = familyDetails(key).locator('> summary');
+    const box = await summary.boundingBox();
+    await summary.click({position: {x: 8, y: box.height / 2}});
+};
 const routes = Array.from({length: 12}, (_, i) => `e${String(i + 1).padStart(2, '0')}`);
 const snapshot = () => {
     const visit = node => {
         if (node.nodeType === Node.TEXT_NODE) return node.textContent;
         if (node.nodeType !== Node.ELEMENT_NODE) return null;
         return [node.localName, node.namespaceURI,
-            [...node.attributes].map(a => [a.name, a.value]).sort(([a], [b]) => a.localeCompare(b)),
+            // Radio group names are scoped by the Gramlot instance (P11): compare them without the instance id.
+            [...node.attributes].map(a => [a.name, a.value.replace(/^gramlot-[0-9a-f-]{36}-/, 'gramlot-<instance>-')])
+                .sort(([a], [b]) => a.localeCompare(b)),
             [...node.childNodes].map(visit).filter(n => n !== null)];
     };
     return visit(document.querySelector('#gramlot-root'));
@@ -39,7 +59,7 @@ try {
             await page.waitForFunction(() => window.gramlot?.state === 'started');
             rendered.push(await page.evaluate(snapshot));
             assert.deepEqual(await page.locator('label[for]').evaluateAll(labels => labels.filter(l => !l.control).map(l => l.htmlFor)), [], 'Every explicit label resolves to its control');
-            assert.equal(await page.locator('link[href="/themes/gramlot-base/theme.css"]').count(), 1);
+            assert.equal(await page.locator('link[href$="/themes/gramlot-base/theme.css"]').count(), 1);
             assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(247, 248, 245)');
             assert.equal(await page.evaluate(() => [...document.querySelectorAll('svg')].every(svg =>
                 svg.namespaceURI === 'http://www.w3.org/2000/svg')), true);
@@ -68,23 +88,45 @@ try {
         await page.setViewportSize({width: 1440, height: 1000});
         console.log(`${route}: Python/JavaScript render and parity passed`);
     }
+    for (const family of bound) {
+        for (const {key, folder} of family.examples) {
+            const rendered = [];
+            for (const language of ['py', 'js']) {
+                const response = await page.goto(`${url}/${language}/${key}`);
+                assert.equal(response.status(), 200);
+                await page.waitForFunction(() => window.gramlot?.state === 'started');
+                await page.waitForTimeout(50);
+                rendered.push(await page.evaluate(snapshot));
+                assert.deepEqual(await page.locator('label[for]').evaluateAll(labels => labels.filter(l => !l.control).map(l => l.htmlFor)), [], 'Every explicit label resolves to its control');
+                assert.equal(await page.locator('link[href$="/themes/gramlot-base/theme.css"]').count(), 1);
+                assert.equal(await page.evaluate(() => [...document.querySelectorAll('svg')].every(svg =>
+                    svg.namespaceURI === 'http://www.w3.org/2000/svg')), true);
+            }
+            assert.deepEqual(rendered[1], rendered[0], `Python/JS rendered parity: ${key}`);
+            console.log(`${key} ${family.key}/${folder}: Python/JavaScript render and parity passed`);
+        }
+    }
     for (const integration of ['py', 'js']) {
         await page.goto(`${url}/${integration}/index`);
         await page.waitForSelector('#code-e01.hljs', {state: 'attached'});
         await page.waitForFunction(() => window.gramlot?.state === 'started');
         assert.equal(await page.locator('[role=tab]:visible').count(), 1, 'Only introduction starts open');
         assert.equal(await page.locator('input[name=runner-language]').count(), 0);
-        assert.equal(await page.locator('.runner-list a').count(), 14);
+        assert.equal(await page.locator('.runner-list a').count(),
+            families.reduce((total, family) => total + 1 + family.examples.length, 0));
         assert.equal(await page.locator('iframe[src]').count(), 0, 'No example loads before selection');
         assert.equal(await page.locator('#panel-intro iframe').count(), 0);
         assert.equal(await page.locator('#panel-intro').isVisible(), true);
+        assert.deepEqual(await page.locator('.runner-sidebar details').evaluateAll(all => all.map(details => details.open)),
+            families.map((_, index) => index === 0), 'Only the first family starts open');
         assert.equal(await page.locator('.runner-logo').evaluate(img => img.complete && img.naturalWidth > 0), true);
         await page.locator('#open-html_svg').click();
         const category = page.locator('#panel-html_svg');
         assert.equal(await category.isVisible(), true);
         assert.equal(await category.locator('[id^=readme-] h1').count(), 1);
         assert.equal(await category.locator('iframe').count(), 0);
-        assert.equal(await page.locator('.runner-list .runner-list a').count(), 13);
+        assert.equal(await page.locator('.runner-list .runner-list a').count(),
+            families.reduce((total, family) => total + family.examples.length, 0));
         await page.locator('#runner-theme').selectOption('dark');
         await page.locator('#open-e06').click();
         const formFrame = page.frame({name: 'example-e06'});
@@ -98,7 +140,7 @@ try {
         await formFrame.locator('#name').fill('Preserve this input');
         const instance = await formFrame.evaluate(() => window.gramlot.pageId);
         const panelCode = page.locator('#panel-e06 code[id^=code-]');
-        const sourceResponse = await context.request.get(`${url}/examples/html_svg/06_forms/page.${integration === 'py' ? 'py' : 'js'}`);
+        const sourceResponse = await context.request.get(`${url}/examples/html_svg/06_forms.${integration === 'py' ? 'py' : 'js'}`);
         assert.equal(await panelCode.textContent(), await sourceResponse.text(), 'Exact integration source is displayed');
         assert.ok(await panelCode.locator('.hljs-keyword').count() > 0, 'Code is syntax highlighted');
         const divider = page.locator('#panel-e06 [id^=divider-]');
@@ -161,7 +203,35 @@ try {
         assert.equal(await divider.getAttribute('aria-valuenow'), selectedRatio);
         await page.locator('#open-e06').click();
         assert.equal(await page.locator('#panel-e06').isVisible(), true);
-        console.log(`${integration} runner: IDs, navigation, frame state, themes, resizing, keyboard and reattachment passed`);
+        await toggleFamily('html_svg');
+        assert.equal(await isOpen('html_svg'), false, 'The summary marker closes a family');
+        await page.locator('#tab-e06').click();
+        assert.equal(await isOpen('html_svg'), true, 'Selecting an example opens its family');
+        for (const {key} of bound) {
+            await page.locator(`#open-${key}`).click();
+            assert.equal(await page.locator(`#panel-${key}`).isVisible(), true);
+            assert.equal(await isOpen(key), true, 'The family link opens its family');
+            await toggleFamily(key);
+            assert.equal(await isOpen(key), false, 'The summary marker closes a family');
+            await page.locator(`#open-${key}`).click();
+            assert.equal(await isOpen(key), true, 'The family link opens its family');
+        }
+        for (const family of bound) {
+            await page.locator(`#open-${family.key}`).click();
+            assert.equal(await page.locator(`#panel-${family.key} [id^=readme-] h1`).count(), 1);
+            for (const {key, folder} of family.examples) {
+                await page.locator(`#open-${key}`).click();
+                const frame = page.frame({name: `example-${key}`});
+                await frame.waitForURL(`**/${integration}/${key}`);
+                await frame.waitForFunction(() => window.gramlot?.state === 'started');
+                const logic = page.locator(`#logic-${key}`);
+                if (await logic.count()) {
+                    const response = await context.request.get(`${url}/examples/${family.key}/${folder}_aux.js`);
+                    assert.equal(await logic.textContent(), await response.text(), `${key}: companion shown`);
+                }
+            }
+        }
+        console.log(`${integration} runner: IDs, navigation, frame state, themes, resizing, keyboard, reattachment and every binding/controllers example passed`);
     }
     await page.screenshot({path: `${output}/runner-light.png`, fullPage: true});
     await page.locator('#runner-theme').selectOption('dark');
@@ -171,7 +241,8 @@ try {
     await page.screenshot({path: `${output}/runner-narrow.png`, fullPage: true});
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'Runner must fit narrow viewport');
     assert.deepEqual(errors, [], 'Browser errors or failed local assets');
-    console.log('PASS: 24 pages; language parity; native controls; runner navigation; light/dark/narrow smoke checks.');
+    const count = 24 + 2 * bound.reduce((total, family) => total + family.examples.length, 0);
+    console.log(`PASS: ${count} pages; language parity; native controls; runner navigation; light/dark/narrow smoke checks.`);
 } finally {
     await browser.close();
 }

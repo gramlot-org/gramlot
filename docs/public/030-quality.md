@@ -3,9 +3,9 @@
 Document ID: **GC-030**.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding), in development**. 0.2.0 is an approved plan: its code is not yet
-> implemented, tested or released. The latest published release is **0.1.2**.
-> Text without a *0.2.0* mark describes 0.1.2 behavior.
+> binding)**. The code is implemented on the development branch and is in
+> qualification; it is not released. The latest published release is **0.1.2**.
+> Text without a *0.2.0* mark describes behavior that comes from 0.1.2.
 
 <a id="gc-030-005"></a>
 
@@ -30,7 +30,7 @@ The `Core and runner tests` workflow runs Python, core JavaScript and runner
 unit tests on main/develop pushes, the CI integration branch, pull requests and
 manual dispatch. It builds browser resources, installs the Python package and
 explicitly selects that interpreter for JS interop. Runner dependencies use the
-public Minimal and JS Server main branches alongside this repository, following
+public `gramlot-serverless` and `gramlot-js-server` main branches alongside this repository, following
 the examples' declared file dependencies. The runner unit suite does not verify
 adapter behavior, standalone exports or the browser matrix. Coverage collection
 is not yet included. Verified GitHub runs on 2026-09-24:
@@ -44,12 +44,15 @@ Both branches also passed their documentation workflow. The four extra JS tests
 on develop cover the unfinished binding prerequisite reserved for 0.2.0; their
 success does not imply full binding implementation or acceptance.
 
-*0.2.0:* the plan's qualification runs the complete suites with dependencies
-installed in clean environments, in Chromium, Firefox and WebKit, on eight hosts:
-Minimal ASGI/Uvicorn, FastAPI, Kajenn, Flask, Django, Node, Bun and Minimal
-standalone. An unavailable environment is reported as not verified and blocks
-qualification unless the owner records an explicit exception. Qualification is
-separate from acceptance and publication.
+*0.2.0:* the qualification runs the complete suites with dependencies
+installed in clean environments, in Chromium, Firefox and WebKit, on the hosts of
+the inventory: `gramlot-uvicorn`, FastAPI, Kajenn, Flask, Django, Node, Bun and
+`gramlot-serverless` (standalone). `gramlot-uvicorn`, `gramlot-js-server` and
+`gramlot-serverless` are verified against the minimal Host contract; FastAPI,
+Flask, Django and Kajenn are deferred to after 0.2.0 and their paths are excluded
+from this qualification. An unavailable environment is reported as not verified
+and blocks qualification unless the owner records an explicit exception.
+Qualification is separate from acceptance and publication.
 
 <a id="gc-030-010"></a>
 

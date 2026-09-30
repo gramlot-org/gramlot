@@ -36,7 +36,9 @@ Repository: https://github.com/gramlot-org/gramlot-poc
 
 Current published Builder already contains SourceBagNode.pointerType, pointers,
 absDatapath, getRelativeData/setRelativeData and Builder.runtimeValues. Gramlot
-already shares builder.data as app.data and creates a main Bag. These are existing
+already shares builder.data as app.data and creates a main Bag (0.1.x; from 0.2.0
+the outer Data root is Builder's `_dataroot` → `_root_` and no main Bag is created,
+constitution amendment 11.49). These are existing
 primitives, not proof that reactive Data binding works in Gramlot today.
 Host main/source currently return typed Source only; author-side builder.data is
 not delivered as an initial Data payload. GramlotRenderer subscribes to Source,

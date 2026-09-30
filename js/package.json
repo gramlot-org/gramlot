@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/native-html",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,8 +10,8 @@
     "prepack": "node scripts/build-runtime.mjs"
   },
   "dependencies": {
-    "@jsr/genro__bag": ">=0.9.0",
-    "@jsr/genro__builders": ">=0.3.0",
+    "@jsr/genro__bag": ">=0.10.0",
+    "@jsr/genro__builders": ">=0.4.0",
     "@jsr/genro__tytx": ">=0.16.0"
   },
   "devDependencies": {

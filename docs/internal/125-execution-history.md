@@ -4,6 +4,8 @@
 > statements below retain their original scope. For 0.2.0 use
 > [GC-210](210-binding-contract.md) and constitution 11.47: dataSetter with
 > destination_path, R1 and full-branch installation. Do not rewrite dated records.
+>
+> **Wire suffix (2026-09-30):** the `SOURCE` and `XS` suffixes cited in this document are historical. The `SOURCE` suffix is gone (constitution 11.48 item 8, [GC-070 §520](070-work-status.md#gc-070-520)): a Bag of any class travels as `::X` and `__cls` names its class. Dated records are not rewritten.
 
 
 Document ID: **GC-125**. Updated: **2026-09-23**.

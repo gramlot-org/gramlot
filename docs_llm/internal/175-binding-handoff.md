@@ -57,7 +57,7 @@ snapshots; they are not interchangeable development roots.
 
 Read constitution, overview, ports/README and [GC-170](170-binding-source-audit.md).
 Amendments 11.41–43 govern binding scope, Gramlot specialization and decisions;
-11.44–46 govern runner and Minimal ownership. The owner confirmed binding belongs
+11.44–46 govern runner and Minimal ownership (Minimal since retired, 11.48). The owner confirmed binding belongs
 to **0.2.0**. SourceNode context, relative/symbolic access, GET/SET/PUT/FIRE,
 expressions, formula/controller and delayed execution belong together from the
 initial investigation/design. Recover legacy behavior and discuss deviations.
@@ -109,6 +109,7 @@ or worker-host core entries. Local Minimal development has the relocation; a new
 published Minimal release was not established. Inspect the matching adapter source
 before end-to-end work. CI uses public Minimal/JS Server main to install example
 dependencies only; runner tests do not prove those hosts or standalone exports.
+*Update 2026-09-30:* Minimal is retired (11.48 item 5); heirs `gramlot-serverless` (standalone) and `gramlot-uvicorn` (ASGI). The text above is the 2026-09-25 wording.
 
 Runner behavior is local to examples/00-runner/browser, with ordinary HTML IDs
 and a bounded page-local exception. It is not general binding support, a source

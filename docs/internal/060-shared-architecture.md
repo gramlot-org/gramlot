@@ -1,10 +1,10 @@
 # Gramlot: the shared architecture
 
-**Historical edition of 18 September 2026.** The current core implements the bounded native HTML and live Source scope; PoC, bindings and recipes remain evidence or future work. For the current status see [GC-070](070-work-status.md) and for the release [GC-110](110-native-html-readiness.md#gc-110-020).
+**Historical edition of 18 September 2026.** The current core implements the bounded native HTML and live Source scope; the 0.2.0 bindings and controllers are implemented on the development branch and in qualification (section 045); PoC and recipes remain evidence or future work. For the current status see [GC-070](070-work-status.md) and for the release [GC-110](110-native-html-readiness.md#gc-110-020).
 
 **GC-060 · Essential guide for collaborating · 18 September 2026**
 
-**Release 0.2.0:** the current code is **0.1.2**. Section 045 describes the architecture of the 0.2.0 HTML/SVG binding. **The 0.2.0 parts are planned and not implemented.**
+**Release 0.2.0:** the published release is **0.1.2**. Section 045 describes the architecture of the 0.2.0 HTML/SVG binding. **The 0.2.0 parts are implemented on the development branch and in qualification; 0.2.0 is not released.**
 
 This document collects the agreed principles and the shared direction of work.
 The diagrams describe responsibilities and flows, not a final class hierarchy.
@@ -168,9 +168,9 @@ action distinct from consolidating the source.
 
 <a id="gc-060-045"></a>
 
-## 045 · HTML/SVG binding in 0.2.0: planned architecture
+## 045 · HTML/SVG binding in 0.2.0: architecture
 
-**Status: planned, not implemented. The current code is 0.1.2.** Source: the
+**Status (2026-09-30): implemented on the development branch, in qualification.** Source: the
 0.2.0 binding plan confirmed by the owner on 2026-09-25. Phase S00 records it
 as GC-210 and as a constitution amendment. The technical detail, in English, is
 in [GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060),
@@ -179,9 +179,11 @@ in [GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-
 
 In 0.1.2 declarations remain inert and no binding exists. 0.2.0 adds:
 
-- **Data:** an outer root contains `main`, which is the document Bag
-  (`builder.data`). Gramlot has a single Data subscription and a single router
-  (`DataRouter`). Paths written by the author do not contain `main`.
+- **Data:** Builder's outer root (revision 11, amendment 11.49): the private wrapper
+  `_dataroot` holds the content node `_root_`, which is the document Bag
+  (`builder.data`). Gramlot has a single Data subscription, on the wrapper, and a
+  single router (`DataRouter`). Paths written by the author do not contain `_root_`.
+  *Historical (revisions 1–10): a Gramlot outer root contained `main`.*
 - **Separate lifetimes:** `NodeBinding` owns the semantic lifetime of a Source node
   (registrations, providers, timers). The renderer record owns the DOM lifetime
   (element, listeners). `NodeBinding` stays in a `Map` of `BindingRuntime` for now.

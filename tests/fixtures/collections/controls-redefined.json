@@ -1,0 +1,20 @@
+{
+  "document_format": {"name": "builder_grammar", "version": "1.1"},
+  "grammar": {"name": "collection_test_controls", "version": null, "title": "Redefined controls", "description": null},
+  "abstracts": {},
+  "elements": {
+    "statusText": {
+      "attributes": {
+        "parameters": [
+          {"name": "node_value", "kind": "positional_or_keyword", "role": "value",
+           "annotation": {"kind": "type", "module": "builtins", "name": "str"}, "has_default": false},
+          {"name": "optional_label", "kind": "positional_or_keyword", "role": "attribute",
+           "annotation": null, "has_default": true, "default": null}
+        ],
+        "accepts_var_keyword": false,
+        "accepts_var_positional": false
+      },
+      "_meta": {"render_tag": "gramlot-status-redefined"}
+    }
+  }
+}

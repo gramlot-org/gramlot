@@ -1,7 +1,7 @@
-import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder, svgAttributes} from '@jsr/genro__builders';
+import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder} from '@jsr/genro__builders';
+import {ControlAdapter} from './controls.js';
+import {SVG_NS, XHTML_NS} from '../renderer/attributes.js';
 
-const HTML_NS = 'http://www.w3.org/1999/xhtml';
-const SVG_NS = 'http://www.w3.org/2000/svg';
 const DEFAULT_TEXT = Symbol('source text');
 const ATTRIBUTE_NS = {
     xmlns: 'http://www.w3.org/2000/xmlns/',
@@ -24,18 +24,15 @@ const PROPERTY_NAMES = new Map([
     ['playsinline', 'playsInline'], ['readonly', 'readOnly'],
 ]);
 
-function domAttributeName(name) {
-    if (name.startsWith('xmlns_')) return `xmlns:${name.slice(6)}`;
-    if (name.startsWith('data_') || name.startsWith('aria_')) return name.replaceAll('_', '-');
-    return name;
-}
-
 function domPropertyName(name) {
     const camel = name.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
     return PROPERTY_NAMES.get(camel.toLowerCase()) ?? camel;
 }
 
-/** Native elements in HTML documents, including embedded SVG. Grammar stays on the builder. */
+/**
+ * Native elements in HTML documents, including embedded SVG. Grammar stays on the builder; attribute
+ * names and style arrive adapted by the renderers (GramlotHtmlRenderer, GramlotSvgRenderer).
+ */
 export class HtmlElement {
     constructor({metadataAttributes = []} = {}) {
         this.metadataAttributes = new Set([...META_ATTRS, '_text', ...metadataAttributes]);
@@ -52,7 +49,7 @@ export class HtmlElement {
         // A foreignObject is an SVG element even when its descendants use an HTML builder.
         const namespace = tag === 'foreignObject' ? SVG_NS
             : meta.render_attributes?.xmlns ?? node.getAttr('xmlns')
-            ?? (builder instanceof SvgBuilder ? SVG_NS : HTML_NS);
+            ?? (builder instanceof SvgBuilder ? SVG_NS : XHTML_NS);
         return {meta, namespace, tag};
     }
 
@@ -76,21 +73,21 @@ export class HtmlElement {
         builder.validateNode(node, {value: text, attrs: declaredAttrs, childTags});
     }
 
-    create(node, document, tag = null, attrs = node.attr) {
+    create(node, document, tag = null, attrs = node.attr, visible = null) {
         const {tag: defaultTag, namespace, meta} = this.definition(node);
         tag ??= defaultTag;
-        const element = namespace === HTML_NS
+        const element = namespace === XHTML_NS
             ? document.createElement(tag) : document.createElementNS(namespace, tag);
         const text = document.createTextNode(this.text(node));
-        if (namespace !== HTML_NS || !meta.void) element.append(text);
+        if (namespace !== XHTML_NS || !meta.void) element.append(text);
         const record = {element, text, tag};
-        this.update(record, node, attrs);
+        this.update(record, node, attrs, DEFAULT_TEXT, visible);
         return record;
     }
 
     matches(record, node) {
         const {tag, namespace} = this.definition(node);
-        return (namespace === HTML_NS ? record.tag.toLowerCase() === tag.toLowerCase() : record.tag === tag)
+        return (namespace === XHTML_NS ? record.tag.toLowerCase() === tag.toLowerCase() : record.tag === tag)
             && record.element.namespaceURI === namespace;
     }
 
@@ -99,22 +96,26 @@ export class HtmlElement {
         for (const child of children) record.element.append(child);
     }
 
-    update(record, node, attrs = node.attr, textValue = DEFAULT_TEXT) {
+    /**
+     * Apply `attrs` and the text; the declaration's `render_attributes` win. `visible === false`
+     * sets `style.visibility = 'hidden'` after the attributes, so a `style` change keeps it; any
+     * other value gives the current `style` back (V1, legacy genro_wdg.js). The `value` of a form
+     * control belongs to its ControlAdapter: neither the attribute nor the property is written here.
+     */
+    update(record, node, attrs = node.attr, textValue = DEFAULT_TEXT, visible = null) {
         const {element, text} = record;
-        const isHtml = element.namespaceURI === HTML_NS;
+        const isHtml = element.namespaceURI === XHTML_NS;
         const renderAttributes = this.definition(node).meta.render_attributes ?? {};
         const previous = record.attrs ?? {};
         attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...renderAttributes}));
-        if (element.namespaceURI === SVG_NS) {
-            attrs = svgAttributes(attrs);
-        }
+        const controlled = ControlAdapter.classFor(element, attrs) !== null;
         if (textValue === DEFAULT_TEXT) textValue = this.text(node);
         const nextText = textValue == null ? '' : String(textValue);
         if (text.data !== nextText) text.data = nextText;
         for (const key of new Set([...Object.keys(previous), ...Object.keys(attrs)])) {
-            if (this.metadataAttributes.has(key)) continue;
+            if (this.metadataAttributes.has(key) || (controlled && key === 'value')) continue;
             const value = attrs[key];
-            const attrName = domAttributeName(key);
+            const attrName = key;
             const propertyName = domPropertyName(attrName);
             const isBoolean = isHtml && BOOLEAN_PROPERTIES.has(propertyName)
                 && typeof element[propertyName] === 'boolean';
@@ -133,6 +134,13 @@ export class HtmlElement {
                 if (element[propertyName] !== target) element[propertyName] = target;
             }
         }
+        if (visible === false) {
+            if (element.style.visibility !== 'hidden') element.style.visibility = 'hidden';
+        } else if (record.visible === false) {
+            if (attrs.style == null) element.removeAttribute('style');
+            else element.setAttribute('style', String(attrs.style));
+        }
+        record.visible = visible;
         // Retain what was applied, including metadata, so later updates can remove it.
         record.attrs = attrs;
     }

@@ -6,6 +6,7 @@
 > extraction or completed verification refer to their recorded stage, not current
 > architectural acceptance. GC-087's agreed ownership remains binding; GC-094 does
 > not promote later review proposals into owner decisions.
+> **Wire suffix (2026-09-30):** the `SOURCE` and `XS` suffixes cited in this document are historical. The `SOURCE` suffix is gone (constitution 11.48 item 8, [GC-070 §520](070-work-status.md#gc-070-520)): a Bag of any class travels as `::X` and `__cls` names its class. Dated records are not rewritten.
 
 Document ID: **GC-088**. Date: **2026-09-19**.
 Status: **local implementation and final verification complete; owner review and upstream consolidation pending**.

@@ -2,15 +2,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {SourceBag, sourceTarget} from '@jsr/genro__builders';
-import {GramlotBuilder} from '../src/builder/gramlot-builder.js';
-import {GramlotRenderer} from '../src/renderer/gramlot-renderer.js';
+import {sourceTarget} from '@jsr/genro__builders';
+import {GramlotBuilderBag} from '../src/builder/source.js';
+import {Gramlot} from '../src/gramlot.js';
 
+/** A Gramlot page; its Source reaches the renderer as events while it is authored. */
 function mounted() {
-    const builder = new GramlotBuilder();
     const document = new JSDOM('<main></main>').window.document;
-    const mount = () => new GramlotRenderer(builder, builder.source, document.querySelector('main')).mount();
-    return {builder, document, mount};
+    const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
+    return {builder: app.builder, document, mount: () => app.renderer};
 }
 
 test('Builder evaluates Data on mount and Source updates without consuming pointers', () => {
@@ -96,7 +96,7 @@ test('replacement and disposal release mounted Source-owned cleanup once', () =>
     const renderer = mount();
     const cleanup = [];
     renderer.onDispose(old, () => cleanup.push('old'));
-    const replacement = new SourceBag(null, builder);
+    const replacement = new GramlotBuilderBag(null, builder);
     const next = sourceTarget(builder.wrapSource(replacement).strong('new'));
     section.setValue(replacement);
     assert.deepEqual(cleanup, ['old']);

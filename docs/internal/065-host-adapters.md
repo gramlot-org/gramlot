@@ -2,7 +2,7 @@
 
 Document ID: **GC-065**.
 
-**Release scope:** the current code is release **0.1.2**. Section 030 adds the page resource and bootstrap changes of the 0.2.0 HTML/SVG binding plan. **The 0.2.0 parts are planned and not implemented.**
+**Release scope:** the latest published release is **0.1.2**. Sections 005-025 describe the 0.1.2 foundations. Section 030 records the page resource and bootstrap changes of the 0.2.0 HTML/SVG binding. **The 0.2.0 parts are implemented on the development branch (S06, S07, S14) and are in qualification; 0.2.0 is not released.** The current contract is [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030).
 
 **Current 0.1.2 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-native-html-readiness.md#gc-110-020) for current release gates.
 
@@ -143,11 +143,28 @@ Python host imports use `from gramlot.server import Host`; public page imports r
 
 <a id="gc-065-030"></a>
 
-## 030 · Planned 0.2.0 page resources and bootstrap
+## 030 · 0.2.0 page resources and bootstrap
 
-**Status: planned and not implemented. The current code is 0.1.2.** Source: the
-owner-confirmed 0.2.0 binding plan of 2026-09-25 (phases S06, S07 and S14). Phase S00
-records it as GC-210 and a constitution amendment.
+**Status (2026-09-30): implemented on the development branch, in qualification.**
+Source: the owner-confirmed 0.2.0 binding plan of 2026-09-25, as revised on
+2026-09-28 (phases S06, S07 and S14); GC-210 records it and constitution amendment 11.48
+amends it. The lists below are the original 2026-09-25 plan and the 0.1.2 facts,
+kept as history. The implemented contract is the minimal Host contract:
+
+- `Page.css` stays in the core for every host (Q10); it is not replaced by
+  `css_requires`. The two fields stay Page attributes, interpreted only by a Host with
+  a resource system (`gramlot-kajenn`, after 0.2.0); the minimal `FileHost` raises
+  `InvalidResourceName` for any name.
+- There is no `ResourceResolver` and no `_resources` search in the core. A Host
+  implements `resolve_page` and `resolve_resources`; `FileHost(pages_dir)` serves the
+  file page `foo.py` first, then `foo/foo.py`, and the same-name companions
+  `foo.css`, `foo_aux.js` (group null) and `foo.md`; both page forms together are not
+  an error (the file wins).
+- `PageBootstrap` (`js/src/bootstrap.js`) writes the CSS links in the browser; the HTML
+  carries no `<link>`. The mount prefix is chosen by the adapter at each opening.
+- Adapters verified on this contract: `gramlot-uvicorn`, `gramlot-js-server`,
+  `gramlot-serverless`; the other four are deferred to after 0.2.0
+  ([GC-070 §595](070-work-status.md#gc-070-595)).
 
 **Current 0.1.2:**
 
@@ -161,7 +178,7 @@ records it as GC-210 and a constitution amendment.
   (`js/src/adapters/file-host.js:15-35`).
 - `Bootstrap` (`host.py:33-36`) has `page_id` and `html`. There is no nonce.
 
-**Planned 0.2.0:**
+**Planned 0.2.0 (original plan of 2026-09-25; superseded items are listed above):**
 
 - `css_requires = ""` and `js_requires = ""` replace `Page.css`, with the same names in
   Python and JS (P23). No alias. Each is one comma-separated string of names (P13).
@@ -209,6 +226,7 @@ records it as GC-210 and a constitution amendment.
   A `GramlotBuilderBag` Source decodes as `GramlotBuilderBag`/`GramlotBuilderBagNode`
   (`js/src/builder/source.js`). GramlotBuilder authoring produces `GramlotBuilderBag`
   in Python and JS ([GC-070 §525](070-work-status.md#gc-070-525)).
-- S06 implements the core contract only. Minimal and the connected adapters
+- S06 implements the core contract only. The connected adapters
   (FastAPI, Kajenn, Flask, Django, Node, Bun, standalone) migrate in S14, after
-  authorization Q4. S00 inventories their current use of `Page.css`.
+  authorization Q4. S00 inventories their current use of `Page.css`. Outcome:
+  see the status above.

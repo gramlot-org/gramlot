@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {mkdtemp, writeFile, symlink, rm} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {Host, Page, GramlotBuilder, PageExpired, HostCapacity, PageNotFound} from '../src/adapters/index.js';
+import {Host, Page, GramlotBuilder, PageExpired, HostCapacity, PageNotFound, SourceNotFound} from '../src/adapters/index.js';
 import {FileHost} from '../src/adapters/file-host.js';
 import {fromTytx} from '@jsr/genro__tytx';
 import {SourceBag} from '@jsr/genro__builders';
@@ -19,6 +19,9 @@ test('file host: bootstrap and async main, identity, fresh page state and cleanu
     assert.ok(!opened.html.includes('homer'));
     assert.ok(opened.html.includes(opened.pageId));
     assert.ok(opened.html.includes('"closeUrl":"/gramlot/close"'));
+    assert.ok(opened.html.includes(`<script type="module" nonce="${opened.nonce}">`));
+    assert.notEqual(opened.nonce, opened.pageId);
+    assert.ok(!opened.html.includes('<link'));
     await assert.rejects(host.main(opened.pageId, {owner: 'bob'}), PageExpired);
     const wire = await host.main(opened.pageId, {owner: 'alice'});
     const bag = fromTytx(wire);
@@ -33,7 +36,10 @@ test('file host: bootstrap and async main, identity, fresh page state and cleanu
         count = 0;
         main(root) { root.div(String(++this.count), {id: this.pageId}); }
     }
-    class MemoryHost extends Host { async resolvePage() { return StatefulPage; } }
+    class MemoryHost extends Host {
+        async resolvePage() { return StatefulPage; }
+        async resolveResources() { return {css: [], js: []}; }
+    }
     const memory = new MemoryHost();
     const {pageId} = await memory.openPage('/');
     for (let i = 0; i < 2; i++) {
@@ -68,15 +74,20 @@ test('JS Source is readable by Python using the same Bag wire contract', () => {
 test('page isolation, expiration, capacity and bootstrap escaping', async () => {
     class CustomPage extends Page {
         static title = '</title><script>bad</script>';
-        static css = ['/x" onload="bad'];
         main(root) { root.div('ok'); }
     }
-    class MemoryHost extends Host { async resolvePage() { return CustomPage; } }
+    class MemoryHost extends Host {
+        async resolvePage() { return CustomPage; }
+        async resolveResources() { return {css: ['/x" onload="bad'], js: []}; }
+    }
     const host = new MemoryHost({maxPages: 1, runtimeUrl: '/x</script>.js'});
     const {pageId, html} = await host.openPage('/');
     assert.ok(!html.includes('<script>bad'));
     assert.ok(!html.includes('/x</script>'));
-    assert.ok(html.includes('&quot;'));
+    assert.ok(html.includes('&lt;/title&gt;'));
+    // The CSS URLs are JSON inside the module script (S07, D9): no attribute to break out of.
+    assert.ok(!html.includes('<link'));
+    assert.ok(html.includes('"css":["/x\\" onload=\\"bad"]'));
     await assert.rejects(host.openPage('/'), HostCapacity);
     host.pages.get(pageId).expires = 0;
     await assert.rejects(host.main(pageId), PageExpired);
@@ -96,7 +107,7 @@ test('host rejects non-expiring TTL and invalid registry capacity', () => {
 
 test('file loader rejects traversal, missing pages, symlink escapes and invalid classes', async () => {
     const host = new FileHost(pages);
-    for (const path of ['/../index', '/index.js', '/missing', '/_private', '/a//b']) {
+    for (const path of ['/../index', '/index.js', '/missing', '/a//b', '/index_aux']) {
         await assert.rejects(host.openPage(path), PageNotFound);
     }
     const directory = await mkdtemp(join(tmpdir(), 'gramlot-host-'));
@@ -114,8 +125,39 @@ test('remote Source requires an explicit method and cannot dispatch main', async
     const host = new FileHost(pages);
     const {pageId} = await host.openPage('/');
     for (const method of [null, undefined, 'main']) {
-        await assert.rejects(host.source(pageId, method), PageNotFound);
+        await assert.rejects(host.source(pageId, method), SourceNotFound);
     }
     const block = fromTytx(await host.source(pageId, 'details', {name: 'remote'}));
     assert.equal(block.getNodes()[0].value, 'remote');
+});
+
+// Phase 18 (Fable R4 a, b): the remote Source errors and the null params of the Python Host.
+test('Fable R4: an unknown Source method is SourceNotFound, as in Python; null params are {}', async () => {
+    const host = new FileHost(pages);
+    const {pageId} = await host.openPage('/');
+    await assert.rejects(host.source(pageId, 'main'), error => error instanceof SourceNotFound
+        && !(error instanceof PageNotFound) && error.message === 'Unknown Source method');
+    await assert.rejects(host.source(pageId, 'nope'), error => error instanceof SourceNotFound
+        && error.message === 'Unknown Source method: nope');
+    for (const params of [null, undefined]) {
+        assert.equal(fromTytx(await host.source(pageId, 'details', params)).getNodes()[0].value, 'remote');
+    }
+    for (const params of [[], 'x', 1]) {
+        await assert.rejects(host.source(pageId, 'details', params), {name: 'TypeError', message: 'Source params must be an object'});
+    }
+});
+
+// Phase 18 (Fable M3): the namespace URIs and the name-segment rule are defined in one place in js/src.
+test('Fable M3: HTML_NS/SVG_NS and SEGMENT are each defined once in js/src', async () => {
+    const {readdir, readFile} = await import('node:fs/promises');
+    const root = fileURLToPath(new URL('../src/', import.meta.url));
+    const files = (await readdir(root, {recursive: true})).filter(name => name.endsWith('.js'));
+    const count = async pattern => {
+        let total = 0;
+        for (const name of files) total += ((await readFile(join(root, name), 'utf8')).match(pattern) ?? []).length;
+        return total;
+    };
+    assert.equal(await count(/['"]http:\/\/www\.w3\.org\/1999\/xhtml['"]/g), 1);
+    assert.equal(await count(/['"]http:\/\/www\.w3\.org\/2000\/svg['"]/g), 1);
+    assert.equal(await count(/\/\^\[A-Za-z0-9_-\]\+\$\//g), 1);
 });

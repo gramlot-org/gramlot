@@ -106,12 +106,17 @@ test('variable datapath reads the branch datapath from Data and follows its chan
     assert.equal(field.absDatapath('absolute.x'), 'absolute.x');
 });
 
-test('a relative variable datapath is an explicit error, not a guessed context', () => {
+test('a relative variable datapath is read in the parent context and counts as written in its place', () => {
     const {builder, branch} = mountedBranch({datapath: 'form'});
     const record = new GramlotBuilderBag(null, builder);
     branch.setItem('record', record, {datapath: '^.selected'});
     const field = record.setItem('field', null);
-    assert.throws(() => field.absDatapath('.x'), /relative variable datapath has no defined resolution/);
+    builder.data.setItem('form.selected', '.x1');
+    assert.equal(field.absDatapath('.x'), 'form.x1.x');
+    builder.data.setItem('form.selected', 'absolute');
+    assert.equal(field.absDatapath('.x'), 'absolute.x');
+    builder.data.setItem('form.selected', '');
+    assert.equal(field.absDatapath('.x'), null);
 });
 
 for (const symbol of ['FORM', 'ANCHOR', 'target']) {
@@ -155,21 +160,7 @@ print(json.dumps({"wire": to_tytx(builder.source), "ref": ref}))
     app.dispose();
 });
 
-test('the legacy data(path, value) call silently builds the HTML5 data element in JavaScript', () => {
-    const builder = new GramlotBuilder();
-    const root = builder.wrapSource(builder.source);
-    root.data('.nome', 'Ada');
-    root.data('.nome', {value: 'Ada'});
-    const [positional, named] = builder.source.getNodes();
-    assert.equal(positional.nodeTag, 'data');
-    assert.equal(positional.value, '.nome');
-    assert.deepEqual(positional.getAttr(), {0: 'A', 1: 'd', 2: 'a'});
-    assert.equal(named.nodeTag, 'data');
-    assert.equal(named.value, '.nome');
-    assert.deepEqual(named.getAttr(), {value: 'Ada'});
-});
-
-/** Author the four value kinds on Builder's dataSetter in Python or JavaScript. */
+/** Author the four value kinds on Gramlot's dataSetter (binding.json) in Python or JavaScript. */
 const VALUE_AUTHORING = `
 import sys
 from genro_bag import Bag
@@ -178,12 +169,12 @@ from gramlot import GramlotBuilder
 if sys.argv[1] == 'encode':
     builder = GramlotBuilder()
     bag = Bag(); bag['a'] = 1; bag['b.c'] = 'x'
-    for destination, value in (('.bag', bag), ('.n', 7), ('.arr', [1, 'a', None]), ('.nul', None)):
-        builder.root.dataSetter(destination, value=value)
+    for destination_path, value in (('.bag', bag), ('.n', 7), ('.arr', [1, 'a', None]), ('.nul', None)):
+        builder.root.dataSetter(destination_path, value=value)
     print(to_tytx(builder.source))
 else:
     source = from_tytx(sys.stdin.read())
-    attrs = {node.attr['destination']: node.attr for node in source.nodes}
+    attrs = {node.attr['destination_path']: node.attr for node in source.nodes}
     assert isinstance(attrs['.bag']['value'], Bag) and attrs['.bag']['value']['b.c'] == 'x'
     assert attrs['.bag']['value']['a'] == 1
     assert attrs['.n']['value'] == 7
@@ -193,7 +184,7 @@ else:
 `;
 
 function assertValueAttributes(source) {
-    const attrs = Object.fromEntries(source.getNodes().map(node => [node.getAttr('destination'), node.getAttr()]));
+    const attrs = Object.fromEntries(source.getNodes().map(node => [node.getAttr('destination_path'), node.getAttr()]));
     assert.ok(attrs['.bag'].value instanceof Bag);
     assert.equal(attrs['.bag'].value.getItem('a'), 1);
     assert.equal(attrs['.bag'].value.getItem('b.c'), 'x');
@@ -208,10 +199,10 @@ test('the value attribute keeps Bag, scalar and array across TYTX in every direc
     const bag = new Bag();
     bag.setItem('a', 1);
     bag.setItem('b.c', 'x');
-    root.dataSetter({destination: '.bag', value: bag});
-    root.dataSetter({destination: '.n', value: 7});
-    root.dataSetter({destination: '.arr', value: [1, 'a', null]});
-    root.dataSetter({destination: '.nul', value: null});
+    root.dataSetter({destination_path: '.bag', value: bag});
+    root.dataSetter({destination_path: '.n', value: 7});
+    root.dataSetter({destination_path: '.arr', value: [1, 'a', null]});
+    root.dataSetter({destination_path: '.nul', value: null});
     assert.equal(Object.hasOwn(builder.source.getNodes()[3].getAttr(), 'value'), false);
     const jsWire = builder.toTytx();
     assertValueAttributes(fromTytx(jsWire));
@@ -264,11 +255,11 @@ test('RendererBase.render resolves data-element pointers, leaves ${...} literal 
     const box = root.div({datapath: 'ctx'});
     const bag = new Bag();
     bag.setItem('a', 1);
-    box.dataSetter({destination: '.x', value: bag, colore: 'rosso'});
-    box.dataFormula({destination: '.t', func: 'somma', formula: 'a + b', a: '^.a', b: '=.b'});
-    box.dataController({func: 'f', script: 'this.SET(".z", `${a}`)', a: '^.a'});
-    box.dataController({func: 'g', script: 'console.log(`${missing}`)'});
-    const outside = root.dataFormula({destination: 'out', func: 'f', a: '^.a'});
+    box.dataSetter({destination_path: '.x', value: bag, colore: 'rosso'});
+    box.dataFormula({result_path: '.t', formula: 'a + b', a: '^.a', b: '=.b'});
+    box.dataController({script: 'this.SET(".z", `${a}`)', a: '^.a'});
+    box.dataController({script: 'console.log(`${missing}`)'});
+    const outside = root.dataFormula({result_path: 'out', func: 'f', a: '^.a'});
     const renderer = new RendererBase(builder);
     const [setter, formula, controller, template] = sourceTarget(box).value.getNodes();
     assert.equal(renderer.render(setter), null);

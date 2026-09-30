@@ -4,6 +4,8 @@ import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 import {GramlotBuilder, Gramlot} from '../src/index.js';
 const controls = JSON.parse(readFileSync(new URL('../../tests/fixtures/collections/controls.json', import.meta.url)));
+// Shared with tests/test_collections.py: a second collection that redefines statusText (Phase 18, ASTRA-03).
+const redefined = JSON.parse(readFileSync(new URL('../../tests/fixtures/collections/controls-redefined.json', import.meta.url)));
 
 test('full exported HTML grammar replaces the restricted list', () => {
     const b = new GramlotBuilder();
@@ -69,4 +71,29 @@ print(to_tytx(b.source))
     app.startSource(wire);
     assert.equal(document.querySelector('gramlot-rating').getAttribute('amount'), '5');
     app.dispose();
+});
+
+test('ASTRA-03: a later collection replaces a named declaration whole, the same document in Python and JS', async () => {
+    const {execFileSync} = await import('node:child_process');
+    const {fileURLToPath} = await import('node:url');
+    const b = new GramlotBuilder(null, {collections: [controls, redefined]});
+    b.root.statusText('ready');
+    assert.throws(() => b.root.statusText('ready', {required_label: 'Status'}),
+        {name: 'TypeError', message: "statusText: unknown attribute 'required_label'"});
+    const document = b._collection.toDocument();
+    assert.deepEqual(document.elements.statusText, redefined.elements.statusText);
+    assert.deepEqual(document.elements.rating, controls.elements.rating);
+    assert.equal(document.grammar.title, 'Redefined controls');
+    const root = fileURLToPath(new URL('../../', import.meta.url));
+    const python = JSON.parse(execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? 'python3', ['-c', `
+import json
+from gramlot import GramlotBuilder
+documents = [json.load(open(f'tests/fixtures/collections/{name}.json')) for name in ('controls', 'controls-redefined')]
+builder = GramlotBuilder(collections=documents)
+builder.root.statusText('ready')
+print(json.dumps(builder._collection.to_document()))
+`], {cwd: root, encoding: 'utf8'}));
+    // JS composes over the class collection, Python over the instance collections: the named entries compare.
+    for (const name of Object.keys(controls.elements)) assert.deepEqual(python.elements[name], document.elements[name], name);
+    assert.deepEqual(python.elements.statusText, redefined.elements.statusText);
 });

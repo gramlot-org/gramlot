@@ -1,9 +1,9 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-09-28**.
+Document ID: **GC-070**. Updated: **2026-09-30**.
 
 
-**Current checkpoint:** S01 proof 11 closed, delivered for review: GramlotBuilder declares `GramlotBuilderBag` as its Source class (genro-builders 0.25.0, genro-builders-js 0.3.0); authoring and wire keep the Gramlot classes in Python and JS. See [§525](#gc-070-525).
+**Current checkpoint:** S16: qualification complete (Firefox by the owner, waivers R22, R24, L1); report [GC-215](215-qualification-0-2-0.md), see [§615](#gc-070-615). Earlier: S15bis: corrections from the review before qualification, see [§610](#gc-070-610); S15: documentation and leftovers delivered in GC-095, GC-090 and the internal documents, see [§605](#gc-070-605); S14: Q3 clear error for inline code under a strict CSP, verified in core and on Chromium and WebKit; gramlot-uvicorn, gramlot-js-server and gramlot-serverless verified from the reports of their delivery chats (2026-09-30), four blocked (deferred by the owner to after 0.2.0). See [§595](#gc-070-595).
 **Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 closed by the owner with proof 11 as debt, S02 and S03 start (2026-09-28).
 **Dependency fixes:** forbidden by owner decision, 2026-09-25; missing Builder behavior goes into GramlotBuilderBag/GramlotBuilderBagNode (S01). See [§495](#gc-070-495).
 **Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
@@ -1147,6 +1147,8 @@ change is introduced. The original duplication/ownership violation claim remains
 withdrawn, not converted into a source-removal task. Other observations about
 private dependency APIs are outside this correction.
 
+*Superseded 2026-09-28 (constitution 11.48 item 8, [GC-070 §520](070-work-status.md#gc-070-520)): the `SOURCE` suffix is gone. A Bag of any class travels as `::X` and `__cls` names its class. The text above is the record of 2026-09-24.*
+
 Verified that the Python AST, excluding docstrings, is identical before and after.
 No runtime tests were needed for this comments/docstring-only edit.
 
@@ -2236,3 +2238,670 @@ the caret import map.
 `examples/node_modules` still hold the old Gramlot JS and libraries ([§520](#gc-070-520)).
 
 **Accepted:** not yet; the delivery awaits review.
+
+<a id="gc-070-530"></a>
+## 530 · S00bis: plan revisions 7–10 transcribed — 2026-09-28
+
+Block ID: **GC-070-530**.
+
+**Decided:** owner, 2026-09-28 (R03): before S06, the decisions of unified-plan
+revisions 7–10 enter the authoritative documents in a documents-only phase, S00bis.
+Gate decisions of the same date: amendment number 11.48; scope includes the rules of
+revisions 9 and 10 (D4, `==` arguments and template chain, D8, D9, Q7 in
+`getRelativeData`/`setRelativeData`/`PUT`, static Python render of setters, Q13) and
+the Q9 release facts; supersessions also of 11.47 items 8, 10 and 11.
+
+**Implemented:** documentation only. Constitution amendment 11.48 in both views,
+with "Superseded in part by 11.48" notes on 11.45, 11.46 and 11.47, whose text stays
+as history. GC-210 §005 records the SHA-256 of plan revision 10 and of the current
+owner-decision register; §§010, 015, 018, 045, 055, 060 and 075 are aligned with
+revision 10, with superseded entries marked historical. §045 now states the minimal
+Host contract and the minimal FileHost as the current contract; the `_resources`
+level lookup is historical, kept as gramlot-kajenn theory. No code, test or
+dependency changed.
+
+**Verified:** `python scripts/prepare_docs.py`, `python -m sphinx -W --keep-going -n
+-b html build/docs-source build/docs-site` and `python scripts/check_public_docs.py`
+pass before and after the edits.
+
+**Not closed:** residues assigned to S15 stay (historical `SOURCE` citations,
+`gramlot-minimal` in older core documents, old example layout).
+
+**Accepted:** not yet; the owner reads and approves amendment 11.48.
+
+<a id="gc-070-535"></a>
+## 535 · S06: minimal Host contract and minimal FileHost — 2026-09-28
+
+Block ID: **GC-070-535**.
+
+**Decided:** unified plan revision 10, §2 "Bootstrap e contratto dell'Host", §4.12,
+Q10, Q12.1, C03, D8 (owner, 2026-09-28). Gate decisions of the same date: the
+`html_svg` examples become file pages directly in `examples/html_svg/`
+(`NN_name.py`, `.js`, `.md`, `.css`); `examples/pages/` and `examples/resources/` of
+`1b5905c` are not taken; branch `kajenn-resources` is created locally on `1b5905c`
+and not pushed; the executor does not edit `gramlot-uvicorn`.
+
+**Implemented:** the neutral `Host` in Python and JavaScript takes no folder and
+searches no files; `resolve_page`/`resolvePage` and `resolve_resources`/
+`resolveResources` raise `PageNotFound`. `open_page(path, *, owner=None, prefix="")`/
+`openPage(path, {owner, prefix})` returns `Bootstrap(page_id, html, nonce)`/
+`{pageId, html, nonce}`; the prefix is added once to root-relative URLs only (links,
+runtime, main, Source, close). The core applies the load order on what the host
+returns: each URL once, in its last position; one JS URL with two groups raises
+`InvalidResourceName` (C03). New `server/resources.py` and `adapters/resources.js`
+hold `SPACES`, `InvalidResourceName`, `parse_requires`/`parseRequires` and the load
+order. New `FileHost(pages_dir)` in Python and the JavaScript `FileHost(pagesDir)`
+resolve the file page before the folder page, reject `*_aux` and paths leaving the
+pages folder, and add `Page.css` then `foo.css` and `foo_aux.js` (group null). A name
+in `css_requires`/`js_requires` raises `InvalidResourceName` ("requires need a Host
+with a resource system"). `Page` gains `css_requires = ""` and `js_requires = ""`;
+`css` stays (Q10). The `html_svg` examples and the runner catalogue page use
+same-name files; the runner, the standalone build and the verification scripts
+follow the new layout.
+
+**Verified:** new `tests/test_page_resources.py` (15 tests) and
+`js/tests/page-resources.test.js` (11 tests, Python/JS cross test of parser,
+descriptors, links and load order) pass; Python 42/42, JS 119/119 and runner 8/8
+pass. `git grep` of the gramlot-kajenn symbols in active code exits 1. The runner
+opens `/js/e03` and `/js/e06` with no console errors; `/js/e06` links the theme and
+the companion `/js/e06.css`, both served.
+
+**Not closed:** `/py/e03` waits for the linked `gramlot-uvicorn` delivery (R02):
+today it calls `Host(pages, …)`, which the neutral Host no longer accepts. The
+standalone export uses the JSR 0.1.2 core, which has no companion lookup; its build
+adds the same-name stylesheet to `Page.css`. The other adapters stay for S14.
+
+**Accepted:** not yet; the phase closes after the `gramlot-uvicorn` delivery and the
+owner's checks.
+
+
+<a id="gc-070-540"></a>
+## 540 · S03: Builder's Data root, semantic lifetime and Source event intake — 2026-09-29
+
+Block ID: **GC-070-540**.
+
+**Decided:** unified plan revision 11, §2 Data, §4.3, §4.4, §5.2, P4, P17, P24, R04, R07
+(owner, 2026-09-29), recorded as amendment 11.49 (Builder's outer Data root). Gate
+answers of the same date: `GramlotRenderer` requires the `{binding}` option;
+`GramlotRenderer.mount()` and the constructor options `html` and `references` are
+removed; in S03 the `ins` event and a new `SourceBag` value open one `NodeBinding` per
+node of the branch, with no registrations.
+
+**Implemented:** `Gramlot` builds, in the order of §4.3, `LogicRegistry` (root
+`LogicGroup` as `gramlot.logic`), `GramlotBuilder`, `BindingRuntime`, `data`,
+`binding.attach()`, `source` and the renderer with `{binding}`; the line
+`this.data.setItem('main', new Bag())` is removed. New `js/src/binding/runtime.js`
+(`BindingRuntime`, `NodeBinding`) and `js/src/binding/logic.js` (`LogicRegistry`,
+`LogicGroup`). `BindingRuntime.attach()` subscribes once on Builder's wrapper
+(`root`, read through `builder.data.parent`) and creates nothing; `handleSourceEvent`
+opens and closes the `NodeBinding`s of the event matrix. `GramlotRenderer.receive`
+follows §5.2: an event on a node under construction is ignored on arrival, every
+other event is queued; semantic work runs for every event, also under freeze;
+structural work only outside frozen branches. `remoteSource` admissibility, response
+validity and cancellation use the target's `NodeBinding` (P24). `dispose` closes the
+binding before the renderer. Only `GramlotBuilderBag` with `GramlotBuilderBagNode`
+nodes is accepted as initial, embedded, remote or inserted Source (R07).
+
+**Verified:** new `js/tests/binding-lifetime.test.js` (19 tests: identities, one
+subscription on `_dataroot`, isolation, `NodeBinding` counter, stable roots, rebuild
+versus semantic lifetime, deletion under freeze, repeated dispose, closing part of the
+event matrix, FIFO ordering of reentrant mutations, R04 cases, P24 rebuild/freeze/
+removal, R07 rejections); the renderer tests moved to `new Gramlot({element,
+transport: false})`. Python 54 OK, JS 150/150, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+<a id="gc-070-545"></a>
+## 545 · S03bis: renderers by inheritance from Builder, Python and JS — 2026-09-29
+
+Block ID: **GC-070-545**.
+
+**Decided:** unified plan §3.3 (P6), S03bis, §1 rule 10; class chain of the owner
+(2026-09-28); gate decisions of 2026-09-29 in the phase notes: Builder's Python/JS
+string differences normalized by Gramlot's classes (empty SVG element `<rect … />`,
+`foreignObject` in the SVG namespace with an XHTML child, null values not written,
+`format`/`places`/`locale`/`dtype` do not format the text and `mask` follows the
+legacy rule), noConvertStyle taken out in `_handleMeta` and put back after the
+adaptation, the prefix `html_` literal and `gramlot_` an error, `_text` as node text,
+the `doctype` render option.
+
+**Implemented:** JS `GramlotHtmlRenderer extends HtmlRenderer` (string) and
+`GramlotRenderer extends GramlotHtmlRenderer` (live DOM); `GramlotSvgRenderer extends
+SvgRenderer`, one instance per SVG builder owned by the HTML renderer, delegating its
+output to the live renderer. Python `GramlotHtmlRenderer(HtmlRenderer)` and
+`GramlotSvgRenderer(SvgRenderer)` with the same rules; `GramlotBuilder.renderer_html`
+returns `GramlotHtmlRenderer` in both languages. The attribute functions shared by the
+renderers are in `renderer/attributes.js` and `renderer/attributes.py`. `html.js` no
+longer renames attributes or applies `svgAttributes`. The Python and JS hosts build
+their document with `GramlotBuilder` and `render(doctype=True)`.
+
+**Verified:** new `js/tests/style-shortcuts.test.js` (6 tests, including the symmetry
+test: the same Sources rendered by Python and JS give identical strings) and
+`tests/test_renderers.py` (12 tests). Python 66 OK, JS 156/156, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+<a id="gc-070-550"></a>
+## 550 · S04: Data router and projection — 2026-09-29
+
+Block ID: **GC-070-550**.
+
+**Decided:** unified plan §2 (variable and relative variable datapath, symbolic paths,
+null path Q7, `_path` suffix), §3.3 (P6, `visible`, `mask`), §4.4, §4.5, §4.11bis,
+P1, R05, R06, R14, R15, R16; gate decisions of 2026-09-29 in the phase notes: `visible`
+false → `style.visibility = 'hidden'`, null → the current `style` back; a `#…` datapath,
+written or read from Data, is symbolic; a duplicate `node_id` in a received Source is an
+error; `getDomNode`/`getBaseSourceNode` give null for a node no longer in the Source,
+also under freeze; the `datapath` pointer is read in the parent's context; the Python
+static render is out of this phase.
+
+**Implemented:** new `js/src/binding/router.js` (`DataRouter`, `DataRegistration`,
+`DataChange`): trie by segment, levels `node`/`container`/`child`, `?attr`
+registrations with ancestor replacement (R14), one delivery per registration (R15),
+`autocreate` ignored, fired events not delivered at level `child`, candidates copied
+before delivery. `BindingRuntime` creates the router, feeds it from the one Data
+subscription, owns the `node_id → node` map (R06) and runs `rebindBranch`;
+`NodeBinding` registers the `^` pointers of `pointers()` when a branch opens, rebinds on
+Source changes and on its variable datapath, and projects through
+`renderer.project(node, change)`. `GramlotRenderer.project` replaces the update block;
+`getDomNode` and `getBaseSourceNode` on the renderer and on `Gramlot`. `GramlotBuilderBagNode`:
+relative variable datapath read in the parent's context, symbolic datapath, Q7 in
+`getRelativeData`/`setRelativeData`/`PUT` and in `runtimeToEvaluate`, `_path`
+attributes never registered. `GramlotBuilder.nodeById` reads the runtime map.
+
+**Verified:** new `js/tests/binding-router.test.js` (13 tests) and
+`js/tests/binding-projection.test.js` (26 tests). Python 66 OK, JS 195/195, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+<a id="gc-070-555"></a>
+## 555 · S05: installation of `dataSetter` and defaults — 2026-09-29
+
+Block ID: **GC-070-555**.
+
+**Decided:** unified plan §2 (A2, R1, R17, D1a, `attr_*`, literal `dataSetter`, Q7),
+P2, P3, P5, P8, P15, P25, §4.6, §5.1 steps 2-4; gate decisions of 2026-09-29 in the phase
+notes: a setter value replaces the attributes of an existing Data node when the setter
+declares attributes and keeps them when it declares none; a `dataSetter` inside `svg` is
+an error before any write; defaults after all setters of the branch, node by node,
+`default_value` before `default`, `attr_*` after the node's defaults; metadata, binding
+attributes and `_` keys never reach the Data node; an installation error closes the new
+NodeBindings without a Data rollback; stamp `installed`, no reinstallation at rebuild or
+thaw; only a Bag payload leaves the Source node. `dtype` conversion of textual defaults
+stays out of this phase.
+
+**Implemented:** new `js/src/binding/installation.js` (`DataInstaller`: `install`,
+`setterNodes`, `applySetter`, `applyDefaults`). `BindingRuntime` creates the installer
+and runs it inside `handleSourceEvent`, for `ins` and for a new branch value, after the
+`node_id` map is published and before the registrations; on an error it closes the
+NodeBindings opened for the branch. `NodeBinding.hasStamp`/`stamp`. `GramlotBuilderBagNode.pathAttribute`
+gives a `destination_path` written as a pointer as a bare path, with the one `_path` warning.
+
+**Verified:** new `js/tests/data-installation.test.js` (22 tests) and
+`js/tests/binding-defaults.test.js` (15 tests), fixtures in `tests/test_binding_authoring.py`
+and `js/tests/transport-interop.test.js`. Python 67 OK, JS 233/233, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+## 560 · S07: browser bootstrap and named logic — 2026-09-29
+
+Block ID: **GC-070-560**.
+
+**Decided:** unified plan P20, P21, §4.3, §4.9, §4.12, Q12.2, D8, D9, C02; gate decisions
+of 2026-09-29 in the phase notes: both hosts write the same compact bootstrap JSON; the
+bootstrap listens to `pagehide` during the imports and, when the page closes before
+`start()`, creates no `Gramlot` and sends the close beacon; a failed import or a failed
+Logic check rejects naming the resource, keeps the CSS links and closes the server page;
+`LogicRegistry.resolve` returns `{group, method}`; the §4.9 rules also refuse accessors,
+symbol keys, a `Logic` that extends a class and the group names `page` and
+`constructor`; the CSP criterion is a static check of the source graph and of the
+runtime bundle (the real browser CSP belongs to S14); the `inline.js` import-graph test
+moves to S09.
+
+**Implemented:** new `js/src/bootstrap.js` (`PageBootstrap`: CSS links, all JS imports
+awaited with relative URLs resolved against the document, check 2bis, `new Gramlot`,
+registration in received order, `window.gramlot`, `start()`), exported by
+`js/src/index.js` and so by the runtime bundle. `js/src/binding/logic.js`:
+`LogicRegistry.check`, `register`, `resolve`, groups nested by `/`. `host.py` and
+`adapters/host.js` no longer write `<link>`s: the script is
+`import {PageBootstrap} from <runtime>; await new PageBootstrap({config, resources}).run()`,
+with the mount prefix once on the root-relative CSS and JS URLs.
+
+**Verified:** new `js/tests/named-logic.test.js` (10 tests) and `js/tests/bootstrap.test.js`
+(9 tests, real imports in jsdom; a Source written in Python resolves every `func` through
+the real bootstrap); fixtures in `js/tests/fixtures/logic/`; the bootstrap tests of
+`host.test.js`, `page-resources.test.js` (with a Python/JS test of the same bootstrap
+HTML), `test_page_resources.py`, `test_native_html.py` and `test_python_builder.py`
+follow the new script. Python 68 OK, JS 254/254, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+## 565 · S08: providers and timers — 2026-09-29
+
+Block ID: **GC-070-565**.
+
+**Decided:** unified plan P12, P20, P22, D7, B7, §4.7, §4.8, §5.1, Q2, Q8, Q9, R13, R15;
+gate decisions of 2026-09-29 in the phase notes: `_onBuilt` after the build of the branch
+that contains it (at thaw under freeze), `_onStart` when the page becomes `started` or
+right after `_onBuilt` for a branch inserted later; the `FIRE` override fires with an
+equal value, writes `true` for null and resets to null in a `finally`; `_userChanges`
+filters only Data triggers; provider attributes on any other node are an error at
+installation; a formula on a null `result_path` raises at every invocation; an inline
+body registers and raises when invoked; the builders constraints stay `^0.4.0`, genro-bag
+rises to `>=0.27.0`.
+
+**Implemented:** new `js/src/binding/providers.js` (`Provider`, `FormulaProvider`,
+`ControllerProvider`: `^` registrations, `_delay` debounce, `_timing` interval,
+`_userChanges`, kwargs of P20 with `_node`, `_triggerpars`, `_reason`, named bodies
+through `LogicRegistry.resolve`). `NodeBinding` creates the provider at §5.1 step 4 and
+re-registers it at every rebinding; `BindingRuntime` runs `_init` (step 5), and
+`branchBuilt`/`pageStarted` run `_onBuilt` and `_onStart` (steps 7-8), called by the
+renderer and by `Gramlot`. `GramlotBuilderBagNode.FIRE` (Q8, D4, P12, R10) and
+`FIRE_AFTER` tracked on the node's `NodeBinding`; `FIRE` on `?attr` fires the attribute and
+keeps the node value, as legacy `fireEvent`. The renderer builds no node brought by a
+Source event still in the queue and no node already built with its ancestor (P4).
+`pyproject.toml` requires `genro-bag>=0.27.0`.
+
+**Verified:** new `js/tests/binding-writes.test.js` (13 tests), `binding-providers.test.js`
+(26 tests, with the S05 cases P5 and P4, and the S07 case: a Python Source calls named
+logic through the real bootstrap; the companion is registered before the first `_init`;
+opening the page on the JS and Python hosts runs no logic) and `binding-timing.test.js`
+(12 tests, `node:test` virtual clock); new fixtures `avvio.py`, `avvio.js`, `avvio_aux.js`.
+Tests that pinned the pre-S08 state changed in `binding-authoring.test.js`,
+`binding-projection.test.js` and `data-installation.test.js`. Python 68 OK, JS 305/305,
+runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+## 570 · S09: inline in the page only, and the macro preprocessor — 2026-09-29
+
+Block ID: **GC-070-570**.
+
+**Decided:** unified plan §2 (inline only in the page runtime, compatibility macro
+preprocessor, deprecated), §4.10, Q11.1, Q11.2, D5, D6; gate decisions of 2026-09-29 in
+the phase notes: `inline.js` is the only file exempted from the CSP scan, and a page with
+named logic only never calls the compiler; `inline.js` is not reachable from
+`adapters/*` and `builder/gramlot-builder.js`; inline parameters `_kwargs`, `_node`,
+`_triggerpars`, `_reason`, then the attributes that are valid JS identifiers; a syntax
+error names node and attribute and quotes the preprocessed text; a text starting with
+`function` is the function itself; `PUBLISH` is an error; `_if` with `func` is an
+authoring error in Python and JS; `==` is evaluated in `_handleMeta` of the renderers,
+for attributes and the node value, and the string renderers write no `==`; a `==` on a
+`dataFormula`/`dataController` attribute is an installation error; a template chain used
+by `==`, and a template using a `==`, are errors.
+
+**Implemented:** new `js/src/binding/inline.js` (`InlineCompiler`: `preprocess` with the
+legacy regexes of `gnrlang.js` targeting the node methods and one deprecation warning per
+declaration, `compile` with one compilation per declaration released at the node close,
+`compileExpression` with the D6 arguments). `Provider.invoke` runs `_if`/`_else` (D5) and
+inline bodies through `BindingRuntime.inlineCompiler`. `GramlotHtmlRenderer.evaluateExpressions`
+and `expressionValue`, used by the HTML and SVG renderers, Python and JS; the live renderer
+evaluates, the string renderers drop. `DataInstaller` rejects `==` on providers;
+`dataElementError`/`data_element_error` reject `_if` with `func`.
+
+**Verified:** new `js/tests/binding-inline.test.js` (26 tests: D5, Q11.1, legacy truthiness, the four gate fixes, Q11.2, D6,
+revision 10, template chain, parity name/inline, macros, macro in a string, syntax error,
+one compilation per declaration, cleanup, import graph); `bootstrap.test.js` CSP scan with
+the `inline.js` exemption and a named-logic page that never calls `Function`;
+`binding-providers.test.js` gate decision 7 now runs inline bodies;
+`tests/test_binding_authoring.py` covers `_if` with `func` and the Python string renderer.
+Python 69 OK, JS 332/332, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+## 575 · S10: native editing — 2026-09-29
+
+Block ID: **GC-070-575**.
+
+**Decided:** unified plan P1, §4.11, the Q5 matrix (owner, 2026-09-28), `live`, C04.1, D7;
+gate decisions of 2026-09-29 in the phase notes: `password`, `email`, `url`, `tel`,
+`search` are text; `hidden` and `file` have no adapter, `checkbox`/`radio` belong to S11
+and the button types to S12; an invalid `number` draft leaves the Data unchanged and an
+empty field writes null; `live` writes on `input` for text, `textarea`, `number` and
+`range`, and `select`, `color` and the temporal types always write on `change`; no write
+during an IME composition, the write per `live` at `compositionend`, a Data change during
+the composition projected at its end; a literal or `=` value writes nothing; the origin of
+a write is a synchronous flag of the adapter and the equality test compares typed values;
+`html.js` writes neither the `value` property nor the `value` attribute of a control; the
+first projection runs after `compose`, and a `select` is projected again when its options
+change; `type`, `multiple` and `group` rebuild the element, from the Source and from Data,
+under freeze at the thaw.
+
+**Implemented:** new `js/src/view/controls.js` (`ControlAdapter` with `TextControl`,
+`NumberControl`, `RangeControl`, `SelectControl`, `TemporalControl`, `ColorControl`).
+`GramlotRenderer.renderedItem` attaches the adapter after `compose` and detaches it through
+`record.cleanup`; `project` hands the resolved `value` to the adapter, rebuilds a control
+whose `type`, `multiple` or `group` changed, and projects a `select` again when an option
+changes; `HtmlElement.update` skips the `value` of a control. An input type the browser
+does not know is its text state. A multiple `select` with a non-array value raises.
+
+**Verified:** new `js/tests/native-controls.test.js` (21 tests: every Q5 row both ways with
+empty and invalid values, `live` and its change without rebuild, literal, `=` and `?attr`
+values, P1 caret and typed equality, controller correction, `title`/`class` during typing,
+synthetic IME, Q7 from the listener, C04.1 and D7 rebuilds with the same NodeBinding and
+under freeze, detach at removal); `binding-authoring.test.js` no longer expects a `value`
+attribute on a control. New `scripts/verify_binding_browser.mjs` (bundled runtime from
+`js/`, `file://` shell, real typing) passes on Chromium 153 and WebKit 26.6; Firefox 155
+(`firefox-1543`) exits at start with "Could not find profile folder" on macOS 27.0 and is
+not verified. Python 69 OK, JS 353/353, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+## 580 · S11: checkbox and radio — 2026-09-29
+
+Block ID: **GC-070-580**.
+
+**Decided:** unified plan D4, P11, C04.2 (owner, 2026-09-28); gate decisions of
+2026-09-29 in the phase notes: a group is the `group` value within the nearest Source
+ancestor with `formId` or `form=true` (as `#FORM`), or within the page when there is none;
+the generated `name` joins an instance id owned by the renderer, the form and the group;
+the adapter writes the `name` at attach and removes it at detach; an authored `name` with
+`group` raises; the string renderers write no `name`; a radio without `group` is a
+standalone boolean; a literal or `=` value sets the initial state and never writes; a
+non-boolean Data value is shown with JS truthiness and null is off; only `true`/`false`
+are written, on `change`; an authored `checked` with a `^` value raises; several `true` in
+one group at mount raise; the `false` writes go only to the peers bound with `^`, through
+the same anti-echo guard as the main write.
+
+**Implemented:** `js/src/view/controls.js`: `CheckboxControl`, `RadioControl` (a subclass
+of `CheckboxControl`) and `RadioGroups` (`join`, `leave`, `peers`); `checkbox` and `radio`
+now have an adapter, so `HtmlElement.update` no longer writes their `value`.
+`GramlotRenderer` owns an `instanceId` and creates the page's `RadioGroups`. Choosing a
+button writes `true` on it, then `false` on the bound peers that are on, in join order
+(the order and the rule of the legacy dijit `RadioButton`); a `true` from the Data after the
+first projection runs the same peer loop; the peers follow the user's choice even when a recipient of the first
+write turns the chosen button off again. `html.js` is unchanged.
+
+**Verified:** new `js/tests/boolean-controls.test.js` (18 tests: checkbox both ways with
+truthiness, null and literal/`=` values, the two-sources error, D1 text → checkbox through
+`^.tipo` with the same NodeBinding, click order `true` then `false`, C04.2 from code with
+the observers of A notified once, group rebuild after a code write, the mount conflict and
+the rebuilt button already on, bound and unbound peers, standalone radio, the two-names
+error and no `name` in the string render, form scope, two pages in one document, buttons
+added and removed, rebinding, a controller that refuses the choice);
+`native-controls.test.js` updated for the S11 adapters. `scripts/verify_binding_browser.mjs`
+adds checkbox click and Space, radio click, arrow keys and Space, `SET` from code, group
+rebuild and two instances; it passes on Chromium 153 and WebKit 26.6. Firefox is run by the
+owner from the macOS Terminal app. Python 69 OK, JS 371/371, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+## 585 · S12: button and events — 2026-09-29
+
+Block ID: **GC-070-585**.
+
+**Decided:** unified plan B7, P9, P10, R3 (provisional), R11, R12 (owner, 2026-09-28);
+gate decisions of 2026-09-29 in the phase notes: only the `<button>` tag gets a
+`ButtonBinding`, `input type=button/submit/reset/image` stay native; `type="button"` only on a
+button with a Gramlot mechanism, also when the mechanism appears later, an authored `type`
+stays; the nested controller is a direct `dataController` child, several of them or two
+mechanisms raise at mount or at the Source change; `fire` fires the modifier string of legacy
+`eventToString` or `true`, with `modifier` and `_counter` on the Data node; `fire_<name>` fires
+`'<name>'`; the controller receives `_evt`, `button_counter` and the `button_*` modifier
+booleans, which are not author arguments; `action` is inline with `this` = the button and
+receives `event`, `_counter`, `modifiers` and the button attributes; `connect_on<event>` lower-cases
+the event name, a dotted `group.method` is named logic, any other value inline; a disabled
+button runs nothing and counts nothing; the button mechanism runs before a `connect_onclick`
+of the same element; `stopPropagation` only with a mechanism.
+
+**Implemented:** new `js/src/view/button.js` (`ButtonBinding`) and `js/src/view/events.js`
+(`NativeEventBinding`), created in `GramlotRenderer.renderedItem` and detached through
+`record.cleanup`; `project` checks the button mechanism again and makes the listeners follow the
+`connect_on<event>` attributes; a `dataController` inserted in a button checks its mechanism.
+`NodeBinding.clickCount`/`countClick` keep the counter for the node's whole semantic life, so a
+rebuild keeps it. `Provider.readArguments` adds the click arguments for `{kind: 'click'}`.
+`GramlotBuilderBagNode.FIRE(path, value, attributes)` writes the attributes with the fired
+value, with the reset guarantee of S08. `fire` wins over `fire_*` on the same button (legacy
+chain).
+
+**Verified:** new `js/tests/button-controller.test.js` (19 tests: R11 on text, span, SVG icon
+and synthetic keyboard activation; ancestor `connect_onclick`; controller kwargs; B7; counter
+across a rebuild; `action`; `fire` and `fire_*`; P10 at mount and at a Source change; R3 `type`;
+disabled; removal during a callback; R12 under freeze; listener error; R3 side effects in a
+form, with a parent controller, with author listeners, Enter/Space keydown) and
+`js/tests/native-events.test.js` (11 tests); `binding-authoring.test.js` R08 now expects
+`type="button"` on the button with a nested controller. `scripts/verify_binding_browser.mjs`
+adds the R3 side effects with real clicks and keys; it passes on Chromium 153 and WebKit 26.6.
+Python 69 OK, JS 401/401, runner 8/8.
+
+**Accepted:** not yet; the owner reads the R3 results in the phase notes and confirms or
+revises R3.
+
+## 590 · S13: integrated lifecycle — 2026-09-29
+
+Block ID: **GC-070-590**.
+
+**Decided:** unified plan P3, P4, R12, §5.1, §5.4; gate decisions of 2026-09-29 in the phase
+notes: every defect the new tests find is fixed in the binding modules and recorded with the
+test that proves it; Chromium and WebKit are run by the executor, Firefox belongs to S16; a
+question the source plan does not settle follows legacy, otherwise the source plan, and is
+listed for the review after 0.2.0.
+
+**Implemented:** five defects fixed. A `ControlAdapter` of a node removed under freeze no
+longer writes the Data on `input`, `change` or `compositionend` (R12); a radio whose write
+removed it no longer turns its peers off, and a peer removed under freeze is left alone; a
+`fire_*` that removes its button stops the remaining `fire_*`. `BindingRuntime.dispose` clears
+the `node_id` map. `BindingRuntime.handleSourceEvent` completes the event when a disposer fails
+and returns the closing errors, and `GramlotRenderer.receive` removes the DOM of every removed
+node before throwing them, so a failing disposer no longer leaves elements, records and
+listeners behind, also for `clear()` and for a replacement. A failed first render removes the
+records its children made before the error (listeners, controls, radio groups, references).
+
+**Verified:** new `js/tests/binding-integration.test.js` (exact traces of Data writes,
+lifecycle invocations, registrations, timers and listeners for mount, rebuild, replacement,
+removal and insertion under freeze, nested freeze and dispose; R12 with `input`, `change`,
+`click`, `keydown` on a removed input, button and `connect_on<event>`; a callback that removes
+its own node) and `js/tests/binding-cleanup.test.js` (expired `remoteSource`; errors in
+validation, installation, first render, provider and cleanup; a failing disposer; 100 mount
+and removal cycles with every counter back to its baseline), on the shared fixture
+`js/tests/fixtures/lifecycle.js`. `scripts/verify_binding_browser.mjs` adds R12 with real
+typing, clicks and keys on a branch removed under freeze; it passes on Chromium 153 and WebKit
+26.6. Python 69 OK, JS 422/422, runner 8/8.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+<a id="gc-070-595"></a>
+## 595 · S14: adapters on the minimal contract, strict CSP — 2026-09-29
+
+Block ID: **GC-070-595**.
+
+**Decided:** unified plan Q3 and Q4 (owner, 2026-09-28); gate decisions of 2026-09-29 in the
+phase notes: gramlot-uvicorn, gramlot-js-server and gramlot-serverless are verified in 0.2.0,
+each delivered in its own chat on its repository with the owner's authorization given there,
+verified locally with the core of this branch linked, with no push until the core 0.2.0 is
+published; gramlot-django, gramlot-fastapi, gramlot-flask and gramlot-kajenn are deferred by
+the owner to after 0.2.0; the acceptance page is the core fixture
+`js/tests/fixtures/logic/avvio.py`/`avvio.js` with its companion `avvio_aux.js`, plus
+`examples/html_svg/03_lists` for `Page.css`. The adapter repositories are not edited from this
+repository.
+
+**Implemented:** Q3 clear error. When the browser refuses `new Function` with an `EvalError`
+(a CSP without `'unsafe-eval'`), the `InlineCompiler` raises an `EvalError` that names the node
+and the attribute, points to named logic in the page companion `_aux.js` or to the permissive
+CSP profile, and keeps the browser error as `cause`. It covers every inline declaration:
+`formula`, `script`, `_if`/`_else`, `==`, `action` and `connect_on<event>`.
+
+**Verified:** `js/tests/binding-inline.test.js` adds a Q3 test under a real engine refusal (a
+Node process started with `--disallow-code-generation-from-strings`): named logic computes;
+`script`, `formula`, `==`, button `action` and `connect_onclick` raise the Q3 error naming node
+and attribute; nothing is written. `scripts/verify_binding_browser.mjs` adds a second
+`file://` shell with a strict CSP (meta `script-src 'nonce-…'`, no `'unsafe-eval'`): the
+nonce scripts run, a script without the nonce is blocked, named logic computes on real typing,
+an inline `script` and an inline button `action` raise the Q3 error, the page reports the
+`script-src eval` violation. It passes on Chromium 153 and WebKit 26.6; Firefox runs from the
+owner's Terminal app or in S16. Python 69 OK, JS 423/423, runner 8/8.
+
+Adapters (one row each; the three pending rows are filled by the coordinating chat from the
+report of each delivery chat):
+
+| Adapter | Status | Reason or report |
+|---|---|---|
+| gramlot-uvicorn | verified | delivery chat report of 2026-09-30, checked by the coordinating chat: local branch `s06-filehost`, commits `08a6029` and `abdf54b`, unpushed; 5 tests passed, tests aligned to the `PageBootstrap` document; GET/HEAD serve only `.css` and `_aux.js` below the pages folder, real path inside the folder as in `FileHost.url`, everything else 404; `Page.css` URLs outside the folder stay application assets; parameter `content_security_policy` with the `{nonce}` placeholder, header on HTML responses only; `avvio` (with `avvio_aux.js`) and `03_lists` (with `Page.css`) reach `state: 'started'` with prefix `/py` and no console errors under the strict (`script-src 'nonce-{nonce}'; object-src 'none'; base-uri 'none'`) and the permissive (plus `'unsafe-eval'`) profile, in Playwright Chromium; `git grep -iE 'gramlot_minimal\|@gramlot/minimal' -- src tests` exit code 1. The Q3 message was first not seen because the served runtime predated `bff81ba`; with the runtime regenerated on 2026-09-30, Playwright Chromium 153 on `/py/inline` under the strict header gives `state: 'failed'`, the inline code does not run, and the page error is the Q3 `EvalError` naming `dataController 'dataController_0' 'script'` and pointing to `_aux.js` or the permissive profile (`cause` is checked by `js/tests/binding-inline.test.js`) |
+| gramlot-js-server | verified | delivery chat report of 2026-09-30, checked by the coordinating chat: branch `develop`, commits `941e60f` (the 2026-09-24 rename from `gramlot-nodejs`, committed separately with the owner's ok), `ed38743`, `e5d21c8` and `1214ac0` (Phase 18: 404 "Unknown Source method" on the new JS `SourceNotFound`, as gramlot-uvicorn; tests for `main`, `missing`, `constructor`), unpushed; `@gramlot/native-html` moved to `peerDependencies` (`"*"`), core linked with `npm install --no-save ../gramlot/js`, so server and pages share one instance and the runner `/js/…` 500 is gone; `src/native-fetch.mjs` builds `new FileHost(pages, options)` when no host is passed and passes `mountPath` as the `prefix` of `openPage`; option `contentSecurityPolicy` with the `{nonce}` placeholder, header on HTML pages; GET/HEAD serve only `.css` and `_aux.js` whose real path is inside the pages folder, other files 404, other methods 405 as in gramlot-uvicorn; `Page.css` URLs outside the folder stay application assets; `npm test` 7/7 on Node, `bun test test/native.test.mjs` 5/5; the browser harness passes on Node and Bun: `avvio` with prefix `/app` reaches `state: 'started'` under the strict and the permissive profile, the inline page starts under the permissive profile and fails under the strict one with the core error naming the node; core runner on port 8091 with Node: `/js/e03` and `/js/index` reach `state: 'started'` with no errors (runner on Bun not tried); `git grep -iE 'gramlot_minimal\|@gramlot/minimal' -- src test` exit code 1 |
+| gramlot-serverless | verified | delivery chat report of 2026-09-30, checked by the coordinating chat: branch `develop`, commits `2451143`, `5d5a65e` and `b79a80d` (Phase 19: tests aligned to "Unknown Source method"), unpushed; dependencies `@jsr/genro__gramlot >=0.2.0`, `@jsr/genro__builders >=0.4.0`, node `>=22`, core `cb46c20` linked with `npm install --no-save`; `npm test` 19/19; `WorkerHost` implements `resolveResources`, `foo_aux.js` is a separate window-only bundle (blob URL in the single HTML), `PageBootstrap` subclass closes through the `WorkerTransport`; the core `scripts/verify_worker_host_browser.mjs` and the new `scripts/verify_worker_sentinel_browser.mjs` pass on Chromium 153 and WebKit 26.6: with the core page `avvio` the window sentinel is 1 and the Worker sentinel 0; the esbuild metafile of the `WorkerHost` bundle has no `binding/inline.js`; `script-src` holds the sha256 of the final script bytes plus `blob:`, no `'unsafe-inline'` or `'unsafe-eval'`, a copy with one added byte is blocked; defect found and fixed: with genro-builders 0.4.0 the CSP meta was written as `http_equiv` and ignored by the browser; `git grep -iE 'gramlot_minimal\|@gramlot/minimal' -- src tests` exit code 1. Firefox from the owner's Terminal app or in S16 |
+| gramlot-django | blocked | deferred by the owner to after 0.2.0 (gate 2026-09-29); its path is excluded from the S16 qualification |
+| gramlot-fastapi | blocked | deferred by the owner to after 0.2.0 (gate 2026-09-29); its path is excluded from the S16 qualification |
+| gramlot-flask | blocked | deferred by the owner to after 0.2.0 (gate 2026-09-29); its path is excluded from the S16 qualification |
+| gramlot-kajenn | blocked | deferred by the owner to after 0.2.0 (gate 2026-09-29); its path is excluded from the S16 qualification |
+
+**Accepted:** by the owner on 2026-09-30: the three delivery chats reported, their rows are
+filled, S14 is closed.
+
+<a id="gc-070-600"></a>
+## 600 · S14bis: example families `binding` and `controllers` — 2026-09-30
+
+Block ID: **GC-070-600**.
+
+**Decided:** unified plan §7 S14bis; owner decisions of 2026-09-26 (families `binding` and
+`controllers`; `html_svg` stays native HTML/SVG without binding) and gate decisions of
+2026-09-30 in the phase notes: the examples "rewritten with binding" are new pages in
+`examples/binding/` with the content of `html_svg` 06, 08 and 12; every example is a file page,
+Python first with its JavaScript equivalent; the naming conventions of §7 S14bis; D11, the
+runner uses only what the minimal `FileHost` serves.
+
+**Implemented:** `examples/binding/` with eleven pages (pointers `^`, `=`, relative, `#node_id`,
+`#FORM`, `?attr`; variable datapath; `dataSetter` and defaults with `attr_*`; native editing and
+`live` from a pointer; checkbox and radio; `visible`, `hidden`, `class`, `style` and reactive
+style shortcuts; bound SVG; freeze; forms, SVG shapes and the complete page of `html_svg` 06,
+08 and 12 with binding) and `examples/controllers/` with nine pages (`dataFormula` with `=`,
+`_if`/`_else`, `_init`; `dataController` with `_fired`, `_delay`, `_timing`, `_onStart`; named
+logic in a companion `NN_name_aux.js`; `==` expressions and inline `action`; `SET`, `GET`, `PUT`,
+`FIRE`, `FIRE_AFTER`; button with nested controller, counter, modifiers, `fire` and
+`fire_<name>`; `connect_on<event>`; `remoteSource` with a `@source` method; the end-to-end story
+of §8.1). `catalog.json` lists the three families; the Python and JavaScript runner pages, the
+launcher and the runner behaviour read them; the launcher copies a logic companion beside the
+staged page, and the code pane shows it. The standalone export keeps the `html_svg` family only.
+
+**Verified:** new `examples/00-runner/tests/examples.test.js` mounts every JavaScript page of
+the two families in JSDOM through its host path (Source from `main`, companion registered as the
+root group, `remoteSource` answered by the Page's Source method) and checks the behaviour its
+README describes; `runner.test.js` adds the families and the companion pane. Runner 30/30.
+`scripts/verify_examples_browser.mjs`, extended to the two families, opens every example on
+`/py` and `/js` in Chromium 153 with Python/JavaScript DOM parity (radio group names compared
+without the instance id), then opens each one again in the runner iframe: no page error, no
+console error, no failed local asset. The pre-existing `html_svg` 06 Reset check of that script
+fails since S10 and was not run (phase notes).
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+<a id="gc-070-605"></a>
+## 605 · S15: documentation and leftovers — 2026-09-30
+
+Block ID: **GC-070-605**.
+
+**Decided:** unified plan §7 S15; gate decisions of 2026-09-30 in the phase notes: no new
+public guide (`prepare_docs.py` and its `PUBLIC_PAGES` unchanged); the 0.2.0 content goes
+into GC-095 and GC-090; `html_data` for the HTML5 element, `data(...)` forbidden;
+`gramlot-minimal` in current text replaced by its heirs (`gramlot-uvicorn`,
+`gramlot-serverless`), dated blocks keep it; historical blocks are annotated with a
+pointer to the current rule, never rewritten; the code files of
+`src/gramlot/page/_grammar_load.py`, `src/gramlot/page/_collection.py` and
+`src/gramlot/collections/html5.json` stay (genropy/genro-builders#51 is still open).
+
+**Implemented:** public guides. GC-095: release status, examples by route (`b01`-`b11`,
+`c01`-`c09`), `html_data`, the Data representation of each native control (type matrix) and
+the `live` rule, R3 as accepted with the one-field form effect, `fire` with `fire_*`,
+`connect_on<event>` naming, cleanup and closing errors, intentional differences from legacy
+and migration from 0.1.x. GC-090: release status, `PageBootstrap` and its `{config,
+resources}`, the mount prefix, the companion rule of the adapters, the CSP profiles (new §035:
+strict and permissive, the Q3 error), the export shape of `gramlot-serverless`, package names
+(new §040, removed at the gate check of 2026-09-30: package names stay for S17), the adapters verified and deferred. GC-020, GC-025, GC-030 and GC-100 aligned to
+the same status and to the heirs of Minimal. Leftovers. `gramlot-minimal`: constitution §7
+and §14, amendments 11.19 and 11.37 (superseded-in-part marks), GC-140, GC-085, GC-086,
+GC-087, GC-175, overview, GC-025 (the showcase link is kept as historical). Old example
+layout: constitution 11.22 layout note, GC-145, GC-150, GC-140 §025, GC-065 §030 (the
+original plan is marked history; the implemented contract is stated first), GC-210 §060
+(S14 update and S15 delivery notes). GC-045 §055 (question 8 closed: Python has the
+counterpart classes; observed versions updated) and GC-085 (versions). GC-065 status lines
+and GC-086, GC-087 §085 aligned to 0.2.0 as implemented. Historical blocks with `SOURCE`:
+GC-070 §315, GC-088, GC-089, GC-125, PORT-0003, PORT-0004 and amendment 11.16 annotated
+with the current rule (the `SOURCE` suffix is gone, constitution 11.48 item 8).
+
+**Verified:** `python scripts/prepare_docs.py`, `python -m sphinx -W --keep-going -n -b html
+build/docs-source build/docs-site` and `python scripts/check_public_docs.py` pass; `git
+grep -iE 'gramlot[-_/]minimal' -- docs docs_llm` finds only dated blocks (amendments with a
+superseded mark, GC-070 entries, the GC-210 register and historical inventory) and explicit
+statements that the repository is retired. Python 69 OK, JS 424/424 (with
+`GRAMLOT_TEST_PYTHON` set to the project `.venv`), runner 31/31. No code changed.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+<a id="gc-070-610"></a>
+## 610 · S15bis: corrections from the review before qualification — 2026-09-30
+
+Block ID: **GC-070-610**.
+
+**Decided:** owner, 2026-09-30, after two independent reviews of `5035228`: one correction
+per finding (ASTRA-01 to ASTRA-07, Fable R1 with R6, R3, R4 a and b, R5, M3), each with a
+regression test that fails before the fix, in Python and JavaScript where the rule exists in
+both; the deferred findings stay in the plan notes for the review after 0.2.0. The rules are
+recorded in [GC-210 §090](210-binding-contract.md#gc-210-090).
+
+**Implemented:** the constructor scan of `Logic` always ends and skips regular expression
+literals; `type`, `multiple`, `group`, `live` and `visible` come from the resolved projection
+(`==` included); the installation rules run at the validation of the candidate, a failed
+installation of `main` removes it from the Source, and an update on a node without NodeBinding
+names node and tag; successive collections replace a named declaration whole in Python as in
+JS; radios follow their form owner and ignore closed peers at the join; a failed first
+projection is cleaned up with its listeners; promoted `_text` stays typed; `FIRE_AFTER` checks
+the path at the call; the JS Host has `SourceNotFound` and accepts null `params`; lifecycle
+attributes accept true, false, null or a number; namespace URIs and the segment rule are
+defined once per language. Public guides GC-090, GC-095 and GC-100 updated where they
+described the old behaviour.
+
+**Verified:** Python 72 OK, JS 441/441 (with `GRAMLOT_TEST_PYTHON` set to the project
+`.venv`), runner 31/31; `npm --prefix js run build`; `scripts/verify_binding_browser.mjs` PASS
+on Chromium 153.0.8010.12 and WebKit 26.6; `prepare_docs.py`, Sphinx `-W` and
+`check_public_docs.py` pass. Open outside this repository: `gramlot-js-server` maps only
+`PageExpired` and `PageNotFound` to 404, not the new JS `SourceNotFound`.
+
+**Accepted:** not yet; the phase waits for the owner's checks at the gate.
+
+<a id="gc-070-615"></a>
+## 615 · S16: qualification — 2026-09-30
+
+Block ID: **GC-070-615**.
+
+**Decided:** gate decisions of 2026-09-30 in the plan notes: report GC-215 in the form of
+GC-130 §025; mandatory rows for the families A01-A18, the full suites, Chromium and WebKit, the
+§8.1 story through the real bootstrap, the C07 bundle check, counters with two fixtures and the
+hosts; clean environments from the artifacts of this branch; Firefox run by the owner; defects
+recorded, not fixed.
+
+**Implemented:** three enrolled tests in `js/tests/`: `qualification-story.test.js` (the §8.1
+story on the Python and the JS page through `FileHost`, TYTX and `PageBootstrap`, eight checks,
+exact trace, counters), `qualification-counters.test.js` (one write costs the same with 1 and
+with 200 unconnected branches), `runtime-bundle.test.js` (C07: a served bundle that is not the
+build of `js/src` fails the suite). The lifecycle fixture exports its timer and listener
+trackers. The report is [GC-215](215-qualification-0-2-0.md).
+
+**Verified:** see GC-215 §015: Python 72 OK, JS 451/451, examples 31/31 in the checkout and in
+the clean environments (latest published genro versions, no pins); Chromium 153 and WebKit 26.6
+for binding, Worker host, the three hosted adapters with strict and permissive CSP and the
+story in the browser; gramlot-uvicorn 5, gramlot-js-server Node 7 and Bun 5 pass. Blocked:
+gramlot-serverless tests 17/19 (the core error text changed in S15bis), the story on the
+standalone export (strict profile only). The C07 check found the served bundle stale at the
+start of the phase; rebuilt.
+
+**Accepted:** the qualification is complete (2026-09-30): Firefox F1-F9 passed from the
+owner's Terminal run; R20 passed after `b79a80d` in gramlot-serverless; the owner granted the
+waivers R22, R24, L1 and refused R20 (GC-215 §035). The release acceptance is S17.
+
+<a id="gc-070-620"></a>
+## 620 · S17: owner acceptance of Gramlot 0.2.0 — 2026-09-30
+
+Block ID: **GC-070-620**.
+
+**Accepted:** the owner accepted the Gramlot 0.2.0 release on 2026-09-30 ("si accetto", in the
+coordinating chat `wf:gramlot-0-2-0-binding`, after the qualification of GC-215 and on branch
+`wf/gramlot-0-2-0-binding` at `ac5c08f`). The acceptance covers the implemented and qualified
+code; it does not authorize the version change, the consolidation pushes or the publication,
+each of which needs its own owner authorization (source plan §7 S17).
+
+**Decided with the acceptance:** the package-name question (GC-215 D3: `@gramlot/native-html`
+and `@jsr/genro__gramlot` for one core) is deferred to after 0.2.0; `/quality-check` is not run
+before `/finalize-workflow`, because two independent reviews of the whole code (2026-09-30,
+Phase 18 notes) and a verifier on Phases 18 and 19 took its place; the sequence is version,
+finalize on `develop`, push, merge into `main`, publication, then the adapter pushes.
+
+**Status:** implemented yes; accepted yes; version 0.2.0 authorized by the owner (2026-09-30) and packaged locally with the C07 re-check; published and distributed not yet (GC-215 §045).

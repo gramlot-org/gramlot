@@ -3,9 +3,10 @@
 Document ID: **GC-045**. Status: **source inventory and design proposal; no new hierarchy approved**.
 
 **Release scope:** sections 005–050 describe `gramlot-poc` evidence, not the core.
-The core code is release **0.1.2**. Sections 055 and 060 describe the core runtime
-classes: the current 0.1.2 classes, and the classes of the 0.2.0 HTML/SVG binding
-plan. **The 0.2.0 parts are planned and not implemented.**
+The latest published core release is **0.1.2**. Sections 055 and 060 describe the
+core runtime classes: the 0.1.2 classes, and the classes of the 0.2.0 HTML/SVG
+binding plan. **The 0.2.0 parts are implemented on the development branch and are
+in qualification (status 2026-09-30, section 055).**
 
 [Concise counterpart](../../docs_llm/internal/045-js-taxonomy.md).
 [Complete inventory](050-js-taxonomy-census.md). [Full syntactic class tree](diagrams/045-all-classes.mmd). [Machine-readable evidence](inventory/045-js-taxonomy.json).
@@ -354,14 +355,23 @@ Before implementation, select the first component/controller families, define mi
 
 <a id="gc-045-055"></a>
 
-## 055 · Core runtime classes: current 0.1.2 and planned 0.2.0
+## 055 · Core runtime classes: 0.1.2 and 0.2.0
 
-**Status: the 0.2.0 part is planned and not implemented. The current code is 0.1.2.**
-Source of the 0.2.0 part: the owner-confirmed binding plan of 2026-09-25
+**Status (2026-09-30): the 0.2.0 part is implemented on the development branch and is
+in qualification; the lists headed "Current 0.1.2" describe the 0.1.2 code as history,
+and the lists headed "planned" are the original plan, now implemented.** The
+question "Python does not need these classes" (S01 question 8) is closed: Python has
+the counterparts `GramlotBuilderBag` and `GramlotBuilderBagNode` in
+`src/gramlot/page/source.py`, without runtime methods, by the owner decision of
+2026-09-26. The Builder and Bag versions cited below (Builder JS 0.1.5, Bag JS
+0.5.3) are the observations of 2026-09-25; the installed versions are now Bag JS
+0.10.0, Builder JS 0.4.0 and TYTX JS 0.16.0, and Python genro-bag 0.27.0,
+genro-builders 0.27.0 and genro-tytx 0.16.0. The Gramlot classes stay by decision
+(dependency fixes forbidden, 2026-09-25). Source of the 0.2.0 part: the owner-confirmed binding plan of 2026-09-25
 (revision 3; approved by the owner on 2026-09-25, proposals confirmed "for now";
 updated on the same date with the owner decisions that forbid upstream fixes and
 reuse Builder renderers by inheritance, revision 4). Phase S00 records it in the repository
-as GC-210 and as a constitution amendment; neither exists yet. Use
+as GC-210 and as a constitution amendment (GC-210 and amendment 11.48 now exist). Use
 [GC-070](070-work-status.md) for status. This section describes the core
 repository, not `gramlot-poc`.
 
@@ -370,6 +380,7 @@ repository, not `gramlot-poc`.
 - `Gramlot` (`gramlot.js:8-112`) creates `GramlotBuilder`, sets `data = builder.data`,
   writes an empty `main` Bag inside `builder.data` (`gramlot.js:14`), then creates
   `GramlotRenderer` and `MainTransport`. It has no Data subscription and no binding.
+  S03 removes the `main` line: the outer Data root is Builder's (amendment 11.49).
 - `GramlotRenderer extends RendererBase` (`renderer/gramlot-renderer.js`) owns the
   node → record `Map` (line 20), the element → record `WeakMap` (line 25), one Source
   subscription (line 27) and the `pending` FIFO in `receive` (lines 199-229). It
@@ -453,9 +464,13 @@ two Gramlot classes:
   the DOM override in `GramlotHtmlRenderer`, and `GramlotSvgRenderer` delegates to it.
   `HtmlElement` keeps DOM application only (GC-210 §030).
 - The current line `this.data.setItem('main', new Bag())` (`gramlot.js:14`) disappears.
-- `binding.attach()` sets `main` of an outer Data root to the document Bag without a
-  copy, and subscribes once to the outer root. `gramlot.data === builder.data`.
-  Author paths never contain `main`. `DataRouter` is the only subscriber of the outer root.
+- The outer Data root is Builder's (revision 11, amendment 11.49): private wrapper
+  `_dataroot` → content node `_root_` → document Bag (`builder.data`), as the Source.
+  `binding.attach()` creates nothing and subscribes once to the wrapper, read through
+  `builder.data.parent`. `gramlot.data === builder.data`. Author paths never contain
+  `_root_`. Builder makes no Data subscription; `DataRouter` is the only subscriber of
+  the wrapper. *Historical (revisions 1–10): `binding.attach()` set `main` of a
+  Gramlot outer root to the document Bag.*
 - Parent passes `this` to the child; the child exposes it with a getter (`runtime`,
   `binding`, `gramlot`). State lives in instances only.
 - Methods live in `GramlotBuilderBagNode` and `GramlotBuilderBag` (P17). No prototype
@@ -576,9 +591,11 @@ classDiagram
 
 <a id="gc-045-060"></a>
 
-## 060 · Planned 0.2.0 runtime sequences
+## 060 · 0.2.0 runtime sequences
 
-**Status: planned and not implemented. The current code is 0.1.2.**
+**Status (2026-09-30): implemented on the development branch and in qualification.
+The sequences below are the original plan, now implemented; the line references to
+0.1.2 files are history (section 055).**
 
 **Branch installation (P2, P3, P5).** It applies to `mountMainSource`
 (`gramlot.js:56-62`), to `remoteSource` (`gramlot.js:87`) and to every Source event
@@ -628,8 +645,9 @@ enter the FIFO and run after the current event.
 | `upd_attrs` | `rebind()` of the node; `rebindBranch(node)` if `attrs_diff` touches `datapath`, `_anchor`, `node_id`, `form` or `formId` |
 | `upd_value_attr` | old branch closure, then `upd_attrs`, then new branch installation |
 
-**Data write.** A write reaches the document Bag; the event propagates to the outer
-root with `pathlist` starting with `main`; `BindingRuntime.receiveData` calls
+**Data write.** A write reaches the document Bag; the event propagates to Builder's
+wrapper `_dataroot` with `pathlist` starting with `_root_` (revision 11; `main` in
+revisions 1–10); `BindingRuntime.receiveData` calls
 `DataRouter.deliver`; the router computes path, level (`node`, `container`, `child`)
 and `fired` (`takeFire(path)`, once per event, on the mark opened by
 `GramlotBuilderBagNode.FIRE`), copies the candidates and calls `recipient.receive(change)`.
