@@ -2638,4 +2638,4 @@ Blocked: gramlot-serverless 17/19 (error text changed in S15bis), story on the s
 
 Block ID: **GC-070-620**.
 
-**Accepted:** owner, 2026-09-30 ("si accetto", chat `wf:gramlot-0-2-0-binding`, `ac5c08f`, after GC-215). Not an authorization of version change, pushes or publication (each separate). D3 package names deferred after 0.2.0; `/quality-check` skipped (two whole-code reviews plus verifier on Phases 18-19). Status: implemented, accepted, version 0.2.0 authorized and packaged locally (C07 re-check); published, distributed not yet (GC-215 §045).
+**Accepted:** owner, 2026-09-30 ("si accetto", chat `wf:gramlot-0-2-0-binding`, `ac5c08f`, after GC-215). Not an authorization of version change, pushes or publication (each separate). D3 package names deferred after 0.2.0; `/quality-check` skipped (two whole-code reviews plus verifier on Phases 18-19). Status: implemented, accepted, version 0.2.0 authorized and packaged locally (C07 re-check); published 2026-09-30: `v0.2.0`, GitHub release, PyPI 0.2.0, JSR 0.2.0 (GC-215 §045).
