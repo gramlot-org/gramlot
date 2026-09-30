@@ -2,6 +2,10 @@
 
 [Constitution](00-constitution.md). [Expanded version](../docs/01-overview.md).
 
+> **Release status.** Model overview including **0.2.0 (HTML/SVG data binding)**:
+> implemented on the development branch, in qualification, not released. Latest
+> published release: **0.1.2**, without Data bindings or controllers.
+
 ## 1. Purpose
 
 - **1.1** Declarative application interfaces: Python authoring, JavaScript browser runtime.
@@ -14,6 +18,8 @@
   resolvers provide data. Not every Source node creates DOM.
 - **2.3** Bound input: Python declares a Data path; runtime manages rendering,
   user edits and external updates through the binding contract.
+  *0.2.0:* `root.input(value='^.name')`; `live=False` (default) writes on `change`,
+  `live=True` on `input` ([GC-095](public/095-writing-pages.md#gc-095-070)).
 
 ## 3. Building blocks
 
@@ -31,6 +37,9 @@
 - **4.2** Reusable browser behavior belongs in framework services/components.
   Application-local DOM/event/request/state bypasses are excluded; native browser
   operations belong inside framework implementation.
+- **4.3** *0.2.0:* named logic (`class Logic` files, called by name) is primary;
+  inline code is allowed, discouraged, browser page runtime only
+  ([GC-095](public/095-writing-pages.md#gc-095-060)).
 
 The provisional example runner has a bounded owner-approved exception (constitution
 11.44): its local JavaScript attaches behavior through ordinary HTML IDs and uses
@@ -56,13 +65,17 @@ future web components require separate approval.
 
 Integration repos provide environment-specific adapters and instructions to install,
 configure and try Gramlot: `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn`,
-`gramlot-minimal`, `gramlot-js-server` (Node.js and Bun), and `gramlot-django`.
-`gramlot-kajenn` is the approved destination name. The inspected local checkout
-and its configured origin still use `gramlot-genro-asgi`; a remote rename is not
-verified. This naming distinction does not change Kajenn's approved ownership.
-Minimal combines Python/ASGI/Uvicorn hosting and browser/Worker standalone packaging.
-Kajenn consumes minimal's generic ASGI adapter and owns only its host-specific
-integration. Core owns shared runtime contracts. This classification does not
+`gramlot-uvicorn`, `gramlot-serverless`, `gramlot-js-server` (Node.js and Bun), and
+`gramlot-django`.
+`gramlot-kajenn` was renamed from `gramlot-genro-asgi` on 2026-09-26, on GitHub
+and locally.
+`gramlot-uvicorn` provides Python/ASGI/Uvicorn hosting and `gramlot-serverless`
+provides browser/Worker standalone packaging; they replace `gramlot-minimal`,
+retired on 2026-09-26.
+`gramlot-kajenn` owns only its host-specific integration and depends only on Kajenn
+besides the core (constitution amendment 11.48 item 5). The Kajenn adapter is not
+migrated yet: its `pyproject.toml` still declares the retired repository; the
+migration is deferred to after 0.2.0. Core owns shared runtime contracts. This classification does not
 assert that every integration supports each core release; Django native alignment
 is newly authorized and must establish its own verification beyond the original
 0.1.0 matrix. See constitution section 7 for the approved ownership.

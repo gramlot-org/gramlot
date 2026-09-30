@@ -2,6 +2,8 @@
 
 Document ID: **GC-089**. Historical 2026-09-19/20 handoff; do not execute its “Resume here” instructions. Read [GC-070](070-work-status.md) and [GC-110](110-native-html-readiness.md#gc-110-020) for current work. Updated: **2026-09-19**.
 
+> **Wire suffix (2026-09-30):** the `SOURCE` and `XS` suffixes cited in this document are historical. The `SOURCE` suffix is gone (constitution 11.48 item 8, [GC-070 §520](070-work-status.md#gc-070-520)): a Bag of any class travels as `::X` and `__cls` names its class. Dated records are not rewritten.
+
 **Latest checkpoint 2026-09-20:** collection integration is implemented and
 verified. Python/JS GramlotBuilder load builder_grammar 1.1 through generic loaders;
 the manual HTML vocabulary is removed. Core17 Python/41 Node/41 Bun, generic JS18

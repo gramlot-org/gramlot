@@ -2,15 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {sourceTarget} from '@jsr/genro__builders';
-import {GramlotBuilder, GramlotRenderer} from '../src/index.js';
+import {Gramlot, GramlotBuilder} from '../src/index.js';
 
 function setup() {
-    const builder = new GramlotBuilder();
+    const document = new JSDOM('<main></main>').window.document;
+    const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
+    const {builder, renderer} = app;
     const panel = sourceTarget(builder.root.section(null, {id: 'panel'}));
     builder.wrapSource(panel).span('old');
     const sibling = sourceTarget(builder.root.p('outside'));
-    const document = new JSDOM('<main></main>').window.document;
-    const renderer = new GramlotRenderer(builder, builder.source, document.querySelector('main')).mount();
     return {builder, panel, sibling, document, renderer};
 }
 

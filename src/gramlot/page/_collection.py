@@ -3,36 +3,18 @@
 from copy import deepcopy
 import json
 
-from genro_builders.builder._utilities import _parse_sub_tags_spec
-
 
 def _merge(current, incoming, path=()):
-    key = path[-1] if path else None
+    """The composition rule of genro-builders JS (source revision 11, genro-builders#50).
+
+    An ``elements`` or ``abstracts`` entry named by the later document replaces
+    the earlier entry whole; the entries it does not name are kept. ``grammar``
+    metadata merges key by key and a null value keeps the earlier one.
+    """
     if incoming is None:
         return deepcopy(current)
-    if len(path) == 3 and path[0] in {"abstracts", "elements"} and key in {"sub_tags", "parent_tags", "inherits_from"} and isinstance(incoming, str):
-        names = [s.strip().split("[", 1)[0] for s in incoming.split(",")]
-        if len(names) != len(set(names)):
-            raise ValueError(f"duplicate name in {key}")
-        if not incoming or not current:
-            return incoming
-        if key == "sub_tags" and current.strip() == "*" and "[" not in incoming:
-            _parse_sub_tags_spec(incoming)
-            return "*"
-        entries = {s.strip().split("[", 1)[0]: s.strip() for s in current.split(",")}
-        entries.update({s.strip().split("[", 1)[0]: s.strip() for s in incoming.split(",")})
-        return ",".join(entries.values())
-    if len(path) == 4 and path[2:] == ("attributes", "parameters") and isinstance(current, list) and isinstance(incoming, list):
-        entries = {p["name"]: deepcopy(p) for p in current}
-        seen = set()
-        for param in incoming:
-            name = param["name"]
-            if name in seen:
-                raise ValueError(f"duplicate parameter {name!r}")
-            seen.add(name)
-            # A parameter is one declaration; its annotation/default are values.
-            entries[name] = deepcopy(param)
-        return list(entries.values())
+    if len(path) == 2 and path[0] in {"abstracts", "elements"}:
+        return deepcopy(incoming)
     if isinstance(current, dict) and isinstance(incoming, dict):
         result = deepcopy(current)
         for name, value in incoming.items():
@@ -43,10 +25,10 @@ def _merge(current, incoming, path=()):
 
 
 class Collection:
-    """A JSON grammar and its metadata; update adds or updates, never deletes.
+    """A JSON grammar and its metadata; update adds or replaces, never deletes.
 
-    Declarations can be partial. Omitted and null fields preserve earlier values.
-    Named parameters and child rules retain order; a repeated name is updated.
+    A later document replaces whole every element or abstract it names and keeps
+    the others; ``grammar`` metadata merges, a null value keeping the earlier one.
     Schema compilation and semantic validation remain the builder's responsibility.
     """
 

@@ -4,7 +4,7 @@
 
 ## 1. Audience and sources
 
-Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Core contains a development native HTML foundation; draft API chapters distinguish it from a stable release. `prepare_docs.py` stages README, six explicit `PUBLIC_PAGES`
+Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Core contains a development native HTML foundation; draft API chapters distinguish it from a stable release. Public guides describe 0.2.0 (HTML/SVG data binding), in development, state that 0.1.2 is the latest published release, and mark planned 0.2.0 behavior without implementation claims. `prepare_docs.py` stages README, six explicit `PUBLIC_PAGES`
 guides and two logo assets. New files are not automatically public. Constitution,
 architecture, ports and docs_llm are excluded from pages, source downloads and
 search, but remain readable in the public Git repository. Pair guides and preserve
@@ -32,16 +32,7 @@ CI must report first-party JavaScript (including unimported files) and Python
 separately, excluding vendors/generated code/helpers. Do not attribute PoC results
 to core. See [quality](public/030-quality.md).
 
-## 4. Italian collaborator guide
+## 4. Retired collaborator guide
 
-Owner-requested Italian internal GC-055 has paired Markdown/HTML under internal/.
-Full HTML includes inventory appendices; both embed 17 Mermaid SVGs, RTD styling,
-fonts/logo for offline use. English remains the default for other technical docs.
-Build with `scripts/build_collaborator_guide.py --tools <node-tools> --browser
-<chromium> --sphinx-python <docs-python>`. Runner: BeautifulSoup; Node tools:
-Mermaid/playwright-core; docs Python: requirements-docs.txt. The renderer helper
-is render_guide_diagrams.mjs; staging is build/collaborator-guide. No change to
-public allowlist. Verify strict builds, anchors/mirrors, links/assets and visual
-readability plus desktop/mobile navigation.
-
-The repository documentation entry is `docs/README.md`; GC-085 is the internal operating guide. Public draft chapters GC-090/095/100 cover the repository/classes/host map, page authoring and extension points. They are explicitly allowlisted; internal guides remain excluded.
+GC-055 (earlier Italian explanatory guide with HTML exports) was removed on
+2026-09-25 by owner decision; superseded by the 0.2.0 docs. ID retired, never reused.

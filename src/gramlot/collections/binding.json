@@ -1,0 +1,216 @@
+{
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "grammar": {
+    "name": "binding",
+    "version": null,
+    "title": "Gramlot binding",
+    "description": "Data-elements of Gramlot 0.2.0 with the signatures of decision P18; loaded after the HTML grammar."
+  },
+  "abstracts": {},
+  "elements": {
+    "dataSetter": {
+      "doc": "Initial Data value, written literally at destination_path.",
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "destination_path",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "type",
+              "module": "builtins",
+              "name": "str"
+            },
+            "has_default": false
+          },
+          {
+            "name": "value",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "data_element": true
+      }
+    },
+    "dataFormula": {
+      "doc": "Computed Data value written at result_path; formula is inline, func is a name.",
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "result_path",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "type",
+              "module": "builtins",
+              "name": "str"
+            },
+            "has_default": false
+          },
+          {
+            "name": "formula",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "str"
+                },
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "NoneType"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "func",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "str"
+                },
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "NoneType"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "params",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "data_element": true
+      }
+    },
+    "dataController": {
+      "doc": "Side effects on Data; script is inline, func is a name.",
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "script",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "str"
+                },
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "NoneType"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "func",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "str"
+                },
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "NoneType"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "params",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "data_element": true
+      }
+    }
+  }
+}

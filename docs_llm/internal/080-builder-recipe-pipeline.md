@@ -26,10 +26,12 @@ superseding decisions. Python rendering stays outside the browser pipeline.
 
 ## 010 · Typed Source transport and ownership
 
-Python and JS GramlotBuilder author native generic SourceBag trees. SourceBag is
-registered with TYTX under the shared `SOURCE` suffix: generic Builder JS registers its type, while Gramlot Python performs the bounded registration under amendment 11.16.
-TYTX outer encoding carries the root type; Bag serialization carries registered
-branch types and structural node tags. Scalar text remains a node value. Mixed
+Python and JS GramlotBuilder author native generic SourceBag trees. SourceBag
+travels as a subtype of the Bag type `X`: Builder, in Python and JS, adds the name
+`SourceBag` to the TYTX subtype dictionary of `X` (genro-builders 0.24.0,
+genro-builders-js 0.2.1); Gramlot no longer registers a `SOURCE` suffix. Bag
+serialization writes `__cls` with the class name on a root or branch whose class
+differs from the inherited one, and carries structural node tags. Scalar text remains a node value. Mixed
 text preceding children uses the Gramlot `_text` attribute at authoring time.
 
 Bag/TYTX own serialization, reconstruction, backrefs and events. Generic Builder JS owns its SourceBag registration and builder association; Gramlot Python owns its bounded TYTX registration, grammar loading and insertion policy under amendment 11.16.

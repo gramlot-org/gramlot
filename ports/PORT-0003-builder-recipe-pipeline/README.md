@@ -2,6 +2,8 @@
 
 **Historical port record.** Contracts, review feedback, rejected paths and dated test evidence remain here. The current 0.1.0 state is [GC-070](../../docs/internal/070-work-status.md) and the sole release plan is [GC-110](../../docs/internal/110-native-html-readiness.md#gc-110-020). Past “current”, “open” and “next” statements are local to their dated checkpoint; old eight-profile checks do not verify the seven-profile release matrix. No port acceptance is implied.
 
+> **Wire suffix (2026-09-30):** the `SOURCE` and `XS` suffixes cited in this document are historical. The `SOURCE` suffix is gone (constitution 11.48 item 8, [GC-070 §520](../../docs/internal/070-work-status.md#gc-070-520)): a Bag of any class travels as `::X` and `__cls` names its class. Dated records are not rewritten.
+
 - **Status:** implemented and locally verified; owner acceptance pending
 - **PoC evidence:** `gramlot-org/gramlot-poc@10478b57ce3f22e6445eb6b72eba343520cbebac`
 - **Destination revision:** uncommitted development working tree

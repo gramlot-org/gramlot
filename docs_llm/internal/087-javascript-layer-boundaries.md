@@ -1,14 +1,16 @@
 # 087 · JavaScript layer boundaries
 
 
-> **Current 0.1.0 ownership:** Gramlot uses generic Builder JS for grammar, SourceBag, `sourceTarget` and static rendering; `GramlotRenderer` extends generic `RendererBase` and owns live DOM behavior. DOM JS is removed from the active dependency path. Sections 005–030 preserve earlier, superseded decisions.
+> **Current 0.1.2 ownership:** Gramlot uses generic Builder JS for grammar, SourceBag, `sourceTarget` and static rendering; `GramlotRenderer` extends generic `RendererBase` and owns live DOM behavior. DOM JS is removed from the active dependency path. Sections 005–030 preserve earlier, superseded decisions.
 >
 > Current execution: [GC-110](110-native-html-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
 > This document retains earlier decisions and checkpoints. Statements about pending
 > extraction or completed verification refer to their recorded stage, not current
 > architectural acceptance. GC-087's later dated decisions are evidence; GC-110 controls current release work.
 
-Document ID: **GC-087**. Decision date: **2026-09-19**. Status: **historical ownership sequence; current 0.1.0 boundary stated above**.
+Document ID: **GC-087**. Decision date: **2026-09-19**. Status: **historical ownership sequence; current 0.1.2 boundary stated above**.
+
+**Release scope:** the published release is **0.1.2**. Section 085 records the layer boundaries of the 0.2.0 HTML/SVG binding, **implemented on the development branch and in qualification; 0.2.0 is not released.**
 
 [Expanded counterpart](../../docs/internal/087-javascript-layer-boundaries.md).
 
@@ -70,7 +72,8 @@ Gramlot specializes the renderer with its reference collaborator and metadata.
 This supersedes the old retirement restriction for this bounded development work;
 it does not rename/create a remote repository or authorize publication.
 
-SOURCE remains the single currently integrated Python/JS wire suffix. Plain ESM
+The Source travels as the Bag type `X` with `__cls` naming its class; the `SOURCE`
+suffix is gone (2026-09-28, [GC-070 §520](070-work-status.md#gc-070-520)). Plain ESM
 declaration helpers avoid a mandatory decorator transform. Historical internal DOM
 module paths re-export generic classes rather than registering a second SourceBag.
 Full upstream availability, clean floating installs and acceptance remain open.
@@ -328,3 +331,56 @@ collections. These are destinations for the same format, not alternate notations
 Executable methods remain code; removing grammar helpers does not remove existing
 container/component execution or Python's own decorators/exporter. The deferred
 recipe implementation and Source replace decision are unchanged.
+
+<a id="gc-087-085"></a>
+
+## 085 · 0.2.0 binding layer boundaries
+
+**Status 2026-09-30: implemented on the development branch, in qualification.** Source: owner-confirmed 0.2.0 plan and decision D7, 2026-09-25; S00 records GC-210 and an amendment. Names below are those of the implementation; the 0.1.2 boundaries are history. Classes: [GC-045 §055](045-js-taxonomy.md#gc-045-055).
+
+Current 0.1.2: Bag JS/TYTX own tree, events, transport. Builder JS owns grammar, `SourceBag`/`SourceBagNode`, `RendererBase`, `HtmlBuilder`/`SvgBuilder`, static rendering, `svgAttributes`. Gramlot owns `GramlotBuilder`, `GramlotRenderer`, `HtmlElement`, `Gramlot`, `MainTransport`, `References`, host adapters. Browser entry `js/src/index.js` (Gramlot, GramlotBuilder, GramlotRenderer, Bag, BagNode, References, MainTransport) does not import server entry `js/src/adapters/index.js` (Page, source, Host, errors, GramlotBuilder, FileHost). `compute_logic` (`page/builder.py:52`) and `computeLogic` (`gramlot-builder.js:17`) empty; no binding.
+
+0.2.0 (implemented):
+- Builder/Bag read-only (§14); upstream fixes forbidden by the owner (2026-09-25); missing behavior goes into the Gramlot Source classes ([GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060)).
+- Builder layer `js/src/builder/source.js`: `GramlotBuilderBag extends SourceBag`, `GramlotBuilderBagNode extends SourceBagNode`; node adds silent `PUT`, `FIRE` marked for the router (`takeFire`), `FIRE_AFTER`, `absDatapath`; `SET`, `GET`, `setRelativeData`, `getRelativeData` stay Builder's. Every browser path creates them, no prototype change (S01). Never imports `binding/inline.js`, like every `builder/*`. `FIRE` mark belongs to the runtime, `FIRE_AFTER` timer on `NodeBinding`; the plan does not say how the node reaches them.
+- Authoring: grammar only; `binding.json` redefines `dataSetter`, `dataFormula`, `dataController`, loaded after `html5.json`; logic hooks stay empty; `GramlotBuilder` unchanged for logic resolution.
+- Host side (`Host`, `FileHost`, `server/resources.py`, `adapters/resources.js`): page resolution, ordered resource URLs from the concrete Host (`resolve_resources`; the core has parser and order, no resolver), bootstrap with nonce; never evaluates code. Standalone WorkerHost (`gramlot-serverless`, heir of retired `gramlot-minimal`) is server side: no eval.
+- Page runtime (`bootstrap.js`, `gramlot.js`, `renderer/*`, `binding/*`, `view/*`): only layer executing logic and compiling inline code.
+- `binding/` does not import `view/`: renderer creates `RadioGroups`; `BindingRuntime` owns `InlineCompiler`.
+- `binding/inline.js` imported only by page runtime; never by `adapters/*`, `builder/*` or WorkerHost; S07/S09 test import graphs.
+- Named mode (`func`) primary, CSP without `'unsafe-eval'`; inline (`formula`, `script`, `==`) for compatibility, may be deprecated; macros = deprecated preprocessor in `InlineCompiler`; two modes = owner exception to §13; CSP profiles settled by Q3: strict (named only), permissive (plus `'unsafe-eval'`), [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035).
+- `LogicRegistry.resolve`, not `_resolveLogicFunc`; missing name = error, no inline fallback.
+- JS page `ordini.js` exports `Page` (Node/Bun host) and `Logic` (browser); importable in both, no server-only imports; S07/S14 verify.
+- Source `script` stays native HTML5, no eval.
+- Bootstrap scripts on the Page; in 0.1.2 the host script imports `Gramlot` (`host.py:102-104`, `adapters/host.js:59-61`); 0.2.0 imports and runs `PageBootstrap`.
+
+All boxes exist in the 0.2.0 implementation; dashed arrows = forbidden imports.
+
+```mermaid
+flowchart TB
+    BAG["Bag JS · TYTX<br/>tree, events, typed transport"]
+    BLD["Builder JS<br/>grammar · SourceBag · RendererBase<br/>node methods SET · GET"]
+    SRC["builder/source.js<br/>GramlotBuilderBag · GramlotBuilderBagNode<br/>PUT · FIRE · FIRE_AFTER · absDatapath"]
+    AUTH["Authoring<br/>GramlotBuilder · html5.json · svg.json<br/>binding.json"]
+    HOST["Host side<br/>Page · Host · FileHost<br/>parseRequires · loadOrder"]
+    WH["WorkerHost in gramlot-serverless<br/>server side"]
+    PAGE["Page runtime in the browser<br/>Gramlot · GramlotRenderer · HtmlElement<br/>PageBootstrap · binding · view"]
+    INL["binding/inline.js<br/>InlineCompiler"]
+    BLD --> BAG
+    AUTH --> BLD
+    HOST --> AUTH
+    WH --> AUTH
+    PAGE --> AUTH
+    PAGE --> BLD
+    PAGE --> INL
+    SRC --> BLD
+    AUTH --> SRC
+    PAGE --> SRC
+    HOST -. never imports .-> INL
+    WH -. never imports .-> INL
+    AUTH -. never imports .-> INL
+    SRC -. never imports .-> INL
+    classDef current fill:#e3f3ed,color:#143d2e,stroke:#39866b;
+    classDef planned fill:#f0e8fa,color:#4f2e70,stroke:#9670b3,stroke-dasharray:5 4;
+    class BAG,BLD,AUTH,HOST,WH,PAGE,INL,SRC current;
+```

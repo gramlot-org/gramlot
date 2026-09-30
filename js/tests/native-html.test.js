@@ -3,19 +3,18 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {JSDOM} from 'jsdom';
-import {Bag, GramlotBuilder, GramlotRenderer, Gramlot, MainTransport} from '../src/index.js';
-import {SourceBag} from '@jsr/genro__builders';
+import {Gramlot, GramlotBuilder, MainTransport} from '../src/index.js';
+import {GramlotBuilderBag} from '../src/builder/source.js';
 
+/** A Gramlot page: its Source reaches the renderer as events while it is filled. */
 function setup() {
     const document = new JSDOM('<div id="gramlot-root"><i id="host-owned"></i></div>').window.document;
-    const author = new GramlotBuilder();
-    const source = author.source;
     const destination = document.getElementById('gramlot-root');
-    return {document, source, destination, author,
-        builder: new GramlotRenderer(author, source, destination)};
+    const app = new Gramlot({document, element: destination, transport: false});
+    return {document, source: app.source, destination, author: app.builder, builder: app.renderer};
 }
 function block(builder) {
-    return new SourceBag(null, builder);
+    return new GramlotBuilderBag(null, builder);
 }
 function add(builder, bag, label, tag, value = '', attrs = {}, position = '>') {
     return builder.setChild(bag, tag, value, {node_label: label, node_position: position, ...attrs});
@@ -31,7 +30,8 @@ test('Python authoring -> TYTX -> first subscriber insert; roots precede main', 
         async main(id) {
             calls++;
             assert.equal(id, 'test');
-            assert.ok(app.data.getItem('main') instanceof Bag);
+            assert.equal(app.binding.root.getItem('_root_'), app.data);
+            assert.equal(app.data.getItem('main'), null);
             assert.equal(app.renderer.records.size, 0);
             return fixture.wire;
         },
@@ -115,10 +115,12 @@ test('native property setters, escaped text, combined updates, isolation and inv
     assert.equal(a.destination.textContent, '<b>literal</b>');
     assert.equal(a.destination.querySelector('b'), null);
     assert.equal(b.builder.records.size, 0);
+    // `color` is a style shortcut (P6, §3.3): it reaches `style`, never an attribute of its own.
     node.setAttr({color: 'red'});
-    assert.equal(a.builder.records.get(node).element.getAttribute('color'), 'red');
-    assert.equal(a.builder.records.get(node).element.style.color, '');
+    assert.equal(a.builder.records.get(node).element.getAttribute('color'), null);
+    assert.equal(a.builder.records.get(node).element.style.color, 'red');
     node.setAttr({color: null});
+    assert.equal(a.builder.records.get(node).element.style.color, '');
 
     a.builder.dispose(); b.builder.dispose();
 });

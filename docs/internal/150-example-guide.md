@@ -14,7 +14,7 @@ and handles Source lifetime. Future web components remain separately scoped.
 The local [runner README](../../examples/00-runner/README.md) is reached from the
 [example index](../../examples/README.md). It documents the exact setup and launch
 command. The native runtime has no adapter dependency: the development launcher
-composes Minimal/Uvicorn and Node integration hosts outside the runtime package.
+composes the `gramlot-uvicorn` and `gramlot-js-server` integration hosts outside the runtime package.
 
 Select a title in the left list to open or reactivate its example tab. Each panel
 contains teaching text above its preview iframe and highlighted source code. The serving integration determines the
@@ -25,8 +25,10 @@ page-local event exception in constitution 11.44. It does not synchronize exampl
 <a id="gc-150-010"></a>
 ## 010 · Learn from paired pages
 
-Every numbered folder under `examples/html_svg` has `page.py`, `page.js` and an
-English README. Start with Hello World, then text, lists, semantic composition,
+Every numbered example under `examples/html_svg` is a file page: `NN_name.py`,
+`NN_name.js` and an English README `NN_name.md`, with a same-name stylesheet
+`NN_name.css` where it needs one (before S06 each example was a folder with
+`page.py`, `page.js` and `README.md`). Start with Hello World, then text, lists, semantic composition,
 tables and forms. Continue with disclosure, SVG shapes/composition, mixed cards,
 a static report and a complete event page. More complex pages use ordinary methods
 and loops. Initial data is local. Example 10 adds an explicitly approved short
@@ -36,7 +38,7 @@ without persistence or server synchronization. No fetch, Data bindings, controll
 or database APIs are introduced. Other native HTML interactions
 remain native; a disabled submit example does not pretend to save data.
 
-The selectable [catalogue](../../examples/00-runner/catalog/README.md) records actual
+The selectable [catalogue](../../examples/00-runner/catalog/catalog.md) records actual
 HTML grammar coverage and classifies document-level, inert and unsupported behavior
 explicitly. A grammar declaration alone does not prove a runtime feature exists.
 
@@ -83,7 +85,8 @@ The approved Gramlot logo appears above the list. The Light/Dark selector below
 the keyboard option controls the runner and all its preview frames, including
 examples opened after the selection. Theme choice lasts for the runner session.
 
-The sidebar groups examples under HTML / SVG. Select the category for its folder
+The sidebar groups examples under HTML / SVG, Binding and Controllers (0.2.0; the last two
+follow the same file-page layout, see [GC-070 §600](070-work-status.md#gc-070-600)). Select the category for its folder
 README, or a child title for its example. New example panels start at 65% preview
 and 35% source; the divider remains adjustable.
 

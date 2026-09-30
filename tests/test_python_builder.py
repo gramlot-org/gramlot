@@ -3,12 +3,14 @@ import unittest
 import json
 from pathlib import Path
 
-from genro_builders.builder import SourceBag
+from genro_bag import Bag
+from genro_builders.builder import SourceBag, SourceBagNode
 from genro_builders import BuilderBase
-from genro_tytx import from_tytx, to_tytx
+from genro_tytx import from_tytx, get_subtype_dict, to_tytx
 
 from gramlot import GramlotBuilder
-from gramlot.server import Host
+from gramlot.page.source import GramlotBuilderBag, GramlotBuilderBagNode
+from gramlot.server import FileHost, SourceNotFound
 
 CONTROLS = json.loads(
     (Path(__file__).parent / "fixtures/collections/controls.json").read_text()
@@ -75,6 +77,121 @@ class BuilderTests(unittest.TestCase):
         self.assertEqual(parent.value, "fallback")
         self.assertNotIn("_text", parent.attr)
 
+    def test_promoted_text_keeps_its_type(self):
+        """Phase 18 (ASTRA-07): no str(); the browser renderer converts the value once, as in JS."""
+        builder = GramlotBuilder()
+        for value in (True, False, 1.5, "text"):
+            builder.root.p(value).span("child")
+        self.assertEqual([node.attr["_text"] for node in builder.root], [True, False, 1.5, "text"])
+        self.assertEqual([type(node.attr["_text"]) for node in builder.root], [bool, bool, float, str])
+        self.assertIn("<p>true<span>child</span></p>", builder.render())
+
+
+class GramlotSourceClassTests(unittest.TestCase):
+    def test_counterparts_use_the_builder_node_class_hook(self):
+        self.assertTrue(issubclass(GramlotBuilderBag, SourceBag))
+        self.assertTrue(issubclass(GramlotBuilderBagNode, SourceBagNode))
+        self.assertIs(GramlotBuilderBag._node_class, GramlotBuilderBagNode)
+        own = {cls: {name for name in vars(cls) if not name.startswith("__")}
+               for cls in (GramlotBuilderBag, GramlotBuilderBagNode)}
+        self.assertEqual(own[GramlotBuilderBagNode], {"pointer_type"})
+        self.assertEqual(own[GramlotBuilderBag], {"_node_class"})
+
+    def test_a_double_equals_value_is_not_a_pointer(self):
+        builder = GramlotBuilder()
+        builder.data["x"] = "X"
+        builder.data["y"] = "Y"
+        node = builder.root.div(title="==1+1", alt="^x", lang="=y")
+        self.assertIs(type(node), GramlotBuilderBagNode)
+        self.assertIsNone(node.pointer_type("==1+1"))
+        self.assertEqual(node.pointer_type("^x"), "^")
+        self.assertEqual(node.pointer_type("=y"), "=")
+        self.assertEqual(node.pointers(), [("alt", "^x")])
+        self.assertEqual(builder.runtime_values(node), (None, {"title": "==1+1", "alt": "X", "lang": "Y"}))
+
+    def test_authoring_on_a_gramlot_bag_propagates_the_classes_to_branches(self):
+        builder = GramlotBuilder()
+        branch = GramlotBuilderBag(builder=builder)
+        panel = branch.div("before", id="panel")
+        child = panel.span("after")
+        self.assertIsInstance(panel, GramlotBuilderBagNode)
+        self.assertIs(type(panel.value), GramlotBuilderBag)
+        self.assertIsInstance(child, GramlotBuilderBagNode)
+        self.assertEqual(panel.attr["_text"], "before")
+
+    def test_bag_classes_share_the_subtype_dictionary_of_x_under_their_class_names(self):
+        subtypes = get_subtype_dict("X")
+        self.assertEqual(GramlotBuilderBag.__tytx_suffix__, "X")
+        self.assertIs(subtypes["Bag"], Bag)
+        self.assertIs(subtypes["SourceBag"], SourceBag)
+        self.assertIs(subtypes["GramlotBuilderBag"], GramlotBuilderBag)
+
+    def test_gramlot_source_travels_as_x_with_cls_and_decodes_to_gramlot_classes(self):
+        builder = GramlotBuilder()
+        root = GramlotBuilderBag(builder=builder)
+        root.div(id="panel").span("after")
+        wire = to_tytx(root)
+        self.assertTrue(wire.endswith("::X"))
+        payload = json.loads(wire[: -len("::X")])
+        self.assertEqual(payload["__cls"], "GramlotBuilderBag")
+        self.assertFalse(any("__cls" in row[4] for row in payload["rows"]))
+        decoded = from_tytx(wire)
+        panel = decoded.nodes[0]
+        self.assertIs(type(decoded), GramlotBuilderBag)
+        self.assertIs(type(panel), GramlotBuilderBagNode)
+        self.assertIs(type(panel.value), GramlotBuilderBag)
+        self.assertIs(type(panel.value.nodes[0]), GramlotBuilderBagNode)
+        self.assertNotIn("__cls", panel.attr)
+        holder = SourceBag()
+        holder["branch"] = GramlotBuilderBag()
+        wire = to_tytx(holder)
+        self.assertEqual(json.loads(wire[: -len("::X")])["rows"][0][4]["__cls"], "GramlotBuilderBag")
+        self.assertIs(type(from_tytx(wire)["branch"]), GramlotBuilderBag)
+
+    def test_gramlot_builder_authoring_produces_gramlot_classes(self):
+        self.assertIs(GramlotBuilder._source_class, GramlotBuilderBag)
+        builder = GramlotBuilder()
+        self.assertIs(type(builder._sourceroot), GramlotBuilderBag)
+        self.assertIs(type(builder.source), GramlotBuilderBag)
+        panel = builder.root.div(id="panel")
+        panel.div("x").span("y")
+        self.assertIs(type(panel), GramlotBuilderBagNode)
+        self.assertIs(type(panel.value), GramlotBuilderBag)
+        inner = panel.value.nodes[0]
+        self.assertIs(type(inner), GramlotBuilderBagNode)
+        self.assertEqual(inner.attr["_text"], "x")
+        self.assertIs(type(inner.value), GramlotBuilderBag)
+        self.assertIs(type(inner.value.nodes[0]), GramlotBuilderBagNode)
+        payload = json.loads(to_tytx(builder.source)[: -len("::X")])
+        self.assertEqual(payload["__cls"], "GramlotBuilderBag")
+        self.assertFalse(any("__cls" in row[4] for row in payload["rows"]))
+
+
+class LegacyTransportProbeTests(unittest.TestCase):
+    def test_value_attribute_roundtrip_keeps_bag_scalar_and_array(self):
+        builder = GramlotBuilder()
+        bag = Bag()
+        bag["a"] = 1
+        bag["b.c"] = "x"
+        for destination_path, value in ((".bag", bag), (".n", 7), (".arr", [1, "a", None]), (".nul", None)):
+            builder.root.dataSetter(destination_path, value=value)
+        self.assertNotIn("value", builder.source.nodes[3].attr)
+        decoded = from_tytx(to_tytx(builder.source))
+        attrs = {node.attr["destination_path"]: node.attr for node in decoded.nodes}
+        self.assertIsInstance(attrs[".bag"]["value"], Bag)
+        self.assertEqual(attrs[".bag"]["value"]["b.c"], "x")
+        self.assertEqual(attrs[".n"]["value"], 7)
+        self.assertEqual(attrs[".arr"]["value"], [1, "a", None])
+        self.assertNotIn("value", attrs[".nul"])
+
+    def test_from_tytx_drops_null_attributes_that_the_wire_carries(self):
+        bag = Bag()
+        bag["x"] = 1
+        bag.get_node("x").attr.update({"keep": 1, "gone": None})
+        wire = to_tytx(bag)
+        self.assertIn('"gone": null', wire)
+        self.assertEqual(dict(from_tytx(wire).get_node("x").attr), {"keep": 1})
+
 
 class SourceMethodTests(unittest.IsolatedAsyncioTestCase):
     async def test_explicit_source_methods_use_fresh_builder_and_honor_mro(self):
@@ -93,12 +210,16 @@ class Page(Parent):
     @source
     async def fragment(self, root, label):
         root.div(label).span("details")
+
+    @source
+    def plain(self, root):
+        root.p("plain")
 '''
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "index.py").write_text(source)
-            host = Host(directory)
+            host = FileHost(directory)
             opened = await host.open_page("/")
-            self.assertIn('"sourceUrl": "/gramlot/source"', opened.html)
+            self.assertIn('"sourceUrl":"/gramlot/source"', opened.html)
             first = from_tytx(await host.source(
                 opened.page_id, "fragment", {"label": "one"}))
             second = from_tytx(await host.source(
@@ -112,6 +233,13 @@ class Page(Parent):
                 await host.source(opened.page_id, "main")
             with self.assertRaises(TypeError):
                 await host.source(opened.page_id, "fragment", [])
+            # Phase 18 (Fable R4): the same errors and messages as the JS Host (js/tests/host.test.js).
+            with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method$"):
+                await host.source(opened.page_id, "main")
+            with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method: hidden$"):
+                await host.source(opened.page_id, "hidden")
+            plain = from_tytx(await host.source(opened.page_id, "plain", None))
+            self.assertEqual([(node.node_tag, node.value) for node in plain.nodes], [("p", "plain")])
 
     async def test_source_method_must_return_none(self):
         source = '''
@@ -123,7 +251,7 @@ class Page(BasePage):
 '''
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "index.py").write_text(source)
-            host = Host(directory)
+            host = FileHost(directory)
             opened = await host.open_page("/")
             with self.assertRaises(TypeError):
                 await host.source(opened.page_id, "bad")

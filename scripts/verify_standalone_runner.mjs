@@ -38,7 +38,7 @@ try {
     await frame.waitForFunction(() => window.gramlot?.state === 'started');
     await frame.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
     assert.equal(await frame.locator('html').getAttribute('data-theme'), 'dark');
-    const source = await readFile(fileURLToPath(new URL('../examples/html_svg/06_forms/page.js', import.meta.url)), 'utf8');
+    const source = await readFile(fileURLToPath(new URL('../examples/html_svg/06_forms.js', import.meta.url)), 'utf8');
     assert.equal(await page.locator('#panel-e06 code[id^=code-]').textContent(), source);
     assert.ok(await page.locator('#panel-e06 .hljs-keyword').count() > 0);
     await frame.locator('#name').fill('Static Worker page');

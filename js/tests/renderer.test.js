@@ -1,22 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {RendererBase, SourceBag} from '@jsr/genro__builders';
-import {GramlotBuilder} from '../src/builder/gramlot-builder.js';
-import {GramlotRenderer} from '../src/renderer/gramlot-renderer.js';
+import {RendererBase} from '@jsr/genro__builders';
+import {Gramlot} from '../src/gramlot.js';
+import {GramlotBuilderBag} from '../src/builder/source.js';
 import {sourceTarget} from '@jsr/genro__builders';
 import html5 from '../../src/gramlot/collections/html5.json' with {type: 'json'};
 
 function setup() {
     const document = new JSDOM('<main id="root"><i id="host"></i></main>').window.document;
-    const builder = new GramlotBuilder();
-    const source = builder.source;
-    const renderer = new GramlotRenderer(builder, source, document.getElementById('root'));
-    return {document, builder, source, renderer};
+    const app = new Gramlot({document, element: document.getElementById('root'), transport: false});
+    return {document, builder: app.builder, source: app.source, renderer: app.renderer};
 }
 
 function nativeBlock(builder, author) {
-    const block = new SourceBag(null, builder, null);
+    const block = new GramlotBuilderBag(null, builder, null);
     author(builder.wrapSource(block));
     return block;
 }
@@ -32,8 +30,8 @@ test('native HTML void behavior follows collection metadata, including aliases',
         },
     };
     const document = new JSDOM('<main id="root"></main>').window.document;
-    const builder = new GramlotBuilder(null, {collections: [collection]});
-    const renderer = new GramlotRenderer(builder, builder.source, document.getElementById('root'));
+    const {builder, renderer} = new Gramlot({document, element: document.getElementById('root'), transport: false,
+        collections: [collection]});
     builder.root.linebreak();
     builder.root.br();
     builder.root.input();

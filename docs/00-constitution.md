@@ -111,17 +111,23 @@ and database technology; an integration may depend on core, never the reverse.
 | `gramlot-fastapi` | FastAPI |
 | `gramlot-flask` | Flask |
 | `gramlot-kajenn` | Kajenn, the new product name for Genro ASGI |
-| `gramlot-minimal` | Python with Uvicorn through the generic ASGI adapter; JavaScript in a browser Worker without a server |
+| `gramlot-uvicorn` | Python with Uvicorn through the generic ASGI adapter |
+| `gramlot-serverless` | JavaScript in a browser Worker without a server (standalone) |
 | `gramlot-js-server` | Node.js and Bun |
 | `gramlot-django` | Django |
 
-`gramlot-minimal` replaces the repository name `gramlot-standalone`; standalone
-remains the browser/Worker profile name. It owns the generic Python ASGI adapter
-and the existing single-HTML exporter. Core retains shared Host/Page execution and rendering. Minimal owns standalone
-Worker integration and startup (amendment 11.46). `gramlot-kajenn` is the approved destination name for `gramlot-genro-asgi` and owns
-Kajenn-specific integration, consuming the generic ASGI adapter from Minimal. The
-inspected local checkout and configured origin still use `gramlot-genro-asgi`;
-the remote rename is not verified. This clarification does not rename a repository.
+`gramlot-minimal` replaced the repository name `gramlot-standalone` (amendment 11.19)
+and was retired on 2026-09-26/28 (amendment 11.48 item 5). Its heirs are
+`gramlot-uvicorn`, which owns the generic Python ASGI adapter, and
+`gramlot-serverless`, which owns the single-HTML exporter, standalone Worker
+integration and startup (amendment 11.46, as reassigned by 11.48). Standalone
+remains the browser/Worker profile name. Core retains shared Host/Page execution and
+rendering. `gramlot-kajenn` (formerly `gramlot-genro-asgi`) owns
+Kajenn-specific integration and depends only on Kajenn besides the core (amendment
+11.48 item 5). The Kajenn adapter is not migrated yet: its `pyproject.toml` still
+declares the retired repository; the migration is deferred to after 0.2.0. The
+GitHub repository, local checkout and configured origin were renamed to
+`gramlot-kajenn` on 2026-09-26.
 The upstream Python distribution/import remains `genro-asgi`/`genro_asgi` until
 its owning project actually renames it. Do not invent an upstream package alias.
 
@@ -314,8 +320,9 @@ Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes
 
 **Current naming clarification — 2026-09-24:** In the dated decisions below,
 `gramlot-nodejs` is now `gramlot-js-server` (11.32), and `gramlot-standalone` is now
-`gramlot-minimal` (11.19). Kajenn's approved destination name is `gramlot-kajenn`;
-the inspected checkout/configured origin remain `gramlot-genro-asgi`. Historical
+`gramlot-minimal` (11.19); `gramlot-minimal` was then retired (11.48 item 5) and its
+heirs are `gramlot-uvicorn` and `gramlot-serverless`. `gramlot-genro-asgi` is now
+`gramlot-kajenn` (repository renamed 2026-09-26). Historical
 names preserve the original decision scope and do not identify additional repos.
 
 Owner decision, 2026-09-21: subsequent work is restricted to Gramlot. Builder JS
@@ -343,6 +350,9 @@ for typed transport, and preserving mixed text and atomic child insertion. This
 supersedes section 13's generic-library ownership rule and the prior GC-092
 assignment only for these Python authoring responsibilities. It does not authorize
 alternate Source representations, dependency source edits or publication.
+**Superseded in part by 11.48 item 8:** Gramlot no longer registers a `SourceBag`
+suffix of its own; the builder declares the Source class (`GramlotBuilderBag`), a Bag
+of any class travels as `::X` and `__cls` names it. The `SOURCE` suffix is gone.
 
 Amendment 11.17 — 2026-09-22: the owner extends the same 0.1.0 ownership choice
 to Gramlot's JavaScript builder. Gramlot owns the mapping from its fluent authoring
@@ -409,6 +419,18 @@ and all descendants and renders its current Source once; a still-frozen ancestor
 keeps rendering suspended until its own unfreeze. There is no automatic timer,
 transaction, rollback or Data binding. This settles the overlap question in GC-070.
 Implementation belongs to Gramlot's live renderer, not generic Bag or Builder.
+
+
+Binding extension confirmed 2026-09-25: freeze suspends structural Source rebuilding,
+not Data reactivity. Formulas/controllers and Data-driven binding updates to already
+built elements remain active; discarded nodes are cleaned up immediately even while
+frozen. Owner confirmation: "ok" after the legacy code trace and the explicit
+recommendation to freeze structural rebuilding while retaining controllers and
+bindings on existing elements. This extends the previously unassigned Data-binding
+behavior; it preserves the existing Source FIFO, frozen-event discard and nested
+unfreeze rules. It supersedes only an unapproved independent proposal to suspend all visual
+updates, not an earlier owner decision. This is an approved 0.2.0 contract, not a
+claim that binding has been implemented.
 
 
 ### Standalone execution language and host direction — 2026-09-21
@@ -493,6 +515,9 @@ method or new class is required. No page-close protocol or grammar policy change
 
 ### Amendment 11.19 — Integration repositories — 2026-09-24
 
+**Superseded in part by 11.48:** `gramlot-minimal` is retired; its ASGI/Uvicorn part
+belongs to `gramlot-uvicorn` and its standalone part to `gramlot-serverless`.
+
 Owner defines the six integration repositories in section 7, accepts the names
 `gramlot-minimal` and `gramlot-kajenn`, and authorizes their reorganization with Sol
 agents. This supersedes section 7's earlier three-repository server-only list and
@@ -532,6 +557,12 @@ explanation; equivalent JavaScript is explicitly part of this suite. This supers
 GC-140's earlier Hello-World-only example scope and its blanket allocation of all
 example pages to the separate integration example repository. The existing
 `gramlot-examples` integration smoke application remains separate and unchanged.
+
+**Layout note (2026-09-30):** since S06 each example is a file page (`NN_name.py`,
+`NN_name.js`, `NN_name.md`, with a same-name `NN_name.css` and logic companion
+`NN_name_aux.js` where needed) and `Page.css` stays (Q10); the original layout was one
+folder per example. Amendment 11.48 adds the families `examples/binding` and
+`examples/controllers`.
 
 The owner separates examples from their runner: code viewing and Inspector access
 are runner responsibilities, superseding amendment 11.7's interpretation as controls
@@ -736,6 +767,9 @@ and waiting requirement in GC-070-150/155; no global protection disablement.
 
 ### Amendment 11.37 — Standalone example download ownership — 2026-09-24
 
+**Superseded in part by 11.48:** `gramlot-minimal` is retired; the exporter and the
+generated distribution belong to its heir `gramlot-serverless`.
+
 The owner confirms that the ready-to-use standalone example ZIP belongs in
 GitHub releases of gramlot-minimal, not core Gramlot releases. Gramlot remains
 the sole maintained source of example pages, runner, READMEs, logo and theme.
@@ -865,6 +899,8 @@ require their own explicitly confirmed design.
 
 **Superseded in part by 11.46:** Worker integration also moves to Minimal; the
 proposal to export WorkerTransport from core was not approved.
+**Superseded in part by 11.48:** `gramlot-minimal` is retired; standalone startup
+belongs to its heir `gramlot-serverless`.
 
 Owner corrects the proposed destination of standalone integration support:
 “più che nel runner, nel gramlot minimal” (current task, 2026-09-24).
@@ -884,6 +920,9 @@ contract decision. No publication, deployment or dependency-source edit is appro
 
 
 ### Amendment 11.46 — Standalone Worker integration belongs in Minimal — 2026-09-24
+
+**Superseded in part by 11.48:** `gramlot-minimal` is retired; Worker messaging,
+WorkerHost and standalone mount belong to its heir `gramlot-serverless`.
 
 Owner resolves the proposal left open by 11.45: “quindi a tutti gli effetti è il
 server dello standalone e nello standalone deve stare”, followed by the explicit
@@ -906,3 +945,305 @@ and Worker-specific entries; Minimal provides its own `/standalone` and
 integration requires the matching development core; no compatibility alias is
 introduced. This is bounded connected Minimal work, not a general framework
 reopening. Runner-local UI ownership from 11.44 remains unchanged.
+
+
+### Amendment 11.47 — HTML/SVG binding 0.2.0 contract — 2026-09-25
+
+**Superseded in part by 11.48:** items 2, 5, 7, 8, 9, 10 and 11 as listed there;
+**superseded in part by 11.49:** item 1; the text below stays as history.
+
+Owner confirms the unified plan's section 2 decisions and section 3 proposals
+“per ora” (for now), and explicitly authorizes S00 transcription through the S00 brief, kept outside the
+repository, and the owner's instruction to execute S00.
+The retrievable evidence and source hashes are recorded in
+[GC-210 §005](internal/210-binding-contract.md#gc-210-005).
+[GC-210 §§010–015](internal/210-binding-contract.md#gc-210-010) are the paired
+per-decision register: owner/date, concrete scope, superseded proposal, phase and
+required test. This amendment incorporates those tables as the 0.2.0 contract;
+it does not claim runtime implementation or acceptance of the S00 transcription.
+
+1. Data: one stable outer root with main containing the document Bag, shared by
+   Gramlot and Builder; authored paths omit main. Gramlot owns one subscription
+   and routing. Source carries initial values, without a second Data envelope.
+2. Canonical declarations: `dataSetter(destination_path, value=None, **attr)`,
+   `dataFormula(result_path, formula=None, func=None, **params)`,
+   `dataController(script=None, func=None, **params)`. Named func and inline
+   formula/script are mutually exclusive. No legacy dispatch or data alias;
+   data remains HTML5. This supersedes `.data(path, value)`, setter destination
+   and formula destination. Destination/result paths reject ?attr. `_path`
+   fields contain bare paths; strip an authored pointer prefix with one warning.
+   Variable datapath follows its Data value and rebinds the branch, through
+   `GramlotBuilderBagNode.absDatapath` (item 10).
+   Authoring dictionaries/plain objects use Bag(value); lists stay lists and JSON
+   strings stay strings. These are bounded confirmed conversions, not general fallbacks.
+3. A2 installs every setter of the initial/inserted branch before DOM in document
+   order, superseding per-level installation. R1: non-null writes; existing null
+   declaration keeps value and applies attributes; missing null creates a node.
+   This supersedes null-overwrite and legacy attribute loss, not runtime setData.
+   Defaults follow setters; only null/missing are empty. attr_* follows the legacy
+   rule: after the node's own defaults, only on the existing Data node of the
+   control's value/src (correcting the earlier P15 clause). No duplicate warning.
+4. Boolean checkbox/radio use value pointers, radio also group; this supersedes
+   checked='^x'. visible=false sets visibility hidden; hidden stays native; live
+   defaults false. Freeze suspends structural rebuilding only; existing Data
+   reactions continue, semantic removal cleanup is immediate, rebuild/thaw never
+   reinstall. Keep the earlier separately recorded freeze decision unchanged.
+5. Named logic is primary; inline compilation only in the page runtime, never
+   Python/JS Host, WorkerHost or DevTools. This is a bounded §13 exception.
+   Both forms use Source-node methods; no Gramlot operations layer. SET, GET,
+   setRelativeData and getRelativeData are Builder's; silent PUT, router-marked
+   FIRE and FIRE_AFTER come from GramlotBuilderBagNode (item 10).
+   Legacy macros become a deprecated regex compatibility preprocessor with one
+   warning, superseding macro-only inline writes. FIRE_AFTER defaults to 10 ms
+   with explicit delay; its timer is tracked on the NodeBinding and cancelled at close.
+6. Nested button controller is ordinary reactive logic plus click (B7), with
+   button-prefixed counter/modifiers. One click mechanism; connect_onclick follows.
+   R3 remains provisional: implicit type=button only for Gramlot-enabled buttons,
+   explicit type preserved, stopPropagation, no preventDefault; plain buttons
+   native. S12 must report form/keyboard/parent/native-listener effects to owner.
+7. Both Page languages use css_requires/js_requires. All hierarchical JS levels
+   register generic-to-specific, last wins; CSS cascades; public same-name companion
+   last. Supersedes Page.css, camelCase and legacy first-JS-only selection. Parsing
+   trims comma-separated names, ignores empty/duplicate entries, allows valid slash
+   segments and rejects colon/traversal/extensions. File or same-name-folder pages
+   are explicitly allowed (§13 exception), both together error; supersedes folder-only.
+   Logic groups are per instance/resource, this.page accesses page, no static holder
+   or page mixin. Nonce differs from page_id; standalone hashes final bytes.
+8. Source/DOM lookup uses getBaseSourceNode/getDomNode on GramlotHtmlRenderer and Gramlot;
+   no added object properties. NodeBinding owns semantic lifetime separately from
+   DOM, in a BindingRuntime Map keyed by the actual node (P17, see item 10). FIFO semantics precede freeze filtering;
+   complete builds before queued mutations, ignore changes to currently building
+   nodes. Anti-echo suppresses only redundant origin value, never other attributes
+   or providers. remoteSource follows semantic lifetime, latest request wins.
+9. All remaining P1–P25 rules, exclusions and exact startup/routing/provider/resource
+   sequences are as registered in GC-210. Explicit errors cover unsupported
+   server/shared/remote Data, subscriptions, PUBLISH and ask declarations, not
+   same-named keys in user Data. Q2 cycles, Q3 CSP profiles, Q4 connected writes
+   and Q5 native conversions remain open at their phases; no new decision implied.
+10. Owner rule, 2026-09-25: no upstream fixes for Gramlot; missing Builder/Bag
+    behavior goes into GramlotBuilderBag/GramlotBuilderBagNode. The earlier planned
+    genro-builders/genro-bag fixes are withdrawn. `js/src/builder/source.js` (S01)
+    holds `GramlotBuilderBag extends SourceBag`, whose nodeClass returns
+    `GramlotBuilderBagNode extends SourceBagNode`, with silent PUT, FIRE marked for
+    the router, FIRE_AFTER with a NodeBinding-tracked timer and absDatapath with
+    variable datapath and symbolic ?attr. S01 proves every browser path produces
+    these classes, without prototype mutation or Builder/Bag changes. Owner rule,
+    2026-09-26 (symmetry): Python has empty counterparts, `GramlotBuilderBagNode(
+    SourceBagNode)` and `GramlotBuilderBag(SourceBag)` with `_node_class`, to be used by
+    the Python GramlotBuilder for the Source; runtime methods stay in JS. This supersedes
+    "Python needs no counterpart". S04 and S08 wait for no external release. S01 measures the
+    Bag.fromTytx null-attribute loss; any solution needs owner approval and goes into
+    these classes. This supersedes the P17 wording "no SourceBagNode subclass".
+11. Owner rule, 2026-09-25: Gramlot reuses Builder by inheritance and never
+    re-implements it. The live renderer becomes `GramlotHtmlRenderer extends
+    HtmlRenderer` (renamed from `GramlotRenderer extends RendererBase`) with its DOM
+    renderedItem, and `GramlotSvgRenderer extends SvgRenderer` serves SvgBuilder
+    nodes. Builder's inherited adaptAttrs brings the legacy style shortcuts into 0.2.0;
+    Gramlot adds `_meta` removal, null style drop, data_/aria_/xmlns_ names and the
+    legacy noConvertStyle attributes. HtmlElement keeps DOM application only. Phase
+    S03bis, before S04. This supersedes the P6 exclusion of color/font_size/_class
+    shortcuts. Owner rule, 2026-09-26: asymmetries between Python and JS are errors.
+    The Python GramlotBuilder may render static HTML/SVG through Python
+    GramlotHtmlRenderer/GramlotSvgRenderer with the same naming rule, delivered in
+    S03bis; authoring stays inert. A render option adds `<!doctype html>` and `<html>`
+    when missing. This supersedes "Python describes Source without rendering it".
+
+This supersedes obsolete authoring/ownership/initialization gates in GC-155–175 and
+PORT-0005; preserve their dated evidence and legacy assertions. GC-210 replaces
+GC-165 for 0.2.0 execution. Each later phase still needs owner authorization.
+S00 is documentation/baseline work only. No runtime, dependency-source edit,
+connected-repository migration, push, publication or deployment is authorized here.
+
+
+### Amendment 11.48 — 0.2.0 scope, minimal Host contract and plan revisions 7–10 — 2026-09-28
+
+Owner decisions of 2026-09-26 and 2026-09-28, recorded in the owner-decision register
+kept outside this repository (`analisi-claude/binding-legacy-analisi.md`), and
+transcribed in the unified plan, revisions 7–10. Owner instruction R03 (2026-09-28):
+the new decisions enter the authoritative documents before S06, in a documents-only
+phase S00bis. The retrievable evidence and source hashes are recorded in
+[GC-210 §005](internal/210-binding-contract.md#gc-210-005); the per-decision register
+is [GC-210 §§010–018](internal/210-binding-contract.md#gc-210-010). "Register" below
+names the section of the owner-decision register. This amendment records decisions;
+it claims no runtime implementation and no owner acceptance of this transcription.
+
+1. Scope. Register: "Perimetro della 0.2.0 (owner, 2026-09-28) — DECISIONE DI
+   RIFERIMENTO" and "Perimetro: Gramlot libreria JS, adapter minimi", 2026-09-28.
+   Gramlot is primarily a JavaScript library; server and database adapters are
+   optional. 0.2.0 contains only what holds for every adapter. The Gramlot folder with
+   `pages`/`resources`, `_resources` levels, `resource_dirs`, `/<page>/_rsrc/<name>`,
+   `resolve_rsrc`, `ResourceNotFound`, the reserved names `config`/`packages`,
+   application packages, `mainpackage` and config belong to gramlot-kajenn after
+   0.2.0. The S06 register entries of 2026-09-26 remain theory for gramlot-kajenn.
+   Supersedes, for the core, the hierarchical resource levels of 11.47 item 7.
+2. Minimal Host contract. Register: same sections; S06 names, 2026-09-26. Python and
+   JavaScript Host: `resolve_page`/`resolvePage` returns the Page class;
+   `resolve_resources`/`resolveResources` returns ready URLs
+   `{css: [url], js: [{url, group}]}`, in load order, without mount prefix. The core
+   never searches files. Server method names follow each language's convention; the
+   page vocabulary (`css_requires`, `js_requires`) is identical. Every page opening
+   takes an optional mount prefix (default `""`), whose source the adapter chooses.
+   The prefix is added once, only to root-relative URLs (`/…`, not `//…`): CSS links,
+   JS module URLs, runtime, main, source and close; relative and absolute URLs stay as
+   written, as in HTML (Q12.1, D8). The nonce is separate from page_id and new at each
+   opening; standalone hashes final bytes. A repeated URL loads once, in its last
+   position. The same JS URL with two different groups is an error in the core, before
+   any import, in Python and JavaScript (C03).
+3. Minimal FileHost. Register: perimeter section, 2026-09-28; S06 companion entries,
+   2026-09-26. `FileHost(pages_dir)`/`new FileHost(pagesDir)` takes one argument, the
+   pages folder. For page path `foo` the file page `foo.py`/`foo.js` is tried first,
+   then the folder `foo/foo.*`; if both exist the file wins, without error. Same-name
+   files beside the file page or in the folder: `foo.css` (CSS), `foo_aux.js`
+   (auxiliary JS module exporting `Logic`, group null), `foo.md` (README). The `_aux`
+   suffix is reserved: a `*_aux.js` file is never a page and no page is named `*_aux`.
+   Page path segments use letters, digits, `_` and `-`. A symlink is rejected only when
+   its real path leaves the pages folder. No resource levels. Load order: `Page.css` URLs
+   as written, then the companions. Supersedes 11.47 item 7 "both together error", the
+   companion `foo.js`, the revision 6 §13 exception for one file exporting both Page and
+   Logic, and the Gramlot-folder argument of FileHost (S06 decision C, 2026-09-26).
+4. `Page.css` and requires. Register: "Revisione 8 del piano — decisioni sui rilievi
+   di Astra", Q10, 2026-09-28. `Page.css` is DOM syntax, a list of URLs as in
+   `<link href>`, and stays in the core for every adapter. `css_requires` and
+   `js_requires` remain Page attributes in Python and JavaScript (P23), one
+   comma-separated string (P13), interpreted by a Host with a resource system
+   (gramlot-kajenn). The core offers the common parser `parse_requires`/`parseRequires`,
+   with one explicit Unicode White_Space set (U+FEFF excluded) in both languages, and
+   `InvalidResourceName`. The minimal FileHost raises an error for any name in
+   `css_requires`/`js_requires`. Supersedes, for the core, "Supersedes Page.css" of
+   11.47 item 7 and the 2026-09-25 rule that css_requires replaces Page.css; both still
+   hold for gramlot-kajenn.
+5. `gramlot-minimal` retired. Register: "gramlot-minimal da dividere", 2026-09-26, and
+   "gramlot-minimal morto", 2026-09-28. `gramlot-minimal` is dead. Its heirs are
+   `gramlot-serverless` (browser/Worker standalone) and `gramlot-uvicorn` (ASGI
+   adapter served by Uvicorn). The core dependency was removed in `61f2c9b`.
+   `gramlot-kajenn` depends only on Kajenn besides the core. Supersedes the
+   `gramlot-minimal` destination of 11.45 and 11.46: standalone startup, Worker
+   messaging, WorkerHost and standalone mount belong to `gramlot-serverless`.
+6. Data declarations. Register: "S01 chiusa con debito", 2026-09-28, and revision 8
+   section (R17, Q7). `data` is forbidden (P19): any `data(...)` call raises an error
+   naming `dataSetter` and `html_data`; the HTML5 `<data>` element is written
+   `html_data(...)`, in Python and JavaScript. `dataSetter` is literal: `value` and
+   attributes are written as authored, without pointer resolution, `==` expression or
+   template; a computed value uses `dataFormula`. A null attribute in a `dataSetter`
+   counts as omitted (R17). A relative variable datapath `datapath='^.foo'` reads
+   `.foo` in the context of the node's parent, and the value read acts as if written
+   in place of the pointer; an absolute or symbolic value acts as an absolute or
+   symbolic datapath. An empty variable datapath gives a null path (Q7): reads
+   (projection, GET, provider arguments) give null; no registration on the null path;
+   defaults and setters are skipped; writes (SET, PUT, FIRE, user input) raise
+   "write on a null path" with node and attribute. The check lives in
+   `getRelativeData`/`setRelativeData` and `PUT` of `GramlotBuilderBagNode`.
+   The Gramlot renderers, live and static, Python and JavaScript, set data-elements
+   aside before `runtime_values`/`runtimeValues`, so a literal `dataSetter` such as
+   `value='^.literal'` renders without resolution or error (R08, plan revision 10).
+   Supersedes "data remains HTML5" of 11.47 item 2 and the P19 condition.
+7. Template `${name}`. Register: "S01 chiusa con debito" and revision 8 section, Q6,
+   2026-09-28. On visual elements, identical in Python and JavaScript: `${name}` is the
+   attribute `name` of the same node after pointer resolution; it is computed at
+   rendering and follows Data changes; the parameter does not reach the DOM; `\${`
+   stays text; a missing name raises "Unknown template parameter 'name'". Attributes
+   only, never the node value; not on data-elements; `${…}` in dataFormula and
+   dataController scripts is JavaScript and passes unchanged. genro-builders 0.26.0
+   aligns Python with genro-builders-js.
+8. Source class and wire. Register: "Prova 11 — classe delle Bag nel wire" (2026-09-26)
+   and "Prova 11 — chiusura" (2026-09-28). The builder declares the Source class, as
+   legacy `domSrcFactory`: `_source_class`/`static _sourceClass = GramlotBuilderBag`;
+   the Source declares the node class. The TYTX suffix stays the type (`::X`). `__cls`
+   names the class on a branch row only when it differs from the parent, and on a root
+   payload; only the payload decides the root class; an unknown name is an error;
+   `__cls` is reserved; names are the real class names. The `SOURCE` suffix is gone.
+   Python `GramlotBuilderBagNode` redefines `pointer_type`, as JavaScript
+   `pointerType`, so a value starting with `==` is not a pointer (Q13); it is not a
+   runtime method.
+9. Writes. Register: revision 8 section, Q8, Q9, R13, 2026-09-28; plan revision 9, D4.
+   FIRE always fires, also with an equal value: `GramlotBuilderBagNode.FIRE` resets
+   the value silently, then writes with fired; `FIRE(path, null)` becomes
+   `FIRE(path, true)`; the reset is guaranteed in finally (P12, R10). No FIRE mark:
+   the Data event carries `fired`, as legacy, and the router reads `event.fired`.
+   This needs genro-bag 0.27.0, genro-bag-js 0.10.0 and genro-builders-js 0.3.1,
+   published on 2026-09-28; the declared constraints rise in S08. Silent PUT means
+   Gramlot does not react; autocreate `ins` events of missing branches reach the
+   router, which discards them, without suppression (R13). Supersedes the
+   router-marked FIRE of 11.47 items 5 and 10, the unchanged inherited GET/SET of item
+   10, and "S04 and S08 wait for no external release" of item 10.
+10. Routing. Register: revision 8 section, R06 and R15, 2026-09-28. `#<node_id>` is
+    translated in `absDatapath` through a `node_id → node` map on the Gramlot
+    instance; a registration uses the path translated when it is made. One delivery
+    per registration: two attributes of one node hit by one event give two calls, as
+    legacy.
+11. Attribute evaluation, `==` and `mask`. Register: revision 8 section, Q11.2, `mask`,
+    and the `==` template-chain decision, 2026-09-28. Order: `pointerType` excludes
+    `==`; Builder `runtimeValues` resolves `^`/`=` and templates; Gramlot computes `==`
+    with the other resolved attributes, excluding other `==`; `mask`; projection. An
+    argument of `==` is the `runtimeValues` result of that attribute; an attribute
+    consumed by a template, absent from that result, is the pointer resolved from the
+    Source. A `==` using a consumed attribute that is itself a template raises an error
+    naming both attributes; a template using an `==` attribute raises an error. `mask`
+    applies to the node text only, as legacy `gnrlang.js:1130-1139` (`%s` replaced; no
+    mask on an empty formatted value), in the live and static renderers, Python and
+    JavaScript. `_if`/`_else` are inline only, as legacy; with `func=` they do not
+    exist (Q11.1). Supersedes the `mask` exclusion of GC-210 §030.
+12. Renderer chain. Register: "Render a stringa in JS", 2026-09-28.
+    `GramlotHtmlRenderer extends HtmlRenderer` renders strings, same name as the Python
+    class, new file `gramlot-html-renderer.js`; `GramlotRenderer extends
+    GramlotHtmlRenderer` is the live DOM renderer and keeps its name and file.
+    `getBaseSourceNode`/`getDomNode` live on `GramlotRenderer` and `Gramlot`.
+    Supersedes 11.47 item 8 (lookup on `GramlotHtmlRenderer`) and the rename of item 11.
+13. Native controls. Register: revision 8 section, C04.1, C04.2 and Q5, 2026-09-28.
+    An attribute change the element cannot apply rebuilds the element, with the
+    NodeBinding kept (`type`, `multiple`, `group`); `live` changes only the write
+    timing. A `true` written by code on a radio of a group writes `false` on the other
+    buttons of the group, with the same code as the click. The Q5 conversion matrix of
+    GC-210 §060 is confirmed.
+14. Open questions closed. Register: revision 8 section, 2026-09-28. Q2: provider
+    cycles as legacy, no limit, loops stop on equal values; reviewed after 0.2.0. Q3:
+    the application chooses and sends the CSP through the adapter; Gramlot adds nonce
+    and hash; strict profile (nonce, no `'unsafe-eval'`, named logic only) and
+    permissive profile (`'unsafe-eval'`, inline active); inline under the strict
+    profile raises a clear error with node and attribute. Q4: all seven adapters are in
+    0.2.0 (`gramlot-uvicorn`, `gramlot-serverless`, `gramlot-js-server`,
+    `gramlot-django`, `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn` with the
+    minimal contract only), authorized per delivery: each repository is worked in its
+    own chat with its own brief, and the owner authorizes it there when that delivery
+    starts; no repository is authorized by this amendment. R02: S06 has a linked
+    delivery in `gramlot-uvicorn` and closes only after it. Q12.2: `PageBootstrap.run`
+    checks the Logic rules after the imports and before `new Gramlot(config)`. D9: from
+    S07 the CSS links are emitted by `PageBootstrap`.
+15. General rule. Register: revision 8 section, 2026-09-28: when in doubt, follow the
+    legacy behavior, because it is field-tested.
+
+Explicit supersessions, with the superseded text kept as history: 11.47 item 2 (data
+remains HTML5) by item 6; item 5 (router-marked FIRE) by item 9; item 7 (hierarchical
+JS levels, Page.css replaced, companion, both page forms together an error) by items
+1–4; item 8 by item 12; item 9 (Q2–Q5 open) by items 13–14; item 10 (FIRE marked for
+the router, inherited GET/SET unchanged, no external release, empty Python classes)
+by items 6, 8 and 9; item 11 (renderer rename) by item 12; 11.45 and 11.46, for the
+assignment of standalone and Worker integration to `gramlot-minimal`, by item 5.
+Decision checklist transcribed: R02, R03, R06, R13, R15, R17, C03, C04.1, C04.2,
+Q2–Q13, `mask`, renderer chain, "when in doubt, follow legacy". Each later phase
+still needs its own owner authorization. No runtime, dependency-source edit,
+connected-repository migration, push, publication or deployment is authorized here.
+
+
+### Amendment 11.49 — Builder owns the outer Data root — 2026-09-29
+
+Owner decision of 2026-09-29 (unified plan, revision 11; genro-builders#37 decision
+comment, genro-builders-js#11), released in genro-builders 0.27.0 and
+genro-builders-js 0.4.0. The per-decision register is
+[GC-210 §010](internal/210-binding-contract.md#gc-210-010). This amendment records a
+decision; it claims no runtime implementation and no owner acceptance.
+
+1. Data root. Builder owns the outer Data root: the private wrapper `_dataroot`
+   holds the content node `_root_`, whose value is the document Data Bag, in the same
+   shape as the Source (`_sourceroot` → `_root_`). `gramlot.data === builder.data`
+   (the content Bag). Authored paths never contain `_root_`. Builder makes no Data
+   subscription and never replaces the content; sub-builders share the content and
+   the wrapper.
+2. Subscription. Gramlot owns one Data subscription, on Builder's wrapper, and the
+   routing. `BindingRuntime.attach()` only subscribes: it creates no root and no
+   `main` node. `BindingRuntime.root` reads the wrapper through the public getter
+   `builder.data.parent`. The line `this.data.setItem('main', new Bag())` of
+   `Gramlot` is removed. The router strips the first path segment `_root_`.
+
+Explicit supersession, with the superseded text kept as history: 11.47 item 1 (one
+stable outer root with `main`, built by Gramlot) by items 1–2.

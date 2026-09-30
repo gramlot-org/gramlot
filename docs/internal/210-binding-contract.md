@@ -1,0 +1,1018 @@
+# 210 · Gramlot 0.2.0 binding contract and execution plan
+
+Document ID: **GC-210**. Recorded: **2026-09-25**. Updated: **2026-09-30** (review corrections, §090; plan revision 10, §005).
+
+[Concise counterpart](../../docs_llm/internal/210-binding-contract.md).
+[Constitution](../00-constitution.md) · [Current status](070-work-status.md#gc-070-510).
+
+<a id="gc-210-005"></a>
+## 005 · Authority, provenance and delivery boundary
+
+Block ID: **GC-210-005**.
+
+This is the English repository transcription of the unified 0.2.0 plan, revision 6
+(revision 3 with its later additions, plus the owner decision of 2026-09-25 that the live
+renderer reuses Builder by inheritance, phase S03bis, and the 2026-09-26 example
+family phases S14bis, S03bis in Python and JS), including its approved decisions, architecture, phases and acceptance gates. It
+supersedes GC-165 as the binding execution plan; GC-110 remains the completed 0.1.0
+plan. The earlier plans, handoffs and legacy probes remain historical evidence.
+This contract is planned behavior, not a claim that reactive binding is implemented.
+
+Owner evidence, 2026-09-25: the unified plan header records the owner's approval on
+2026-09-25; its sections 2–3 and the decision record confirm the remaining proposals **“per ora”** (for now). Individually settled decisions
+are identified below. The S00 brief authorizes transcription, the disposition of
+pre-existing documentation, baseline checks and inventories; the current task says
+“Esegui la fase S00 di Gramlot 0.2.0” and requires one commit on develop, no push,
+and a final report beside that brief. Completion acceptance still belongs to the
+owner after review. Q2–Q5 remain open at their consuming phases.
+
+Provenance: the owner-approved unified plan (revision 3 with later additions,
+sections 2–10) and the S00 brief, both kept outside this repository. The brief identifies the owner-decision record
+(section “Decisioni dell'owner” through the document-ID decision) and the review
+section 3 disposition table. SHA-256 at transcription:
+
+- Unified plan, revision 6: `e8ceda0f713be58f43b2e24a2d03ffd6affb2600c2d3916446b2419a2068a9f5`.
+- Unified plan, revision 5: `71f9878eb6a0783714ef2945d6f7e01c28b0f66cc99733ffdcdf6638fb93a6ea`.
+- Unified plan, revision 4: `77a9fb2aebede13be865da8b7c54c8afc2a0f29635c3e09fe1ff002e44c53151`.
+- Unified plan, revision 3 with later additions: `9d7251c4d0ad0a1eb02b7ce6aa3a9b8f198f862a62c93a37c69d840212ead035`.
+- Unified plan, revision 2 (first transcription): `a9eda5d9f9f1541b3851ff7fc93e37bfbc74658df67ad5a9794929e6622c8b33`.
+- Owner-decision record: `40de3e54e8a9e2ef02ef88a5b5c3261f41345506bd17563aae6835b824b649b1`.
+- Disposition review: `1ec993d5f65746e2b3bbba92e4d9b2261cf32b70e502dd3e5393fcc49bcaa153`.
+- S00 brief: `baed3e78d36bd10289c4fd561e5a6442cc2634f6d99d5135fbb6f84cca3c2e0a`.
+
+These references establish provenance; the contract below is self-contained.
+Constitution amendment 11.47 records the decisions in both repository views.
+
+**Revisions 7–10 (S00bis, 2026-09-28).** Owner instruction R03 (2026-09-28): the
+decisions of unified-plan revisions 7–10 enter this contract and the constitution
+before S06. Constitution amendment 11.48 records them in both views. This document
+is aligned with revision 10 in §§010, 015, 018, 045, 055, 060 and 075; superseded
+entries stay, marked historical. Sources, SHA-256 at transcription:
+
+- Unified plan, revision 10: `a6725853e5157d0c3f9895b3e8997747598a2e3bbd3f7706ab398df672296b1e`
+  (`v_0.2.0/piano-unico-0.2.0.md`, outside this repository).
+- Owner-decision register, current version: `84a11f2fcc886a3c83cf1a17df731711587e22f9916f5b1ffcefbbabe68894de`
+  (`analisi-claude/binding-legacy-analisi.md`, outside this repository). The
+  sections "S01 chiusa con debito" through "Revisione 8 del piano — decisioni sui
+  rilievi di Astra" and later entries hold the owner evidence of 2026-09-26/28.
+
+Historical: the sentence above "Q2–Q5 remain open at their consuming phases" is
+superseded; Q2–Q13 are decided (§015). The phases run in the linear order of
+unified-plan §6: S00bis, S06, S02, S03, S03bis, S04, S05, S07–S13, S14, S14bis,
+S15, S16, S17.
+
+Implementation uses real SourceBag/SourceBagNode and TYTX, one agreed path, no
+parallel Source or Data store, no module-level mutable state and no global `genro`.
+Python authoring comes first. Builder and Bag, including installed copies, are
+read-only here. Fixes to genro-builders or genro-bag are forbidden (owner, 2026-09-25);
+missing behavior goes into the Gramlot source classes of §018, never elsewhere. Record tested versions without pinning dependencies. Each phase needs
+its own owner authorization, bounded commit, behavior note, meaningful tests and
+paired GC-070 update. New JS tests belong in `js/tests/*.test.js`, Python tests in
+`tests/`; real-browser tests use a separate runner. No release or deployment is
+implied. Execution/review assignments remain operational metadata in the external brief.
+
+<a id="gc-210-010"></a>
+## 010 · Release decisions and supersession register
+
+Block ID: **GC-210-010**.
+
+Every row is an owner decision dated 2026-09-25, sourced by the correspondingly
+named decision in the record identified in §005, or by unified-plan §2. “New” means
+there was no earlier approved behavior to replace. Test names below are planned
+unless §080 explicitly records execution.
+
+| Decision | Contract and superseded proposal | Phase | Required evidence |
+| --- | --- | --- | --- |
+| Data root/ownership | Builder's outer root (revision 11, owner, 2026-09-29; genro-builders#37, genro-builders-js#11; amendment 11.49): private wrapper `_dataroot` → content node `_root_` → document Bag, as the Source (`_sourceroot` → `_root_`); `gramlot.data === builder.data`; authored paths omit `_root_`; Builder makes no Data subscription and never replaces the content; one Gramlot subscription, on the wrapper, and the router. *Historical (revisions 1–10): outer root → `main` → document Bag, built by Gramlot.* Supersedes segmented Data and unresolved ownership gates; original receipts GC-070 §§425–435 | S01, S03 | Identity/backrefs, two isolated instances, stable root after branch replacement, one subscription on `_dataroot` |
+| Canonical declarations, P18 | `dataSetter(destination_path, value=None, **attr)`; `dataFormula(result_path, formula=None, func=None, **params)`; `dataController(script=None, func=None, **params)`. Inline `formula`/`script` and named `func` are mutually exclusive. Supersedes `.data(path, value)`, setter `destination`, formula `destination`, generic-only signatures and legacy dispatch | S02 | Python/JS positional and named calls, attribute-only setter, invalid calls, inert transport |
+| B8 | No `?attr` in `destination_path` or `result_path`; reject before installation. Attribute selectors remain valid in reading pointers | S02, S05 | Validation before side effects; R1 attribute-only update |
+| `_path` suffix | Bare paths; strip authored `^`/`=` pointer prefix with one warning per declaration. `foopath` is an ordinary attribute. New explicit normalization exception | S02, S04 | Prefix removal and one warning; ordinary attribute unaffected |
+| Variable datapath | `datapath='^.foo'` uses the Data value at `.foo`; changes rebind the whole branch. Supersedes literal-only context assumptions; resolved by `GramlotBuilderBagNode.absDatapath` (§018) | S04 | Changing, empty and nested variable contexts |
+| A2 | All setters of initial/inserted branch before any DOM, document order including deep later descendants; later non-null duplicate wins. Supersedes per-build-level legacy stripping | S05 | First-render values, duplicates at different depths, remote insertion |
+| R1 | Non-null writes; null on existing path retains value and applies attributes; null on missing path creates null plus attributes. Runtime setData unchanged. Supersedes unconditional null overwrite and legacy lost attributes | S05 | Absent null, 7 then null, attribute-only null, 7 then 9 |
+| D1a | `default`, `default_value`, `default_<attr>` after setters, empty paths only; `attr_*` follows §012. Construction defaults differ from future newrecord defaults | S05, S15 | False/0/empty string preserved; defaults never beat later setter |
+| D2a | `_userChanges` accepts only `node` trigger level, excluding `container`, `child`, `autocreate`; it is not user-versus-program discrimination | S08 | All levels including programmatic node writes |
+| Pointers/lifetime | `^`, `=`, page-only `==`; relative/symbolic (§012)/attribute pointers; rebind on Source/context changes; removal keeps Data; rebuild/thaw do not reinstall | S04, S09, S13 | Rebinding and exact lifecycle traces |
+| D4 | Boolean `value='^x'` on checkbox; radio adds `group`, one boolean per button and peer writes. Supersedes `checked='^x'`; radioButtonText deferred | S11 | Both Data booleans and DOM peers, mouse/keyboard, isolation |
+| V1, live, freeze | `visible=false` → visibility hidden; native `hidden` unchanged; `live=False` default; freeze suspends structural rebuild only. Retains separately recorded freeze extension | S04, S10, S13 | Geometry, input/change, active existing views/providers under freeze |
+| D7 | Named logic primary, inline only in page runtime; no eval in Python/JS Host, WorkerHost or DevTools. Native Source script stays HTML5. Explicit named/inline exception to §13 | S07–S09, S14 | Import graphs, server sentinels, real CSP |
+| Source operations | Named code uses `node.SET` etc.; inline uses `this.SET` etc., `this` is Source node. Builder `setRelativeData`, `getRelativeData`, GET/SET; PUT/FIRE/FIRE_AFTER of `GramlotBuilderBagNode` (§018); no Gramlot ops layer. Historical in part: "FIRE marked for the router" is superseded by Q8/Q9 (table below) | S01, S08 | Silent PUT, FIRE marked for the router (historical: FIRE recognized from `event.fired`), nested writes and reset |
+| Macro compatibility | Deprecated inline preprocessor uses legacy regexes, translates GET/SET/PUT/FIRE/FIRE_AFTER to node methods and `$n` to arguments; one warning on first compilation. Same string/comment limitations. Supersedes macros as sole inline write mechanism | S09 | Direct calls without warning, each macro, strings/comments, cache/release |
+| Delayed writes | `FIRE_AFTER(path, value=true, delay=10)` in ms, method of `GramlotBuilderBagNode` (§018); timer tracked on the NodeBinding and cancelled when it closes | S08 | Default/explicit delay, cancellation at NodeBinding close, closed recipients not called |
+| Button, B7 | Nested ordinary dataController is primary, still reacts to pointers/init/start/timing; click adds a trigger. Alternatives action or fire family (§012); connect_on events secondary | S08, S12 | Normal provider plus click, exactly one click invocation |
+| R3 provisional | Gramlot-enabled button gets type=button only if absent; preserve explicit type; stopPropagation, no preventDefault. Plain button native. Supersedes both unconditional native cancellation and unqualified native defaults | S12 | Forms, submit, parent handlers/controllers, Enter/Space, native listeners; owner reviews effects |
+| Bootstrap/resources, P23 (historical, revision 6; superseded by the scope, Host contract, FileHost and Q10 rows below) | Page declares `js_requires`/`css_requires` in both languages, names only; hierarchical all-level JS last registration wins, CSS cascade; public same-name companion last; nonce distinct from page_id, static hashes. Supersedes Page.css, camelCase and legacy first-JS-only resolution | S06, S07, S14 | Three resource levels, nonce/hash, CSP, all eight hosts |
+| Source↔DOM | Renderer and Gramlot expose `getBaseSourceNode(domNode)` and `getDomNode(sourceNode)` through existing maps; no added object properties | S04 | Ancestors/text/fragments; null for nonvisual/unbuilt/removed nodes, fresh element after rebuild |
+| Exclusions | Explicit errors for serverpath, dbenv, shared_id, remote, dataRpc, dataRemote, subscribe_*, selfsubscribe_*, formsubscribe_*, PUBLISH, _ask, ask; same keys inside user Data stay data | S02, S16 | Rejection at declaration boundary, user payload untouched |
+
+Deferred without adding new error contracts: components/widgets, stores/grids/trees,
+forms/records/newrecord, server synchronization, CSS beyond css_requires and native
+projection, rich editing, asynchronous scheduling/transactions, gramlot.warning,
+LightButton, automatic 200 ms disable and click-burst behavior. *Revision 8:* "CSS
+beyond css_requires" reads "CSS beyond `Page.css`, the companions and
+`css_requires` (gramlot-kajenn)".
+
+**Revisions 7–10 decisions (constitution 11.48).** Owner decisions dated 2026-09-26
+or 2026-09-28, sourced by the named entries of the register identified in §005 and by
+unified-plan §§2–4, revision 10.
+
+| Decision | Contract and superseded entry | Phase | Required evidence |
+| --- | --- | --- | --- |
+| Scope (2026-09-28) | Gramlot is primarily a JS library; 0.2.0 holds only what is valid for every adapter. Gramlot folder, `_resources` levels, `resource_dirs`, `_rsrc`, `resolve_rsrc`, `ResourceNotFound`, reserved `config`/`packages`, packages, `mainpackage`, config belong to gramlot-kajenn after 0.2.0. Supersedes the hierarchical resolution of revisions 1–6 for the core | S06, S14 | `git grep` of the kajenn symbols in active code finds nothing |
+| Minimal Host contract (2026-09-28) | `resolve_page`/`resolvePage` → Page class; `resolve_resources`/`resolveResources` → `{css: [url], js: [{url, group}]}`, load order, no prefix; the core never searches files. Optional mount prefix per opening, default `""`, chosen by the adapter, added once only to `/…` URLs (Q12.1, D8). Nonce distinct from page_id, new per opening. Repeated URL loads once, last position; same JS URL with two groups → error before imports (C03) | S06, S07, S14 | Prefix forms `/…`, `//…`, `https://…`, `./…`, bare; nonce freshness; C03 error; Python/JS descriptor cross test |
+| Minimal FileHost (2026-09-28) | `FileHost(pages_dir)`/`new FileHost(pagesDir)`, one argument. `foo.py`/`foo.js` before `foo/foo.*`; both present → the file wins, no error. Companions `foo.css`, `foo_aux.js` (exports `Logic`, group null), README `foo.md`; `_aux` reserved; segments letters/digits/`_`/`-`; symlink rejected only if its real path leaves the pages folder; no levels. Order: `Page.css`, then companions. Supersedes P14 "both present error", companion `foo.js`, decision C (Gramlot folder) | S06 | Both layouts, file wins, `_aux` rules, companions, traversal and symlink escape |
+| Q10, Q12.1 (2026-09-28) | `Page.css` is DOM syntax (URLs as `<link href>`) and stays in the core. `css_requires`/`js_requires` stay Page attributes (P23), interpreted by a Host with a resource system (kajenn); the core keeps `parse_requires`/`parseRequires` and `InvalidResourceName`; the minimal FileHost errors on any requires name. Supersedes "Page.css is replaced by css_requires" (2026-09-25) for the core | S06, S14 | `css_requires='tema'` on FileHost → decided error; `Page.css` positive on every path |
+| `gramlot-minimal` retired (2026-09-26/28) | Heirs `gramlot-serverless` (standalone, Worker) and `gramlot-uvicorn` (ASGI/Uvicorn); core dependency removed in `61f2c9b`; gramlot-kajenn depends only on Kajenn. Supersedes the Minimal assignment of 11.45/11.46 | S14, S15 | No `gramlot_minimal`/`@gramlot/minimal` in each adapter's active code |
+| `data` forbidden, P19 (2026-09-28) | Any `data(...)` raises an error naming `dataSetter` and `html_data`; the HTML5 element is `html_data(...)`. Python and JS. Supersedes "data remains HTML5" and the P19 condition | S02 | Error message in both languages; `html_data(value='1')` → `<data value="1">` |
+| Literal `dataSetter` (2026-09-28) | `value` and attributes as written: no pointer, no `==`, no template; computed values use `dataFormula`. R17: a null attribute counts as omitted | S02, S03bis, S05 | `'^y'`, `'==a+b'`, `'a${b}'` stored as strings; static render without errors (R08, revision 10) |
+| Relative variable datapath (2026-09-28) | `datapath='^.foo'`: `.foo` read in the parent's context; the value read acts as if written in place of the pointer; absolute or symbolic value acts as such | S04 | Parent `ordini`, `ordini.foo='.x1'` → `ordini.x1`; absolute and symbolic values |
+| Q7 null path (2026-09-28) | Empty variable datapath → null path: reads null, no registration, defaults/setters skipped, writes raise "write on a null path" with node and attribute; the check is in `getRelativeData`/`setRelativeData` and `PUT` of `GramlotBuilderBagNode` | S04, S05, S08, S10 | valid → empty → valid; GET null; SET/PUT/FIRE/setRelativeData errors |
+| Template `${name}`, Q6 (2026-09-28) | Visual attributes only, never node value or data-elements; resolved attribute of the same node; follows Data; parameter not in DOM; `\${` literal; missing name → "Unknown template parameter"; scripts pass unchanged. genro-builders 0.26.0 | S03bis, S04 | Python/JS parity |
+| Source class and wire (2026-09-26/28) | Builder declares the Source class (`_source_class`/`_sourceClass`); suffix `::X`; `__cls` on differing branch rows and on the root payload; payload decides the root; unknown name error; `__cls` reserved; `SOURCE` gone. Q13: `pointer_type`/`pointerType` excludes `==` in Python and JS (`0b7f913`) | S01 (closed), S02 | Existing proof 11 tests; S02 verifies `==` classification |
+| Q8, Q9, D4 FIRE (2026-09-28) | FIRE always fires: silent reset, then write with fired; `FIRE(path, null)` → `FIRE(path, true)`; reset in finally (P12, R10). No FIRE mark: the router reads `event.fired` (genro-bag 0.27.0, genro-bag-js 0.10.0, genro-builders-js 0.3.1, published 2026-09-28). Supersedes the FireMark of §018 | S08 | Equal-value FIRE, null FIRE, throwing recipient, nested SET not fired |
+| R13 silent PUT (2026-09-28) | Gramlot does not react; autocreate `ins` of missing branches are discarded by the router; no suppression | S08 | Recipient counts on existing, missing-branch and `?attr` paths |
+| R06, R15 routing (2026-09-28) | `#<node_id>` translated in `absDatapath` through a `node_id → node` map on the instance, at registration time. One delivery per registration, as legacy | S04, S08 | Translated registration; two attributes → two calls |
+| Q11.1, Q11.2, `mask` (2026-09-28) | `_if`/`_else` inline only. Order: `pointerType`, `runtimeValues`, `==` with resolved non-`==` arguments (consumed template attributes from the Source), `mask`, projection. A `==` using a consumed attribute that is itself a template → error naming both; a template using `==` → error. `mask` on node text only, legacy rule, live and static, Python and JS | S03bis, S04, S09 | D6 and revision 10 cases; mask with null, empty, 0, false, `%s` |
+| Renderer chain (2026-09-28) | `GramlotHtmlRenderer extends HtmlRenderer` (string, same as Python, new file); `GramlotRenderer extends GramlotHtmlRenderer` (live DOM, name and file kept). Supersedes the rename of 11.47 item 11 | S03bis | Symmetry test string to string |
+| C04.1, C04.2 (2026-09-28) | An attribute without a setter rebuilds the element, NodeBinding kept (`type`, `multiple`, `group`). A `true` from code on a radio writes `false` on its peers, same code as the click | S10, S11 | Rebuild with NodeBinding unchanged; peer writes from code |
+| Q2–Q5, Q12.2 (2026-09-28) | Q2 cycles as legacy, no limit. Q3 CSP chosen by the application, strict and permissive profiles, clear error for inline under strict. Q4 seven adapters, authorization per delivery. Q5 matrix confirmed (§060). Q12.2 Logic checks before `new Gramlot`. D9 CSS links from `PageBootstrap` from S07 | S07, S08, S10, S14 | As in the owning phases |
+| When in doubt, legacy (2026-09-28) | With no clear winner, follow the legacy behavior, because it is field-tested | all | — |
+
+<a id="gc-210-012"></a>
+## 012 · Legacy attr_*, symbolic paths and click attributes
+
+Block ID: **GC-210-012**.
+
+Added on 2026-09-25 when GC-210 was aligned with unified plan revision 3 and its
+later additions. Every row is an owner decision dated 2026-09-25 from unified-plan §2.
+
+| Decision | Contract and superseded proposal | Phase | Required evidence |
+| --- | --- | --- | --- |
+| `attr_*` | As legacy `stripDataNode` (`genro_src.js:581-593`, origin/develop): on a visual node `attr_<name>=v` sets attribute `<name>` on the Data node of the control's `value` (the path in `value`, or in `src`). `v` may be a pointer, resolved on the node. It applies only if that Data node exists, without checking whether the attribute is empty, and after the node's own defaults: a default that just created the Data node lets `attr_*` apply. Example: `input(value='^.prezzo', attr_dtype='N')` sets `dtype='N'` on Data node `.prezzo`. Corrects the P15 clause that evaluated `attr_*` before the default | S05 | Existing Data node, Data node created by the default, absent Data node (no effect), pointer value |
+| Symbolic paths | Only the symbols Builder already resolves (`source-bag.js:109-190`): `#parent` (one level up), `#FORM` (first ancestor with `formId` or `form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<node_id>` (the node with that `node_id`). Example: `value='^#FORM.cliente.nome'`. Legacy `#WORKSPACE`, `#ROW`, `#DATA` and aliases do not exist in Builder and stay out of 0.2.0 | S01, S04 | Each supported symbol, including `?attr` pointers |
+| `action` | As legacy `_ButtonLogic._clickHandlerDo` (`genro_widgets.js:3545-3598`, origin/develop): inline code run on click with `this` = button node. It receives the current button attributes plus `event`, `_counter` and `modifiers`. D7 inline rules apply: page runtime only, discouraged | S09, S12 | Click invocation and received arguments |
+| `fire` | `fire='.path'` runs FIRE on `.path` on click. The value is the modifier string (`'Shift'`, `'CtrlAlt'`, …, from `eventToString`, `gnrlang.js:1757`), or `true` without modifiers. The Data node receives attributes `modifier` and `_counter` | S12 | Value with and without modifiers; `modifier`/`_counter` attributes |
+| `fire_<name>` | `fire_<name>='.path'` runs FIRE on `.path` with value `'<name>'`. Several `fire_*` on one button all fire (P10 order). Example: `fire_salva='.azione', fire_chiudi='.chiusura'` | S12 | Several `fire_*` on one button |
+| Click mechanism exclusion | Legacy excludes the mechanisms in a chain (`action`, then `fire`, then `fire_*`) and fires the nested controller in addition. Gramlot applies P10: any combination of nested controller, `action` and the fire family is an error | S12 | Each combination rejected |
+
+<a id="gc-210-015"></a>
+## 015 · Confirmed proposals and remaining decisions
+
+Block ID: **GC-210-015**.
+
+All P rows have owner provenance dated 2026-09-25. P4/P7/P14/P17/P18/P21/P23/P25 were
+settled individually; the remaining proposals were confirmed “per ora”. A discovered
+problem must return to the owner; this is not permission to choose an alternative.
+Nonarchitectural corrections may belong in 0.2.1. Unless stated otherwise these
+settle previously unapproved proposals, not older approved behavior.
+
+| ID | Confirmed rule | Phase → test |
+| --- | --- | --- |
+| P1 | Suppress only redundant value projection originating at that control when its DOM value already matches. Corrective values return to origin; title/class/style and providers always react | S04/S10 → caret preserved, controller normalization visible, other attributes updated |
+| P2 | Eight-step installation in §035 | S05/S08 → exact ordered trace |
+| P3 | Frozen inserted branch executes steps 1–5 immediately; DOM/built at thaw, start waits for first build | S05/S13 → never-built and nested-freeze cases |
+| P4 | Settled, aligned with legacy `nodeTrigger` (`genro_src.js:167-203`) and `_isBuilding` (`gnrdomsource.js:982-992`): finish each build; queue Source mutations and run them after the build; ignore changes to a currently building node (§025); queue in arrival order as today (`gramlot-renderer.js:211`), where legacy uses pop(); onBuilt after complete construction (`onBuiltCall`). Supersedes error-on-reentrancy and legacy LIFO | S03/S05 → observer/init mutation traces |
+| P5 | Existing observers see setter writes synchronously; new branch providers wait through setters/defaults | S05 → external sees 1 then 2, internal sees final state |
+| P6 | Finite style vocabulary in §030. Settled (owner, 2026-09-25): legacy style shortcuts are in 0.2.0, inherited from Builder `HtmlRenderer.adaptAttrs`; legacy `noConvertStyle` keeps listed width/height/border as attributes. Supersedes the exclusion of color/font_size/_class shortcuts | S03bis → shortcut composition, null, SVG unchanged, noConvertStyle; S04 → reactive shortcuts, removal, precedence |
+| P7 | Comma parsing, trim, ignore empty tokens/duplicates preserving first position; slash-separated segments match `^[A-Za-z0-9_-]+$`; reject dot segments, leading/trailing slash, extensions and colon. Supersedes slash ban and errors on empty/duplicate tokens. *2026-09-26/28:* trimming uses one explicit Unicode White_Space set (U+FEFF excluded), identical in Python and JS; one error class `InvalidResourceName` (Python `ValueError`, JS `Error`) | S06 → parser parity and invalid names |
+| P8 | No duplicate-setter warning; future warning Bag deferred | S05 → deterministic writes without warning |
+| P9 | button_counter, button_shift, button_ctrl, button_alt, button_meta; counter lasts for semantic node | S12 → modifiers, rebuild retains counter |
+| P10 | Exactly one click mechanism: one nested controller, action, or fire family. Ambiguity errors; all fire_* attributes in attribute order; connect_onclick separate and afterward | S12 → multiple controllers/mechanisms rejected, fire order |
+| P11 | Radio DOM name scoped by instance plus group; multiple initial true values in one group error | S11 → isolation/conflict tests |
+| P12 | Provider exception interrupts delivery visibly; context/FIRE markers restored in finally, silent FIRE reset still runs; no rollback; subsequent writes work. *Revision 8:* no FIRE marker exists (Q9); contexts are restored and the silent FIRE reset runs in finally | S08 → throwing recipient and next write |
+| P13 | Requires fields are one comma-separated string. *Revision 8:* gramlot-kajenn interprets them (Q10); the core offers the parser | S06 → Python/JS descriptors |
+| P14 | *Historical (revision 6), revised 2026-09-28 in the FileHost row of §010:* pages/name.py or pages/name/name.py; both present error; companion beside either; JS pages in separate directory. A JS page `ordini.js` exports both `Page` (used by the Node/Bun host to build the Source) and `Logic` (used in the browser), so it must import in both environments without server-only imports. Explicit §13 exception, supersedes folder-only proposal | S06 → both layouts/ambiguity/traversal; S07/S14 → JS page imports on Node/Bun and in the browser |
+| P15 | Only null/missing empty; false, 0, empty string values; default_value beats default; attr_* follows the legacy rule in §012 (after own default, only if the value's Data node exists) | S05 → boundary/default precedence |
+| P16 | S00 execution followed by separate review; S06 assigned separately in external brief. *Revision 7:* model and effort of each phase are in its workflow `Run:` field | S00/S06 → delivery and review receipts; no runtime behavior |
+| P17 | Settled (owner, 2026-09-25): the node methods live in `GramlotBuilderBagNode extends SourceBagNode` and `GramlotBuilderBag extends SourceBag` (§018); no prototype mutation. Node semantic state (registrations, timers, counter, stamps) stays for now in NodeBinding, in a BindingRuntime Map keyed by the actual node; it may move onto the node later without author-visible effects. Supersedes "no SourceBagNode subclass" | S01/S03 → Gramlot classes on every browser path; identity through insertion and transport destination |
+| P18 | Canonical signatures in §010, no legacy dispatch; optional setter value | S02 → valid/invalid signatures in both languages |
+| P19 | *Historical:* reject legacy data-element calls with migration message only if distinguishable from HTML5 data without content heuristics; otherwise documentation migration. No alias. *Decided 2026-09-28:* `data` is forbidden; every `data(...)` call errors naming `dataSetter` and `html_data` (§010) | S01/S02 → observed legacy call and legitimate HTML5 data |
+| P20 | Formula: method(kwargs) returns result; controller: method(node, kwargs); this=group. Resolved author attributes plus _node, _triggerpars, _reason, and button _evt/button_*; exclude control attributes listed in §040 | S07/S08 → argument/receiver contract |
+| P21 | Each resource exports class Logic; per-page resource groups, companion root, specific methods override generic. Supersedes static-method holder/page mixin proposal. *Revision 8:* groups from `js_requires` need a Host with a resource system (kajenn or a test Host); with the minimal FileHost only the companion root group exists | S07 → groups, collision, constructor and isolation checks |
+| P22 | Numeric _onStart in ms; true and 0 immediate; negative/nonfinite error; independent of other-trigger _delay | S08 → virtual clock |
+| P23 | Same snake_case requires fields in Python and JS, no aliases | S06/S14 → authoring and all hosts |
+| P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins | S03 → rebuild, removal, late response, frozen living target |
+| P25 | Authoring dict/plain JS object becomes Bag(value); nested dicts become Bags, lists and their dictionary items remain lists/items, JSON strings stay strings. Supersedes scalar-only assumptions; no custom converter | S02 → TYTX cross-language payload identity/types |
+
+*Historical (revision 6):* the open questions below were still open on 2026-09-25.
+
+| Open ID | Decision still required | Gate |
+| --- | --- | --- |
+| Q2 | Synchronous provider cycles: gather real cases, no arbitrary limit | S08 |
+| Q3 | Actual CSP profiles: named without unsafe-eval, inline only under application-selected permissive policy | S14 |
+| Q4 | Connected-repository write authorization for 0.2.0 migration | S14 |
+| Q5 | Native conversion matrix in §060 | S10 |
+
+All questions Q1–Q13 are closed (owner, 2026-09-28, register revision 8 section):
+
+| ID | Decision | Phase |
+| --- | --- | --- |
+| Q2 | Provider cycles as legacy: no limit, no detector; loops stop on equal values. A depth limit is to be reviewed after 0.2.0 | S08 |
+| Q3 | The application chooses and sends the CSP through the adapter; Gramlot adds nonce and hash. Strict profile: nonce, no `'unsafe-eval'`, named logic only. Permissive profile: `'unsafe-eval'`, inline active. Inline under strict → clear error with node and attribute | S14 |
+| Q4 | All seven adapters in 0.2.0: `gramlot-uvicorn`, `gramlot-serverless`, `gramlot-js-server`, `gramlot-django`, `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn` (minimal contract only). Authorization per delivery: each repository in its own chat and brief, authorized there when the delivery starts | S06 (uvicorn, R02), S14 |
+| Q5 | Native conversion matrix of §060 confirmed | S10 |
+| Q6 | Template in attributes only, as genro-builders-js; genro-builders 0.26.0 aligns Python | S03bis |
+| Q7 | Null path rules (§010) | S04, S05, S08, S10 |
+| Q8 | FIRE always fires, also with an equal value, as legacy | S08 |
+| Q9 | `fired` in the Bag event, as legacy; no FIRE mark. Releases genro-bag 0.27.0, genro-bag-js 0.10.0, genro-builders-js 0.3.1 published 2026-09-28 | S08 |
+| Q10 | `Page.css` in the core, requires names for kajenn (§010) | S06 |
+| Q11 | Q11.1 `_if`/`_else` inline; Q11.2 attribute evaluation order (§010) | S04, S09 |
+| Q12 | Q12.1 prefix only on `/…` URLs; Q12.2 Logic checks before the instance | S06, S07 |
+| Q13 | `pointer_type`/`pointerType` excludes `==` in Python and JS; implemented in `0b7f913` | S02 verifies |
+
+Q1 is closed by dataSetter. No fixes to genro-builders or genro-bag (owner,
+2026-09-25). Silent PUT, FIRE marked for the router, FIRE_AFTER with a tracked timer
+and absDatapath with variable datapath and symbolic `?attr` are implemented in the
+Gramlot source classes (§018), so S04 and S08 wait for no external release. *Historical
+in part (Q9, 2026-09-28): FIRE carries no mark and S08 needs the published Bag
+releases listed above.* S01
+measures the TYTX null-attribute loss in `Bag.fromTytx`; any solution goes into
+those classes after owner approval. No Builder or Bag source is edited.
+
+<a id="gc-210-018"></a>
+## 018 · Gramlot source classes
+
+Block ID: **GC-210-018**.
+
+Owner decision, 2026-09-25: fixes to genro-builders and genro-bag are forbidden for
+Gramlot. The previously planned dependency fixes are withdrawn. Behavior that
+Builder lacks goes into two Gramlot classes in the new file
+`js/src/builder/source.js`. S01 status (2026-09-26, not yet accepted): the classes
+exist with silent `PUT`, `FIRE_AFTER` and `absDatapath`; the `FIRE` mark and the
+production of these classes on every browser path are stopped at the S01 gate
+([GC-070 §515](070-work-status.md#gc-070-515)). Owner, 2026-09-28: S01 is closed
+with proof 11 as debt. Debt work (2026-09-28, not yet accepted,
+[GC-070 §520](070-work-status.md#gc-070-520)): the wire carries the class. Proof 11
+closed (2026-09-28, not yet accepted, [GC-070 §525](070-work-status.md#gc-070-525)):
+GramlotBuilder declares `GramlotBuilderBag` as its Source class.
+
+```js
+export class GramlotBuilderBag extends SourceBag {
+    get nodeClass()               // returns GramlotBuilderBagNode
+}
+export class GramlotBuilderBagNode extends SourceBagNode {
+    PUT(path, value)              // silent: Bag setItem(..., doTrigger=false)
+    FIRE(path, value = true)      // historical: marks its own write for the router; revision 8: see below
+    FIRE_AFTER(path, value = true, delay = 10)   // FIRE after delay ms; timer tracked on the NodeBinding
+    absDatapath(path)             // variable datapath; ?attr preserved on symbolic paths
+}
+```
+
+- `SET`, `GET`, `setRelativeData` and `getRelativeData` remain Builder's.
+- `PUT` writes without any reaction. Builder's current PUT emits an event.
+- *Historical (revision 6):* `FIRE` opens a FireMark on the absolute path. The router
+  consumes it with `takeFire(path)` at the first event on that path. A nested SET on
+  the same path during delivery finds the mark consumed and is not fired. The mark is
+  removed in `finally`. The Bag event itself carries no fired field.
+- *Revision 8 (Q8, Q9, D4, R10, owner 2026-09-28), S08:* the `FIRE` override of
+  `GramlotBuilderBagNode` turns a null value into `true`, resets the value silently,
+  then writes with `fired`, so it fires also with an equal value; the reset is
+  guaranteed in `finally`. No mark exists: the Bag event carries `fired`, as legacy,
+  and the router reads `event.fired`; a nested SET on the same path produces its own
+  event without `fired`. This supersedes the FireMark and `takeFire` wording here and
+  in §§030 and 040. It needs genro-bag 0.27.0, genro-bag-js 0.10.0 and
+  genro-builders-js 0.3.1, published on 2026-09-28.
+- *Q7 (revision 10), S04:* `getRelativeData` and `setRelativeData` of
+  `GramlotBuilderBagNode`, and `PUT`, check the null path: reading gives null, writing
+  raises "write on a null path" with node and attribute. SET, GET and FIRE pass through
+  them, and so do controls and formulas.
+- `FIRE_AFTER` keeps its timer on the NodeBinding; closing the NodeBinding cancels it.
+- `absDatapath` supports variable datapath: with `datapath='^.foo'` the branch
+  datapath is the value read from Data at `.foo`; an empty value gives a null path.
+  Symbolic paths keep their `?attr` suffix.
+- Node semantic state (registrations, timers, click counter, stamps) stays for now in
+  NodeBinding, in the BindingRuntime Map keyed by the actual node (P17). It may move
+  onto the node later without author-visible effects.
+- S01 verifies that every browser path produces the Gramlot classes: JS authoring,
+  `sourceBagFromTytx`, `bindBuilder`, insertion and `remoteSource`. No prototype
+  mutation. No change to Builder or Bag.
+- Wire class (owner decisions 2026-09-26, libraries aligned 2026-09-28): the TYTX
+  suffix stays the type, so a Bag of any class travels as `::X`. `__cls` names the
+  class on a branch (row attributes) and on a root (payload), only when the class
+  differs from the inherited one; only the payload decides the root class. Symbolic
+  names are the real class names, identical in Python and JS: `Bag`, `SourceBag`,
+  `GramlotBuilderBag`. The `SOURCE` suffix is gone from Builder and Gramlot.
+  Gramlot adds `GramlotBuilderBag` to the TYTX subtype dictionary of `X` in
+  `src/gramlot/page/source.py` and `js/src/builder/source.js` (read, add, set again);
+  the builder modules load it. Nodes take their class from the Bag.
+- Status 2026-09-28: a `GramlotBuilderBag` Source keeps `GramlotBuilderBag` and
+  `GramlotBuilderBagNode` through Python → JS and JS → Python, `sourceBagFromTytx`,
+  `bindBuilder`, insertion and `remoteSource`; Python and JS write the same wire for
+  the same Source. Authoring (2026-09-28, [GC-070 §525](070-work-status.md#gc-070-525)):
+  the builder declares the class of its Source, as legacy `domSrcFactory`.
+  `GramlotBuilder` sets `_source_class = GramlotBuilderBag` (genro-builders 0.25.0)
+  and `static _sourceClass = GramlotBuilderBag` (genro-builders-js 0.3.0). The
+  document root, nested branches and JS scalar promotion (which follows the parent
+  Bag class, as Python branches do) hold `GramlotBuilderBag`/`GramlotBuilderBagNode`.
+  The GramlotBuilder wire carries `__cls: "GramlotBuilderBag"` on the payload only.
+- Owner decision, 2026-09-26 (symmetry): Python has empty counterparts in
+  `src/gramlot/page/source.py`: `class GramlotBuilderBagNode(SourceBagNode)` and
+  `class GramlotBuilderBag(SourceBag)` with `_node_class = GramlotBuilderBagNode`
+  (Builder Python hook, `genro_builders/builder/source_bag.py:645`). The Python
+  `GramlotBuilder` is to use them for the Source, and the Python → JS transport is to
+  yield the Gramlot classes in the browser. The runtime methods stay in JS; Python authoring
+  stays inert. This supersedes "Python needs no counterpart".
+- S01 measures the null-attribute loss in `Bag.fromTytx`. Any solution goes into
+  these classes after owner approval. *Revision 8 (R17):* a null attribute in a
+  `dataSetter` counts as omitted; no solution is needed.
+- *Relative variable datapath (owner, 2026-09-28), S04:* `datapath='^.foo'` reads
+  `.foo` in the parent's context, and the value read acts as if written in place of
+  the pointer. Today `source.js` raises an explicit error for this form; S04 replaces
+  it with the rule. `#<node_id>` is translated through the `node_id → node` map of the
+  instance (R06).
+- *Q13 (owner, 2026-09-28), implemented in `0b7f913`:* `GramlotBuilderBagNode`
+  redefines `pointer_type` (Python) and `pointerType` (JS): a value starting with `==`
+  is not a pointer. It is the only method of the Python class and not a runtime
+  method; this supersedes "empty" Python counterparts.
+
+<a id="gc-210-020"></a>
+## 020 · Modules, instance ownership and construction
+
+Block ID: **GC-210-020**.
+
+| Planned file | Classes/exports | Phase |
+| --- | --- | --- |
+| js/src/builder/source.js | GramlotBuilderBag, GramlotBuilderBagNode (§018) | S01 |
+| js/src/renderer/gramlot-html-renderer.js | GramlotHtmlRenderer extends HtmlRenderer: string rendering, the same class as Python | S03bis |
+| js/src/renderer/gramlot-renderer.js | GramlotRenderer extends GramlotHtmlRenderer: live DOM renderer | S03bis |
+| js/src/renderer/gramlot-svg-renderer.js | GramlotSvgRenderer extends SvgRenderer | S03bis |
+| js/src/renderer/attributes.js | attribute functions shared by the three renderers | S03bis |
+| src/gramlot/renderer/html_renderer.py | GramlotHtmlRenderer(HtmlRenderer), string rendering | S03bis |
+| src/gramlot/renderer/svg_renderer.py | GramlotSvgRenderer(SvgRenderer) | S03bis |
+| src/gramlot/renderer/attributes.py | attribute functions shared by the two renderers | S03bis |
+| js/src/binding/runtime.js | BindingRuntime, NodeBinding | S03 |
+| js/src/binding/router.js | DataRouter, DataRegistration, DataChange | S04 |
+| js/src/binding/installation.js | DataInstaller | S05 |
+| js/src/binding/providers.js | Provider, FormulaProvider, ControllerProvider | S08 |
+| js/src/binding/logic.js | LogicRegistry, LogicGroup | S03 root only, S07 registration |
+| js/src/binding/inline.js | InlineCompiler | S09 |
+| js/src/view/controls.js | ControlAdapter and subclasses, RadioGroups | S10/S11 |
+| js/src/view/button.js | ButtonBinding | S12 |
+| js/src/view/events.js | NativeEventBinding | S12 |
+| js/src/bootstrap.js | PageBootstrap | S07 |
+| js/src/adapters/resources.js | ResourceResolver, parseRequires | S06 |
+| src/gramlot/server/resources.py | ResourceResolver, parse_requires | S06 |
+| src/gramlot/collections/binding.json | Binding grammar | S02 |
+
+All state is per instance. Parent passes itself to collaborator; child exposes a
+getter. Class methods use public getters/methods instead of private fields except
+constructors/setters. Expected contract errors identify node, tag and attribute.
+No swallowed impossible states. New unplanned names require a rationale in phase notes.
+
+Gramlot constructs, in order: `new LogicRegistry(this)` (root logic group),
+`new GramlotBuilder(null, {collections})`, `new BindingRuntime(this)` (router,
+installer, inlineCompiler), sets `this.data = this.builder.data`, calls
+`this.binding.attach()`, sets `this.source = this.builder.source`, then constructs
+`GramlotRenderer(builder, source, destination, {binding})`. Registration happens
+after construction and before start/startSource, never in a provisional registry.
+Use LogicRegistry.resolve, not Builder._resolveLogicFunc (static-method lookup).
+Authoring remains inert. The `this.data.setItem('main', new Bag())` line
+(`gramlot.js:14`) is removed: the outer root is Builder's `_dataroot` → `_root_`
+(amendment 11.49), and `binding.attach()` only subscribes to it, creating nothing.
+*Historical (revisions 1–10): `main` lived in an outer root created by `binding.attach()`.*
+
+BindingRuntime exposes gramlot/builder/renderer/data/root/logicRegistry/router/
+installer/inlineCompiler getters and attach, bindingFor(node), openBinding(node),
+closeBranch(node), rebindBranch(node), handleSourceEvent(event), receiveData(event),
+dispose. inlineCompiler is the S09 InlineCompiler, created by the runtime and imported
+only in the page runtime. The runtime has no radio-group state (§050).
+attach subscribes once on Builder's wrapper (`root`, read through the public getter
+`builder.data.parent`; `root.getItem('_root_') === data`) and creates nothing.
+NodeBinding(runtime,node) exposes runtime/node/closed/registrations/providers/
+clickCount, hasStamp/stamp (`installed`, `init`, `built`, `start`), track(disposer),
+registerPointers (step 4 of §035), evaluateFormulas (evaluates `==` attributes through
+InlineCompiler.compileExpression at each projection, S09), rebind, receive and close. track returns a removal function;
+close runs semantic disposers in reverse order and collects errors.
+
+Semantic lifetime owns registrations, providers, timers, click counter, stamps and
+remoteSource request. DOM records own elements/listeners/ControlAdapter/ButtonBinding/
+NativeEventBinding. Rebuild closes only DOM lifetime. Gramlot.dispose closes binding
+before renderer. No new public Live Object Tree semantics or Builder parent model.
+
+<a id="gc-210-025"></a>
+## 025 · Source event ingress and semantic lifetime
+
+Block ID: **GC-210-025**.
+
+All Source events enter the renderer FIFO before freeze filtering or semantic work.
+Closed renderer ignores events; otherwise enqueue, return if already building, and
+drain with building=true. Discard detached-node events except del. Ignore mutations
+of a node currently being built (P4). Run semantic handling even under freeze,
+then structural insert/remove/update only outside frozen branches. An exception
+clears pending events and propagates. Track currently building nodes during buildNode.
+
+| Source event | Semantic work (old context for cleanup, new for registration) |
+| --- | --- |
+| ins | Install inserted node/branch |
+| del, including arrays | Close each removed branch |
+| upd_value with old SourceBag | Close old children |
+| upd_value with new SourceBag | Install new branch |
+| upd_value to scalar/null | Close previous branch only |
+| upd_attrs | Rebind node; datapath/_anchor/node_id/form/formId changes rebind branch |
+| upd_value_attr | Close old branch, process attributes, install new branch in that order |
+
+remoteSource uses semantic binding for eligibility, current-response check and
+cancellation registration, including targets rebuilt or living under freeze.
+Latest request still wins. `setValue(prepared, true, {_text: null}, true)` emits
+upd_value_attr; the installer is entered through the FIFO, not separately from
+mountMainSource or remoteSource. Removal under freeze closes semantic ownership
+immediately; old DOM waits until thaw. Thaw builds current Source once, without
+reinstallation or repeating init/start.
+
+<a id="gc-210-030"></a>
+## 030 · Data routing, projection and DOM lookup
+
+Block ID: **GC-210-030**.
+
+DataRouter(runtime) exposes runtime/size, register({path,attr=null,recipient}) and
+deliver(event). DataRegistration exposes path without `_root_`, attr, recipient,
+active, close. DataChange carries evt, node, path, oldvalue, attrsDiff, reason,
+fired, level, registration. `fired` is read from the Bag event (`event.fired`), as
+legacy (Q9, §018); Gramlot has no FIRE mark. *Historical (revision 6): `fired` came
+from `takeFire(path)` on the FireMark opened by `GramlotBuilderBagNode.FIRE`, asked
+once per event; the Bag event had no fired field.* The root event path begins with `_root_` (Builder's
+wrapper, amendment 11.49); remove only that segment. An authored user field named main is plain
+data. *Historical (revisions 1–10): the path began with the Gramlot-built main, events outside it were ignored.*
+For upd_* pathlist includes the node; for ins/del append node.label to parent path.
+Use a segment trie: a.b and a.bc differ. Node level is exact, container means event
+ancestor, child means event descendant. Attribute registrations receive matching
+attrs_diff or node replacement. Ignore autocreate; fired child events do not deliver.
+Snapshot candidates, skip registrations closed during delivery. No full scan or
+channel observer. S01 checks no prior subscriber writes before the root router.
+
+Visual pointers come from node.pointers(); '=' is read-only, not registered; classify
+'==' before '='. Rebind on pointer replacement/removal, context/anchor changes and
+variable datapath changes, then reproject the affected branch. NodeBinding.receive
+calls renderer.project(node,change); renderer.update reuses project. Registrations
+happen at step 4 of §035; renderedItem only links the new record to the NodeBinding
+already open (`binding.bindingFor(node)`). renderer.project does nothing while the node
+has no element (steps 4–5, or under freeze). Reuse
+runtimeValues → _handleMeta → adaptAttrs → html.update; render_attributes wins last.
+P1 applies only to redundant origin value; providers and other attributes still run.
+Existing built elements react during freeze; no fake Source events.
+
+| Style vocabulary | Projection and null rule |
+| --- | --- |
+| style, class | String or null only; null removes attribute |
+| visible | false sets style.visibility=hidden; otherwise no override; removal restores current style |
+| hidden | Existing native boolean behavior |
+| HTML style shortcuts: style_*, roots (width, height, color, background_*, font_*, margin_*, padding_*, border_*, …), macros (rounded, shadow, transform, filter, transition, zoom, gradient) | One style attribute composed by Builder HtmlRenderer.adaptAttrs (renderer/html.js:151) with style='…'; the shortcut wins over the same property in style; null drops that property only |
+| width/height on img, canvas, embed; width/border on table; height on editor | Native attribute, not style (legacy noConvertStyle, genro_wdg.js:102-108); null removes |
+| _class | class attribute (Builder pythonKeywordAttribute) |
+| SVG presentation (fill/stroke/stroke-width/opacity/transform/…) | Builder SvgRenderer.adaptAttrs (svgAttributes), inherited by GramlotSvgRenderer, correct namespace; no style shortcuts on SVG; null removes |
+| data_*, aria_*, xmlns_* | data-*, aria-*, xmlns:* in the adaptAttrs of GramlotHtmlRenderer and GramlotSvgRenderer; null removes |
+| Other native attributes | HtmlElement boolean/reflected/namespace rules |
+
+Projection calls _handleMeta and adaptAttrs on `getRender(node.builder)`. No style
+Bags/dicts, themes, root.css, or format/mask/places in the live renderer. Text
+remains safe text; SVG/XLink and foreignObject preserve namespaces and DOM identity.
+`getBaseSourceNode` climbs parentNode to the first generated element in elements,
+returning its record.node or null; a DocumentFragment is not an element.
+`getDomNode` uses records and returns element or null for fragment, data-element,
+unbuilt/removed node. Gramlot delegates both; never add domNode/sourceNode properties.
+
+<a id="gc-210-035"></a>
+## 035 · Branch installation and Data ownership
+
+Block ID: **GC-210-035**.
+
+Eight ordered steps for every initial or inserted branch:
+1. Validate whole candidate without effects via renderer.validateCandidate.
+2. Apply all dataSetter nodes, parent-before-descendants in document order (A2).
+3. Apply defaults to all visual nodes (D1a/P15).
+4. Open semantic bindings and register visual pointers/providers.
+5. Invoke _init once per node through BindingRuntime.
+6. Build DOM from current values; defer under freeze.
+7. Invoke _onBuilt after first successful complete build.
+8. Invoke _onStart after initial page readiness, or step 7 for later insertions;
+   never-built nodes wait. Numeric delay follows P22.
+
+Existing observers see synchronous setter writes; new providers wait through steps
+2–3. Under freeze steps 1–5 still execute. On error close newly created bindings,
+with no Data rollback. The installed stamp and semantic lifetime survive rebuild/thaw.
+Step 1 includes the installation rules, and a `main` whose installation failed leaves
+the Source (§090, 2026-09-30).
+
+DataInstaller(runtime) exposes install(branch), setterNodes(branch), applySetter(node),
+applyDefaults(nodes). Setter destination_path and value are Source **attributes**
+(role: attribute), not Source node value. Resolve with node.absDatapath, with '?' already
+rejected. Payload attributes exclude destination_path/value, _meta/META_ATTRS and
+binding attributes. For non-null value, or absent target with null, use
+`data.setItem(path,value,attrs,'>',false,true,node)`; null at existing target uses
+`data.getNode(path).setAttr(attrs,true)` preserving value. Bag payload transfers
+without copying. Silently remove Source value attribute with
+`node.setAttr({value:null},false)` so no second Bag owner or Source event remains.
+Stamp installed; no duplicate warnings. Defaults handle ^/= pointers only when
+null/missing; attr_* reads before own control default; default_value beats default.
+
+<a id="gc-210-040"></a>
+## 040 · Providers, writes, time and inline execution
+
+Block ID: **GC-210-040**.
+
+No operations.js: writes use Source node methods, that is GramlotBuilderBagNode
+(§018). SET and setRelativeData remain Builder's and react. PUT of GramlotBuilderBagNode
+is silent. GramlotBuilderBagNode.FIRE resets the value silently, then writes with
+fired, so it fires also with an equal value; `FIRE(path, null)` becomes
+`FIRE(path, true)`; the value returns to null, guaranteed in finally; no mark
+(Q8, Q9, D4, R10, §018). *Historical (revision 6): FIRE wrote with fired=true, the Bag
+emitted even equal values and reset to null, and GramlotBuilderBagNode.FIRE marked the
+write for the router.*
+FIRE_AFTER of GramlotBuilderBagNode has default 10 ms; its timer is tracked on the
+NodeBinding and cancelled when it closes, and closed recipients are not delivered. Installation alone uses
+direct Bag writes for R1. Formulas/controls use node.setRelativeData.
+
+Provider(binding) exposes binding/node/kind, register, receive, invoke(trigger),
+readArguments, cancel. FormulaProvider writes returned result to result_path;
+ControllerProvider invokes without formula writeback. dataSetter is not a provider.
+register owns ^ subscriptions and _timing; BindingRuntime owns init/built/start;
+ButtonBinding adds click. invoke reads current arguments (^ triggers, = reads),
+filters _userChanges by node level, evaluates _if/_else, calls named or inline body,
+then writes formula result. Conditions are named-only in S08; inline arrives S09.
+_delay debounces latest trigger; _timing is reactive seconds-based setInterval with
+stop/restart; semantic track owns provider timers. Provider reactions have no anti-echo.
+Exception behavior is P12; nested SET during FIRE is not itself fired.
+
+P20 kwargs contains resolved author attributes plus _node/_triggerpars/_reason and
+button _evt/button_* where relevant. The excluded control attributes are
+`destination_path`, `result_path`, `func`, `formula`, `script`, `_if`, `_else`, `_init`,
+`_onStart`, `_onBuilt`, `_delay`, `_timing`, `_userChanges`.
+
+InlineCompiler(runtime) exposes preprocess(node,attr,source),
+compile(node,attr,source,argNames), compileExpression(node,attr,expr), release(node).
+It ports legacy macroExpand_GET/SET/PUT/FIRE/FIRE_AFTER regexes and `$n` replacement
+from gnrlang.js, preserving regex limitations in strings/comments, translating to
+this.GET/SET/PUT/FIRE/FIRE_AFTER and arguments[n-1]. Warn once per declaration at
+first macro compilation. Direct this.SET calls pass unchanged without warnings.
+Cache by declaration, release on mutation/removal. Import only in page runtime,
+never adapters, builder, server or WorkerHost. Missing named methods never fall
+back to inline. Syntax errors include location. No arbitrary cycle cap (Q2).
+
+<a id="gc-210-045"></a>
+## 045 · Named logic, resources and browser bootstrap
+
+Block ID: **GC-210-045**.
+
+LogicRegistry(gramlot) exposes gramlot, register(logicClass,{group,resource}),
+resolve(name,node) returning {group,method} or resource/node error. LogicGroup has
+only page as its own framework member. Companion methods live in gramlot.logic;
+requires names become groups, slash names nested groups. Each resource exports
+class Logic. Copy Logic.prototype methods except constructor, in load order;
+explicit constructors are errors and never run. Methods initialize group/page state.
+Method/child-group or method/page collisions are errors; missing names error.
+`this` is group, `this.page` the Gramlot instance. Named formulas take kwargs,
+controllers node/kwargs. No static-method holder or page mixin.
+
+*Revision 8:* groups from `js_requires` need a Host with a resource system
+(gramlot-kajenn, or a test Host implementing `resolveResources`); with the minimal
+FileHost only the companion root group exists (Q10). Before `new Gramlot(config)`,
+`PageBootstrap.run` checks every `Logic` against these rules: no explicit
+constructor, no method named as a child group or `page` (Q12.2).
+
+**Current contract (revisions 7–10, owner 2026-09-28).** The core never searches
+files. The minimal Host contract, Python and JS:
+
+- `resolve_page(path)`/`resolvePage(path)` returns the Page class, or raises
+  `PageNotFound`;
+- `resolve_resources(path, cls)`/`resolveResources(path, PageClass)` returns ready
+  URLs `{css: [url], js: [{url, group}]}`, already in load order and without mount
+  prefix, or raises `PageNotFound`. A neutral Host without an implementation raises
+  `PageNotFound`;
+- `open_page(path, *, owner=None, prefix="")`/`openPage(path, {owner, prefix})`
+  returns `Bootstrap(page_id, html, nonce)`/`{pageId, html, nonce}`. The prefix is a
+  string (`TypeError` otherwise), chosen by the adapter, and is added once, only to
+  root-relative URLs (`/…`, not `//…`): CSS links, `resources.js[*].url`, runtime,
+  main, source and close. Relative and absolute URLs stay as written (Q12.1, D8). The
+  nonce is `secrets.token_urlsafe(16)` in Python, separate from page_id, new at each
+  opening;
+- a repeated URL loads once, in its last position; the same JS URL with two
+  different groups raises an error in the core before any import (C03);
+- TTL, capacity and owner checks of the Host stay.
+
+`parse_requires(text)`/`parseRequires(text)` and `InvalidResourceName` stay in the
+core (§3.4 of the unified plan, P7/P13), with one explicit Unicode White_Space set
+(U+FEFF excluded) in both languages. The names are interpreted by a Host with a
+resource system (gramlot-kajenn), not by the core.
+
+The minimal reference `FileHost(pages_dir)`/`new FileHost(pagesDir)` takes the pages
+folder only. Page path `foo`: file page `foo.py`/`foo.js` first, then folder
+`foo/foo.*`; if both exist the file wins, without error. Same-name files beside the
+file page or in the folder: `foo.css`, `foo_aux.js` (exports `Logic`, group null),
+`foo.md` (README); the `_aux` suffix is reserved. Segments: letters, digits, `_`,
+`-`. A symlink whose real path leaves the pages folder gives `PageNotFound`. Load
+order: `Page.css` URLs as written, then `foo.css` and `foo_aux.js`. A name in
+`css_requires`/`js_requires` raises an error ("requires need a Host with a resource
+system"). `Page.css` stays in the core for every adapter (Q10); `css_requires` and
+`js_requires` are Page attributes in both languages (P23). A Host with a resource
+system adds its requires resources before the companion. Python and JS pages may
+share one folder: `ordini.js` is a JS page exporting `Page`, and the Logic of
+`ordini.py` is in `ordini_aux.js`.
+
+*S06 implementation (2026-09-28, GC-070 §535):* the core applies the load order in
+`open_page`/`registerPage` on what `resolve_resources`/`resolveResources` returns,
+through `load_order`/`loadOrder` in `server/resources.py`/`adapters/resources.js`:
+each URL once in its last position, and C03 raises `InvalidResourceName`. The
+`FileHost` requires error is also `InvalidResourceName`. A companion whose real path
+leaves the pages folder raises an error (`ValueError` in Python, `Error` in JS).
+
+*Historical (revisions 1–6), superseded for the core by the contract above and kept as
+theory for gramlot-kajenn (constitution 11.48 items 1–4):*
+
+parse_requires(text) returns tuple in Python; parseRequires(text) is JS equivalent;
+P7/P13 apply. ResourceResolver takes pages/application root (Python Path; JS
+pagesDirectory/applicationRoot), resolve(pagePath,names,kind) returns ordered URLs.
+Search each name from page directory through ancestor _resources to application
+root; load reverse, generic to specific. Process names in declared order; same-name
+companion last. Both file and same-name-folder page layouts are allowed; both at
+once error. Reject traversal/symlink escapes. Public companion must not import
+server-only queries/keys/access logic. A JS page's same-name file exports both Page
+and Logic and must import on Node/Bun and in the browser (P14); Python and JS page
+directories remain separate.
+
+Replace Python Page.css tuple and JS static css array with css_requires/js_requires
+strings, no aliases. Both hosts resolve resources, create nonce independently from
+page_id (Python secrets.token_urlsafe(16)), and clean registry on bootstrap failure.
+Keep host TTL/capacity/ownership checks. Concrete adapter resource hierarchy belongs
+to integration, neutral resolver/bootstrap contract to core.
+*End of the historical text.*
+
+PageBootstrap({config,resources,document}), resources={js:[{url,group}],css:[url]},
+run: append CSS links in supplied order; import all JS and await completion; construct
+Gramlot; register each module.Logic in supplied order regardless of import completion
+order, group null for companion; assign window.gramlot and await app.start(). Close
+or import failure before start mounts nothing. Bootstrap generated by both Hosts
+imports PageBootstrap. Nonce covers bootstrap and Source script .nonce; standalone
+hashes final bytes. Native event attributes are not covered by nonce. S14 tests
+actual headers and named/inline CSP separately; Q3/Q4 still gate that work.
+
+*Revisions 8–10:* between the imports and `new Gramlot(config)`, `run` checks each
+`Logic` (Q12.2); a failed check behaves as a failed import, no instance exists and
+nothing is mounted; CSS links already added stay. `PageBootstrap` resolves each
+relative JS URL against the document (`new URL(url, document.baseURI)`) before the
+import (D8). S06 writes the CSS links in the bootstrap HTML; from S07 `PageBootstrap`
+emits them and the S06 loop is removed (D9). Q3 and Q4 are decided (§015): they no
+longer gate S14; each adapter delivery needs its own authorization.
+
+<a id="gc-210-050"></a>
+## 050 · Native controls and button ownership
+
+Block ID: **GC-210-050**.
+
+ControlAdapter.for(binding,record) returns matching subclass or null; constructor
+owns binding/element/live getters, project(value,change), read(), commit(event),
+attach(), detach(). commit uses node.setRelativeData(valuePath,read()). Subclasses:
+TextControl (text/textarea), NumberControl, RangeControl, SelectControl (single/multiple),
+TemporalControl, ColorControl, then CheckboxControl and RadioControl. ControlAdapter
+consumes value; HtmlElement no longer independently writes control.value. DOM record
+cleanup owns detach, including input/change/composition listeners.
+
+RadioGroups(renderer) is created by the renderer and stays in the view layer. It
+exposes join(control,group,form), leave(control), peers(control).
+Join generates instance-scoped name; selecting B synchronously writes peers false
+and B true in documented order. No selection store. Initial multiple true is error;
+insertion/removal/rebinding and keyboard behavior require browser tests.
+
+ButtonBinding(binding,record) exposes mechanism, attach, onClick, detach. onClick
+uses R3, increments semantic clickCount, invokes the single P10 mechanism. Nested
+controller remains ordinary B7 provider. NativeEventBinding(binding,record,eventName,
+handler) owns attach/detach for connect_on<event>; click connection runs after the
+Gramlot click mechanism. Both use renderer.getBaseSourceNode(event.target).
+DOM listener teardown does not reset semantic count. R3 is provisional, with all
+form/keyboard/parent/native-listener effects reported for owner review in S12.
+
+<a id="gc-210-055"></a>
+## 055 · Phase map, deliverables and gates S00–S09
+
+Block ID: **GC-210-055**.
+
+Each phase stops dependent work on missing contracts or unproved hooks; independent
+already-authorized work continues. Dependencies do not authorize concurrent changes
+or the next phase. S06 depends on S00 only and can proceed beside S01–S05, because it
+touches different files. Owner authorization still precedes S06. This does not launch it.
+*Revision 7 (R03, owner 2026-09-28):* S06 depends on S00bis. The phases run one after
+the other on one branch, in the linear order of §005; parallel agents on the same
+files are not authorized.
+
+| Phase / dependencies | Files and implementation | Tests and completion gate |
+| --- | --- | --- |
+| S00 / approved brief | Constitution, GC-210, GC-005, GC-055/070/125/155/160/165/170/175 and mirrors; PORT-0004/0005; prepare npm/CI enrollment subject to red-CI gate | Baseline before edits; inventories/fixture design; documentation checks; owner reviews amendment/contract. One commit, no push, report and stop |
+| S01 / S00 | New js/src/builder/source.js (GramlotBuilderBag, GramlotBuilderBagNode, §018); new source-extension-contract.test.js; bag-contract.test.js, two nested regressions, test_python_builder.py. Builder and Bag read-only | Complete Python grammar→Source→TYTX→browser bindBuilder route; node identity in one runtime; legacy HTML5 data call; Bag/scalar/array/null value attribute roundtrip; symbolic selectors; null-attribute loss; silent insert/update/attrs; Gramlot classes on JS authoring, sourceBagFromTytx, bindBuilder, insertion and remoteSource without prototype mutation; silent PUT, FIRE mark, FIRE_AFTER, absDatapath with variable datapath and symbolic ?attr; fired/reset, reason string conversion; root backrefs/ins-del paths; runtimeValues/pointers incl empty value key; static-only _resolveLogicFunc; RendererBase runtimeValues on nonvisual declarations. Every hook proved directly or through the Gramlot classes; no Builder or Bag change |
+| S02 / S01 | Python page/builder.py, _collection.py/_grammar_load.py if needed; JS gramlot-builder.js; binding.json after HTML grammar; renderer validation; exporter only if needed | test_binding_authoring.py, binding-authoring.test.js, collections and transport-interop: signatures, optional value, invalid missing path/?attr, dict→Bag, four-direction typed/null/false/0/empty/Bag/array transport. Mark data_element, recognize binding attributes, validate nonvisual before visual; hosts compute_logic/computeLogic inert; no alias/dispatch/evaluator/host serializer |
+| S03 / S01 | Gramlot, renderer, runtime.js and root-only LogicRegistry; remoteSource semantic lifetime, FIFO before freeze | binding-lifetime.test.js and lifecycle/page-close/freeze/render-failure/source-pipeline: roots/identity/isolation, disposal twice, counters, DOM rebuild vs semantic lifetime, complete event matrix, reentrant mutation, building-node suppression, remote rebuild/remove/late/frozen target. One owner/subscription per app |
+| S03bis / S03 | gramlot-renderer.js → gramlot-html-renderer.js (GramlotHtmlRenderer extends HtmlRenderer, DOM renderedItem kept); new gramlot-svg-renderer.js (GramlotSvgRenderer extends SvgRenderer, delegates renderedItem); adaptAttrs adds _meta removal, null style drop, data_/aria_/xmlns_ names; render override for noConvertStyle; update uses getRender(node.builder); html.js keeps DOM application only; gramlot.js/index.js names. Python (symmetric, owner 2026-09-26): new src/gramlot/renderer/html_renderer.py and svg_renderer.py (proposed) subclass Builder Python HtmlRenderer/SvgRenderer with the same adapt_attrs; _text renders as text; GramlotBuilder exposes renderer_html and GramlotSvgRenderer for SVG nodes; render option adds `<!doctype html>` and `<html>` when missing (Python and JS string render), used by the Python host; S03bis settles with the owner how JS offers string rendering with Gramlot adaptAttrs. | New style-shortcuts.test.js and renderer/svg/native-html/live-source-validation/freeze/lifecycle: shortcut composition, style precedence, null, _class, data/aria/xmlns in HTML and SVG, SVG width/font-size stay attributes, canvas/img/table attributes, foreignObject, setAttr of a shortcut on the same element. No name or style adaptation left in html.js. Symmetry test: the same Source rendered to a string by Python and JS gives identical output (shortcuts, names, SVG, noConvertStyle, _text, document wrapper); tests/test_renderers.py. |
+| S04 / S03bis | router.js/runtime.js, renderer.project and lookup methods, view/html.js | binding-router/projection and renderer/svg/native-html/live-source-validation: exact recipient counts, paths/selectors, rebinding, nested writes/removal, user main field, safe text/SVG/XLink/foreignObject, render_attributes precedence/removal, visible/style/class null, stable DOM, title/class origin updates, variable datapath through absDatapath (change, empty gives null path, nested) and lookup edge cases. Work independent of unrelated branch count |
+| S05 / S02, S04 | installation.js/runtime.js, Gramlot/renderer through FIFO only | data-installation/binding-defaults, Python authoring/interop fixtures: A2/R1/P15, Bag backref and Source attribute removal without event, later defaults/setters, remote branch, synchronous old observers, new provider activation after final state, init inserting/removing/replacing ancestors and observer mutation also frozen, no duplicate install/removed-node DOM, no reinstall/reinit on thaw. First render proves values |
+| S00bis / S01 (revision 7, R03) | Constitution amendment 11.48; GC-210 §§005, 010, 015, 018, 045, 055, 060, 075; GC-070; mirrors. Documents only | Amendment with the listed supersessions; §045 without the level lookup as current contract; documentation checks pass; owner approves the amendment |
+| S06 / S00bis (revision 7) | Minimal Host contract and minimal FileHost on `develop` (not `s06-resources`): Python `page/base.py`, `server/host.py`, new `server/file_host.py` and `server/resources.py`; JS `adapters/page.js`, `host.js`, `file-host.js`, new `adapters/resources.js`; `html_svg` examples as file pages with same-name files, runner and verify scripts. First step: local branch `kajenn-resources` on `1b5905c`. Linked delivery in `gramlot-uvicorn` (R02) in its own chat; S06 closes only after it. Bootstrap writes the CSS links; JS module loading stays for S07 | test_page_resources.py/page-resources.test.js with the Python/JS descriptor cross test; D8/Q12.1 prefix forms; `css_requires` name on FileHost → error; parser parity; file wins; `_aux`; companions; repeated URL last; C03; nonce; `git grep` of the kajenn symbols in active code exit 1; runner opens `/py/e03` and `/js/e03` without console errors |
+| S06 / S00 (historical, revision 6) | Python Page/Host/assets/resources.py; JS Page/Host/FileHost/resources.js | test_page_resources.py/page-resources.test.js plus native-html/host: two layouts/ambiguity, same-name companions, parser parity, three levels and companion last, traversal/symlink/name safety, CSS cascade, distinct fresh nonce, migrate fixtures from css, preserve TTL/capacity/owner. Core only; adapters S14 |
+| S07 / S02, S03, S06 | bootstrap.js/logic.js, Gramlot/index/runtime/builder, both host bootstrap generators, build-runtime.mjs and companion fixtures | named-logic/bootstrap tests: specific override, reversed import completion, isolated groups/nested names/this.page, cross-group calls, constructor/collision/missing errors, companion before init, close during import no mount, server/Worker graph no compiler, named CSP. Real Python Source through real bootstrap |
+| S08 / S05, S07; Q2 | providers.js/runtime/router/logic | binding-writes/providers/timing: ^/= and levels, formula once, node.PUT silent, repeated FIRE recognized as fired by the router, FIRE→SET same/other path (SET not fired), FIRE→FIRE, PUT in FIRE, exceptions/reset/next write, fired-child suppression, node.FIRE_AFTER default/explicit delay cancelled at NodeBinding close, virtual-clock _delay/_timing/_onStart, no callback after removal, host/Worker sentinels. Named providers end-to-end |
+| S09 / S02, S07, S08 | inline.js, logic/providers dispatch only, build import graph | binding-inline: named/inline parity, direct calls without warnings, each legacy regex and its string/comment limits, syntax location, once-per-declaration compilation, mutation/removal cleanup, page-only import graph. Unsupported syntax explicit |
+
+Revisions 7–10 additions to the rows above (unified plan §7, revision 10):
+
+- S02: `data(...)` errors naming `dataSetter` and `html_data`; `html_data` builds the
+  HTML5 element; `dataSetter` literal; `result_path` with `?` errors; the Gramlot
+  renderer recognizes data-elements before `runtimeValues` (R08); S02 verifies the
+  `==` classification of `0b7f913` (Q13).
+- S03: Gramlot classes only at the entry points (Source, embedded, `remoteSource`,
+  inserted branches), error before any effect, no silent conversion (R07); a
+  modification of a node under construction is ignored on arrival (R04).
+- S03bis: renderer chain `GramlotHtmlRenderer extends HtmlRenderer`,
+  `GramlotRenderer extends GramlotHtmlRenderer` (this supersedes the rename in the
+  S03bis row); `noConvertStyle` also in projection (R16); static render excludes
+  data-elements before `runtime_values`/`runtimeValues` (revision 10); `mask`;
+  `genro-builders>=0.26.0` (Q6).
+- S04: Q7 null path in `getRelativeData`/`setRelativeData`/`PUT`; relative variable
+  datapath replaces the explicit error of `source.js`; `node_id → node` map (R06);
+  multiple `del` and ancestor replacement for `?attr` registrations (R14); `mask`
+  projection.
+- S05: literal `dataSetter` cases; R17; setters and defaults skipped on a null path.
+- S07: Logic checks before the instance (Q12.2); JS URLs relative to the document (D8);
+  CSS links emitted by `PageBootstrap` (D9); requires groups proved with a test Host.
+- S08: `FIRE` override (Q8, D4, R10) with `fired` from the Bag event (Q9); dependency
+  constraints `genro-bag>=0.27.0`, `@jsr/genro__bag` 0.10.0 and `@jsr/genro__builders`
+  0.3.1; R13 and R15 counts; the P4/P5 tests moved from S05 and the end-to-end call
+  moved from S07 (R01).
+- S09: `_if`/`_else` inline (Q11.1); `==` argument rules and template-chain error
+  (Q11.2, revision 10).
+
+<a id="gc-210-060"></a>
+## 060 · Phase map and remaining gates S10–S17
+
+Block ID: **GC-210-060**.
+
+| Phase / dependencies | Files and implementation | Tests and completion gate |
+| --- | --- | --- |
+| S10 / S04, S08; Q5 | controls.js/html.js/runtime/renderer; native-controls.test.js; new scripts/verify_binding_browser.mjs | Q5 matrix below in both directions on Chromium/Firefox/WebKit; empty/invalid/lifetime, cursor/IME, controller correction returns to origin, title/class update while typing. Synthetic IME distinguished from manual |
+| S11 / S10 | controls RadioGroups/Checkbox/Radio, html/runtime, boolean-controls.test.js and browser fixtures | Boolean-only data (never 'on'), peer Data and DOM, initial conflicts, insertion/removal/rebinding, mouse/keyboard, two instances, three engines |
+| S12 / S08, S11 | button.js/events.js, controls/providers/renderer; button-controller/native-events tests | One invocation, disabled button, modifiers/count across rebuild, removal in callback, handler replacement, ambiguity and multiple controllers, B7 pointer/init plus click, ordered fire_*; all R3 form/submit/parent/Enter/Space/native-listener effects. Owner confirms or revises R3 |
+| S13 / S09–S12 | Gramlot/renderer/binding only for defects; freeze/source-pipeline/embedded-source/render-failure/page-close, new binding-integration/cleanup tests | Exact install/default/start/timer/subscription traces for mount/rebuild/new identity/remove/insert/nested freeze/dispose; stale remote, validation/install/first-render/provider/cleanup failures; failing disposer does not stop others; 100 mount/remove cycles restore counters; no special thaw/remote path |
+| S14 / S06–S09, S13; Q3/Q4 (historical, revision 6; see below) | Authorized Minimal WorkerHost/transport/standalone/build/build-directory/ASGI; JS Server native-fetch/node/bun; Django/FastAPI/Flask/Kajenn native adapters and tests | Same fixture on eight paths, resource descriptors and companion before Source, no Page.css/eval in Host, Worker sentinel, actual CSP headers, nonce on bootstrap/Source scripts, final-byte standalone hashes, altered nonce/hash blocked, named without unsafe-eval, inline blocked where forbidden. Blocked host prevents its S16 qualification |
+| S14bis / S12–S14 | New example families examples/binding and examples/controllers (owner, 2026-09-26), runner and catalog. html_svg stays native HTML/SVG without binding (owner, 2026-09-26) | binding: some html_svg examples rewritten with binding, pointers, variable datapath, dataSetter/defaults, native editing/live, checkbox/radio, visible/style/class and reactive shortcuts, bound SVG, freeze. controllers: dataFormula, dataController, named logic, inline and ==, node methods, nested button controller, connect_on<event>, remoteSource. Full list: dataSetter before DOM, defaults, formula, controller and named logic, live, checkbox/radio, button, bound SVG, variable datapath, dynamic Source, freeze, reactive style shortcuts. Python-first with JS equivalent; names: generic div in `pane`, `html_main` for main held in `main_content`, never `page` for an element. Packaged runtime, no manual DOM/state. Every listed 0.2.0 feature has an example |
+| S15 / S14bis (historical in part, see below) | examples/html_svg/01–13 migration only; public GC-090/095 and related paired guides, prepare_docs only for approved guides | html_svg: css → css_requires (and same-name companion where needed), content unchanged including examples 10/13. Document signatures, types/events/cleanup/CSP/exports, construction vs newrecord defaults, intentional legacy differences and migration from 0.1.x, referencing S14bis examples. ID/link/allowlist checks |
+| S16 / S15 | Qualification report and clean installed artifacts with updated unconstrained dependencies | Complete suites incl enrolled regressions, Chromium/Firefox/WebKit, all eight hosts, two fixtures with same active path but different unrelated branch counts, revisions/hashes/versions/commands/skip reasons. Every mandatory acceptance executed and passed, or explicit owner waiver; unavailable is unverified, never success. No publication |
+| S17 / S16 | Explicit owner acceptance receipt, consolidation to main, version 0.2.0 only if authorized | Distinguish implemented/accepted/packaged/published/distributed. Publication requires separate authorization |
+
+Revisions 7–10 changes to the rows above (unified plan §7, revision 10):
+
+- S12: action, fire and fire_* follow §012; the R3 side-effect tests are mandatory
+  and their results go to the owner, who confirms or revises R3.
+- S13: handlers of nodes removed under freeze do nothing while their NodeBinding is
+  closed (R12).
+- S14: adapters on the minimal contract, real CSP. Q3 and Q4 are decided (§015). All
+  seven adapters are in 0.2.0: `gramlot-uvicorn` and `gramlot-serverless` (heirs of
+  the retired `gramlot-minimal`), `gramlot-js-server`, `gramlot-django`,
+  `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn` (minimal contract only; the
+  kajenn scope comes after 0.2.0). Each is delivered in its own chat on its
+  repository, with its own brief and the owner's authorization given there when the
+  delivery starts; this phase coordinates and records. Each adapter implements the
+  minimal contract or uses the FileHost, passes the mount prefix at each opening,
+  serves `Page.css` and companions; `css_requires`/`js_requires` only on Kajenn after
+  0.2.0. Done: one GC-070 row per adapter, verified or blocked with the reason;
+  `Page.css` positive on every path; no `gramlot_minimal`/`@gramlot/minimal` in
+  active adapter code. *Update 2026-09-29 (owner, gate of S14):* three adapters are
+  verified in 0.2.0 (`gramlot-uvicorn`, `gramlot-js-server`, `gramlot-serverless`);
+  `gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn` are
+  deferred to after 0.2.0, with a "blocked" row each in
+  [GC-070 §595](070-work-status.md#gc-070-595).
+- S15: the migration of `examples/html_svg` to file pages moved to S06 (revision 7),
+  and the examples keep `Page.css` (Q10, revision 8), so "css → css_requires" is
+  superseded. Residues: historical documents citing `SOURCE`, GC-045 §055,
+  `gramlot-minimal` cited in core documents, documents with the old example layout.
+  *Delivered 2026-09-30* ([GC-070 §605](070-work-status.md#gc-070-605)): the residues
+  are treated or annotated, and the public guides GC-090 and GC-095 are updated.
+- S16: the host inventory of §075 updated to the heirs of Minimal; each host verified
+  or blocked in S14.
+
+*Historical (revision 6):* Q5 was a **proposal awaiting confirmation before S10**, not
+silently approved by other P rows. *Owner, 2026-09-28:* the matrix below is confirmed;
+`live=False` (default) writes at `change`, `live=True` at `input`.
+
+| Control | Proposed Data representation | Boundary behavior to confirm |
+| --- | --- | --- |
+| text/textarea | string or null displayed empty | Empty string retained; defer external projection during IME |
+| number | finite number or null | Empty→null; invalid draft remains DOM, never NaN |
+| range | finite number or null | Browser clamp does not write Data during projection |
+| single select | string or null | Missing option: no selection, Data unchanged |
+| multiple select | string array incl [] | No delimiter strings |
+| date/time/month/week/datetime-local | lexical string or null | No Date object/time-zone conversion |
+| color | serialized string | Browser normalization does not write Data |
+
+live only selects input versus change timing; no updateOn alias.
+
+<a id="gc-210-065"></a>
+## 065 · Acceptance families and end-to-end fixture design
+
+Block ID: **GC-210-065**.
+
+| Family | Owning phases |
+| --- | --- |
+| A01 roots/identity | S01–S05 |
+| A02 authoring/types/null/HTML5 data distinction | S02, S05 |
+| A03 initialization/A2/R1/defaults/no reinstall | S05, S13 |
+| A04 relative/attribute/symbolic/context paths | S01, S04 |
+| A05 routing/levels/rebind/removal in delivery | S04, S08, S13 |
+| A06 safe projection/booleans/visible/render_attributes/style shortcuts | S03bis, S04 |
+| A07 SVG | S03bis, S04, S16 |
+| A08 SET/PUT/FIRE/FIRE_AFTER | S01, S08 |
+| A09 providers/^/=/==/_userChanges | S08, S09 |
+| A10 timing/startup | S08, S13 |
+| A11 editing | S10, S16 |
+| A12 booleans | S11 |
+| A13 clicks/events/B7/R3 | S12 |
+| A14 dynamic Source/FIFO/freeze | S03, S13 |
+| A15 resources | S06, S07, S14 |
+| A16 execution/CSP | S07, S09, S14, S16 |
+| A17 errors/lifetime | S03, S13, S16 |
+| A18 distribution/documentation | S14–S17 |
+
+Fixture design only, no implementation in S00: one Python Page and equivalent JS
+Page with title bound to `.settings.caption`, input, two radios and checkbox,
+calculated result, SVG bound color/size, button with nested named dataController.
+Put setters after some controls and in a later descendant, with duplicate paths
+and defaults, exercising first-render order rather than correcting after mount.
+Use real Page/Host/TYTX/bootstrap/named companion, then run unchanged behavior on
+each authorized integration. No manual registry injection, DOM wiring or extra store.
+
+Acceptance story: (1) first DOM shows final Data; (2) edit with live false then true;
+(3) formula/controller update text and SVG; (4) choosing radio updates both booleans;
+(5) button invokes once with counter/modifiers; (6) remoteSource branch's own setters
+are visible on its first render; (7) freeze, mutate Data, remove child, then one thaw;
+(8) page close stops owned work. Record semantic/DOM counters and exact trace, not
+just screenshots. FIRE_AFTER timers are tracked on the NodeBinding and cancelled at
+its close, like provider timers; closed recipients must not react. Q5 and CSP cases wait for
+their decisions. Real engines and host coverage belong to S14/S16, not S00 baseline.
+
+<a id="gc-210-070"></a>
+## 070 · Existing test inventory and positive-contract migration
+
+Block ID: **GC-210-070**.
+
+Read-only inventory of tests/, js/tests/ and PORT-0005 diagnostics on S00 baseline.
+No assertion was changed. Distinguish actual negative assertions from prerequisites
+that merely lack a positive reactive check.
+
+| Existing case | Baseline meaning | Planned transformation |
+| --- | --- | --- |
+| ports/PORT-0005-data-binding/current-nonreactivity.test.mjs, “current destination does not refresh mounted Source after a Data-only write” | Explicitly expects old text after Data write, outside npm glob | S04 replace/retire negative diagnostic in favor of positive Data-only projection test |
+| js/tests/binding-lifecycle-baseline.test.js, “Builder evaluates Data on mount and Source updates without consuming pointers” | Requires Source mutation before re-read; does not explicitly assert immediate Data nonreactivity | S04 assert immediate Data projection plus preserved pointers/rebinding/identity |
+| Same file, “Source updates resolve branch text and preserve an unchanged input value and caret” | Source-driven projection/caret prerequisite, native checked property | S04 positive Data projection; S10 origin/correction/IME; S11 value-bound boolean coverage, retaining legitimate native checked behavior |
+| Same file, “replacement and disposal release mounted Source-owned cleanup once” | Positive DOM cleanup only, no semantic ownership | S03 semantic-versus-DOM ownership; S13 exact cleanup and repeated cycles |
+| Same file, “freeze delays Source projection; thaw reads current Data and disposes discarded records” | Explicit old DOM and delayed DOM cleanup while frozen | S03 immediate semantic cleanup; S04 Data reactivity on surviving built nodes; S13 separate DOM delay/no reinstall |
+| js/tests/freeze.test.js and source-pipeline.test.js | Structural freeze/FIFO tests, no general binding absence contract | S03/S13 extend with semantic work before structural freeze and reentrancy |
+| js/tests/render-failure.test.js, page-close.test.js, embedded-source.test.js | Existing Source/DOM ownership and errors | S03/S13 remote semantic validity, partial install/provider/cleanup failures |
+| tests/test_python_builder.py::test_create_does_not_compute_browser_logic | Explicitly proves create does not invoke browser logic; remains a positive no-server-eval boundary | S02/S08 preserve inert Host authoring and add execution sentinels |
+| ports/PORT-0005-data-binding/contract-probes.mjs | Reports observations/gaps; normal mode can exit zero despite gaps | S01 classify/reproduce hooks; S04/S08 positive router/write/provider tests, not count probe exit as acceptance |
+| Two nested .mjs regressions in §080 | Quiet PUT plus symbolic attribute target assertions | Out of CI until GramlotBuilderBagNode provides silent PUT and symbolic ?attr (S01), then S04/S08 positive integration; never weaken expectations |
+| legacy-data-installation-probe.cjs | Legacy characterization, not 0.2.0 acceptance | Keep unchanged; S05 creates separate A2/R1 tests |
+
+No Python test explicitly asserting browser nonreactivity was found. Absence of
+coverage is not an assertion of absence; the new positive suites above supply it.
+
+<a id="gc-210-075"></a>
+## 075 · Eight-host inventory and Page.css migration exposure
+
+Block ID: **GC-210-075**.
+
+*Historical (S00 inventory, 2026-09-25):* the table below predates the retirement of
+`gramlot-minimal` and the decision Q10, which keeps `Page.css` in the core; it is
+kept as evidence. The current inventory follows the table.
+
+S00 reads sibling repositories only. Paths below are repository-relative; the
+workspace uses physical sibling directories with these names. No adapter was
+modified or newly qualified. Core Python Host.open_page currently loops over
+cls.css; JS Host.registerPage returns css and openPage emits links. Thus hosted
+adapters inherit Page.css indirectly even when they contain no literal `.css`.
+
+| Host profile | Repository and actual entry | Page.css exposure / future S14 work |
+| --- | --- | --- |
+| Minimal ASGI/Uvicorn | gramlot-minimal, src/gramlot_minimal/asgi.py: NativeHtmlASGI, create_asgi_application | NativeHtmlASGI.host=core Host; __call__ uses open_page. Migrate resource serving/bootstrap/CSP contract |
+| FastAPI | gramlot-fastapi, src/gramlot_fastapi/native_html.py: NativeHtmlPages, NativeHtmlApplication, mount_native_html | Core Host.open_page supplies CSS/bootstrap; adapter serves responses and runtime |
+| Kajenn | gramlot-kajenn (formerly gramlot-genro-asgi), src/gramlot_kajenn/native_html.py: KajennNativeHtmlApplication, _KajennASGI | _KajennASGI derives Minimal NativeHtmlASGI, inherits core CSS path; custom runtime source remains adapter-owned |
+| Flask | gramlot-flask, src/gramlot_flask/native_html.py: NativeHtmlPages, mount_native_html | asyncio.run(core Host.open_page) returns bootstrap containing cls.css |
+| Django | gramlot-django, src/gramlot_django/native_html.py: NativeHtmlPages | async_to_sync(core Host.open_page); needs new 0.2.0 qualification, not inferred from seven-profile history |
+| Node | gramlot-js-server, src/native-node.mjs: startNativeServer → src/native-fetch.mjs:createNativeDispatch | Core FileHost/Host.openPage reads Page.css; shared HTTP adapter migration. Obsolete src/bootstrap.mjs is not the entry |
+| Bun | gramlot-js-server, src/native-bun.mjs: startNativeServer → native-fetch.mjs | Same FileHost CSS/bootstrap contract through Bun socket bridge |
+| Minimal standalone | gramlot-minimal, src/build.js:build and src/build-directory.js:buildDirectory; src/standalone.js:mount; src/worker-host.js:WorkerHost | WorkerHost.resolvePage validates PageClass.css array; registerPage returns css; mount destructures css and loadStyles before app.start. Requires descriptor/companion/window-vs-Worker migration and static hashes |
+
+[GC-130](130-release-ecosystem-review.md) records historical Chromium seven-profile
+0.1.0 checks: Uvicorn, FastAPI, Kajenn, Flask, Node, Bun, Worker. Django is not in
+that seven. Separate later Django/standalone work does not qualify 0.2.0 binding.
+S16 requires all eight with Chromium, Firefox and WebKit, clean current artifacts,
+actual versions and explicit skips. Q4 must authorize connected edits first.
+
+**Current inventory (revisions 7–10, owner 2026-09-28).** `gramlot-minimal` is
+retired (constitution 11.48 item 5); the core no longer depends on it (`61f2c9b`).
+`Page.css` stays in the core (Q10), so no host migrates away from it. Seven
+repositories, eight host profiles; the files are those listed by unified-plan §7 S14,
+not re-read by this transcription:
+
+| Host profile | Repository | S14 work (Q4: authorization per delivery) |
+| --- | --- | --- |
+| ASGI/Uvicorn | `gramlot-uvicorn` (heir of Minimal) | `src/gramlot_uvicorn/asgi.py` and tests. The linked S06 delivery (R02) turns `Host(pages, …)` into `FileHost(pages, …)` and passes the mount prefix to `open_page` |
+| Standalone Worker | `gramlot-serverless` (heir of Minimal) | `src/worker-host.js`, `worker-transport.js`, `standalone.js`, `build.js`, `build-directory.js` and tests; today it depends on core 0.1.2 from JSR (gramlot-org/gramlot-serverless#1) |
+| Node, Bun | `gramlot-js-server` | `src/native-fetch.mjs`, `native-node.mjs`, `native-bun.mjs` and tests; it calls `new FileHost(pages, options)`; `src/bootstrap.mjs` is obsolete |
+| Django | `gramlot-django` | `src/gramlot_django/native_html.py` and tests |
+| FastAPI | `gramlot-fastapi` | `src/gramlot_fastapi/native_html.py` and tests |
+| Flask | `gramlot-flask` | `src/gramlot_flask/native_html.py` and tests |
+| Kajenn | `gramlot-kajenn` | `src/gramlot_kajenn/native_html.py`: minimal contract only; it depends only on Kajenn besides the core; the kajenn resource scope comes after 0.2.0 |
+
+<a id="gc-210-080"></a>
+## 080 · S00 baseline, enrollment gate and stop conditions
+
+Block ID: **GC-210-080**.
+
+Baseline HEAD cbd80deed1b097ffbe778d05cb092c8338c5a9e7, develop, core 0.1.2.
+Observed environment: Python 3.12.9, Node 23.11.0, npm 10.9.2; Python Builder 0.23.4,
+Bag 0.25.1, TYTX 0.15.0; JS Builder 0.1.5, Bag 0.5.3, TYTX 0.15.1. No dependency
+update/setup or pin change was performed. CI uses Node 22; this is a local baseline.
+
+Before edits: `.venv/bin/python -m unittest discover -s tests` passes 18/18;
+`GRAMLOT_TEST_PYTHON="$PWD/.venv/bin/python" npm --prefix js test` passes 76/76.
+An experimentally expanded npm command discovered 81 cases: 77 passed, 4 failed.
+The quiet-write case expects [] but gets ['ins'] at gramlot-quiet-write.test.mjs:21.
+The three symbolic cases FORM/ANCHOR/target expect main.form.x?caption but receive
+main.form.x at builder-symbolic-attribute.test.mjs:15. Direct attribute reads pass;
+the final symbolic GET assertion is not reached after the earlier path assertion.
+
+The prepared enrollment patch adds both exact nested paths to npm test; CI already
+calls that command and its step label documents the expanded contract coverage.
+With the tested dependency graph this makes its required test step fail. Per S00
+brief §4.6, enrollment is withheld from the commit pending the owner's explicit
+red-CI decision; the final report preserves the patch and failure output. No skip,
+continue-on-error or changed expected values hide these failures. Passing ordinary
+suites must never be called full 0.2.0 qualification. Owner decision, 2026-09-25:
+both nested tests stay out of CI until GramlotBuilderBagNode provides silent PUT
+and symbolic ?attr in S01. S01 (2026-09-26): both nested tests now reach PUT and
+absDatapath through GramlotBuilderBag/GramlotBuilderBagNode with unchanged assertions,
+pass, and are enrolled with the S00 patch; npm test runs 102 cases, all passing.
+Proof 11 debt (2026-09-28): dependencies move to genro-tytx 0.16.0, genro-bag 0.26.0,
+genro-builders 0.24.0 (PyPI) and JS TYTX 0.16.0, Bag 0.9.0, Builder 0.2.1 (npm.jsr.io).
+Before edits, on the old versions: Python 24/24, JS 102/102, runner 8/8. On the new
+versions, before Gramlot edits: the Python `SOURCE` registration breaks 7 JS transport
+cases; the two proof 11 "today" cases (Python, JS) fail because they record behavior
+superseded by the owner's wire decisions; the proof 10 template probe no longer throws.
+After: Python 26/26, JS 106/106, runner 8/8 ([GC-070 §520](070-work-status.md#gc-070-520)).
+Proof 11 closure (2026-09-28): genro-builders 0.25.0 (PyPI) and JS Builder 0.3.0
+(npm.jsr.io). Before edits: Python 26/26, JS 106/106, runner 8/8. New versions before
+Gramlot edits: the JS "authoring today" case fails, because JS promotion now follows
+the parent class. After: Python 26/26, JS 106/106, runner 8/8
+([GC-070 §525](070-work-status.md#gc-070-525)).
+
+Other stops: unresolved Q2–Q5, a hook the Gramlot source classes cannot provide
+without an owner decision, any new unapproved contract,
+or unavailable mandatory S16 acceptance without owner waiver. In particular record
+any implementation contradiction for the owning phase instead of deciding silently. This S00 transcription does not
+start S01 or connected-repository work. Acceptance, release, packaging, publication
+and distribution remain distinct states.
+
+<a id="gc-210-085"></a>
+## 085 · Risks and stop responses
+
+Block ID: **GC-210-085**.
+
+| Risk | Response |
+| --- | --- |
+| Builder or Bag hooks are insufficient | Solution in the Gramlot source classes (§018), decided with the owner; no change to Builder or Bag |
+| Builder creates nodes without `nodeClass` on some path | S01 verification; every path found goes into the Gramlot source classes |
+| Legacy `data(path, value)` silently produces an HTML5 element (P19) | Migration documentation; no alias |
+| Attribute event reason converted to a string (`bag-node.js:345`) | Measured in S01; P1 anti-echo compares the DOM value, not the reason |
+| Another Data subscriber writes before the router | S01 verification; the router remains the only root subscriber |
+| Semantic lifetime tied to the DOM | S03 before providers; exact traces in S13 |
+| Reentrant Source events during installation | §025 ingress; tests in S03 and S05 |
+| Named logic incompatible with Builder lookup | Gramlot logic resolves through LogicRegistry (§045), not `_resolveLogicFunc` |
+| Radios updated only in part | S11 verifies Data and DOM |
+| Removing `Page.css` breaks Minimal | S00 inventory, Q4, migration in S14 |
+| Nonce mistaken for an eval permission | Distinct CSP profiles in S14 |
+| Tests not discovered by CI | Enrollment in S00 |
+| Scope growth | Every class, state or API answers a current requirement |
+| Qualification confused with publication | Separate S16 and S17 |
+
+<a id="gc-210-090"></a>
+## 090 · Review corrections before qualification (2026-09-30)
+
+Block ID: **GC-210-090**.
+
+Owner decisions of 2026-09-30 on the two reviews of `5035228`, applied in plan Phase 18
+(S15bis). Each rule has a regression test that fails on the code before the correction.
+
+| Finding | Rule now | Where |
+| --- | --- | --- |
+| ASTRA-01 | The constructor check of a `Logic` class (§045) always ends: its scan index only moves forward, a `/` after an operator, a bracket or a keyword such as `return` opens a regular expression literal that is skipped to its closing `/` on the same line, and an unterminated `/*` is not a comment. The constructor ban stays. Accepted limit: after `)` and `]` a `/` is division, after `}`, `++` and `--` it opens a regular expression, so a case such as `if (a) /[{]/.test(s)` can mislead the constructor check; the scan still ends | `js/src/binding/logic.js`; `named-logic.test.js`, run in a child process with a 5 s timeout |
+| ASTRA-02, Fable R2 | `type`, `multiple`, `group`, `live` and `visible` are read from the resolved projection the renderer computes once per build or projection: runtimeValues, then `==` (C04.1), binding attributes included. A `==` value is never a truthy string; `=` is read at each projection. A control rebuilt for a changed shape receives the projection `project` computed, so its `==` run once | `GramlotRenderer.evaluateExpressions`, `record.resolved`, `ControlAdapter.resolved` |
+| Fable R1, R6 | The installation rules (`dataSetter` of another dialect, provider attributes, `==` on providers, lifecycle values) are part of step 1 of §035 (`validateCandidate` → `requireInstallable`); a branch inserted by a Source event is checked by `install` before any write. When the installation of `main` fails after its insertion (its NodeBindings closed again), `mountMainSource` removes `main` from the Source, so `start`/`startSource` can mount again; a later error (`_init`, DOM) keeps `main` (P12). An update event on a node left without NodeBinding raises an error naming node and tag | `installation.js`, `gramlot-renderer.js`, `gramlot.js`, `runtime.js` |
+| ASTRA-03 | Successive collections: a later document replaces whole every `elements` or `abstracts` entry it names and keeps the others; `grammar` metadata merges and null keeps the earlier value. The JS rule of genro-builders (genro-builders#50) is the contract; the temporary Python loader (until genro-builders#51) applies the same rule | `src/gramlot/page/_collection.py`; shared fixture `tests/fixtures/collections/controls-redefined.json` |
+| ASTRA-04 | A radio follows its semantic form owner: when `form`/`formId` is added, removed or moved above it, the button leaves its group and joins the group of the same name in its new scope, with a new generated `name`, keeping NodeBinding and element. A button that is on and meets another button on in the new scope raises "several true values" before any effect, as at the join (P11) | `RadioControl.refresh`, called after every projection |
+| ASTRA-05 | The several-true check at the join of a radio ignores the buttons whose NodeBinding is closed (removed under freeze, DOM kept until the thaw) | `RadioControl.attach` |
+| ASTRA-06 | The record of an element is registered before its control, button and event listeners, so a failed first projection is removed by the failed-build cleanup with its listeners; no Data rollback | `GramlotRenderer.renderedItem` |
+| ASTRA-07 | The scalar value promoted to `_text` when a node gets children keeps its type in Python and JS (no `str()`/`String()`); the renderer converts it to text once (`true`, not `True`) | `builder.py`, `gramlot-builder.js` |
+| Fable R3 | `FIRE_AFTER` checks the writable path (Q7) at the call; no timer starts on a null path | `GramlotBuilderBagNode.FIRE_AFTER` |
+| Fable R4 a, b | The JS Host exports `SourceNotFound` and raises it as Python does: `Unknown Source method` for a non-string method or `main`, `Unknown Source method: <name>` for an undeclared one. `params` null or omitted is `{}` in both languages; an adapter passes null when a request has no parameters | `js/src/adapters/host.js`, `index.js` |
+| Fable R4 c, d | Language conventions, not changed: the builder name and `**kwargs` of Python against the options object of JS; a Python page module runs again at each opening, a JS module comes from the import cache | recorded here |
+| Fable R5 | `_init`, `_onBuilt` and `_onStart` accept `true`, `false`, null or a number (a delay, P22); any other value, a pointer included, is an error naming node and attribute | `requireProviderAttributes` |
+| Fable M3 | The namespace URIs live in `renderer/attributes.js` (JS) and `renderer/attributes.py` (Python); the name-segment rule in `adapters/resources.js` and `server/resources.py` | source-scan tests in `host.test.js` and `test_page_resources.py` |
+
+Consequence outside this repository: `gramlot-js-server` (`src/native-fetch.mjs`) maps
+`PageExpired` and `PageNotFound` to 404; an unknown Source method now raises
+`SourceNotFound`, which it does not map yet.

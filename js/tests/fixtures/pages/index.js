@@ -1,4 +1,4 @@
-import {Page as BasePage, source} from '../../../src/adapters/index.js';
+import {Page as BasePage, source} from '../../../src/adapters/page.js';
 
 export class Page extends BasePage {
     static title = 'Native HTML contract fixture';

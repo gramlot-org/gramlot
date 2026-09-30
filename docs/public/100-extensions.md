@@ -1,6 +1,11 @@
 # Extending Gramlot
 
-Document ID: **GC-100**. Native 0.1.0 APIs; future capabilities remain explicitly deferred.
+Document ID: **GC-100**. Native 0.1.2 APIs; 0.2.0 changes are marked.
+
+> **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
+> binding)**. The code is implemented on the development branch and is in
+> qualification; it is not released. The latest published release is **0.1.2**.
+> Text without a *0.2.0* mark describes behavior that comes from 0.1.2.
 
 <a id="gc-100-005"></a>
 
@@ -13,8 +18,10 @@ Document ID: **GC-100**. Native 0.1.0 APIs; future capabilities remain explicitl
 | Reusable Source macros | Deferred | No active recipe API |
 | Static HTML text generation | Generic Builder JS | `HtmlBuilder` and `HtmlRenderer` |
 | Reactive Source realization | Gramlot | `GramlotRenderer` (extends `RendererBase`) and `HtmlElement` |
+| *0.2.0:* reactive Source realization | Gramlot | `GramlotRenderer` (extends `GramlotHtmlRenderer`, which extends `HtmlRenderer`), `GramlotSvgRenderer` (extends `SvgRenderer`) and `HtmlElement` |
 | Serialization, types and notifications | Bag/TYTX | Their registered-type and subscription contracts |
 | Source grammar and builder association | Generic Builder JS | `SourceBag`, `BuilderBase`, `RendererBase` |
+| *0.2.0:* page behavior | Application | `class Logic` in the companion or a `js_requires` resource |
 
 The class extension points above exist, but their public compatibility is not
 frozen. Keep host technology out of core. Missing shared behavior belongs in its
@@ -38,6 +45,8 @@ The following sections deliberately remain outlines:
 - **Third-party collection discovery:** package loading, class registration and extension of native content models.
 - **Python authoring from JS descriptions:** metadata transport and generated authoring surface.
 - **Controllers and resolvers:** declarations, lifecycle and Data ownership.
+  *0.2.0:* defines `dataFormula`, `dataController` and named logic
+  ([Writing pages](095-writing-pages.md)); resolvers remain open.
 - **Database adapters:** shared operations and technology-specific implementations.
 
 Do not infer a plugin loader, package naming convention or finalized class hierarchy
@@ -55,10 +64,12 @@ methods; there is no separate JS element/abstract declaration helper API.
 
 Generic Builder JS now bundles the HTML5 grammar and its static `HtmlBuilder` and
 `HtmlRenderer`. They produce HTML text and accept the Python-compatible CSS keyword
-and macro conventions. This does not add live CSS integration to Gramlot: the
-reactive renderer does not yet reuse the dialect's `adaptAttrs` behavior. Source
-authoring and typed grammar remain unchanged, and this boundary move adds neither
-labels nor bindings.
+and macro conventions. In 0.1.2 this added no live CSS integration to Gramlot: the
+reactive renderer did not reuse the dialect's `adaptAttrs` behavior. Source
+authoring and typed grammar stayed unchanged, and the boundary move added neither
+labels nor bindings. *0.2.0:* the live `GramlotRenderer` extends
+`GramlotHtmlRenderer`, which extends Builder's `HtmlRenderer`, so the live DOM
+reuses its attribute and style adaptation.
 
 Main/remote Source blocks are validated at reception, then inserted into the
 observed Source. DOM construction starts from the emitted Bag event. Direct writes
@@ -82,12 +93,15 @@ JavaScript uses the generic Builder loader and `Collection`. Python GramlotBuild
 loads and composes its packaged dialect through Gramlot's `page/_grammar_load.py`
 and `page/_collection.py`, under the approved Python authoring boundary. Both
 paths validate declared parameters and structural constraints and isolate instances.
-Omitted/null fields preserve previous values; supplied fields update them. Named
-parameters and child rules combine by name; nested metadata merges recursively.
-An existing wildcard remains open when a later collection adds bare child names.
+A later collection replaces whole every element or abstract it names and keeps the
+others; `grammar` metadata merges key by key and a null value keeps the earlier one
+(the genro-builders rule, applied by the Python loader too since 2026-09-30).
 Mixed wildcard/cardinality rules remain unsupported. Defaults are descriptive, not automatically inserted attributes. Browser
 `Gramlot` accepts the same `collections` option.
 This is explicit loading, not automatic discovery or custom-element registration.
+*0.2.0:* Gramlot redefines `dataSetter`, `dataFormula` and `dataController` in its
+own collection, `binding.json`, loaded after the HTML5 collection in Python and
+JavaScript. The binding attributes it declares never reach the DOM.
 Native HTML's open parameter signatures do not become a manual attribute whitelist.
 Custom children must satisfy their parent's declared content model; this API does
 not automatically amend HTML child lists.

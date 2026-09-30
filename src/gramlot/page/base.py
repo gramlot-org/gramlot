@@ -15,6 +15,8 @@ def source(function):
 class Page:
     title = "Gramlot"
     css = ()
+    css_requires = ""
+    js_requires = ""
     source_builder = GramlotBuilder
 
     def main(self, root):

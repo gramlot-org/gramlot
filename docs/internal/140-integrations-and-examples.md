@@ -1,6 +1,6 @@
 # 140 · Agreed integrations and examples
 
-Document ID: **GC-140**. Updated: **2026-09-24**.
+Document ID: **GC-140**. Updated: **2026-09-30**.
 
 [Concise counterpart](../../docs_llm/internal/140-integrations-and-examples.md).
 
@@ -21,8 +21,9 @@ integration repositories own environment-specific adaptation and setup.
 | --- | --- | --- |
 | `gramlot-fastapi` | Python / FastAPI | Native FastAPI integration and setup; included in the original 0.1.0 delivery. |
 | `gramlot-flask` | Python / Flask | Native Flask integration and setup; included in the original 0.1.0 delivery. |
-| `gramlot-kajenn` | Python / Kajenn | Kajenn-specific integration, consuming the generic ASGI adapter from Minimal. Locally aligned; repository still named `gramlot-genro-asgi`. |
-| `gramlot-minimal` | Python / Uvicorn and JavaScript / browser Worker | Generic ASGI hosting for Python and single-HTML packaging for the browser standalone profile. Locally aligned; local and GitHub repository renamed to `gramlot-minimal`. |
+| `gramlot-kajenn` | Python / Kajenn | Kajenn-specific integration; it depends only on Kajenn besides the core (constitution 11.48 item 5). Repository renamed from `gramlot-genro-asgi` on 2026-09-26. Not migrated yet: its `pyproject.toml` still declares the retired repository replaced by `gramlot-uvicorn` and `gramlot-serverless`. The migration and the minimal Host contract are deferred to after 0.2.0. |
+| `gramlot-uvicorn` | Python / Uvicorn | Generic ASGI hosting for Python; heir of the ASGI part of the retired `gramlot-minimal` (constitution 11.48 item 5). Verified on the 0.2.0 minimal Host contract ([GC-070 §595](070-work-status.md#gc-070-595)). |
+| `gramlot-serverless` | JavaScript / browser Worker | Single-HTML packaging and Worker integration for the browser standalone profile; heir of the standalone part of the retired `gramlot-minimal`. Verified on the 0.2.0 minimal Host contract. |
 | `gramlot-js-server` | JavaScript / Node.js and Bun | Both server runtimes belong to this integration repository; included in the original 0.1.0 delivery. |
 | `gramlot-django` | Python / Django | Native Django views and URLconf integration through `NativeHtmlPages`. Locally aligned and checked; the older Page/ORM implementation is historical. |
 
@@ -43,14 +44,14 @@ same example, not eight different applications.
 
 | Page language | Profile | Integration repository |
 | --- | --- | --- |
-| Python | Uvicorn with generic ASGI | `gramlot-minimal` |
+| Python | Uvicorn with generic ASGI | `gramlot-uvicorn` |
 | Python | FastAPI | `gramlot-fastapi` |
 | Python | Flask | `gramlot-flask` |
 | Python | Kajenn | `gramlot-kajenn` |
 | Python | Django | `gramlot-django` |
 | JavaScript | Node.js | `gramlot-js-server` |
 | JavaScript | Bun | `gramlot-js-server` |
-| JavaScript | Browser Worker / standalone HTML | `gramlot-minimal` |
+| JavaScript | Browser Worker / standalone HTML | `gramlot-serverless` |
 
 The existing integration smoke pages, launch configurations and application tests
 belong in `gramlot-examples`. The owner-approved teaching suite now lives in core
@@ -60,15 +61,16 @@ Reusable adapters belong in their integration repositories;
 shared runtime behavior belongs in core. Installation and launch commands are
 maintained in the example's README rather than duplicated here.
 
-The Minimal repository also contains `examples/hello-world` and
-`examples/source-live` as focused exporter/runtime verification fixtures. They are
-not additional application commitments or an authorization to expand core features.
+The retired `gramlot-minimal` repository contained `examples/hello-world` and
+`examples/source-live` as focused exporter/runtime verification fixtures (historical,
+2026-09-24). They were not additional application commitments or an authorization to
+expand core features.
 
 <a id="gc-140-015"></a>
 ## 015 · Verification and publication boundary
 
 The original core 0.1.0 delivery verified seven Chromium profiles: Uvicorn, FastAPI,
-Flask, Kajenn, Node.js, Bun and Worker. Later local work aligned Minimal/Kajenn
+Flask, Kajenn, Node.js, Bun and Worker. Later local work aligned Minimal (since retired)/Kajenn
 package ownership and added native Django with protocol, installed-package and
 browser checks. These targeted checks are not a rerun of one complete eight-profile
 browser matrix. See GC-070 for the actual evidence and remaining limits.
@@ -96,7 +98,12 @@ acceptance checks. This reminder does not authorize any such transfer.
 ## 025 · Core teaching suite — approved 2026-09-24
 
 The owner has selected twelve paired Python/JavaScript HTML/SVG examples inside
-core, each with an explanatory README. A runner provides a list, language iframe
+core, each with an explanatory README. *Update 2026-09-30:* the suite has three
+families in core, `examples/html_svg` (thirteen pages, native HTML/SVG),
+`examples/binding` (eleven) and `examples/controllers` (nine); every example is a file
+page `NN_name.py`, `NN_name.js`, `NN_name.md` with a same-name `.css` and logic
+companion `NN_name_aux.js` where needed ([GC-145](145-html-svg-examples.md)); the
+original layout was one folder per example. A runner provides a list, language iframe
 panels and an initial HTML element catalogue. The shared `gramlot-base` theme lives
 outside examples under `themes`. Code viewing belongs to the runner, not each page.
 This work supersedes the earlier Hello-World-only teaching scope; the integration

@@ -4,12 +4,12 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-from gramlot.server import Host, PageExpired
+from gramlot.server import FileHost, PageExpired
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-class FixtureHost(Host):
+class FixtureHost(FileHost):
     def runtime(self):
         return (ROOT / "build/assets/gramlot.js").read_bytes()
 

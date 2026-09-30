@@ -3,6 +3,9 @@
 <!-- Document ID: GC-086 -->
 <a id="gc-086-005"></a>
 
+**Release scope:** the tree in this section is the release **0.1.2**. Section 010 lists the files that the 0.2.0 HTML/SVG binding adds. **The 0.2.0 files exist on the development branch; 0.2.0 is in qualification and not released.**
+
+
 ```text
 gramlot/
 ├── src/gramlot/                         Python
@@ -91,5 +94,55 @@ constitution amendment 11.16. JavaScript uses generic Builder loading and
 Collection composition. SourceBag/SourceBagNode stay generic dependency classes
 in both languages; these Python modules do not introduce a second Source type.
 
-Standalone WorkerHost, WorkerTransport and mount now belong to gramlot-minimal
-(amendment 11.46). Shared Host execution and rendering remain in core.
+Standalone WorkerHost, WorkerTransport and mount belong to `gramlot-serverless`
+(amendment 11.46 as reassigned by 11.48 item 5, after `gramlot-minimal` was retired).
+Shared Host execution and rendering remain in core.
+
+<a id="gc-086-010"></a>
+
+## 010 · 0.2.0 files
+
+**Status (2026-09-30): implemented on the development branch, in qualification.** The
+tree above is the 0.1.2 repository. The files below are added by the owner-confirmed
+0.2.0 HTML/SVG binding plan of 2026-09-25 (revised 2026-09-28); GC-210 records it. They
+replace the `ResourceResolver` of the original plan with the minimal Host contract
+(`parse_requires`/`parseRequires` and `load_order`/`loadOrder`; no resolver in the core).
+Classes and layer rules: [GC-045 §055](045-js-taxonomy.md#gc-045-055) and
+[GC-087 §085](087-javascript-layer-boundaries.md#gc-087-085).
+
+```text
+gramlot/
+├── src/gramlot/
+│   ├── server/
+│   │   ├── resources.py                parse_requires · load_order · InvalidResourceName (S06)
+│   │   └── file_host.py                FileHost, minimal (S06)
+│   ├── renderer/                       GramlotHtmlRenderer · GramlotSvgRenderer (S03bis)
+│   └── collections/
+│       └── binding.json                Data-element and binding grammar (S02)
+└── js/src/
+    ├── bootstrap.js                    PageBootstrap (S07)
+    ├── builder/
+    │   └── source.js                   GramlotBuilderBag · GramlotBuilderBagNode (S01)
+    ├── binding/
+    │   ├── runtime.js                  BindingRuntime · NodeBinding (S03)
+    │   ├── router.js                   DataRouter · DataRegistration · DataChange (S04)
+    │   ├── installation.js             DataInstaller (S05)
+    │   ├── providers.js                Provider · FormulaProvider · ControllerProvider (S08)
+    │   ├── logic.js                    LogicRegistry · LogicGroup (S07)
+    │   └── inline.js                   InlineCompiler, page runtime only (S09)
+    ├── view/
+    │   ├── controls.js                 ControlAdapter and subclasses · RadioGroups (S10, S11)
+    │   ├── button.js                   ButtonBinding (S12)
+    │   └── events.js                   NativeEventBinding (S12)
+    └── adapters/
+        └── resources.js                parseRequires · loadOrder · InvalidResourceName (S06)
+```
+
+`js/src/builder/source.js` holds the Gramlot Source classes. They add what Builder
+lacks (silent `PUT`, `FIRE` marked for the router, `FIRE_AFTER`, `absDatapath`), because
+fixes in genro-builders and genro-bag are forbidden. There is no `operations.js`.
+Existing files that change in 0.2.0 include
+`js/src/gramlot.js`, `js/src/renderer/gramlot-renderer.js`, `js/src/view/html.js`,
+`js/src/index.js`, `js/src/builder/gramlot-builder.js`,
+`js/src/adapters/page.js`, `host.js`, `file-host.js`, `src/gramlot/page/base.py`,
+`builder.py`, `src/gramlot/server/host.py` and `assets.py`.

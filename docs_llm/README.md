@@ -5,6 +5,9 @@
 Start with [Classes and server adapters](public/090-classes-and-hosts.md), then
 [Writing pages](public/095-writing-pages.md) and [Extending Gramlot](public/100-extensions.md).
 These draft chapters describe the development foundation and explicitly mark gaps.
+They describe release **0.2.0 (HTML/SVG data binding), in development**: an
+approved plan, not yet implemented. The latest published release is **0.1.2**;
+each chapter marks planned 0.2.0 behavior.
 [Evaluate](public/020-evaluate.md), [Try](public/025-try.md) and
 [Quality](public/030-quality.md) distinguish the core from the experimental PoC.
 

@@ -6,7 +6,7 @@ import unittest
 
 from genro_tytx import from_tytx, to_tytx
 from gramlot import GramlotBuilder
-from gramlot.server import Host, PageExpired
+from gramlot.server import FileHost, Host, PageExpired
 
 PAGES = Path(__file__).parent / "fixtures/pages"
 
@@ -43,17 +43,21 @@ class HostTests(unittest.IsolatedAsyncioTestCase):
     def test_host_rejects_non_expiring_ttl_and_invalid_capacity(self):
         for page_ttl in (float("inf"), float("nan"), 10**1000, "30", 0):
             with self.subTest(page_ttl=page_ttl), self.assertRaises(ValueError):
-                Host(PAGES, page_ttl=page_ttl)
+                Host(page_ttl=page_ttl)
         for max_pages in (float("inf"), 1.5, "2", 0):
             with self.subTest(max_pages=max_pages), self.assertRaises(ValueError):
-                Host(PAGES, max_pages=max_pages)
+                Host(max_pages=max_pages)
 
     async def test_bootstrap_and_main_are_separate_and_owned(self):
-        host = Host(PAGES)
+        host = FileHost(PAGES)
         bootstrap = await host.open_page("/", owner="one")
         self.assertIn('id="gramlot-root"', bootstrap.html)
         self.assertNotIn("homer", bootstrap.html)
-        self.assertIn('"closeUrl": "/gramlot/close"', bootstrap.html)
+        self.assertIn('"closeUrl":"/gramlot/close"', bootstrap.html)
+        self.assertIn('import {PageBootstrap} from "/assets/gramlot.js";await new PageBootstrap(', bootstrap.html)
+        self.assertIn(f'<script type="module" nonce="{bootstrap.nonce}">', bootstrap.html)
+        self.assertNotEqual(bootstrap.nonce, bootstrap.page_id)
+        self.assertNotIn("<link", bootstrap.html)
         with self.assertRaises(PageExpired):
             await host.main(bootstrap.page_id, owner="two")
         result = from_tytx(await host.main(bootstrap.page_id, owner="one"))
@@ -63,7 +67,7 @@ class HostTests(unittest.IsolatedAsyncioTestCase):
             await host.main(bootstrap.page_id, owner="one")
 
     async def test_paths_expiry_capacity_and_async_page(self):
-        host = Host(PAGES, max_pages=1)
+        host = FileHost(PAGES, max_pages=1)
         for path in ("/../index", "/missing", "/index.py", "/%2e%2e/index"):
             with self.assertRaises(LookupError):
                 await host.open_page(path)
@@ -78,7 +82,7 @@ class HostTests(unittest.IsolatedAsyncioTestCase):
                 'from gramlot import Page as Base\nclass Page(Base):\n'
                 '    title = "</title><script>bad</script>"\n'
                 '    async def main(self, root): root.div("async")\n')
-            host = Host(directory, runtime_url="/x</script>.js")
+            host = FileHost(directory, runtime_url="/x</script>.js")
             opened = await host.open_page("/")
             self.assertNotIn("<script>bad", opened.html)
             self.assertNotIn("/x</script>", opened.html)

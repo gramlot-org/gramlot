@@ -12,7 +12,7 @@ const options = {
     legalComments: 'inline',
 };
 const hosted = await build({...options, entryPoints: [path('src/index.js')], format: 'esm', outfile: path('dist/gramlot.js')});
-// Standalone startup and Worker integration now belong to gramlot-minimal.
+// Standalone startup and Worker integration now belong to gramlot-serverless.
 await rm(path('dist/standalone.js'), {force: true});
 await rm(path('../src/gramlot/resources/standalone.js'), {force: true});
 const packages = new Map();
