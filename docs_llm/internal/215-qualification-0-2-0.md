@@ -119,7 +119,7 @@ Owner, 2026-09-30: R20/D1 refused (fix in gramlot-serverless, row re-run); R22/D
 
 Block ID: **GC-215-040**.
 
-`/private/tmp/gramlot-s16/` (logs, artifacts, clean, hosts, scripts); retain durably for S17.
+`/private/tmp/gramlot-s16/` (logs, artifacts, clean, hosts, scripts); commands keep these paths. Retained 2026-10-01: `logs/` (64 files), scripts and host launchers in `/Users/gporcari/Sviluppo/gramlot/v_0.2.0/qualification-evidence/` (outside the repositories); venvs not kept; the 0.1.2-versioned artifacts are superseded by the GitHub release `v0.2.0`.
 
 <a id="gc-215-045"></a>
 ## 045 · Release status
