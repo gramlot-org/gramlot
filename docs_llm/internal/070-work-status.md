@@ -2646,3 +2646,10 @@ Block ID: **GC-070-620**.
 Block ID: **GC-070-625**.
 
 Owner, 2026-10-01: each adapter carries its own CI, coverage, docs build and standard files (brief for the three verified adapters). Verified on the remotes: gramlot-uvicorn `580bb40` (CI success: published core on 3.11/3.12, core main, docs; `gramlot>=0.2.0`; Codecov 81%; RTD to import); gramlot-js-server `8c30641` (CI success: core main Node 22 and Bun, docs; no published-core job while `@gramlot/native-html` is unpublished, D3; RTD imported); gramlot-serverless `a70fe59` (CI success: published core 0.2.0 from JSR, core main with sentinel, docs; RTD to import). Core CI on main passed with the new adapter main branches; the core has the same standard since `7cfc51a`. Open: shared `GS` namespace of uvicorn/serverless; D3.
+
+<a id="gc-070-630"></a>
+## 630 · User documentation of the adapters — 2026-10-01
+
+Block ID: **GC-070-630**.
+
+Owner, 2026-10-01: adapter docs for readers new to Gramlot; Gramlot and the repository table once in core GC-055 (`d96ebf7`), linked by the adapters. Verified: gramlot-uvicorn `9723fa2` (GS-105…140, `tests/test_examples.py`), gramlot-js-server `2742ead` (files 005…040, GN-105…140, `test/quickstart.test.mjs` Node/Bun), gramlot-serverless `fc06286` (GS-105…140, `tests/quickstart.test.js` + Chromium script); CI green, Read the Docs published, internal notes in `docs/internal/`. Core CI on main green after the pushes. Open: guide file numbering differs across repositories; shared `GS` namespace; D3.

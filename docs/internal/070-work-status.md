@@ -2933,3 +2933,28 @@ runtime, `CONTRIBUTING.md`, `CLAUDE.md`).
 **Open:** gramlot-uvicorn and gramlot-serverless share the `GS` document namespace with the
 same Document IDs since the split of `gramlot-minimal` (to be renamed after 0.2.0); D3.
 
+<a id="gc-070-630"></a>
+## 630 · User documentation of the adapters — 2026-10-01
+
+Block ID: **GC-070-630**.
+
+**Decided:** the owner asked for adapter documentation written for a reader who does not know
+Gramlot; the definition of Gramlot and the table of the repositories live once in the core page
+GC-055 (`docs/public/055-family.md`, `d96ebf7`) and the adapters link it (brief of 2026-10-01).
+
+**Implemented and verified by the coordinating chat on the remotes and on Read the Docs:**
+
+| Adapter | `main` = `develop` | CI on `main` | Published guides | Quick-start test |
+|---|---|---|---|---|
+| gramlot-uvicorn | `9723fa2` | success | GS-105…GS-140 (Introduction, Tutorial, Writing pages, Configuration, Deployment, Reference, Troubleshooting) | `tests/test_examples.py` runs the README page |
+| gramlot-js-server | `2742ead` | success | files 005…040, IDs GN-105…GN-140 | `test/quickstart.test.mjs` on Node and Bun |
+| gramlot-serverless | `fc06286` | success | GS-105…GS-140 | `tests/quickstart.test.js` and `scripts/verify_quickstart_browser.mjs` (Chromium) |
+
+Each README opens with one sentence on Gramlot and the link to GC-055, says what the repository
+is, when to choose it and what it does not do, and shows a quick-start page that a test runs.
+The former internal notes moved to `docs/internal/`, out of the published sites. The core CI on
+`main`, run again after the three pushes, passed.
+
+**Open:** guide file numbers differ between the repositories (gramlot-js-server 005…040 with IDs
+GN-105…GN-140; the others 105…140); the shared `GS` namespace of gramlot-uvicorn and
+gramlot-serverless; D3.
