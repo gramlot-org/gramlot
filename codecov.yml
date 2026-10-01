@@ -1,0 +1,32 @@
+# Coverage is reported per runtime (GC-030): JavaScript and Python never merge into one figure.
+coverage:
+  status:
+    project:
+      default: false
+      javascript:
+        flags: [javascript]
+        informational: true
+      python:
+        flags: [python]
+        informational: true
+    patch:
+      default:
+        informational: true
+
+flags:
+  javascript:
+    paths: [js/src/]
+    carryforward: true
+  python:
+    paths: [src/gramlot/]
+    carryforward: true
+
+ignore:
+  - "js/dist/**"
+  - "src/gramlot/resources/**"
+  - "js/tests/**"
+  - "tests/**"
+  - "examples/**"
+
+comment:
+  layout: "flags, files"

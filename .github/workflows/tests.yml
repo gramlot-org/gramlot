@@ -17,6 +17,9 @@ defaults:
 jobs:
   core:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,7 +56,30 @@ jobs:
         run: python -m unittest discover -s tests
       - name: Install runner dependencies
         run: npm --prefix examples install --ignore-scripts --install-links --package-lock=false
-      - name: Test JavaScript including quiet-write and symbolic-attribute contracts
-        run: npm --prefix js test
+      - name: Python coverage on the source tree
+        run: |
+          python -m pip install coverage
+          PYTHONPATH=src python -m coverage run --source=src/gramlot -m unittest discover -s tests
+          python -m coverage xml -o coverage-python.xml
+      - name: Test JavaScript including quiet-write and symbolic-attribute contracts, with coverage of every js/src file
+        run: js/node_modules/.bin/c8 --all --src js/src --include 'js/src/**' --reporter=lcov --reporter=text-summary --report-dir coverage-js npm --prefix js test
       - name: Test runner
         run: npm --prefix examples test
+      - name: Upload JavaScript coverage
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: gramlot/coverage-js/lcov.info
+          flags: javascript
+          disable_search: true
+          fail_ci_if_error: false
+      - name: Upload Python coverage
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: gramlot/coverage-python.xml
+          flags: python
+          disable_search: true
+          fail_ci_if_error: false

@@ -2,45 +2,21 @@
 
 Document ID: **GC-030**.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: implemented on the
-> development branch, in qualification, not released. Latest published release:
+> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
+> (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0, GitHub `v0.2.0`). Previous release:
 > **0.1.2**. Unmarked text is behavior from 0.1.2.
 
 <a id="gc-030-005"></a>
 
 ## 005 · Read badges in context
 
-The README documentation badge follows main and measures docs, not runtime correctness. Status/license badges are labels. The experimental runtime is tested in gramlot-poc. Core has Python/JS tests and a current local packaged Chromium 7/7 matrix (Uvicorn, FastAPI, Kajenn, Flask, Node, Bun, Worker), not release or Safari/Firefox evidence. Identify repository/revision in any coverage result; no runtime percentage is measured here. Verify hosted connections before adding Read the Docs or Codecov badges.
-
-The `Core and runner tests` workflow runs Python, core JavaScript and runner
-unit tests on main/develop pushes, the CI integration branch, pull requests and
-manual dispatch. It builds browser resources, installs the Python package and
-explicitly selects that interpreter for JS interop. Runner dependencies use the
-public `gramlot-serverless` and `gramlot-js-server` main branches alongside this repository, following
-the examples' declared file dependencies. The runner unit suite does not verify
-adapter behavior, standalone exports or the browser matrix. Coverage collection
-is not yet included. Verified GitHub runs on 2026-09-24:
-
-- [main](https://github.com/gramlot-org/gramlot/actions/runs/36059477892), revision
-  `76321ac`: Python 18/18, JavaScript 72/72 and runner 8/8.
-- [develop](https://github.com/gramlot-org/gramlot/actions/runs/36059479696), revision
-  `361dcca`: Python 18/18, JavaScript 76/76 and runner 8/8.
-
-Both branches also passed their documentation workflow. The four extra JS tests
-on develop cover the unfinished binding prerequisite reserved for 0.2.0; their
-success does not imply full binding implementation or acceptance.
-*0.2.0:* qualification: complete suites, clean-environment installs, Chromium,
-Firefox and WebKit, hosts of the inventory (`gramlot-uvicorn`, FastAPI, Kajenn, Flask,
-Django, Node, Bun, `gramlot-serverless`). `gramlot-uvicorn`, `gramlot-js-server` and
-`gramlot-serverless` verified on the minimal Host contract; FastAPI, Flask, Django and
-Kajenn deferred to after 0.2.0 and excluded. Unavailable = not verified and blocks
-qualification unless the owner records an exception. Separate from acceptance and publication.
+README badges: tests (`Core and runner tests` on `main`: runtime build, Python, core JS with the quiet-write and symbolic-attribute contracts, runner; pushes to main/develop, PRs, dispatch; runner uses the public main of `gramlot-serverless` and `gramlot-js-server`), documentation build, two Codecov badges (JavaScript, Python; section 010), PyPI and JSR versions, license label. Unit suites do not verify adapters in a server, standalone exports or real browsers: that is the 0.2.0 qualification (GC-215: clean environments, Chromium/WebKit/Firefox, §8.1 story through the real bootstrap, served runtime vs fresh build, acceptance pages on `gramlot-uvicorn`, `gramlot-js-server` Node/Bun, `gramlot-serverless`; django, fastapi, flask, kajenn deferred). The experimental runtime is tested in gramlot-poc.
 
 <a id="gc-030-010"></a>
 
 ## 010 · JavaScript is the primary runtime measure
 
-Future runtime CI must measure first-party JavaScript, including unimported files, with lines/branches/functions. Exclude vendors, generated bundles and test helpers. Measure Python authoring/serialization separately and use separate Codecov flags with visible JS results. Combined or Python-only coverage can hide runtime gaps. Collection is not implemented in this core.
+CI measures `js/src` with `c8 --all` (every file, unimported ones included; lines/branches/functions; no vendors, `js/dist` or tests) and `src/gramlot` separately with coverage.py on the source tree. Codecov flags `javascript` and `python` (`codecov.yml`), never merged. Local run 2026-10-01: JS 99.2% lines, 95.6% branches, 99.0% functions; Python 90% statements.
 
 <a id="gc-030-015"></a>
 

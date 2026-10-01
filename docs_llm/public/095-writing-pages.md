@@ -2,8 +2,8 @@
 
 Document ID: **GC-095**. Native 0.1.2 APIs plus the 0.2.0 data binding.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: implemented on the
-> development branch, in qualification, not released. Latest published release:
+> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
+> (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0, GitHub `v0.2.0`). Previous release:
 > **0.1.2**. Sections 005-035 come from 0.1.2 with *0.2.0* notes; sections 040-090
 > are 0.2.0 behavior.
 

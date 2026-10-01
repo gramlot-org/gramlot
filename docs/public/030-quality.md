@@ -3,71 +3,52 @@
 Document ID: **GC-030**.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**. The code is implemented on the development branch and is in
-> qualification; it is not released. The latest published release is **0.1.2**.
+> binding)**, released on 2026-09-30 (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0,
+> GitHub release `v0.2.0`). The previous release is **0.1.2**.
 > Text without a *0.2.0* mark describes behavior that comes from 0.1.2.
 
 <a id="gc-030-005"></a>
 
 ## 005 · Read badges in context
 
-The README documentation badge links to this repository's GitHub Actions workflow
-on `main`. It becomes useful once the workflow has been pushed and run; it measures
-documentation build health, not application correctness. The status and license
-badges are labels, not test results.
+The README shows six badges. The tests badge reports the `Core and runner tests`
+workflow on `main`: it builds the browser runtime, installs the Python package, and
+runs the Python suite, the core JavaScript suite (with the quiet-write and
+symbolic-attribute contracts) and the runner suite, on pushes to `main` and
+`develop`, pull requests and manual dispatch. The runner suite checks out the
+public `main` branches of `gramlot-serverless` and `gramlot-js-server` next to this
+repository, following the examples' declared file dependencies. The documentation
+badge reports the documentation build. The two coverage badges report Codecov, one
+per runtime (section 010). The PyPI and JSR badges show the published versions.
+The license badge is a label.
 
-The full experimental runtime is tested in `gramlot-poc`. This development
-checkout contains Python and JS foundation tests. A current local packaged
-Chromium matrix passes seven profiles: Uvicorn, FastAPI, Kajenn, Flask, Node, Bun
-and Worker. This is bounded native HTML evidence, not release acceptance or
-Safari/Firefox verification.
-During consolidation, runtime coverage should identify that repository and the
-revision measured. Move the tests and coverage collection with the implementation
-as it enters this repository. No runtime percentage is measured here yet.
-Hosted documentation and Codecov badges require a verified project connection.
-
-The `Core and runner tests` workflow runs Python, core JavaScript and runner
-unit tests on main/develop pushes, the CI integration branch, pull requests and
-manual dispatch. It builds browser resources, installs the Python package and
-explicitly selects that interpreter for JS interop. Runner dependencies use the
-public `gramlot-serverless` and `gramlot-js-server` main branches alongside this repository, following
-the examples' declared file dependencies. The runner unit suite does not verify
-adapter behavior, standalone exports or the browser matrix. Coverage collection
-is not yet included. Verified GitHub runs on 2026-09-24:
-
-- [main](https://github.com/gramlot-org/gramlot/actions/runs/36059477892), revision
-  `76321ac`: Python 18/18, JavaScript 72/72 and runner 8/8.
-- [develop](https://github.com/gramlot-org/gramlot/actions/runs/36059479696), revision
-  `361dcca`: Python 18/18, JavaScript 76/76 and runner 8/8.
-
-Both branches also passed their documentation workflow. The four extra JS tests
-on develop cover the unfinished binding prerequisite reserved for 0.2.0; their
-success does not imply full binding implementation or acceptance.
-
-*0.2.0:* the qualification runs the complete suites with dependencies
-installed in clean environments, in Chromium, Firefox and WebKit, on the hosts of
-the inventory: `gramlot-uvicorn`, FastAPI, Kajenn, Flask, Django, Node, Bun and
-`gramlot-serverless` (standalone). `gramlot-uvicorn`, `gramlot-js-server` and
-`gramlot-serverless` are verified against the minimal Host contract; FastAPI,
-Flask, Django and Kajenn are deferred to after 0.2.0 and their paths are excluded
-from this qualification. An unavailable environment is reported as not verified
-and blocks qualification unless the owner records an explicit exception.
-Qualification is separate from acceptance and publication.
+The unit suites do not verify adapter behavior in a server, standalone exports or
+real browsers. That evidence is the 0.2.0 qualification (GC-215 in
+`docs/internal/`): complete suites in clean environments; Chromium, WebKit and
+Firefox; the end-to-end story through the real Page, Host, TYTX and PageBootstrap
+path; the served runtime checked against a fresh build; and the acceptance pages on
+`gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun) and `gramlot-serverless`.
+`gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn` are
+deferred to after 0.2.0 and excluded. The experimental runtime is tested in
+`gramlot-poc`.
 
 <a id="gc-030-010"></a>
 
 ## 010 · JavaScript is the primary runtime measure
 
-Python describes applications, but the browser runtime is JavaScript. When runtime
-code is accepted here, its coverage should include first-party JavaScript sources,
-including files that no test imports. Report lines, branches and functions; exclude
-third-party libraries, generated bundles and test helpers from that denominator.
+Python describes applications, but the browser runtime is JavaScript. The CI
+measures it with `c8 --all` on `js/src`: every first-party source file is in the
+denominator, including files that no test imports; lines, branches and functions
+are reported; third-party libraries, the generated bundle (`js/dist`) and the tests
+are excluded. Python authoring and serialization (`src/gramlot`) are measured
+separately with coverage.py, on the source tree.
 
-Measure Python authoring and serialization separately. A combined total or a high
-Python percentage can hide untested rendering, binding, controller or cleanup paths.
-Use separate JavaScript and Python report flags in Codecov, with a visible
-JavaScript result. These are requirements for future runtime CI, not implemented
-coverage collection in this repository.
+Codecov receives two reports with the flags `javascript` and `python`
+(`codecov.yml`); they are never merged into one figure, because a combined total
+or a high Python percentage can hide untested rendering, binding, controller or
+cleanup paths. On 2026-10-01 a local run of the suites measured JavaScript at 99.2%
+of lines, 95.6% of branches and 99.0% of functions, and Python at 90% of
+statements.
 
 <a id="gc-030-015"></a>
 
