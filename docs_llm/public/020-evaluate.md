@@ -10,7 +10,7 @@ Document ID: **GC-020**.
 
 ## 005 · Who it is for
 
-Gramlot targets Python authors of interactive forms, data tools and application interfaces. This repository implements a bounded native HTML/typed Source foundation, verified and owner-accepted as native 0.1.0. Shared controls and bindings are future work here; gramlot-poc contains richer experimental behavior. Allow for API changes. *0.2.0:* adds HTML/SVG data binding (`dataSetter`, `^`/`=` pointers, formulas/controllers with named logic, native controls, button controllers); released in 0.2.0 (2026-09-30).
+Gramlot targets Python authors of interactive forms, data tools and application interfaces. This repository is the Gramlot core: release 0.2.0 (2026-09-30) has native HTML/SVG pages with typed Source and HTML/SVG data binding (`dataSetter`, `^`/`=`/`==`, formulas/controllers with named logic, native controls, button controllers). Components start with 0.3.0. Core, adapters and how to choose: [The Gramlot family](055-family.md). gramlot-poc is a separate experimental runtime.
 
 <a id="gc-020-010"></a>
 
