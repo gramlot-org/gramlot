@@ -2639,3 +2639,10 @@ Blocked: gramlot-serverless 17/19 (error text changed in S15bis), story on the s
 Block ID: **GC-070-620**.
 
 **Accepted:** owner, 2026-09-30 ("si accetto", chat `wf:gramlot-0-2-0-binding`, `ac5c08f`, after GC-215). Not an authorization of version change, pushes or publication (each separate). D3 package names deferred after 0.2.0; `/quality-check` skipped (two whole-code reviews plus verifier on Phases 18-19). Status: implemented, accepted, version 0.2.0 authorized and packaged locally (C07 re-check); published 2026-09-30: `v0.2.0`, GitHub release, PyPI 0.2.0, JSR 0.2.0 (GC-215 §045).
+
+<a id="gc-070-625"></a>
+## 625 · Adapters pushed with their own CI after 0.2.0 — 2026-10-01
+
+Block ID: **GC-070-625**.
+
+Owner, 2026-10-01: each adapter carries its own CI, coverage, docs build and standard files (brief for the three verified adapters). Verified on the remotes: gramlot-uvicorn `580bb40` (CI success: published core on 3.11/3.12, core main, docs; `gramlot>=0.2.0`; Codecov 81%; RTD to import); gramlot-js-server `8c30641` (CI success: core main Node 22 and Bun, docs; no published-core job while `@gramlot/native-html` is unpublished, D3; RTD imported); gramlot-serverless `a70fe59` (CI success: published core 0.2.0 from JSR, core main with sentinel, docs; RTD to import). Core CI on main passed with the new adapter main branches; the core has the same standard since `7cfc51a`. Open: shared `GS` namespace of uvicorn/serverless; D3.

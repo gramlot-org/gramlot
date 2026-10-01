@@ -2905,3 +2905,31 @@ Phase 18 notes) and a verifier on Phases 18 and 19 took its place; the sequence 
 finalize on `develop`, push, merge into `main`, publication, then the adapter pushes.
 
 **Status:** implemented yes; accepted yes; version 0.2.0 authorized by the owner (2026-09-30) and packaged locally with the C07 re-check; published on 2026-09-30 as tag `v0.2.0`, GitHub release, PyPI `gramlot` 0.2.0 and JSR `@genro/gramlot` 0.2.0 (GC-215 §045).
+
+<a id="gc-070-625"></a>
+## 625 · Adapters pushed with their own CI after 0.2.0 — 2026-10-01
+
+Block ID: **GC-070-625**.
+
+**Decided:** the owner asked each downstream repository to carry its own CI, coverage,
+documentation build and standard files, as `gramlot-devtools` does; one brief for the three
+verified adapters (coordinating chat, 2026-10-01).
+
+**Implemented and verified by the coordinating chat on the remotes:**
+
+| Adapter | `main` = `develop` | CI on `main` | Notes |
+|---|---|---|---|
+| gramlot-uvicorn | `580bb40` | success: published core on Python 3.11 and 3.12, core main, documentation | `gramlot>=0.2.0`; Codecov 81% (154 statements); Read the Docs to import |
+| gramlot-js-server | `8c30641` | success: core main on Node 22 and Bun, documentation | no published-core job while `@gramlot/native-html` is unpublished (D3); Read the Docs imported, first build passed |
+| gramlot-serverless | `a70fe59` | success: published core (`@jsr/genro__gramlot` 0.2.0 from the registry), core main with the Worker sentinel, documentation | Read the Docs to import |
+
+Each repository has `tests.yml`, `codecov.yml` (Codecov upload with OIDC), Sphinx for the
+paired `docs`/`docs_llm` guides with `.readthedocs.yaml`, `NOTICE`, `CLAUDE.md`,
+`CONTRIBUTING.md` and a README with CI, Codecov, Read the Docs and license badges. The core CI
+on `main`, dispatched after each push, passed with the new adapter `main` branches. The core
+itself carries the same standard since `7cfc51a` (tests and coverage badges, Codecov per
+runtime, `CONTRIBUTING.md`, `CLAUDE.md`).
+
+**Open:** gramlot-uvicorn and gramlot-serverless share the `GS` document namespace with the
+same Document IDs since the split of `gramlot-minimal` (to be renamed after 0.2.0); D3.
+
