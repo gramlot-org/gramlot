@@ -29,6 +29,8 @@ Block ID: **GC-220-005**.
 - Named `connect_on<event>` needs a dotted name, that is a `js_requires` group; with the minimal FileHost only inline code is possible for it (Phase 16, `controllers/07_events`).
 - Style shortcut numbers pass without a unit (`font_size=20` → `font-size: 20`, dropped by the browser) (Phase 16).
 - Package names: the core `js/package.json` is `@gramlot/native-html`, unpublished on any registry, used by gramlot-js-server (peer dependency) and by `examples/package.json`; gramlot-serverless uses the JSR name `@jsr/genro__gramlot`. The core runner `examples/00-runner/build-standalone.mjs` fails with `Cannot find module '@jsr/genro__gramlot'` because `examples/node_modules` has only `@gramlot/native-html` (Phase 15; for S17).
+- Naming: core docs call the 0.1.0 profile "native HTML" (92 files); gramlot-uvicorn exports `NativeHtmlASGI`. gramlot-js-server dropped the prefix on 2026-10-01 (11.50); core docs and Python adapters for this review (`NATIVE_ATTRIBUTES` in `js/src/renderer/attributes.js` is another meaning).
+- The runner suite never starts `examples/00-runner/server.mjs`: a stale `@gramlot/gramlot-js-server` with the old `/native` entry passed the 31 tests and failed only when the runner was started by hand (2026-10-01).
 
 <a id="gc-220-010"></a>
 ## 010 · Closed since

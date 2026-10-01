@@ -2982,3 +2982,29 @@ moved from `genropy` to `genro-org` on 2026-10-01. gramlot-js-server takes the c
 
 **Open:** gramlot-serverless still imports `@jsr/genro__gramlot` until its rename, after the npm
 publication of the core.
+
+<a id="gc-070-640"></a>
+## 640 · The standalone exporter joins gramlot-js-server — 2026-10-01
+
+Block ID: **GC-070-640**.
+
+Owner, 2026-10-01, to reduce the downstream repositories: gramlot-serverless joins
+gramlot-js-server ("va bene js server in effetti il worker è uj server"); names "server" and
+"browser", without the `native` prefix ("accetto il tuo suggerimento"). Amendment 11.50.
+
+- gramlot-js-server is an npm workspace: `server/` is `@gramlot/gramlot-js-server` (entry points
+  `/node` and `/bun`, `startServer`), `browser/` is `@gramlot/gramlot-browser` (command
+  `gramlot-browser`). History imported with `git subtree` (`05efadd`); layout `9cbbd11`; PoC
+  showcase removed `b3a6e6e`; names `d706973`; PoC server removed `c0ca2bd`.
+- Core: the runner, `scripts/verify_worker_host_browser.mjs` and CI use the two packages from one
+  `gramlot-js-server` checkout (`18880bb`, `0569d4d`).
+- Verified on 2026-10-01: clean clone with `@gramlot/gramlot` 0.2.1 from npm, server 6/6 on Node
+  and Bun, browser 20/20, three Chromium checks of the exporter; with the core `main` linked, the
+  sentinel check and the server browser harness on Node and Bun; core Python OK, JavaScript
+  451/451, runner 31/31, Worker host and standalone runner in Chromium; runner pages `/js/e01`,
+  `/js/b01`, `/js/c01`, `/py/b01` answer 200.
+- The open item of §635 is closed: the exporter imports `@gramlot/gramlot` (gramlot-serverless
+  `8ed1fc3`).
+
+**Open:** publication of the two packages on npm and JSR; archive of `gramlot-org/gramlot-serverless`
+and of its Read the Docs project.

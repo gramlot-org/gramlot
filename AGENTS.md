@@ -97,4 +97,5 @@ No formal Live Object Tree semantics have been approved. Do not infer or invent 
   startup belong to gramlot-minimal. Bounded connected edits there are authorized
   for this transfer. Owner 2026-09-28: gramlot-minimal is retired; its successors
   are gramlot-serverless (browser/Worker standalone) and gramlot-uvicorn
-  (Python/ASGI/Uvicorn). Core retains shared Host/Page execution, Source and rendering.
+  (Python/ASGI/Uvicorn). Owner 2026-10-01: gramlot-serverless joined
+  gramlot-js-server as the package `@gramlot/gramlot-browser`. Core retains shared Host/Page execution, Source and rendering.
