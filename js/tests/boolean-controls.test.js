@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM, VirtualConsole} from 'jsdom';
-import {sourceTarget} from '@jsr/genro__builders';
+import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {CheckboxControl, RadioControl, TextControl} from '../src/view/controls.js';
 

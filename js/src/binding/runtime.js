@@ -1,4 +1,4 @@
-import {SourceBag} from '@jsr/genro__builders';
+import {SourceBag} from '@genrojs/builders';
 import {DataRouter} from './router.js';
 import {DataInstaller} from './installation.js';
 import {ControllerProvider, FormulaProvider} from './providers.js';

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BuilderBase} from '@jsr/genro__builders';
+import {BuilderBase} from '@genrojs/builders';
 import {GramlotBuilderBag} from '../../src/builder/source.js';
 
 test('Bag supports a silent write through doTrigger=false', () => {

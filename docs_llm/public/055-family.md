@@ -3,7 +3,7 @@
 Document ID: **GC-055**.
 
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0, GitHub `v0.2.0`).
+> (GitHub `v0.2.0`; current patch **0.2.1**, 2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`).
 
 <a id="gc-055-005"></a>
 
@@ -17,7 +17,7 @@ Example (Python): `pane = root.div(datapath="person")`; `pane.input(id="name", v
 
 ## 010 · The repositories
 
-- [gramlot](https://github.com/gramlot-org/gramlot): core (Page, Source, Data, binding, runtime, minimal Host contract, `FileHost`); PyPI `gramlot`, JSR `@genro/gramlot`; always needed; released 0.2.0.
+- [gramlot](https://github.com/gramlot-org/gramlot): core (Page, Source, Data, binding, runtime, minimal Host contract, `FileHost`); PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; always needed; released 0.2.0.
 - [gramlot-uvicorn](https://github.com/gramlot-org/gramlot-uvicorn): ASGI adapter for Python pages (Uvicorn or any ASGI server); verified.
 - [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server): HTTP adapter for JavaScript pages on Node.js 22 and Bun; verified.
 - [gramlot-serverless](https://github.com/gramlot-org/gramlot-serverless): JavaScript pages exported to one HTML file or a static folder opened from disk, Page in a Web Worker; verified.

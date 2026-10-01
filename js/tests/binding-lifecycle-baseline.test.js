@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {sourceTarget} from '@jsr/genro__builders';
+import {sourceTarget} from '@genrojs/builders';
 import {GramlotBuilderBag} from '../src/builder/source.js';
 import {Gramlot} from '../src/gramlot.js';
 

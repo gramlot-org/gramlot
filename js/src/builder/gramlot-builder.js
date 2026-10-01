@@ -1,6 +1,6 @@
-import {Bag} from '@jsr/genro__bag';
-import {HtmlBuilder, SourceBagNode, sourceTarget} from '@jsr/genro__builders';
-import {toTytx} from '@jsr/genro__tytx';
+import {Bag} from '@genrojs/bag';
+import {HtmlBuilder, SourceBagNode, sourceTarget} from '@genrojs/builders';
+import {toTytx} from '@genrojs/tytx';
 // Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 // dictionary of X, so every GramlotBuilder user can encode and decode it.
 import {GramlotBuilderBag} from './source.js';

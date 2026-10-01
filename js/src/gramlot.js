@@ -1,4 +1,4 @@
-import {SourceBag, sourceBagFromTytx} from '@jsr/genro__builders';
+import {SourceBag, sourceBagFromTytx} from '@genrojs/builders';
 import {GramlotBuilder} from './builder/gramlot-builder.js';
 import {GramlotBuilderBag} from './builder/source.js';
 import {GramlotRenderer} from './renderer/gramlot-renderer.js';

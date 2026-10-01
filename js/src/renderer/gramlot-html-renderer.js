@@ -1,4 +1,4 @@
-import {HtmlBuilder, HtmlRenderer, SvgBuilder, sourceAttributeItems} from '@jsr/genro__builders';
+import {HtmlBuilder, HtmlRenderer, SvgBuilder, sourceAttributeItems} from '@genrojs/builders';
 import {GramlotSvgRenderer} from './gramlot-svg-renderer.js';
 import {
     SVG_NS, XHTML_NS, boundaryAttributes, displayItem, domNames, isExpression, requireNoExpressionTemplate,

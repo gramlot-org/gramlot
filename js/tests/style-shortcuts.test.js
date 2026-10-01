@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {JSDOM} from 'jsdom';
-import {HtmlBuilder, SvgBuilder, sourceTarget} from '@jsr/genro__builders';
+import {HtmlBuilder, SvgBuilder, sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder, GramlotHtmlRenderer, GramlotSvgRenderer} from '../src/index.js';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';

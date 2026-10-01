@@ -1,6 +1,6 @@
 // Attribute rules shared by GramlotHtmlRenderer, GramlotSvgRenderer and the live GramlotRenderer.
 // Same table and same functions as src/gramlot/renderer/attributes.py (source plan §1 rule 10).
-import {sourceAttributeItems} from '@jsr/genro__builders';
+import {sourceAttributeItems} from '@genrojs/builders';
 
 export const XHTML_NS = 'http://www.w3.org/1999/xhtml';
 export const SVG_NS = 'http://www.w3.org/2000/svg';

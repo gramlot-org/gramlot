@@ -2,7 +2,7 @@
 // page on a virtual clock, with the live timers and DOM listeners counted, a trace of the Data writes
 // and of the provider invocations, and the counters that must come back to their baseline.
 import {JSDOM} from 'jsdom';
-import {sourceTarget} from '@jsr/genro__builders';
+import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../../src/index.js';
 
 /**

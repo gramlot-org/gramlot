@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {Bag} from '@jsr/genro__bag';
+import {Bag} from '@genrojs/bag';
 import {Gramlot} from '../src/index.js';
 import {DataChange, DataRegistration, DataRouter} from '../src/binding/router.js';
 

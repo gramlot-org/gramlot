@@ -4,6 +4,6 @@ export {GramlotBuilder} from './builder/gramlot-builder.js';
 export {GramlotRenderer} from './renderer/gramlot-renderer.js';
 export {GramlotHtmlRenderer} from './renderer/gramlot-html-renderer.js';
 export {GramlotSvgRenderer} from './renderer/gramlot-svg-renderer.js';
-export {Bag, BagNode} from '@jsr/genro__bag';
+export {Bag, BagNode} from '@genrojs/bag';
 export {References} from './references.js';
 export {MainTransport} from './transport.js';

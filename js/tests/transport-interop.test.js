@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
-import {fromTytx} from '@jsr/genro__tytx';
-import {Bag} from '@jsr/genro__bag';
-import {SourceBag, SourceBagNode, sourceBagFromTytx, sourceBagToTytx} from '@jsr/genro__builders';
+import {fromTytx} from '@genrojs/tytx';
+import {Bag} from '@genrojs/bag';
+import {SourceBag, SourceBagNode, sourceBagFromTytx, sourceBagToTytx} from '@genrojs/builders';
 import {GramlotBuilder} from '../src/builder/gramlot-builder.js';
 import {GramlotBuilderBag, GramlotBuilderBagNode} from '../src/builder/source.js';
 

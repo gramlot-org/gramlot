@@ -6,8 +6,8 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {Host} from '../js/src/adapters/host.js';
 import {Page as BasePage} from '../js/src/adapters/page.js';
-import {SourceBag} from '@jsr/genro__builders';
-import {fromTytx} from '@jsr/genro__tytx';
+import {SourceBag} from '@genrojs/builders';
+import {fromTytx} from '@genrojs/tytx';
 
 // The JSR package ships the HTML / SVG family only (jsr.json publish.include).
 const catalog = JSON.parse(await readFile(new URL('../examples/00-runner/catalog.json', import.meta.url), 'utf8'))

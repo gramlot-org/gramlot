@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {HtmlBuilder, SourceBag} from '@jsr/genro__builders';
-import {Bag, BagNode} from '@jsr/genro__bag';
+import {HtmlBuilder, SourceBag} from '@genrojs/builders';
+import {Bag, BagNode} from '@genrojs/bag';
 import {Gramlot} from '../src/gramlot.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
 import {GramlotRenderer} from '../src/renderer/gramlot-renderer.js';

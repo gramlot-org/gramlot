@@ -1,6 +1,6 @@
 /** Real browser check of native editing (S10), checkbox and radio (S11), button and events with the R3 side effects (S12), handlers of a branch removed under freeze (S13, R12), strict CSP with the Q3 error (S14): the bundled runtime from js/ on a file:// shell, real typing, clicks and keys. */
 import {build} from '../js/node_modules/esbuild/lib/main.js';
-import {HtmlBuilder} from '../js/node_modules/@jsr/genro__builders/src/index.js';
+import {HtmlBuilder} from '../js/node_modules/@genrojs/builders/src/index.js';
 import {mkdtemp, writeFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';

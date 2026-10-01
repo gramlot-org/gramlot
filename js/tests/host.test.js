@@ -7,8 +7,8 @@ import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {Host, Page, GramlotBuilder, PageExpired, HostCapacity, PageNotFound, SourceNotFound} from '../src/adapters/index.js';
 import {FileHost} from '../src/adapters/file-host.js';
-import {fromTytx} from '@jsr/genro__tytx';
-import {SourceBag} from '@jsr/genro__builders';
+import {fromTytx} from '@genrojs/tytx';
+import {SourceBag} from '@genrojs/builders';
 
 const pages = fileURLToPath(new URL('./fixtures/pages/', import.meta.url));
 

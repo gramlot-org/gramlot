@@ -1,5 +1,5 @@
-import {SourceBag, SourceBagNode} from '@jsr/genro__builders';
-import {getSubtypeDict, setSubtypeDict} from '@jsr/genro__tytx';
+import {SourceBag, SourceBagNode} from '@genrojs/builders';
+import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
 
 /**
  * Gramlot Source node: Builder's SourceBagNode plus the Data behavior Builder lacks.

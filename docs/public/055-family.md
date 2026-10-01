@@ -3,8 +3,8 @@
 Document ID: **GC-055**.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data binding)**,
-> released on 2026-09-30 (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0, GitHub
-> release `v0.2.0`).
+> released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
+> (2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`).
 
 <a id="gc-055-005"></a>
 
@@ -59,7 +59,7 @@ JavaScript calls the same methods; data-elements take an object
 
 | Repository | What it is | Use it when | Status for 0.2.0 |
 | --- | --- | --- | --- |
-| [gramlot](https://github.com/gramlot-org/gramlot) | The core: Page, Source, Data, binding, the browser runtime, the minimal Host contract and `FileHost`. PyPI `gramlot`, JSR `@genro/gramlot`. | Always: every page and every adapter depends on it. | Released 0.2.0 |
+| [gramlot](https://github.com/gramlot-org/gramlot) | The core: Page, Source, Data, binding, the browser runtime, the minimal Host contract and `FileHost`. PyPI `gramlot`, npm and JSR `@gramlot/gramlot`. | Always: every page and every adapter depends on it. | Released 0.2.0 |
 | [gramlot-uvicorn](https://github.com/gramlot-org/gramlot-uvicorn) | ASGI adapter for Python pages; runs on Uvicorn or any ASGI server. | Your pages are in Python and you serve them from a Python web server. | Verified |
 | [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server) | HTTP adapter for JavaScript pages on Node.js 22 and Bun. | Your pages are in JavaScript and you serve them from Node.js or Bun. | Verified |
 | [gramlot-serverless](https://github.com/gramlot-org/gramlot-serverless) | Exporter of JavaScript pages to one HTML file, or one static folder, that opens from disk; the Page runs in a Web Worker. | You want a page without any server: a file to open, send or host as static content. | Verified |

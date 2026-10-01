@@ -1,4 +1,4 @@
-import {SvgRenderer, svgAttributes} from '@jsr/genro__builders';
+import {SvgRenderer, svgAttributes} from '@genrojs/builders';
 import {boundaryAttributes, domNames, textValue, withoutBindingAttributes, withoutNullValues} from './attributes.js';
 
 // SVG elements written `<tag … />`, as the Python SvgRenderer of Builder (the grammar gives them no children).

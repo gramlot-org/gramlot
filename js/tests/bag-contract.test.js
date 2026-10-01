@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Bag} from '@jsr/genro__bag';
-import {toTytx, fromTytx} from '@jsr/genro__tytx';
-import {BuilderBase} from '@jsr/genro__builders';
+import {Bag} from '@genrojs/bag';
+import {toTytx, fromTytx} from '@genrojs/tytx';
+import {BuilderBase} from '@genrojs/builders';
 
 test('observed root activates prebuilt nested Bags without builder assistance', () => {
     const root = new Bag();
