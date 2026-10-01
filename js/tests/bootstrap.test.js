@@ -13,7 +13,7 @@ import {tmpdir} from 'node:os';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {JSDOM} from 'jsdom';
 import {build} from 'esbuild';
-import {SourceBag} from '@jsr/genro__builders';
+import {SourceBag} from '@genrojs/builders';
 import {GramlotBuilder, PageBootstrap} from '../src/index.js';
 import {FileHost, parseRequires} from '../src/adapters/index.js';
 

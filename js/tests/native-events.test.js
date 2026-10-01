@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM, VirtualConsole} from 'jsdom';
-import {sourceTarget} from '@jsr/genro__builders';
+import {sourceTarget} from '@genrojs/builders';
 import {Gramlot} from '../src/index.js';
 import {NativeEventBinding} from '../src/view/events.js';
 

@@ -1,5 +1,5 @@
-import {Bag} from '@jsr/genro__bag';
-import {META_ATTRS, SourceBag} from '@jsr/genro__builders';
+import {Bag} from '@genrojs/bag';
+import {META_ATTRS, SourceBag} from '@genrojs/builders';
 import {isExpression, withoutBindingAttributes} from '../renderer/attributes.js';
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
 

@@ -2653,3 +2653,10 @@ Owner, 2026-10-01: each adapter carries its own CI, coverage, docs build and sta
 Block ID: **GC-070-630**.
 
 Owner, 2026-10-01: adapter docs for readers new to Gramlot; Gramlot and the repository table once in core GC-055 (`d96ebf7`), linked by the adapters. Verified: gramlot-uvicorn `9723fa2` (GS-105…140, `tests/test_examples.py`), gramlot-js-server `2742ead` (files 005…040, GN-105…140, `test/quickstart.test.mjs` Node/Bun), gramlot-serverless `fc06286` (GS-105…140, `tests/quickstart.test.js` + Chromium script); CI green, Read the Docs published, internal notes in `docs/internal/`. Core CI on main green after the pushes. Open: guide file numbering differs across repositories; shared `GS` namespace; D3.
+
+<a id="gc-070-635"></a>
+## 635 · Package names and registries, release 0.2.1 — 2026-10-01
+
+Block ID: **GC-070-635**.
+
+Owner, 2026-10-01: JS packages on npm and JSR; same package name on both, only scope differs; genro modules on npm under `genrojs`. D3 closed with `@gramlot/gramlot`. core npm+JSR `@gramlot/gramlot` 0.2.1 (`@genro/gramlot` archived); bag `@genrojs/bag` / `@genro/bag` 0.10.1; builders `@genrojs/builders` / `@genro/builders` 0.4.1; tytx `@genrojs/tytx` / `@genro/tytx` 0.16.1. Source imports npm names, `jsr.json` maps to `jsr:@genro/*` (one copy per registry). genro modules moved to `genro-org`. gramlot-js-server peer `@gramlot/gramlot >=0.2.1` (`11e5db2`). `publish.yml`: tag → PyPI, npm, JSR. Open: gramlot-serverless still imports `@jsr/genro__gramlot` until its rename after the core's npm publication.

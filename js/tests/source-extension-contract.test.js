@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {setTimeout as sleep} from 'node:timers/promises';
 import {JSDOM} from 'jsdom';
-import {Bag} from '@jsr/genro__bag';
-import {fromTytx, getSubtypeDict, toTytx} from '@jsr/genro__tytx';
-import {RendererBase, SourceBag, SourceBagNode, sourceBagFromTytx, sourceTarget} from '@jsr/genro__builders';
+import {Bag} from '@genrojs/bag';
+import {fromTytx, getSubtypeDict, toTytx} from '@genrojs/tytx';
+import {RendererBase, SourceBag, SourceBagNode, sourceBagFromTytx, sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag, GramlotBuilderBagNode} from '../src/builder/source.js';
 

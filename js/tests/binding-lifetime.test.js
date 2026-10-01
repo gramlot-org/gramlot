@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {HtmlBuilder, SourceBag, sourceBagToTytx, sourceTarget} from '@jsr/genro__builders';
+import {HtmlBuilder, SourceBag, sourceBagToTytx, sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
 import {BindingRuntime, NodeBinding} from '../src/binding/runtime.js';

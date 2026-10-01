@@ -45,6 +45,5 @@ Only with owner authorization. The version in `pyproject.toml`, `jsr.json` and
 `js/package.json` must match; release notes go in `.github/release-notes/v<version>.md`.
 Push a tag `v<version>` on `main`, then run the `Publish release` workflow on the tag:
 it runs the full CI, builds the distributions with the runtime provenance check,
-creates the GitHub release and uploads to PyPI (trusted publisher). The JSR package
-`@genro/gramlot` is published by the owner from a clean clone of the tag
-(`npx jsr publish`).
+creates the GitHub release and publishes to PyPI, npm and JSR (`@gramlot/gramlot`)
+with trusted publishing; the npm and JSR jobs skip a version already published.

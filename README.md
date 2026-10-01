@@ -12,7 +12,7 @@
 [![JavaScript coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=javascript)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=javascript)
 [![Python coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=python)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=python)
 [![PyPI](https://img.shields.io/pypi/v/gramlot)](https://pypi.org/project/gramlot/)
-[![JSR](https://jsr.io/badges/@genro/gramlot)](https://jsr.io/@genro/gramlot)
+[![JSR](https://jsr.io/badges/@gramlot/gramlot)](https://jsr.io/@gramlot/gramlot)
 [![Status: 0.2.0 released](https://img.shields.io/badge/status-0.2.0%20released-green)](docs/public/020-evaluate.md)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
@@ -30,24 +30,25 @@ independent of server and database technology.
 > [PyPI](https://pypi.org/project/gramlot/0.2.0/) (`gramlot`), on
 > [JSR](https://jsr.io/@genro/gramlot@0.2.0) (`@genro/gramlot`) and as the
 > [GitHub release v0.2.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.0).
+> **0.2.1** (2026-10-01) publishes the JavaScript core as `@gramlot/gramlot` on npm and JSR.
 
-## JavaScript package on JSR
+## JavaScript package
 
-The JavaScript distribution is `@genro/gramlot` on JSR. Install it with
-`bunx jsr add @genro/gramlot` or `npx jsr add @genro/gramlot`.
+The JavaScript distribution is `@gramlot/gramlot`, on npm and on JSR. Install it with
+`npm install @gramlot/gramlot` or `npx jsr add @gramlot/gramlot`.
 Node.js 22 or later and Bun are supported server runtimes; the browser runtime
 is bundled separately. The core provides `server`, `host`, `page` and `runtime`.
 Standalone startup, WorkerHost and WorkerTransport belong to `gramlot-serverless`.
 Python pages require the Python distribution and a Python server.
 
-The published JSR version is 0.2.0, from the tag `v0.2.0`. Markdown, highlighting and
+The published version is 0.2.1, from the tag `v0.2.1`. Markdown, highlighting and
 DOMPurify belong to the example runner.
 
 ## Can I use it today?
 
-- **Python:** `pip install gramlot` (0.2.0).
-- **JavaScript:** `npx jsr add @genro/gramlot` or `bunx jsr add @genro/gramlot` (0.2.0).
-- **Archives:** the [GitHub release v0.2.0](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.0)
+- **Python:** `pip install gramlot` (0.2.1).
+- **JavaScript:** `npm install @gramlot/gramlot` or `npx jsr add @gramlot/gramlot` (0.2.1).
+- **Archives:** the [GitHub release v0.2.1](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.1)
   carries the wheel, the sdist, the npm package of `js/` and `SHA256SUMS`.
 - **Adapters:** `gramlot-uvicorn`, `gramlot-js-server` and `gramlot-serverless` are
   used from their repositories.

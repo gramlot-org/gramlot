@@ -1,4 +1,4 @@
-import {sourceAttributeItems} from '@jsr/genro__builders';
+import {sourceAttributeItems} from '@genrojs/builders';
 import {isExpression, templateParameters} from '../renderer/attributes.js';
 
 /**

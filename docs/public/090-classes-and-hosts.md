@@ -3,8 +3,8 @@
 Document ID: **GC-090**. Native 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**, released on 2026-09-30 (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0,
-> GitHub release `v0.2.0`). The previous release is **0.1.2**.
+> binding)**, released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
+> (2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). The previous release is **0.1.2**.
 > Text without a *0.2.0* mark describes behavior that comes from 0.1.2. Sections
 > 030 and 035 describe 0.2.0 behavior.
 
@@ -200,8 +200,7 @@ same renderer; it does not execute a Page. Standalone Page execution uses the Wo
 host described below, not a build-time compiler.
 
 Hosts obtain browser code from packaged assets (`gramlot.server.runtime_asset`
-in Python; `@genro/gramlot/runtime` after JSR installation, or
-`@gramlot/native-html/runtime` for the local development package in JS). See the
+in Python; `@gramlot/gramlot/runtime` in JS, from npm, JSR or the repository's `js/`). See the
 installation contexts below; adapters serve the assets of their installed package.
 `PageNotFound`, `SourceNotFound`, `PageExpired` and `HostCapacity`, in Python and JS, distinguish
 framework failures from unexpected application exceptions. The current dependency
@@ -213,17 +212,18 @@ is owner-accepted for GitHub archive delivery.
 
 ## 022 · Published package and local development names
 
-The public JSR package is `@genro/gramlot`. After installing it with
-`npx jsr add @genro/gramlot`, use its public name in application imports:
+The core is published as `@gramlot/gramlot` on npm (`npm install @gramlot/gramlot`)
+and on JSR (`npx jsr add @gramlot/gramlot`). Application imports use that name:
 
 ```javascript
-import {Page as BasePage, source} from '@genro/gramlot/page';
+import {Page as BasePage, source} from '@gramlot/gramlot/page';
 ```
 
 | Installation | Core name used in imports | Scope |
 | --- | --- | --- |
-| JSR via `jsr add` | `@genro/gramlot` | Published registry package |
-| Repository examples (`file:../js`) | `@gramlot/native-html` | Local development package declared in `js/package.json` |
+| npm (`npm install`) or JSR (`jsr add`) | `@gramlot/gramlot` | Published registry package, from 0.2.1 |
+| Repository examples (`file:../js`) | `@gramlot/gramlot` | The repository's `js/package.json`, same name |
+| JSR `@genro/gramlot` 0.1.0–0.2.0 | `@genro/gramlot` | Earlier JSR name, archived |
 | Original GitHub 0.1.0 archives | Follow the archive README and package manifest | Frozen archive delivery, separate from JSR |
 
 The [JSR installation documentation](https://jsr.io/docs/npm-compatibility)
@@ -254,7 +254,7 @@ For the local development installation described above, use the browser-safe
 Page entry for pages shared by Node, Bun and standalone:
 
 ```javascript
-import {Page as BasePage, source} from '@gramlot/native-html/page';
+import {Page as BasePage, source} from '@gramlot/gramlot/page';
 
 export class Page extends BasePage {
     main(root) { root.section(null, {id: 'details'}).p('Hello'); }
@@ -319,8 +319,8 @@ with its own Worker. Assets must be included by the exporter and served at their
 declared paths. The runner directory of the examples opens through `file://`:
 relative classic scripts start Blob Workers, and an explicit export root resolves
 local stylesheets. The repository of each integration documents its commands.
-Its dependencies are `@jsr/genro__gramlot >=0.2.0` and `@jsr/genro__builders
->=0.4.0` (Node 22 or newer).
+Its dependencies are `@gramlot/gramlot >=0.2.1` and `@genrojs/builders
+>=0.4.1` (Node 22 or newer).
 
 The published 0.1.0 archive retains `@gramlot/standalone` and its
 `gramlot-standalone` command; use its bundled README for that immutable release.

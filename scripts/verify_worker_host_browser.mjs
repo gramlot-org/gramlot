@@ -1,6 +1,6 @@
 /** Real browser integration: static HtmlBuilder shell and dedicated Worker host. */
 import {build} from '../js/node_modules/esbuild/lib/main.js';
-import {HtmlBuilder} from '../js/node_modules/@jsr/genro__builders/src/index.js';
+import {HtmlBuilder} from '../js/node_modules/@genrojs/builders/src/index.js';
 import {mkdtemp, writeFile, readFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';

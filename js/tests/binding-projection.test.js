@@ -5,8 +5,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {JSDOM} from 'jsdom';
-import {Bag} from '@jsr/genro__bag';
-import {sourceTarget} from '@jsr/genro__builders';
+import {Bag} from '@genrojs/bag';
+import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
 

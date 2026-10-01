@@ -1,4 +1,4 @@
-import {Bag} from '@jsr/genro__bag';
+import {Bag} from '@genrojs/bag';
 
 /**
  * Providers of one Gramlot page (source plan §4.8): the semantic runtime of a `dataFormula` or a

@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {JSDOM} from 'jsdom';
 import {build} from 'esbuild';
-import {sourceTarget} from '@jsr/genro__builders';
+import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {templateParameters} from '../src/renderer/attributes.js';
 

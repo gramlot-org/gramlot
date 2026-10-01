@@ -1,7 +1,9 @@
 name: Publish release
 
 # Run by hand on the version tag (Actions → Publish release → Run workflow → tag vX.Y.Z).
-# The PyPI upload uses the trusted publisher gramlot-org/gramlot, publish.yml, environment release.
+# PyPI, npm (@gramlot/gramlot) and JSR (@gramlot/gramlot) use trusted publishing from
+# gramlot-org/gramlot, publish.yml; PyPI and npm also require the environment release.
+# The npm and JSR jobs skip a version that is already on their registry.
 
 on:
   workflow_dispatch:
@@ -125,3 +127,58 @@ jobs:
       - name: Keep only the Python distributions
         run: find dist -type f ! -name '*.whl' ! -name '*.tar.gz' -delete
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+
+  npm:
+    needs: github-release
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: distributions
+          path: dist
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - name: npm 11.5.1 or later for trusted publishing
+        run: npm install -g npm@latest
+      - name: Publish the packed @gramlot/gramlot
+        run: |
+          set -euo pipefail
+          tarball=$(ls dist/*.tgz)
+          version=$(tar -xzOf "$tarball" package/package.json | node -p "JSON.parse(require('fs').readFileSync(0)).version")
+          if npm view "@gramlot/gramlot@$version" version >/dev/null 2>&1; then
+            echo "@gramlot/gramlot@$version is already on npm"
+          else
+            npm publish "$tarball" --access public
+          fi
+
+  jsr:
+    needs: github-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build the browser runtime from js/src
+        run: |
+          npm --prefix js install --ignore-scripts --package-lock=false
+          npm --prefix js run build
+      - name: Publish @gramlot/gramlot
+        run: |
+          VERSION=$(node -p "require('./jsr.json').version")
+          if curl -fsS https://jsr.io/@gramlot/gramlot/meta.json 2>/dev/null | node -e "process.exit(JSON.parse(require('fs').readFileSync(0)).versions['$VERSION'] ? 0 : 1)"; then
+            echo "@gramlot/gramlot@$VERSION is already on JSR"
+          else
+            npx jsr publish --allow-dirty
+          fi

@@ -1,4 +1,4 @@
-import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder} from '@jsr/genro__builders';
+import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder} from '@genrojs/builders';
 import {ControlAdapter} from './controls.js';
 import {SVG_NS, XHTML_NS} from '../renderer/attributes.js';
 

@@ -2958,3 +2958,27 @@ The former internal notes moved to `docs/internal/`, out of the published sites.
 **Open:** guide file numbers differ between the repositories (gramlot-js-server 005…040 with IDs
 GN-105…GN-140; the others 105…140); the shared `GS` namespace of gramlot-uvicorn and
 gramlot-serverless; D3.
+
+<a id="gc-070-635"></a>
+## 635 · Package names and registries, release 0.2.1 — 2026-10-01
+
+Block ID: **GC-070-635**.
+
+Owner, 2026-10-01: JavaScript packages on npm and JSR ("tenerli entrambi"); one package name on
+both registries, only the scope differs ("@gramlot/gramlot no ?"); genro modules on npm under the
+existing organization `genrojs` ("userei genrojs"). D3 is closed with `@gramlot/gramlot`.
+
+| Package | npm | JSR |
+| --- | --- | --- |
+| core | `@gramlot/gramlot` 0.2.1 | `@gramlot/gramlot` 0.2.1 (`@genro/gramlot` archived) |
+| bag | `@genrojs/bag` 0.10.1 | `@genro/bag` 0.10.1 |
+| builders | `@genrojs/builders` 0.4.1 | `@genro/builders` 0.4.1 |
+| tytx | `@genrojs/tytx` 0.16.1 | `@genro/tytx` 0.16.1 |
+
+The source imports the npm names; `jsr.json` maps them to `jsr:@genro/*`, so each registry's
+package depends on one copy of Bag, Builders and TYTX from the same registry. The genro modules
+moved from `genropy` to `genro-org` on 2026-10-01. gramlot-js-server takes the core as peer
+`@gramlot/gramlot >=0.2.1` (`11e5db2`). `publish.yml` publishes the tag to PyPI, npm and JSR.
+
+**Open:** gramlot-serverless still imports `@jsr/genro__gramlot` until its rename, after the npm
+publication of the core.

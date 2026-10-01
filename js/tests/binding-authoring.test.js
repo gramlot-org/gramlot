@@ -3,10 +3,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
-import {Bag} from '@jsr/genro__bag';
-import {fromTytx} from '@jsr/genro__tytx';
+import {Bag} from '@genrojs/bag';
+import {fromTytx} from '@genrojs/tytx';
 import {JSDOM} from 'jsdom';
-import {sourceBagFromTytx, sourceTarget} from '@jsr/genro__builders';
+import {sourceBagFromTytx, sourceTarget} from '@genrojs/builders';
 import {Gramlot} from '../src/gramlot.js';
 import {GramlotBuilder} from '../src/builder/gramlot-builder.js';
 

@@ -1,4 +1,4 @@
-import {BuilderBase, SourceBag, sourceTarget} from '@jsr/genro__builders';
+import {BuilderBase, SourceBag, sourceTarget} from '@genrojs/builders';
 import {HtmlElement} from '../view/html.js';
 import {ControlAdapter, RadioGroups, SelectControl} from '../view/controls.js';
 import {ButtonBinding} from '../view/button.js';
