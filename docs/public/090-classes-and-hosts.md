@@ -3,8 +3,8 @@
 Document ID: **GC-090**. Native 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**. The code is implemented on the development branch and is in
-> qualification; it is not released. The latest published release is **0.1.2**.
+> binding)**, released on 2026-09-30 (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0,
+> GitHub release `v0.2.0`). The previous release is **0.1.2**.
 > Text without a *0.2.0* mark describes behavior that comes from 0.1.2. Sections
 > 030 and 035 describe 0.2.0 behavior.
 

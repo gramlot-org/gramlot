@@ -3,8 +3,8 @@
 Document ID: **GC-020**.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**. The code is implemented on the development branch and is in
-> qualification; it is not released. The latest published release is **0.1.2**.
+> binding)**, released on 2026-09-30 (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0,
+> GitHub release `v0.2.0`). The previous release is **0.1.2**.
 > Text without a *0.2.0* mark describes behavior that comes from 0.1.2.
 
 <a id="gc-020-005"></a>
@@ -21,10 +21,9 @@ It is verified and owner-accepted as the bounded native 0.1.0. The richer
 `gramlot-poc` remains experimental evidence; account for API changes when
 evaluating either path for an application.
 
-*0.2.0:* the next release adds HTML/SVG data binding to this core: initial
-values with `dataSetter`, `^`/`=` pointers, formulas and controllers with named
-logic, native controls and button controllers. It is implemented and in
-qualification; it is not yet released.
+*0.2.0:* the 0.2.0 release (2026-09-30) adds HTML/SVG data binding to this core:
+initial values with `dataSetter`, `^`/`=` pointers, formulas and controllers with
+named logic, native controls and button controllers.
 
 <a id="gc-020-010"></a>
 

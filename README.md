@@ -7,7 +7,12 @@
   </picture>
 </p>
 
+[![Core and runner tests](https://github.com/gramlot-org/gramlot/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/gramlot-org/gramlot/actions/workflows/tests.yml)
 [![Documentation build](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml)
+[![JavaScript coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=javascript)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=javascript)
+[![Python coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=python)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=python)
+[![PyPI](https://img.shields.io/pypi/v/gramlot)](https://pypi.org/project/gramlot/)
+[![JSR](https://jsr.io/badges/@genro/gramlot)](https://jsr.io/@genro/gramlot)
 [![Status: 0.2.0 released](https://img.shields.io/badge/status-0.2.0%20released-green)](docs/public/020-evaluate.md)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
@@ -89,10 +94,12 @@ with 0.3.0.
 
 ## Project status
 
-The documentation badge reports this repository's documentation checks. This
-checkout has Python and JavaScript foundation tests; the broader experimental
-implementation has separate tests in `gramlot-poc`. Coverage must identify the
-repository and revision measured, with JavaScript and Python reported separately.
+The tests badge reports the `Core and runner tests` workflow on `main` (Python,
+JavaScript and runner suites); the documentation badge reports the documentation
+checks. Coverage is collected by the same workflow and reported on Codecov per
+runtime: JavaScript (every file of `js/src`, including files no test imports) and
+Python (`src/gramlot`), never merged into one figure. See
+[Tests and coverage](docs/public/030-quality.md).
 
 Maintainers keep architecture decisions, port reviews and concise working documents
 in the repository, outside the public user manual. Public source files remain

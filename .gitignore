@@ -31,3 +31,5 @@ src/gramlot/resources/*.js
 src/gramlot/resources/runtime-notices.json
 
 js/collections/
+coverage-js/
+coverage-python.xml

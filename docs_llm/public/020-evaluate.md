@@ -2,15 +2,15 @@
 
 Document ID: **GC-020**.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: implemented on the
-> development branch, in qualification, not released. Latest published release:
+> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
+> (PyPI `gramlot` 0.2.0, JSR `@genro/gramlot` 0.2.0, GitHub `v0.2.0`). Previous release:
 > **0.1.2**. Unmarked text is behavior from 0.1.2.
 
 <a id="gc-020-005"></a>
 
 ## 005 · Who it is for
 
-Gramlot targets Python authors of interactive forms, data tools and application interfaces. This repository implements a bounded native HTML/typed Source foundation, verified and owner-accepted as native 0.1.0. Shared controls and bindings are future work here; gramlot-poc contains richer experimental behavior. Allow for API changes. *0.2.0:* adds HTML/SVG data binding (`dataSetter`, `^`/`=` pointers, formulas/controllers with named logic, native controls, button controllers); implemented and in qualification, not yet released.
+Gramlot targets Python authors of interactive forms, data tools and application interfaces. This repository implements a bounded native HTML/typed Source foundation, verified and owner-accepted as native 0.1.0. Shared controls and bindings are future work here; gramlot-poc contains richer experimental behavior. Allow for API changes. *0.2.0:* adds HTML/SVG data binding (`dataSetter`, `^`/`=` pointers, formulas/controllers with named logic, native controls, button controllers); released in 0.2.0 (2026-09-30).
 
 <a id="gc-020-010"></a>
 
