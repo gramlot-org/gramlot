@@ -84,6 +84,7 @@ with 0.3.0.
 
 ## Start here
 
+- [The Gramlot family](docs/public/055-family.md) — what Gramlot is, the core and the adapters, and which one to choose.
 - [Is Gramlot a fit?](docs/public/020-evaluate.md) — the development model and its current limits.
 - [Try Gramlot](docs/public/025-try.md) — inspect the showcase, then choose a Python host.
 - [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.

@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 
 PUBLIC_PAGES = (
+    "docs/public/055-family.md",
     "docs/public/020-evaluate.md",
     "docs/public/025-try.md",
     "docs/public/030-quality.md",

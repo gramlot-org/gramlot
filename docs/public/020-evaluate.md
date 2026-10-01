@@ -16,14 +16,13 @@ interfaces using Python declarations. Forms and data-oriented interfaces are use
 places to evaluate the approach. Application authors work with shared controls and
 state bindings; reusable browser behavior belongs in the JavaScript framework.
 
-This repository implements a bounded native HTML and typed Source foundation.
-It is verified and owner-accepted as the bounded native 0.1.0. The richer
-`gramlot-poc` remains experimental evidence; account for API changes when
-evaluating either path for an application.
-
-*0.2.0:* the 0.2.0 release (2026-09-30) adds HTML/SVG data binding to this core:
-initial values with `dataSetter`, `^`/`=` pointers, formulas and controllers with
-named logic, native controls and button controllers.
+This repository is the Gramlot core. Release 0.2.0 (2026-09-30) provides native
+HTML and SVG pages with a typed Source and HTML/SVG data binding: initial values
+with `dataSetter`, `^`/`=` pointers and `==` expressions, formulas and controllers
+with named logic, native controls and button controllers. Components (shared
+controls such as labelled fields) start with 0.3.0. The core, its adapters and how
+to choose among them are in [The Gramlot family](055-family.md). The earlier
+`gramlot-poc` is a separate experimental runtime.
 
 <a id="gc-020-010"></a>
 
