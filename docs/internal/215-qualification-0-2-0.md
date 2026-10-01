@@ -248,7 +248,15 @@ Block ID: **GC-215-040**.
 Temporary evidence under `/private/tmp/gramlot-s16/`: `logs/` (every row), `artifacts/` (the
 three artifacts), `clean/` (venv, consumer, test tree), `hosts/` (venv of gramlot-uvicorn,
 scratch pages, host launchers), `standalone/`, `runner-standalone/`, `qualify-clean.sh`,
-`acceptance.mjs`, `firefox.sh`. Retain the evidence durably when producing the release (S17).
+`acceptance.mjs`, `firefox.sh`. The commands in this report keep those original paths.
+
+**Retained (2026-10-01):** the logs of every row (`logs/`, 64 files, including the owner's
+Firefox run), the scripts (`qualify-clean.sh`, `firefox.sh`, `acceptance.mjs`,
+`debug-standalone.mjs`) and the host launchers (`hosts/serve_py.py`, `hosts/serve_js.mjs`)
+are copied to `/Users/gporcari/Sviluppo/gramlot/v_0.2.0/qualification-evidence/` (the owner's
+workspace, next to the source plan, outside the repositories). The virtual environments and
+test installs are not kept; the artifacts of `artifacts/` carried version 0.1.2 and are
+superseded by the 0.2.0 artifacts of the GitHub release `v0.2.0` (§045).
 
 <a id="gc-215-045"></a>
 ## 045 · Release status
