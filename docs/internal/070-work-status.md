@@ -3006,5 +3006,11 @@ gramlot-js-server ("va bene js server in effetti il worker è uj server"); names
 - The open item of §635 is closed: the exporter imports `@gramlot/gramlot` (gramlot-serverless
   `8ed1fc3`).
 
-**Open:** publication of the two packages on npm and JSR; archive of `gramlot-org/gramlot-serverless`
-and of its Read the Docs project.
+Registries (owner, 2026-10-01, "ok"): the two packages are published on npm only. A JSR install
+maps the core to `@jsr/gramlot__gramlot` behind the alias `@gramlot/gramlot` (verified with
+`npx jsr add @gramlot/gramlot`), so a JSR adapter would bring a second copy of the core next to
+the one the pages import, and `@gramlot/gramlot-browser` resolves the core by name at build time.
+The core stays on npm and JSR.
+
+**Open:** npm publication of the two packages; archive of `gramlot-org/gramlot-serverless` and of
+its Read the Docs project.
