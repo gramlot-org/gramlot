@@ -344,7 +344,7 @@ Current 0.1.2: Bag JS/TYTX own tree, events, transport. Builder JS owns grammar,
 - Builder/Bag read-only (§14); upstream fixes forbidden by the owner (2026-09-25); missing behavior goes into the Gramlot Source classes ([GC-045 §055](045-js-taxonomy.md#gc-045-055), [§060](045-js-taxonomy.md#gc-045-060)).
 - Builder layer `js/src/builder/source.js`: `GramlotBuilderBag extends SourceBag`, `GramlotBuilderBagNode extends SourceBagNode`; node adds silent `PUT`, `FIRE` marked for the router (`takeFire`), `FIRE_AFTER`, `absDatapath`; `SET`, `GET`, `setRelativeData`, `getRelativeData` stay Builder's. Every browser path creates them, no prototype change (S01). Never imports `binding/inline.js`, like every `builder/*`. `FIRE` mark belongs to the runtime, `FIRE_AFTER` timer on `NodeBinding`; the plan does not say how the node reaches them.
 - Authoring: grammar only; `binding.json` redefines `dataSetter`, `dataFormula`, `dataController`, loaded after `html5.json`; logic hooks stay empty; `GramlotBuilder` unchanged for logic resolution.
-- Host side (`Host`, `FileHost`, `server/resources.py`, `adapters/resources.js`): page resolution, ordered resource URLs from the concrete Host (`resolve_resources`; the core has parser and order, no resolver), bootstrap with nonce; never evaluates code. Standalone WorkerHost (`@gramlot/gramlot-browser`, heir of retired `gramlot-minimal`) is server side: no eval.
+- Host side (`Host`, `FileHost`, `server/resources.py`, `adapters/resources.js`): page resolution, ordered resource URLs from the concrete Host (`resolve_resources`; the core has parser and order, no resolver), bootstrap with nonce; never evaluates code. Standalone WorkerHost (`@gramlot/gramlot-serverless`, heir of retired `gramlot-minimal`) is server side: no eval.
 - Page runtime (`bootstrap.js`, `gramlot.js`, `renderer/*`, `binding/*`, `view/*`): only layer executing logic and compiling inline code.
 - `binding/` does not import `view/`: renderer creates `RadioGroups`; `BindingRuntime` owns `InlineCompiler`.
 - `binding/inline.js` imported only by page runtime; never by `adapters/*`, `builder/*` or WorkerHost; S07/S09 test import graphs.
@@ -363,7 +363,7 @@ flowchart TB
     SRC["builder/source.js<br/>GramlotBuilderBag · GramlotBuilderBagNode<br/>PUT · FIRE · FIRE_AFTER · absDatapath"]
     AUTH["Authoring<br/>GramlotBuilder · html5.json · svg.json<br/>binding.json"]
     HOST["Host side<br/>Page · Host · FileHost<br/>parseRequires · loadOrder"]
-    WH["WorkerHost in @gramlot/gramlot-browser<br/>server side"]
+    WH["WorkerHost in @gramlot/gramlot-serverless<br/>server side"]
     PAGE["Page runtime in the browser<br/>Gramlot · GramlotRenderer · HtmlElement<br/>PageBootstrap · binding · view"]
     INL["binding/inline.js<br/>InlineCompiler"]
     BLD --> BAG
