@@ -1,0 +1,22 @@
+{
+  "brand.blue": "#456BC4",
+  "brand.yellow": "#FFC400",
+  "ink": "#243449",
+  "background": "#F7F8F5",
+  "surface": "#FFFFFF",
+  "surface.subtle": "#EDF1F7",
+  "text.secondary": "#566579",
+  "border": "#D5DCE5",
+  "border.control": "#7A8798",
+  "navigation": "#182333",
+  "navigation.text": "#EDF2FA",
+  "action": "#456BC4",
+  "action.hover": "#3557AB",
+  "selected": "#EAF0FC",
+  "success": "#23745B",
+  "success.background": "#EAF5EF",
+  "warning": "#785000",
+  "warning.background": "#FFF4CF",
+  "error": "#B13D48",
+  "error.background": "#FCEEF0"
+}

@@ -1,0 +1,22 @@
+:root {
+  --gramlot-brand-blue: #456BC4;
+  --gramlot-brand-yellow: #FFC400;
+  --gramlot-ink: #243449;
+  --gramlot-background: #F7F8F5;
+  --gramlot-surface: #FFFFFF;
+  --gramlot-surface-subtle: #EDF1F7;
+  --gramlot-text-secondary: #566579;
+  --gramlot-border: #D5DCE5;
+  --gramlot-border-control: #7A8798;
+  --gramlot-navigation: #182333;
+  --gramlot-navigation-text: #EDF2FA;
+  --gramlot-action: #456BC4;
+  --gramlot-action-hover: #3557AB;
+  --gramlot-selected: #EAF0FC;
+  --gramlot-success: #23745B;
+  --gramlot-success-background: #EAF5EF;
+  --gramlot-warning: #785000;
+  --gramlot-warning-background: #FFF4CF;
+  --gramlot-error: #B13D48;
+  --gramlot-error-background: #FCEEF0;
+}

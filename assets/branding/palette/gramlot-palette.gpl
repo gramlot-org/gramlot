@@ -1,0 +1,24 @@
+GIMP Palette
+Name: Gramlot
+Columns: 4
+#
+ 69 107 196 brand.blue
+255 196   0 brand.yellow
+ 36  52  73 ink
+247 248 245 background
+255 255 255 surface
+237 241 247 surface.subtle
+ 86 101 121 text.secondary
+213 220 229 border
+122 135 152 border.control
+ 24  35  51 navigation
+237 242 250 navigation.text
+ 69 107 196 action
+ 53  87 171 action.hover
+234 240 252 selected
+ 35 116  91 success
+234 245 239 success.background
+120  80   0 warning
+255 244 207 warning.background
+177  61  72 error
+252 238 240 error.background
