@@ -2,6 +2,8 @@
 
 Document ID: **GC-065**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 **Release scope:** the latest published release is **0.1.2**. Sections 005-025 describe the 0.1.2 foundations. Section 030 records the page resource and bootstrap changes of the 0.2.0 HTML/SVG binding. **The 0.2.0 parts are implemented on the development branch (S06, S07, S14) and are in qualification; 0.2.0 is not released.** The current contract is [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030).
 
 **Current 0.1.2 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-0-1-0-readiness.md#gc-110-020) for current release gates.

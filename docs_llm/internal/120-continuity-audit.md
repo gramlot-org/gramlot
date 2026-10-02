@@ -3,6 +3,8 @@
 Document ID: **GC-120**. Audit date: **2026-09-22**.
 Status: **audit preserved; documentary repair B1–B5 completed 2026-09-22**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 [Expanded counterpart](../../docs/internal/120-continuity-audit.md).
 This is an audit, not a new plan or amendment. [GC-110](110-0-1-0-readiness.md#gc-110-020)
 is the current plan. The owner meant first release **0.1.0**, not GC-094 phase 1.

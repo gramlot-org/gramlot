@@ -2,6 +2,8 @@
 
 Document ID: **GC-140**. Updated: **2026-09-30**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 [Expanded counterpart](../../docs/internal/140-integrations-and-examples.md).
 Agreed inventory, not a new implementation plan. Authority: constitution §7 and
 11.19–11.21; current evidence: [GC-070 §040](070-work-status.md#gc-070-040).

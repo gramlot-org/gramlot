@@ -2,6 +2,8 @@
 
 Document ID: **GC-215**. Recorded: **2026-09-30**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 **Current outcome:** the qualification of S16 is complete (2026-09-30). Every mandatory row
 passed or carries an owner waiver: R20 passed after the fix in gramlot-serverless
 (`b79a80d`, 19/19); R22, R24 and L1 are waived by the owner (§035); the Firefox rows (§025)

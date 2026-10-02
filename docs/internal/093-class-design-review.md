@@ -3,6 +3,8 @@
 Document ID: **GC-093**. Updated: **2026-09-21**.
 Historical review findings and eight-profile matrix: sections 100–115. Current 0.1.0 scope has seven profiles; use [GC-110](110-0-1-0-readiness.md#gc-110-020) for release gates. Q1/Q2 speculative validation was removed; Q3 Worker shared execution, Q4 HTTP adapter/Python loader, Q5 page closure and Q6 packaged grammar were settled as recorded in [GC-120 §020](120-continuity-audit.md#gc-120-020). Broader design acceptance remains open.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 Historical review follows. Status: **architectural revision requested**. Section 040 reviews implementation
 quality independently of runtime checks and reopens the design of changes in 030.
 Section 030 records functional progress only. **Not architecture acceptance**.

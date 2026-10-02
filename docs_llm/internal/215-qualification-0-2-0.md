@@ -2,6 +2,8 @@
 
 Document ID: **GC-215**. Recorded: **2026-09-30**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 **Current outcome:** complete (2026-09-30). R20 passes after `b79a80d` (19/19); R22, R24, L1
 waived by the owner (§035); Firefox rows (§025) passed. Nothing published.
 

@@ -1,5 +1,7 @@
 # 125 · Historical Gramlot execution record
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 > **Historical evidence:** legacy/earlier Data declaration vocabulary and API
 > statements below retain their original scope. For 0.2.0 use
 > [GC-210](210-binding-contract.md) and constitution 11.47: dataSetter with
