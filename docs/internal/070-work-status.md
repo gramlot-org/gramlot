@@ -2471,7 +2471,7 @@ with the mount prefix once on the root-relative CSS and JS URLs.
 (9 tests, real imports in jsdom; a Source written in Python resolves every `func` through
 the real bootstrap); fixtures in `js/tests/fixtures/logic/`; the bootstrap tests of
 `host.test.js`, `page-resources.test.js` (with a Python/JS test of the same bootstrap
-HTML), `test_page_resources.py`, `test_native_html.py` and `test_python_builder.py`
+HTML), `test_page_resources.py`, `test_source_host.py` and `test_python_builder.py`
 follow the new script. Python 68 OK, JS 254/254, runner 8/8.
 
 **Accepted:** not yet; the phase waits for the owner's checks at the gate.

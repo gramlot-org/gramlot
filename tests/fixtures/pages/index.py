@@ -3,7 +3,7 @@ from gramlot import source
 
 
 class Page(BasePage):
-    title = "Native HTML contract fixture"
+    title = "Contract fixture"
 
     def main(self, root):
         panel = root.div("homer", id="panel")

@@ -154,7 +154,7 @@ Block ID: **GC-215-022**.
 | A12 booleans | `boolean-controls`, R11, story step 4 |
 | A13 clicks and events | `button-controller`, `native-events`, R11 (R3 in forms), story step 5 |
 | A14 dynamic Source, FIFO, freeze | `source-pipeline`, `freeze`, `embedded-source`, `live-source-validation`, story steps 6-7 |
-| A15 Host contract and resources | `host`, `page-resources`, `test_page_resources.py`, `test_native_html.py`, R15-R21 |
+| A15 Host contract and resources | `host`, `page-resources`, `test_page_resources.py`, `test_source_host.py`, R15-R21 |
 | A16 execution and CSP | `binding-inline` (Q3 under a real engine refusal), `bootstrap` (no string evaluation), `named-logic`, R11, R16, R19, R21 |
 | A17 errors and lifetime | `render-failure`, `binding-cleanup` (100 cycles), `page-close`, story step 8 |
 | A18 distribution and documentation | R04-R07, R10, R23, §010; `prepare_docs.py`, Sphinx `-W`, `check_public_docs.py` pass |

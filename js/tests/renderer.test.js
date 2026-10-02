@@ -13,13 +13,13 @@ function setup() {
     return {document, builder: app.builder, source: app.source, renderer: app.renderer};
 }
 
-function nativeBlock(builder, author) {
+function sourceBlock(builder, author) {
     const block = new GramlotBuilderBag(null, builder, null);
     author(builder.wrapSource(block));
     return block;
 }
 
-test('native HTML void behavior follows collection metadata, including aliases', () => {
+test('HTML void behavior follows collection metadata, including aliases', () => {
     const collection = {
         document_format: html5.document_format,
         grammar: {...html5.grammar, name: 'void-aliases'},
@@ -49,7 +49,7 @@ test('renderer uses the generic traversal and retains reactive mount ownership',
     const {document, builder, source, renderer} = setup();
     assert.ok(renderer instanceof RendererBase);
 
-    const block = nativeBlock(builder, root => {
+    const block = sourceBlock(builder, root => {
         const panel = root.div(null, {id: 'panel'});
         builder.reference(panel, 'dom');
         panel.span('A');
@@ -78,23 +78,23 @@ test('renderer uses the generic traversal and retains reactive mount ownership',
     renderer.dispose();
 });
 
-test('native SourceBag nodes keep nodeTag and scalar text through live rendering', () => {
+test('typed SourceBag nodes keep nodeTag and scalar text through live rendering', () => {
     const {document, builder, renderer} = setup();
-    const authored = builder.root.p('native text', {id: 'native'});
+    const authored = builder.root.p('plain text', {id: 'plain'});
     const node = sourceTarget(authored);
 
     assert.equal(node.nodeTag, 'p');
-    assert.equal(node.value, 'native text');
+    assert.equal(node.value, 'plain text');
     assert.equal('tag' in node.attr, false);
     assert.equal('_text' in node.attr, false);
-    assert.equal(document.getElementById('native').textContent, 'native text');
+    assert.equal(document.getElementById('plain').textContent, 'plain text');
     assert.equal(renderer.records.get(node).node, node);
 
     node.setAttr({title: 'keeps text', _text: 'stale compatibility text'});
-    assert.equal(document.getElementById('native').title, 'keeps text');
-    assert.equal(document.getElementById('native').textContent, 'native text');
+    assert.equal(document.getElementById('plain').title, 'keeps text');
+    assert.equal(document.getElementById('plain').textContent, 'plain text');
     node.setValue('replacement');
-    assert.equal(document.getElementById('native').textContent, 'replacement');
+    assert.equal(document.getElementById('plain').textContent, 'replacement');
     renderer.dispose();
 });
 
@@ -121,7 +121,7 @@ test('null stays in Source and becomes empty text only at the DOM boundary', () 
 
 test('candidate validation is read-only and excludes only replaced descendants', () => {
     const {builder, source, renderer} = setup();
-    const initial = nativeBlock(builder, root => {
+    const initial = sourceBlock(builder, root => {
         const target = root.section();
         target.attr.__ref = 'target';
         const old = target.span('old');
@@ -130,14 +130,14 @@ test('candidate validation is read-only and excludes only replaced descendants',
     source.setItem('main', initial);
     const mountedTarget = source.getNode('main').value.getNodes()[0];
 
-    const replacement = nativeBlock(builder, root => {
+    const replacement = sourceBlock(builder, root => {
         const fresh = root.strong('new');
         fresh.attr.__ref = 'old';
     });
     assert.equal(renderer.validateCandidate(replacement, {replacingNode: mountedTarget}), replacement);
     assert.equal(renderer.records.size, 3);
 
-    const targetConflict = nativeBlock(builder, root => {
+    const targetConflict = sourceBlock(builder, root => {
         const bad = root.strong('bad');
         bad.attr.__ref = 'target';
     });
@@ -151,7 +151,7 @@ test('candidate validation is read-only and excludes only replaced descendants',
 
 test('invalid detached candidates do not emit observed events or mutate mounted state', () => {
     const {document, builder, source, renderer} = setup();
-    const initial = nativeBlock(builder, root => {
+    const initial = sourceBlock(builder, root => {
         const stable = root.p('stable');
         stable.attr.__ref = 'stable';
     });
@@ -160,7 +160,7 @@ test('invalid detached candidates do not emit observed events or mutate mounted 
     let events = 0;
     source.subscribe('candidate-test', {any: () => events++});
 
-    const invalid = nativeBlock(builder, root => {
+    const invalid = sourceBlock(builder, root => {
         const one = root.span('one');
         one.attr.__ref = 'stable';
     });
@@ -173,7 +173,7 @@ test('invalid detached candidates do not emit observed events or mutate mounted 
 
 test('nested typed branches retain ordering and disposable ownership', () => {
     const {document, builder, source, renderer} = setup();
-    const incoming = nativeBlock(builder, root => {
+    const incoming = sourceBlock(builder, root => {
         const panel = root.div('A');
         panel.span('B', {node_label: 'middle'});
         panel.strong('C', {node_label: 'last'});
@@ -196,12 +196,12 @@ test('nested typed branches retain ordering and disposable ownership', () => {
 
 test('replacement may reuse a removed descendant reference without leaking metadata', () => {
     const {document, builder, source, renderer} = setup();
-    const block = nativeBlock(builder, root => root.section().span('old'));
+    const block = sourceBlock(builder, root => root.section().span('old'));
     const section = block.getNodes()[0];
     section.value.getNodes()[0].setAttr({__ref: 'replaceable'});
     source.setItem('main', block);
     const previous = renderer.references.resolve({$gramlotRef: 'replaceable', kind: 'dom'});
-    const replacement = nativeBlock(builder, root => root.span('new'));
+    const replacement = sourceBlock(builder, root => root.span('new'));
     replacement.getNodes()[0].setAttr({__ref: 'replaceable'});
     renderer.validateCandidate(replacement, {replacingNode: section});
     section.setValue(replacement);
@@ -229,7 +229,7 @@ test('native attributes share Source keyword rules and never publish structural 
     assert.equal(typed.hasAttribute('datapath'), false);
     assert.equal(typed.hasAttribute('node_id'), false);
 
-    const block = nativeBlock(builder, root => root.div('wire', {
+    const block = sourceBlock(builder, root => root.div('wire', {
         id:'wire', _class:'wire-before', datapath:'record', node_id:'wire-ref', updateOn:'blur',
     }));
     const legacy = block.getNodes()[0];

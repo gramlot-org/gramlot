@@ -30,7 +30,7 @@ function domPropertyName(name) {
 }
 
 /**
- * Native elements in HTML documents, including embedded SVG. Grammar stays on the builder; attribute
+ * HTML elements of an HTML document, including embedded SVG elements. Grammar stays on the builder; attribute
  * names and style arrive adapted by the renderers (GramlotHtmlRenderer, GramlotSvgRenderer).
  */
 export class HtmlElement {

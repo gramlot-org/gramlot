@@ -1,4 +1,4 @@
-"""The bounded native-HTML foundation."""
+"""Describe application interfaces in Python; let a JavaScript runtime handle interaction in the browser."""
 from .page import GramlotBuilder, Page, source
 from .renderer import GramlotHtmlRenderer, GramlotSvgRenderer
 

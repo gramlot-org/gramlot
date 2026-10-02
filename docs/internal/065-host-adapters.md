@@ -130,7 +130,7 @@ For current setup and tests use [GC-085](085-operating-guide.md#gc-085-025);
 for the versioned seven-profile evidence use [GC-130](130-release-ecosystem-review.md#gc-130-025).
 No database, bindings, application controller API or CSS shorthand is included.
 
-`scripts/verify_native_html_browser.mjs` takes a runtime executable, an installed
+`scripts/verify_page_browser.mjs` takes a runtime executable, an installed
 Playwright entry, a Chromium executable and `python` or `js`. JavaScript checks
 require `GRAMLOT_TEST_URL` from a running Node/Bun adapter; the script does not
 start a JavaScript host. With no external URL, Python uses its local test fixture.

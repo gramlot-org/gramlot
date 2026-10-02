@@ -229,10 +229,10 @@ same-name/version tarballs. Do not solve this by editing node_modules or pinning
 maintained first-party manifests. Install the Python MessagePack optional dependency
 for the real binary interoperability test.
 
-Persistent browser checks live in core `scripts/verify_native_html_browser.mjs`,
+Persistent browser checks live in core `scripts/verify_page_browser.mjs`,
 Node adapter `test/native-browser.mjs`, examples Hello World
 `scripts/verify_python_browser.mjs` and `js/tests/browser.mjs`, and standalone
-`scripts/verify_native_html_browser.mjs`. Inspect their arguments on the new account.
+`scripts/verify_page_browser.mjs`. Inspect their arguments on the new account.
 Playwright/Chromium and Node/Bun executable paths are machine-specific.
 Browser/listener checks may need sandbox network/process permission.
 

@@ -39,7 +39,7 @@ try {
     await page.goto(pathToFileURL(file).href);
     await page.waitForFunction(() => window.gramlot || window.startupError);
     assert.equal(await page.evaluate(() => window.startupError), undefined);
-    assert.equal(await page.title(), 'Worker native HTML');
+    assert.equal(await page.title(), 'Worker page');
     assert.equal(await page.locator('h1').textContent(), 'Hello Worker');
     const result = await page.evaluate(async () => {
         const app = window.gramlot;
