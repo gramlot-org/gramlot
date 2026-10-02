@@ -121,7 +121,7 @@ The Source error classes and the explicit-null rule are the same in both languag
 not a promise of cross-language interchangeability. Module caching does not reuse Page instances
 between Source requests. Custom page resolution belongs to the host integration;
 the filesystem comparison above does not describe the bundled Worker loader of
-`@gramlot/gramlot-browser`.
+`@gramlot/gramlot-serverless`.
 
 
 <a id="gc-090-020"></a>
@@ -178,7 +178,7 @@ not production-certified integrations; delivery uses GitHub archives.
 
 *0.2.0:* the adapters verified against the minimal contract are `gramlot-uvicorn`
 (Python, ASGI and Uvicorn), `gramlot-js-server` (Node.js and Bun) and
-`@gramlot/gramlot-browser`, in `gramlot-js-server` (standalone and Worker). `gramlot-django`, `gramlot-fastapi`,
+`@gramlot/gramlot-serverless`, in `gramlot-js-server` (standalone and Worker). `gramlot-django`, `gramlot-fastapi`,
 `gramlot-flask` and `gramlot-kajenn` are deferred to after 0.2.0. Each adapter
 passes the mount prefix to `open_page` and serves the companions (section 030). The
 two server adapters send the Content Security Policy header they are configured
@@ -234,11 +234,48 @@ one application's core dependency graph.
 
 The standalone examples below explicitly use the local development installation:
 matching core and standalone packages, as configured by the repository examples.
-`@gramlot/gramlot-browser` owns standalone startup and Worker integration; it replaces
+`@gramlot/gramlot-serverless` owns standalone startup and Worker integration; it replaces
 the retired `gramlot-minimal` (section 025). This boundary is not supplied by
 installing the published JSR 0.1.x package alone; unchanged GitHub archives also
 retain their original boundary. No package rename or compatibility alias is
 introduced by this guide.
+
+
+<a id="gc-090-023"></a>
+
+## 023 · Theme and logo files in the packages (0.2.2)
+
+From 0.2.2 the three core packages carry the same theme and logo files:
+
+- `themes/gramlot-base/theme.css` and its `README.md`;
+- of `assets/branding/`, the four stable entry points `gramlot-logo.svg`,
+  `gramlot-logo-dark.svg`, `gramlot-mark.png`, `gramlot-mark-dark.png`, and the
+  24 transparent SVG variants in `svg/`.
+
+| Registry | Path of the theme | Path of a logo |
+| --- | --- | --- |
+| npm `@gramlot/gramlot` | `@gramlot/gramlot/themes/gramlot-base/theme.css` | `@gramlot/gramlot/assets/branding/svg/gramlot-logo-primary.svg` |
+| PyPI `gramlot` | `gramlot/resources/themes/gramlot-base/theme.css` | `gramlot/resources/assets/branding/svg/gramlot-logo-primary.svg` |
+| JSR `@gramlot/gramlot` | `themes/gramlot-base/theme.css` | `assets/branding/svg/gramlot-logo-primary.svg` |
+
+The npm package exports `./themes/*` and `./assets/branding/*`, so the files
+resolve by name:
+
+```javascript
+const theme = import.meta.resolve('@gramlot/gramlot/themes/gramlot-base/theme.css');
+```
+
+The wheel reads them as package resources:
+
+```python
+from importlib.resources import files
+
+theme = files("gramlot") / "resources" / "themes" / "gramlot-base" / "theme.css"
+```
+
+The sources stay at the repository root (`themes/`, `assets/branding/`);
+`js/scripts/build-runtime.mjs` copies them into the npm package and the wheel.
+The rest of the identity kit is not packaged.
 
 
 <a id="gc-090-025"></a>
@@ -263,19 +300,19 @@ export class Page extends BasePage {
 source(Page.prototype.details);
 ```
 
-The Worker entry belongs to the `@gramlot/gramlot-browser` host configuration. This
+The Worker entry belongs to the `@gramlot/gramlot-serverless` host configuration. This
 development boundary requires the matching core with the browser-safe `/host`
 export; unchanged 0.1.0 archives do not provide it:
 
 ```javascript
-import {WorkerHost} from '@gramlot/gramlot-browser/worker-host';
+import {WorkerHost} from '@gramlot/gramlot-serverless/worker-host';
 import {Page} from './page.js';
 new WorkerHost(Page);
 ```
 
 Bundle this entry and its imports into a classic Worker script. The browser runtime
 starts it with `await mount({workerUrl})` from the standalone entry of
-`@gramlot/gramlot-browser` (`@gramlot/gramlot-browser/standalone`).
+`@gramlot/gramlot-serverless` (`@gramlot/gramlot-serverless/standalone`).
 The document must already contain `gramlot-root`, or pass an explicit `element`.
 `mount` opens the Page, prepares Gramlot roots/subscriptions, then requests `main`.
 For an exported directory, `mount({workerUrl, assetRoot})` accepts an absolute
@@ -296,7 +333,7 @@ Playwright WebKit. WebKit is not Safari. Safari and Firefox remain unverified.
 need a Host with a resource system (section 030). The WorkerHost counts as server
 side: it compiles no code, and it never executes the companion.
 
-**Export shape (0.2.0).** The `@gramlot/gramlot-browser` export is one HTML file:
+**Export shape (0.2.0).** The `@gramlot/gramlot-serverless` export is one HTML file:
 
 - the Worker script holds the Page and the `WorkerHost`; it has no inline
   compiler (`binding/inline.js` is not in its bundle);
@@ -311,7 +348,7 @@ side: it compiles no code, and it never executes the companion.
   only named logic is supported there; a check of inline code under that policy
   is not part of 0.2.0 (section 035).
 
-**Standalone integration.** `@gramlot/gramlot-browser`, in `gramlot-js-server` (heir
+**Standalone integration.** `@gramlot/gramlot-serverless`, in `gramlot-js-server` (heir
 of the retired `gramlot-minimal`), supplies the Node/npm exporter of the browser standalone profile.
 It bundles the Page without executing it and generates the complete HTML through
 HtmlBuilder; it also exports a static directory with several documents, each
@@ -329,7 +366,7 @@ depends only on Kajenn besides the core (constitution amendment 11.48 item 5); i
 adapter is not migrated yet and is deferred to after 0.2.0. The retired
 `gramlot-minimal` repository is historical; its heirs are `gramlot-uvicorn` and
 `gramlot-serverless`, which joined `gramlot-js-server` on 2026-10-01 as
-`@gramlot/gramlot-browser`.
+`@gramlot/gramlot-browser`, renamed `@gramlot/gramlot-serverless` on 2026-10-02 (0.2.2).
 
 
 <a id="gc-090-030"></a>

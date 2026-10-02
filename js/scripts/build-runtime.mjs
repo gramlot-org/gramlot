@@ -1,12 +1,22 @@
 /** Build installed browser entry points and preserve their dependency notices. */
 import {build} from 'esbuild';
-import {mkdir, copyFile, readFile, readdir, writeFile, rm} from 'node:fs/promises';
+import {mkdir, copyFile, cp, readFile, readdir, writeFile, rm} from 'node:fs/promises';
 import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root = new URL('../', import.meta.url);
 const path = value => fileURLToPath(new URL(value, root));
 await mkdir(path('dist/'), {recursive: true});
 for (const name of ['LICENSE', 'NOTICE']) await copyFile(path(`../${name}`), path(name));
+// Theme and identity files ship in the npm package (js/) and in the wheel (resources/), as in jsr.json.
+const shipped = ['themes', 'assets/branding/gramlot-logo.svg', 'assets/branding/gramlot-logo-dark.svg',
+    'assets/branding/gramlot-mark.png', 'assets/branding/gramlot-mark-dark.png', 'assets/branding/svg'];
+for (const target of ['', '../src/gramlot/resources/']) {
+    for (const folder of ['themes', 'assets']) await rm(path(`${target}${folder}`), {recursive: true, force: true});
+    for (const name of shipped) {
+        await mkdir(dirname(path(`${target}${name}`)), {recursive: true});
+        await cp(path(`../${name}`), path(`${target}${name}`), {recursive: true});
+    }
+}
 const options = {
     bundle: true, platform: 'browser', target: 'es2022', metafile: true,
     legalComments: 'inline',

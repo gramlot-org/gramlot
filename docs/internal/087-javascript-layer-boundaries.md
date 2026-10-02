@@ -434,7 +434,7 @@ are in [GC-045 §055](045-js-taxonomy.md#gc-045-055).
   the concrete Host (`resolve_resources`/`resolveResources`) and writes the bootstrap
   with a nonce; the core parses and orders names but has no resolver (minimal Host
   contract, GC-210 §010). It never evaluates code
-  strings. The standalone WorkerHost (`@gramlot/gramlot-browser`, heir of the retired `gramlot-minimal`) counts as server side: no eval there.
+  strings. The standalone WorkerHost (`@gramlot/gramlot-serverless`, heir of the retired `gramlot-minimal`) counts as server side: no eval there.
 - **Page runtime** (browser: `bootstrap.js`, `gramlot.js`, `renderer/*`,
   `binding/*`, `view/*`): the only layer that executes declared logic. Only this layer
   compiles inline code.
@@ -468,7 +468,7 @@ flowchart TB
     SRC["builder/source.js<br/>GramlotBuilderBag · GramlotBuilderBagNode<br/>PUT · FIRE · FIRE_AFTER · absDatapath"]
     AUTH["Authoring<br/>GramlotBuilder · html5.json · svg.json<br/>binding.json"]
     HOST["Host side<br/>Page · Host · FileHost<br/>parseRequires · loadOrder"]
-    WH["WorkerHost in @gramlot/gramlot-browser<br/>server side"]
+    WH["WorkerHost in @gramlot/gramlot-serverless<br/>server side"]
     PAGE["Page runtime in the browser<br/>Gramlot · GramlotRenderer · HtmlElement<br/>PageBootstrap · binding · view"]
     INL["binding/inline.js<br/>InlineCompiler"]
     BLD --> BAG

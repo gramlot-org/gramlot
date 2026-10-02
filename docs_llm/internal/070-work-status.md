@@ -4,6 +4,8 @@ Document ID: **GC-070**. Updated: **2026-10-02**.
 
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
+**Release 0.2.2 (in preparation):** `@gramlot/gramlot-serverless` and the theme and logo files in the npm, PyPI and JSR packages. See [§655](#gc-070-655).
+
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
 
@@ -2709,3 +2711,13 @@ overflow or script errors. Strict Sphinx/public-documentation checker pass (8 pa
 **Accepted:** creation authorized; reconstructed artwork and new layouts await owner
 visual acceptance. Tiny icons need target-specific checks; press work needs a printer
 profile/proof. Kit delivered; no publication, consolidation or runtime theme implied.
+
+
+<a id="gc-070-655"></a>
+## 655 · Serverless name and packaged theme and logo, release 0.2.2 — 2026-10-02
+
+Block ID: **GC-070-655**.
+
+Owner, 2026-10-02: `@gramlot/gramlot-browser` → `@gramlot/gramlot-serverless` ("gramlot-serverless forse è il piu semplice"), ahead of gramlot-py-server, "così chiudiamo tutta la parte js"; core 0.2.2 carries theme and logo in every package. Constitution 11.52. gramlot-js-server 0.2.2: rename `ca0e102`, release `0965fff`, tag `v0.2.2`; both packages published by hand from the tag after the npm job failed (`EALLOWGIT`: npm 12 reads `dist/NAME.tgz` as a GitHub shorthand), fix `ca60072`; `@gramlot/gramlot-browser` deprecated, then unpublished. Core: runner/scripts/CI and the same fix (gramlot-org/gramlot#7, `4e0eefc`, merge `1db63c5`); theme and logo in npm, PyPI, JSR (`b9ada8d`: `themes/`, four stable entry points and `svg/` of `assets/branding/`; JSR without the rest of the kit; paths [GC-090 §023](../public/090-classes-and-hosts.md#gc-090-023)); documents `e51989c`. Verified 2026-10-02: Python 72 OK, JS 451/451, runner 31/31 and on port 8091, Worker browser check PASS in Chromium; npm pack, wheel (`importlib.resources`) and JSR dry run carry the same 30 files; Sphinx `-W`, public docs check.
+
+**Open:** gramlot-examples `apps/hello-world` still depends on `@gramlot/gramlot-browser`, no longer on npm.

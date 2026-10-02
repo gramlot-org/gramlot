@@ -134,7 +134,8 @@ and locally.
 `gramlot-uvicorn` provides Python/ASGI/Uvicorn hosting and `gramlot-serverless`
 provided browser/Worker standalone packaging; they replaced `gramlot-minimal`,
 retired on 2026-09-26. On 2026-10-01 `gramlot-serverless` joined
-`gramlot-js-server` as the package `@gramlot/gramlot-browser`.
+`gramlot-js-server` as the package `@gramlot/gramlot-browser`,
+renamed `@gramlot/gramlot-serverless` on 2026-10-02 (0.2.2).
 `gramlot-kajenn` owns only its host-specific integration and depends only on Kajenn
 besides the core (constitution amendment 11.48 item 5). The Kajenn adapter is not
 migrated yet: its `pyproject.toml` still declares the retired repository; the

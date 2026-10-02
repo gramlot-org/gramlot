@@ -4,6 +4,8 @@ Document ID: **GC-070**. Updated: **2026-10-02**.
 
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
+**Release 0.2.2 (in preparation):** `@gramlot/gramlot-serverless` and the theme and logo files in the npm, PyPI and JSR packages. See [§655](#gc-070-655).
+
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
 
@@ -3081,3 +3083,34 @@ error. Strict Sphinx and the public-documentation checker pass (8 pages).
 symbol and new layouts is pending. Target-platform tiny-icon checks and printer-specific
 CMYK/spot-color production proofs remain contextual reviews. The kit is delivered;
 no publication, consolidation or installed application theme is implied.
+
+
+<a id="gc-070-655"></a>
+## 655 · Serverless name and packaged theme and logo, release 0.2.2 — 2026-10-02
+
+Block ID: **GC-070-655**.
+
+Owner, 2026-10-02: `@gramlot/gramlot-browser` becomes `@gramlot/gramlot-serverless`
+("gramlot-serverless forse è il piu semplice"), ahead of gramlot-py-server, "così
+chiudiamo tutta la parte js"; the core 0.2.2 carries the theme and the logo files in
+every package. Constitution amendment 11.52.
+
+- gramlot-js-server 0.2.2: rename `ca0e102` (`browser/` → `serverless/`, command
+  `gramlot-serverless`), release `0965fff`, tag `v0.2.2`. `@gramlot/gramlot-serverless`
+  0.2.2 and `@gramlot/gramlot-js-server` 0.2.2 are on npm, published by hand from the
+  tag: the npm job of `publish.yml` failed with `EALLOWGIT`, because npm 12 reads
+  `dist/NAME.tgz` as a GitHub shorthand. Fix `ca60072` (`./dist/NAME.tgz`).
+  `@gramlot/gramlot-browser` was deprecated and then unpublished from npm.
+- Core: runner, scripts and CI on the new name and the same `publish.yml` fix
+  (gramlot-org/gramlot#7, `4e0eefc`, merge `1db63c5`). Theme and logo files in the npm,
+  PyPI and JSR packages (`b9ada8d`): `themes/`, the four stable entry points of
+  `assets/branding/` and `assets/branding/svg/`; JSR no longer carries the rest of the
+  identity kit. Paths: [GC-090 §023](../public/090-classes-and-hosts.md#gc-090-023).
+  Current documents (`e51989c`).
+- Verified on 2026-10-02: Python 72 OK, JavaScript 451/451, runner 31/31 and on port
+  8091, `verify_worker_host_browser.mjs` PASS in Chromium; `npm pack`, the wheel
+  (read with `importlib.resources`) and the JSR dry run carry the same 30 files; Sphinx
+  with `-W` and the public documentation check.
+
+**Open:** gramlot-examples `apps/hello-world` still depends on `@gramlot/gramlot-browser`,
+which is no longer on npm.
