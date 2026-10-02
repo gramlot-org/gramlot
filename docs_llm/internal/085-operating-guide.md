@@ -32,8 +32,8 @@ provisional runner; `tests`/`js/tests` hold core tests, `ports` holds port recor
 and `scripts` holds verification/build helpers.
 
 Generated build outputs, virtual environments, installed modules and caches are
-not source architecture. In `gramlot-serverless` (heir of the retired `gramlot-minimal`),
-`src/worker-host.js`, `src/worker-transport.js` and `src/standalone.js` own standalone integration.
+not source architecture. In `gramlot-js-server` (`@gramlot/gramlot-browser`, heir of the retired `gramlot-minimal`),
+`browser/src/worker-host.js`, `browser/src/worker-transport.js` and `browser/src/standalone.js` own standalone integration.
 No future component/controller/database contract is implied by a folder name.
 
 <a id="gc-085-015"></a>

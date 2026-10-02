@@ -18,8 +18,7 @@ instructions. Core owns shared Page, Host, Source and browser contracts.
 | `gramlot-flask` | Python / Flask; native integration in original 0.1.0 delivery. |
 | `gramlot-kajenn` | Python / Kajenn; depends only on Kajenn besides the core (11.48 item 5). Renamed from `gramlot-genro-asgi` on 2026-09-26. Not migrated yet: its `pyproject.toml` still declares the retired repository replaced by `gramlot-uvicorn` and `gramlot-serverless`. Migration and minimal Host contract deferred to after 0.2.0. |
 | `gramlot-uvicorn` | Python / generic ASGI/Uvicorn; heir of the ASGI part of retired `gramlot-minimal` (11.48 item 5). Verified on the 0.2.0 minimal Host contract ([GC-070 §595](070-work-status.md#gc-070-595)). |
-| `gramlot-serverless` | JS / browser Worker and single-HTML packaging; heir of the standalone part of retired `gramlot-minimal`. Verified on the 0.2.0 minimal Host contract. |
-| `gramlot-js-server` | JavaScript / Node.js and Bun; both belong here, original 0.1.0 profiles. |
+| `gramlot-js-server` | JavaScript / Node.js and Bun (`@gramlot/gramlot-js-server`, original 0.1.0 profiles) and browser Worker single-HTML packaging (`@gramlot/gramlot-browser`, heir of the standalone part of retired `gramlot-minimal`, in `gramlot-serverless` until 2026-10-01). Both verified on the 0.2.0 minimal Host contract. |
 | `gramlot-django` | Python / Django; local native `NativeHtmlPages` views/URLconf. Old Page/ORM code is historical. |
 
 Kajenn names the former Genro ASGI product; upstream distribution/import still
@@ -34,7 +33,7 @@ reference application in `gramlot-examples`, with equivalent Python/JS pages and
 real typed Source. One application has eight execution profiles:
 
 - Python: Uvicorn (`gramlot-uvicorn`), FastAPI, Flask, Kajenn, Django.
-- JavaScript: Node.js and Bun through `gramlot-js-server`; browser Worker through `gramlot-serverless`.
+- JavaScript: Node.js and Bun through `@gramlot/gramlot-js-server`; browser Worker through `@gramlot/gramlot-browser`, both in `gramlot-js-server`.
 
 The separate integration example owns its pages/configuration/tests; core now also
 owns the approved teaching suite (§025). Integration repos own adapters; core owns

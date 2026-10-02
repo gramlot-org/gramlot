@@ -11,11 +11,11 @@ const [playwrightPath, engineName = 'chromium', executablePath] = process.argv.s
 if (!playwrightPath) throw new Error('Usage: node scripts/verify_worker_host_browser.mjs PLAYWRIGHT_ENTRY [ENGINE] [EXECUTABLE]');
 const engine = (await import(pathToFileURL(playwrightPath)))[engineName];
 const js = fileURLToPath(new URL('../js/', import.meta.url));
-const worker = (await build({stdin: {resolveDir: fileURLToPath(new URL('../examples/', import.meta.url)), contents: `import {WorkerHost} from '@gramlot/serverless/worker-host'; ${await readFile(join(js, 'tests/fixtures/worker/page.js'), 'utf8')}
+const worker = (await build({stdin: {resolveDir: fileURLToPath(new URL('../examples/', import.meta.url)), contents: `import {WorkerHost} from '@gramlot/gramlot-browser/worker-host'; ${await readFile(join(js, 'tests/fixtures/worker/page.js'), 'utf8')}
 new WorkerHost(Page);`},
     bundle: true, platform: 'browser', format: 'iife', write: false})).outputFiles[0].text;
 const runtime = (await build({stdin: {resolveDir: fileURLToPath(new URL('../examples/', import.meta.url)), contents: `
-    import {mount} from '@gramlot/serverless/standalone';
+    import {mount} from '@gramlot/gramlot-browser/standalone';
     const url = URL.createObjectURL(new Blob([${JSON.stringify(worker)}], {type:'text/javascript'}));
     mount({workerUrl:url}).then(app => { window.gramlot=app; }, error => { window.startupError=String(error); })
         .finally(() => URL.revokeObjectURL(url));

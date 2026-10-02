@@ -163,7 +163,8 @@ kept as history. The implemented contract is the minimal Host contract:
 - `PageBootstrap` (`js/src/bootstrap.js`) writes the CSS links in the browser; the HTML
   carries no `<link>`. The mount prefix is chosen by the adapter at each opening.
 - Adapters verified on this contract: `gramlot-uvicorn`, `gramlot-js-server`,
-  `gramlot-serverless`; the other four are deferred to after 0.2.0
+  `gramlot-serverless` (since 2026-10-01 `@gramlot/gramlot-browser` in
+  `gramlot-js-server`); the other four are deferred to after 0.2.0
   ([GC-070 §595](070-work-status.md#gc-070-595)).
 
 **Current 0.1.2:**

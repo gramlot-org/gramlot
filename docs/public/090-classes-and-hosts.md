@@ -121,7 +121,7 @@ The Source error classes and the explicit-null rule are the same in both languag
 not a promise of cross-language interchangeability. Module caching does not reuse Page instances
 between Source requests. Custom page resolution belongs to the host integration;
 the filesystem comparison above does not describe the bundled Worker loader of
-`gramlot-serverless`.
+`@gramlot/gramlot-browser`.
 
 
 <a id="gc-090-020"></a>
@@ -170,15 +170,15 @@ compact JSON. The HTML has no `<link>`: `PageBootstrap` writes the stylesheet li
 in the browser (section 030).
 
 The JS Host provides `openPage`, `main`, `source` and `closePage`; HTTP
-`Request`/`Response` translation belongs to the adapter. `FileHost` resolves JS page modules and their same-name files. Reusable Node and Bun bridges now live in `gramlot-js-server/native` and
-`gramlot-js-server/bun`. Bounded Python integrations live in FastAPI, Flask and Genro
+`Request`/`Response` translation belongs to the adapter. `FileHost` resolves JS page modules and their same-name files. Reusable Node and Bun bridges now live in `@gramlot/gramlot-js-server/node` and
+`@gramlot/gramlot-js-server/bun`. Bounded Python integrations live in FastAPI, Flask and Genro
 ASGI adapter packages; generic ASGI and the Kajenn-specific wrapper are distinct.
 These are development implementations with a local artifact verification gate,
 not production-certified integrations; delivery uses GitHub archives.
 
 *0.2.0:* the adapters verified against the minimal contract are `gramlot-uvicorn`
 (Python, ASGI and Uvicorn), `gramlot-js-server` (Node.js and Bun) and
-`gramlot-serverless` (standalone and Worker). `gramlot-django`, `gramlot-fastapi`,
+`@gramlot/gramlot-browser`, in `gramlot-js-server` (standalone and Worker). `gramlot-django`, `gramlot-fastapi`,
 `gramlot-flask` and `gramlot-kajenn` are deferred to after 0.2.0. Each adapter
 passes the mount prefix to `open_page` and serves the companions (section 030). The
 two server adapters send the Content Security Policy header they are configured
@@ -234,7 +234,7 @@ one application's core dependency graph.
 
 The standalone examples below explicitly use the local development installation:
 matching core and standalone packages, as configured by the repository examples.
-`gramlot-serverless` owns standalone startup and Worker integration; it replaces
+`@gramlot/gramlot-browser` owns standalone startup and Worker integration; it replaces
 the retired `gramlot-minimal` (section 025). This boundary is not supplied by
 installing the published JSR 0.1.x package alone; unchanged GitHub archives also
 retain their original boundary. No package rename or compatibility alias is
@@ -263,19 +263,19 @@ export class Page extends BasePage {
 source(Page.prototype.details);
 ```
 
-The Worker entry belongs to the `gramlot-serverless` host configuration. This
+The Worker entry belongs to the `@gramlot/gramlot-browser` host configuration. This
 development boundary requires the matching core with the browser-safe `/host`
 export; unchanged 0.1.0 archives do not provide it:
 
 ```javascript
-import {WorkerHost} from '<gramlot-serverless>/worker-host';
+import {WorkerHost} from '@gramlot/gramlot-browser/worker-host';
 import {Page} from './page.js';
 new WorkerHost(Page);
 ```
 
 Bundle this entry and its imports into a classic Worker script. The browser runtime
 starts it with `await mount({workerUrl})` from the standalone entry of
-`gramlot-serverless`. Import paths follow the `gramlot-serverless` package manifest.
+`@gramlot/gramlot-browser` (`@gramlot/gramlot-browser/standalone`).
 The document must already contain `gramlot-root`, or pass an explicit `element`.
 `mount` opens the Page, prepares Gramlot roots/subscriptions, then requests `main`.
 For an exported directory, `mount({workerUrl, assetRoot})` accepts an absolute
@@ -296,7 +296,7 @@ Playwright WebKit. WebKit is not Safari. Safari and Firefox remain unverified.
 need a Host with a resource system (section 030). The WorkerHost counts as server
 side: it compiles no code, and it never executes the companion.
 
-**Export shape (0.2.0).** The `gramlot-serverless` export is one HTML file:
+**Export shape (0.2.0).** The `@gramlot/gramlot-browser` export is one HTML file:
 
 - the Worker script holds the Page and the `WorkerHost`; it has no inline
   compiler (`binding/inline.js` is not in its bundle);
@@ -311,8 +311,8 @@ side: it compiles no code, and it never executes the companion.
   only named logic is supported there; a check of inline code under that policy
   is not part of 0.2.0 (section 035).
 
-**Standalone integration.** `gramlot-serverless` (heir of the retired
-`gramlot-minimal`) supplies the Node/npm exporter of the browser standalone profile.
+**Standalone integration.** `@gramlot/gramlot-browser`, in `gramlot-js-server` (heir
+of the retired `gramlot-minimal`), supplies the Node/npm exporter of the browser standalone profile.
 It bundles the Page without executing it and generates the complete HTML through
 HtmlBuilder; it also exports a static directory with several documents, each
 with its own Worker. Assets must be included by the exporter and served at their
@@ -328,7 +328,8 @@ Generic Python ASGI/Uvicorn hosting belongs to `gramlot-uvicorn`. `gramlot-kajen
 depends only on Kajenn besides the core (constitution amendment 11.48 item 5); its
 adapter is not migrated yet and is deferred to after 0.2.0. The retired
 `gramlot-minimal` repository is historical; its heirs are `gramlot-uvicorn` and
-`gramlot-serverless`.
+`gramlot-serverless`, which joined `gramlot-js-server` on 2026-10-01 as
+`@gramlot/gramlot-browser`.
 
 
 <a id="gc-090-030"></a>
