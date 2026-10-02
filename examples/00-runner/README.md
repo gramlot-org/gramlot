@@ -147,7 +147,7 @@ the Page at build time. Python examples remain hosted Python pages. The Binding 
 Controllers families stay out of the export: their pages need a host that serves
 the logic companion and answers `remoteSource`, which the standalone core does not.
 
-Standalone startup and Worker communication belong to `@gramlot/gramlot-browser`
-(`gramlot-js-server/browser`). The export requires matching development core and
-browser packages; published 0.1.0 archives
+Standalone startup and Worker communication belong to `@gramlot/gramlot-serverless`
+(`gramlot-js-server/serverless`). The export requires matching development core and
+serverless packages; published 0.1.0 archives
 are unchanged. The runner owns only its provisional UI behavior.
