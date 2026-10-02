@@ -1274,3 +1274,27 @@ suggerimento" (two packages, `server` and `browser`, without the `native` prefix
 
 The §7 table and the §14 naming clarification are updated; dated decisions keep
 their original names as history.
+
+### Amendment 11.51 — The native label is removed — 2026-10-02
+
+Owner decision of 2026-10-02: the label "native HTML" "è completamente fuorviante".
+
+1. Meaning. As the name of the 0.1.0 profile, "native" recorded only that the first
+   milestone (GC-088, 2026-09-19) planned no web components and no recipes. It has no
+   technical meaning.
+2. Rule. "native" names no release, profile, milestone, adapter, module, API or pages.
+   It keeps the technical meanings listed in
+   [GC-005 §030](005-documentation-policy.md#gc-005-030).
+3. Renames. `docs/internal/088-native-html-plan.md` → `088-0-1-0-plan.md`,
+   `089-native-html-handoff.md` → `089-0-1-0-handoff.md`,
+   `110-native-html-readiness.md` → `110-0-1-0-readiness.md`,
+   `ports/PORT-0001-native-html/` → `ports/PORT-0001-0-1-0/`,
+   `ports/PORT-0004-native-html-delivery/` → `ports/PORT-0004-0-1-0-delivery/`, with
+   their mirrors; document IDs and anchors are unchanged. `js/tests/native-html.test.js`
+   → `source-contract.test.js`, `tests/test_native_html.py` → `test_source_host.py`,
+   `scripts/verify_native_html_browser.mjs` → `verify_page_browser.mjs`.
+4. History. Dated decisions and records keep their text and carry a naming note.
+   Published artifacts keep their names (`gramlot-native-0.1.0.zip`,
+   `gramlot-native-html-0.2.0.tgz`).
+5. Other repositories. The Python adapter names leave with gramlot-py-server; the
+   example pages change with their move to gramlot-examples.

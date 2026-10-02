@@ -3016,3 +3016,29 @@ The core stays on npm and JSR.
 
 **Open:** npm publication of the two packages; archive of `gramlot-org/gramlot-serverless` and of
 its Read the Docs project.
+
+<a id="gc-070-645"></a>
+## 645 · The native label is removed — 2026-10-02
+
+Block ID: **GC-070-645**.
+
+Owner, 2026-10-02: the label "native HTML" "è completamente fuorviante". It named only
+the scope of the 0.1.0 milestone (no web components, no recipes). Rule:
+[GC-005 §030](../005-documentation-policy.md#gc-005-030); constitution amendment 11.51.
+
+- Code, tests and scripts (`cdc33d9`): `js/tests/source-contract.test.js`,
+  `tests/test_source_host.py`, `scripts/verify_page_browser.mjs`; fixture titles
+  "Contract fixture" and "Worker page"; package docstring.
+- Documentation file names (`cefa532`): `088-0-1-0-plan.md`, `089-0-1-0-handoff.md`,
+  `110-0-1-0-readiness.md`, `ports/PORT-0001-0-1-0/`, `ports/PORT-0004-0-1-0-delivery/`;
+  IDs and anchors unchanged.
+- Current documents (`7757c1d`); naming note in the dated records (`022acff`).
+- Verified on 2026-10-02: Python 72 OK, JavaScript 451/451, runner 31/31, runner on port
+  8091, `verify_page_browser.mjs` and `verify_worker_host_browser.mjs` PASS in Chromium,
+  Sphinx with `-W` and the public documentation check.
+
+Outside this change: the Python adapters (`NativeHtmlASGI`, `mount_native_html`,
+`native_html.py`) until gramlot-py-server; the core `examples/` and gramlot-examples with
+the move of the examples; gramlot-site, outside the framework.
+
+**Open:** gramlot-js-server documents (GN-010, GS-020); publication of the core.

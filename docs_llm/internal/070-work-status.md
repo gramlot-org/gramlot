@@ -2669,3 +2669,12 @@ Owner, 2026-10-01: JS packages on npm and JSR; same package name on both, only s
 Block ID: **GC-070-640**.
 
 Owner, 2026-10-01: gramlot-serverless joins gramlot-js-server ("va bene js server in effetti il worker è uj server"); names "server" and "browser", no `native` prefix ("accetto il tuo suggerimento"). Amendment 11.50. Workspace: `server/` `@gramlot/gramlot-js-server` (`/node`, `/bun`, `startServer`), `browser/` `@gramlot/gramlot-browser` (command `gramlot-browser`); commits `05efadd` (subtree), `9cbbd11`, `b3a6e6e`, `d706973`, `c0ca2bd`. Core `18880bb`, `0569d4d`: runner, Worker check and CI use one checkout. Verified 2026-10-01: clean clone with core 0.2.1 from npm (server 6/6 Node and Bun, browser 20/20, three Chromium checks), linked core `main` (sentinel, server browser harness Node/Bun), core Python OK, JS 451/451, runner 31/31, runner pages 200. §635 open item closed (`8ed1fc3`). Registries (owner, 2026-10-01, "ok"): the two packages on npm only; a JSR install maps the core to `@jsr/gramlot__gramlot` behind the alias `@gramlot/gramlot`, so a JSR adapter would bring a second core copy, and the browser package resolves the core by name. The core stays on npm and JSR. Open: npm publication of the two packages; archive of `gramlot-serverless` and its Read the Docs.
+
+<a id="gc-070-645"></a>
+## 645 · The native label is removed — 2026-10-02
+
+Block ID: **GC-070-645**.
+
+Owner, 2026-10-02: "native HTML" "è completamente fuorviante"; it named only the 0.1.0 scope (no web components, no recipes). Rule [GC-005 §030](../005-documentation-policy.md#gc-005-030), constitution 11.51. Code/tests/scripts `cdc33d9` (`source-contract.test.js`, `test_source_host.py`, `verify_page_browser.mjs`, fixture titles, docstring); file names `cefa532` (`088-0-1-0-plan`, `089-0-1-0-handoff`, `110-0-1-0-readiness`, `PORT-0001-0-1-0`, `PORT-0004-0-1-0-delivery`; IDs/anchors unchanged); current documents `7757c1d`; naming notes `022acff`. Verified 2026-10-02: Python 72 OK, JS 451/451, runner 31/31 and on port 8091, page and Worker browser checks PASS in Chromium, Sphinx `-W`, public docs check. Outside: Python adapters until gramlot-py-server; core `examples/` and gramlot-examples with the move of the examples; gramlot-site.
+
+**Open:** gramlot-js-server documents (GN-010, GS-020); core publication.

@@ -15,8 +15,11 @@ Gramlot repositories. Content/builders remain locally owned. All documentation
 sites use the classic Read the Docs appearance from Genro Bag: blue header, dark
 sidebar, light content, default typography. Use `sphinx_rtd_theme` for Sphinx or
 `readthedocs` for MkDocs; preserve logos/status notices. Supersedes Material/Furo;
-applies to future doc sites, not application UI. Namespaces: core **GC**, Django **GD**, FastAPI **GF**; other
-repos choose distinct ones. Public reference = `main`; new work = `develop` until
+applies to future doc sites, not application UI. Namespaces: core **GC**;
+gramlot-js-server **GN**/**GS** (server/browser); gramlot-examples **GE**;
+gramlot-py-server **GP** (owner, 2026-10-02). Frozen, never reused: **GD** Django,
+**GF** FastAPI, **GA** Kajenn, **GS** of gramlot-uvicorn (archive only);
+gramlot-flask has none. Other repos choose distinct ones. Public reference = `main`; new work = `develop` until
 verified/accepted. Publication still needs authorization.
 
 <a id="gc-005-010"></a>
@@ -97,3 +100,25 @@ where readers enter the affected document and correct active plans in place.
 Preserve historical evidence without silently rewriting external archives.
 See [GC-170](internal/170-binding-source-audit.md) for the first binding source audit
 and its explicitly limited coverage.
+
+<a id="gc-005-030"></a>
+## 030 · The word "native"
+
+Block ID: **GC-005-030**.
+
+Owner, 2026-10-02: "native" never names a release, profile, milestone, adapter,
+module, API or pages. As the 0.1.0 profile name it meant only "no web components,
+no recipes"; no technical meaning. Allowed meanings only:
+
+1. browser behavior/controls (form controls, Reset, implicit submission, `<details>`);
+2. DOM events/listeners (`NativeEventBinding`, `connect_on<event>`);
+3. HTML attributes that do not become style (`NATIVE_ATTRIBUTES`, `splitNativeAttributes`);
+4. DOM properties/operations;
+5. genro-bag events/subscriptions;
+6. platform/runtime APIs (`node:http`, `Bun.serve`);
+7. standard HTML/SVG element versus custom element.
+
+Two readings: keep "native" only if the sentence names the opposed alternative
+(custom element, style conversion, snapshot, browser behavior); else use the precise
+term ("HTML elements", "typed SourceBag", "attribute projection"). Dated records keep
+their text with a naming note (§025). See [constitution](00-constitution.md) 11.51.

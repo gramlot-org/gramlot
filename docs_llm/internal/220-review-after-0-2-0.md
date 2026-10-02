@@ -27,7 +27,6 @@ Block ID: **GC-220-005**.
 - The standalone of gramlot-serverless has only the strict hash profile; no permissive profile and no inline check under CSP there, while Q3 names two profiles (Phase 15).
 - Named `connect_on<event>` needs a dotted name, that is a `js_requires` group; with the minimal FileHost only inline code is possible for it (Phase 16, `controllers/07_events`).
 - Style shortcut numbers pass without a unit (`font_size=20` → `font-size: 20`, dropped by the browser) (Phase 16).
-- Naming: core docs call the 0.1.0 profile "native HTML" (92 files); gramlot-uvicorn exports `NativeHtmlASGI`. gramlot-js-server dropped the prefix on 2026-10-01 (11.50); core docs and Python adapters for this review (`NATIVE_ATTRIBUTES` in `js/src/renderer/attributes.js` is another meaning).
 - The runner suite never starts `examples/00-runner/server.mjs`: a stale `@gramlot/gramlot-js-server` with the old `/native` entry passed the 31 tests and failed only when the runner was started by hand (2026-10-01).
 
 <a id="gc-220-010"></a>
@@ -35,6 +34,7 @@ Block ID: **GC-220-005**.
 
 Block ID: **GC-220-010**.
 
+- Naming: core docs call the 0.1.0 profile "native HTML" (92 files); gramlot-uvicorn exports `NativeHtmlASGI`. gramlot-js-server dropped the prefix on 2026-10-01 (11.50); core docs and Python adapters for this review (`NATIVE_ATTRIBUTES` in `js/src/renderer/attributes.js` is another meaning). *Status 2026-10-02:* closed in the core by `cdc33d9` (code, tests, scripts), `cefa532` (file renames), `7757c1d` (current documents), `022acff` (naming notes of dated records) and the rule GC-005 §030. The Python adapters keep their names until gramlot-py-server replaces them; the gramlot-examples pages change with the move of the examples (owner, 2026-10-02).
 - Package names: one core, two names (`@gramlot/native-html` (former core name) in `js/package.json`, `examples/package.json`, gramlot-js-server; `@jsr/genro__gramlot` in gramlot-serverless and the WorkerHost import) — GC-215 D3; deferred by the owner at the S17 gate (2026-09-30). *Status 2026-10-02:* closed by 0.2.1 (`2e93fc3`): the core is `@gramlot/gramlot`; `examples/package.json`, `@gramlot/gramlot-js-server` and `@gramlot/gramlot-browser` use that name; no tracked file of the core or of gramlot-js-server uses `@jsr/genro__gramlot`.
 - Package names: the core `js/package.json` is `@gramlot/native-html` (former core name), unpublished on any registry, used by gramlot-js-server (peer dependency) and by `examples/package.json`; gramlot-serverless uses the JSR name `@jsr/genro__gramlot`. The core runner `examples/00-runner/build-standalone.mjs` fails with `Cannot find module '@jsr/genro__gramlot'` because `examples/node_modules` has only `@gramlot/native-html` (Phase 15; for S17). *Status 2026-10-02:* closed by 0.2.1 (`2e93fc3`): the core is `@gramlot/gramlot`; `examples/package.json`, `@gramlot/gramlot-js-server` and `@gramlot/gramlot-browser` use that name; no tracked file of the core or of gramlot-js-server uses `@jsr/genro__gramlot`.
 - Runner `/js/…` pages answer 500 — closed in Phase 15: gramlot-js-server takes the core as a peer dependency, one instance (`ed38743`).
