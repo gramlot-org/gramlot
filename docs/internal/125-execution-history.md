@@ -1,5 +1,7 @@
 # 125 · Historical Gramlot execution record
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 > **Historical evidence:** legacy/earlier Data declaration vocabulary and API
 > statements below retain their original scope. For 0.2.0 use
 > [GC-210](210-binding-contract.md) and constitution 11.47: dataSetter with
@@ -10,7 +12,7 @@
 
 Document ID: **GC-125**. Updated: **2026-09-23**.
 
-**Historical record — do not execute past “Next” instructions.** The current checkpoint is [GC-070](070-work-status.md); the active release plan is [GC-110](110-native-html-readiness.md).
+**Historical record — do not execute past “Next” instructions.** The current checkpoint is [GC-070](070-work-status.md); the active release plan is [GC-110](110-0-1-0-readiness.md).
 
 **TYTX GitHub notice refresh — 2026-09-23.**
 TYTX commit `e113806` added LICENSE/NOTICE; issue #44 closed. Fresh
@@ -21,7 +23,7 @@ package root. The collector now chooses that root. Fresh bundle and regenerated
 0.1.0 wheel/npm archive carry the full Apache/Softwell TYTX text; resources match
 byte for byte. New Python 3.12/npm consumers install them; JS 75/75 and Python
 installation/dependency/typed Source checks pass. No seven-host rerun, release or
-acceptance. Evidence: [GC-110 §6.2](110-native-html-readiness.md#gc-110-065) and
+acceptance. Evidence: [GC-110 §6.2](110-0-1-0-readiness.md#gc-110-065) and
 `/private/tmp/gramlot-tytx-refresh-20260923/`.
 
 **Local 0.1.0 version closure — 2026-09-23.**
@@ -35,7 +37,7 @@ import Gramlot before using its TYTX registration; MessagePack test extra was
 installed. The Chromium 7/7 matrix is earlier development-artifact evidence, not
 a versioned-artifact rerun. TYTX GitHub LICENSE remains absent; issue #44 tracks
 its owning-source fix. NodeJS/Hello World notice fixes are local. No push,
-release, deployment or owner acceptance. Evidence and limits: [GC-110 §6.1](110-native-html-readiness.md#gc-110-060)
+release, deployment or owner acceptance. Evidence and limits: [GC-110 §6.1](110-0-1-0-readiness.md#gc-110-060)
 and `/private/tmp/gramlot-phase6-20260923/`.
 
 **Owning-package notice correction — 2026-09-23.**
@@ -46,7 +48,7 @@ example Python metadata, now declare Apache-2.0. Fresh local npm archives for al
 three and Python wheels for TYTX/example include both files. No code behavior,
 dependency pin, package release or source push. Gramlot's normal GitHub TYTX
 dependency remains at the prior source until the owning change is distributed.
-Evidence: `/private/tmp/gramlot-notice-repair-20260923/` and [GC-110 §5.1](110-native-html-readiness.md#gc-110-055).
+Evidence: `/private/tmp/gramlot-notice-repair-20260923/` and [GC-110 §5.1](110-0-1-0-readiness.md#gc-110-055).
 
 **Documentation and package review — 2026-09-23.**
 GC-110 phase 5 reconciled README, six public guides/mirrors, the internal operating
@@ -59,7 +61,7 @@ JS bytes. No local absolute paths occur in packaged code/resources. Phase 4 exam
 already ran from fresh installed packages. Installed TYTX JS and locally packed
 NodeJS/Hello World JS archives lack their own LICENSE/NOTICE files; this is recorded
 for those owning projects before external distribution. No version bump, release,
-deployment or owner acceptance. See [GC-110 §5.1](110-native-html-readiness.md#gc-110-055).
+deployment or owner acceptance. See [GC-110 §5.1](110-0-1-0-readiness.md#gc-110-055).
 
 **Fresh packaged seven-profile verification — 2026-09-23.**
 Built current local wheels/archives, rebuilt browser assets before the Gramlot
@@ -70,7 +72,7 @@ main/remote Source, live insert/update/delete/replacement, freeze/unfreeze, stri
 Source rejection and disposal. Six server page records close; Worker terminates
 without HTTP(S). Installed adapter protocol tests pass 3/3 FastAPI, 3/3 Flask and
 2/2 ASGI/Kajenn. Kajenn uses BaseServer; Orchestra registry integration is not
-claimed. Evidence: `/private/tmp/gramlot-phase4-20260923/`; [GC-110 §3.1](110-native-html-readiness.md#gc-110-035).
+claimed. Evidence: `/private/tmp/gramlot-phase4-20260923/`; [GC-110 §3.1](110-0-1-0-readiness.md#gc-110-035).
 This closes phase 4 only. Safari/Firefox, phase 5/6 and owner acceptance remain open.
 
 **Implementation and ownership review — 2026-09-23.**
@@ -82,7 +84,7 @@ Both neutral Hosts now reject non-expiring TTL and invalid capacity; focused
 regressions added. Local Node 75/75 and Python 17/17 pass with the existing Python
 test environment. The first direct JS host test used system Python and failed its
 cross-language import; the configured full rerun passed. This is local core evidence,
-not a fresh seven-profile packaged result. See [GC-110 §2.1](110-native-html-readiness.md#gc-110-025).
+not a fresh seven-profile packaged result. See [GC-110 §2.1](110-0-1-0-readiness.md#gc-110-025).
 
 **TYTX browser correction and clean GitHub verification — 2026-09-22.**
 Owner authorized the bounded TYTX fix. Its owning project published source commit
@@ -383,7 +385,7 @@ promote the whole local diff; bounded owning-library correction needs authorizat
 
 **Readiness execution plan — 2026-09-21.**
 
-[GC-110](110-native-html-readiness.md) is the current six-phase closure plan,
+[GC-110](110-0-1-0-readiness.md) is the current six-phase closure plan,
 preceded by baseline capture. Dependency provenance is in progress; host/grammar
 decisions remain open. Prior successful local tests do not establish a clean-install
 result. Baseline captured; code review is in progress. Fixed transport disposal being skipped
@@ -1757,7 +1759,7 @@ six-host plus Python/JS standalone browser matrix are complete. Core tests:
 Python 14/14, Node 36/36, Bun 36/36; generic Builder 12/12 per runtime;
 DOM 124/124 per runtime. All agents finished. Owner explicitly requested keeping
 all changes local for review: no commits/pushes/remote creation/release/deployment.
-See [GC-089](089-native-html-handoff.md) for repositories, evidence and next steps.
+See [GC-089](089-0-1-0-handoff.md) for repositories, evidence and next steps.
 Acceptance, upstream installation and develop/main consolidation remain open.
 
 **Next:** phase 0 of GC-094. Source publication and a fresh upstream install

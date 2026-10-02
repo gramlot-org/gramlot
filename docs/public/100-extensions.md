@@ -1,6 +1,6 @@
 # Extending Gramlot
 
-Document ID: **GC-100**. Native 0.1.2 APIs; 0.2.0 changes are marked.
+Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
 > binding)**, released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
@@ -42,7 +42,7 @@ specified separately before implementation.
 The following sections deliberately remain outlines:
 
 - **Component bases and mixins:** parameters, description, requirements and cleanup contracts.
-- **Third-party collection discovery:** package loading, class registration and extension of native content models.
+- **Third-party collection discovery:** package loading, class registration and extension of the HTML5 and SVG content models.
 - **Python authoring from JS descriptions:** metadata transport and generated authoring surface.
 - **Controllers and resolvers:** declarations, lifecycle and Data ownership.
   *0.2.0:* defines `dataFormula`, `dataController` and named logic
@@ -102,7 +102,7 @@ This is explicit loading, not automatic discovery or custom-element registration
 *0.2.0:* Gramlot redefines `dataSetter`, `dataFormula` and `dataController` in its
 own collection, `binding.json`, loaded after the HTML5 collection in Python and
 JavaScript. The binding attributes it declares never reach the DOM.
-Native HTML's open parameter signatures do not become a manual attribute whitelist.
+The HTML5 collection's open parameter signatures do not become a manual attribute whitelist.
 Custom children must satisfy their parent's declared content model; this API does
 not automatically amend HTML child lists.
 
@@ -111,7 +111,7 @@ not automatically amend HTML child lists.
 
 ## 030 · HTML void metadata
 
-Native HTML void elements declare `"_meta": {"void": true}` in their collection.
+HTML void elements declare `"_meta": {"void": true}` in their collection.
 The owning Python element declarations export this metadata unchanged to JSON.
 Python and JavaScript static HTML renderers use it to omit the end tag; Gramlot's
 DOM handler uses it to omit the element's text child. No renderer maintains a

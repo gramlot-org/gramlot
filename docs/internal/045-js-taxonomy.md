@@ -302,7 +302,7 @@ flowchart TB
     L --> ACTION["Actions and overlays<br/>menu · tooltip · dropDownButton · toaster"]
     L --> MEDIA["Editors and media<br/>bagEditor · codemirror · qrscanner · fileUploader"]
     L --> LOGIC["Data and remote logic<br/>dataFormula · dataController · dataRpc · remote"]
-    L --> HTML["Native HTML declarations<br/>not one JS class per HTML tag"]
+    L --> HTML["HTML declarations<br/>not one JS class per HTML tag"]
     INPUT -. review for .-> F["Field families and adapters"]
     LAYOUT -. review for .-> R["Recipes / layout components"]
     GRID -. review for .-> G["Grid collaborators and cell contracts"]
@@ -385,7 +385,7 @@ repository, not `gramlot-poc`.
   node → record `Map` (line 20), the element → record `WeakMap` (line 25), one Source
   subscription (line 27) and the `pending` FIFO in `receive` (lines 199-229). It
   filters frozen nodes before queuing (lines 201-205).
-- `HtmlElement` (`view/html.js`) creates and updates native HTML/SVG elements. It
+- `HtmlElement` (`view/html.js`) creates and updates HTML/SVG elements. It
   also writes the `value` property of controls (`html.js:131-134`).
 - `References` (`references.js`) and `MainTransport` (`transport.js`) are collaborators.
 - `GramlotBuilder extends HtmlBuilder` (`builder/gramlot-builder.js`); `computeLogic()`

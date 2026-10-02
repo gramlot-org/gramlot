@@ -27,8 +27,8 @@ ownership boundaries and the local split are recorded in
 
 [GC-130 · Ecosystem release review](internal/130-release-ecosystem-review.md): architecture assessment, current release-alignment findings and versioned-artifact checks.
 
-[Current 0.1.0 plan](internal/110-native-html-readiness.md#gc-110-020). Read [GC-070](internal/070-work-status.md) for the current checkpoint. [GC-094](internal/094-design-consolidation-plan.md) is historical.
-The [earlier delivery plan](internal/088-native-html-plan.md) is historical evidence;
+[Current 0.1.0 plan](internal/110-0-1-0-readiness.md#gc-110-020). Read [GC-070](internal/070-work-status.md) for the current checkpoint. [GC-094](internal/094-design-consolidation-plan.md) is historical.
+The [earlier delivery plan](internal/088-0-1-0-plan.md) is historical evidence;
 GC-110 records the current review and seven-profile verification.
 
 ## For contributors

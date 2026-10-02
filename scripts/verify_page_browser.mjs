@@ -5,7 +5,7 @@ import {pathToFileURL, fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 
 const [runtime, playwrightPath, executablePath, language = 'python'] = process.argv.slice(2);
-if (!executablePath) throw new Error('Usage: node verify_native_html_browser.mjs RUNTIME PLAYWRIGHT_ENTRY CHROMIUM [python|js]');
+if (!executablePath) throw new Error('Usage: node verify_page_browser.mjs RUNTIME PLAYWRIGHT_ENTRY CHROMIUM [python|js]');
 const {chromium} = await import(pathToFileURL(playwrightPath));
 const root = fileURLToPath(new URL('../', import.meta.url));
 const externalUrl = process.env.GRAMLOT_TEST_URL;
@@ -37,7 +37,7 @@ try {
         const panel = contents.getNodes()[0];
         if (contents.constructor !== app.source.constructor || panel.nodeTag !== 'div' ||
             panel.attr.tag !== undefined || panel.value.getNodes()[0].value !== 'bart') {
-            throw new Error('Main lost its native typed SourceBag structure');
+            throw new Error('Main lost its typed SourceBag structure');
         }
         let invalidSourceRejected = false;
         try { panel.setAttr({title: {invalid: true}}); }

@@ -96,7 +96,7 @@ test('events render each inserted or replaced element once', () => {
     renderer.dispose();
 });
 
-test('active grammar renders native and collection-mapped tags without a DOM whitelist', () => {
+test('active grammar renders HTML5 tags and collection-mapped custom elements without a DOM whitelist', () => {
     const collection = {
         document_format: html5.document_format,
         grammar: {...html5.grammar, name: 'test-controls'},

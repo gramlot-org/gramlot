@@ -17,7 +17,7 @@ function appWith(transport) {
 test('registered SourceBag root and branches survive JSON and MessagePack and bind in place', () => {
     for (const transport of ['json', 'msgpack']) {
         const authored = new GramlotBuilder();
-        authored.root.section().span('native');
+        authored.root.section().span('text');
         const runtime = new GramlotBuilder();
         const payload = sourceBagToTytx(authored.source, {transport});
         const restored = fromTytx(payload, transport === 'json' ? null : transport);
@@ -31,7 +31,7 @@ test('registered SourceBag root and branches survive JSON and MessagePack and bi
         assert.ok(leaf instanceof SourceBagNode, `${transport} leaf node`);
         assert.equal(section.nodeTag, 'section');
         assert.equal(leaf.nodeTag, 'span');
-        assert.equal(leaf.value, 'native');
+        assert.equal(leaf.value, 'text');
         assert.equal(restored.bindBuilder(runtime), restored);
         assert.equal(restored.getNodes()[0], section);
         assert.equal(section.value, branch);
@@ -45,7 +45,7 @@ test('recipes are outside the active grammar', () => {
     assert.equal(new GramlotBuilder().root.recipe, undefined);
 });
 
-test('main inserts the complete native tree with one observed event', async () => {
+test('main inserts the complete Source tree with one observed event', async () => {
     const app = appWith({main: async () => wire(root => root.div('homer').span('bart'))});
     const observed = [];
     app.source.subscribe('test', {any: event => observed.push(event.evt)});
@@ -135,8 +135,8 @@ test('pipeline requires the registered SourceBag contract, without ordinary Bag 
     app.dispose();
 });
 
-test('typed transport retains native source tags, scalar values and builder ownership', async () => {
-    const app = appWith({main: async () => wire(root => root.section().span('native'))});
+test('typed transport retains Source tags, scalar values and builder ownership', async () => {
+    const app = appWith({main: async () => wire(root => root.section().span('text'))});
     await app.start();
     const body = app.source.getItem('main');
     const section = body.getNodes()[0];
@@ -145,7 +145,7 @@ test('typed transport retains native source tags, scalar values and builder owne
     assert.ok(section.value instanceof SourceBag);
     assert.ok(leaf instanceof SourceBagNode);
     assert.equal(leaf.nodeTag, 'span');
-    assert.equal(leaf.value, 'native');
+    assert.equal(leaf.value, 'text');
     assert.equal(leaf.attr.tag, undefined);
     assert.equal(leaf.attr._text, undefined);
     assert.equal(leaf.builder, app.builder);

@@ -2,9 +2,11 @@
 
 Document ID: **GC-065**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 **Release scope:** the latest published release is **0.1.2**. Sections 005-025 describe the 0.1.2 foundations. Section 030 records the page resource and bootstrap changes of the 0.2.0 HTML/SVG binding. **The 0.2.0 parts are implemented on the development branch (S06, S07, S14) and are in qualification; 0.2.0 is not released.** The current contract is [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030).
 
-**Current 0.1.2 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-native-html-readiness.md#gc-110-020) for current release gates.
+**Current 0.1.2 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-0-1-0-readiness.md#gc-110-020) for current release gates.
 
 [Concise counterpart](../../docs_llm/internal/065-host-adapters.md).
 
@@ -76,7 +78,7 @@ projects. The small HTTP bridges in tests are verification fixtures only.
 Python imports `Page` from `gramlot` or `gramlot.page`. JS server modules import
 `Page` from `js/src/adapters/index.js` and export their subclass as named `Page`.
 Python declares `root.div('homer', id='panel')`; JS declares
-`root.div('homer', {id: 'panel'})`. Both authoring facades produce native SourceBag nodes, preserving node tags and
+`root.div('homer', {id: 'panel'})`. Both authoring facades produce typed SourceBag nodes, preserving node tags and
 scalar values through registered TYTX transport. Mixed prefix text uses `_text`;
 there is no ordinary-Bag snapshot or hydration boundary. No CSS shorthand translation is included.
 
@@ -130,11 +132,11 @@ For current setup and tests use [GC-085](085-operating-guide.md#gc-085-025);
 for the versioned seven-profile evidence use [GC-130](130-release-ecosystem-review.md#gc-130-025).
 No database, bindings, application controller API or CSS shorthand is included.
 
-`scripts/verify_native_html_browser.mjs` takes a runtime executable, an installed
+`scripts/verify_page_browser.mjs` takes a runtime executable, an installed
 Playwright entry, a Chromium executable and `python` or `js`. JavaScript checks
 require `GRAMLOT_TEST_URL` from a running Node/Bun adapter; the script does not
 start a JavaScript host. With no external URL, Python uses its local test fixture.
-Use the matching native-HTML fixture page, not an arbitrary application or the
+Use the matching contract fixture page, not an arbitrary application or the
 simpler Hello World page; each browser checker asserts its fixture's content.
 These are verification commands, not application launch or deployment commands.
 

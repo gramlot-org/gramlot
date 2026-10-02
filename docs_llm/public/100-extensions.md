@@ -1,6 +1,6 @@
 # Extending Gramlot
 
-Document ID: **GC-100**. Native 0.1.2 APIs; 0.2.0 changes are marked.
+Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
 > (GitHub `v0.2.0`; current patch **0.2.1**, 2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). Previous release:
@@ -91,7 +91,7 @@ Mixed wildcard/cardinality rules remain unsupported. Defaults are descriptive, n
 This is explicit loading, not automatic discovery or custom-element registration.
 *0.2.0:* Gramlot redefines `dataSetter`/`dataFormula`/`dataController` in its own
 `binding.json` collection, loaded after HTML5 in Python and JS; its binding attributes never reach the DOM.
-Native HTML's open parameter signatures do not become a manual attribute whitelist.
+The HTML5 collection's open parameter signatures do not become a manual attribute whitelist.
 Custom children must satisfy their parent's declared content model; this API does
 not automatically amend HTML child lists.
 
@@ -100,7 +100,7 @@ not automatically amend HTML child lists.
 
 ## 030 · HTML void metadata
 
-Native HTML void elements declare `"_meta": {"void": true}` in their collection.
+HTML void elements declare `"_meta": {"void": true}` in their collection.
 The owning Python element declarations export this metadata unchanged to JSON.
 Python and JavaScript static HTML renderers use it to omit the end tag; Gramlot's
 DOM handler uses it to omit the element's text child. No renderer maintains a

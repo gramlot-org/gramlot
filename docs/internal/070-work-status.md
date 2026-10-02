@@ -2,6 +2,8 @@
 
 Document ID: **GC-070**. Updated: **2026-09-30**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 
 **Current checkpoint:** S16: qualification complete (Firefox by the owner, waivers R22, R24, L1); report [GC-215](215-qualification-0-2-0.md), see [§615](#gc-070-615). Earlier: S15bis: corrections from the review before qualification, see [§610](#gc-070-610); S15: documentation and leftovers delivered in GC-095, GC-090 and the internal documents, see [§605](#gc-070-605); S14: Q3 clear error for inline code under a strict CSP, verified in core and on Chromium and WebKit; gramlot-uvicorn, gramlot-js-server and gramlot-serverless verified from the reports of their delivery chats (2026-09-30), four blocked (deferred by the owner to after 0.2.0). See [§595](#gc-070-595).
 **Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 closed by the owner with proof 11 as debt, S02 and S03 start (2026-09-28).
@@ -11,7 +13,7 @@ Document ID: **GC-070**. Updated: **2026-09-30**.
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
 
-This is the current checkpoint. [GC-110](110-native-html-readiness.md#gc-110-020) is the completed release plan; [GC-125](125-execution-history.md) preserves dated execution history. The PoC and old handoffs are evidence, not startup instructions.
+This is the current checkpoint. [GC-110](110-0-1-0-readiness.md#gc-110-020) is the completed release plan; [GC-125](125-execution-history.md) preserves dated execution history. The PoC and old handoffs are evidence, not startup instructions.
 
 **Decision review — 2026-09-24:** Amendment 11.43 requires explicit owner confirmation
 for every decision. Examples-only requests do not reopen frozen framework work.
@@ -26,7 +28,7 @@ The transfer is implemented and verified. See [§270](#gc-070-270).
 <a id="gc-070-005"></a>
 ## 005 · Released baseline and current development
 
-The accepted GitHub native 0.1.0 archives provide native HTML, typed Source,
+The accepted GitHub 0.1.0 archives provide HTML pages, typed Source,
 Python/JS Page execution, live updates, freeze/unfreeze and cleanup. Reactive Data
 binding is outside that frozen release scope. Safari/Firefox and grammar-drift CI
 were not acceptance gates for those archives.
@@ -56,10 +58,10 @@ and §015. Later decisions and verification are recorded in the linked sections.
 - Implemented: Python dialect grammar/transport/mixed-text/atomic insertion responsibilities under constitution 11.16; JavaScript consumes generic Builder `sourceTarget` under 11.18. Ordered Collection composition follows 11.14. Bag uses unchanged upstream source; element-type replacement uses delete/insert.
 - Verified on 2026-09-22: core Python 16/16, installed Python wheel 16/16 with published Builder 0.23.2, and generic Builder JS 0.1.3 109/109 with freshly installed GitHub Bag/TYTX. The owner-authorized 0.1.3 source is now at `genropy/genro-builders-js` on `main` (a3a5860). A fresh Gramlot JS dependency installation resolves that source and passes core Node 74/74 with the existing Python test environment. The owner-authorized TYTX browser correction is available on GitHub at c8016d4. A second clean GitHub installation resolves it; Gramlot JS passes 74/74 and its browser bundle builds. TYTX passes 850/850 JS and 731/731 Python checks. These checks do not verify the seven-host matrix.
 - Older eight-profile results are dated historical evidence in [GC-125](125-execution-history.md). The current matrix has seven profiles: Uvicorn, FastAPI, Kajenn, Flask, Node, Bun and Worker.
-- GC-110 phase 2 implementation/ownership review is complete (2026-09-23). Both neutral Hosts now reject TTLs that cannot expire and invalid registry capacities. Local core checks pass Node 75/75 and Python 17/17; the reviewed state and limits are recorded in [GC-110 §2.1](110-native-html-readiness.md#gc-110-025).
-- GC-110 phase 4 is complete (2026-09-23): newly built local Python wheels and JS archives installed in fresh Python 3.12/npm environments; Chromium passes Uvicorn, FastAPI, Kajenn, Flask, Node, Bun and Worker (7/7). The same bounded Source, remote, live update, freeze and disposal checks pass; server page closure and Worker termination pass. Installed adapter protocol checks pass FastAPI 3/3, Flask 3/3, ASGI/Kajenn 2/2. See [GC-110 §3.1](110-native-html-readiness.md#gc-110-035). This is not a registry release or Safari/Firefox verification.
-- GC-110 phase 5 is complete (2026-09-23): public/internal documentation and mirrors now match the implemented core and 7/7 evidence; strict Sphinx and public boundary/link checks pass. Gramlot JS archive includes its LICENSE/NOTICE, all seven exports and bundles; Python wheel resources/collections match their owning packages byte for byte. Separate TYTX, NodeJS and Hello World notice gaps were corrected in local owning checkouts; new npm archives and relevant Python wheels include both files. See [GC-110 §5.1](110-native-html-readiness.md#gc-110-055). At that checkpoint those source changes were local; TYTX's later GitHub correction is verified in [GC-110 §6.2](110-native-html-readiness.md#gc-110-065).
-- GC-110 phase 6 is complete locally (2026-09-23): Python/JS manifests and fresh wheel/npm archive are 0.1.0. Clean Python 3.12/npm installations and package contents pass; Python 17/17 and JS 75/75 pass after the SVG namespace correction. At that phase-6 checkpoint the earlier Chromium 7/7 matrix had not been rerun on versioned artifacts; the later GC-130 alignment below closes that verification gap. See [GC-110 §6.1](110-native-html-readiness.md#gc-110-060).
+- GC-110 phase 2 implementation/ownership review is complete (2026-09-23). Both neutral Hosts now reject TTLs that cannot expire and invalid registry capacities. Local core checks pass Node 75/75 and Python 17/17; the reviewed state and limits are recorded in [GC-110 §2.1](110-0-1-0-readiness.md#gc-110-025).
+- GC-110 phase 4 is complete (2026-09-23): newly built local Python wheels and JS archives installed in fresh Python 3.12/npm environments; Chromium passes Uvicorn, FastAPI, Kajenn, Flask, Node, Bun and Worker (7/7). The same bounded Source, remote, live update, freeze and disposal checks pass; server page closure and Worker termination pass. Installed adapter protocol checks pass FastAPI 3/3, Flask 3/3, ASGI/Kajenn 2/2. See [GC-110 §3.1](110-0-1-0-readiness.md#gc-110-035). This is not a registry release or Safari/Firefox verification.
+- GC-110 phase 5 is complete (2026-09-23): public/internal documentation and mirrors now match the implemented core and 7/7 evidence; strict Sphinx and public boundary/link checks pass. Gramlot JS archive includes its LICENSE/NOTICE, all seven exports and bundles; Python wheel resources/collections match their owning packages byte for byte. Separate TYTX, NodeJS and Hello World notice gaps were corrected in local owning checkouts; new npm archives and relevant Python wheels include both files. See [GC-110 §5.1](110-0-1-0-readiness.md#gc-110-055). At that checkpoint those source changes were local; TYTX's later GitHub correction is verified in [GC-110 §6.2](110-0-1-0-readiness.md#gc-110-065).
+- GC-110 phase 6 is complete locally (2026-09-23): Python/JS manifests and fresh wheel/npm archive are 0.1.0. Clean Python 3.12/npm installations and package contents pass; Python 17/17 and JS 75/75 pass after the SVG namespace correction. At that phase-6 checkpoint the earlier Chromium 7/7 matrix had not been rerun on versioned artifacts; the later GC-130 alignment below closes that verification gap. See [GC-110 §6.1](110-0-1-0-readiness.md#gc-110-060).
 
 2026-09-23 ecosystem review: [GC-130](130-release-ecosystem-review.md) confirms the bounded core ownership and reports incompatible PoC entry points in current adapter packages, stale primary documentation and older-consumer exclusions. Rechecked core Python 17/17, Node 75/75, native Python adapters 8/8, standalone exporter 3/3 and strict Sphinx for core plus four adapters. The latest local 0.1.0 wheel/archive also pass Chromium 7/7 over the existing dependency graph; this is a versioned-artifact rerun, not a new clean network installation. No runtime changes or acceptance.
 
@@ -2471,7 +2473,7 @@ with the mount prefix once on the root-relative CSS and JS URLs.
 (9 tests, real imports in jsdom; a Source written in Python resolves every `func` through
 the real bootstrap); fixtures in `js/tests/fixtures/logic/`; the bootstrap tests of
 `host.test.js`, `page-resources.test.js` (with a Python/JS test of the same bootstrap
-HTML), `test_page_resources.py`, `test_native_html.py` and `test_python_builder.py`
+HTML), `test_page_resources.py`, `test_source_host.py` and `test_python_builder.py`
 follow the new script. Python 68 OK, JS 254/254, runner 8/8.
 
 **Accepted:** not yet; the phase waits for the owner's checks at the gate.
@@ -3014,3 +3016,29 @@ The core stays on npm and JSR.
 
 **Open:** npm publication of the two packages; archive of `gramlot-org/gramlot-serverless` and of
 its Read the Docs project.
+
+<a id="gc-070-645"></a>
+## 645 · The native label is removed — 2026-10-02
+
+Block ID: **GC-070-645**.
+
+Owner, 2026-10-02: the label "native HTML" "è completamente fuorviante". It named only
+the scope of the 0.1.0 milestone (no web components, no recipes). Rule:
+[GC-005 §030](../005-documentation-policy.md#gc-005-030); constitution amendment 11.51.
+
+- Code, tests and scripts (`cdc33d9`): `js/tests/source-contract.test.js`,
+  `tests/test_source_host.py`, `scripts/verify_page_browser.mjs`; fixture titles
+  "Contract fixture" and "Worker page"; package docstring.
+- Documentation file names (`cefa532`): `088-0-1-0-plan.md`, `089-0-1-0-handoff.md`,
+  `110-0-1-0-readiness.md`, `ports/PORT-0001-0-1-0/`, `ports/PORT-0004-0-1-0-delivery/`;
+  IDs and anchors unchanged.
+- Current documents (`7757c1d`); naming note in the dated records (`022acff`).
+- Verified on 2026-10-02: Python 72 OK, JavaScript 451/451, runner 31/31, runner on port
+  8091, `verify_page_browser.mjs` and `verify_worker_host_browser.mjs` PASS in Chromium,
+  Sphinx with `-W` and the public documentation check.
+
+Outside this change: the Python adapters (`NativeHtmlASGI`, `mount_native_html`,
+`native_html.py`) until gramlot-py-server; the core `examples/` and gramlot-examples with
+the move of the examples; gramlot-site, outside the framework.
+
+**Open:** gramlot-js-server documents (GN-010, GS-020); publication of the core.

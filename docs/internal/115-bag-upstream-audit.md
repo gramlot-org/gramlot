@@ -2,10 +2,12 @@
 
 Document ID: **GC-115**. Updated: **2026-09-21**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 <a id="gc-115-010"></a>
 ## 1. Scope and evidence
 
-**Disposition (2026-09-22):** Sections 2–4 preserve the initial investigation, not outstanding requirements. The later Builder ownership correction, unchanged upstream Bag installation and delete/insert element replacement supersede the proposed Bag hooks and tag events. Validator-specific tests were corrected; see the dated closure below. Current release gates are in [GC-110](110-native-html-readiness.md#gc-110-020).
+**Disposition (2026-09-22):** Sections 2–4 preserve the initial investigation, not outstanding requirements. The later Builder ownership correction, unchanged upstream Bag installation and delete/insert element replacement supersede the proposed Bag hooks and tag events. Validator-specific tests were corrected; see the dated closure below. Current release gates are in [GC-110](110-0-1-0-readiness.md#gc-110-020).
 
 Read-only review authorized by the owner. No Bag/Builder repository, installed
 source, manifest or version was changed. Isolated copies under /private/tmp were

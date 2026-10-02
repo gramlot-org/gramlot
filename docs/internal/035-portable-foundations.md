@@ -11,7 +11,7 @@ Document ID: **GC-035**. Status: **proposal, not an accepted API or class hierar
 Owner direction, 2026-09-18: start consolidating portable code in Gramlot; define
 Python and JavaScript bases that support server and database implementations,
 JavaScript components and controllers, common functionality, and elements exposed
-through Python authoring. The definitive framework belongs here; the bounded native HTML/typed Source core is now implemented here. The richer `gramlot-poc` remains historical evidence and a laboratory.
+through Python authoring. The definitive framework belongs here; the typed Source core is now implemented here. The richer `gramlot-poc` remains historical evidence and a laboratory.
 
 Constitution §§2–8 require host/database independence, Python-first authoring,
 Source/Data separation, explicit ownership and bounded reviewed ports. They do

@@ -2,6 +2,8 @@
 
 [Concise version](../docs_llm/00-constitution.md).
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 ## 1. Authority and amendments
 
 This constitution contains agreed product principles. Proposals, examples, PoC
@@ -133,7 +135,7 @@ The upstream Python distribution/import remains `genro-asgi`/`genro_asgi` until
 its owning project actually renames it. Do not invent an upstream package alias.
 
 Category membership does not establish release compatibility. The owner has
-authorized bounded Django native alignment; its acceptance requires its own tests. Published 0.1.0 archives retain their original names and contents;
+authorized bounded Django alignment with the Host contract; its acceptance requires its own tests. Published 0.1.0 archives retain their original names and contents;
 new development uses the reorganized package ownership. No compatibility wrappers,
 registry releases, deployment or new core feature contract are implied.
 
@@ -313,7 +315,7 @@ and the open SourceBag-versus-Bag choice in GC-093/GC-094. It does not authorize
 new compatibility elsewhere. Recipes and their related defects remain deferred.
 
 
-Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes approved Gramlot adapter work while Builder/Bag remain read-only for this workstream. Amendments 11.14 and 11.16 assign ordered Collection composition and bounded Python authoring; 11.18 supersedes 11.17 for JavaScript `sourceTarget`. Dated Builder corrections below were bounded exceptions, not general permission. The active release plan is [GC-110](internal/110-native-html-readiness.md#gc-110-020), with current status in [GC-070](internal/070-work-status.md).
+Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes approved Gramlot adapter work while Builder/Bag remain read-only for this workstream. Amendments 11.14 and 11.16 assign ordered Collection composition and bounded Python authoring; 11.18 supersedes 11.17 for JavaScript `sourceTarget`. Dated Builder corrections below were bounded exceptions, not general permission. The active release plan is [GC-110](internal/110-0-1-0-readiness.md#gc-110-020), with current status in [GC-070](internal/070-work-status.md).
 
 <a id="gc-000-140"></a>
 
@@ -1272,3 +1274,27 @@ suggerimento" (two packages, `server` and `browser`, without the `native` prefix
 
 The §7 table and the §14 naming clarification are updated; dated decisions keep
 their original names as history.
+
+### Amendment 11.51 — The native label is removed — 2026-10-02
+
+Owner decision of 2026-10-02: the label "native HTML" "è completamente fuorviante".
+
+1. Meaning. As the name of the 0.1.0 profile, "native" recorded only that the first
+   milestone (GC-088, 2026-09-19) planned no web components and no recipes. It has no
+   technical meaning.
+2. Rule. "native" names no release, profile, milestone, adapter, module, API or pages.
+   It keeps the technical meanings listed in
+   [GC-005 §030](005-documentation-policy.md#gc-005-030).
+3. Renames. `docs/internal/088-native-html-plan.md` → `088-0-1-0-plan.md`,
+   `089-native-html-handoff.md` → `089-0-1-0-handoff.md`,
+   `110-native-html-readiness.md` → `110-0-1-0-readiness.md`,
+   `ports/PORT-0001-native-html/` → `ports/PORT-0001-0-1-0/`,
+   `ports/PORT-0004-native-html-delivery/` → `ports/PORT-0004-0-1-0-delivery/`, with
+   their mirrors; document IDs and anchors are unchanged. `js/tests/native-html.test.js`
+   → `source-contract.test.js`, `tests/test_native_html.py` → `test_source_host.py`,
+   `scripts/verify_native_html_browser.mjs` → `verify_page_browser.mjs`.
+4. History. Dated decisions and records keep their text and carry a naming note.
+   Published artifacts keep their names (`gramlot-native-0.1.0.zip`,
+   `gramlot-native-html-0.2.0.tgz`).
+5. Other repositories. The Python adapter names leave with gramlot-py-server; the
+   example pages change with their move to gramlot-examples.

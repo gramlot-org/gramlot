@@ -2,6 +2,8 @@
 
 Document ID: **GC-145**. Updated: **2026-09-24**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 [Expanded counterpart](../../docs/internal/145-html-svg-examples.md).
 Authority: constitution 11.22. New local example workstream; GC-110 remains complete.
 
@@ -34,7 +36,7 @@ stays (Q10). `examples/binding/` and `examples/controllers/` use the same layout
   `<number>_<name>`): equivalent Python/JS Page modules, README, optional geometry-only
   `NN_name.css`. No host dependencies in core runtime.
 
-Code display belongs to the runner. Inspector remains unavailable in native core;
+Code display belongs to the runner. Inspector remains unavailable in the core;
 no PoC import or invented implementation. The integration owns language selection. Runner-local handlers use ordinary HTML
 IDs and update Source; core has no runner-specific behavior.
 
@@ -54,7 +56,7 @@ SVG animation (constitution 11.39).
 
 READMEs explain goal, prerequisites, files, launch, construction, language differences,
 exercises and limits. Python first; equivalent handwritten JS. Ordinary helper methods,
-not remote endpoints. The first twelve focus on static data/native HTML; example 13
+not remote endpoints. The first twelve focus on static data and HTML; example 13
 demonstrates live Source. These examples do not establish full Data binding support.
 
 <a id="gc-145-015"></a>

@@ -1,7 +1,7 @@
 import {Page as BasePage, source} from '@gramlot/gramlot/page';
 
 export class Page extends BasePage {
-    static title = 'Worker native HTML';
+    static title = 'Worker page';
     main(root) {
         root.h1('Hello Worker');
         root.section(null, {id: 'details'}).p('Initial');

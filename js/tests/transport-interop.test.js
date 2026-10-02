@@ -9,7 +9,7 @@ import {GramlotBuilderBag, GramlotBuilderBagNode} from '../src/builder/source.js
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
 for (const transport of ['json', 'msgpack']) {
-    test(`Python ↔ JavaScript preserves typed root/branches and native nodes over ${transport}`, () => {
+    test(`Python ↔ JavaScript preserves typed root/branches and typed nodes over ${transport}`, () => {
         const code = `
 import sys,base64
 import gramlot

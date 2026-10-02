@@ -1,5 +1,7 @@
 # 125 · Historical Gramlot execution record
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 > **Historical evidence:** legacy/earlier Data declaration vocabulary and API
 > statements below retain their original scope. For 0.2.0 use
 > [GC-210](210-binding-contract.md) and constitution 11.47: dataSetter with
@@ -10,7 +12,7 @@
 
 Document ID: **GC-125**. Updated: **2026-09-23**.
 
-**Historical record — do not execute past “Next” instructions.** The current checkpoint is [GC-070](070-work-status.md); the active release plan is [GC-110](110-native-html-readiness.md).
+**Historical record — do not execute past “Next” instructions.** The current checkpoint is [GC-070](070-work-status.md); the active release plan is [GC-110](110-0-1-0-readiness.md).
 
 **TYTX GitHub notice refresh — 2026-09-23.**
 TYTX GitHub `e113806` added LICENSE/NOTICE; issue #44 closed. Fresh dependency
@@ -18,7 +20,7 @@ TYTX GitHub `e113806` added LICENSE/NOTICE; issue #44 closed. Fresh dependency
 so it was corrected to use the same-name outer root. Regenerated 0.1.0 wheel/npm
 resources carry the full Apache/Softwell text and match; clean consumers install,
 JS 75/75 and Python dependency/Source smoke pass. No seven-host rerun, release or
-acceptance. [GC-110 §6.2](110-native-html-readiness.md#gc-110-065) records evidence.
+acceptance. [GC-110 §6.2](110-0-1-0-readiness.md#gc-110-065) records evidence.
 
 **Local 0.1.0 version closure — 2026-09-23.**
 Phase 6 built and clean-installed Python/JS 0.1.0 artifacts. Wheel 21 entries,
@@ -27,7 +29,7 @@ Python 17/17, JS 75/75 after fixing Python-origin SVG `foreignObject` namespace
 and TYTX registration in JS subprocess tests. The earlier Chromium 7/7 was not
 rerun on versioned artifacts. TYTX GitHub notice still falls back (issue #44);
 NodeJS/example notice changes stay local. No push, release, deployment or owner
-acceptance. See [GC-110 §6.1](110-native-html-readiness.md#gc-110-060) and
+acceptance. See [GC-110 §6.1](110-0-1-0-readiness.md#gc-110-060) and
 `/private/tmp/gramlot-phase6-20260923/`.
 
 **Owning-package notice correction — 2026-09-23.**
@@ -37,7 +39,7 @@ example npm and example Python metadata declare Apache-2.0. Fresh npm archives a
 TYTX/example wheels include both files. No code behavior, pin, source push or
 package release. Ordinary Gramlot installs still resolve prior GitHub TYTX source
 until distribution. Evidence: `/private/tmp/gramlot-notice-repair-20260923/` and
-[GC-110 §5.1](110-native-html-readiness.md#gc-110-055).
+[GC-110 §5.1](110-0-1-0-readiness.md#gc-110-055).
 
 **Documentation and package review — 2026-09-23.**
 Phase 5 aligned README, public guides/mirrors and internal guide/maps with core and
@@ -47,7 +49,7 @@ adds LICENSE/NOTICE to its 20-file archive with seven exports/bundles/notices; t
 No packaged local absolute paths; phase 4 installed examples used no sibling imports.
 TYTX JS and locally packed NodeJS/Hello World JS lack their own LICENSE/NOTICE;
 owning projects should review before distribution. No release or acceptance. See
-[GC-110 §5.1](110-native-html-readiness.md#gc-110-055).
+[GC-110 §5.1](110-0-1-0-readiness.md#gc-110-055).
 
 **Fresh packaged seven-profile verification — 2026-09-23.**
 Current local wheels/archives installed in new Python 3.12/npm environments;
@@ -57,7 +59,7 @@ main/remote Source, live changes, strict rejection, freeze and disposal. Six ser
 pages close; Worker terminates without HTTP(S). Adapter protocol checks pass
 FastAPI 3/3, Flask 3/3 and ASGI/Kajenn 2/2. No Orchestra, Safari/Firefox or
 release acceptance claim. Evidence: `/private/tmp/gramlot-phase4-20260923/`;
-[GC-110 §3.1](110-native-html-readiness.md#gc-110-035). Phase 5/6 remain open.
+[GC-110 §3.1](110-0-1-0-readiness.md#gc-110-035). Phase 5/6 remain open.
 
 **Implementation and ownership review — 2026-09-23.**
 GC-110 phase 2 traced both Page/Host paths, bootstrap/main, typed Source, live
@@ -66,7 +68,7 @@ distinct pre-write/per-node validation, and no speculative rollback. Neutral Hos
 now reject non-expiring TTL and invalid capacity. Local Node 75/75 and Python 17/17
 pass with the existing Python test environment; the first direct JS host run used
 system Python and failed its cross-language import, then the configured full rerun
-passed. This is not seven-profile packaged verification. See [GC-110 §2.1](110-native-html-readiness.md#gc-110-025).
+passed. This is not seven-profile packaged verification. See [GC-110 §2.1](110-0-1-0-readiness.md#gc-110-025).
 
 **TYTX browser correction and clean GitHub verification — 2026-09-22.**
 Owner authorized the bounded TYTX fix. Its owning project published source commit
@@ -326,7 +328,7 @@ promote the whole local diff; bounded owning-library correction needs authorizat
 
 **Readiness execution plan — 2026-09-21.**
 
-[GC-110](110-native-html-readiness.md) is the current six-phase closure plan,
+[GC-110](110-0-1-0-readiness.md) is the current six-phase closure plan,
 preceded by baseline capture. Dependency provenance is in progress; host/grammar
 decisions remain open. Prior successful local tests do not establish a clean-install
 result. Baseline captured; code review is in progress. Fixed transport disposal being skipped
@@ -1674,7 +1676,7 @@ six-host plus Python/JS standalone browser matrix are complete. Core tests:
 Python 14/14, Node 36/36, Bun 36/36; generic Builder 12/12 per runtime;
 DOM 124/124 per runtime. All agents finished. Owner explicitly requested keeping
 all changes local for review: no commits/pushes/remote creation/release/deployment.
-See [GC-089](089-native-html-handoff.md) for repositories, evidence and next steps.
+See [GC-089](089-0-1-0-handoff.md) for repositories, evidence and next steps.
 Acceptance, upstream installation and develop/main consolidation remain open.
 
 **Next:** phase 0 of GC-094. Source publication and a fresh upstream install
