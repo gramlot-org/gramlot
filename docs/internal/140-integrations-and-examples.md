@@ -19,12 +19,12 @@ integration repositories own environment-specific adaptation and setup.
 
 | Agreed repository name | Environment | Responsibility and current status |
 | --- | --- | --- |
-| `gramlot-fastapi` | Python / FastAPI | Native FastAPI integration and setup; included in the original 0.1.0 delivery. |
-| `gramlot-flask` | Python / Flask | Native Flask integration and setup; included in the original 0.1.0 delivery. |
+| `gramlot-fastapi` | Python / FastAPI | FastAPI integration and setup; included in the original 0.1.0 delivery. |
+| `gramlot-flask` | Python / Flask | Flask integration and setup; included in the original 0.1.0 delivery. |
 | `gramlot-kajenn` | Python / Kajenn | Kajenn-specific integration; it depends only on Kajenn besides the core (constitution 11.48 item 5). Repository renamed from `gramlot-genro-asgi` on 2026-09-26. Not migrated yet: its `pyproject.toml` still declares the retired repository replaced by `gramlot-uvicorn` and `gramlot-serverless`. The migration and the minimal Host contract are deferred to after 0.2.0. |
 | `gramlot-uvicorn` | Python / Uvicorn | Generic ASGI hosting for Python; heir of the ASGI part of the retired `gramlot-minimal` (constitution 11.48 item 5). Verified on the 0.2.0 minimal Host contract ([GC-070 §595](070-work-status.md#gc-070-595)). |
 | `gramlot-js-server` | JavaScript / Node.js and Bun; browser Worker | Two packages. `@gramlot/gramlot-js-server` (`server/`): both server runtimes; included in the original 0.1.0 delivery. `@gramlot/gramlot-browser` (`browser/`): single-HTML packaging and Worker integration for the browser standalone profile; heir of the standalone part of the retired `gramlot-minimal`, in the `gramlot-serverless` repository until 2026-10-01. Both verified on the 0.2.0 minimal Host contract. |
-| `gramlot-django` | Python / Django | Native Django views and URLconf integration through `NativeHtmlPages`. Locally aligned and checked; the older Page/ORM implementation is historical. |
+| `gramlot-django` | Python / Django | Django views and URLconf integration through `NativeHtmlPages`. Locally aligned and checked; the older Page/ORM implementation is historical. |
 
 Kajenn is the new product name for Genro ASGI. Its upstream Python dependency still
 uses the actual distribution/import names `genro-asgi` / `genro_asgi`.
@@ -70,7 +70,7 @@ expand core features.
 
 The original core 0.1.0 delivery verified seven Chromium profiles: Uvicorn, FastAPI,
 Flask, Kajenn, Node.js, Bun and Worker. Later local work aligned Minimal (since retired)/Kajenn
-package ownership and added native Django with protocol, installed-package and
+package ownership and added Django integration with protocol, installed-package and
 browser checks. These targeted checks are not a rerun of one complete eight-profile
 browser matrix. See GC-070 for the actual evidence and remaining limits.
 
@@ -86,7 +86,7 @@ No registry publication or deployment is implied.
 Database profile directories in Hello World are placeholders, not working database
 examples or accepted database APIs. Historical showcase, Microblog, Django ORM
 demos, site and Rosetta material remain PoC evidence; they are not additional
-accepted native examples merely because they exist in a repository.
+accepted examples merely because they exist in a repository.
 
 No list of further transfers from `gramlot-poc` has been agreed. Select and review
 each proposed transfer separately, naming its destination, responsibility and

@@ -2,7 +2,7 @@
 
 Document ID: **GC-130**. Reviewed: **2026-09-23**.
 
-**Current outcome:** native 0.1.0 was accepted and published; see [section 040](#gc-130-040). Earlier findings below record the initial review and are not current release blockers.
+**Current outcome:** 0.1.0 was accepted and published; see [section 040](#gc-130-040). Earlier findings below record the initial review and are not current release blockers.
 
 [Concise counterpart](../../docs_llm/internal/130-release-ecosystem-review.md).
 

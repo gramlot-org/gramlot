@@ -1,6 +1,6 @@
 # Classes, repository and server adapters
 
-Document ID: **GC-090**. Native 0.1.2 APIs; 0.2.0 changes are marked.
+Document ID: **GC-090**. 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
 > binding)**, released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
@@ -12,8 +12,8 @@ Document ID: **GC-090**. Native 0.1.2 APIs; 0.2.0 changes are marked.
 
 ## 005 · Reading this first draft
 
-This is the user-facing map of the native HTML foundation in this development
-checkout, with the 0.2.0 binding layer marked where it applies. It describes the owner-accepted native 0.1.0 classes. The Python
+This is the user-facing map of the Gramlot core in this development
+checkout, with the 0.2.0 binding layer marked where it applies. It describes the owner-accepted 0.1.0 classes. The Python
 wheel and declared GitHub JS dependencies install in fresh environments; seven
 locally packaged Host profiles pass in Chromium. Richer examples in gramlot-poc
 use an experimental runtime and do not establish features in this core.
@@ -33,7 +33,7 @@ js/src/              Browser runtime and JavaScript authoring
   adapters/          JS host contracts and filesystem page loading
   builder/           Gramlot authoring dialect
   renderer/          Source events and DOM lifetime
-  view/              Native HTML element handling
+  view/              HTML and SVG element handling
   references.js      Mounted Source/DOM references
   transport.js       Main and remote Source transport
 tests/, js/tests/    Contract tests and small host fixtures
@@ -287,7 +287,7 @@ The returned Gramlot instance uses its ordinary `remoteSource` and live Source A
 An optional mount `signal` cancels startup. A cancelled remote request drops its
 reply; it does not interrupt JavaScript already executing inside the host.
 
-Current scope: one Page per Worker, native HTML, Source live, declared `Page.css`, no database.
+Current scope: one Page per Worker, HTML Source, Source live, declared `Page.css`, no database.
 *0.2.0:* Data binding runs in the window; the Worker builds the Source. Node-only imports cannot run in the Worker. The current packaged
 Worker profile passes in Chromium; an earlier local file check also passed in
 Playwright WebKit. WebKit is not Safari. Safari and Firefox remain unverified.

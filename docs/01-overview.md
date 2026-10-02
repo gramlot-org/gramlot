@@ -139,7 +139,7 @@ retired on 2026-09-26. On 2026-10-01 `gramlot-serverless` joined
 besides the core (constitution amendment 11.48 item 5). The Kajenn adapter is not
 migrated yet: its `pyproject.toml` still declares the retired repository; the
 migration is deferred to after 0.2.0. Core owns shared runtime contracts. This classification does not
-assert that every integration supports each core release; Django native alignment
+assert that every integration supports each core release; Django alignment with the Host contract
 is newly authorized and must establish its own verification beyond the original
 0.1.0 matrix. See constitution section 7 for the approved ownership.
 

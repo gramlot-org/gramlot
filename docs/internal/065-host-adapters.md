@@ -76,7 +76,7 @@ projects. The small HTTP bridges in tests are verification fixtures only.
 Python imports `Page` from `gramlot` or `gramlot.page`. JS server modules import
 `Page` from `js/src/adapters/index.js` and export their subclass as named `Page`.
 Python declares `root.div('homer', id='panel')`; JS declares
-`root.div('homer', {id: 'panel'})`. Both authoring facades produce native SourceBag nodes, preserving node tags and
+`root.div('homer', {id: 'panel'})`. Both authoring facades produce typed SourceBag nodes, preserving node tags and
 scalar values through registered TYTX transport. Mixed prefix text uses `_text`;
 there is no ordinary-Bag snapshot or hydration boundary. No CSS shorthand translation is included.
 
@@ -134,7 +134,7 @@ No database, bindings, application controller API or CSS shorthand is included.
 Playwright entry, a Chromium executable and `python` or `js`. JavaScript checks
 require `GRAMLOT_TEST_URL` from a running Node/Bun adapter; the script does not
 start a JavaScript host. With no external URL, Python uses its local test fixture.
-Use the matching native-HTML fixture page, not an arbitrary application or the
+Use the matching contract fixture page, not an arbitrary application or the
 simpler Hello World page; each browser checker asserts its fixture's content.
 These are verification commands, not application launch or deployment commands.
 

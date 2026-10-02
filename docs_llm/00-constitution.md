@@ -95,7 +95,7 @@ The upstream Python distribution/import remains `genro-asgi`/`genro_asgi` until
 its owning project actually renames it. Do not invent an upstream package alias.
 
 Category membership does not establish release compatibility. The owner has
-authorized bounded Django native alignment; its acceptance requires its own tests. Published 0.1.0 archives retain their original names and contents;
+authorized bounded Django alignment with the Host contract; its acceptance requires its own tests. Published 0.1.0 archives retain their original names and contents;
 new development uses the reorganized package ownership. No compatibility wrappers,
 registry releases, deployment or new core feature contract are implied.
 

@@ -34,7 +34,7 @@ src/gramlot/
 js/src/
   builder/               Gramlot builder integration
   renderer/              Live Source and DOM lifecycle
-  view/                  Native element creation and update
+  view/                  HTML and SVG element creation and update
   references.js          Source/DOM references
   transport.js           Browser HTTP main/remote transport
   adapters/              Shared Host/Page and filesystem FileHost

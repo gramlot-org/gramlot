@@ -30,7 +30,7 @@ gramlot/
 │   ├── renderer/
 │   │   └── gramlot-renderer.js         GramlotRenderer · Source live DOM lifecycle
 │   ├── view/
-│   │   └── html.js                     HtmlElement · native HTML/SVG DOM
+│   │   └── html.js                     HtmlElement · HTML/SVG DOM elements
 │   ├── transport.js                   MainTransport · main/remote Source HTTP
 │   ├── references.js                  Mounted Source/DOM reference registry
 │   ├── adapters/

@@ -1,6 +1,6 @@
 # Writing pages
 
-Document ID: **GC-095**. Native 0.1.2 APIs plus the 0.2.0 data binding.
+Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
 > (GitHub `v0.2.0`; current patch **0.2.1**, 2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). Previous release:
@@ -10,11 +10,11 @@ Document ID: **GC-095**. Native 0.1.2 APIs plus the 0.2.0 data binding.
 Examples: `examples/binding/` (routes `b01`-`b11` in the local runner) and
 `examples/controllers/` (`c01`-`c09`), each page in Python with a JS equivalent; the
 sections below name the one they illustrate. No example for `js_requires` groups,
-`connect_on<event>` by name, `_userChanges`, `_onBuilt` and `#ANCHOR`. `html_svg` is native, without binding.
+`connect_on<event>` by name, `_userChanges`, `_onBuilt` and `#ANCHOR`. `html_svg` is HTML and SVG without binding.
 
 <a id="gc-095-005"></a>
 
-## 005 · A first native HTML page
+## 005 · A first HTML page
 
 Host-supplied authoring example, not a standalone server command:
 
@@ -76,14 +76,14 @@ target: late answer ignored); of two overlapping requests the latest wins. Examp
 ## 020 · Deferred capabilities
 
 Recipes, Data bindings, controllers, resolvers and shared components are outside
-this native HTML Source-live increment. They are not available page APIs.
+this Source-live increment. They are not available page APIs.
 *0.2.0:* bindings, `dataSetter`, `dataFormula`, `dataController` enter (040-090).
 Recipes, resolvers, shared components stay deferred; components planned for 0.3.0.
 Exclusions: 085.
 
 <a id="gc-095-025"></a>
 
-## 025 · Native SVG inside a page
+## 025 · SVG inside a page
 
 The exported SVG collection provides the element declarations. Enter its dialect
 with `svg`; return to HTML with `html`:
@@ -327,7 +327,7 @@ Reactive attributes: `style`/`class` strings (null removes; other types error);
 property in `style`, null removes that property; `width`/`height` on img/canvas/embed
 and `width`/`border` on table stay attributes (legacy); SVG presentation attributes,
 no style shortcuts on SVG (null removes); `data_*`/`aria_*` → `data-*`/`aria-*`; other
-native attributes as in 0.1.2. Excluded: style as Bag/dict, themes, `root.css()`.
+other HTML attributes as in 0.1.2. Excluded: style as Bag/dict, themes, `root.css()`.
 
 <a id="gc-095-075"></a>
 
@@ -418,7 +418,7 @@ also ran the nested controller); no `#WORKSPACE`/`#ROW`/`#DATA`; methods instead
 Migration from legacy pages: `data(...)` → `dataSetter(...)`; `Page.css` URL list
 stays, a page-only stylesheet can move to same-name `foo.css`; inline controllers →
 named logic; macros → `node.SET(...)` etc.
-Migration from 0.1.x: pages without binding run unchanged (native HTML/SVG, `Page.css`,
+Migration from 0.1.x: pages without binding run unchanged (HTML/SVG, `Page.css`,
 `@source`, `remoteSource`); `data(...)` created the HTML5 `<data>` element; on `root` it now
 raises, on other nodes `data` is the Data Bag property: write `html_data(...)`; custom hosts implement `resolve_page`/`resolvePage` and
 `resolve_resources`/`resolveResources`, pass the mount prefix to `open_page` and serve

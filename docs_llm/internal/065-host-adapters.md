@@ -37,7 +37,7 @@ bootstrap HTML. Browser prepares roots/subscriber before main. Main and explicit
 Python @source methods create fresh page/builder instances. Typed Source inserts once and triggers live rendering. Recipe expansion is deferred.
 An unmarked override hides inherited source exposure. Python Page imports from gramlot or gramlot.page; JS
 from adapters/index.js. JS files export named Page. Python div('homer', id='panel')
-corresponds to JS div('homer', {id:'panel'}). Python and JS serialize registered SourceBag roots directly through TYTX. Native tags only, no CSS shorthand.
+corresponds to JS div('homer', {id:'panel'}). Python and JS serialize registered SourceBag roots directly through TYTX. HTML5 tags only, no CSS shorthand.
 JS operations: openPage/main/source/closePage; Python open_page/main/source/close_page.
 JS source receives `(pageId, method, params, {owner})`; Python receives
 `(page_id, method, params, owner=...)`. Parameter/error differences are documented
@@ -67,7 +67,7 @@ Current commands: [GC-085](085-operating-guide.md#gc-085-025); versioned seven-p
 results: [GC-130](130-release-ecosystem-review.md#gc-130-025).
 The browser harness takes runtime, Playwright entry, Chromium and python/js.
 JS requires GRAMLOT_TEST_URL from an already running adapter; Python may start
-its local fixture. Use its native-HTML fixture, not an arbitrary or Hello World
+its local fixture. Use its contract fixture, not an arbitrary or Hello World
 page. No application launch/deployment, database/bindings/controllers/CSS claim.
 
 Owner dependency policy: no first-party pins or lockfiles; follow upstream Git default branches and unconstrained package releases. Refresh during setup/update; historical version records are evidence only.

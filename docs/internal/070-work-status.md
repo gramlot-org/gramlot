@@ -26,7 +26,7 @@ The transfer is implemented and verified. See [§270](#gc-070-270).
 <a id="gc-070-005"></a>
 ## 005 · Released baseline and current development
 
-The accepted GitHub native 0.1.0 archives provide native HTML, typed Source,
+The accepted GitHub 0.1.0 archives provide HTML pages, typed Source,
 Python/JS Page execution, live updates, freeze/unfreeze and cleanup. Reactive Data
 binding is outside that frozen release scope. Safari/Firefox and grammar-drift CI
 were not acceptance gates for those archives.

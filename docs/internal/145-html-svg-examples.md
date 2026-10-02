@@ -46,7 +46,7 @@ iframe panels. Every example has an English README and comparable source files.
   on an ASGI server, Node adapter or database.
 
 The runner owns code presentation. Inspector capability is not present in the
-current native core and must be reported as unavailable, not simulated.
+current core and must be reported as unavailable, not simulated.
 The serving integration selects the authoring language. Runner-local JavaScript
 opens/reactivates example tabs; each panel places explanation above its iframe.
 
@@ -57,7 +57,7 @@ The initial catalogue inventories actual HTML collection declarations. Elements
 requiring document/head placement or inert/media contexts are classified explicitly;
 coverage must not mean inserting every tag into an invalid body. No external
 services, DOM canvas drawing or invented controls. The initial twelve examples
-focus on static/native HTML; example 13 adds the approved live Source actions
+focus on static HTML; example 13 adds the approved live Source actions
 and SVG animation (constitution 11.39).
 
 | Example (file stem) | Content and teaching focus |

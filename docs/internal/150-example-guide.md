@@ -13,7 +13,7 @@ and handles Source lifetime. Future web components remain separately scoped.
 
 The local [runner README](../../examples/00-runner/README.md) is reached from the
 [example index](../../examples/README.md). It documents the exact setup and launch
-command. The native runtime has no adapter dependency: the development launcher
+command. The runtime has no adapter dependency: the development launcher
 composes the `gramlot-uvicorn` and `gramlot-js-server` integration hosts outside the runtime package.
 
 Select a title in the left list to open or reactivate its example tab. Each panel
