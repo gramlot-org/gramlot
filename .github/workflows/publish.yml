@@ -84,6 +84,10 @@ jobs:
           test "$fresh" = "$wheel"
           test "$fresh" = "$npm"
           echo "runtime sha256 $fresh"
+          for name in themes/gramlot-base/theme.css assets/branding/svg/gramlot-logo-primary.svg; do
+            unzip -l dist/*.whl "gramlot/resources/$name" >/dev/null
+            tar -tzf dist/*.tgz "package/$name" >/dev/null
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: distributions

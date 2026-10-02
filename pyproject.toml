@@ -22,4 +22,8 @@ test = ["genro-tytx[msgpack]"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-gramlot = ["resources/*.json", "resources/*.js", "collections/*.json"]
+gramlot = [
+    "resources/*.json", "resources/*.js", "collections/*.json",
+    "resources/themes/*/*",
+    "resources/assets/branding/*.svg", "resources/assets/branding/*.png", "resources/assets/branding/svg/*.svg",
+]

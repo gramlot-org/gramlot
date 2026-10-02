@@ -29,6 +29,10 @@ js/LICENSE
 js/NOTICE
 src/gramlot/resources/*.js
 src/gramlot/resources/runtime-notices.json
+js/themes/
+js/assets/
+src/gramlot/resources/themes/
+src/gramlot/resources/assets/
 
 js/collections/
 coverage-js/

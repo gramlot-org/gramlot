@@ -30,13 +30,17 @@
     "./server": "./src/adapters/index.js",
     "./runtime": "./dist/gramlot.js",
     "./page": "./src/adapters/page.js",
-    "./host": "./src/adapters/host.js"
+    "./host": "./src/adapters/host.js",
+    "./themes/*": "./themes/*",
+    "./assets/branding/*": "./assets/branding/*"
   },
   "files": [
     "LICENSE",
     "NOTICE",
     "src",
-    "dist"
+    "dist",
+    "themes",
+    "assets"
   ],
   "engines": {
     "node": ">=22"
