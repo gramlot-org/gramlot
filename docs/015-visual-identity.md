@@ -1,10 +1,10 @@
 # 015 · Visual identity and graphic coordination
 
-Document ID: **GC-015**. Revision: **0.2 — 2026-09-18**.
+Document ID: **GC-015**. Revision: **0.3 — 2026-10-02**.
 
 [Paired view](../docs_llm/015-visual-identity.md).
 
-[Graphic coordination guide](../assets/branding/theme-guide.md) · [Asset inventory](../assets/branding/README.md).
+[Graphic coordination guide](../assets/branding/theme-guide.md) · [Asset inventory](../assets/branding/README.md) · [Visual catalogue](../assets/branding/index.html).
 
 <a id="gc-015-005"></a>
 
@@ -12,7 +12,7 @@ Document ID: **GC-015**. Revision: **0.2 — 2026-09-18**.
 
 Block ID: **GC-015-005**.
 
-The owner selected the revised blue/yellow symbol direction and lowercase Arial Rounded wordmark on 2026-09-18. The owner also approved the supporting application palette on 2026-09-18. It is a design specification, not an installed runtime theme or a change to documentation styling.
+The owner selected the revised blue/yellow symbol direction, lowercase Arial Rounded wordmark and supporting application palette on 2026-09-18. On 2026-10-02 the owner explicitly requested a rich, complete graphic asset folder: “puoi provvedere e creare una bella cartella con tutto il necessario per un immagine grafica ? bella ricca”. This authorizes the missing vector, transparent, monochrome and favicon assets identified in the preceding audit and related graphic exports. The new reconstruction and layouts await visual acceptance. The palette remains a design specification, not an installed runtime theme or a change to documentation styling.
 
 <a id="gc-015-010"></a>
 
@@ -20,7 +20,9 @@ The owner selected the revised blue/yellow symbol direction and lowercase Arial 
 
 Block ID: **GC-015-010**.
 
-The historical symbol remains at `docs/_static/branding/gramlot-logo.png`. Current assets are in `assets/branding/`: `gramlot-mark.png`, `gramlot-mark-dark.png`, `gramlot-logo.svg` and `gramlot-logo-dark.svg`. The new symbols are raster refinements of the original. The SVG logos embed those raster images and contain outlined lettering; they are not fully vector masters. Backgrounds are opaque white or navy (#182333), and the two symbol variants can differ slightly in geometry.
+The historical symbol remains at `docs/_static/branding/gramlot-logo.png`; the September raster/hybrid files are in git history (commit `234c6d8`). The current single artwork master is `assets/branding/source/gramlot-master.svg`, containing vector symbol paths and the original outlined lettering. The symbol is reconstructed from the selected light raster with smooth contours and approved solid colors; it does not claim recovery of an original vector source. Light/dark and monochrome exports now share identical geometry.
+
+The kit includes transparent SVG/PNG stacked and horizontal logos, symbols and wordmarks in six variants; browser/device/maskable icons; CSS/JSON/GPL/SVG palettes; five light/dark social formats; wallpapers and presentation backgrounds; an offline catalogue, four-page printable RGB guide, checksummed manifest and a generated ZIP (not committed). Stable root logo/mark entry points retain their original white/navy background use.
 
 <a id="gc-015-015"></a>
 
@@ -28,7 +30,7 @@ The historical symbol remains at `docs/_static/branding/gramlot-logo.png`. Curre
 
 Block ID: **GC-015-015**.
 
-Preserve the curved asymmetric symbol, detached yellow disc, orientation and proportions. Use **gramlot**, all lowercase, in **Arial Rounded MT Bold**, centered below the symbol. Current tracking is −0.025 em. SVG lettering is outlined and does not require the font to be installed; font files are not distributed. Blue #456BC4 and yellow #FFC400 are approved design targets, not guaranteed values of every raster pixel.
+Preserve the curved asymmetric symbol, detached yellow disc, orientation and proportions. Use **gramlot**, all lowercase, in **Arial Rounded MT Bold**, centered below the symbol. Current tracking is −0.025 em. SVG lettering is outlined and does not require the font to be installed; font files are not distributed. Vector masters use solid blue #456BC4 and yellow #FFC400; raster edges contain antialiased pixels. Historical raster pixels may vary from those targets.
 
 <a id="gc-015-020"></a>
 
@@ -36,7 +38,7 @@ Preserve the curved asymmetric symbol, detached yellow disc, orientation and pro
 
 Block ID: **GC-015-020**.
 
-Start the symbol at 64 px and the complete logo at 160 px; inspect the thin tips and lettering at actual size. These are working recommendations, not certified minima. Keep one disc diameter of clear space around the visible contour. Match the opaque background of the chosen asset. Do not rotate, stretch, add shadows or use the logo as a status indicator. Transparent, monochrome and favicon exports remain open.
+Start the symbol at 64 px and the complete logo at 160 px; inspect the thin tips and lettering at actual size. These are working recommendations, not certified minima. Keep one disc diameter of clear space around the visible contour. Choose transparent primary artwork for light surfaces, inverse for navy, or the stable root white/navy assets. Do not rotate, stretch, add shadows or use the logo as a status indicator. Monochrome variants are utility exports; browser icons are provided down to 16 px, with target-specific small-size review still required.
 
 <a id="gc-015-025"></a>
 
@@ -68,4 +70,4 @@ Classic Read the Docs remains mandatory under the constitution, with its default
 
 Block ID: **GC-015-040**.
 
-The exported logos were visually reviewed on white/navy backgrounds; lettering is stored as paths, assets are self-contained, and token JSON plus contrast calculations were checked. Full vector/transparent masters, monochrome and favicon variants, optical small-size tests and verification of the palette on working UI screens remain pending. No deployment or publication is included. The English coordination guide, offline reference sheet and machine-readable tokens live together in `assets/branding/`.
+The rich kit is generated from a single fully vector master and approved tokens. Verification covers SVG structure and self-containment, preserved lettering paths, matching variant geometry, raster dimensions/transparency, links, checksums, ZIP contents, browser catalogue layout and the printable guide. New vector artwork and layouts await owner visual acceptance; platform-specific tiny-icon review, printer color conversion and palette verification on working application screens remain open. The kit does not install a runtime theme. Reproduction instructions and provenance live with the assets.
