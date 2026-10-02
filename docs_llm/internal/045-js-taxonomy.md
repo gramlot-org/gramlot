@@ -254,7 +254,7 @@ flowchart TB
     L --> ACTION["Actions and overlays<br/>menu · tooltip · dropDownButton · toaster"]
     L --> MEDIA["Editors and media<br/>bagEditor · codemirror · qrscanner · fileUploader"]
     L --> LOGIC["Data and remote logic<br/>dataFormula · dataController · dataRpc · remote"]
-    L --> HTML["Native HTML declarations<br/>not one JS class per HTML tag"]
+    L --> HTML["HTML declarations<br/>not one JS class per HTML tag"]
     INPUT -. review for .-> F["Field families and adapters"]
     LAYOUT -. review for .-> R["Recipes / layout components"]
     GRID -. review for .-> G["Grid collaborators and cell contracts"]

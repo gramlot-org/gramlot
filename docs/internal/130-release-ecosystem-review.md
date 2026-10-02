@@ -2,7 +2,9 @@
 
 Document ID: **GC-130**. Reviewed: **2026-09-23**.
 
-**Current outcome:** native 0.1.0 was accepted and published; see [section 040](#gc-130-040). Earlier findings below record the initial review and are not current release blockers.
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
+**Current outcome:** 0.1.0 was accepted and published; see [section 040](#gc-130-040). Earlier findings below record the initial review and are not current release blockers.
 
 [Concise counterpart](../../docs_llm/internal/130-release-ecosystem-review.md).
 
@@ -15,7 +17,7 @@ yet describe the whole ecosystem as release-ready: several adapters still lead
 users into incompatible PoC APIs, and their main documentation contradicts the
 current packages. Complete the bounded release alignment in section 030 before
 acceptance. This is a review recommendation, not a new execution plan or acceptance.
-[GC-110](110-native-html-readiness.md) remains the release plan.
+[GC-110](110-0-1-0-readiness.md) remains the release plan.
 
 Reviewed local source and maintained documentation in thirteen repositories:
 core, FastAPI, Flask, Genro ASGI, NodeJS, standalone, examples, Django, PoC, site,

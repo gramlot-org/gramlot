@@ -16,7 +16,7 @@ interfaces using Python declarations. Forms and data-oriented interfaces are use
 places to evaluate the approach. Application authors work with shared controls and
 state bindings; reusable browser behavior belongs in the JavaScript framework.
 
-This repository is the Gramlot core. Release 0.2.0 (2026-09-30) provides native
+This repository is the Gramlot core. Release 0.2.0 (2026-09-30) provides
 HTML and SVG pages with a typed Source and HTML/SVG data binding: initial values
 with `dataSetter`, `^`/`=` pointers and `==` expressions, formulas and controllers
 with named logic, native controls and button controllers. Components (shared
@@ -41,7 +41,7 @@ wiring DOM events. Use the current implementation’s guide for executable examp
 A server adapter supplies hosting integration. Choosing a host and choosing a
 database are separate decisions; core does not require a particular server or ORM.
 Bindings, controllers, resolvers and shared controls describe the wider Gramlot
-model; the current native HTML increment implements typed Source and live rendering,
+model; the current increment implements typed Source and live rendering,
 not those higher-level application capabilities.
 
 *0.2.0:* bindings and controllers are part of 0.2.0. Resolvers and shared
@@ -51,7 +51,7 @@ controls stay outside it; components are planned for 0.3.0.
 
 ## 015 · What is available
 
-This development checkout contains the native HTML foundation, Python and JS
+This development checkout contains Python and JS
 Page authoring, typed Source, live DOM updates and seven locally verified Host
 profiles. Recipes, reactive Data bindings, controllers, resolvers and shared
 components are not part of this increment. The richer
@@ -64,4 +64,4 @@ its differences from legacy GenroPy and its exclusions.
 
 Continue with [Try Gramlot](025-try.md).
 
-For the foundation in this checkout, read [Classes and server adapters](090-classes-and-hosts.md) and [Writing pages](095-writing-pages.md). These guides describe the bounded native 0.1.0 contract.
+For the foundation in this checkout, read [Classes and server adapters](090-classes-and-hosts.md) and [Writing pages](095-writing-pages.md). These guides describe the bounded 0.1.0 contract.

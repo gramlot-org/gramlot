@@ -1,4 +1,4 @@
-"""Package the canonical native collections exported by genro-builders-js."""
+"""Package the canonical HTML5 and SVG collections exported by genro-builders-js."""
 import argparse
 import json
 from pathlib import Path

@@ -2,6 +2,8 @@
 
 Document ID: **GC-140**. Updated: **2026-09-30**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 [Expanded counterpart](../../docs/internal/140-integrations-and-examples.md).
 Agreed inventory, not a new implementation plan. Authority: constitution §7 and
 11.19–11.21; current evidence: [GC-070 §040](070-work-status.md#gc-070-040).
@@ -14,12 +16,12 @@ instructions. Core owns shared Page, Host, Source and browser contracts.
 
 | Agreed name | Environment and responsibility |
 | --- | --- |
-| `gramlot-fastapi` | Python / FastAPI; native integration in original 0.1.0 delivery. |
-| `gramlot-flask` | Python / Flask; native integration in original 0.1.0 delivery. |
+| `gramlot-fastapi` | Python / FastAPI; integration in the original 0.1.0 delivery. |
+| `gramlot-flask` | Python / Flask; integration in the original 0.1.0 delivery. |
 | `gramlot-kajenn` | Python / Kajenn; depends only on Kajenn besides the core (11.48 item 5). Renamed from `gramlot-genro-asgi` on 2026-09-26. Not migrated yet: its `pyproject.toml` still declares the retired repository replaced by `gramlot-uvicorn` and `gramlot-serverless`. Migration and minimal Host contract deferred to after 0.2.0. |
 | `gramlot-uvicorn` | Python / generic ASGI/Uvicorn; heir of the ASGI part of retired `gramlot-minimal` (11.48 item 5). Verified on the 0.2.0 minimal Host contract ([GC-070 §595](070-work-status.md#gc-070-595)). |
 | `gramlot-js-server` | JavaScript / Node.js and Bun (`@gramlot/gramlot-js-server`, original 0.1.0 profiles) and browser Worker single-HTML packaging (`@gramlot/gramlot-browser`, heir of the standalone part of retired `gramlot-minimal`, in `gramlot-serverless` until 2026-10-01). Both verified on the 0.2.0 minimal Host contract. |
-| `gramlot-django` | Python / Django; local native `NativeHtmlPages` views/URLconf. Old Page/ORM code is historical. |
+| `gramlot-django` | Python / Django; local `NativeHtmlPages` views/URLconf. Old Page/ORM code is historical. |
 
 Kajenn names the former Genro ASGI product; upstream distribution/import still
 `genro-asgi` / `genro_asgi`. Standalone names the browser profile, not the intended
@@ -45,7 +47,7 @@ fixtures (historical, 2026-09-24), not additional feature or application commitm
 ## 015 · Verification and publication boundary
 
 Original core 0.1.0: seven Chromium profiles, without Django. Later local work:
-Minimal (since retired)/Kajenn ownership alignment and native Django protocol/install/browser
+Minimal (since retired)/Kajenn ownership alignment and Django protocol/install/browser
 checks; not a complete eight-profile browser-matrix rerun. GC-070 records evidence.
 
 Published core 0.1.0 archives remain unchanged. New integration packages/names and
@@ -57,7 +59,7 @@ no registry publication or deployment.
 ## 020 · What is not yet an agreed example or transfer
 
 Database folders are placeholders. Historical showcase, Microblog, Django ORM,
-site and Rosetta are PoC evidence, not accepted native examples. No further PoC
+site and Rosetta are PoC evidence, not accepted examples. No further PoC
 transfer list has been agreed. Each transfer needs its own destination,
 responsibility, review and acceptance checks; this inventory authorizes none.
 

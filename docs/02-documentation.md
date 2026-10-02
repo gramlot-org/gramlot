@@ -4,7 +4,7 @@
 
 ## 1. Audience and publication boundary
 
-The public manual helps a developer assess the current native HTML foundation and
+The public manual helps a developer assess the current Gramlot core and
 distinguish richer experimental examples. It uses Sphinx, MyST Markdown and the
 classic Read the Docs theme. Draft development chapters describe classes,
 server adapters, page authoring and extension gaps. They do not claim a stable release.

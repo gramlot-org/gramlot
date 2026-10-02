@@ -2,9 +2,11 @@
 
 Document ID: **GC-065**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 **Release scope:** latest published release **0.1.2**. Sections 005-025 describe 0.1.2. Section 030 records the 0.2.0 page resource and bootstrap changes. **The 0.2.0 parts are implemented on the development branch (S06, S07, S14), in qualification, not released.** Current contract: [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030).
 
-**Current 0.1.2 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-native-html-readiness.md#gc-110-020) for current release gates.
+**Current 0.1.2 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-0-1-0-readiness.md#gc-110-020) for current release gates.
 
 [Expanded counterpart](../../docs/internal/065-host-adapters.md).
 
@@ -37,7 +39,7 @@ bootstrap HTML. Browser prepares roots/subscriber before main. Main and explicit
 Python @source methods create fresh page/builder instances. Typed Source inserts once and triggers live rendering. Recipe expansion is deferred.
 An unmarked override hides inherited source exposure. Python Page imports from gramlot or gramlot.page; JS
 from adapters/index.js. JS files export named Page. Python div('homer', id='panel')
-corresponds to JS div('homer', {id:'panel'}). Python and JS serialize registered SourceBag roots directly through TYTX. Native tags only, no CSS shorthand.
+corresponds to JS div('homer', {id:'panel'}). Python and JS serialize registered SourceBag roots directly through TYTX. HTML5 tags only, no CSS shorthand.
 JS operations: openPage/main/source/closePage; Python open_page/main/source/close_page.
 JS source receives `(pageId, method, params, {owner})`; Python receives
 `(page_id, method, params, owner=...)`. Parameter/error differences are documented
@@ -67,7 +69,7 @@ Current commands: [GC-085](085-operating-guide.md#gc-085-025); versioned seven-p
 results: [GC-130](130-release-ecosystem-review.md#gc-130-025).
 The browser harness takes runtime, Playwright entry, Chromium and python/js.
 JS requires GRAMLOT_TEST_URL from an already running adapter; Python may start
-its local fixture. Use its native-HTML fixture, not an arbitrary or Hello World
+its local fixture. Use its contract fixture, not an arbitrary or Hello World
 page. No application launch/deployment, database/bindings/controllers/CSS claim.
 
 Owner dependency policy: no first-party pins or lockfiles; follow upstream Git default branches and unconstrained package releases. Refresh during setup/update; historical version records are evidence only.

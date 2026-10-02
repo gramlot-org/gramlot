@@ -9,7 +9,7 @@ Status: **current development guide; clean core setup verified**.
 ## 005 · Start here
 
 Read the [constitution](../00-constitution.md), then [GC-070](070-work-status.md)
-for current decisions, implementation and verification. [GC-110](110-native-html-readiness.md#gc-110-020)
+for current decisions, implementation and verification. [GC-110](110-0-1-0-readiness.md#gc-110-020)
 is the completed GitHub 0.1.0 release plan, not the current development plan.
 The GitHub archives and JSR publication have separate evidence; neither is changed
 by local development. GC-080's recipe pipeline and GC-045/050's legacy inventories
@@ -34,7 +34,7 @@ src/gramlot/
 js/src/
   builder/               Gramlot builder integration
   renderer/              Live Source and DOM lifecycle
-  view/                  Native element creation and update
+  view/                  HTML and SVG element creation and update
   references.js          Source/DOM references
   transport.js           Browser HTTP main/remote transport
   adapters/              Shared Host/Page and filesystem FileHost

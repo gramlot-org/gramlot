@@ -3,7 +3,7 @@
 
 > **Current 0.1.2 ownership:** Gramlot uses generic Builder JS for grammar, SourceBag, `sourceTarget` and static rendering; `GramlotRenderer` extends generic `RendererBase` and owns live DOM behavior. DOM JS is removed from the active dependency path. Sections 005–030 preserve earlier, superseded decisions.
 >
-> Current execution: [GC-110](110-native-html-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
+> Current execution: [GC-110](110-0-1-0-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
 > This document retains earlier decisions and checkpoints. Statements about pending
 > extraction or completed verification refer to their recorded stage, not current
 > architectural acceptance. GC-087's later dated decisions are evidence; GC-110 controls current release work.
@@ -131,7 +131,7 @@ It is a generic grammar/Source/rendering system, not an HTML-first framework.
 Database definitions, electronic invoices and other vocabularies are legitimate
 possible dialects. They may supply static JSON, XML or other renderings. These
 examples clarify extensibility; they do not add database/invoice implementation
-to the current native-HTML milestone.
+to the 0.1.0 milestone.
 
 The grammar describes valid declarations; Source is the authored document;
 the selected renderer produces the representation. An HTML grammar supports HTML
@@ -175,9 +175,9 @@ and generic rendering. Static object output remains possible; producing an objec
 alone is not reactivity. Gramlot owns Source subscriptions, live records, update
 coordination and cleanup. Bag continues to own its generic events/backreferences.
 
-The current native-HTML HtmlSourceRenderer and Source-mutation projection move from
+The current HtmlSourceRenderer and Source-mutation projection move from
 DOM JS into Gramlot. The old Application's row/cell patch runtime is not silently
-promoted into the native-HTML milestone. Remaining DOM HTML/SVG rendering, element
+promoted into the 0.1.0 milestone. Remaining DOM HTML/SVG rendering, element
 operations, CSS helpers and collections must be inventoried before deciding whether
 the package should survive or where those responsibilities should go.
 
@@ -216,7 +216,7 @@ in static HTML. This supersedes §040's exclusion of CSS transformation from tha
 dialect; generic RendererBase remains CSS-agnostic. Gramlot is to reuse the HTML
 dialect transformation for dynamic DOM, not duplicate it. Labels, boxing, reactive
 bindings and DOM lifecycle belong to Gramlot. This assigns future capability
-ownership; it does not add labels/bindings to the current native HTML slice.
+ownership; it does not add labels/bindings to the 0.1.0 scope.
 No Python CSS removal is requested. Static HTML port and DOM dependency removal
 are in progress; verification and acceptance are separate.
 
@@ -242,7 +242,7 @@ of a Source macro/authoring shortcut. Do not define or implement its contract no
 The earlier root/override/parameter discussions below are retained as history,
 not current acceptance criteria or prerequisites. Existing recipe code is
 provisional; it is not being accepted, extended or removed by this deferral.
-Continue the generic builder and ordinary native HTML authoring/static rendering.
+Continue the generic builder and ordinary HTML authoring/static rendering.
 
 Owner, 2026-09-20: a recipe produces one tree, with one outermost parent node.
 Caller-supplied attributes apply to that root and override attributes supplied by
@@ -299,7 +299,7 @@ values. This supersedes the assistant's incorrect static-HTML interpretation of
 this decision, which was implemented briefly and then reverted in both languages.
 
 Gramlot's existing HtmlElement.text()/compose() and input value assignment already
-perform the DOM conversion. A native Source regression verifies initial null text,
+perform the DOM conversion. A Source regression verifies initial null text,
 updates back to null, unchanged element identity, and empty input.value while
 Source retains null. Zero/false are not converted to empty. No extra normalizer,
 class, static-renderer change or new live-binding contract is introduced.
@@ -318,7 +318,7 @@ does not define a general ranking for every possible pair of macro sub-parameter
 
 <a id="gc-087-070"></a>
 
-## 070 · Native grammar JSON is the single declaration source
+## 070 · HTML5 and SVG grammar JSON is the single declaration source
 
 Owner, 2026-09-20: JSON declarations are portable between Python and JavaScript;
 JavaScript declarations only serve JavaScript. Never duplicate a vocabulary.
@@ -327,7 +327,7 @@ its missing packaged export has now been generated through SvgBuilder.to_grammar
 This resolves the earlier question about removing all JS declaration APIs: that
 blanket removal was not requested.
 
-The sole native collection generation entry point is now genro-builders-js's
+The sole HTML5/SVG collection generation entry point is now genro-builders-js's
 scripts/export_collections.py (npm run export:collections), using the existing
 Python exporter for HtmlBuilder and SvgBuilder. Its src/collections files are the
 canonical JSON artifacts: 117 HTML elements; 58 SVG elements and 2 abstracts.
@@ -355,7 +355,7 @@ attribute adapter shared with Gramlot). Python's SVG boundary metadata was fixed
 at its source and re-exported: the envelope is SVG; HtmlRenderer adds XHTML to
 immediate entered-HTML children, using subbuilder metadata without tag-name checks.
 
-Gramlot reuses the single live HtmlSourceRenderer for native HTML/SVG builders via
+Gramlot reuses the single live HtmlSourceRenderer for the HTML and SVG builders via
 RendererBase.addRender/getRender. HtmlElement handles native namespace creation,
 namespace-aware attributes and native property reflection only on HTML elements.
 Namespace/tag changes require replacement; ordinary SVG attribute changes preserve

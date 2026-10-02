@@ -30,7 +30,7 @@ gramlot/
 │   ├── renderer/
 │   │   └── gramlot-renderer.js         GramlotRenderer · Source live DOM lifecycle
 │   ├── view/
-│   │   └── html.js                     HtmlElement · native HTML/SVG DOM
+│   │   └── html.js                     HtmlElement · HTML/SVG DOM elements
 │   ├── transport.js                   MainTransport · main/remote Source HTTP
 │   ├── references.js                  Mounted Source/DOM reference registry
 │   ├── adapters/
@@ -60,7 +60,7 @@ gramlot/
 │       ├── 086-repository-map.md       This map
 │       ├── 087-javascript-layer-boundaries.md
 │       │                                Builder → Gramlot ownership
-│       ├── 088-native-html-plan.md      Historical delivery plan
+│       ├── 088-0-1-0-plan.md      Historical delivery plan
 │       ├── 094-design-consolidation-plan.md
 │       │                                Historical consolidation plan
 │       ├── inventory/                 Inventory data
@@ -82,7 +82,7 @@ External libraries
 └── genro-builders-js                   Grammar · SourceBag · static rendering · HTML5/SVG dialects
 ```
 
-For current status use [GC-070](070-work-status.md) and for release execution use [GC-110](110-native-html-readiness.md#gc-110-020). GC-094 and the older ownership proposals are historical.
+For current status use [GC-070](070-work-status.md) and for release execution use [GC-110](110-0-1-0-readiness.md#gc-110-020). GC-094 and the older ownership proposals are historical.
 
 `genro-dom-js` remains a reference repository, but Gramlot no longer declares it as
 a dependency. Its former live DOM responsibilities are represented here by

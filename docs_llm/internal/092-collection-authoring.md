@@ -7,7 +7,7 @@ Document ID: **GC-092**. Updated: **2026-09-22**. Current ownership follows cons
 ## 005 · One declaration format
 
 GramlotBuilder Python and JavaScript consume `builder_grammar` version 1.1 from
-the owning generic builders. HTML5 and SVG JSON are the sole native vocabulary;
+the owning generic builders. HTML5 and SVG JSON are the only vocabularies of the core;
 there are no handwritten JS equivalents. `genro-builders-js` generates both through
 the existing Python HtmlBuilder/SvgBuilder exporters (`npm run export:collections`).
 Gramlot's `scripts/export_collections.py` copies these artifacts from the installed
@@ -69,7 +69,7 @@ and capability descriptions remain separate work.
 Unknown portable types or unsupported regex constructs fail explicitly. JavaScript
 regex support is a bounded interoperable subset, not arbitrary Python regex support.
 HTML, SVG and CSS documents can be loaded independently in the generic loader.
-Flat collection composition follows ordered add/update semantics; no removal marker is approved. SVG uses its registered subbuilder; static and live native integration is verified in GC-070.
+Flat collection composition follows ordered add/update semantics; no removal marker is approved. SVG uses its registered subbuilder; static and live SVG integration is verified in GC-070.
 
 The exported HTML content model enumerates allowed children. An additional collection may explicitly add or update named `sub_tags` child rules under amendment 11.14; omitted/null fields preserve existing rules. Automatic admission or discovery of custom elements in native containers is not implemented.
 

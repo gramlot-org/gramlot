@@ -3,10 +3,12 @@
 Document ID: **GC-120**. Audit date: **2026-09-22**.
 Status: **audit preserved; documentary repair B1–B5 completed 2026-09-22**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 [Concise counterpart](../../docs_llm/internal/120-continuity-audit.md).
 
 This audit preserves the pre-repair findings and records closure in §045. It is not another execution plan or an architectural amendment.
-[GC-110](110-native-html-readiness.md#gc-110-020) remains the current 0.1.0 plan.
+[GC-110](110-0-1-0-readiness.md#gc-110-020) remains the current 0.1.0 plan.
 The owner clarified that the requested scope was the first **0.1.0 release**, not
 phase 1 of the older GC-094 consolidation plan.
 
@@ -85,9 +87,9 @@ do not reinterpret these as a new requirement to rebuild Builder.
 
 ### A2 · The active plan contradicts its own phase table — high
 
-[GC-110 §2](110-native-html-readiness.md#gc-110-020) marks host/grammar decisions
+[GC-110 §2](110-0-1-0-readiness.md#gc-110-020) marks host/grammar decisions
 complete and Python clean installation verified. Its
-[baseline section](110-native-html-readiness.md#gc-110-040) still describes a
+[baseline section](110-0-1-0-readiness.md#gc-110-040) still describes a
 temporary patched Bag archive as currently working and lists HTTP separation,
 page closure, Python loader and grammar decisions as open. Later entries settle
 those points. Label the entire baseline explicitly as historical and replace its

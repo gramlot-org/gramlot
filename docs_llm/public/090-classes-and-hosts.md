@@ -1,6 +1,6 @@
 # Classes, repository and server adapters
 
-Document ID: **GC-090**. Native 0.1.2 APIs; 0.2.0 changes are marked.
+Document ID: **GC-090**. 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
 > (GitHub `v0.2.0`; current patch **0.2.1**, 2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). Previous release:
@@ -10,7 +10,7 @@ Document ID: **GC-090**. Native 0.1.2 APIs; 0.2.0 changes are marked.
 
 ## 005 · Reading this first draft
 
-Implemented and owner-accepted native HTML 0.1.0 foundation, with the 0.2.0 binding layer marked. The Python wheel and
+Implemented and owner-accepted 0.1.0 core, with the 0.2.0 binding layer marked. The Python wheel and
 declared GitHub JS dependencies install in fresh environments; seven local
 packaged Host profiles pass in Chromium. Richer PoC behavior is not core evidence.
 
@@ -222,7 +222,7 @@ The returned Gramlot instance uses its ordinary `remoteSource` and live Source A
 An optional mount `signal` cancels startup. A cancelled remote request drops its
 reply; it does not interrupt JavaScript already executing inside the host.
 
-Current scope: one Page per Worker, native HTML, Source live, declared `Page.css`, no database.
+Current scope: one Page per Worker, HTML Source, Source live, declared `Page.css`, no database.
 *0.2.0:* Data binding runs in the window; the Worker builds the Source. Node-only imports cannot run in Worker. Current packaged Worker
 passes in Chromium; an earlier local file check passed in Playwright WebKit.
 WebKit is not Safari. Safari and Firefox remain unverified.

@@ -3,6 +3,8 @@
 Document ID: **GC-094**. Date: **2026-09-20**.
 Status: **local minimum matrix verified; architectural acceptance open**.
 
+> **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
+
 2026-09-21 checkpoint: GC-093 sections 100–105 and GC-070 supersede old active
 recipe/DOM-layer and pending-matrix descriptions below. Current path is generic
 Builder → GramlotRenderer, native HTML Source live, no recipes. Eight local profiles
@@ -50,7 +52,7 @@ clear responsibilities and extensible contracts. Do not restart the project, bul
 port the PoC, or rewrite working code merely to match new names. Reuse code only
 where its design fits the agreed contract.
 
-This was the proposed execution sequence on 2026-09-20 and is superseded by [GC-110](110-native-html-readiness.md#gc-110-020). GC-088 remains historical delivery
+This was the proposed execution sequence on 2026-09-20 and is superseded by [GC-110](110-0-1-0-readiness.md#gc-110-020). GC-088 remains historical delivery
 evidence, not a second active task list. GC-070 is the single progress ledger;
 GC-093 contains findings, not owner-approved architectural decisions. The owner subsequently authorized execution on 2026-09-20 where decisions are
 clear, requiring questions on uncertain architecture. Open choices below are not

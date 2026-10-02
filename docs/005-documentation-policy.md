@@ -21,9 +21,14 @@ uses its `readthedocs` port. Preserve project logos and accurate status notices.
 This owner decision supersedes the earlier Material/Furo choices. Future
 documentation sites follow the same rule; application UI themes are separate.
 
-Use **GC** for the clean Gramlot core, preserve **GD** for Django, and use **GF**
-for FastAPI. Other repositories must choose distinct namespaces before assigning
-IDs. Public consolidated documentation follows `main`; new work stays on `develop`
+Namespaces in use: **GC** for the Gramlot core; **GN** and **GS** in `gramlot-js-server`
+(the `server` and `browser` packages); **GE** for `gramlot-examples`; **GP** for
+`gramlot-py-server` (owner decision, 2026-10-02). The Python adapter repositories that
+`gramlot-py-server` replaces keep their namespaces frozen and never reused: **GD**
+(`gramlot-django`), **GF** (`gramlot-fastapi`), **GA** (`gramlot-kajenn`) and the **GS**
+of `gramlot-uvicorn`, which collides with `gramlot-js-server` and remains only in that
+archive; `gramlot-flask` assigns no IDs. Other repositories must choose distinct
+namespaces before assigning IDs. Public consolidated documentation follows `main`; new work stays on `develop`
 until verified and accepted. Publishing still requires authorization.
 
 <a id="gc-005-010"></a>
@@ -91,7 +96,7 @@ explicit page and asset allowlists define the site boundary, including search
 and downloadable sources. The public guides GC-020, GC-025, GC-030, GC-090, GC-095 and GC-100 have paired
 paths and stable block anchors. Existing legacy migration gaps remain unchanged.
 
-Present Gramlot as one framework: this repository contains the bounded native HTML/typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the current 0.1.0 implementation or operating plan. Keep
+Present Gramlot as one framework: this repository contains the typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the current 0.1.0 implementation or operating plan. Keep
 implementation and verification claims tied to the repository and revision that
 contain the evidence; transfer tests and guides with reviewed code.
 
@@ -114,3 +119,27 @@ where readers enter the affected document and correct active plans in place.
 Preserve historical evidence without silently rewriting external archives.
 See [GC-170](internal/170-binding-source-audit.md) for the first binding source audit
 and its explicitly limited coverage.
+
+<a id="gc-005-030"></a>
+## 030 · The word "native"
+
+Block ID: **GC-005-030**.
+
+Owner decision, 2026-10-02: "native" never names a release, profile, milestone,
+adapter, module, API or pages. As the name of the 0.1.0 profile it recorded only that
+no web components and no recipes were planned; it has no technical meaning. Documents,
+code and package names use "native" only in these meanings:
+
+1. browser behavior and controls: form controls, Reset, implicit submission, `<details>`;
+2. DOM events and listeners: `NativeEventBinding`, `connect_on<event>`;
+3. HTML attributes that do not become style: `NATIVE_ATTRIBUTES`, `splitNativeAttributes`;
+4. DOM properties and operations;
+5. genro-bag events and subscriptions;
+6. platform and runtime APIs: `node:http`, `Bun.serve`;
+7. a standard HTML or SVG element as opposed to a custom element.
+
+When a sentence admits both readings, "native" stays only if the sentence names the
+alternative it opposes (custom element, conversion to style, snapshot, browser
+behavior). Otherwise use the precise term: "HTML elements", "typed SourceBag",
+"attribute projection". Dated records keep their text and carry a naming note
+(§025). See [constitution](00-constitution.md) amendment 11.51.

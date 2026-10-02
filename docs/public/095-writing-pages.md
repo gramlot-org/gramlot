@@ -1,6 +1,6 @@
 # Writing pages
 
-Document ID: **GC-095**. Native 0.1.2 APIs plus the 0.2.0 data binding.
+Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
 > binding)**, released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
@@ -14,12 +14,12 @@ page in Python with its JavaScript equivalent: `examples/binding/` (routes
 The sections below name the example they illustrate. These features have no
 example: `js_requires` groups, `connect_on<event>` by name, `_userChanges`,
 `_onBuilt` and `#ANCHOR`. The `html_svg` family is
-native HTML and SVG without binding. A reader follows the Python-first example
+HTML and SVG without binding. A reader follows the Python-first example
 using only the functions documented here.
 
 <a id="gc-095-005"></a>
 
-## 005 · A first native HTML page
+## 005 · A first HTML page
 
 This is an authoring example for the development foundation, not a standalone
 server command. A host loads the module and supplies `root`.
@@ -104,7 +104,7 @@ ignored, and of two overlapping requests the latest wins. Example:
 ## 020 · Deferred capabilities
 
 Recipes, Data bindings, controllers, resolvers and shared components are outside
-this native HTML Source-live increment. They are not available page APIs.
+this Source-live increment. They are not available page APIs.
 
 *0.2.0:* Data bindings, `dataSetter`, `dataFormula` and `dataController` enter
 with 0.2.0 (sections 040-090). Recipes, resolvers and shared components remain
@@ -113,7 +113,7 @@ all exclusions.
 
 <a id="gc-095-025"></a>
 
-## 025 · Native SVG inside a page
+## 025 · SVG inside a page
 
 The exported SVG collection provides the element declarations. Enter its dialect
 with `svg`; return to HTML with `html`:
@@ -548,7 +548,7 @@ with the components in 0.3.0.
 | `width`/`height` on `img`, `canvas`, `embed`; `width`/`border` on `table` | native attribute, not CSS, as in legacy GenroPy | removes the attribute |
 | SVG presentation attributes | SVG attribute; no style shortcuts on SVG | removes the attribute |
 | `data_*`, `aria_*` | `data-*`, `aria-*` attribute | removes the attribute |
-| other native attributes | existing native projection | as in 0.1.2 |
+| other HTML attributes | existing attribute projection | as in 0.1.2 |
 
 For `style` and `class`, a value other than a string or null is an error.
 Excluded: `style` as a Bag or dictionary, themes and `root.css()`.
@@ -728,7 +728,7 @@ Migration from legacy pages:
 
 Migration from 0.1.x:
 
-- a 0.1.x page without binding runs unchanged: native HTML and SVG, `Page.css`,
+- a 0.1.x page without binding runs unchanged: HTML and SVG, `Page.css`,
   `@source` methods and `remoteSource` keep their behavior;
 - a call `data(...)` in a 0.1.x page created the HTML5 `<data>` element; on `root`
   it now raises an error, on other nodes `data` is the Data Bag property. Write
