@@ -127,13 +127,14 @@ Detailed component and adapter contracts specify parameters and result behavior.
 
 Integration repos provide environment-specific adapters and instructions to install,
 configure and try Gramlot: `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn`,
-`gramlot-uvicorn`, `gramlot-serverless`, `gramlot-js-server` (Node.js and Bun), and
-`gramlot-django`.
+`gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun, and the browser/Worker
+standalone exporter), and `gramlot-django`.
 `gramlot-kajenn` was renamed from `gramlot-genro-asgi` on 2026-09-26, on GitHub
 and locally.
 `gramlot-uvicorn` provides Python/ASGI/Uvicorn hosting and `gramlot-serverless`
-provides browser/Worker standalone packaging; they replace `gramlot-minimal`,
-retired on 2026-09-26.
+provided browser/Worker standalone packaging; they replaced `gramlot-minimal`,
+retired on 2026-09-26. On 2026-10-01 `gramlot-serverless` joined
+`gramlot-js-server` as the package `@gramlot/gramlot-browser`.
 `gramlot-kajenn` owns only its host-specific integration and depends only on Kajenn
 besides the core (constitution amendment 11.48 item 5). The Kajenn adapter is not
 migrated yet: its `pyproject.toml` still declares the retired repository; the

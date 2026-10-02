@@ -16,8 +16,7 @@ workflow on `main`: it builds the browser runtime, installs the Python package, 
 runs the Python suite, the core JavaScript suite (with the quiet-write and
 symbolic-attribute contracts) and the runner suite, on pushes to `main` and
 `develop`, pull requests and manual dispatch. The runner suite checks out the
-public `main` branches of `gramlot-serverless` and `gramlot-js-server` next to this
-repository, following the examples' declared file dependencies. The documentation
+public `main` branch of `gramlot-js-server` next to this repository, following the examples' declared file dependencies. The documentation
 badge reports the documentation build. The two coverage badges report Codecov, one
 per runtime (section 010). The PyPI and JSR badges show the published versions.
 The license badge is a label.
@@ -27,7 +26,8 @@ real browsers. That evidence is the 0.2.0 qualification (GC-215 in
 `docs/internal/`): complete suites in clean environments; Chromium, WebKit and
 Firefox; the end-to-end story through the real Page, Host, TYTX and PageBootstrap
 path; the served runtime checked against a fresh build; and the acceptance pages on
-`gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun) and `gramlot-serverless`.
+`gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun) and `gramlot-serverless`
+(today `@gramlot/gramlot-browser` in `gramlot-js-server`).
 `gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn` are
 deferred to after 0.2.0 and excluded. The experimental runtime is tested in
 `gramlot-poc`.

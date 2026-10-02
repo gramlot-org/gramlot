@@ -10,8 +10,8 @@ npm --prefix examples install
 .venv/bin/pip install -r requirements-docs.txt   # documentation only
 ```
 
-The example runner links `gramlot-serverless` and `gramlot-js-server` from sibling
-checkouts (`examples/package.json`).
+The example runner links the `server/` and `browser/` packages of a sibling
+`gramlot-js-server` checkout (`examples/package.json`).
 
 ## Checks before a commit
 

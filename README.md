@@ -38,7 +38,8 @@ The JavaScript distribution is `@gramlot/gramlot`, on npm and on JSR. Install it
 `npm install @gramlot/gramlot` or `npx jsr add @gramlot/gramlot`.
 Node.js 22 or later and Bun are supported server runtimes; the browser runtime
 is bundled separately. The core provides `server`, `host`, `page` and `runtime`.
-Standalone startup, WorkerHost and WorkerTransport belong to `gramlot-serverless`.
+Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/gramlot-browser`
+(in the `gramlot-js-server` repository).
 Python pages require the Python distribution and a Python server.
 
 The published version is 0.2.1, from the tag `v0.2.1`. Markdown, highlighting and
@@ -50,8 +51,9 @@ DOMPurify belong to the example runner.
 - **JavaScript:** `npm install @gramlot/gramlot` or `npx jsr add @gramlot/gramlot` (0.2.1).
 - **Archives:** the [GitHub release v0.2.1](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.1)
   carries the wheel, the sdist, the npm package of `js/` and `SHA256SUMS`.
-- **Adapters:** `gramlot-uvicorn`, `gramlot-js-server` and `gramlot-serverless` are
-  used from their repositories.
+- **Adapters:** `gramlot-uvicorn` and `gramlot-js-server` (packages
+  `@gramlot/gramlot-js-server` and `@gramlot/gramlot-browser`) are used from their
+  repositories.
 
 Start with [Try Gramlot](docs/public/025-try.md) and
 [Writing pages](docs/public/095-writing-pages.md). The broader experimental
@@ -111,16 +113,18 @@ reference. Gramlot is licensed under Apache 2.0.
 ## Integration repositories
 
 Environment-specific adapters and setup instructions live in `gramlot-fastapi`,
-`gramlot-flask`, `gramlot-kajenn`, `gramlot-uvicorn`, `gramlot-serverless`,
-`gramlot-js-server` (Node.js/Bun) and `gramlot-django`. `gramlot-uvicorn` covers
-Python/ASGI/Uvicorn; `gramlot-serverless` covers browser/Worker standalone.
-For 0.2.0, `gramlot-uvicorn`, `gramlot-js-server` and `gramlot-serverless` are
+`gramlot-flask`, `gramlot-kajenn`, `gramlot-uvicorn`, `gramlot-js-server` and
+`gramlot-django`. `gramlot-uvicorn` covers Python/ASGI/Uvicorn; `gramlot-js-server`
+holds two packages: `@gramlot/gramlot-js-server` (Node.js/Bun) and
+`@gramlot/gramlot-browser` (browser/Worker standalone, formerly the
+`gramlot-serverless` repository, merged on 2026-10-01).
+For 0.2.0, `gramlot-uvicorn`, `gramlot-js-server` and the standalone exporter are
 verified; `gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn`
 are deferred to after 0.2.0. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
 These development names do not rename the already published 0.1.0 archives.
 
-`gramlot-uvicorn`, `gramlot-serverless` and `gramlot-js-server` are the current local
-and GitHub repository names. They replace `gramlot-minimal`, retired on 2026-09-28.
+`gramlot-uvicorn` and `gramlot-js-server` are the current local and GitHub
+repository names. They replace `gramlot-minimal`, retired on 2026-09-28.
 `gramlot-kajenn` was renamed from `gramlot-genro-asgi` on 2026-09-26, on GitHub
 and locally.
 Repository naming does not imply a package release or deployment.

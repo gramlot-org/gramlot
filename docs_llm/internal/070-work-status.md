@@ -2660,3 +2660,10 @@ Owner, 2026-10-01: adapter docs for readers new to Gramlot; Gramlot and the repo
 Block ID: **GC-070-635**.
 
 Owner, 2026-10-01: JS packages on npm and JSR; same package name on both, only scope differs; genro modules on npm under `genrojs`. D3 closed with `@gramlot/gramlot`. core npm+JSR `@gramlot/gramlot` 0.2.1 (`@genro/gramlot` archived); bag `@genrojs/bag` / `@genro/bag` 0.10.1; builders `@genrojs/builders` / `@genro/builders` 0.4.1; tytx `@genrojs/tytx` / `@genro/tytx` 0.16.1. Source imports npm names, `jsr.json` maps to `jsr:@genro/*` (one copy per registry). genro modules moved to `genro-org`. gramlot-js-server peer `@gramlot/gramlot >=0.2.1` (`11e5db2`). `publish.yml`: tag → PyPI, npm, JSR. Open: gramlot-serverless still imports `@jsr/genro__gramlot` until its rename after the core's npm publication.
+
+<a id="gc-070-640"></a>
+## 640 · The standalone exporter joins gramlot-js-server — 2026-10-01
+
+Block ID: **GC-070-640**.
+
+Owner, 2026-10-01: gramlot-serverless joins gramlot-js-server ("va bene js server in effetti il worker è uj server"); names "server" and "browser", no `native` prefix ("accetto il tuo suggerimento"). Amendment 11.50. Workspace: `server/` `@gramlot/gramlot-js-server` (`/node`, `/bun`, `startServer`), `browser/` `@gramlot/gramlot-browser` (command `gramlot-browser`); commits `05efadd` (subtree), `9cbbd11`, `b3a6e6e`, `d706973`, `c0ca2bd`. Core `18880bb`, `0569d4d`: runner, Worker check and CI use one checkout. Verified 2026-10-01: clean clone with core 0.2.1 from npm (server 6/6 Node and Bun, browser 20/20, three Chromium checks), linked core `main` (sentinel, server browser harness Node/Bun), core Python OK, JS 451/451, runner 31/31, runner pages 200. §635 open item closed (`8ed1fc3`). Registries (owner, 2026-10-01, "ok"): the two packages on npm only; a JSR install maps the core to `@jsr/gramlot__gramlot` behind the alias `@gramlot/gramlot`, so a JSR adapter would bring a second core copy, and the browser package resolves the core by name. The core stays on npm and JSR. Open: npm publication of the two packages; archive of `gramlot-serverless` and its Read the Docs.

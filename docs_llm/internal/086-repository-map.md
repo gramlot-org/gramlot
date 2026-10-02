@@ -94,8 +94,9 @@ constitution amendment 11.16. JavaScript uses generic Builder loading and
 Collection composition. SourceBag/SourceBagNode stay generic dependency classes
 in both languages; these Python modules do not introduce a second Source type.
 
-Standalone WorkerHost, WorkerTransport and mount belong to `gramlot-serverless`
-(amendment 11.46 as reassigned by 11.48 item 5, after `gramlot-minimal` was retired).
+Standalone WorkerHost, WorkerTransport and mount belong to `@gramlot/gramlot-browser`
+in `gramlot-js-server` (amendment 11.46 as reassigned by 11.48 item 5, after
+`gramlot-minimal` was retired, and by 11.50).
 Shared Host execution and rendering remain in core.
 
 <a id="gc-086-010"></a>
