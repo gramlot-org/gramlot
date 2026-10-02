@@ -1,6 +1,6 @@
 # 089 · Historical native HTML handoff
 
-Document ID: **GC-089**. Historical 2026-09-19/20 handoff; do not execute its “Resume here” instructions. Read [GC-070](070-work-status.md) and [GC-110](110-native-html-readiness.md#gc-110-020) for current work. Updated: **2026-09-19**.
+Document ID: **GC-089**. Historical 2026-09-19/20 handoff; do not execute its “Resume here” instructions. Read [GC-070](070-work-status.md) and [GC-110](110-0-1-0-readiness.md#gc-110-020) for current work. Updated: **2026-09-19**.
 
 > **Wire suffix (2026-09-30):** the `SOURCE` and `XS` suffixes cited in this document are historical. The `SOURCE` suffix is gone (constitution 11.48 item 8, [GC-070 §520](070-work-status.md#gc-070-520)): a Bag of any class travels as `::X` and `__cls` names its class. Dated records are not rewritten.
 
@@ -39,7 +39,7 @@ The constitution is authoritative; an architectural conflict requires an explici
 owner amendment. No formal Live Object Tree semantics have been approved.
 
 Read GC-087 for layer ownership, GC-088 for the plan, GC-070 for the ongoing TODO,
-GC-086 for the repository map and PORT-0004-native-html-delivery for review evidence.
+GC-086 for the repository map and PORT-0004-0-1-0-delivery for review evidence.
 This handoff supersedes their earlier in-progress execution claims where stated.
 Do not treat historical baseline counts as final verification.
 

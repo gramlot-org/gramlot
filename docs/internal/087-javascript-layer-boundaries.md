@@ -3,7 +3,7 @@
 
 > **Current 0.1.2 ownership:** Gramlot uses generic Builder JS for grammar, SourceBag, `sourceTarget` and static rendering; `GramlotRenderer` extends generic `RendererBase` and owns live DOM behavior. DOM JS is removed from the active dependency path. Sections 005–030 preserve earlier, superseded decisions.
 >
-> Current execution: [GC-110](110-native-html-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
+> Current execution: [GC-110](110-0-1-0-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
 > This document retains earlier decisions and checkpoints. Statements about pending
 > extraction or completed verification refer to their recorded stage, not current
 > architectural acceptance. GC-087's later dated decisions are evidence; GC-110 controls current release work.

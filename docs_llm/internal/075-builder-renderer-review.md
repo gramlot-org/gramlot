@@ -1,7 +1,7 @@
 # 075 · Builder and renderer architecture review
 
 
-> Historical review/plan. Current execution: [GC-110](110-native-html-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
+> Historical review/plan. Current execution: [GC-110](110-0-1-0-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
 > This document retains earlier decisions and checkpoints. Statements about pending
 > extraction or completed verification refer to their recorded stage, not current
 > architectural acceptance. GC-087's agreed ownership remains binding; GC-094 does

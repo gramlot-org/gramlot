@@ -1,6 +1,6 @@
 # Gramlot: the shared architecture
 
-**Historical edition of 18 September 2026.** The current core implements the bounded native HTML and live Source scope; the 0.2.0 bindings and controllers are implemented on the development branch and in qualification (section 045); PoC and recipes remain evidence or future work. For the current status see [GC-070](070-work-status.md) and for the release [GC-110](110-native-html-readiness.md#gc-110-020).
+**Historical edition of 18 September 2026.** The current core implements the bounded native HTML and live Source scope; the 0.2.0 bindings and controllers are implemented on the development branch and in qualification (section 045); PoC and recipes remain evidence or future work. For the current status see [GC-070](070-work-status.md) and for the release [GC-110](110-0-1-0-readiness.md#gc-110-020).
 
 **GC-060 · Essential guide for collaborating · 18 September 2026**
 

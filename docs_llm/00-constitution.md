@@ -235,7 +235,7 @@ and the open SourceBag-versus-Bag choice in GC-093/GC-094. It does not authorize
 new compatibility elsewhere. Recipes and their related defects remain deferred.
 
 
-Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes approved Gramlot adapter work while Builder/Bag remain read-only for this workstream. Amendments 11.14 and 11.16 assign ordered Collection composition and bounded Python authoring; 11.18 supersedes 11.17 for JavaScript `sourceTarget`. Dated Builder corrections below were bounded exceptions, not general permission. The active release plan is [GC-110](internal/110-native-html-readiness.md#gc-110-020), with current status in [GC-070](internal/070-work-status.md).
+Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes approved Gramlot adapter work while Builder/Bag remain read-only for this workstream. Amendments 11.14 and 11.16 assign ordered Collection composition and bounded Python authoring; 11.18 supersedes 11.17 for JavaScript `sourceTarget`. Dated Builder corrections below were bounded exceptions, not general permission. The active release plan is [GC-110](internal/110-0-1-0-readiness.md#gc-110-020), with current status in [GC-070](internal/070-work-status.md).
 
 <a id="gc-000-140"></a>
 

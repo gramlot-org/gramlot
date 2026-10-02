@@ -4,9 +4,9 @@ typed Source, native HTML, Page/Host, live lifecycle and seven-profile contract.
 Earlier recipes, retired compilers, speculative rendering and broader PoC behavior
 remain superseded or excluded; dated records below retain their original status.
 
-# PORT-0001-native-html
+# PORT-0001-0-1-0
 
-**Historical port record.** Contracts, review feedback, rejected paths and dated test evidence remain here. The current 0.1.0 state is [GC-070](../../docs/internal/070-work-status.md) and the sole release plan is [GC-110](../../docs/internal/110-native-html-readiness.md#gc-110-020). Past “current”, “open” and “next” statements are local to their dated checkpoint; old eight-profile checks do not verify the seven-profile release matrix. No port acceptance is implied.
+**Historical port record.** Contracts, review feedback, rejected paths and dated test evidence remain here. The current 0.1.0 state is [GC-070](../../docs/internal/070-work-status.md) and the sole release plan is [GC-110](../../docs/internal/110-0-1-0-readiness.md#gc-110-020). Past “current”, “open” and “next” statements are local to their dated checkpoint; old eight-profile checks do not verify the seven-profile release matrix. No port acceptance is implied.
 
 - **Status:** implemented and locally verified; owner acceptance pending
 - **PoC evidence:** gramlot-org/gramlot-poc@10478b57ce3f22e6445eb6b72eba343520cbebac

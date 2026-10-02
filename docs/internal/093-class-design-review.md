@@ -1,7 +1,7 @@
 # 093 · Class and ownership review
 
 Document ID: **GC-093**. Updated: **2026-09-21**.
-Historical review findings and eight-profile matrix: sections 100–115. Current 0.1.0 scope has seven profiles; use [GC-110](110-native-html-readiness.md#gc-110-020) for release gates. Q1/Q2 speculative validation was removed; Q3 Worker shared execution, Q4 HTTP adapter/Python loader, Q5 page closure and Q6 packaged grammar were settled as recorded in [GC-120 §020](120-continuity-audit.md#gc-120-020). Broader design acceptance remains open.
+Historical review findings and eight-profile matrix: sections 100–115. Current 0.1.0 scope has seven profiles; use [GC-110](110-0-1-0-readiness.md#gc-110-020) for release gates. Q1/Q2 speculative validation was removed; Q3 Worker shared execution, Q4 HTTP adapter/Python loader, Q5 page closure and Q6 packaged grammar were settled as recorded in [GC-120 §020](120-continuity-audit.md#gc-120-020). Broader design acceptance remains open.
 
 Historical review follows. Status: **architectural revision requested**. Section 040 reviews implementation
 quality independently of runtime checks and reopens the design of changes in 030.

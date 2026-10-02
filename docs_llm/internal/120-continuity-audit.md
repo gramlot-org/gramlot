@@ -4,7 +4,7 @@ Document ID: **GC-120**. Audit date: **2026-09-22**.
 Status: **audit preserved; documentary repair B1–B5 completed 2026-09-22**.
 
 [Expanded counterpart](../../docs/internal/120-continuity-audit.md).
-This is an audit, not a new plan or amendment. [GC-110](110-native-html-readiness.md#gc-110-020)
+This is an audit, not a new plan or amendment. [GC-110](110-0-1-0-readiness.md#gc-110-020)
 is the current plan. The owner meant first release **0.1.0**, not GC-094 phase 1.
 
 <a id="gc-120-005"></a>

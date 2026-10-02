@@ -14,7 +14,7 @@ remain superseded or excluded; dated records below retain their original status.
 
 **Branch freeze/unfreeze implemented and verified — 2026-09-21.**
 
-**Historical port record.** Contracts, review feedback, rejected paths and dated test evidence remain here. The current 0.1.0 state is [GC-070](../../docs/internal/070-work-status.md) and the sole release plan is [GC-110](../../docs/internal/110-native-html-readiness.md#gc-110-020). Past “current”, “open” and “next” statements are local to their dated checkpoint; old eight-profile checks do not verify the seven-profile release matrix. No port acceptance is implied.
+**Historical port record.** Contracts, review feedback, rejected paths and dated test evidence remain here. The current 0.1.0 state is [GC-070](../../docs/internal/070-work-status.md) and the sole release plan is [GC-110](../../docs/internal/110-0-1-0-readiness.md#gc-110-020). Past “current”, “open” and “next” statements are local to their dated checkpoint; old eight-profile checks do not verify the seven-profile release matrix. No port acceptance is implied.
 
 **Worker standalone runtime implemented and verified — 2026-09-21.**
 
@@ -160,7 +160,7 @@ installed/verified here. No existing external demo server was restarted. This
 completes the local dependency refresh, not owner acceptance of the full release.
 Earlier version/installed-package statements below are historical and superseded.
 
-# PORT-0004-native-html-delivery
+# PORT-0004-0-1-0-delivery
 
 **Collection composition implemented in owning sources — 2026-09-21.**
 Owner decisions supersede full-declaration replacement and collision rejection.
@@ -289,7 +289,7 @@ remains identified; owner acceptance is still pending. The owner explicitly
 requested keeping everything local for review. No commit/push/remote creation,
 package publication or deployment is authorized.
 
-[GC-089](../../docs/internal/089-native-html-handoff.md) records durable repository
+[GC-089](../../docs/internal/089-0-1-0-handoff.md) records durable repository
 and worktree paths, artifact evidence, reproduction and the upstream gate.
 
 ## Implementation-quality review — 2026-09-20

@@ -50,7 +50,7 @@ clear responsibilities and extensible contracts. Do not restart the project, bul
 port the PoC, or rewrite working code merely to match new names. Reuse code only
 where its design fits the agreed contract.
 
-This was the proposed execution sequence on 2026-09-20 and is superseded by [GC-110](110-native-html-readiness.md#gc-110-020). GC-088 remains historical delivery
+This was the proposed execution sequence on 2026-09-20 and is superseded by [GC-110](110-0-1-0-readiness.md#gc-110-020). GC-088 remains historical delivery
 evidence, not a second active task list. GC-070 is the single progress ledger;
 GC-093 contains findings, not owner-approved architectural decisions. The owner subsequently authorized execution on 2026-09-20 where decisions are
 clear, requiring questions on uncertain architecture. Open choices below are not

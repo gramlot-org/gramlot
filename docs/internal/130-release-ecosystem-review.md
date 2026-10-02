@@ -15,7 +15,7 @@ yet describe the whole ecosystem as release-ready: several adapters still lead
 users into incompatible PoC APIs, and their main documentation contradicts the
 current packages. Complete the bounded release alignment in section 030 before
 acceptance. This is a review recommendation, not a new execution plan or acceptance.
-[GC-110](110-native-html-readiness.md) remains the release plan.
+[GC-110](110-0-1-0-readiness.md) remains the release plan.
 
 Reviewed local source and maintained documentation in thirteen repositories:
 core, FastAPI, Flask, Genro ASGI, NodeJS, standalone, examples, Django, PoC, site,

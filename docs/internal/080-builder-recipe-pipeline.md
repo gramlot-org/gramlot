@@ -1,7 +1,7 @@
 # 080 · Builder, renderer and recipe pipeline
 
 
-> **Historical recipe pipeline.** Current execution: [GC-110](110-native-html-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
+> **Historical recipe pipeline.** Current execution: [GC-110](110-0-1-0-readiness.md#gc-110-020); status: [GC-070](070-work-status.md).
 > This document retains earlier decisions and checkpoints. Statements about pending
 > extraction or completed verification refer to their recorded stage, not current
 > architectural acceptance. Current ownership follows GC-110 and constitution amendments 11.16/11.18.

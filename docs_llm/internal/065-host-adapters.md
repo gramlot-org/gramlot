@@ -4,7 +4,7 @@ Document ID: **GC-065**.
 
 **Release scope:** latest published release **0.1.2**. Sections 005-025 describe 0.1.2. Section 030 records the 0.2.0 page resource and bootstrap changes. **The 0.2.0 parts are implemented on the development branch (S06, S07, S14), in qualification, not released.** Current contract: [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030).
 
-**Current 0.1.2 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-native-html-readiness.md#gc-110-020) for current release gates.
+**Current 0.1.2 boundary:** neutral JavaScript Host runs Page/main/source/close, while the Node/Bun adapter owns HTTP parsing and routing. Recipes in sections below describe the 2026-09-19 increment and are deferred. Use [GC-110](110-0-1-0-readiness.md#gc-110-020) for current release gates.
 
 [Expanded counterpart](../../docs/internal/065-host-adapters.md).
 
