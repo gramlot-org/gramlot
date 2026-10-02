@@ -61,7 +61,7 @@ JavaScript calls the same methods; data-elements take an object
 | --- | --- | --- | --- |
 | [gramlot](https://github.com/gramlot-org/gramlot) | The core: Page, Source, Data, binding, the browser runtime, the minimal Host contract and `FileHost`. PyPI `gramlot`, npm and JSR `@gramlot/gramlot`. | Always: every page and every adapter depends on it. | Released 0.2.0 |
 | [gramlot-uvicorn](https://github.com/gramlot-org/gramlot-uvicorn) | ASGI adapter for Python pages; runs on Uvicorn or any ASGI server. | Your pages are in Python and you serve them from a Python web server. | Verified |
-| [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server) | Two packages for JavaScript pages: `@gramlot/gramlot-js-server`, the HTTP adapter on Node.js 22 and Bun; `@gramlot/gramlot-browser`, the exporter to one HTML file, or one static folder, that opens from disk, with the Page in a Web Worker. | Your pages are in JavaScript: you serve them from Node.js or Bun, or you want a page without any server, a file to open, send or host as static content. | Verified |
+| [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server) | Two packages for JavaScript pages: `@gramlot/gramlot-js-server`, the HTTP adapter on Node.js 22 and Bun; `@gramlot/gramlot-serverless`, the exporter to one HTML file, or one static folder, that opens from disk, with the Page in a Web Worker. | Your pages are in JavaScript: you serve them from Node.js or Bun, or you want a page without any server, a file to open, send or host as static content. | Verified |
 | [gramlot-devtools](https://github.com/gramlot-org/gramlot-devtools) | Chrome DevTools extension that shows and edits the Data and the Source of a page. | You develop pages and want to inspect them. | Development tool |
 | gramlot-django, gramlot-fastapi, gramlot-flask, gramlot-kajenn | Adapters for those frameworks. | — | Deferred to after 0.2.0 |
 | [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) | The earlier experimental runtime, with a different scope. | Research only. | Experimental |
@@ -77,6 +77,6 @@ adapter repository documents its installation, configuration and deployment.
 
 - **Python pages:** the core plus `gramlot-uvicorn`.
 - **JavaScript pages with a server:** the core plus `@gramlot/gramlot-js-server`.
-- **JavaScript pages without a server:** the core plus `@gramlot/gramlot-browser`.
+- **JavaScript pages without a server:** the core plus `@gramlot/gramlot-serverless`.
 - **Trying it first:** the example runner of this repository shows every example in
   Python and JavaScript, with its source; see [Try Gramlot](025-try.md).

@@ -38,7 +38,7 @@ The JavaScript distribution is `@gramlot/gramlot`, on npm and on JSR. Install it
 `npm install @gramlot/gramlot` or `npx jsr add @gramlot/gramlot`.
 Node.js 22 or later and Bun are supported server runtimes; the browser runtime
 is bundled separately. The core provides `server`, `host`, `page` and `runtime`.
-Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/gramlot-browser`
+Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/gramlot-serverless`
 (in the `gramlot-js-server` repository).
 Python pages require the Python distribution and a Python server.
 
@@ -52,7 +52,7 @@ DOMPurify belong to the example runner.
 - **Archives:** the [GitHub release v0.2.1](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.1)
   carries the wheel, the sdist, the npm package of `js/` and `SHA256SUMS`.
 - **Adapters:** `gramlot-uvicorn` and `gramlot-js-server` (packages
-  `@gramlot/gramlot-js-server` and `@gramlot/gramlot-browser`) are used from their
+  `@gramlot/gramlot-js-server` and `@gramlot/gramlot-serverless`) are used from their
   repositories.
 
 Start with [Try Gramlot](docs/public/025-try.md) and
@@ -116,8 +116,9 @@ Environment-specific adapters and setup instructions live in `gramlot-fastapi`,
 `gramlot-flask`, `gramlot-kajenn`, `gramlot-uvicorn`, `gramlot-js-server` and
 `gramlot-django`. `gramlot-uvicorn` covers Python/ASGI/Uvicorn; `gramlot-js-server`
 holds two packages: `@gramlot/gramlot-js-server` (Node.js/Bun) and
-`@gramlot/gramlot-browser` (browser/Worker standalone, formerly the
-`gramlot-serverless` repository, merged on 2026-10-01).
+`@gramlot/gramlot-serverless` (browser/Worker standalone, formerly the
+`gramlot-serverless` repository, merged on 2026-10-01 as `@gramlot/gramlot-browser`,
+renamed `@gramlot/gramlot-serverless` on 2026-10-02 (0.2.2)).
 For 0.2.0, `gramlot-uvicorn`, `gramlot-js-server` and the standalone exporter are
 verified; `gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn`
 are deferred to after 0.2.0. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).

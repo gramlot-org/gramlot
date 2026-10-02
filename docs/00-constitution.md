@@ -114,7 +114,7 @@ and database technology; an integration may depend on core, never the reverse.
 | `gramlot-flask` | Flask |
 | `gramlot-kajenn` | Kajenn, the new product name for Genro ASGI |
 | `gramlot-uvicorn` | Python with Uvicorn through the generic ASGI adapter |
-| `gramlot-js-server` | Node.js and Bun (`@gramlot/gramlot-js-server`); JavaScript in a browser Worker without a server, standalone (`@gramlot/gramlot-browser`, amendment 11.50) |
+| `gramlot-js-server` | Node.js and Bun (`@gramlot/gramlot-js-server`); JavaScript in a browser Worker without a server, standalone (`@gramlot/gramlot-serverless`, amendments 11.50 and 11.52) |
 | `gramlot-django` | Django |
 
 `gramlot-minimal` replaced the repository name `gramlot-standalone` (amendment 11.19)
@@ -122,8 +122,8 @@ and was retired on 2026-09-26/28 (amendment 11.48 item 5). Its heirs are
 `gramlot-uvicorn`, which owns the generic Python ASGI adapter, and
 `gramlot-serverless`, which owns the single-HTML exporter, standalone Worker
 integration and startup (amendment 11.46, as reassigned by 11.48); since
-2026-10-01 it is the package `@gramlot/gramlot-browser` in `gramlot-js-server`
-(amendment 11.50). Standalone
+2026-10-01 it is a package in `gramlot-js-server` (amendment 11.50), named
+`@gramlot/gramlot-serverless` since 2026-10-02 (amendment 11.52). Standalone
 remains the browser/Worker profile name. Core retains shared Host/Page execution and
 rendering. `gramlot-kajenn` (formerly `gramlot-genro-asgi`) owns
 Kajenn-specific integration and depends only on Kajenn besides the core (amendment
@@ -325,7 +325,7 @@ Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes
 `gramlot-nodejs` is now `gramlot-js-server` (11.32), and `gramlot-standalone` is now
 `gramlot-minimal` (11.19); `gramlot-minimal` was then retired (11.48 item 5) and its
 heirs are `gramlot-uvicorn` and `gramlot-serverless`; `gramlot-serverless` is now
-`@gramlot/gramlot-browser` in `gramlot-js-server` (11.50). `gramlot-genro-asgi` is now
+`@gramlot/gramlot-serverless` in `gramlot-js-server` (11.50, 11.52). `gramlot-genro-asgi` is now
 `gramlot-kajenn` (repository renamed 2026-09-26). Historical
 names preserve the original decision scope and do not identify additional repos.
 
@@ -1298,3 +1298,23 @@ Owner decision of 2026-10-02: the label "native HTML" "è completamente fuorvian
    `gramlot-native-html-0.2.0.tgz`).
 5. Other repositories. The Python adapter names leave with gramlot-py-server; the
    example pages change with their move to gramlot-examples.
+
+### Amendment 11.52 — The standalone exporter becomes @gramlot/gramlot-serverless; theme and logo in every package — 2026-10-02
+
+Owner decisions of 2026-10-02: on the name, "gramlot-serverless forse è il piu
+semplice" ("browser" reads as the package for the interface, while every Gramlot page
+uses the browser; what sets the package apart is that nothing runs on a server); on
+the timing, "forse di anticiparlo così chiudiamo tutta la parte js"; the core 0.2.2
+carries the theme and the logo files in the npm and PyPI packages, as JSR does.
+
+1. Name. The exporter of 11.50 item 2 is `@gramlot/gramlot-serverless`, in
+   `serverless/` of `gramlot-js-server`, command `gramlot-serverless`, from
+   gramlot-js-server 0.2.2. Scope unchanged (11.50 item 3). The name of 11.50 is not a
+   compatibility alias; it was removed from npm.
+2. Packages. The npm, PyPI and JSR packages of the core carry the same theme and logo
+   files: `themes/` and, of `assets/branding/`, the four stable entry points and
+   `svg/` (paths in [GC-090 §023](public/090-classes-and-hosts.md#gc-090-023)). The
+   sources stay at the repository root; the rest of the identity kit is not packaged.
+3. History. Dated decisions and records keep the name of 11.50.
+
+The §7 table, the §7 heirs paragraph and the §14 naming clarification are updated.

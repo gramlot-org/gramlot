@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
@@ -22,7 +22,11 @@
       "js/package.json",
       "themes/**",
       "examples/html_svg/**",
-      "assets/branding/**",
+      "assets/branding/gramlot-logo.svg",
+      "assets/branding/gramlot-logo-dark.svg",
+      "assets/branding/gramlot-mark.png",
+      "assets/branding/gramlot-mark-dark.png",
+      "assets/branding/svg/**",
       "README.md",
       "LICENSE",
       "NOTICE"

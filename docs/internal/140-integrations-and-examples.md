@@ -25,7 +25,7 @@ integration repositories own environment-specific adaptation and setup.
 | `gramlot-flask` | Python / Flask | Flask integration and setup; included in the original 0.1.0 delivery. |
 | `gramlot-kajenn` | Python / Kajenn | Kajenn-specific integration; it depends only on Kajenn besides the core (constitution 11.48 item 5). Repository renamed from `gramlot-genro-asgi` on 2026-09-26. Not migrated yet: its `pyproject.toml` still declares the retired repository replaced by `gramlot-uvicorn` and `gramlot-serverless`. The migration and the minimal Host contract are deferred to after 0.2.0. |
 | `gramlot-uvicorn` | Python / Uvicorn | Generic ASGI hosting for Python; heir of the ASGI part of the retired `gramlot-minimal` (constitution 11.48 item 5). Verified on the 0.2.0 minimal Host contract ([GC-070 §595](070-work-status.md#gc-070-595)). |
-| `gramlot-js-server` | JavaScript / Node.js and Bun; browser Worker | Two packages. `@gramlot/gramlot-js-server` (`server/`): both server runtimes; included in the original 0.1.0 delivery. `@gramlot/gramlot-browser` (`browser/`): single-HTML packaging and Worker integration for the browser standalone profile; heir of the standalone part of the retired `gramlot-minimal`, in the `gramlot-serverless` repository until 2026-10-01. Both verified on the 0.2.0 minimal Host contract. |
+| `gramlot-js-server` | JavaScript / Node.js and Bun; browser Worker | Two packages. `@gramlot/gramlot-js-server` (`server/`): both server runtimes; included in the original 0.1.0 delivery. `@gramlot/gramlot-serverless` (`serverless/`): single-HTML packaging and Worker integration for the browser standalone profile; heir of the standalone part of the retired `gramlot-minimal`, in the `gramlot-serverless` repository until 2026-10-01. Both verified on the 0.2.0 minimal Host contract. |
 | `gramlot-django` | Python / Django | Django views and URLconf integration through `NativeHtmlPages`. Locally aligned and checked; the older Page/ORM implementation is historical. |
 
 Kajenn is the new product name for Genro ASGI. Its upstream Python dependency still
@@ -52,7 +52,7 @@ same example, not eight different applications.
 | Python | Django | `gramlot-django` |
 | JavaScript | Node.js | `gramlot-js-server` (`@gramlot/gramlot-js-server/node`) |
 | JavaScript | Bun | `gramlot-js-server` (`@gramlot/gramlot-js-server/bun`) |
-| JavaScript | Browser Worker / standalone HTML | `gramlot-js-server` (`@gramlot/gramlot-browser`) |
+| JavaScript | Browser Worker / standalone HTML | `gramlot-js-server` (`@gramlot/gramlot-serverless`) |
 
 The existing integration smoke pages, launch configurations and application tests
 belong in `gramlot-examples`. The owner-approved teaching suite now lives in core

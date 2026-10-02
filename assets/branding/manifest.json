@@ -1,0 +1,1565 @@
+{
+  "brand": "Gramlot",
+  "version": "2026-10-02",
+  "source": "source/gramlot-master.svg",
+  "status": "Owner-authorized kit completion; new vector artwork and layouts pending visual acceptance",
+  "colorspace": "RGB / sRGB PNG exports",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3864,
+      "sha256": "96ee0760165010ba34aacb7e17875f955c0154d3ddb56bf4e7c6c8b1d0778f97"
+    },
+    {
+      "path": "backgrounds/gramlot-slide-content-dark.png",
+      "bytes": 51343,
+      "sha256": "2f81c624ff83e844d0dcbfb70dc7883a8c8658ef5a747eccb71935c179e6b438",
+      "format": "png",
+      "width": 1920,
+      "height": 1080,
+      "mode": "RGBA"
+    },
+    {
+      "path": "backgrounds/gramlot-slide-content-dark.svg",
+      "bytes": 9600,
+      "sha256": "d80a7ba29eac459969d48cf3a5b693147a5e3ee2cd9336639b7e621f526bda98",
+      "format": "svg",
+      "viewBox": "0 0 1920 1080",
+      "vector": true
+    },
+    {
+      "path": "backgrounds/gramlot-slide-content-light.png",
+      "bytes": 51251,
+      "sha256": "a5d92500bb1c7f4cb22033ec6d58b90802dfbdabe784924004da2d2095ea116b",
+      "format": "png",
+      "width": 1920,
+      "height": 1080,
+      "mode": "RGBA"
+    },
+    {
+      "path": "backgrounds/gramlot-slide-content-light.svg",
+      "bytes": 9602,
+      "sha256": "3524041834a0e00b098afc1118dad69ff57d5f318a155a57b7df1862ad652bf4",
+      "format": "svg",
+      "viewBox": "0 0 1920 1080",
+      "vector": true
+    },
+    {
+      "path": "backgrounds/gramlot-slide-title-dark.png",
+      "bytes": 65981,
+      "sha256": "b8eccc4b3d3727e7cf7a785df6f49014b51228c354150b81d34c0a0c24e38b86",
+      "format": "png",
+      "width": 1920,
+      "height": 1080,
+      "mode": "RGBA"
+    },
+    {
+      "path": "backgrounds/gramlot-slide-title-dark.svg",
+      "bytes": 14176,
+      "sha256": "1cf0ebe3e382711c36c98655b200c3eb8ca63a1105c5455b1af36572d3cb8aef",
+      "format": "svg",
+      "viewBox": "0 0 1920 1080",
+      "vector": true
+    },
+    {
+      "path": "backgrounds/gramlot-slide-title-light.png",
+      "bytes": 67065,
+      "sha256": "20696574f48caf1e36bcde81d6b544944b9c15012f8e6adc49c8a4d2caf5f911",
+      "format": "png",
+      "width": 1920,
+      "height": 1080,
+      "mode": "RGBA"
+    },
+    {
+      "path": "backgrounds/gramlot-slide-title-light.svg",
+      "bytes": 14178,
+      "sha256": "4eeddb9315cadf29f19979110d97ada275330624be8613ca330689043857066b",
+      "format": "svg",
+      "viewBox": "0 0 1920 1080",
+      "vector": true
+    },
+    {
+      "path": "backgrounds/gramlot-wallpaper-dark-1920.png",
+      "bytes": 71070,
+      "sha256": "02d13439ce10c6a75aa55d444028e959a1b5e6b03937e60f13b5320f3b75d505",
+      "format": "png",
+      "width": 1920,
+      "height": 1080,
+      "mode": "RGBA"
+    },
+    {
+      "path": "backgrounds/gramlot-wallpaper-dark-2560.png",
+      "bytes": 114266,
+      "sha256": "e8a5401b5a8a4f176ab9e171e284c81c1b3db08255f0609e528d92fef5f34ede",
+      "format": "png",
+      "width": 2560,
+      "height": 1440,
+      "mode": "RGBA"
+    },
+    {
+      "path": "backgrounds/gramlot-wallpaper-dark.svg",
+      "bytes": 14136,
+      "sha256": "7ae291e8145b0bacc9e59c7d935441e29272f0e72c4854cf689df8248e01be4a",
+      "format": "svg",
+      "viewBox": "0 0 2560 1440",
+      "vector": true
+    },
+    {
+      "path": "backgrounds/gramlot-wallpaper-light-1920.png",
+      "bytes": 71452,
+      "sha256": "1c4dd45519ab5c0c30de4479194e1210a8ae7c39f4744dc1225d6abab9300de1",
+      "format": "png",
+      "width": 1920,
+      "height": 1080,
+      "mode": "RGBA"
+    },
+    {
+      "path": "backgrounds/gramlot-wallpaper-light-2560.png",
+      "bytes": 114753,
+      "sha256": "baaac7cbb689c5d10193e42803e2917cb47160c8a7c908ad4bae554704708bb8",
+      "format": "png",
+      "width": 2560,
+      "height": 1440,
+      "mode": "RGBA"
+    },
+    {
+      "path": "backgrounds/gramlot-wallpaper-light.svg",
+      "bytes": 14138,
+      "sha256": "f364af74e35ed767cef9b28f471d03e4bd823aebb7e1a3957adad53e5a074538",
+      "format": "svg",
+      "viewBox": "0 0 2560 1440",
+      "vector": true
+    },
+    {
+      "path": "contrast-check.json",
+      "bytes": 971,
+      "sha256": "79e6c087204d37667790e884901c465378522eeba53c7dae251d73819d7ef484"
+    },
+    {
+      "path": "gramlot-logo-dark.svg",
+      "bytes": 9305,
+      "sha256": "9daf5cc860f9b71adcb7ef27fed2ce20c01c4c5795979088bf363d870b63a2ab",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "gramlot-logo.svg",
+      "bytes": 9305,
+      "sha256": "d6b949a7d7e01c3a93da3d23086ba44d7760a5aeae5d9578a23a7ed64b8da2ca",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "gramlot-mark-dark.png",
+      "bytes": 50211,
+      "sha256": "66413667943df5617f9f74f0e20ecaadc2160aec24f51bc2280397777af1517f",
+      "format": "png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB"
+    },
+    {
+      "path": "gramlot-mark.png",
+      "bytes": 32271,
+      "sha256": "fe63ee600440498a2ddaac5648a3fbdb7ffe117fb06228be2f2ce482dcc2dfbf",
+      "format": "png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB"
+    },
+    {
+      "path": "icons/README.md",
+      "bytes": 1324,
+      "sha256": "84ad60f8ba9465f9538c430777431c046d7c93ce892c6a4a2df0af4e795101fe"
+    },
+    {
+      "path": "icons/android-chrome-192x192.png",
+      "bytes": 5724,
+      "sha256": "42315e43c36f729aed03b91c8445eb383a370baaa6f2340f1cfb754b3db5bf45",
+      "format": "png",
+      "width": 192,
+      "height": 192,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/android-chrome-512x512.png",
+      "bytes": 20342,
+      "sha256": "5845dea6fd4da0fdc0b50e95300ddb98fe6c6b5de27550ae768e9232b2fec6db",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/app-icon.svg",
+      "bytes": 4825,
+      "sha256": "a556ccae38a2639914a242ab68b362432b7ef72ce156d996a48c350a30d18ae0",
+      "format": "svg",
+      "viewBox": "0 0 512 512",
+      "vector": true
+    },
+    {
+      "path": "icons/apple-touch-icon.png",
+      "bytes": 4625,
+      "sha256": "063d94b891e2e2f4478a658dcf064f54cf76db49f52173e180e3682fb7a88a15",
+      "format": "png",
+      "width": 180,
+      "height": 180,
+      "mode": "RGB"
+    },
+    {
+      "path": "icons/favicon-16x16.png",
+      "bytes": 383,
+      "sha256": "aed5a4b87a2b68699ed35bcde1358cb4a5379368a93a07e787971c1cc1867bdc",
+      "format": "png",
+      "width": 16,
+      "height": 16,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/favicon-24x24.png",
+      "bytes": 606,
+      "sha256": "a1742d2e73ab8e210f1552ccb8b2fe840303fe0e50eb4a4bc50914e554ff8983",
+      "format": "png",
+      "width": 24,
+      "height": 24,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/favicon-32x32.png",
+      "bytes": 792,
+      "sha256": "935c8aed7f0b57b91898e54f8c747720d4ba24f017e9619513545a0033c76f8e",
+      "format": "png",
+      "width": 32,
+      "height": 32,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/favicon-48x48.png",
+      "bytes": 1253,
+      "sha256": "10c9f80b49e1f2afd385b91fbe5c717175c57110bc47db00131cdd08710a34f0",
+      "format": "png",
+      "width": 48,
+      "height": 48,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/favicon-64x64.png",
+      "bytes": 1706,
+      "sha256": "1f3f14c87002cad6c3a443b5507658c5377fc5add3fbd861d31e9c839ca452af",
+      "format": "png",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/favicon.ico",
+      "bytes": 8267,
+      "sha256": "e8e40313fd59c3f8547b58cb7e3ca3c379b56088c8902ce85a851c98a696df5f"
+    },
+    {
+      "path": "icons/favicon.svg",
+      "bytes": 4823,
+      "sha256": "279ba11a844c87dca75d65349c459030b6abe9dfdf3b1a09fb67ace65eb14840",
+      "format": "svg",
+      "viewBox": "0 0 512 512",
+      "vector": true
+    },
+    {
+      "path": "icons/mask-icon.svg",
+      "bytes": 4708,
+      "sha256": "ca79132a4b12818ac0611e156fdb4633b5f5fb27d9f94cfe984c1332abb6610c",
+      "format": "svg",
+      "viewBox": "0 0 440 440",
+      "vector": true
+    },
+    {
+      "path": "icons/maskable-icon-192x192.png",
+      "bytes": 3582,
+      "sha256": "1ef52625c7d0468b219668a7bf000ddc3ecf3069dc998d4e557cf1a9fa5e2c0c",
+      "format": "png",
+      "width": 192,
+      "height": 192,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/maskable-icon-512x512.png",
+      "bytes": 14073,
+      "sha256": "dd0d9b798ea66a162ee987848ad482b3ea1e064092193755ab75a091842a5226",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "icons/maskable-icon.svg",
+      "bytes": 4825,
+      "sha256": "2aac2984301571573f08309842cae7801cf5918692182aca517219efb9312e0b",
+      "format": "svg",
+      "viewBox": "0 0 512 512",
+      "vector": true
+    },
+    {
+      "path": "icons/site.webmanifest",
+      "bytes": 665,
+      "sha256": "1c21597375d0f1500fb1a355fbc1c17612ff1b8270cd61f957e46c4d5b6550f7"
+    },
+    {
+      "path": "index.html",
+      "bytes": 27795,
+      "sha256": "2f51c95ed8218f5c38eef13ac031ca711209ff126429403debee436caa59560c"
+    },
+    {
+      "path": "palette/gramlot-palette.css",
+      "bytes": 682,
+      "sha256": "adc80f491594553577218bab206cc37bd1e19d08fccc67b22d33960473fb09cc"
+    },
+    {
+      "path": "palette/gramlot-palette.gpl",
+      "bytes": 512,
+      "sha256": "7e2b4d2fd4c8390631365c08577fbd8783fee0147eb569716b5bd9eac255d5c4"
+    },
+    {
+      "path": "palette/gramlot-palette.json",
+      "bytes": 555,
+      "sha256": "00aad48ae1853af0f4c4e41c7f3112026154e292b2382762aa68731aa7754c45"
+    },
+    {
+      "path": "palette/gramlot-palette.svg",
+      "bytes": 5267,
+      "sha256": "3cfd306534c74b76d04411552b0b5d2c6e17815f7f110fdaaf35673729cb768d",
+      "format": "svg",
+      "viewBox": "0 0 1000 880",
+      "vector": true
+    },
+    {
+      "path": "png/gramlot-horizontal-black-1024.png",
+      "bytes": 16030,
+      "sha256": "6b1a135d320efe1c1cf5cf10d32cee71c7fbe4e5cd86cfefadd1ed47ab45a0fe",
+      "format": "png",
+      "width": 1024,
+      "height": 341,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-black-2048.png",
+      "bytes": 38798,
+      "sha256": "3b5a71910d01d3c935094fd2eb50a3a9428010db58f3e321019371462ff67fbd",
+      "format": "png",
+      "width": 2048,
+      "height": 683,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-black-512.png",
+      "bytes": 7202,
+      "sha256": "8576aceca4397475c35da9b3d7d8cbd5602402d0f2ee15a8caddd9de8d07ca59",
+      "format": "png",
+      "width": 512,
+      "height": 171,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-blue-1024.png",
+      "bytes": 20548,
+      "sha256": "3d285f56732038783f06e2de396f03c587c0d3aab635cb8def62995bc3e8a37f",
+      "format": "png",
+      "width": 1024,
+      "height": 341,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-blue-2048.png",
+      "bytes": 49207,
+      "sha256": "6f546fb87b06d5b4453e345b9dd989c994873b11f7ac5fbe2cf4f69869dd8a30",
+      "format": "png",
+      "width": 2048,
+      "height": 683,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-blue-512.png",
+      "bytes": 9133,
+      "sha256": "509d01c46e0a0cf6d8ff7fae8767a1dd85f9acd63298a59683f23781b69ffb23",
+      "format": "png",
+      "width": 512,
+      "height": 171,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-ink-1024.png",
+      "bytes": 20469,
+      "sha256": "f67a9250f167b9afd9c9c3d8b96729d856a5ab1c305edefa2170ba79a1199749",
+      "format": "png",
+      "width": 1024,
+      "height": 341,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-ink-2048.png",
+      "bytes": 48960,
+      "sha256": "a8a79fcae5a94acd6cd9ab096c08fd3d8406a96c5577c1ae10ce903f74406962",
+      "format": "png",
+      "width": 2048,
+      "height": 683,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-ink-512.png",
+      "bytes": 9090,
+      "sha256": "429dd4a3c0f713f42de5079e5c42d1b334eb79e64dc801610203f123de451fd8",
+      "format": "png",
+      "width": 512,
+      "height": 171,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-inverse-1024.png",
+      "bytes": 21702,
+      "sha256": "3e8ff2ad64623aa84e186dfc5bb82d293fa729be9bec9bedde084cd6156cb980",
+      "format": "png",
+      "width": 1024,
+      "height": 341,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-inverse-2048.png",
+      "bytes": 51442,
+      "sha256": "77cb4d7f30ead1ad803bc9ce57b14147ecd123230df1857fc247d8fd64fb04da",
+      "format": "png",
+      "width": 2048,
+      "height": 683,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-inverse-512.png",
+      "bytes": 9839,
+      "sha256": "8a3db9f29be59147b145ce2635467e2f21ae7b6530ee0dd2e944a9d603ec5442",
+      "format": "png",
+      "width": 512,
+      "height": 171,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-primary-1024.png",
+      "bytes": 21811,
+      "sha256": "60ba940116e35d19cd78464d5bbb7c13ff3ee57d5fafa30ce89c8afd94b45adc",
+      "format": "png",
+      "width": 1024,
+      "height": 341,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-primary-2048.png",
+      "bytes": 51816,
+      "sha256": "628ca5d5a89f7ee9d1c5adae7f234598163b628b5c33df9d9d0a17a0f8dc5888",
+      "format": "png",
+      "width": 2048,
+      "height": 683,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-primary-512.png",
+      "bytes": 9888,
+      "sha256": "233ec166c9f93adb5add2248e4866a0c06da6a1a99c8e50a339c3027eb2e8e5b",
+      "format": "png",
+      "width": 512,
+      "height": 171,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-white-1024.png",
+      "bytes": 16457,
+      "sha256": "047b580c985792fff3ef5187bfa641f44bd64ffddcf6b174a5067b257e3dc9b1",
+      "format": "png",
+      "width": 1024,
+      "height": 341,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-white-2048.png",
+      "bytes": 37491,
+      "sha256": "437a6fae6bcddecb9fbd657f6d1bd4510a42c7cfe5bb33591fc5c36198b1f2f9",
+      "format": "png",
+      "width": 2048,
+      "height": 683,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-horizontal-white-512.png",
+      "bytes": 7551,
+      "sha256": "101afa3935e9542bc84aa770d647e191d2a2e2c6027e426983674d89f5cddc24",
+      "format": "png",
+      "width": 512,
+      "height": 171,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-black-1024.png",
+      "bytes": 29586,
+      "sha256": "18c4c6845ec9b38a8758a7fcb789160931b43e6b6da62d8e315e83f65a76f504",
+      "format": "png",
+      "width": 1024,
+      "height": 1233,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-black-2048.png",
+      "bytes": 74917,
+      "sha256": "205e58e27d55fcbd24c58738a79c9b2dbed109f4f7574413f4ca22af01218fb6",
+      "format": "png",
+      "width": 2048,
+      "height": 2467,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-black-256.png",
+      "bytes": 5762,
+      "sha256": "8308fd7fe5f6d7dee68cbe5963a9e25e5acfa27db711b8ab489a919db6cb4a75",
+      "format": "png",
+      "width": 256,
+      "height": 308,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-black-512.png",
+      "bytes": 12645,
+      "sha256": "5b42251788a52c7d1ac0f8164ba9b3191726ec8c02516239cd3ee8b6a1a5be73",
+      "format": "png",
+      "width": 512,
+      "height": 617,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-blue-1024.png",
+      "bytes": 38848,
+      "sha256": "49f1f956d201cb226ca389f53877fee0d9ed6fc1382ea219d8b44b3a39008aa2",
+      "format": "png",
+      "width": 1024,
+      "height": 1233,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-blue-2048.png",
+      "bytes": 94657,
+      "sha256": "7652364eca3e07414c7e26a0ba57cf9fddbe7d71f1749e594e203163b813f9c1",
+      "format": "png",
+      "width": 2048,
+      "height": 2467,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-blue-256.png",
+      "bytes": 7506,
+      "sha256": "08ffa730ea9cfe4796f1ffa917a9af19558bbf1c8355de04dfc27db1f1e3c24e",
+      "format": "png",
+      "width": 256,
+      "height": 308,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-blue-512.png",
+      "bytes": 16420,
+      "sha256": "daf415aff9bd970ba456ccd405c4a5755a65a73ef8ef2ccf8135f87d87bd90dd",
+      "format": "png",
+      "width": 512,
+      "height": 617,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-ink-1024.png",
+      "bytes": 38563,
+      "sha256": "e6c9b01955c1ad3af2e5424997488ec32be3c9538f6760a865d4aa5e82316463",
+      "format": "png",
+      "width": 1024,
+      "height": 1233,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-ink-2048.png",
+      "bytes": 93978,
+      "sha256": "815685709e6726980abb2e030a502a1b435d614845f21b6266a2ddbbf90de7ff",
+      "format": "png",
+      "width": 2048,
+      "height": 2467,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-ink-256.png",
+      "bytes": 7451,
+      "sha256": "da0a6c4c9604d872350455bc3cfd1c2ae775c42c635052b753c37d4e4b35f00e",
+      "format": "png",
+      "width": 256,
+      "height": 308,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-ink-512.png",
+      "bytes": 16311,
+      "sha256": "9d9f08594e222730a0e7efffc1f5540dbbf119b3810850fed4187b91f959622e",
+      "format": "png",
+      "width": 512,
+      "height": 617,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-inverse-1024.png",
+      "bytes": 39197,
+      "sha256": "461e85374e4a53a7ea69128c957956b355ab981d2dfb242bf1b4fad35ca4ef70",
+      "format": "png",
+      "width": 1024,
+      "height": 1233,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-inverse-2048.png",
+      "bytes": 94137,
+      "sha256": "aaa8e3947c3b1c9760b933c77504426040e27fc5dedbbaca9134fcc6003afaff",
+      "format": "png",
+      "width": 2048,
+      "height": 2467,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-inverse-256.png",
+      "bytes": 7882,
+      "sha256": "f6cbac078b6bb2365cc36fe60f6ff95e6a2115ef52a490001a470c17109ead89",
+      "format": "png",
+      "width": 256,
+      "height": 308,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-inverse-512.png",
+      "bytes": 17003,
+      "sha256": "2650db1f7a4d5e3ecb96082514a8159dbd74e199cce5768f15c3d798cf0f0bce",
+      "format": "png",
+      "width": 512,
+      "height": 617,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-primary-1024.png",
+      "bytes": 39267,
+      "sha256": "e1e72666c377735ac2200474b05c90679ddc9533f96619b61d72f492aa8f0f8d",
+      "format": "png",
+      "width": 1024,
+      "height": 1233,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-primary-2048.png",
+      "bytes": 94392,
+      "sha256": "59bf14cfc0f2103212e898035f3b9344d51afa8b6065b4ba048cea82697f3978",
+      "format": "png",
+      "width": 2048,
+      "height": 2467,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-primary-256.png",
+      "bytes": 7907,
+      "sha256": "e9213f5d6595f87b3dbdfc25ca4d78caa4ab1b1330b11d14c04302b111fa2aa2",
+      "format": "png",
+      "width": 256,
+      "height": 308,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-primary-512.png",
+      "bytes": 17076,
+      "sha256": "b5774b6674b3f9762a5a418b3cd645714f96056a33b97bef27b45c803ab11e26",
+      "format": "png",
+      "width": 512,
+      "height": 617,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-white-1024.png",
+      "bytes": 29772,
+      "sha256": "605b67bf4cd6ffccabc83bac635ea275199a95fe4c817d2488ea8a87a242b73c",
+      "format": "png",
+      "width": 1024,
+      "height": 1233,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-white-2048.png",
+      "bytes": 70708,
+      "sha256": "12455f57d9a6a1ff1355810c68d21f8e43bbe7ea28e6dc866426cbdacaa02e0f",
+      "format": "png",
+      "width": 2048,
+      "height": 2467,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-white-256.png",
+      "bytes": 5999,
+      "sha256": "536e18a05296ff393bd15be6e6cc8017864af63112d7165e41935ff453516544",
+      "format": "png",
+      "width": 256,
+      "height": 308,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-logo-white-512.png",
+      "bytes": 13089,
+      "sha256": "992d0ac50803de95565f925fa9052c1073bcc297840ddf0586dede177e74c117",
+      "format": "png",
+      "width": 512,
+      "height": 617,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-black-1024.png",
+      "bytes": 19120,
+      "sha256": "5b7f58634c298b21797140cac6bf5743d60222b6ad62bf642a8f8a18ce58e458",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-black-128.png",
+      "bytes": 1716,
+      "sha256": "99534b365a2e51a28e3fb26e4d4bb510c72b1123b907d6dc75b685ec2af8f7d2",
+      "format": "png",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-black-256.png",
+      "bytes": 3643,
+      "sha256": "dfe250034eded0720762b3ef92fe6bc71d8387720a95da13fcc05d5d58babb83",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-black-512.png",
+      "bytes": 8110,
+      "sha256": "48aa1a802288dcc4db3e5ecc7107d785b9af4e39c7c3a3b8971dae6fbe16fa3d",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-black-64.png",
+      "bytes": 768,
+      "sha256": "ee9fe87039232a6af37f81de1758feaf2391d06f013ca81541c70979398f0be4",
+      "format": "png",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-blue-1024.png",
+      "bytes": 25206,
+      "sha256": "4d7ef4bc3a80f5ca07e2ce42796e0d666ad539fb49f1a4f77edcc7a08e90fc62",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-blue-128.png",
+      "bytes": 2266,
+      "sha256": "a7041717f1db439e0aee7809d87c868402b194a3148587bf4d33d1512a2420f5",
+      "format": "png",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-blue-256.png",
+      "bytes": 4765,
+      "sha256": "eb1089a37d73b1f8b34b835b97785366c973706c3df0538dd6456bb31eac2da7",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-blue-512.png",
+      "bytes": 10738,
+      "sha256": "d7af73ccd9ced4c67de43aea369e6e1e6da1476ffacafa1a629d2ea6a38335af",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-blue-64.png",
+      "bytes": 1075,
+      "sha256": "942d41a96aba3c9685f1f8666e0d4df2b2b4fd6137a908af4816b65c07c470b7",
+      "format": "png",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-ink-1024.png",
+      "bytes": 24896,
+      "sha256": "e12aee5c5ec9a25602df597e8c531b99ad6ea2dc1f58a03ed7ca42547588ffcc",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-ink-128.png",
+      "bytes": 2248,
+      "sha256": "367860d249ee20d4f53a516bc5711b53e577b66a6510fae9944b79dd998d5ef4",
+      "format": "png",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-ink-256.png",
+      "bytes": 4726,
+      "sha256": "35838cfb9b0a529235fc7b6324694ad08db914c8dd4555d214f57212f43f40d4",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-ink-512.png",
+      "bytes": 10682,
+      "sha256": "03d25ae21cdca6497263c80bfcddb06a705f745e185f8c95dd2f052f49aa3137",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-ink-64.png",
+      "bytes": 1082,
+      "sha256": "496457b3b3289fbd22b7f0cc74f44d72286e0a4a4a8166475758c060d6e58e69",
+      "format": "png",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-inverse-1024.png",
+      "bytes": 25350,
+      "sha256": "f405cd0ad62f4fbcf5f7d169d32bd9f5445c11b303738482ade0102bce39c8f7",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-inverse-128.png",
+      "bytes": 2385,
+      "sha256": "bab89f9fff11032a9c7364e3871bcfb62013df2137f0beb3112f487c1a6dab2f",
+      "format": "png",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-inverse-256.png",
+      "bytes": 5006,
+      "sha256": "3811a39abecc0487d5cea8c8aa6a38240be3ade82027607fca87eb494c1f99df",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-inverse-512.png",
+      "bytes": 10977,
+      "sha256": "f7be725900c1451300b8e7c8c694bc561ebd4085e8bcc9aff693f6176e37642b",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-inverse-64.png",
+      "bytes": 1127,
+      "sha256": "acff98690667712c295de650be1dabc4b7d8e850d8b96f24cc4deb957d77e882",
+      "format": "png",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-primary-1024.png",
+      "bytes": 25350,
+      "sha256": "f405cd0ad62f4fbcf5f7d169d32bd9f5445c11b303738482ade0102bce39c8f7",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-primary-128.png",
+      "bytes": 2385,
+      "sha256": "bab89f9fff11032a9c7364e3871bcfb62013df2137f0beb3112f487c1a6dab2f",
+      "format": "png",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-primary-256.png",
+      "bytes": 5006,
+      "sha256": "3811a39abecc0487d5cea8c8aa6a38240be3ade82027607fca87eb494c1f99df",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-primary-512.png",
+      "bytes": 10977,
+      "sha256": "f7be725900c1451300b8e7c8c694bc561ebd4085e8bcc9aff693f6176e37642b",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-primary-64.png",
+      "bytes": 1127,
+      "sha256": "acff98690667712c295de650be1dabc4b7d8e850d8b96f24cc4deb957d77e882",
+      "format": "png",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-white-1024.png",
+      "bytes": 19021,
+      "sha256": "849e5ad35d87176d2db8b07715346caabda5ebdc672264e9b54e23578a7b2bb9",
+      "format": "png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-white-128.png",
+      "bytes": 1791,
+      "sha256": "a4f8dc6ee41431b7a9e7f0a642c98ab80b6aa848750a5ab83c14cc17c930b7eb",
+      "format": "png",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-white-256.png",
+      "bytes": 3807,
+      "sha256": "2ded240ad36227d5362affe28ad1f04cb5898ed22626d1860a3060a132b0d5d2",
+      "format": "png",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-white-512.png",
+      "bytes": 8431,
+      "sha256": "310da4fc622f43e2fc6d1b81343ca84801a6ceb40282bb34c48f57171a42ae12",
+      "format": "png",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-mark-white-64.png",
+      "bytes": 813,
+      "sha256": "cdafce3189fa9ce646461e217ce9253d24af4703008fc8d28655d042b6c02fb8",
+      "format": "png",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-black-1024.png",
+      "bytes": 18331,
+      "sha256": "ce38d3e7d2fd4542c1515031995d686008840e374bd52e26ae515fef1aa5c384",
+      "format": "png",
+      "width": 1024,
+      "height": 330,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-black-2048.png",
+      "bytes": 46190,
+      "sha256": "1eac28d2faae310319b5875c72456ebc08a9f94f485aa4d5a13a87443d098586",
+      "format": "png",
+      "width": 2048,
+      "height": 659,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-black-512.png",
+      "bytes": 7854,
+      "sha256": "b95e3c76a7f91922d88cadff8954d3a8c9a307efe57df05fbce4f5c22ab3fe1d",
+      "format": "png",
+      "width": 512,
+      "height": 165,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-blue-1024.png",
+      "bytes": 22844,
+      "sha256": "e0543c0ef61c8347c4b5581241eae6c1d17ba3605c91ef99506d7daa1935214b",
+      "format": "png",
+      "width": 1024,
+      "height": 330,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-blue-2048.png",
+      "bytes": 57638,
+      "sha256": "84a36eb71ebf9b4f9fb371a25e667a30167effc8ea3d4c03176541d0ca0f14f3",
+      "format": "png",
+      "width": 2048,
+      "height": 659,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-blue-512.png",
+      "bytes": 9780,
+      "sha256": "cbfda4690e7b111dd9abf02732ac8f3e3b25c0bf4e48095939ff0b3ecc3d174b",
+      "format": "png",
+      "width": 512,
+      "height": 165,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-ink-1024.png",
+      "bytes": 22795,
+      "sha256": "02b7a76ca42665b0d2506367606a3889d108085acbf510203b25cde66dce916c",
+      "format": "png",
+      "width": 1024,
+      "height": 330,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-ink-2048.png",
+      "bytes": 57429,
+      "sha256": "ff1cc717f04bc658bdd1111c795fe83a6888061bba9ff9743fe92cdba40d3534",
+      "format": "png",
+      "width": 2048,
+      "height": 659,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-ink-512.png",
+      "bytes": 9764,
+      "sha256": "641b289574c1d5e508bc226818372a92f5ad340019c044bb2b07c059340b1370",
+      "format": "png",
+      "width": 512,
+      "height": 165,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-inverse-1024.png",
+      "bytes": 22695,
+      "sha256": "d5aa64a445e6ea17e8ee47e1ab334f53fb65e8e9a3ba884972f7edab99cf785f",
+      "format": "png",
+      "width": 1024,
+      "height": 330,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-inverse-2048.png",
+      "bytes": 56961,
+      "sha256": "d1bb5811ab0818f8e045dc95cbac15d397ccea716393e1eee3de3aca04919cef",
+      "format": "png",
+      "width": 2048,
+      "height": 659,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-inverse-512.png",
+      "bytes": 9734,
+      "sha256": "7f8ed4cfcc42213a4f4d70877eda251cad1fb3267ace208a3b173f1fc600bdf2",
+      "format": "png",
+      "width": 512,
+      "height": 165,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-primary-1024.png",
+      "bytes": 22795,
+      "sha256": "02b7a76ca42665b0d2506367606a3889d108085acbf510203b25cde66dce916c",
+      "format": "png",
+      "width": 1024,
+      "height": 330,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-primary-2048.png",
+      "bytes": 57429,
+      "sha256": "ff1cc717f04bc658bdd1111c795fe83a6888061bba9ff9743fe92cdba40d3534",
+      "format": "png",
+      "width": 2048,
+      "height": 659,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-primary-512.png",
+      "bytes": 9764,
+      "sha256": "641b289574c1d5e508bc226818372a92f5ad340019c044bb2b07c059340b1370",
+      "format": "png",
+      "width": 512,
+      "height": 165,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-white-1024.png",
+      "bytes": 17632,
+      "sha256": "58a1ba925be1fde542b47ff2e829c8fd8707969e7e19e9d99bb12f25ceaf3a18",
+      "format": "png",
+      "width": 1024,
+      "height": 330,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-white-2048.png",
+      "bytes": 43890,
+      "sha256": "1c14cec793dc41ab12ad07670efa70e982e5c7c22a6f5da8e529c66157f49b7e",
+      "format": "png",
+      "width": 2048,
+      "height": 659,
+      "mode": "RGBA"
+    },
+    {
+      "path": "png/gramlot-wordmark-white-512.png",
+      "bytes": 8002,
+      "sha256": "5e742816c7c9890e0cdc390d0ea517bf00714bda8d4639f9f35b807607b8725d",
+      "format": "png",
+      "width": 512,
+      "height": 165,
+      "mode": "RGBA"
+    },
+    {
+      "path": "preview/gramlot-identity.png",
+      "bytes": 99982,
+      "sha256": "65eaf4f26c5f1dcec2db7b0bbf2828d5fc1bc5933bac5377cf521a1ea4746c82",
+      "format": "png",
+      "width": 1600,
+      "height": 1000,
+      "mode": "RGBA"
+    },
+    {
+      "path": "preview/gramlot-identity.svg",
+      "bytes": 51465,
+      "sha256": "2eb57aba9b52b2db94ae4cc547af1cb47ac4eca5fd55ea3d5ddc8ab5dc129e7d",
+      "format": "svg",
+      "viewBox": "0 0 1600 1000",
+      "vector": true
+    },
+    {
+      "path": "print/gramlot-identity-guide.pdf",
+      "bytes": 30304,
+      "sha256": "b8088db53114ab6bcede6c0f9612dcbf740c38e882fab76f8dabe50fdf491ab4"
+    },
+    {
+      "path": "social/gramlot-banner-dark.png",
+      "bytes": 43502,
+      "sha256": "3c170307823ab7a8de416dc993945717a89d44ff5d47e28f0630b959cffb3dea",
+      "format": "png",
+      "width": 1500,
+      "height": 500,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-banner-dark.svg",
+      "bytes": 14229,
+      "sha256": "599ea41ae6f860b226b7ffd9313650a10804b1dacd878139f52a0cc6b33bdbca",
+      "format": "svg",
+      "viewBox": "0 0 1500 500",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-banner-light.png",
+      "bytes": 43539,
+      "sha256": "f9e8ea58f0b1daaf433e4b99f46b8f1328fedabee7c5de21b5b07fabb3308050",
+      "format": "png",
+      "width": 1500,
+      "height": 500,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-banner-light.svg",
+      "bytes": 14231,
+      "sha256": "2b4a0ebe46710b50db1fb9ba367349b954ac12543739df7fcb27b807acbfbed4",
+      "format": "svg",
+      "viewBox": "0 0 1500 500",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-opengraph-dark.png",
+      "bytes": 38229,
+      "sha256": "feaeeb02119e34699eb468ba87aa9f65e92d77d8a9129bc1704e44fc0bdef60a",
+      "format": "png",
+      "width": 1200,
+      "height": 630,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-opengraph-dark.svg",
+      "bytes": 14222,
+      "sha256": "5c4c334429f2cc8ee0f74f1fd17cfd96e6951b3d00fac784fb944e53d1576fe2",
+      "format": "svg",
+      "viewBox": "0 0 1200 630",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-opengraph-light.png",
+      "bytes": 38221,
+      "sha256": "3c53ebf6082b4d9a1a76f9d2f7e890249bab1bf3ffaaa37fda217f44dffcecd5",
+      "format": "png",
+      "width": 1200,
+      "height": 630,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-opengraph-light.svg",
+      "bytes": 14224,
+      "sha256": "b236d5236813cf9b50dfd29730617ed77e3b27a58b174fecb1808edfdf402da7",
+      "format": "svg",
+      "viewBox": "0 0 1200 630",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-portrait-dark.png",
+      "bytes": 48211,
+      "sha256": "5a13e36972e0fd6307c24cc76c6ffcfd15ce65da32ed1142092063f8b0599d31",
+      "format": "png",
+      "width": 1080,
+      "height": 1350,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-portrait-dark.svg",
+      "bytes": 14138,
+      "sha256": "660916b45d73c6317de6c688b8c5f0ac18c595a7750a5bc348507985145ae6b3",
+      "format": "svg",
+      "viewBox": "0 0 1080 1350",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-portrait-light.png",
+      "bytes": 48201,
+      "sha256": "0302984fa3d2dcc11c5fbc71ae6b691179d64010cf8d0a74dee30dd8b652a408",
+      "format": "png",
+      "width": 1080,
+      "height": 1350,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-portrait-light.svg",
+      "bytes": 14140,
+      "sha256": "1a5709de664952627c1654e9f4765ccb14a2d49c0bf4e4591b79a3bf670e7f95",
+      "format": "svg",
+      "viewBox": "0 0 1080 1350",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-square-dark.png",
+      "bytes": 41604,
+      "sha256": "3c302e24e79ba8b45d94c139029f8f751bba3560c6fef60bc5a2287e1a3286a9",
+      "format": "png",
+      "width": 1080,
+      "height": 1080,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-square-dark.svg",
+      "bytes": 14134,
+      "sha256": "b01c22d0427ea300eded05abb96f0dbd2e501c4c895ea912091f3cfabf2aa9d9",
+      "format": "svg",
+      "viewBox": "0 0 1080 1080",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-square-light.png",
+      "bytes": 41605,
+      "sha256": "dff16d4621238677197a3735ace428a05d6d5ba2784a9693fb3b11f48d9fedc9",
+      "format": "png",
+      "width": 1080,
+      "height": 1080,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-square-light.svg",
+      "bytes": 14136,
+      "sha256": "29ea0793152e41fee7f81e41ae31e2c3e47ea26f3d36eb7e2742a71634a2dfcf",
+      "format": "svg",
+      "viewBox": "0 0 1080 1080",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-story-dark.png",
+      "bytes": 61381,
+      "sha256": "e741e9bb892e28d899ad20267903ddb9dd080889d9a17b8508c631fb7b5ef586",
+      "format": "png",
+      "width": 1080,
+      "height": 1920,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-story-dark.svg",
+      "bytes": 14132,
+      "sha256": "ba25720df2fdc4c020ed7728ceec838405a4f4c6cc4ee472761ea45881fd754f",
+      "format": "svg",
+      "viewBox": "0 0 1080 1920",
+      "vector": true
+    },
+    {
+      "path": "social/gramlot-story-light.png",
+      "bytes": 61335,
+      "sha256": "905f83278c865958e74cb6d17adbf1f9555080c350e70de76ed4e47fff598af0",
+      "format": "png",
+      "width": 1080,
+      "height": 1920,
+      "mode": "RGBA"
+    },
+    {
+      "path": "social/gramlot-story-light.svg",
+      "bytes": 14134,
+      "sha256": "8056f7ba9386387416a1a87cbe9ab70d9debede9bd61fbb856694b06c6b26760",
+      "format": "svg",
+      "viewBox": "0 0 1080 1920",
+      "vector": true
+    },
+    {
+      "path": "source/README.md",
+      "bytes": 2524,
+      "sha256": "9333f0b1392471936ccf9e11056135c3618fe0322544351206c8817eed038b10"
+    },
+    {
+      "path": "source/build_assets.py",
+      "bytes": 31799,
+      "sha256": "7a4eb7a8d6383403ff4d29ffdee1c6b09b89813f83bfaf9a2d80a9553db2ea55"
+    },
+    {
+      "path": "source/gramlot-master.svg",
+      "bytes": 9375,
+      "sha256": "4300ecf91967ff47c912f38925022eeb7640665dec8a59539ccea1f0966b2d40",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-horizontal-black.svg",
+      "bytes": 9408,
+      "sha256": "5fa213db813415a0e121bea2d9f3613f4bf7ff9283395c423832516744cb9218",
+      "format": "svg",
+      "viewBox": "0 0 960 320",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-horizontal-blue.svg",
+      "bytes": 9406,
+      "sha256": "658be8eea74047b79b4f76469a3e82e8da6412cd7bcf9e645eeeb86089b09706",
+      "format": "svg",
+      "viewBox": "0 0 960 320",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-horizontal-ink.svg",
+      "bytes": 9404,
+      "sha256": "d34d5d87e618789806add8acf692b5aae59237973c008d0b69b47fdd0d14bf7d",
+      "format": "svg",
+      "viewBox": "0 0 960 320",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-horizontal-inverse.svg",
+      "bytes": 9412,
+      "sha256": "b8277e5903d5dc0ceb5278fe9aeacdd4afd89a84c8e4ed00193591e794672ff9",
+      "format": "svg",
+      "viewBox": "0 0 960 320",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-horizontal-primary.svg",
+      "bytes": 9412,
+      "sha256": "3f723e3bd0e8efa8e8e4795cf6aa2b39296e7f03b7c9027f29f727f2ad590620",
+      "format": "svg",
+      "viewBox": "0 0 960 320",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-horizontal-white.svg",
+      "bytes": 9408,
+      "sha256": "4a26ac57fe319e81ffdebbfa7428cd826446a43c4012ca8ae37dec61e33ac18f",
+      "format": "svg",
+      "viewBox": "0 0 960 320",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-logo-black.svg",
+      "bytes": 9282,
+      "sha256": "e4f56468a0badb4778edc1270005f148962051ac2a045e75862fd682b4063deb",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-logo-blue.svg",
+      "bytes": 9280,
+      "sha256": "ceb658071388263e7b26159608141ba26a99ef048015ea65d32998b56ffa7ecb",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-logo-ink.svg",
+      "bytes": 9278,
+      "sha256": "3fd3ad2f9a6251b362bf5f5af974abe981f1650d05e7afd4ff7cd5c5c6c71c0f",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-logo-inverse.svg",
+      "bytes": 9286,
+      "sha256": "50309b8723d558cd53051191b5c725a4dc132bbc8bc3415b2a10bfda9b5cb748",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-logo-primary.svg",
+      "bytes": 9286,
+      "sha256": "f0baa0a984ca101a7a92a9e065a8d369730cbe95caa4a2a174745e82a0eb16fb",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-logo-white.svg",
+      "bytes": 9282,
+      "sha256": "00000f5ec9833dab6520efb84ea05aa4001926f1a9bb0354fde2041b4100da69",
+      "format": "svg",
+      "viewBox": "0 0 440 530",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-mark-black.svg",
+      "bytes": 4712,
+      "sha256": "f84360383c7abb8c102544528937ea9c999cb55017147d8baac6a656f006ceea",
+      "format": "svg",
+      "viewBox": "0 0 440 440",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-mark-blue.svg",
+      "bytes": 4710,
+      "sha256": "e2fc639f56d0faff2f38e10336ea73383b414bc07dee968f6b743f103574f16a",
+      "format": "svg",
+      "viewBox": "0 0 440 440",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-mark-ink.svg",
+      "bytes": 4708,
+      "sha256": "c23367f01c19ee6ee4d9a31c8ae63474bd8923632b28946a5838eba317068624",
+      "format": "svg",
+      "viewBox": "0 0 440 440",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-mark-inverse.svg",
+      "bytes": 4716,
+      "sha256": "51d5534ec567eae964b169da66cf22a4014545b279b85c8232e30383902ec8cc",
+      "format": "svg",
+      "viewBox": "0 0 440 440",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-mark-primary.svg",
+      "bytes": 4716,
+      "sha256": "3a16a953e8ece842ee801ad39514d87854026476c0a15a1d032af8e850d4dc17",
+      "format": "svg",
+      "viewBox": "0 0 440 440",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-mark-white.svg",
+      "bytes": 4712,
+      "sha256": "0c058189409cd9a32967b799085cf2cc81f2ccb43c3bbd0eda832b066cbc3965",
+      "format": "svg",
+      "viewBox": "0 0 440 440",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-wordmark-black.svg",
+      "bytes": 4787,
+      "sha256": "58582f4a8adb695adf1da0c537624b4ffc6cbd420db2575e34ec53545034bfe4",
+      "format": "svg",
+      "viewBox": "0 0 264 85",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-wordmark-blue.svg",
+      "bytes": 4785,
+      "sha256": "853c8c33219553900181c219081c8c66ad080e40fff6a999f92bda214405c5ef",
+      "format": "svg",
+      "viewBox": "0 0 264 85",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-wordmark-ink.svg",
+      "bytes": 4783,
+      "sha256": "8611d2f3d6a44f6e40207e4654db56fec37813ad430672dbc79994833decbe91",
+      "format": "svg",
+      "viewBox": "0 0 264 85",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-wordmark-inverse.svg",
+      "bytes": 4791,
+      "sha256": "5c421acf81f76bed20a1f4526ea89bd698e02ea3f14cc1f4071cfbcdf596d4de",
+      "format": "svg",
+      "viewBox": "0 0 264 85",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-wordmark-primary.svg",
+      "bytes": 4791,
+      "sha256": "8154dd23b8a86379b4282c4f3513f74460ba5a8b1480c85cd260c3a32e2ad174",
+      "format": "svg",
+      "viewBox": "0 0 264 85",
+      "vector": true
+    },
+    {
+      "path": "svg/gramlot-wordmark-white.svg",
+      "bytes": 4787,
+      "sha256": "6e0bc029364d92fb76476adeb9154390e02f69bbd4b85dc4b1071bf1e3fad419",
+      "format": "svg",
+      "viewBox": "0 0 264 85",
+      "vector": true
+    },
+    {
+      "path": "theme-guide.md",
+      "bytes": 6223,
+      "sha256": "f96b25829cd043cb357d4f9565c72391d2aac9cf4e280e79c146105a144cb3af"
+    },
+    {
+      "path": "theme-reference.html",
+      "bytes": 3539,
+      "sha256": "fc5313aabdcd4a7400026200efb9b69ee5ee69b61c0e4c196edf3c63b8111e66"
+    },
+    {
+      "path": "theme-tokens.json",
+      "bytes": 1040,
+      "sha256": "9acf6b31da8ecbeae0aa7bd34fccd7d4f994a2a7521e2857c23a61e344de1ceb"
+    }
+  ]
+}

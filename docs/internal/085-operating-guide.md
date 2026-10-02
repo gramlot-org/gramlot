@@ -46,7 +46,7 @@ scripts/                 Build/documentation/browser verification helpers
 ```
 
 Generated build outputs, virtual environments, installed modules and caches are
-not source architecture. In `gramlot-js-server` (`@gramlot/gramlot-browser`, heir of the retired `gramlot-minimal`),
+not source architecture. In `gramlot-js-server` (`@gramlot/gramlot-serverless`, heir of the retired `gramlot-minimal`),
 `browser/src/worker-host.js`, `browser/src/worker-transport.js` and `browser/src/standalone.js` own standalone integration.
 No future component/controller/database contract is implied by a folder name.
 

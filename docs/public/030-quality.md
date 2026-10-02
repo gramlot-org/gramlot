@@ -27,7 +27,7 @@ real browsers. That evidence is the 0.2.0 qualification (GC-215 in
 Firefox; the end-to-end story through the real Page, Host, TYTX and PageBootstrap
 path; the served runtime checked against a fresh build; and the acceptance pages on
 `gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun) and `gramlot-serverless`
-(today `@gramlot/gramlot-browser` in `gramlot-js-server`).
+(today `@gramlot/gramlot-serverless` in `gramlot-js-server`).
 `gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn` are
 deferred to after 0.2.0 and excluded. The experimental runtime is tested in
 `gramlot-poc`.
