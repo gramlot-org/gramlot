@@ -74,6 +74,10 @@ jobs:
           echo "CHROMIUM=$(node --input-type=module -e "const {chromium} = await import('$entry'); console.log(chromium.executablePath())")" >> "$GITHUB_ENV"
       - name: Browser check of binding, strict CSP and iframe srcdoc in Chromium
         run: node scripts/verify_binding_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
+      - name: Browser check of both page logic forms on the JS and Python hosts in Chromium
+        run: node scripts/verify_page_module_browser.mjs python "$PLAYWRIGHT_ENTRY" chromium
+      - name: Browser check of gramlot.inout in Chromium
+        run: node scripts/verify_inout_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
       - name: Install the Python Uvicorn integration for the runner
         run: python -m pip install '../gramlot-uvicorn[uvicorn]'
       - name: Browser checks of the live Source examples 10 and 13 through the runner, Python and JavaScript
