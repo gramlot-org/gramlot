@@ -11,6 +11,7 @@ import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder, PageBootstrap} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
 import {FileHost} from '../src/adapters/index.js';
+import {mount} from './fixtures/mount.js';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
 const LOGIC = fileURLToPath(new URL('./fixtures/logic/', import.meta.url)).replace(/\/$/, '');
@@ -389,9 +390,11 @@ test('gate decision 6: a formula whose result_path is in a null context raises a
 
 test('gate decision 7: an inline body registers and runs (S09); a missing func raises at the first invocation', () => {
     const {app, data} = page();
-    app.builder.root.dataFormula({result_path: 'r', formula: 'a + 1', a: '^a'});
-    app.builder.root.dataController({script: 'this.SET("seen", b)', b: '^b'});
-    app.builder.root.dataController({func: 'missing', c: '^c'});
+    mount(app, root => {
+        root.dataFormula({result_path: 'r', formula: 'a + 1', a: '^a'});
+        root.dataController({script: 'this.SET("seen", b)', b: '^b'});
+        root.dataController({func: 'missing', c: '^c'});
+    });
     assert.equal(app.binding.router.size, 3);
     data.setItem('a', 1);
     assert.equal(data.getItem('r'), 2);
