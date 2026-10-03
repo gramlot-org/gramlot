@@ -1,4 +1,4 @@
-/** Real browser check of native editing (S10), checkbox and radio (S11), button and events with the R3 side effects (S12), handlers of a branch removed under freeze (S13, R12), strict CSP with the Q3 error (S14): the bundled runtime from js/ on a file:// shell, real typing, clicks and keys. */
+/** Real browser check of native editing (S10), checkbox and radio (S11), button and events with the R3 side effects (S12), handlers of a branch removed under freeze (S13, R12), strict CSP with the Q3 error (S14), iframe srcdoc from Data sandboxed: the bundled runtime from js/ on a file:// shell, real typing, clicks and keys. */
 import {build} from '../js/node_modules/esbuild/lib/main.js';
 import {HtmlBuilder} from '../js/node_modules/@genrojs/builders/src/index.js';
 import {mkdtemp, writeFile, rm} from 'node:fs/promises';
@@ -423,6 +423,74 @@ try {
     assert.ok(violations.some(line => line === 'script-src eval'), violations.join(', '));
     assert.deepEqual(strictNetwork, []);
     checks.push(`strict CSP (nonce, no unsafe-eval): named logic runs, inline script and button action raise the Q3 error, script without nonce blocked; violations ${JSON.stringify(violations)}`);
+
+    // An iframe srcdoc from Data gets an empty sandbox: its HTML is shown and its script does not run, also after
+    // a Data change and after a Source change from a literal srcdoc. A declared sandbox and a literal srcdoc are
+    // the author's: their script runs. Each script posts its name to the page.
+    const frameShell = new HtmlBuilder();
+    const frameHtml = frameShell.root.html();
+    frameHtml.head().meta({charset: 'utf-8'});
+    const frameBody = frameHtml.body();
+    frameBody.main({id: 'gramlot-root'});
+    frameBody.script(runtime.replaceAll('</script', '<\\/script'));
+    frameBody.script(`
+        window.messages = [];
+        window.addEventListener('message', event => window.messages.push(event.data));
+        window.posting = name => '<p id="m">' + name + '</p><script>parent.postMessage("' + name + '", "*")</' + 'script>';
+        const app = new GramlotRuntime.Gramlot({document, element: document.getElementById('gramlot-root'), transport: false});
+        const source = new GramlotRuntime.GramlotBuilder();
+        const root = source.root;
+        app.data.setItem('sd.data', posting('data'));
+        app.data.setItem('sd.allowed', posting('allowed'));
+        app.data.setItem('sd.switch', posting('switched'));
+        root.iframe({id: 'data-frame', name: 'data-frame', srcdoc: '^sd.data'});
+        root.iframe({id: 'allowed-frame', name: 'allowed-frame', srcdoc: '^sd.allowed', sandbox: 'allow-scripts'});
+        root.iframe({id: 'literal-frame', name: 'literal-frame', srcdoc: posting('literal')});
+        window.switchNode = root.iframe({id: 'switch-frame', name: 'switch-frame', srcdoc: '<p id="m">literal</p>'});
+        app.startSource(source.source);
+        window.app = app;
+    `);
+    const frameFile = join(folder, 'srcdoc.html');
+    await writeFile(frameFile, '<!doctype html>' + frameShell.render());
+    const framePage = await browser.newPage();
+    const frameErrors = [], frameNetwork = [];
+    framePage.on('pageerror', error => frameErrors.push(`${error.name}: ${error.message}`));
+    framePage.on('request', request => { if (/^https?:/.test(request.url())) frameNetwork.push(request.url()); });
+    await framePage.goto(pathToFileURL(frameFile).href);
+    await framePage.waitForFunction(() => window.app);
+    const sandboxes = () => framePage.evaluate(() => ['data-frame', 'allowed-frame', 'literal-frame', 'switch-frame']
+        .map(id => document.getElementById(id).getAttribute('sandbox')));
+    assert.deepEqual(await sandboxes(), ['', 'allow-scripts', null, null]);
+    // The scripts that run post their names; a later posting script proves the earlier frames had their turn.
+    const settle = async name => {
+        await framePage.evaluate(name => window.app.data.setItem('sd.allowed', window.posting(name)), name);
+        await framePage.waitForFunction(name => window.messages.includes(name), name);
+        await framePage.waitForTimeout(200);
+    };
+    await framePage.waitForFunction(() => window.messages.includes('allowed') && window.messages.includes('literal'));
+    await settle('allowed-1');
+    assert.equal(await framePage.frame('data-frame').textContent('#m'), 'data');
+    await framePage.evaluate(() => window.app.data.setItem('sd.data', window.posting('data-changed')));
+    await settle('allowed-2');
+    assert.equal(await framePage.frame('data-frame').textContent('#m'), 'data-changed');
+    const written = await framePage.evaluate(() => {
+        const frame = document.getElementById('switch-frame');
+        const observer = new MutationObserver(() => {});
+        observer.observe(frame, {attributes: true});
+        window.switchNode.setAttr({srcdoc: '^sd.switch'});
+        const names = observer.takeRecords().map(record => record.attributeName);
+        observer.disconnect();
+        return names;
+    });
+    assert.deepEqual(written, ['sandbox', 'srcdoc']);
+    await settle('allowed-3');
+    assert.equal(await framePage.frame('switch-frame').textContent('#m'), 'switched');
+    assert.deepEqual(await sandboxes(), ['', 'allow-scripts', null, '']);
+    const messages = await framePage.evaluate(() => window.messages);
+    assert.deepEqual(messages.filter(name => ['data', 'data-changed', 'switched'].includes(name)), [], messages.join(', '));
+    assert.deepEqual(frameErrors, []);
+    assert.deepEqual(frameNetwork, []);
+    checks.push(`srcdoc from Data sandboxed (initial, Data change, Source change from literal, sandbox written first); declared allow-scripts and literal srcdoc run; messages ${JSON.stringify(messages)}`);
 
     console.log(`${engineName} ${browser.version()} PASS: ${checks.join('; ')}; no HTTP(S).`);
 } finally {
