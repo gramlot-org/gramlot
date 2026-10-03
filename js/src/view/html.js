@@ -112,7 +112,10 @@ export class HtmlElement {
         if (textValue === DEFAULT_TEXT) textValue = this.text(node);
         const nextText = textValue == null ? '' : String(textValue);
         if (text.data !== nextText) text.data = nextText;
-        for (const key of new Set([...Object.keys(previous), ...Object.keys(attrs)])) {
+        const keys = [...new Set([...Object.keys(previous), ...Object.keys(attrs)])];
+        // The browser reads `sandbox` when `src` or `srcdoc` starts a navigation: `sandbox` is written first.
+        keys.sort((a, b) => (b === 'sandbox') - (a === 'sandbox'));
+        for (const key of keys) {
             if (this.metadataAttributes.has(key) || (controlled && key === 'value')) continue;
             const value = attrs[key];
             const attrName = key;
