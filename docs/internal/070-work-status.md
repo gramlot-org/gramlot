@@ -3148,6 +3148,37 @@ amendment 11.53.
   (`verify_inline_browser`, `verify_export_browser` ×2, sentinel, quick start);
   `verify_binding_browser.mjs` PASS in Chromium, strict CSP check included.
 
-**Open:** an `iframe` `srcdoc` attribute is written as is, also when resolved from Data;
-its HTML runs scripts wherever the policy of the page allows inline scripts; the directory export of `serverless` sets no CSP; nothing pushed,
-merged or released.
+**Open:** the directory export of `serverless` sets no CSP. Closed: the `iframe`
+`srcdoc` from Data (section 665); released as 0.2.3 (gramlot-org/gramlot#9).
+
+<a id="gc-070-665"></a>
+## 665 · An iframe srcdoc from Data is sandboxed — 2026-10-03
+
+Block ID: **GC-070-665**.
+
+Owner, 2026-10-03 ("ok"): an `iframe` whose `srcdoc` comes from Data gets
+`sandbox=""`, all restrictions; a `sandbox` declared by the author is kept as declared;
+a literal `srcdoc` gets none. Rejected: `srcdoc` only literal (no HTML preview), DOMPurify
+sanitizing (a runtime dependency and rules to maintain). Approved during the work
+("vai"): the declaration decides, not the value; `sandbox` written first by the live
+element; a pointer node value counts as Data, because Builder applies the `_wdg` of its
+datum over a literal `srcdoc`. Constitution amendment 11.54.
+
+- Core `feat/srcdoc-sandbox`: `f6876cc` `withDataSrcdocSandbox` and
+  `with_data_srcdoc_sandbox` in `_handleMeta` of both renderers, next to the script
+  attribute check; `HtmlElement.update` writes `sandbox` first. `103ca15` tests: the
+  same Sources in Python and JavaScript (`style-shortcuts.test.js`), Python
+  `SrcdocSandboxTests`, live `js/tests/srcdoc-sandbox.test.js`, and four iframes in
+  `scripts/verify_binding_browser.mjs`. `ae04748` example 13 uses `connect_onclick`: its
+  `onclick` stopped the page since 0.2.3. Rules:
+  [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035),
+  [GC-095 §065](../public/095-writing-pages.md#gc-095-065).
+- Verified on 2026-10-03: Python 81 OK, JavaScript 466/466, examples 31/31;
+  `verify_binding_browser.mjs` PASS in Chromium 153 and WebKit 26.6: the script of a
+  `srcdoc` from Data does not run, also after a Data change and after a Source change
+  from a literal `srcdoc`; a declared `allow-scripts` and a literal `srcdoc` run; without
+  the rule the check fails. Runner on port 8093 with the new core in both integrations
+  (`e01`, `e06`, `e12`, `e13`, `b01`, `b05`, `c01`, `c04`, `c06`, `c07`, `c09`).
+
+**Open:** example 10 (`10_cards_with_icons`) still writes `onclick` and stops at its
+first render, in Python and JavaScript.
