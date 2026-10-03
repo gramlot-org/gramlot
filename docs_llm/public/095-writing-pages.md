@@ -287,7 +287,16 @@ under a host CSP; without it the browser refuses compilation and Gramlot raises 
 `EvalError` naming node and attribute and pointing to named logic or the permissive
 profile ([GC-090 035](090-classes-and-hosts.md)); covers `formula`, `script`,
 `_if`/`_else`, `==`, `action`, `connect_on<event>`. Examples: `examples/controllers/04_inline_expressions`
-(`c04`), `05_node_methods` (`c05`). Legacy macros (`GET`, `SET`, `PUT`, `FIRE`, `FIRE_AFTER`, `$1`)
+(`c04`), `05_node_methods` (`c05`). The `@gramlot/gramlot-serverless` file allows
+`'unsafe-eval'`: inline runs there too. Inline code runs only as written in the
+received Source (`main`, a remote Source, a `GramlotBuilderBag` given to `startSource`),
+as literal strings. Errors naming node and attribute ([GC-090 035](090-classes-and-hosts.md)):
+a code attribute changed after the start or a node with inline code inserted in the live
+Source (not run; use named logic); a code attribute holding a pointer
+(`formula='^.code'`), refused at reception (data reaches inline code as parameters,
+never as text); an attribute of the form `onclick` (write `connect_onclick`); a
+`javascript:` URL in `href`, `src`, `formaction`, `xlink:href`, written or from Data.
+Legacy macros (`GET`, `SET`, `PUT`, `FIRE`, `FIRE_AFTER`, `$1`)
 only via a deprecated preprocessor with legacy regexes → `this.GET(...)` etc.,
 `$1` → `arguments[0]`; macros in strings/comments are translated as in legacy; one
 `console.warn` per declaration. `this.SET(...)` passes unchanged, no warning.

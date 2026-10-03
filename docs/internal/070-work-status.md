@@ -3114,3 +3114,37 @@ every package. Constitution amendment 11.52.
 
 **Open:** gramlot-examples `apps/hello-world` still depends on `@gramlot/gramlot-browser`,
 which is no longer on npm.
+
+<a id="gc-070-660"></a>
+## 660 · Inline code activated by the received Source — 2026-10-03
+
+Block ID: **GC-070-660**.
+
+Owner, 2026-10-03: inline code stays and is available everywhere, also in the file
+without a server ("credo sia necessario accettare unsafe e fare il possibile per
+prevenire"); the code is activated in one place only, the reception of the Source, in
+the Gramlot Source classes; no new wire type. Approved during the work: the test
+migration (A.3), the refusal of `on*` attributes and `javascript:` URLs, and
+`connect-src *` in the single file "until the CSP grammar arrives". Constitution
+amendment 11.53.
+
+- Core `feat/inline-code-activation`: `0cb54f1` activation in `Gramlot.prepareSource`
+  (`GramlotBuilderBagNode.activateCode`, `InlineCompiler` compiles only the activated
+  text), pointer in a code attribute refused at reception, `on*`/`javascript:` refused
+  by the JS renderers; the tests that wrote inline code in the live Source mount a
+  separate Source (`js/tests/fixtures/mount.js`). `c9584ab` the same attribute rule in
+  the Python renderers and a contract test of a Python Source with inline code.
+  Rules: [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035),
+  [GC-095 §065](../public/095-writing-pages.md#gc-095-065).
+- gramlot-js-server `feat/serverless-inline-code`: `312d4fc` single-file CSP with
+  `'unsafe-eval'` and `connect-src *`, example `serverless/examples/inline-code` and
+  `verify_inline_browser.mjs` in both CI jobs; `902c5e3` its guides.
+- Verified on 2026-10-03: Python 76 OK, JavaScript 461/461, examples 31/31; runner on
+  port 8091 with the new core in both integrations (`c01`, `c02`, `c04`, `c06`, `c07`,
+  `c09`), no console or server errors; gramlot-js-server with the new core in a
+  temporary worktree: server 6/6, serverless 20/20, Chromium checks PASS
+  (`verify_inline_browser`, `verify_export_browser` ×2, sentinel, quick start).
+
+**Open:** an `iframe` `srcdoc` attribute is written as is, also when resolved from Data;
+its HTML runs scripts wherever the policy of the page allows inline scripts; the directory export of `serverless` sets no CSP; nothing pushed,
+merged or released.
