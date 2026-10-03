@@ -2,7 +2,8 @@ import {HtmlBuilder, HtmlRenderer, SvgBuilder, sourceAttributeItems} from '@genr
 import {GramlotSvgRenderer} from './gramlot-svg-renderer.js';
 import {
     SVG_NS, XHTML_NS, boundaryAttributes, displayItem, domNames, isExpression, requireNoExpressionTemplate,
-    requireNoScriptAttributes, splitNativeAttributes, textValue, withoutBindingAttributes, withoutNullValues,
+    requireNoScriptAttributes, splitNativeAttributes, textValue, withDataSrcdocSandbox, withoutBindingAttributes,
+    withoutNullValues,
 } from './attributes.js';
 
 /**
@@ -39,12 +40,13 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
      * Builder's meta; then the noConvertStyle attributes of the tag are set aside, because adaptAttrs
      * has no tag. A sub-builder boundary node keeps its attributes literal, with the Gramlot filters and
      * names; the `html` boundary inside SVG is a `foreignObject` in the SVG namespace. No attribute
-     * makes the browser run a text: no `on<event>`, no `javascript:` URL.
+     * makes the browser run a text: no `on<event>`, no `javascript:` URL, no `srcdoc` from Data without `sandbox`.
      */
     _handleMeta(node, runtimeAttrs) {
+        const prefixes = this.builder.constructor.dialectPrefixes;
         const evaluated = this.evaluateExpressions(node, runtimeAttrs);
-        requireNoScriptAttributes(node, evaluated, this.builder.constructor.dialectPrefixes);
-        const [tag, attrs] = super._handleMeta(node, evaluated);
+        requireNoScriptAttributes(node, evaluated, prefixes);
+        const [tag, attrs] = super._handleMeta(node, withDataSrcdocSandbox(node, evaluated, prefixes));
         if (node._getMeta('subbuilder')) {
             const boundary = boundaryAttributes(attrs);
             if (node._getMeta('subbuilder') === 'html') boundary.xmlns = SVG_NS;

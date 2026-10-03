@@ -64,6 +64,36 @@ function isJavascriptUrl(value) {
     return typeof value === 'string' && /^javascript:/i.test(value.replace(/[\t\n\r]/g, '').replace(/^[\u0000-\u0020]+/, ''));
 }
 
+/**
+ * `attrs` of an `iframe` whose `srcdoc` comes from Data, with an empty `sandbox` first: the browser shows
+ * the HTML of a datum and runs nothing of it. `srcdoc` comes from Data when it is a `^`/`=` pointer, a `==`
+ * expression or a `${…}` template reading one, or when the node value is a pointer, whose datum can carry
+ * `srcdoc` in its `_wdg`. The declaration decides, so the iframe has `sandbox` while `srcdoc` is still null.
+ * A `sandbox` declared in the Source stays as declared; a literal `srcdoc` gets none. The names are read
+ * without the dialect `prefixes` (`html_`); `sandbox` takes the prefix of `srcdoc`.
+ */
+export function withDataSrcdocSandbox(node, attrs, prefixes = []) {
+    if (node.nodeTag !== 'iframe') return attrs;
+    const bare = name => {
+        const prefix = prefixes.find(candidate => name.startsWith(candidate)) ?? '';
+        return [prefix, name.slice(prefix.length).toLowerCase()];
+    };
+    const declared = Object.fromEntries(sourceAttributeItems(node.getAttr()));
+    const srcdoc = [...Object.keys(declared), ...Object.keys(attrs)].find(name => bare(name)[1] === 'srcdoc');
+    if (srcdoc === undefined || Object.keys(declared).some(name => bare(name)[1] === 'sandbox')) return attrs;
+    const fromData = (name, seen) => {
+        const raw = declared[name];
+        seen.add(name);
+        return node.pointerType(raw) !== null || isExpression(raw) || templateParameters(raw)
+            .some(param => Object.hasOwn(declared, param) && !seen.has(param) && fromData(param, seen));
+    };
+    if (node.pointerType(node.value) === null && !(Object.hasOwn(declared, srcdoc) && fromData(srcdoc, new Set()))) {
+        return attrs;
+    }
+    const rest = Object.fromEntries(Object.entries(attrs).filter(([name]) => bare(name)[1] !== 'sandbox'));
+    return {[`${bare(srcdoc)[0]}sandbox`]: '', ...rest};
+}
+
 /** The attributes of `attrs` whose value is neither null nor undefined. */
 export function withoutNullValues(attrs) {
     return Object.fromEntries(Object.entries(attrs).filter(([, value]) => value != null));

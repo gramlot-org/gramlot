@@ -182,5 +182,46 @@ class ScriptAttributeTests(unittest.TestCase):
         self.assertEqual(rendered(authoring), '<a href="https://example.org/">x</a>')
 
 
+
+class SrcdocSandboxTests(unittest.TestCase):
+    """An iframe srcdoc from Data gets an empty sandbox; the same strings as ``js/tests/style-shortcuts.test.js``."""
+
+    def test_a_srcdoc_from_data_gets_an_empty_sandbox_before_it(self):
+        def authoring(root, data):
+            data["doc"] = "<script>run()</script>"
+            root.iframe(title="p", srcdoc="^doc")
+        self.assertEqual(rendered(authoring),
+                         '<iframe sandbox="" title="p" srcdoc="&lt;script&gt;run()&lt;/script&gt;"></iframe>')
+
+    def test_the_declaration_decides_also_for_a_missing_value(self):
+        for declaration in ("^missing", "=missing", "==missing"):
+            self.assertEqual(rendered(lambda root, data, value=declaration: root.iframe(srcdoc=value)),
+                             '<iframe sandbox=""></iframe>', declaration)
+
+    def test_a_template_reading_data_and_a_datum_carrying_srcdoc_count_as_data(self):
+        def authoring(root, data):
+            data["doc"] = "d"
+            data.set_item("w", "x", _attributes={"_wdg": {"srcdoc": "<b>w</b>"}})
+            root.iframe(srcdoc="<p>${d}</p>", d="^doc")
+            root.iframe("^w", srcdoc="<i>lit</i>")
+        self.assertEqual(rendered(authoring), '<iframe sandbox="" srcdoc="&lt;p&gt;d&lt;/p&gt;"></iframe>'
+                                              '<iframe sandbox="" srcdoc="&lt;b&gt;w&lt;/b&gt;">x</iframe>')
+
+    def test_a_declared_sandbox_and_a_literal_srcdoc_are_left_alone(self):
+        def authoring(root, data):
+            data["doc"] = "d"
+            root.iframe(srcdoc="^doc", sandbox="allow-scripts")
+            root.iframe(srcdoc="<p>lit</p>")
+            root.iframe(srcdoc="<p>${t}</p>", t="lit")
+        self.assertEqual(rendered(authoring), '<iframe srcdoc="d" sandbox="allow-scripts"></iframe>'
+                                              '<iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe>'
+                                              '<iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe>')
+
+    def test_the_html_prefix_is_read_and_kept(self):
+        def authoring(root, data):
+            data["doc"] = "d"
+            root.iframe(html_srcdoc="^doc")
+        self.assertEqual(rendered(authoring), '<iframe sandbox="" srcdoc="d"></iframe>')
+
 if __name__ == "__main__":
     unittest.main()
