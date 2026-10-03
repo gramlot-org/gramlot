@@ -95,8 +95,8 @@ class Page(GramlotPage):
         codepane.h3(f"Python · {source_path.name}")
         codepane.pre().code(source_path.read_text(), class_="language-python",
                             id=f"code-{key}")
-        logic_path = examples / f"{example['folder']}_aux.js"
-        if logic_path.is_file():
-            codepane.h3(f"Companion · {logic_path.name}")
-            codepane.pre().code(logic_path.read_text(), class_="language-javascript",
-                                id=f"logic-{key}")
+        # The Python page takes its Logic from the JavaScript module beside it.
+        logic_path = examples / f"{example['folder']}.js"
+        codepane.h3(f"Logic · {logic_path.name}")
+        codepane.pre().code(logic_path.read_text(), class_="language-javascript",
+                            id=f"logic-{key}")

@@ -15,10 +15,10 @@ function fixture() {
         static families = [{key: 'html_svg', title: 'HTML / SVG', readme: '# HTML / SVG',
             examples: ['e01', 'e02'].map(key => ({key, title: key, frameUrl: key,
                 readme: '# Example\n\n**Description** <script>bad()</script><img onerror="bad()"> [bad](javascript:alert(3))',
-                source: 'def hello():\n    return "<script>bad()</script>"', logic: null}))},
+                source: 'def hello():\n    return "<script>bad()</script>"'}))},
         {key: 'controllers', title: 'Controllers', readme: '# Controllers',
-            examples: [{key: 'c01', title: 'c01', frameUrl: 'c01', readme: '# Named', source: 'x = 1',
-                logic: 'export class Logic { total(kwargs) { return "<b>"; } }'}]}];
+            examples: [{key: 'c01', title: 'c01', frameUrl: 'c01', readme: '# Named',
+                source: 'export class Logic { total(kwargs) { return "<b>"; } }'}]}];
     }
     const builder = new GramlotBuilder();
     new Page().main(builder.root);
@@ -56,7 +56,7 @@ test('ordinary IDs connect local tab events; Source owns selection and lazy fram
     f.app.dispose();
 });
 
-test('each family has its own category panel; a companion module is shown beside the page code', () => {
+test('each family has its own category panel; the page module code, Logic included, is shown escaped', () => {
     const f = fixture();
     assert.deepEqual([...f.document.querySelectorAll('.runner-family')].map(link => link.id), ['open-html_svg', 'open-controllers']);
     f.get('open-controllers').click();
@@ -64,10 +64,10 @@ test('each family has its own category panel; a companion module is shown beside
     assert.equal(f.get('panel-html_svg').hidden, true);
     assert.equal(f.get('panel-controllers').querySelector('iframe'), null);
     assert.equal(f.get('readme-controllers').querySelector('h1').textContent, 'Controllers');
-    assert.equal(f.get('logic-e01'), null);
-    assert.match(f.get('logic-c01').textContent, /return "<b>";/);
-    assert.equal(f.get('logic-c01').querySelector('b'), null);
-    assert.ok(f.get('logic-c01').classList.contains('hljs'));
+    assert.equal(f.get('logic-c01'), null);
+    assert.match(f.get('code-c01').textContent, /return "<b>";/);
+    assert.equal(f.get('code-c01').querySelector('b'), null);
+    assert.ok(f.get('code-c01').classList.contains('hljs'));
     f.get('open-c01').click();
     assert.equal(f.get('frame-c01').getAttribute('src'), 'c01');
     f.app.dispose();

@@ -87,10 +87,5 @@ export class RunnerPage extends GramlotPage {
         codepane.h3(`JavaScript · ${example.folder}.js`);
         codepane.pre().code(example.source, {class: 'language-javascript',
             id: `code-${key}`});
-        if (example.logic != null) {
-            codepane.h3(`Companion · ${example.folder}_aux.js`);
-            codepane.pre().code(example.logic, {class: 'language-javascript',
-                id: `logic-${key}`});
-        }
     }
 }
