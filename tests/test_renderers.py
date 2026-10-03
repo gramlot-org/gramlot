@@ -140,5 +140,47 @@ class DocumentTests(unittest.TestCase):
         self.assertEqual(rendered(authoring), "<div>x</div><div>y</div>")
 
 
+class ScriptAttributeTests(unittest.TestCase):
+    """No attribute makes the browser run a text outside InlineCompiler, as the JS renderers."""
+
+    def test_an_on_event_attribute_is_an_error_naming_node_and_attribute(self):
+        for authoring, name in [
+            (lambda root, data: root.button("b", onclick="x()"), "onclick"),
+            (lambda root, data: root.div(html_onMouseOver="x()"), "html_onMouseOver"),
+            (lambda root, data: root.svg(width=1).circle(r=1, onload="x()"), "onload"),
+        ]:
+            with self.assertRaisesRegex(ValueError, rf"^\w+ '.+': '{name}' has the form of a native event handler, run by "
+                                                    r"the browser outside Gramlot; write connect_on\w+ for an event, or rename the attribute$"):
+                rendered(authoring)
+
+    def test_an_attribute_named_on_and_connect_on_are_not_native_handlers(self):
+        def authoring(root, data):
+            root.input(on="yes", connect_onclick="void 0")
+        self.assertEqual(rendered(authoring), '<input on="yes"/>')
+
+    def test_a_javascript_url_is_an_error_written_or_from_data(self):
+        for url in ["javascript:alert(1)", " JavaScript:alert(1)", "java\tscr\nipt:alert(1)", "\x01javascript:void 0"]:
+            def authoring(root, data, url=url):
+                data["url"] = url
+                root.a("x", href="^url")
+            with self.assertRaisesRegex(ValueError, r"^a '.+': 'href' holds a javascript: URL, run by the browser as code; "
+                                                    r"write connect_onclick or the action of a button instead$"):
+                rendered(authoring)
+        for authoring, name in [
+            (lambda root, data: root.iframe(src="javascript:alert(1)"), "src"),
+            (lambda root, data: root.button("b", formaction="javascript:alert(1)"), "formaction"),
+            (lambda root, data: root.svg(width=1).a(href="javascript:alert(1)"), "href"),
+            (lambda root, data: root.svg(width=1).a(xlink_href="javascript:alert(1)"), "xlink_href"),
+        ]:
+            with self.assertRaisesRegex(ValueError, rf"'{name}' holds a javascript: URL"):
+                rendered(authoring)
+
+    def test_an_ordinary_url_is_written(self):
+        def authoring(root, data):
+            data["url"] = "https://example.org/"
+            root.a("x", href="^url")
+        self.assertEqual(rendered(authoring), '<a href="https://example.org/">x</a>')
+
+
 if __name__ == "__main__":
     unittest.main()
