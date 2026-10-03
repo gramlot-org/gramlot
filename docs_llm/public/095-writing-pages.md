@@ -296,6 +296,10 @@ Source (not run; use named logic); a code attribute holding a pointer
 (`formula='^.code'`), refused at reception (data reaches inline code as parameters,
 never as text); an attribute of the form `onclick` (write `connect_onclick`); a
 `javascript:` URL in `href`, `src`, `formaction`, `xlink:href`, written or from Data.
+An `iframe` `srcdoc` from Data (pointer, `==`, `${…}` template reading a pointer, or a
+pointer node value whose datum carries `srcdoc` in `_wdg`) gets `sandbox=""`: HTML shown,
+nothing runs. Literal `srcdoc`: no `sandbox`. A `sandbox` written in the Source is kept
+(`sandbox='allow-scripts'` runs scripts) and turns the rule off (GC-090 §035).
 Legacy macros (`GET`, `SET`, `PUT`, `FIRE`, `FIRE_AFTER`, `$1`)
 only via a deprecated preprocessor with legacy regexes → `this.GET(...)` etc.,
 `$1` → `arguments[0]`; macros in strings/comments are translated as in legacy; one

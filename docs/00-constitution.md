@@ -1349,3 +1349,31 @@ open until the CSP grammar arrives.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
 [GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §660.
+
+### Amendment 11.54 — An iframe srcdoc from Data is sandboxed — 2026-10-03
+
+Owner decision of 2026-10-03 ("ok"): an `iframe` whose `srcdoc` comes from Data gets
+`sandbox=""`; the author's `sandbox` is kept; a literal `srcdoc` gets none. Rejected: a
+`srcdoc` accepted only as a literal, which removes the HTML preview, and sanitizing with
+DOMPurify, a runtime dependency with rules to maintain. This extends item 2 of 11.53
+(browser-run attributes): a `srcdoc` is a whole document whose scripts the browser
+runs, and the `on*`/`javascript:` refusal does not reach them.
+
+1. Rule. The Python and JavaScript renderers add `sandbox=""` to an `iframe` whose
+   `srcdoc` is declared as a `^`/`=` pointer, a `==` expression or a `${…}` template
+   reading a pointer, or whose node value is a pointer, since Builder applies the
+   `_wdg` of that datum over a literal `srcdoc`. The declaration decides, not the
+   value, so the iframe has its `sandbox` before `srcdoc` has one.
+2. Author. A `sandbox` declared in the Source, with any value, is kept as declared and
+   turns the rule off; a literal `srcdoc` gets no `sandbox`.
+3. Order. The live element writes `sandbox` before every other attribute, because the
+   browser reads `sandbox` when `src` or `srcdoc` starts a navigation.
+4. Examples 10 and 13. Amendments 11.38 and 11.39 approved a native `onclick` in
+   examples 10 (card removal) and 13 (live Source playground); since 11.53 the
+   renderers refuse it. Both examples, Python and JavaScript, pass to
+   `connect_onclick` with the same text and the same behavior through Gramlot. The
+   core CI runs their browser checks (`verify_live_cards.mjs`,
+   `verify_live_playground.mjs`) on the runner.
+
+Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
+[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §665.

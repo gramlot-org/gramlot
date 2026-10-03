@@ -58,6 +58,22 @@ const CASES = {
         root.dataSetter({destination_path: 'e', value: '^.literal'});
         root.div('ok');
     },
+    srcdoc(root, data) {
+        data.setItem('doc', '<script>run()</script>');
+        data.setItem('w', 'x', {_wdg: {srcdoc: '<b>w</b>'}});
+        root.iframe({title: 'p', srcdoc: '^doc'});
+        root.iframe({srcdoc: '=doc'});
+        root.iframe({srcdoc: '^missing'});
+        root.iframe({srcdoc: '==doc'});
+        root.iframe({srcdoc: '<p>${d}</p>', d: '^doc'});
+        root.iframe({t: '<i>${d}</i>', d: '^doc', srcdoc: '<p>${t}</p>'});
+        root.iframe({html_srcdoc: '^doc'});
+        root.iframe('^w', {srcdoc: '<i>lit</i>'});
+        root.iframe({srcdoc: '^doc', sandbox: 'allow-scripts'});
+        root.iframe({srcdoc: '<p>lit</p>'});
+        root.iframe({srcdoc: '<p>${t}</p>', t: 'lit'});
+        root.div({title: '^doc'});
+    },
 };
 const DOCUMENTS = {
     htmlRoot(root) {
@@ -123,6 +139,22 @@ def dataElements(root, data):
     root.dataSetter(destination_path="e", value="^.literal")
     root.div("ok")
 
+def srcdoc(root, data):
+    data.set_item("doc", "<script>run()</script>")
+    data.set_item("w", "x", _attributes={"_wdg": {"srcdoc": "<b>w</b>"}})
+    root.iframe(title="p", srcdoc="^doc")
+    root.iframe(srcdoc="=doc")
+    root.iframe(srcdoc="^missing")
+    root.iframe(srcdoc="==doc")
+    root.iframe(srcdoc="<p>\u0024{d}</p>", d="^doc")
+    root.iframe(t="<i>\u0024{d}</i>", d="^doc", srcdoc="<p>\u0024{t}</p>")
+    root.iframe(html_srcdoc="^doc")
+    root.iframe("^w", srcdoc="<i>lit</i>")
+    root.iframe(srcdoc="^doc", sandbox="allow-scripts")
+    root.iframe(srcdoc="<p>lit</p>")
+    root.iframe(srcdoc="<p>\u0024{t}</p>", t="lit")
+    root.div(title="^doc")
+
 def htmlRoot(root, data):
     html = root.html()
     html.head().title("t")
@@ -137,7 +169,7 @@ def rendered(case, **opts):
     case(builder.root, builder.data)
     return builder.render(**opts)
 
-cases = {case.__name__: rendered(case) for case in (shortcuts, names, native, nulls, text, mask, foreign, dataElements)}
+cases = {case.__name__: rendered(case) for case in (shortcuts, names, native, nulls, text, mask, foreign, dataElements, srcdoc)}
 documents = {case.__name__: rendered(case, doctype=True) for case in (htmlRoot, otherRoot)}
 print(json.dumps({"cases": cases, "documents": documents}))
 `;
@@ -171,6 +203,16 @@ const EXPECTED = {
     mask: '<div></div><div></div><div>Ciao 0</div><div>Ciao false</div><div>Ciao a%sb</div><div>1234.5</div>',
     foreign: `<svg><foreignObject width="5" xmlns="${SVG}"><div xmlns="${HTML}" data-x="1" style="color: green"></div></foreignObject></svg>`,
     dataElements: '<div>ok</div>',
+    srcdoc: '<iframe sandbox="" title="p" srcdoc="&lt;script&gt;run()&lt;/script&gt;"></iframe>'
+        + '<iframe sandbox="" srcdoc="&lt;script&gt;run()&lt;/script&gt;"></iframe>'
+        + '<iframe sandbox=""></iframe><iframe sandbox=""></iframe>'
+        + '<iframe sandbox="" srcdoc="&lt;p&gt;&lt;script&gt;run()&lt;/script&gt;&lt;/p&gt;"></iframe>'
+        + '<iframe sandbox="" srcdoc="&lt;p&gt;&lt;i&gt;&lt;script&gt;run()&lt;/script&gt;&lt;/i&gt;&lt;/p&gt;"></iframe>'
+        + '<iframe sandbox="" srcdoc="&lt;script&gt;run()&lt;/script&gt;"></iframe>'
+        + '<iframe sandbox="" srcdoc="&lt;b&gt;w&lt;/b&gt;">x</iframe>'
+        + '<iframe srcdoc="&lt;script&gt;run()&lt;/script&gt;" sandbox="allow-scripts"></iframe>'
+        + '<iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe><iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe>'
+        + '<div title="&lt;script&gt;run()&lt;/script&gt;"></div>',
 };
 
 test('Python and JavaScript GramlotHtmlRenderer give identical strings for the same Source', () => {

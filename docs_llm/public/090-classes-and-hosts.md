@@ -365,3 +365,11 @@ name, not a list; `on` alone accepted); (2) a `javascript:` URL in `href`, `src`
 `formaction`, `xlink:href`, read as the URL parser does (tabs/newlines removed, leading
 spaces/controls trimmed): `… holds a javascript: URL, run by the browser as code; write
 connect_onclick or the action of a button instead`.
+**`iframe` `srcdoc` from Data**: both renderers add `sandbox=""` (HTML shown, nothing
+runs). The declaration decides, not the value: `^`/`=` pointer, `==`, `${…}` template
+reading a pointer (also through another template), or a pointer node value whose datum
+can carry `srcdoc` in `_wdg`; so `sandbox` is there while `srcdoc` is null and a Data
+change writes only `srcdoc`. Literal `srcdoc`: no `sandbox`. A `sandbox` declared in
+the Source (any value) is kept and turns the rule off; removing it brings `sandbox=""`
+back. `html_srcdoc` → `html_sandbox`. The live renderer writes `sandbox` before every
+other attribute: the browser reads it when `src`/`srcdoc` starts a navigation.

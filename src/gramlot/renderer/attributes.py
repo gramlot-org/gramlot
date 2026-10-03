@@ -75,6 +75,40 @@ def is_javascript_url(value):
     return bool(JAVASCRIPT_SCHEME.match(URL_LEADING_CONTROLS.sub("", URL_TABS_AND_NEWLINES.sub("", value))))
 
 
+def with_data_srcdoc_sandbox(node, attrs, prefixes=()):
+    """``attrs`` of an ``iframe`` whose ``srcdoc`` comes from Data, with an empty ``sandbox`` first.
+
+    The browser shows the HTML of a datum and runs nothing of it. ``srcdoc`` comes from Data when it is
+    a ``^``/``=`` pointer, a ``==`` expression or a ``${…}`` template reading one, or when the node value
+    is a pointer, whose datum can carry ``srcdoc`` in its ``_wdg``. The declaration decides, so the iframe
+    has ``sandbox`` while ``srcdoc`` is still None. A ``sandbox`` declared in the Source stays as declared;
+    a literal ``srcdoc`` gets none. The names are read without the dialect ``prefixes`` (``html_``);
+    ``sandbox`` takes the prefix of ``srcdoc``.
+    """
+    if node.node_tag != "iframe":
+        return attrs
+
+    def bare(name):
+        prefix = next((candidate for candidate in prefixes if name.startswith(candidate)), "")
+        return prefix, name[len(prefix):].lower()
+
+    declared = dict(node.fixed_attr_items())
+    srcdoc = next((name for name in [*declared, *attrs] if bare(name)[1] == "srcdoc"), None)
+    if srcdoc is None or any(bare(name)[1] == "sandbox" for name in declared):
+        return attrs
+
+    def from_data(name, seen):
+        raw = declared[name]
+        seen.add(name)
+        return node.pointer_type(raw) is not None or is_expression(raw) or any(
+            param in declared and param not in seen and from_data(param, seen) for param in template_parameters(raw))
+
+    if node.pointer_type(node.value) is None and not (srcdoc in declared and from_data(srcdoc, set())):
+        return attrs
+    rest = {name: value for name, value in attrs.items() if bare(name)[1] != "sandbox"}
+    return {f"{bare(srcdoc)[0]}sandbox": "", **rest}
+
+
 def without_null_values(attrs):
     """The attributes of ``attrs`` whose value is not None."""
     return {name: value for name, value in attrs.items() if value is not None}

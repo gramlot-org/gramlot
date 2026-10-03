@@ -6,7 +6,8 @@ from genro_builders.contrib.svg import SvgBuilder
 
 from .attributes import (
     SVG_NS, XHTML_NS, boundary_attributes, display_item, dom_names, is_expression, require_no_expression_template,
-    require_no_script_attributes, split_native_attributes, text_value, without_binding_attributes, without_null_values,
+    require_no_script_attributes, split_native_attributes, text_value, with_data_srcdoc_sandbox, without_binding_attributes,
+    without_null_values,
 )
 from .svg_renderer import GramlotSvgRenderer
 
@@ -44,11 +45,12 @@ class GramlotHtmlRenderer(HtmlRenderer):
         ``adapt_attrs`` has no tag. A sub-builder boundary node keeps its attributes literal,
         with the Gramlot filters and names; the ``html`` boundary inside SVG is a
         ``foreignObject`` in the SVG namespace. No attribute makes the browser run a text:
-        no ``on<event>``, no ``javascript:`` URL.
+        no ``on<event>``, no ``javascript:`` URL, no ``srcdoc`` from Data without ``sandbox``.
         """
+        prefixes = self.builder.dialect_prefixes
         evaluated = self.evaluate_expressions(node, runtime_attrs)
-        require_no_script_attributes(node, evaluated, self.builder.dialect_prefixes)
-        tag, attrs = super()._handle_meta(node, evaluated)
+        require_no_script_attributes(node, evaluated, prefixes)
+        tag, attrs = super()._handle_meta(node, with_data_srcdoc_sandbox(node, evaluated, prefixes))
         if node._get_meta("subbuilder"):
             boundary = boundary_attributes(attrs)
             if node._get_meta("subbuilder") == "html":

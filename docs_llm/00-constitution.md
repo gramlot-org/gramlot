@@ -1246,3 +1246,27 @@ connections open until the CSP grammar arrives.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
 [GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §660.
+
+### Amendment 11.54 — An iframe srcdoc from Data is sandboxed — 2026-10-03
+
+Owner, 2026-10-03 ("ok"): `iframe` `srcdoc` from Data → `sandbox=""`; author's
+`sandbox` kept; literal `srcdoc` none. Rejected: literal-only `srcdoc` (no HTML
+preview), DOMPurify (runtime dependency, rules to maintain). Extends 11.53 item 2: a
+`srcdoc` is a whole document whose scripts the browser runs, out of reach of the
+`on*`/`javascript:` refusal.
+
+1. Rule. Python and JS renderers add `sandbox=""` when `srcdoc` is declared as a
+   `^`/`=` pointer, a `==`, a `${…}` template reading a pointer, or when the node value
+   is a pointer (Builder applies its datum's `_wdg` over a literal `srcdoc`). The
+   declaration decides, not the value.
+2. Author. A declared `sandbox` (any value) is kept and turns the rule off; literal
+   `srcdoc`: no `sandbox`.
+3. Order. The live element writes `sandbox` first: the browser reads it when
+   `src`/`srcdoc` starts a navigation.
+4. Examples 10 and 13. The native `onclick` approved by 11.38 (card removal) and 11.39
+   (live Source playground), refused since 11.53, passes to `connect_onclick` in Python
+   and JS: same text, same behavior through Gramlot. Core CI runs
+   `verify_live_cards.mjs` and `verify_live_playground.mjs` on the runner.
+
+Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
+[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §665.
