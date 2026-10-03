@@ -1368,6 +1368,12 @@ runs, and the `on*`/`javascript:` refusal does not reach them.
    turns the rule off; a literal `srcdoc` gets no `sandbox`.
 3. Order. The live element writes `sandbox` before every other attribute, because the
    browser reads `sandbox` when `src` or `srcdoc` starts a navigation.
+4. Examples 10 and 13. Amendments 11.38 and 11.39 approved a native `onclick` in
+   examples 10 (card removal) and 13 (live Source playground); since 11.53 the
+   renderers refuse it. Both examples, Python and JavaScript, pass to
+   `connect_onclick` with the same text and the same behavior through Gramlot. The
+   core CI runs their browser checks (`verify_live_cards.mjs`,
+   `verify_live_playground.mjs`) on the runner.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
 [GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §665.

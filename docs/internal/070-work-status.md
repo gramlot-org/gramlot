@@ -3162,7 +3162,9 @@ a literal `srcdoc` gets none. Rejected: `srcdoc` only literal (no HTML preview),
 sanitizing (a runtime dependency and rules to maintain). Approved during the work
 ("vai"): the declaration decides, not the value; `sandbox` written first by the live
 element; a pointer node value counts as Data, because Builder applies the `_wdg` of its
-datum over a literal `srcdoc`. Constitution amendment 11.54.
+datum over a literal `srcdoc`. Owner, 2026-10-03: examples 10 and 13 pass to
+`connect_onclick`, recorded in 11.54, and their browser checks join the CI.
+Constitution amendment 11.54.
 
 - Core `feat/srcdoc-sandbox`: `f6876cc` `withDataSrcdocSandbox` and
   `with_data_srcdoc_sandbox` in `_handleMeta` of both renderers, next to the script
@@ -3170,7 +3172,10 @@ datum over a literal `srcdoc`. Constitution amendment 11.54.
   same Sources in Python and JavaScript (`style-shortcuts.test.js`), Python
   `SrcdocSandboxTests`, live `js/tests/srcdoc-sandbox.test.js`, and four iframes in
   `scripts/verify_binding_browser.mjs`. `ae04748` example 13 uses `connect_onclick`: its
-  `onclick` stopped the page since 0.2.3. Rules:
+  `onclick` stopped the page since 0.2.3; `c4dbbfc` the same for example 10. `0b14e33`
+  documents and amendment 11.54. `f9cdb31` the core CI job installs Playwright Chromium
+  and runs `verify_binding_browser.mjs`, then the runner with the Uvicorn integration
+  and `verify_live_cards.mjs`, `verify_live_playground.mjs`. Rules:
   [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035),
   [GC-095 §065](../public/095-writing-pages.md#gc-095-065).
 - Verified on 2026-10-03: Python 81 OK, JavaScript 466/466, examples 31/31;
@@ -3178,7 +3183,9 @@ datum over a literal `srcdoc`. Constitution amendment 11.54.
   `srcdoc` from Data does not run, also after a Data change and after a Source change
   from a literal `srcdoc`; a declared `allow-scripts` and a literal `srcdoc` run; without
   the rule the check fails. Runner on port 8093 with the new core in both integrations
-  (`e01`, `e06`, `e12`, `e13`, `b01`, `b05`, `c01`, `c04`, `c06`, `c07`, `c09`).
+  (`e01`, `e06`, `e12`, `e13`, `b01`, `b05`, `c01`, `c04`, `c06`, `c07`, `c09`);
+  `verify_live_cards.mjs` (`e10`) and `verify_live_playground.mjs` (`e13`) PASS on
+  `/py` and `/js`, both failing before the fix.
 
-**Open:** example 10 (`10_cards_with_icons`) still writes `onclick` and stops at its
-first render, in Python and JavaScript.
+**Open:** the same `onclick` correction in gramlot-examples, done in its own chat; the
+new CI steps run for the first time on the pull request.
