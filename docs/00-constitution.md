@@ -1318,3 +1318,34 @@ carries the theme and the logo files in the npm and PyPI packages, as JSR does.
 3. History. Dated decisions and records keep the name of 11.50.
 
 The §7 table, the §7 heirs paragraph and the §14 naming clarification are updated.
+
+### Amendment 11.53 — Inline code is activated by the received Source; the single file allows 'unsafe-eval' — 2026-10-03
+
+Owner decisions of 2026-10-03: inline code stays and is available everywhere, also in
+the file without a server: "credo sia necessario accettare unsafe e fare il possibile
+per prevenire"; the code is activated in one place only, the decoding of the Source, in
+the Gramlot Source classes, with no new wire type; connections of the single file stay
+open until the CSP grammar arrives.
+
+1. Activation. Inline code runs only as received with the Source: `main`, a remote
+   Source, or a `GramlotBuilderBag` given to `startSource`. `Gramlot.prepareSource`
+   activates it in `GramlotBuilderBag`/`GramlotBuilderBagNode`; Builder, Bag and TYTX
+   are not modified. A code text written later in the Source, or arrived through Data
+   or RPC, is an error naming node and attribute, never run. A code attribute holding
+   a `^`/`=` pointer is an error at reception. This narrows item 5 of 11.48 (inline
+   compilation only in the page runtime): the runtime compiles only activated text.
+2. Browser-run attributes. The Python and JavaScript renderers refuse attributes with
+   the form of a native event handler (`on` followed by at least one character) and
+   `javascript:` URLs in `href`, `src`, `formaction` and `xlink:href`, written or
+   resolved from Data. `connect_on<event>` is the event mechanism.
+3. Single file. The CSP of the `@gramlot/gramlot-serverless` file is
+   `script-src '<sha256>' 'unsafe-eval' blob:` without `'unsafe-inline'`, and
+   `connect-src *`, from gramlot-js-server 0.2.3. This supersedes, for the export, the
+   statement of 11.48 item 14 (Q3) that only the permissive server profile runs inline
+   code. The server profiles of Q3 are unchanged.
+4. Python. Python compiles no inline code and has no activation: a Python Source
+   carries its code attributes as plain strings, activated by the page on reception.
+   The asymmetry has a technical reason: Python does not run JavaScript.
+
+Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
+[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §660.

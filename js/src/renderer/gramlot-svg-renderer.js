@@ -1,5 +1,7 @@
 import {SvgRenderer, svgAttributes} from '@genrojs/builders';
-import {boundaryAttributes, domNames, textValue, withoutBindingAttributes, withoutNullValues} from './attributes.js';
+import {
+    boundaryAttributes, domNames, requireNoScriptAttributes, textValue, withoutBindingAttributes, withoutNullValues,
+} from './attributes.js';
 
 // SVG elements written `<tag … />`, as the Python SvgRenderer of Builder (the grammar gives them no children).
 const SVG_VOID_TAGS = new Set([
@@ -26,9 +28,14 @@ export class GramlotSvgRenderer extends SvgRenderer {
 
     get owner() { return this._owner; }
 
-    /** Builder's meta on the attributes with the `==` evaluated by the owner; a sub-builder boundary node keeps its attributes literal, with the Gramlot filters and names. */
+    /**
+     * Builder's meta on the attributes with the `==` evaluated by the owner, with no `on<event>` and no
+     * `javascript:` URL; a sub-builder boundary node keeps its attributes literal, with the Gramlot filters and names.
+     */
     _handleMeta(node, runtimeAttrs) {
-        const [tag, attrs] = super._handleMeta(node, this.owner.evaluateExpressions(node, runtimeAttrs));
+        const evaluated = this.owner.evaluateExpressions(node, runtimeAttrs);
+        requireNoScriptAttributes(node, evaluated);
+        const [tag, attrs] = super._handleMeta(node, evaluated);
         return node._getMeta('subbuilder') ? [tag, svgAttributes(boundaryAttributes(attrs))] : [tag, attrs];
     }
 

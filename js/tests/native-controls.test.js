@@ -10,6 +10,7 @@ import {
     CheckboxControl, ColorControl, NumberControl, RadioControl, RangeControl, SelectControl, TemporalControl,
     TextControl,
 } from '../src/view/controls.js';
+import {mount} from './fixtures/mount.js';
 
 function page() {
     const errors = [];
@@ -317,9 +318,11 @@ test('P1: typing does not move the caret and a typed-equal value is not written 
 });
 
 test('a controller that normalizes the typed value: the correction reaches the control that wrote', () => {
-    const {builder, data, byId} = page();
-    builder.root.input({id: 't', value: '^f.v', live: true});
-    builder.root.dataController({script: 'this.SET("f.v", v.toUpperCase())', v: '^f.v'});
+    const {app, data, byId} = page();
+    mount(app, root => {
+        root.input({id: 't', value: '^f.v', live: true});
+        root.dataController({script: 'this.SET("f.v", v.toUpperCase())', v: '^f.v'});
+    });
     type(byId('t'), 'abc');
     assert.equal(data.getItem('f.v'), 'ABC');
     assert.equal(byId('t').value, 'ABC');
@@ -477,13 +480,13 @@ test('a literal value is the default a native form Reset restores; a ^ value sta
 // Phase 18 (ASTRA-02): `type`, `multiple` and `live` are read from the renderer's resolved projection
 // (runtimeValues, then `==`), not from the raw Source; a `==` value is no longer a truthy string.
 test('ASTRA-02: type from ^, = and == is the resolved one, at mount and on update; the Data gets the typed value', () => {
-    const {app, builder, data, byId, record} = page();
+    const {app, data, byId, record} = page();
     data.setItem('k', 'text');
-    const nodes = {
-        e: sourceTarget(builder.root.input({id: 'e', type: '==kind === "n" ? "number" : "text"', kind: '^kn', value: '^v.e', live: true})),
-        r: sourceTarget(builder.root.input({id: 'r', type: '=k', value: '^v.r', live: true})),
-        p: sourceTarget(builder.root.input({id: 'p', type: '^k', value: '^v.p', live: true})),
-    };
+    const nodes = mount(app, root => ({
+        e: sourceTarget(root.input({id: 'e', type: '==kind === "n" ? "number" : "text"', kind: '^kn', value: '^v.e', live: true})),
+        r: sourceTarget(root.input({id: 'r', type: '=k', value: '^v.r', live: true})),
+        p: sourceTarget(root.input({id: 'p', type: '^k', value: '^v.p', live: true})),
+    }));
     for (const [id, node] of Object.entries(nodes)) {
         assert.ok(record(node).control instanceof TextControl, id);
         type(byId(id), '12');
@@ -503,9 +506,14 @@ test('ASTRA-02: type from ^, = and == is the resolved one, at mount and on updat
 });
 
 test('ASTRA-02: multiple from == rebuilds the select; live from == is its value, not a truthy string', () => {
-    const {builder, data, byId, record, errors} = page();
+    const {app, data, byId, record, errors} = page();
     data.setItem('m', ['a']);
-    const node = sourceTarget(select(builder, {id: 's', value: '^m', multiple: '==many', many: '^manyFlag'}));
+    const node = sourceTarget(mount(app, root => {
+        root.input({id: 'off', value: '^l.off', live: '==false'});
+        root.input({id: 'eq', value: '^l.eq', live: '==on', on: '^liveOn'});
+        root.input({id: 'ro', value: '^l.ro', live: '=liveRead'});
+        return select({root}, {id: 's', value: '^m', multiple: '==many', many: '^manyFlag'});
+    }));
     assert.equal(byId('s').multiple, false);
     const first = byId('s');
     data.setItem('manyFlag', true);
@@ -514,9 +522,6 @@ test('ASTRA-02: multiple from == rebuilds the select; live from == is its value,
     assert.ok(record(node).control instanceof SelectControl);
     assert.deepEqual([...byId('s').selectedOptions].map(option => option.value), ['a']);
 
-    builder.root.input({id: 'off', value: '^l.off', live: '==false'});
-    builder.root.input({id: 'eq', value: '^l.eq', live: '==on', on: '^liveOn'});
-    builder.root.input({id: 'ro', value: '^l.ro', live: '=liveRead'});
     type(byId('off'), 'x');
     type(byId('eq'), 'x');
     type(byId('ro'), 'x');
@@ -534,7 +539,7 @@ test('ASTRA-02: multiple from == rebuilds the select; live from == is its value,
 
 // Gate check of Phase 18: a shape change rebuilds with the projection already resolved by `project`.
 test('ASTRA-02: a shape change evaluates the == of the node once, the rebuild included', () => {
-    const {app, builder, data, byId, record} = page();
+    const {app, data, byId, record} = page();
     const compiler = app.renderer.inlineCompiler;
     const compile = compiler.compileExpression.bind(compiler);
     let runs = 0;
@@ -546,7 +551,7 @@ test('ASTRA-02: a shape change evaluates the == of the node once, the rebuild in
         };
     };
     data.setItem('kind', 'text');
-    const node = sourceTarget(builder.root.input({id: 'n', type: '==kind', kind: '^kind', value: '^v'}));
+    const node = sourceTarget(mount(app, root => root.input({id: 'n', type: '==kind', kind: '^kind', value: '^v'})));
     assert.equal(runs, 1);
     runs = 0;
     data.setItem('kind', 'number');

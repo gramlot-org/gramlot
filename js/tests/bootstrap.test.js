@@ -14,8 +14,9 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import {JSDOM} from 'jsdom';
 import {build} from 'esbuild';
 import {SourceBag} from '@genrojs/builders';
-import {GramlotBuilder, PageBootstrap} from '../src/index.js';
+import {Gramlot, GramlotBuilder, PageBootstrap} from '../src/index.js';
 import {FileHost, parseRequires} from '../src/adapters/index.js';
+import {mount} from './fixtures/mount.js';
 
 const LOGIC = fileURLToPath(new URL('./fixtures/logic/', import.meta.url)).replace(/\/$/, '');
 const PAGE_MODULE = new URL('../src/adapters/page.js', import.meta.url).href;
@@ -328,11 +329,14 @@ test('CSP without unsafe-eval: a page with named logic only never calls the inli
         assert.equal(app.data.getItem('ordine.sconto'), 9);
         assert.equal(app.data.getItem('ordine.totale'), 3);
         assert.equal(calls, 0);
-        // The probe sees the compiler: one inline formula is one call.
-        app.builder.root.dataFormula({result_path: 'inline', formula: 'a * 2', a: '^ordine.a'});
-        app.data.setItem('ordine.a', 4);
-        assert.equal(app.data.getItem('inline'), 8);
+        // The probe sees the compiler: one inline formula, received with the Source of a second page, is one call.
+        const element = window.document.body.appendChild(window.document.createElement('section'));
+        const probe = new Gramlot({document: window.document, element, transport: false});
+        mount(probe, root => root.dataFormula({result_path: 'inline', formula: 'a * 2', a: '^a'}));
+        probe.data.setItem('a', 4);
+        assert.equal(probe.data.getItem('inline'), 8);
         assert.equal(calls, 1);
+        probe.dispose();
         app.dispose();
     } finally {
         globalThis.Function = original;

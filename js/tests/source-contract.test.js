@@ -48,6 +48,38 @@ test('Python authoring -> TYTX -> first subscriber insert; roots precede main', 
     assert.throws(() => app.reference(fixture.reference), /not mounted/);
 });
 
+// A Python Source with every inline declaration: Python keeps the code as plain strings and runs none of it.
+const PYTHON_INLINE = `
+from genro_tytx import to_tytx
+from gramlot import GramlotBuilder
+builder = GramlotBuilder()
+root = builder.root
+root.dataFormula("f", "a * 2", a="^a", _if="a > 0", _else="-1")
+root.dataController("this.SET('s', a + 1)", a="^a")
+root.div("==a * 10", id="expr", title="==a + 100", a="^a")
+root.button("go", id="go", action="this.SET('clicked', 'action')")
+root.span("x", id="span", connect_onclick="this.SET('connected', event.type)")
+print(to_tytx(builder.source))
+`;
+
+test('a Python Source with inline code runs it in the page, received through TYTX', () => {
+    const root = fileURLToPath(new URL('../../', import.meta.url));
+    const wire = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? 'python3', ['-c', PYTHON_INLINE],
+        {cwd: root, env: {...process.env, PYTHONPATH: `${root}/src`}, encoding: 'utf8'}).trim();
+    const document = new JSDOM('<main></main>').window.document;
+    const app = new Gramlot({pageId: 'python-inline', element: document.querySelector('main'), transport: false});
+    app.startSource(wire);
+    app.data.setItem('a', 3);
+    document.getElementById('go').click();
+    document.getElementById('span').click();
+    const byId = id => document.getElementById(id);
+    assert.deepEqual([app.data.getItem('f'), app.data.getItem('s'), byId('expr').textContent, byId('expr').getAttribute('title'),
+        app.data.getItem('clicked'), app.data.getItem('connected')], [6, 4, '30', '103', 'action', 'click']);
+    app.data.setItem('a', -1);
+    assert.equal(app.data.getItem('f'), -1);
+    app.dispose();
+});
+
 test('ordered nested insertion, setter update, structural replacement and detached events', () => {
     const {source, destination, author, builder} = setup();
     const panel = add(author, source, 'panel', 'div', block(author), {_text: 'parent'});

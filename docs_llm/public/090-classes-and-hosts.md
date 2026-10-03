@@ -249,10 +249,12 @@ Export shape (0.2.0), `@gramlot/gramlot-serverless`: one HTML file. The Worker s
 the Page and `WorkerHost`, without the inline compiler (`binding/inline.js` is not in
 its bundle). The companion `foo_aux.js` is a separate bundle that runs in the window
 only, through a blob URL that replaces its `_aux` URL, resource order kept. The CSP is
-a hash profile: `script-src` has the sha256 of the final script bytes plus `blob:`,
-no `'unsafe-inline'`, no `'unsafe-eval'`; a copy with one added byte is blocked. It is
-the only profile of the export: no permissive one, so only named logic is supported;
-a check of inline code under that policy is not part of 0.2.0 (035).
+a hash profile: `script-src` has the sha256 of the final script bytes, `'unsafe-eval'`
+and `blob:`, no `'unsafe-inline'`; a copy with one added byte is blocked.
+`'unsafe-eval'` lets the window compile the inline code of the Source received from the
+Worker: named logic and inline code run (035). `connect-src *` until a page can declare
+its own policy. Only profile of the export (from gramlot-js-server 0.2.3; 0.2.2: no
+`'unsafe-eval'`, `connect-src 'none'`).
 
 `@gramlot/gramlot-serverless`, in `gramlot-js-server` (heir of the retired `gramlot-minimal`), supplies the Node/npm
 exporter of the browser standalone profile: it bundles the Page without executing it
@@ -339,3 +341,27 @@ the permissive CSP profile, which allows 'unsafe-eval'`; for inline code in the 
 value the prefix is `<tag> '<label>' node value`; browser error kept as `cause`;
 nothing is written. One bootstrap module script carries the nonce and imports the runtime; a script without the nonce is blocked. The standalone export has its
 own hash profile (025).
+
+Inline code runs only as received with the Source. `Gramlot.prepareSource` activates
+the inline code of the received Source (`main` from the host, a remote Source, a
+`GramlotBuilderBag` given to `startSource`): each `GramlotBuilderBagNode` keeps the text
+of its code attributes (`formula` of `dataFormula`, `script` of `dataController`,
+`_if`/`_else`, `action` of `button`, `connect_on<event>`, `==` attributes and node
+value); the compiler runs only that text. A text written later (attribute changed by
+page code, node inserted in the live Source, `GramlotBuilderBag` arrived in Data or RPC)
+is never run: `<tag> '<label>' '<attribute>': inline code runs only as received with the
+Source (main or a remote Source); a text written later is not run: use named logic`.
+Not in the TYTX decoding, because a `GramlotBuilderBag` can arrive inside a Data Bag; a
+Data Bag is never compiled. A code attribute holding a `^`/`=` pointer is an error at
+reception, before any effect: `<tag> '<label>': '<attribute>' is inline code and cannot
+be the pointer '<pointer>'; inline code is never read from Data`. Python runs no inline
+code; its Source carries plain strings, activated by the page on reception.
+
+Attributes the browser runs: the Python and JS renderers refuse, written or resolved
+from Data, (1) a name of the form `on` + at least one character (`onclick`,
+`html_onload`): `… has the form of a native event handler, run by the browser outside
+Gramlot; write connect_<attribute> for an event, or rename the attribute` (every such
+name, not a list; `on` alone accepted); (2) a `javascript:` URL in `href`, `src`,
+`formaction`, `xlink:href`, read as the URL parser does (tabs/newlines removed, leading
+spaces/controls trimmed): `… holds a javascript: URL, run by the browser as code; write
+connect_onclick or the action of a button instead`.

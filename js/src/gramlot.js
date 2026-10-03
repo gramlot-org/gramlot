@@ -81,15 +81,19 @@ export class Gramlot {
         this.binding.pageStarted();
         return this;
     }
-    /** A Source from a SourceBag or a TYTX wire; only GramlotBuilderBag is accepted, before any effect (R07). */
+    /**
+     * A Source from a SourceBag or a TYTX wire; only GramlotBuilderBag is accepted, before any effect (R07).
+     * The received Source activates its inline code: the only inline code the page runs. Activation is
+     * here and not in the TYTX decoding, because a GramlotBuilderBag can also arrive inside Data.
+     */
     prepareSource(wire, builder = this.builder) {
         if (wire instanceof SourceBag) {
             if (!(wire instanceof GramlotBuilderBag)) throw new TypeError('Source values must be GramlotBuilderBags');
-            return wire.bindBuilder(builder);
+            return wire.bindBuilder(builder).activateCode();
         }
         const source = sourceBagFromTytx(wire, builder);
         if (!(source instanceof GramlotBuilderBag)) throw new TypeError('Source values must be GramlotBuilderBags');
-        return source;
+        return source.activateCode();
     }
 
     /**

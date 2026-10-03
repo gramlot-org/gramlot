@@ -2,10 +2,14 @@ import {sourceAttributeItems} from '@genrojs/builders';
 import {isExpression, templateParameters} from '../renderer/attributes.js';
 
 /**
- * Inline code of one Gramlot page (source plan §4.10): the `formula`/`script` bodies, `_if`/`_else`
- * and the `==` expressions, compiled with `this` = the Source node. Imported only by the page runtime:
- * never by `adapters/*`, `builder/*` or a WorkerHost, so a page with named logic only runs under a
- * CSP without `'unsafe-eval'`.
+ * Inline code of one Gramlot page (source plan §4.10): the `formula`/`script` bodies, `_if`/`_else`,
+ * `action`, `connect_on<event>` and the `==` expressions, compiled with `this` = the Source node. Imported
+ * only by the page runtime: never by `adapters/*`, `builder/*` or a WorkerHost, so a page with named logic
+ * only runs under a CSP without `'unsafe-eval'`.
+ *
+ * Only the inline code received with the Source runs: the text activated by Gramlot.prepareSource
+ * (GramlotBuilderBagNode.activateCode). A text written later in the Source, by page code or from Data,
+ * is an error naming node and attribute.
  *
  * The legacy macros are a deprecated compatibility preprocessor: the regexes of `gnrlang.js`
  * (`argumentsReplace`, `macroExpand_*`, the order of `funcCreate`), with the node methods as target.
@@ -68,12 +72,19 @@ export class InlineCompiler {
 
     /**
      * The function of the declaration `attr` of `node`: `run(values)` calls the compiled `source` with
-     * `this` = node and the parameters `argNames`, each read from `values`. A name that is not a valid
-     * JS identifier is not a parameter. A text starting with `function` is the function itself, as in
-     * legacy. One compilation per declaration: a new text or new names compile again; the entry is
-     * released when its attribute changes or is removed, and when the node's NodeBinding closes.
+     * `this` = node and the parameters `argNames`, each read from `values`. `code` is the text of the
+     * declaration as written in the Source, `source` the body built from it: `code` must be the text
+     * activated with the Source, otherwise nothing is compiled and the error names node and attribute.
+     * A name that is not a valid JS identifier is not a parameter. A text starting with `function` is
+     * the function itself, as in legacy. One compilation per declaration: a new text or new names
+     * compile again; the entry is released when its attribute changes or is removed, and when the
+     * node's NodeBinding closes.
      */
-    compile(node, attr, source, argNames) {
+    compile(node, attr, code, argNames, source = code) {
+        if (node.activatedCode(attr) !== code) {
+            throw new Error(`${declaration(node, attr)}: inline code runs only as received with the Source `
+                + '(main or a remote Source); a text written later is not run: use named logic');
+        }
         let entries = this.#cache.get(node);
         if (!entries) {
             entries = new Map();
@@ -96,15 +107,17 @@ export class InlineCompiler {
     }
 
     /**
-     * The function of the `==` expression of the attribute `attr` of `node` (`''` for the node value):
-     * `run(resolved)` evaluates it on the attributes resolved by runtimeValues. Its arguments are the
+     * The function of the `==` expression `code` of the attribute `attr` of `node` (`''` for the node
+     * value), as written in the Source: `run(resolved)` evaluates it on the attributes resolved by
+     * runtimeValues. Its arguments are the
      * other attributes of the node, except the other `==` (Q11.2): the resolved value, or, for an
      * attribute a template consumed, its pointer resolved from Data (D6). A consumed attribute that is
      * itself a template has no value: an expression using it is an error naming both attributes.
      */
-    compileExpression(node, attr, expr) {
+    compileExpression(node, attr, code) {
+        const expr = code.slice(2);
         const items = sourceAttributeItems(node.getAttr()).filter(([, raw]) => !isExpression(raw));
-        const run = this.compile(node, attr, `return ${expr}`, items.map(([name]) => name));
+        const run = this.compile(node, attr, code, items.map(([name]) => name), `return ${expr}`);
         return resolved => {
             const values = {};
             for (const [name, raw] of items) {

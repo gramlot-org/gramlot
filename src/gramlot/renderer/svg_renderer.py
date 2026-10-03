@@ -2,7 +2,9 @@
 
 from genro_builders.contrib.svg.svg_renderer import SvgRenderer
 
-from .attributes import boundary_attributes, dom_names, text_value, without_binding_attributes, without_null_values
+from .attributes import (
+    boundary_attributes, dom_names, require_no_script_attributes, text_value, without_binding_attributes, without_null_values,
+)
 
 
 class GramlotSvgRenderer(SvgRenderer):
@@ -21,9 +23,11 @@ class GramlotSvgRenderer(SvgRenderer):
         return self._owner
 
     def _handle_meta(self, node, runtime_attrs):
-        """Builder's meta on the attributes with the ``==`` handled by the owner; a sub-builder boundary node keeps
-        its attributes literal, with the Gramlot filters and names."""
-        tag, attrs = super()._handle_meta(node, self.owner.evaluate_expressions(node, runtime_attrs))
+        """Builder's meta on the attributes with the ``==`` handled by the owner, with no ``on<event>`` and no
+        ``javascript:`` URL; a sub-builder boundary node keeps its attributes literal, with the Gramlot filters and names."""
+        evaluated = self.owner.evaluate_expressions(node, runtime_attrs)
+        require_no_script_attributes(node, evaluated)
+        tag, attrs = super()._handle_meta(node, evaluated)
         if node._get_meta("subbuilder"):
             return tag, boundary_attributes(attrs)
         return tag, attrs
