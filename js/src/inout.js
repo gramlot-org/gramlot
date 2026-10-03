@@ -13,8 +13,8 @@ function leafText(value) {
 /**
  * What the page sends, receives, saves and downloads: `gramlot.inout` (decisions of 2026-10-03).
  * Every function takes the Data path of a Bag branch; a missing path or a value that is not a Bag
- * raises an Error. There is no Python counterpart: this object belongs to the runtime in the
- * browser, and Python pages call it from inline code or from their Logic.
+ * raises an Error. Part of the browser runtime, so Python and JavaScript pages use it alike, from
+ * inline code or from their Logic.
  */
 export class InOut {
     constructor(gramlot, document) {

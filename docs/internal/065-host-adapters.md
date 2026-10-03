@@ -168,6 +168,12 @@ kept as history. The implemented contract is the minimal Host contract:
   `gramlot-serverless` (since 2026-10-01 `@gramlot/gramlot-browser` in
   `gramlot-js-server`, renamed `@gramlot/gramlot-serverless` on 2026-10-02 (0.2.2)); the other four are deferred to after 0.2.0
   ([GC-070 §595](070-work-status.md#gc-070-595)).
+- 2026-10-03, amendment 11.55 (0.2.5): the page logic is the `Logic` export of the page
+  module `foo.js` (beside `foo.py` for a Python page), else `foo_aux.js`; both are an
+  error. The bootstrap HTML carries an import map from `@gramlot/gramlot/page` to the
+  runtime, and adapters serve `.css` and `.js` below the pages folder. The P14 idea
+  above (`ordini.js` exporting `Page` and `Logic`) returns in this form. Current
+  contract: [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030).
 
 **Current 0.1.2:**
 

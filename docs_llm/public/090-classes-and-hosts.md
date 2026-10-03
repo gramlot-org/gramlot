@@ -288,10 +288,18 @@ the file wins, no error. Segments: letters, digits, `_`, `-`. A real path leavin
 the pages folder is rejected. Same-name files beside the file page or in its
 folder: `orders.css` (stylesheet), `orders_aux.js` (auxiliary JS module exporting
 `Logic`), `orders.md` (README). `_aux` is reserved: `orders_aux.js` is never a page,
-no page is `*_aux`. Python and JS pages may share a folder: `orders.js` is a JS
-page; the logic of `orders.py` is in `orders_aux.js`.
+no page is `*_aux`. Python and JS pages may share a folder: `orders.js` is the JS page
+and the logic of `orders.py`.
 
-Load order: `Page.css` as written, then `orders.css` and `orders_aux.js`. A repeated
+Page logic (0.2.5), group null: JS page → the page module's `Logic` export, else
+`orders_aux.js`; Python page → `orders.js` beside `orders.py` (its `Logic`; its `Page`
+unused), else `orders_aux.js`. Python cannot read JS exports: beside a Python page
+`orders.js` exports `Logic`, else the browser rejects it naming the file. Both modules
+→ error (`Error`/`ValueError`) before registration. The browser imports the page
+module, so its imports must resolve there; a JS `Page` with server-only imports keeps
+`orders_aux.js`.
+
+Load order: `Page.css` as written, then `orders.css` and the page logic. A repeated
 URL loads once, in its last position. One JS URL with two different groups = error.
 
 Resource fields: Python `css_requires = ""`/`js_requires = ""`; JS
@@ -303,12 +311,17 @@ tokens and duplicates ignored (first position kept); `/` separates subfolders,
 segments `^[A-Za-z0-9_-]+$`, no `.`, `..`, leading/trailing `/` or extensions; `:`
 (`name:media`) = error.
 
-The companion is public (served to the browser); server-only logic lives in
+The page logic module is public (served to the browser); server-only logic lives in
 modules it does not import.
 
 Companion rule of the adapters (the `FileHost.url` rule): GET/HEAD answer only `.css`
-and `_aux.js` files whose real path is inside the pages folder; other files 404, other
+and `.js` files whose real path is inside the pages folder (page modules and their
+relative imports; until 0.2.4 `.css` and `_aux.js`); other files 404, other
 methods 405. `Page.css` URLs outside the pages folder stay application assets.
+
+Import map (0.2.5): before the bootstrap script, `<script type="importmap">` with the
+bootstrap nonce maps `@gramlot/gramlot/page` → runtime URL (mount prefix); the runtime
+exports `Page` and `source`; one runtime instance; no new CSP source.
 
 Bootstrap (`PageBootstrap`, in the browser): 1 write the CSS links in load order;
 2 import all JS modules (relative URLs against the document); 3 check every `Logic`

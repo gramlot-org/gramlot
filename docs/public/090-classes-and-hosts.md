@@ -393,12 +393,27 @@ page or in its folder:
 - `orders_aux.js`: the page's auxiliary JavaScript module, exporting `Logic`;
 - `orders.md`: the README.
 
-The `_aux` suffix is reserved: `orders_aux.js` is never a page, and no page is
-called `*_aux`. Python and JavaScript pages may share one folder: `orders.js` is a
-JavaScript page, and the logic of `orders.py` is in `orders_aux.js`.
+**Page logic (0.2.5).** The page logic, group null, comes from one module:
 
-**Load order.** The `Page.css` URLs as written, then `orders.css` and
-`orders_aux.js`. The same URL repeated loads once, in its last position. The same
+- JavaScript page: the `Logic` export of the page module `orders.js`, else
+  `orders_aux.js`;
+- Python page: `orders.js` beside `orders.py`, else `orders_aux.js`. Its `Logic`
+  export is the logic; its `Page` export, the JavaScript version of the same page,
+  stays unused. Python cannot read the exports of a JavaScript file: `orders.js`
+  beside a Python page exports `Logic`, and the browser rejects it otherwise,
+  naming the file.
+
+Both modules for one page raise an error (`Error` in JavaScript, `ValueError` in
+Python), before the page is registered. The page module is imported by the browser
+for its `Logic`, so every import of it resolves in the browser; a JavaScript `Page`
+with server-only imports keeps its logic in `orders_aux.js`.
+
+The `_aux` suffix is reserved: `orders_aux.js` is never a page, and no page is
+called `*_aux`. Python and JavaScript pages may share one folder: `orders.js` is
+the JavaScript page and the logic of `orders.py`.
+
+**Load order.** The `Page.css` URLs as written, then `orders.css` and the page
+logic. The same URL repeated loads once, in its last position. The same
 JavaScript URL declared with two different groups is an error.
 
 **Resource fields.** Python pages declare `css_requires = ""` and
@@ -416,15 +431,23 @@ parses both fields with the same rules in both languages:
   trailing `/` and extensions are rejected;
 - `:` is an error: `name:media` is outside 0.2.0.
 
-**Companion visibility.** The companion is served to the browser, so it is public.
-Server-only logic, such as queries, keys and data access, belongs in separate
-modules that the companion does not import.
+**Companion visibility.** The page logic module is served to the browser, so it is
+public. Server-only logic, such as queries, keys and data access, belongs in
+separate modules that the page logic does not import.
 
 **Companion rule of the adapters.** An adapter serves the companions with the
-`FileHost.url` rule: GET and HEAD answer only `.css` and `_aux.js` files whose real
-path is inside the pages folder. Any other file answers 404 and any other method
+`FileHost.url` rule: GET and HEAD answer only `.css` and `.js` files whose real
+path is inside the pages folder, so a page module and its relative imports reach
+the browser (until 0.2.4: `.css` and `_aux.js`). Any other file answers 404 and any other method
 405. `Page.css` URLs that point outside the pages folder stay application assets and
 are not served by this rule.
+
+**Import map (0.2.5).** Before the bootstrap script, the bootstrap HTML carries
+`<script type="importmap">`, with the bootstrap nonce, that maps
+`@gramlot/gramlot/page` to the runtime URL with the mount prefix. The runtime exports
+`Page` and `source`, so a page module imported for its `Logic` loads the runtime
+already in the page: one runtime instance. A strict CSP needs no new source: the
+import map carries the nonce.
 
 **Bootstrap.** The bootstrap script (section 020) runs `PageBootstrap` in the
 browser:
