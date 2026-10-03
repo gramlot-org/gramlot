@@ -9,3 +9,4 @@ export {GramlotSvgRenderer} from './renderer/gramlot-svg-renderer.js';
 export {Bag, BagNode} from '@genrojs/bag';
 export {References} from './references.js';
 export {MainTransport} from './transport.js';
+export {InOut} from './inout.js';
