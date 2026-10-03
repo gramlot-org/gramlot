@@ -176,7 +176,7 @@ function create(node, attr, text, params) {
     } catch (error) {
         if (error instanceof EvalError) {
             throw new EvalError(`${declaration(node, attr)}: inline code blocked by the Content Security Policy of the page `
-                + `(no 'unsafe-eval'); move the code to named logic (a method of the page companion _aux.js) `
+                + `(no 'unsafe-eval'); move the code to named logic (a method of the page's class Logic) `
                 + `or serve the page with the permissive CSP profile, which allows 'unsafe-eval'`, {cause: error});
         }
         throw new SyntaxError(`${declaration(node, attr)}: ${error.message} in the inline code:\n${text}`, {cause: error});

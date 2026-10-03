@@ -171,6 +171,30 @@ class FileHostResourceTests(unittest.IsolatedAsyncioTestCase):
                 "js": [{"url": "/orders/orders_aux.js", "group": None}]})
             self.assertEqual(resolve("plain"), {"css": ["/themes/base.css"], "js": []})
 
+    async def test_foo_js_beside_the_python_page_is_the_logic_else_the_aux_companion_never_both(self):
+        # Python cannot read the exports of foo.js: the file itself is the logic module.
+        with tempfile.TemporaryDirectory() as root:
+            write(root, "single.py", page())
+            write(root, "single.js", "export class Page {}\nexport class Logic {}\n")
+            write(root, "nested/nested.py", page())
+            write(root, "nested/nested.js", "export class Logic {}\n")
+            write(root, "twice.py", page())
+            write(root, "twice.js", "export class Logic {}\n")
+            write(root, "twice_aux.js", "export class Logic {}\n")
+            host = FileHost(root)
+
+            def resolve(path):
+                return host.resolve_resources(path, host.resolve_page(path))
+            self.assertEqual(resolve("single"), {"css": [], "js": [{"url": "/single.js", "group": None}]})
+            self.assertEqual(resolve("nested"), {"css": [], "js": [{"url": "/nested/nested.js", "group": None}]})
+            with self.assertRaises(ValueError) as caught:
+                await host.open_page("/twice")
+            self.assertIs(type(caught.exception), ValueError)
+            self.assertEqual(str(caught.exception), "Two logic modules for one page: /twice.js and /twice_aux.js")
+            self.assertEqual(host._pages, {})
+            opened = await host.open_page("/single", prefix="/app")
+            self.assertEqual(bootstrap_arguments(opened.html)["resources"]["js"], [{"url": "/app/single.js", "group": None}])
+
     async def test_requires_names_need_a_host_with_a_resource_system(self):
         with tempfile.TemporaryDirectory() as root:
             write(root, "themed.py", page(css_requires="tema"))
@@ -235,6 +259,15 @@ class BootstrapTests(unittest.IsolatedAsyncioTestCase):
             self.assertRegex(first.nonce, r"^[A-Za-z0-9_-]{22}$")
             self.assertIn(f'<script type="module" nonce="{first.nonce}">', first.html)
             self.assertNotIn(second.nonce, first.html)
+
+    async def test_import_map_points_the_page_module_import_to_the_runtime(self):
+        host = MemoryHost({"css": [], "js": []}, runtime_url="/static/gramlot.js")
+        for prefix, runtime in (("", "/static/gramlot.js"), ("/app", "/app/static/gramlot.js")):
+            with self.subTest(prefix=prefix):
+                opened = await host.open_page("/", prefix=prefix)
+                self.assertIn(f'<script type="importmap" nonce="{opened.nonce}">'
+                              f'{{"imports":{{"@gramlot/gramlot/page":"{runtime}"}}}}</script></head>', opened.html)
+                self.assertLess(opened.html.index('type="importmap"'), opened.html.index('type="module"'))
 
     async def test_js_url_with_two_groups_fails_before_registration(self):
         host = MemoryHost({"css": [], "js": [{"url": "/js/comune.js", "group": "calcoli"},

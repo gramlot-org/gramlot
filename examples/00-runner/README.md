@@ -40,10 +40,12 @@ ordinary Source `script` element; the teaching pages themselves are unchanged.
 The example files keep their descriptive names (`06_forms.py`); the routes are the
 catalogue keys. An example with a same-name stylesheet (`06_forms.css`) gets a copy
 beside its wrapper, so the minimal `FileHost` links it as the page companion, and the
-launcher serves it at `/py/e06.css` and `/js/e06.css`. An example with a logic
-companion (`03_named_logic_aux.js`) gets a copy named after its route (`c03_aux.js`);
-the Uvicorn and Node.js integrations serve it from their pages folder, and the page
-bootstrap registers its `Logic` as the root group. The temporary directory
+launcher serves it at `/py/e06.css` and `/js/e06.css`. Every example module exports
+`Page` and `Logic`; a one-line companion named after its route (`c03_aux.js`)
+re-exports `Logic` from `/examples/controllers/03_named_logic.js`. The Uvicorn and
+Node.js integrations serve the companion from their pages folder, the page bootstrap
+registers its `Logic` as the root group, and the import map of the bootstrap resolves
+the example's `@gramlot/gramlot/page` import to the runtime. The temporary directory
 disappears when the runner stops.
 
 ## Current limits

@@ -1,5 +1,5 @@
 /** Node integration: provide original example text to the browser-safe runner UI. */
-import {existsSync, readFileSync} from 'node:fs';
+import {readFileSync} from 'node:fs';
 import catalog from './catalog.json' with {type: 'json'};
 import {RunnerPage} from './runner-page.js';
 
@@ -13,8 +13,8 @@ export class Page extends RunnerPage {
             examples: examples.map(example => ({
                 key: example.key, title: example.title, folder: example.folder, frameUrl: example.key,
                 readme: read(`${example.folder}.md`),
+                // The module exports Page and Logic: the code pane shows both.
                 source: read(`${example.folder}.js`),
-                logic: existsSync(new URL(`${example.folder}_aux.js`, folder)) ? read(`${example.folder}_aux.js`) : null,
             })),
         };
     });

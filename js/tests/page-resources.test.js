@@ -18,7 +18,7 @@ const PAGE_MODULE = new URL('../src/adapters/page.js', import.meta.url).href;
 const URL_FORMS = ['/themes/x.css', '//cdn.example.org/a.css', 'https://cdn.example.org/lib.css',
     './local.css', 'theme.css'];
 
-const jsPage = ({css = [], cssRequires = '', jsRequires = ''} = {}) =>
+const jsPage = ({css = [], cssRequires = '', jsRequires = '', logic = false} = {}) =>
     `import {Page as Base} from ${JSON.stringify(PAGE_MODULE)};
 export class Page extends Base {
     static css = ${JSON.stringify(css)};
@@ -26,7 +26,7 @@ export class Page extends Base {
     static js_requires = ${JSON.stringify(jsRequires)};
     main(root) { root.div('ok'); }
 }
-`;
+${logic ? 'export class Logic {}\n' : ''}`;
 const pyPage = ({css = [], cssRequires = '', jsRequires = ''} = {}) =>
     `from gramlot import Page as Base
 class Page(Base):
@@ -162,6 +162,32 @@ test('file host: Page.css then the companions, beside the file page and in the f
     assert.deepEqual(await resolved(host, 'plain'), {css: ['/themes/base.css'], js: []});
 }));
 
+test('file host: the Logic export of the page module is the page logic, else the _aux companion, never both', () => folder(async root => {
+    await write(root, 'single.js', jsPage({logic: true}));
+    await write(root, 'nested/nested.js', jsPage({logic: true}));
+    await write(root, 'twice.js', jsPage({logic: true}));
+    await write(root, 'twice_aux.js', 'export class Logic {}\n');
+    const host = new FileHost(root);
+    assert.deepEqual(await resolved(host, 'single'), {css: [], js: [{url: '/single.js', group: null}]});
+    assert.deepEqual(await resolved(host, 'nested'), {css: [], js: [{url: '/nested/nested.js', group: null}]});
+    await assert.rejects(host.openPage('/twice'), error => error.constructor === Error &&
+        error.message === 'Two logic modules for one page: /twice.js and /twice_aux.js');
+    assert.equal(host.pages.size, 0);
+    const opened = await host.openPage('/single', {prefix: '/app'});
+    assert.deepEqual(bootstrapArguments(opened.html).resources.js, [{url: '/app/single.js', group: null}]);
+}));
+
+test('bootstrap: the import map points @gramlot/gramlot/page to the runtime, with the mount prefix and the nonce', async () => {
+    const host = new MemoryHost({css: [], js: []}, {runtimeUrl: '/static/gramlot.js'});
+    for (const [prefix, runtime] of [['', '/static/gramlot.js'], ['/app', '/app/static/gramlot.js']]) {
+        const opened = await host.openPage('/', {prefix});
+        const map = `<script type="importmap" nonce="${opened.nonce}">` +
+            `{"imports":{"@gramlot/gramlot/page":"${runtime}"}}</script></head>`;
+        assert.ok(opened.html.includes(map), prefix);
+        assert.ok(opened.html.indexOf('type="importmap"') < opened.html.indexOf('type="module"'));
+    }
+});
+
 test('file host: requires names need a Host with a resource system', () => folder(async root => {
     await write(root, 'themed.js', jsPage({cssRequires: 'tema'}));
     await write(root, 'logic.js', jsPage({jsRequires: 'calcoli'}));
@@ -251,11 +277,11 @@ test('Python and JavaScript give the same parser outcomes, descriptors, links an
     for (const [path, declaration] of Object.entries(pages)) {
         const name = path.split('/').at(-1);
         const base = path === 'orders' ? `orders/${name}` : path;
-        await write(root, `${base}.js`, jsPage(declaration));
+        // Beside a Python page, foo.js gives the logic (Python cannot read its exports): it exports Logic.
+        await write(root, `${base}.js`, jsPage({...declaration, logic: true}));
         await write(root, `${base}.py`, pyPage(declaration));
     }
-    for (const companion of ['area/invoices.css', 'area/invoices_aux.js', 'orders/orders.css', 'orders/orders_aux.js',
-        'index.css']) await write(root, companion);
+    for (const companion of ['area/invoices.css', 'orders/orders.css', 'index.css']) await write(root, companion);
     const inputs = ['', ' , ,', ' business ,gui,, business,\tgui_2 ', 'a/b,a-b', ' theme　, gui\u0085', '..',
         'a/../b', 'a b', 'à', '﻿theme', 'a.css', 'print:media', 'a//b'];
     const orders = [
@@ -297,7 +323,7 @@ print(json.dumps({
     for (const resources of orders) javascript.orders.push(await outcome(() => loadOrder(resources)));
     assert.deepEqual(javascript, python);
     assert.deepEqual(javascript.descriptors[0], {css: ['/themes/base.css', 'theme.css', '/themes/base.css',
-        '/area/invoices.css'], js: [{url: '/area/invoices_aux.js', group: null}]});
+        '/area/invoices.css'], js: [{url: '/area/invoices.js', group: null}]});
     assert.deepEqual(javascript.links[0], ['theme.css', '/app/themes/base.css', '/app/area/invoices.css']);
     assert.deepEqual(javascript.descriptors[2], ['InvalidResourceName', 'requires need a Host with a resource system']);
 }));
@@ -317,7 +343,7 @@ opened = asyncio.run(MemoryHost().open_page("/", prefix="/app"))
 print(json.dumps([opened.html, opened.page_id, opened.nonce]))
 `, JSON.stringify(resources)], {encoding: 'utf8'}));
     const opened = await new MemoryHost(resources).openPage('/', {prefix: '/app'});
-    const neutral = ([html, pageId, nonce]) => html.replace(pageId, '<page>').replace(nonce, '<nonce>');
+    const neutral = ([html, pageId, nonce]) => html.replace(pageId, '<page>').replaceAll(nonce, '<nonce>');
     assert.equal(neutral([opened.html, opened.pageId, opened.nonce]), neutral(python));
     assert.ok(opened.html.includes('"tema-é.css"'));
 });

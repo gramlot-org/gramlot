@@ -1,7 +1,7 @@
 // Phase S16: the end-to-end story of source plan §8.1 (GC-210 §065) on `examples/controllers/09_end_to_end`,
 // once from the Python page and once from the JavaScript page, through the real path: the FileHost of each
 // language opens the page, the browser document is the bootstrap HTML the host wrote, PageBootstrap imports
-// the companion `_aux.js` and starts Gramlot, the Source travels as TYTX over the MainTransport, and the page
+// the page module for its `Logic` and starts Gramlot, the Source travels as TYTX over the MainTransport, and the page
 // closes on a real `pagehide`. Nothing is registered, mounted or wired by hand: the test only answers the
 // transport requests with the host, acts on the DOM with events, and observes.
 //
@@ -174,9 +174,9 @@ async function runStory(t, host) {
         app = await new PageBootstrap({...args, document}).run();
         assert.equal(app.state, 'started');
         assert.equal(window.gramlot, app);
-        // Page.css then the same-name companion, both with the mount prefix; the companion _aux.js is the Logic.
+        // Page.css then the same-name stylesheet, both with the mount prefix; the page module 09_end_to_end.js gives the Logic.
         assert.deepEqual(args.resources, {css: [`${PAGES}/themes/gramlot-base/theme.css`, `${PAGES}/09_end_to_end.css`],
-            js: [{url: `${PAGES}/09_end_to_end_aux.js`, group: null}]});
+            js: [{url: `${PAGES}/09_end_to_end.js`, group: null}]});
         assert.deepEqual([...document.head.querySelectorAll('link[rel="stylesheet"]')].map(link => link.getAttribute('href')),
             args.resources.css);
         assert.equal(typeof app.logic.press, 'function');

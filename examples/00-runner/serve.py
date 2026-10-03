@@ -44,8 +44,9 @@ def stage_pages(directory: Path, pages):
 
     A route whose example has a same-name stylesheet receives a copy of it as its
     companion, so the minimal FileHost links it. The returned map serves each
-    companion URL from its original file. A same-name ``_aux.js`` logic companion
-    is copied the same way and served by the integration from the pages folder.
+    companion URL from its original file. Each example module exports ``Logic``: a
+    one-line ``{route}_aux.js`` re-exports it from the URL the launcher serves the
+    example at, and the integration serves that companion from the pages folder.
     """
     python_dir = directory / "python"
     javascript_dir = directory / "javascript" / "js"
@@ -85,10 +86,10 @@ def stage_pages(directory: Path, pages):
             for folder, prefix in ((python_dir, "/py"), (javascript_dir, "/js")):
                 shutil.copyfile(stylesheet, folder / f"{route}.css")
                 companions[f"{prefix}/{route}.css"] = stylesheet
-        logic = py_file.with_name(f"{py_file.stem}_aux.js")
-        if route != "index" and logic.is_file():
+        if route != "index":
+            module = "/" + js_file.relative_to(ROOT).as_posix()
             for folder in (python_dir, javascript_dir):
-                shutil.copyfile(logic, folder / f"{route}_aux.js")
+                (folder / f"{route}_aux.js").write_text(f"export {{Logic}} from {json.dumps(module)};\n")
     return python_dir, directory / "javascript", companions
 
 
@@ -113,7 +114,7 @@ class RunnerApplication:
             allowed[f"/examples/00-runner/dist/{name}"] = RUNNER / "dist" / name
         for family in catalog:
             for entry in family["examples"]:
-                for suffix in (".py", ".js", ".css", ".md", "_aux.js"):
+                for suffix in (".py", ".js", ".css", ".md"):
                     name = f"{entry['folder']}{suffix}"
                     allowed[f"/examples/{family['key']}/{name}"] = EXAMPLES / family["key"] / name
         self.assets = allowed
@@ -163,7 +164,9 @@ class RunnerApplication:
         if path.suffix in (".md", ".py"):
             media_type = "text/plain"
         if path.suffix == ".js":
-            media_type = "application/javascript" if path.parent == RUNNER / "dist" else "text/plain"
+            # The runner scripts and the example modules, which the pages import for their Logic.
+            executable = path.parent == RUNNER / "dist" or (path.parent.parent == EXAMPLES and path.parent != RUNNER)
+            media_type = "application/javascript" if executable else "text/plain"
         await self._reply(send, 200, b"" if scope["method"] == "HEAD" else body,
                           media_type, content_length=len(body))
 

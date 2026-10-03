@@ -226,8 +226,8 @@ try {
                 await frame.waitForFunction(() => window.gramlot?.state === 'started');
                 const logic = page.locator(`#logic-${key}`);
                 if (await logic.count()) {
-                    const response = await context.request.get(`${url}/examples/${family.key}/${folder}_aux.js`);
-                    assert.equal(await logic.textContent(), await response.text(), `${key}: companion shown`);
+                    const response = await context.request.get(`${url}/examples/${family.key}/${folder}.js`);
+                    assert.equal(await logic.textContent(), await response.text(), `${key}: Logic module shown`);
                 }
             }
         }

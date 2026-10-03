@@ -16,7 +16,7 @@ const families = JSON.parse(readFileSync(new URL('../catalog.json', import.meta.
 const folder = key => new URL(`../../${key}/`, import.meta.url);
 
 /**
- * Mount one JavaScript example as its host would: Source from `main`, companion Logic registered
+ * Mount one JavaScript example as its host would: Source from `main`, the module's Logic registered
  * as the root group, `remoteSource` answered by the Page's declared Source methods.
  */
 async function mount(family, example) {
@@ -25,7 +25,7 @@ async function mount(family, example) {
     virtualConsole.on('jsdomError', error => errors.push(error));
     const dom = new JSDOM('<main id="gramlot-root"></main>', {url: `https://runner.test/js/${example.key}`,
         virtualConsole});
-    const {Page} = await import(new URL(`${example.folder}.js`, folder(family.key)));
+    const {Page, Logic} = await import(new URL(`${example.folder}.js`, folder(family.key)));
     const wire = async (method, params) => {
         const page = new Page();
         const builder = new Page.sourceBuilder();
@@ -35,11 +35,7 @@ async function mount(family, example) {
     };
     const transport = {main: () => wire('main'), source: (_pageId, method, params) => wire(method, params)};
     const app = new Gramlot({document: dom.window.document, pageId: example.key, transport});
-    const companion = new URL(`${example.folder}_aux.js`, folder(family.key));
-    if (existsSync(companion)) {
-        const {Logic} = await import(companion);
-        app.logicRegistry.register(Logic, {group: null, resource: `/${example.key}_aux.js`});
-    }
+    app.logicRegistry.register(Logic, {group: null, resource: `/${example.key}.js`});
     await app.start();
     const byId = id => dom.window.document.getElementById(id);
     const data = path => app.data.getItem(path);
