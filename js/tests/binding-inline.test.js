@@ -459,7 +459,7 @@ test('Q3: inline code under a CSP without unsafe-eval raises an EvalError naming
     assert.equal(result.named, 3);
     assert.equal(result.out, null);
     const hint = "inline code blocked by the Content Security Policy of the page \\(no 'unsafe-eval'\\); move the code to named "
-        + "logic \\(a method of the page companion _aux\\.js\\) or serve the page with the permissive CSP profile, which allows 'unsafe-eval'$";
+        + "logic \\(a method of the page's class Logic\\) or serve the page with the permissive CSP profile, which allows 'unsafe-eval'$";
     assert.equal(result.action, null);
     assert.equal(result.event, null);
     for (const [key, target] of [['script', "dataController '.+' 'script'"], ['formula', "dataFormula '.+' 'formula'"],

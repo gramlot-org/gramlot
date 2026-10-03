@@ -1,7 +1,8 @@
 """Page written in Python whose formula runs at ``_init`` through its companion (S08).
 
-The companion ``avvio_aux.js`` is served by the minimal FileHost as the root group, and it
-counts its calls on ``globalThis.gramlotSentinel``: opening the page on a host runs nothing.
+The ``Logic`` export of ``avvio.js`` beside it is served by the minimal FileHost as the root
+group (its ``Page`` export stays unused), and it counts its calls on
+``globalThis.gramlotSentinel``: opening the page on a host runs nothing.
 """
 from gramlot import Page as Base
 

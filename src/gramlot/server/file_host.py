@@ -18,8 +18,12 @@ class FileHost(Host):
 
     Page path ``foo``: the file page ``foo.py`` first, then the folder page
     ``foo/foo.py``; the file wins when both exist. Beside the page file:
-    ``foo.css`` (CSS), ``foo_aux.js`` (JS module exporting ``Logic``, group null)
-    and ``foo.md`` (README). The ``_aux`` suffix is reserved. There are no
+    ``foo.css`` (CSS), ``foo.md`` (README) and the page logic (group null):
+    ``foo.js``, whose ``Logic`` export is the logic (a ``Page`` export, the JS
+    version of the same page, stays unused), else ``foo_aux.js``; both at once
+    raise ``ValueError``. Python cannot read the exports of ``foo.js``: beside a
+    Python page it must export ``Logic``, and the browser rejects it otherwise.
+    The ``_aux`` suffix is reserved. There are no
     resource levels: a name in ``css_requires``/``js_requires`` raises
     ``InvalidResourceName``.
     """
@@ -53,7 +57,7 @@ class FileHost(Host):
         return getattr(module, "Page", None)
 
     def resolve_resources(self, path, cls):
-        """``Page.css`` URLs as written, then the companions ``foo.css`` and ``foo_aux.js``."""
+        """``Page.css`` URLs as written, then the companion ``foo.css`` and the page logic."""
         if parse_requires(cls.css_requires) or parse_requires(cls.js_requires):
             raise InvalidResourceName("requires need a Host with a resource system")
         page_file = self.locate_page(path)
@@ -61,9 +65,13 @@ class FileHost(Host):
         companion_css = page_file.with_name(f"{page_file.stem}.css")
         if companion_css.is_file():
             css.append(self.url(companion_css))
-        companion_js = page_file.with_name(f"{page_file.stem}_aux.js")
-        if companion_js.is_file():
-            js.append({"url": self.url(companion_js), "group": None})
+        logic = [self.url(filename) for filename in (page_file.with_name(f"{page_file.stem}.js"),
+                                                     page_file.with_name(f"{page_file.stem}_aux.js"))
+                 if filename.is_file()]
+        if len(logic) == 2:
+            raise ValueError(f"Two logic modules for one page: {logic[0]} and {logic[1]}")
+        if logic:
+            js.append({"url": logic[0], "group": None})
         return {"css": css, "js": js}
 
     def url(self, filename):

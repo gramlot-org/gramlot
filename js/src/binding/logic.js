@@ -2,7 +2,7 @@
  * Named logic of one Gramlot page (source plan §4.9, decision P21).
  *
  * Every logic file exports `class Logic`; its prototype methods are copied into a
- * `LogicGroup`: the root group for the page companion (group null), a child group
+ * `LogicGroup`: the root group for the page logic (group null), a child group
  * for each name of `js_requires` (`a/b` is the group `b` inside the group `a`).
  * The constructor of `Logic` never runs.
  */
@@ -178,7 +178,7 @@ export class LogicRegistry {
 
     /**
      * Copy the methods of `logicClass` into the group `group` (a `js_requires` name, `a/b` nested,
-     * or null for the page companion), creating the groups on the way. On an equal method name in
+     * or null for the page logic), creating the groups on the way. On an equal method name in
      * the same group the last registration wins.
      */
     register(logicClass, {group = null, resource}) {

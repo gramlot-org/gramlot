@@ -414,7 +414,7 @@ try {
     for (let tries = 0; strictErrors.length < 2 && tries < 50; tries += 1) await strictPage.waitForTimeout(20);
     assert.equal(await strictPage.evaluate(() => window.app.data.getItem('csp.out')), null);
     const q3 = "inline code blocked by the Content Security Policy of the page \\(no 'unsafe-eval'\\); move the code to named "
-        + "logic \\(a method of the page companion _aux\\.js\\) or serve the page with the permissive CSP profile, which allows 'unsafe-eval'$";
+        + "logic \\(a method of the page's class Logic\\) or serve the page with the permissive CSP profile, which allows 'unsafe-eval'$";
     assert.equal(strictErrors.length, 2, strictErrors.join('\n'));
     assert.match(strictErrors[0], new RegExp(`^EvalError: dataController '.+' 'script': ${q3}`));
     assert.match(strictErrors[1], new RegExp(`^EvalError: button '.+' 'action': ${q3}`));
