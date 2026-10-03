@@ -3134,6 +3134,8 @@ amendment 11.53.
   by the JS renderers; the tests that wrote inline code in the live Source mount a
   separate Source (`js/tests/fixtures/mount.js`). `c9584ab` the same attribute rule in
   the Python renderers and a contract test of a Python Source with inline code.
+  `06637d9` documents and amendment 11.53. `f2eb977` the pages of
+  `scripts/verify_binding_browser.mjs` mount a received Source.
   Rules: [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035),
   [GC-095 §065](../public/095-writing-pages.md#gc-095-065).
 - gramlot-js-server `feat/serverless-inline-code`: `312d4fc` single-file CSP with
@@ -3143,7 +3145,8 @@ amendment 11.53.
   port 8091 with the new core in both integrations (`c01`, `c02`, `c04`, `c06`, `c07`,
   `c09`), no console or server errors; gramlot-js-server with the new core in a
   temporary worktree: server 6/6, serverless 20/20, Chromium checks PASS
-  (`verify_inline_browser`, `verify_export_browser` ×2, sentinel, quick start).
+  (`verify_inline_browser`, `verify_export_browser` ×2, sentinel, quick start);
+  `verify_binding_browser.mjs` PASS in Chromium, strict CSP check included.
 
 **Open:** an `iframe` `srcdoc` attribute is written as is, also when resolved from Data;
 its HTML runs scripts wherever the policy of the page allows inline scripts; the directory export of `serverless` sets no CSP; nothing pushed,
