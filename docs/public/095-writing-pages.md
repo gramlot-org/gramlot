@@ -480,7 +480,30 @@ the attribute and points to named logic or to the permissive profile
 ([GC-090 section 035](090-classes-and-hosts.md)). The error covers every inline
 declaration: `formula`, `script`, `_if`/`_else`, `==`, `action` and
 `connect_on<event>`. Examples: `examples/controllers/04_inline_expressions`
-(`c04`) and `05_node_methods` (`c05`).
+(`c04`) and `05_node_methods` (`c05`). The file exported by
+`@gramlot/gramlot-serverless` allows `'unsafe-eval'`, so inline code runs there too.
+
+Inline code runs only as written in the Source the page receives: `main`, a remote
+Source, or a `GramlotBuilderBag` given to `startSource`. Write it in `main` or in the
+method of a remote Source, as a literal string. These are errors that name the node
+and the attribute ([GC-090 section 035](090-classes-and-hosts.md)):
+
+- a code attribute changed by page code after the start, or a node with inline code
+  inserted in the live Source: its text is not run. Code that must change at run time
+  belongs in named logic;
+- inline code built from data: a code attribute that holds a pointer
+  (`formula='^.code'`) is refused when the Source is received. Data reaches inline
+  code as parameters (`a='^.a'`), never as text;
+- an attribute with the form of a native event handler (`onclick='…'`): write
+  `connect_onclick` instead;
+- a `javascript:` URL in `href`, `src`, `formaction` or `xlink:href`, written or
+  from Data.
+
+```python
+pane.dataFormula(".total", "price * quantity", price="^.price", quantity="^.quantity")
+pane.button("Save", action="this.FIRE('.save')")
+pane.span("x", connect_onclick="this.SET('.clicked', true)")
+```
 
 **Legacy macros** (`GET .a`, `SET .a = v`, `PUT`, `FIRE`, `FIRE_AFTER`, `$1`)
 are accepted only by a deprecated compatibility preprocessor for inline code. It

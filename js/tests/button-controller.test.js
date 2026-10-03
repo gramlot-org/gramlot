@@ -8,6 +8,7 @@ import {JSDOM, VirtualConsole} from 'jsdom';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {ButtonBinding} from '../src/view/button.js';
+import {mount} from './fixtures/mount.js';
 
 function page() {
     const window = new JSDOM('<main></main>', {virtualConsole: new VirtualConsole()}).window;
@@ -73,13 +74,16 @@ test('R11: text, span, SVG icon and keyboard activation invoke the nested contro
 });
 
 test('R11: a connect_onclick on an ancestor keeps its own node; the button mechanism stops the propagation (R3)', () => {
-    const {builder, byId, window} = page();
+    const {app, byId, window} = page();
     const seen = [];
     globalThis.__seen = seen;
     try {
-        const pane = builder.root.div({id: 'pane', connect_onclick: '__seen.push(["pane", this.label, event.target.id])'});
-        pane.button('native', {id: 'native'});
-        pane.button('fires', {id: 'fires', fire: 'x'});
+        const pane = mount(app, root => {
+            const div = root.div({id: 'pane', connect_onclick: '__seen.push(["pane", this.label, event.target.id])'});
+            div.button('native', {id: 'native'});
+            div.button('fires', {id: 'fires', fire: 'x'});
+            return div;
+        });
         click(window, byId('native'));
         click(window, byId('fires'));
         assert.deepEqual(seen, [['pane', sourceTarget(pane).label, 'native']]);
@@ -89,12 +93,14 @@ test('R11: a connect_onclick on an ancestor keeps its own node; the button mecha
 });
 
 test('controller kwargs: _evt, button_counter and the modifier booleans; a body reads them as locals', () => {
-    const {app, builder, byId, window} = page();
+    const {app, byId, window} = page();
     const calls = [];
     companion(app, {pressed(node, kwargs) { calls.push(kwargs); }});
-    builder.root.button({id: 'named'}).dataController({func: 'pressed', a: 1});
-    const inline = builder.root.button({id: 'inline'});
-    inline.dataController({script: 'this.SET("seen", [button_counter, button_shift, button_ctrl, button_alt, button_meta, _evt.type, a].join())', a: 'A'});
+    mount(app, root => {
+        root.button({id: 'named'}).dataController({func: 'pressed', a: 1});
+        root.button({id: 'inline'}).dataController({
+            script: 'this.SET("seen", [button_counter, button_shift, button_ctrl, button_alt, button_meta, _evt.type, a].join())', a: 'A'});
+    });
     click(window, byId('named'), {shiftKey: true, metaKey: true});
     const [kwargs] = calls;
     assert.equal(kwargs._evt.type, 'click');
@@ -133,9 +139,9 @@ test('the counter lives as long as the semantic node: a rebuild keeps it', () =>
 });
 
 test('action: inline with this = the button node, the button attributes, event, _counter and modifiers', () => {
-    const {builder, byId, window, data} = page();
-    const node = sourceTarget(builder.root.button('go', {id: 'b', title: 'T',
-        action: 'this.SET("got", [this.label, title, event.type, _counter, modifiers].join("|"))'}));
+    const {app, byId, window, data} = page();
+    const node = sourceTarget(mount(app, root => root.button('go', {id: 'b', title: 'T',
+        action: 'this.SET("got", [this.label, title, event.type, _counter, modifiers].join("|"))'})));
     click(window, byId('b'), {ctrlKey: true, shiftKey: true});
     assert.equal(data.getItem('got'), `${node.label}|T|click|1|ShiftCtrl`);
     click(window, byId('b'));
@@ -209,11 +215,11 @@ test('R3: type="button" only with a mechanism, also when the mechanism appears l
     assert.equal(byId('native').getAttribute('type'), null);
     assert.equal(byId('submit').getAttribute('type'), 'submit');
     assert.equal(byId('late').getAttribute('type'), null);
-    sourceTarget(late).setAttr({action: 'void 0'});
+    sourceTarget(late).setAttr({fire: 'y'});
     assert.equal(byId('late').getAttribute('type'), 'button');
     nested.span('x');
     assert.equal(byId('nested').getAttribute('type'), null);
-    nested.dataController({script: 'void 0'});
+    nested.dataController({func: 'pressed'});
     assert.equal(byId('nested').getAttribute('type'), 'button');
     sourceTarget(submit).setAttr({type: null});
     assert.equal(byId('submit').getAttribute('type'), 'button');
@@ -235,10 +241,10 @@ test('disabled button: the click runs nothing and is not counted (legacy early r
 });
 
 test('removal during a callback: the button removed by its own action runs nothing more (R12)', () => {
-    const {builder, byId, window, data} = page();
+    const {app, byId, window, data} = page();
     globalThis.__remove = node => node.parentBag.popNode(node.label);
     try {
-        builder.root.button('go', {id: 'b', action: '__remove(this)', connect_onclick: 'this.SET("after", true)'});
+        mount(app, root => root.button('go', {id: 'b', action: '__remove(this)', connect_onclick: 'this.SET("after", true)'}));
         const element = byId('b');
         const errors = listenerErrors(window, () => click(window, element));
         assert.deepEqual(errors, []);

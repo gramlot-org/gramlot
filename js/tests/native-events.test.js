@@ -8,6 +8,7 @@ import {JSDOM, VirtualConsole} from 'jsdom';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot} from '../src/index.js';
 import {NativeEventBinding} from '../src/view/events.js';
+import {mount} from './fixtures/mount.js';
 
 function page() {
     const window = new JSDOM('<main></main>', {virtualConsole: new VirtualConsole()}).window;
@@ -51,9 +52,9 @@ test('the event name is the part after connect_on, lower-cased; one listener per
 });
 
 test('inline: this = the declaring node, the event as parameter and as arguments[0]; the legacy macros work', () => {
-    const {builder, byId, window, data} = page();
-    const node = sourceTarget(builder.root.div({id: 'd',
-        connect_onclick: 'SET got = [this.label, event.type, arguments[0] === event].join()'}));
+    const {app, byId, window, data} = page();
+    const node = sourceTarget(mount(app, root => root.div({id: 'd',
+        connect_onclick: 'SET got = [this.label, event.type, arguments[0] === event].join()'})));
     const errors = listenerErrors(window, () => fire(window, byId('d'), 'click'));
     assert.deepEqual(errors, []);
     assert.equal(data.getItem('got'), `${node.label},click,true`);
@@ -78,36 +79,46 @@ test('named logic: a missing name raises from the listener, never falls back to 
 });
 
 test('R11: an event on a descendant runs the handler with the declaring node', () => {
-    const {builder, byId, window, data} = page();
-    const pane = builder.root.div({id: 'pane', connect_onclick: 'this.SET("got", [this.label, event.target.id].join())'});
-    pane.p({id: 'inner'}).span('x', {id: 'leaf'});
+    const {app, byId, window, data} = page();
+    const pane = mount(app, root => {
+        const div = root.div({id: 'pane', connect_onclick: 'this.SET("got", [this.label, event.target.id].join())'});
+        div.p({id: 'inner'}).span('x', {id: 'leaf'});
+        return div;
+    });
     fire(window, byId('leaf'), 'click');
     assert.equal(data.getItem('got'), `${sourceTarget(pane).label},leaf`);
 });
 
-test('a replaced handler no longer fires; a removed one is gone; an added one fires; a Data projection keeps one listener', () => {
-    const {builder, byId, window, data, record} = page();
-    const node = sourceTarget(builder.root.div({id: 'd', title: '^t', connect_onclick: 'this.SET("which", "old")'}));
+test('a replaced or added handler is not run; a removed one is gone; a Data projection keeps one listener', () => {
+    const {app, byId, window, data, record} = page();
+    const node = sourceTarget(mount(app, root => root.div({id: 'd', title: '^t', connect_onclick: 'this.SET("which", "old")'})));
     const first = record(node).events.get('connect_onclick');
     data.setItem('t', 'projected');
     assert.equal(record(node).events.get('connect_onclick'), first, 'a projection keeps the listener');
-    node.setAttr({connect_onclick: 'this.SET("which", "new")'});
     fire(window, byId('d'), 'click');
-    assert.equal(data.getItem('which'), 'new');
-    data.setItem('which', null);
+    assert.equal(data.getItem('which'), 'old');
+    const refused = new RegExp(`^div '${node.label}' 'connect_on(click|dblclick)': inline code runs only as received with the Source`);
+    node.setAttr({connect_onclick: 'this.SET("which", "new")'});
+    const replaced = listenerErrors(window, () => fire(window, byId('d'), 'click'));
+    assert.equal(replaced.length, 1);
+    assert.match(replaced[0].message, refused);
+    assert.equal(data.getItem('which'), 'old');
     node.setAttr({connect_onclick: null});
     fire(window, byId('d'), 'click');
-    assert.equal(data.getItem('which'), null);
     assert.equal(record(node).events.size, 0);
     node.setAttr({connect_ondblclick: 'this.SET("which", "dbl")'});
-    fire(window, byId('d'), 'dblclick');
-    assert.equal(data.getItem('which'), 'dbl');
+    const added = listenerErrors(window, () => fire(window, byId('d'), 'dblclick'));
+    assert.equal(added.length, 1);
+    assert.match(added[0].message, refused);
+    assert.equal(data.getItem('which'), 'old');
 });
 
 test('a rebuilt element gets its listeners once; a removed element keeps none', () => {
-    const {app, builder, byId, window, data} = page();
-    const pane = builder.root.div({id: 'pane'});
-    const node = sourceTarget(pane.div({id: 'd', connect_onclick: 'this.SET("n", (this.GET("n") || 0) + 1)'}));
+    const {app, byId, window, data} = page();
+    const [pane, node] = mount(app, root => {
+        const div = root.div({id: 'pane'});
+        return [div, sourceTarget(div.div({id: 'd', connect_onclick: 'this.SET("n", (this.GET("n") || 0) + 1)'}))];
+    });
     app.renderer.freeze(pane);
     sourceTarget(pane).setAttr({title: 'rebuilt'});
     app.renderer.unfreeze(pane);
@@ -132,13 +143,15 @@ test('R12: a node removed under freeze keeps its DOM until the thaw and its hand
 });
 
 test('P10: the button mechanism runs before a connect_onclick of the same button; a button with only connect_onclick stays native', () => {
-    const {builder, byId, window} = page();
+    const {app, byId, window} = page();
     const order = [];
     globalThis.__order = order;
     try {
-        const pane = builder.root.div({id: 'pane', connect_onclick: '__order.push("pane")'});
-        pane.button('both', {id: 'both', action: '__order.push("action")', connect_onclick: '__order.push("connect")'});
-        pane.button('only', {id: 'only', connect_onclick: '__order.push("only")'});
+        mount(app, root => {
+            const pane = root.div({id: 'pane', connect_onclick: '__order.push("pane")'});
+            pane.button('both', {id: 'both', action: '__order.push("action")', connect_onclick: '__order.push("connect")'});
+            pane.button('only', {id: 'only', connect_onclick: '__order.push("only")'});
+        });
         fire(window, byId('both'), 'click');
         assert.deepEqual(order.splice(0), ['action', 'connect']);
         fire(window, byId('only'), 'click');
@@ -150,9 +163,11 @@ test('P10: the button mechanism runs before a connect_onclick of the same button
 });
 
 test('input type=button, submit, reset and image stay native; connect_onclick works on them', () => {
-    const {builder, byId, window, data, record} = page();
-    for (const type of ['button', 'submit', 'reset', 'image']) {
-        const node = builder.root.input({id: type, type, connect_onclick: `this.SET("clicked.${type}", true)`});
+    const {app, byId, window, data, record} = page();
+    const types = ['button', 'submit', 'reset', 'image'];
+    const nodes = mount(app, root => types.map(type => root.input({id: type, type, connect_onclick: `this.SET("clicked.${type}", true)`})));
+    for (const [index, type] of types.entries()) {
+        const node = nodes[index];
         assert.equal(record(node).button, undefined);
         assert.equal(record(node).control, undefined);
         fire(window, byId(type), 'click');
@@ -162,8 +177,8 @@ test('input type=button, submit, reset and image stay native; connect_onclick wo
 });
 
 test('an SVG element takes connect_on<event> as well', () => {
-    const {builder, byId, window, data} = page();
-    builder.root.svg({width: 10, height: 10}).circle({id: 'c', r: 4, connect_onclick: 'this.SET("hit", this.nodeTag)'});
+    const {app, byId, window, data} = page();
+    mount(app, root => root.svg({width: 10, height: 10}).circle({id: 'c', r: 4, connect_onclick: 'this.SET("hit", this.nodeTag)'}));
     fire(window, byId('c'), 'click');
     assert.equal(data.getItem('hit'), 'circle');
 });

@@ -7,6 +7,7 @@ import {JSDOM, VirtualConsole} from 'jsdom';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {CheckboxControl, RadioControl, TextControl} from '../src/view/controls.js';
+import {mount} from './fixtures/mount.js';
 
 function page(window = new JSDOM('<main></main><aside></aside>', {virtualConsole: new VirtualConsole()}).window,
     element = window.document.querySelector('main')) {
@@ -298,10 +299,12 @@ test('rebinding: a datapath change projects the new values; a true there turns t
 });
 
 test('a controller that refuses the choice: its correction reaches B, and A still follows the choice', () => {
-    const {builder, data, byId} = page();
+    const {app, data, byId} = page();
     data.setItem('g.a', true);
-    radios(builder.root, 'g', ['a', 'b']);
-    builder.root.dataController({script: 'if (b) this.SET("g.b", false)', b: '^g.b'});
+    mount(app, root => {
+        radios(root, 'g', ['a', 'b']);
+        root.dataController({script: 'if (b) this.SET("g.b", false)', b: '^g.b'});
+    });
     byId('b').click();
     assert.strictEqual(data.getItem('g.b'), false);
     assert.equal(byId('b').checked, false, 'the correction reaches the button that wrote');
@@ -310,13 +313,15 @@ test('a controller that refuses the choice: its correction reaches B, and A stil
 
 // Phase 18 (ASTRA-02): `group` is read from the renderer's resolved projection (`==` included).
 test('ASTRA-02: group from ^, = and == is the resolved group, at mount and on update', () => {
-    const {app, window, builder, data, byId} = page();
+    const {app, window, data, byId} = page();
     data.setItem('gn', 'colors');
     const prefix = `gramlot-${app.renderer.instanceId}-page-`;
-    const eq = sourceTarget(builder.root.input({id: 'e', type: 'radio', group: '==gname', gname: '^gn', value: '^g.e'}));
-    builder.root.input({id: 'r', type: 'radio', group: '=gn', value: '^g.r'});
-    builder.root.input({id: 'p', type: 'radio', group: '^gn', value: '^g.p'});
-    builder.root.input({id: 'l', type: 'radio', group: '==lit', lit: 'colors', value: '^g.l'});
+    const eq = sourceTarget(mount(app, root => {
+        root.input({id: 'r', type: 'radio', group: '=gn', value: '^g.r'});
+        root.input({id: 'p', type: 'radio', group: '^gn', value: '^g.p'});
+        root.input({id: 'l', type: 'radio', group: '==lit', lit: 'colors', value: '^g.l'});
+        return root.input({id: 'e', type: 'radio', group: '==gname', gname: '^gn', value: '^g.e'});
+    }));
     for (const id of ['e', 'r', 'p', 'l']) assert.equal(byId(id).name, `${prefix}colors`, id);
     byId('e').checked = true;
     byId('e').dispatchEvent(new window.Event('change'));

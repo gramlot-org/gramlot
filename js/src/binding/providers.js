@@ -97,14 +97,14 @@ export class Provider {
         let [attr, body] = [formula ? 'formula' : 'script', node.getAttr(formula ? 'formula' : 'script')];
         // Truthiness of `_if`, `_else` and the body, as legacy (`gnrdomsource.js:371-385, 473-482`).
         const condition = node.getAttr('_if');
-        if (condition && !this.#inline('_if', `return (${condition})`, kwargs, false)) {
+        if (condition && !this.#inline('_if', condition, `return (${condition})`, kwargs, false)) {
             [attr, body] = ['_else', node.getAttr('_else')];
             if (!body) return;
         }
         const func = node.getAttr('func');
         let result;
         if (body) {
-            result = this.#inline(attr, formula ? `return ${body}` : body, kwargs, true);
+            result = this.#inline(attr, body, formula ? `return ${body}` : body, kwargs, true);
         } else if (func === null || func === undefined) {
             // No body, as legacy: a formula writes the Bag of its arguments, a controller does nothing.
             if (!formula) return;
@@ -182,15 +182,15 @@ export class Provider {
     }
 
     /**
-     * The inline declaration `attr` run on `kwargs`, as legacy (`gnrdomsource.js:377-378, 480-482`):
-     * `this` = node, the parameters `_node`, `_triggerpars`, `_reason`, the click arguments (undefined
-     * for any other trigger), then the author attributes; a body (`formula`, `script`, or `_else` in
-     * their place) has `_kwargs` first, `_if` has not.
+     * The inline declaration `attr`, written `code` in the Source and compiled as `source`, run on
+     * `kwargs`, as legacy (`gnrdomsource.js:377-378, 480-482`): `this` = node, the parameters `_node`,
+     * `_triggerpars`, `_reason`, the click arguments (undefined for any other trigger), then the author
+     * attributes; a body (`formula`, `script`, or `_else` in their place) has `_kwargs` first, `_if` has not.
      */
-    #inline(attr, source, kwargs, body) {
+    #inline(attr, code, source, kwargs, body) {
         const names = [...(body ? ['_kwargs'] : []), ...TRIGGER_FIELDS, ...CLICK_FIELDS,
             ...Object.keys(authorArguments(kwargs))];
-        return this.binding.runtime.inlineCompiler.compile(this.node, attr, source, names)({...kwargs, _kwargs: kwargs});
+        return this.binding.runtime.inlineCompiler.compile(this.node, attr, code, names, source)({...kwargs, _kwargs: kwargs});
     }
 
     #closeRegistrations() {

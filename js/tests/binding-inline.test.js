@@ -7,9 +7,12 @@ import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {JSDOM} from 'jsdom';
 import {build} from 'esbuild';
+import {Bag} from '@genrojs/bag';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
+import {GramlotBuilderBag} from '../src/builder/source.js';
 import {templateParameters} from '../src/renderer/attributes.js';
+import {mount} from './fixtures/mount.js';
 
 function page() {
     const document = new JSDOM('<main></main>').window.document;
@@ -56,8 +59,8 @@ test('D5: a formula with a previous result, _if true/false x _else present/absen
         data.setItem('r', 7);
         data.setItem('flag', flag);
         globalThis.inlineBodyRuns = 0;
-        app.builder.root.dataFormula({result_path: 'r', formula: '(globalThis.inlineBodyRuns++, a * 2)', a: '^a',
-            flag: '=flag', _if: 'flag', ...(withElse ? {_else: 'a * 3'} : {})});
+        mount(app, root => root.dataFormula({result_path: 'r', formula: '(globalThis.inlineBodyRuns++, a * 2)', a: '^a',
+            flag: '=flag', _if: 'flag', ...(withElse ? {_else: 'a * 3'} : {})}));
         data.setItem('a', 5);
         assert.equal(data.getItem('r'), expected, `_if ${flag}, _else ${withElse}`);
         assert.equal(globalThis.inlineBodyRuns, flag ? 1 : 0, 'the main body does not run when _if is false');
@@ -70,8 +73,8 @@ test('Q11.1: _if true and false, with and without _else, on dataController: _els
     for (const [flag, withElse, expected] of [[true, false, 'body'], [true, true, 'body'], [false, false, null], [false, true, 'else']]) {
         const {app, data} = page();
         data.setItem('flag', flag);
-        app.builder.root.dataController({script: 'this.SET("out", "body")', a: '^a', flag: '=flag', _if: 'flag',
-            ...(withElse ? {_else: 'this.SET("out", "else")'} : {})});
+        mount(app, root => root.dataController({script: 'this.SET("out", "body")', a: '^a', flag: '=flag', _if: 'flag',
+            ...(withElse ? {_else: 'this.SET("out", "else")'} : {})}));
         data.setItem('a', 1);
         assert.equal(data.getItem('out'), expected, `_if ${flag}, _else ${withElse}`);
         app.dispose();
@@ -80,7 +83,7 @@ test('Q11.1: _if true and false, with and without _else, on dataController: _els
 
 test('Q11.1: an error in _if propagates (P12); _if with func is an authoring error', () => {
     const {app, data} = page();
-    app.builder.root.dataController({script: 'this.SET("out", 1)', a: '^a', _if: 'missing.value'});
+    mount(app, root => root.dataController({script: 'this.SET("out", 1)', a: '^a', _if: 'missing.value'}));
     assert.throws(() => data.setItem('a', 1), ReferenceError);
     assert.equal(data.getItem('out'), null);
     assert.throws(() => new GramlotBuilder().root.dataController({func: 'go', _if: 'a > 1'}),
@@ -93,10 +96,12 @@ test('Q11.1: an error in _if propagates (P12); _if with func is an authoring err
 test('legacy truthiness: an empty _if is absent, an empty _else stops, an empty formula writes the Bag of its arguments', () => {
     const {app, data} = page();
     data.setItem('r1', 7);
-    app.builder.root.dataFormula({result_path: 'r1', formula: 'a * 2', a: '^a', _if: ''});
-    app.builder.root.dataFormula({result_path: 'r2', formula: 'a * 2', a: '^a', _if: false});
-    app.builder.root.dataFormula({result_path: 'r3', formula: 'a * 2', a: '^a', _if: 'a > 10', _else: ''});
-    app.builder.root.dataFormula({result_path: 'r4', formula: '', a: '^a'});
+    mount(app, root => {
+        root.dataFormula({result_path: 'r1', formula: 'a * 2', a: '^a', _if: ''});
+        root.dataFormula({result_path: 'r2', formula: 'a * 2', a: '^a', _if: false});
+        root.dataFormula({result_path: 'r3', formula: 'a * 2', a: '^a', _if: 'a > 10', _else: ''});
+        root.dataFormula({result_path: 'r4', formula: '', a: '^a'});
+    });
     data.setItem('r3', 7);
     data.setItem('a', 5);
     assert.equal(data.getItem('r1'), 10);
@@ -111,9 +116,11 @@ test('parity name/inline: the same formula by name and inline gives the same res
     const seen = [];
     companion(app, {total(kwargs) { seen.push(Object.keys(kwargs)); return kwargs.a + kwargs.b; }});
     data.setItem('b', 2);
-    app.builder.root.dataFormula({result_path: 'byName', func: 'total', a: '^a', b: '=b'});
-    app.builder.root.dataFormula({result_path: 'inline', formula: '(globalThis.inlineKwargs = Object.keys(_kwargs), a + b)',
-        a: '^a', b: '=b'});
+    mount(app, root => {
+        root.dataFormula({result_path: 'byName', func: 'total', a: '^a', b: '=b'});
+        root.dataFormula({result_path: 'inline', formula: '(globalThis.inlineKwargs = Object.keys(_kwargs), a + b)',
+            a: '^a', b: '=b'});
+    });
     data.setItem('a', 1);
     assert.equal(data.getItem('byName'), 3);
     assert.equal(data.getItem('inline'), 3);
@@ -124,10 +131,10 @@ test('parity name/inline: the same formula by name and inline gives the same res
 
 test('inline parameters as legacy: $1 is _kwargs, then _node, _triggerpars, _reason and the attributes; this is the node', () => {
     const {app, data} = page();
-    const node = sourceTarget(app.builder.root.dataController({
+    const node = sourceTarget(mount(app, root => root.dataController({
         script: 'this.SET("out", [$1 === _kwargs, this.label, _reason, _triggerpars.trigger_reason, _node.label, a, _kwargs["class"]])',
         a: '^a', class: 'k',
-    }));
+    })));
     data.setItem('a', 4);
     assert.deepEqual(data.getItem('out'), [true, node.label, 'node', 'node', 'a', 4, 'k']);
     app.dispose();
@@ -135,8 +142,8 @@ test('inline parameters as legacy: $1 is _kwargs, then _node, _triggerpars, _rea
 
 test('gate fix 1: _if has no _kwargs, as legacy ($1 is _node); a body and an _else body have _kwargs first', () => {
     const {app, data} = page();
-    app.builder.root.dataController({script: 'this.SET("body", $1 === _kwargs)', a: '^a',
-        _if: '(this.SET("condition", [$1.label, typeof _kwargs]), a > 1)', _else: 'this.SET("else", $1 === _kwargs)'});
+    mount(app, root => root.dataController({script: 'this.SET("body", $1 === _kwargs)', a: '^a',
+        _if: '(this.SET("condition", [$1.label, typeof _kwargs]), a > 1)', _else: 'this.SET("else", $1 === _kwargs)'}));
     data.setItem('a', 2);
     assert.deepEqual(data.getItem('condition'), ['a', 'undefined']);
     assert.equal(data.getItem('body'), true);
@@ -145,12 +152,13 @@ test('gate fix 1: _if has no _kwargs, as legacy ($1 is _node); a body and an _el
     app.dispose();
 });
 
-test('gate fix 2: a compiled declaration is released when its attribute changes or is removed', () => {
+test('gate fix 2: a compiled declaration is released when its attribute changes or is removed; a changed text is not run', () => {
     const {app, data, byId, compiler} = page();
     data.setItem('a', 1);
-    const formula = sourceTarget(app.builder.root.dataFormula({result_path: 'r', formula: 'a', a: '^a', _if: 'a > 5',
-        _else: '-a'}));
-    const box = sourceTarget(app.builder.root.div({id: 'box', title: '==a * 2', a: '^a'}));
+    const [formula, box] = mount(app, root => [
+        sourceTarget(root.dataFormula({result_path: 'r', formula: 'a', a: '^a', _if: 'a > 5', _else: '-a'})),
+        sourceTarget(root.div({id: 'box', title: '==a * 2', a: '^a'})),
+    ]);
     data.setItem('a', 2);
     assert.equal(data.getItem('r'), -2);
     assert.equal(compiler.size, 3, '_if, _else and the title');
@@ -161,9 +169,10 @@ test('gate fix 2: a compiled declaration is released when its attribute changes 
     box.setAttr({title: 'plain'});
     assert.equal(byId('box').getAttribute('title'), 'plain');
     assert.equal(compiler.size, 0, 'the title that is no longer == is released');
-    data.setItem('a', 3);
-    assert.equal(data.getItem('r'), 3);
-    assert.equal(compiler.size, 2);
+    assert.throws(() => data.setItem('a', 3),
+        new RegExp(`^Error: dataFormula '${formula.label}' '_if': inline code runs only as received with the Source`));
+    assert.equal(data.getItem('r'), -2);
+    assert.equal(compiler.size, 0);
     app.dispose();
 });
 
@@ -184,7 +193,7 @@ test('gate fix 5: one template rule for Builder templates, the == checks and the
     assert.deepEqual(templateParameters(3), []);
     const {app, data, byId} = page();
     data.setItem('price', 10);
-    app.builder.root.div({id: 'box', a: '^price', title: '\\${a}px', total: '=="\\${x}" + a'});
+    mount(app, root => root.div({id: 'box', a: '^price', title: '\\${a}px', total: '=="\\${x}" + a'}));
     assert.equal(byId('box').getAttribute('title'), '${a}px');
     assert.equal(byId('box').getAttribute('total'), '${x}10');
     app.dispose();
@@ -192,7 +201,7 @@ test('gate fix 5: one template rule for Builder templates, the == checks and the
 
 test('this.SET(...) needs no preprocessor and gives no warning', () => {
     const {app, data, compiler} = page();
-    const node = sourceTarget(app.builder.root.dataController({script: 'this.SET("x", a); this.PUT("y", GETTER)', a: '^a', GETTER: 1}));
+    const node = sourceTarget(mount(app, root => root.dataController({script: 'this.SET("x", a); this.PUT("y", GETTER)', a: '^a', GETTER: 1})));
     assert.deepEqual(warnings(() => data.setItem('a', 3)), []);
     assert.equal(data.getItem('x'), 3);
     assert.equal(data.getItem('y'), 1);
@@ -226,7 +235,7 @@ test('every legacy macro is translated as in gnrlang.js, targeting the node meth
 test('the macros run through the node methods, with one deprecation warning per declaration', () => {
     const {app, data} = page();
     data.setItem('ctx.a', 2);
-    app.builder.root.div({datapath: 'ctx'}).dataController({script: 'SET .out = GET .a + $1.b; FIRE .done', b: '^b'});
+    mount(app, root => root.div({datapath: 'ctx'}).dataController({script: 'SET .out = GET .a + $1.b; FIRE .done', b: '^b'}));
     const fired = [];
     data.subscribe('fired', {any: event => { if (event.node.label === 'done') fired.push(event.node.value); }});
     const messages = warnings(() => {
@@ -243,7 +252,7 @@ test('the macros run through the node methods, with one deprecation warning per 
 test('a macro inside a string is translated, as legacy', () => {
     const {app, data} = page();
     warnings(() => {
-        app.builder.root.dataController({script: 'this.SET("msg", "read GET .a")', b: '^b'});
+        mount(app, root => root.dataController({script: 'this.SET("msg", "read GET .a")', b: '^b'}));
         data.setItem('b', 1);
     });
     assert.equal(data.getItem('msg'), "read this.GET('.a')");
@@ -252,7 +261,7 @@ test('a macro inside a string is translated, as legacy', () => {
 
 test('a text starting with function is the function itself, as legacy', () => {
     const {app, data} = page();
-    app.builder.root.dataController({script: 'function(kwargs, node){ this.SET("out", [kwargs.b, node.label]); }', b: '^b'});
+    mount(app, root => root.dataController({script: 'function(kwargs, node){ this.SET("out", [kwargs.b, node.label]); }', b: '^b'}));
     data.setItem('b', 5);
     assert.deepEqual(data.getItem('out'), [5, 'b']);
     app.dispose();
@@ -260,7 +269,7 @@ test('a text starting with function is the function itself, as legacy', () => {
 
 test('invalid syntax: the error names the node and the attribute and quotes the preprocessed text', () => {
     const {app, data} = page();
-    const node = sourceTarget(app.builder.root.dataController({script: 'SET .a = (1', b: '^b'}));
+    const node = sourceTarget(mount(app, root => root.dataController({script: 'SET .a = (1', b: '^b'})));
     let error = null;
     warnings(() => {
         try { data.setItem('b', 1); } catch (caught) { error = caught; }
@@ -270,13 +279,15 @@ test('invalid syntax: the error names the node and the attribute and quotes the 
     app.dispose();
 });
 
-test('one compilation per declaration; a new text compiles again; the removal releases the cache', () => {
+test('one compilation per declaration; a new text is not compiled; the removal releases the cache', () => {
     const {app, data, compiler} = page();
     data.setItem('prezzo', 1);
     let formula;
     const first = functionCalls(() => {
-        formula = sourceTarget(app.builder.root.dataFormula({result_path: 'r', formula: 'a + 1', a: '^a'}));
-        app.builder.root.div({id: 'price', title: '==prezzo * 2', prezzo: '^prezzo'});
+        formula = sourceTarget(mount(app, root => {
+            root.div({id: 'price', title: '==prezzo * 2', prezzo: '^prezzo'});
+            return root.dataFormula({result_path: 'r', formula: 'a + 1', a: '^a'});
+        }));
         data.setItem('a', 1);
         data.setItem('a', 2);
         data.setItem('prezzo', 2);
@@ -287,12 +298,11 @@ test('one compilation per declaration; a new text compiles again; the removal re
     assert.equal(compiler.size, 2);
     const second = functionCalls(() => {
         formula.setAttr({formula: 'a + 10'});
-        data.setItem('a', 3);
-        data.setItem('a', 4);
+        assert.throws(() => data.setItem('a', 3), /dataFormula '.*' 'formula': inline code runs only as received with the Source/);
     });
-    assert.equal(second, 1);
-    assert.equal(data.getItem('r'), 14);
-    app.builder.source.popNode(formula.label);
+    assert.equal(second, 0);
+    assert.equal(data.getItem('r'), 3);
+    app.source.getItem('main').popNode(formula.label);
     assert.equal(compiler.size, 1);
     app.dispose();
     assert.equal(compiler.size, 0);
@@ -302,7 +312,7 @@ test('Q11.2: an == attribute is computed from its pointers and recomputed when t
     const {app, data, byId} = page();
     data.setItem('prezzo', 100);
     data.setItem('iva', 0.2);
-    app.builder.root.div({id: 'box', title: '==prezzo * (1 + iva)', prezzo: '^prezzo', iva: '^iva'});
+    mount(app, root => root.div({id: 'box', title: '==prezzo * (1 + iva)', prezzo: '^prezzo', iva: '^iva'}));
     assert.equal(byId('box').getAttribute('title'), '120');
     data.setItem('prezzo', 200);
     assert.equal(byId('box').getAttribute('title'), '240');
@@ -314,7 +324,7 @@ test('Q11.2: an == attribute is computed from its pointers and recomputed when t
 test('Q11.2: an == does not see the other ==; an == node value is the element text', () => {
     const {app, data, byId} = page();
     data.setItem('n', 2);
-    app.builder.root.div('==n * 10', {id: 'box', x: '==1', y: '==typeof x', n: '^n'});
+    mount(app, root => root.div('==n * 10', {id: 'box', x: '==1', y: '==typeof x', n: '^n'}));
     assert.equal(byId('box').getAttribute('x'), '1');
     assert.equal(byId('box').getAttribute('y'), 'undefined');
     assert.equal(byId('box').textContent, '20');
@@ -326,7 +336,7 @@ test('Q11.2: an == does not see the other ==; an == node value is the element te
 test('D6: a template-consumed pointer is an argument of ==, read from Data, and never reaches the DOM', () => {
     const {app, data, byId} = page();
     data.setItem('price', 10);
-    app.builder.root.div({id: 'box', a: '^price', title: '${a}', total: '==a*2'});
+    mount(app, root => root.div({id: 'box', a: '^price', title: '${a}', total: '==a*2'}));
     assert.equal(byId('box').getAttribute('title'), '10');
     assert.equal(byId('box').getAttribute('total'), '20');
     assert.equal(byId('box').hasAttribute('a'), false);
@@ -338,7 +348,7 @@ test('D6: a template-consumed pointer is an argument of ==, read from Data, and 
 test('revision 10: the expanded template and the consumed parameter are both available to ==', () => {
     const {app, data, byId} = page();
     data.setItem('price', 10);
-    app.builder.root.div({id: 'box', a: '^price', title: '${a}px', total: '==title + a'});
+    mount(app, root => root.div({id: 'box', a: '^price', title: '${a}px', total: '==title + a'}));
     assert.equal(byId('box').getAttribute('total'), '10px10');
     app.dispose();
 });
@@ -346,7 +356,7 @@ test('revision 10: the expanded template and the consumed parameter are both ava
 test('a template chain used by == is an error naming both attributes; a template using an == is an error', () => {
     const {app, data} = page();
     data.setItem('price', 10);
-    assert.throws(() => app.builder.root.div({a: '^price', title: '${a}px', aria_label: '${title}', total: '==title + a'}),
+    assert.throws(() => mount(app, root => root.div({a: '^price', title: '${a}px', aria_label: '${title}', total: '==title + a'})),
         /'total' uses 'title', a template consumed by another template/);
     const other = page();
     assert.throws(() => other.app.builder.root.div({title: '${t}', t: '==1 + 1'}),
@@ -358,7 +368,7 @@ test('a template chain used by == is an error naming both attributes; a template
 test('an == expression in an SVG attribute is computed by the same point', () => {
     const {app, data, byId} = page();
     data.setItem('r', 4);
-    app.builder.root.svg({width: 20, height: 20}).circle({id: 'dot', r: '==size / 2', size: '^r'});
+    mount(app, root => root.svg({width: 20, height: 20}).circle({id: 'dot', r: '==size / 2', size: '^r'}));
     assert.equal(byId('dot').getAttribute('r'), '2');
     data.setItem('r', 10);
     assert.equal(byId('dot').getAttribute('r'), '5');
@@ -401,25 +411,31 @@ test('import graph: inline.js is reachable from the page runtime only', async ()
 // `new Function` with an EvalError, as a browser does under a CSP without 'unsafe-eval'.
 const STRICT_PAGE = `
 import {JSDOM} from 'jsdom';
-import {Gramlot} from ${JSON.stringify(new URL('../src/index.js', import.meta.url).href)};
-const document = new JSDOM('<main></main>').window.document;
+import {Gramlot, GramlotBuilder} from ${JSON.stringify(new URL('../src/index.js', import.meta.url).href)};
+const document = new JSDOM('<main></main><section></section>').window.document;
 const app = new Gramlot({document, pageId: 'strict', element: document.querySelector('main'), transport: false});
 app.logicRegistry.register(class Logic { somma(kwargs) { return kwargs.a + kwargs.b; } }, {group: null, resource: '/strict_aux.js'});
-const root = app.builder.root;
+const builder = new GramlotBuilder();
+const root = builder.root;
 const failure = run => { try { run(); return null; } catch (error) {
     return {name: error.name, message: error.message, cause: error.cause?.name ?? null}; } };
 root.dataFormula({result_path: 'named', func: 'somma', a: '^a', b: '^b'});
-app.data.setItem('a', 1);
-app.data.setItem('b', 2);
 root.dataController({id: 'ctrl', script: 'this.SET("out", 1)', c: '^c'});
 root.dataFormula({result_path: 'f', formula: 'a * 2', a: '^a2'});
 root.button('go', {id: 'go', action: 'this.SET("out", 2)'});
 root.span('x', {id: 'clicked', connect_onclick: 'this.SET("out", 3)'});
+app.startSource(builder.source);
+app.data.setItem('a', 1);
+app.data.setItem('b', 2);
+// An == is evaluated when its node is rendered: the mount of a second page with one raises.
+const other = new Gramlot({document, pageId: 'strict-expression', element: document.querySelector('section'), transport: false});
+const expression = new GramlotBuilder();
+expression.root.div({title: '==a + 1', a: 1});
 const result = {
     named: app.data.getItem('named'),
     script: failure(() => app.data.setItem('c', 1)),
     formula: failure(() => app.data.setItem('a2', 1)),
-    expression: failure(() => root.div({title: '==a + 1', a: 1})),
+    expression: failure(() => other.startSource(expression.source)),
     out: null,
 };
 // A listener's error goes to the window error event, not to the caller of click().
@@ -432,6 +448,7 @@ for (const [key, id] of [['action', 'go'], ['event', 'clicked']]) {
 }
 result.out = app.data.getItem('out');
 app.dispose();
+other.dispose();
 process.stdout.write(JSON.stringify(result));
 `;
 
@@ -452,4 +469,184 @@ test('Q3: inline code under a CSP without unsafe-eval raises an EvalError naming
         assert.equal(result[key].cause, 'EvalError', key);
         assert.match(result[key].message, new RegExp(`^${target}: ${hint}`), key);
     }
+});
+
+// The inline code runs only as received with the Source (Gramlot.prepareSource): the TYTX wire, a
+// GramlotBuilderBag given to startSource, or a remote Source. A text written later is not run.
+const REFUSED = "inline code runs only as received with the Source \\(main or a remote Source\\); a text written later "
+    + 'is not run: use named logic$';
+
+/** The Source of every inline declaration: formula, script, `_if`/`_else`, `==` attribute and value, action, connect_on. */
+function inlineSource(root) {
+    root.dataFormula({result_path: 'f', formula: 'a * 2', a: '^a', _if: 'a > 0', _else: '-1'});
+    root.dataController({script: 'this.SET("s", a + 1)', a: '^a'});
+    root.div('==a * 10', {id: 'expr', title: '==a + 100', a: '^a'});
+    root.button('go', {id: 'go', action: 'this.SET("clicked", "action")'});
+    root.span('x', {id: 'span', connect_onclick: 'this.SET("connected", event.type)'});
+}
+
+/** The effects of inlineSource after a = 3 and a click on each element. */
+function inlineEffects({data, byId}) {
+    data.setItem('a', 3);
+    byId('go').click();
+    byId('span').click();
+    return [data.getItem('f'), data.getItem('s'), byId('expr').textContent, byId('expr').getAttribute('title'),
+        data.getItem('clicked'), data.getItem('connected')];
+}
+
+test('a Source from the TYTX wire runs its inline code: formula, script, _if/_else, ==, action, connect_on', () => {
+    const {app, data, byId} = page();
+    const builder = new GramlotBuilder();
+    inlineSource(builder.root);
+    app.startSource(builder.toTytx());
+    assert.deepEqual(inlineEffects({data, byId}), [6, 4, '30', '103', 'action', 'click']);
+    data.setItem('a', -1);
+    assert.equal(data.getItem('f'), -1, '_else');
+    app.dispose();
+});
+
+test('a GramlotBuilderBag given to startSource runs its inline code', () => {
+    const {app, data, byId} = page();
+    const builder = new GramlotBuilder();
+    inlineSource(builder.root);
+    assert.ok(builder.source instanceof GramlotBuilderBag);
+    app.startSource(builder.source);
+    assert.deepEqual(inlineEffects({data, byId}), [6, 4, '30', '103', 'action', 'click']);
+    app.dispose();
+});
+
+test('a remote Source runs its inline code; a node of a remote Source keeps its own text', async () => {
+    const remote = new GramlotBuilder();
+    remote.root.dataFormula({result_path: 'remote', formula: 'b + 1', b: '^b'});
+    const wire = remote.toTytx();
+    const document = new JSDOM('<main></main>').window.document;
+    const app = new Gramlot({document, pageId: 'remote', element: document.querySelector('main'),
+        transport: {source: async () => wire}});
+    const target = sourceTarget(mount(app, root => root.div({id: 'target'})));
+    assert.equal(await app.remoteSource(target, 'details'), true);
+    app.data.setItem('b', 1);
+    assert.equal(app.data.getItem('remote'), 2);
+    app.dispose();
+});
+
+test('inline code written in the live Source after the start is not run, naming node and attribute', () => {
+    const {app, data} = page();
+    mount(app, root => root.div({id: 'pane'}));
+    const main = app.source.getItem('main');
+    const later = new GramlotBuilder();
+    const formula = sourceTarget(later.root.dataFormula({result_path: 'f', formula: 'a * 2', a: '^a'}));
+    main.setItem('late', later.source);
+    assert.throws(() => data.setItem('a', 1), new RegExp(`^Error: dataFormula '${formula.label}' 'formula': ${REFUSED}`));
+    assert.equal(data.getItem('f'), null);
+    assert.throws(() => app.builder.root.div({id: 'expr', title: '==1 + 1'}), new RegExp(`'title': ${REFUSED}`));
+    app.dispose();
+});
+
+test('a GramlotBuilderBag arrived inside Data is not activated: inserted in the Source, its inline code is not run', () => {
+    const {app, data} = page();
+    mount(app, root => root.div({id: 'pane'}));
+    const carried = new GramlotBuilder();
+    carried.root.dataController({script: 'globalThis.inlineFromData = true', c: '^c'});
+    const payload = new Bag();
+    payload.setItem('branch', carried.source);
+    const received = Bag.fromTytx(payload.toTytx());
+    const branch = received.getItem('branch');
+    assert.ok(branch instanceof GramlotBuilderBag, 'the TYTX decoding gives the Source class back');
+    app.source.getItem('main').setItem('fromData', branch.bindBuilder(app.builder));
+    assert.throws(() => data.setItem('c', 1), new RegExp(`'script': ${REFUSED}`));
+    assert.equal(globalThis.inlineFromData, undefined);
+    app.dispose();
+});
+
+test('a Data Bag with code-named attributes is never compiled', () => {
+    const {app, data} = page();
+    mount(app, root => root.div({id: 'pane', title: '^d'}));
+    const payload = new Bag();
+    payload.setItem('d', 'text', {formula: 'globalThis.inlineFromData = 1', script: 'globalThis.inlineFromData = 2',
+        action: 'globalThis.inlineFromData = 3', connect_onclick: 'globalThis.inlineFromData = 4', title: '==globalThis.inlineFromData = 5'});
+    const received = Bag.fromTytx(payload.toTytx()).getNode('d');
+    const calls = functionCalls(() => {
+        data.setItem('d', received.value, received.getAttr());
+        data.setItem('d', 'changed');
+    });
+    assert.equal(calls, 0);
+    assert.equal(globalThis.inlineFromData, undefined);
+    app.dispose();
+});
+
+test('a code attribute holding a ^/= pointer is an error at the reception, before any effect', () => {
+    const cases = [
+        ['formula', root => root.dataFormula({result_path: 'f', formula: '^code'})],
+        ['script', root => root.dataController({script: '=code'})],
+        ['_if', root => root.dataController({script: 'void 0', _if: '^code'})],
+        ['_else', root => root.dataFormula({result_path: 'f', formula: '1', _if: 'false', _else: '^code'})],
+        ['action', root => root.button('go', {action: '^code'})],
+        ['connect_onclick', root => root.span('x', {connect_onclick: '^code'})],
+    ];
+    for (const [attr, build] of cases) {
+        for (const received of [builder => builder.source, builder => builder.toTytx()]) {
+            const {app, byId} = page();
+            const builder = new GramlotBuilder();
+            builder.root.div({id: 'before'});
+            build(builder.root);
+            assert.throws(() => app.startSource(received(builder)),
+                new RegExp(`^Error: \\w+ '.+': '${attr}' is inline code and cannot be the pointer '[\\^=]code'; inline code is never read from Data$`),
+                attr);
+            assert.equal(app.state, 'failed');
+            assert.equal(app.source.getItem('main'), null, attr);
+            assert.equal(byId('before'), null, attr);
+            app.dispose();
+        }
+    }
+    // `action` is inline code of a button only: the action of a form stays an ordinary attribute.
+    const {app} = page();
+    mount(app, root => root.form({action: '^url'}));
+    app.dispose();
+});
+
+test('an on<event> attribute is an error naming node and attribute, pointing to connect_on<event>', () => {
+    const {app, data} = page();
+    data.setItem('code', 'globalThis.inlineFromData = 1');
+    assert.throws(() => mount(app, root => root.button('b', {id: 'b', onclick: '^code'})),
+        /^Error: button '.+': 'onclick' has the form of a native event handler, run by the browser outside Gramlot; write connect_onclick for an event, or rename the attribute$/);
+    const other = page();
+    assert.throws(() => mount(other.app, root => root.div({html_onMouseOver: 'x()'})), /'html_onMouseOver' has the form of a native event handler/);
+    const svg = page();
+    assert.throws(() => mount(svg.app, root => root.svg({width: 1}).circle({r: 1, onload: 'x()'})), /circle '.+': 'onload' has the form/);
+    const string = new GramlotBuilder();
+    string.root.div({onclick: 'x()'});
+    assert.throws(() => string.renderer_html.render(string.source.getNodes()[0]), /div '.+': 'onclick' has the form of a native event handler/);
+    // An attribute named `on`, a connect_on<event> and a dataController are not native handlers.
+    const plain = page();
+    mount(plain.app, root => root.input({id: 'i', on: '^flag', connect_onclick: 'void 0'}));
+    plain.data.setItem('flag', true);
+    assert.equal(plain.byId('i').getAttribute('on'), 'true');
+    assert.equal(globalThis.inlineFromData, undefined);
+    for (const page of [app, other.app, svg.app, plain.app]) page.dispose();
+});
+
+test('a javascript: URL in href, src, formaction or xlink:href is an error, written or from Data', () => {
+    const {app, data, byId} = page();
+    data.setItem('url', 'https://example.org/');
+    const link = sourceTarget(mount(app, root => root.a('x', {id: 'link', href: '^url'})));
+    assert.equal(byId('link').getAttribute('href'), 'https://example.org/');
+    for (const url of ['javascript:alert(1)', ' JavaScript:alert(1)', 'java\tscr\nipt:alert(1)', '\u0001javascript:void 0']) {
+        assert.throws(() => data.setItem('url', url),
+            new RegExp(`^Error: a '${link.label}': 'href' holds a javascript: URL, run by the browser as code; write connect_onclick or the action of a button instead$`),
+            JSON.stringify(url));
+    }
+    for (const [attr, build] of [
+        ['src', root => root.iframe({src: 'javascript:alert(1)'})],
+        ['formaction', root => root.button('b', {formaction: 'javascript:alert(1)'})],
+        ['href', root => root.svg({width: 1}).a({href: 'javascript:alert(1)'})],
+        ['xlink_href', root => root.svg({width: 1}).a({xlink_href: 'javascript:alert(1)'})],
+    ]) {
+        const other = page();
+        assert.throws(() => mount(other.app, build), new RegExp(`'${attr}' holds a javascript: URL`), attr);
+        other.app.dispose();
+    }
+    const string = new GramlotBuilder();
+    string.root.a('x', {href: 'javascript:alert(1)'});
+    assert.throws(() => string.renderer_html.render(string.source.getNodes()[0]), /'href' holds a javascript: URL/);
+    app.dispose();
 });

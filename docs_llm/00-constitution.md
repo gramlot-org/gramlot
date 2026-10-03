@@ -1220,3 +1220,29 @@ parte js"; core 0.2.2 carries theme and logo in npm and PyPI, as JSR does.
 3. History. Dated text keeps the name of 11.50.
 
 §7 table, §7 heirs paragraph and §14 naming clarification updated.
+
+### Amendment 11.53 — Inline code is activated by the received Source; the single file allows 'unsafe-eval' — 2026-10-03
+
+Owner, 2026-10-03: inline stays everywhere, also serverless ("credo sia necessario
+accettare unsafe e fare il possibile per prevenire"); activation in one place, the
+decoding of the Source, in the Gramlot Source classes, no new wire type; single-file
+connections open until the CSP grammar arrives.
+
+1. Activation. Inline runs only as received with the Source (`main`, remote Source,
+   `GramlotBuilderBag` given to `startSource`); `Gramlot.prepareSource` activates it in
+   `GramlotBuilderBag`/`GramlotBuilderBagNode`; Builder, Bag, TYTX unchanged. Text
+   written later or arrived through Data/RPC: error naming node and attribute, never
+   run. A code attribute holding a `^`/`=` pointer: error at reception. Narrows 11.48
+   item 5: the runtime compiles only activated text.
+2. Browser-run attributes. Python and JS renderers refuse names of the form `on` + at
+   least one character and `javascript:` URLs in `href`, `src`, `formaction`,
+   `xlink:href`, written or from Data; `connect_on<event>` is the event mechanism.
+3. Single file. `@gramlot/gramlot-serverless` CSP: `script-src '<sha256>' 'unsafe-eval'
+   blob:`, no `'unsafe-inline'`, `connect-src *`, from gramlot-js-server 0.2.3;
+   supersedes for the export 11.48 item 14 (Q3) "only the permissive profile runs
+   inline"; server profiles unchanged.
+4. Python. No inline compilation, no activation: plain strings activated by the page
+   on reception (technical reason: Python does not run JS).
+
+Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
+[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §660.

@@ -1,5 +1,17 @@
-import {SourceBag, SourceBagNode} from '@genrojs/builders';
+import {SourceBag, SourceBagNode, sourceAttributeItems} from '@genrojs/builders';
 import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
+
+// The inline code attributes of each tag, besides `connect_on<event>` and the `==` expressions of any tag.
+const CODE_ATTRIBUTES = {
+    dataFormula: ['formula', '_if', '_else'],
+    dataController: ['script', '_if', '_else'],
+    button: ['action'],
+};
+
+/** Whether `value` is a `==` expression (Q11.2). */
+function isExpression(value) {
+    return typeof value === 'string' && value.startsWith('==');
+}
 
 /**
  * Gramlot Source node: Builder's SourceBagNode plus the Data behavior Builder lacks.
@@ -11,6 +23,49 @@ import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
 export class GramlotBuilderBagNode extends SourceBagNode {
     // Attributes ending in `_path` whose pointer symbol was already reported.
     #reportedPathPointers = new Set();
+    // The texts of the inline code received with the Source, by the name InlineCompiler uses; null before activation.
+    #activatedCode = null;
+
+    /**
+     * The inline code attributes of this node as `[name, text]`, under the names InlineCompiler uses:
+     * `formula` of a dataFormula, `script` of a dataController, `_if`/`_else` of both, `action` of a
+     * button, every `connect_on<event>`, every `==` attribute (canonical name) and a `==` node value (`''`).
+     */
+    codeAttributes() {
+        const own = CODE_ATTRIBUTES[this.nodeTag] ?? [];
+        const items = [];
+        for (const [name, value] of Object.entries(this.getAttr() ?? {})) {
+            if (typeof value === 'string' && (own.includes(name) || name.startsWith('connect_on'))) items.push([name, value]);
+        }
+        for (const [name, value] of sourceAttributeItems(this.getAttr())) {
+            if (isExpression(value)) items.push([name, value]);
+        }
+        if (isExpression(this.staticValue)) items.push(['', this.staticValue]);
+        return items;
+    }
+
+    /**
+     * Activate the inline code of this node: the current texts of its code attributes become the only
+     * texts InlineCompiler runs for it. Called by GramlotBuilderBag.activateCode, from Gramlot.prepareSource:
+     * a text written later is not run. A code attribute holding a `^`/`=` pointer is an error, because
+     * its text would come from Data.
+     */
+    activateCode() {
+        const code = new Map();
+        for (const [name, text] of this.codeAttributes()) {
+            if (this.pointerType(text)) {
+                throw new Error(`${this.nodeTag} '${this.label}': '${name}' is inline code and cannot be the pointer `
+                    + `'${text}'; inline code is never read from Data`);
+            }
+            code.set(name, text);
+        }
+        this.#activatedCode = code;
+    }
+
+    /** The text of the inline code `name` received with the Source, or null when it was not received. */
+    activatedCode(name) {
+        return this.#activatedCode?.get(name) ?? null;
+    }
 
     /** Builder's pointerType, except that a string starting with `==` is not a pointer. */
     pointerType(v) {
@@ -215,6 +270,15 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 export class GramlotBuilderBag extends SourceBag {
     get nodeClass() {
         return GramlotBuilderBagNode;
+    }
+
+    /** Activate the inline code of every node, nested Source branches included (GramlotBuilderBagNode.activateCode); returns this. */
+    activateCode() {
+        for (const node of this.getNodes()) {
+            node.activateCode();
+            if (node.staticValue instanceof GramlotBuilderBag) node.staticValue.activateCode();
+        }
+        return this;
     }
 }
 

@@ -341,12 +341,14 @@ side: it compiles no code, and it never executes the companion.
   only, reached through a blob URL that replaces its `_aux` URL, with the order of
   the resources kept;
 - the Content Security Policy is a hash profile: `script-src` holds the sha256 of
-  the final script bytes plus `blob:`, without `'unsafe-inline'` or
-  `'unsafe-eval'`; the export uses the hash where the server hosts use a nonce.
-  A copy of the file with one added byte is blocked. This is the only profile of the
-  export: it has no permissive one, and its policy carries no `'unsafe-eval'`, so
-  only named logic is supported there; a check of inline code under that policy
-  is not part of 0.2.0 (section 035).
+  the final script bytes, `'unsafe-eval'` and `blob:`, without `'unsafe-inline'`;
+  the export uses the hash where the server hosts use a nonce. A copy of the file
+  with one added byte is blocked. `'unsafe-eval'` lets the window compile the
+  inline code of the Source it receives from the Worker, so the file runs named
+  logic and inline code (section 035). `connect-src` is `*`: connections stay open
+  until a page can declare its own policy. This is the only profile of the export
+  (from gramlot-js-server 0.2.3; 0.2.2 had no `'unsafe-eval'` and
+  `connect-src 'none'`).
 
 **Standalone integration.** `@gramlot/gramlot-serverless`, in `gramlot-js-server` (heir
 of the retired `gramlot-minimal`), supplies the Node/npm exporter of the browser standalone profile.
@@ -465,6 +467,40 @@ companion _aux.js) or serve the page with the permissive CSP profile, which allo
 `node value`: `<tag> '<label>' node value: inline code blocked …`. The browser error
 stays as `cause`. Nothing is written to the Data.
 The page that hits it reports the violation as any `script-src eval` violation.
+
+**Inline code runs only as received with the Source.** `Gramlot.prepareSource`
+activates the inline code of the Source the page receives: `main` from the host,
+a remote Source, or a `GramlotBuilderBag` given to `startSource`. Each
+`GramlotBuilderBagNode` keeps the text of its code attributes (`formula` of a
+`dataFormula`, `script` of a `dataController`, `_if`/`_else` of both, `action` of a
+`button`, every `connect_on<event>`, every `==` attribute and a `==` node value), and
+the compiler runs only that text. A text written later is never run: a code
+attribute changed by page code, a node inserted in the live Source, a
+`GramlotBuilderBag` that arrived inside Data or an RPC answer. The error is
+`<tag> '<label>' '<attribute>': inline code runs only as received with the Source
+(main or a remote Source); a text written later is not run: use named logic`.
+Activation is in `prepareSource` and not in the TYTX decoding, because a
+`GramlotBuilderBag` can arrive inside a Data Bag. A Data Bag is never compiled,
+whatever the names of its attributes. A code attribute that holds a `^` or `=`
+pointer is an error when the Source is received, before any effect:
+`<tag> '<label>': '<attribute>' is inline code and cannot be the pointer
+'<pointer>'; inline code is never read from Data`. Python runs no inline code: a
+Python Source carries its code attributes as plain strings, and the page
+activates them when it receives the Source.
+
+**Attributes the browser runs.** The renderers, Python and JavaScript, refuse two
+kinds of attribute that the browser would run outside the compiler, written in the
+Source or resolved from Data:
+
+- a name with the form of a native event handler, `on` followed by at least one
+  character (`onclick`, `html_onload`): `<tag> '<label>': '<attribute>' has the
+  form of a native event handler, run by the browser outside Gramlot; write
+  connect_<attribute> for an event, or rename the attribute`. The rule covers every
+  such name, not a list of events. An attribute named `on` is accepted;
+- a `javascript:` URL in `href`, `src`, `formaction` or `xlink:href`, read as the URL
+  parser reads it (tabs and newlines removed, leading spaces and controls trimmed):
+  `<tag> '<label>': '<attribute>' holds a javascript: URL, run by the browser as
+  code; write connect_onclick or the action of a button instead`.
 
 One bootstrap module script carries the nonce and imports the runtime, so a script
 without the nonce is blocked. The standalone export has its own hash profile

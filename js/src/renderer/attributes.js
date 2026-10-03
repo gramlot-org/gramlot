@@ -28,10 +28,40 @@ const TEMPLATE_REFERENCE = /(?<!\\)\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g;
 // Display directives of the node text: consumed by the renderer, never written as attributes.
 const DISPLAY_ATTRIBUTES = ['format', 'mask', 'locale', 'places', 'dtype'];
 
+// Output attributes whose `javascript:` value the browser runs as code (`action` never reaches the output).
+const URL_ATTRIBUTES = new Set(['href', 'src', 'formaction', 'xlink:href', 'xlink_href']);
+
 /** The attributes of `attrs` that are not binding attributes. */
 export function withoutBindingAttributes(attrs) {
     return Object.fromEntries(Object.entries(attrs).filter(([name]) => !BINDING_ATTRIBUTES.has(name)
         && !BINDING_ATTRIBUTE_PREFIXES.some(prefix => name.startsWith(prefix))));
+}
+
+/**
+ * No attribute of `attrs` (resolved, `==` evaluated) makes the browser run a text outside InlineCompiler:
+ * a name starting with `on` and longer than it, the form of the native event handlers, is an error pointing
+ * to `connect_on<event>`; a `javascript:` URL is an error pointing to `connect_onclick`. Every such name is
+ * refused, not a list of events, so an event a browser adds is refused too. The names are read without
+ * the dialect `prefixes` (`html_`).
+ */
+export function requireNoScriptAttributes(node, attrs, prefixes = []) {
+    for (const [name, value] of Object.entries(withoutNullValues(withoutBindingAttributes(attrs)))) {
+        const prefix = prefixes.find(candidate => name.startsWith(candidate));
+        const bare = prefix ? name.slice(prefix.length) : name;
+        if (/^on./i.test(bare)) {
+            throw new Error(`${node.nodeTag} '${node.label}': '${name}' has the form of a native event handler, run by `
+                + `the browser outside Gramlot; write connect_${bare} for an event, or rename the attribute`);
+        }
+        if (URL_ATTRIBUTES.has(bare.toLowerCase()) && isJavascriptUrl(value)) {
+            throw new Error(`${node.nodeTag} '${node.label}': '${name}' holds a javascript: URL, run by the browser `
+                + 'as code; write connect_onclick or the action of a button instead');
+        }
+    }
+}
+
+/** Whether `value` is a `javascript:` URL as the URL parser reads it: tabs and newlines removed, leading controls and spaces trimmed. */
+function isJavascriptUrl(value) {
+    return typeof value === 'string' && /^javascript:/i.test(value.replace(/[\t\n\r]/g, '').replace(/^[\u0000-\u0020]+/, ''));
 }
 
 /** The attributes of `attrs` whose value is neither null nor undefined. */

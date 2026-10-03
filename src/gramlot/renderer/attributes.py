@@ -31,11 +31,48 @@ TEMPLATE_REFERENCE = re.compile(r"(?<!\\)\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 # Display directives of the node text: consumed by the renderer, never written as attributes.
 DISPLAY_ATTRIBUTES = ("format", "mask", "locale", "places", "dtype")
 
+# Output attributes whose ``javascript:`` value the browser runs as code (``action`` never reaches the output).
+URL_ATTRIBUTES = frozenset({"href", "src", "formaction", "xlink:href", "xlink_href"})
+
+# The form of a native event handler: ``on`` followed by at least one character.
+EVENT_HANDLER = re.compile(r"^on.", re.IGNORECASE)
+
+# A ``javascript:`` URL as the URL parser reads it: tabs and newlines removed, leading controls and spaces trimmed.
+URL_TABS_AND_NEWLINES = re.compile(r"[\t\n\r]")
+URL_LEADING_CONTROLS = re.compile(r"^[\x00-\x20]+")
+JAVASCRIPT_SCHEME = re.compile(r"^javascript:", re.IGNORECASE)
+
 
 def without_binding_attributes(attrs):
     """The attributes of ``attrs`` that are not binding attributes."""
     return {name: value for name, value in attrs.items()
             if name not in BINDING_ATTRIBUTES and not name.startswith(BINDING_ATTRIBUTE_PREFIXES)}
+
+
+def require_no_script_attributes(node, attrs, prefixes=()):
+    """No attribute of ``attrs`` (resolved, ``==`` handled) makes the browser run a text outside InlineCompiler.
+
+    A name starting with ``on`` and longer than it, the form of the native event handlers, is an error
+    pointing to ``connect_on<event>``; a ``javascript:`` URL is an error pointing to ``connect_onclick``.
+    Every such name is refused, not a list of events, so an event a browser adds is refused too. The
+    names are read without the dialect ``prefixes`` (``html_``).
+    """
+    for name, value in without_null_values(without_binding_attributes(attrs)).items():
+        prefix = next((candidate for candidate in prefixes if name.startswith(candidate)), None)
+        bare = name[len(prefix):] if prefix else name
+        if EVENT_HANDLER.match(bare):
+            raise ValueError(f"{node.node_tag} '{node.label}': '{name}' has the form of a native event handler, run by "
+                             f"the browser outside Gramlot; write connect_{bare} for an event, or rename the attribute")
+        if bare.lower() in URL_ATTRIBUTES and is_javascript_url(value):
+            raise ValueError(f"{node.node_tag} '{node.label}': '{name}' holds a javascript: URL, run by the browser "
+                             "as code; write connect_onclick or the action of a button instead")
+
+
+def is_javascript_url(value):
+    """Whether ``value`` is a ``javascript:`` URL as the URL parser reads it."""
+    if not isinstance(value, str):
+        return False
+    return bool(JAVASCRIPT_SCHEME.match(URL_LEADING_CONTROLS.sub("", URL_TABS_AND_NEWLINES.sub("", value))))
 
 
 def without_null_values(attrs):

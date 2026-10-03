@@ -26,7 +26,9 @@ try {
     body.script(runtime.replaceAll('</script', '<\\/script'));
     body.script(`
         const app = new GramlotRuntime.Gramlot({document, element: document.getElementById('gramlot-root'), transport: false});
-        const root = app.builder.root;
+        // Inline code runs only as received with the Source: the page is built apart and mounted with startSource.
+        const source = new GramlotRuntime.GramlotBuilder();
+        const root = source.root;
         const data = app.data;
         data.setItem('f.n', 7);
         data.setItem('f.r', 30);
@@ -88,6 +90,7 @@ try {
         r12.button('fire', {id: 'r12fire', fire: 'z.fired'});
         r12.span('span', {id: 'r12span', connect_onclick: 'this.SET("z.clicked", true)'});
         root.dataController({script: 'window.r12seen.push(1)', t: '^z.text', k: '^z.key', b: '^z.box', f: '^z.fired', c: '^z.clicked'});
+        app.startSource(source.source);
         window.app = app;
         document.getElementById('bctrl').addEventListener('click', () => window.seen.push('author on bctrl'));
         document.getElementById('buttons').addEventListener('click', event => window.seen.push('author bubble ' + event.target.id));
@@ -231,7 +234,7 @@ try {
 
     // C04.1: multiple of a select rebuilds the element, the NodeBinding stays.
     const rebuild = await page.evaluate(() => {
-        const node = window.app.source.getNodes().find(each => each.attr.id === 'multiple');
+        const node = window.app.source.getItem('main').getNodes().find(each => each.attr.id === 'multiple');
         const binding = window.app.binding.bindingFor(node);
         const before = document.getElementById('multiple');
         node.setAttr({multiple: false});
@@ -279,7 +282,7 @@ try {
 
     // A rebuild of the group after the code write: the button written last is on.
     const regrouped = await page.evaluate(() => {
-        const panel = window.app.source.getNodes().find(each => each.attr.id === 'panel');
+        const panel = window.app.source.getItem('main').getNodes().find(each => each.attr.id === 'panel');
         const before = document.getElementById('rc');
         window.app.renderer.freeze(panel);
         panel.setAttr({title: 'rebuilt'});
@@ -332,7 +335,7 @@ try {
 
     // S13, R12: freeze, remove the branch, then real typing, clicks and keys on its elements.
     await page.evaluate(() => {
-        const section = window.app.source.getNodes().find(each => each.attr.id === 'r12');
+        const section = window.app.source.getItem('main').getNodes().find(each => each.attr.id === 'r12');
         window.app.renderer.freeze(section);
         section.value.popNode(section.value.getNodes()[0].label);
     });
@@ -350,7 +353,7 @@ try {
     }));
     assert.deepEqual(r12, {data: [null, null, null, null, null], seen: 0, typed: 'abc'});
     const thawed = await page.evaluate(() => {
-        window.app.renderer.unfreeze(window.app.source.getNodes().find(each => each.attr.id === 'r12'));
+        window.app.renderer.unfreeze(window.app.source.getItem('main').getNodes().find(each => each.attr.id === 'r12'));
         return ['r12box', 'r12text', 'r12fire', 'r12span'].map(id => document.getElementById(id));
     });
     assert.deepEqual(thawed, [null, null, null, null]);
@@ -379,13 +382,15 @@ try {
     strictBody.script(`
         const app = new GramlotRuntime.Gramlot({document, element: document.getElementById('gramlot-root'), transport: false});
         app.logicRegistry.register(class Logic { somma(kwargs) { return kwargs.a + kwargs.b; } }, {group: null, resource: '/csp_aux.js'});
-        const root = app.builder.root;
+        const source = new GramlotRuntime.GramlotBuilder();
+        const root = source.root;
         app.data.setItem('csp.b', 2);
         root.input({id: 'named-a', type: 'number', value: '^csp.a'});
         root.dataFormula({result_path: 'csp.named', func: 'somma', a: '^csp.a', b: '^csp.b'});
         root.input({id: 'inline-c', value: '^csp.c'});
         root.dataController({script: 'this.SET("csp.out", c)', c: '^csp.c'});
         root.button('go', {id: 'inline-go', action: 'this.SET("csp.out", "clicked")'});
+        app.startSource(source.source);
         window.app = app;
     `, {nonce});
     const strictFile = join(folder, 'csp.html');

@@ -9,6 +9,7 @@ import {Bag} from '@genrojs/bag';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
+import {mount} from './fixtures/mount.js';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
 const XLINK = 'http://www.w3.org/1999/xlink';
@@ -496,13 +497,15 @@ test('a data change reaches only its own registrations: an unrelated write does 
 });
 
 // Phase 18 (ASTRA-02): `visible` is read from the renderer's resolved projection (`==` included).
-test('ASTRA-02: visible from ^, = and == hides the element, at mount and on update', () => {
-    const {builder, data, byId} = page();
+test('ASTRA-02: visible from ^, = and == hides the element, at mount and on update; a new == text is not run', () => {
+    const {app, data, byId} = page();
     data.setItem('show', false);
-    const eq = sourceTarget(builder.root.div('x', {id: 'eq', visible: '==false'}));
-    const flag = sourceTarget(builder.root.div('x', {id: 'flag', visible: '==shown', shown: '^show'}));
-    const read = sourceTarget(builder.root.div('x', {id: 'read', visible: '=show'}));
-    const pointer = sourceTarget(builder.root.div('x', {id: 'pointer', visible: '^show'}));
+    const [eq, flag, read, pointer] = mount(app, root => [
+        sourceTarget(root.div('x', {id: 'eq', visible: '==false'})),
+        sourceTarget(root.div('x', {id: 'flag', visible: '==shown', shown: '^show'})),
+        sourceTarget(root.div('x', {id: 'read', visible: '=show'})),
+        sourceTarget(root.div('x', {id: 'pointer', visible: '^show'})),
+    ]);
     for (const id of ['eq', 'flag', 'read', 'pointer']) assert.equal(byId(id).style.visibility, 'hidden', id);
     data.setItem('show', true);
     assert.equal(byId('flag').style.visibility, '');
@@ -510,9 +513,8 @@ test('ASTRA-02: visible from ^, = and == hides the element, at mount and on upda
     assert.equal(byId('read').style.visibility, 'hidden');
     read.setAttr({title: 'projected again'});
     assert.equal(byId('read').style.visibility, '');
-    eq.setAttr({visible: '==true'});
-    assert.equal(byId('eq').style.visibility, '');
-    flag.setAttr({visible: '==!shown'});
-    assert.equal(byId('flag').style.visibility, 'hidden');
+    assert.throws(() => eq.setAttr({visible: '==true'}),
+        new RegExp(`^Error: div '${eq.label}' 'visible': inline code runs only as received with the Source`));
+    assert.equal(byId('eq').style.visibility, 'hidden');
     assert.equal(pointer.getAttr('visible'), '^show');
 });
