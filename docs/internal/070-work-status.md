@@ -1,10 +1,10 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-02**.
+Document ID: **GC-070**. Updated: **2026-10-03**.
 
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
-**Release 0.2.2 (in preparation):** `@gramlot/gramlot-serverless` and the theme and logo files in the npm, PyPI and JSR packages. See [§655](#gc-070-655).
+**Release 0.2.5 (in preparation):** one page module with `Page` and `Logic`, the import map of the bootstrap, and `gramlot.inout`. See [§670](#gc-070-670). Released before: 0.2.2 ([§655](#gc-070-655)), 0.2.3 ([§660](#gc-070-660)), 0.2.4 ([§665](#gc-070-665)).
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
@@ -3191,3 +3191,55 @@ Constitution amendment 11.54.
 
 **Open:** the same `onclick` correction in gramlot-examples, done in its own chat; the
 new CI steps run for the first time on the pull request.
+
+<a id="gc-070-670"></a>
+## 670 · One page module with Page and Logic; gramlot.inout — 2026-10-03
+
+Block ID: **GC-070-670**.
+
+Owner, 2026-10-03, brief 1 of the gallery and project-creation plan
+(`decisioni_gallery-scaffold`): a JavaScript page is one module that exports `Page` and
+`Logic`; beside a Python page the logic module is `foo.js`; `foo_aux.js` stays admitted;
+the data functions live in `gramlot.inout`. Approved during the work ("ok"): an import
+map resolves `@gramlot/gramlot/page` in the browser (a server bundle rejected: esbuild in
+a Python host, a second core copy); both logic modules together are an error; the core
+`examples/` pass to the module form, with their runner; the runner serves the example
+modules as JavaScript; `gramlot.inout` formats (`sendHttp` posts a JSON object; the email
+subject is the page title); `gramlot.inout` is part of the browser runtime for Python and
+JavaScript pages (owner correction). Constitution amendment 11.55.
+
+- Core `feat/page-module-inout`: `3d207e0` `FileHost.resolveResources` takes the page
+  module's `Logic`, `FileHost.resolve_resources` takes `foo.js` beside `foo.py`, else
+  `foo_aux.js`, both an error; `openPage`/`open_page` write the import map with the
+  bootstrap nonce; `js/src/index.js` exports `Page` and `source` into the runtime; the
+  fixture `avvio` passes to the module form; the CSP error of inline code names the
+  page's class `Logic`. `a92b142` the 33 core examples export `Page` and `Logic`, the four
+  `NN_name_aux.js` move into their module; the runner shows the module, stages a one-line
+  `{route}_aux.js` that re-exports `Logic` from the example URL, and serves the example
+  modules as JavaScript. `c7656bf` `scripts/verify_page_module_browser.mjs`: both forms on
+  a Node and a Python loopback host under a strict CSP. `a561ff6` merge of develop (0.2.4,
+  no conflict). `4fc0fab` `js/src/inout.js` (`InOut`, `gramlot.inout`) and
+  `js/tests/inout.test.js`. `d99de9d` `scripts/verify_inout_browser.mjs`. Rules:
+  [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030),
+  [GC-095 §060](../public/095-writing-pages.md#gc-095-060),
+  [GC-095 §095](../public/095-writing-pages.md#gc-095-095).
+- Verified on 2026-10-03, in a copy with the CI layout (gramlot-js-server `main`):
+  Python 83 OK, JavaScript 475/475, examples 31/31. In Chromium 153 and WebKit 26.6:
+  `verify_page_module_browser.mjs` PASS (module form and `_aux` form, JS and Python
+  hosts, one runtime request, the logic module imported; without the import map the
+  module form fails); `verify_inout_browser.mjs` PASS (email text and the 2000-character
+  limit, a real POST and a 500, `save`/`restore` with date and decimal through a real
+  download and file chooser, JSON and XML export, calls from inline code and from
+  `Logic`). In Chromium: `verify_page_browser.mjs`, `verify_binding_browser.mjs` and
+  `verify_examples_browser.mjs` (64 pages, runner on port 8197 with both integrations)
+  PASS.
+- Upstream: `Bag.toXml` of `@genrojs/bag` 0.10.1 writes a date with `Date.toString()`,
+  unlike genro-bag (ISO): genro-org/genro-bag-js#10. The XML check of
+  `verify_inout_browser.mjs` reads text and numbers only.
+- This record, the documents and amendment 11.55. Release 0.2.5: version in
+  `pyproject.toml`, `js/package.json` and `jsr.json`; release notes v0.2.5.
+
+**Open:** gramlot-js-server and gramlot-py-server serve `.css` and `_aux.js` only; the
+module form with a server needs their `.js` rule (briefs 3 and 4). gramlot-examples
+passes to the module form in brief 2. The XML date text waits for
+genro-org/genro-bag-js#10.

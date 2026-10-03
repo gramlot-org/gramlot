@@ -27,8 +27,11 @@ async function realFile(filename) {
 /** Minimal reference Host on one pages folder, with APIs shared by Node.js and Bun.
  * The Python counterpart is src/gramlot/server/file_host.py. Page path foo: the
  * file page foo.js first, then the folder page foo/foo.js; the file wins when both
- * exist. Beside the page file: foo.css (CSS), foo_aux.js (JS module exporting
- * Logic, group null) and foo.md (README). The _aux suffix is reserved. There are
+ * exist. Beside the page file: foo.css (CSS) and foo.md (README). The page logic
+ * (group null) is the Logic export of the page module itself, else foo_aux.js
+ * (JS module exporting Logic); both at once raise an Error. The page module then
+ * reaches the browser, so its imports must resolve there too. The _aux suffix is
+ * reserved. There are
  * no resource levels: a name in css_requires/js_requires raises
  * InvalidResourceName. Modules are trusted ESM application files; runtime module
  * caching applies.
@@ -67,7 +70,7 @@ export class FileHost extends Host {
         return (await import(pathToFileURL(await this.locatePage(path)).href)).Page;
     }
 
-    /** Page.css URLs as written, then the companions foo.css and foo_aux.js. */
+    /** Page.css URLs as written, then the companion foo.css and the page logic. */
     async resolveResources(path, PageClass) {
         if (parseRequires(PageClass.css_requires).length || parseRequires(PageClass.js_requires).length) {
             throw new InvalidResourceName('requires need a Host with a resource system');
@@ -76,7 +79,12 @@ export class FileHost extends Host {
         const stem = join(dirname(pageFile), basename(pageFile, extname(pageFile)));
         const css = [...PageClass.css], js = [];
         if (await realFile(`${stem}.css`)) css.push(await this.url(`${stem}.css`));
-        if (await realFile(`${stem}_aux.js`)) js.push({url: await this.url(`${stem}_aux.js`), group: null});
+        const logic = [];
+        // The module is already in the runtime cache: resolvePage imported it.
+        if ('Logic' in await import(pathToFileURL(pageFile).href)) logic.push(await this.url(pageFile));
+        if (await realFile(`${stem}_aux.js`)) logic.push(await this.url(`${stem}_aux.js`));
+        if (logic.length === 2) throw new Error(`Two logic modules for one page: ${logic.join(' and ')}`);
+        if (logic.length) js.push({url: logic[0], group: null});
         return {css, js};
     }
 

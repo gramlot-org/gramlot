@@ -118,6 +118,9 @@ class Host:
         head = root.head()
         head.meta(charset="utf-8")
         head.title(cls.title)
+        # A page module served for its Logic imports the core from the runtime already loaded.
+        head.script(_script_json({"imports": {"@gramlot/gramlot/page": _prefixed(prefix, self.runtime_url)}}),
+                    type="importmap", nonce=nonce)
         body = root.body()
         body.div(id=self.root_id)
         body.script(f'import {{PageBootstrap}} from {runtime};'

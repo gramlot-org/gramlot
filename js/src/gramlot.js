@@ -5,6 +5,7 @@ import {GramlotRenderer} from './renderer/gramlot-renderer.js';
 import {BindingRuntime} from './binding/runtime.js';
 import {LogicRegistry} from './binding/logic.js';
 import {MainTransport} from './transport.js';
+import {InOut} from './inout.js';
 
 /**
  * One Gramlot page. The construction order is the one of source plan §4.3: the Data
@@ -20,6 +21,7 @@ export class Gramlot {
         this.binding = new BindingRuntime(this);
         this.builder.binding = this.binding;
         this.data = this.builder.data;
+        this.inout = new InOut(this, document);
         this.binding.attach();
         this.source = this.builder.source;
         const destination = element ?? document.getElementById(rootId);

@@ -3,14 +3,14 @@
 Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (GitHub `v0.2.0`; current patch **0.2.1**, 2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). Previous release:
+> (GitHub `v0.2.0`; current patch **0.2.5**, 2026-10-03: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). Previous release:
 > **0.1.2**. Sections 005-035 come from 0.1.2 with *0.2.0* notes; sections 040-090
-> are 0.2.0 behavior.
+> are 0.2.0 behavior (060 with the 0.2.5 page module); 095 is `gramlot.inout` (0.2.5).
 
 Examples: `examples/binding/` (routes `b01`-`b11` in the local runner) and
 `examples/controllers/` (`c01`-`c09`), each page in Python with a JS equivalent; the
 sections below name the one they illustrate. No example for `js_requires` groups,
-`connect_on<event>` by name, `_userChanges`, `_onBuilt` and `#ANCHOR`. `html_svg` is HTML and SVG without binding.
+`connect_on<event>` by name, `_userChanges`, `_onBuilt`, `#ANCHOR` and `gramlot.inout`. `html_svg` is HTML and SVG without binding.
 
 <a id="gc-095-005"></a>
 
@@ -251,20 +251,25 @@ separates edits from structure loading, not user from program. Removal stops tim
 Primary path. Each logic file exports `class Logic`; its methods are copied into a
 per-instance group. Companion methods live in `page.logic`; each `js_requires` name
 is a group (`page.logic.business`); `/` makes nested groups. Source:
-`func='business.discount'` or `func='add'` (companion). Formula: `method(kwargs)`
+`func='business.discount'` or `func='add'` (page logic). Formula: `method(kwargs)`
 returns the value; controller: `method(node, kwargs)`. `kwargs` = resolved author
 attributes plus `_node`, `_triggerpars`, `_reason` and, for buttons, `_evt` and
 `button_*`; control attributes (`destination_path`, `result_path`, `func`, `formula`, `script`,
 `_if`, `_else`, `_init`, `_onStart`, `_onBuilt`, `_delay`, `_timing`,
-`_userChanges`) are excluded. `this` = group, `this.page` = page instance. The same
+`_userChanges`) are excluded. `this` = group, `this.page` = page instance. Page logic
+= the page module's `Logic` export: `orders.js` (JS page), `orders.js` beside `orders.py`
+(Python page; its `Page` unused); `orders_aux.js` stays admitted; both = error. The
+browser imports the page module, so its imports must resolve there: a `Page` with
+server-only imports keeps `orders_aux.js`. Beside a Python page `orders.js` exports
+`Logic` (else the browser rejects it, naming the file). The same
 resource at several levels fills one group from generic to specific; specific wins.
 Errors: explicit `Logic` constructor; method named `page` or like a child group;
 missing name (never an inline fallback). State lives on group or page. Works
 without `'unsafe-eval'`. Lookup/layout: [GC-090 030](090-classes-and-hosts.md). With the
-minimal `FileHost` only the companion exists, as the root group (`func='add'`); a dotted
+minimal `FileHost` only the page logic exists, as the root group (`func='add'`); a dotted
 name (`business.discount`) needs a `js_requires` group (a Host with a resource system).
 The same method name registered twice in a group: the last registration wins; the
-companion registers after `js_requires`. Example: `examples/controllers/03_named_logic` (`c03`).
+page logic registers after `js_requires`. Example: `examples/controllers/03_named_logic` (`c03`).
 
 <a id="gc-095-065"></a>
 
@@ -440,3 +445,26 @@ the companions, and the bootstrap writes the CSS links in the browser
 retired `gramlot-minimal` to `gramlot-serverless` and `gramlot-uvicorn`; Python and JS
 static renderers share the attribute/style rules (`style_*`, `color`, … compose `style`
 in both). Check migrated pages for `data(` calls.
+
+<a id="gc-095-095"></a>
+
+## 095 · Sending and saving data: `gramlot.inout` (0.2.5)
+
+`gramlot.inout`: what the page sends, receives, saves, downloads. Browser runtime, so
+Python and JS pages alike, from inline code (`action="gramlot.inout.sendMail('modulo',
+'office@example.org')"`) or `Logic` (`this.page.inout`). Argument: Data path of a Bag
+branch.
+- `sendMail(path, email)`: `mailto:` in the user's mail program; subject = page title;
+  one `name: Rossi` line per value (`address.street: …` nested); sent when the user
+  presses send.
+- `sendHttp(path, url)`: branch as a JSON object, HTTP `POST`; resolves with the
+  response, rejects outside 200–299.
+- `save(path, name)`: TYTX file. `restore(path)`: file dialog, reads a `save` file
+  into `path` with exact types (dates, decimals).
+- `download(path, name, 'json' | 'xml')`: `Bag.toJson`, or `Bag.toXml` in one root
+  element named after the last path segment; types become text.
+Dates in the email `1990-05-02`, datetimes ISO. Email > 2000 characters (`mailto:`
+limit) → error naming the length. Missing path or not a Bag →
+`gramlot.inout: no data Bag at '<path>'`. `restore` needs a user action. JSON/XML are
+export only. Inline code needs `'unsafe-eval'` ([GC-090 §035](090-classes-and-hosts.md));
+strict CSP → call from `Logic`. `sendHttp` reaches what `connect-src` allows.

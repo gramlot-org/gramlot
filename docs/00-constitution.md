@@ -1377,3 +1377,57 @@ runs, and the `on*`/`javascript:` refusal does not reach them.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
 [GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §665.
+
+### Amendment 11.55 — One page module with Page and Logic; gramlot.inout — 2026-10-03
+
+Owner decisions of 2026-10-03, in the coordinating chat and in the execution of brief 1:
+a JavaScript page is one module that exports `Page` and `Logic` ("io farei lo skeleton con
+2 classi nella new"); beside a Python page the logic module is `foo.js`, not `foo_aux.js`
+("non index_aux.js ma solo index.js in python perché non c'è ambiguità"); `foo_aux.js`
+stays admitted; the core import is resolved in the browser by an import map ("ok" to the
+phase A proposal); both logic modules together are an error ("ok"); the data functions
+live in `gramlot.inout` ("sendMail", "post troppo generico, sendHttp", reload "solo
+interno"), part of the browser runtime for Python and JavaScript pages alike (owner
+correction of 2026-10-03). Rejected: a bundle built by the server for each page module,
+which needs esbuild (Node) in a Python host and sends a second copy of the core to the
+browser.
+
+1. Page logic of `FileHost`. JavaScript: the `Logic` export of the page module `foo.js`
+   is the page logic (group null), else `foo_aux.js`; a module that exports `Logic` with
+   `foo_aux.js` beside it raises an `Error`. Python: `foo.js` beside `foo.py` is the
+   logic module, whose `Logic` export is the logic and whose `Page` export (the
+   JavaScript version of the same page) stays unused; else `foo_aux.js`; both raise
+   `ValueError`. Python cannot read the exports of `foo.js`, so beside a Python page it
+   exports `Logic`: the browser rejects a module without it, naming the file. The page
+   module reaches the browser, so its imports resolve there too; a `Page` with
+   server-only imports keeps its logic in `foo_aux.js`. The `_aux` suffix stays
+   reserved.
+2. Import map. The bootstrap HTML of both hosts carries, before the bootstrap script,
+   `<script type="importmap">` with the bootstrap nonce, mapping
+   `@gramlot/gramlot/page` to the runtime URL with the mount prefix. The runtime exports
+   `Page` and `source`. Bootstrap and page module import the same URL: one runtime
+   instance in the page.
+3. Adapters. GET and HEAD serve `.css` and `.js` files whose real path is inside the
+   pages folder (until now `.css` and `_aux.js`), so a page module and its relative
+   imports reach the browser.
+4. `gramlot.inout`. Each `Gramlot` instance carries `inout`, part of the browser runtime
+   and available to Python and JavaScript pages, from inline code or from `Logic`. Every
+   function takes the Data path of a Bag branch; a missing path or a value that is not
+   a Bag raises an Error naming the path. `sendMail(path, email)` prepares a `mailto:`
+   email, subject the page title, one `path: value` line per leaf, refused over 2000
+   characters; `sendHttp(path, url)` POSTs the branch as a JSON object; `save(path,
+   name)` writes TYTX and `restore(path)` reads a file chosen by the user back with exact
+   types; `download(path, name, 'json' | 'xml')` exports `Bag.toJson` or `Bag.toXml`
+   inside one root element named after the last segment of the path. No upload of
+   external JSON or XML.
+5. Examples. The core `examples/` pass to the module form: every `NN_name.js` exports
+   `Page` and `Logic`, the four `NN_name_aux.js` are removed, and the Python pages take
+   `Logic` from `NN_name.js`.
+
+Explicit supersession, with the superseded text kept as history: 11.48 item 3 (the
+companion `foo_aux.js` as the only page logic of `FileHost`) and the layout note of 11.22
+(`NN_name_aux.js` where needed).
+
+Rules: [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
+[GC-095 §060](public/095-writing-pages.md#gc-095-060),
+[GC-095 §095](public/095-writing-pages.md#gc-095-095). Record: GC-070 §670.

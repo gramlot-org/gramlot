@@ -1270,3 +1270,43 @@ preview), DOMPurify (runtime dependency, rules to maintain). Extends 11.53 item 
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
 [GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §665.
+
+### Amendment 11.55 — One page module with Page and Logic; gramlot.inout — 2026-10-03
+
+Owner, 2026-10-03: a JS page is one module exporting `Page` and `Logic` ("io farei lo
+skeleton con 2 classi nella new"); beside a Python page the logic module is `foo.js`
+("non index_aux.js ma solo index.js in python perché non c'è ambiguità"); `foo_aux.js`
+stays admitted; import map for the core import ("ok" to phase A); both logic modules =
+error ("ok"); data functions in `gramlot.inout` ("sendMail", "sendHttp", reload "solo
+interno"), part of the browser runtime for Python and JS pages (owner correction).
+Rejected: a server-built bundle per page module (esbuild/Node in a Python host, a second
+core copy in the browser).
+
+1. `FileHost` page logic. JS: the page module's `Logic` export (group null), else
+   `foo_aux.js`; module `Logic` + `foo_aux.js` → `Error`. Python: `foo.js` beside
+   `foo.py` (its `Logic`; its `Page` unused), else `foo_aux.js`; both → `ValueError`.
+   Python cannot read exports: beside a Python page `foo.js` exports `Logic`, else the
+   browser rejects it naming the file. The page module reaches the browser: its imports
+   must resolve there; a `Page` with server-only imports keeps `foo_aux.js`. `_aux`
+   stays reserved.
+2. Import map. Both hosts write, before the bootstrap script, `<script type="importmap">`
+   with the bootstrap nonce: `@gramlot/gramlot/page` → runtime URL (mount prefix). The
+   runtime exports `Page` and `source`; one runtime instance per page.
+3. Adapters. GET/HEAD serve `.css` and `.js` inside the pages folder (was `.css`,
+   `_aux.js`): page modules and their relative imports.
+4. `gramlot.inout` on each `Gramlot`, browser runtime, Python and JS pages (inline code
+   or `Logic`). Path of a Bag branch; missing/not a Bag → Error naming it.
+   `sendMail(path, email)`: `mailto:`, subject = page title, `path: value` per leaf,
+   > 2000 characters refused; `sendHttp(path, url)`: JSON object POST; `save(path,
+   name)`: TYTX; `restore(path)`: chosen file, exact types; `download(path, name,
+   'json' | 'xml')`: `Bag.toJson`/`Bag.toXml` in one root element (last path segment).
+   No upload of external JSON/XML.
+5. Core `examples/`: every `NN_name.js` exports `Page` and `Logic`; the four
+   `NN_name_aux.js` removed; Python pages take `Logic` from `NN_name.js`.
+
+Explicit supersession (text kept as history): 11.48 item 3 (`foo_aux.js` as the only
+`FileHost` page logic), 11.22 layout note (`NN_name_aux.js`).
+
+Rules: [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
+[GC-095 §060](public/095-writing-pages.md#gc-095-060),
+[GC-095 §095](public/095-writing-pages.md#gc-095-095). Record: GC-070 §670.

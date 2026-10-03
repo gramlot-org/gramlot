@@ -23,3 +23,6 @@ export class Page extends BasePage {
         page.footer().small('Built with native Source elements.');
     }
 }
+
+/** The page logic: this page names no methods. */
+export class Logic {}

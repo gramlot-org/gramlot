@@ -3,17 +3,18 @@
 Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**, released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
-> (2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). The previous release is **0.1.2**.
+> binding)**, released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.5**
+> (2026-10-03: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). The previous release is **0.1.2**.
 > Sections 005-035 describe behavior that comes from 0.1.2, with explicit *0.2.0*
-> notes where 0.2.0 changes it. Sections 040-090 describe 0.2.0 behavior.
+> notes where 0.2.0 changes it. Sections 040-090 describe 0.2.0 behavior; section 060
+> includes the page module of 0.2.5, and section 095 describes `gramlot.inout` (0.2.5).
 
 **Examples.** Two example families run the features of sections 040-080, each
 page in Python with its JavaScript equivalent: `examples/binding/` (routes
 `b01`-`b11` in the local runner) and `examples/controllers/` (routes `c01`-`c09`).
 The sections below name the example they illustrate. These features have no
 example: `js_requires` groups, `connect_on<event>` by name, `_userChanges`,
-`_onBuilt` and `#ANCHOR`. The `html_svg` family is
+`_onBuilt`, `#ANCHOR` and `gramlot.inout`. The `html_svg` family is
 HTML and SVG without binding. A reader follows the Python-first example
 using only the functions documented here.
 
@@ -405,17 +406,31 @@ function round(x) { return Math.round(x * 100) / 100; }   // private to the file
 ```
 
 ```javascript
-// companion file of the page, with the page's name
+// orders.js: the page module, with the page's name. The JavaScript page uses Page and
+// Logic; the Python page orders.py beside it takes Logic only.
+import {Page as BasePage} from '@gramlot/gramlot/page';
+
+export class Page extends BasePage {
+    main(root) { root.dataFormula({result_path: '.total', func: 'add', a: '^.a', b: '^.b'}); }
+}
+
 export class Logic {
     add(kwargs) { return kwargs.a + kwargs.b; }
     reset(node, kwargs) { this.page.logic.business.discount(kwargs); }
 }
 ```
 
-- The companion's methods live in `page.logic`. Each name in `js_requires`
+- The page logic is the `Logic` export of the page module: `orders.js` for the
+  JavaScript page, and `orders.js` beside `orders.py` for the Python page, whose
+  `Page` export stays unused. A separate companion `orders_aux.js` that exports
+  `Logic` stays admitted; a page with both raises an error. Use the companion when
+  the JavaScript `Page` imports server-only modules: the page module is imported by
+  the browser too, so all its imports must resolve there. Beside a Python page,
+  `orders.js` exports `Logic`; the browser rejects it otherwise, naming the file.
+- The page logic's methods live in `page.logic`. Each name in `js_requires`
   becomes a group: `page.logic.business`. A name with `/` becomes a nested group.
 - `func='business.discount'` calls a group method; `func='add'` calls a
-  companion method.
+  method of the page logic.
 - A formula method is called as `method(kwargs)` and returns the value. A
   controller method is called as `method(node, kwargs)`.
 - `kwargs` contains the resolved author attributes, plus `_node`, `_triggerpars`,
@@ -434,13 +449,14 @@ the methods.
 
 Named logic works under a Content Security Policy without `'unsafe-eval'`.
 [GC-090 section 030](090-classes-and-hosts.md) describes resource
-lookup and file layout. With the minimal `FileHost` only the companion
-`foo_aux.js` exists, and its methods are the root group: `func='add'`. A dotted
-name such as `business.discount` needs a `js_requires` group, that is a Host
-with a resource system. Example: `examples/controllers/03_named_logic` (`c03`).
+lookup and file layout. With the minimal `FileHost` only the page logic exists
+(the `Logic` of `foo.js`, or `foo_aux.js`), and its methods are the root group:
+`func='add'`. A dotted name such as `business.discount` needs a `js_requires`
+group, that is a Host with a resource system. Example:
+`examples/controllers/03_named_logic` (`c03`).
 
 The same method name registered twice in the same group: the last registration
-wins. The companion registers after the `js_requires` names.
+wins. The page logic registers after the `js_requires` names.
 
 <a id="gc-095-065"></a>
 
@@ -753,8 +769,8 @@ Migration from legacy pages:
 - replace each `data(path, value, …)` with `dataSetter(path, value, …)`;
 - `Page.css` (a list of URLs) stays; a stylesheet of the page alone can move to
   the same-name file `foo.css` beside the page;
-- move inline controller code to named logic in the companion or in a
-  `js_requires` resource;
+- move inline controller code to named logic in the page module's `Logic` or in
+  a `js_requires` resource;
 - write Data with `node.SET(...)` and the matching methods instead of macros.
 
 Migration from 0.1.x:
@@ -775,3 +791,40 @@ Migration from 0.1.x:
   `style` attribute in both.
 
 Check migrated pages for remaining `data(` calls.
+
+<a id="gc-095-095"></a>
+
+## 095 · Sending and saving data: `gramlot.inout` (0.2.5)
+
+`gramlot.inout` holds what a page sends, receives, saves and downloads. It is part
+of the browser runtime, so Python and JavaScript pages use it alike: from inline
+code (`action="gramlot.inout.sendMail('modulo', 'office@example.org')"`) or from a
+`Logic` method (`this.page.inout`). Each function takes the Data path of a Bag
+branch, here `modulo`.
+
+```python
+root.button("Send by email", action="gramlot.inout.sendMail('modulo', 'office@example.org')")
+root.button("Save", action="gramlot.inout.save('modulo', 'registration.json')")
+root.button("Reload", action="gramlot.inout.restore('modulo')")
+```
+
+| Function | Effect |
+|---|---|
+| `sendMail(path, email)` | Prepares an email in the mail program of the user (`mailto:`): recipient `email`, subject the page title, one line `name: Rossi` per value, `address.street: …` for a nested value. The email leaves when the user presses send. |
+| `sendHttp(path, url)` | Sends the branch as a JSON object with an HTTP `POST` to `url`; resolves with the response, rejects on a status outside 200–299. |
+| `save(path, name)` | Saves the branch as a TYTX file named `name`. |
+| `restore(path)` | Opens the choice of a local file and loads a file written by `save` into `path`, with the exact types: dates and decimals come back as dates and decimals. |
+| `download(path, name, 'json' \| 'xml')` | Exports the branch for other programs: `Bag.toJson`, or `Bag.toXml` inside one root element named after the last segment of `path`. Types become text. |
+
+- A date is written `1990-05-02` in the email; a date with a time keeps its ISO text.
+- An email longer than 2000 characters, the practical limit of a `mailto:` link,
+  raises an error that names its length; use `sendHttp` or `save` instead.
+- A missing path, or a value that is not a Bag, raises
+  `gramlot.inout: no data Bag at '<path>'`.
+- `restore` opens a file dialog, so it runs from a user action such as a button.
+- JSON and XML are export formats only: `restore` reads back the files of `save`.
+- Inline code needs a Content Security Policy that allows `'unsafe-eval'`
+  ([GC-090 §035](090-classes-and-hosts.md)); under a strict policy call
+  the functions from `Logic`.
+- `sendHttp` reaches the addresses that the Content Security Policy of the page
+  allows in `connect-src`.

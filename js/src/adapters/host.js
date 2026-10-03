@@ -81,6 +81,9 @@ export class Host {
             const head = root.head();
             head.meta({charset: 'utf-8'});
             head.title(title);
+            // A page module served for its Logic imports the core from the runtime already loaded.
+            head.script(scriptJson({imports: {'@gramlot/gramlot/page': prefixed(prefix, this.runtimeUrl)}}),
+                {type: 'importmap', nonce});
             const body = root.body();
             body.div({id: this.rootId});
             body.script(`import {PageBootstrap} from ${scriptJson(prefixed(prefix, this.runtimeUrl))};` +
