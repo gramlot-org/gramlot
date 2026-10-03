@@ -502,6 +502,20 @@ Source or resolved from Data:
   `<tag> '<label>': '<attribute>' holds a javascript: URL, run by the browser as
   code; write connect_onclick or the action of a button instead`.
 
+**An `iframe` `srcdoc` from Data.** The renderers, Python and JavaScript, add
+`sandbox=""` to an `iframe` whose `srcdoc` comes from Data: the browser shows its
+HTML and runs nothing of it. The declaration decides, not the value: a `^`/`=`
+pointer, a `==` expression, a `${…}` template reading a pointer, also through
+another template, or a node value that is a pointer, whose datum can carry `srcdoc`
+in its `_wdg`. The iframe has its `sandbox` while `srcdoc` is still null, so a Data
+change writes only `srcdoc`. A literal `srcdoc` gets no `sandbox`. A `sandbox`
+declared in the Source, with any value, is kept as declared and turns the rule off
+(`sandbox='allow-scripts'` runs the scripts of the HTML); removing it brings the
+empty `sandbox` back. With the `html_` prefix, `html_srcdoc` gets `html_sandbox`.
+The live renderer writes `sandbox` before every other attribute of an element: the
+browser reads `sandbox` when `src` or `srcdoc` starts a navigation, so a change of
+both, or of a literal `srcdoc` into a pointer, navigates with the new `sandbox`.
+
 One bootstrap module script carries the nonce and imports the runtime, so a script
 without the nonce is blocked. The standalone export has its own hash profile
 (section 025).

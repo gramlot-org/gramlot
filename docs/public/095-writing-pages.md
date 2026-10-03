@@ -499,6 +499,14 @@ and the attribute ([GC-090 section 035](090-classes-and-hosts.md)):
 - a `javascript:` URL in `href`, `src`, `formaction` or `xlink:href`, written or
   from Data.
 
+An `iframe` whose `srcdoc` comes from Data gets `sandbox=""`: the HTML is shown and
+runs nothing, no script, form, popup or access to the page. `srcdoc` comes from Data
+when it is a pointer (`srcdoc='^.preview'`), a `==` expression or a `${…}` template
+reading a pointer, or when the node value is a pointer, whose datum can carry
+`srcdoc` in its `_wdg`. A literal `srcdoc` gets no `sandbox`. A `sandbox` written in
+the Source is kept as written: `sandbox='allow-scripts'` lets the HTML run scripts,
+and is the way to turn the rule off ([GC-090 section 035](090-classes-and-hosts.md)).
+
 ```python
 pane.dataFormula(".total", "price * quantity", price="^.price", quantity="^.quantity")
 pane.button("Save", action="this.FIRE('.save')")
