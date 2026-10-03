@@ -3186,6 +3186,8 @@ Constitution amendment 11.54.
   (`e01`, `e06`, `e12`, `e13`, `b01`, `b05`, `c01`, `c04`, `c06`, `c07`, `c09`);
   `verify_live_cards.mjs` (`e10`) and `verify_live_playground.mjs` (`e13`) PASS on
   `/py` and `/js`, both failing before the fix.
+- `5a554ea` item 4 of 11.54 (examples 10 and 13) and this record. Release 0.2.4:
+  version in `pyproject.toml`, `js/package.json` and `jsr.json`; release notes v0.2.4.
 
 **Open:** the same `onclick` correction in gramlot-examples, done in its own chat; the
 new CI steps run for the first time on the pull request.
