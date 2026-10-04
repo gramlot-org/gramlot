@@ -4,7 +4,7 @@
  * @module
  */
 import {HtmlRenderer} from '@genrojs/builders';
-import type {SourceBagNode} from '@genrojs/builders';
+import type {BuilderBase, RendererBase, SourceBagNode} from '@genrojs/builders';
 
 /**
  * The string renderer of a Gramlot Source. It carries the Gramlot attribute rules on the builder
@@ -15,7 +15,7 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
     /** The compiler of the `==` expressions: a string renderer has none. */
     get inlineCompiler(): unknown;
     /** HTML nodes render with this renderer; SVG nodes with one `GramlotSvgRenderer` owned by it. */
-    getRender(builder: unknown): unknown;
+    getRender(builder: BuilderBase): RendererBase;
     /** Render a node; a data-element renders nothing. */
     render(node: SourceBagNode, opts?: Record<string, unknown>): unknown;
     /** The tag and attributes of a node, with the expressions evaluated and no script attributes. */
@@ -33,5 +33,5 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
     renderedItem(node: SourceBagNode, item: unknown, runtimeAttrs: Record<string, unknown>,
         opts?: Record<string, unknown>): string;
     /** Finish the output; the `doctype` option prepends the doctype and wraps in `<html>` when needed. */
-    finalize(result: unknown, target?: unknown, opts?: Record<string, unknown>): unknown;
+    finalize(result: unknown, target?: unknown, opts?: Record<string, unknown>): string | null;
 }
