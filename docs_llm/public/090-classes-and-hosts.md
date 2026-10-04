@@ -24,7 +24,7 @@ manual; `docs/internal`: working decisions; `docs_llm`: concise mirrors; `ports`
 bounded reviews. Generic Bag/builders live separately; `build` is generated output.
 This tree does not imply a component inventory.
 *0.2.0:* adds `js/src/builder/source.js`, `js/src/binding/`, `js/src/bootstrap.js`, `js/src/adapters/resources.js`,
-`src/gramlot/server/resources.py`, Python renderers in `src/gramlot/renderer/` and grammar `src/gramlot/collections/binding.json`. `examples/`: families `html_svg`, `binding`, `controllers`; runner in `examples/00-runner/`.
+`src/gramlot/server/resources.py`, Python renderers in `src/gramlot/renderer/` and grammar `src/gramlot/collections/binding.json`. Example families `html_svg`, `binding`, `controllers` and their gallery: separate package `gramlot-examples`.
 
 <a id="gc-090-015"></a>
 
@@ -158,7 +158,7 @@ import {Page as BasePage, source} from '@gramlot/gramlot/page';
 | Installation | Core name used in imports | Scope |
 | --- | --- | --- |
 | npm (`npm install`) or JSR (`jsr add`) | `@gramlot/gramlot` | Published registry package, from 0.2.1 |
-| Repository examples (`file:../js`) | `@gramlot/gramlot` | The repository's `js/package.json`, same name |
+| Core test fixtures (`js/tests/fixtures`) | `@gramlot/gramlot` | Package self-reference inside `js/`, same name |
 | JSR `@genro/gramlot` 0.1.0–0.2.0 | `@genro/gramlot` | Earlier JSR name, archived |
 | Original GitHub 0.1.0 archives | Follow the archive README and package manifest | Frozen archive delivery, separate from JSR |
 
@@ -168,8 +168,7 @@ The repository's local package name is not automatically provided by that instal
 The names above identify different installation contexts; do not mix them within
 one application's core dependency graph.
 
-The standalone examples below explicitly use the local development installation:
-matching core and standalone packages, as configured by the repository examples.
+The standalone examples below use matching core and standalone packages.
 `@gramlot/gramlot-serverless` owns standalone startup and Worker integration and replaces the
 retired `gramlot-minimal` (025). This boundary is not supplied by installing the
 published JSR 0.1.x package alone; unchanged GitHub archives also retain their
@@ -260,7 +259,7 @@ its own policy. Only profile of the export (from gramlot-js-server 0.2.3; 0.2.2:
 exporter of the browser standalone profile: it bundles the Page without executing it
 and generates the HTML through HtmlBuilder; it also exports a static directory of
 several documents, each with its own Worker. Assets must be included by the exporter
-and served at their declared paths. The runner directory opens through `file://`
+and served at their declared paths. The exported gallery directory opens through `file://`
 (Blob Workers, explicit export root for local stylesheets). Dependencies:
 `@gramlot/gramlot >=0.2.1`, `@genrojs/builders >=0.4.1`, Node 22+; commands are in
 its repository.

@@ -10,8 +10,9 @@ Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 > includes the page module of 0.2.5, and section 095 describes `gramlot.inout` (0.2.5).
 
 **Examples.** Two example families run the features of sections 040-080, each
-page in Python with its JavaScript equivalent: `examples/binding/` (routes
-`b01`-`b11` in the local runner) and `examples/controllers/` (routes `c01`-`c09`).
+page in Python with its JavaScript equivalent, in the package gramlot-examples:
+[`binding/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) (routes `b01`-`b11` in the gallery) and
+[`controllers/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) (routes `c01`-`c09`).
 The sections below name the example they illustrate. These features have no
 example: `js_requires` groups, `connect_on<event>` by name, `_userChanges`,
 `_onBuilt`, `#ANCHOR` and `gramlot.inout`. The `html_svg` family is
@@ -98,7 +99,7 @@ controller (section 075) can call `this.page.remoteSource(...)` from its named
 logic; 0.2.0 defines no declarative remote Source request. The pending request
 lives as long as its target: if the target is removed first, the late answer is
 ignored, and of two overlapping requests the latest wins. Example:
-`examples/controllers/08_remote_source` (`c08`).
+`controllers/08_remote_source` (`c08`).
 
 <a id="gc-095-020"></a>
 
@@ -221,7 +222,7 @@ A change of the Source or of the context re-registers the affected pointers.
 Example: `value='^#FORM.customer.name'`. The legacy origins `#WORKSPACE`, `#ROW`
 and `#DATA` and their aliases are outside 0.2.0.
 
-Examples: `examples/binding/01_pointers` (`b01`, every pointer form and symbolic
+Examples: `binding/01_pointers` (`b01`, every pointer form and symbolic
 origin) and `02_variable_datapath` (`b02`).
 
 ```python
@@ -302,7 +303,7 @@ runtime are not affected by R1.
 Removing a `dataSetter` from the Source does not delete its Data. A rebuild or a
 thaw does not install it again. A `Bag` value moves into the Data without a copy;
 the Source node then no longer carries it. Example:
-`examples/binding/03_setters_and_defaults` (`b03`).
+`binding/03_setters_and_defaults` (`b03`).
 
 <a id="gc-095-050"></a>
 
@@ -338,7 +339,7 @@ remote call), editing, saving and loading again. When a user inserts a new
 record, a "newrecord" is loaded, and the record defaults belong to it. Forms,
 records and newrecord are outside 0.2.0, so 0.2.0 offers only build-time defaults.
 Do not use build-time defaults to model record defaults. Example:
-`examples/binding/03_setters_and_defaults` (`b03`).
+`binding/03_setters_and_defaults` (`b03`).
 
 <a id="gc-095-055"></a>
 
@@ -359,7 +360,7 @@ dataController(script=None, func=None, **params)
 
 Keyword arguments with `^` trigger the declaration; with `=` they are only read.
 The legacy form `dataFormula('.total', 'a + b', a='^.a', b='^.b')` keeps working
-as inline code. Examples: `examples/controllers/01_formula` (`c01`) and
+as inline code. Examples: `controllers/01_formula` (`c01`) and
 `02_controller` (`c02`).
 
 Control attributes:
@@ -453,7 +454,7 @@ lookup and file layout. With the minimal `FileHost` only the page logic exists
 (the `Logic` of `foo.js`, or `foo_aux.js`), and its methods are the root group:
 `func='add'`. A dotted name such as `business.discount` needs a `js_requires`
 group, that is a Host with a resource system. Example:
-`examples/controllers/03_named_logic` (`c03`).
+`controllers/03_named_logic` (`c03`).
 
 The same method name registered twice in the same group: the last registration
 wins. The page logic registers after the `js_requires` names.
@@ -495,7 +496,7 @@ refuses the compilation and Gramlot raises an `EvalError` that names the node an
 the attribute and points to named logic or to the permissive profile
 ([GC-090 section 035](090-classes-and-hosts.md)). The error covers every inline
 declaration: `formula`, `script`, `_if`/`_else`, `==`, `action` and
-`connect_on<event>`. Examples: `examples/controllers/04_inline_expressions`
+`connect_on<event>`. Examples: `controllers/04_inline_expressions`
 (`c04`) and `05_node_methods` (`c05`). The file exported by
 `@gramlot/gramlot-serverless` allows `'unsafe-eval'`, so inline code runs there too.
 
@@ -570,7 +571,7 @@ default of their authored `selected` or `checked` attribute.
 - Changing `type`, `multiple` or `group` rebuilds the element and keeps its
   binding.
 
-Examples: `examples/binding/04_native_editing` (`b04`), `05_checkbox_radio`
+Examples: `binding/04_native_editing` (`b04`), `05_checkbox_radio`
 (`b05`), `06_style_and_visibility` (`b06`) and `07_bound_svg` (`b07`).
 
 **Checkbox:** `input(type='checkbox', value='^.flag')` holds a boolean. Data
@@ -654,7 +655,7 @@ the mechanism does not run. A form with a native submit button keeps the native
 behavior. The owner accepted R3 as built for 0.2.0 and reviews it after the
 release.
 
-Examples: `examples/controllers/06_button_controller` (`c06`) and `07_events`
+Examples: `controllers/06_button_controller` (`c06`) and `07_events`
 (`c07`). A `connect_on<event>` value made of dotted names (`group.method`) is
 named logic; any other value is inline code. The event name is the text after
 `connect_on`, lower-cased.
@@ -695,7 +696,7 @@ freeze runs steps 1-5 at once; its DOM and `_onBuilt` wait for the thaw; `_onSta
 waits for the first build. A thaw performs one build of the current Source,
 without installing Data again and without repeating `_init` or `_onStart`.
 Removing a branch closes its registrations and timers, also under freeze.
-Example: `examples/binding/08_freeze` (`b08`).
+Example: `binding/08_freeze` (`b08`).
 
 **Cleanup.** Removing a Source node closes its bindings: providers, timers,
 registrations, event listeners and pending requests stop, and the renderer removes
@@ -714,7 +715,7 @@ the whole page.
   error (listeners, controls, radio groups, references); the Data is not rolled
   back.
 
-Example: `examples/controllers/09_end_to_end` (`c09`) walks the lifecycle from
+Example: `controllers/09_end_to_end` (`c09`) walks the lifecycle from
 the first render to the close.
 
 <a id="gc-095-085"></a>

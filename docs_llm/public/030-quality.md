@@ -10,7 +10,7 @@ Document ID: **GC-030**.
 
 ## 005 · Read badges in context
 
-README badges: tests (`Core and runner tests` on `main`: runtime build, Python, core JS with the quiet-write and symbolic-attribute contracts, runner; pushes to main/develop, PRs, dispatch; runner uses the public main of `gramlot-js-server`), documentation build, two Codecov badges (JavaScript, Python; section 010), PyPI and JSR versions, license label. Unit suites do not verify adapters in a server, standalone exports or real browsers: that is the 0.2.0 qualification (GC-215: clean environments, Chromium/WebKit/Firefox, §8.1 story through the real bootstrap, served runtime vs fresh build, acceptance pages on `gramlot-uvicorn`, `gramlot-js-server` Node/Bun, `gramlot-serverless`; django, fastapi, flask, kajenn deferred). The experimental runtime is tested in gramlot-poc.
+README badges: tests (`Core tests` on `main`: runtime build, Python, core JS with the quiet-write and symbolic-attribute contracts, Chromium checks on core fixture pages; pushes to main/develop, PRs, dispatch; no other repository checked out, example pages tested in gramlot-examples), documentation build, two Codecov badges (JavaScript, Python; section 010), PyPI and JSR versions, license label. Unit suites do not verify adapters in a server, standalone exports or real browsers: that is the 0.2.0 qualification (GC-215: clean environments, Chromium/WebKit/Firefox, §8.1 story through the real bootstrap, served runtime vs fresh build, acceptance pages on `gramlot-uvicorn`, `gramlot-js-server` Node/Bun, `gramlot-serverless`; django, fastapi, flask, kajenn deferred). The experimental runtime is tested in gramlot-poc.
 
 <a id="gc-030-010"></a>
 

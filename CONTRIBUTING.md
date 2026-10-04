@@ -6,19 +6,14 @@
 python3 -m venv .venv && .venv/bin/pip install -e '.[test]'
 npm --prefix js install
 npm --prefix js run build
-npm --prefix examples install
 .venv/bin/pip install -r requirements-docs.txt   # documentation only
 ```
-
-The example runner links the `server/` and `browser/` packages of a sibling
-`gramlot-js-server` checkout (`examples/package.json`).
 
 ## Checks before a commit
 
 ```sh
 .venv/bin/python -m unittest discover -s tests
 GRAMLOT_TEST_PYTHON="$PWD/.venv/bin/python" npm --prefix js test
-npm --prefix examples test
 node scripts/verify_binding_browser.mjs <playwright-core index.mjs> chromium   # when behavior changes
 python3 scripts/prepare_docs.py
 .venv/bin/python -m sphinx -W --keep-going -n -b html build/docs-source build/docs-site
