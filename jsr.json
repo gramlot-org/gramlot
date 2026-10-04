@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
@@ -10,9 +10,9 @@
     "./host": "./js/src/adapters/host.js"
   },
   "imports": {
-    "@genrojs/bag": "jsr:@genro/bag@^0.10.1",
-    "@genrojs/builders": "jsr:@genro/builders@^0.4.1",
-    "@genrojs/tytx": "jsr:@genro/tytx@^0.16.1",
+    "@genrojs/bag": "jsr:@genro/bag@^0.10.3",
+    "@genrojs/builders": "jsr:@genro/builders@^0.4.2",
+    "@genrojs/tytx": "jsr:@genro/tytx@^0.16.2",
     "@gramlot/gramlot/page": "./js/src/adapters/page.js"
   },
   "publish": {

@@ -1,0 +1,33 @@
+/**
+ * Host-side page base class and the `source` registration.
+ *
+ * @module
+ */
+import type {GramlotBuilder} from '../builder/gramlot-builder.js';
+
+/**
+ * Explicit registration of a remote Source method, equivalent to the Python `@source`.
+ * A Source method populates its `root` argument and returns nothing.
+ */
+export function source<T extends Function>(method: T): T;
+
+/** The registered Source method `name` of `page`, or null. */
+export function sourceMethod(page: Page, name: string): Function | null;
+
+/** Host-side page base; unrelated to browser view components. */
+export class Page {
+    /** The title of the page document. */
+    static title: string;
+    /** CSS URLs of the page. */
+    static css: string[];
+    /** Comma-separated names of the CSS resources of the page. */
+    static css_requires: string;
+    /** Comma-separated names of the JS resources of the page. */
+    static js_requires: string;
+    /** The builder class that authors the Source of the page. */
+    static sourceBuilder: typeof GramlotBuilder;
+    /** The id of the page, set by the host. */
+    pageId?: string;
+    /** Populate the `main` Source in `root`; subclasses must implement it. */
+    main(root: unknown): void | Promise<void>;
+}

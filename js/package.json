@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Declarative HTML/SVG interfaces with live data binding, authored in JavaScript or Python.",
   "license": "Apache-2.0",
   "repository": {
@@ -16,9 +16,9 @@
     "prepack": "node scripts/build-runtime.mjs"
   },
   "dependencies": {
-    "@genrojs/bag": ">=0.10.1",
-    "@genrojs/builders": ">=0.4.1",
-    "@genrojs/tytx": ">=0.16.1"
+    "@genrojs/bag": ">=0.10.3",
+    "@genrojs/builders": ">=0.4.2",
+    "@genrojs/tytx": ">=0.16.2"
   },
   "devDependencies": {
     "c8": "10.1.3",

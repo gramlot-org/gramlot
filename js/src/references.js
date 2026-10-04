@@ -1,4 +1,9 @@
-/** Opaque references to mounted Source nodes and their DOM elements. */
+/* @ts-self-types="./references.d.ts" */
+/**
+ * Opaque references to mounted Source nodes and their DOM elements.
+ *
+ * @module
+ */
 import {SourceBag} from '@genrojs/builders';
 
 export class References {

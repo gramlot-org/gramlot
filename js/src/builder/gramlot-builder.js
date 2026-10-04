@@ -1,3 +1,9 @@
+/* @ts-self-types="./gramlot-builder.d.ts" */
+/**
+ * The Gramlot vocabulary and inert authoring on the shared builder grammar.
+ *
+ * @module
+ */
 import {Bag} from '@genrojs/bag';
 import {HtmlBuilder, SourceBagNode, sourceTarget} from '@genrojs/builders';
 import {toTytx} from '@genrojs/tytx';

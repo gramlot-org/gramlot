@@ -1,7 +1,10 @@
+/* @ts-self-types="./resources.d.ts" */
 /** Resource names and bootstrap load order; no file lookup and no HTTP engine.
  * The Python counterpart is src/gramlot/server/resources.py; both apply the same
  * rules. css_requires/js_requires names are interpreted by a Host with a resource
  * system, not by the core.
+ *
+ * @module
  */
 /** One segment of a resource or page name. */
 export const SEGMENT = /^[A-Za-z0-9_-]+$/;
