@@ -1,4 +1,4 @@
-// Phase S16: the end-to-end story of source plan §8.1 (GC-210 §065) on `examples/controllers/09_end_to_end`,
+// Phase S16: the end-to-end story of source plan §8.1 (GC-210 §065) on `fixtures/qualification/09_end_to_end`,
 // once from the Python page and once from the JavaScript page, through the real path: the FileHost of each
 // language opens the page, the browser document is the bootstrap HTML the host wrote, PageBootstrap imports
 // the page module for its `Logic` and starts Gramlot, the Source travels as TYTX over the MainTransport, and the page
@@ -11,22 +11,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {createInterface} from 'node:readline';
-import {createRequire} from 'node:module';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {JSDOM} from 'jsdom';
+import {PageBootstrap} from '../src/index.js';
+import {FileHost} from '../src/adapters/index.js';
 import {counters, liveListeners, liveTimers} from './fixtures/lifecycle.js';
 
-// The core as the example page resolves it: `examples/node_modules/@gramlot/gramlot` is a symlink to
-// `js/` locally and a copy of it in CI (`--install-links`); loading FileHost and PageBootstrap from the same
-// installation keeps one `Page` class, so the host's `instanceof Page` check holds in both.
-const fromExamples = createRequire(new URL('../../examples/package.json', import.meta.url));
-const {PageBootstrap} = await import(pathToFileURL(fromExamples.resolve('@gramlot/gramlot')).href);
-const {FileHost} = await import(pathToFileURL(fromExamples.resolve('@gramlot/gramlot/server')).href);
-
-const PAGES = fileURLToPath(new URL('../../examples/controllers/', import.meta.url)).replace(/\/$/, '');
+// The page module imports `@gramlot/gramlot/page`; inside `js/` Node resolves it by package self-reference
+// to `src/adapters/page.js`, the module FileHost loads: one `Page` class, so `instanceof Page` holds.
+const PAGES = fileURLToPath(new URL('./fixtures/qualification/', import.meta.url)).replace(/\/$/, '');
 const PATH = '/09_end_to_end';
 
-/** The JavaScript FileHost on the controllers folder. */
+/** The JavaScript FileHost on the fixture folder. */
 function jsHost() {
     const host = new FileHost(PAGES);
     return {
@@ -39,7 +35,7 @@ function jsHost() {
     };
 }
 
-/** The Python FileHost on the controllers folder, one process answering one JSON request per line. */
+/** The Python FileHost on the fixture folder, one process answering one JSON request per line. */
 const PYTHON_HOST = `
 import asyncio, json, sys
 from gramlot.server import FileHost
