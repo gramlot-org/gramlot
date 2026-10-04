@@ -1,3 +1,9 @@
+/* @ts-self-types="./gramlot-svg-renderer.d.ts" */
+/**
+ * The renderer of the SVG nodes of a Gramlot Source.
+ *
+ * @module
+ */
 import {SvgRenderer, svgAttributes} from '@genrojs/builders';
 import {
     boundaryAttributes, domNames, requireNoScriptAttributes, textValue, withoutBindingAttributes, withoutNullValues,

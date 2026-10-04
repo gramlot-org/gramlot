@@ -1,3 +1,9 @@
+/* @ts-self-types="./gramlot.d.ts" */
+/**
+ * One Gramlot page in the browser.
+ *
+ * @module
+ */
 import {SourceBag, sourceBagFromTytx} from '@genrojs/builders';
 import {GramlotBuilder} from './builder/gramlot-builder.js';
 import {GramlotBuilderBag} from './builder/source.js';

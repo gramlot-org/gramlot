@@ -1,3 +1,9 @@
+/* @ts-self-types="./gramlot-renderer.d.ts" */
+/**
+ * The live renderer of a Gramlot page.
+ *
+ * @module
+ */
 import {BuilderBase, SourceBag, sourceTarget} from '@genrojs/builders';
 import {HtmlElement} from '../view/html.js';
 import {ControlAdapter, RadioGroups, SelectControl} from '../view/controls.js';

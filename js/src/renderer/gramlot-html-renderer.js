@@ -1,3 +1,9 @@
+/* @ts-self-types="./gramlot-html-renderer.d.ts" */
+/**
+ * The string renderer of a Gramlot Source.
+ *
+ * @module
+ */
 import {HtmlBuilder, HtmlRenderer, SvgBuilder, sourceAttributeItems} from '@genrojs/builders';
 import {GramlotSvgRenderer} from './gramlot-svg-renderer.js';
 import {

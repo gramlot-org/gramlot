@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {build} from 'esbuild';
+import {bundleBanner} from '../scripts/bundle-banner.mjs';
 
 const JS = fileURLToPath(new URL('../', import.meta.url));
 const SERVED = ['dist/gramlot.js', '../src/gramlot/resources/gramlot.js'];
@@ -16,7 +17,7 @@ test('C07: every served runtime bundle is the build of js/src with the installed
     // The options of js/scripts/build-runtime.mjs, run from js/ as `npm --prefix js run build` runs it.
     const fresh = await build({
         entryPoints: ['src/index.js'], absWorkingDir: JS, bundle: true, platform: 'browser', target: 'es2022',
-        format: 'esm', legalComments: 'inline', write: false, logLevel: 'silent',
+        format: 'esm', legalComments: 'inline', banner: {js: bundleBanner}, write: false, logLevel: 'silent',
     });
     const expected = sha256(fresh.outputFiles[0].contents);
     for (const relative of SERVED) {

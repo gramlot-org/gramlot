@@ -1,3 +1,9 @@
+/* @ts-self-types="./bootstrap.d.ts" */
+/**
+ * The browser start of one page.
+ *
+ * @module
+ */
 import {Gramlot} from './gramlot.js';
 import {LogicRegistry} from './binding/logic.js';
 import {MainTransport} from './transport.js';

@@ -1,4 +1,10 @@
-/** Main and remote Source transport; application pages do not issue fetch calls. */
+/* @ts-self-types="./transport.d.ts" */
+/**
+ * Main and remote Source transport; application pages do not issue fetch calls.
+ *
+ * @module
+ */
+/** The page-to-host transport: loads `main` and remote Sources and closes the server page. */
 export class MainTransport {
     constructor(url, fetcher = globalThis.fetch?.bind(globalThis), sourceUrl = '/gramlot/source',
                 closeUrl = '/gramlot/close', navigator = globalThis.navigator) {
