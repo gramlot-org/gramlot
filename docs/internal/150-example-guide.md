@@ -1,6 +1,8 @@
 # 150 · Base theme and HTML/SVG example guide
 
-Document ID: **GC-150**. Updated: **2026-09-24**.
+Document ID: **GC-150**. Updated: **2026-10-04**.
+
+> **Status (2026-10-04, constitution 11.56):** historical record. The examples, their READMEs and the gallery that replaces the runner live in `gramlot-examples` (GE-010); the core has no `examples/`. Paths `examples/...` below name the former core layout.
 
 [Concise counterpart](../../docs_llm/internal/150-example-guide.md).
 
@@ -11,8 +13,8 @@ and handles Source lifetime. Future web components remain separately scoped.
 <a id="gc-150-005"></a>
 ## 005 · Start with the runner
 
-The local [runner README](../../examples/00-runner/README.md) is reached from the
-[example index](../../examples/README.md). It documents the exact setup and launch
+The local runner README (`examples/00-runner/README.md`, removed) is reached from the
+example index (`examples/README.md`, removed). It documents the exact setup and launch
 command. The runtime has no adapter dependency: the development launcher
 composes the `gramlot-uvicorn` and `gramlot-js-server` integration hosts outside the runtime package.
 
@@ -38,7 +40,7 @@ without persistence or server synchronization. No fetch, Data bindings, controll
 or database APIs are introduced. Other native HTML interactions
 remain native; a disabled submit example does not pretend to save data.
 
-The selectable [catalogue](../../examples/00-runner/catalog/catalog.md) records actual
+The selectable catalogue (`examples/00-runner/catalog/catalog.md`, removed) records actual
 HTML grammar coverage and classifies document-level, inert and unsupported behavior
 explicitly. A grammar declaration alone does not prove a runtime feature exists.
 

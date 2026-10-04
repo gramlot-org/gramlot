@@ -1,6 +1,6 @@
 # 140 · Agreed integrations and examples
 
-Document ID: **GC-140**. Updated: **2026-09-30**.
+Document ID: **GC-140**. Updated: **2026-10-04**.
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
@@ -38,7 +38,7 @@ JavaScript pages. Database integration is a separate responsibility.
 ## 010 · Agreed reference example
 
 The integration smoke application is **Hello World** in
-[`gramlot-examples/apps/hello-world`](../../../gramlot-examples/apps/hello-world/README.md).
+`gramlot-examples/apps/hello-world`. *Update 2026-10-04:* `apps/hello-world` was removed from `gramlot-examples`; its launchers are the quick starts of `gramlot-py-server` and `gramlot-js-server`.
 It has equivalent Python and JavaScript pages, using real Gramlot typed Source and
 the shared execution contracts. The execution profiles are configurations of this
 same example, not eight different applications.
@@ -55,9 +55,9 @@ same example, not eight different applications.
 | JavaScript | Browser Worker / standalone HTML | `gramlot-js-server` (`@gramlot/gramlot-serverless`) |
 
 The existing integration smoke pages, launch configurations and application tests
-belong in `gramlot-examples`. The owner-approved teaching suite now lives in core
-`examples/html_svg`, with its runner in `examples/00-runner` and its theme in
-`themes/gramlot-base`; see [GC-145](145-html-svg-examples.md).
+belong in `gramlot-examples`. The owner-approved teaching suite and the gallery
+that replaces its runner live in `gramlot-examples` (constitution 11.56); the theme
+stays in core `themes/gramlot-base`; see [GC-145](145-html-svg-examples.md).
 Reusable adapters belong in their integration repositories;
 shared runtime behavior belongs in core. Installation and launch commands are
 maintained in the example's README rather than duplicated here.
@@ -112,6 +112,11 @@ smoke application above is unchanged. Implementation and verification status are
 tracked in [GC-145](145-html-svg-examples.md) and [GC-070](070-work-status.md#gc-070-045).
 PoC transfers are set aside; no new release or publication is authorized.
 
+*Update 2026-10-04 (constitution 11.56):* the three families, their READMEs and the
+gallery page that replaces the runner live in `gramlot-examples`
+(`src/gramlot_examples/pages`, `src/gramlot_examples/gallery`); the core has no
+`examples/`. The theme and the logo stay in the core.
+
 
 <a id="gc-140-040"></a>
 
@@ -124,3 +129,9 @@ restarting or regenerating exports propagates changes; copied teaching suites
 are not maintained downstream. This supersedes any broader reading of the older
 smoke-application ownership notes. Uniform packaging and launch rollout remains
 pending. See [GC-025 §020](../public/025-try.md#gc-025-020).
+
+*Update 2026-10-04 (constitution 11.56):* `gramlot-examples` is the single source of
+teaching pages, READMEs, gallery page and catalogue; Gramlot remains the source of
+framework documentation, logo and theme. Each environment serves the gallery with
+its own gallery command. Dependencies run one way: core ← gramlot-examples ←
+environments.

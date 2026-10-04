@@ -3,11 +3,14 @@
 Before changing this repository, read `docs/00-constitution.md`,
 `docs/01-overview.md` and `ports/README.md`. The constitution is authoritative.
 
-- Owner 2026-09-24, constitution amendment 11.44: remove runner-specific core
-  behavior; retain the provisional implementation in `examples/00-runner` using
-  existing Source/Bag/lifecycle APIs. The bounded runner-local browser exception
-  does not authorize new framework capabilities or general application bypasses.
-  Report any blocking gap; future web components require a separate confirmed design.
+- Owner 2026-10-04, constitution amendment 11.56 (supersedes the runner placement
+  of 11.44): the example pages, their READMEs and the gallery live in
+  `gramlot-examples`; the core has no `examples/` and no runner. Dependencies run
+  one way, core ← gramlot-examples ← environments: the core does not depend on
+  gramlot-examples or on any adapter, also in CI and tests, and tests itself on
+  its own fixtures (`js/tests/fixtures/qualification`, `js/tests/fixtures/live`).
+  Runner-specific core behavior stays out of the core (11.44); future web
+  components require a separate confirmed design.
 - Owner 2026-09-24, constitution amendment 11.43: every decision requires explicit
   owner confirmation before implementation or recording it as approved. Agent
   proposals, interpretations, silence, working code and passing tests are not

@@ -41,10 +41,11 @@
   inline code is allowed, discouraged, browser page runtime only
   ([GC-095](public/095-writing-pages.md#gc-095-060)).
 
-The provisional example runner has a bounded owner-approved exception (constitution
-11.44): its local JavaScript attaches behavior through ordinary HTML IDs and uses
-existing Source/Bag/lifecycle APIs. This is not a general core component facility;
-future web components require separate approval.
+The provisional example runner had a bounded owner-approved exception (constitution
+11.44): its local JavaScript attached behavior through ordinary HTML IDs and used
+existing Source/Bag/lifecycle APIs. The runner left the core with amendment 11.56;
+the example pages and their gallery live in `gramlot-examples`. Future web
+components require separate approval.
 
 ## 5. Adapters
 
