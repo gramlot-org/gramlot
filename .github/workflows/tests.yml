@@ -78,17 +78,10 @@ jobs:
         run: node scripts/verify_page_module_browser.mjs python "$PLAYWRIGHT_ENTRY" chromium
       - name: Browser check of gramlot.inout in Chromium
         run: node scripts/verify_inout_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
-      - name: Install the Python Uvicorn integration for the runner
-        run: python -m pip install '../gramlot-uvicorn[uvicorn]'
-      - name: Browser checks of the live Source examples 10 and 13 through the runner, Python and JavaScript
+      - name: Browser checks of the live Source pages 10 and 13 on the Python and JavaScript FileHost in Chromium
         run: |
-          PORT=8090 python examples/00-runner/serve.py > "$RUNNER_TEMP/runner.log" 2>&1 &
-          for attempt in $(seq 1 90); do curl -fs -o /dev/null http://127.0.0.1:8090/py/index && break; sleep 1; done
-          node scripts/verify_live_cards.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM" http://127.0.0.1:8090/py/e10 http://127.0.0.1:8090/js/e10
-          node scripts/verify_live_playground.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM" http://127.0.0.1:8090
-      - name: Runner log
-        if: ${{ failure() }}
-        run: cat "$RUNNER_TEMP/runner.log"
+          node scripts/verify_live_cards.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"
+          node scripts/verify_live_playground.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"
       - name: Upload JavaScript coverage
         if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5
