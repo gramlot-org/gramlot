@@ -1,3 +1,9 @@
+/* @ts-self-types="./file-host.d.ts" */
+/**
+ * A reference host on one pages folder.
+ *
+ * @module
+ */
 import {realpath, stat} from 'node:fs/promises';
 import {basename, dirname, extname, isAbsolute, join, relative, resolve, sep} from 'node:path';
 import {pathToFileURL} from 'node:url';

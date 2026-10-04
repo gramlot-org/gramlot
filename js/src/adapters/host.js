@@ -1,3 +1,9 @@
+/* @ts-self-types="./host.d.ts" */
+/**
+ * The neutral host: registers pages and builds their Sources, with no HTTP engine.
+ *
+ * @module
+ */
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
 import {Page, sourceMethod} from './page.js';
 import {loadOrder} from './resources.js';

@@ -42,6 +42,31 @@ Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/gramlot-s
 (in the `gramlot-js-server` repository).
 Python pages require the Python distribution and a Python server.
 
+A page is a module in the pages folder that exports a `Page` subclass. `FileHost`
+serves that folder; an adapter passes each request to the host:
+
+```js
+// pages/hello.js
+import {Page as GramlotPage} from '@gramlot/gramlot/page';
+
+// FileHost reads the export named `Page`.
+export class Page extends GramlotPage {
+    static title = 'Hello';
+    main(root) {
+        root.div('Hello from Gramlot', {id: 'greeting'});
+    }
+}
+```
+
+```js
+// server.js
+import {FileHost} from '@gramlot/gramlot/server';
+
+const host = new FileHost('./pages');
+const {pageId, html, nonce} = await host.openPage('hello');
+// Answer the browser with `html`; it then requests `host.main(pageId)`.
+```
+
 The published version is 0.2.1, from the tag `v0.2.1`. The example pages and their
 gallery are the separate package `gramlot-examples`.
 

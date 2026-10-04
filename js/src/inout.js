@@ -1,3 +1,9 @@
+/* @ts-self-types="./inout.d.ts" */
+/**
+ * What the page sends, receives, saves and downloads (`gramlot.inout`).
+ *
+ * @module
+ */
 import {Bag} from '@genrojs/bag';
 
 /** The practical length limit of a mailto: URL in mail programs and browsers. */

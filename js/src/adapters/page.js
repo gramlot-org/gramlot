@@ -1,3 +1,9 @@
+/* @ts-self-types="./page.d.ts" */
+/**
+ * Host-side page base class and the `source` registration.
+ *
+ * @module
+ */
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
 
 const SOURCE_METHOD = Symbol('gramlot.source');

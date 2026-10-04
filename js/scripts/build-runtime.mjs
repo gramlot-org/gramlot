@@ -3,6 +3,7 @@ import {build} from 'esbuild';
 import {mkdir, copyFile, cp, readFile, readdir, writeFile, rm} from 'node:fs/promises';
 import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {bundleBanner, moduleDoc} from './bundle-banner.mjs';
 const root = new URL('../', import.meta.url);
 const path = value => fileURLToPath(new URL(value, root));
 await mkdir(path('dist/'), {recursive: true});
@@ -21,7 +22,9 @@ const options = {
     bundle: true, platform: 'browser', target: 'es2022', metafile: true,
     legalComments: 'inline',
 };
-const hosted = await build({...options, entryPoints: [path('src/index.js')], format: 'esm', outfile: path('dist/gramlot.js')});
+const hosted = await build({...options, entryPoints: [path('src/index.js')], format: 'esm', outfile: path('dist/gramlot.js'),
+    banner: {js: bundleBanner}});
+await writeFile(path('dist/gramlot.d.ts'), `${moduleDoc}\nexport * from '../src/index.d.ts';\n`);
 // Standalone startup and Worker integration now belong to gramlot-serverless.
 await rm(path('dist/standalone.js'), {force: true});
 await rm(path('../src/gramlot/resources/standalone.js'), {force: true});
