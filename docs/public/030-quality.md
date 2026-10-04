@@ -11,12 +11,12 @@ Document ID: **GC-030**.
 
 ## 005 · Read badges in context
 
-The README shows six badges. The tests badge reports the `Core and runner tests`
+The README shows six badges. The tests badge reports the `Core tests`
 workflow on `main`: it builds the browser runtime, installs the Python package, and
 runs the Python suite, the core JavaScript suite (with the quiet-write and
-symbolic-attribute contracts) and the runner suite, on pushes to `main` and
-`develop`, pull requests and manual dispatch. The runner suite checks out the
-public `main` branch of `gramlot-js-server` next to this repository, following the examples' declared file dependencies. The documentation
+symbolic-attribute contracts) and the browser checks in Chromium on core fixture
+pages, on pushes to `main` and `develop`, pull requests and manual dispatch. It
+checks out no other repository: the example pages are tested in gramlot-examples. The documentation
 badge reports the documentation build. The two coverage badges report Codecov, one
 per runtime (section 010). The PyPI and JSR badges show the published versions.
 The license badge is a label.

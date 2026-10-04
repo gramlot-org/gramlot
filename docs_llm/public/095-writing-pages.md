@@ -7,8 +7,8 @@ Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 > **0.1.2**. Sections 005-035 come from 0.1.2 with *0.2.0* notes; sections 040-090
 > are 0.2.0 behavior (060 with the 0.2.5 page module); 095 is `gramlot.inout` (0.2.5).
 
-Examples: `examples/binding/` (routes `b01`-`b11` in the local runner) and
-`examples/controllers/` (`c01`-`c09`), each page in Python with a JS equivalent; the
+Examples, in gramlot-examples: [`binding/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) (routes `b01`-`b11` in the gallery) and
+[`controllers/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) (`c01`-`c09`), each page in Python with a JS equivalent; the
 sections below name the one they illustrate. No example for `js_requires` groups,
 `connect_on<event>` by name, `_userChanges`, `_onBuilt`, `#ANCHOR` and `gramlot.inout`. `html_svg` is HTML and SVG without binding.
 
@@ -69,7 +69,7 @@ manual DOM events/fetch.
 controller (075) can call `this.page.remoteSource(...)` from named logic; no
 declarative remote request. The pending request lives as long as its target (removed
 target: late answer ignored); of two overlapping requests the latest wins. Example:
-`examples/controllers/08_remote_source` (`c08`).
+`controllers/08_remote_source` (`c08`).
 
 <a id="gc-095-020"></a>
 
@@ -169,7 +169,7 @@ Symbolic origins (Builder): `#parent` (one level up), `#FORM` (first ancestor wi
 e.g. `value='^#FORM.customer.name'`. `#WORKSPACE`, `#ROW`, `#DATA` and aliases are
 outside 0.2.0.
 Example: `panel = root.div(datapath=".customer")`; `panel.h2("^.name")`;
-`panel.input(value="^.name", live=True)`. Examples: `examples/binding/01_pointers`
+`panel.input(value="^.name", live=True)`. Examples: `binding/01_pointers`
 (`b01`), `02_variable_datapath` (`b02`).
 
 Variable datapath: `datapath='^.foo'` uses the value at `.foo` as the branch
@@ -205,7 +205,7 @@ value and applies attributes; null on a missing path creates null plus attribute
 affected. `value` and attributes are stored as written (`'^y'`, `'==a+b'`, `'a${b}'`
 stay strings; computed values use `dataFormula`). Removing the declaration keeps Data;
 rebuild/thaw do not reinstall. A Bag value moves into Data without copy and leaves the
-Source node. Example: `examples/binding/03_setters_and_defaults` (`b03`).
+Source node. Example: `binding/03_setters_and_defaults` (`b03`).
 
 <a id="gc-095-050"></a>
 
@@ -234,7 +234,7 @@ data arrives after construction through load/edit/save/reload; a new record load
 Data itself. `func` = named logic (recommended, 060); `formula`/`script`
 = inline (065); both together = error. `^` keywords trigger, `=` only
 read. Legacy `dataFormula('.total', 'a + b', a='^.a', b='^.b')` still works inline.
-Examples: `examples/controllers/01_formula` (`c01`), `02_controller` (`c02`).
+Examples: `controllers/01_formula` (`c01`), `02_controller` (`c02`).
 
 Controls: `_if`/`_else` (false → `_else` if present, then stop); `_init` once before
 DOM; `_onBuilt` after first successful build; `_onStart` at readiness (number = ms
@@ -269,7 +269,7 @@ without `'unsafe-eval'`. Lookup/layout: [GC-090 030](090-classes-and-hosts.md). 
 minimal `FileHost` only the page logic exists, as the root group (`func='add'`); a dotted
 name (`business.discount`) needs a `js_requires` group (a Host with a resource system).
 The same method name registered twice in a group: the last registration wins; the
-page logic registers after `js_requires`. Example: `examples/controllers/03_named_logic` (`c03`).
+page logic registers after `js_requires`. Example: `controllers/03_named_logic` (`c03`).
 
 <a id="gc-095-065"></a>
 
@@ -291,7 +291,7 @@ Python Host, JS Host, WorkerHost or DevTools panel. Inline pages need `'unsafe-e
 under a host CSP; without it the browser refuses compilation and Gramlot raises an
 `EvalError` naming node and attribute and pointing to named logic or the permissive
 profile ([GC-090 035](090-classes-and-hosts.md)); covers `formula`, `script`,
-`_if`/`_else`, `==`, `action`, `connect_on<event>`. Examples: `examples/controllers/04_inline_expressions`
+`_if`/`_else`, `==`, `action`, `connect_on<event>`. Examples: `controllers/04_inline_expressions`
 (`c04`), `05_node_methods` (`c05`). The `@gramlot/gramlot-serverless` file allows
 `'unsafe-eval'`: inline runs there too. Inline code runs only as written in the
 received Source (`main`, a remote Source, a `GramlotBuilderBag` given to `startSource`),
@@ -331,7 +331,7 @@ authored `selected`/`checked`. `live=False` (default) writes on `change`; `live=
 text, textarea, number, range; select, color and temporal types always write on
 `change`. A controller correction returns to the originating control; other attributes
 on the same path update while typing. Changing `type`, `multiple` or `group` rebuilds
-the element and keeps its binding. Examples: `examples/binding/04_native_editing`
+the element and keeps its binding. Examples: `binding/04_native_editing`
 (`b04`), `05_checkbox_radio` (`b05`), `06_style_and_visibility` (`b06`), `07_bound_svg` (`b07`).
 Checkbox `input(type='checkbox', value='^.flag')`: Data only `true`/`false`, never
 `'on'`. Radio `input(type='radio', group='size', value='^.small')`: one boolean per
@@ -377,7 +377,7 @@ does not count. Other buttons stay native, also under a parent `dataController`;
 effect: in a form with one text field whose only button has a mechanism
 (`type="button"`), Enter submits the form natively and the mechanism does not run. The
 owner accepted R3 as built for 0.2.0 and reviews it after the release. Examples:
-`examples/controllers/06_button_controller` (`c06`), `07_events` (`c07`).
+`controllers/06_button_controller` (`c06`), `07_events` (`c07`).
 `Gramlot.getBaseSourceNode(domNode)` → Source node of the first rendered ancestor
 or null; `getDomNode(sourceNode)` → element or null (fragment, data element, removed
 or unbuilt node). No properties are added to DOM elements or Source nodes.
@@ -397,7 +397,7 @@ Each build runs to completion; Source changes during it queue in arrival order;
 changes to a node being built are ignored. Freeze: inserted branch runs 1-5 at once;
 DOM and `_onBuilt` at thaw; `_onStart` waits for the first build. Thaw builds once,
 no reinstallation, no repeated `_init`/`_onStart`. Removal closes registrations and
-timers, also under freeze. Example: `examples/binding/08_freeze` (`b08`).
+timers, also under freeze. Example: `binding/08_freeze` (`b08`).
 
 Cleanup: removing a Source node closes its providers, timers, registrations, listeners
 and pending requests and the renderer removes its DOM; closing the page disposes the
@@ -407,7 +407,7 @@ only the Gramlot handlers stop (`fire_*` loop, radio peer loop, listeners). A fa
 disposer does not stop the others: removal completes, then the closing errors are
 thrown (one as is, several as `AggregateError`). A failed first render removes the
 records its children created (listeners, controls, radio groups, references); no Data
-rollback. Example: `examples/controllers/09_end_to_end` (`c09`).
+rollback. Example: `controllers/09_end_to_end` (`c09`).
 
 <a id="gc-095-085"></a>
 

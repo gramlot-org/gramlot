@@ -78,5 +78,6 @@ adapter repository documents its installation, configuration and deployment.
 - **Python pages:** the core plus `gramlot-uvicorn`.
 - **JavaScript pages with a server:** the core plus `@gramlot/gramlot-js-server`.
 - **JavaScript pages without a server:** the core plus `@gramlot/gramlot-serverless`.
-- **Trying it first:** the example runner of this repository shows every example in
-  Python and JavaScript, with its source; see [Try Gramlot](025-try.md).
+- **Trying it first:** the gallery of `gramlot-examples`, served by the gallery
+  command of each environment, shows every example in Python and JavaScript, with
+  its source; see [Try Gramlot](025-try.md).

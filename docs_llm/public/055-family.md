@@ -30,4 +30,4 @@ Shared contract: [classes and server adapters](090-classes-and-hosts.md) (mount 
 
 ## 015 · Choosing a path
 
-Python pages: core + gramlot-uvicorn. JavaScript with a server: core + @gramlot/gramlot-js-server. JavaScript without a server: core + @gramlot/gramlot-serverless. To try first: the example runner ([Try Gramlot](025-try.md)).
+Python pages: core + gramlot-uvicorn. JavaScript with a server: core + @gramlot/gramlot-js-server. JavaScript without a server: core + @gramlot/gramlot-serverless. To try first: the gallery of gramlot-examples, served by each environment ([Try Gramlot](025-try.md)).

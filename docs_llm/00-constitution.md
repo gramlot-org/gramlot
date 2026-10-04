@@ -33,8 +33,8 @@
 - **3.2** No app-local DOM construction/manipulation, manual event wiring, input
   scraping, ad hoc fetch or parallel UI/state. Report missing capabilities and stop
   affected work pending explicit owner confirmation. An application assignment does
-  not authorize framework implementation. See 11.44 for the bounded provisional
-  runner exception using ordinary HTML IDs.
+  not authorize framework implementation. 11.44 provided the bounded provisional
+  runner exception using ordinary HTML IDs; the runner left the core with 11.56.
 - **3.3** Show Python first. Small local JS expressions are allowed; do not hide apps
   in large JS strings/support files.
 
@@ -468,6 +468,8 @@ remains unchanged. This does not authorize bulk ports of unapproved PoC behavior
 
 ### Amendment 11.22 — Core examples, runner and shared theme — 2026-09-24
 
+**Superseded in part by 11.56:** the example pages, their READMEs and the gallery (heir of the runner) live in `gramlot-examples`; the core keeps theme and logo.
+
 Owner authorizes a local, usable HTML/SVG teaching suite in core: twelve paired
 Python/JavaScript pages under `examples/html_svg`, each with its own README,
 progressing from Hello World to methods and loops. Python remains the first
@@ -617,6 +619,8 @@ the actual evidence without claiming universal browser compatibility.
 
 ### Amendment 11.31 — Shared teaching sources and downstream integrations — 2026-09-24
 
+**Superseded in part by 11.56:** the example pages, their READMEs and the gallery (heir of the runner) live in `gramlot-examples`; the core keeps theme and logo.
+
 The owner confirms Gramlot as the single source of framework documentation,
 teaching pages, example READMEs, runner, logo and theme. Integration repositories
 consume this material through their Gramlot dependency and own only their
@@ -684,6 +688,8 @@ and waiting requirement in GC-070-150/155; no global protection disablement.
 
 
 ### Amendment 11.37 — Standalone example download ownership — 2026-09-24
+
+**Superseded in part by 11.56:** the example pages, their READMEs and the gallery (heir of the runner) live in `gramlot-examples`; the core keeps theme and logo.
 
 **Superseded in part by 11.48:** `gramlot-minimal` is retired; the exporter and the
 generated distribution belong to its heir `gramlot-serverless`.
@@ -783,6 +789,8 @@ against explicit owner confirmation, not agent-written amendments alone. No runt
 change, release or publication is authorized by this rule.
 
 ### Amendment 11.44 — Remove runner-specific behavior from core — 2026-09-24
+
+**Superseded in part by 11.56:** the example pages, their READMEs and the gallery (heir of the runner) live in `gramlot-examples`; the core keeps theme and logo.
 
 Owner explicitly directs removal of the core changes introduced for the current
 runner, retaining their implementation inside the provisional runner where possible.
@@ -1310,3 +1318,34 @@ Explicit supersession (text kept as history): 11.48 item 3 (`foo_aux.js` as the 
 Rules: [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
 [GC-095 §060](public/095-writing-pages.md#gc-095-060),
 [GC-095 §095](public/095-writing-pages.md#gc-095-095). Record: GC-070 §670.
+
+### Amendment 11.56 — The examples and their runner leave the core — 2026-10-04
+
+Owner: "tutti gli esempi vanno messi nel repo esempi e collegati opportunamente"
+(2026-10-02); gallery model of 2026-10-02 (no runner, a gallery command per environment,
+gramlot-examples on PyPI and npm: "si mi garba"). 2026-10-04, phase by phase ("vai"):
+workflow renamed `Core tests`; `file:` branch of the live checks removed; the four Worker
+checks of `verify_worker_host_browser.mjs` move to `verify_export_browser.mjs` of
+`@gramlot/gramlot-serverless` instead of opening an issue.
+
+1. Placement: example pages (`html_svg`, `binding`, `controllers`), READMEs, gallery page
+   and catalogue in `gramlot-examples`; each environment serves them with its gallery
+   command (gramlot-py-server, gramlot-js-server, `@gramlot/gramlot-serverless`). Core
+   keeps the `gramlot-base` theme and logo in its packages (11.52).
+2. Dependencies one way: core ← gramlot-examples ← environments; the core depends on
+   neither gramlot-examples nor any adapter, also in CI and tests.
+3. Core tests on own fixtures: GC-210 §065 story on
+   `js/tests/fixtures/qualification/09_end_to_end`; browser checks of examples 10 and 13
+   on `js/tests/fixtures/live/` through the Python and JS FileHost
+   (`scripts/fixture_hosts.mjs`).
+4. Packages: from the next release the core JSR package no longer includes
+   `examples/html_svg/**`; releases up to 0.2.5 unchanged.
+
+Explicit supersession (text kept as history): 11.22 (`examples/`, `examples/00-runner`);
+11.31 and 11.37 (Gramlot as sole source of example pages, runner, READMEs; it remains the
+source of framework documentation, logo and theme); 11.44 (provisional runner and its
+bounded exception, section 3); 11.54 item 4 (checks "on the runner"); 11.55 item 5
+(core `examples/` to the module form, now in gramlot-examples).
+
+Rules: [GC-025 §020](public/025-try.md#gc-025-020),
+[GC-090 §010](public/090-classes-and-hosts.md#gc-090-010). Record: GC-070 §680.

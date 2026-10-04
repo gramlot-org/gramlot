@@ -1,10 +1,12 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-03**.
+Document ID: **GC-070**. Updated: **2026-10-04**.
 
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
-**Release 0.2.5 (in preparation):** one page module with `Page` and `Logic`, the import map of the bootstrap, and `gramlot.inout`. See [§670](#gc-070-670). Released before: 0.2.2 ([§655](#gc-070-655)), 0.2.3 ([§660](#gc-070-660)), 0.2.4 ([§665](#gc-070-665)).
+**Release 0.2.5 (published 2026-10-03):** one page module with `Page` and `Logic`, the import map of the bootstrap, and `gramlot.inout`. See [§670](#gc-070-670). Released before: 0.2.2 ([§655](#gc-070-655)), 0.2.3 ([§660](#gc-070-660)), 0.2.4 ([§665](#gc-070-665)).
+
+**Examples out of the core (branch `chore/examples-out`, not merged yet):** `examples/` and the runner are removed; the core tests itself on its own fixtures; constitution amendment 11.56. See [§680](#gc-070-680).
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
@@ -3243,3 +3245,51 @@ JavaScript pages (owner correction). Constitution amendment 11.55.
 module form with a server needs their `.js` rule (briefs 3 and 4). gramlot-examples
 passes to the module form in brief 2. The XML date text waits for
 genro-org/genro-bag-js#10.
+
+<a id="gc-070-680"></a>
+## 680 · The examples and their runner leave the core — 2026-10-04
+
+Block ID: **GC-070-680**.
+
+Owner: "tutti gli esempi vanno messi nel repo esempi e collegati opportunamente"
+(2026-10-02) and the gallery model of 2026-10-02. On 2026-10-04 the owner approved a
+six-phase plan and each phase ("vai"); decisions taken on the way: the workflow is
+renamed `Core tests`; the trigger of the absent branch `codex/core-runner-ci` goes; the
+`file:` branch of the live checks goes (the static export belongs to serverless); the
+four Worker checks of `verify_worker_host_browser.mjs` that serverless lacked move to
+its `verify_export_browser.mjs` instead of opening an issue. Constitution amendment 11.56.
+
+- Core `chore/examples-out` (from develop `78ea747`): `eb96c6b` the qualification story
+  (GC-210 §065) runs on `js/tests/fixtures/qualification/09_end_to_end` and imports
+  `PageBootstrap` and `FileHost` from `js/src`; the page module resolves
+  `@gramlot/gramlot/page` by package self-reference. `866ef3f` `verify_live_cards.mjs`
+  and `verify_live_playground.mjs` start the Python and JavaScript FileHost of the core
+  on `js/tests/fixtures/live/` (`scripts/fixture_hosts.mjs`); CI no longer starts
+  `serve.py` nor installs gramlot-uvicorn. `072a818` CI `Core tests` without checkouts of
+  gramlot-js-server and gramlot-uvicorn and without the runner steps. `fe02793` removes
+  `examples/` (138 files), `verify_examples_browser.mjs`, `verify_jsr_examples.mjs`,
+  `verify_standalone_runner.mjs`, `verify_worker_host_browser.mjs` and its fixture
+  `js/tests/fixtures/worker`; `jsr.json` no longer includes `examples/html_svg/**`,
+  `codecov.yml` no longer ignores `examples/**`. `e00f211` README, CONTRIBUTING, GC-025,
+  GC-030, GC-055, GC-090 and GC-095 point at gramlot-examples and the gallery commands.
+  This record, amendment 11.56, AGENTS.md, `docs/01-overview.md`, GC-085, GC-140, GC-145, GC-150 and
+  the indexes.
+- gramlot-js-server `test/worker-export-checks` (from develop `683a4b9`): `4855370`
+  `serverless/scripts/verify_export_browser.mjs` also checks a live attribute, `clear()`
+  of the remote Source target, the state `disposed` and the rejection of
+  `transport.main` after dispose.
+- Verified on 2026-10-04 in the worktree, without `examples/node_modules`: Python 83 OK,
+  JavaScript 475/475 (with c8); in Chromium 153 `verify_binding_browser.mjs`,
+  `verify_page_module_browser.mjs`, `verify_inout_browser.mjs`, `verify_live_cards.mjs`
+  and `verify_live_playground.mjs` (Python and JavaScript hosts) PASS; Sphinx `-W` and
+  `check_public_docs.py` PASS. gramlot-js-server: `verify_export_browser.mjs` PASS in
+  Chromium 153 and WebKit 26.6 on `hello-world` and `source-live`; serverless 32/32.
+  `deno` was not available: the JSR dry run was not executed.
+- Coverage moved downstream: the example pages, the gallery and e10/e13 against the
+  published core in gramlot-examples (`examples.test.js`, `gallery.test.js`,
+  `verify_pages_browser.mjs`, `verify_e10_e13_browser.mjs`); the static export in
+  gramlot-js-server (`verify_export_browser.mjs`, `verify_gallery_browser.mjs`).
+
+**Open:** push, pull requests and merge of the two branches (coordinating chat); the
+CI of `chore/examples-out` on GitHub; the JSR package without `examples/html_svg` from
+the next release.

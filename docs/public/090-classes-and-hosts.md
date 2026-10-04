@@ -52,8 +52,8 @@ assets and documentation; it is not an application source directory.
 and controllers, named logic, inline code), `js/src/bootstrap.js`,
 `js/src/adapters/resources.js`, `src/gramlot/server/resources.py`, the Python
 renderers in `src/gramlot/renderer/` and the data-element grammar
-`src/gramlot/collections/binding.json`. `examples/` holds three families: `html_svg`,
-`binding` and `controllers`, with a local runner in `examples/00-runner/`.
+`src/gramlot/collections/binding.json`. The example families `html_svg`, `binding`
+and `controllers` and their gallery are the separate package `gramlot-examples`.
 
 <a id="gc-090-015"></a>
 
@@ -222,7 +222,7 @@ import {Page as BasePage, source} from '@gramlot/gramlot/page';
 | Installation | Core name used in imports | Scope |
 | --- | --- | --- |
 | npm (`npm install`) or JSR (`jsr add`) | `@gramlot/gramlot` | Published registry package, from 0.2.1 |
-| Repository examples (`file:../js`) | `@gramlot/gramlot` | The repository's `js/package.json`, same name |
+| Core test fixtures (`js/tests/fixtures`) | `@gramlot/gramlot` | Package self-reference inside `js/`, same name |
 | JSR `@genro/gramlot` 0.1.0–0.2.0 | `@genro/gramlot` | Earlier JSR name, archived |
 | Original GitHub 0.1.0 archives | Follow the archive README and package manifest | Frozen archive delivery, separate from JSR |
 
@@ -232,8 +232,7 @@ The repository's local package name is not automatically provided by that instal
 The names above identify different installation contexts; do not mix them within
 one application's core dependency graph.
 
-The standalone examples below explicitly use the local development installation:
-matching core and standalone packages, as configured by the repository examples.
+The standalone examples below use matching core and standalone packages.
 `@gramlot/gramlot-serverless` owns standalone startup and Worker integration; it replaces
 the retired `gramlot-minimal` (section 025). This boundary is not supplied by
 installing the published JSR 0.1.x package alone; unchanged GitHub archives also
@@ -355,7 +354,7 @@ of the retired `gramlot-minimal`), supplies the Node/npm exporter of the browser
 It bundles the Page without executing it and generates the complete HTML through
 HtmlBuilder; it also exports a static directory with several documents, each
 with its own Worker. Assets must be included by the exporter and served at their
-declared paths. The runner directory of the examples opens through `file://`:
+declared paths. The exported gallery directory opens through `file://`:
 relative classic scripts start Blob Workers, and an explicit export root resolves
 local stylesheets. The repository of each integration documents its commands.
 Its dependencies are `@gramlot/gramlot >=0.2.1` and `@genrojs/builders

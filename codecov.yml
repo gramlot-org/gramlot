@@ -26,7 +26,6 @@ ignore:
   - "src/gramlot/resources/**"
   - "js/tests/**"
   - "tests/**"
-  - "examples/**"
 
 comment:
   layout: "flags, files"

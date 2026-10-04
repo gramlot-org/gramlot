@@ -44,5 +44,5 @@ mirrors are excluded from the public Sphinx manual.
 
 [Python/JavaScript Builder differences](internal/105-builder-python-js-differences.md): explicit exceptions, open gaps and corrected differences.
 
-- [GC-145 · HTML/SVG examples, base theme and runner](internal/145-html-svg-examples.md)
-- [GC-150 · Base theme and HTML/SVG example guide](internal/150-example-guide.md)
+- [GC-145 · HTML/SVG examples, base theme and runner](internal/145-html-svg-examples.md) (historical; the examples live in gramlot-examples, constitution 11.56)
+- [GC-150 · Base theme and HTML/SVG example guide](internal/150-example-guide.md) (historical, constitution 11.56)

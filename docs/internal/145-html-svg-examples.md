@@ -1,6 +1,8 @@
 # 145 · HTML/SVG examples, base theme and runner
 
-Document ID: **GC-145**. Updated: **2026-09-24**.
+Document ID: **GC-145**. Updated: **2026-10-04**.
+
+> **Status (2026-10-04, constitution 11.56):** historical record. The examples, their READMEs and the gallery that replaces the runner live in `gramlot-examples` (GE-010); the core has no `examples/`. Paths `examples/...` below name the former core layout.
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 

@@ -1,6 +1,6 @@
 # 140 · Agreed integrations and examples
 
-Document ID: **GC-140**. Updated: **2026-09-30**.
+Document ID: **GC-140**. Updated: **2026-10-04**.
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
@@ -30,7 +30,8 @@ repo. Python pages require Python hosting; Worker runs JS. Database work is sepa
 <a id="gc-140-010"></a>
 ## 010 · Agreed reference example
 
-[Hello World](../../../gramlot-examples/apps/hello-world/README.md) is the agreed
+*Update 2026-10-04:* `apps/hello-world` was removed from `gramlot-examples`; its launchers are the quick starts of `gramlot-py-server` and `gramlot-js-server`.
+Hello World is the agreed
 reference application in `gramlot-examples`, with equivalent Python/JS pages and
 real typed Source. One application has eight execution profiles:
 
@@ -80,6 +81,11 @@ smoke application above is unchanged. Implementation and verification status are
 tracked in [GC-145](145-html-svg-examples.md) and [GC-070](070-work-status.md#gc-070-045).
 PoC transfers are set aside; no new release or publication is authorized.
 
+*Update 2026-10-04 (constitution 11.56):* the three families, their READMEs and the
+gallery page that replaces the runner live in `gramlot-examples`
+(`src/gramlot_examples/pages`, `src/gramlot_examples/gallery`); the core has no
+`examples/`. The theme and the logo stay in the core.
+
 
 <a id="gc-140-040"></a>
 
@@ -92,3 +98,9 @@ restarting or regenerating exports propagates changes; copied teaching suites
 are not maintained downstream. This supersedes any broader reading of the older
 smoke-application ownership notes. Uniform packaging and launch rollout remains
 pending. See [GC-025 §020](../public/025-try.md#gc-025-020).
+
+*Update 2026-10-04 (constitution 11.56):* `gramlot-examples` is the single source of
+teaching pages, READMEs, gallery page and catalogue; Gramlot remains the source of
+framework documentation, logo and theme. Each environment serves the gallery with
+its own gallery command. Dependencies run one way: core ← gramlot-examples ←
+environments.
