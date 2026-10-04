@@ -21,7 +21,6 @@
       "js/dist/**",
       "js/package.json",
       "themes/**",
-      "examples/html_svg/**",
       "assets/branding/gramlot-logo.svg",
       "assets/branding/gramlot-logo-dark.svg",
       "assets/branding/gramlot-mark.png",

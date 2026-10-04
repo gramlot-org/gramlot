@@ -1,12 +1,15 @@
-/** Hosted live Source example: mutations, animation and timer ownership. */
+/** Live Source on the fixture page 13_live_source, through the Python and the JavaScript FileHost of the
+ * core: mutations, animation and timer ownership. node scripts/verify_live_playground.mjs PLAYWRIGHT_ENTRY [CHROMIUM]. */
 import assert from 'node:assert/strict';
-import {pathToFileURL} from 'node:url';
-const [playwright, executablePath, base] = process.argv.slice(2);
+import {fileURLToPath, pathToFileURL} from 'node:url';
+import {startHosts} from './fixture_hosts.mjs';
+const [playwright, executablePath] = process.argv.slice(2);
 const {chromium} = await import(pathToFileURL(playwright));
+const hosts = await startHosts(fileURLToPath(new URL('../js/tests/fixtures/live/', import.meta.url)));
 const browser = await chromium.launch({headless: true, executablePath});
 try {
-    for (const language of (base.startsWith('file:') ? ['offline'] : ['py', 'js'])) {
-        const page = await browser.newPage({offline: language === 'offline'});
+    for (const [language, host] of hosts) {
+        const page = await browser.newPage();
         const errors = [];
         page.on('pageerror', e => errors.push(e.message));
         await page.addInitScript(() => {
@@ -15,7 +18,7 @@ try {
             window.setInterval = (...args) => { const id = start(...args); window.activeTimers.add(id); return id; };
             window.clearInterval = id => { window.activeTimers.delete(id); stop(id); };
         });
-        await page.goto(language === 'offline' ? `${base}/e13/index.html` : `${base}/${language}/e13`);
+        await page.goto(`${host.url}/13_live_source`);
         await page.waitForFunction(() => window.gramlot?.state === 'started');
         const list = page.locator('.live-items li');
         assert.equal(await list.count(), 2);
@@ -49,4 +52,7 @@ try {
         console.log(`PASS ${language}: insert/delete/clear/text/SVG, animation and section/page timer cleanup`);
         await page.close();
     }
-} finally { await browser.close(); }
+} finally {
+    await browser.close();
+    for (const [, host] of hosts) host.close();
+}

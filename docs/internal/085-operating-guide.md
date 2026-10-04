@@ -1,6 +1,6 @@
 # 085 · Repository operating guide
 
-Document ID: **GC-085**. Updated: **2026-09-24**.
+Document ID: **GC-085**. Updated: **2026-10-04**.
 Status: **current development guide; clean core setup verified**.
 
 [Concise counterpart](../../docs_llm/internal/085-operating-guide.md).
@@ -39,7 +39,6 @@ js/src/
   transport.js           Browser HTTP main/remote transport
   adapters/              Shared Host/Page and filesystem FileHost
   gramlot.js             Browser application lifecycle
-examples/00-runner/       Provisional runner UI and launch/export configuration
 tests/, js/tests/         Core contract tests and fixtures
 ports/                   Bounded historical and current port records
 scripts/                 Build/documentation/browser verification helpers
@@ -64,9 +63,9 @@ Minimal owns WorkerHost, WorkerTransport and standalone mount, including CSS,
 export asset paths and startup ordering (11.46). It consumes the existing neutral
 Host through the browser-safe core `/host` export. The matching development core
 and Minimal packages are required; frozen artifacts do not acquire these changes.
-The provisional runner owns tabs, splitter, Markdown/highlighting and frame themes
-using ordinary HTML IDs and existing Source/Bag APIs (11.44). General applications
-do not inherit that bounded exception. Future web components are not implemented
+The provisional runner and its bounded exception (11.44) left the core with 11.56;
+the gallery page that replaces it lives in `gramlot-examples`. General applications
+never inherited that exception. Future web components are not implemented
 or approved by this transfer. Builder/Bag source and installed copies remain
 read-only unless the owner explicitly authorizes a bounded dependency change.
 
@@ -109,10 +108,9 @@ recorded in [GC-070 §320](070-work-status.md#gc-070-320); this note makes the
 working-environment distinction explicit in the operating guide as well.
 
 A pre-existing venv or node_modules directory does not establish clean installation.
-Use a separate checkout copy/environment when verifying reproducibility. Setup of
-the runner and adapter dependencies is separate: follow the
-[runner guide](../../examples/00-runner/README.md), including its `--install-links`
-installation so examples and adapters share one core identity.
+Use a separate checkout copy/environment when verifying reproducibility. The core
+needs no example or adapter dependency (11.56): the example pages and the gallery
+are tested in `gramlot-examples`, the adapters in their own repositories.
 
 For package-boundary work, build resources before packaging:
 
@@ -149,7 +147,7 @@ pytest discovery over temporary working files as a clean-checkout result.
 The fresh check passed Python 18/18, JS 76/76 and build. Counts are dated evidence,
 not permanent gates. Bun can be checked separately with
 `GRAMLOT_TEST_PYTHON="$PWD/.venv/bin/python" bun test js/tests/*.test.js`; Bun was
-not rerun in the isolated check. Browser, runner and adapter verification remain
+not rerun in the isolated check. Browser and adapter verification remain
 separate; see [GC-070 §270](070-work-status.md#gc-070-270) for their last recorded scope.
 
 Distinguish implementation, verification and acceptance. Local test success does
@@ -175,15 +173,9 @@ a reason to regenerate owning-library sources. Any regeneration needs its own
 confirmed scope; there is no independently maintained tag list.
 
 
-Before preparing a JSR release, run from the repository root:
-
-```sh
-deno run --config jsr.json --allow-read scripts/verify_jsr_examples.mjs
-```
-
-This checks all thirteen example imports, shared Page identity, typed Source and
-Host cleanup through the publishing import map. After publication, verify the
-actual downloaded registry payload without that local map. The current develop
+The JSR package no longer contains example pages (11.56), so the former
+`scripts/verify_jsr_examples.mjs` check is removed. After publication, verify the
+actual downloaded registry payload. The current develop
 checkout preserves unfinished 0.2.0 binding work; its aligned 0.1.2 metadata is a
 maintenance baseline, not permission to publish this mixed development state.
 Use the identified release source and explicit owner approval for publication.

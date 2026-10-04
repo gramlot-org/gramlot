@@ -1,12 +1,16 @@
-/** Verify Source-driven card removal in hosted and offline pages. */
+/** Verify Source-driven card removal on the fixture page 10_cards_with_icons, through the Python and the
+ * JavaScript FileHost of the core: node scripts/verify_live_cards.mjs PLAYWRIGHT_ENTRY [CHROMIUM]. */
 import assert from 'node:assert/strict';
-import {pathToFileURL} from 'node:url';
-const [playwright, executablePath, ...urls] = process.argv.slice(2);
+import {fileURLToPath, pathToFileURL} from 'node:url';
+import {startHosts} from './fixture_hosts.mjs';
+const [playwright, executablePath] = process.argv.slice(2);
 const {chromium} = await import(pathToFileURL(playwright));
+const hosts = await startHosts(fileURLToPath(new URL('../js/tests/fixtures/live/', import.meta.url)));
 const browser = await chromium.launch({headless: true, executablePath});
 try {
-    for (const url of urls) {
-        const context = await browser.newContext({offline: url.startsWith('file:')});
+    for (const [language, host] of hosts) {
+        const url = `${host.url}/10_cards_with_icons`;
+        const context = await browser.newContext();
         const page = await context.newPage();
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
@@ -38,7 +42,10 @@ try {
         await page.waitForFunction(() => window.gramlot?.state === 'started');
         assert.equal(await page.locator('.icon-cards article').count(), 3);
         assert.deepEqual(errors, []);
-        console.log(`PASS: ${url} — Source removal, DOM cleanup, sibling identity, keyboard and reload`);
+        console.log(`PASS ${language}: ${url} — Source removal, DOM cleanup, sibling identity, keyboard and reload`);
         await context.close();
     }
-} finally { await browser.close(); }
+} finally {
+    await browser.close();
+    for (const [, host] of hosts) host.close();
+}

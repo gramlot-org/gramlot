@@ -1,8 +1,8 @@
-name: Core and runner tests
+name: Core tests
 
 on:
   push:
-    branches: [main, develop, 'codex/core-runner-ci']
+    branches: [main, develop]
   pull_request:
   workflow_dispatch:
   workflow_call:
@@ -24,20 +24,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: gramlot
-      - name: Check out the JS Server example dependency (server and serverless packages)
-        uses: actions/checkout@v4
-        with:
-          repository: gramlot-org/gramlot-js-server
-          ref: main
-          path: gramlot-js-server
-          persist-credentials: false
-      - name: Check out the Python Uvicorn integration used by the runner
-        uses: actions/checkout@v4
-        with:
-          repository: gramlot-org/gramlot-uvicorn
-          ref: main
-          path: gramlot-uvicorn
-          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -54,8 +40,6 @@ jobs:
         run: python -c 'import os, sys; open(os.environ["GITHUB_ENV"], "a").write("GRAMLOT_TEST_PYTHON=" + sys.executable + "\n")'
       - name: Test Python
         run: python -m unittest discover -s tests
-      - name: Install runner dependencies
-        run: npm --prefix examples install --ignore-scripts --install-links --package-lock=false
       - name: Python coverage on the source tree
         run: |
           python -m pip install coverage
@@ -63,8 +47,6 @@ jobs:
           python -m coverage xml -o coverage-python.xml
       - name: Test JavaScript including quiet-write and symbolic-attribute contracts, with coverage of every js/src file
         run: js/node_modules/.bin/c8 --all --src js/src --include 'js/src/**' --reporter=lcov --reporter=text-summary --report-dir coverage-js npm --prefix js test
-      - name: Test runner
-        run: npm --prefix examples test
       - name: Install Playwright Chromium for the browser checks
         run: |
           npm install --prefix "$RUNNER_TEMP/playwright" --no-fund --no-audit playwright
@@ -78,17 +60,10 @@ jobs:
         run: node scripts/verify_page_module_browser.mjs python "$PLAYWRIGHT_ENTRY" chromium
       - name: Browser check of gramlot.inout in Chromium
         run: node scripts/verify_inout_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
-      - name: Install the Python Uvicorn integration for the runner
-        run: python -m pip install '../gramlot-uvicorn[uvicorn]'
-      - name: Browser checks of the live Source examples 10 and 13 through the runner, Python and JavaScript
+      - name: Browser checks of the live Source pages 10 and 13 on the Python and JavaScript FileHost in Chromium
         run: |
-          PORT=8090 python examples/00-runner/serve.py > "$RUNNER_TEMP/runner.log" 2>&1 &
-          for attempt in $(seq 1 90); do curl -fs -o /dev/null http://127.0.0.1:8090/py/index && break; sleep 1; done
-          node scripts/verify_live_cards.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM" http://127.0.0.1:8090/py/e10 http://127.0.0.1:8090/js/e10
-          node scripts/verify_live_playground.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM" http://127.0.0.1:8090
-      - name: Runner log
-        if: ${{ failure() }}
-        run: cat "$RUNNER_TEMP/runner.log"
+          node scripts/verify_live_cards.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"
+          node scripts/verify_live_playground.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"
       - name: Upload JavaScript coverage
         if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5

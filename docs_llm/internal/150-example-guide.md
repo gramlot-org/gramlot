@@ -1,6 +1,8 @@
 # 150 · Base theme and HTML/SVG example guide
 
-Document ID: **GC-150**. Updated: **2026-09-24**.
+Document ID: **GC-150**. Updated: **2026-10-04**.
+
+> **Status (2026-10-04, constitution 11.56):** historical record. The examples, their READMEs and the gallery that replaces the runner live in `gramlot-examples` (GE-010); the core has no `examples/`. Paths `examples/...` below name the former core layout.
 
 [Expanded counterpart](../../docs/internal/150-example-guide.md).
 
@@ -11,7 +13,7 @@ and handles Source lifetime. Future web components remain separately scoped.
 <a id="gc-150-005"></a>
 ## 005 · Start with the runner
 
-Follow the [runner setup](../../examples/00-runner/README.md). The local launcher
+Follow the runner setup (`examples/00-runner/README.md`, removed). The local launcher
 composes the `gramlot-uvicorn` and `gramlot-js-server` adapters outside the runtime package. Select a title to open/reactivate an example tab with explanation above its split preview and highlighted source.
 The integration selects the language. Runner-local behavior keeps open frames.
 Source/README links open original files. No synchronized example state or Inspector implementation is implied.
@@ -19,7 +21,7 @@ Source/README links open original files. No synchronized example state or Inspec
 <a id="gc-150-010"></a>
 ## 010 · Learn from paired pages
 
-The [thirteen examples](../../examples/html_svg/README.md) are file pages
+The thirteen examples (`examples/html_svg/README.md`, removed) are file pages
 `NN_name.py`, `NN_name.js` and a README `NN_name.md` (same-name `.css` where needed; originally folders with `page.py`, `page.js`, `README.md`). Progress: Hello World, text, lists, semantics, tables, forms,
 disclosure, SVG shapes/composition, cards, report and complete event page. Methods
 and loops compose local data. Example 10 has an approved short onclick action
@@ -27,7 +29,7 @@ calling popNode on the browser Builder's Source to remove a card; the renderer
 updates the DOM. No persistence, server synchronization, direct DOM manipulation,
 fetch, Data binding, controllers or database. Other controls use native interactions;
 submit is disabled.
-The [catalogue](../../examples/00-runner/catalog/catalog.md) classifies actual grammar
+The catalogue (`examples/00-runner/catalog/catalog.md`, removed) classifies actual grammar
 coverage and gaps; a declaration is not evidence of an implemented behavior.
 
 <a id="gc-150-015"></a>

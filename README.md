@@ -7,7 +7,7 @@
   </picture>
 </p>
 
-[![Core and runner tests](https://github.com/gramlot-org/gramlot/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/gramlot-org/gramlot/actions/workflows/tests.yml)
+[![Core tests](https://github.com/gramlot-org/gramlot/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/gramlot-org/gramlot/actions/workflows/tests.yml)
 [![Documentation build](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/gramlot-org/gramlot/actions/workflows/docs.yml)
 [![JavaScript coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=javascript)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=javascript)
 [![Python coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=python)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=python)
@@ -42,8 +42,8 @@ Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/gramlot-s
 (in the `gramlot-js-server` repository).
 Python pages require the Python distribution and a Python server.
 
-The published version is 0.2.1, from the tag `v0.2.1`. Markdown, highlighting and
-DOMPurify belong to the example runner.
+The published version is 0.2.1, from the tag `v0.2.1`. The example pages and their
+gallery are the separate package `gramlot-examples`.
 
 ## Can I use it today?
 
@@ -78,8 +78,9 @@ Source and the Data; Data changes reach the DOM, and native controls write back.
   mount prefix) with `FileHost` as reference; pages keep `Page.css` and same-name
   companions (`foo.css`, `foo_aux.js`).
 
-Examples: [`examples/binding/`](https://github.com/gramlot-org/gramlot/tree/main/examples/binding) and
-[`examples/controllers/`](https://github.com/gramlot-org/gramlot/tree/main/examples/controllers), each page in Python with its
+Examples: the families [`binding`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) and
+[`controllers`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) of
+[gramlot-examples](https://github.com/gramlot-org/gramlot-examples), each page in Python with its
 JavaScript equivalent. [Writing pages](docs/public/095-writing-pages.md) and
 [Classes and server adapters](docs/public/090-classes-and-hosts.md) describe the
 contract, its exclusions and the differences from legacy GenroPy. Components start
@@ -98,8 +99,8 @@ with 0.3.0.
 
 ## Project status
 
-The tests badge reports the `Core and runner tests` workflow on `main` (Python,
-JavaScript and runner suites); the documentation badge reports the documentation
+The tests badge reports the `Core tests` workflow on `main` (Python and
+JavaScript suites and the browser checks in Chromium); the documentation badge reports the documentation
 checks. Coverage is collected by the same workflow and reported on Codecov per
 runtime: JavaScript (every file of `js/src`, including files no test imports) and
 Python (`src/gramlot`), never merged into one figure. See
