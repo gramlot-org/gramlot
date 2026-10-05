@@ -23,8 +23,9 @@ JavaScript, and keeps it bound to the application state in the browser.
   expression. Native controls write back into the Data when the user edits them.
 - **Logic.** `dataFormula` computes a value, `dataController` runs code when the Data
   changes, buttons and `connect_on<event>` react to the user. The code is a method of
-  `class Logic` in the page companion `foo_aux.js`, or an inline expression where the
-  page's Content Security Policy allows it.
+  the `Logic` class exported by the page module `foo.js` (beside `foo.py` for a Python
+  page), or of `class Logic` in `foo_aux.js`, or an inline expression where the page's
+  Content Security Policy allows it.
 - **Host.** The part that opens a page for a browser: it finds the Page, sends the
   bootstrap document, serves the Source and closes the page. An adapter connects a
   Host to a web server, or packages pages without a server.

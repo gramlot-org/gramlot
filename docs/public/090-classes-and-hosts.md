@@ -338,9 +338,9 @@ side: it compiles no code, and it never executes the companion.
 
 - the Worker script holds the Page and the `WorkerHost`; it has no inline
   compiler (`binding/inline.js` is not in its bundle);
-- the page companion `foo_aux.js` is a separate bundle that runs in the window
-  only, reached through a blob URL that replaces its `_aux` URL, with the order of
-  the resources kept;
+- the page logic (the `Logic` export of the page module, else the companion
+  `foo_aux.js`) is a separate bundle that runs in the window only, reached through
+  a blob URL that replaces its URL, with the order of the resources kept;
 - the Content Security Policy is a hash profile: `script-src` holds the sha256 of
   the final script bytes, `'unsafe-eval'` and `blob:`, without `'unsafe-inline'`;
   the export uses the hash where the server hosts use a nonce. A copy of the file

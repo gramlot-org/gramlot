@@ -247,8 +247,9 @@ code and never runs the companion.
 
 Export shape (0.2.0), `@gramlot/gramlot-serverless`: one HTML file. The Worker script holds
 the Page and `WorkerHost`, without the inline compiler (`binding/inline.js` is not in
-its bundle). The companion `foo_aux.js` is a separate bundle that runs in the window
-only, through a blob URL that replaces its `_aux` URL, resource order kept. The CSP is
+its bundle). The page logic (`Logic` export of the page module, else `foo_aux.js`) is a
+separate bundle that runs in the window only, through a blob URL that replaces its URL,
+resource order kept. The CSP is
 a hash profile: `script-src` has the sha256 of the final script bytes, `'unsafe-eval'`
 and `blob:`, no `'unsafe-inline'`; a copy with one added byte is blocked.
 `'unsafe-eval'` lets the window compile the inline code of the Source received from the

@@ -21,7 +21,7 @@ Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 | *0.2.0:* reactive Source realization | Gramlot | `GramlotRenderer` (extends `GramlotHtmlRenderer`, which extends `HtmlRenderer`), `GramlotSvgRenderer` (extends `SvgRenderer`) and `HtmlElement` |
 | Serialization, types and notifications | Bag/TYTX | Their registered-type and subscription contracts |
 | Source grammar and builder association | Generic Builder JS | `SourceBag`, `BuilderBase`, `RendererBase` |
-| *0.2.0:* page behavior | Application | `class Logic` in the companion or a `js_requires` resource |
+| *0.2.0:* page behavior | Application | The `Logic` export of the page module `foo.js`, else `class Logic` in `foo_aux.js`, or a `js_requires` resource |
 
 The class extension points above exist, but their public compatibility is not
 frozen. Keep host technology out of core. Missing shared behavior belongs in its

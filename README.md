@@ -96,14 +96,15 @@ Source and the Data; Data changes reach the DOM, and native controls write back.
   `html_data(...)`;
 - `^`, `=` and `==` pointers, relative, symbolic and `?attr` paths, variable datapaths;
 - `dataFormula`, `dataController` and `remoteSource`, with named logic as the primary
-  path (`class Logic` in the page companion `foo_aux.js`) and inline code only under a
-  permissive Content Security Policy (a clear error under a strict one);
+  path (since 0.2.5 the `Logic` class exported by the page module `foo.js`, beside
+  `foo.py` for a Python page, or `class Logic` in `foo_aux.js`) and inline code only
+  under a permissive Content Security Policy (a clear error under a strict one);
 - native controls bound with `value='^path'`, `live`, checkbox and radio groups,
   `visible`, reactive `style` and `class`, bound SVG attributes, freeze and thaw;
 - buttons with a nested `dataController` and `connect_on<event>`;
 - a minimal Host contract (`resolve_page`, `resolve_resources`, `open_page` with a
   mount prefix) with `FileHost` as reference; pages keep `Page.css` and same-name
-  companions (`foo.css`, `foo_aux.js`).
+  companions (`foo.css`, and `foo.js` or `foo_aux.js` for the logic).
 
 Examples: the families [`binding`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) and
 [`controllers`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) of
