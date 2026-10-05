@@ -3,8 +3,8 @@
 Document ID: **GC-020**.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**, released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
-> (2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). The previous release is **0.1.2**.
+> binding)**, released on 2026-09-30 and is published on PyPI (`gramlot`)
+> and on npm and JSR (`@gramlot/gramlot`); the README states the current release. The previous release is **0.1.2**.
 > Text without a *0.2.0* mark describes behavior that comes from 0.1.2.
 
 <a id="gc-020-005"></a>
@@ -41,20 +41,17 @@ wiring DOM events. Use the current implementation’s guide for executable examp
 A server adapter supplies hosting integration. Choosing a host and choosing a
 database are separate decisions; core does not require a particular server or ORM.
 Bindings, controllers, resolvers and shared controls describe the wider Gramlot
-model; the current increment implements typed Source and live rendering,
-not those higher-level application capabilities.
-
-*0.2.0:* bindings and controllers are part of 0.2.0. Resolvers and shared
+model. *0.2.0:* bindings and controllers are part of 0.2.0. Resolvers and shared
 controls stay outside it; components are planned for 0.3.0.
 
 <a id="gc-020-015"></a>
 
 ## 015 · What is available
 
-This development checkout contains Python and JS
-Page authoring, typed Source, live DOM updates and seven locally verified Host
-profiles. Recipes, reactive Data bindings, controllers, resolvers and shared
-components are not part of this increment. The richer
+The core contains Python and JavaScript Page authoring, typed Source, live DOM
+updates, the minimal Host contract with `FileHost`, and, since 0.2.0, Data bindings
+and controllers. Recipes, resolvers and shared components are not part of it. The
+adapters are in `gramlot-py-server` and `gramlot-js-server`. The richer
 [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) has separate examples and
 tests; its behavior is not a contract for this core. Check each integration's
 documented scope before using it.
@@ -64,4 +61,4 @@ its differences from legacy GenroPy and its exclusions.
 
 Continue with [Try Gramlot](025-try.md).
 
-For the foundation in this checkout, read [Classes and server adapters](090-classes-and-hosts.md) and [Writing pages](095-writing-pages.md). These guides describe the bounded 0.1.0 contract.
+For the core contract, read [Classes and server adapters](090-classes-and-hosts.md) and [Writing pages](095-writing-pages.md).

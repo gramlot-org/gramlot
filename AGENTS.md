@@ -3,6 +3,12 @@
 Before changing this repository, read `docs/00-constitution.md`,
 `docs/01-overview.md` and `ports/README.md`. The constitution is authoritative.
 
+- Owner 2026-10-05, constitution amendment 11.57: the integration repositories are
+  gramlot-py-server and gramlot-js-server; the other adapter repositories are
+  archived. Each repository writes its current release version only in its README
+  and badge. Historical documents keep their dated text under a "Historical record"
+  banner. The resource host for `css_requires`/`js_requires` is genro-kajenn, part
+  of Genro; FileHost and the current adapters have none.
 - Owner 2026-10-04, constitution amendment 11.56 (supersedes the runner placement
   of 11.44): the example pages, their READMEs and the gallery live in
   `gramlot-examples`; the core has no `examples/` and no runner. Dependencies run
@@ -81,7 +87,9 @@ Before changing this repository, read `docs/00-constitution.md`,
 - Follow `docs/005-documentation-policy.md` across Gramlot: three-digit guide
   prefixes initially spaced by five, mirrored paths, repository namespaces and
   shared stable document/block IDs with explicit anchors. Preserve IDs across moves,
-  update links and record legacy migration gaps. Core uses GC, Django GD, FastAPI GF.
+  update links and record legacy migration gaps. Namespaces in use: GC (core), GN and
+  GS (gramlot-js-server), GE (gramlot-examples), GP (gramlot-py-server); GD, GF and GA
+  of the archived adapter repositories are frozen (GC-005 §005).
 - Use the classic Read the Docs theme for all Gramlot documentation sites:
   `sphinx_rtd_theme` with Sphinx, `readthedocs` with MkDocs. Follow constitution §9;
   retain project logos/status notices and the default blue/dark/light appearance.
@@ -95,10 +103,14 @@ No formal Live Object Tree semantics have been approved. Do not infer or invent 
 - Owner 2026-09-17: public gramlot-poc, gramlot-standalone, gramlot-flask and
   gramlot-nodejs are authorized; this supersedes earlier local/private restrictions.
   Source pushes do not authorize package releases or application deployments.
+  History: gramlot-standalone became gramlot-minimal, now archived; gramlot-flask is
+  archived; gramlot-nodejs is gramlot-js-server.
 
 - Owner 2026-09-24, constitution 11.46: standalone WorkerTransport, WorkerHost and
   startup belong to gramlot-minimal. Bounded connected edits there are authorized
-  for this transfer. Owner 2026-09-28: gramlot-minimal is retired; its successors
-  are gramlot-serverless (browser/Worker standalone) and gramlot-uvicorn
-  (Python/ASGI/Uvicorn). Owner 2026-10-01: gramlot-serverless joined
-  gramlot-js-server as the package `@gramlot/gramlot-browser`, renamed `@gramlot/gramlot-serverless` on 2026-10-02 (0.2.2). Core retains shared Host/Page execution, Source and rendering.
+  for this transfer. Owner 2026-09-28: gramlot-minimal is retired (archived). Its
+  successors today: `@gramlot/gramlot-serverless` in gramlot-js-server (browser/Worker
+  standalone; the gramlot-serverless repository joined gramlot-js-server on
+  2026-10-01 and is archived) and the `uvicorn` adapter of gramlot-py-server
+  (Python/ASGI; it replaces the archived gramlot-uvicorn). Core retains shared
+  Host/Page execution, Source and rendering.

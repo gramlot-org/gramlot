@@ -306,7 +306,8 @@ deno run --config jsr.json --allow-read scripts/verify_jsr_examples.mjs
 
 The absolute interpreter matters: default `python3` may not import Gramlot, and
 some interop tests change cwd. The runner requires declared example dependencies;
-follow [its setup guide](../../examples/00-runner/README.md), using `--install-links`
+follow its setup guide (`examples/00-runner/README.md`, removed with amendment
+11.56), using `--install-links`
 and matching local integrations. Do not replace its file dependencies with aliases.
 Deno is optional for ordinary unit tests; this machine previously used the cached
 npm Deno executable when `deno` was not on PATH. The JSR example check verifies

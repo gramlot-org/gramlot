@@ -594,7 +594,8 @@ files. The minimal Host contract, Python and JS:
 `parse_requires(text)`/`parseRequires(text)` and `InvalidResourceName` stay in the
 core (§3.4 of the unified plan, P7/P13), with one explicit Unicode White_Space set
 (U+FEFF excluded) in both languages. The names are interpreted by a Host with a
-resource system (gramlot-kajenn), not by the core.
+resource system (genro-kajenn, part of Genro, the framework that succeeds GenroPy),
+not by the core; the current adapters have none.
 
 The minimal reference `FileHost(pages_dir)`/`new FileHost(pagesDir)` takes the pages
 folder only. Page path `foo`: file page `foo.py`/`foo.js` first, then folder

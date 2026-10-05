@@ -22,7 +22,7 @@ This owner decision supersedes the earlier Material/Furo choices. Future
 documentation sites follow the same rule; application UI themes are separate.
 
 Namespaces in use: **GC** for the Gramlot core; **GN** and **GS** in `gramlot-js-server`
-(the `server` and `browser` packages); **GE** for `gramlot-examples`; **GP** for
+(the `server` and `serverless` packages); **GE** for `gramlot-examples`; **GP** for
 `gramlot-py-server` (owner decision, 2026-10-02). The Python adapter repositories that
 `gramlot-py-server` replaces keep their namespaces frozen and never reused: **GD**
 (`gramlot-django`), **GF** (`gramlot-fastapi`), **GA** (`gramlot-kajenn`) and the **GS**
@@ -49,7 +49,10 @@ Block ID: **GC-005-010**.
 4. Cite the ID plus a link to the intended view. Preserve IDs and anchors when
    moving files or changing display order, even if filename prefixes change.
    Never reuse retired IDs or restart IDs in a subfolder. Update inbound links;
-   stable IDs alone do not redirect old URLs.
+   stable IDs alone do not redirect old URLs. Explicit exception, owner decision of
+   2026-10-05: GC-055, retired on 2026-09-25, is kept by the public guide The Gramlot
+   family (`docs/public/055-family.md`), which received it on 2026-10-01. No other
+   retired ID is reused.
 5. Run the owning repository's documentation checks and verify paired coverage,
    links and anchors. A concise view must never strengthen an implementation claim.
 
@@ -67,17 +70,16 @@ five-step spacing. This extends allocation policy without renumbering older guid
 
 Block ID: **GC-005-015**.
 
-Django has recorded this convention in its local policy; its documented mirror
-coverage remains partial. This core policy has matching paths, IDs and anchors in
+`gramlot-py-server` (GP), `gramlot-js-server` (GN, GS) and `gramlot-examples` (GE)
+apply this convention with paired `docs/` and `docs_llm/` guides. The archived
+Django, FastAPI and Kajenn adapter repositories keep their records and namespaces
+frozen (§005). This core policy has matching paths, IDs and anchors in
 both views. The existing core `00-constitution.md`, `01-overview.md` and
 `02-documentation.md` pairs retain their current paths and references for now;
 their three-digit naming and explicit stable-block migration remains pending.
 Do not silently invalidate existing constitutional references during that migration.
 
-FastAPI must inventory its guides, choose matching human/concise paths and apply
-the `GF` namespace while preserving any existing stable references. Its adoption
-is not verified here. Each repository records actual coverage and outstanding
-migration, adding missing mirrors when existing guides are substantially revised.
+Each repository records actual coverage and outstanding migration, adding missing mirrors when existing guides are substantially revised.
 New architecture and product-contract guides require both views immediately.
 
 <a id="gc-005-020"></a>
@@ -93,10 +95,10 @@ public manual pages. This does not make files in a public repository private.
 
 Core now uses Sphinx with the classic Read the Docs theme. The staging script's
 explicit page and asset allowlists define the site boundary, including search
-and downloadable sources. The public guides GC-020, GC-025, GC-030, GC-090, GC-095 and GC-100 have paired
+and downloadable sources. The public guides GC-020, GC-025, GC-030, GC-055, GC-090, GC-095 and GC-100 have paired
 paths and stable block anchors. Existing legacy migration gaps remain unchanged.
 
-Present Gramlot as one framework: this repository contains the typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the current 0.1.0 implementation or operating plan. Keep
+Present Gramlot as one framework: this repository contains the typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the core implementation or its operating plan. Keep
 implementation and verification claims tied to the repository and revision that
 contain the evidence; transfer tests and guides with reviewed code.
 

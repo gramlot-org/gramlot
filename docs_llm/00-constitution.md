@@ -72,34 +72,24 @@ and database technology; an integration may depend on core, never the reverse.
 
 | Repository | Integration environment |
 | --- | --- |
-| `gramlot-fastapi` | FastAPI |
-| `gramlot-flask` | Flask |
-| `gramlot-kajenn` | Kajenn, the new product name for Genro ASGI |
-| `gramlot-uvicorn` | Python with Uvicorn through the generic ASGI adapter |
-| `gramlot-js-server` | Node.js and Bun (`@gramlot/gramlot-js-server`); JavaScript in a browser Worker without a server, standalone (`@gramlot/gramlot-serverless`, amendments 11.50 and 11.52) |
-| `gramlot-django` | Django |
+| `gramlot-py-server` | Python pages: one PyPI package, `gramlot-py-server`, with five adapters as extras: `uvicorn` (Uvicorn or any ASGI server), `django`, `flask`, `fastapi` and `kajenn` (Kajenn, the new product name for Genro ASGI) |
+| `gramlot-js-server` | JavaScript pages: `@gramlot/gramlot-js-server` (Node.js and Bun), `@gramlot/gramlot-serverless` (JavaScript in a browser Worker without a server, standalone; amendments 11.50 and 11.52) and `@gramlot/create` (new projects) |
 
-`gramlot-minimal` replaced the repository name `gramlot-standalone` (amendment 11.19)
-and was retired on 2026-09-26/28 (amendment 11.48 item 5). Its heirs are
-`gramlot-uvicorn`, which owns the generic Python ASGI adapter, and
-`gramlot-serverless`, which owns the single-HTML exporter, standalone Worker
-integration and startup (amendment 11.46, as reassigned by 11.48); since
-2026-10-01 it is a package in `gramlot-js-server` (amendment 11.50), named
-`@gramlot/gramlot-serverless` since 2026-10-02 (amendment 11.52). Standalone
-remains the browser/Worker profile name. Core retains shared Host/Page execution and
-rendering. `gramlot-kajenn` (formerly `gramlot-genro-asgi`) owns
-Kajenn-specific integration and depends only on Kajenn besides the core (amendment
-11.48 item 5). The Kajenn adapter is not migrated yet: its `pyproject.toml` still
-declares the retired repository; the migration is deferred to after 0.2.0. The
-GitHub repository, local checkout and configured origin were renamed to
-`gramlot-kajenn` on 2026-09-26.
-The upstream Python distribution/import remains `genro-asgi`/`genro_asgi` until
-its owning project actually renames it. Do not invent an upstream package alias.
+`gramlot-examples` holds the example pages, their READMEs and the gallery; each
+integration serves them with its gallery command (amendment 11.56). Standalone remains
+the browser/Worker profile name. Core retains shared Host/Page execution and
+rendering. Kajenn is published on PyPI as `kajenn`; the `kajenn` adapter depends only
+on Kajenn besides the core.
 
-Category membership does not establish release compatibility. The owner has
-authorized bounded Django alignment with the Host contract; its acceptance requires its own tests. Published 0.1.0 archives retain their original names and contents;
-new development uses the reorganized package ownership. No compatibility wrappers,
-registry releases, deployment or new core feature contract are implied.
+The repositories `gramlot-fastapi`, `gramlot-flask`, `gramlot-django`,
+`gramlot-kajenn` (formerly `gramlot-genro-asgi`), `gramlot-uvicorn`,
+`gramlot-serverless` and `gramlot-minimal` (formerly `gramlot-standalone`, retired on
+2026-09-28) are archived (amendment 11.57). Amendments 11.19, 11.46, 11.48, 11.50 and
+11.52 record their history.
+
+Category membership does not establish release compatibility. Published 0.1.0
+archives retain their original names and contents. No compatibility wrappers,
+deployment or new core feature contract are implied.
 
 ## 8. Database adapters
 
@@ -248,8 +238,11 @@ Current reading order (2026-09-22): §13 is the primary-path rule; §14 includes
 `gramlot-minimal` (11.19); `gramlot-minimal` was then retired (11.48 item 5) and its
 heirs are `gramlot-uvicorn` and `gramlot-serverless`; `gramlot-serverless` is now
 `@gramlot/gramlot-serverless` in `gramlot-js-server` (11.50, 11.52). `gramlot-genro-asgi` is now
-`gramlot-kajenn` (repository renamed 2026-09-26). Historical
-names preserve the original decision scope and do not identify additional repos.
+`gramlot-kajenn` (repository renamed 2026-09-26). Since 11.57 the integration
+repositories are `gramlot-py-server` and `gramlot-js-server`; `gramlot-uvicorn`,
+`gramlot-kajenn`, `gramlot-serverless` and the other adapter repositories are
+archived. Historical names preserve the original decision scope and do not identify
+additional repos.
 
 Owner decision, 2026-09-21: subsequent work is restricted to Gramlot. Builder JS
 and Bag JS are dependencies to inspect read-only, not repositories to modify
@@ -432,6 +425,9 @@ method or new class is required. No page-close protocol or grammar policy change
 
 
 ### Amendment 11.19 — Integration repositories — 2026-09-24
+
+**Superseded in part by 11.57:** the integration repositories are `gramlot-py-server` and
+`gramlot-js-server`; the six repositories of this amendment are archived.
 
 **Superseded in part by 11.48:** `gramlot-minimal` is retired; its ASGI/Uvicorn part
 belongs to `gramlot-uvicorn` and its standalone part to `gramlot-serverless`.
@@ -980,6 +976,10 @@ connected-repository migration, push, publication or deployment is authorized he
 
 ### Amendment 11.48 — 0.2.0 scope, minimal Host contract and plan revisions 7–10 — 2026-09-28
 
+**Superseded in part by 11.57:** the resource host of items 1 and 4 is genro-kajenn, part of
+Genro, not `gramlot-kajenn`; the heirs of item 5 are archived (`gramlot-py-server` and
+`@gramlot/gramlot-serverless` hold their adapters).
+
 Owner decisions of 2026-09-26 and 2026-09-28, recorded in the owner-decision register
 kept outside this repository (`analisi-claude/binding-legacy-analisi.md`), and
 transcribed in the unified plan, revisions 7–10. Owner instruction R03 (2026-09-28):
@@ -1349,3 +1349,66 @@ bounded exception, section 3); 11.54 item 4 (checks "on the runner"); 11.55 item
 
 Rules: [GC-025 §020](public/025-try.md#gc-025-020),
 [GC-090 §010](public/090-classes-and-hosts.md#gc-090-010). Record: GC-070 §680.
+
+### Amendment 11.57 — Current integration repositories; release version in the README; historical banners; resource host — 2026-10-05
+
+Owner decisions of 2026-10-05 for the documentation coherence pass (coordinating chat;
+goal: "l'insieme Gramlot deve essere pulito, coerente e senza doc che possano creare
+confusione").
+
+1. Integration repositories: §7 = `gramlot-py-server` (Python; one PyPI package, extras
+   `uvicorn`, `django`, `flask`, `fastapi`, `kajenn`) and `gramlot-js-server` (JavaScript;
+   `@gramlot/gramlot-js-server`, `@gramlot/gramlot-serverless`, `@gramlot/create`);
+   `gramlot-examples` holds examples and gallery (11.56). Archived: `gramlot-fastapi`,
+   `gramlot-flask`, `gramlot-django`, `gramlot-kajenn`, `gramlot-uvicorn`,
+   `gramlot-serverless`, `gramlot-minimal`. Kajenn (ex Genro ASGI) is on PyPI as
+   `kajenn`; its adapter is the `kajenn` extra.
+2. Release version: only in each repository's README and badge; guides state no current
+   patch release.
+3. Historical documents keep their dated text and open with "Historical record (<dates>):
+   describes <what>; not the current state. Current: <pointer>."; only broken links fixed.
+4. Resource host: `css_requires`/`js_requires` need a Host with a resource system;
+   `FileHost` and current adapters have none and raise for any name; the resource system
+   comes with genro-kajenn, part of Genro (GenroPy successor on Kajenn, Gramlot, Asqueel),
+   replacing `gramlot-kajenn` as named host.
+
+Explicit supersession (text kept as history): §7 table and paragraphs as updated by 11.52
+(quoted below); 11.19 (six repositories) and 11.48 item 5 (current heirs of
+`gramlot-minimal`), for current names; 11.48 items 1 and 4, for the resource host name.
+§14 naming clarification updated; dated decisions keep original names.
+
+Superseded §7 text, as updated by 11.52:
+
+> | Repository | Integration environment |
+> | --- | --- |
+> | `gramlot-fastapi` | FastAPI |
+> | `gramlot-flask` | Flask |
+> | `gramlot-kajenn` | Kajenn, the new product name for Genro ASGI |
+> | `gramlot-uvicorn` | Python with Uvicorn through the generic ASGI adapter |
+> | `gramlot-js-server` | Node.js and Bun (`@gramlot/gramlot-js-server`); JavaScript in a browser Worker without a server, standalone (`@gramlot/gramlot-serverless`, amendments 11.50 and 11.52) |
+> | `gramlot-django` | Django |
+>
+> `gramlot-minimal` replaced the repository name `gramlot-standalone` (amendment 11.19)
+> and was retired on 2026-09-26/28 (amendment 11.48 item 5). Its heirs are
+> `gramlot-uvicorn`, which owns the generic Python ASGI adapter, and
+> `gramlot-serverless`, which owns the single-HTML exporter, standalone Worker
+> integration and startup (amendment 11.46, as reassigned by 11.48); since
+> 2026-10-01 it is a package in `gramlot-js-server` (amendment 11.50), named
+> `@gramlot/gramlot-serverless` since 2026-10-02 (amendment 11.52). Standalone
+> remains the browser/Worker profile name. Core retains shared Host/Page execution and
+> rendering. `gramlot-kajenn` (formerly `gramlot-genro-asgi`) owns
+> Kajenn-specific integration and depends only on Kajenn besides the core (amendment
+> 11.48 item 5). The Kajenn adapter is not migrated yet: its `pyproject.toml` still
+> declares the retired repository; the migration is deferred to after 0.2.0. The
+> GitHub repository, local checkout and configured origin were renamed to
+> `gramlot-kajenn` on 2026-09-26.
+> The upstream Python distribution/import remains `genro-asgi`/`genro_asgi` until
+> its owning project actually renames it. Do not invent an upstream package alias.
+>
+> Category membership does not establish release compatibility. The owner has
+> authorized bounded Django alignment with the Host contract; its acceptance requires its own tests. Published 0.1.0 archives retain their original names and contents;
+> new development uses the reorganized package ownership. No compatibility wrappers,
+> registry releases, deployment or new core feature contract are implied.
+
+Rules: [GC-005 §005](005-documentation-policy.md#gc-005-005),
+[GC-090 §030](public/090-classes-and-hosts.md#gc-090-030). Record: GC-070 §690.

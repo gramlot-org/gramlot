@@ -16,7 +16,7 @@ sites use the classic Read the Docs appearance from Genro Bag: blue header, dark
 sidebar, light content, default typography. Use `sphinx_rtd_theme` for Sphinx or
 `readthedocs` for MkDocs; preserve logos/status notices. Supersedes Material/Furo;
 applies to future doc sites, not application UI. Namespaces: core **GC**;
-gramlot-js-server **GN**/**GS** (server/browser); gramlot-examples **GE**;
+gramlot-js-server **GN**/**GS** (server/serverless); gramlot-examples **GE**;
 gramlot-py-server **GP** (owner, 2026-10-02). Frozen, never reused: **GD** Django,
 **GF** FastAPI, **GA** Kajenn, **GS** of gramlot-uvicorn (archive only);
 gramlot-flask has none. Other repos choose distinct ones. Public reference = `main`; new work = `develop` until
@@ -36,7 +36,9 @@ Block ID: **GC-005-010**.
    sections spaced by five; shared logical IDs and explicit lowercase HTML anchors.
 4. Cite ID + view link. Preserve IDs/anchors across moves/reordering, even if
    filename prefixes change. Never reuse retired IDs or restart per folder.
-   Update links; stable IDs do not redirect URLs.
+   Update links; stable IDs do not redirect URLs. Explicit exception (owner,
+   2026-10-05): GC-055, retired 2026-09-25, stays with The Gramlot family
+   (`docs/public/055-family.md`, assigned 2026-10-01); no other retired ID is reused.
 5. Run local docs checks; verify mirrors, links, anchors. Never strengthen claims.
 
 Owner decision, 2026-09-25: version-specific core guides use the hundreds digit
@@ -53,12 +55,12 @@ five-step spacing. This extends allocation policy without renumbering older guid
 
 Block ID: **GC-005-015**.
 
-Django policy exists; mirror coverage remains partial. This core policy is paired
+gramlot-py-server (GP), gramlot-js-server (GN, GS) and gramlot-examples (GE) apply it
+with paired docs/docs_llm; archived Django, FastAPI and Kajenn repos keep records and
+namespaces frozen (§005). This core policy is paired
 with matching IDs/anchors. Core 00-constitution/01-overview/02-documentation retain
 legacy paths/references; three-digit/stable-block migration is pending and must
-preserve constitutional references. FastAPI must inventory guides and adopt GF
-with paired paths while preserving existing references; adoption is unverified.
-Track actual gaps; add missing mirrors on substantial revision. New architecture
+preserve constitutional references. Track actual gaps; add missing mirrors on substantial revision. New architecture
 and product-contract guides require both forms immediately.
 
 <a id="gc-005-020"></a>
@@ -74,10 +76,10 @@ public manual pages. This does not make files in a public repository private.
 
 Core now uses Sphinx with the classic Read the Docs theme. The staging script's
 explicit page and asset allowlists define the site boundary, including search
-and downloadable sources. The public guides GC-020, GC-025, GC-030, GC-090, GC-095 and GC-100 have paired
+and downloadable sources. The public guides GC-020, GC-025, GC-030, GC-055, GC-090, GC-095 and GC-100 have paired
 paths and stable block anchors. Existing legacy migration gaps remain unchanged.
 
-Present Gramlot as one framework: this repository contains the typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the current 0.1.0 implementation or operating plan. Keep
+Present Gramlot as one framework: this repository contains the typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the core implementation or its operating plan. Keep
 implementation and verification claims tied to the repository and revision that
 contain the evidence; transfer tests and guides with reviewed code.
 

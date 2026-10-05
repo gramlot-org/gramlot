@@ -41,3 +41,6 @@ coverage-python.xml
 # Brand kit: generated ZIP and the original raster references (in git history, 234c6d8)
 assets/gramlot-brand-kit.zip
 assets/branding/references/
+
+# Secondary git worktrees
+worktrees/

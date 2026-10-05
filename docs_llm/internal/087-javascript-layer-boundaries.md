@@ -1,5 +1,6 @@
 # 087 · JavaScript layer boundaries
 
+> **Historical record (2026-09-09 – 2026-09-30):** describes the JavaScript layer boundaries of 0.1.2 and of the 0.2.0 plan; not the current state. Current: [GC-090](../public/090-classes-and-hosts.md) and [GC-070](070-work-status.md).
 
 > **Current 0.1.2 ownership:** Gramlot uses generic Builder JS for grammar, SourceBag, `sourceTarget` and static rendering; `GramlotRenderer` extends generic `RendererBase` and owns live DOM behavior. DOM JS is removed from the active dependency path. Sections 005–030 preserve earlier, superseded decisions.
 >
