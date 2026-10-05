@@ -1,12 +1,12 @@
 # Gramlot Base theme
 
-`theme.css` is a standalone application stylesheet. Include it once on a page built with Gramlot Source. It has no JavaScript, server, or database dependency. Example pages and the runner can reference this file by URL; they do not need a copy.
+`theme.css` is a standalone application stylesheet. Include it once on a page built with Gramlot Source. It has no JavaScript, server, or database dependency. Pages, including the example pages of `gramlot-examples`, reference this file by URL; they do not need a copy.
 
 ```html
 <link rel="stylesheet" href="/themes/gramlot-base/theme.css">
 ```
 
-The URL above is illustrative: the host must serve this file at that path. The theme styles semantic HTML, forms, tables, dialogs, details, code, focus states, and a few optional layout classes: `.example-page`, `.stack`, `.grid`, `.card`, `.muted`, and fluid SVG `.example-art`. Secondary button variants are `.button--secondary` and `.button--quiet`; status chips use `.status` with a semantic modifier. SVG icons can use `.gramlot-icon` (fill) or `.gramlot-icon--stroke` (stroke) and inherit `currentColor`. Supply an accessible name or mark decorative icons `aria-hidden="true"` in the application.
+The adapters of `gramlot-py-server` and `gramlot-js-server` serve the themes packaged with the core at `/themes/…`, below the mount prefix, and `@gramlot/gramlot-serverless` copies or inlines them in its export. Another host must serve this file at that path. The theme styles semantic HTML, forms, tables, dialogs, details, code, focus states, and a few optional layout classes: `.example-page`, `.stack`, `.grid`, `.card`, `.muted`, and fluid SVG `.example-art`. Secondary button variants are `.button--secondary` and `.button--quiet`; status chips use `.status` with a semantic modifier. SVG icons can use `.gramlot-icon` (fill) or `.gramlot-icon--stroke` (stroke) and inherit `currentColor`. Supply an accessible name or mark decorative icons `aria-hidden="true"` in the application.
 
 ## Tokens and extension
 
@@ -27,4 +27,4 @@ Modern evergreen browsers are the intended target. Cascade layers, `clamp()`, CS
 
 Syntax highlighting uses `.hljs-*` token classes mapped to the same semantic colors in light and dark mode. Python and JavaScript detection belongs to the runtime; the theme only styles the resulting code spans.
 
-The base text size is 14px with compact headings and spacing. Runner navigation uses the approved navy navigation surface, blue selected item and yellow brand accent; these are the existing palette tokens, not new colors.
+The base text size is 14px with compact headings and spacing. Navigation surfaces use the tokens `--gramlot-navigation` and `--gramlot-navigation-text`, the approved navy surface; a selected item uses the blue and the brand accent the yellow of the existing palette, not new colors.
