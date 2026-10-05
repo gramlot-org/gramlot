@@ -3,6 +3,12 @@
 Before changing this repository, read `docs/00-constitution.md`,
 `docs/01-overview.md` and `ports/README.md`. The constitution is authoritative.
 
+- Owner 2026-10-05, constitution amendment 11.57: the integration repositories are
+  gramlot-py-server and gramlot-js-server; the other adapter repositories are
+  archived. Each repository writes its current release version only in its README
+  and badge. Historical documents keep their dated text under a "Historical record"
+  banner. The resource host for `css_requires`/`js_requires` is genro-kajenn, part
+  of Genro; FileHost and the current adapters have none.
 - Owner 2026-10-04, constitution amendment 11.56 (supersedes the runner placement
   of 11.44): the example pages, their READMEs and the gallery live in
   `gramlot-examples`; the core has no `examples/` and no runner. Dependencies run
