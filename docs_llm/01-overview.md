@@ -2,9 +2,9 @@
 
 [Constitution](00-constitution.md). [Expanded version](../docs/01-overview.md).
 
-> **Release status.** Model overview including **0.2.0 (HTML/SVG data binding)**:
-> implemented on the development branch, in qualification, not released. Latest
-> published release: **0.1.2**, without Data bindings or controllers.
+> **Release status.** Model overview including **0.2.0 (HTML/SVG data binding)**,
+> released 2026-09-30; current release in the README. Previous release **0.1.2**,
+> without Data bindings or controllers.
 
 ## 1. Purpose
 

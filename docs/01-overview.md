@@ -3,9 +3,9 @@
 [Constitution](00-constitution.md). [Concise version](../docs_llm/01-overview.md).
 
 > **Release status.** This overview describes the Gramlot model, including
-> release **0.2.0 (HTML/SVG data binding)**. 0.2.0 is implemented on the
-> development branch and is in qualification; it is not released. The latest
-> published release is **0.1.2**, which has no Data bindings or controllers.
+> release **0.2.0 (HTML/SVG data binding)**, released on 2026-09-30. The README
+> states the current release. The previous release, **0.1.2**, has no Data
+> bindings or controllers.
 
 ## 1. Purpose
 

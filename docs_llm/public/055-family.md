@@ -3,7 +3,7 @@
 Document ID: **GC-055**.
 
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (GitHub `v0.2.0`; current patch **0.2.1**, 2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`).
+> (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README).
 
 <a id="gc-055-005"></a>
 

@@ -3,8 +3,8 @@
 Document ID: **GC-055**.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data binding)**,
-> released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
-> (2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`).
+> released on 2026-09-30, and is published on PyPI (`gramlot`) and on npm and JSR
+> (`@gramlot/gramlot`); the README states the current release.
 
 <a id="gc-055-005"></a>
 

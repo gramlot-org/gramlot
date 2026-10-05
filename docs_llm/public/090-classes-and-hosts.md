@@ -3,7 +3,7 @@
 Document ID: **GC-090**. 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (GitHub `v0.2.0`; current patch **0.2.1**, 2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). Previous release:
+> (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README). Previous release:
 > **0.1.2**. Unmarked text is behavior from 0.1.2; sections 030 and 035 are 0.2.0.
 
 <a id="gc-090-005"></a>
