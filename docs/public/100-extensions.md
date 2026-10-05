@@ -3,8 +3,8 @@
 Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**, released on 2026-09-30 (GitHub release `v0.2.0`); the current patch release is **0.2.1**
-> (2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). The previous release is **0.1.2**.
+> binding)**, released on 2026-09-30 and is published on PyPI (`gramlot`)
+> and on npm and JSR (`@gramlot/gramlot`); the README states the current release. The previous release is **0.1.2**.
 > Text without a *0.2.0* mark describes behavior that comes from 0.1.2.
 
 <a id="gc-100-005"></a>
@@ -21,7 +21,7 @@ Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 | *0.2.0:* reactive Source realization | Gramlot | `GramlotRenderer` (extends `GramlotHtmlRenderer`, which extends `HtmlRenderer`), `GramlotSvgRenderer` (extends `SvgRenderer`) and `HtmlElement` |
 | Serialization, types and notifications | Bag/TYTX | Their registered-type and subscription contracts |
 | Source grammar and builder association | Generic Builder JS | `SourceBag`, `BuilderBase`, `RendererBase` |
-| *0.2.0:* page behavior | Application | `class Logic` in the companion or a `js_requires` resource |
+| *0.2.0:* page behavior | Application | The `Logic` export of the page module `foo.js`, else `class Logic` in `foo_aux.js`, or a `js_requires` resource |
 
 The class extension points above exist, but their public compatibility is not
 frozen. Keep host technology out of core. Missing shared behavior belongs in its

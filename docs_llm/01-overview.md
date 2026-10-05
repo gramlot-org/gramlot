@@ -2,9 +2,9 @@
 
 [Constitution](00-constitution.md). [Expanded version](../docs/01-overview.md).
 
-> **Release status.** Model overview including **0.2.0 (HTML/SVG data binding)**:
-> implemented on the development branch, in qualification, not released. Latest
-> published release: **0.1.2**, without Data bindings or controllers.
+> **Release status.** Model overview including **0.2.0 (HTML/SVG data binding)**,
+> released 2026-09-30; current release in the README. Previous release **0.1.2**,
+> without Data bindings or controllers.
 
 ## 1. Purpose
 
@@ -51,8 +51,8 @@ components require separate approval.
 
 - **5.1** Server adapters handle host integration; DB adapters handle backend/model
   services. These choices are independent.
-- **5.2** Gramlot defines the server contract; FastAPI, Kajenn and Django
-  integration projects document host-specific behavior.
+- **5.2** Gramlot defines the server contract; the guides of `gramlot-py-server`
+  (one per framework) and `gramlot-js-server` document host-specific behavior.
 - **5.3** DB areas: `common` contracts/behavior; `fake` controlled contract checks;
   `genropy` and `sqlalchemy` implementations. SQLite is a SQLAlchemy backend.
 - **5.4** Capabilities: required minimum / common optional / implementation-specific.
@@ -65,24 +65,23 @@ components require separate approval.
 ## 6. Integration repositories
 
 Integration repos provide environment-specific adapters and instructions to install,
-configure and try Gramlot: `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn`,
-`gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun, and the browser/Worker
-standalone exporter), and `gramlot-django`.
-`gramlot-kajenn` was renamed from `gramlot-genro-asgi` on 2026-09-26, on GitHub
-and locally.
-`gramlot-uvicorn` provides Python/ASGI/Uvicorn hosting and `gramlot-serverless`
-provided browser/Worker standalone packaging; they replaced `gramlot-minimal`,
-retired on 2026-09-26. On 2026-10-01 `gramlot-serverless` joined
-`gramlot-js-server` as the package `@gramlot/gramlot-browser`,
-renamed `@gramlot/gramlot-serverless` on 2026-10-02 (0.2.2).
-`gramlot-kajenn` owns only its host-specific integration and depends only on Kajenn
-besides the core (constitution amendment 11.48 item 5). The Kajenn adapter is not
-migrated yet: its `pyproject.toml` still declares the retired repository; the
-migration is deferred to after 0.2.0. Core owns shared runtime contracts. This classification does not
-assert that every integration supports each core release; Django alignment with the Host contract
-is newly authorized and must establish its own verification beyond the original
-0.1.0 matrix. See constitution section 7 for the approved ownership.
+configure and try Gramlot:
+
+- `gramlot-py-server` (PyPI `gramlot-py-server`) serves Python pages with five
+  adapters, one extra each: `uvicorn` (any ASGI server), `django`, `flask`,
+  `fastapi` and `kajenn` (Kajenn, formerly Genro ASGI, on PyPI as `kajenn`);
+- `gramlot-js-server` serves JavaScript pages: `@gramlot/gramlot-js-server`
+  (Node.js and Bun), `@gramlot/gramlot-serverless` (browser/Worker standalone,
+  without a server) and `@gramlot/create` (new projects).
+
+The example pages and their gallery are in `gramlot-examples`; each environment
+serves them with its gallery command. The earlier repositories `gramlot-uvicorn`,
+`gramlot-django`, `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn` (formerly
+`gramlot-genro-asgi`), `gramlot-serverless` and `gramlot-minimal` (retired on
+2026-09-28) are archived. Core owns shared runtime contracts; an integration
+depends on the core, never the reverse. Each integration repository states the
+core release it verifies. See constitution section 7 for the approved ownership.
 
 [GC-140 · Agreed integrations and examples](internal/140-integrations-and-examples.md)
-is the shared inventory of integration environments, the Hello World profiles and
-their verification/publication status. It does not define further PoC transfers.
+records how the integration environments were reorganized up to 0.2.0. It does not
+define further PoC transfers.

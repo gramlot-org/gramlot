@@ -1,12 +1,12 @@
 # 140 · Agreed integrations and examples
 
-Document ID: **GC-140**. Updated: **2026-10-04**.
+Document ID: **GC-140**. Updated: **2026-10-05**.
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
 [Expanded counterpart](../../docs/internal/140-integrations-and-examples.md).
-Agreed inventory, not a new implementation plan. Authority: constitution §7 and
-11.19–11.21; current evidence: [GC-070 §040](070-work-status.md#gc-070-040).
+Agreed inventory, not a new implementation plan. Authority: constitution §7 and its
+amendments; current status: [GC-070](070-work-status.md).
 
 <a id="gc-140-005"></a>
 ## 005 · Integration repositories
@@ -14,52 +14,57 @@ Agreed inventory, not a new implementation plan. Authority: constitution §7 and
 Integration repos own environment adapters and installation/configuration/trial
 instructions. Core owns shared Page, Host, Source and browser contracts.
 
-| Agreed name | Environment and responsibility |
+| Repository | Environment and responsibility |
 | --- | --- |
-| `gramlot-fastapi` | Python / FastAPI; integration in the original 0.1.0 delivery. |
-| `gramlot-flask` | Python / Flask; integration in the original 0.1.0 delivery. |
-| `gramlot-kajenn` | Python / Kajenn; depends only on Kajenn besides the core (11.48 item 5). Renamed from `gramlot-genro-asgi` on 2026-09-26. Not migrated yet: its `pyproject.toml` still declares the retired repository replaced by `gramlot-uvicorn` and `gramlot-serverless`. Migration and minimal Host contract deferred to after 0.2.0. |
-| `gramlot-uvicorn` | Python / generic ASGI/Uvicorn; heir of the ASGI part of retired `gramlot-minimal` (11.48 item 5). Verified on the 0.2.0 minimal Host contract ([GC-070 §595](070-work-status.md#gc-070-595)). |
-| `gramlot-js-server` | JavaScript / Node.js and Bun (`@gramlot/gramlot-js-server`, original 0.1.0 profiles) and browser Worker single-HTML packaging (`@gramlot/gramlot-serverless`, heir of the standalone part of retired `gramlot-minimal`, in `gramlot-serverless` until 2026-10-01). Both verified on the 0.2.0 minimal Host contract. |
-| `gramlot-django` | Python / Django; local `NativeHtmlPages` views/URLconf. Old Page/ORM code is historical. |
+| `gramlot-py-server` | Python; PyPI package with five adapters, one extra each (`uvicorn` for any ASGI server, `django`, `flask`, `fastapi`, `kajenn`); command `gramlot <environment> new` and `gallery`. |
+| `gramlot-js-server` | JavaScript; npm packages `@gramlot/gramlot-js-server` (Node.js and Bun, command `gramlot`), `@gramlot/gramlot-serverless` (single-HTML/static-folder export, browser Worker, command `gramlot-serverless`), `@gramlot/create` (`npm create @gramlot page` or `site`). |
+| `gramlot-examples` | Example pages, READMEs and gallery (PyPI `gramlot-examples`, npm `@gramlot/gramlot-examples`), served by each environment's gallery command. |
 
-Kajenn names the former Genro ASGI product; upstream distribution/import still
-`genro-asgi` / `genro_asgi`. Standalone names the browser profile, not the intended
-repo. Python pages require Python hosting; Worker runs JS. Database work is separate.
+History: `gramlot-fastapi`, `gramlot-flask`, `gramlot-django`, `gramlot-kajenn`
+(ex `gramlot-genro-asgi`, renamed 2026-09-26) and `gramlot-uvicorn` (ASGI heir of
+`gramlot-minimal`) became `gramlot-py-server` adapters and are archived;
+`gramlot-serverless` (standalone heir) joined `gramlot-js-server` on 2026-10-01 and is
+archived; `gramlot-minimal`, retired 2026-09-28, is archived.
+
+Kajenn is the former Genro ASGI, on PyPI as `kajenn`. Standalone names the browser
+profile, not a repo. Python pages require Python hosting; Worker runs JS. Database
+work is separate.
 
 <a id="gc-140-010"></a>
 ## 010 · Agreed reference example
 
-*Update 2026-10-04:* `apps/hello-world` was removed from `gramlot-examples`; its launchers are the quick starts of `gramlot-py-server` and `gramlot-js-server`.
-Hello World is the agreed
-reference application in `gramlot-examples`, with equivalent Python/JS pages and
-real typed Source. One application has eight execution profiles:
+Historical (until 2026-10-04): Hello World in `gramlot-examples/apps/hello-world`,
+equivalent Python/JS pages with real typed Source, one application with eight
+execution profiles. Removed on 2026-10-04; its launchers are the quick starts of
+`gramlot-py-server` (`gramlot <environment> new`) and `gramlot-js-server`
+(`npm create @gramlot`). Profiles today:
 
-- Python: Uvicorn (`gramlot-uvicorn`), FastAPI, Flask, Kajenn, Django.
+- Python: Uvicorn/ASGI, FastAPI, Flask, Kajenn, Django: extras of `gramlot-py-server`.
 - JavaScript: Node.js and Bun through `@gramlot/gramlot-js-server`; browser Worker through `@gramlot/gramlot-serverless`, both in `gramlot-js-server`.
 
-The separate integration example owns its pages/configuration/tests; core now also
-owns the approved teaching suite (§025). Integration repos own adapters; core owns
-shared runtime. Use the example README for maintained launch commands.
+Teaching suite and gallery in `gramlot-examples` (11.56); theme in core
+`themes/gramlot-base` ([GC-145](145-html-svg-examples.md)). Integration repos own
+adapters and launch commands; core owns shared runtime.
 The retired `gramlot-minimal` had `examples/hello-world` and `examples/source-live` as focused verification
 fixtures (historical, 2026-09-24), not additional feature or application commitments.
 
 <a id="gc-140-015"></a>
 ## 015 · Verification and publication boundary
 
-Original core 0.1.0: seven Chromium profiles, without Django. Later local work:
-Minimal (since retired)/Kajenn ownership alignment and Django protocol/install/browser
-checks; not a complete eight-profile browser-matrix rerun. GC-070 records evidence.
+Original core 0.1.0: seven Chromium profiles, without Django. 0.2.0 qualification:
+acceptance pages on `gramlot-uvicorn`, `gramlot-js-server` and the standalone exporter
+([GC-215](215-qualification-0-2-0.md)). Today each integration repo runs its own CI
+against the released core and documents its verified versions.
 
-Published core 0.1.0 archives remain unchanged. New integration packages/names and
-Django alignment remain local. Checkout directory and GitHub repository names are
-unchanged. Pushes, remote renames and releases await explicit owner authorization;
-no registry publication or deployment.
+Published core 0.1.0 archives remain unchanged. Core on PyPI (`gramlot`), npm and JSR
+(`@gramlot/gramlot`); `gramlot-py-server`, `gramlot-examples` on PyPI; `gramlot-js-server`
+packages and `@gramlot/gramlot-examples` on npm. Each release needs explicit owner
+authorization; no deployment implied.
 
 <a id="gc-140-020"></a>
 ## 020 · What is not yet an agreed example or transfer
 
-Database folders are placeholders. Historical showcase, Microblog, Django ORM,
+Database examples and APIs are not agreed yet. Historical showcase, Microblog, Django ORM,
 site and Rosetta are PoC evidence, not accepted examples. No further PoC
 transfer list has been agreed. Each transfer needs its own destination,
 responsibility, review and acceptance checks; this inventory authorizes none.

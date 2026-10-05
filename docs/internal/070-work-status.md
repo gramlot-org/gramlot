@@ -1,21 +1,23 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-04**.
+Document ID: **GC-070**. Updated: **2026-10-05**.
 
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
-**Release 0.2.5 (published 2026-10-03):** one page module with `Page` and `Logic`, the import map of the bootstrap, and `gramlot.inout`. See [§670](#gc-070-670). Released before: 0.2.2 ([§655](#gc-070-655)), 0.2.3 ([§660](#gc-070-660)), 0.2.4 ([§665](#gc-070-665)).
+**Current checkpoint:** documentation coherence pass and preparation of release 0.2.7 (2026-10-05). See [§690](#gc-070-690).
 
-**Examples out of the core (branch `chore/examples-out`, not merged yet):** `examples/` and the runner are removed; the core tests itself on its own fixtures; constitution amendment 11.56. See [§680](#gc-070-680).
+**Release 0.2.6 (published 2026-10-04):** type declarations of the JavaScript package; the examples and the runner out of the core. See [§685](#gc-070-685). Released before: 0.2.5 (2026-10-03, page module and `gramlot.inout`, [§670](#gc-070-670)), 0.2.4 ([§665](#gc-070-665)), 0.2.3 ([§660](#gc-070-660)), 0.2.2 ([§655](#gc-070-655)).
+
+**Examples out of the core (merged 2026-10-04, released in 0.2.6):** `examples/` and the runner are removed; the core tests itself on its own fixtures; constitution amendment 11.56. See [§680](#gc-070-680).
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
 
-**Current checkpoint:** S16: qualification complete (Firefox by the owner, waivers R22, R24, L1); report [GC-215](215-qualification-0-2-0.md), see [§615](#gc-070-615). Earlier: S15bis: corrections from the review before qualification, see [§610](#gc-070-610); S15: documentation and leftovers delivered in GC-095, GC-090 and the internal documents, see [§605](#gc-070-605); S14: Q3 clear error for inline code under a strict CSP, verified in core and on Chromium and WebKit; gramlot-uvicorn, gramlot-js-server and gramlot-serverless verified from the reports of their delivery chats (2026-09-30), four blocked (deferred by the owner to after 0.2.0). See [§595](#gc-070-595).
+**0.2.0 checkpoint (2026-09-30, historical):** S16: qualification complete (Firefox by the owner, waivers R22, R24, L1); report [GC-215](215-qualification-0-2-0.md), see [§615](#gc-070-615). Earlier: S15bis: corrections from the review before qualification, see [§610](#gc-070-610); S15: documentation and leftovers delivered in GC-095, GC-090 and the internal documents, see [§605](#gc-070-605); S14: Q3 clear error for inline code under a strict CSP, verified in core and on Chromium and WebKit; gramlot-uvicorn, gramlot-js-server and gramlot-serverless verified from the reports of their delivery chats (2026-09-30), four blocked (deferred by the owner to after 0.2.0). See [§595](#gc-070-595).
 **Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 closed by the owner with proof 11 as debt, S02 and S03 start (2026-09-28).
 **Dependency fixes:** forbidden by owner decision, 2026-09-25; missing Builder behavior goes into GramlotBuilderBag/GramlotBuilderBagNode (S01). See [§495](#gc-070-495).
-**Hosted CI:** core and runner workflow published; GitHub passes Python 18/18, JS 76/76 and runner 8/8. See [§400](#gc-070-400).
-**Audit cleanup:** confirmed corrections implemented and locally verified; CI execution on GitHub remains pending. See [§385](#gc-070-385).
+**Hosted CI:** the `Core tests` workflow (Python, JavaScript with coverage, Chromium checks on core fixture pages, no runner) and the `Documentation` workflow pass on `main` (`b9b2feb`, checked 2026-10-05). The earlier core and runner workflow is history ([§400](#gc-070-400)).
+**Audit cleanup:** confirmed corrections implemented and locally verified; they are on `main`, whose hosted CI passes. See [§385](#gc-070-385).
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
 
@@ -44,14 +46,13 @@ recorded in [§195](#gc-070-195). The GitHub archive verification and the JSR re
 are separate evidence; the shared version number does not establish identical
 contents or a source-commit match for JSR.
 
-Current development includes the owner-requested 0.2.0 binding work (constitution
-11.41), with the implementation boundaries clarified by 11.42. A Source-projection
-prerequisite is implemented and tested ([§245](#gc-070-245)); the full binding flow
-is not complete or accepted. The owner-confirmed [GC-210](210-binding-contract.md) supersedes the historical
-GC-165/GC-170 contract-review pause; runtime phases still need individual authorization.
-Runner isolation and the transfer of standalone integration to Minimal are
-implemented and verified separately ([§270](#gc-070-270)); they do not change the
-published artifacts or establish binding acceptance.
+The owner-requested 0.2.0 binding work (constitution 11.41, boundaries 11.42) was
+qualified ([GC-215](215-qualification-0-2-0.md)), accepted by the owner and released
+on 2026-09-30; patch releases followed (see the header of this document). The
+owner-confirmed [GC-210](210-binding-contract.md) superseded the historical
+GC-165/GC-170 contract-review pause. Runner isolation and the transfer of standalone
+integration to Minimal ([§270](#gc-070-270)) are history: the runner left the core
+with amendment 11.56, and Minimal is archived.
 
 <a id="gc-070-010"></a>
 ## 010 · Historical implementation and verification checkpoints
@@ -3293,3 +3294,74 @@ its `verify_export_browser.mjs` instead of opening an issue. Constitution amendm
 **Open:** push, pull requests and merge of the two branches (coordinating chat); the
 CI of `chore/examples-out` on GitHub; the JSR package without `examples/html_svg` from
 the next release.
+
+
+<a id="gc-070-685"></a>
+## 685 · Release 0.2.6 — 2026-10-04
+
+Block ID: **GC-070-685**.
+
+- `64df3fd` (pull request #14): hand-written `.d.ts` declarations for the five entry
+  points of the JavaScript package, module docs, the README example. `20e713b` aligns
+  the Gramlot overrides with the declarations of `@genrojs/builders` 0.4.2. `20a677f`
+  version 0.2.6, dependency floors `@genrojs/bag` 0.10.3, `@genrojs/builders` 0.4.2,
+  `@genrojs/tytx` 0.16.2, release notes v0.2.6.
+- The release carries the removal of the examples and the runner (§680, pull request
+  #12, merged 2026-10-04). The open points of §680 are closed: both branches are
+  merged, `Core tests` and `Documentation` pass on `main` (`b9b2feb`), and the JSR
+  package 0.2.6 has no `examples/` file.
+- Published 2026-10-04: GitHub release v0.2.6 (wheel, sdist, npm package,
+  `SHA256SUMS`), PyPI `gramlot` 0.2.6, npm and JSR `@gramlot/gramlot` 0.2.6 (registries
+  checked 2026-10-05).
+
+<a id="gc-070-690"></a>
+## 690 · Documentation coherence pass — 2026-10-05
+
+Block ID: **GC-070-690**.
+
+Owner goal, 2026-10-05: "l'insieme Gramlot deve essere pulito, coerente e senza doc che
+possano creare confusione". Owner decisions of the same date for this pass:
+
+1. The current release version is written in one place per repository: the README and
+   its badge. The guides no longer state "the current patch release".
+2. Historical documents stay, with a banner at the top that names their dates, what they
+   describe and the current document. Their dated text is not rewritten; only broken
+   links are fixed.
+3. `css_requires`/`js_requires` need a Host with a resource system. `FileHost` and the
+   current adapters have none and raise an error for any name. The resource system comes
+   with genro-kajenn, part of Genro, the framework that succeeds GenroPy (built on
+   Kajenn, Gramlot and Asqueel); it replaces `gramlot-kajenn` as the named resource host.
+4. `gramlot-examples` is public: links to it are allowed.
+
+Branch `docs/coherence` (from develop `18c51aa`):
+
+- `24f3b66` the README carries the current release (0.2.6 at that commit) and its badge;
+  the status lines of the public guides, the overview, the documentation map and the
+  build guide say that 0.2.0 is released.
+- `1a522cf` `gramlot-py-server` and `gramlot-js-server` replace the archived adapter
+  repositories in the README, AGENTS.md, the overview, GC-005, the public guides,
+  GC-140 and GC-085; Python adapter names `Application`, `Pages`, `mount_pages`,
+  `create_application`; serverless floor `@gramlot/gramlot >=0.2.5`; GC-085 records the
+  current JavaScript dependencies.
+- `f4b8327` the page module with `Page` and `Logic` is the primary page logic in the
+  README, GC-055, GC-090 and GC-100; `foo_aux.js` stays the alternative.
+- `51a7402` genro-kajenn as the future resource host in GC-065 and GC-210.
+- `6e66eed` banners on GC-010, GC-045, GC-060, GC-065, GC-086, GC-087 and GC-215; the
+  GC-175 link to the removed runner guide becomes text.
+- `f99d495` `docs/02-documentation.md` counts seven public guides, describes the coverage of `Core tests`
+  and records that GC-055 names The Gramlot family since 2026-10-01; GC-020 states that
+  bindings and controllers are in the core.
+- `4accfb9` the theme README names the adapters that serve `/themes/`; `pyproject.toml`
+  takes the description of `js/package.json`.
+- This record; constitution amendment 11.57 (§7 replaced by the current integration
+  repositories, decisions 1–3 above); release 0.2.7: version in `pyproject.toml`,
+  `js/package.json` and `jsr.json`, release notes v0.2.7, README version and badge.
+
+Verified 2026-10-05 in the worktree: Python 83 OK; JavaScript 475/475 with
+`GRAMLOT_TEST_PYTHON` set; `prepare_docs.py`, Sphinx `-W` and `check_public_docs.py`
+PASS; no broken relative link in `docs/`, `docs_llm/`, README, AGENTS.md and the theme
+README.
+
+**Closed:** GC-055 was assigned again on 2026-10-01 although GC-005 §010 item 4 forbids
+reusing a retired ID. Owner decision of 2026-10-05: The Gramlot family keeps GC-055, as
+an explicit exception recorded in GC-005 §010 item 4 and in `docs/02-documentation.md` §4.

@@ -6,15 +6,14 @@
 
 The public manual helps a developer assess the current Gramlot core and
 distinguish richer experimental examples. It uses Sphinx, MyST Markdown and the
-classic Read the Docs theme. Draft development chapters describe classes,
-server adapters, page authoring and extension gaps. They do not claim a stable release.
-The public guides describe release 0.2.0 (HTML/SVG data binding), in development,
-and state that the latest published release is 0.1.2. Planned 0.2.0 behavior is
-marked in each guide and is not an implementation claim.
+classic Read the Docs theme. Its chapters describe classes, server adapters,
+page authoring and extension gaps. The public guides describe release 0.2.0
+(HTML/SVG data binding), released on 2026-09-30, and mark 0.2.0 behavior in each
+guide. The README is the only place that states the current release version.
 
 `scripts/prepare_docs.py` stages the README as the home page, an explicit
 `PUBLIC_PAGES` allowlist and two logo assets in `build/docs-source/`. Only the
-six guides under `docs/public/` are currently selected. Add a page explicitly
+seven guides under `docs/public/` are currently selected. Add a page explicitly
 when it is suitable for users; merely adding a file under `docs/` does not publish it.
 
 Architecture decisions, constitution, port records, working documents and
@@ -59,14 +58,19 @@ Read the Docs status badge. Repository preparation does not publish a site.
 See the official [Sphinx configuration reference](https://www.sphinx-doc.org/en/master/usage/configuration.html)
 and [Read the Docs configuration reference](https://docs.readthedocs.com/platform/stable/config-file/v2.html).
 
-There is no runtime coverage job yet. Core foundation tests exist; collect JavaScript coverage over first-party runtime sources including
-unimported files, and collect Python coverage separately. Upload separate reports
-and flags; never substitute Python coverage for browser-runtime coverage or import
-PoC percentages into the core badge. See [the public quality guide](public/030-quality.md).
+The `Core tests` workflow collects runtime coverage: JavaScript with `c8 --all`
+over `js/src`, unimported files included, and Python with coverage.py over
+`src/gramlot`. It uploads separate reports to Codecov with the flags `javascript`
+and `python` (`codecov.yml`); the two figures are never merged. Never substitute
+Python coverage for browser-runtime coverage or import PoC percentages into the
+core badge. See [the public quality guide](public/030-quality.md).
 
 ## 4. Retired collaborator guide
 
 GC-055, an earlier Italian explanatory guide with paired HTML exports, was removed
 from the maintained documentation on 2026-09-25 by owner decision. It served to
-explain the project and is superseded by the 0.2.0 documentation. The ID GC-055 is
-retired and is never reused.
+explain the project and is superseded by the 0.2.0 documentation. On 2026-10-01 the
+ID GC-055 was assigned to the public guide The Gramlot family
+(`docs/public/055-family.md`). By owner decision of 2026-10-05 the guide keeps GC-055:
+an explicit exception to the rule that a retired ID is never reused
+([GC-005 §010](005-documentation-policy.md#gc-005-010), item 4).

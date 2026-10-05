@@ -2,6 +2,8 @@
 
 Document ID: **GC-045**. Status: **source inventory and design proposal; no new hierarchy approved**.
 
+> **Historical record (2026-09-11 – 2026-09-30):** describes the PoC JavaScript class inventory and the core runtime classes of 0.1.2 and of the 0.2.0 plan, before the 0.2.0 release; not the current state. Current: [GC-090](../public/090-classes-and-hosts.md) and the code in `js/src`.
+
 **Release scope:** sections 005–050 describe `gramlot-poc` evidence, not the core.
 The latest published core release is **0.1.2**. Sections 055 and 060 describe the
 core runtime classes: the 0.1.2 classes, and the classes of the 0.2.0 HTML/SVG

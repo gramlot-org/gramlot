@@ -3,7 +3,7 @@
 Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (GitHub `v0.2.0`; current patch **0.2.1**, 2026-10-01: PyPI `gramlot`, npm and JSR `@gramlot/gramlot`). Previous release:
+> (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README). Previous release:
 > **0.1.2**. Unmarked text is behavior from 0.1.2.
 
 <a id="gc-100-005"></a>
@@ -20,7 +20,7 @@ Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 | *0.2.0:* reactive DOM | GramlotRenderer (extends GramlotHtmlRenderer, which extends HtmlRenderer), GramlotSvgRenderer (extends SvgRenderer) + HtmlElement |
 | Types, serialization, notifications | Bag/TYTX contracts |
 | Source grammar/association | Generic SourceBag, BuilderBase, RendererBase |
-| *0.2.0:* page behavior | Application `class Logic` in companion or `js_requires` resource |
+| *0.2.0:* page behavior | Application `Logic` export of the page module `foo.js`, else `foo_aux.js`, or `js_requires` resource |
 
 These extension points exist but compatibility is not frozen. Keep host technology
 out of core; implement missing shared behavior in its owning library, not locally.
