@@ -485,7 +485,7 @@ order, no prefix, or `PageNotFound` (also on the neutral Host);
 and absolute unchanged (Q12.1, D8); nonce `token_urlsafe(16)`, ≠ page_id, fresh.
 Repeated URL once, last; same JS URL with two groups → error before imports (C03).
 TTL/capacity/owner checks stay. Parser and `InvalidResourceName` in core (explicit
-Unicode set); names interpreted by kajenn. Minimal `FileHost(pages_dir)`: file page
+Unicode set); names interpreted by a resource Host (genro-kajenn, in Genro; current adapters have none). Minimal `FileHost(pages_dir)`: file page
 before `foo/foo.*`, file wins; `foo.css`, `foo_aux.js` (group null), `foo.md`; `_aux`
 reserved; segments letters/digits/`_`/`-`; escaping symlink → `PageNotFound`; order
 `Page.css` then companions; any requires name → error. `Page.css` in core (Q10),

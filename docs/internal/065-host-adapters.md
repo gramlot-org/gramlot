@@ -155,7 +155,8 @@ kept as history. The implemented contract is the minimal Host contract:
 
 - `Page.css` stays in the core for every host (Q10); it is not replaced by
   `css_requires`. The two fields stay Page attributes, interpreted only by a Host with
-  a resource system (`gramlot-kajenn`, after 0.2.0); the minimal `FileHost` raises
+  a resource system (genro-kajenn, part of Genro, the framework that succeeds
+  GenroPy); the minimal `FileHost` and the current adapters raise
   `InvalidResourceName` for any name.
 - There is no `ResourceResolver` and no `_resources` search in the core. A Host
   implements `resolve_page` and `resolve_resources`; `FileHost(pages_dir)` serves the
