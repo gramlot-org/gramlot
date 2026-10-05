@@ -2,6 +2,8 @@
 
 Document ID: **GC-010**. [Concise counterpart](../docs_llm/010-showcase.md).
 
+> **Historical record (2026-09-16):** describes the planned `gramlot.showcase` catalogue, with FastAPI as first host and Genro ASGI (now Kajenn) among the targets; not the current state. Current: the gallery of [gramlot-examples](https://github.com/gramlot-org/gramlot-examples), served by the gallery command of each environment ([GC-025 §020](public/025-try.md#gc-025-020)).
+
 <a id="gc-010-005"></a>
 ## 005 · Identity and rollout
 

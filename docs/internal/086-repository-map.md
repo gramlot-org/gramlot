@@ -1,6 +1,9 @@
 # Repository map
 
 <!-- Document ID: GC-086 -->
+
+> **Historical record (2026-09-25 – 2026-09-30):** describes the 0.1.2 repository tree and the files that the 0.2.0 binding added; not the current state. Current: the repository tree itself and [GC-090](../public/090-classes-and-hosts.md).
+
 <a id="gc-086-005"></a>
 
 **Release scope:** the tree in this section is the release **0.1.2**. Section 010 lists the files that the 0.2.0 HTML/SVG binding adds. **The 0.2.0 files exist on the development branch; 0.2.0 is in qualification and not released.**

@@ -2,6 +2,8 @@
 
 Document ID: **GC-065**.
 
+> **Historical record (2026-09-19 – 2026-10-03):** describes the 0.1.2 host foundations and the 0.2.0 plan for page resources and bootstrap, with updates up to 0.2.5; not the current state. Current: [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030).
+
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
 **Release scope:** latest published release **0.1.2**. Sections 005-025 describe 0.1.2. Section 030 records the 0.2.0 page resource and bootstrap changes. **The 0.2.0 parts are implemented on the development branch (S06, S07, S14), in qualification, not released.** Current contract: [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030).
