@@ -13,9 +13,9 @@ Document ID: **GC-090**. 0.1.2 APIs; 0.2.0 changes are marked.
 ## 005 · Reading this first draft
 
 This is the user-facing map of the Gramlot core in this development
-checkout, with the 0.2.0 binding layer marked where it applies. It describes the owner-accepted 0.1.0 classes. The Python
-wheel and declared GitHub JS dependencies install in fresh environments; seven
-locally packaged Host profiles pass in Chromium. Richer examples in gramlot-poc
+checkout, with the 0.2.0 binding layer marked where it applies. The core is published
+on PyPI (`gramlot`) and on npm and JSR (`@gramlot/gramlot`); the adapters are tested in
+their own repositories. Richer examples in gramlot-poc
 use an experimental runtime and do not establish features in this core.
 
 <a id="gc-090-010"></a>
@@ -65,8 +65,10 @@ the Page and releases its stylesheet links on disposal.
 
 *0.2.0:* `Page.css` stays, in Python and JavaScript, for every host. Pages also
 declare `css_requires` and `js_requires` as comma-separated strings of resource
-names; only a Host with a resource system (gramlot-kajenn) interprets them
-(section 030).
+names; only a Host with a resource system interprets them. The minimal `FileHost` and
+the current adapters have none and raise an error for any name; the resource
+system comes with genro-kajenn, part of Genro, the framework that succeeds GenroPy
+(built on Kajenn, Gramlot and Asqueel) (section 030).
 
 Rendering requires `SourceBag` and `SourceBagNode`, associated with their builder.
 Their methods are part of the contract. Plain Bags are valid for Data, not Source;
@@ -171,15 +173,16 @@ in the browser (section 030).
 
 The JS Host provides `openPage`, `main`, `source` and `closePage`; HTTP
 `Request`/`Response` translation belongs to the adapter. `FileHost` resolves JS page modules and their same-name files. Reusable Node and Bun bridges now live in `@gramlot/gramlot-js-server/node` and
-`@gramlot/gramlot-js-server/bun`. Bounded Python integrations live in FastAPI, Flask and Genro
-ASGI adapter packages; generic ASGI and the Kajenn-specific wrapper are distinct.
-These are development implementations with a local artifact verification gate,
-not production-certified integrations; delivery uses GitHub archives.
+`@gramlot/gramlot-js-server/bun`. The Python adapters live in `gramlot-py-server`:
+generic ASGI (Uvicorn or any ASGI server), Django, Flask, FastAPI and Kajenn are
+distinct modules of one package. Each adapter repository states the versions it
+verifies.
 
-*0.2.0:* the adapters verified against the minimal contract are `gramlot-uvicorn`
-(Python, ASGI and Uvicorn), `gramlot-js-server` (Node.js and Bun) and
-`@gramlot/gramlot-serverless`, in `gramlot-js-server` (standalone and Worker). `gramlot-django`, `gramlot-fastapi`,
-`gramlot-flask` and `gramlot-kajenn` are deferred to after 0.2.0. Each adapter
+*0.2.0:* at the 0.2.0 release the adapters verified against the minimal contract
+were `gramlot-uvicorn` (Python, ASGI and Uvicorn), `gramlot-js-server` (Node.js and
+Bun) and the standalone exporter, today `@gramlot/gramlot-serverless` in
+`gramlot-js-server`. Today the five adapters of `gramlot-py-server` and the packages
+of `gramlot-js-server` implement the contract. Each adapter
 passes the mount prefix to `open_page` and serves the companions (section 030). The
 two server adapters send the Content Security Policy header they are configured
 with (section 035); the standalone export writes a hash policy (section 025).
@@ -203,9 +206,8 @@ Hosts obtain browser code from packaged assets (`gramlot.server.runtime_asset`
 in Python; `@gramlot/gramlot/runtime` in JS, from npm, JSR or the repository's `js/`). See the
 installation contexts below; adapters serve the assets of their installed package.
 `PageNotFound`, `SourceNotFound`, `PageExpired` and `HostCapacity`, in Python and JS, distinguish
-framework failures from unexpected application exceptions. The current dependency
-sources are available through the declared installation paths; Gramlot 0.1.0 itself
-is owner-accepted for GitHub archive delivery.
+framework failures from unexpected application exceptions. The dependencies are
+installed from the registries that each package declares (PyPI, npm, JSR).
 
 
 <a id="gc-090-022"></a>
@@ -357,17 +359,17 @@ with its own Worker. Assets must be included by the exporter and served at their
 declared paths. The exported gallery directory opens through `file://`:
 relative classic scripts start Blob Workers, and an explicit export root resolves
 local stylesheets. The repository of each integration documents its commands.
-Its dependencies are `@gramlot/gramlot >=0.2.1` and `@genrojs/builders
+Its dependencies are `@gramlot/gramlot >=0.2.5` and `@genrojs/builders
 >=0.4.1` (Node 22 or newer).
 
 The published 0.1.0 archive retains `@gramlot/standalone` and its
 `gramlot-standalone` command; use its bundled README for that immutable release.
-Generic Python ASGI/Uvicorn hosting belongs to `gramlot-uvicorn`. `gramlot-kajenn`
-depends only on Kajenn besides the core (constitution amendment 11.48 item 5); its
-adapter is not migrated yet and is deferred to after 0.2.0. The retired
-`gramlot-minimal` repository is historical; its heirs are `gramlot-uvicorn` and
-`gramlot-serverless`, which joined `gramlot-js-server` on 2026-10-01 as
-`@gramlot/gramlot-browser`, renamed `@gramlot/gramlot-serverless` on 2026-10-02 (0.2.2).
+Generic Python ASGI hosting, with Uvicorn or any ASGI server, is the `uvicorn`
+adapter of `gramlot-py-server`; Kajenn is its `kajenn` adapter. The retired
+`gramlot-minimal` repository is historical; its heirs are the `uvicorn` adapter of
+`gramlot-py-server` (formerly the archived `gramlot-uvicorn`) and
+`@gramlot/gramlot-serverless` in `gramlot-js-server` (formerly the archived
+`gramlot-serverless` repository).
 
 
 <a id="gc-090-030"></a>
@@ -417,8 +419,10 @@ JavaScript URL declared with two different groups is an error.
 
 **Resource fields.** Python pages declare `css_requires = ""` and
 `js_requires = ""`; JavaScript pages declare `static css_requires = ''` and
-`static js_requires = ''`. The names are interpreted by a Host with a resource
-system (gramlot-kajenn). On `FileHost` a name in either field raises
+`static js_requires = ''`. The names are interpreted only by a Host with a
+resource system, which comes with genro-kajenn, part of Genro, the framework that
+succeeds GenroPy (built on Kajenn, Gramlot and Asqueel). The minimal `FileHost` and
+the current adapters have none: on `FileHost` a name in either field raises
 `InvalidResourceName` ("requires need a Host with a resource system"). The core
 parses both fields with the same rules in both languages:
 
@@ -473,7 +477,7 @@ adapter puts it in the CSP header. The standalone export uses a hash (section 02
 The application chooses the Content Security Policy; Gramlot defines two profiles
 and never sets the header itself. The adapter writes it with the nonce of the
 opening, through a `{nonce}` placeholder in its configuration:
-`content_security_policy` in `gramlot-uvicorn`, `contentSecurityPolicy` in
+`content_security_policy` in the adapters of `gramlot-py-server`, `contentSecurityPolicy` in
 `gramlot-js-server`. The header is sent on HTML responses only.
 
 | Profile | `script-src` | Pages that run |

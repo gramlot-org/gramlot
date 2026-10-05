@@ -11,7 +11,7 @@ Document ID: **GC-030**.
 
 ## 005 · Read badges in context
 
-The README shows six badges. The tests badge reports the `Core tests`
+The README shows eight badges. The tests badge reports the `Core tests`
 workflow on `main`: it builds the browser runtime, installs the Python package, and
 runs the Python suite, the core JavaScript suite (with the quiet-write and
 symbolic-attribute contracts) and the browser checks in Chromium on core fixture
@@ -19,17 +19,18 @@ pages, on pushes to `main` and `develop`, pull requests and manual dispatch. It
 checks out no other repository: the example pages are tested in gramlot-examples. The documentation
 badge reports the documentation build. The two coverage badges report Codecov, one
 per runtime (section 010). The PyPI and JSR badges show the published versions.
-The license badge is a label.
+The status badge shows the current release; the license badge is a label.
 
 The unit suites do not verify adapter behavior in a server, standalone exports or
 real browsers. That evidence is the 0.2.0 qualification (GC-215 in
 `docs/internal/`): complete suites in clean environments; Chromium, WebKit and
 Firefox; the end-to-end story through the real Page, Host, TYTX and PageBootstrap
 path; the served runtime checked against a fresh build; and the acceptance pages on
-`gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun) and `gramlot-serverless`
-(today `@gramlot/gramlot-serverless` in `gramlot-js-server`).
-`gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn` are
-deferred to after 0.2.0 and excluded. The experimental runtime is tested in
+`gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun) and `gramlot-serverless`,
+the repositories of that date. Today the adapters are tested in their own
+repositories: `gramlot-py-server` runs its five adapters (Uvicorn, Django, Flask,
+FastAPI, Kajenn) in its CI, and `gramlot-js-server` runs Node.js, Bun and
+`@gramlot/gramlot-serverless` in its CI. The experimental runtime is tested in
 `gramlot-poc`.
 
 <a id="gc-030-010"></a>

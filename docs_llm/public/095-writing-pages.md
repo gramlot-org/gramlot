@@ -429,7 +429,7 @@ Intentional differences: `dataSetter` replaces `data`, no alias; R1 applies
 attributes on null (legacy skipped the whole write); all branch `dataSetter` before
 DOM (legacy: node and direct children); no `?attr` in `destination_path`/`result_path`;
 R3: `stopPropagation` without `preventDefault` plus `type="button"` (legacy: both calls, no type; one-field form: Enter submits natively, 075);
-`css_requires`/`js_requires` need a Host with a resource system (gramlot-kajenn), minimal `FileHost` errors on any name, last registration of a method name wins; `name:media`
+`css_requires`/`js_requires` need a Host with a resource system (genro-kajenn, part of Genro, the GenroPy successor built on Kajenn, Gramlot and Asqueel), minimal `FileHost` and current adapters error on any name, last registration of a method name wins; `name:media`
 error; `data(...)` is no declaration (`root.data` raises, on other nodes `data` is the Data Bag property), `html_data(...)` is the HTML5 element; controller/`action`/`fire` combinations are errors (legacy chained them and
 also ran the nested controller); no `#WORKSPACE`/`#ROW`/`#DATA`; methods instead of `domNode`/`sourceNode` properties; Source `script` without
 `dojo.eval`; macros only via the deprecated preprocessor.
@@ -442,7 +442,7 @@ raises, on other nodes `data` is the Data Bag property: write `html_data(...)`; 
 `resolve_resources`/`resolveResources`, pass the mount prefix to `open_page` and serve
 the companions, and the bootstrap writes the CSS links in the browser
 ([GC-090](090-classes-and-hosts.md)); standalone and ASGI integrations moved from the
-retired `gramlot-minimal` to `gramlot-serverless` and `gramlot-uvicorn`; Python and JS
+retired `gramlot-minimal` to `@gramlot/gramlot-serverless` (gramlot-js-server) and the `uvicorn` adapter of `gramlot-py-server`; Python and JS
 static renderers share the attribute/style rules (`style_*`, `color`, … compose `style`
 in both). Check migrated pages for `data(` calls.
 

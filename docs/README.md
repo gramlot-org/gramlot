@@ -13,26 +13,28 @@ release **0.2.0 (HTML/SVG data binding)**, released on 2026-09-30; each chapter 
 ## Repository map
 
 [GC-140 · Agreed integrations and examples](internal/140-integrations-and-examples.md):
-the six integration repositories, Hello World profiles, local/publication status
-and the boundary between agreed examples and historical PoC material.
+the integration repositories (`gramlot-py-server`, `gramlot-js-server`) and
+`gramlot-examples`, the archived repositories they replace, and the boundary between
+agreed examples and historical PoC material.
 
-[Current repository map](internal/086-repository-map.md). The agreed target JavaScript
-ownership boundaries and the local split are recorded in
-[GC-087](internal/087-javascript-layer-boundaries.md).
+[GC-086 · Repository map](internal/086-repository-map.md) and
+[GC-087 · JavaScript layer boundaries](internal/087-javascript-layer-boundaries.md)
+are historical records of the 0.1.2 tree and the 0.2.0 plan.
 
-## Current execution
+## Current status
 
-[GC-135 · Artifact handoff](internal/135-release-handoff.md): package set, local archive installation, verification and publication boundary.
-
-[GC-130 · Ecosystem release review](internal/130-release-ecosystem-review.md): architecture assessment, current release-alignment findings and versioned-artifact checks.
-
-[Current 0.1.0 plan](internal/110-0-1-0-readiness.md#gc-110-020). Read [GC-070](internal/070-work-status.md) for the current checkpoint. [GC-094](internal/094-design-consolidation-plan.md) is historical.
-The [earlier delivery plan](internal/088-0-1-0-plan.md) is historical evidence;
-GC-110 records the current review and seven-profile verification.
+Read [GC-070](internal/070-work-status.md) for the current status and the record of
+each release. These execution records are historical:
+[GC-135 · Artifact handoff](internal/135-release-handoff.md) and
+[GC-130 · Ecosystem release review](internal/130-release-ecosystem-review.md) (0.1.0
+delivery), the [0.1.0 plan](internal/110-0-1-0-readiness.md#gc-110-020) and its
+seven-profile verification, the [earlier delivery plan](internal/088-0-1-0-plan.md),
+[GC-094](internal/094-design-consolidation-plan.md) and the
+[0.2.0 qualification](internal/215-qualification-0-2-0.md).
 
 ## For contributors
 
-The Gramlot PoC and older `docs/context` handoffs are evidence/laboratory material, not the 0.1.0 operating list.
+The Gramlot PoC and older `docs/context` handoffs are evidence/laboratory material, not an operating list.
 
 Start with the [internal operating guide](internal/085-operating-guide.md).
 Keep the [work status](internal/070-work-status.md) current. Follow the

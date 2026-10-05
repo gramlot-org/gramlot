@@ -77,9 +77,10 @@ The example pages and their gallery are the separate package `gramlot-examples`.
 - **JavaScript:** `npm install @gramlot/gramlot` or `npx jsr add @gramlot/gramlot`.
 - **Archives:** each [GitHub release](https://github.com/gramlot-org/gramlot/releases)
   carries the wheel, the sdist, the npm package of `js/` and `SHA256SUMS`.
-- **Adapters:** `gramlot-uvicorn` and `gramlot-js-server` (packages
-  `@gramlot/gramlot-js-server` and `@gramlot/gramlot-serverless`) are used from their
-  repositories.
+- **Adapters:** `pip install "gramlot-py-server[uvicorn]"` (also `django`, `flask`,
+  `fastapi`, `kajenn`) for Python pages; `npm install @gramlot/gramlot-js-server`
+  (Node.js and Bun) or `@gramlot/gramlot-serverless` (no server) for JavaScript pages;
+  `npm create @gramlot page|site` starts a JavaScript project.
 
 Start with [Try Gramlot](docs/public/025-try.md) and
 [Writing pages](docs/public/095-writing-pages.md). The broader experimental
@@ -116,7 +117,7 @@ with 0.3.0.
 
 - [The Gramlot family](docs/public/055-family.md) — what Gramlot is, the core and the adapters, and which one to choose.
 - [Is Gramlot a fit?](docs/public/020-evaluate.md) — the development model and its current limits.
-- [Try Gramlot](docs/public/025-try.md) — inspect the showcase, then choose a Python host.
+- [Try Gramlot](docs/public/025-try.md) — open the gallery of examples, then choose a host.
 - [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.
 
 - [Classes and server adapters](docs/public/090-classes-and-hosts.md) — repository map and responsibilities.
@@ -139,20 +140,22 @@ reference. Gramlot is licensed under Apache 2.0.
 
 ## Integration repositories
 
-Environment-specific adapters and setup instructions live in `gramlot-fastapi`,
-`gramlot-flask`, `gramlot-kajenn`, `gramlot-uvicorn`, `gramlot-js-server` and
-`gramlot-django`. `gramlot-uvicorn` covers Python/ASGI/Uvicorn; `gramlot-js-server`
-holds two packages: `@gramlot/gramlot-js-server` (Node.js/Bun) and
-`@gramlot/gramlot-serverless` (browser/Worker standalone, formerly the
-`gramlot-serverless` repository, merged on 2026-10-01 as `@gramlot/gramlot-browser`,
-renamed `@gramlot/gramlot-serverless` on 2026-10-02 (0.2.2)).
-For 0.2.0, `gramlot-uvicorn`, `gramlot-js-server` and the standalone exporter are
-verified; `gramlot-django`, `gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn`
-are deferred to after 0.2.0. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
-These development names do not rename the already published 0.1.0 archives.
+Environment-specific adapters and setup instructions live in two repositories:
 
-`gramlot-uvicorn` and `gramlot-js-server` are the current local and GitHub
-repository names. They replace `gramlot-minimal`, retired on 2026-09-28.
-`gramlot-kajenn` was renamed from `gramlot-genro-asgi` on 2026-09-26, on GitHub
-and locally.
-Repository naming does not imply a package release or deployment.
+- [gramlot-py-server](https://github.com/gramlot-org/gramlot-py-server) (PyPI
+  `gramlot-py-server`) serves Python pages. One package holds five adapters, one
+  extra each: `uvicorn` (any ASGI server), `django`, `flask`, `fastapi` and `kajenn`.
+  Its command `gramlot <environment> new|gallery` creates a project or serves the
+  gallery.
+- [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server) serves
+  JavaScript pages with three npm packages: `@gramlot/gramlot-js-server` (Node.js
+  and Bun, command `gramlot`), `@gramlot/gramlot-serverless` (pages in a browser
+  Worker without a server, command `gramlot-serverless`) and `@gramlot/create`
+  (`npm create @gramlot page|site`).
+
+The example pages and the gallery are in
+[gramlot-examples](https://github.com/gramlot-org/gramlot-examples). The earlier
+adapter repositories (`gramlot-uvicorn`, `gramlot-django`, `gramlot-fastapi`,
+`gramlot-flask`, `gramlot-kajenn`, `gramlot-serverless`, `gramlot-minimal`) are
+archived. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
+The published 0.1.0 archives keep their original names.

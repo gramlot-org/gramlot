@@ -748,8 +748,10 @@ Intentional differences:
 - R3: a Gramlot button calls `stopPropagation` but not `preventDefault`, and gets
   `type="button"` when the author wrote none. Legacy called both and set no
   type. In a one-field form Enter then submits natively (section 075).
-- `css_requires` and `js_requires` need a Host with a resource system
-  (gramlot-kajenn); the minimal `FileHost` raises an error for any name. When
+- `css_requires` and `js_requires` need a Host with a resource system, which
+  comes with genro-kajenn, part of Genro, the framework that succeeds GenroPy
+  (built on Kajenn, Gramlot and Asqueel); the minimal `FileHost` and the current
+  adapters raise an error for any name. When
   the same method name is registered twice in a group, the last registration
   wins.
 - `data(...)` is not a declaration: `root.data(...)` raises an error naming
@@ -786,7 +788,8 @@ Migration from 0.1.x:
   and serve the page companions; the bootstrap now writes the stylesheet links
   in the browser ([GC-090](090-classes-and-hosts.md));
 - the standalone integration and the ASGI integration moved from
-  `gramlot-minimal` (retired) to `gramlot-serverless` and `gramlot-uvicorn`;
+  `gramlot-minimal` (retired) to `@gramlot/gramlot-serverless`, in
+  `gramlot-js-server`, and to the `uvicorn` adapter of `gramlot-py-server`;
 - the Python and JavaScript renderers of the static HTML now share the attribute
   and style rules, so `style_*`, `color` and the other shortcuts compose a
   `style` attribute in both.

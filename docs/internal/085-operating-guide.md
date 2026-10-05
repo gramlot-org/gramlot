@@ -1,6 +1,6 @@
 # 085 · Repository operating guide
 
-Document ID: **GC-085**. Updated: **2026-10-04**.
+Document ID: **GC-085**. Updated: **2026-10-05**.
 Status: **current development guide; clean core setup verified**.
 
 [Concise counterpart](../../docs_llm/internal/085-operating-guide.md).
@@ -19,8 +19,9 @@ The current core source passes a fresh installation and tests with dependencies
 from PyPI and JSR ([GC-070 §325](070-work-status.md#gc-070-325)). This is source-checkout
 verification, not a new wheel/archive consumer, browser or seven-host matrix run.
 The older seven-profile release checks remain dated evidence in GC-110.
-Binding 0.2.0 is authorized but incomplete and paused for source/contract review;
-consult [GC-165](165-binding-execution.md) and [GC-170](170-binding-source-audit.md).
+Binding 0.2.0 was released on 2026-09-30; [GC-165](165-binding-execution.md) and
+[GC-170](170-binding-source-audit.md) are historical records of its execution and
+source audit.
 
 <a id="gc-085-010"></a>
 ## 010 · Current repository map
@@ -86,8 +87,8 @@ python3 -m venv .venv
 The clean check used an empty npm cache as well. Python resolved Builder 0.23.2,
 Bag 0.25.1 and TYTX 0.15.0. JS resolved `@jsr/genro__builders` 0.1.5,
 `@jsr/genro__bag` 0.5.3 and `@jsr/genro__tytx` 0.15.1. These are observed versions,
-not install pins or claims about future resolution. `js/.npmrc` selects the JSR
-npm endpoint and disables package-lock. Local dependency wheels used in the older
+not install pins or claims about future resolution. At that date `js/.npmrc`
+selected the JSR npm endpoint and disabled package-lock. Local dependency wheels used in the older
 working venv are not prerequisites for the tested current core paths.
 
 *Update 2026-09-30 (0.2.0 branch):* the versions above are the observations of 2026-09-24 and
@@ -96,6 +97,11 @@ are superseded. The development branch declares `genro-bag>=0.27.0`,
 `@jsr/genro__builders >=0.4.0`, `@jsr/genro__tytx >=0.16.0` (JS); the working checkout
 resolves Bag 0.27.0, Builders 0.27.0, TYTX 0.16.0, and JS Bag 0.10.0, Builders 0.4.0,
 TYTX 0.16.0. The qualification report of S16 records the versions of a clean install.
+
+*Update 2026-10-05:* the JavaScript dependencies are the npm packages
+`@genrojs/bag >=0.10.3`, `@genrojs/builders >=0.4.2` and `@genrojs/tytx >=0.16.2`
+(floors of 0.2.6); `js/.npmrc` was removed in 0.2.1. The Python floors are those of
+`pyproject.toml`.
 
 **Local environment observed on 2026-09-24:** this working checkout's `.venv`
 still contains `genro-builders` 0.23.4 installed from
@@ -175,7 +181,6 @@ confirmed scope; there is no independently maintained tag list.
 
 The JSR package no longer contains example pages (11.56), so the former
 `scripts/verify_jsr_examples.mjs` check is removed. After publication, verify the
-actual downloaded registry payload. The current develop
-checkout preserves unfinished 0.2.0 binding work; its aligned 0.1.2 metadata is a
-maintenance baseline, not permission to publish this mixed development state.
-Use the identified release source and explicit owner approval for publication.
+actual downloaded registry payload. The version in `pyproject.toml`,
+`js/package.json` and `jsr.json` is the last prepared release; a new release needs
+its release-preparation commit and explicit owner approval for publication.

@@ -17,12 +17,14 @@ Example (Python): `pane = root.div(datapath="person")`; `pane.input(id="name", v
 
 ## 010 · The repositories
 
-- [gramlot](https://github.com/gramlot-org/gramlot): core (Page, Source, Data, binding, runtime, minimal Host contract, `FileHost`); PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; always needed; released 0.2.0.
-- [gramlot-uvicorn](https://github.com/gramlot-org/gramlot-uvicorn): ASGI adapter for Python pages (Uvicorn or any ASGI server); verified.
-- [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server): two packages for JavaScript pages, `@gramlot/gramlot-js-server` (HTTP adapter on Node.js 22 and Bun) and `@gramlot/gramlot-serverless` (export to one HTML file or a static folder opened from disk, Page in a Web Worker); verified.
+- [gramlot](https://github.com/gramlot-org/gramlot): core (Page, Source, Data, binding, runtime, minimal Host contract, `FileHost`); PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; always needed; published.
+- [gramlot-py-server](https://github.com/gramlot-org/gramlot-py-server): adapters for Python pages, one extra each (`uvicorn` for Uvicorn or any ASGI server, `django`, `flask`, `fastapi`, `kajenn`); PyPI `gramlot-py-server`, command `gramlot <environment> new|gallery`; published.
+- [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server): three packages for JavaScript pages, `@gramlot/gramlot-js-server` (HTTP adapter on Node.js 22 and Bun), `@gramlot/gramlot-serverless` (export to one HTML file or a static folder opened from disk, Page in a Web Worker) and `@gramlot/create` (new projects); published.
+- [gramlot-examples](https://github.com/gramlot-org/gramlot-examples): example pages in Python and JavaScript and the gallery; PyPI `gramlot-examples`, npm `@gramlot/gramlot-examples`; published.
 - [gramlot-devtools](https://github.com/gramlot-org/gramlot-devtools): Chrome DevTools extension showing and editing Data and Source; development tool.
-- gramlot-django, gramlot-fastapi, gramlot-flask, gramlot-kajenn: deferred to after 0.2.0.
 - [gramlot-poc](https://github.com/gramlot-org/gramlot-poc): earlier experimental runtime.
+
+Archived: `gramlot-uvicorn`, `gramlot-django`, `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn`, `gramlot-serverless`; their adapters are in `gramlot-py-server` and `gramlot-js-server`.
 
 Shared contract: [classes and server adapters](090-classes-and-hosts.md) (mount prefix, companions, CSP profiles). Each adapter documents install, configuration, deployment.
 
@@ -30,4 +32,4 @@ Shared contract: [classes and server adapters](090-classes-and-hosts.md) (mount 
 
 ## 015 · Choosing a path
 
-Python pages: core + gramlot-uvicorn. JavaScript with a server: core + @gramlot/gramlot-js-server. JavaScript without a server: core + @gramlot/gramlot-serverless. To try first: the gallery of gramlot-examples, served by each environment ([Try Gramlot](025-try.md)).
+Python pages: core + the adapter of your framework in gramlot-py-server. JavaScript with a server: core + @gramlot/gramlot-js-server. JavaScript without a server: core + @gramlot/gramlot-serverless. To try first: the gallery of gramlot-examples, served by each environment ([Try Gramlot](025-try.md)).
