@@ -71,4 +71,6 @@ GC-055, an earlier Italian explanatory guide with paired HTML exports, was remov
 from the maintained documentation on 2026-09-25 by owner decision. It served to
 explain the project and is superseded by the 0.2.0 documentation. On 2026-10-01 the
 ID GC-055 was assigned to the public guide The Gramlot family
-(`docs/public/055-family.md`); that guide is the only current holder of the ID.
+(`docs/public/055-family.md`). By owner decision of 2026-10-05 the guide keeps GC-055:
+an explicit exception to the rule that a retired ID is never reused
+([GC-005 §010](005-documentation-policy.md#gc-005-010), item 4).

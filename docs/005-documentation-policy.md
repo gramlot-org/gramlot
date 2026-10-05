@@ -49,7 +49,10 @@ Block ID: **GC-005-010**.
 4. Cite the ID plus a link to the intended view. Preserve IDs and anchors when
    moving files or changing display order, even if filename prefixes change.
    Never reuse retired IDs or restart IDs in a subfolder. Update inbound links;
-   stable IDs alone do not redirect old URLs.
+   stable IDs alone do not redirect old URLs. Explicit exception, owner decision of
+   2026-10-05: GC-055, retired on 2026-09-25, is kept by the public guide The Gramlot
+   family (`docs/public/055-family.md`), which received it on 2026-10-01. No other
+   retired ID is reused.
 5. Run the owning repository's documentation checks and verify paired coverage,
    links and anchors. A concise view must never strengthen an implementation claim.
 

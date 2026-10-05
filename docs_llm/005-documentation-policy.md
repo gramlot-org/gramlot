@@ -36,7 +36,9 @@ Block ID: **GC-005-010**.
    sections spaced by five; shared logical IDs and explicit lowercase HTML anchors.
 4. Cite ID + view link. Preserve IDs/anchors across moves/reordering, even if
    filename prefixes change. Never reuse retired IDs or restart per folder.
-   Update links; stable IDs do not redirect URLs.
+   Update links; stable IDs do not redirect URLs. Explicit exception (owner,
+   2026-10-05): GC-055, retired 2026-09-25, stays with The Gramlot family
+   (`docs/public/055-family.md`, assigned 2026-10-01); no other retired ID is reused.
 5. Run local docs checks; verify mirrors, links, anchors. Never strengthen claims.
 
 Owner decision, 2026-09-25: version-specific core guides use the hundreds digit

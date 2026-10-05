@@ -36,4 +36,5 @@ merged. Do not attribute PoC results to core. See [quality](public/030-quality.m
 
 GC-055 (earlier Italian explanatory guide with HTML exports) was removed on
 2026-09-25 by owner decision; superseded by the 0.2.0 docs. Since 2026-10-01 GC-055
-is the public guide The Gramlot family (`docs/public/055-family.md`), its only current holder.
+is the public guide The Gramlot family (`docs/public/055-family.md`); owner decision of 2026-10-05:
+it keeps the ID, an explicit exception to [GC-005 §010](005-documentation-policy.md#gc-005-010) item 4.

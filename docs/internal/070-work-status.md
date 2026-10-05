@@ -3362,5 +3362,6 @@ Verified 2026-10-05 in the worktree: Python 83 OK; JavaScript 475/475 with
 PASS; no broken relative link in `docs/`, `docs_llm/`, README, AGENTS.md and the theme
 README.
 
-**Open:** GC-055 was assigned again on 2026-10-01 although GC-005 §010 item 4 forbids
-reusing a retired ID; the owner decides whether the guide keeps it.
+**Closed:** GC-055 was assigned again on 2026-10-01 although GC-005 §010 item 4 forbids
+reusing a retired ID. Owner decision of 2026-10-05: The Gramlot family keeps GC-055, as
+an explicit exception recorded in GC-005 §010 item 4 and in `docs/02-documentation.md` §4.
