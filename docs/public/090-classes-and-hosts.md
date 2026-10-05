@@ -12,8 +12,8 @@ Document ID: **GC-090**. 0.1.2 APIs; 0.2.0 changes are marked.
 
 ## 005 · Reading this first draft
 
-This is the user-facing map of the Gramlot core in this development
-checkout, with the 0.2.0 binding layer marked where it applies. The core is published
+This is the user-facing map of the Gramlot core, with the 0.2.0 binding layer
+marked where it applies. The core is published
 on PyPI (`gramlot`) and on npm and JSR (`@gramlot/gramlot`); the adapters are tested in
 their own repositories. Richer examples in gramlot-poc
 use an experimental runtime and do not establish features in this core.
