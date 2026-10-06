@@ -108,6 +108,9 @@ export class Gramlot {
      * Replace one Source node's children only after incoming Source validation.
      * The request lives as long as the target's NodeBinding (P24): a DOM rebuild
      * or a freeze keeps it, the removal of the target cancels it.
+     *
+     * Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API:
+     * they arrive together with the `remote` grammar attribute and `@endpoint`.
      */
     async remoteSource(target, method, params = {}) {
         if (!this.transport?.source) throw new Error('Remote Source is unavailable without a server transport');

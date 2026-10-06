@@ -12,7 +12,7 @@ Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 **Examples.** Two example families run the features of sections 040-080, each
 page in Python with its JavaScript equivalent, in the package gramlot-examples:
 [`binding/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) (routes `b01`-`b11` in the gallery) and
-[`controllers/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) (routes `c01`-`c09`).
+[`controllers/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) (routes `c01`-`c08`).
 The sections below name the example they illustrate. These features have no
 example: `js_requires` groups, `connect_on<event>` by name, `_userChanges`,
 `_onBuilt`, `#ANCHOR` and `gramlot.inout`. The `html_svg` family is
@@ -27,7 +27,7 @@ This is an authoring example for the development foundation, not a standalone
 server command. A host loads the module and supplies `root`.
 
 ```python
-from gramlot import Page as BasePage, source
+from gramlot import Page as BasePage
 
 class Page(BasePage):
     title = "People"
@@ -35,10 +35,6 @@ class Page(BasePage):
     def main(self, root):
         panel = root.div("People", id="people")
         panel.p("Choose a person")
-
-    @source
-    def details(self, root, name="Homer"):
-        root.p(name)
 ```
 
 `root.div(...)` returns a real SourceBagNode, so nested calls create child Source
@@ -80,26 +76,7 @@ validation and DOM construction, each branch installs its Data declarations
 
 ## 015 · Remote blocks
 
-`@source` explicitly exposes a public Python method for remote Source generation.
-Both `main` and Source methods may be synchronous or asynchronous; they populate
-`root` and return `None`. An unmarked override hides an inherited exposed method.
-Arguments arrive as the method's keyword parameters.
-
-The browser framework currently exposes
-`app.remoteSource(targetNode, "details", {name: "Marge"})`. It replaces the mounted
-target's body after incoming Source validation. Invalid incoming Source is rejected before
-insertion; rendering errors after insertion do not roll back Source; stale responses and removed targets are ignored.
-
-This is the runtime API, not a declarative page API. A page example must not
-fill that gap with manual DOM events or fetches.
-
-*0.2.0:* a branch received through `remoteSource` installs its own `dataSetter`
-declarations before its DOM is built, like the initial Source. A button
-controller (section 075) can call `this.page.remoteSource(...)` from its named
-logic; 0.2.0 defines no declarative remote Source request. The pending request
-lives as long as its target: if the target is removed first, the late answer is
-ignored, and of two overlapping requests the latest wins. Example:
-`controllers/08_remote_source` (`c08`).
+Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
 
 <a id="gc-095-020"></a>
 
@@ -715,7 +692,7 @@ the whole page.
   error (listeners, controls, radio groups, references); the Data is not rolled
   back.
 
-Example: `controllers/09_end_to_end` (`c09`) walks the lifecycle from
+Example: `controllers/08_end_to_end` (`c08`) walks the lifecycle from
 the first render to the close.
 
 <a id="gc-095-085"></a>
@@ -778,8 +755,10 @@ Migration from legacy pages:
 
 Migration from 0.1.x:
 
-- a 0.1.x page without binding runs unchanged: HTML and SVG, `Page.css`,
-  `@source` methods and `remoteSource` keep their behavior;
+- a 0.1.x page without binding runs unchanged: HTML and SVG and `Page.css`
+  keep their behavior. Source methods (`@source`, `source(...)`, `remoteSource`)
+  are not yet part of the page-writing API: they arrive together with the
+  `remote` grammar attribute and `@endpoint`;
 - a call `data(...)` in a 0.1.x page created the HTML5 `<data>` element; on `root`
   it now raises an error, on other nodes `data` is the Data Bag property. Write
   `html_data(...)` for the element;

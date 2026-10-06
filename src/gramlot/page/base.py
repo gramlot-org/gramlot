@@ -6,6 +6,11 @@ from .builder import GramlotBuilder
 
 
 def source(function):
+    """Mark an instance method as an explicitly exposed Source method.
+
+    Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API:
+    they arrive together with the `remote` grammar attribute and `@endpoint`.
+    """
     if not isfunction(function):
         raise TypeError("@source can decorate only an instance method")
     function.__gramlot_source__ = True

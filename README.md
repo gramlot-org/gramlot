@@ -95,7 +95,7 @@ Source and the Data; Data changes reach the DOM, and native controls write back.
   replacing the legacy `data(path, value)`; the HTML5 `<data>` element is
   `html_data(...)`;
 - `^`, `=` and `==` pointers, relative, symbolic and `?attr` paths, variable datapaths;
-- `dataFormula`, `dataController` and `remoteSource`, with named logic as the primary
+- `dataFormula` and `dataController`, with named logic as the primary
   path (since 0.2.5 the `Logic` class exported by the page module `foo.js`, beside
   `foo.py` for a Python page, or `class Logic` in `foo_aux.js`) and inline code only
   under a permissive Content Security Policy (a clear error under a strict one);
