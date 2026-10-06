@@ -51,7 +51,7 @@ each branch installs Data declarations between validation and DOM (080).
 
 <a id="gc-095-015"></a>
 
-## 015 · Remote blocks
+## 015 · Remote Source (not yet available)
 
 Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
 
