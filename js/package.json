@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Declarative HTML/SVG interfaces with live data binding, authored in JavaScript or Python.",
   "license": "Apache-2.0",
   "repository": {
@@ -10,7 +10,7 @@
   },
   "type": "module",
   "scripts": {
-    "test": "node --test tests/*.test.js tests/binding-contracts/gramlot-quiet-write.test.mjs tests/upstream-regressions/builder-symbolic-attribute.test.mjs tests/routes/*.test.js",
+    "test": "node --test tests/*.test.js tests/binding-contracts/gramlot-quiet-write.test.mjs tests/upstream-regressions/builder-symbolic-attribute.test.mjs",
     "build": "node scripts/build-runtime.mjs",
     "test:host": "node --test tests/host.test.js",
     "prepack": "node scripts/build-runtime.mjs"
@@ -31,7 +31,6 @@
     "./runtime": "./dist/gramlot.js",
     "./page": "./src/adapters/page.js",
     "./host": "./src/adapters/host.js",
-    "./routes": "./src/routes/index.js",
     "./themes/*": "./themes/*",
     "./assets/branding/*": "./assets/branding/*"
   },
