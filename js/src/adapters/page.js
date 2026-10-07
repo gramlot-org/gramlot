@@ -8,7 +8,12 @@ import {GramlotBuilder} from '../builder/gramlot-builder.js';
 
 const SOURCE_METHOD = Symbol('gramlot.source');
 
-/** Explicit method registration, equivalent to Python @source without syntax transforms. */
+/**
+ * Explicit method registration, equivalent to Python @source without syntax transforms.
+ *
+ * Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API:
+ * they arrive together with the `remote` grammar attribute and `@endpoint`.
+ */
 export function source(method) {
     if (typeof method !== 'function') throw new TypeError('source requires a method');
     method[SOURCE_METHOD] = true;

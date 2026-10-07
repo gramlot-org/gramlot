@@ -292,14 +292,14 @@ For the local development installation described above, use the browser-safe
 Page entry for pages shared by Node, Bun and standalone:
 
 ```javascript
-import {Page as BasePage, source} from '@gramlot/gramlot/page';
+import {Page as BasePage} from '@gramlot/gramlot/page';
 
 export class Page extends BasePage {
     main(root) { root.section(null, {id: 'details'}).p('Hello'); }
-    details(root, {name}) { root.p(name); }
 }
-source(Page.prototype.details);
 ```
+
+Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
 
 The Worker entry belongs to the `@gramlot/gramlot-serverless` host configuration. This
 development boundary requires the matching core with the browser-safe `/host`
@@ -320,7 +320,7 @@ For an exported directory, `mount({workerUrl, assetRoot})` accepts an absolute
 file/HTTP/HTTPS directory URL ending in `/`. With this option, declared CSS URLs
 must be root-relative paths and are resolved inside that export directory.
 The exporter supplies the directory URL; it does not rewrite `Page.css`.
-The returned Gramlot instance uses its ordinary `remoteSource` and live Source APIs.
+The returned Gramlot instance uses its ordinary live Source APIs.
 `app.dispose()` terminates its dedicated Worker and rejects outstanding requests.
 An optional mount `signal` cancels startup. A cancelled remote request drops its
 reply; it does not interrupt JavaScript already executing inside the host.

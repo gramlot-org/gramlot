@@ -13,7 +13,7 @@
 [![Python coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=python)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=python)
 [![PyPI](https://img.shields.io/pypi/v/gramlot)](https://pypi.org/project/gramlot/)
 [![JSR](https://jsr.io/badges/@gramlot/gramlot)](https://jsr.io/@gramlot/gramlot)
-[![Status: 0.2.7 released](https://img.shields.io/badge/status-0.2.7%20released-green)](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.7)
+[![Status: 0.2.8 released](https://img.shields.io/badge/status-0.2.8%20released-green)](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.8)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
 **Describe application interfaces in Python; let a JavaScript runtime handle
@@ -25,11 +25,11 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a host; the core is
 independent of server and database technology.
 
-> **Release status.** The current release is **0.2.7**, published on
+> **Release status.** The current release is **0.2.8**, published on
 > [PyPI](https://pypi.org/project/gramlot/) (`gramlot`), on
 > [npm](https://www.npmjs.com/package/@gramlot/gramlot) and
 > [JSR](https://jsr.io/@gramlot/gramlot) (`@gramlot/gramlot`) and as the
-> [GitHub release v0.2.7](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.7).
+> [GitHub release v0.2.8](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.8).
 > **0.2.0 (HTML/SVG data binding)**, released on 2026-09-30, was qualified on
 > Chromium, WebKit and Firefox and accepted by the owner; the patch releases that
 > follow it keep its contract.
@@ -95,7 +95,7 @@ Source and the Data; Data changes reach the DOM, and native controls write back.
   replacing the legacy `data(path, value)`; the HTML5 `<data>` element is
   `html_data(...)`;
 - `^`, `=` and `==` pointers, relative, symbolic and `?attr` paths, variable datapaths;
-- `dataFormula`, `dataController` and `remoteSource`, with named logic as the primary
+- `dataFormula` and `dataController`, with named logic as the primary
   path (since 0.2.5 the `Logic` class exported by the page module `foo.js`, beside
   `foo.py` for a Python page, or `class Logic` in `foo_aux.js`) and inline code only
   under a permissive Content Security Policy (a clear error under a strict one);
@@ -122,7 +122,7 @@ with 0.3.0.
 - [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.
 
 - [Classes and server adapters](docs/public/090-classes-and-hosts.md) — repository map and responsibilities.
-- [Writing pages](docs/public/095-writing-pages.md) — HTML pages, lifecycle, remote blocks and the 0.2.0 data binding.
+- [Writing pages](docs/public/095-writing-pages.md) — HTML pages, lifecycle and the 0.2.0 data binding.
 - [Extending Gramlot](docs/public/100-extensions.md) — current extension points and contracts still to define.
 
 ## Project status

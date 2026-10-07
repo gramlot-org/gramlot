@@ -8,7 +8,7 @@ Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 > are 0.2.0 behavior (060 with the 0.2.5 page module); 095 is `gramlot.inout` (0.2.5).
 
 Examples, in gramlot-examples: [`binding/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) (routes `b01`-`b11` in the gallery) and
-[`controllers/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) (`c01`-`c09`), each page in Python with a JS equivalent; the
+[`controllers/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) (`c01`-`c08`), each page in Python with a JS equivalent; the
 sections below name the one they illustrate. No example for `js_requires` groups,
 `connect_on<event>` by name, `_userChanges`, `_onBuilt`, `#ANCHOR` and `gramlot.inout`. `html_svg` is HTML and SVG without binding.
 
@@ -19,15 +19,12 @@ sections below name the one they illustrate. No example for `js_requires` groups
 Host-supplied authoring example, not a standalone server command:
 
 ```python
-from gramlot import Page as BasePage, source
+from gramlot import Page as BasePage
 
 class Page(BasePage):
     title = "People"
     def main(self, root):
         root.div("People", id="people").p("Choose a person")
-    @source
-    def details(self, root, name="Homer"):
-        root.p(name)
 ```
 
 Python calls return real SourceBagNode objects; JS uses the generic builder handles. Text is literal, not parsed HTML.
@@ -54,22 +51,9 @@ each branch installs Data declarations between validation and DOM (080).
 
 <a id="gc-095-015"></a>
 
-## 015 · Remote blocks
+## 015 · Remote Source (not yet available)
 
-`@source` explicitly exposes a public method. Main/source methods may be sync or
-async, build into root, return `None`, and accept keyword arguments. An unmarked
-override hides inherited exposure. Browser runtime
-`app.remoteSource(targetNode, "details", {name: "Marge"})` validates incoming Source
-then replaces the body. Rendering follows the Bag event, without Source rollback.
-Stale responses and removed targets are ignored.
-
-This runtime call is not a declarative page API; applications must not substitute
-manual DOM events/fetch.
-*0.2.0:* a `remoteSource` branch installs its own `dataSetter` before its DOM. A button
-controller (075) can call `this.page.remoteSource(...)` from named logic; no
-declarative remote request. The pending request lives as long as its target (removed
-target: late answer ignored); of two overlapping requests the latest wins. Example:
-`controllers/08_remote_source` (`c08`).
+Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
 
 <a id="gc-095-020"></a>
 
@@ -407,7 +391,7 @@ only the Gramlot handlers stop (`fire_*` loop, radio peer loop, listeners). A fa
 disposer does not stop the others: removal completes, then the closing errors are
 thrown (one as is, several as `AggregateError`). A failed first render removes the
 records its children created (listeners, controls, radio groups, references); no Data
-rollback. Example: `controllers/09_end_to_end` (`c09`).
+rollback. Example: `controllers/08_end_to_end` (`c08`).
 
 <a id="gc-095-085"></a>
 
@@ -436,8 +420,8 @@ also ran the nested controller); no `#WORKSPACE`/`#ROW`/`#DATA`; methods instead
 Migration from legacy pages: `data(...)` → `dataSetter(...)`; `Page.css` URL list
 stays, a page-only stylesheet can move to same-name `foo.css`; inline controllers →
 named logic; macros → `node.SET(...)` etc.
-Migration from 0.1.x: pages without binding run unchanged (HTML/SVG, `Page.css`,
-`@source`, `remoteSource`); `data(...)` created the HTML5 `<data>` element; on `root` it now
+Migration from 0.1.x: pages without binding run unchanged (HTML/SVG, `Page.css`);
+Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`; `data(...)` created the HTML5 `<data>` element; on `root` it now
 raises, on other nodes `data` is the Data Bag property: write `html_data(...)`; custom hosts implement `resolve_page`/`resolvePage` and
 `resolve_resources`/`resolveResources`, pass the mount prefix to `open_page` and serve
 the companions, and the bootstrap writes the CSS links in the browser

@@ -1,3 +1,4 @@
+# Copy of the 0.2.0 qualification page; the public example changed in 0.2.8.
 from gramlot import Page as BasePage
 from gramlot import source
 

@@ -45,6 +45,9 @@ Before changing this repository, read `docs/00-constitution.md`,
   Flag violations as defects, not optional cleanup. Only the owner may approve an
   exception or weaken this rule; record the exact scope in the constitution.
 - Keep code and maintained technical documentation in English.
+- Derive every new name, proxy and JS marker from the conventions of GC-225
+  (docs/internal/225-naming-and-proxy-conventions.md). A missing convention is
+  decided, written in GC-225 and only then applied.
 - Use docs/internal/070-work-status.md for current status and GC-110 for the sole 0.1.0 execution plan. GC-094, older handoffs, and PoC/context are historical evidence. Keep docs/internal/070-work-status.md and its docs_llm mirror current after
   meaningful progress, checks, scope changes or blockers. Proactively report
   status and the next action; distinguish implemented, verified and accepted work.
