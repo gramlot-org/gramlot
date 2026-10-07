@@ -73,12 +73,11 @@ Decided by the owner on 2026-10-06, after the legacy `genro` object
   the transport). It does not replace them, and their names do not change.
   Owner, 2026-10-06: "le classi vanno bene [...] le classi handler sono solo dei
   diramatori in namespace da gramlot".
-- A handler is a `RoutingClass` of the routes package of the core
-  (`js/src/routes/`, export `@gramlot/gramlot/routes`): the API subset of the
-  Python `genro-routes`, with the same names and behaviour, kept ready to become a
-  separate package. Owner, 2026-10-06: "gli handler sarebbero routing class";
-  "lo possiamo tenere per ora in gramlot come package già pronto ad essere messo a
-  parte".
+- A handler is not a `RoutingClass`: in the browser the functions of a handler
+  are called directly, there is no routing. The decision of 2026-10-06 is
+  superseded; the routes package written for it left the core in 0.2.9 and lives,
+  unpublished, in `genro-org/genro-routes-js`. Owner, 2026-10-07: "nel browser non
+  c'è un vero routing ma chiamate dirette".
 - The browser primary object is `Gramlot`. On the server the same rules apply to
   `Page`. Kajenn terminology (server, application, `code`, `mount`, avatar) is the
   reference on the server side.
