@@ -7,7 +7,8 @@
     "./server": "./js/src/adapters/index.js",
     "./runtime": "./js/dist/gramlot.js",
     "./page": "./js/src/adapters/page.js",
-    "./host": "./js/src/adapters/host.js"
+    "./host": "./js/src/adapters/host.js",
+    "./routes": "./js/src/routes/index.js"
   },
   "imports": {
     "@genrojs/bag": "jsr:@genro/bag@^0.10.3",
