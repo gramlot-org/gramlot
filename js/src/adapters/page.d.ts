@@ -8,6 +8,9 @@ import type {GramlotBuilder} from '../builder/gramlot-builder.js';
 /**
  * Explicit registration of a remote Source method, equivalent to the Python `@source`.
  * A Source method populates its `root` argument and returns nothing.
+ *
+ * Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API:
+ * they arrive together with the `remote` grammar attribute and `@endpoint`.
  */
 export function source<T extends Function>(method: T): T;
 

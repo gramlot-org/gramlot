@@ -95,7 +95,7 @@ Source and the Data; Data changes reach the DOM, and native controls write back.
   replacing the legacy `data(path, value)`; the HTML5 `<data>` element is
   `html_data(...)`;
 - `^`, `=` and `==` pointers, relative, symbolic and `?attr` paths, variable datapaths;
-- `dataFormula`, `dataController` and `remoteSource`, with named logic as the primary
+- `dataFormula` and `dataController`, with named logic as the primary
   path (since 0.2.5 the `Logic` class exported by the page module `foo.js`, beside
   `foo.py` for a Python page, or `class Logic` in `foo_aux.js`) and inline code only
   under a permissive Content Security Policy (a clear error under a strict one);
@@ -122,7 +122,7 @@ with 0.3.0.
 - [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.
 
 - [Classes and server adapters](docs/public/090-classes-and-hosts.md) — repository map and responsibilities.
-- [Writing pages](docs/public/095-writing-pages.md) — HTML pages, lifecycle, remote blocks and the 0.2.0 data binding.
+- [Writing pages](docs/public/095-writing-pages.md) — HTML pages, lifecycle and the 0.2.0 data binding.
 - [Extending Gramlot](docs/public/100-extensions.md) — current extension points and contracts still to define.
 
 ## Project status
