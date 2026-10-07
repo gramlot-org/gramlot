@@ -1,5 +1,5 @@
 // The received Source of a test page: inline code runs only as received with the Source
-// (Gramlot.prepareSource), so a test with inline code builds its Source apart and mounts it as `main`.
+// (SourceHandler.prepareSource), so a test with inline code builds its Source apart and mounts it as `main`.
 import {GramlotBuilder} from '../../src/index.js';
 
 /**
@@ -9,6 +9,6 @@ import {GramlotBuilder} from '../../src/index.js';
 export function mount(app, build) {
     const builder = new GramlotBuilder();
     const result = build(builder.root);
-    app.startSource(builder.source);
+    app.src.startSource(builder.source);
     return result;
 }

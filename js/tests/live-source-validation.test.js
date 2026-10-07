@@ -11,7 +11,7 @@ import {GramlotRenderer} from '../src/renderer/gramlot-renderer.js';
 function page() {
     const document = new JSDOM('<main></main>').window.document;
     const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-    return {document, app, builder: app.builder, renderer: app.renderer};
+    return {document, app, builder: app.src.builder, renderer: app.src.renderer};
 }
 
 test('a scalar update validates only its node; insertion creates one DOM element', () => {
@@ -39,7 +39,7 @@ test('renderer rejects unsupported Source representations without mutating mount
 
     const plainRoot = new Bag();
     plainRoot.setItem('fake', 'plain', {tag: 'p'});
-    assert.throws(() => new GramlotRenderer(builder, plainRoot, document.querySelector('main'), {binding: app.binding}),
+    assert.throws(() => new GramlotRenderer(builder, plainRoot, document.querySelector('main'), {binding: app.src.binding}),
         /GramlotBuilderBag/);
     assert.throws(() => new GramlotRenderer(builder, builder.source, document.querySelector('main')), /BindingRuntime/);
     assert.throws(() => renderer.validateCandidate(plainRoot), /GramlotBuilderBag/);

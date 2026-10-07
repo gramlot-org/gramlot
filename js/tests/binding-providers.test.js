@@ -28,7 +28,7 @@ function companion(app, methods) {
     for (const [name, method] of Object.entries(methods)) {
         Object.defineProperty(Logic.prototype, name, {value: method, writable: true, configurable: true});
     }
-    app.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
+    app.src.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
 }
 
 /** A Source authored on a separate builder, mounted as one branch (one `ins` event). */
@@ -51,7 +51,7 @@ test('the ^/= matrix: ^ triggers and reads, = only reads, both at call time', ()
     const calls = [];
     companion(app, {sum: counter(calls, kwargs => kwargs.a + kwargs.b)});
     data.setItem('b', 10);
-    app.builder.root.dataFormula({result_path: 'total', func: 'sum', a: '^a', b: '=b'});
+    app.src.builder.root.dataFormula({result_path: 'total', func: 'sum', a: '^a', b: '=b'});
     data.setItem('b', 20);
     assert.equal(calls.length, 0);
     data.setItem('a', 1);
@@ -64,7 +64,7 @@ test('a formula writes its result once on result_path per invocation', () => {
     const {app, data} = page();
     const writes = [];
     companion(app, {double: kwargs => kwargs.a * 2});
-    app.builder.root.dataFormula({result_path: 'r', func: 'double', a: '^a'});
+    app.src.builder.root.dataFormula({result_path: 'r', func: 'double', a: '^a'});
     data.subscribe('writes', {any: event => { if (event.node.label === 'r') writes.push(event.evt); }});
     data.setItem('a', 1);
     data.setItem('a', 2);
@@ -78,7 +78,7 @@ test('P20: kwargs carry the resolved author attributes and the trigger fields, n
     const calls = [];
     companion(app, {go: counter(calls)});
     data.setItem('b', 'read');
-    const node = sourceTarget(app.builder.root.dataController({
+    const node = sourceTarget(app.src.builder.root.dataController({
         func: 'go', a: '^a', b: '=b', plain: 7, _delay: 0, _userChanges: false, _timing: 0, _onBuilt: false,
     }));
     data.setItem('a', 1);
@@ -89,7 +89,7 @@ test('P20: kwargs carry the resolved author attributes and the trigger fields, n
     assert.equal(kwargs._reason, 'node');
     assert.equal(kwargs._triggerpars.trigger_reason, 'node');
     assert.equal(kwargs._triggerpars.kw.path, 'a');
-    assert.equal(kwargs._triggerpars.kw.registration.recipient, app.binding.bindingFor(node).providers[0]);
+    assert.equal(kwargs._triggerpars.kw.registration.recipient, app.src.binding.bindingFor(node).providers[0]);
     app.dispose();
 });
 
@@ -100,8 +100,8 @@ test('P20: a controller receives the Source node and this is the group; a formul
         control(node, kwargs) { seen.push(['controller', this === app.logic, node.nodeTag, kwargs.a]); },
         compute(kwargs) { seen.push(['formula', this === app.logic, arguments.length, kwargs.a]); return 1; },
     });
-    app.builder.root.dataController({func: 'control', a: '^a'});
-    app.builder.root.dataFormula({result_path: 'r', func: 'compute', a: '^a'});
+    app.src.builder.root.dataController({func: 'control', a: '^a'});
+    app.src.builder.root.dataFormula({result_path: 'r', func: 'compute', a: '^a'});
     data.setItem('a', 5);
     assert.deepEqual(seen, [['controller', true, 'dataController', 5], ['formula', true, 1, 5]]);
     app.dispose();
@@ -112,9 +112,9 @@ test('D2a: _userChanges runs only the node level; programmatic node writes pass,
     const filtered = [];
     const all = [];
     companion(app, {filtered: counter(filtered), all: counter(all)});
-    app.builder.root.dataController({func: 'filtered', v: '^c.v', _userChanges: true});
-    app.builder.root.dataController({func: 'all', v: '^c.v'});
-    const writer = sourceTarget(app.builder.root.dataController({}));
+    app.src.builder.root.dataController({func: 'filtered', v: '^c.v', _userChanges: true});
+    app.src.builder.root.dataController({func: 'all', v: '^c.v'});
+    const writer = sourceTarget(app.src.builder.root.dataController({}));
     writer.SET('c.v', 1); // c created by autocreate, then the node insertion of v
     writer.SET('c.v', 2);
     writer.SET('c', new Bag({v: 3}));
@@ -131,8 +131,8 @@ test('R15: two attributes hit by one container event give two invocations; a con
     const container = [];
     companion(app, {pair: counter(pair), container: counter(container)});
     data.setItem('c', new Bag({x: 1, y: 2}));
-    app.builder.root.dataController({func: 'pair', x: '^c.x', y: '^c.y'});
-    app.builder.root.dataController({func: 'container', c: '^c'});
+    app.src.builder.root.dataController({func: 'pair', x: '^c.x', y: '^c.y'});
+    app.src.builder.root.dataController({func: 'container', c: '^c'});
     data.setItem('c', new Bag({x: 3, y: 4}));
     assert.equal(pair.length, 2);
     assert.deepEqual(pair.map(kwargs => kwargs._reason), ['container', 'container']);
@@ -144,8 +144,8 @@ test('Q2: two formulas that feed each other stop on the equal value, as legacy',
     const {app, data} = page();
     const calls = [];
     companion(app, {copy: counter(calls, kwargs => kwargs.v)});
-    app.builder.root.dataFormula({result_path: 'b', func: 'copy', v: '^a'});
-    app.builder.root.dataFormula({result_path: 'a', func: 'copy', v: '^b'});
+    app.src.builder.root.dataFormula({result_path: 'b', func: 'copy', v: '^a'});
+    app.src.builder.root.dataFormula({result_path: 'a', func: 'copy', v: '^b'});
     data.setItem('a', 1);
     assert.equal(calls.length, 2);
     assert.deepEqual([data.getItem('a'), data.getItem('b')], [1, 1]);
@@ -161,7 +161,7 @@ test('_init runs once per node before the DOM: the first render shows its result
             return `init ${kwargs._reason}`;
         }),
     });
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         const box = root.section({id: 'box'});
         box.p('^shown', {id: 'shown'});
         box.dataFormula({result_path: 'shown', func: 'prepare', _init: true});
@@ -171,9 +171,9 @@ test('_init runs once per node before the DOM: the first render shows its result
     assert.equal(byId('shown').textContent, 'init init');
     assert.equal(calls[0]._node, null);
     assert.deepEqual(calls[0]._triggerpars, {kw: null, trigger_reason: 'init'});
-    const box = app.source.getItem('main').getNodes()[0];
-    app.renderer.freeze(box);
-    app.renderer.unfreeze(box);
+    const box = app.src.source.getItem('main').getNodes()[0];
+    app.src.renderer.freeze(box);
+    app.src.renderer.unfreeze(box);
     box.setAttr({title: 'rebuilt'});
     assert.equal(calls.length, 1);
     app.dispose();
@@ -186,17 +186,17 @@ test('_onBuilt runs after the build of its branch; under freeze it waits for the
         built(node, kwargs) { order.push([kwargs._reason, byId('late') !== null]); },
         started(node, kwargs) { order.push([kwargs._reason, byId('late') !== null]); },
     });
-    app.startSource(authored(root => root.section({id: 'box'})));
-    const box = sourceTarget(app.source.getItem('main').getNodes()[0]);
-    app.renderer.freeze(box);
-    const inner = app.builder.wrapSource(box).div({id: 'late'});
+    app.src.startSource(authored(root => root.section({id: 'box'})));
+    const box = sourceTarget(app.src.source.getItem('main').getNodes()[0]);
+    app.src.renderer.freeze(box);
+    const inner = app.src.builder.wrapSource(box).div({id: 'late'});
     inner.dataController({func: 'built', _onBuilt: true});
     inner.dataController({func: 'started', _onStart: true});
     assert.deepEqual(order, []);
-    app.renderer.unfreeze(box);
+    app.src.renderer.unfreeze(box);
     assert.deepEqual(order, [['built', true], ['start', true]]);
-    app.renderer.freeze(box);
-    app.renderer.unfreeze(box);
+    app.src.renderer.freeze(box);
+    app.src.renderer.unfreeze(box);
     assert.equal(order.length, 2);
     app.dispose();
 });
@@ -207,7 +207,7 @@ test('_onStart of the initial Source runs when the page is started, after every 
     companion(app, {
         record(node, kwargs) { order.push([kwargs._reason, app.state]); },
     });
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.dataController({func: 'record', _onStart: true});
         root.div().dataController({func: 'record', _onBuilt: true});
     }));
@@ -220,8 +220,8 @@ test('P5: an observer outside the branch sees every dataSetter write; the provid
     const outside = [];
     const inside = [];
     companion(app, {outside: counter(outside), inside: counter(inside)});
-    app.builder.root.dataController({func: 'outside', x: '^x'});
-    app.startSource(authored(root => {
+    app.src.builder.root.dataController({func: 'outside', x: '^x'});
+    app.src.startSource(authored(root => {
         root.dataSetter({destination_path: 'x', value: 1});
         root.dataController({func: 'inside', x: '^x'});
         root.dataSetter({destination_path: 'x', value: 2});
@@ -239,17 +239,17 @@ test('P4: an _init that inserts a branch; the insertion is processed after the c
     companion(app, {
         grow() {
             seen.push(byId('box'));
-            const grown = this.page.builder.root.div({id: 'grown'});
+            const grown = this.page.src.builder.root.div({id: 'grown'});
             grown.dataSetter({destination_path: 'g', value: 'once'});
             grown.span('^g', {id: 'g'});
         },
     });
-    app.startSource(authored(root => root.section({id: 'box'}).dataController({func: 'grow', _init: true})));
+    app.src.startSource(authored(root => root.section({id: 'box'}).dataController({func: 'grow', _init: true})));
     assert.deepEqual(seen, [null]);
     assert.ok(byId('box'));
     assert.equal(byId('g').textContent, 'once');
-    const setter = app.source.getNodes().at(-1).value.getNodes()[0];
-    assert.equal(app.binding.bindingFor(setter).hasStamp('installed'), true);
+    const setter = app.src.source.getNodes().at(-1).value.getNodes()[0];
+    assert.equal(app.src.binding.bindingFor(setter).hasStamp('installed'), true);
     data.setItem('g', 'changed');
     assert.equal(byId('g').textContent, 'changed');
     app.dispose();
@@ -265,7 +265,7 @@ test('P4: an _init that removes its own branch: no DOM of the removed nodes, the
         },
         built: counter(built),
     });
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.p('stays', {id: 'stays'});
         const box = root.section({id: 'box'});
         box.p('inside', {id: 'inside'});
@@ -276,7 +276,7 @@ test('P4: an _init that removes its own branch: no DOM of the removed nodes, the
     assert.equal(byId('box'), null);
     assert.equal(byId('inside'), null);
     assert.deepEqual(built, []);
-    assert.equal(app.binding.size, 2); // the fragment main and p#stays
+    assert.equal(app.src.binding.size, 2); // the fragment main and p#stays
     app.dispose();
 });
 
@@ -291,7 +291,7 @@ test('P4: an _init or an _onBuilt that removes a later node: the removed node ru
         },
         record(node) { ran.push(node.getAttr('name')); },
     });
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.dataController({func: 'drop', name: 'a', target: 'b', _init: true});
         root.dataController({func: 'record', name: 'b', _init: true});
         root.dataController({func: 'drop', name: 'c', target: 'd', _onBuilt: true});
@@ -312,10 +312,10 @@ test('P4: an _init that replaces an ancestor: the new value is built once its ev
             outer.setValue(fresh);
         },
     });
-    app.startSource(authored(root => root.section({id: 'outer'}).div({id: 'box'}).dataController({func: 'swap', _init: true})));
+    app.src.startSource(authored(root => root.section({id: 'outer'}).div({id: 'box'}).dataController({func: 'swap', _init: true})));
     assert.equal(byId('box'), null);
     assert.equal(byId('fresh').textContent, 'fresh');
-    assert.ok(app.binding.bindingFor(app.renderer.getBaseSourceNode(byId('fresh'))));
+    assert.ok(app.src.binding.bindingFor(app.src.renderer.getBaseSourceNode(byId('fresh'))));
     app.dispose();
 });
 
@@ -324,22 +324,22 @@ test('P4: an observer that mutates the Source during a dataSetter; the same case
         const {app, byId} = page();
         companion(app, {
             react(node, kwargs) {
-                if (kwargs.x === 1) this.page.builder.root.p('reaction', {id: 'reaction'});
+                if (kwargs.x === 1) this.page.src.builder.root.p('reaction', {id: 'reaction'});
             },
-            grow() { this.page.builder.root.p('grown', {id: 'grown'}); },
+            grow() { this.page.src.builder.root.p('grown', {id: 'grown'}); },
         });
-        app.builder.root.dataController({func: 'react', x: '^x'});
-        const box = sourceTarget(app.builder.root.section({id: 'box'}));
-        if (frozen) app.renderer.freeze(box);
-        const branch = new GramlotBuilderBag(null, app.builder);
-        const inner = app.builder.wrapSource(branch).div({id: 'inner'});
+        app.src.builder.root.dataController({func: 'react', x: '^x'});
+        const box = sourceTarget(app.src.builder.root.section({id: 'box'}));
+        if (frozen) app.src.renderer.freeze(box);
+        const branch = new GramlotBuilderBag(null, app.src.builder);
+        const inner = app.src.builder.wrapSource(branch).div({id: 'inner'});
         inner.dataSetter({destination_path: 'x', value: 1});
         inner.dataController({func: 'grow', _init: true});
         box.setValue(branch);
         assert.equal(byId('reaction').textContent, 'reaction');
         assert.equal(byId('grown').textContent, 'grown');
         assert.equal(byId('inner') === null, frozen);
-        if (frozen) app.renderer.unfreeze(box);
+        if (frozen) app.src.renderer.unfreeze(box);
         assert.ok(byId('inner'));
         assert.equal(app.data.getItem('x'), 1);
         app.dispose();
@@ -349,14 +349,14 @@ test('P4: an observer that mutates the Source during a dataSetter; the same case
 test('an _init error propagates; the NodeBindings of the branch stay open (P12, no rollback)', () => {
     const {app, data} = page();
     companion(app, {fail() { throw new Error('init failure'); }});
-    const box = sourceTarget(app.builder.root.section());
-    const branch = new GramlotBuilderBag(null, app.builder);
-    const setter = sourceTarget(app.builder.wrapSource(branch).dataSetter({destination_path: 'x', value: 1}));
-    const failing = sourceTarget(app.builder.wrapSource(branch).dataController({func: 'fail', _init: true}));
+    const box = sourceTarget(app.src.builder.root.section());
+    const branch = new GramlotBuilderBag(null, app.src.builder);
+    const setter = sourceTarget(app.src.builder.wrapSource(branch).dataSetter({destination_path: 'x', value: 1}));
+    const failing = sourceTarget(app.src.builder.wrapSource(branch).dataController({func: 'fail', _init: true}));
     assert.throws(() => box.setValue(branch), /init failure/);
     assert.equal(data.getItem('x'), 1);
-    assert.ok(app.binding.bindingFor(setter));
-    assert.ok(app.binding.bindingFor(failing));
+    assert.ok(app.src.binding.bindingFor(setter));
+    assert.ok(app.src.binding.bindingFor(failing));
     app.dispose();
 });
 
@@ -370,7 +370,7 @@ test('gate decision 5: provider attributes on a visual node or a dataSetter are 
         [root => root.span({_userChanges: true}), /'_userChanges' is allowed only/],
     ]) {
         const {app, data} = page();
-        assert.throws(() => app.startSource(authored(root => {
+        assert.throws(() => app.src.startSource(authored(root => {
             root.dataSetter({destination_path: 'before', value: 1});
             author(root);
         })), pattern);
@@ -382,7 +382,7 @@ test('gate decision 5: provider attributes on a visual node or a dataSetter are 
 test('gate decision 6: a formula whose result_path is in a null context raises at every invocation', () => {
     const {app, data} = page();
     companion(app, {one: () => 1});
-    app.builder.root.div({datapath: '^sel'}).dataFormula({result_path: '.r', func: 'one', a: '^a'});
+    app.src.builder.root.div({datapath: '^sel'}).dataFormula({result_path: '.r', func: 'one', a: '^a'});
     assert.throws(() => data.setItem('a', 1), /dataFormula '.*': write on a null path: '\.r'/);
     assert.throws(() => data.setItem('a', 2), /write on a null path/);
     app.dispose();
@@ -395,7 +395,7 @@ test('gate decision 7: an inline body registers and runs (S09); a missing func r
         root.dataController({script: 'this.SET("seen", b)', b: '^b'});
         root.dataController({func: 'missing', c: '^c'});
     });
-    assert.equal(app.binding.router.size, 3);
+    assert.equal(app.src.binding.router.size, 3);
     data.setItem('a', 1);
     assert.equal(data.getItem('r'), 2);
     data.setItem('b', 1);
@@ -406,8 +406,8 @@ test('gate decision 7: an inline body registers and runs (S09); a missing func r
 
 test('no body, as legacy: a formula writes the Bag of its author arguments; a controller does nothing', () => {
     const {app, data} = page();
-    app.builder.root.dataFormula({result_path: 'r', a: '^a', k: 'x'});
-    app.builder.root.dataController({b: '^a'});
+    app.src.builder.root.dataFormula({result_path: 'r', a: '^a', k: 'x'});
+    app.src.builder.root.dataController({b: '^a'});
     data.setItem('a', 1);
     assert.ok(data.getItem('r') instanceof Bag);
     assert.deepEqual([data.getItem('r.a'), data.getItem('r.k')], [1, 'x']);
@@ -419,7 +419,7 @@ test('D1: a provider through a valid, a null and a valid path: null arguments, n
     const calls = [];
     companion(app, {go: counter(calls)});
     data.setItem('sel', 'one');
-    const box = app.builder.root.div({datapath: '^sel'});
+    const box = app.src.builder.root.div({datapath: '^sel'});
     box.dataController({func: 'go', v: '^.v', go: '^go'});
     data.setItem('one.v', 1);
     data.setItem('sel', null);
@@ -437,7 +437,7 @@ test('a variable datapath on the data-element itself rebinds its provider', () =
     const calls = [];
     companion(app, {go: counter(calls)});
     data.setItem('sel', 'one');
-    app.builder.root.dataController({datapath: '^sel', func: 'go', v: '^.v'});
+    app.src.builder.root.dataController({datapath: '^sel', func: 'go', v: '^.v'});
     data.setItem('sel', 'two');
     data.setItem('one.v', 1);
     data.setItem('two.v', 2);
@@ -449,10 +449,10 @@ test('removing a provider closes its registrations', () => {
     const {app, data} = page();
     const calls = [];
     companion(app, {go: counter(calls)});
-    const node = sourceTarget(app.builder.root.dataController({func: 'go', a: '^a', b: '^b'}));
-    assert.equal(app.binding.router.size, 2);
+    const node = sourceTarget(app.src.builder.root.dataController({func: 'go', a: '^a', b: '^b'}));
+    assert.equal(app.src.binding.router.size, 2);
     node.parentBag.popNode(node.label);
-    assert.equal(app.binding.router.size, 0);
+    assert.equal(app.src.binding.router.size, 0);
     data.setItem('a', 1);
     assert.deepEqual(calls, []);
     app.dispose();
@@ -531,20 +531,20 @@ test('Fable R5: _init, _onBuilt and _onStart reject pointers and strings, naming
         for (const value of ['^flag', 'yes', '=flag', {}]) {
             const {app, data} = page();
             data.setItem('flag', true);
-            assert.throws(() => app.startSource(authored(root => {
+            assert.throws(() => app.src.startSource(authored(root => {
                 root.dataSetter({destination_path: 'before', value: 1});
                 root.dataController({script: 'x', [name]: value});
             })), error => error.message.startsWith("dataController '")
                 && error.message.endsWith(`: '${name}' accepts true, false, null or a number, not ${JSON.stringify(value)}`));
             assert.equal(data.getItem('before'), null);
-            assert.ok(!app.source.getNode('main'));
+            assert.ok(!app.src.source.getNode('main'));
             app.dispose();
         }
     }
     const {app} = page();
     let runs = 0;
     companion(app, {count() { runs++; }});
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.dataController({func: 'count', _init: false, _onBuilt: null, _onStart: true});
         root.dataController({func: 'count', _init: 0});
     }));

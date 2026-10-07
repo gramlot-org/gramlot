@@ -32,8 +32,8 @@ test('an expired remoteSource applies nothing: target removed, request supersede
     const base = counters(ctx);
     insertBranch(app, host, 'b1', fullBranch(1));
     // The target is removed while the request waits.
-    const removed = app.remoteSource(paneOf(host, 'b1'), 'details');
-    assert.equal(app.remoteRequests.size, 1);
+    const removed = app.src.remoteSource(paneOf(host, 'b1'), 'details');
+    assert.equal(app.rpc.remoteRequests.size, 1);
     host.value.popNode('b1');
     trace.length = 0;
     answers[0].resolve(wire(fullBranch(9)));
@@ -43,8 +43,8 @@ test('an expired remoteSource applies nothing: target removed, request supersede
     // A newer request supersedes the older one: the older answer, arriving last, is dropped.
     insertBranch(app, host, 'b2', fullBranch(2));
     const target = paneOf(host, 'b2');
-    const older = app.remoteSource(target, 'details');
-    const newer = app.remoteSource(target, 'details');
+    const older = app.src.remoteSource(target, 'details');
+    const newer = app.src.remoteSource(target, 'details');
     trace.length = 0;
     answers[2].resolve(wire(root => root.span('new', {id: 'new'})));
     assert.equal(await newer, true);
@@ -52,14 +52,14 @@ test('an expired remoteSource applies nothing: target removed, request supersede
     assert.equal(await older, false);
     assert.equal(ctx.data.getItem('stale'), null);
     assert.ok(ctx.byId('new'));
-    assert.equal(app.remoteRequests.size, 0);
+    assert.equal(app.rpc.remoteRequests.size, 0);
     // Disposed while waiting.
-    const late = app.remoteSource(target, 'details');
+    const late = app.src.remoteSource(target, 'details');
     app.dispose();
     answers[3].resolve(wire(root => root.dataSetter({destination_path: 'late', value: 1})));
     assert.equal(await late, false);
     assert.equal(ctx.data.getItem('late'), null);
-    assert.equal(app.remoteRequests.size, 0);
+    assert.equal(app.rpc.remoteRequests.size, 0);
 });
 
 test('a validation error has no effect: no Data write, no NodeBinding, no DOM; the page can start again', async t => {
@@ -72,7 +72,7 @@ test('a validation error has no effect: no Data write, no NodeBinding, no DOM; t
         root.div({__ref: 'same'});
         root.div({__ref: 'same'});
     });
-    assert.throws(() => app.startSource(duplicate), /Duplicate Source reference/);
+    assert.throws(() => app.src.startSource(duplicate), /Duplicate Source reference/);
     assert.equal(app.state, 'failed');
     assert.deepEqual(trace, []);
     assert.deepEqual(delta(counters(ctx), base), {});
@@ -81,7 +81,7 @@ test('a validation error has no effect: no Data write, no NodeBinding, no DOM; t
     insertBranch(app, host, 'b1', fullBranch(1));
     const mounted = counters(ctx);
     trace.length = 0;
-    const pending = app.remoteSource(paneOf(host, 'b1'), 'details');
+    const pending = app.src.remoteSource(paneOf(host, 'b1'), 'details');
     answers[0].resolve(wire(root => {
         root.dataSetter({destination_path: 'y', value: 1});
         root.span('x', {__ref: 'ref1'});
@@ -139,8 +139,8 @@ test('a first render error leaves no record, listener or radio of the branch; th
     const {app, trace} = ctx;
     const host = startHost(app);
     const base = counters(ctx);
-    const create = app.renderer.html.create.bind(app.renderer.html);
-    app.renderer.html.create = (node, ...args) => {
+    const create = app.src.renderer.html.create.bind(app.src.renderer.html);
+    app.src.renderer.html.create = (node, ...args) => {
         if (node.value === 'bad') throw new Error('injected create failure');
         return create(node, ...args);
     };
@@ -157,7 +157,7 @@ test('a first render error leaves no record, listener or radio of the branch; th
     assert.deepEqual(trace, ['ctl:init']);
     assert.equal(ctx.byId('text'), null);
     assert.deepEqual(delta(counters(ctx), base), {bindings: 7, registrations: 2});
-    assert.deepEqual(app.renderer.radioGroups.peersOf('g', null), []);
+    assert.deepEqual(app.src.renderer.radioGroups.peersOf('g', null), []);
     // Data still reaches the NodeBindings, which have no element to project.
     ctx.data.setItem('f.text', 'x');
     host.value.popNode('b1');
@@ -179,7 +179,7 @@ test('a provider error propagates to the writer and leaves the page working', t 
         },
         writable: true, configurable: true,
     });
-    app.logicRegistry.register(Logic, {group: 'p', resource: '/p.js'});
+    app.src.logicRegistry.register(Logic, {group: 'p', resource: '/p.js'});
     insertBranch(app, host, 'b1', root => {
         root.span('^v', {id: 'shown'});
         root.dataController({func: 'p.check', v: '^v'});
@@ -212,10 +212,10 @@ test('a failing disposer does not block the others: removal, replacement and cle
     const base = counters(ctx);
     let ran = 0;
     const failing = node => {
-        const binding = app.binding.bindingFor(node);
+        const binding = app.src.binding.bindingFor(node);
         binding.track(() => { ran++; });
         binding.track(() => { throw new Error('injected disposer failure'); });
-        app.renderer.onDispose(node, () => { ran++; });
+        app.src.renderer.onDispose(node, () => { ran++; });
     };
     // Removal: the NodeBinding's other disposer, the renderer cleanups and the DOM removal still run.
     insertBranch(app, host, 'b1', fullBranch(1));
@@ -227,16 +227,16 @@ test('a failing disposer does not block the others: removal, replacement and cle
     // Replacement: the old branch closes, the new one is installed and built.
     const branch = insertBranch(app, host, 'b2', fullBranch(2));
     failing(paneOf(host, 'b2'));
-    assert.throws(() => branch.setValue(app.prepareSource(authored(fullBranch(3)))), /Source branch close failed/);
+    assert.throws(() => branch.setValue(app.src.prepareSource(authored(fullBranch(3)))), /Source branch close failed/);
     assert.equal(ran, 4);
     assert.equal(ctx.byId('pane2'), null);
     assert.ok(ctx.byId('pane3'));
-    assert.ok(app.binding.bindingFor(paneOf(host, 'b2')));
+    assert.ok(app.src.binding.bindingFor(paneOf(host, 'b2')));
     // clear(): every removed node leaves, also after a failing one.
     insertBranch(app, host, 'b4', fullBranch(4));
     failing(paneOf(host, 'b2'));
     const renderedFailure = paneOf(host, 'b4');
-    app.renderer.onDispose(renderedFailure, () => { throw new Error('injected cleanup failure'); });
+    app.src.renderer.onDispose(renderedFailure, () => { throw new Error('injected cleanup failure'); });
     assert.throws(() => host.value.clear(), AggregateError);
     assert.equal(ctx.byId('pane3'), null);
     assert.equal(ctx.byId('pane4'), null);
@@ -250,7 +250,7 @@ test('dispose with a failing disposer still releases the renderer, the timers an
     const {app} = ctx;
     const host = startHost(app);
     insertBranch(app, host, 'b1', fullBranch(1));
-    app.binding.bindingFor(paneOf(host, 'b1')).track(() => { throw new Error('injected disposer failure'); });
+    app.src.binding.bindingFor(paneOf(host, 'b1')).track(() => { throw new Error('injected disposer failure'); });
     assert.throws(() => app.dispose(), /Binding cleanup failed/);
     assert.deepEqual(counters(ctx), {bindings: 0, registrations: 0, nodeIds: 0, inline: 0, records: 0, references: 0,
         elements: 0, timers: 0, listeners: 0, dataSubscribers: 0, sourceSubscribers: 0, remoteRequests: 0});
@@ -276,22 +276,22 @@ test('100 mount and removal cycles: every counter back to its baseline, nothing 
         ctx.byId(`span${n}`).click();
         // A rebuild of the pane, and a replacement of its children, on some cycles.
         if (cycle % 5 === 0) {
-            app.renderer.freeze(pane);
+            app.src.renderer.freeze(pane);
             pane.setAttr({title: `t${cycle}`});
-            app.renderer.unfreeze(pane);
+            app.src.renderer.unfreeze(pane);
         }
         if (cycle % 7 === 0) paneOf(host, `b${cycle}`).value.getNodes()[1].setAttr({type: 'search'});
-        if (frozen) app.renderer.freeze(host);
+        if (frozen) app.src.renderer.freeze(host);
         host.value.popNode(`b${cycle}`);
-        if (frozen) app.renderer.unfreeze(host);
+        if (frozen) app.src.renderer.unfreeze(host);
         assert.deepEqual(delta(counters(ctx), base), {}, `cycle ${cycle}`);
     }
     assert.ok(data.getItem('p1.clicked'));
     trace.length = 0;
     clock.tick(10000);
     assert.deepEqual(trace, []);
-    assert.deepEqual(app.renderer.radioGroups.peersOf('g0', null), []);
-    assert.deepEqual(app.renderer.radioGroups.peersOf('g1', null), []);
+    assert.deepEqual(app.src.renderer.radioGroups.peersOf('g0', null), []);
+    assert.deepEqual(app.src.renderer.radioGroups.peersOf('g1', null), []);
     app.dispose();
     assert.equal(ctx.timers.size, 0);
     assert.equal(ctx.listeners.size, 0);

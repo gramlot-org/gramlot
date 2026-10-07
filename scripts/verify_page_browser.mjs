@@ -33,9 +33,9 @@ try {
     const result = await page.evaluate(async () => {
         const {GramlotBuilder} = await import('/assets/gramlot.js');
         const app = window.gramlot;
-        const contents = app.source.getItem('main');
+        const contents = app.src.source.getItem('main');
         const panel = contents.getNodes()[0];
-        if (contents.constructor !== app.source.constructor || panel.nodeTag !== 'div' ||
+        if (contents.constructor !== app.src.source.constructor || panel.nodeTag !== 'div' ||
             panel.attr.tag !== undefined || panel.value.getNodes()[0].value !== 'bart') {
             throw new Error('Main lost its typed SourceBag structure');
         }
@@ -47,7 +47,7 @@ try {
             throw new Error('Rendering failure did not preserve the written Source or untouched DOM');
         }
         panel.setAttr({title: null, _text: 'updated'});
-        app.builder.wrapSource(panel.value).strong(' lisa');
+        app.src.builder.wrapSource(panel.value).strong(' lisa');
         const afterInsert = document.querySelector('#panel').textContent;
         panel.value.clear();
         const afterDelete = document.querySelector('#panel').textContent;
@@ -55,21 +55,21 @@ try {
         replacement.root.em(' maggie');
         panel.setValue(replacement.source);
         const afterReplace = document.querySelector('#panel').textContent;
-        const remoteApplied = await app.remoteSource(panel, 'details', {name: 'remote homer'});
+        const remoteApplied = await app.src.remoteSource(panel, 'details', {name: 'remote homer'});
         const afterRemote = document.querySelector('#panel').textContent;
         const child = panel.value.getNodes()[0];
-        app.renderer.freeze(panel);
-        app.renderer.freeze(child);
+        app.src.renderer.freeze(panel);
+        app.src.renderer.freeze(child);
         child.setValue('frozen final');
-        app.builder.wrapSource(panel.value).span(' tail');
-        app.renderer.unfreeze(child);
+        app.src.builder.wrapSource(panel.value).span(' tail');
+        app.src.renderer.unfreeze(child);
         const whileFrozen = document.querySelector('#panel').textContent;
-        app.renderer.unfreeze(panel);
+        app.src.renderer.unfreeze(panel);
         const afterUnfreeze = document.querySelector('#panel').textContent;
         child.setValue('live again');
         const afterResume = document.querySelector('#panel').textContent;
         app.dispose();
-        return {invalidSourceRejected, afterInsert, afterDelete, afterReplace, remoteApplied, afterRemote, whileFrozen, afterUnfreeze, afterResume, remaining: app.renderer.records.size,
+        return {invalidSourceRejected, afterInsert, afterDelete, afterReplace, remoteApplied, afterRemote, whileFrozen, afterUnfreeze, afterResume, remaining: app.src.renderer.records.size,
                 children: document.querySelector('#gramlot-root').childNodes.length};
     });
     assert.deepEqual(result, {invalidSourceRejected: true, afterInsert: 'updatedbart lisa', afterDelete: 'updated',

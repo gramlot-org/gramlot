@@ -14,9 +14,9 @@ function page() {
     const window = new JSDOM('<main></main>', {virtualConsole: new VirtualConsole()}).window;
     const document = window.document;
     const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-    return {app, window, document, builder: app.builder, data: app.data,
+    return {app, window, document, builder: app.src.builder, data: app.data,
         byId: id => document.getElementById(id),
-        record: node => app.renderer.records.get(sourceTarget(node))};
+        record: node => app.src.renderer.records.get(sourceTarget(node))};
 }
 
 /** Register `methods` in the logic group `group`. */
@@ -25,7 +25,7 @@ function logic(app, group, methods) {
     for (const [name, method] of Object.entries(methods)) {
         Object.defineProperty(Logic.prototype, name, {value: method, writable: true, configurable: true});
     }
-    app.logicRegistry.register(Logic, {group, resource: `/${group ?? 'page'}.js`});
+    app.src.logicRegistry.register(Logic, {group, resource: `/${group ?? 'page'}.js`});
 }
 
 function fire(window, element, type, init = {}) {
@@ -119,9 +119,9 @@ test('a rebuilt element gets its listeners once; a removed element keeps none', 
         const div = root.div({id: 'pane'});
         return [div, sourceTarget(div.div({id: 'd', connect_onclick: 'this.SET("n", (this.GET("n") || 0) + 1)'}))];
     });
-    app.renderer.freeze(pane);
+    app.src.renderer.freeze(pane);
     sourceTarget(pane).setAttr({title: 'rebuilt'});
-    app.renderer.unfreeze(pane);
+    app.src.renderer.unfreeze(pane);
     fire(window, byId('d'), 'click');
     assert.equal(data.getItem('n'), 1);
     const element = byId('d');
@@ -134,11 +134,11 @@ test('R12: a node removed under freeze keeps its DOM until the thaw and its hand
     const {app, builder, byId, window, data} = page();
     const pane = builder.root.div({id: 'pane'});
     const node = sourceTarget(pane.input({id: 'i', connect_onkeydown: 'this.SET("typed", true)'}));
-    app.renderer.freeze(pane);
+    app.src.renderer.freeze(pane);
     node.parentBag.popNode(node.label);
     fire(window, byId('i'), 'keydown');
     assert.equal(data.getItem('typed'), null);
-    app.renderer.unfreeze(pane);
+    app.src.renderer.unfreeze(pane);
     assert.equal(byId('i'), null);
 });
 

@@ -15,7 +15,7 @@ function sourceBlock(builder) {
 function page(collections = []) {
     const document = new JSDOM('<main id="root"></main>').window.document;
     const app = new Gramlot({document, element: document.getElementById('root'), transport: false, collections});
-    return {document, builder: app.builder, source: app.source, renderer: app.renderer};
+    return {document, builder: app.src.builder, source: app.src.source, renderer: app.src.renderer};
 }
 
 function element(builder, bag, label, tag, value = '', attrs = {}) {

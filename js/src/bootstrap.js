@@ -63,7 +63,7 @@ export class PageBootstrap {
             window.removeEventListener('pagehide', pagehide);
         }
         const app = new Gramlot({...config, document});
-        for (const {logicClass, group, resource} of entries) app.logicRegistry.register(logicClass, {group, resource});
+        for (const {logicClass, group, resource} of entries) app.src.logicRegistry.register(logicClass, {group, resource});
         window.gramlot = app;
         await app.start();
         return app;

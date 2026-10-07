@@ -20,7 +20,7 @@ function companion(app, methods) {
     for (const [name, method] of Object.entries(methods)) {
         Object.defineProperty(Logic.prototype, name, {value: method, writable: true, configurable: true});
     }
-    app.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
+    app.src.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
 }
 
 function authored(author) {
@@ -35,7 +35,7 @@ test('_delay debounces: the last call wins and the arguments are read when the b
     const {app, data, clock} = page(t);
     const calls = [];
     companion(app, {go: counting(calls)});
-    app.builder.root.dataController({func: 'go', a: '^a', b: '=b', _delay: 50});
+    app.src.builder.root.dataController({func: 'go', a: '^a', b: '=b', _delay: 50});
     data.setItem('a', 1);
     clock.tick(30);
     data.setItem('a', 2);
@@ -56,7 +56,7 @@ test('_delay=1: several writes give one invocation, counted directly', t => {
     const {app, data, clock} = page(t);
     const calls = [];
     companion(app, {go: counting(calls)});
-    app.builder.root.dataController({func: 'go', a: '^a', _delay: 1});
+    app.src.builder.root.dataController({func: 'go', a: '^a', _delay: 1});
     for (let value = 0; value < 5; value++) data.setItem('a', value);
     clock.tick(1);
     assert.equal(calls.length, 1);
@@ -68,7 +68,7 @@ test('_userChanges is evaluated at trigger time, before the _delay', t => {
     const calls = [];
     companion(app, {go: counting(calls)});
     data.setItem('c.v', 0);
-    app.builder.root.dataController({func: 'go', v: '^c.v', _delay: 10, _userChanges: true});
+    app.src.builder.root.dataController({func: 'go', v: '^c.v', _delay: 10, _userChanges: true});
     data.setItem('c.v', 1);
     data.setItem('c.v.deep', 2);
     clock.tick(10);
@@ -81,7 +81,7 @@ test('_timing: an interval in seconds; null or 0 stops it; a new value restarts 
     const calls = [];
     companion(app, {tick: counting(calls)});
     data.setItem('every', 2);
-    app.builder.root.dataController({func: 'tick', _timing: '^every'});
+    app.src.builder.root.dataController({func: 'tick', _timing: '^every'});
     clock.tick(1999);
     assert.equal(calls.length, 0);
     clock.tick(1);
@@ -113,8 +113,8 @@ test('_timing with a literal value, and a rebinding restarts it from the new con
     data.setItem('one.every', 1);
     data.setItem('two.every', 5);
     data.setItem('sel', 'one');
-    app.builder.root.dataController({func: 'tick', _timing: 1});
-    app.builder.root.div({datapath: '^sel'}).dataController({func: 'tick', _timing: '^.every', which: 'context'});
+    app.src.builder.root.dataController({func: 'tick', _timing: 1});
+    app.src.builder.root.div({datapath: '^sel'}).dataController({func: 'tick', _timing: '^.every', which: 'context'});
     clock.tick(1000);
     assert.equal(calls.filter(kwargs => kwargs.which).length, 1);
     data.setItem('sel', 'two');
@@ -133,14 +133,14 @@ test('no execution after removal: the pending _delay, the _timing and the delaye
     const {app, data, clock} = page(t);
     const calls = [];
     companion(app, {go: counting(calls)});
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         const box = root.section();
         box.dataController({func: 'go', a: '^a', _delay: 100});
         box.dataController({func: 'go', _timing: 1});
         box.dataController({func: 'go', _onStart: 500});
     }));
     data.setItem('a', 1);
-    const box = app.source.getItem('main').getNodes()[0];
+    const box = app.src.source.getItem('main').getNodes()[0];
     box.parentBag.popNode(box.label);
     clock.tick(10000);
     assert.deepEqual(calls, []);
@@ -151,7 +151,7 @@ test('the same three timers run when the node stays', t => {
     const {app, data, clock} = page(t);
     const calls = [];
     companion(app, {go: counting(calls)});
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         const box = root.section();
         box.dataController({func: 'go', a: '^a', _delay: 100});
         box.dataController({func: 'go', _timing: 1});
@@ -167,8 +167,8 @@ test('dispose stops every timer of the page', t => {
     const {app, data, clock} = page(t);
     const calls = [];
     companion(app, {go: counting(calls)});
-    app.builder.root.dataController({func: 'go', a: '^a', _delay: 100});
-    app.builder.root.dataController({func: 'go', _timing: 1});
+    app.src.builder.root.dataController({func: 'go', a: '^a', _delay: 100});
+    app.src.builder.root.dataController({func: 'go', _timing: 1});
     data.setItem('a', 1);
     app.dispose();
     clock.tick(10000);
@@ -179,7 +179,7 @@ test('P22: _onStart true and 0 run at start with no delay; a number is a delay i
     const {app, data, clock} = page(t);
     const calls = [];
     companion(app, {go: (node, kwargs) => { calls.push([node.getAttr('name'), kwargs._reason]); }});
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.dataController({func: 'go', name: 'true', _onStart: true});
         root.dataController({func: 'go', name: 'zero', _onStart: 0});
         root.dataController({func: 'go', name: 'later', _onStart: 200, a: '^a'});
@@ -198,7 +198,7 @@ test('P22: _onStart true and 0 run at start with no delay; a number is a delay i
 test('P22: a negative or non-finite _onStart is an error at registration', t => {
     for (const value of [-1, Infinity, NaN]) {
         const {app} = page(t);
-        assert.throws(() => app.startSource(authored(root => root.dataController({func: 'go', _onStart: value}))),
+        assert.throws(() => app.src.startSource(authored(root => root.dataController({func: 'go', _onStart: value}))),
             /dataController '.*': _onStart must be true or a delay in ms not below 0/);
         app.dispose();
         t.mock.timers.reset();
@@ -209,7 +209,7 @@ test('_onBuilt with a number runs that many ms after the build', t => {
     const {app, clock} = page(t);
     const calls = [];
     companion(app, {go: counting(calls)});
-    app.startSource(authored(root => root.div().dataController({func: 'go', _onBuilt: 30})));
+    app.src.startSource(authored(root => root.div().dataController({func: 'go', _onBuilt: 30})));
     assert.deepEqual(calls, []);
     clock.tick(30);
     assert.deepEqual(calls.map(kwargs => kwargs._reason), ['built']);
@@ -223,8 +223,8 @@ test('FIRE_AFTER from a provider body is owned by the provider node and cancelle
         later(node) { node.FIRE_AFTER('shot', 'v', 50); },
         seen: (node, kwargs) => { seen.push(kwargs.shot); },
     });
-    app.builder.root.dataController({func: 'seen', shot: '^shot'});
-    const node = sourceTarget(app.builder.root.dataController({func: 'later', go: '^go'}));
+    app.src.builder.root.dataController({func: 'seen', shot: '^shot'});
+    const node = sourceTarget(app.src.builder.root.dataController({func: 'later', go: '^go'}));
     data.setItem('go', 1);
     clock.tick(50);
     assert.deepEqual(seen, ['v']);

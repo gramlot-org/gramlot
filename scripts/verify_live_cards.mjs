@@ -18,19 +18,19 @@ try {
         await page.waitForFunction(() => window.gramlot?.state === 'started');
         assert.equal(await page.locator('.icon-cards article').count(), 3);
         await page.evaluate(() => {
-            window.originalCards = window.gramlot.builder.source.getItem('main.page.cards');
+            window.originalCards = window.gramlot.src.builder.source.getItem('main.page.cards');
             window.originalSibling = document.querySelector('.icon-cards article');
             window.removedCard = window.originalCards.getNode('drawing');
-            window.recordCount = window.gramlot.renderer.records.size;
+            window.recordCount = window.gramlot.src.renderer.records.size;
         });
         await page.getByRole('button', {name: 'Remove Drawing', exact: true}).click();
         assert.equal(await page.locator('.icon-cards article').count(), 2);
         assert.deepEqual(await page.evaluate(() => ({
             labels: window.originalCards.getNodes().map(node => node.label),
-            sameSource: window.originalCards === window.gramlot.builder.source.getItem('main.page.cards'),
+            sameSource: window.originalCards === window.gramlot.src.builder.source.getItem('main.page.cards'),
             sameSibling: window.originalSibling === document.querySelector('.icon-cards article'),
-            removedRecord: !window.gramlot.renderer.records.has(window.removedCard),
-            fewerRecords: window.gramlot.renderer.records.size < window.recordCount,
+            removedRecord: !window.gramlot.src.renderer.records.has(window.removedCard),
+            fewerRecords: window.gramlot.src.renderer.records.size < window.recordCount,
         })), {labels: ['structure', 'reading'], sameSource: true, sameSibling: true,
             removedRecord: true, fewerRecords: true});
         await page.getByRole('button', {name: 'Remove Structure', exact: true}).click();

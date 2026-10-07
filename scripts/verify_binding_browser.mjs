@@ -61,7 +61,7 @@ try {
         // A second Gramlot page in the same document, with the same group name.
         const other = new GramlotRuntime.Gramlot({document, element: document.getElementById('other-root'), transport: false});
         other.data.setItem('b.ra', true);
-        for (const id of ['oa', 'ob']) other.builder.root.input({id, type: 'radio', group: 'g', value: '^b.' + id.replace('o', 'r')});
+        for (const id of ['oa', 'ob']) other.src.builder.root.input({id, type: 'radio', group: 'g', value: '^b.' + id.replace('o', 'r')});
         window.other = other;
         // S12: buttons in forms, a connect_onclick on the ancestor, native listeners of the author.
         window.seen = [];
@@ -90,7 +90,7 @@ try {
         r12.button('fire', {id: 'r12fire', fire: 'z.fired'});
         r12.span('span', {id: 'r12span', connect_onclick: 'this.SET("z.clicked", true)'});
         root.dataController({script: 'window.r12seen.push(1)', t: '^z.text', k: '^z.key', b: '^z.box', f: '^z.fired', c: '^z.clicked'});
-        app.startSource(source.source);
+        app.src.startSource(source.source);
         window.app = app;
         document.getElementById('bctrl').addEventListener('click', () => window.seen.push('author on bctrl'));
         document.getElementById('buttons').addEventListener('click', event => window.seen.push('author bubble ' + event.target.id));
@@ -234,12 +234,12 @@ try {
 
     // C04.1: multiple of a select rebuilds the element, the NodeBinding stays.
     const rebuild = await page.evaluate(() => {
-        const node = window.app.source.getItem('main').getNodes().find(each => each.attr.id === 'multiple');
-        const binding = window.app.binding.bindingFor(node);
+        const node = window.app.src.source.getItem('main').getNodes().find(each => each.attr.id === 'multiple');
+        const binding = window.app.src.binding.bindingFor(node);
         const before = document.getElementById('multiple');
         node.setAttr({multiple: false});
         const after = document.getElementById('multiple');
-        return {rebuilt: before !== after, multiple: after.multiple, same: window.app.binding.bindingFor(node) === binding};
+        return {rebuilt: before !== after, multiple: after.multiple, same: window.app.src.binding.bindingFor(node) === binding};
     });
     assert.deepEqual(rebuild, {rebuilt: true, multiple: false, same: true});
     checks.push('C04.1 rebuild');
@@ -282,11 +282,11 @@ try {
 
     // A rebuild of the group after the code write: the button written last is on.
     const regrouped = await page.evaluate(() => {
-        const panel = window.app.source.getItem('main').getNodes().find(each => each.attr.id === 'panel');
+        const panel = window.app.src.source.getItem('main').getNodes().find(each => each.attr.id === 'panel');
         const before = document.getElementById('rc');
-        window.app.renderer.freeze(panel);
+        window.app.src.renderer.freeze(panel);
         panel.setAttr({title: 'rebuilt'});
-        window.app.renderer.unfreeze(panel);
+        window.app.src.renderer.unfreeze(panel);
         return document.getElementById('rc') !== before;
     });
     assert.equal(regrouped, true);
@@ -335,8 +335,8 @@ try {
 
     // S13, R12: freeze, remove the branch, then real typing, clicks and keys on its elements.
     await page.evaluate(() => {
-        const section = window.app.source.getItem('main').getNodes().find(each => each.attr.id === 'r12');
-        window.app.renderer.freeze(section);
+        const section = window.app.src.source.getItem('main').getNodes().find(each => each.attr.id === 'r12');
+        window.app.src.renderer.freeze(section);
         section.value.popNode(section.value.getNodes()[0].label);
     });
     await page.click('#r12text');
@@ -353,7 +353,7 @@ try {
     }));
     assert.deepEqual(r12, {data: [null, null, null, null, null], seen: 0, typed: 'abc'});
     const thawed = await page.evaluate(() => {
-        window.app.renderer.unfreeze(window.app.source.getItem('main').getNodes().find(each => each.attr.id === 'r12'));
+        window.app.src.renderer.unfreeze(window.app.src.source.getItem('main').getNodes().find(each => each.attr.id === 'r12'));
         return ['r12box', 'r12text', 'r12fire', 'r12span'].map(id => document.getElementById(id));
     });
     assert.deepEqual(thawed, [null, null, null, null]);
@@ -381,7 +381,7 @@ try {
     strictBody.script('window.withoutNonce = true;');
     strictBody.script(`
         const app = new GramlotRuntime.Gramlot({document, element: document.getElementById('gramlot-root'), transport: false});
-        app.logicRegistry.register(class Logic { somma(kwargs) { return kwargs.a + kwargs.b; } }, {group: null, resource: '/csp_aux.js'});
+        app.src.logicRegistry.register(class Logic { somma(kwargs) { return kwargs.a + kwargs.b; } }, {group: null, resource: '/csp_aux.js'});
         const source = new GramlotRuntime.GramlotBuilder();
         const root = source.root;
         app.data.setItem('csp.b', 2);
@@ -390,7 +390,7 @@ try {
         root.input({id: 'inline-c', value: '^csp.c'});
         root.dataController({script: 'this.SET("csp.out", c)', c: '^csp.c'});
         root.button('go', {id: 'inline-go', action: 'this.SET("csp.out", "clicked")'});
-        app.startSource(source.source);
+        app.src.startSource(source.source);
         window.app = app;
     `, {nonce});
     const strictFile = join(folder, 'csp.html');
@@ -447,7 +447,7 @@ try {
         root.iframe({id: 'allowed-frame', name: 'allowed-frame', srcdoc: '^sd.allowed', sandbox: 'allow-scripts'});
         root.iframe({id: 'literal-frame', name: 'literal-frame', srcdoc: posting('literal')});
         window.switchNode = root.iframe({id: 'switch-frame', name: 'switch-frame', srcdoc: '<p id="m">literal</p>'});
-        app.startSource(source.source);
+        app.src.startSource(source.source);
         window.app = app;
     `);
     const frameFile = join(folder, 'srcdoc.html');

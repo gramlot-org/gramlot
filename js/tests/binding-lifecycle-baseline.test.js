@@ -10,7 +10,7 @@ import {Gramlot} from '../src/gramlot.js';
 function mounted() {
     const document = new JSDOM('<main></main>').window.document;
     const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-    return {builder: app.builder, document, mount: () => app.renderer};
+    return {builder: app.src.builder, document, mount: () => app.src.renderer};
 }
 
 test('Builder evaluates Data on mount and Source updates without consuming pointers', () => {

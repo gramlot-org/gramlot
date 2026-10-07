@@ -7,7 +7,7 @@ import {Gramlot, GramlotBuilder} from '../src/index.js';
 function setup() {
     const document = new JSDOM('<main></main>').window.document;
     const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-    const {builder, renderer} = app;
+    const {builder, renderer} = app.src;
     const panel = sourceTarget(builder.root.section(null, {id: 'panel'}));
     builder.wrapSource(panel).span('old');
     const sibling = sourceTarget(builder.root.p('outside'));

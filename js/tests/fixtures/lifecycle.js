@@ -22,7 +22,7 @@ export function page(t, {transport = false} = {}) {
         value(node, kwargs) { trace.push(`${kwargs.who}:${kwargs._reason}`); },
         writable: true, configurable: true,
     });
-    app.logicRegistry.register(Logic, {group: null, resource: '/lifecycle_aux.js'});
+    app.src.logicRegistry.register(Logic, {group: null, resource: '/lifecycle_aux.js'});
     app.data.subscribe('lifecycle-trace', {any: event => {
         const base = event.pathlist ?? [];
         const path = event.evt === 'ins' || event.evt === 'del' ? [...base, event.node.label] : base;
@@ -41,13 +41,13 @@ export function authored(author) {
 
 /** Start `app` on a Source holding one `section#host` with a `p#base`, and return the host node. */
 export function startHost(app) {
-    app.startSource(authored(root => root.section({id: 'host'}).p('base', {id: 'base'})));
-    return sourceTarget(app.source.getItem('main').getNodes()[0]);
+    app.src.startSource(authored(root => root.section({id: 'host'}).p('base', {id: 'base'})));
+    return sourceTarget(app.src.source.getItem('main').getNodes()[0]);
 }
 
 /** Insert the branch authored by `author` under `host` as one Source event (a fragment node `label`). */
 export function insertBranch(app, host, label, author) {
-    host.value.setItem(label, app.prepareSource(authored(author)));
+    host.value.setItem(label, app.src.prepareSource(authored(author)));
     return host.value.getNode(label);
 }
 
@@ -81,18 +81,18 @@ export function counters({app, document, timers, listeners, root = document.quer
     const subscribers = bag => Object.keys(bag._updSubscribers).length + Object.keys(bag._insSubscribers).length
         + Object.keys(bag._delSubscribers).length;
     return {
-        bindings: app.binding.size,
-        registrations: app.binding.router.size,
-        nodeIds: app.binding.nodeIds.size,
-        inline: app.binding.inlineCompiler.size,
-        records: app.renderer.records.size,
-        references: app.renderer.references.entries.size,
+        bindings: app.src.binding.size,
+        registrations: app.src.binding.router.size,
+        nodeIds: app.src.binding.nodeIds.size,
+        inline: app.src.binding.inlineCompiler.size,
+        records: app.src.renderer.records.size,
+        references: app.src.renderer.references.entries.size,
         elements: root.getElementsByTagName('*').length,
         timers: timers.size,
         listeners: listeners.size,
-        dataSubscribers: subscribers(app.binding.root),
-        sourceSubscribers: subscribers(app.source),
-        remoteRequests: app.remoteRequests.size,
+        dataSubscribers: subscribers(app.src.binding.root),
+        sourceSubscribers: subscribers(app.src.source),
+        remoteRequests: app.rpc.remoteRequests.size,
     };
 }
 

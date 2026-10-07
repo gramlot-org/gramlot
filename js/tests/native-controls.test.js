@@ -19,9 +19,9 @@ function page() {
     const {window} = new JSDOM('<main></main>', {virtualConsole});
     const document = window.document;
     const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-    return {app, window, document, builder: app.builder, data: app.data, errors,
+    return {app, window, document, builder: app.src.builder, data: app.data, errors,
         byId: id => document.getElementById(id),
-        record: node => app.renderer.records.get(sourceTarget(node))};
+        record: node => app.src.renderer.records.get(sourceTarget(node))};
 }
 
 /** Type `text` into `element` as the browser does: the value changes, then `input`. */
@@ -264,7 +264,7 @@ test('a change of live, literal or from a pointer, changes the write moment with
     const {app, builder, data, byId} = page();
     const node = sourceTarget(builder.root.input({id: 't', value: '^v', live: '^mode'}));
     const field = byId('t');
-    const binding = app.binding.bindingFor(node);
+    const binding = app.src.binding.bindingFor(node);
     type(field, 'a');
     assert.equal(data.getItem('v'), null);
     data.setItem('mode', true);
@@ -273,7 +273,7 @@ test('a change of live, literal or from a pointer, changes the write moment with
     assert.equal(data.getItem('v'), 'ab');
     node.setAttr({live: false});
     assert.strictEqual(byId('t'), field);
-    assert.strictEqual(app.binding.bindingFor(node), binding);
+    assert.strictEqual(app.src.binding.bindingFor(node), binding);
     type(field, 'abc');
     assert.equal(data.getItem('v'), 'ab');
     change(field);
@@ -386,7 +386,7 @@ test('C04.1: multiple of a select rebuilds the element with the same NodeBinding
     const {app, builder, data, byId, record} = page();
     data.setItem('m', ['a']);
     const node = sourceTarget(select(builder, {id: 's', value: '^m', multiple: '^multi'}));
-    const binding = app.binding.bindingFor(node);
+    const binding = app.src.binding.bindingFor(node);
     const first = byId('s');
     assert.equal(first.multiple, false);
     data.setItem('multi', true);
@@ -394,11 +394,11 @@ test('C04.1: multiple of a select rebuilds the element with the same NodeBinding
     assert.notStrictEqual(second, first);
     assert.equal(second.multiple, true);
     assert.deepEqual([...second.selectedOptions].map(option => option.value), ['a']);
-    assert.strictEqual(app.binding.bindingFor(node), binding);
+    assert.strictEqual(app.src.binding.bindingFor(node), binding);
     node.setAttr({multiple: false});
     const third = byId('s');
     assert.notStrictEqual(third, second);
-    assert.strictEqual(app.binding.bindingFor(node), binding);
+    assert.strictEqual(app.src.binding.bindingFor(node), binding);
     assert.equal(third.multiple, false);
     // The detached element no longer writes.
     first.value = 'c';
@@ -423,11 +423,11 @@ test('D7: type from Data rebuilds and chooses the adapter again; under freeze th
     assert.ok(record(node).control instanceof NumberControl);
     assert.equal(byId('f').value, '3');
     const second = byId('f');
-    app.renderer.freeze(panel);
+    app.src.renderer.freeze(panel);
     data.setItem('tipo', 'range');
     assert.strictEqual(byId('f'), second);
     assert.equal(second.type, 'number');
-    app.renderer.unfreeze(panel);
+    app.src.renderer.unfreeze(panel);
     assert.notStrictEqual(byId('f'), second);
     assert.ok(record(node).control instanceof RangeControl);
 });
@@ -492,7 +492,7 @@ test('ASTRA-02: type from ^, = and == is the resolved one, at mount and on updat
         type(byId(id), '12');
         assert.strictEqual(data.getItem(`v.${id}`), '12', id);
     }
-    const binding = app.binding.bindingFor(nodes.e);
+    const binding = app.src.binding.bindingFor(nodes.e);
     data.setItem('kn', 'n');
     data.setItem('k', 'number');
     nodes.r.setAttr({title: 'projected again'});
@@ -502,7 +502,7 @@ test('ASTRA-02: type from ^, = and == is the resolved one, at mount and on updat
         type(byId(id), '13');
         assert.strictEqual(data.getItem(`v.${id}`), 13, id);
     }
-    assert.strictEqual(app.binding.bindingFor(nodes.e), binding);
+    assert.strictEqual(app.src.binding.bindingFor(nodes.e), binding);
 });
 
 test('ASTRA-02: multiple from == rebuilds the select; live from == is its value, not a truthy string', () => {
@@ -540,7 +540,7 @@ test('ASTRA-02: multiple from == rebuilds the select; live from == is its value,
 // Gate check of Phase 18: a shape change rebuilds with the projection already resolved by `project`.
 test('ASTRA-02: a shape change evaluates the == of the node once, the rebuild included', () => {
     const {app, data, byId, record} = page();
-    const compiler = app.renderer.inlineCompiler;
+    const compiler = app.src.renderer.inlineCompiler;
     const compile = compiler.compileExpression.bind(compiler);
     let runs = 0;
     compiler.compileExpression = (node, attr, expression) => {

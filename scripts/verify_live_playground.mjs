@@ -24,7 +24,7 @@ try {
         assert.equal(await list.count(), 2);
         await page.getByRole('button', {name: 'Add item', exact: true}).click();
         assert.equal(await list.count(), 3);
-        assert.equal(await page.evaluate(() => window.gramlot.source.getItem('main.page.work.items').getNodes().length), 3);
+        assert.equal(await page.evaluate(() => window.gramlot.src.source.getItem('main.page.work.items').getNodes().length), 3);
         await page.getByRole('button', {name: 'Remove last', exact: true}).click();
         assert.equal(await list.count(), 2);
         await page.getByRole('button', {name: 'Clear list', exact: true}).click();
@@ -36,7 +36,7 @@ try {
         assert.equal(await page.locator('h1').innerText(), 'Source is alive!');
         const initial = await page.locator('circle').getAttribute('cx');
         await page.waitForFunction(value => document.querySelector('circle').getAttribute('cx') !== value, initial);
-        assert.equal(await page.evaluate(() => String(window.gramlot.source.getNode('main.page.motion.scene.ball').getAttr('cx')) === document.querySelector('circle').getAttribute('cx')), true);
+        assert.equal(await page.evaluate(() => String(window.gramlot.src.source.getNode('main.page.motion.scene.ball').getAttr('cx')) === document.querySelector('circle').getAttribute('cx')), true);
         await page.getByRole('button', {name: 'Change ball color', exact: true}).click();
         assert.equal(await page.locator('circle').getAttribute('fill'), 'var(--gramlot-warning)');
         assert.equal(await page.evaluate(() => window.activeTimers.size), 1);
