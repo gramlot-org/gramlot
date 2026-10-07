@@ -20,13 +20,17 @@ export interface Parameter {
 
 /** The named parameters of a routed function: TYTX code, required or default, in declaration order. */
 export class Signature {
-    /** Declare the parameters; a spec that is neither a code nor `[code, default]` raises a TypeError. */
+    /**
+     * Declare the parameters. A TypeError is raised by a name that is not an identifier or is `_extraPath`,
+     * a spec that is neither a code nor `[code, default]`, and a default other than `null` that is not a value of its code.
+     */
     constructor(specs?: Record<string, ParameterSpec>);
     /** Copies of the declared specs in order; changing them does not change the signature. */
     readonly parameters: Parameter[];
     /**
      * A new object of the named values `kw` checked against the declaration, defaults applied.
-     * Unknown, missing or wrongly typed names raise a TypeError. A non-empty `extraPath` is carried as `_extraPath`.
+     * Unknown, missing or wrongly typed names raise a TypeError. A non-empty `extraPath` is carried as `_extraPath`;
+     * without the option, a non-empty string `_extraPath` of `kw` passes through.
      */
     bind(kw: Record<string, unknown>, options?: {extraPath?: string}): Record<string, unknown>;
 }

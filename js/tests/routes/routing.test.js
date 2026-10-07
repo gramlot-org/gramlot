@@ -152,7 +152,7 @@ test('a direct call is validated and receives the bound object', () => {
     assert.throws(() => service.sendMail({}), {name: 'TypeError', message: /missing required parameter 'to'/});
     assert.throws(() => service.sendMail({to: 'a', other: 1}), {name: 'TypeError', message: /unknown parameter/});
     assert.throws(() => service.sendMail({to: 7}), {name: 'TypeError', message: /not a valid 'T' value/});
-    assert.throws(() => service.sendMail({to: 'a', _extraPath: 'x'}), {name: 'TypeError'});
+    assert.deepEqual(service.sendMail({to: 'a', _extraPath: 'x'}), {to: 'a', copies: 1, _extraPath: 'x'});
 });
 
 test('the wrapper keeps `this` and an async method stays async', async () => {

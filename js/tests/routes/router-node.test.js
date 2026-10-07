@@ -60,10 +60,29 @@ test('_extraPath is present only when segments are left over', () => {
     assert.equal(kw._extraPath, 'orders/new');
 });
 
-test('_extraPath is refused in kw and on a direct call', () => {
+test('_extraPath in kw passes through, so a handler can re-dispatch the object it received', () => {
     const svc = new TypedService();
-    assert.throws(() => svc.echo({_extraPath: 'a/b'}), TypeError);
-    assert.throws(() => svc.route.node('echo').call({_extraPath: 'a/b'}), TypeError);
+    assert.equal(svc.echo({_extraPath: 'a/b'})._extraPath, 'a/b');
+    assert.equal(svc.route.node('echo').call({_extraPath: 'a/b'})._extraPath, 'a/b');
+    assert.equal(svc.route.node('echo/a/1/1/1/true/2026-10-07/2026-10-07T10:00:00Z/10:30:00/x').call({_extraPath: 'a/b'})._extraPath, 'x');
+});
+
+test('a segment is percent-decoded before the format check; a malformed escape is not_found', () => {
+    const svc = new TypedService();
+    assert.equal(svc.route.node('echo/a%20b%2Fc').call().t, 'a b/c');
+    assert.equal(svc.route.node('echo/-/1/1/1/true/2026-10-07/2026-10-07T10%3A00%3A00Z').call().dhz.toISOString(), '2026-10-07T10:00:00.000Z');
+    assert.equal(svc.route.node('echo/%E0%A4%A').error, 'not_found');
+});
+
+test('a date or time segment whose fields roll over is not_found', () => {
+    const svc = new TypedService();
+    const base = 'echo/a/1/1/1/true';
+    assert.equal(svc.route.node(`${base}/2026-02-29`).error, 'not_found');
+    assert.equal(svc.route.node(`${base}/2026-13-45`).error, 'not_found');
+    assert.equal(svc.route.node(`${base}/2026-10-07/2026-10-07T24:00:00Z`).error, 'not_found');
+    assert.equal(svc.route.node(`${base}/2026-10-07/2026-10-07T10:60Z`).error, 'not_found');
+    assert.equal(svc.route.node(`${base}/2026-10-07/2026-10-07T10:00:00Z/25:99:99`).error, 'not_found');
+    assert.equal(svc.route.node(`${base}/2024-02-29/2026-10-07T23:59:59.999Z/23:59:59.999`).error, null);
 });
 
 // router_node.py:270 RouterNode.__call__: kwargs that conflict with path arguments are ignored - path wins
@@ -97,9 +116,12 @@ test('any other error from the handler body propagates untouched', () => {
     assert.throws(() => mapped().route.node('brokenValue').call({text: 'a'}), {name: 'RangeError', message: 'body failure for a'});
 });
 
-test('a not_found node raises the class mapped in router.errors with its selector', () => {
+test('a not_found node raises the class mapped in router.errors with the requested path as selector', () => {
     const svc = new TypedService();
-    assert.throws(() => svc.route.node('nope').call(), err => err instanceof NotFound && err.selector === 'route');
+    assert.throws(() => svc.route.node('nope').call(), err => err instanceof NotFound && err.selector === 'route:nope');
+    assert.throws(() => svc.route.node('nope/7').call(), err => err instanceof NotFound && err.selector === 'route:nope/7');
+    assert.throws(() => svc.route.node('echo/x/abc').call(), err => err instanceof NotFound && err.selector === 'route:echo/x/abc');
+    assert.throws(() => svc.route.node('').call(), err => err instanceof NotFound && err.selector === 'route');
     class Missing extends Error {}
     svc.route.errors.not_found = Missing;
     assert.throws(() => svc.route.node('nope').call(), Missing);

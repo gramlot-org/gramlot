@@ -57,10 +57,23 @@ test('bind returns a new object and never converts values', () => {
     assert.throws(() => signature.bind({value: '3'}), TypeError);
 });
 
-test('bind applies defaults for absent optional names, without type-checking them', () => {
-    const signature = new Signature({name: 'T', weight: ['L', 'heavy'], tag: ['T', null]});
-    assert.deepEqual(signature.bind({name: 'a'}), {name: 'a', weight: 'heavy', tag: null});
+test('bind applies defaults for absent optional names', () => {
+    const signature = new Signature({name: 'T', weight: ['L', 7], tag: ['T', null]});
+    assert.deepEqual(signature.bind({name: 'a'}), {name: 'a', weight: 7, tag: null});
     assert.deepEqual(signature.bind({name: 'a', weight: 2}), {name: 'a', weight: 2, tag: null});
+});
+
+test('a default is checked against its code at construction; null is always admitted', () => {
+    assert.throws(() => new Signature({weight: ['L', 'heavy']}), {name: 'TypeError', message: /default is not a valid 'L' value/});
+    assert.throws(() => new Signature({when: ['D', '2026-10-07']}), TypeError);
+    for (const [code, value] of Object.entries(VALID)) assert.doesNotThrow(() => new Signature({x: [code, value], y: [code, null]}), code);
+});
+
+test('a parameter name is an identifier other than _extraPath', () => {
+    for (const name of ['2', '0', 'a-b', 'a b', '', '_extraPath']) {
+        assert.throws(() => new Signature({[name]: 'T'}), {name: 'TypeError', message: /not an admissible name/}, JSON.stringify(name));
+    }
+    assert.deepEqual(new Signature({_a: 'T', $b: 'T', c2: 'T'}).parameters.map(parameter => parameter.name), ['_a', '$b', 'c2']);
 });
 
 test('bind rejects unknown names, naming them', () => {
@@ -88,10 +101,12 @@ test('bind with extraPath carries _extraPath only for a non-empty string', () =>
     assert.deepEqual(signature.bind({name: 'a'}), {name: 'a'});
 });
 
-test('_extraPath inside kw is an unknown name', () => {
+test('_extraPath inside kw passes through; the extraPath option wins over it', () => {
     const signature = new Signature({name: 'T'});
-    assert.throws(() => signature.bind({name: 'a', _extraPath: 'x'}), /_extraPath/);
-    assert.throws(() => signature.bind({name: 'a', _extraPath: 'x'}, {extraPath: 'y'}), /_extraPath/);
+    assert.deepEqual(signature.bind({name: 'a', _extraPath: 'x'}), {name: 'a', _extraPath: 'x'});
+    assert.deepEqual(signature.bind({name: 'a', _extraPath: 'x'}, {extraPath: 'y'}), {name: 'a', _extraPath: 'y'});
+    assert.deepEqual(signature.bind({name: 'a', _extraPath: ''}), {name: 'a'});
+    assert.deepEqual(signature.bind({name: 'a', _extraPath: 3}), {name: 'a'});
 });
 
 test('a spec that is neither a code nor [code, default] is a TypeError at construction', () => {

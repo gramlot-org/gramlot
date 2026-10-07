@@ -11,6 +11,7 @@ const ENTRY = Symbol('gramlot.routes.entry');
 const SEGMENT_VALUES = Symbol('gramlot.routes.segmentValues');
 const EXTRA_PATH = Symbol('gramlot.routes.extraPath');
 const ERRORS = Symbol('gramlot.routes.errors');
+const PARTIAL = Symbol('gramlot.routes.partial');
 
 /** The text form a segment must have for each TYTX code before it is decoded. */
 const SEGMENT_FORMATS = {
@@ -24,11 +25,41 @@ const SEGMENT_FORMATS = {
     H: /^\d{2}:\d{2}:\d{2}(\.\d{3})?$/,
 };
 
+/** The UTC fields of a Date in the order they appear in the D, DHZ and H text forms. */
+const UTC_FIELDS = [
+    date => date.getUTCFullYear(),
+    date => date.getUTCMonth() + 1,
+    date => date.getUTCDate(),
+    date => date.getUTCHours(),
+    date => date.getUTCMinutes(),
+    date => date.getUTCSeconds(),
+];
+
+/** True when every numeric field of a date or time segment is the field the decoded Date carries: `2026-13-45` rolls over, so it is refused. */
+const sameFields = (segment, value, type) => {
+    const offset = type === 'H' ? 3 : 0;
+    const fields = segment.split(/\D+/).filter(Boolean).slice(0, UTC_FIELDS.length - offset);
+    return fields.every((field, index) => Number(field) === UTC_FIELDS[offset + index](value));
+};
+
+/** Percent-decode one segment; a malformed escape raises a TypeError. */
+const unescapeSegment = segment => {
+    try {
+        return decodeURIComponent(segment);
+    } catch (error) {
+        throw new TypeError(`segment '${segment}' is not percent-encoded text`, {cause: error});
+    }
+};
+
 /** Decode one path segment with its parameter's TYTX code; a segment out of format or a value the code rejects raises a TypeError. */
-const decodeSegment = (segment, {name, type}) => {
+const decodeSegment = (escaped, {name, type}) => {
+    const segment = unescapeSegment(escaped);
     if (!SEGMENT_FORMATS[type].test(segment)) throw new TypeError(`segment '${segment}' is not a '${type}' value`);
     const value = fromTytx(`${segment}::${type}`);
     new Signature({[name]: type}).bind({[name]: value});
+    if (value instanceof Date && !sameFields(segment, value, type)) {
+        throw new TypeError(`segment '${segment}' is not a '${type}' value`);
+    }
     return value;
 };
 
@@ -50,6 +81,7 @@ export class RouterNode {
     constructor(router, {entryName, path = null, partial = [], errors = router.errors} = {}) {
         this.router = router;
         this[ERRORS] = errors;
+        this[PARTIAL] = partial;
         this.path = path;
         const entry = router.entries.get(entryName ?? router.defaultEntry);
         const assigned = entry ? assignPartial(entry.signature.parameters, partial) : null;
@@ -66,14 +98,15 @@ export class RouterNode {
         return {name: entry.name, docline: entry.docline, meta: entry.meta, result: entry.result};
     }
 
-    /** Invoke the entry with the segment values over `kw` (the path wins); returns the handler result as is. */
+    /** Invoke the entry with the segment values over `kw` (the path wins); returns the handler result as is. The error selector carries the whole requested path. */
     call(kw = {}) {
-        const selector = this.path ? `${this.router.name}:${this.path}` : this.router.name;
+        const requested = [this.path, ...this[PARTIAL]].filter(Boolean).join('/');
+        const selector = requested ? `${this.router.name}:${requested}` : this.router.name;
         const entry = this[ENTRY];
         if (this.error) throw new this[ERRORS][this.error](selector);
         let bound;
         try {
-            bound = entry.signature.bind({...kw, ...this[SEGMENT_VALUES]}, {extraPath: this[EXTRA_PATH]});
+            bound = entry.signature.bind({...kw, ...this[SEGMENT_VALUES]}, {extraPath: this[EXTRA_PATH] || undefined});
         } catch (error) {
             const SignatureError = this[ERRORS].signature_error;
             if (SignatureError === TypeError) throw error;

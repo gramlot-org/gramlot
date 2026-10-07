@@ -67,13 +67,15 @@ ending on a router; `nodes()` omits `entries` and `routers` when empty; a handle
 
 - **One `kw` object.** A function reached through routes receives one object of named values. There are no positional arguments.
 - **`Signature` and `ReturnValue` instead of type hints.** JavaScript has no annotations. `new Signature({name: 'T', weight: ['L', 0]})`
-  declares parameters in order: a string is a required parameter with that TYTX code, `[code, default]` is optional.
+  declares parameters in order: a string is a required parameter with that TYTX code, `[code, default]` is optional and the default
+  is checked against the code at construction (`null` is always admitted). A name is an identifier other than `_extraPath`.
   Accepted codes: `T`, `L`, `R`, `N`, `B`, `D`, `DHZ`, `H`. `ReturnValue` is documentation only and is never checked against the result.
 - **`registerRoute` instead of `@route`.** JavaScript has no stable method decorators. The static call replaces the method with a wrapper
   that validates `kw` against the signature, so a direct call is validated too.
 - **`call(kw)` instead of `__call__`.** A name given both as a path segment and in `kw` takes the value of the path, as Python.
 - **`_extraPath` string instead of `_extra_args` list.** Path segments beyond the declared parameters are joined with `/` and passed as
-  `_extraPath`; with no leftover the key is absent. A path with extra segments is not `not_found`.
+  `_extraPath`, still percent-encoded; with no leftover the key is absent. A path with extra segments is not `not_found`.
+  A string `_extraPath` given in `kw` passes through `bind`, so a handler can re-dispatch the object it received; the path wins over it.
 - **`docline` instead of docstrings.** Entries take `docline` in `registerRoute`; the owner doc is the static `docline` field of the class
   (own property, not inherited).
 - **`mediaType` on `ReturnValue`.** The Python result block uses `media_type`.
@@ -83,8 +85,11 @@ ending on a router; `nodes()` omits `entries` and `routers` when empty; a handle
 - **`resultWrapper(value, metadata)`** takes the metadata as an object, not as keyword arguments.
 - **Errors.** `router.errors` of the router `node()` is called on applies to the whole path, as Python's `errors=` of `node()`. It maps `not_found` to `NotFound` and `signature_error` to `TypeError`. The default `TypeError` re-raises the
   bind error itself; a replacement class is raised as `new Class(selector, {cause})`.
-- **Segment decoding.** Each path segment must match the text form of its parameter's code (`L` digits, `B` `true`/`false`, `D` `YYYY-MM-DD`, ...),
-  then it is decoded with `fromTytx('<segment>::<code>')`; a segment out of format or that the code rejects makes the node `not_found`.
+- **Segment decoding.** Each path segment assigned to a parameter is percent-decoded (`decodeURIComponent`), must match the text form of
+  its parameter's code (`L` digits, `B` `true`/`false`, `D` `YYYY-MM-DD`, ...), then it is decoded with `fromTytx('<segment>::<code>')`;
+  a date or time whose fields do not round-trip (`2026-13-45`, `25:99:99`) is refused. A malformed escape, a segment out of format or
+  one the code rejects makes the node `not_found`. Entry and branch names are matched as written, never decoded.
+- **Error selector.** `NotFound` and a mapped `signature_error` carry `'<router name>:<requested path>'`, the whole path given to `node()`.
 - **State.** Per-instance and per-function state lives under module-level `Symbol` keys; there are no `#private` fields.
 
 ## Python features not implemented

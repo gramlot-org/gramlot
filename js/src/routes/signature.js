@@ -25,16 +25,28 @@ const checkCode = code => {
     if (!Object.hasOwn(CHECKS, code)) throw new TypeError(`unknown TYTX code '${code}'`);
 };
 
+/** A parameter name is an identifier; integer-like keys would lose their declaration order in an object. */
+const NAME = /^[A-Za-z_$][\w$]*$/;
+const EXTRA_PATH = '_extraPath';
+
+const checkName = name => {
+    if (!NAME.test(name) || name === EXTRA_PATH) throw new TypeError(`parameter '${name}': not an admissible name`);
+};
+
 /** The named parameters of a routed function: TYTX code, required or default, in declaration order. */
 export class Signature {
     constructor(specs = {}) {
         const parameters = [];
         for (const [name, spec] of Object.entries(specs)) {
+            checkName(name);
             if (typeof spec === 'string') {
                 checkCode(spec);
                 parameters.push({name, type: spec, required: true, default: undefined});
             } else if (Array.isArray(spec) && spec.length === 2 && typeof spec[0] === 'string') {
                 checkCode(spec[0]);
+                if (spec[1] !== null && !CHECKS[spec[0]](spec[1])) {
+                    throw new TypeError(`parameter '${name}': the default is not a valid '${spec[0]}' value`);
+                }
                 parameters.push({name, type: spec[0], required: false, default: spec[1]});
             } else {
                 throw new TypeError(`parameter '${name}': a spec is a TYTX code or [code, default]`);
@@ -48,10 +60,10 @@ export class Signature {
         return this[PARAMETERS].map(parameter => ({...parameter}));
     }
 
-    /** A new object of the named values `kw` checked against the declaration, defaults applied. */
-    bind(kw, {extraPath} = {}) {
+    /** A new object of the named values `kw` checked against the declaration, defaults applied; `_extraPath` passes through. */
+    bind(kw, {extraPath = kw[EXTRA_PATH]} = {}) {
         const parameters = this.parameters;
-        const unknown = Object.keys(kw).filter(key => !parameters.some(parameter => parameter.name === key));
+        const unknown = Object.keys(kw).filter(key => key !== EXTRA_PATH && !parameters.some(parameter => parameter.name === key));
         if (unknown.length) throw new TypeError(`unknown parameter(s): ${unknown.join(', ')}`);
         const bound = {};
         for (const {name, type, required, default: fallback} of parameters) {
@@ -65,7 +77,7 @@ export class Signature {
             if (!accepted) throw new TypeError(`parameter '${name}' is not a valid '${type}' value`);
             bound[name] = value;
         }
-        if (typeof extraPath === 'string' && extraPath !== '') bound._extraPath = extraPath;
+        if (typeof extraPath === 'string' && extraPath !== '') bound[EXTRA_PATH] = extraPath;
         return bound;
     }
 }
