@@ -79,7 +79,7 @@ Their methods are part of the contract. Plain Bags are valid for Data, not Sourc
 | Python `Page` | Declares metadata, `main(root)` and exposed Source methods | Subclass for an application page |
 | Python `Host` | Resolves page files, allocates page IDs, returns bootstrap HTML and Source | Used or specialized by a server adapter |
 | `GramlotBuilder` in Python/JS | Authors the Gramlot dialect over Python `BuilderBase` / JS `HtmlBuilder` with loaded collections | Page roots are backed by it |
-| JS `Gramlot` | Prepares Data/Source roots and coordinates main and remote responses | Browser runtime bootstrap |
+| JS `Gramlot` | Holds lifecycle and Data; its proxies `src` (`SourceHandler`: the Source and every change of it), `rpc` (`RpcHandler`: the exchange with the host), `dom` (`DomHandler`: the DOM and its correspondence with the Source), `utl` (`UtilitiesHandler`: page utilities) hold the themed members | Browser runtime bootstrap |
 | JS `GramlotRenderer` | Extends generic `RendererBase`; owns live DOM and application references | Framework runtime |
 | *0.2.0:* JS `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Extend Builder `HtmlRenderer` and `SvgRenderer`, inheriting their attribute and style adaptation; render to strings. `GramlotRenderer` extends `GramlotHtmlRenderer` and keeps the live DOM and application references | Framework runtime |
 | *0.2.0:* Python `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Render a Gramlot Source to static HTML/SVG with the same attribute and style rules as JS | Static pages, pre-rendering |
@@ -92,7 +92,7 @@ the 0.2.0 bindings and controllers are described below and in
 [Writing pages](095-writing-pages.md), and resolvers are not implemented.
 
 *0.2.0:* bindings and controllers enter with 0.2.0; resolvers stay deferred.
-`Gramlot` gains `getBaseSourceNode(domNode)` and `getDomNode(sourceNode)`, and
+`gramlot.dom` holds `getBaseSourceNode(domNode)` and `getDomNode(sourceNode)`, and
 each instance owns its named logic groups in `app.logic`
 ([Writing pages](095-writing-pages.md)). In the browser, Source is built from
 `GramlotBuilderBag` and `GramlotBuilderBagNode`, which extend `SourceBag` and
@@ -198,7 +198,7 @@ Next: [Writing pages](095-writing-pages.md).
 
 The generic `genro-builders-js` owns authoring and static HTML/SVG rendering.
 Gramlot owns its live renderer; `genro-dom-js` is no longer a dependency.
-`Gramlot.startSource(wire)` can mount an already-authored typed Source through the
+`gramlot.src.startSource(wire)` can mount an already-authored typed Source through the
 same renderer; it does not execute a Page. Standalone Page execution uses the Worker
 host described below, not a build-time compiler.
 
@@ -494,7 +494,7 @@ companion _aux.js) or serve the page with the permissive CSP profile, which allo
 stays as `cause`. Nothing is written to the Data.
 The page that hits it reports the violation as any `script-src eval` violation.
 
-**Inline code runs only as received with the Source.** `Gramlot.prepareSource`
+**Inline code runs only as received with the Source.** `gramlot.src.prepareSource`
 activates the inline code of the Source the page receives: `main` from the host,
 a remote Source, or a `GramlotBuilderBag` given to `startSource`. Each
 `GramlotBuilderBagNode` keeps the text of its code attributes (`formula` of a

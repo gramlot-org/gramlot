@@ -17,7 +17,7 @@ const DATA_FORBIDDEN = /data is forbidden: write dataSetter for a Data value or 
 function mounted(builder = new GramlotBuilder()) {
     const document = new JSDOM('<main></main>').window.document;
     const mount = () => new Gramlot({document, element: document.querySelector('main'), transport: false})
-        .startSource(builder.source).renderer;
+        .src.startSource(builder.source).src.renderer;
     return {builder, document, mount};
 }
 
@@ -147,11 +147,11 @@ test('a Python Source with html_label, html_data and literal setters mounts in t
     const wire = execFileSync(python, ['-c', PYTHON_AUTHORING], {encoding: 'utf8'}).trim();
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     const app = new Gramlot({document, transport: false});
-    app.startSource(sourceBagFromTytx(wire, app.builder));
+    app.src.startSource(sourceBagFromTytx(wire, app.src.builder));
     const root = document.getElementById('gramlot-root');
     assert.equal(document.getElementById('d').outerHTML, '<data value="1" id="d">one</data>');
     assert.equal(root.querySelector('label').getAttribute('for'), 'n');
-    const setter = app.source.getItem('main').getNodes()[1];
+    const setter = app.src.source.getItem('main').getNodes()[1];
     assert.equal(setter.nodeTag, 'dataSetter');
     assert.equal(setter.getAttr('value'), '^.unresolved');
     assert.equal(setter.getAttr('title'), '=.other');
@@ -347,8 +347,8 @@ print(to_tytx(builder.source))
     const mount = wire => {
         const document = new JSDOM('<main></main>').window.document;
         const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-        app.startSource(wire);
-        const texts = app.source.getItem('main').getNodes().map(node => node.getAttr('_text'));
+        app.src.startSource(wire);
+        const texts = app.src.source.getItem('main').getNodes().map(node => node.getAttr('_text'));
         const html = document.querySelector('main').innerHTML;
         app.dispose();
         return {texts, html};

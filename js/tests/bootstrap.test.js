@@ -243,10 +243,10 @@ async function resolveEveryFunc({html, wire}) {
     const {window} = browser(html, pathToFileURL(`${LOGIC}/calcolo`).href);
     const app = await withFetch(wire, () => new PageBootstrap({...bootstrapArguments(html), document: window.document}).run());
     assert.equal(app.state, 'started');
-    const nodes = sourceNodes(app.source).filter(node => node.attr.func);
+    const nodes = sourceNodes(app.src.source).filter(node => node.attr.func);
     assert.deepEqual(nodes.map(node => node.attr.func),
         ['business.calcolaSconto', 'gui.scroll', 'somma', 'gnrcomponents.settingmanager.load']);
-    const resolved = nodes.map(node => app.logicRegistry.resolve(node.attr.func, node));
+    const resolved = nodes.map(node => app.src.logicRegistry.resolve(node.attr.func, node));
     assert.deepEqual(resolved.map(({group}) => group),
         [app.logic.business, app.logic.gui, app.logic, app.logic.gnrcomponents.settingmanager]);
     const [sconto, scroll, somma, load] = resolved;

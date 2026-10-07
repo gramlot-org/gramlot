@@ -10,7 +10,7 @@ import {DataChange, DataRegistration, DataRouter} from '../src/binding/router.js
 function page() {
     const document = new JSDOM('<main></main>').window.document;
     const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-    return {app, data: app.data, router: app.binding.router};
+    return {app, data: app.data, router: app.src.binding.router};
 }
 
 /** A recipient that records `[name, evt, path, level]` for every change it receives. */
@@ -35,7 +35,7 @@ const names = log => log.map(([name]) => name);
 test('the runtime owns one DataRouter; register returns an active DataRegistration counted by size', () => {
     const {app, router} = page();
     assert.ok(router instanceof DataRouter);
-    assert.equal(router.runtime, app.binding);
+    assert.equal(router.runtime, app.src.binding);
     const registration = router.register({path: 'a.b', recipient: recorder([], 'x')});
     assert.ok(registration instanceof DataRegistration);
     assert.equal(registration.path, 'a.b');
@@ -238,8 +238,8 @@ test('events outside _root_ are ignored', () => {
     const {app, router} = page();
     const log = [];
     registerAll(router, log, ['outside', 'x']);
-    app.binding.root.setItem('outside', 1);
-    app.binding.root.setItem('outside', 2);
+    app.src.binding.root.setItem('outside', 1);
+    app.src.binding.root.setItem('outside', 2);
     assert.deepEqual(log, []);
 });
 

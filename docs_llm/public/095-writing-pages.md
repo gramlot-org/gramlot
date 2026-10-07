@@ -5,12 +5,12 @@ Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 > **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
 > (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README). Previous release:
 > **0.1.2**. Sections 005-035 come from 0.1.2 with *0.2.0* notes; sections 040-090
-> are 0.2.0 behavior (060 with the 0.2.5 page module); 095 is `gramlot.inout` (0.2.5).
+> are 0.2.0 behavior (060 with the 0.2.5 page module); 095 is `gramlot.utl.inout` (0.2.5, path since 0.2.10).
 
 Examples, in gramlot-examples: [`binding/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) (routes `b01`-`b11` in the gallery) and
 [`controllers/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) (`c01`-`c08`), each page in Python with a JS equivalent; the
 sections below name the one they illustrate. No example for `js_requires` groups,
-`connect_on<event>` by name, `_userChanges`, `_onBuilt`, `#ANCHOR` and `gramlot.inout`. `html_svg` is HTML and SVG without binding.
+`connect_on<event>` by name, `_userChanges`, `_onBuilt`, `#ANCHOR` and `gramlot.utl.inout`. `html_svg` is HTML and SVG without binding.
 
 <a id="gc-095-005"></a>
 
@@ -95,19 +95,19 @@ Next: [Extending Gramlot](100-extensions.md).
 
 ## 030 · Freeze a rendered branch
 
-The runtime offers `app.renderer.freeze(node)` and `app.renderer.unfreeze(node)`
+The runtime offers `app.src.renderer.freeze(node)` and `app.src.renderer.unfreeze(node)`
 for a mounted SourceNode. Freeze is an idempotent flag, not a counter. Source
 changes normally; the branch's existing DOM remains visible and its rendering
 events are discarded. Other branches continue updating synchronously in FIFO order.
 
 ```javascript
-const root = app.builder.wrapSource(app.source.getItem('main'));
+const root = app.src.builder.wrapSource(app.src.source.getItem('main'));
 const panel = root.section();
 panel.span('Old content');
-app.renderer.freeze(panel);
+app.src.renderer.freeze(panel);
 panel.value.clear();
-app.builder.wrapSource(panel).span('Final content');
-app.renderer.unfreeze(panel);
+app.src.builder.wrapSource(panel).span('Final content');
+app.src.renderer.unfreeze(panel);
 ```
 
 Unfreeze releases that branch and all descendants, then rebuilds from current
@@ -142,7 +142,7 @@ value and attribute updates continue through their existing Source methods.
 
 ## 040 · Data and pointers (0.2.0)
 
-One Data Bag per page instance: `app.data === app.builder.data`. Author paths never
+One Data Bag per page instance: `app.data === app.src.builder.data`. Author paths never
 contain the internal `main`. One Gramlot subscription routes changes by path.
 Pointers in attributes or node values: `^path` reads and reacts; `=path` reads at
 call time without triggering; `==expr` is an inline JS expression compiled only in
@@ -362,7 +362,7 @@ effect: in a form with one text field whose only button has a mechanism
 (`type="button"`), Enter submits the form natively and the mechanism does not run. The
 owner accepted R3 as built for 0.2.0 and reviews it after the release. Examples:
 `controllers/06_button_controller` (`c06`), `07_events` (`c07`).
-`Gramlot.getBaseSourceNode(domNode)` → Source node of the first rendered ancestor
+`gramlot.dom.getBaseSourceNode(domNode)` → Source node of the first rendered ancestor
 or null; `getDomNode(sourceNode)` → element or null (fragment, data element, removed
 or unbuilt node). No properties are added to DOM elements or Source nodes.
 
@@ -432,11 +432,11 @@ in both). Check migrated pages for `data(` calls.
 
 <a id="gc-095-095"></a>
 
-## 095 · Sending and saving data: `gramlot.inout` (0.2.5)
+## 095 · Sending and saving data: `gramlot.utl.inout` (0.2.5, path since 0.2.10)
 
-`gramlot.inout`: what the page sends, receives, saves, downloads. Browser runtime, so
-Python and JS pages alike, from inline code (`action="gramlot.inout.sendMail('modulo',
-'office@example.org')"`) or `Logic` (`this.page.inout`). Argument: Data path of a Bag
+`gramlot.utl.inout`: what the page sends, receives, saves, downloads. Browser runtime, so
+Python and JS pages alike, from inline code (`action="gramlot.utl.inout.sendMail('modulo',
+'office@example.org')"`) or `Logic` (`this.page.utl.inout`). Argument: Data path of a Bag
 branch.
 - `sendMail(path, email)`: `mailto:` in the user's mail program; subject = page title;
   one `name: Rossi` line per value (`address.street: …` nested); sent when the user
@@ -449,6 +449,6 @@ branch.
   element named after the last path segment; types become text.
 Dates in the email `1990-05-02`, datetimes ISO. Email > 2000 characters (`mailto:`
 limit) → error naming the length. Missing path or not a Bag →
-`gramlot.inout: no data Bag at '<path>'`. `restore` needs a user action. JSON/XML are
+`gramlot.utl.inout: no data Bag at '<path>'`. `restore` needs a user action. JSON/XML are
 export only. Inline code needs `'unsafe-eval'` ([GC-090 §035](090-classes-and-hosts.md));
 strict CSP → call from `Logic`. `sendHttp` reaches what `connect-src` allows.

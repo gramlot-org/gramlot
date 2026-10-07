@@ -11,7 +11,7 @@ function setup() {
     const document = new JSDOM('<div id="gramlot-root"><i id="host-owned"></i></div>').window.document;
     const destination = document.getElementById('gramlot-root');
     const app = new Gramlot({document, element: destination, transport: false});
-    return {document, source: app.source, destination, author: app.builder, builder: app.renderer};
+    return {document, source: app.src.source, destination, author: app.src.builder, builder: app.src.renderer};
 }
 function block(builder) {
     return new GramlotBuilderBag(null, builder);
@@ -30,22 +30,22 @@ test('Python authoring -> TYTX -> first subscriber insert; roots precede main', 
         async main(id) {
             calls++;
             assert.equal(id, 'test');
-            assert.equal(app.binding.root.getItem('_root_'), app.data);
+            assert.equal(app.src.binding.root.getItem('_root_'), app.data);
             assert.equal(app.data.getItem('main'), null);
-            assert.equal(app.renderer.records.size, 0);
+            assert.equal(app.src.renderer.records.size, 0);
             return fixture.wire;
         },
     }});
     let inserts = 0;
-    app.source.subscribe('test', {insert: () => inserts++});
+    app.src.source.subscribe('test', {insert: () => inserts++});
     await Promise.all([app.start(), app.start()]);
     assert.equal(calls, 1);
     assert.equal(inserts, 1);
     assert.equal(document.getElementById('panel').textContent, 'homerbart');
     assert.equal(document.getElementById('name').value, 'marge');
-    assert.equal(app.reference(fixture.reference), document.getElementById('panel'));
+    assert.equal(app.dom.reference(fixture.reference), document.getElementById('panel'));
     app.dispose();
-    assert.throws(() => app.reference(fixture.reference), /not mounted/);
+    assert.throws(() => app.dom.reference(fixture.reference), /not mounted/);
 });
 
 // A Python Source with every inline declaration: Python keeps the code as plain strings and runs none of it.
@@ -68,7 +68,7 @@ test('a Python Source with inline code runs it in the page, received through TYT
         {cwd: root, env: {...process.env, PYTHONPATH: `${root}/src`}, encoding: 'utf8'}).trim();
     const document = new JSDOM('<main></main>').window.document;
     const app = new Gramlot({pageId: 'python-inline', element: document.querySelector('main'), transport: false});
-    app.startSource(wire);
+    app.src.startSource(wire);
     app.data.setItem('a', 3);
     document.getElementById('go').click();
     document.getElementById('span').click();
@@ -191,7 +191,7 @@ test('main failure is visible and retryable; disposal prevents late insertion', 
     late.dispose();
     release(new GramlotBuilder().toTytx());
     await assert.rejects(loading, /disposed/);
-    assert.equal(late.source.getNodes().length, 0);
+    assert.equal(late.src.source.getNodes().length, 0);
 });
 
 test('transport passes identity, cancellation and failures through the host contract', async () => {

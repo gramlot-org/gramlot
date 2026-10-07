@@ -21,7 +21,7 @@ function authored(author) {
 
 test('D1a: a default fills an empty path at the first render', () => {
     const {app, data, byId} = page();
-    app.startSource(authored(root => root.input({id: 'f', value: '^nome', default: 'Ada'})));
+    app.src.startSource(authored(root => root.input({id: 'f', value: '^nome', default: 'Ada'})));
     assert.equal(data.getItem('nome'), 'Ada');
     assert.equal(byId('f').value, 'Ada');
     app.dispose();
@@ -29,7 +29,7 @@ test('D1a: a default fills an empty path at the first render', () => {
 
 test('D1a: defaults come after all dataSetters, so a default never beats a later dataSetter', () => {
     const {app, data, byId} = page();
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.input({id: 'f', value: '^nome', default: 'default'});
         root.div().dataSetter({destination_path: 'nome', value: 'setter'});
     }));
@@ -44,7 +44,7 @@ test('P15: false, 0 and the empty string are values; null and a missing path are
     data.setItem('z', 0);
     data.setItem('e', '');
     data.setItem('n', null);
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         for (const path of ['f', 'z', 'e', 'n', 'missing']) root.input({value: `^${path}`, default: 'D'});
     }));
     assert.equal(data.getItem('f'), false);
@@ -57,7 +57,7 @@ test('P15: false, 0 and the empty string are values; null and a missing path are
 
 test('P15: a default of false, 0 or the empty string is written as a value', () => {
     const {app, data} = page();
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.input({value: '^f', default: false});
         root.input({value: '^z', default: 0});
         root.input({value: '^e', default: ''});
@@ -70,7 +70,7 @@ test('P15: a default of false, 0 or the empty string is written as a value', () 
 
 test('P15: default_value wins over default; default_<attr> fills another attribute pointer', () => {
     const {app, data, byId} = page();
-    app.startSource(authored(root => root.input({
+    app.src.startSource(authored(root => root.input({
         id: 'f', value: '^v', default: 'plain', default_value: 'specific', title: '^t', default_title: 'Titolo',
     })));
     assert.equal(data.getItem('v'), 'specific');
@@ -81,7 +81,7 @@ test('P15: default_value wins over default; default_<attr> fills another attribu
 
 test('D1a: an = pointer gets its default too; a relative pointer resolves in the node context', () => {
     const {app, data, byId} = page();
-    app.startSource(authored(root => root.div({datapath: 'ctx'})
+    app.src.startSource(authored(root => root.div({datapath: 'ctx'})
         .span({id: 's', title: '=.hint', default_title: 'H', lang: '^.lang', default_lang: 'it'})));
     assert.equal(data.getItem('ctx.hint'), 'H');
     assert.equal(data.getItem('ctx.lang'), 'it');
@@ -93,7 +93,7 @@ test('D1a: a default on a ?attr pointer fills the attribute of the Data node', (
     const {app, data} = page();
     data.setItem('kept', 1, {caption: 'old'});
     data.setItem('empty', 1);
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.span({title: '^kept?caption', default_title: 'new'});
         root.span({title: '^empty?caption', default_title: 'new'});
         root.span({title: '^absent?caption', default_title: 'new'});
@@ -109,7 +109,7 @@ test('D1a: a default on a ?attr pointer fills the attribute of the Data node', (
 test('D1a: a default keeps the attributes of an existing Data node with a null value', () => {
     const {app, data} = page();
     data.setItem('x', null, {caption: 'Nome'});
-    app.startSource(authored(root => root.input({value: '^x', default: 'Ada'})));
+    app.src.startSource(authored(root => root.input({value: '^x', default: 'Ada'})));
     assert.equal(data.getItem('x'), 'Ada');
     assert.deepEqual(data.getNode('x').getAttr(), {caption: 'Nome'});
     app.dispose();
@@ -117,15 +117,15 @@ test('D1a: a default keeps the attributes of an existing Data node with a null v
 
 test('Q7: a default on a null path is skipped', () => {
     const {app, data} = page();
-    app.startSource(authored(root => root.div({datapath: '^sel'}).input({value: '^.x', default: 'D'})));
+    app.src.startSource(authored(root => root.div({datapath: '^sel'}).input({value: '^.x', default: 'D'})));
     assert.equal(data.getNodes().length, 0);
     app.dispose();
 });
 
 test('defaults of an inserted branch are applied when it enters the Source', () => {
     const {app, data, byId} = page();
-    const box = sourceTarget(app.builder.root.div({id: 'box'}));
-    app.builder.wrapSource(box).input({id: 'f', value: '^late', default: 'L'});
+    const box = sourceTarget(app.src.builder.root.div({id: 'box'}));
+    app.src.builder.wrapSource(box).input({id: 'f', value: '^late', default: 'L'});
     assert.equal(data.getItem('late'), 'L');
     assert.equal(byId('f').value, 'L');
     app.dispose();
@@ -134,7 +134,7 @@ test('defaults of an inserted branch are applied when it enters the Source', () 
 test('attr_*: an existing Data node of value receives the attribute, with no emptiness check', () => {
     const {app, data} = page();
     data.setItem('prezzo', 10, {dtype: 'L'});
-    app.startSource(authored(root => root.input({value: '^prezzo', attr_dtype: 'N', attr_caption: 'Prezzo'})));
+    app.src.startSource(authored(root => root.input({value: '^prezzo', attr_dtype: 'N', attr_caption: 'Prezzo'})));
     assert.equal(data.getItem('prezzo'), 10);
     assert.deepEqual(data.getNode('prezzo').getAttr(), {dtype: 'N', caption: 'Prezzo'});
     app.dispose();
@@ -142,7 +142,7 @@ test('attr_*: an existing Data node of value receives the attribute, with no emp
 
 test('attr_*: a Data node created by the node\'s own default receives the attribute', () => {
     const {app, data} = page();
-    app.startSource(authored(root => root.input({value: '^prezzo', default: 0, attr_dtype: 'N'})));
+    app.src.startSource(authored(root => root.input({value: '^prezzo', default: 0, attr_dtype: 'N'})));
     assert.equal(data.getItem('prezzo'), 0);
     assert.equal(data.getNode('prezzo').getAttr('dtype'), 'N');
     app.dispose();
@@ -150,7 +150,7 @@ test('attr_*: a Data node created by the node\'s own default receives the attrib
 
 test('attr_*: no effect when the Data node of value does not exist', () => {
     const {app, data} = page();
-    app.startSource(authored(root => root.input({value: '^prezzo', attr_dtype: 'N'})));
+    app.src.startSource(authored(root => root.input({value: '^prezzo', attr_dtype: 'N'})));
     assert.equal(data.getNode('prezzo'), null);
     assert.equal(data.getNodes().length, 0);
     app.dispose();
@@ -161,7 +161,7 @@ test('attr_*: a pointer value is resolved on the node; src is used when there is
     data.setItem('ctx.tipo', 'N');
     data.setItem('ctx.prezzo', 3);
     data.setItem('ctx.url', 'a.png');
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         const box = root.div({datapath: 'ctx'});
         box.input({value: '^.prezzo', attr_dtype: '^.tipo', attr_hint: '=.tipo'});
         box.img({src: '^.url', attr_kind: 'image'});
@@ -173,7 +173,7 @@ test('attr_*: a pointer value is resolved on the node; src is used when there is
 
 test('attr_*: applied after the defaults of its own node, before the defaults of the next node', () => {
     const {app, data} = page();
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.input({value: '^a', attr_seen: '=b'});
         root.input({value: '^b', default: 'B'});
         root.input({value: '^a', default: 'A', attr_after: '=b'});

@@ -146,17 +146,17 @@ print(json.dumps({"wire": to_tytx(builder.source), "ref": ref}))
     const {wire, ref} = JSON.parse(execFileSync(python, ['-c', code], {encoding: 'utf8'}).trim());
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     const app = new Gramlot({document, transport: false});
-    const prepared = sourceBagFromTytx(wire, app.builder);
+    const prepared = sourceBagFromTytx(wire, app.src.builder);
     const panel = prepared.getNodes()[0];
     const child = panel.value.getNodes()[0];
     const identity = new Map([[panel, 'panel'], [child, 'child']]);
-    app.startSource(prepared);
-    const mounted = app.source.getItem('main');
+    app.src.startSource(prepared);
+    const mounted = app.src.source.getItem('main');
     assert.equal(identity.get(mounted.getNodes()[0]), 'panel');
     assert.equal(identity.get(mounted.getNodes()[0].value.getNodes()[0]), 'child');
-    assert.equal(app.reference(ref), child);
-    assert.ok(app.renderer.records.has(child));
-    assert.equal(app.reference({...ref, kind: 'dom'}).textContent, 'after');
+    assert.equal(app.dom.reference(ref), child);
+    assert.ok(app.src.renderer.records.has(child));
+    assert.equal(app.dom.reference({...ref, kind: 'dom'}).textContent, 'after');
     app.dispose();
 });
 
@@ -338,21 +338,21 @@ test('a Python GramlotBuilderBag Source reaches the browser as Gramlot classes t
         main: async () => wire,
         source: async () => wire,
     }});
-    const decoded = sourceBagFromTytx(wire, app.builder);
+    const decoded = sourceBagFromTytx(wire, app.src.builder);
     assertGramlotClasses(decoded);
     const bound = fromTytx(wire);
-    assert.equal(app.prepareSource(bound), bound);
+    assert.equal(app.src.prepareSource(bound), bound);
     assertGramlotClasses(bound);
-    assert.equal(bound.getNodes()[0].builder, app.builder);
+    assert.equal(bound.getNodes()[0].builder, app.src.builder);
     await app.start();
-    const mounted = app.source.getItem('main');
+    const mounted = app.src.source.getItem('main');
     assertGramlotClasses(mounted);
     const target = mounted.getNodes()[0];
-    assert.ok(app.renderer.records.has(target.value.getNodes()[0]));
-    await app.remoteSource(target, 'details', {});
+    assert.ok(app.src.renderer.records.has(target.value.getNodes()[0]));
+    await app.src.remoteSource(target, 'details', {});
     assert.equal(target.value.constructor, GramlotBuilderBag);
     assertGramlotClasses(target.value);
-    assert.equal(app.renderer.destination.textContent, 'after');
+    assert.equal(app.src.renderer.destination.textContent, 'after');
     app.dispose();
 });
 

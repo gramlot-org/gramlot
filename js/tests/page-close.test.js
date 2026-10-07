@@ -14,7 +14,7 @@ function page() {
     };
     const app = new Gramlot({pageId: 'page', document: window.document,
         mainUrl: '/prefix/main', sourceUrl: '/prefix/source', closeUrl: '/prefix/close'});
-    app.transport.fetcher = fetcher;
+    app.rpc.transport.fetcher = fetcher;
     return {window, app, requests, beacons};
 }
 

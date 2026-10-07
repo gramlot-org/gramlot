@@ -13,9 +13,9 @@ function page(window = new JSDOM('<main></main><aside></aside>', {virtualConsole
     element = window.document.querySelector('main')) {
     const document = window.document;
     const app = new Gramlot({document, element, transport: false});
-    return {app, window, document, builder: app.builder, data: app.data,
+    return {app, window, document, builder: app.src.builder, data: app.data,
         byId: id => document.getElementById(id),
-        record: node => app.renderer.records.get(sourceTarget(node))};
+        record: node => app.src.renderer.records.get(sourceTarget(node))};
 }
 
 /** The Data events on `labels`, as [label, value], in order. */
@@ -85,14 +85,14 @@ test('D1: type from text to checkbox through ^.tipo rebuilds with CheckboxContro
     data.setItem('r.tipo', 'text');
     data.setItem('r.v', 'abc');
     const node = sourceTarget(builder.root.div({datapath: 'r'}).input({id: 'f', type: '^.tipo', value: '^.v'}));
-    const binding = app.binding.bindingFor(node);
+    const binding = app.src.binding.bindingFor(node);
     assert.ok(record(node).control instanceof TextControl);
     const text = byId('f');
     data.setItem('r.tipo', 'checkbox');
     const box = byId('f');
     assert.notStrictEqual(box, text);
     assert.ok(record(node).control instanceof CheckboxControl);
-    assert.strictEqual(app.binding.bindingFor(node), binding);
+    assert.strictEqual(app.src.binding.bindingFor(node), binding);
     assert.equal(box.checked, true, "'abc' is truthy");
     box.click();
     assert.strictEqual(data.getItem('r.v'), false);
@@ -106,7 +106,7 @@ test('radio group: RadioGroups generates one name per group; choosing B writes t
     const [a, b, c] = radios(builder.root, 'g', ['a', 'b', 'c']);
     assert.ok(record(a).control instanceof RadioControl);
     const name = byId('a').name;
-    assert.match(name, new RegExp(`^gramlot-${app.renderer.instanceId}-page-g$`));
+    assert.match(name, new RegExp(`^gramlot-${app.src.renderer.instanceId}-page-g$`));
     assert.deepEqual([byId('b').name, byId('c').name], [name, name]);
     assert.equal(byId('a').checked, true);
     const events = watch(data, 'a', 'b', 'c');
@@ -117,7 +117,7 @@ test('radio group: RadioGroups generates one name per group; choosing B writes t
     events.length = 0;
     byId('b').click();
     assert.deepEqual(events, [], 'a checked radio fires no change');
-    assert.deepEqual(app.renderer.radioGroups.peers(record(b).control).map(peer => peer.node), [a, c]);
+    assert.deepEqual(app.src.renderer.radioGroups.peers(record(b).control).map(peer => peer.node), [a, c]);
 });
 
 test('C04.2: SET of B to true from code turns A off in Data and DOM; A observers are notified once', () => {
@@ -145,9 +145,9 @@ test('rebuild of the group after a code write: the button written last is on', (
     data.setItem('g.c', true);
     const before = byId('c');
     // A new value of the panel rebuilds its branch.
-    app.renderer.freeze(panel);
+    app.src.renderer.freeze(panel);
     panel.setAttr({title: 'y'});
-    app.renderer.unfreeze(panel);
+    app.src.renderer.unfreeze(panel);
     assert.notStrictEqual(byId('c'), before);
     assert.deepEqual([byId('a').checked, byId('b').checked, byId('c').checked], [false, false, true]);
     assert.deepEqual([data.getItem('g.a'), data.getItem('g.b'), data.getItem('g.c')], [false, null, true]);
@@ -264,7 +264,7 @@ test('buttons added and removed: removal leaves the group and drops the name; an
     const {app, builder, data, byId, record} = page();
     data.setItem('g.a', true);
     const [a, b] = radios(builder.root, 'g', ['a', 'b']);
-    const groups = app.renderer.radioGroups;
+    const groups = app.src.renderer.radioGroups;
     const control = record(b).control;
     const element = byId('b');
     builder.source.popNode(b.label);
@@ -315,7 +315,7 @@ test('a controller that refuses the choice: its correction reaches B, and A stil
 test('ASTRA-02: group from ^, = and == is the resolved group, at mount and on update', () => {
     const {app, window, data, byId} = page();
     data.setItem('gn', 'colors');
-    const prefix = `gramlot-${app.renderer.instanceId}-page-`;
+    const prefix = `gramlot-${app.src.renderer.instanceId}-page-`;
     const eq = sourceTarget(mount(app, root => {
         root.input({id: 'r', type: 'radio', group: '=gn', value: '^g.r'});
         root.input({id: 'p', type: 'radio', group: '^gn', value: '^g.p'});
@@ -329,12 +329,12 @@ test('ASTRA-02: group from ^, = and == is the resolved group, at mount and on up
     byId('p').checked = true;
     byId('p').dispatchEvent(new window.Event('change'));
     assert.deepEqual(['e', 'r', 'p', 'l'].map(id => data.getItem(`g.${id}`)), [false, null, true, null]);
-    const binding = app.binding.bindingFor(eq);
+    const binding = app.src.binding.bindingFor(eq);
     data.setItem('gn', 'sizes');
     assert.equal(byId('e').name, `${prefix}sizes`);
     assert.equal(byId('p').name, `${prefix}sizes`);
     assert.equal(byId('r').name, `${prefix}colors`);
-    assert.strictEqual(app.binding.bindingFor(eq), binding);
+    assert.strictEqual(app.src.binding.bindingFor(eq), binding);
 });
 
 // Phase 18 (ASTRA-04): the radio group follows the semantic form owner when `form`/`formId` changes above it.
@@ -345,7 +345,7 @@ test('ASTRA-04: adding, removing and moving a form scope moves the radios to the
     const [a] = radios(builder.wrapSource(inner), 'g', ['a']);
     radios(builder.wrapSource(outer), 'g', ['o']);
     radios(builder.root, 'g', ['p']);
-    const binding = app.binding.bindingFor(a);
+    const binding = app.src.binding.bindingFor(a);
     const element = byId('a');
     assert.equal(byId('a').name, byId('o').name);
     // Add: inner becomes a form; a leaves the group of o.
@@ -371,9 +371,9 @@ test('ASTRA-04: adding, removing and moving a form scope moves the radios to the
     assert.equal(byId('o').name, byId('p').name);
     byId('p').click();
     assert.deepEqual([data.getItem('g.o'), data.getItem('g.a'), data.getItem('g.p')], [false, false, true]);
-    assert.strictEqual(app.binding.bindingFor(a), binding);
+    assert.strictEqual(app.src.binding.bindingFor(a), binding);
     assert.strictEqual(byId('a'), element);
-    const groups = app.renderer.radioGroups;
+    const groups = app.src.renderer.radioGroups;
     assert.equal(groups.peersOf('g', null).length, 3);
     assert.equal(groups.peersOf('g', outer).length, 0);
 });
@@ -385,13 +385,13 @@ test('ASTRA-05: a radio removed under freeze is not counted by the several-true 
     data.setItem('g.a', true);
     const panel = sourceTarget(builder.root.div({id: 'panel'}));
     const [a] = radios(builder.wrapSource(panel), 'g', ['a']);
-    app.renderer.freeze(panel);
+    app.src.renderer.freeze(panel);
     panel.value.popNode(a.label);
     assert.ok(byId('a'));
     data.setItem('g.b', true);
     radios(builder.root, 'g', ['b']);
     assert.equal(byId('b').checked, true);
-    app.renderer.unfreeze(panel);
+    app.src.renderer.unfreeze(panel);
     assert.equal(byId('a'), null);
 });
 
@@ -426,5 +426,5 @@ test('ASTRA-06: a failed first projection of a control cleans up its partial rec
         !removed.some(([t, ty, l]) => t === target && ty === type && l === listener));
     assert.deepEqual(live.map(([, type]) => type), []);
     assert.equal(added.filter(([target]) => target.localName === 'select').length, 4);
-    assert.deepEqual([...app.renderer.records.keys()].map(node => node.nodeTag).sort(), ['div', 'span']);
+    assert.deepEqual([...app.src.renderer.records.keys()].map(node => node.nodeTag).sort(), ['div', 'span']);
 });
