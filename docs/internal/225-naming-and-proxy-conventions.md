@@ -1,8 +1,7 @@
 # 225 · Naming and proxy conventions
 
-Document ID: **GC-225**. Started: **2026-10-06**. Register of the decisions:
-`temp/perimetro-0-2-x.md` (coordinating chat, 2026-10-06). Sections marked
-**Open** record a question, not a rule.
+Document ID: **GC-225**. Started: **2026-10-06**. Each rule names the owner
+decision it comes from. Sections marked **Open** record a question, not a rule.
 
 <a id="gc-225-005"></a>
 
