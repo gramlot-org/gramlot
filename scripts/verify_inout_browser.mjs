@@ -1,4 +1,4 @@
-/** Real-browser check of gramlot.inout on the bundled runtime: email text, HTTP POST, save/restore with
+/** Real-browser check of gramlot.utl.inout on the bundled runtime: email text, HTTP POST, save/restore with
  * exact types through a real download and file chooser, JSON/XML export, errors.
  * Usage: node scripts/verify_inout_browser.mjs PLAYWRIGHT_ENTRY [ENGINE …]
  * Build the runtime first (npm --prefix js run build).
@@ -29,19 +29,19 @@ import {Gramlot, GramlotBuilder, Bag} from '/gramlot.js';
 const app = new Gramlot({document, transport: false});
 window.gramlot = app;
 app.data.setItem('modulo', Bag.fromTytx(${JSON.stringify(modulo.toTytx())}));
-app.logicRegistry.register(class Logic {
-    mail() { this.page.inout.sendMail('modulo', 'logic@example.org'); }
+app.src.logicRegistry.register(class Logic {
+    mail() { this.page.utl.inout.sendMail('modulo', 'logic@example.org'); }
 }, {group: null, resource: '/inout_aux.js'});
 // A received Source: inline code in an action and a nested controller naming Logic.
 const source = new GramlotBuilder();
-source.root.button('inline', {id: 'inline', action: "gramlot.inout.sendMail('modulo', 'inline@example.org')"});
+source.root.button('inline', {id: 'inline', action: "gramlot.utl.inout.sendMail('modulo', 'inline@example.org')"});
 source.root.button('logic', {id: 'logic'}).dataController({func: 'mail'});
-app.startSource(source.source);
+app.src.startSource(source.source);
 const on = (id, run) => document.getElementById(id).addEventListener('click', run);
-on('save', () => app.inout.save('modulo', 'iscrizione.json'));
-on('restore', () => { window.restored = app.inout.restore('copia').then(() => 'done', error => error.message); });
-on('json', () => app.inout.download('modulo', 'modulo.json', 'json'));
-on('xml', () => app.inout.download('modulo', 'modulo.xml', 'xml'));
+on('save', () => app.utl.inout.save('modulo', 'iscrizione.json'));
+on('restore', () => { window.restored = app.utl.inout.restore('copia').then(() => 'done', error => error.message); });
+on('json', () => app.utl.inout.download('modulo', 'modulo.json', 'json'));
+on('xml', () => app.utl.inout.download('modulo', 'modulo.xml', 'xml'));
 window.ready = true;
 </script></body></html>`;
 
@@ -87,10 +87,10 @@ try {
             const click = HTMLAnchorElement.prototype.click;
             HTMLAnchorElement.prototype.click = function () { href = this.href; };
             try {
-                window.gramlot.inout.sendMail('modulo', 'segreteria@example.org');
+                window.gramlot.utl.inout.sendMail('modulo', 'segreteria@example.org');
                 let tooLong = null;
                 window.gramlot.data.setItem('lungo.note', 'x'.repeat(2000));
-                try { window.gramlot.inout.sendMail('lungo', 'a@example.org'); } catch (error) { tooLong = error.message; }
+                try { window.gramlot.utl.inout.sendMail('lungo', 'a@example.org'); } catch (error) { tooLong = error.message; }
                 return {href, tooLong};
             } finally { HTMLAnchorElement.prototype.click = click; }
         });
@@ -99,7 +99,7 @@ try {
         assert.equal(decodeURIComponent(mailto.pathname), 'segreteria@example.org');
         assert.equal(mailto.searchParams.get('subject'), 'Iscrizione');
         assert.equal(mailto.searchParams.get('body'), 'nome: Rossi\nnascita: 1990-05-02\nquota: 12.5\nindirizzo.via: Roma 1');
-        assert.match(mail.tooLong, /^gramlot\.inout\.sendMail: the email of 'lungo' is \d+ characters long, over the mailto: limit of 2000;/);
+        assert.match(mail.tooLong, /^gramlot\.utl\.inout\.sendMail: the email of 'lungo' is \d+ characters long, over the mailto: limit of 2000;/);
 
         // The same call from inline code and from a Logic method.
         await page.evaluate(() => {
@@ -115,14 +115,14 @@ try {
         // sendHttp: a real POST; a 500 rejects; a missing path raises before any request.
         posts.length = 0;
         const http = await page.evaluate(async () => {
-            const status = (await window.gramlot.inout.sendHttp('modulo', '/collect')).status;
-            const failed = await window.gramlot.inout.sendHttp('modulo', '/fail').then(() => null, error => error.message);
+            const status = (await window.gramlot.utl.inout.sendHttp('modulo', '/collect')).status;
+            const failed = await window.gramlot.utl.inout.sendHttp('modulo', '/fail').then(() => null, error => error.message);
             let missing = null;
-            try { await window.gramlot.inout.sendHttp('assente', '/collect'); } catch (error) { missing = error.message; }
+            try { await window.gramlot.utl.inout.sendHttp('assente', '/collect'); } catch (error) { missing = error.message; }
             return {status, failed, missing};
         });
-        assert.deepEqual(http, {status: 200, failed: `gramlot.inout.sendHttp: /fail answered 500`,
-            missing: "gramlot.inout: no data Bag at 'assente'"});
+        assert.deepEqual(http, {status: 200, failed: `gramlot.utl.inout.sendHttp: /fail answered 500`,
+            missing: "gramlot.utl.inout: no data Bag at 'assente'"});
         assert.equal(posts.length, 2);
         assert.equal(posts[0].type, 'application/json');
         assert.deepEqual(JSON.parse(posts[0].body), {nome: 'Rossi', nascita: '1990-05-02T00:00:00.000Z', quota: '12.5',
@@ -151,8 +151,8 @@ try {
         // Date text in XML awaits genro-org/genro-bag-js#10: only text and numbers are checked.
         assert.match(xml.text, /^<\?xml version='1\.0' encoding='UTF-8'\?>\n<modulo><nome>Rossi<\/nome><nascita>.*<\/nascita><quota>12\.5<\/quota><indirizzo><via>Roma 1<\/via><\/indirizzo><\/modulo>$/);
         assert.equal(await page.evaluate(() => {
-            try { window.gramlot.inout.download('modulo', 'x.csv', 'csv'); } catch (error) { return error.message; }
-        }), "gramlot.inout.download: format 'csv' is not 'json' or 'xml'");
+            try { window.gramlot.utl.inout.download('modulo', 'x.csv', 'csv'); } catch (error) { return error.message; }
+        }), "gramlot.utl.inout.download: format 'csv' is not 'json' or 'xml'");
 
         assert.deepEqual(errors, []);
         console.log(`PASS ${engineName}: sendMail (also from inline code and Logic), sendHttp, save/restore with date and decimal, JSON/XML download, errors`);

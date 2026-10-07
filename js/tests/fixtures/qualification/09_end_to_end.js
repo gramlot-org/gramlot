@@ -70,7 +70,7 @@ source(Page.prototype.extras);
 /** Logic of 09_end_to_end.py and 09_end_to_end.js: the named logic of the story. */
 export class Logic {
     sourceNode(nodeId) {
-        return this.page.source.getNodeByAttr('node_id', nodeId);
+        return this.page.src.source.getNodeByAttr('node_id', nodeId);
     }
 
     /** Controller of the total: the circle turns red above 10. */
@@ -85,11 +85,11 @@ export class Logic {
     }
 
     loadExtras() {
-        return this.page.remoteSource(this.sourceNode('extras'), 'extras');
+        return this.page.src.remoteSource(this.sourceNode('extras'), 'extras');
     }
 
     freeze() {
-        this.page.renderer.freeze(this.sourceNode('later'));
+        this.page.src.renderer.freeze(this.sourceNode('later'));
     }
 
     removeNote() {
@@ -99,6 +99,6 @@ export class Logic {
     }
 
     thaw() {
-        this.page.renderer.unfreeze(this.sourceNode('later'));
+        this.page.src.renderer.unfreeze(this.sourceNode('later'));
     }
 }

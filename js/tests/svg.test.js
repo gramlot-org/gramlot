@@ -22,7 +22,7 @@ test('one live renderer mounts nested SVG/HTML, updates native setters, and clea
     svg.html({id:'foreign', width:80, height:30}).div('Hello', {id:'label'});
     svg.use({id:'use', 'xlink:href':'#circle'});
     const {document, app} = setup();
-    app.startSource(authored.toTytx());
+    app.src.startSource(authored.toTytx());
     const drawing = document.getElementById('drawing');
     const circle = document.getElementById('circle');
     assert.equal(drawing.namespaceURI, SVG);
@@ -36,7 +36,7 @@ test('one live renderer mounts nested SVG/HTML, updates native setters, and clea
     const use = document.getElementById('use');
     assert.equal(use.getAttributeNS(XLINK, 'href'), '#circle');
 
-    const svgNode = app.source.getItem('main').getNodes()[0];
+    const svgNode = app.src.source.getItem('main').getNodes()[0];
     const circleNode = svgNode.value.getNodes()[0];
     const useNode = svgNode.value.getNodes().at(-1);
     circleNode.setAttr({r:15, stroke_width:4});
@@ -52,23 +52,23 @@ test('one live renderer mounts nested SVG/HTML, updates native setters, and clea
     svgNode.value.popNode(rectNode.label);
     assert.equal(document.getElementById('rect'), null);
     let cleaned = 0;
-    app.renderer.onDispose(circleNode, () => cleaned++);
-    app.source.popNode('main');
+    app.src.renderer.onDispose(circleNode, () => cleaned++);
+    app.src.source.popNode('main');
     assert.equal(cleaned, 1);
-    assert.equal(app.renderer.records.size, 0);
+    assert.equal(app.src.renderer.records.size, 0);
     assert.equal(document.querySelector('svg'), null);
     app.dispose();
 });
 
 test('direct live authoring enters SVG before the insert event is rendered', () => {
     const {document, app} = setup();
-    const svg = app.builder.root.svg({id:'direct'});
+    const svg = app.src.builder.root.svg({id:'direct'});
     svg.circle({r:8});
     svg.html({width:20, height:20}).div('HTML');
     assert.equal(document.querySelector('circle').namespaceURI, SVG);
     assert.equal(document.querySelector('foreignObject').namespaceURI, SVG);
     assert.equal(document.querySelector('foreignObject > div').namespaceURI, HTML);
-    assert.equal(app.renderer.records.size, 4);
+    assert.equal(app.src.renderer.records.size, 4);
     app.dispose();
 });
 
@@ -86,12 +86,12 @@ test('remote SVG children use the destination dialect and preserve the existing 
     let wire = sourceBagToTytx(generic.source);
     const {document, app} = setup({main:async () => authored.toTytx(), source:async () => wire});
     await app.start();
-    const target = app.source.getItem('main').getNodes()[0].value.getNodes()[0];
+    const target = app.src.source.getItem('main').getNodes()[0].value.getNodes()[0];
     const parent = document.getElementById('drawing');
-    await assert.rejects(app.remoteSource(target, 'details'), /GramlotBuilderBags/);
+    await assert.rejects(app.src.remoteSource(target, 'details'), /GramlotBuilderBags/);
     assert.ok(document.querySelector('circle'));
     wire = sourceBagToTytx(branch.value);
-    await app.remoteSource(target, 'details');
+    await app.src.remoteSource(target, 'details');
     assert.strictEqual(document.getElementById('drawing'), parent);
     assert.equal(document.querySelector('circle'), null);
     assert.equal(document.getElementById('new').namespaceURI, SVG);
@@ -111,7 +111,7 @@ s.html(width=10,height=10).div('Python')
 print(to_tytx(b.source))
 `], {cwd:root, encoding:'utf8'}).trim();
     const {document, app} = setup();
-    app.startSource(wire);
+    app.src.startSource(wire);
     assert.equal(document.querySelector('circle').namespaceURI, SVG);
     assert.equal(document.querySelector('circle').getAttribute('stroke-width'), '2');
     assert.equal(document.querySelector('foreignObject').namespaceURI, SVG);

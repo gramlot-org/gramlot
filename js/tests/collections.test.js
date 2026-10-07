@@ -45,7 +45,7 @@ test('custom collection renders its mapped tag', () => {
     b.root.ratingPanel().rating(null, {amount:3,code:'IT'});
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     const app = new Gramlot({document, collections:[controls], transport:false});
-    app.startSource(b.toTytx());
+    app.src.startSource(b.toTytx());
     const rating = document.querySelector('section > gramlot-rating');
     assert.ok(rating);
     assert.equal(rating.getAttribute('amount'), '3');
@@ -68,7 +68,7 @@ print(to_tytx(b.source))
 `], {cwd:root, encoding:'utf8'}).trim();
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     const app = new Gramlot({document, collections:[controls], transport:false});
-    app.startSource(wire);
+    app.src.startSource(wire);
     assert.equal(document.querySelector('gramlot-rating').getAttribute('amount'), '5');
     app.dispose();
 });

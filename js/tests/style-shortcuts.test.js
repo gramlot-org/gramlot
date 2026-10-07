@@ -187,8 +187,8 @@ function mounted(authoring) {
     const app = new Gramlot({document, transport: false});
     const authored = new GramlotBuilder();
     authoring(authored.root, authored.data);
-    app.startSource(authored.toTytx());
-    return {document, app, main: app.source.getItem('main')};
+    app.src.startSource(authored.toTytx());
+    return {document, app, main: app.src.source.getItem('main')};
 }
 
 const EXPECTED = {

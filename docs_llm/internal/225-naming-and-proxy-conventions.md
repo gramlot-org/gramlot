@@ -42,9 +42,32 @@ Block ID: **GC-225-010**.
 
 Block ID: **GC-225-015**.
 
-Decided proxies: `gramlot.utl` (`UtilitiesHandler`), with `gramlot.inout` of
-2026-10-03 moving to the group `gramlot.utl.inout`. Owner, 2026-10-06:
-"gramlot.utl.inout.sendMail".
+Decided proxies of `Gramlot`, each with the theme of its class docline:
+
+- `gramlot.src` (`SourceHandler`): the Source and every change of it. Holds
+  `builder`, `source`, `renderer`, `binding`, `logicRegistry` and the functions
+  `startSource`, `mountMainSource`, `prepareSource`, `remoteSource`.
+- `gramlot.rpc` (`RpcHandler`): the exchange with the host. Holds `transport` and
+  `remoteRequests`.
+- `gramlot.dom` (`DomHandler`): the DOM and its correspondence with the Source.
+  Holds `getDomNode`, `getBaseSourceNode`, `reference`.
+- `gramlot.utl` (`UtilitiesHandler`): page utilities grouped by theme. Holds the
+  group `inout` (`gramlot.utl.inout.sendMail`). Owner, 2026-10-06:
+  "gramlot.utl.inout.sendMail".
+
+Decided for the first pass of 0.2.10 (owner, 2026-10-07: "va bene: è un primo
+passo"):
+
+- Every handler extends one base class `Handler`, whose constructor stores the
+  `gramlot` reference and does nothing else.
+- A handler has no implicit delegation to `Gramlot`: no alias, getter or
+  forwarding for a moved name.
+- The handlers are created at startup, in `Gramlot`'s constructor: `src`,
+  `rpc`, `dom`, `utl`. The binding order is the one of source plan §4.3 — the
+  builder, then the binding subscribed to its Data, then the renderer — and
+  `SourceHandler` sets `gramlot.src` before creating its classes, because the
+  binding reaches the builder through it. `InOut` and `gramlot.data` come after
+  the renderer: nothing reads them during construction. Owner, 2026-10-07: "ok".
 
 Decided by the owner on 2026-10-06, after the legacy `genro` object
 (`genro.rpc` → `GnrRpcHandler`, `genro.src` → `GnrSrcHandler`):
@@ -92,35 +115,23 @@ adattarsi a regole e cercare una standardizzazione."
 
 Block ID: **GC-225-020**.
 
-- One base class per family of proxies, holding the reference to its primary
-  object. Legacy: `GnrBaseProxy` for the page (`gnrbaseproxy.py:10-23`), none for
-  the site.
-- Implicit delegation from a proxy to its primary object (`__getattr__`,
-  `gnrbaseproxy.py:18-19`).
-- Creation of a proxy: lazy or at startup. Legacy uses both (`connection` at
-  startup, the others lazy).
 - `Host`: a primary object with proxies, or a boundary object without proxies. It
   has no legacy equivalent; it corresponds in part to a Kajenn application (page
   registry and routes).
-- Content of `src`, `rpc` and `dom` (proposal of 2026-10-06, not confirmed):
-  `src` the Source and every change of it, holding builder and renderer; `rpc`
-  transport to the host only; `dom` DOM utilities and the DOM↔Source lookup.
-- Theme of `remoteSource`: the owner states that it can belong to `src` if every
-  change of the Source goes through `src`, with `rpc` as transport only.
 
 <a id="gc-225-025"></a>
 
 ## 025 · Current code against these rules
 
-Block ID: **GC-225-025**. Facts of 0.2.7, input of the refactoring planned for
-0.2.10 (browser) and 0.2.12 (server).
+Block ID: **GC-225-025**. State after the first pass of 0.2.10 (browser); the
+server refactoring is planned for 0.2.12.
 
-- `Gramlot` (`js/src/gramlot.js`) holds themed functions directly:
-  `remoteSource` and `remoteRequests` (server exchange), `reference`,
-  `getBaseSourceNode`, `getDomNode` (renderer).
-- The members of `Gramlot` that delegate by theme (`builder`, `binding`,
-  `renderer`, `transport`, `inout`, `logicRegistry`) are the existing classes
-  themselves, not handlers; no member of `Gramlot` is a handler yet.
+- `Gramlot` (`js/src/gramlot.js`) holds only lifecycle (`start`, `loadMain`,
+  `dispose`, `abort`, `pagehide`, `loading`), data (`pageId`, `state`, `data`,
+  `logic`, `window`) and the proxies `src`, `rpc`, `dom`, `utl`. No themed
+  function is left on `Gramlot`.
+- The handlers live in `js/src/handlers/`; the existing classes they hold keep
+  their names.
 - `Host` differs between the languages: the page registry and its pruning are
   private in Python (`_pages`, `_prune`) and public in JS (`pages`, `prune`);
   `registerPage` exists only in JS (`js/src/adapters/host.js:58`).

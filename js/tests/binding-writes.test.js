@@ -18,12 +18,12 @@ function companion(app, methods) {
     for (const [name, method] of Object.entries(methods)) {
         Object.defineProperty(Logic.prototype, name, {value: method, writable: true, configurable: true});
     }
-    app.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
+    app.src.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
 }
 
 /** A controller node on the page Source, returned as the Source node. */
 function controller(app, attrs) {
-    return sourceTarget(app.builder.root.dataController(attrs));
+    return sourceTarget(app.src.builder.root.dataController(attrs));
 }
 
 /** A recorder method: every call pushes `[path, fired, value]` of its Data trigger. */
@@ -234,7 +234,7 @@ test('FIRE on ?attr fires the attribute as legacy fireEvent: the value stays, th
 
 test('FIRE on a null path is an error naming the node (Q7)', () => {
     const {app} = page();
-    const box = app.builder.root.div({datapath: '^sel'});
+    const box = app.src.builder.root.div({datapath: '^sel'});
     const node = sourceTarget(box.dataController({}));
     assert.throws(() => node.FIRE('.x'), /dataController '.*': write on a null path: '\.x'/);
     app.dispose();
@@ -244,7 +244,7 @@ test('FIRE on a null path is an error naming the node (Q7)', () => {
 test('Fable R3: FIRE_AFTER on a null path is an error at the call; no timer starts', t => {
     t.mock.timers.enable({apis: ['setTimeout']});
     const {app} = page();
-    const box = app.builder.root.div({datapath: '^sel'});
+    const box = app.src.builder.root.div({datapath: '^sel'});
     const node = sourceTarget(box.dataController({}));
     const started = [];
     const original = globalThis.setTimeout;
@@ -282,7 +282,7 @@ test('FIRE_AFTER: the default and an explicit delay, the returned cancellation, 
     assert.equal(calls.length, 2);
     writer.FIRE_AFTER('tick', 'closed', 20);
     writer.parentBag.popNode(writer.label);
-    assert.equal(app.binding.bindingFor(writer), null);
+    assert.equal(app.src.binding.bindingFor(writer), null);
     t.mock.timers.tick(40);
     assert.equal(calls.length, 2);
     assert.equal(data.getItem('tick'), null);

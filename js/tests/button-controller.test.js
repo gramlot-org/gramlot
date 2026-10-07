@@ -14,9 +14,9 @@ function page() {
     const window = new JSDOM('<main></main>', {virtualConsole: new VirtualConsole()}).window;
     const document = window.document;
     const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-    return {app, window, document, builder: app.builder, data: app.data,
+    return {app, window, document, builder: app.src.builder, data: app.data,
         byId: id => document.getElementById(id),
-        record: node => app.renderer.records.get(sourceTarget(node))};
+        record: node => app.src.renderer.records.get(sourceTarget(node))};
 }
 
 /** Register `methods` as the page companion (the root logic group). */
@@ -25,7 +25,7 @@ function companion(app, methods) {
     for (const [name, method] of Object.entries(methods)) {
         Object.defineProperty(Logic.prototype, name, {value: method, writable: true, configurable: true});
     }
-    app.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
+    app.src.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
 }
 
 /** A Source authored on a separate builder, mounted as one branch. */
@@ -70,7 +70,7 @@ test('R11: text, span, SVG icon and keyboard activation invoke the nested contro
     click(window, byId('dot'));
     keyboardActivation(window, element);
     assert.deepEqual(calls, [[owner, 'click', 1], [owner, 'click', 2], [owner, 'click', 3], [owner, 'click', 4]]);
-    assert.equal(app.binding.bindingFor(sourceTarget(button)).clickCount, 4);
+    assert.equal(app.src.binding.bindingFor(sourceTarget(button)).clickCount, 4);
 });
 
 test('R11: a connect_onclick on an ancestor keeps its own node; the button mechanism stops the propagation (R3)', () => {
@@ -130,9 +130,9 @@ test('the counter lives as long as the semantic node: a rebuild keeps it', () =>
     pane.button({id: 'b'}).dataController({func: 'pressed'});
     click(window, byId('b'));
     const before = byId('b');
-    app.renderer.freeze(pane);
+    app.src.renderer.freeze(pane);
     sourceTarget(pane).setAttr({title: 'rebuilt'});
-    app.renderer.unfreeze(pane);
+    app.src.renderer.unfreeze(pane);
     assert.notEqual(byId('b'), before);
     click(window, byId('b'));
     assert.deepEqual(counters, [1, 2]);
@@ -178,7 +178,7 @@ test('fire_*: every fire_<name> fires the string <name>, in attribute order; fir
 
 test('P10: several dataController children or two mechanisms raise at mount, naming the button', () => {
     const {app} = page();
-    assert.throws(() => app.startSource(authored(root => {
+    assert.throws(() => app.src.startSource(authored(root => {
         const button = root.button({id: 'b'});
         button.dataController({script: '1'});
         button.dataController({script: '2'});
@@ -191,7 +191,7 @@ test('P10: several dataController children or two mechanisms raise at mount, nam
         assert.throws(() => builder.root.button({id: 'b', ...attrs}), new RegExp(`${found} together`));
     }
     const {app: other} = page();
-    assert.throws(() => other.startSource(authored(root => {
+    assert.throws(() => other.src.startSource(authored(root => {
         root.button({id: 'b', action: 'x()'}).dataController({script: '1'});
     })), /controller and action together/);
 });
@@ -233,11 +233,11 @@ test('disabled button: the click runs nothing and is not counted (legacy early r
     data.subscribe('fire-watch', {any: event => { if (event.node.label === 'x') events.push(event.node.value); }});
     click(window, byId('b'));
     assert.deepEqual(events, []);
-    assert.equal(app.binding.bindingFor(node).clickCount, 0);
+    assert.equal(app.src.binding.bindingFor(node).clickCount, 0);
     data.setItem('off', false);
     click(window, byId('b'));
     assert.deepEqual(events, [true]);
-    assert.equal(app.binding.bindingFor(node).clickCount, 1);
+    assert.equal(app.src.binding.bindingFor(node).clickCount, 1);
 });
 
 test('removal during a callback: the button removed by its own action runs nothing more (R12)', () => {
@@ -259,17 +259,17 @@ test('R12: a button removed under freeze keeps its DOM until the thaw and does n
     const {app, builder, byId, window, data} = page();
     const pane = builder.root.div({id: 'pane'});
     const button = sourceTarget(pane.button('go', {id: 'b', fire: 'x'}));
-    const binding = app.binding.bindingFor(button);
+    const binding = app.src.binding.bindingFor(button);
     const events = [];
     data.subscribe('fire-watch', {any: event => events.push(event.node.label)});
-    app.renderer.freeze(pane);
+    app.src.renderer.freeze(pane);
     button.parentBag.popNode(button.label);
     const element = byId('b');
     assert.ok(element);
     click(window, element);
     assert.deepEqual(events, []);
     assert.equal(binding.clickCount, 0);
-    app.renderer.unfreeze(pane);
+    app.src.renderer.unfreeze(pane);
     assert.equal(byId('b'), null);
 });
 

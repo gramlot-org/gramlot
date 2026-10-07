@@ -50,7 +50,7 @@ function attributes(data, path) {
 
 test('A2: an earlier element sees a deep dataSetter declared after it, at the first render', () => {
     const {app, byId} = page();
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.p('^x', {id: 'early', title: '^y'});
         const box = root.div();
         box.div().dataSetter({destination_path: 'x', value: 'deep'});
@@ -63,7 +63,7 @@ test('A2: an earlier element sees a deep dataSetter declared after it, at the fi
 
 test('A2: two dataSetters on the same path at different depths: the second in document order wins', () => {
     const deeperFirst = page();
-    deeperFirst.app.startSource(authored(root => {
+    deeperFirst.app.src.startSource(authored(root => {
         root.span('^x', {id: 's'});
         root.div().div().dataSetter({destination_path: 'x', value: 'inner'});
         root.dataSetter({destination_path: 'x', value: 'outer'});
@@ -71,7 +71,7 @@ test('A2: two dataSetters on the same path at different depths: the second in do
     assert.equal(deeperFirst.byId('s').textContent, 'outer');
     deeperFirst.app.dispose();
     const deeperSecond = page();
-    deeperSecond.app.startSource(authored(root => {
+    deeperSecond.app.src.startSource(authored(root => {
         root.span('^x', {id: 's'});
         root.dataSetter({destination_path: 'x', value: 'outer'});
         root.div().div().dataSetter({destination_path: 'x', value: 'inner'});
@@ -82,7 +82,7 @@ test('A2: two dataSetters on the same path at different depths: the second in do
 
 test('A2: a relative destination_path resolves in the dataSetter context', () => {
     const {app, data, byId} = page();
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         const box = root.div({datapath: 'ordine'});
         box.span('^.cliente', {id: 's'});
         box.dataSetter({destination_path: '.cliente', value: 'Ada'});
@@ -96,7 +96,7 @@ test('R1: null creates a missing path, keeps an existing value and applies the a
     const {app, data} = page();
     data.setItem('kept', 7);
     data.setItem('replaced', 7);
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.dataSetter({destination_path: 'absent', value: null});
         root.dataSetter({destination_path: 'seven', value: 7});
         root.dataSetter({destination_path: 'seven', value: null});
@@ -114,7 +114,7 @@ test('R1: null creates a missing path, keeps an existing value and applies the a
 
 test('R1: a missing path with null and attributes is created with null and the attributes', () => {
     const {app, data} = page();
-    app.startSource(authored(root => root.dataSetter({destination_path: 'a.b', value: null, caption: 'Nome'})));
+    app.src.startSource(authored(root => root.dataSetter({destination_path: 'a.b', value: null, caption: 'Nome'})));
     assert.equal(data.getItem('a.b'), null);
     assert.deepEqual(attributes(data, 'a.b'), {caption: 'Nome'});
     app.dispose();
@@ -124,7 +124,7 @@ test('gate decision 1: a value replaces the attributes when the setter declares 
     const {app, data} = page();
     data.setItem('x', 1, {caption: 'old'});
     data.setItem('y', 1, {caption: 'old'});
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.dataSetter({destination_path: 'x', value: 9, colore: 'rosso'});
         root.dataSetter({destination_path: 'y', value: 9});
     }));
@@ -137,7 +137,7 @@ test('gate decision 1: a value replaces the attributes when the setter declares 
 
 test('gate decision 5: metadata, binding attributes and keys starting with _ never reach the Data node', () => {
     const {app, data} = page();
-    app.startSource(authored(root => root.div({datapath: 'ctx', node_id: 'box'}).dataSetter({
+    app.src.startSource(authored(root => root.div({datapath: 'ctx', node_id: 'box'}).dataSetter({
         destination_path: '.x', value: 1, colore: 'rosso', _private: 'p', default: 3, attr_dtype: 'N',
         live: true, updateOn: 'input',
     })));
@@ -153,7 +153,7 @@ test('R17: a null attribute counts as omitted, the same from Python and from Jav
     ]) {
         const {app, data} = page();
         data.setItem('x', 5, {caption: 'old'});
-        app.startSource(source());
+        app.src.startSource(source());
         assert.equal(data.getItem('x'), 5);
         assert.deepEqual(attributes(data, 'x'), {caption: 'old'});
         app.dispose();
@@ -169,9 +169,9 @@ test('P25: a Bag payload moves into Data with its backref; the value attribute l
         root.dataSetter({destination_path: 'cliente', value: payload, tipo: 'persona'});
     });
     const events = [];
-    app.source.subscribe('spy', {any: event => events.push(event.evt)});
-    app.startSource(source);
-    const setter = app.source.getItem('main').getNodes()[1];
+    app.src.source.subscribe('spy', {any: event => events.push(event.evt)});
+    app.src.startSource(source);
+    const setter = app.src.source.getItem('main').getNodes()[1];
     assert.strictEqual(data.getItem('cliente'), payload);
     assert.strictEqual(payload.parentNode, data.getNode('cliente'));
     assert.deepEqual(attributes(data, 'cliente'), {tipo: 'persona'});
@@ -186,15 +186,15 @@ test('P25: a Bag payload moves into Data with its backref; the value attribute l
 
 test('P25: a scalar value stays on the Source node', () => {
     const {app} = page();
-    app.startSource(authored(root => root.dataSetter({destination_path: 'n', value: 3})));
-    assert.equal(app.source.getItem('main').getNodes()[0].getAttr('value'), 3);
+    app.src.startSource(authored(root => root.dataSetter({destination_path: 'n', value: 3})));
+    assert.equal(app.src.source.getItem('main').getNodes()[0].getAttr('value'), 3);
     app.dispose();
 });
 
 test('dataSetter is literal: pointers, == expressions and templates are written as strings', () => {
     const {app, data} = page();
     data.setItem('y', 'Y');
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         root.dataSetter({destination_path: 'pointer', value: '^y'});
         root.dataSetter({destination_path: 'read', value: '=y'});
         root.dataSetter({destination_path: 'expression', value: '==a+b'});
@@ -215,7 +215,7 @@ test('P8: duplicate dataSetters are installed with no warning', () => {
     const warn = console.warn;
     console.warn = (...args) => warnings.push(args);
     try {
-        app.startSource(authored(root => {
+        app.src.startSource(authored(root => {
             root.dataSetter({destination_path: 'x', value: 1});
             root.dataSetter({destination_path: 'x', value: 2});
         }));
@@ -233,14 +233,14 @@ test('the _path rule: a destination_path written as a pointer loses its symbol, 
     const warn = console.warn;
     console.warn = (...args) => warnings.push(args.join(' '));
     try {
-        app.startSource(authored(root => {
+        app.src.startSource(authored(root => {
             root.dataSetter({destination_path: '^x', value: 1});
             root.dataSetter({destination_path: '=y', value: 2});
             root.dataSetter({destination_path: 'z', value: 3});
         }));
-        const [first] = app.source.getItem('main').getNodes();
-        app.binding.installer.applySetter(first); // a second read of the same declaration
-        app.builder.root.dataSetter({destination_path: '^w', value: 4});
+        const [first] = app.src.source.getItem('main').getNodes();
+        app.src.binding.installer.applySetter(first); // a second read of the same declaration
+        app.src.builder.root.dataSetter({destination_path: '^w', value: 4});
     } finally {
         console.warn = warn;
     }
@@ -254,7 +254,7 @@ test('the _path rule: a destination_path written as a pointer loses its symbol, 
 
 test('Q7: a dataSetter on a null path is skipped', () => {
     const {app, data} = page();
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         const box = root.div({datapath: '^sel'});
         box.dataSetter({destination_path: '.x', value: 1});
     }));
@@ -264,45 +264,45 @@ test('Q7: a dataSetter on a null path is skipped', () => {
 
 test('an inserted branch installs its setters before its DOM, and the NodeBinding is stamped installed', () => {
     const {app, data, byId} = page();
-    const box = sourceTarget(app.builder.root.div({id: 'box'}));
-    const branch = new GramlotBuilderBag(null, app.builder);
-    app.builder.wrapSource(branch).span('^late', {id: 'late'});
-    const setter = sourceTarget(app.builder.wrapSource(branch).dataSetter({destination_path: 'late', value: 'ok'}));
+    const box = sourceTarget(app.src.builder.root.div({id: 'box'}));
+    const branch = new GramlotBuilderBag(null, app.src.builder);
+    app.src.builder.wrapSource(branch).span('^late', {id: 'late'});
+    const setter = sourceTarget(app.src.builder.wrapSource(branch).dataSetter({destination_path: 'late', value: 'ok'}));
     box.setValue(branch);
     assert.equal(byId('late').textContent, 'ok');
-    assert.equal(app.binding.bindingFor(setter).hasStamp('installed'), true);
-    const direct = sourceTarget(app.builder.root.dataSetter({destination_path: 'direct', value: 1}));
+    assert.equal(app.src.binding.bindingFor(setter).hasStamp('installed'), true);
+    const direct = sourceTarget(app.src.builder.root.dataSetter({destination_path: 'direct', value: 1}));
     assert.equal(data.getItem('direct'), 1);
-    assert.equal(app.binding.bindingFor(direct).hasStamp('installed'), true);
+    assert.equal(app.src.binding.bindingFor(direct).hasStamp('installed'), true);
     app.dispose();
 });
 
 test('P3: a branch inserted under freeze installs at once; its DOM waits for thaw', () => {
     const {app, data, byId} = page();
-    const box = sourceTarget(app.builder.root.section({id: 'box'}));
-    app.renderer.freeze(box);
-    const inner = app.builder.wrapSource(box).div();
+    const box = sourceTarget(app.src.builder.root.section({id: 'box'}));
+    app.src.renderer.freeze(box);
+    const inner = app.src.builder.wrapSource(box).div();
     inner.span('^x', {id: 'x'});
     inner.dataSetter({destination_path: 'x', value: 'frozen'});
     assert.equal(data.getItem('x'), 'frozen');
     assert.equal(byId('x'), null);
-    app.renderer.unfreeze(box);
+    app.src.renderer.unfreeze(box);
     assert.equal(byId('x').textContent, 'frozen');
     app.dispose();
 });
 
 test('no reinstallation at rebuild or thaw, nor on a Source change of the dataSetter', () => {
     const {app, data, byId} = page();
-    app.startSource(authored(root => {
+    app.src.startSource(authored(root => {
         const box = root.section({id: 'box'});
         box.span('^x', {id: 'x'});
         box.dataSetter({destination_path: 'x', value: 1});
     }));
-    const box = app.source.getItem('main').getNodes()[0];
+    const box = app.src.source.getItem('main').getNodes()[0];
     const setter = box.value.getNodes()[1];
     data.setItem('x', 5);
-    app.renderer.freeze(box);
-    app.renderer.unfreeze(box); // thaw rebuilds the section
+    app.src.renderer.freeze(box);
+    app.src.renderer.unfreeze(box); // thaw rebuilds the section
     assert.equal(data.getItem('x'), 5);
     assert.equal(byId('x').textContent, '5');
     setter.setAttr({value: 2});
@@ -315,8 +315,8 @@ test('remoteSource installs the dataSetters of the replacement before its first 
     const {app, data, byId} = page({main: async () => wire(root => root.div('old', {id: 'slot'})),
         source: () => new Promise(done => { resolve = done; })});
     await app.start();
-    const target = app.source.getItem('main').getNodes()[0];
-    const pending = app.remoteSource(target, 'details');
+    const target = app.src.source.getItem('main').getNodes()[0];
+    const pending = app.src.remoteSource(target, 'details');
     resolve(wire(root => {
         root.span('^remote.nome', {id: 'nome'});
         root.dataSetter({destination_path: 'remote.nome', value: 'Ada', caption: 'Nome'});
@@ -335,9 +335,9 @@ test('an invalid form fails at validation, before any installation', () => {
         root.dataSetter({destination_path: 'y', value: 2});
     });
     source.getNodes()[1].setAttr({destination_path: 'y?caption'}, false);
-    assert.throws(() => app.startSource(source), /'destination_path' does not accept '\?attr'/);
+    assert.throws(() => app.src.startSource(source), /'destination_path' does not accept '\?attr'/);
     assert.equal(data.getNodes().length, 0);
-    assert.equal(app.binding.size, 0);
+    assert.equal(app.src.binding.size, 0);
     app.dispose();
 });
 
@@ -347,25 +347,25 @@ test('gate decision 2: a dataSetter inside svg is an error before any write', ()
         root.dataSetter({destination_path: 'x', value: 1});
         root.svg().dataSetter({destination: 'y', value: 2});
     });
-    assert.throws(() => app.startSource(source), /dataSetter '.*': dataSetter is not supported inside svg/);
+    assert.throws(() => app.src.startSource(source), /dataSetter '.*': dataSetter is not supported inside svg/);
     assert.equal(data.getNodes().length, 0);
     app.dispose();
 });
 
 test('gate decision 6: an installation error closes the new NodeBindings; Data is not rolled back', () => {
     const {app, data} = page();
-    const box = sourceTarget(app.builder.root.div({id: 'box'}));
-    const before = app.binding.size;
-    const branch = new GramlotBuilderBag(null, app.builder);
-    const wrapped = app.builder.wrapSource(branch);
+    const box = sourceTarget(app.src.builder.root.div({id: 'box'}));
+    const before = app.src.binding.size;
+    const branch = new GramlotBuilderBag(null, app.src.builder);
+    const wrapped = app.src.builder.wrapSource(branch);
     wrapped.span('^missing', {id: 'kept', node_id: 'kept'});
     wrapped.dataSetter({destination_path: 'written', value: 1});
     wrapped.dataSetter({destination_path: '#nowhere.x', value: 2});
     assert.throws(() => box.setValue(branch), /#<id>: cannot resolve/);
     assert.equal(data.getItem('written'), 1);
-    assert.equal(app.binding.size, before);
-    for (const node of branch.getNodes()) assert.equal(app.binding.bindingFor(node), null);
-    assert.equal(app.binding.nodeIds.has('kept'), false);
+    assert.equal(app.src.binding.size, before);
+    for (const node of branch.getNodes()) assert.equal(app.src.binding.bindingFor(node), null);
+    assert.equal(app.src.binding.nodeIds.has('kept'), false);
     app.dispose();
 });
 
@@ -374,7 +374,7 @@ test('Python and JavaScript Sources install the same Data', () => {
     const bag = new Bag();
     bag.setItem('a', 1, {colore: 'rosso'});
     js.data.setItem('kept', 7);
-    js.app.startSource(wire(root => {
+    js.app.src.startSource(wire(root => {
         root.dataSetter({destination_path: 'absent', value: null});
         root.dataSetter({destination_path: 'kept', value: null, colore: 'rosso'});
         root.dataSetter({destination_path: 'n', value: 9});
@@ -384,7 +384,7 @@ test('Python and JavaScript Sources install the same Data', () => {
     }));
     const py = page();
     py.data.setItem('kept', 7);
-    py.app.startSource(pythonWire(`
+    py.app.src.startSource(pythonWire(`
 bag = Bag()
 bag.set_item("a", 1, colore="rosso")
 root.dataSetter("absent", None)
@@ -415,36 +415,36 @@ root.div(datapath="ctx").dataSetter(".deep", "d")
 // a failure after the insertion takes main out of the Source again, so the page can start once more.
 test('Fable R1+R6: main never stays in the Source without NodeBindings; the page starts again', () => {
     const {app, data, byId} = page();
-    assert.throws(() => app.startSource(authored(root => {
+    assert.throws(() => app.src.startSource(authored(root => {
         root.dataSetter({destination_path: 'before', value: 1});
         root.div({_init: true});
     })), /div 'div_0': '_init' is allowed only on dataFormula and dataController/);
-    assert.ok(!app.source.getNode('main'));
+    assert.ok(!app.src.source.getNode('main'));
     assert.equal(data.getItem('before'), null);
     assert.equal(app.state, 'failed');
-    assert.throws(() => app.startSource(authored(root => {
+    assert.throws(() => app.src.startSource(authored(root => {
         root.dataSetter({destination_path: 'written', value: 1});
         root.dataController({script: 'x', _onStart: -1});
     })), /_onStart must be true or a delay in ms not below 0/);
-    assert.ok(!app.source.getNode('main'));
+    assert.ok(!app.src.source.getNode('main'));
     assert.equal(data.getItem('written'), 1);
-    assert.equal(app.binding.size, 0);
-    app.startSource(authored(root => root.span('^v', {id: 's'})));
+    assert.equal(app.src.binding.size, 0);
+    app.src.startSource(authored(root => root.span('^v', {id: 's'})));
     assert.equal(app.state, 'started');
     data.setItem('v', 'ok');
     assert.equal(byId('s').textContent, 'ok');
-    sourceTarget(app.source.getItem('main').getNodes()[0]).setAttr({title: 't'});
+    sourceTarget(app.src.source.getItem('main').getNodes()[0]).setAttr({title: 't'});
     assert.equal(byId('s').title, 't');
     app.dispose();
 });
 
 test('Fable R1: an update of a later branch whose installation failed is an error naming node and tag', () => {
     const {app} = page();
-    app.startSource(authored(root => root.div({id: 'host'})));
-    const host = sourceTarget(app.source.getItem('main').getNodes()[0]);
-    assert.throws(() => app.builder.wrapSource(host).dataController({script: 'x', _onStart: -1}), /_onStart must be/);
+    app.src.startSource(authored(root => root.div({id: 'host'})));
+    const host = sourceTarget(app.src.source.getItem('main').getNodes()[0]);
+    assert.throws(() => app.src.builder.wrapSource(host).dataController({script: 'x', _onStart: -1}), /_onStart must be/);
     const failed = host.value.getNodes()[0];
-    assert.equal(app.binding.bindingFor(failed), null);
+    assert.equal(app.src.binding.bindingFor(failed), null);
     assert.throws(() => failed.setAttr({script: 'y'}),
         {message: `dataController '${failed.label}': the node has no NodeBinding (its installation failed); remove it from the Source and insert it again`});
     assert.throws(() => failed.setValue('text'), /dataController '.*': the node has no NodeBinding/);
@@ -452,9 +452,9 @@ test('Fable R1: an update of a later branch whose installation failed is an erro
     for (const attrs of [{datapath: 'ctx'}, {_anchor: true}, {node_id: 'lost'}, {form: true}, {formId: 'f'}]) {
         assert.throws(() => failed.setAttr(attrs), /dataController '.*': the node has no NodeBinding/, Object.keys(attrs)[0]);
     }
-    assert.equal(app.binding.nodeIds.has('lost'), false);
+    assert.equal(app.src.binding.nodeIds.has('lost'), false);
     host.value.popNode(failed.label);
-    app.builder.wrapSource(host).span('ok', {id: 'ok'});
+    app.src.builder.wrapSource(host).span('ok', {id: 'ok'});
     app.dispose();
 });
 
@@ -464,11 +464,11 @@ test('Fable R1: a candidate that is not installable changes nothing in the Sourc
     const {app, byId} = page({main: async () => wire(root => root.div({id: 'slot'}).span('old', {id: 'old'})),
         source: async () => wire(root => root.dataController({script: 'x', _onStart: 'later'}))});
     await app.start();
-    const target = app.source.getItem('main').getNodes()[0];
+    const target = app.src.source.getItem('main').getNodes()[0];
     const [old] = target.value.getNodes();
-    await assert.rejects(app.remoteSource(target, 'details'), /'_onStart' accepts true, false, null or a number/);
+    await assert.rejects(app.src.remoteSource(target, 'details'), /'_onStart' accepts true, false, null or a number/);
     assert.deepEqual(target.value.getNodes(), [old]);
-    assert.ok(app.binding.bindingFor(old));
+    assert.ok(app.src.binding.bindingFor(old));
     assert.equal(byId('old').textContent, 'old');
     app.dispose();
 
@@ -476,8 +476,8 @@ test('Fable R1: a candidate that is not installable changes nothing in the Sourc
     // The renderer subscribes first: after an `ins` whose installation fails, this probe would see the
     // `del` that takes main out again; no event at all means no insertion.
     const events = [];
-    other.app.source.subscribe('probe', {any: event => events.push(event.evt)});
-    assert.throws(() => other.app.startSource(authored(root => root.div({_init: true}))),
+    other.app.src.source.subscribe('probe', {any: event => events.push(event.evt)});
+    assert.throws(() => other.app.src.startSource(authored(root => root.div({_init: true}))),
         /div 'div_0': '_init' is allowed only on dataFormula and dataController/);
     assert.deepEqual(events, []);
     other.app.dispose();

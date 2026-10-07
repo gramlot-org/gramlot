@@ -21,14 +21,14 @@ try {
         builder.root.canvas('fallback',{id:'native-canvas'});
         builder.root.ratingPanel().rating(null,{amount:4,code:'IT'});
         const app=new Gramlot({document,transport:false,collections:[collection]});
-        app.startSource(builder.toTytx());
+        app.src.startSource(builder.toTytx());
         const rating=document.querySelector('gramlot-rating');
         const mounted=!!document.querySelector('canvas#native-canvas') && rating?.getAttribute('amount')==='4';
         const isolated=new GramlotBuilder().root.rating===undefined;
         let rejected=false;
         try{builder.root.ratingPanel().rating(null,{amount:20,code:'IT'});}catch{rejected=true;}
         app.dispose();
-        return {mounted,isolated,rejected,records:app.renderer.records.size,children:document.getElementById('gramlot-root').children.length};
+        return {mounted,isolated,rejected,records:app.src.renderer.records.size,children:document.getElementById('gramlot-root').children.length};
     },collection);
     assert.deepEqual(result,{mounted:true,isolated:true,rejected:true,records:0,children:0});
     assert.deepEqual(errors,[]);

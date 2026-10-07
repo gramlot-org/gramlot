@@ -17,7 +17,7 @@ import {mount} from './fixtures/mount.js';
 function page() {
     const document = new JSDOM('<main></main>').window.document;
     const app = new Gramlot({document, pageId: 'test', element: document.querySelector('main'), transport: false});
-    return {app, data: app.data, byId: id => document.getElementById(id), compiler: app.binding.inlineCompiler};
+    return {app, data: app.data, byId: id => document.getElementById(id), compiler: app.src.binding.inlineCompiler};
 }
 
 /** Register `methods` as the page companion (the root logic group). */
@@ -26,7 +26,7 @@ function companion(app, methods) {
     for (const [name, method] of Object.entries(methods)) {
         Object.defineProperty(Logic.prototype, name, {value: method, writable: true, configurable: true});
     }
-    app.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
+    app.src.logicRegistry.register(Logic, {group: null, resource: '/test_aux.js'});
 }
 
 /** The console.warn messages emitted during `run`. */
@@ -179,10 +179,10 @@ test('gate fix 2: a compiled declaration is released when its attribute changes 
 test('gate fix 3: a ${…} template inside a == attribute or node value is an explicit error naming it', () => {
     const {app, data} = page();
     data.setItem('price', 10);
-    assert.throws(() => app.builder.root.div({a: '^price', total: '==${a} * 2'}),
+    assert.throws(() => app.src.builder.root.div({a: '^price', total: '==${a} * 2'}),
         /div '.*': 'total' contains a \$\{…\} template, not accepted in a == expression/);
     const other = page();
-    assert.throws(() => other.app.builder.root.div('==${a}', {a: 1}),
+    assert.throws(() => other.app.src.builder.root.div('==${a}', {a: 1}),
         /the == node value contains a \$\{…\} template/);
     app.dispose();
     other.app.dispose();
@@ -211,7 +211,7 @@ test('this.SET(...) needs no preprocessor and gives no warning', () => {
 
 test('every legacy macro is translated as in gnrlang.js, targeting the node methods', () => {
     const {app, compiler} = page();
-    const node = sourceTarget(app.builder.root.dataController({script: 'x'}));
+    const node = sourceTarget(app.src.builder.root.dataController({script: 'x'}));
     const cases = [
         ['GET .a', "this.GET('.a')"],
         ['var v = GET ^.a.b;', "var v = this.GET('^.a.b');"],
@@ -302,7 +302,7 @@ test('one compilation per declaration; a new text is not compiled; the removal r
     });
     assert.equal(second, 0);
     assert.equal(data.getItem('r'), 3);
-    app.source.getItem('main').popNode(formula.label);
+    app.src.source.getItem('main').popNode(formula.label);
     assert.equal(compiler.size, 1);
     app.dispose();
     assert.equal(compiler.size, 0);
@@ -359,7 +359,7 @@ test('a template chain used by == is an error naming both attributes; a template
     assert.throws(() => mount(app, root => root.div({a: '^price', title: '${a}px', aria_label: '${title}', total: '==title + a'})),
         /'total' uses 'title', a template consumed by another template/);
     const other = page();
-    assert.throws(() => other.app.builder.root.div({title: '${t}', t: '==1 + 1'}),
+    assert.throws(() => other.app.src.builder.root.div({title: '${t}', t: '==1 + 1'}),
         /the template of 'title' uses 't', a == expression/);
     app.dispose();
     other.app.dispose();
@@ -377,11 +377,11 @@ test('an == expression in an SVG attribute is computed by the same point', () =>
 
 test('an == in an attribute of dataFormula or dataController is an error at installation; dataSetter stays literal', () => {
     const {app, data} = page();
-    assert.throws(() => app.builder.root.dataFormula({result_path: 'r', formula: 'a', a: '==1'}),
+    assert.throws(() => app.src.builder.root.dataFormula({result_path: 'r', formula: 'a', a: '==1'}),
         /dataFormula '.*': 'a' is a == expression, not accepted on dataFormula/);
-    assert.throws(() => app.builder.root.dataController({script: 'x', b: '==2'}),
+    assert.throws(() => app.src.builder.root.dataController({script: 'x', b: '==2'}),
         /dataController '.*': 'b' is a == expression, not accepted on dataController/);
-    app.builder.root.dataSetter({destination_path: 'literal', value: '==1'});
+    app.src.builder.root.dataSetter({destination_path: 'literal', value: '==1'});
     assert.equal(data.getItem('literal'), '==1');
     app.dispose();
 });
@@ -414,7 +414,7 @@ import {JSDOM} from 'jsdom';
 import {Gramlot, GramlotBuilder} from ${JSON.stringify(new URL('../src/index.js', import.meta.url).href)};
 const document = new JSDOM('<main></main><section></section>').window.document;
 const app = new Gramlot({document, pageId: 'strict', element: document.querySelector('main'), transport: false});
-app.logicRegistry.register(class Logic { somma(kwargs) { return kwargs.a + kwargs.b; } }, {group: null, resource: '/strict_aux.js'});
+app.src.logicRegistry.register(class Logic { somma(kwargs) { return kwargs.a + kwargs.b; } }, {group: null, resource: '/strict_aux.js'});
 const builder = new GramlotBuilder();
 const root = builder.root;
 const failure = run => { try { run(); return null; } catch (error) {
@@ -424,7 +424,7 @@ root.dataController({id: 'ctrl', script: 'this.SET("out", 1)', c: '^c'});
 root.dataFormula({result_path: 'f', formula: 'a * 2', a: '^a2'});
 root.button('go', {id: 'go', action: 'this.SET("out", 2)'});
 root.span('x', {id: 'clicked', connect_onclick: 'this.SET("out", 3)'});
-app.startSource(builder.source);
+app.src.startSource(builder.source);
 app.data.setItem('a', 1);
 app.data.setItem('b', 2);
 // An == is evaluated when its node is rendered: the mount of a second page with one raises.
@@ -435,7 +435,7 @@ const result = {
     named: app.data.getItem('named'),
     script: failure(() => app.data.setItem('c', 1)),
     formula: failure(() => app.data.setItem('a2', 1)),
-    expression: failure(() => other.startSource(expression.source)),
+    expression: failure(() => other.src.startSource(expression.source)),
     out: null,
 };
 // A listener's error goes to the window error event, not to the caller of click().
@@ -471,7 +471,7 @@ test('Q3: inline code under a CSP without unsafe-eval raises an EvalError naming
     }
 });
 
-// The inline code runs only as received with the Source (Gramlot.prepareSource): the TYTX wire, a
+// The inline code runs only as received with the Source (SourceHandler.prepareSource): the TYTX wire, a
 // GramlotBuilderBag given to startSource, or a remote Source. A text written later is not run.
 const REFUSED = "inline code runs only as received with the Source \\(main or a remote Source\\); a text written later "
     + 'is not run: use named logic$';
@@ -498,7 +498,7 @@ test('a Source from the TYTX wire runs its inline code: formula, script, _if/_el
     const {app, data, byId} = page();
     const builder = new GramlotBuilder();
     inlineSource(builder.root);
-    app.startSource(builder.toTytx());
+    app.src.startSource(builder.toTytx());
     assert.deepEqual(inlineEffects({data, byId}), [6, 4, '30', '103', 'action', 'click']);
     data.setItem('a', -1);
     assert.equal(data.getItem('f'), -1, '_else');
@@ -510,7 +510,7 @@ test('a GramlotBuilderBag given to startSource runs its inline code', () => {
     const builder = new GramlotBuilder();
     inlineSource(builder.root);
     assert.ok(builder.source instanceof GramlotBuilderBag);
-    app.startSource(builder.source);
+    app.src.startSource(builder.source);
     assert.deepEqual(inlineEffects({data, byId}), [6, 4, '30', '103', 'action', 'click']);
     app.dispose();
 });
@@ -523,7 +523,7 @@ test('a remote Source runs its inline code; a node of a remote Source keeps its 
     const app = new Gramlot({document, pageId: 'remote', element: document.querySelector('main'),
         transport: {source: async () => wire}});
     const target = sourceTarget(mount(app, root => root.div({id: 'target'})));
-    assert.equal(await app.remoteSource(target, 'details'), true);
+    assert.equal(await app.src.remoteSource(target, 'details'), true);
     app.data.setItem('b', 1);
     assert.equal(app.data.getItem('remote'), 2);
     app.dispose();
@@ -532,13 +532,13 @@ test('a remote Source runs its inline code; a node of a remote Source keeps its 
 test('inline code written in the live Source after the start is not run, naming node and attribute', () => {
     const {app, data} = page();
     mount(app, root => root.div({id: 'pane'}));
-    const main = app.source.getItem('main');
+    const main = app.src.source.getItem('main');
     const later = new GramlotBuilder();
     const formula = sourceTarget(later.root.dataFormula({result_path: 'f', formula: 'a * 2', a: '^a'}));
     main.setItem('late', later.source);
     assert.throws(() => data.setItem('a', 1), new RegExp(`^Error: dataFormula '${formula.label}' 'formula': ${REFUSED}`));
     assert.equal(data.getItem('f'), null);
-    assert.throws(() => app.builder.root.div({id: 'expr', title: '==1 + 1'}), new RegExp(`'title': ${REFUSED}`));
+    assert.throws(() => app.src.builder.root.div({id: 'expr', title: '==1 + 1'}), new RegExp(`'title': ${REFUSED}`));
     app.dispose();
 });
 
@@ -552,7 +552,7 @@ test('a GramlotBuilderBag arrived inside Data is not activated: inserted in the 
     const received = Bag.fromTytx(payload.toTytx());
     const branch = received.getItem('branch');
     assert.ok(branch instanceof GramlotBuilderBag, 'the TYTX decoding gives the Source class back');
-    app.source.getItem('main').setItem('fromData', branch.bindBuilder(app.builder));
+    app.src.source.getItem('main').setItem('fromData', branch.bindBuilder(app.src.builder));
     assert.throws(() => data.setItem('c', 1), new RegExp(`'script': ${REFUSED}`));
     assert.equal(globalThis.inlineFromData, undefined);
     app.dispose();
@@ -589,11 +589,11 @@ test('a code attribute holding a ^/= pointer is an error at the reception, befor
             const builder = new GramlotBuilder();
             builder.root.div({id: 'before'});
             build(builder.root);
-            assert.throws(() => app.startSource(received(builder)),
+            assert.throws(() => app.src.startSource(received(builder)),
                 new RegExp(`^Error: \\w+ '.+': '${attr}' is inline code and cannot be the pointer '[\\^=]code'; inline code is never read from Data$`),
                 attr);
             assert.equal(app.state, 'failed');
-            assert.equal(app.source.getItem('main'), null, attr);
+            assert.equal(app.src.source.getItem('main'), null, attr);
             assert.equal(byId('before'), null, attr);
             app.dispose();
         }

@@ -1,5 +1,5 @@
 /**
- * What the page sends, receives, saves and downloads (`gramlot.inout`).
+ * What the page sends, receives, saves and downloads (`gramlot.utl.inout`).
  *
  * @module
  */
@@ -11,7 +11,7 @@ import type {Gramlot} from './gramlot.js';
 export const MAILTO_LIMIT: number;
 
 /**
- * What the page sends, receives, saves and downloads: `gramlot.inout`.
+ * What the page sends, receives, saves and downloads: `gramlot.utl.inout`.
  * Every function takes the Data path of a Bag branch; a missing path or a value that is not a Bag
  * raises an Error.
  */

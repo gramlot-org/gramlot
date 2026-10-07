@@ -11,7 +11,7 @@ test('core renders former runner markers as ordinary HTML attributes', () => {
     root.div('# Heading', {data_gramlot_markdown: true});
     root.pre().code('function demo() {}', {data_gramlot_highlight: true});
     root.div({data_gramlot_split: 65});
-    const app = new Gramlot({document, transport: false}).startSource(builder.source);
+    const app = new Gramlot({document, transport: false}).src.startSource(builder.source);
     assert.equal(document.querySelector('h1, .hljs-keyword'), null);
     assert.match(document.getElementById('plain').textContent, /# Heading/);
     assert.equal(document.documentElement.hasAttribute('data-theme'), false);

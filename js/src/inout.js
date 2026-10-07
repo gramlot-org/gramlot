@@ -1,6 +1,6 @@
 /* @ts-self-types="./inout.d.ts" */
 /**
- * What the page sends, receives, saves and downloads (`gramlot.inout`).
+ * What the page sends, receives, saves and downloads (`gramlot.utl.inout`).
  *
  * @module
  */
@@ -17,7 +17,7 @@ function leafText(value) {
 }
 
 /**
- * What the page sends, receives, saves and downloads: `gramlot.inout` (decisions of 2026-10-03).
+ * What the page sends, receives, saves and downloads: `gramlot.utl.inout` (decisions of 2026-10-03).
  * Every function takes the Data path of a Bag branch; a missing path or a value that is not a Bag
  * raises an Error. Part of the browser runtime, so Python and JavaScript pages use it alike, from
  * inline code or from their Logic.
@@ -31,7 +31,7 @@ export class InOut {
     /** The Bag at path in the Data. */
     branch(path) {
         const value = this.gramlot.data.getItem(path);
-        if (!(value instanceof Bag)) throw new Error(`gramlot.inout: no data Bag at '${path}'`);
+        if (!(value instanceof Bag)) throw new Error(`gramlot.utl.inout: no data Bag at '${path}'`);
         return value;
     }
 
@@ -54,7 +54,7 @@ export class InOut {
         const url = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(this.document.title)}` +
             `&body=${encodeURIComponent(this.mailText(path))}`;
         if (url.length > MAILTO_LIMIT) {
-            throw new Error(`gramlot.inout.sendMail: the email of '${path}' is ${url.length} characters long, ` +
+            throw new Error(`gramlot.utl.inout.sendMail: the email of '${path}' is ${url.length} characters long, ` +
                 `over the mailto: limit of ${MAILTO_LIMIT}; send it with sendHttp or save it as a file`);
         }
         return url;
@@ -71,7 +71,7 @@ export class InOut {
         const response = await this.document.defaultView.fetch(url, {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body,
         });
-        if (!response.ok) throw new Error(`gramlot.inout.sendHttp: ${url} answered ${response.status}`);
+        if (!response.ok) throw new Error(`gramlot.utl.inout.sendHttp: ${url} answered ${response.status}`);
         return response;
     }
 
@@ -92,7 +92,7 @@ export class InOut {
                     this.gramlot.data.setItem(path, bag);
                     resolve(bag);
                 } catch (error) {
-                    reject(new Error(`gramlot.inout.restore: the file is not a saved Gramlot branch: ${error.message}`,
+                    reject(new Error(`gramlot.utl.inout.restore: the file is not a saved Gramlot branch: ${error.message}`,
                         {cause: error}));
                 }
             }, {once: true});
@@ -104,7 +104,7 @@ export class InOut {
      * after the last segment of path); types become text. */
     download(path, filename, format) {
         if (!['json', 'xml'].includes(format)) {
-            throw new Error(`gramlot.inout.download: format '${format}' is not 'json' or 'xml'`);
+            throw new Error(`gramlot.utl.inout.download: format '${format}' is not 'json' or 'xml'`);
         }
         const bag = this.branch(path);
         if (format === 'json') {

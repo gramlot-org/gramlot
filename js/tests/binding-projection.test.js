@@ -17,13 +17,13 @@ const XLINK = 'http://www.w3.org/1999/xlink';
 function page() {
     const document = new JSDOM('<main></main>').window.document;
     const app = new Gramlot({document, element: document.querySelector('main'), transport: false});
-    return {app, document, builder: app.builder, data: app.data, router: app.binding.router,
+    return {app, document, builder: app.src.builder, data: app.data, router: app.src.binding.router,
         byId: id => document.getElementById(id)};
 }
 
 /** Paths registered by the NodeBinding of `node`. */
 function registered(app, node) {
-    return app.binding.bindingFor(sourceTarget(node)).registrations
+    return app.src.binding.bindingFor(sourceTarget(node)).registrations
         .map(registration => registration.attr ? `${registration.path}?${registration.attr}` : registration.path);
 }
 
@@ -48,7 +48,7 @@ test('an external Data write updates the page without remounting it, with one su
     assert.equal(element.textContent, 'Bea');
     assert.equal(element.title, 'hint');
     assert.equal(element.className, 'k1');
-    assert.equal(Object.keys(app.binding.root._updSubscribers).length, 1);
+    assert.equal(Object.keys(app.src.binding.root._updSubscribers).length, 1);
     assert.deepEqual(Object.keys(app.data._updSubscribers), []);
 });
 
@@ -59,11 +59,11 @@ test('pointers are registered from pointers(); = is not registered; a dataSetter
     builder.root.dataController({func: 'go', a: '^trigger'});
     assert.deepEqual(registered(app, node).sort(), ['a', 'b?caption']);
     const [setter, controller] = builder.source.getNodes().slice(1);
-    assert.deepEqual(app.binding.bindingFor(setter).registrations, []);
+    assert.deepEqual(app.src.binding.bindingFor(setter).registrations, []);
     // S08: a provider registers its `^` pointers through its Provider, not on the NodeBinding.
-    assert.deepEqual(app.binding.bindingFor(controller).registrations, []);
-    assert.equal(app.binding.bindingFor(controller).providers.length, 1);
-    assert.equal(app.binding.router.size, 3);
+    assert.deepEqual(app.src.binding.bindingFor(controller).registrations, []);
+    assert.equal(app.src.binding.bindingFor(controller).providers.length, 1);
+    assert.equal(app.src.binding.router.size, 3);
 });
 
 test('title and class update also with reason = node (P1 concerns only `value`)', () => {
@@ -379,14 +379,14 @@ test('under freeze the elements already built react to Data; a node inserted und
     const {app, builder, data, byId} = page();
     const box = sourceTarget(builder.root.div({id: 'box'}));
     builder.wrapSource(box).p('^v', {id: 'p'});
-    app.renderer.freeze(box);
+    app.src.renderer.freeze(box);
     data.setItem('v', 'frozen but live');
     assert.equal(byId('p').textContent, 'frozen but live');
     const late = sourceTarget(builder.wrapSource(box).span('^v', {id: 'late'}));
     data.setItem('v', 'again');
     assert.equal(byId('late'), null);
-    assert.equal(app.getDomNode(late), null);
-    app.renderer.unfreeze(box);
+    assert.equal(app.dom.getDomNode(late), null);
+    app.src.renderer.unfreeze(box);
     assert.equal(byId('late').textContent, 'again');
     assert.equal(byId('p').textContent, 'again');
 });
@@ -398,36 +398,36 @@ test('getBaseSourceNode: from a text node, a nested foreign element, an element 
     const fragment = new GramlotBuilderBag(null, builder);
     const wrapped = builder.wrapSource(fragment);
     wrapped.span('in fragment', {id: 'frag'});
-    app.source.setItem('fragment', fragment);
+    app.src.source.setItem('fragment', fragment);
     const spanNode = fragment.getNodes()[0];
     const foreign = document.createElement('em');
     byId('inner').append(foreign);
-    assert.equal(app.getBaseSourceNode(byId('inner').firstChild), inner);
-    assert.equal(app.getBaseSourceNode(foreign), inner);
-    assert.equal(app.getBaseSourceNode(byId('outer')), outer);
-    assert.equal(app.getBaseSourceNode(byId('frag').firstChild), spanNode);
-    assert.equal(app.getBaseSourceNode(document.body), null);
+    assert.equal(app.dom.getBaseSourceNode(byId('inner').firstChild), inner);
+    assert.equal(app.dom.getBaseSourceNode(foreign), inner);
+    assert.equal(app.dom.getBaseSourceNode(byId('outer')), outer);
+    assert.equal(app.dom.getBaseSourceNode(byId('frag').firstChild), spanNode);
+    assert.equal(app.dom.getBaseSourceNode(document.body), null);
 });
 
 test('getDomNode: the new element after a rebuild; null for fragment, data-element, removed node', () => {
     const {app, builder, byId} = page();
     const handle = builder.root.div({id: 'd'});
     const node = sourceTarget(handle);
-    const before = app.getDomNode(handle);
+    const before = app.dom.getDomNode(handle);
     assert.strictEqual(before, byId('d'));
     node.setValue(new GramlotBuilderBag(null, builder));
-    const after = app.getDomNode(node);
+    const after = app.dom.getDomNode(node);
     assert.notStrictEqual(after, before);
     assert.strictEqual(after, byId('d'));
-    assert.equal(app.getBaseSourceNode(before), null);
+    assert.equal(app.dom.getBaseSourceNode(before), null);
     const fragment = new GramlotBuilderBag(null, builder);
-    const fragmentNode = app.source.setItem('fragment', fragment);
-    assert.equal(app.getDomNode(fragmentNode), null);
+    const fragmentNode = app.src.source.setItem('fragment', fragment);
+    assert.equal(app.dom.getDomNode(fragmentNode), null);
     const setter = sourceTarget(builder.root.dataSetter({destination_path: 'x', value: 1}));
-    assert.equal(app.getDomNode(setter), null);
-    app.source.popNode(node.label);
-    assert.equal(app.getDomNode(node), null);
-    assert.equal(app.getBaseSourceNode(after), null);
+    assert.equal(app.dom.getDomNode(setter), null);
+    app.src.source.popNode(node.label);
+    assert.equal(app.dom.getDomNode(node), null);
+    assert.equal(app.dom.getBaseSourceNode(after), null);
 });
 
 test('getDomNode and getBaseSourceNode give null for a node removed under freeze', () => {
@@ -435,11 +435,11 @@ test('getDomNode and getBaseSourceNode give null for a node removed under freeze
     const box = sourceTarget(builder.root.div({id: 'box'}));
     const child = sourceTarget(builder.wrapSource(box).p('x', {id: 'p'}));
     const element = byId('p');
-    app.renderer.freeze(box);
+    app.src.renderer.freeze(box);
     box.value.popNode(child.label);
     assert.strictEqual(byId('p'), element);
-    assert.equal(app.getDomNode(child), null);
-    assert.equal(app.getBaseSourceNode(element), null);
+    assert.equal(app.dom.getDomNode(child), null);
+    assert.equal(app.dom.getBaseSourceNode(element), null);
 });
 
 test('R06: #<node_id> is translated by the map; insertion, removal and in-place node_id change', () => {
@@ -447,23 +447,23 @@ test('R06: #<node_id> is translated by the map; insertion, removal and in-place 
     data.setItem('t.x', 'target x');
     const target = sourceTarget(builder.root.div({datapath: 't', node_id: 'target'}));
     const sibling = builder.root.p('^#target.x', {id: 'p'});
-    assert.equal(app.binding.nodeIds.get('target'), target);
+    assert.equal(app.src.binding.nodeIds.get('target'), target);
     assert.deepEqual(registered(app, sibling), ['t.x']);
     assert.equal(byId('p').textContent, 'target x');
     assert.equal(sourceTarget(builder.nodeById('target')), target);
     target.setAttr({node_id: 'renamed'});
-    assert.equal(app.binding.nodeIds.has('target'), false);
-    assert.equal(app.binding.nodeIds.get('renamed'), target);
+    assert.equal(app.src.binding.nodeIds.has('target'), false);
+    assert.equal(app.src.binding.nodeIds.get('renamed'), target);
     assert.deepEqual(registered(app, sibling), ['t.x']);
-    assert.equal(app.binding.router.size, 1);
+    assert.equal(app.src.binding.router.size, 1);
     // As legacy: the next projection of the sibling reads its Source pointer and the old id no longer resolves.
     assert.throws(() => data.setItem('t.x', 'after rename'), {message: '#<id>: cannot resolve ^#target.x'});
     assert.equal(byId('p').textContent, 'target x');
     assert.deepEqual(registered(app, sibling), ['t.x']);
     assert.throws(() => builder.root.span('^#target.x'), /#<id>: cannot resolve \^#target\.x/);
     assert.throws(() => builder.nodeById('target'), /node_id not found: target/);
-    app.source.popNode(target.label);
-    assert.equal(app.binding.nodeIds.has('renamed'), false);
+    app.src.source.popNode(target.label);
+    assert.equal(app.src.binding.nodeIds.has('renamed'), false);
 });
 
 test('R06: a duplicate node_id in a received Source is an explicit error when it enters the map', () => {
@@ -471,20 +471,20 @@ test('R06: a duplicate node_id in a received Source is an explicit error when it
     builder.root.div({node_id: 'dup'});
     const other = new GramlotBuilder();
     other.root.div({node_id: 'dup'});
-    const received = app.prepareSource(other.toTytx());
-    assert.throws(() => app.source.setItem('received', received), /Duplicate node_id 'dup'/);
+    const received = app.src.prepareSource(other.toTytx());
+    assert.throws(() => app.src.source.setItem('received', received), /Duplicate node_id 'dup'/);
     const twice = new GramlotBuilderBag(null, builder);
     twice.setItem('a', null, {node_id: 'x'});
     twice.setItem('b', null, {node_id: 'x'});
-    assert.throws(() => app.source.setItem('twice', twice), /Duplicate node_id 'x'/);
+    assert.throws(() => app.src.source.setItem('twice', twice), /Duplicate node_id 'x'/);
 });
 
 test('a data change reaches only its own registrations: an unrelated write does not project', () => {
     const {app, builder, data} = page();
     builder.root.p('^a', {id: 'p'});
     let projected = 0;
-    const project = app.renderer.project.bind(app.renderer);
-    app.renderer.project = (...args) => { projected += 1; return project(...args); };
+    const project = app.src.renderer.project.bind(app.src.renderer);
+    app.src.renderer.project = (...args) => { projected += 1; return project(...args); };
     data.setItem('b', 1);
     data.setItem('b', 2);
     assert.equal(projected, 0);

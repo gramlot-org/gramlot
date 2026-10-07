@@ -10,7 +10,7 @@ import html5 from '../../src/gramlot/collections/html5.json' with {type: 'json'}
 function setup() {
     const document = new JSDOM('<main id="root"><i id="host"></i></main>').window.document;
     const app = new Gramlot({document, element: document.getElementById('root'), transport: false});
-    return {document, builder: app.builder, source: app.source, renderer: app.renderer};
+    return {document, builder: app.src.builder, source: app.src.source, renderer: app.src.renderer};
 }
 
 function sourceBlock(builder, author) {
@@ -31,7 +31,7 @@ test('HTML void behavior follows collection metadata, including aliases', () => 
     };
     const document = new JSDOM('<main id="root"></main>').window.document;
     const {builder, renderer} = new Gramlot({document, element: document.getElementById('root'), transport: false,
-        collections: [collection]});
+        collections: [collection]}).src;
     builder.root.linebreak();
     builder.root.br();
     builder.root.input();

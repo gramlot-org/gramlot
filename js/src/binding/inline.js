@@ -7,7 +7,7 @@ import {isExpression, templateParameters} from '../renderer/attributes.js';
  * only by the page runtime: never by `adapters/*`, `builder/*` or a WorkerHost, so a page with named logic
  * only runs under a CSP without `'unsafe-eval'`.
  *
- * Only the inline code received with the Source runs: the text activated by Gramlot.prepareSource
+ * Only the inline code received with the Source runs: the text activated by SourceHandler.prepareSource
  * (GramlotBuilderBagNode.activateCode). A text written later in the Source, by page code or from Data,
  * is an error naming node and attribute.
  *

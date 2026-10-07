@@ -37,9 +37,9 @@ export class BindingRuntime {
     }
 
     get gramlot() { return this.#gramlot; }
-    get builder() { return this.gramlot.builder; }
-    get renderer() { return this.gramlot.renderer; }
-    get logicRegistry() { return this.gramlot.logicRegistry; }
+    get builder() { return this.gramlot.src.builder; }
+    get renderer() { return this.gramlot.src.renderer; }
+    get logicRegistry() { return this.gramlot.src.logicRegistry; }
     /** The document Data Bag. */
     get data() { return this.builder.data; }
     /** Builder's Data wrapper `_dataroot`: `root.getItem('_root_') === data`. */

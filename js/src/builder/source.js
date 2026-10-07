@@ -46,7 +46,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /**
      * Activate the inline code of this node: the current texts of its code attributes become the only
-     * texts InlineCompiler runs for it. Called by GramlotBuilderBag.activateCode, from Gramlot.prepareSource:
+     * texts InlineCompiler runs for it. Called by GramlotBuilderBag.activateCode, from SourceHandler.prepareSource:
      * a text written later is not run. A code attribute holding a `^`/`=` pointer is an error, because
      * its text would come from Data.
      */

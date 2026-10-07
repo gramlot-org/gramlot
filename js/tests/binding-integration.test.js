@@ -61,7 +61,7 @@ test('rebuild of the same node: nothing installed or started again, same NodeBin
     const base = counters(ctx);
     const input = nodeById(branch, 'name1');
     const pane = nodeById(branch, 'pane1');
-    const binding = app.binding.bindingFor(input);
+    const binding = app.src.binding.bindingFor(input);
     const element = ctx.byId('name1');
     trace.length = 0;
     // C04.1: `type` has no setter, the element is rebuilt.
@@ -70,11 +70,11 @@ test('rebuild of the same node: nothing installed or started again, same NodeBin
     assert.equal(ctx.byId('name1').value, 'anon');
     // A thaw rebuilds the whole pane once.
     const paneElement = ctx.byId('pane1');
-    app.renderer.freeze(pane);
-    app.renderer.unfreeze(pane);
+    app.src.renderer.freeze(pane);
+    app.src.renderer.unfreeze(pane);
     assert.notEqual(ctx.byId('pane1'), paneElement);
     assert.deepEqual(trace, []);
-    assert.equal(app.binding.bindingFor(input), binding);
+    assert.equal(app.src.binding.bindingFor(input), binding);
     assert.deepEqual(delta(counters(ctx), base), {});
     ctx.byId('name1').value = 'lisa';
     dispatch(ctx, ctx.byId('name1'), 'input');
@@ -89,11 +89,11 @@ test('replacement with a new identity: the old branch closes, the new one instal
     const branch = insertBranch(app, host, 'b1', fullBranch(1));
     const base = counters(ctx);
     const oldController = nodeById(branch, 'button1').value.getNodes()[0];
-    const oldBinding = app.binding.bindingFor(oldController);
+    const oldBinding = app.src.binding.bindingFor(oldController);
     ctx.data.setItem('p1.name', null);
     trace.length = 0;
     // The same label with a new branch: `upd_value` of the fragment, new nodes (§4.4 matrix).
-    branch.setValue(app.prepareSource(authored(fullBranch(1))));
+    branch.setValue(app.src.prepareSource(authored(fullBranch(1))));
     assert.equal(oldBinding.closed, true);
     assert.notEqual(nodeById(branch, 'button1').value.getNodes()[0], oldController);
     // The dataSetter writes the same value: no event; the default refills the emptied name.
@@ -113,7 +113,7 @@ test('removal under freeze: the NodeBindings close at once, the DOM and its list
     const base = counters(ctx);
     insertBranch(app, host, 'b1', fullBranch(1));
     const mounted = counters(ctx);
-    app.renderer.freeze(host);
+    app.src.renderer.freeze(host);
     trace.length = 0;
     host.value.popNode('b1');
     assert.deepEqual(trace, []);
@@ -121,7 +121,7 @@ test('removal under freeze: the NodeBindings close at once, the DOM and its list
     assert.equal(counters(ctx).listeners, mounted.listeners);
     clock.tick(10000);
     assert.deepEqual(trace, []);
-    app.renderer.unfreeze(host);
+    app.src.renderer.unfreeze(host);
     assert.deepEqual(delta(counters(ctx), base), {});
     assert.equal(ctx.byId('pane1'), null);
     app.dispose();
@@ -132,20 +132,20 @@ test('P3: insertion under freeze: steps 1-5 at once, the build and _onBuilt at t
     const {app, trace} = ctx;
     const host = startHost(app);
     const base = counters(ctx);
-    app.renderer.freeze(host);
+    app.src.renderer.freeze(host);
     trace.length = 0;
     insertBranch(app, host, 'b1', fullBranch(1));
     assert.deepEqual(trace, ['data:ins:p1', 'data:ins:p1.greeting', 'data:ins:p1.name', 'ctl:init']);
     // The providers are registered and `_timing` runs; no element, no listener.
     assert.deepEqual(delta(counters(ctx), base), {bindings: 10, registrations: 6, nodeIds: 1, timers: 1});
     trace.length = 0;
-    app.renderer.unfreeze(host);
+    app.src.renderer.unfreeze(host);
     assert.deepEqual(trace, ['ctl:built', 'ctl:start']);
     assert.deepEqual(delta(counters(ctx), base), {bindings: 10, registrations: 6, nodeIds: 1, inline: 1, records: 7,
         references: 1, elements: 6, timers: 1, listeners: 14});
     trace.length = 0;
-    app.renderer.freeze(host);
-    app.renderer.unfreeze(host);
+    app.src.renderer.freeze(host);
+    app.src.renderer.unfreeze(host);
     assert.deepEqual(trace, []);
     app.dispose();
 });
@@ -156,15 +156,15 @@ test('P3: insertion then removal under the same freeze: installed and closed, ne
     const host = startHost(app);
     const base = counters(ctx);
     let creates = 0;
-    const create = app.renderer.html.create.bind(app.renderer.html);
-    app.renderer.html.create = (...args) => { creates++; return create(...args); };
-    app.renderer.freeze(host);
+    const create = app.src.renderer.html.create.bind(app.src.renderer.html);
+    app.src.renderer.html.create = (...args) => { creates++; return create(...args); };
+    app.src.renderer.freeze(host);
     trace.length = 0;
     insertBranch(app, host, 'b1', fullBranch(1));
     host.value.popNode('b1');
     assert.deepEqual(trace, ['data:ins:p1', 'data:ins:p1.greeting', 'data:ins:p1.name', 'ctl:init']);
     assert.deepEqual(delta(counters(ctx), base), {});
-    app.renderer.unfreeze(host);
+    app.src.renderer.unfreeze(host);
     // The thaw builds the host once: section and p, nothing of the removed branch.
     assert.equal(creates, 2);
     assert.deepEqual(trace, ['data:ins:p1', 'data:ins:p1.greeting', 'data:ins:p1.name', 'ctl:init']);
@@ -179,29 +179,29 @@ test('nested freeze: the inner thaw waits for the outer one, which builds the cu
     const branch = insertBranch(app, host, 'b1', fullBranch(1));
     const pane = nodeById(branch, 'pane1');
     const span = nodeById(branch, 'span1');
-    const bindings = new Map([pane, span].map(node => [node, app.binding.bindingFor(node)]));
+    const bindings = new Map([pane, span].map(node => [node, app.src.binding.bindingFor(node)]));
     const base = counters(ctx);
     let creates = 0;
-    const create = app.renderer.html.create.bind(app.renderer.html);
-    app.renderer.html.create = (...args) => { creates++; return create(...args); };
-    app.renderer.freeze(host);
-    app.renderer.freeze(pane);
+    const create = app.src.renderer.html.create.bind(app.src.renderer.html);
+    app.src.renderer.html.create = (...args) => { creates++; return create(...args); };
+    app.src.renderer.freeze(host);
+    app.src.renderer.freeze(pane);
     trace.length = 0;
     pane.setAttr({title: 'frozen'});
     span.setValue('changed');
-    app.builder.wrapSource(pane).em('late', {id: 'late1'});
-    app.renderer.unfreeze(pane);
+    app.src.builder.wrapSource(pane).em('late', {id: 'late1'});
+    app.src.renderer.unfreeze(pane);
     assert.equal(creates, 0);
     assert.equal(ctx.byId('late1'), null);
     assert.equal(ctx.byId('pane1').title, '');
-    app.renderer.unfreeze(host);
+    app.src.renderer.unfreeze(host);
     // section, p, pane, input, 2 radios, button, span, em: one build each.
     assert.equal(creates, 9);
     assert.equal(ctx.byId('pane1').title, 'frozen');
     assert.equal(ctx.byId('span1').textContent, 'changed');
     assert.ok(ctx.byId('late1'));
     assert.deepEqual(trace, []);
-    for (const [node, binding] of bindings) assert.equal(app.binding.bindingFor(node), binding);
+    for (const [node, binding] of bindings) assert.equal(app.src.binding.bindingFor(node), binding);
     // The em is new; the span lost the pointer of its value (R05).
     assert.deepEqual(delta(counters(ctx), base), {bindings: 1, registrations: -1, records: 1, elements: 1});
     app.dispose();
@@ -242,7 +242,7 @@ test('R12: an input, a button and a connect_on<event> removed under freeze do no
             fired: '^.fired', clicked: '^.clicked', key: '^.key', _delay: 20});
     });
     const elements = ['text', 'lazy', 'box', 'fire', 'controlled', 'span'].map(id => ctx.byId(id));
-    app.renderer.freeze(host);
+    app.src.renderer.freeze(host);
     host.value.popNode('b1');
     trace.length = 0;
     const [text, lazy, box, fire, controlled, span] = elements;
@@ -264,7 +264,7 @@ test('R12: an input, a button and a connect_on<event> removed under freeze do no
     for (const path of ['text', 'lazy', 'box', 'fired', 'clicked', 'key']) assert.equal(data.getItem(`r.${path}`), null);
     assert.equal(ctx.timers.size, 0);
     assert.deepEqual(delta(counters(ctx), base), {records: 8, elements: 7, listeners: 16});
-    app.renderer.unfreeze(host);
+    app.src.renderer.unfreeze(host);
     assert.deepEqual(delta(counters(ctx), base), {});
     for (const element of elements) assert.equal(element.isConnected, false);
     app.dispose();
@@ -281,7 +281,7 @@ test('a callback that removes its own node: the handler stops, under freeze and 
             let removeNow = null;
             const Logic = class {};
             Object.defineProperty(Logic.prototype, 'leave', {value() { removeNow(); }, writable: true, configurable: true});
-            app.logicRegistry.register(Logic, {group: 'lc', resource: '/lc.js'});
+            app.src.logicRegistry.register(Logic, {group: 'lc', resource: '/lc.js'});
             insertBranch(app, host, 'input', root => {
                 root.input({id: 'lazy', value: '^i.lazy'});
                 root.dataController({func: 'lc.leave', v: '^i.lazy'});
@@ -300,7 +300,7 @@ test('a callback that removes its own node: the handler stops, under freeze and 
                 root.button('b', {id: 'self', connect_onclick: 'this.SET("s.clicked", true)'})
                     .dataController({func: 'lc.leave'});
             });
-            if (frozen) app.renderer.freeze(host);
+            if (frozen) app.src.renderer.freeze(host);
             trace.length = 0;
             // A text input writes on `change`; its observer removes it; the next `change` writes nothing.
             removeNow = remove('input');
@@ -325,7 +325,7 @@ test('a callback that removes its own node: the handler stops, under freeze and 
             assert.equal(data.getItem('s.clicked'), null);
             // `i` and `f` are created by the first write under them.
             assert.deepEqual(trace, ['data:ins:i', 'data:ins:i.lazy', 'data:ins:f', 'data:ins:f.a', 'data:ins:r.rb']);
-            if (frozen) app.renderer.unfreeze(host);
+            if (frozen) app.src.renderer.unfreeze(host);
             assert.deepEqual(delta(counters(ctx), base), {});
             app.dispose();
         });

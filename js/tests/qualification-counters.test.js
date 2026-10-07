@@ -29,7 +29,7 @@ function farBranch(root, n) {
 /** A started page with the active branch and `far` unconnected branches. */
 function fixture(t, far) {
     const ctx = page(t);
-    ctx.app.startSource(authored(root => {
+    ctx.app.src.startSource(authored(root => {
         activeBranch(root);
         for (let n = 0; n < far; n++) farBranch(root, n);
     }));
