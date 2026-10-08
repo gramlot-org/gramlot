@@ -1,13 +1,14 @@
-/* @ts-self-types="./file-host.d.ts" */
+/* @ts-self-types="./gramlot-file-server.d.ts" */
 /**
- * A reference host on one pages folder.
+ * A reference server on one pages folder.
  *
  * @module
  */
 import {realpath, stat} from 'node:fs/promises';
 import {basename, dirname, extname, isAbsolute, join, relative, resolve, sep} from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {Host, PageNotFound} from './host.js';
+import {gramlotDev} from './assets.js';
+import {GramlotServer, PageNotFound} from './gramlot-server.js';
 import {InvalidResourceName, SEGMENT, parseRequires} from './resources.js';
 
 const inside = (filename, folder) => {
@@ -30,8 +31,8 @@ async function realFile(filename) {
     }
 }
 
-/** Minimal reference Host on one pages folder, with APIs shared by Node.js and Bun.
- * The Python counterpart is src/gramlot/server/file_host.py. Page path foo: the
+/** Minimal reference GramlotServer on one pages folder, with APIs shared by Node.js and Bun.
+ * The Python counterpart is src/gramlot/server/gramlot_file_server.py. Page path foo: the
  * file page foo.js first, then the folder page foo/foo.js; the file wins when both
  * exist. Beside the page file: foo.css (CSS) and foo.md (README). The page logic
  * (group null) is the Logic export of the page module itself, else foo_aux.js
@@ -39,16 +40,28 @@ async function realFile(filename) {
  * reaches the browser, so its imports must resolve there too. The _aux suffix is
  * reserved. There are
  * no resource levels: a name in css_requires/js_requires raises
- * InvalidResourceName. Modules are trusted ESM application files; runtime module
- * caching applies.
+ * InvalidResourceName. Modules are trusted ESM application files. Without reload
+ * the runtime module cache applies, keyed by the real path
+ * of the page module; with reload the page module is imported again
+ * when its modification time changes. reload null takes the value from GRAMLOT_DEV
+ * (true for YES and DEBUG, false when unset); an explicit boolean wins.
  */
-export class FileHost extends Host {
-    constructor(pagesDir, options = {}) {
+export class GramlotFileServer extends GramlotServer {
+    constructor(pagesDir, {reload = null, ...options} = {}) {
         super(options);
         this._pagesDir = resolve(pagesDir);
+        this.reload = reload ?? gramlotDev() !== null;
     }
 
     get pagesDir() { return this._pagesDir; }
+
+    /** The import URL of a page module from its real path, so a symlinked page runs once;
+     * with reload it carries the modification time. */
+    async _moduleUrl(pageFile) {
+        const real = await realpath(pageFile);
+        const url = pathToFileURL(real).href;
+        return this.reload ? `${url}?v=${(await stat(real)).mtimeMs}` : url;
+    }
 
     /** Map a/b to a/b.js, else a/b/b.js, below the real pages folder. */
     async locatePage(path) {
@@ -73,21 +86,21 @@ export class FileHost extends Host {
     }
 
     async resolvePage(path) {
-        return (await import(pathToFileURL(await this.locatePage(path)).href)).Page;
+        return (await import(await this._moduleUrl(await this.locatePage(path)))).Page;
     }
 
     /** Page.css URLs as written, then the companion foo.css and the page logic. */
     async resolveResources(path, PageClass) {
         if (parseRequires(PageClass.css_requires).length || parseRequires(PageClass.js_requires).length) {
-            throw new InvalidResourceName('requires need a Host with a resource system');
+            throw new InvalidResourceName('requires need a GramlotServer with a resource system');
         }
         const pageFile = await this.locatePage(path);
         const stem = join(dirname(pageFile), basename(pageFile, extname(pageFile)));
         const css = [...PageClass.css], js = [];
         if (await realFile(`${stem}.css`)) css.push(await this.url(`${stem}.css`));
         const logic = [];
-        // The module is already in the runtime cache: resolvePage imported it.
-        if ('Logic' in await import(pathToFileURL(pageFile).href)) logic.push(await this.url(pageFile));
+        // The module is already in the runtime cache: resolvePage imported it with the same URL.
+        if ('Logic' in await import(await this._moduleUrl(pageFile))) logic.push(await this.url(pageFile));
         if (await realFile(`${stem}_aux.js`)) logic.push(await this.url(`${stem}_aux.js`));
         if (logic.length === 2) throw new Error(`Two logic modules for one page: ${logic.join(' and ')}`);
         if (logic.length) js.push({url: logic[0], group: null});

@@ -24,7 +24,7 @@ using only the functions documented here.
 ## 005 · A first HTML page
 
 This is an authoring example for the development foundation, not a standalone
-server command. A host loads the module and supplies `root`.
+server command. A server loads the module and supplies `root`.
 
 ```python
 from gramlot import Page as BasePage
@@ -54,7 +54,7 @@ any attribute (section 070).
 
 ## 010 · From a page to the browser
 
-1. The host returns a document with a root element, default `gramlot-root`, and runtime bootstrap.
+1. The server returns a document with a root element, default `gramlot-root`, and runtime bootstrap.
 2. `Gramlot` prepares Data and Source roots and subscribes before requesting main.
 3. The server executes `main(root)` and sends a typed SourceBag through TYTX.
 4. The generic builder decodes and associates the Source, then Gramlot validates it before insertion.
@@ -76,7 +76,7 @@ validation and DOM construction, each branch installs its Data declarations
 
 ## 015 · Remote Source (not yet available)
 
-Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
+Source methods (`@source`, `registerSource(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
 
 <a id="gc-095-020"></a>
 
@@ -427,10 +427,10 @@ the methods.
 
 Named logic works under a Content Security Policy without `'unsafe-eval'`.
 [GC-090 section 030](090-classes-and-hosts.md) describes resource
-lookup and file layout. With the minimal `FileHost` only the page logic exists
+lookup and file layout. With the minimal `GramlotFileServer` only the page logic exists
 (the `Logic` of `foo.js`, or `foo_aux.js`), and its methods are the root group:
 `func='add'`. A dotted name such as `business.discount` needs a `js_requires`
-group, that is a Host with a resource system. Example:
+group, that is a `GramlotServer` with a resource system. Example:
 `controllers/03_named_logic` (`c03`).
 
 The same method name registered twice in the same group: the last registration
@@ -466,9 +466,9 @@ for the Data router, `FIRE_AFTER` with its timer tied to the node, and
 root.dataController("this.SET('.count', 0)", _fired="^.reset")
 ```
 
-No host compiles code: not the Python Host, the JavaScript Host, the WorkerHost
-nor the DevTools panel. A page with inline code needs `'unsafe-eval'` when its
-host sets a Content Security Policy. Under a policy without it, the browser
+No server compiles code: not the Python `GramlotServer`, the JavaScript
+`GramlotServer`, the WorkerHost nor the DevTools panel. A page with inline code
+needs `'unsafe-eval'` when its server sets a Content Security Policy. Under a policy without it, the browser
 refuses the compilation and Gramlot raises an `EvalError` that names the node and
 the attribute and points to named logic or to the permissive profile
 ([GC-090 section 035](090-classes-and-hosts.md)). The error covers every inline
@@ -725,9 +725,9 @@ Intentional differences:
 - R3: a Gramlot button calls `stopPropagation` but not `preventDefault`, and gets
   `type="button"` when the author wrote none. Legacy called both and set no
   type. In a one-field form Enter then submits natively (section 075).
-- `css_requires` and `js_requires` need a Host with a resource system, which
+- `css_requires` and `js_requires` need a `GramlotServer` with a resource system, which
   comes with genro-kajenn, part of Genro, the framework that succeeds GenroPy
-  (built on Kajenn, Gramlot and Asqueel); the minimal `FileHost` and the current
+  (built on Kajenn, Gramlot and Asqueel); the minimal `GramlotFileServer` and the current
   adapters raise an error for any name. When
   the same method name is registered twice in a group, the last registration
   wins.
@@ -756,13 +756,13 @@ Migration from legacy pages:
 Migration from 0.1.x:
 
 - a 0.1.x page without binding runs unchanged: HTML and SVG and `Page.css`
-  keep their behavior. Source methods (`@source`, `source(...)`, `remoteSource`)
+  keep their behavior. Source methods (`@source`, `registerSource(...)`, `remoteSource`)
   are not yet part of the page-writing API: they arrive together with the
   `remote` grammar attribute and `@endpoint`;
 - a call `data(...)` in a 0.1.x page created the HTML5 `<data>` element; on `root`
   it now raises an error, on other nodes `data` is the Data Bag property. Write
   `html_data(...)` for the element;
-- custom hosts implement `resolve_page`/`resolvePage` and
+- custom servers implement `resolve_page`/`resolvePage` and
   `resolve_resources`/`resolveResources`, pass the mount prefix to `open_page`
   and serve the page companions; the bootstrap now writes the stylesheet links
   in the browser ([GC-090](090-classes-and-hosts.md));

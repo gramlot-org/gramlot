@@ -1,5 +1,5 @@
 /**
- * The neutral host: registers pages and builds their Sources, with no HTTP engine.
+ * The neutral server: registers pages and builds their Sources, with no HTTP engine.
  *
  * @module
  */
@@ -9,16 +9,24 @@ import type {Resources} from './resources.js';
 export type {Resources};
 
 /** The page is unknown, expired or owned by someone else. */
-export class PageExpired extends Error {}
+export class PageExpired extends Error {
+    name: 'PageExpired';
+}
 /** No page exists for the requested path. */
-export class PageNotFound extends Error {}
+export class PageNotFound extends Error {
+    name: 'PageNotFound';
+}
 /** An unknown remote Source method, as the Python `SourceNotFound`. */
-export class SourceNotFound extends Error {}
+export class SourceNotFound extends Error {
+    name: 'SourceNotFound';
+}
 /** The page registry is full. */
-export class HostCapacity extends Error {}
+export class ServerCapacity extends Error {
+    name: 'ServerCapacity';
+}
 
-/** The options of a `Host`. */
-export interface HostOptions {
+/** The options of a `GramlotServer`. */
+export interface GramlotServerOptions {
     /** URL of the runtime bundle. */
     runtimeUrl?: string;
     /** URL of the `main` Source endpoint. */
@@ -56,10 +64,10 @@ export interface OpenedPage {
 }
 
 /**
- * Neutral host: no Node or Bun imports and no server startup side effects. The core never
+ * Neutral server: no Node or Bun imports and no server startup side effects. The core never
  * searches files: override `resolvePage` and `resolveResources` in concrete integrations.
  */
-export class Host {
+export class GramlotServer {
     /** URL of the runtime bundle. */
     runtimeUrl: string;
     /** URL of the `main` Source endpoint. */
@@ -76,8 +84,8 @@ export class Host {
     maxPages: number;
     /** The registered pages by id. */
     pages: Map<string, {PageClass: typeof Page; owner: unknown; expires: number}>;
-    /** Create a host. */
-    constructor(options?: HostOptions);
+    /** Create a server. */
+    constructor(options?: GramlotServerOptions);
     /** The Page class of `path`, or `PageNotFound`. */
     resolvePage(path: string): Promise<typeof Page>;
     /** The resources of the page at `path` in load order and without mount prefix, or `PageNotFound`. */
@@ -93,9 +101,12 @@ export class Host {
     /** A remote Source of a registered page, as TYTX text; `params` null or omitted is `{}`. */
     source(pageId: string, method: string, params?: Record<string, unknown> | null,
         options?: {owner?: unknown}): Promise<string>;
-    /** Build the Source of a page by calling its `main` or a registered Source method. */
-    buildSource(pageId: string, method: string | null, params: Record<string, unknown>,
+    /** Build the Source of a page by calling its `main` (`method` `'main'`) or a registered Source method;
+     * the Source builder is named after `method`. */
+    buildSource(pageId: string, method: string, params: Record<string, unknown>,
         owner: unknown): Promise<string>;
     /** Forget a registered page when `owner` owns it. */
     closePage(pageId: string, options?: {owner?: unknown}): void;
+    /** Forget every registered page; adapters call it on shutdown. */
+    closeAll(): void;
 }

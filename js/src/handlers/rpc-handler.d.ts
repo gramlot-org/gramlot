@@ -1,5 +1,5 @@
 /**
- * The exchange of one Gramlot page with the host (`gramlot.rpc`).
+ * The exchange of one Gramlot page with the server (`gramlot.rpc`).
  *
  * @module
  */
@@ -9,7 +9,7 @@ import type {Gramlot} from '../gramlot.js';
 import type {MainTransport} from '../transport.js';
 import {Handler} from './handler.js';
 
-/** The exchange with the host. */
+/** The exchange with the server. */
 export class RpcHandler extends Handler {
     /** The server transport, or null. */
     transport: MainTransport | null;

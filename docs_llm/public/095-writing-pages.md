@@ -16,7 +16,7 @@ sections below name the one they illustrate. No example for `js_requires` groups
 
 ## 005 · A first HTML page
 
-Host-supplied authoring example, not a standalone server command:
+Server-supplied authoring example, not a standalone server command:
 
 ```python
 from gramlot import Page as BasePage
@@ -38,7 +38,7 @@ CSS conveniences such as `color`/`background` are absent.
 
 ## 010 · From a page to the browser
 
-Host returns bootstrap; `Gramlot` prepares/subscribes Data and Source; server runs
+The server returns bootstrap; `Gramlot` prepares/subscribes Data and Source; server runs
 `main(root)` and sends typed SourceBag/TYTX; generic builder associates it; Gramlot
 validates incoming Source before insertion; one insertion under Source `main`
 triggers rendering. Later mutations use the same subscription. Native attribute
@@ -53,7 +53,7 @@ each branch installs Data declarations between validation and DOM (080).
 
 ## 015 · Remote Source (not yet available)
 
-Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
+Source methods (`@source`, `registerSource(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
 
 <a id="gc-095-020"></a>
 
@@ -250,8 +250,8 @@ resource at several levels fills one group from generic to specific; specific wi
 Errors: explicit `Logic` constructor; method named `page` or like a child group;
 missing name (never an inline fallback). State lives on group or page. Works
 without `'unsafe-eval'`. Lookup/layout: [GC-090 030](090-classes-and-hosts.md). With the
-minimal `FileHost` only the page logic exists, as the root group (`func='add'`); a dotted
-name (`business.discount`) needs a `js_requires` group (a Host with a resource system).
+minimal `GramlotFileServer` only the page logic exists, as the root group (`func='add'`); a dotted
+name (`business.discount`) needs a `js_requires` group (a `GramlotServer` with a resource system).
 The same method name registered twice in a group: the last registration wins; the
 page logic registers after `js_requires`. Example: `controllers/03_named_logic` (`c03`).
 
@@ -271,8 +271,8 @@ Gramlot provides silent `PUT`, `FIRE` marking its write for the router, `FIRE_AF
 Inline code is allowed, discouraged, possibly deprecated: compiled only in the
 browser page runtime with `this` = Source node, e.g.
 `dataController("this.SET('.count', 0)", _fired="^.reset")`. No compilation in
-Python Host, JS Host, WorkerHost or DevTools panel. Inline pages need `'unsafe-eval'`
-under a host CSP; without it the browser refuses compilation and Gramlot raises an
+Python `GramlotServer`, JS `GramlotServer`, WorkerHost or DevTools panel. Inline pages need `'unsafe-eval'`
+under a server CSP; without it the browser refuses compilation and Gramlot raises an
 `EvalError` naming node and attribute and pointing to named logic or the permissive
 profile ([GC-090 035](090-classes-and-hosts.md)); covers `formula`, `script`,
 `_if`/`_else`, `==`, `action`, `connect_on<event>`. Examples: `controllers/04_inline_expressions`
@@ -413,7 +413,7 @@ Intentional differences: `dataSetter` replaces `data`, no alias; R1 applies
 attributes on null (legacy skipped the whole write); all branch `dataSetter` before
 DOM (legacy: node and direct children); no `?attr` in `destination_path`/`result_path`;
 R3: `stopPropagation` without `preventDefault` plus `type="button"` (legacy: both calls, no type; one-field form: Enter submits natively, 075);
-`css_requires`/`js_requires` need a Host with a resource system (genro-kajenn, part of Genro, the GenroPy successor built on Kajenn, Gramlot and Asqueel), minimal `FileHost` and current adapters error on any name, last registration of a method name wins; `name:media`
+`css_requires`/`js_requires` need a `GramlotServer` with a resource system (genro-kajenn, part of Genro, the GenroPy successor built on Kajenn, Gramlot and Asqueel), minimal `GramlotFileServer` and current adapters error on any name, last registration of a method name wins; `name:media`
 error; `data(...)` is no declaration (`root.data` raises, on other nodes `data` is the Data Bag property), `html_data(...)` is the HTML5 element; controller/`action`/`fire` combinations are errors (legacy chained them and
 also ran the nested controller); no `#WORKSPACE`/`#ROW`/`#DATA`; methods instead of `domNode`/`sourceNode` properties; Source `script` without
 `dojo.eval`; macros only via the deprecated preprocessor.
@@ -421,8 +421,8 @@ Migration from legacy pages: `data(...)` → `dataSetter(...)`; `Page.css` URL l
 stays, a page-only stylesheet can move to same-name `foo.css`; inline controllers →
 named logic; macros → `node.SET(...)` etc.
 Migration from 0.1.x: pages without binding run unchanged (HTML/SVG, `Page.css`);
-Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`; `data(...)` created the HTML5 `<data>` element; on `root` it now
-raises, on other nodes `data` is the Data Bag property: write `html_data(...)`; custom hosts implement `resolve_page`/`resolvePage` and
+Source methods (`@source`, `registerSource(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`; `data(...)` created the HTML5 `<data>` element; on `root` it now
+raises, on other nodes `data` is the Data Bag property: write `html_data(...)`; custom servers implement `resolve_page`/`resolvePage` and
 `resolve_resources`/`resolveResources`, pass the mount prefix to `open_page` and serve
 the companions, and the bootstrap writes the CSS links in the browser
 ([GC-090](090-classes-and-hosts.md)); standalone and ASGI integrations moved from the

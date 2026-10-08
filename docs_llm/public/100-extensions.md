@@ -13,7 +13,7 @@ Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 | Need | Owner / entry point |
 | --- | --- |
 | Page content/metadata | Application `Page` subclass |
-| Routing, identity, HTTP | Python `Host`; JS `Host`/`FileHost` adapter |
+| Routing, identity, HTTP | Python `GramlotServer`; JS `GramlotServer`/`GramlotFileServer` adapter |
 | Reusable Source macros | Deferred; no active recipe API |
 | Static HTML text | Generic HtmlBuilder + HtmlRenderer |
 | Reactive DOM | GramlotRenderer (extends RendererBase) + HtmlElement |
@@ -22,7 +22,7 @@ Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 | Source grammar/association | Generic SourceBag, BuilderBase, RendererBase |
 | *0.2.0:* page behavior | Application `Logic` export of the page module `foo.js`, else `foo_aux.js`, or `js_requires` resource |
 
-These extension points exist but compatibility is not frozen. Keep host technology
+These extension points exist but compatibility is not frozen. Keep HTTP server technology
 out of core; implement missing shared behavior in its owning library, not locally.
 
 <a id="gc-100-010"></a>

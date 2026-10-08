@@ -1,6 +1,6 @@
-/* @ts-self-types="./host.d.ts" */
+/* @ts-self-types="./gramlot-server.d.ts" */
 /**
- * The neutral host: registers pages and builds their Sources, with no HTTP engine.
+ * The neutral server: registers pages and builds their Sources, with no HTTP engine.
  *
  * @module
  */
@@ -8,11 +8,11 @@ import {GramlotBuilder} from '../builder/gramlot-builder.js';
 import {Page, sourceMethod} from './page.js';
 import {loadOrder} from './resources.js';
 
-export class PageExpired extends Error {}
-export class PageNotFound extends Error {}
+export class PageExpired extends Error { name = 'PageExpired'; }
+export class PageNotFound extends Error { name = 'PageNotFound'; }
 /** An unknown remote Source method, as the Python `SourceNotFound`. */
-export class SourceNotFound extends Error {}
-export class HostCapacity extends Error {}
+export class SourceNotFound extends Error { name = 'SourceNotFound'; }
+export class ServerCapacity extends Error { name = 'ServerCapacity'; }
 
 const scriptJson = value => JSON.stringify(value).replaceAll('<', '\\u003c');
 
@@ -26,11 +26,11 @@ function createNonce() {
  * absolute URLs stay as written. */
 const prefixed = (prefix, url) => url.startsWith('/') && !url.startsWith('//') ? prefix + url : url;
 
-/** Neutral host: no Node/Bun imports or server startup side effects. The core never
+/** Neutral server: no Node/Bun imports or server startup side effects. The core never
  * searches files: override resolvePage and resolveResources in concrete integrations;
- * FileHost implements them on one pages folder. Adapters supply request ownership.
+ * GramlotFileServer implements them on one pages folder. Adapters supply request ownership.
  */
-export class Host {
+export class GramlotServer {
     constructor({runtimeUrl = '/assets/gramlot.js', mainUrl = '/gramlot/main', sourceUrl = '/gramlot/source',
                  closeUrl = '/gramlot/close',
                  rootId = 'gramlot-root', pageTtl = 1800, maxPages = 1000} = {}) {
@@ -62,7 +62,7 @@ export class Host {
         }
         const resources = loadOrder(await this.resolveResources(path, PageClass));
         this.prune();
-        if (this.pages.size >= this.maxPages) throw new HostCapacity('Page registry capacity reached');
+        if (this.pages.size >= this.maxPages) throw new ServerCapacity('Page registry capacity reached');
         const pageId = crypto.randomUUID().replaceAll('-', '');
         this.pages.set(pageId, {PageClass, owner, expires: performance.now() + this.pageTtl * 1000});
         return {pageId, title: PageClass.title, resources};
@@ -104,7 +104,7 @@ export class Host {
     }
 
     async main(pageId, {owner = null} = {}) {
-        return this.buildSource(pageId, null, {}, owner);
+        return this.buildSource(pageId, 'main', {}, owner);
     }
 
     /** A remote Source; `params` null or omitted is `{}`, as in Python (an adapter passes null when a request has none). */
@@ -122,9 +122,9 @@ export class Host {
         if (!record || record.owner !== owner) throw new PageExpired('Unknown, expired or unowned page');
         const page = new record.PageClass();
         page.pageId = pageId;
-        const callable = method === null ? page.main : sourceMethod(page, method);
+        const callable = method === 'main' ? page.main : sourceMethod(page, method);
         if (!callable) throw new SourceNotFound(`Unknown Source method: ${method}`);
-        const builder = new record.PageClass.sourceBuilder();
+        const builder = new record.PageClass.sourceBuilder(method);
         const result = await callable.call(page, builder.root, params);
         if (result !== undefined && result !== null) throw new TypeError('Source methods populate root and return no value');
         return builder.toTytx();
@@ -132,6 +132,11 @@ export class Host {
 
     closePage(pageId, {owner = null} = {}) {
         if (this.pages.get(pageId)?.owner === owner) this.pages.delete(pageId);
+    }
+
+    /** Forget every registered page; adapters call it on shutdown. */
+    closeAll() {
+        this.pages = new Map();
     }
 
 }

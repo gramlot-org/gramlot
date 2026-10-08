@@ -14,7 +14,7 @@ export interface PageResources {
     js: {url: string; group: string | null}[];
 }
 
-/** The configuration written by the host into the bootstrap HTML. */
+/** The configuration written by the server into the bootstrap HTML. */
 export interface PageBootstrapOptions {
     /** The options of the `Gramlot` instance, with the page id. */
     config: GramlotOptions;
@@ -25,7 +25,7 @@ export interface PageBootstrapOptions {
 }
 
 /**
- * The browser start of one page. The host writes
+ * The browser start of one page. The server writes
  * `await new PageBootstrap({config, resources}).run()` into the bootstrap HTML.
  */
 export class PageBootstrap {

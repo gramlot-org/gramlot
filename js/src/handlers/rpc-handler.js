@@ -1,13 +1,13 @@
 /* @ts-self-types="./rpc-handler.d.ts" */
 /**
- * The exchange of one Gramlot page with the host (`gramlot.rpc`).
+ * The exchange of one Gramlot page with the server (`gramlot.rpc`).
  *
  * @module
  */
 import {Handler} from './handler.js';
 import {MainTransport} from '../transport.js';
 
-/** The exchange with the host. */
+/** The exchange with the server. */
 export class RpcHandler extends Handler {
     constructor(gramlot, {mainUrl, sourceUrl, closeUrl, document, transport}) {
         super(gramlot);

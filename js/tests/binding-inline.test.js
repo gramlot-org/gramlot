@@ -402,7 +402,7 @@ test('import graph: inline.js is reachable from the page runtime only', async ()
     const reaches = keys => keys.some(key => key.endsWith('src/binding/inline.js'));
     assert.ok(reaches(await inputs('index.js')));
     assert.ok(reaches(await inputs('gramlot.js')));
-    for (const entry of ['adapters/index.js', 'adapters/host.js', 'adapters/page.js', 'builder/gramlot-builder.js']) {
+    for (const entry of ['server/index.js', 'server/gramlot-server.js', 'server/page.js', 'builder/gramlot-builder.js']) {
         assert.equal(reaches(await inputs(entry)), false, entry);
     }
 });

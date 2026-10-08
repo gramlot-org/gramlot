@@ -11,7 +11,9 @@ export const SEGMENT: RegExp;
 export const SPACES: string;
 
 /** A page declares its resources in an invalid way. */
-export class InvalidResourceName extends Error {}
+export class InvalidResourceName extends Error {
+    name: 'InvalidResourceName';
+}
 
 /** Parse `css_requires` or `js_requires`: comma-separated resource names, without duplicates. */
 export function parseRequires(text: string): string[];

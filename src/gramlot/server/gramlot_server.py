@@ -1,4 +1,4 @@
-"""Neutral host foundation: no HTTP framework, event loop or ASGI dependency."""
+"""Neutral server foundation: no HTTP framework, event loop or ASGI dependency."""
 
 import inspect
 import json
@@ -26,7 +26,7 @@ class SourceNotFound(LookupError):
     pass
 
 
-class HostCapacity(RuntimeError):
+class ServerCapacity(RuntimeError):
     pass
 
 
@@ -50,11 +50,11 @@ def _script_json(value):
     return json.dumps(value, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
 
 
-class Host:
-    """Subclass at the host boundary to connect routing, assets and identity.
+class GramlotServer:
+    """Subclass at the server boundary to connect routing, assets and identity.
 
     The core never searches files: override ``resolve_page`` and
-    ``resolve_resources`` in concrete integrations; ``FileHost`` implements them
+    ``resolve_resources`` in concrete integrations; ``GramlotFileServer`` implements them
     on one pages folder. The default page registry is bounded, expiring and
     process-local. A concrete adapter must associate requests with their owner;
     page IDs are not login.
@@ -95,16 +95,16 @@ class Host:
         if not isinstance(prefix, str):
             raise TypeError("Mount prefix must be a string")
         cls = self.resolve_page(path)
-        if not isinstance(cls, type) or not issubclass(cls, Page):
+        if not isinstance(cls, type) or not issubclass(cls, Page) or cls is Page:
             raise TypeError("Page modules must expose a subclass of gramlot.Page")
         resources = load_order(self.resolve_resources(path, cls))
         self._prune()
         if len(self._pages) >= self.max_pages:
-            raise HostCapacity("Page registry capacity reached")
+            raise ServerCapacity("Page registry capacity reached")
         page_id = uuid4().hex
         nonce = secrets.token_urlsafe(16)
         # The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9);
-        # the compact JSON gives the same text as the JavaScript host.
+        # the compact JSON gives the same text as the JavaScript server.
         bootstrap = _script_json({
             "config": {"pageId": page_id, "mainUrl": _prefixed(prefix, self.main_url),
                        "sourceUrl": _prefixed(prefix, self.source_url),
@@ -165,3 +165,7 @@ class Host:
         record = self._pages.get(page_id)
         if record is not None and record[2] == owner:
             del self._pages[page_id]
+
+    def close_all(self):
+        """Forget every registered page; adapters call it on shutdown."""
+        self._pages = {}

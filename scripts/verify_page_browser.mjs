@@ -10,15 +10,15 @@ const {chromium} = await import(pathToFileURL(playwrightPath));
 const root = fileURLToPath(new URL('../', import.meta.url));
 const externalUrl = process.env.GRAMLOT_TEST_URL;
 if (language === 'js' && !externalUrl) throw new Error('JS verification requires GRAMLOT_TEST_URL from a running Node/Bun adapter');
-const server = externalUrl ? null : spawn(runtime, ['tests/http_host.py'], {
+const server = externalUrl ? null : spawn(runtime, ['tests/http_server.py'], {
     cwd: root, env: {...process.env, PYTHONPATH: `${root}/src`}, stdio: ['ignore', 'pipe', 'inherit'],
 });
 let browser;
 try {
     const url = externalUrl ?? await new Promise((resolve, reject) => {
-        const timer = setTimeout(() => reject(Error('Host startup timed out')), 10000);
+        const timer = setTimeout(() => reject(Error('GramlotServer startup timed out')), 10000);
         createInterface({input: server.stdout}).once('line', line => { clearTimeout(timer); resolve(line); });
-        server.once('exit', code => { clearTimeout(timer); reject(Error(`Host exited: ${code}`)); });
+        server.once('exit', code => { clearTimeout(timer); reject(Error(`GramlotServer exited: ${code}`)); });
     });
     browser = await chromium.launch({headless: true, executablePath});
     const page = await browser.newPage();

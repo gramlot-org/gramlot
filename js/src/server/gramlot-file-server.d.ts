@@ -1,23 +1,31 @@
 /**
- * A reference host on one pages folder.
+ * A reference server on one pages folder.
  *
  * @module
  */
-import {Host} from './host.js';
-import type {HostOptions} from './host.js';
+import {GramlotServer} from './gramlot-server.js';
+import type {GramlotServerOptions} from './gramlot-server.js';
 import type {Page} from './page.js';
 import type {Resources} from './resources.js';
 
+/** Options of `GramlotFileServer`: those of `GramlotServer` and `reload`. */
+export interface GramlotFileServerOptions extends GramlotServerOptions {
+    /** Import the page module again when it changes; `null` takes the value from `GRAMLOT_DEV`. */
+    reload?: boolean | null;
+}
+
 /**
- * Minimal reference `Host` on one pages folder, with APIs shared by Node.js and Bun. Page path
+ * Minimal reference `GramlotServer` on one pages folder, with APIs shared by Node.js and Bun. Page path
  * `foo`: the file page `foo.js` first, then the folder page `foo/foo.js`. Beside the page file:
  * `foo.css` and the page logic (the `Logic` export of the page module, or `foo_aux.js`).
  */
-export class FileHost extends Host {
-    /** Create a host on `pagesDir`. */
-    constructor(pagesDir: string, options?: HostOptions);
+export class GramlotFileServer extends GramlotServer {
+    /** Create a server on `pagesDir`. */
+    constructor(pagesDir: string, options?: GramlotFileServerOptions);
     /** The absolute pages folder. */
     get pagesDir(): string;
+    /** Whether the page module is imported again when it changes; resolved in the constructor. */
+    reload: boolean;
     /** Map `a/b` to `a/b.js`, else `a/b/b.js`, below the real pages folder; or raise `PageNotFound`. */
     locatePage(path: string): Promise<string>;
     /** Import the page module of `path` and return its `Page` export. */

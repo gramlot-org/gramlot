@@ -1,14 +1,14 @@
-/** Live Source on the fixture page 13_live_source, through the Python and the JavaScript FileHost of the
+/** Live Source on the fixture page 13_live_source, through the Python and the JavaScript GramlotFileServer of the
  * core: mutations, animation and timer ownership. node scripts/verify_live_playground.mjs PLAYWRIGHT_ENTRY [CHROMIUM]. */
 import assert from 'node:assert/strict';
 import {fileURLToPath, pathToFileURL} from 'node:url';
-import {startHosts} from './fixture_hosts.mjs';
+import {startServers} from './fixture_servers.mjs';
 const [playwright, executablePath] = process.argv.slice(2);
 const {chromium} = await import(pathToFileURL(playwright));
-const hosts = await startHosts(fileURLToPath(new URL('../js/tests/fixtures/live/', import.meta.url)));
+const servers = await startServers(fileURLToPath(new URL('../js/tests/fixtures/live/', import.meta.url)));
 const browser = await chromium.launch({headless: true, executablePath});
 try {
-    for (const [language, host] of hosts) {
+    for (const [language, server] of servers) {
         const page = await browser.newPage();
         const errors = [];
         page.on('pageerror', e => errors.push(e.message));
@@ -18,7 +18,7 @@ try {
             window.setInterval = (...args) => { const id = start(...args); window.activeTimers.add(id); return id; };
             window.clearInterval = id => { window.activeTimers.delete(id); stop(id); };
         });
-        await page.goto(`${host.url}/13_live_source`);
+        await page.goto(`${server.url}/13_live_source`);
         await page.waitForFunction(() => window.gramlot?.state === 'started');
         const list = page.locator('.live-items li');
         assert.equal(await list.count(), 2);
@@ -54,5 +54,5 @@ try {
     }
 } finally {
     await browser.close();
-    for (const [, host] of hosts) host.close();
+    for (const [, server] of servers) server.close();
 }

@@ -17,12 +17,12 @@ Core map, with the 0.2.0 binding layer marked. Published on PyPI (`gramlot`), np
 
 ## 010 · A small repository
 
-`src/gramlot`: page/ owns Page/builder/Source, server/ owns Host, db/ is reserved; collections/ holds exported grammars; resources/ holds runtime bundles. `js/src`: browser/JS authoring adapters, builder, renderer, view, references.js,
+`src/gramlot`: page/ owns Page/builder/Source, server/ owns GramlotServer, db/ is reserved; collections/ holds exported grammars; resources/ holds runtime bundles. `js/src`: browser/JS authoring, server/ (JS server contracts, file page loading), builder, renderer, view, references.js,
 transport.js and bootstrap. `tests`/`js/tests`: contracts and fixtures. `docs/public`:
 manual; `docs/internal`: working decisions; `docs_llm`: concise mirrors; `ports`:
 bounded reviews. Generic Bag/builders live separately; `build` is generated output.
 This tree does not imply a component inventory.
-*0.2.0:* adds `js/src/builder/source.js`, `js/src/binding/`, `js/src/bootstrap.js`, `js/src/adapters/resources.js`,
+*0.2.0:* adds `js/src/builder/source.js`, `js/src/binding/`, `js/src/bootstrap.js`, `js/src/server/resources.js`,
 `src/gramlot/server/resources.py`, Python renderers in `src/gramlot/renderer/` and grammar `src/gramlot/collections/binding.json`. Example families `html_svg`, `binding`, `controllers` and their gallery: separate package `gramlot-examples`.
 
 <a id="gc-090-015"></a>
@@ -32,9 +32,9 @@ This tree does not imply a component inventory.
 JavaScript pages must extend `Page` in hosted and standalone execution.
 `Page.css` is an array of stylesheet URLs. Standalone loads them before starting
 the Page and releases its stylesheet links on disposal.
-*0.2.0:* `Page.css` stays for every host; Python and JS pages also declare
-`css_requires`/`js_requires` name strings, interpreted only by a Host with a
-resource system; `FileHost` and the current adapters have none and raise an error for any
+*0.2.0:* `Page.css` stays for every server; Python and JS pages also declare
+`css_requires`/`js_requires` name strings, interpreted only by a `GramlotServer` with a
+resource system; `GramlotFileServer` and the current adapters have none and raise an error for any
 name. The resource system comes with genro-kajenn, part of Genro, the framework that succeeds
 GenroPy (built on Kajenn, Gramlot and Asqueel) (030).
 
@@ -45,14 +45,14 @@ Their methods are part of the contract. Plain Bags are valid for Data, not Sourc
 | API | Responsibility |
 | --- | --- |
 | Python `Page` | Metadata, `main(root)`, exposed Source methods |
-| Python `Host` | Page resolution, IDs, bootstrap, main/Source calls |
+| Python `GramlotServer` | Page resolution, IDs, bootstrap, main/Source calls |
 | Python/JS `GramlotBuilder` | Gramlot dialect over Python `BuilderBase` / JS `HtmlBuilder` with loaded collections |
 | JS `Gramlot` | Lifecycle and Data; proxies `src` (`SourceHandler`), `rpc` (`RpcHandler`), `dom` (`DomHandler`), `utl` (`UtilitiesHandler`) hold the themed members |
 | JS `GramlotRenderer` | Generic `RendererBase` specialization; live DOM and references |
 | *0.2.0:* JS `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Extend Builder `HtmlRenderer`/`SvgRenderer`, inherit their attribute/style adaptation; string rendering. `GramlotRenderer` extends `GramlotHtmlRenderer` and keeps live DOM and references |
 | *0.2.0:* Python `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Static HTML/SVG rendering of a Gramlot Source, same rules as JS |
 | JS `MainTransport` | Main and remote requests |
-| JS `Host`/`Page`/`FileHost` | Node/Bun server boundary and file loading |
+| JS `GramlotServer`/`Page`/`GramlotFileServer` | Node/Bun server boundary and file loading |
 
 Dependency libraries own SourceBag, typed serialization and generic grammar/rendering. Pages
 author Source, never DOM. Data roots exist; resolvers do not.
@@ -65,25 +65,34 @@ Other binding classes stay internal.
 
 <a id="gc-090-017"></a>
 
-## 017 · Python and JavaScript Host boundaries
+## 017 · Python and JavaScript server boundaries
 
-Python Host and JS Host/FileHost have the same execution responsibility, not an
-identical language-level API. Both create a fresh Page and builder for each main
+`GramlotServer`/`GramlotFileServer`, Python and JS: same functionality, not an
+identical member-by-member API. Both create a fresh Page and builder for each main
 or remote Source request; module loading is a separate lifecycle.
 
-| Aspect | Python Host | JavaScript Host / FileHost |
+| Aspect | Python | JavaScript |
 | --- | --- | --- |
-| Named Source parameters | Passed as keyword arguments: `details(root, name=...)` | Passed as one object: `details(root, {name})` |
+| Named Source parameters | Keyword arguments: `details(root, name=...)` | One object: `details(root, {name})` |
 | Omitted parameters | Empty dictionary | Empty object |
-| Explicit `None` / `null` | `None` is treated as empty parameters | `null` is treated as empty parameters |
-| Missing exposed Source method | `SourceNotFound` | `SourceNotFound` |
-| Page module loading | FileHost executes the module on each page opening | FileHost uses cached ESM imports; no live reload |
+| Explicit `None` / `null` | Empty parameters | Empty parameters |
+| Exposed Source method | `@source` | `registerSource('details')` on the `Page` subclass |
+| Unknown or unexposed Source method | `SourceNotFound` | `SourceNotFound` |
+| Base `Page` class as a page | Rejected | Rejected |
+| Empty the page registry | `close_all()` | `closeAll()` |
+| Module loading, no reload | Executed once per real path, cached | Imported once per real path, ESM import cache |
+| Module loading, reload | Executed again at each opening | Imported again when its modification time changes |
+
+`GramlotFileServer(pages_dir, reload=None)`/`new GramlotFileServer(pagesDir, {reload: null})`:
+`None`/`null` takes reload from `GRAMLOT_DEV` (true for `YES`/`DEBUG`, false when unset);
+an explicit boolean wins. Adapters call `close_all()`/`closeAll()` on shutdown. JS error
+classes set `name` to their class name. `registerPage` is JS-only (serverless Worker).
 
 Valid named parameters produce the same Source result in the bounded comparison.
 The Source error classes and the explicit-null rule are the same in both languages
 (since 2026-09-30); the parameter form and the module loading are language conventions,
 not a promise of cross-language interchangeability. Module caching does not reuse Page instances
-between Source requests. Custom page resolution belongs to the host integration;
+between Source requests. Custom page resolution belongs to the server integration;
 the filesystem comparison above does not describe the bundled Worker loader of `@gramlot/gramlot-serverless`.
 
 
@@ -95,15 +104,15 @@ Python routes bootstrap to `open_page(path, owner=...)`, main to
 `main(page_id, owner=...)`, and remote Source to
 `source(page_id, method, params, owner=...)`; it serves `runtime_url`, supplies
 authenticated owner identity and maps failures. `PageExpired` means expired,
-unknown or unowned ID. Host starts no server and searches no files: its bounded
-registry is process-local and IDs are not credentials. A concrete host implements
+unknown or unowned ID. `GramlotServer` starts no HTTP server and searches no files: its bounded
+registry is process-local and IDs are not credentials. A concrete server implements
 `resolve_page(path)`/`resolvePage(path)` → Page class and
 `resolve_resources(path, cls)`/`resolveResources(path, PageClass)` →
-`{css: [url], js: [{url, group}]}` in load order, without prefix; the neutral Host
+`{css: [url], js: [{url, group}]}` in load order, without prefix; the neutral `GramlotServer`
 raises `PageNotFound` for both. Each module exports `Page`. Every main or remote
 Source request creates fresh page/builder state.
-Minimal reference `FileHost(pages_dir)`/`new FileHost(pagesDir)`, Python and JS,
-one argument (the pages folder): `/` → `index.py`/`index.js`; `a/b` → file page
+Minimal reference `GramlotFileServer(pages_dir)`/`new GramlotFileServer(pagesDir)`, Python and JS,
+the pages folder plus optional `reload` (017): `/` → `index.py`/`index.js`; `a/b` → file page
 `a/b.py` first, then folder page `a/b/b.py`; both present → the file wins (030).
 `open_page(path, *, owner=None, prefix="")`/`openPage(path, {owner, prefix})` →
 `Bootstrap(page_id, html, nonce)`/`{pageId, html, nonce}`. The adapter's mount
@@ -113,19 +122,22 @@ The nonce is new at each opening, distinct from the page ID, on the bootstrap sc
 *0.2.0:* the HTML holds one module script
 `import {PageBootstrap} from <runtime>; await new PageBootstrap({config, resources}).run();`;
 `config` = `{pageId, mainUrl, sourceUrl, closeUrl, rootId}`, `resources` =
-`{css: [url], js: [{url, group}]}`; both Hosts write the same compact JSON. No `<link>`
+`{css: [url], js: [{url, group}]}`; both `GramlotServer` classes write the same compact JSON. No `<link>`
 in the HTML: `PageBootstrap` writes the CSS links in the browser (030).
 
-JS Host exposes `openPage`, `main`, `source` and `closePage`; adapters own HTTP
-translation and identity extraction. FileHost loads JS
+JS `GramlotServer` exposes `openPage`, `main`, `source`, `closePage` and `closeAll`; adapters own HTTP
+translation and identity extraction and call `close_all()`/`closeAll()` on shutdown. `GramlotFileServer` loads JS
 pages and their same-name files. Node/Bun bridges are in `gramlot-js-server`; the Python
 adapters (ASGI/Uvicorn, Django, Flask, FastAPI, Kajenn) are modules of `gramlot-py-server`.
-Each adapter repository states the versions it verifies.
+Each adapter repository states the versions it verifies. The browser protocol of every adapter
+(URLs, payloads, status codes) is stated in GC-230, Server protocol (`docs/internal/`); any adapter
+can run the conformance check `check_protocol(base_url, page_path)` (Python, `gramlot.server`) /
+`checkProtocol(baseUrl, pagePath)` (JS, `@gramlot/gramlot/server`) against itself.
 *0.2.0:* verified on the minimal contract at the 0.2.0 release: `gramlot-uvicorn` (Python ASGI/Uvicorn), `gramlot-js-server` (Node.js, Bun) and the standalone exporter (today `@gramlot/gramlot-serverless`); today the five adapters of `gramlot-py-server` and the packages of `gramlot-js-server` implement the contract. Each passes the mount prefix to `open_page` and serves the companions (030); the two server adapters send the configured CSP header (035); the standalone export writes a hash policy (025).
 
 HTTP browser disposal sends a best-effort close request; non-persisted `pagehide`
 sends a JSON beacon, while back/forward-cache pages stay active. Adapters supply
-owner identity, Host checks it, and TTL handles lost delivery. Worker disposal
+owner identity, `GramlotServer` checks it, and TTL handles lost delivery. Worker disposal
 remains local.
 
 Next: [Writing pages](095-writing-pages.md).
@@ -137,10 +149,16 @@ Gramlot owns its live renderer; `genro-dom-js` is no longer a dependency.
 same renderer; it does not execute a Page. Standalone Page execution uses the Worker
 host described below, not a build-time compiler.
 
-Hosts obtain browser code from packaged assets (`gramlot.server.runtime_asset`
-in Python; `@gramlot/gramlot/runtime` in JS, from npm, JSR or the repository's `js/`). See the
+Servers obtain browser code from packaged assets (`runtime_asset()` in `gramlot.server`;
+`runtimeAsset()` from `@gramlot/gramlot/server` and `@gramlot/gramlot/runtime` in JS, from npm, JSR or the repository's `js/`). See the
 installation contexts below; adapters serve the assets of their installed package.
-`PageNotFound`, `SourceNotFound`, `PageExpired` and `HostCapacity`, in Python and JS, distinguish
+The build writes `gramlot.js` (readable) and `gramlot.min.js` (minified); the runtime URL
+(default `/assets/gramlot.js`) serves `gramlot.js` when `GRAMLOT_DEV=DEBUG`, `gramlot.min.js`
+otherwise (`runtime_asset()`/`runtimeAsset()` return the file; `runtimeAsset()` returns a `URL`: `file:` from npm, read with `fs.readFile`; `https:` from JSR, read with `fetch`).
+`GRAMLOT_DEV`, read by `gramlot_dev()`/`gramlotDev()`: unset = deploy; `YES` = development,
+pages read again (017); `DEBUG` = development with the readable runtime; any other value
+raises (`ValueError` Python, `TypeError` JS).
+`PageNotFound`, `SourceNotFound`, `PageExpired` and `ServerCapacity`, in Python and JS, distinguish
 framework failures from unexpected application exceptions. Dependencies install from the
 registries each package declares (PyPI, npm, JSR).
 
@@ -153,7 +171,7 @@ The core is published as `@gramlot/gramlot` on npm (`npm install @gramlot/gramlo
 and on JSR (`npx jsr add @gramlot/gramlot`). Application imports use that name:
 
 ```javascript
-import {Page as BasePage, source} from '@gramlot/gramlot/page';
+import {Page as BasePage} from '@gramlot/gramlot/page';
 ```
 
 | Installation | Core name used in imports | Scope |
@@ -196,7 +214,7 @@ npm package and the wheel. The rest of the identity kit is not packaged.
 
 ## 025 · JavaScript standalone host
 
-A dedicated browser Worker hosts one JavaScript Page. `WorkerHost` inherits `Host`
+A dedicated browser Worker hosts one JavaScript Page. `WorkerHost` inherits `GramlotServer`
 and reuses its page registration, `main`, explicitly marked Source methods, typed
 serialization, fresh instance per call, expiry and error rules. There is no separate
 standalone Page compiler. Python pages execute on Python servers only.
@@ -212,10 +230,10 @@ export class Page extends BasePage {
 }
 ```
 
-Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
+Source methods (`@source`, `registerSource(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
 
 The Worker entry belongs to the `@gramlot/gramlot-serverless` host configuration. This
-development boundary requires the matching core with the browser-safe `/host`
+development boundary requires the matching core with the browser-safe `/gramlot-server`
 export; unchanged 0.1.0 archives do not provide it:
 
 ```javascript
@@ -241,8 +259,8 @@ Current scope: one Page per Worker, HTML Source, Source live, declared `Page.css
 *0.2.0:* Data binding runs in the window; the Worker builds the Source. Node-only imports cannot run in Worker. Current packaged Worker
 passes in Chromium; an earlier local file check passed in Playwright WebKit.
 WebKit is not Safari. Safari and Firefox remain unverified.
-*0.2.0:* `Page.css` stays on every host path; `css_requires`/`js_requires` need a
-Host with a resource system (030); the WorkerHost is server side: it compiles no
+*0.2.0:* `Page.css` stays on every server path; `css_requires`/`js_requires` need a
+`GramlotServer` with a resource system (030); the WorkerHost is server side: it compiles no
 code and never runs the companion.
 
 Export shape (0.2.0), `@gramlot/gramlot-serverless`: one HTML file. The Worker script holds
@@ -280,10 +298,10 @@ archived `gramlot-serverless` repository).
 ## 030 · Page resources and file layout (0.2.0)
 
 0.2.0 behavior.
-`Page.css`: list of URLs as in `<link href>`, in the core for every host. `/…` gets
+`Page.css`: list of URLs as in `<link href>`, in the core for every server. `/…` gets
 the mount prefix once; `theme.css`, `https://…`, `//…` stay as written.
 
-Page files: `FileHost` serves one pages folder. Path `orders` → file page
+Page files: `GramlotFileServer` serves one pages folder. Path `orders` → file page
 `orders.py` (`orders.js` for JS) first, then folder page `orders/orders.py`; both →
 the file wins, no error. Segments: letters, digits, `_`, `-`. A real path leaving
 the pages folder is rejected. Same-name files beside the file page or in its
@@ -305,9 +323,9 @@ URL loads once, in its last position. One JS URL with two different groups = err
 
 Resource fields: Python `css_requires = ""`/`js_requires = ""`; JS
 `static css_requires = ''`/`static js_requires = ''`. Names are interpreted by a
-Host with a resource system (genro-kajenn, part of Genro, the framework that succeeds GenroPy,
-built on Kajenn, Gramlot and Asqueel); `FileHost` and the current adapters have none: any name raises
-`InvalidResourceName` ("requires need a Host with a resource system"). Core parser,
+`GramlotServer` with a resource system (genro-kajenn, part of Genro, the framework that succeeds GenroPy,
+built on Kajenn, Gramlot and Asqueel); `GramlotFileServer` and the current adapters have none: any name raises
+`InvalidResourceName` ("requires need a GramlotServer with a resource system"). Core parser,
 same in both languages: empty/missing = none; `,` separator, spaces ignored; empty
 tokens and duplicates ignored (first position kept); `/` separates subfolders,
 segments `^[A-Za-z0-9_-]+$`, no `.`, `..`, leading/trailing `/` or extensions; `:`
@@ -316,14 +334,14 @@ segments `^[A-Za-z0-9_-]+$`, no `.`, `..`, leading/trailing `/` or extensions; `
 The page logic module is public (served to the browser); server-only logic lives in
 modules it does not import.
 
-Companion rule of the adapters (the `FileHost.url` rule): GET/HEAD answer only `.css`
+Companion rule of the adapters (the `GramlotFileServer.url` rule): GET/HEAD answer only `.css`
 and `.js` files whose real path is inside the pages folder (page modules and their
 relative imports; until 0.2.4 `.css` and `_aux.js`); other files 404, other
 methods 405. `Page.css` URLs outside the pages folder stay application assets.
 
 Import map (0.2.5): before the bootstrap script, `<script type="importmap">` with the
 bootstrap nonce maps `@gramlot/gramlot/page` → runtime URL (mount prefix); the runtime
-exports `Page` and `source`; one runtime instance; no new CSP source.
+exports `Page`; one runtime instance; no new CSP source.
 
 Bootstrap (`PageBootstrap`, in the browser): 1 write the CSS links in load order;
 2 import all JS modules (relative URLs against the document); 3 check every `Logic`
@@ -358,7 +376,7 @@ nothing is written. One bootstrap module script carries the nonce and imports th
 own hash profile (025).
 
 Inline code runs only as received with the Source. `gramlot.src.prepareSource` activates
-the inline code of the received Source (`main` from the host, a remote Source, a
+the inline code of the received Source (`main` from the server, a remote Source, a
 `GramlotBuilderBag` given to `startSource`): each `GramlotBuilderBagNode` keeps the text
 of its code attributes (`formula` of `dataFormula`, `script` of `dataController`,
 `_if`/`_else`, `action` of `button`, `connect_on<event>`, `==` attributes and node

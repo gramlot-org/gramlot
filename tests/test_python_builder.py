@@ -10,7 +10,7 @@ from genro_tytx import from_tytx, get_subtype_dict, to_tytx
 
 from gramlot import GramlotBuilder
 from gramlot.page.source import GramlotBuilderBag, GramlotBuilderBagNode
-from gramlot.server import FileHost, SourceNotFound
+from gramlot.server import GramlotFileServer, SourceNotFound
 
 CONTROLS = json.loads(
     (Path(__file__).parent / "fixtures/collections/controls.json").read_text()
@@ -217,28 +217,28 @@ class Page(Parent):
 '''
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "index.py").write_text(source)
-            host = FileHost(directory)
-            opened = await host.open_page("/")
+            server = GramlotFileServer(directory)
+            opened = await server.open_page("/")
             self.assertIn('"sourceUrl":"/gramlot/source"', opened.html)
-            first = from_tytx(await host.source(
+            first = from_tytx(await server.source(
                 opened.page_id, "fragment", {"label": "one"}))
-            second = from_tytx(await host.source(
+            second = from_tytx(await server.source(
                 opened.page_id, "fragment", {"label": "two"}))
             self.assertEqual(first.nodes[0].attr["_text"], "one")
             self.assertEqual(first.nodes[0].value.nodes[0].node_tag, "span")
             self.assertEqual(second.nodes[0].attr["_text"], "two")
             with self.assertRaises(LookupError):
-                await host.source(opened.page_id, "hidden")
+                await server.source(opened.page_id, "hidden")
             with self.assertRaises(LookupError):
-                await host.source(opened.page_id, "main")
+                await server.source(opened.page_id, "main")
             with self.assertRaises(TypeError):
-                await host.source(opened.page_id, "fragment", [])
-            # Phase 18 (Fable R4): the same errors and messages as the JS Host (js/tests/host.test.js).
+                await server.source(opened.page_id, "fragment", [])
+            # Phase 18 (Fable R4): the same errors and messages as the JS GramlotServer (js/tests/gramlot-server.test.js).
             with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method$"):
-                await host.source(opened.page_id, "main")
+                await server.source(opened.page_id, "main")
             with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method: hidden$"):
-                await host.source(opened.page_id, "hidden")
-            plain = from_tytx(await host.source(opened.page_id, "plain", None))
+                await server.source(opened.page_id, "hidden")
+            plain = from_tytx(await server.source(opened.page_id, "plain", None))
             self.assertEqual([(node.node_tag, node.value) for node in plain.nodes], [("p", "plain")])
 
     async def test_source_method_must_return_none(self):
@@ -251,10 +251,10 @@ class Page(BasePage):
 '''
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "index.py").write_text(source)
-            host = FileHost(directory)
-            opened = await host.open_page("/")
+            server = GramlotFileServer(directory)
+            opened = await server.open_page("/")
             with self.assertRaises(TypeError):
-                await host.source(opened.page_id, "bad")
+                await server.source(opened.page_id, "bad")
 
 
 if __name__ == "__main__":
