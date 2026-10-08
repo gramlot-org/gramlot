@@ -18,6 +18,12 @@ export type DomNode = any;
 // deno-lint-ignore no-explicit-any
 /** A browser `DocumentFragment`. */
 export type DomFragment = any;
+// deno-lint-ignore no-explicit-any
+/** A browser `Window`. */
+export type DomWindow = any;
+// deno-lint-ignore no-explicit-any
+/** A browser `Event`. */
+export type DomEvent = any;
 /** The part of a browser `Navigator` that sends the close beacon. */
 export interface BeaconNavigator {
     /** Queue `data` for delivery to `url`; returns false when the browser refuses it. */
