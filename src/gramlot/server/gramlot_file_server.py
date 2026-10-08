@@ -63,7 +63,9 @@ class GramlotFileServer(GramlotServer):
         if module is None:
             spec = importlib.util.spec_from_file_location(f"gramlot_page_{uuid4().hex}", filename)
             module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+            # Compiled from the source, never from __pycache__: a .pyc is trusted on the source's size and
+            # whole-second mtime, so an edit of the same size within one second would run the old code.
+            exec(compile(spec.loader.get_source(spec.name), str(filename), "exec"), module.__dict__)
             if not self.reload:
                 self._modules[real] = module
         return getattr(module, "Page", None)
