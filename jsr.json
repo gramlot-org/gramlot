@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
