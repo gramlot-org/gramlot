@@ -3,7 +3,7 @@
  *
  * @module
  */
-import type {DomElement, DomDocument} from './dom.d.ts';
+import type {DomElement, DomDocument, DomEvent, DomWindow} from './dom.d.ts';
 import type {Bag} from '@genrojs/bag';
 import type {MainTransport} from './transport.js';
 import type {SourceHandler} from './handlers/source-handler.js';
@@ -59,9 +59,9 @@ export class Gramlot {
     /** The pending `start` promise, while loading. */
     loading?: Promise<Gramlot> | null;
     /** The window whose `pagehide` disposes the page; set only with the default `MainTransport`. */
-    window?: Window;
+    window?: DomWindow;
     /** The `pagehide` listener that disposes the page with a beacon; set only with the default `MainTransport`. */
-    pagehide?: (event: PageTransitionEvent) => void;
+    pagehide?: (event: DomEvent) => void;
     /** Create the page instance; the construction order is the one of the source plan. */
     constructor(options?: GramlotOptions);
     /** Load `main` from the server and mount it; resolves with the instance. */

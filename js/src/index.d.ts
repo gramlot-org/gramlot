@@ -25,4 +25,4 @@ export type {SourceReference} from './references.js';
 export {MainTransport} from './transport.js';
 export type {Fetcher} from './transport.js';
 export {InOut} from './inout.js';
-export type {BeaconNavigator, DomDocument, DomElement, DomFragment, DomNode} from './dom.d.ts';
+export type {BeaconNavigator, DomDocument, DomElement, DomEvent, DomFragment, DomNode, DomWindow} from './dom.d.ts';
