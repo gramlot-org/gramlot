@@ -8,7 +8,7 @@ from .builder import GramlotBuilder
 def source(function):
     """Mark an instance method as an explicitly exposed Source method.
 
-    Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API:
+    Source methods (`@source`, `registerSource`, `remoteSource`) are not yet part of the page-writing API:
     they arrive together with the `remote` grammar attribute and `@endpoint`.
     """
     if not isfunction(function):
@@ -36,9 +36,9 @@ def source_methods(page_class):
             if name in shadowed:
                 continue
             shadowed.add(name)
-            if name.startswith("_") or not getattr(value, "__gramlot_source__", False):
+            # A marked value that is not an instance method is not a Source method:
+            # requesting it is SourceNotFound, as in JS.
+            if name.startswith("_") or not isfunction(value) or not getattr(value, "__gramlot_source__", False):
                 continue
-            if not isfunction(value):
-                raise TypeError(f"Source method {name} must be an instance method")
             methods[name] = value
     return methods

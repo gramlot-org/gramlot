@@ -14,7 +14,7 @@ Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 | What you need to extend | Owner | Current entry point |
 | --- | --- | --- |
 | Page contents and metadata | Application | Subclass `Page` |
-| Server routing, identity and HTTP I/O | Server adapter | Python `Host`; JS `Host`/`FileHost` |
+| Server routing, identity and HTTP I/O | Server adapter | Python `GramlotServer`; JS `GramlotServer`/`GramlotFileServer` |
 | Reusable Source macros | Deferred | No active recipe API |
 | Static HTML text generation | Generic Builder JS | `HtmlBuilder` and `HtmlRenderer` |
 | Reactive Source realization | Gramlot | `GramlotRenderer` (extends `RendererBase`) and `HtmlElement` |
@@ -24,7 +24,7 @@ Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 | *0.2.0:* page behavior | Application | The `Logic` export of the page module `foo.js`, else `class Logic` in `foo_aux.js`, or a `js_requires` resource |
 
 The class extension points above exist, but their public compatibility is not
-frozen. Keep host technology out of core. Missing shared behavior belongs in its
+frozen. Keep HTTP server technology out of core. Missing shared behavior belongs in its
 owning library, not in an application-local substitute.
 
 <a id="gc-100-010"></a>

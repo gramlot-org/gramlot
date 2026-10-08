@@ -1,7 +1,7 @@
 """Resource names and bootstrap load order; no file lookup and no HTTP engine.
 
-The JavaScript counterpart is ``js/src/adapters/resources.js``; both apply the
-same rules. ``css_requires``/``js_requires`` names are interpreted by a Host with
+The JavaScript counterpart is ``js/src/server/resources.js``; both apply the
+same rules. ``css_requires``/``js_requires`` names are interpreted by a GramlotServer with
 a resource system, not by the core.
 """
 import json

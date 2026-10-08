@@ -2,7 +2,7 @@
 
 The companion ``calcolo_aux.js`` is the root group; the ``js_requires`` groups are
 served by the test host of ``js/tests/bootstrap.test.js``, since the minimal
-FileHost does not interpret ``requires`` (Q10).
+GramlotFileServer does not interpret ``requires`` (Q10).
 """
 from gramlot import Page as Base
 

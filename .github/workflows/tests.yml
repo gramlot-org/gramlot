@@ -56,11 +56,11 @@ jobs:
           echo "CHROMIUM=$(node --input-type=module -e "const {chromium} = await import('$entry'); console.log(chromium.executablePath())")" >> "$GITHUB_ENV"
       - name: Browser check of binding, strict CSP and iframe srcdoc in Chromium
         run: node scripts/verify_binding_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
-      - name: Browser check of both page logic forms on the JS and Python hosts in Chromium
+      - name: Browser check of both page logic forms on the JS and Python servers in Chromium
         run: node scripts/verify_page_module_browser.mjs python "$PLAYWRIGHT_ENTRY" chromium
       - name: Browser check of gramlot.inout in Chromium
         run: node scripts/verify_inout_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
-      - name: Browser checks of the live Source pages 10 and 13 on the Python and JavaScript FileHost in Chromium
+      - name: Browser checks of the live Source pages 10 and 13 on the Python and JavaScript GramlotFileServer in Chromium
         run: |
           node scripts/verify_live_cards.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"
           node scripts/verify_live_playground.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"

@@ -22,7 +22,7 @@ interaction in the browser.** Gramlot's model connects a declared interface
 and reusable components.
 
 Gramlot is intended for Python developers building interactive forms, data tools
-and application interfaces. Server adapters connect it to a host; the core is
+and application interfaces. Server adapters connect it to a web server; the core is
 independent of server and database technology.
 
 > **Release status.** The current release is **0.2.11**, published on
@@ -39,19 +39,19 @@ independent of server and database technology.
 The JavaScript distribution is `@gramlot/gramlot`, on npm and on JSR. Install it with
 `npm install @gramlot/gramlot` or `npx jsr add @gramlot/gramlot`.
 Node.js 22 or later and Bun are supported server runtimes; the browser runtime
-is bundled separately. The core provides `server`, `host`, `page` and `runtime`.
+is bundled separately. The core provides `server`, `gramlot-server`, `page` and `runtime`.
 Standalone startup, WorkerHost and WorkerTransport belong to `@gramlot/gramlot-serverless`
 (in the `gramlot-js-server` repository).
 Python pages require the Python distribution and a Python server.
 
-A page is a module in the pages folder that exports a `Page` subclass. `FileHost`
-serves that folder; an adapter passes each request to the host:
+A page is a module in the pages folder that exports a `Page` subclass. `GramlotFileServer`
+serves that folder; an adapter passes each request to the server:
 
 ```js
 // pages/hello.js
 import {Page as GramlotPage} from '@gramlot/gramlot/page';
 
-// FileHost reads the export named `Page`.
+// GramlotFileServer reads the export named `Page`.
 export class Page extends GramlotPage {
     static title = 'Hello';
     main(root) {
@@ -62,11 +62,11 @@ export class Page extends GramlotPage {
 
 ```js
 // server.js
-import {FileHost} from '@gramlot/gramlot/server';
+import {GramlotFileServer} from '@gramlot/gramlot/server';
 
-const host = new FileHost('./pages');
-const {pageId, html, nonce} = await host.openPage('hello');
-// Answer the browser with `html`; it then requests `host.main(pageId)`.
+const server = new GramlotFileServer('./pages');
+const {pageId, html, nonce} = await server.openPage('hello');
+// Answer the browser with `html`; it then requests `server.main(pageId)`.
 ```
 
 The example pages and their gallery are the separate package `gramlot-examples`.
@@ -102,8 +102,8 @@ Source and the Data; Data changes reach the DOM, and native controls write back.
 - native controls bound with `value='^path'`, `live`, checkbox and radio groups,
   `visible`, reactive `style` and `class`, bound SVG attributes, freeze and thaw;
 - buttons with a nested `dataController` and `connect_on<event>`;
-- a minimal Host contract (`resolve_page`, `resolve_resources`, `open_page` with a
-  mount prefix) with `FileHost` as reference; pages keep `Page.css` and same-name
+- a minimal `GramlotServer` contract (`resolve_page`, `resolve_resources`, `open_page` with a
+  mount prefix) with `GramlotFileServer` as reference; pages keep `Page.css` and same-name
   companions (`foo.css`, and `foo.js` or `foo_aux.js` for the logic).
 
 Examples: the families [`binding`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) and
@@ -118,7 +118,7 @@ with 0.3.0.
 
 - [The Gramlot family](docs/public/055-family.md) — what Gramlot is, the core and the adapters, and which one to choose.
 - [Is Gramlot a fit?](docs/public/020-evaluate.md) — the development model and its current limits.
-- [Try Gramlot](docs/public/025-try.md) — open the gallery of examples, then choose a host.
+- [Try Gramlot](docs/public/025-try.md) — open the gallery of examples, then choose a server.
 - [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.
 
 - [Classes and server adapters](docs/public/090-classes-and-hosts.md) — repository map and responsibilities.

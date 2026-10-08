@@ -9,7 +9,7 @@ import {LogicRegistry} from './binding/logic.js';
 import {MainTransport} from './transport.js';
 
 /**
- * The browser start of one page (source plan §4.12). The host writes
+ * The browser start of one page (source plan §4.12). The server writes
  * `await new PageBootstrap({config, resources}).run()` into the bootstrap HTML;
  * `resources` is `{css: [url], js: [{url, group}]}`, already in load order and
  * with the mount prefix.

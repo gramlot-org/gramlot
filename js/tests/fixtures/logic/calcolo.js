@@ -1,4 +1,4 @@
-import {Page as BasePage} from '../../../src/adapters/page.js';
+import {Page as BasePage} from '../../../src/server/page.js';
 
 /** The JavaScript twin of calcolo.py; data-elements in the object form (genropy/genro-builders-js#15). */
 export class Page extends BasePage {

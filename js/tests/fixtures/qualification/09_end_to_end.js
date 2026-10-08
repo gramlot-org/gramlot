@@ -1,5 +1,5 @@
 // Copy of the 0.2.0 qualification page; the public example changed in 0.2.8.
-import {Page as BasePage, source} from '@gramlot/gramlot/page';
+import {Page as BasePage} from '@gramlot/gramlot/page';
 
 export class Page extends BasePage {
     static title = 'End-to-end story';
@@ -65,7 +65,7 @@ export class Page extends BasePage {
         branch.dataSetter({destination_path: '.items', value: 'Ribbon, card, envelope'});
     }
 }
-source(Page.prototype.extras);
+Page.registerSource('extras');
 
 /** Logic of 09_end_to_end.py and 09_end_to_end.js: the named logic of the story. */
 export class Logic {

@@ -2,7 +2,7 @@
 // with real imports of logic files in jsdom. The §4.9 rules themselves are in named-logic.test.js.
 //
 // Root-relative URLs under a `file:` document resolve from the file system root, so the tests
-// that go through a host use the fixture folder's absolute path as the mount prefix: the host
+// that go through a server use the fixture folder's absolute path as the mount prefix: the server
 // adds it once to every `/…` URL (Q12.1) and the modules are imported from the fixture folder.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,11 +15,11 @@ import {JSDOM} from 'jsdom';
 import {build} from 'esbuild';
 import {SourceBag} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder, PageBootstrap} from '../src/index.js';
-import {FileHost, parseRequires} from '../src/adapters/index.js';
+import {GramlotFileServer, parseRequires} from '../src/server/index.js';
 import {mount} from './fixtures/mount.js';
 
 const LOGIC = fileURLToPath(new URL('./fixtures/logic/', import.meta.url)).replace(/\/$/, '');
-const PAGE_MODULE = new URL('../src/adapters/page.js', import.meta.url).href;
+const PAGE_MODULE = new URL('../src/server/page.js', import.meta.url).href;
 const CONFIG = {pageId: 'page', mainUrl: '/gramlot/main', sourceUrl: '/gramlot/source', closeUrl: '/gramlot/close',
     rootId: 'gramlot-root'};
 const EMPTY_PAGE = '<!doctype html><html><head></head><body><div id="gramlot-root"></div></body></html>';
@@ -51,7 +51,7 @@ function browser(html, url) {
     return {window, beacons};
 }
 
-/** The argument the host writes into `new PageBootstrap(…)`. */
+/** The argument the server writes into `new PageBootstrap(…)`. */
 function bootstrapArguments(html) {
     const match = html.match(/import \{PageBootstrap\} from "[^"]*";await new PageBootstrap\((.*)\)\.run\(\);<\/script>/s);
     assert.ok(match, 'the bootstrap script calls PageBootstrap');
@@ -85,15 +85,15 @@ export class Page extends Base {
 }
 `;
 
-test('D9: PageBootstrap writes each CSS link once, in received order; the host HTML has none', () => folder(async root => {
+test('D9: PageBootstrap writes each CSS link once, in received order; the server HTML has none', () => folder(async root => {
     await write(root, 'index.js', jsPage(['/index.css', '/themes/a.css', '/themes/b.css', '/themes/a.css', 'theme.css']));
     await write(root, 'index.css');
     await write(root, 'index_aux.js', logic('ciao() { return this.page; }'));
-    const host = new FileHost(root);
-    const opened = await host.openPage('/', {prefix: root});
+    const server = new GramlotFileServer(root);
+    const opened = await server.openPage('/', {prefix: root});
     assert.ok(!opened.html.includes('<link'));
     const {window} = browser(opened.html, pathToFileURL(`${root}/`).href);
-    const app = await withFetch(await host.main(opened.pageId), () =>
+    const app = await withFetch(await server.main(opened.pageId), () =>
         new PageBootstrap({...bootstrapArguments(opened.html), document: window.document}).run());
     assert.deepEqual(links(window.document), [`${root}/themes/b.css`, `${root}/themes/a.css`, 'theme.css', `${root}/index.css`]);
     assert.equal(window.document.head.querySelectorAll('link').length, 4);
@@ -215,23 +215,23 @@ test('a page closed during the imports mounts nothing and sends the close beacon
     assert.equal(beacons[0].url, '/gramlot/close');
 }));
 
-/** The Python host of the fixture: FileHost pages, js_requires served as `/<name>.js` (FileHost refuses requires, Q10). */
+/** The Python server of the fixture: GramlotFileServer pages, js_requires served as `/<name>.js` (GramlotFileServer refuses requires, Q10). */
 const PYTHON_HOST = `
 import asyncio, json, sys
-from gramlot.server import FileHost, parse_requires
-class LogicHost(FileHost):
+from gramlot.server import GramlotFileServer, parse_requires
+class LogicServer(GramlotFileServer):
     def resolve_resources(self, path, cls):
         return {"css": [], "js": [*({"url": f"/{name}.js", "group": name} for name in parse_requires(cls.js_requires)),
                                   {"url": "/calcolo_aux.js", "group": None}]}
 async def run():
-    host = LogicHost(sys.argv[1])
-    opened = await host.open_page("/calcolo", prefix=sys.argv[1])
-    return {"html": opened.html, "wire": await host.main(opened.page_id)}
+    server = LogicServer(sys.argv[1])
+    opened = await server.open_page("/calcolo", prefix=sys.argv[1])
+    return {"html": opened.html, "wire": await server.main(opened.page_id)}
 print(json.dumps(asyncio.run(run())))
 `;
 
 /** The JavaScript twin of PYTHON_HOST. */
-class LogicHost extends FileHost {
+class LogicServer extends GramlotFileServer {
     async resolveResources(path, PageClass) {
         return {css: [], js: [...parseRequires(PageClass.js_requires).map(name => ({url: `/${name}.js`, group: name})),
             {url: '/calcolo_aux.js', group: null}]};
@@ -269,10 +269,10 @@ test('a Source written in Python: every func resolves through the real bootstrap
     await resolveEveryFunc(opened);
 });
 
-test('the same page written in JavaScript, with groups from js_requires given by a test host', async () => {
-    const host = new LogicHost(LOGIC);
-    const opened = await host.openPage('/calcolo', {prefix: LOGIC});
-    await resolveEveryFunc({html: opened.html, wire: await host.main(opened.pageId)});
+test('the same page written in JavaScript, with groups from js_requires given by a test server', async () => {
+    const server = new LogicServer(LOGIC);
+    const opened = await server.openPage('/calcolo', {prefix: LOGIC});
+    await resolveEveryFunc({html: opened.html, wire: await server.main(opened.pageId)});
 });
 
 /** Relative module imports reachable from `entry`, inside js/src. */

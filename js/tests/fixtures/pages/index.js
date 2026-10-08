@@ -1,4 +1,4 @@
-import {Page as BasePage, source} from '../../../src/adapters/page.js';
+import {Page as BasePage} from '../../../src/server/page.js';
 
 export class Page extends BasePage {
     static title = 'Contract fixture';
@@ -11,4 +11,4 @@ export class Page extends BasePage {
     }
     details(root, {name = 'remote'} = {}) { root.div(name); }
 }
-source(Page.prototype.details);
+Page.registerSource('details');

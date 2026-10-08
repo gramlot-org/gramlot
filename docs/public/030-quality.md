@@ -24,7 +24,7 @@ The status badge shows the current release; the license badge is a label.
 The unit suites do not verify adapter behavior in a server, standalone exports or
 real browsers. That evidence is the 0.2.0 qualification (GC-215 in
 `docs/internal/`): complete suites in clean environments; Chromium, WebKit and
-Firefox; the end-to-end story through the real Page, Host, TYTX and PageBootstrap
+Firefox; the end-to-end story through the real Page, `GramlotServer`, TYTX and PageBootstrap
 path; the served runtime checked against a fresh build; and the acceptance pages on
 `gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun) and `gramlot-serverless`,
 the repositories of that date. Today the adapters are tested in their own

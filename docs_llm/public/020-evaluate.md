@@ -16,12 +16,12 @@ Gramlot targets Python authors of interactive forms, data tools and application 
 
 ## 010 · How you build an interface
 
-Source describes the interface; Data Bags hold state. Bindings, controllers, resolvers and shared controls are the wider model. Python authors the page and JavaScript runs browser rendering. A bound input reads/writes Data without application DOM wiring. Host and database choices remain independent. *0.2.0:* includes bindings and controllers; resolvers and shared controls stay outside; components planned for 0.3.0.
+Source describes the interface; Data Bags hold state. Bindings, controllers, resolvers and shared controls are the wider model. Python authors the page and JavaScript runs browser rendering. A bound input reads/writes Data without application DOM wiring. Server and database choices remain independent. *0.2.0:* includes bindings and controllers; resolvers and shared controls stay outside; components planned for 0.3.0.
 
 <a id="gc-020-015"></a>
 
 ## 015 · What is available
 
-The core contains Python/JS Page authoring, typed Source, live DOM updates, the minimal Host contract with `FileHost` and, since 0.2.0, bindings and controllers. Recipes, resolvers and shared components are not part of it. Adapters: `gramlot-py-server`, `gramlot-js-server`. The richer [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) remains separate evidence, not a core contract. Integrations define their own scope; see [Try Gramlot](025-try.md). *0.2.0:* binding syntax, differences from legacy and exclusions: [Writing pages](095-writing-pages.md).
+The core contains Python/JS Page authoring, typed Source, live DOM updates, the minimal `GramlotServer` contract with `GramlotFileServer` and, since 0.2.0, bindings and controllers. Recipes, resolvers and shared components are not part of it. Adapters: `gramlot-py-server`, `gramlot-js-server`. The richer [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) remains separate evidence, not a core contract. Integrations define their own scope; see [Try Gramlot](025-try.md). *0.2.0:* binding syntax, differences from legacy and exclusions: [Writing pages](095-writing-pages.md).
 
 For the core contract, read [Classes and server adapters](090-classes-and-hosts.md) and [Writing pages](095-writing-pages.md).

@@ -13,7 +13,7 @@ import type {UtilitiesHandler} from './handlers/utilities-handler.js';
 
 /** The options of a `Gramlot` instance. */
 export interface GramlotOptions {
-    /** The id of the server page, as registered by the host. */
+    /** The id of the server page, as registered by the server. */
     pageId?: string;
     /** The URL of the `main` Source endpoint. */
     mainUrl?: string;
@@ -46,7 +46,7 @@ export class Gramlot {
     src: SourceHandler;
     /** The Data Bag of the page. */
     data: Bag;
-    /** The exchange with the host. */
+    /** The exchange with the server. */
     rpc: RpcHandler;
     /** The DOM and its correspondence with the Source. */
     dom: DomHandler;

@@ -14,7 +14,7 @@ export {DomHandler} from './handlers/dom-handler.js';
 export {UtilitiesHandler} from './handlers/utilities-handler.js';
 export {PageBootstrap} from './bootstrap.js';
 // A page module served for its Logic imports @gramlot/gramlot/page; the bootstrap import map points it here.
-export {Page, source} from './adapters/page.js';
+export {Page} from './server/page.js';
 export {GramlotBuilder} from './builder/gramlot-builder.js';
 export {GramlotRenderer} from './renderer/gramlot-renderer.js';
 export {GramlotHtmlRenderer} from './renderer/gramlot-html-renderer.js';

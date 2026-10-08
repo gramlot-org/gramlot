@@ -9,7 +9,7 @@ Document ID: **GC-055**.
 
 ## 005 · What Gramlot is
 
-A web interface described as a tree of declarations in Python or JavaScript, bound to application state in the browser. Page: class with `main(root)` calling element methods. Source: the tree (native HTML5/SVG elements in a Bag); the DOM follows it. Data: a Bag of values; `^` follows, `=` reads once, `==` computes; native controls write back. Logic: `dataFormula`, `dataController`, buttons, `connect_on<event>`; code as methods of the `Logic` export of the page module `foo.js` (beside `foo.py` for Python), else of `class Logic` in `foo_aux.js`, or inline where the CSP allows. Host: opens a page for a browser (Page, bootstrap, Source, close); an adapter connects it to a server or packages pages without one.
+A web interface described as a tree of declarations in Python or JavaScript, bound to application state in the browser. Page: class with `main(root)` calling element methods. Source: the tree (native HTML5/SVG elements in a Bag); the DOM follows it. Data: a Bag of values; `^` follows, `=` reads once, `==` computes; native controls write back. Logic: `dataFormula`, `dataController`, buttons, `connect_on<event>`; code as methods of the `Logic` export of the page module `foo.js` (beside `foo.py` for Python), else of `class Logic` in `foo_aux.js`, or inline where the CSP allows. Server (`GramlotServer`): opens a page for a browser (Page, bootstrap, Source, close); an adapter connects it to a web server or packages pages without one.
 
 Example (Python): `pane = root.div(datapath="person")`; `pane.input(id="name", value="^.name", live=True)`; `pane.p("^.greeting")`; `pane.dataFormula(".greeting", "'Hello, ' + name", name="^.name", _init=True)`; `pane.dataSetter(".name", "Ada")` → shows `Hello, Ada`, and `Hello, Grace` while typing `Grace`. JavaScript: same methods, data-elements with an object. See [Writing pages](095-writing-pages.md).
 
@@ -17,7 +17,7 @@ Example (Python): `pane = root.div(datapath="person")`; `pane.input(id="name", v
 
 ## 010 · The repositories
 
-- [gramlot](https://github.com/gramlot-org/gramlot): core (Page, Source, Data, binding, runtime, minimal Host contract, `FileHost`); PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; always needed; published.
+- [gramlot](https://github.com/gramlot-org/gramlot): core (Page, Source, Data, binding, runtime, minimal `GramlotServer` contract, `GramlotFileServer`); PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; always needed; published.
 - [gramlot-py-server](https://github.com/gramlot-org/gramlot-py-server): adapters for Python pages, one extra each (`uvicorn` for Uvicorn or any ASGI server, `django`, `flask`, `fastapi`, `kajenn`); PyPI `gramlot-py-server`, command `gramlot <environment> new|gallery`; published.
 - [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server): three packages for JavaScript pages, `@gramlot/gramlot-js-server` (HTTP adapter on Node.js 22 and Bun), `@gramlot/gramlot-serverless` (export to one HTML file or a static folder opened from disk, Page in a Web Worker) and `@gramlot/create` (new projects); published.
 - [gramlot-examples](https://github.com/gramlot-org/gramlot-examples): example pages in Python and JavaScript and the gallery; PyPI `gramlot-examples`, npm `@gramlot/gramlot-examples`; published.

@@ -22,4 +22,4 @@ CI measures `js/src` with `c8 --all` (every file, unimported ones included; line
 
 ## 015 · Coverage is not a browser acceptance test
 
-PoC JavaScript uses Node tests and jsdom. These do not establish real-browser behavior, visual quality, accessibility or all host/database combinations. Assess binding, cleanup and failure tests plus real-browser checks of the components you need. Coverage does not guarantee production readiness. *0.2.0:* real-browser binding tests use a separate runner, not jsdom.
+PoC JavaScript uses Node tests and jsdom. These do not establish real-browser behavior, visual quality, accessibility or all server/database combinations. Assess binding, cleanup and failure tests plus real-browser checks of the components you need. Coverage does not guarantee production readiness. *0.2.0:* real-browser binding tests use a separate runner, not jsdom.
