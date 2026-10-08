@@ -1,23 +1,14 @@
 /**
- * Host-side page base class and the `source` registration.
+ * Server-side page base class and the `registerSource` marker.
  *
  * @module
  */
 import type {GramlotBuilder} from '../builder/gramlot-builder.js';
 
-/**
- * Explicit registration of a remote Source method, equivalent to the Python `@source`.
- * A Source method populates its `root` argument and returns nothing.
- *
- * Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API:
- * they arrive together with the `remote` grammar attribute and `@endpoint`.
- */
-export function source<T extends Function>(method: T): T;
-
 /** The registered Source method `name` of `page`, or null. */
 export function sourceMethod(page: Page, name: string): Function | null;
 
-/** Host-side page base; unrelated to browser view components. */
+/** Server-side page base; unrelated to browser view components. */
 export class Page {
     /** The title of the page document. */
     static title: string;
@@ -29,8 +20,17 @@ export class Page {
     static js_requires: string;
     /** The builder class that authors the Source of the page. */
     static sourceBuilder: typeof GramlotBuilder;
-    /** The id of the page, set by the host. */
+    /** The id of the page, set by the server. */
     pageId?: string;
     /** Populate the `main` Source in `root`; subclasses must implement it. */
     main(root: unknown): void | Promise<void>;
+    /**
+     * Mark the own method `methodName` of this page class as a remote Source method,
+     * equivalent to the Python `@source`; call it after the class. A Source method populates
+     * its `root` argument and returns nothing.
+     *
+     * Source methods (`@source`, `registerSource`, `remoteSource`) are not yet part of the page-writing API:
+     * they arrive together with the `remote` grammar attribute and `@endpoint`.
+     */
+    static registerSource(methodName: string): void;
 }

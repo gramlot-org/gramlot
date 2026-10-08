@@ -38,7 +38,7 @@ For example, a bound text field reads and writes a Data path. Other declarations
 can react to that value without your application scraping the input or manually
 wiring DOM events. Use the current implementation’s guide for executable examples.
 
-A server adapter supplies hosting integration. Choosing a host and choosing a
+A server adapter supplies hosting integration. Choosing a server and choosing a
 database are separate decisions; core does not require a particular server or ORM.
 Bindings, controllers, resolvers and shared controls describe the wider Gramlot
 model. *0.2.0:* bindings and controllers are part of 0.2.0. Resolvers and shared
@@ -49,7 +49,7 @@ controls stay outside it; components are planned for 0.3.0.
 ## 015 · What is available
 
 The core contains Python and JavaScript Page authoring, typed Source, live DOM
-updates, the minimal Host contract with `FileHost`, and, since 0.2.0, Data bindings
+updates, the minimal `GramlotServer` contract with `GramlotFileServer`, and, since 0.2.0, Data bindings
 and controllers. Recipes, resolvers and shared components are not part of it. The
 adapters are in `gramlot-py-server` and `gramlot-js-server`. The richer
 [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) has separate examples and

@@ -1,4 +1,4 @@
-/** Real-browser check of the page logic forms on the JavaScript and Python FileHost.
+/** Real-browser check of the page logic forms on the JavaScript and Python GramlotFileServer.
  * Usage: node scripts/verify_page_module_browser.mjs PYTHON PLAYWRIGHT_ENTRY [ENGINE …]
  * Build the runtime first (npm --prefix js run build). Both loopback hosts serve the
  * runtime, the .js and .css files below their pages folder and the page protocol, with
@@ -12,7 +12,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createInterface} from 'node:readline';
 import {fileURLToPath, pathToFileURL} from 'node:url';
-import {FileHost} from '../js/src/adapters/index.js';
+import {GramlotFileServer} from '../js/src/server/index.js';
 
 const [python, playwrightEntry, ...engines] = process.argv.slice(2);
 if (!playwrightEntry) throw new Error('Usage: node scripts/verify_page_module_browser.mjs PYTHON PLAYWRIGHT_ENTRY [ENGINE …]');
@@ -53,9 +53,9 @@ const PYTHON_HOST = String.raw`
 import asyncio, json, sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from gramlot.server import FileHost, PageNotFound
+from gramlot.server import GramlotFileServer, PageNotFound
 pages, runtime, csp = Path(sys.argv[1]), Path(sys.argv[2]).read_bytes(), sys.argv[3]
-host = FileHost(pages)
+server = GramlotFileServer(pages)
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args): pass
     def reply(self, status, body, kind, headers={}):
@@ -67,7 +67,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
     def do_GET(self):
-        if self.path == host.runtime_url:
+        if self.path == server.runtime_url:
             return self.reply(200, runtime, "text/javascript")
         if self.path.endswith((".js", ".css")):
             filename = (pages / self.path.lstrip("/")).resolve()
@@ -76,54 +76,54 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, filename.read_bytes(), kind)
             return self.reply(404, "Not found", "text/plain")
         try:
-            opened = asyncio.run(host.open_page(self.path))
+            opened = asyncio.run(server.open_page(self.path))
         except PageNotFound:
             return self.reply(404, "Not found", "text/plain")
         self.reply(200, opened.html, "text/html; charset=utf-8",
                    {"Content-Security-Policy": csp.replace("{nonce}", opened.nonce)})
     def do_POST(self):
         payload = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-        if self.path == host.close_url:
-            host.close_page(payload["pageId"])
+        if self.path == server.close_url:
+            server.close_page(payload["pageId"])
             return self.reply(200, "{}", "application/json")
-        self.reply(200, asyncio.run(host.main(payload["pageId"])), "application/json")
-server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-print(f"http://127.0.0.1:{server.server_port}", flush=True)
-server.serve_forever()
+        self.reply(200, asyncio.run(server.main(payload["pageId"])), "application/json")
+http_server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+print(f"http://127.0.0.1:{http_server.server_port}", flush=True)
+http_server.serve_forever()
 `;
 
 /** The Node counterpart of PYTHON_HOST on the same protocol. */
 async function nodeHost(pages, runtime) {
-    const host = new FileHost(pages);
-    const server = createServer(async (request, response) => {
+    const server = new GramlotFileServer(pages);
+    const httpServer = createServer(async (request, response) => {
         const reply = (status, body, kind, headers = {}) => {
             response.writeHead(status, {'Content-Type': kind, ...headers});
             response.end(body);
         };
         try {
-            if (request.method === 'GET' && request.url === host.runtimeUrl) return reply(200, runtime, 'text/javascript');
+            if (request.method === 'GET' && request.url === server.runtimeUrl) return reply(200, runtime, 'text/javascript');
             if (request.method === 'GET' && /\.(js|css)$/.test(request.url)) {
                 const filename = join(pages, ...request.url.split('/').filter(Boolean));
-                try { await host.url(filename); }
+                try { await server.url(filename); }
                 catch { return reply(404, 'Not found', 'text/plain'); }
                 return reply(200, await readFile(filename), request.url.endsWith('.js') ? 'text/javascript' : 'text/css');
             }
             if (request.method === 'GET') {
-                const opened = await host.openPage(request.url);
+                const opened = await server.openPage(request.url);
                 return reply(200, opened.html, 'text/html; charset=utf-8',
                     {'Content-Security-Policy': CSP.replaceAll('{nonce}', opened.nonce)});
             }
             const chunks = [];
             for await (const chunk of request) chunks.push(chunk);
             const {pageId} = JSON.parse(Buffer.concat(chunks).toString());
-            if (request.url === host.closeUrl) { host.closePage(pageId); return reply(200, '{}', 'application/json'); }
-            return reply(200, await host.main(pageId), 'application/json');
+            if (request.url === server.closeUrl) { server.closePage(pageId); return reply(200, '{}', 'application/json'); }
+            return reply(200, await server.main(pageId), 'application/json');
         } catch (error) {
             reply(500, String(error.stack), 'text/plain');
         }
     });
-    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-    return {url: `http://127.0.0.1:${server.address().port}`, close: () => server.close()};
+    await new Promise(resolve => httpServer.listen(0, '127.0.0.1', resolve));
+    return {url: `http://127.0.0.1:${httpServer.address().port}`, close: () => httpServer.close()};
 }
 
 function pythonHost(pages) {

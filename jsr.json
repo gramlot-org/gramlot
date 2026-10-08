@@ -1,19 +1,19 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
-    "./server": "./js/src/adapters/index.js",
+    "./server": "./js/src/server/index.js",
     "./runtime": "./js/dist/gramlot.js",
-    "./page": "./js/src/adapters/page.js",
-    "./host": "./js/src/adapters/host.js"
+    "./page": "./js/src/server/page.js",
+    "./gramlot-server": "./js/src/server/gramlot-server.js"
   },
   "imports": {
     "@genrojs/bag": "jsr:@genro/bag@^0.10.3",
     "@genrojs/builders": "jsr:@genro/builders@^0.4.2",
     "@genrojs/tytx": "jsr:@genro/tytx@^0.16.2",
-    "@gramlot/gramlot/page": "./js/src/adapters/page.js"
+    "@gramlot/gramlot/page": "./js/src/server/page.js"
   },
   "publish": {
     "include": [

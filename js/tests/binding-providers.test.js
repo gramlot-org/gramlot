@@ -10,7 +10,7 @@ import {Bag} from '@genrojs/bag';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder, PageBootstrap} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
-import {FileHost} from '../src/adapters/index.js';
+import {GramlotFileServer} from '../src/server/index.js';
 import {mount} from './fixtures/mount.js';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
@@ -458,26 +458,26 @@ test('removing a provider closes its registrations', () => {
     app.dispose();
 });
 
-/** The Python FileHost of the fixture folder: page HTML and main wire. */
+/** The Python GramlotFileServer of the fixture folder: page HTML and main wire. */
 function openPython(path) {
     return JSON.parse(execFileSync(python, ['-c', `
 import asyncio, json, sys
-from gramlot.server import FileHost, parse_requires
-class LogicHost(FileHost):
+from gramlot.server import GramlotFileServer, parse_requires
+class LogicServer(GramlotFileServer):
     def resolve_resources(self, path, cls):
         if not cls.js_requires:
             return super().resolve_resources(path, cls)
         return {"css": [], "js": [*({"url": f"/{name}.js", "group": name} for name in parse_requires(cls.js_requires)),
                                   {"url": "/calcolo_aux.js", "group": None}]}
 async def run():
-    host = LogicHost(sys.argv[1])
-    opened = await host.open_page(sys.argv[2], prefix=sys.argv[1])
-    return {"html": opened.html, "wire": await host.main(opened.page_id)}
+    server = LogicServer(sys.argv[1])
+    opened = await server.open_page(sys.argv[2], prefix=sys.argv[1])
+    return {"html": opened.html, "wire": await server.main(opened.page_id)}
 print(json.dumps(asyncio.run(run())))
 `, LOGIC, path], {encoding: 'utf8'}));
 }
 
-/** The argument the host writes into `new PageBootstrap(…)`. */
+/** The argument the server writes into `new PageBootstrap(…)`. */
 function bootstrapArguments(html) {
     const match = html.match(/await new PageBootstrap\((.*)\)\.run\(\);<\/script>/s);
     assert.ok(match, 'the bootstrap script calls PageBootstrap');
@@ -507,11 +507,11 @@ test('a Python Source calls named logic through the real bootstrap, with no manu
     app.dispose();
 });
 
-test('the companion is registered before the first _init; opening the page on the JS and Python hosts runs no logic', async () => {
+test('the companion is registered before the first _init; opening the page on the JS and Python servers runs no logic', async () => {
     globalThis.gramlotSentinel = 0;
-    const host = new FileHost(LOGIC);
-    const opened = await host.openPage('/avvio', {prefix: LOGIC});
-    const jsWire = await host.main(opened.pageId);
+    const server = new GramlotFileServer(LOGIC);
+    const opened = await server.openPage('/avvio', {prefix: LOGIC});
+    const jsWire = await server.main(opened.pageId);
     const pythonOpened = openPython('/avvio');
     assert.equal(globalThis.gramlotSentinel, 0);
     for (const [pageOpened, wire] of [[pythonOpened, pythonOpened.wire], [opened, jsWire]]) {

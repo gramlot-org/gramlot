@@ -24,6 +24,9 @@ const options = {
 };
 const hosted = await build({...options, entryPoints: [path('src/index.js')], format: 'esm', outfile: path('dist/gramlot.js'),
     banner: {js: bundleBanner}});
+// The minified runtime is served in deploy and in development without GRAMLOT_DEV=DEBUG.
+await build({...options, entryPoints: [path('src/index.js')], format: 'esm', outfile: path('dist/gramlot.min.js'),
+    banner: {js: bundleBanner}, minify: true, legalComments: 'eof', metafile: false});
 await writeFile(path('dist/gramlot.d.ts'), `${moduleDoc}\nexport * from '../src/index.d.ts';\n`);
 // Standalone startup and Worker integration now belong to gramlot-serverless.
 await rm(path('dist/standalone.js'), {force: true});
@@ -67,6 +70,6 @@ await writeFile(path('dist/runtime-notices.json'), JSON.stringify(notices, null,
 await mkdir(path('../build/assets/'), {recursive: true});
 await copyFile(path('dist/gramlot.js'), path('../build/assets/gramlot.js'));
 await mkdir(path('../src/gramlot/resources/'), {recursive: true});
-for (const name of ['gramlot.js', 'runtime-notices.json']) {
+for (const name of ['gramlot.js', 'gramlot.min.js', 'runtime-notices.json']) {
     await copyFile(path(`dist/${name}`), path(`../src/gramlot/resources/${name}`));
 }

@@ -40,7 +40,7 @@ export class SourceHandler extends Handler {
      * Replace the children of one Source node with a remote Source, only after the incoming Source
      * validates. Resolves with true when applied, false when superseded or cancelled.
      *
-     * Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API:
+     * Source methods (`@source`, `registerSource`, `remoteSource`) are not yet part of the page-writing API:
      * they arrive together with the `remote` grammar attribute and `@endpoint`.
      */
     remoteSource(target: SourceBagNode, method: string, params?: Record<string, unknown>): Promise<boolean>;

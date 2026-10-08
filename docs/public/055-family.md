@@ -26,9 +26,10 @@ JavaScript, and keeps it bound to the application state in the browser.
   the `Logic` class exported by the page module `foo.js` (beside `foo.py` for a Python
   page), or of `class Logic` in `foo_aux.js`, or an inline expression where the page's
   Content Security Policy allows it.
-- **Host.** The part that opens a page for a browser: it finds the Page, sends the
-  bootstrap document, serves the Source and closes the page. An adapter connects a
-  Host to a web server, or packages pages without a server.
+- **Server (`GramlotServer`).** The part that opens a page for a browser: it finds
+  the Page, sends the bootstrap document, serves the Source and closes the page. An
+  adapter connects a `GramlotServer` to a web server, or packages pages without a
+  web server.
 
 A complete page, in Python:
 
@@ -60,7 +61,7 @@ JavaScript calls the same methods; data-elements take an object
 
 | Repository | What it is | Use it when | Status |
 | --- | --- | --- | --- |
-| [gramlot](https://github.com/gramlot-org/gramlot) | The core: Page, Source, Data, binding, the browser runtime, the minimal Host contract and `FileHost`. PyPI `gramlot`, npm and JSR `@gramlot/gramlot`. | Always: every page and every adapter depends on it. | Published |
+| [gramlot](https://github.com/gramlot-org/gramlot) | The core: Page, Source, Data, binding, the browser runtime, the minimal `GramlotServer` contract and `GramlotFileServer`. PyPI `gramlot`, npm and JSR `@gramlot/gramlot`. | Always: every page and every adapter depends on it. | Published |
 | [gramlot-py-server](https://github.com/gramlot-org/gramlot-py-server) | Adapters for Python pages, one extra each: `uvicorn` (Uvicorn or any ASGI server), `django`, `flask`, `fastapi`, `kajenn`. PyPI `gramlot-py-server`, commands `gramlot <environment> new` and `gramlot <environment> gallery`. | Your pages are in Python and you serve them from a Python web server. | Published |
 | [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server) | Three packages for JavaScript pages: `@gramlot/gramlot-js-server`, the HTTP adapter on Node.js 22 and Bun; `@gramlot/gramlot-serverless`, the exporter to one HTML file, or one static folder, that opens from disk, with the Page in a Web Worker; `@gramlot/create`, new projects. | Your pages are in JavaScript: you serve them from Node.js or Bun, or you want a page without any server, a file to open, send or host as static content. | Published |
 | [gramlot-examples](https://github.com/gramlot-org/gramlot-examples) | The example pages, in Python and JavaScript, and the gallery. PyPI `gramlot-examples`, npm `@gramlot/gramlot-examples`. | You want to see every feature at work, with its source. | Published |

@@ -77,7 +77,7 @@ export class SourceHandler extends Handler {
      * The request lives as long as the target's NodeBinding (P24): a DOM rebuild
      * or a freeze keeps it, the removal of the target cancels it.
      *
-     * Source methods (`@source`, `source(...)`, `remoteSource`) are not yet part of the page-writing API:
+     * Source methods (`@source`, `registerSource`, `remoteSource`) are not yet part of the page-writing API:
      * they arrive together with the `remote` grammar attribute and `@endpoint`.
      */
     async remoteSource(target, method, params = {}) {

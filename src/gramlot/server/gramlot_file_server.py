@@ -1,19 +1,21 @@
-"""Minimal reference Host on one pages folder.
+"""Minimal reference GramlotServer on one pages folder.
 
-The JavaScript counterpart is ``js/src/adapters/file-host.js``. Python page
-files are trusted application code, never uploaded content; each opening
-executes the module again.
+The JavaScript counterpart is ``js/src/server/gramlot-file-server.js``. Python page
+files are trusted application code, never uploaded content. With ``reload``
+each opening executes the module again; without it the module runs once per
+real path.
 """
 import importlib.util
 from pathlib import Path
 from urllib.parse import quote
 from uuid import uuid4
 
-from .host import Host, PageNotFound
+from .assets import gramlot_dev
+from .gramlot_server import GramlotServer, PageNotFound
 from .resources import SEGMENT, InvalidResourceName, parse_requires
 
 
-class FileHost(Host):
+class GramlotFileServer(GramlotServer):
     """Resolve pages and their same-name companions below one pages folder.
 
     Page path ``foo``: the file page ``foo.py`` first, then the folder page
@@ -26,11 +28,16 @@ class FileHost(Host):
     The ``_aux`` suffix is reserved. There are no
     resource levels: a name in ``css_requires``/``js_requires`` raises
     ``InvalidResourceName``.
+
+    ``reload=None`` takes the value from ``GRAMLOT_DEV`` (true for ``YES`` and
+    ``DEBUG``, false when unset); an explicit boolean wins.
     """
 
-    def __init__(self, pages_dir, **options):
+    def __init__(self, pages_dir, reload=None, **options):
         super().__init__(**options)
         self._pages_dir = Path(pages_dir)
+        self.reload = gramlot_dev() is not None if reload is None else reload
+        self._modules = {}
 
     @property
     def pages_dir(self):
@@ -51,15 +58,22 @@ class FileHost(Host):
 
     def resolve_page(self, path):
         filename = self.locate_page(path)
-        spec = importlib.util.spec_from_file_location(f"gramlot_page_{uuid4().hex}", filename)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        real = filename.resolve()
+        module = None if self.reload else self._modules.get(real)
+        if module is None:
+            spec = importlib.util.spec_from_file_location(f"gramlot_page_{uuid4().hex}", filename)
+            module = importlib.util.module_from_spec(spec)
+            # Compiled from the source, never from __pycache__: a .pyc is trusted on the source's size and
+            # whole-second mtime, so an edit of the same size within one second would run the old code.
+            exec(compile(spec.loader.get_source(spec.name), str(filename), "exec"), module.__dict__)
+            if not self.reload:
+                self._modules[real] = module
         return getattr(module, "Page", None)
 
     def resolve_resources(self, path, cls):
         """``Page.css`` URLs as written, then the companion ``foo.css`` and the page logic."""
         if parse_requires(cls.css_requires) or parse_requires(cls.js_requires):
-            raise InvalidResourceName("requires need a Host with a resource system")
+            raise InvalidResourceName("requires need a GramlotServer with a resource system")
         page_file = self.locate_page(path)
         css, js = list(cls.css), []
         companion_css = page_file.with_name(f"{page_file.stem}.css")

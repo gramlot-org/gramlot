@@ -1,9 +1,9 @@
 // Phase S16: the end-to-end story of source plan §8.1 (GC-210 §065) on `fixtures/qualification/09_end_to_end`,
-// once from the Python page and once from the JavaScript page, through the real path: the FileHost of each
-// language opens the page, the browser document is the bootstrap HTML the host wrote, PageBootstrap imports
+// once from the Python page and once from the JavaScript page, through the real path: the GramlotFileServer of each
+// language opens the page, the browser document is the bootstrap HTML the server wrote, PageBootstrap imports
 // the page module for its `Logic` and starts Gramlot, the Source travels as TYTX over the MainTransport, and the page
 // closes on a real `pagehide`. Nothing is registered, mounted or wired by hand: the test only answers the
-// transport requests with the host, acts on the DOM with events, and observes.
+// transport requests with the server, acts on the DOM with events, and observes.
 //
 // Each step records the Data trace, the DOM mutations, the transport requests and the counters; the two
 // languages must give the same records, and every step checks its own outcome.
@@ -14,43 +14,43 @@ import {createInterface} from 'node:readline';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {JSDOM} from 'jsdom';
 import {PageBootstrap} from '../src/index.js';
-import {FileHost} from '../src/adapters/index.js';
+import {GramlotFileServer} from '../src/server/index.js';
 import {counters, liveListeners, liveTimers} from './fixtures/lifecycle.js';
 
 // The page module imports `@gramlot/gramlot/page`; inside `js/` Node resolves it by package self-reference
-// to `src/adapters/page.js`, the module FileHost loads: one `Page` class, so `instanceof Page` holds.
+// to `src/server/page.js`, the module GramlotFileServer loads: one `Page` class, so `instanceof Page` holds.
 const PAGES = fileURLToPath(new URL('./fixtures/qualification/', import.meta.url)).replace(/\/$/, '');
 const PATH = '/09_end_to_end';
 
-/** The JavaScript FileHost on the fixture folder. */
+/** The JavaScript GramlotFileServer on the fixture folder. */
 function jsHost() {
-    const host = new FileHost(PAGES);
+    const server = new GramlotFileServer(PAGES);
     return {
         language: 'js',
-        open: async () => host.openPage(PATH, {prefix: PAGES}),
-        main: pageId => host.main(pageId),
-        source: (pageId, method, params) => host.source(pageId, method, params),
-        close: async pageId => host.closePage(pageId),
+        open: async () => server.openPage(PATH, {prefix: PAGES}),
+        main: pageId => server.main(pageId),
+        source: (pageId, method, params) => server.source(pageId, method, params),
+        close: async pageId => server.closePage(pageId),
         stop() {},
     };
 }
 
-/** The Python FileHost on the fixture folder, one process answering one JSON request per line. */
+/** The Python GramlotFileServer on the fixture folder, one process answering one JSON request per line. */
 const PYTHON_HOST = `
 import asyncio, json, sys
-from gramlot.server import FileHost
-host = FileHost(sys.argv[1])
+from gramlot.server import GramlotFileServer
+server = GramlotFileServer(sys.argv[1])
 async def handle(request):
     op = request["op"]
     if op == "open":
-        opened = await host.open_page(request["path"], prefix=sys.argv[1])
+        opened = await server.open_page(request["path"], prefix=sys.argv[1])
         return {"pageId": opened.page_id, "html": opened.html}
     if op == "main":
-        return {"wire": await host.main(request["pageId"])}
+        return {"wire": await server.main(request["pageId"])}
     if op == "source":
-        return {"wire": await host.source(request["pageId"], request["method"], request["params"])}
+        return {"wire": await server.source(request["pageId"], request["method"], request["params"])}
     if op == "close":
-        host.close_page(request["pageId"])
+        server.close_page(request["pageId"])
         return {}
     raise ValueError(op)
 async def run():
@@ -83,7 +83,7 @@ function pythonHost() {
     };
 }
 
-/** The argument the host wrote into `new PageBootstrap(…)`. */
+/** The argument the server wrote into `new PageBootstrap(…)`. */
 function bootstrapArguments(html) {
     const match = html.match(/import \{PageBootstrap\} from "[^"]*";await new PageBootstrap\((.*)\)\.run\(\);<\/script>/s);
     assert.ok(match, 'the bootstrap script calls PageBootstrap');
@@ -100,11 +100,11 @@ function where(node) {
 }
 
 /**
- * Open the story page on `host` and run it in a jsdom browser document, recording every step. Returns the
+ * Open the story page on `server` and run it in a jsdom browser document, recording every step. Returns the
  * records of the eight steps; the checks of each step run here, identical for both languages.
  */
-async function runStory(t, host) {
-    const opened = await host.open();
+async function runStory(t, server) {
+    const opened = await server.open();
     const args = bootstrapArguments(opened.html);
     const {window} = new JSDOM(opened.html, {url: pathToFileURL(`${PAGES}${PATH}`).href});
     const document = window.document;
@@ -114,7 +114,7 @@ async function runStory(t, host) {
     const beacons = [];
     window.navigator.sendBeacon = (url, blob) => {
         trace.transport.push(`beacon:${url === args.config.closeUrl ? 'close' : url}`);
-        beacons.push(blob.text().then(text => host.close(JSON.parse(text).pageId)));
+        beacons.push(blob.text().then(text => server.close(JSON.parse(text).pageId)));
         return true;
     };
     let observer = null;
@@ -136,13 +136,13 @@ async function runStory(t, host) {
             observer = new window.MutationObserver(records => mutations.push(...records));
             observer.observe(document.getElementById(args.config.rootId), {subtree: true, childList: true,
                 attributes: true, characterData: true});
-            wire = await host.main(body.pageId);
+            wire = await server.main(body.pageId);
         } else if (url === args.config.sourceUrl) {
             trace.transport.push(`source:${body.method}`);
-            wire = await host.source(body.pageId, body.method, body.params);
+            wire = await server.source(body.pageId, body.method, body.params);
         } else if (url === args.config.closeUrl) {
             trace.transport.push('close');
-            await host.close(body.pageId);
+            await server.close(body.pageId);
         } else {
             assert.fail(`unexpected request ${url}`);
         }
@@ -234,7 +234,7 @@ async function runStory(t, host) {
         assert.equal(byId('modifiers').textContent, 'without modifiers');
         record('5 button');
 
-        // 6. remoteSource: the branch comes back from the host with its own setters, visible at its first render.
+        // 6. remoteSource: the branch comes back from the server with its own setters, visible at its first render.
         click('loadExtras');
         for (let i = 0; i < 50 && !byId('extras-title'); i++) await tick(5);
         assert.equal(byId('extras-title').textContent, 'Extras from the server');
@@ -262,7 +262,7 @@ async function runStory(t, host) {
         window.dispatchEvent(new window.Event('pagehide'));
         await Promise.all(beacons);
         assert.equal(app.state, 'disposed');
-        await assert.rejects(host.main(opened.pageId), /Unknown, expired or unowned page/);
+        await assert.rejects(server.main(opened.pageId), /Unknown, expired or unowned page/);
         const closed = root.innerHTML;
         app.data.setItem('story.quantity', 9);
         assert.equal(root.innerHTML, closed);
@@ -276,7 +276,7 @@ async function runStory(t, host) {
         observer?.disconnect();
         globalThis.fetch = original;
         if (app && app.state !== 'disposed') app.dispose();
-        host.stop();
+        server.stop();
     }
     return steps;
 }
@@ -316,7 +316,7 @@ const EXPECTED = [
         data: ['upd_value:story.quantity']},
 ];
 
-test('§8.1 story through the real Page/Host/TYTX/PageBootstrap path: Python and JavaScript pages agree', async t => {
+test('§8.1 story through the real Page/GramlotServer/TYTX/PageBootstrap path: Python and JavaScript pages agree', async t => {
     const records = {};
     for (const [language, open] of [['py', pythonHost], ['js', jsHost]]) {
         await t.test(`${language} page`, async st => { records[language] = await runStory(st, open()); });

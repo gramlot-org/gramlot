@@ -14,7 +14,7 @@ export {UtilitiesHandler} from './handlers/utilities-handler.js';
 export type {GramlotOptions, GramlotState} from './gramlot.js';
 export {PageBootstrap} from './bootstrap.js';
 export type {PageBootstrapOptions, PageResources} from './bootstrap.js';
-export {Page, source} from './adapters/page.js';
+export {Page} from './server/page.js';
 export {GramlotBuilder} from './builder/gramlot-builder.js';
 export {GramlotRenderer} from './renderer/gramlot-renderer.js';
 export {GramlotHtmlRenderer} from './renderer/gramlot-html-renderer.js';

@@ -8,7 +8,7 @@ import type {BeaconNavigator} from './dom.d.ts';
 /** The fetch function used by the transport. */
 export type Fetcher = (input: string, init?: RequestInit) => Promise<Response>;
 
-/** The page-to-host transport: loads `main` and remote Sources and closes the server page. */
+/** The page-to-server transport: loads `main` and remote Sources and closes the server page. */
 export class MainTransport {
     /** The URL of the `main` endpoint. */
     url: string;
@@ -29,6 +29,6 @@ export class MainTransport {
     source(pageId: string, method: string, params: Record<string, unknown>, signal?: AbortSignal): Promise<string>;
     /** POST a JSON payload to `url`; resolves with the response text, rejects on a non-2xx status. */
     request(operation: string, url: string, payload: unknown, signal?: AbortSignal): Promise<string>;
-    /** Ask the host to close the page, with a beacon or a best-effort fetch; delivery failure is ignored. */
+    /** Ask the server to close the page, with a beacon or a best-effort fetch; delivery failure is ignored. */
     close(pageId: string, options?: {beacon?: boolean}): void;
 }

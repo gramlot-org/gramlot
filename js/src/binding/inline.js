@@ -4,7 +4,7 @@ import {isExpression, templateParameters} from '../renderer/attributes.js';
 /**
  * Inline code of one Gramlot page (source plan §4.10): the `formula`/`script` bodies, `_if`/`_else`,
  * `action`, `connect_on<event>` and the `==` expressions, compiled with `this` = the Source node. Imported
- * only by the page runtime: never by `adapters/*`, `builder/*` or a WorkerHost, so a page with named logic
+ * only by the page runtime: never by `server/*`, `builder/*` or a GramlotWorkerServer, so a page with named logic
  * only runs under a CSP without `'unsafe-eval'`.
  *
  * Only the inline code received with the Source runs: the text activated by SourceHandler.prepareSource
