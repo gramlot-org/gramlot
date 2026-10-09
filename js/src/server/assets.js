@@ -1,16 +1,16 @@
 /* @ts-self-types="./assets.d.ts" */
 /**
- * Development mode and the runtime file to serve; Node.js and Bun only.
+ * Development mode and the runtime file to serve. `gramlotDev` imports nothing from Node.js, so the
+ * neutral `GramlotServer` can read it in a serverless Worker, where it is null without `process`.
  *
  * @module
  */
-import process from 'node:process';
 
 const DEV_MODES = ['YES', 'DEBUG'];
 
 /** GRAMLOT_DEV: null when unset (deploy), 'YES' or 'DEBUG'; any other value throws a TypeError. */
 export function gramlotDev() {
-    const value = process.env.GRAMLOT_DEV;
+    const value = globalThis.process?.env?.GRAMLOT_DEV;
     if (value === undefined) return null;
     if (!DEV_MODES.includes(value)) {
         throw new TypeError(`GRAMLOT_DEV must be unset, YES or DEBUG, not ${JSON.stringify(value)}`);

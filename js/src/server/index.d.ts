@@ -5,7 +5,8 @@
  * @module
  */
 export {Page} from './page.js';
-export {GramlotServer, PageExpired, PageNotFound, SourceNotFound, ServerCapacity} from './gramlot-server.js';
+export {GramlotServer, EndpointNotFound, InvalidRequest, NotAuthenticated, NotAuthorized, PageExpired, PageNotFound,
+    SourceNotFound, ServerCapacity} from './gramlot-server.js';
 export type {GramlotServerOptions, OpenedPage, RegisteredPage} from './gramlot-server.js';
 export {GramlotBuilder} from '../builder/gramlot-builder.js';
 export {GramlotFileServer} from './gramlot-file-server.js';

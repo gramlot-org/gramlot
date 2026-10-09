@@ -8,10 +8,21 @@ import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
 import {BindingRuntime, NodeBinding} from '../src/binding/runtime.js';
 import {LogicGroup, LogicRegistry} from '../src/binding/logic.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
+
+/** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
+function envelope({main, source, ...rest}) {
+    return {...rest, async call(text, signal) {
+        const {id, contentType, name, params} = fromTytx(text);
+        const value = name === 'main' ? await main() : await source(name, params, signal);
+        return toTytx({id, contentType, value});
+    }};
+}
 
 function page(transport = false) {
     const document = new JSDOM('<main id="gramlot-root"></main>').window.document;
-    const app = new Gramlot({document, pageId: 'test', element: document.querySelector('main'), transport});
+    const app = new Gramlot({document, pageId: 'test', element: document.querySelector('main'),
+        transport: transport && envelope(transport)});
     return {document, app};
 }
 
@@ -408,7 +419,7 @@ test('P24: a remoteSource request on a live target under freeze applies; the DOM
 test('P24: removing the target closes its NodeBinding and aborts the request; a late response is discarded', async () => {
     let resolve, signal;
     const {app, document} = page({main: async () => wire(root => root.div('old', {id: 'slot'})),
-        source: (pageId, method, params, abort) => new Promise(done => { resolve = done; signal = abort; })});
+        source: (method, params, abort) => new Promise(done => { resolve = done; signal = abort; })});
     await app.start();
     const target = app.src.source.getItem('main').getNodes()[0];
     const pending = app.src.remoteSource(target, 'details');

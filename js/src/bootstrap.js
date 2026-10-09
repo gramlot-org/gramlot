@@ -6,7 +6,7 @@
  */
 import {Gramlot} from './gramlot.js';
 import {LogicRegistry} from './binding/logic.js';
-import {MainTransport} from './transport.js';
+import {HttpTransport} from './http-transport.js';
 
 /**
  * The browser start of one page (source plan §4.12). The server writes
@@ -71,8 +71,8 @@ export class PageBootstrap {
 
     /** The close request of a page that never got its Gramlot instance: a beacon, as `Gramlot` sends on pagehide. */
     closePage() {
-        const {mainUrl, sourceUrl, closeUrl, pageId} = this.config;
-        new MainTransport(mainUrl, undefined, sourceUrl, closeUrl, this.document.defaultView.navigator)
+        const {rpcUrl, closeUrl, pageId} = this.config;
+        new HttpTransport(rpcUrl, {closeUrl, navigator: this.document.defaultView.navigator})
             .close(pageId, {beacon: true});
     }
 }

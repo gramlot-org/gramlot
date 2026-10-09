@@ -344,8 +344,9 @@ rebuilds. Alternatives: `action='…'` = inline code on click, `this` = button n
 receives current button attributes plus `event`, `_counter`, `modifiers` (inline
 rules apply); `fire='.path'` = `FIRE` with the modifier string (`'Shift'`,
 `'CtrlAlt'`, …) or `true`, Data node gets `modifier` and `_counter`;
-`fire_<name>='.path'` = `FIRE` with value `'<name>'`. One mechanism per button:
-several `dataController` children or any combination of nested controller, `action`
+`fire_<name>='.path'` = `FIRE` with value `'<name>'`. A nested `dataRpc` is also a click mechanism
+(§100). One mechanism per button:
+several `dataController` or `dataRpc` children or any combination of nested controller, `action`
 and the `fire` family = error; several `fire_*` all fire in attribute order; `fire`
 with `fire_*` is one mechanism (`fire` wins, `fire_*` ignored, as legacy); `fire_*`
 also write `modifier` and `_counter`. `connect_on<event>` attaches native listeners on
@@ -397,13 +398,14 @@ rollback. Example: `controllers/08_end_to_end` (`c08`).
 
 ## 085 · Exclusions and deferred work (0.2.0)
 
-Explicit error: `serverpath`, `dbenv`, `shared_id`, `remote`, `dataRpc`,
+Explicit error: `serverpath`, `dbenv`, `shared_id`, `remote`,
 `dataRemote`, `subscribe_*`, `selfsubscribe_*`, `formsubscribe_*`, `PUBLISH`,
 `_ask`, `ask` (same keys inside user Data stay data). Outside 0.2.0 without a
 dedicated error: components/widgets; store, grid, tree; form, record, newrecord;
 server sync; CSS beyond `css_requires`; rich editing; async scheduling and
 transactions; developer warning Bag. Components (incl. `radioButtonText`) planned
-for 0.3.0. Source `script` stays native HTML5, not evaluated.
+for 0.3.0. Source `script` stays native HTML5, not evaluated. `dataRpc` left the
+list in 0.2.14 (§100).
 
 <a id="gc-095-090"></a>
 
@@ -452,3 +454,35 @@ limit) → error naming the length. Missing path or not a Bag →
 `gramlot.utl.inout: no data Bag at '<path>'`. `restore` needs a user action. JSON/XML are
 export only. Inline code needs `'unsafe-eval'` ([GC-090 §035](090-classes-and-hosts.md));
 strict CSP → call from `Logic`. `sendHttp` reaches what `connect-src` allows.
+
+<a id="gc-095-100"></a>
+
+## 100 · Calling the server: `dataRpc` and endpoints (0.2.14)
+
+`dataRpc(method, result_path=None, timeout=None, **params)` calls an endpoint of the
+page and writes the value at `result_path` (absent → not written; no `?attr`).
+`method` = endpoint name or `^`/`=` pointer. `timeout` in ms → abort, error `name`
+`TimeoutError`. Other kwargs = endpoint arguments (`^` triggers, `=` read only);
+control attributes of §055 apply (`_init`, `_onBuilt`, `_onStart`, `_delay`, `_timing`,
+`_userChanges`, `_if`; false `_if` → no call, `_else` runs as inline code). Inline
+callbacks: `_onCalling` (arguments), `_onResult` (arguments + `result`, after the
+write), `_onError` (arguments + `error`: `RpcError` with `code`/`remoteName`/`message`,
+transport error or `TimeoutError`); without `_onError` the failure is an unhandled
+rejection. Latest call wins (a new trigger aborts the one in flight; removal aborts
+too). Nested in `button` = click mechanism (§075).
+Declaration: Python `@endpoint` / `@endpoint(auth="rule")`; JS
+`Page.registerEndpoint(name, {auth})` after the class. Arguments by name (Python) or
+one object (JS); returns a scalar, a Bag or null (data, never code). `dataRpc` sends
+every author argument: Python calls with keywords (an unaccepted keyword →
+`application_error`), JS ignores unread keys, so a Python endpoint called from
+`dataRpc` declares `**kwargs` (legacy `rpc_*` convention). Example:
+`root.dataRpc("with_vat", result_path=".gross", price="^.price")` with
+`@endpoint def with_vat(self, price, **kwargs)`; JS
+`root.dataRpc({method: 'with_vat', result_path: '.gross', price: '^.price'})` and
+`Page.registerEndpoint('with_vat')`. `auth` on a server without the `auth`
+capability → `not_authenticated`, method not run. Names `[A-Za-z][\w]*`, `main`
+reserved, not both endpoint and `@source`. Unknown endpoint → `not_found`; raised
+exception → `application_error` with `name`/`message`; both reach `_onError`. A string
+argument with a TYTX suffix (`"x::D"`) is decoded by TYTX, not passed as text
+(genro-tytx decodes only text it encoded): endpoints do not rely on it. Wire:
+one envelope on `POST /gramlot/rpc` ([GC-090](090-classes-and-hosts.md)).

@@ -6,9 +6,14 @@ import unittest
 
 from genro_tytx import from_tytx, to_tytx
 from gramlot import GramlotBuilder, Page, source
-from gramlot.server import GramlotFileServer, GramlotServer, PageExpired, SourceNotFound
+from gramlot.server import GramlotFileServer, GramlotServer
 
 PAGES = Path(__file__).parent / "fixtures/pages"
+
+async def call(server, page_id, content_type="source", name="main", params=None, owner=None):
+    """The decoded response envelope of one ``call``."""
+    return from_tytx(await server.call(to_tytx({"id": "r1", "pageId": page_id, "contentType": content_type,
+                                                "name": name, "params": params or {}}), owner=owner))
 
 
 class SourceTests(unittest.TestCase):
@@ -58,13 +63,11 @@ class HostTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn(f'<script type="module" nonce="{bootstrap.nonce}">', bootstrap.html)
         self.assertNotEqual(bootstrap.nonce, bootstrap.page_id)
         self.assertNotIn("<link", bootstrap.html)
-        with self.assertRaises(PageExpired):
-            await server.main(bootstrap.page_id, owner="two")
-        result = from_tytx(await server.main(bootstrap.page_id, owner="one"))
+        self.assertEqual((await call(server, bootstrap.page_id, owner="two"))["error"]["code"], "page_expired")
+        result = (await call(server, bootstrap.page_id, owner="one"))["value"]
         self.assertEqual(result.nodes[0].attr["_text"], "homer")
         server.close_page(bootstrap.page_id, owner="one")
-        with self.assertRaises(PageExpired):
-            await server.main(bootstrap.page_id, owner="one")
+        self.assertEqual((await call(server, bootstrap.page_id, owner="one"))["error"]["code"], "page_expired")
 
     async def test_paths_expiry_capacity_and_async_page(self):
         server = GramlotFileServer(PAGES, max_pages=1)
@@ -75,8 +78,7 @@ class HostTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(RuntimeError):
             await server.open_page("/index")
         server._pages[first.page_id] = (0, server._pages[first.page_id][1], None)
-        with self.assertRaises(PageExpired):
-            await server.main(first.page_id)
+        self.assertEqual((await call(server, first.page_id))["error"]["code"], "page_expired")
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "index.py").write_text(
                 'from gramlot import Page as Base\nclass Page(Base):\n'
@@ -86,7 +88,7 @@ class HostTests(unittest.IsolatedAsyncioTestCase):
             opened = await server.open_page("/")
             self.assertNotIn("<script>bad", opened.html)
             self.assertNotIn("/x</script>", opened.html)
-            self.assertIn("async", await server.main(opened.page_id))
+            self.assertEqual((await call(server, opened.page_id))["value"].nodes[0].value, "async")
 
 
 class MemoryServer(GramlotServer):
@@ -117,8 +119,7 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
         await server.open_page("/", owner="two")
         self.assertIsNone(server.close_all())
         self.assertEqual(server._pages, {})
-        with self.assertRaises(PageExpired):
-            await server.main(first.page_id, owner="one")
+        self.assertEqual((await call(server, first.page_id, owner="one"))["error"]["code"], "page_expired")
 
     async def test_base_page_and_non_page_classes_are_rejected(self):
         for page_class in (Page, object, "index"):
@@ -128,7 +129,7 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
                 await server.open_page("/")
             self.assertEqual(server._pages, {})
 
-    async def test_a_marked_value_that_is_not_a_method_is_source_not_found(self):
+    async def test_a_marked_value_that_is_not_a_method_is_not_found(self):
         class Marked:
             __gramlot_source__ = True
 
@@ -141,9 +142,9 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
 
         server = MemoryServer(MarkedPage)
         opened = await server.open_page("/")
-        with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method: bad$"):
-            await server.source(opened.page_id, "bad")
-        self.assertIn("good", await server.source(opened.page_id, "good"))
+        self.assertEqual((await call(server, opened.page_id, name="bad"))["error"],
+                         {"code": "not_found", "name": "SourceNotFound", "message": "Unknown Source method: bad"})
+        self.assertEqual((await call(server, opened.page_id, name="good"))["value"].nodes[0].value, "good")
 
     async def test_the_source_builder_is_named_after_the_method(self):
         names = []
@@ -162,8 +163,8 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
 
         server = MemoryServer(RecordingPage)
         opened = await server.open_page("/")
-        await server.main(opened.page_id)
-        await server.source(opened.page_id, "details")
+        await call(server, opened.page_id)
+        await call(server, opened.page_id, name="details")
         self.assertEqual(names, ["main", "details"])
 
     async def test_no_page_is_registered_when_the_bootstrap_fails(self):
@@ -183,7 +184,7 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
         server = MemoryServer(StatefulPage)
         opened = await server.open_page("/")
         for _ in range(2):
-            node = from_tytx(await server.main(opened.page_id)).nodes[0]
+            node = (await call(server, opened.page_id))["value"].nodes[0]
             self.assertEqual((node.value, node.attr["id"]), ("1", opened.page_id))
 
     async def test_close_page_with_another_owner_keeps_the_page(self):
@@ -194,12 +195,16 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
         server.close_page(opened.page_id, owner="one")
         self.assertEqual(server._pages, {})
 
-    async def test_configured_urls_and_root_id_reach_the_bootstrap(self):
-        server = MemoryServer(EmptyPage, main_url="/m", source_url="/s", close_url="/c", root_id="here")
+    async def test_configured_urls_root_id_and_capabilities_reach_the_bootstrap(self):
+        server = MemoryServer(EmptyPage, rpc_url="/r", close_url="/c", root_id="here")
         opened = await server.open_page("/", prefix="/app")
-        for text in ('"mainUrl":"/app/m"', '"sourceUrl":"/app/s"', '"closeUrl":"/app/c"',
-                     '"rootId":"here"', '<div id="here">'):
-            self.assertIn(text, opened.html)
+        self.assertIn(f'"config":{{"pageId":"{opened.page_id}","rpcUrl":"/app/r","closeUrl":"/app/c",'
+                      '"rootId":"here","capabilities":[]}', opened.html)
+        self.assertIn('<div id="here">', opened.html)
+        self.assertNotIn("mainUrl", opened.html)
+        self.assertNotIn("sourceUrl", opened.html)
+        self.assertEqual(GramlotServer().capabilities, [])
+        self.assertEqual(GramlotServer().rpc_url, "/gramlot/rpc")
 
     def test_pages_dir_is_the_folder_as_passed(self):
         self.assertEqual(GramlotFileServer("pages").pages_dir, Path("pages"))

@@ -169,18 +169,25 @@ export function requireInstallable(branch) {
     }
 }
 
-// Provider attributes (§4.8): only a `dataFormula` or a `dataController` carries them.
+// Provider attributes (§4.8): only a `dataFormula`, a `dataController` or a `dataRpc` carries them;
+// the callbacks of the call only a `dataRpc`.
 const PROVIDER_ATTRIBUTES = ['_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges'];
-const PROVIDER_TAGS = new Set(['dataFormula', 'dataController']);
+const PROVIDER_TAGS = new Set(['dataFormula', 'dataController', 'dataRpc']);
+const RPC_ATTRIBUTES = ['_onCalling', '_onResult', '_onError'];
 // The lifecycle attributes: true, false, null or a number (a delay in ms, P22); a pointer is not read.
 const LIFECYCLE_ATTRIBUTES = ['_init', '_onBuilt', '_onStart'];
 
 /**
- * A provider attribute on any other node is an error before any write; so is a `==` expression in an
- * attribute of a `dataFormula` or `dataController` (S09: `==` belongs to the visual nodes), and a
- * lifecycle attribute whose value is not `true`, `false`, null or a number.
+ * A provider attribute on any other node is an error before any write, and so is an rpc callback
+ * outside a `dataRpc`; so is a `==` expression in an attribute of a provider node (S09: `==` belongs
+ * to the visual nodes), and a lifecycle attribute whose value is not `true`, `false`, null or a number.
  */
 function requireProviderAttributes(node) {
+    const isSet = name => node.getAttr(name) !== null && node.getAttr(name) !== undefined;
+    if (node.nodeTag !== 'dataRpc') {
+        const callback = RPC_ATTRIBUTES.find(isSet);
+        if (callback) throw new Error(`${node.nodeTag ?? 'fragment'} '${node.label}': '${callback}' is allowed only on dataRpc`);
+    }
     if (PROVIDER_TAGS.has(node.nodeTag)) {
         const expression = Object.entries(node.getAttr()).find(([, value]) => isExpression(value));
         if (expression) {
@@ -194,8 +201,8 @@ function requireProviderAttributes(node) {
         }
         return;
     }
-    const name = PROVIDER_ATTRIBUTES.find(each => node.getAttr(each) !== null && node.getAttr(each) !== undefined);
-    if (name) throw new Error(`${node.nodeTag ?? 'fragment'} '${node.label}': '${name}' is allowed only on dataFormula and dataController`);
+    const name = PROVIDER_ATTRIBUTES.find(isSet);
+    if (name) throw new Error(`${node.nodeTag ?? 'fragment'} '${node.label}': '${name}' is allowed only on dataFormula, dataController and dataRpc`);
 }
 
 /** The nodes of `branch` (a SourceBagNode or a SourceBag), depth first, in document order. */

@@ -8,6 +8,7 @@ import {join} from 'node:path';
 import {JSDOM} from 'jsdom';
 import {build} from 'esbuild';
 import {Bag} from '@genrojs/bag';
+import {fromTytx, toTytx} from '@genrojs/tytx';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
@@ -515,13 +516,22 @@ test('a GramlotBuilderBag given to startSource runs its inline code', () => {
     app.dispose();
 });
 
+/** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
+function envelope({main, source, ...rest}) {
+    return {...rest, async call(text, signal) {
+        const {id, contentType, name, params} = fromTytx(text);
+        const value = name === 'main' ? await main() : await source(name, params, signal);
+        return toTytx({id, contentType, value});
+    }};
+}
+
 test('a remote Source runs its inline code; a node of a remote Source keeps its own text', async () => {
     const remote = new GramlotBuilder();
     remote.root.dataFormula({result_path: 'remote', formula: 'b + 1', b: '^b'});
     const wire = remote.toTytx();
     const document = new JSDOM('<main></main>').window.document;
     const app = new Gramlot({document, pageId: 'remote', element: document.querySelector('main'),
-        transport: {source: async () => wire}});
+        transport: envelope({source: async () => wire})});
     const target = sourceTarget(mount(app, root => root.div({id: 'target'})));
     assert.equal(await app.src.remoteSource(target, 'details'), true);
     app.data.setItem('b', 1);

@@ -5,13 +5,23 @@ import {fileURLToPath} from 'node:url';
 import {JSDOM} from 'jsdom';
 import {SvgBuilder, sourceTarget, sourceBagToTytx} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const HTML = 'http://www.w3.org/1999/xhtml';
 const XLINK = 'http://www.w3.org/1999/xlink';
+/** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
+function envelope({main, source, ...rest}) {
+    return {...rest, async call(text, signal) {
+        const {id, contentType, name, params} = fromTytx(text);
+        const value = name === 'main' ? await main() : await source(name, params, signal);
+        return toTytx({id, contentType, value});
+    }};
+}
+
 function setup(transport = false) {
     const document = new JSDOM('<main id="gramlot-root"></main>').window.document;
-    return {document, app: new Gramlot({document, transport})};
+    return {document, app: new Gramlot({document, transport: transport && envelope(transport)})};
 }
 
 test('one live renderer mounts nested SVG/HTML, updates native setters, and cleans the subtree', () => {

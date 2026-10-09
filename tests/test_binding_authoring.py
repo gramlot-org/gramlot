@@ -46,8 +46,6 @@ class ForbiddenDeclarationTests(unittest.TestCase):
 
     def test_excluded_declarations_are_errors_naming_the_tag(self):
         builder = GramlotBuilder()
-        with self.assertRaisesRegex(ValueError, r"dataRpc: excluded from Gramlot 0\.2\.0"):
-            builder.root.dataRpc(destination="x")
         with self.assertRaisesRegex(ValueError, r"dataRemote: excluded from Gramlot 0\.2\.0"):
             builder.root.dataRemote(destination="x")
         for name in ("serverpath", "dbenv", "shared_id", "remote", "_ask", "ask",

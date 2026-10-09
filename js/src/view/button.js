@@ -1,7 +1,7 @@
 /**
  * The click of a `<button>` (source plan §2 Button, §4.11, S12). One mechanism per button (P10): the
- * `dataController` nested in it, `action`, or the `fire`/`fire_*` family. The nested controller is a
- * normal ControllerProvider (B7); the click is one more trigger. Controller, `action` and counter use
+ * `dataController` or `dataRpc` nested in it, `action`, or the `fire`/`fire_*` family. The nested
+ * provider is a normal ControllerProvider or RpcProvider (B7); the click is one more trigger. Controller, `action` and counter use
  * the button's own node, also when the click hits a descendant (R11).
  *
  * R3, provisional: only a button with a mechanism gets `type="button"` when the author wrote no
@@ -31,22 +31,22 @@ export class ButtonBinding {
     get node() { return this.binding.node; }
     get element() { return this.#record.element; }
 
-    /** The `dataController` children of the button, in Source order. */
+    /** The `dataController` and `dataRpc` children of the button, in Source order. */
     get controllers() {
         const value = this.node.value;
         if (!value?.getNodes) return [];
-        return value.getNodes().filter(child => child.nodeTag === 'dataController');
+        return value.getNodes().filter(child => child.nodeTag === 'dataController' || child.nodeTag === 'dataRpc');
     }
 
     /**
-     * 'controller' | 'action' | 'fire' | null, from the current Source. Several `dataController`
-     * children, or two mechanisms together, are an error naming the button (P10).
+     * 'controller' | 'action' | 'fire' | null, from the current Source. Several `dataController` or
+     * `dataRpc` children, or two mechanisms together, are an error naming the button (P10).
      */
     get mechanism() {
         const node = this.node;
         const controllers = this.controllers;
         if (controllers.length > 1) {
-            throw new Error(`${node.nodeTag} '${node.label}': several dataController children; a button has one click mechanism`);
+            throw new Error(`${node.nodeTag} '${node.label}': several dataController or dataRpc children; a button has one click mechanism`);
         }
         const attrs = node.getAttr() ?? {};
         const found = [];

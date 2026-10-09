@@ -11,10 +11,17 @@ import tempfile
 import unittest
 from unittest import mock
 
+from genro_tytx import to_tytx
 from gramlot import Page
-from gramlot.server import (GramlotFileServer, GramlotServer, ServerCapacity, InvalidResourceName, PageExpired, PageNotFound,
+from gramlot.server import (GramlotFileServer, GramlotServer, ServerCapacity, InvalidResourceName, PageNotFound,
                             parse_requires)
 from gramlot.server.resources import load_order
+
+
+async def main_envelope(server, page_id, owner=None):
+    """The response envelope of ``main`` as plain JSON: its ``value`` is the fragment text."""
+    return json.loads(await server.call(to_tytx({"id": "r1", "pageId": page_id, "contentType": "source",
+                                                 "name": "main", "params": {}}), owner=owner))
 
 PAGE = ('from gramlot import Page as Base\n'
         'class Page(Base):\n'
@@ -117,7 +124,7 @@ class FileHostPageTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(server.locate_page("/orders"), real / "orders/orders.py")
             write(root, "orders.py", page())
             self.assertEqual(server.locate_page("/orders"), real / "orders.py")
-            self.assertIn("ok", await server.main((await server.open_page("/orders")).page_id))
+            self.assertIn("ok", (await main_envelope(server, (await server.open_page("/orders")).page_id))["value"])
             self.assertEqual(server.locate_page("/orders/orders"), real / "orders/orders.py")
 
     async def test_segments_aux_suffix_and_other_language(self):
@@ -128,7 +135,7 @@ class FileHostPageTests(unittest.IsolatedAsyncioTestCase):
             server = GramlotFileServer(root)
             for path in ("/01_hello-world", "/_private", "/", "/index"):
                 with self.subTest(path=path):
-                    self.assertIn("ok", await server.main((await server.open_page(path)).page_id))
+                    self.assertIn("ok", (await main_envelope(server, (await server.open_page(path)).page_id))["value"])
             for path in ("/foo_aux", "/sub/foo_aux", "/only_js", "/a.b", "/à", "/a b", "/../index", "/a//b",
                          "/index.py", "/missing", "/%2e%2e/index"):
                 with self.subTest(path=path), self.assertRaises(PageNotFound):
@@ -246,7 +253,7 @@ class FileHostResourceTests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaisesRegex(InvalidResourceName, "Invalid resource name"):
                 await server.open_page("/invalid")
             self.assertEqual(server._pages, {})
-            self.assertIn("ok", await server.main((await server.open_page("/blank")).page_id))
+            self.assertIn("ok", (await main_envelope(server, (await server.open_page("/blank")).page_id))["value"])
 
     async def test_repeated_url_loads_once_in_its_last_position(self):
         with tempfile.TemporaryDirectory() as root:
@@ -265,8 +272,7 @@ class BootstrapTests(unittest.IsolatedAsyncioTestCase):
             mounted = await server.open_page("/", prefix="/py")
             self.assertEqual(links(mounted.html), ["/py/themes/x.css", *URL_FORMS[1:], "/py/index.css"])
             self.assertIn('import {PageBootstrap} from "/py/assets/gramlot.js"', mounted.html)
-            for key, url in (("mainUrl", "/gramlot/main"), ("sourceUrl", "/gramlot/source"),
-                             ("closeUrl", "/gramlot/close")):
+            for key, url in (("rpcUrl", "/gramlot/rpc"), ("closeUrl", "/gramlot/close")):
                 self.assertIn(f'"{key}":"/py{url}"', mounted.html)
             self.assertNotIn("/py/py", mounted.html)
             plain = await server.open_page("/")
@@ -284,7 +290,7 @@ class BootstrapTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(mounted["resources"]["js"], [{**js[0], "url": "/py/a.js"}, *js[1:]])
         self.assertEqual(bootstrap_arguments((await server.open_page("/")).html)["resources"]["js"], js)
         self.assertEqual(sorted(mounted), ["config", "resources"])
-        self.assertEqual(list(mounted["config"]), ["pageId", "mainUrl", "sourceUrl", "closeUrl", "rootId"])
+        self.assertEqual(list(mounted["config"]), ["pageId", "rpcUrl", "closeUrl", "rootId", "capabilities"])
 
     async def test_nonce_is_new_at_each_opening_and_distinct_from_the_page_id(self):
         with tempfile.TemporaryDirectory() as root:
@@ -331,11 +337,9 @@ class BootstrapTests(unittest.IsolatedAsyncioTestCase):
         opened = await server.open_page("/", owner="one")
         with self.assertRaises(ServerCapacity):
             await server.open_page("/", owner="one")
-        with self.assertRaises(PageExpired):
-            await server.main(opened.page_id, owner="two")
+        self.assertEqual((await main_envelope(server, opened.page_id, owner="two"))["error"]["code"], "page_expired")
         server._pages[opened.page_id] = (0, *server._pages[opened.page_id][1:])
-        with self.assertRaises(PageExpired):
-            await server.main(opened.page_id, owner="one")
+        self.assertEqual((await main_envelope(server, opened.page_id, owner="one"))["error"]["code"], "page_expired")
 
 
 class OnePlaceTests(unittest.TestCase):

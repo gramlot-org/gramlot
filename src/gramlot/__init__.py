@@ -1,5 +1,5 @@
 """Describe application interfaces in Python; let a JavaScript runtime handle interaction in the browser."""
-from .page import GramlotBuilder, Page, source
+from .page import GramlotBuilder, Page, endpoint, source
 from .renderer import GramlotHtmlRenderer, GramlotSvgRenderer
 
-__all__ = ["GramlotBuilder", "GramlotHtmlRenderer", "GramlotSvgRenderer", "Page", "source"]
+__all__ = ["GramlotBuilder", "GramlotHtmlRenderer", "GramlotSvgRenderer", "Page", "endpoint", "source"]

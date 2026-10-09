@@ -17,11 +17,20 @@ import {SourceBag} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder, PageBootstrap} from '../src/index.js';
 import {GramlotFileServer, parseRequires} from '../src/server/index.js';
 import {mount} from './fixtures/mount.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
 
 const LOGIC = fileURLToPath(new URL('./fixtures/logic/', import.meta.url)).replace(/\/$/, '');
 const PAGE_MODULE = new URL('../src/server/page.js', import.meta.url).href;
-const CONFIG = {pageId: 'page', mainUrl: '/gramlot/main', sourceUrl: '/gramlot/source', closeUrl: '/gramlot/close',
-    rootId: 'gramlot-root'};
+
+/** The fragment text of a source call: the value the fake fetch of `withFetch` answers in the envelope. */
+async function sourceText(server, pageId, name = 'main', params = {}) {
+    const response = JSON.parse(await server.call(toTytx({id: 'r1', pageId, contentType: 'source', name, params})));
+    if (response.error) throw new Error(response.error.message);
+    return response.value;
+}
+
+const CONFIG = {pageId: 'page', rpcUrl: '/gramlot/rpc', closeUrl: '/gramlot/close', rootId: 'gramlot-root',
+    capabilities: []};
 const EMPTY_PAGE = '<!doctype html><html><head></head><body><div id="gramlot-root"></div></body></html>';
 
 async function folder(run) {
@@ -58,14 +67,15 @@ function bootstrapArguments(html) {
     return JSON.parse(match[1]);
 }
 
-/** Replace the global fetch the Gramlot transport binds at construction; `main` answers `wire`. */
+/** Replace the global fetch the Gramlot transport binds at construction; the `main` call answers `wire`. */
 async function withFetch(wire, run, onMain = () => {}) {
     const original = globalThis.fetch;
     const requests = [];
     globalThis.fetch = async (url, options) => {
         requests.push(url);
         onMain(url);
-        return {ok: true, status: 200, text: async () => wire};
+        const {id, contentType} = fromTytx(options.body);
+        return {ok: true, status: 200, text: async () => toTytx({id, contentType, value: wire})};
     };
     try { return await run(requests); } finally { globalThis.fetch = original; }
 }
@@ -93,7 +103,7 @@ test('D9: PageBootstrap writes each CSS link once, in received order; the server
     const opened = await server.openPage('/', {prefix: root});
     assert.ok(!opened.html.includes('<link'));
     const {window} = browser(opened.html, pathToFileURL(`${root}/`).href);
-    const app = await withFetch(await server.main(opened.pageId), () =>
+    const app = await withFetch(await sourceText(server, opened.pageId), () =>
         new PageBootstrap({...bootstrapArguments(opened.html), document: window.document}).run());
     assert.deepEqual(links(window.document), [`${root}/themes/b.css`, `${root}/themes/a.css`, 'theme.css', `${root}/index.css`]);
     assert.equal(window.document.head.querySelectorAll('link').length, 4);
@@ -218,15 +228,22 @@ test('a page closed during the imports mounts nothing and sends the close beacon
 /** The Python server of the fixture: GramlotFileServer pages, js_requires served as `/<name>.js` (GramlotFileServer refuses requires, Q10). */
 const PYTHON_HOST = `
 import asyncio, json, sys
+from genro_tytx import to_tytx
 from gramlot.server import GramlotFileServer, parse_requires
 class LogicServer(GramlotFileServer):
     def resolve_resources(self, path, cls):
         return {"css": [], "js": [*({"url": f"/{name}.js", "group": name} for name in parse_requires(cls.js_requires)),
                                   {"url": "/calcolo_aux.js", "group": None}]}
+async def source_text(server, page_id, name="main", params=None):
+    response = json.loads(await server.call(to_tytx(
+        {"id": "r1", "pageId": page_id, "contentType": "source", "name": name, "params": params or {}})))
+    if "error" in response:
+        raise LookupError(response["error"]["message"])
+    return response["value"]
 async def run():
     server = LogicServer(sys.argv[1])
     opened = await server.open_page("/calcolo", prefix=sys.argv[1])
-    return {"html": opened.html, "wire": await server.main(opened.page_id)}
+    return {"html": opened.html, "wire": await source_text(server, opened.page_id)}
 print(json.dumps(asyncio.run(run())))
 `;
 
@@ -272,7 +289,7 @@ test('a Source written in Python: every func resolves through the real bootstrap
 test('the same page written in JavaScript, with groups from js_requires given by a test server', async () => {
     const server = new LogicServer(LOGIC);
     const opened = await server.openPage('/calcolo', {prefix: LOGIC});
-    await resolveEveryFunc({html: opened.html, wire: await server.main(opened.pageId)});
+    await resolveEveryFunc({html: opened.html, wire: await sourceText(server, opened.pageId)});
 });
 
 /** Relative module imports reachable from `entry`, inside js/src. */

@@ -1,14 +1,14 @@
 # 230 · Server protocol
 
 Document ID: **GC-230**. Started: **2026-10-08** (0.2.12). Rewritten: **2026-10-09**
-(0.2.14). Part A states the contract between the browser runtime and any Gramlot
+for 0.2.14. Part A states the contract between the browser runtime and any Gramlot
 server, independent of the transport. Parts B, C and D state its realisation over
 HTTP, inside a Worker and over WebSocket. The internal technique of a server is
 free; what it exposes is this. Rules already in the code cite the core line that
 implements them (server `GramlotServer`: `src/gramlot/server/gramlot_server.py`,
 `js/src/server/gramlot-server.js`; reference adapters: `tests/http_server.py`,
-`scripts/fixture_servers.mjs`). Rules marked **(0.2.14)** receive their citation
-when the code lands. Decisions: `temp/perimetro-0-2-x.md`, section 0.2.14.
+`scripts/fixture_servers.mjs`; client: `js/src/http-transport.js`,
+`js/src/handlers/rpc-handler.js`). Decisions: `temp/perimetro-0-2-x.md`, section 0.2.14.
 
 ## Part A · The contract
 
@@ -46,20 +46,21 @@ Block ID: **GC-230-010**.
   bootstrap: the HTML document with `<title>` from `Page.title`, the import map
   mapping `@gramlot/gramlot/page` to the runtime URL, the root `div` (`gramlot-root`),
   the resources (`css`, `js`) and a module script that imports `PageBootstrap` and
-  runs it with `{config, resources}` (`gramlot_server.py:92-130`,
-  `gramlot-server.js:73-104`).
-- `config` is `{pageId, rpcUrl, closeUrl, rootId, capabilities}` **(0.2.14)**:
+  runs it with `{config, resources}` (`gramlot_server.py:144-182`,
+  `gramlot-server.js:99-146`).
+- `config` is `{pageId, rpcUrl, closeUrl, rootId, capabilities}`
+  (`gramlot_server.py:161-163`, `gramlot-server.js:122-123`; read by `gramlot.js:18`):
   `rpcUrl` receives every envelope, `closeUrl` the close message, `capabilities` is
   the list of the MAY features the server offers (§040). Replaces
   `{pageId, mainUrl, sourceUrl, closeUrl, rootId}` of 0.2.12.
 - A page that does not exist is `PageNotFound`; a full registry is
-  `ServerCapacity` (`gramlot_server.py:101-103`, `gramlot-server.js:64-65`).
+  `ServerCapacity` (`gramlot_server.py:149-155`, `gramlot-server.js:101-107`).
 - Every call names the `pageId`; a call of another owner, of an unknown or of an
   expired page is the outcome `page_expired` (§025). Page IDs are not login.
 - A page is closed by the close message (§020) or by `close_all()`/`closeAll()` on
-  shutdown (`gramlot_server.py:164-169`, `gramlot-server.js:133-138`).
+  shutdown (`gramlot_server.py:237-244`, `gramlot-server.js:199-206`).
 - `GramlotServer` creates a new `Page` instance for every call
-  (`gramlot-server.js:120-121`). The contract promises no state between calls; a
+  (`gramlot_server.py:206`, `gramlot-server.js:171`). The contract promises no state between calls; a
   server MAY keep it (§040).
 
 <a id="gc-230-015"></a>
@@ -70,20 +71,23 @@ Block ID: **GC-230-015**.
 
 | `contentType` | The client asks | The page declares | The value | Mounted |
 |---|---|---|---|---|
-| `source` | a fragment: `main` or another | `main`; `@source` / `Page.registerSource` | the **fragment document**: TYTX JSON of the `GramlotBuilderBag` the method populated (`gramlot_server.py:142-162`, `gramlot-server.js:117-131`) | root for `main`; below a node of the client Source otherwise |
-| `data` | a value or a computation | `@endpoint` / `Page.registerEndpoint` **(0.2.14)** | TYTX JSON of one value: scalar, Bag or null; never code | in Data, at the path the caller names |
+| `source` | a fragment: `main` or another | `main`; `@source` / `Page.registerSource` | the **fragment document**: TYTX JSON of the `GramlotBuilderBag` the method populated (`gramlot_server.py:229-235`, `gramlot-server.js:193-196`) | root for `main`; below a node of the client Source otherwise |
+| `data` | a value or a computation | `@endpoint` / `Page.registerEndpoint` (`base.py:34-37`, `page.js:73-75`) | TYTX JSON of one value: scalar, Bag or null; never code (`gramlot_server.py:226-228`, `gramlot-server.js:192`) | in Data, at the path the caller names |
 
 - A fragment method populates the given root and returns nothing
-  (`gramlot-server.js:128-129`); an endpoint returns its value.
+  (`gramlot_server.py:230-234`, `gramlot-server.js:194-195`); an endpoint returns
+  its value.
 - Inline code runs only when it arrives inside a fragment (constitution 11.53); a
   `GramlotBuilderBag` inside a `data` value is a value and activates nothing.
 - Names: `main` is reserved to the whole page; `main` is refused as a declared
-  fragment name (`gramlot-server.js:111`). A fragment or endpoint name matches
-  `^[A-Za-z][\w]*$` (`page.js:12`); Python excludes `_*` methods
-  (`page/base.py`, `source_methods`). The same name may not be both a fragment and
-  an endpoint **(0.2.14)**.
+  fragment or endpoint name (`base.py:17-18`, `page.js:34`). A fragment or endpoint
+  name matches `^[A-Za-z][\w]*$` with ASCII word characters in both languages
+  (`page.js:16`, `base.py:10`, `:61`); any other name is not declared and answers
+  `not_found`. The same name may not be both a fragment and an endpoint
+  (`base.py:64-65`, `page.js:42-43`).
 - Arguments: Python methods receive `params` as keyword arguments
-  (`gramlot_server.py:157`), JS methods as one object (`gramlot-server.js:128`).
+  (`gramlot_server.py:227`, `:230`), JS methods as one object
+  (`gramlot-server.js:192`, `:194`).
   No parameter type check in 0.2.14 (the `Signature` of GC-225 §010 left the core
   with the routes package; GC-225 is amended with this document).
 
@@ -91,7 +95,9 @@ Block ID: **GC-230-015**.
 
 ### 020 · The envelope
 
-Block ID: **GC-230-020**. **(0.2.14)**
+Block ID: **GC-230-020**. Request checked by `gramlot_server.py:76-91` and
+`gramlot-server.js:31-47`; response built by `gramlot_server.py:184-199` and
+`gramlot-server.js:151-164`; sent and read by the client in `rpc-handler.js:36-42`.
 
 ```
 request:  {id, pageId, contentType, name, params}
@@ -108,30 +114,34 @@ close:    {pageId}
 - `name`: the fragment or endpoint name. `main` is the whole page.
 - `params`: a JSON object, name → value, encoded as TYTX JSON; `{}` when there are
   none. `null`, an array or a scalar is a transport error (§120), never reaches
-  `GramlotServer`.
+  `GramlotServer`. A string value carrying a TYTX suffix (`"x::D"`) is decoded by
+  TYTX, not passed through as text (genro-tytx decodes only text it encoded):
+  endpoint authors do not rely on such strings.
 - `value`: the fragment document or the endpoint value (§015).
 - `error`: the outcome (§025). `name` and `message` are those of the exception;
-  with `GRAMLOT_DEV=DEBUG` the server MAY add further fields.
+  with `GRAMLOT_DEV=DEBUG` the server MAY add further fields (the core adds
+  `details`, `gramlot_server.py:197-198`, `gramlot-server.js:161`).
 - Extra fields are allowed on both sides: the base library ignores them, an
   extension reads them (the Kajenn client: `changes`, `serverpath`).
 - A message without `id` from the server is reserved to push (§040); the base
   client ignores it.
 - The close message is `{pageId}` alone, sent without waiting for an answer
-  (`transport.js:32-44`); over HTTP it is a beacon (§125).
+  (`http-transport.js:25-40`); over HTTP it is a beacon (§125).
 
 <a id="gc-230-025"></a>
 
 ### 025 · Outcomes
 
-Block ID: **GC-230-025**. **(0.2.14)**
+Block ID: **GC-230-025**. The codes are spelled once, in `OUTCOME_CODES`
+(`gramlot_server.py:51-53`, `gramlot-server.js:24-26`).
 
 | `code` | Cause | Core class |
 |---|---|---|
-| `not_found` | the page declares no fragment or endpoint of that `contentType` and `name` | `SourceNotFound` (`gramlot_server.py:150-154`, `gramlot-server.js:111`, `:125`); the endpoint class is named with the code |
-| `page_expired` | unknown, expired, closed or unowned `pageId` | `PageExpired` (`gramlot_server.py:145`, `gramlot-server.js:122`) |
-| `not_authenticated` | the target carries an `auth` rule and the server knows no identity for the caller | (0.2.14) |
-| `not_authorized` | the target carries an `auth` rule the caller's identity does not satisfy | (0.2.14) |
-| `application_error` | the method raised; `name` and `message` are the exception's | (0.2.14) |
+| `not_found` | the page declares no fragment or endpoint of that `contentType` and `name` | `SourceNotFound`, `EndpointNotFound` (`gramlot_server.py:214-216`, `gramlot-server.js:178-181`) |
+| `page_expired` | unknown, expired, closed or unowned `pageId` | `PageExpired` (`gramlot_server.py:204-205`, `gramlot-server.js:170`) |
+| `not_authenticated` | the target carries an `auth` rule and the server knows no identity for the caller | `NotAuthenticated` (`gramlot_server.py:220-225`, `gramlot-server.js:184-191`) |
+| `not_authorized` | the target carries an `auth` rule the caller's identity does not satisfy | `NotAuthorized` (same lines) |
+| `application_error` | the method raised; `name` and `message` are the exception's | any other exception, a value TYTX cannot serialise and an `evaluate_auth`/`evaluateAuth` result outside the three outcomes included (`gramlot_server.py:190-196`, `:221-222`, `gramlot-server.js:154-160`, `:185-187`) |
 
 An outcome is a normal response of the transport (HTTP 200): status codes are for
 transport failures only (§130). The class names stay the API of `GramlotServer`;
@@ -147,7 +157,8 @@ Block ID: **GC-230-030**.
   rule in the syntax of the genro-routes `AuthPlugin` (`|`, `&`, `!` over tags), the
   legacy `_tags` of elements and `tags` of `@public_method`.
 - Endpoint: an unsatisfied rule answers `not_authenticated` or `not_authorized`
-  (§025); the method does not run **(0.2.14)**.
+  (§025); the method does not run (`gramlot_server.py:219-225`,
+  `gramlot-server.js:182-191`).
 - Element: the Gramlot builder on the server (`GramlotBuilderBag`, Python and JS,
   never genro-builders) drops the element whose rule is unsatisfied when it
   serialises the fragment; the element never reaches the client. Realised by
@@ -155,7 +166,10 @@ Block ID: **GC-230-030**.
   0.2.14.
 - Who evaluates is an extension point of `GramlotServer` (§045). The base
   evaluator knows no identity: any `auth` rule answers `not_authenticated`
-  (closed by default). Kajenn evaluates the avatar tags.
+  (closed by default; `evaluate_auth`, `gramlot_server.py:134-138`;
+  `evaluateAuth`, `gramlot-server.js:88-92`). Kajenn evaluates the avatar tags.
+  An evaluator answers `None`/`null`, `not_authenticated` or `not_authorized`; any
+  other result is a `TypeError`, answered as `application_error`.
 - `auth` protects what the server builds, not the page source. A JS page module
   served to the browser (§145) is readable; a Worker page (Part C) runs in the
   browser and `auth` is no protection there.
@@ -166,9 +180,10 @@ Block ID: **GC-230-030**.
 
 Block ID: **GC-230-035**.
 
-- Python: `@source` and `@endpoint` **(0.2.14)** on methods of the `Page` subclass.
-- JS: `Page.registerSource('name')` (`page.js:39`) and
-  `Page.registerEndpoint('name')` **(0.2.14)**, static methods called after the
+- Python: `@source` and `@endpoint`, bare or with `auth="rule"`, on methods of the
+  `Page` subclass (`base.py:24-37`).
+- JS: `Page.registerSource('name', {auth})` and
+  `Page.registerEndpoint('name', {auth})` (`page.js:67-75`), static methods called after the
   class body (the decorator syntax is a `SyntaxError` on Node).
 - Kajenn: an endpoint is an entry of genro-routes with its plugins (auth,
   permissions); the Kajenn adapter maps the envelope to the entry. Outside this
@@ -191,7 +206,8 @@ A server MUST, whatever its kind (the Worker included):
 - close a page on the close message and all pages on shutdown (§010);
 - pass the conformance check of its transports (§150, §205).
 
-A server MAY, and then names the capability in the bootstrap:
+A server MAY, and then names the capability in the bootstrap (`capabilities`,
+`gramlot_server.py:129-132`, `gramlot-server.js:83-86`; empty in the base server):
 
 | capability | Meaning | Realised by |
 |---|---|---|
@@ -237,12 +253,13 @@ Block ID: **GC-230-105**.
   and answers 404 to paths outside it.
 - The prefix without its final slash answers **301** to the prefix with the slash,
   query string kept: pages link each other with relative URLs
-  (`tests/http_server.py:58-63`, `scripts/fixture_servers.mjs:82-86`).
+  (`tests/http_server.py:57-62`, `scripts/fixture_servers.mjs:77-81`).
 - `open_page`/`openPage` adds the prefix once to the root-relative URLs of the
   bootstrap (`/…`, not `//…`); relative and absolute URLs stay as written
-  (`gramlot_server.py:40-43`, `gramlot-server.js:27`).
+  (`gramlot_server.py:63-66`, `gramlot-server.js:59`).
 - The bootstrap URLs are the defaults of `GramlotServer`: runtime
-  `/assets/gramlot.js`, `rpc` `/gramlot/rpc`, `close` `/gramlot/close` **(0.2.14)**.
+  `/assets/gramlot.js`, `rpc` `/gramlot/rpc`, `close` `/gramlot/close`
+  (`gramlot_server.py:104-105`, `gramlot-server.js:66`).
 
 <a id="gc-230-110"></a>
 
@@ -264,27 +281,31 @@ Block ID: **GC-230-115**.
 
 - `GET` of a page path answers **200** `text/html` with the bootstrap of §010.
 - The import map and the module script carry the same nonce, 16 random bytes in
-  URL-safe base64 (`gramlot_server.py:105`, `gramlot-server.js:77`).
+  URL-safe base64 (`gramlot_server.py:157`, `gramlot-server.js:52-55`).
 - `PageNotFound` answers **404**; `ServerCapacity` answers **503**. Any method
   other than `GET` on a page path answers **405**.
 - As on a static host, `<path>/index.html` opens the page `<path>/` and
-  `/index.html` the index (`tests/http_server.py:80-82`,
-  `scripts/fixture_servers.mjs:101-102`).
+  `/index.html` the index (`tests/http_server.py:79-81`,
+  `scripts/fixture_servers.mjs:96-97`).
 
 <a id="gc-230-120"></a>
 
 ### 120 · RPC request
 
-Block ID: **GC-230-120**. **(0.2.14)**
+Block ID: **GC-230-120**. Adapters: `tests/http_server.py:73-108`,
+`scripts/fixture_servers.mjs:46-61` and `:91-94`.
 
 - `/gramlot/rpc` accepts **POST** only (**405** otherwise) with
   `Content-Type: application/json` (**415** otherwise). It replaces `/gramlot/main`
   and `/gramlot/source` of 0.2.12: `main` is the envelope
   `{contentType: 'source', name: 'main'}`.
-- The body is the request envelope of §020. A body that is not valid JSON, not an
+- The body is the request envelope of §020 as TYTX JSON text. A body that is not a
+  TYTX text the server can decode (`InvalidRequest` from `call`), not an
   object, or whose `id`, `pageId`, `contentType` or `name` is not a string, whose
   `contentType` is neither `source` nor `data`, or whose `params` is not an object
-  answers **400** before `GramlotServer` is called.
+  is refused by `call` with `InvalidRequest` (`gramlot_server.py:76-91`,
+  `gramlot-server.js:31-47`); the adapter answers **400** when `call` raises it
+  (`tests/http_server.py:104-107`, `scripts/fixture_servers.mjs:55-58`).
 - The adapter passes `owner` (§135) with every call.
 - The response is **200** `application/json` with the response envelope of §020,
   for values and for outcomes alike.
@@ -297,10 +318,12 @@ Block ID: **GC-230-125**.
 
 - `/gramlot/close` accepts **POST** `application/json` with `{pageId}` (same
   transport errors as §120) and answers **200** `application/json` `{"ok": true}`;
-  it removes the page owned by the requester (`gramlot_server.py:164-167`,
-  `gramlot-server.js:133-135`). An unknown or unowned `pageId` answers the same.
-- The client sends it as a beacon on `pagehide` (`transport.js:32-36`,
-  `bootstrap.js:73-76`), so the adapter accepts a body without `Content-Length`.
+  it removes the page owned by the requester (`gramlot_server.py:237-240`,
+  `gramlot-server.js:199-201`; adapters `tests/http_server.py:109-116`,
+  `scripts/fixture_servers.mjs:62-66`). An unknown or unowned `pageId` answers the same.
+- The client sends it as a beacon on `pagehide` (`http-transport.js:27-30`,
+  `gramlot.js:30-31`, `bootstrap.js:40-45`, `:73-76`). The adapter reads the body by
+  its `Content-Length`, which a beacon sends.
 
 <a id="gc-230-130"></a>
 
@@ -318,7 +341,7 @@ Block ID: **GC-230-130**.
 | 503 | `ServerCapacity` on page GET | §115 |
 
 Every other failure is an outcome inside a 200 response (§025). `MAX_REQUEST_BYTES`
-of 0.2.12 and its mandatory 413 are removed **(0.2.14)**.
+of 0.2.12 and its mandatory 413 are removed in 0.2.14.
 
 <a id="gc-230-135"></a>
 
@@ -327,11 +350,11 @@ of 0.2.12 and its mandatory 413 are removed **(0.2.14)**.
 Block ID: **GC-230-135**.
 
 - `GramlotServer` registers each page with an owner and answers `page_expired` to
-  every call of another owner (`gramlot_server.py:145`, `gramlot-server.js:122`).
+  every call of another owner (`gramlot_server.py:204-205`, `gramlot-server.js:170`).
 - An adapter that identifies the owner by cookie names it `gramlot_owner`, sets it
   on the page response with `Path=<prefix or />; HttpOnly; SameSite=Lax`, reuses
   the value the browser already sends, and passes it as `owner` to every call
-  (`tests/http_server.py:83-90`, `scripts/fixture_servers.mjs:103-105`).
+  (`tests/http_server.py:82-89`, `scripts/fixture_servers.mjs:98-100`).
 - An adapter may take the owner from its own identity system instead; without one,
   the owner is null for every request.
 
@@ -343,8 +366,8 @@ Block ID: **GC-230-140**.
 
 - The policy belongs to the application. When an adapter is given one, it sends it
   as the `Content-Security-Policy` header of each page response, with `{nonce}`
-  replaced by the bootstrap nonce of that response (`tests/http_server.py:91-92`,
-  `scripts/fixture_servers.mjs:106`), so the header allows the two bootstrap scripts
+  replaced by the bootstrap nonce of that response (`tests/http_server.py:90-91`,
+  `scripts/fixture_servers.mjs:101`), so the header allows the two bootstrap scripts
   (§115).
 
 <a id="gc-230-145"></a>
@@ -359,7 +382,7 @@ Block ID: **GC-230-145**.
   the pages folder: page modules, companions `foo.css`, `foo_aux.js` and `Page.css`
   files placed there; any other file of the folder is not served
   (`gramlot_file_server.py:89`, `gramlot-file-server.js:112`;
-  `tests/http_server.py:47-53`, `scripts/fixture_servers.mjs:27-37`).
+  `tests/http_server.py:46-52`, `scripts/fixture_servers.mjs:24-35`).
 - A JS page module whose `Logic` lives in the module itself is served to the
   browser (`gramlot-file-server.js:38-41`): `main` runs on the server
   (`fetch.mjs:130`) and the fragment document carries only what the builder kept,
@@ -379,10 +402,11 @@ Block ID: **GC-230-150**.
 `@gramlot/gramlot/server`, `js/src/server/conformance.js`) run the list below, in
 this order, over HTTP against a running adapter. `base_url` includes the mount
 prefix; `page_path` names a page of the adapter that declares the fragment
-`check_fragment` and the endpoint `check_endpoint` of the core fixtures
-**(0.2.14)**. The first failure raises `AssertionError` (Python) or rejects with
+`check_fragment` and the endpoints `check_endpoint`, `check_endpoint_auth`
+(with an `auth` rule) and `check_endpoint_raise` of the core fixtures
+(`tests/fixtures/pages/index.py`, `js/tests/fixtures/pages/index.js`). The first failure raises `AssertionError` (Python) or rejects with
 `AssertionError` from `node:assert` (JS), its message starting with the rule ID.
-Standard library only (`urllib`, `fetch`).
+Standard library (`urllib`, `fetch`) plus genro-tytx / `@genrojs/tytx` for the envelope.
 
 1. GC-230-105: with a prefix, `GET <prefix>` answers 301 to `<prefix>/`.
 2. GC-230-115: `GET <page>` answers 200 `text/html` with the bootstrap module
@@ -409,9 +433,11 @@ Standard library only (`urllib`, `fetch`).
     `{contentType: 'data', name: 'main'}` answers `not_found`.
 13. GC-230-015: `source`/`check_fragment` with `params` answers a fragment
     document; `data`/`check_endpoint` with `params` answers the value the fixture
-    computes from them.
+    computes from them: `3`, `"x"` and a date, which comes back as the same typed
+    value.
 14. GC-230-030: `data`/`check_endpoint_auth` (an endpoint with an `auth` rule)
-    answers `not_authenticated` on an adapter without the `auth` capability.
+    answers `not_authenticated` on an adapter without the `auth` capability; on an
+    adapter with it, `not_authenticated`, `not_authorized` or a value.
 15. GC-230-025: `data`/`check_endpoint_raise` answers `application_error` with the
     exception `name`.
 16. GC-230-125: `close` answers 200 `{"ok": true}`; `main` of the closed page
@@ -431,13 +457,14 @@ adapters.
 
 ### 205 · Messages
 
-Block ID: **GC-230-205**.
+Block ID: **GC-230-205**. Realised by the serverless package of gramlot-js-server,
+outside this repository, after the core 0.2.14; the line citations below are to
+its 0.2.12 code.
 
 - The serverless package runs one `GramlotWorkerServer` (a `GramlotServer`) per
   tab inside a dedicated Worker (`gramlot-worker-server.js:9-18`); the window side
   is `WorkerTransport`. Every message goes through `postMessage`.
-- Open: the window sends `{id, open: true}` **(0.2.14)** (0.2.12: `operation:
-  'open'`) and receives the bootstrap data of §010 with `capabilities: []`.
+- Open: the window sends `{id, open: true}` (0.2.12: `operation: 'open'`) and receives the bootstrap data of §010 with `capabilities: []`.
 - Calls: the request and response envelopes of §020, unchanged. The Worker
   dispatches on `contentType` and `name` (0.2.12 dispatched on `operation`,
   `gramlot-worker-server.js:35-43`).
@@ -446,7 +473,7 @@ Block ID: **GC-230-205**.
 - The owner is null (`gramlot-worker-server.js:39-41`); the owner check stays and
   always matches. `auth` is no protection: the page runs in the browser (§030).
 - Conformance: the serverless package runs the envelope part of the check (items
-  10, 12-16 of §150) over `postMessage` **(0.2.14)**.
+  10, 12-16 of §150) over `postMessage`.
 
 ## Part D · WebSocket realisation (MAY)
 
