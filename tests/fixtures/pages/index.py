@@ -1,5 +1,5 @@
 from gramlot import Page as BasePage
-from gramlot import source
+from gramlot import endpoint, source
 
 
 class Page(BasePage):
@@ -12,5 +12,17 @@ class Page(BasePage):
         root.p("<literal text>", id="literal")
 
     @source
-    def details(self, root, name="remote"):
-        root.div(name)
+    def check_fragment(self, root, text="check"):
+        root.span(text)
+
+    @endpoint
+    def check_endpoint(self, value):
+        return value
+
+    @endpoint(auth="admin")
+    def check_endpoint_auth(self):
+        return "allowed"
+
+    @endpoint
+    def check_endpoint_raise(self):
+        raise ValueError("check")

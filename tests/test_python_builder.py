@@ -10,7 +10,7 @@ from genro_tytx import from_tytx, get_subtype_dict, to_tytx
 
 from gramlot import GramlotBuilder
 from gramlot.page.source import GramlotBuilderBag, GramlotBuilderBagNode
-from gramlot.server import GramlotFileServer, SourceNotFound
+from gramlot.server import GramlotFileServer, InvalidRequest
 
 CONTROLS = json.loads(
     (Path(__file__).parent / "fixtures/collections/controls.json").read_text()
@@ -41,6 +41,18 @@ class BuilderTests(unittest.TestCase):
         builder = GramlotBuilder()
         with self.assertRaises(AttributeError):
             builder.root.recipe("cards.person")
+
+    def test_data_rpc_builds_with_result_path_and_data_remote_stays_excluded(self):
+        builder = GramlotBuilder()
+        builder.root.dataRpc(method="m", result_path="x", timeout=500, value="^v")
+        node = builder.source.nodes[0]
+        self.assertEqual(node.node_tag, "dataRpc")
+        self.assertEqual((node.attr["method"], node.attr["result_path"], node.attr["timeout"], node.attr["value"]),
+                         ("m", "x", 500, "^v"))
+        with self.assertRaisesRegex(ValueError, r"dataRpc: 'result_path' does not accept '\?attr'"):
+            builder.root.dataRpc(method="m", result_path="x?a")
+        with self.assertRaisesRegex(ValueError, r"dataRemote: excluded from Gramlot 0\.2\.0"):
+            builder.root.dataRemote(method="m")
 
     def test_create_does_not_compute_browser_logic(self):
         class PageBuilder(GramlotBuilder):
@@ -193,6 +205,12 @@ class LegacyTransportProbeTests(unittest.TestCase):
         self.assertEqual(dict(from_tytx(wire).get_node("x").attr), {"keep": 1})
 
 
+async def fragment(server, page_id, name, params=None):
+    """The decoded response envelope of a ``source`` call."""
+    return from_tytx(await server.call(to_tytx({"id": "r1", "pageId": page_id, "contentType": "source",
+                                                "name": name, "params": params or {}})))
+
+
 class SourceMethodTests(unittest.IsolatedAsyncioTestCase):
     async def test_explicit_source_methods_use_fresh_builder_and_honor_mro(self):
         source = '''
@@ -219,26 +237,21 @@ class Page(Parent):
             Path(directory, "index.py").write_text(source)
             server = GramlotFileServer(directory)
             opened = await server.open_page("/")
-            self.assertIn('"sourceUrl":"/gramlot/source"', opened.html)
-            first = from_tytx(await server.source(
-                opened.page_id, "fragment", {"label": "one"}))
-            second = from_tytx(await server.source(
-                opened.page_id, "fragment", {"label": "two"}))
+            self.assertIn('"rpcUrl":"/gramlot/rpc"', opened.html)
+            first = (await fragment(server, opened.page_id, "fragment", {"label": "one"}))["value"]
+            second = (await fragment(server, opened.page_id, "fragment", {"label": "two"}))["value"]
             self.assertEqual(first.nodes[0].attr["_text"], "one")
             self.assertEqual(first.nodes[0].value.nodes[0].node_tag, "span")
             self.assertEqual(second.nodes[0].attr["_text"], "two")
-            with self.assertRaises(LookupError):
-                await server.source(opened.page_id, "hidden")
-            with self.assertRaises(LookupError):
-                await server.source(opened.page_id, "main")
-            with self.assertRaises(TypeError):
-                await server.source(opened.page_id, "fragment", [])
-            # Phase 18 (Fable R4): the same errors and messages as the JS GramlotServer (js/tests/gramlot-server.test.js).
-            with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method$"):
-                await server.source(opened.page_id, "main")
-            with self.assertRaisesRegex(SourceNotFound, r"^Unknown Source method: hidden$"):
-                await server.source(opened.page_id, "hidden")
-            plain = from_tytx(await server.source(opened.page_id, "plain", None))
+            # The same outcomes and messages as the JS GramlotServer (js/tests/gramlot-server.test.js).
+            self.assertEqual((await fragment(server, opened.page_id, "hidden"))["error"],
+                             {"code": "not_found", "name": "SourceNotFound", "message": "Unknown Source method: hidden"})
+            main = (await fragment(server, opened.page_id, "main"))["value"]
+            self.assertEqual([(node.node_tag, node.value) for node in main.nodes], [("h1", "main")])
+            with self.assertRaises(InvalidRequest):
+                await server.call(to_tytx({"id": "r1", "pageId": opened.page_id, "contentType": "source",
+                                           "name": "fragment", "params": []}))
+            plain = (await fragment(server, opened.page_id, "plain"))["value"]
             self.assertEqual([(node.node_tag, node.value) for node in plain.nodes], [("p", "plain")])
 
     async def test_source_method_must_return_none(self):
@@ -253,8 +266,9 @@ class Page(BasePage):
             Path(directory, "index.py").write_text(source)
             server = GramlotFileServer(directory)
             opened = await server.open_page("/")
-            with self.assertRaises(TypeError):
-                await server.source(opened.page_id, "bad")
+            self.assertEqual((await fragment(server, opened.page_id, "bad"))["error"],
+                             {"code": "application_error", "name": "TypeError",
+                              "message": "Source methods must build into root and return None"})
 
 
 if __name__ == "__main__":

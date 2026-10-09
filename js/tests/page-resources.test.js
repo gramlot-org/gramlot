@@ -10,9 +10,17 @@ import {dirname, join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {realpathSync} from 'node:fs';
 import {
-    GramlotFileServer, GramlotServer, ServerCapacity, InvalidResourceName, Page, PageExpired, PageNotFound, parseRequires,
+    GramlotFileServer, GramlotServer, ServerCapacity, InvalidResourceName, Page, PageNotFound, parseRequires,
 } from '../src/server/index.js';
 import {loadOrder} from '../src/server/resources.js';
+import {toTytx} from '@genrojs/tytx';
+
+/** The fragment text of a source call, the wire the client transport reads until it speaks the envelope. */
+async function sourceText(server, pageId, name = 'main', params = {}) {
+    const response = JSON.parse(await server.call(toTytx({id: 'r1', pageId, contentType: 'source', name, params})));
+    if (response.error) throw new Error(response.error.message);
+    return response.value;
+}
 
 const PAGE_MODULE = new URL('../src/server/page.js', import.meta.url).href;
 const URL_FORMS = ['/themes/x.css', '//cdn.example.org/a.css', 'https://cdn.example.org/lib.css',
@@ -114,7 +122,7 @@ test('file server: file page wins, folder page, segments and the _aux suffix', (
     await write(root, 'only_py.py');
     for (const path of ['/01_hello-world', '/_private', '/', '/index', '/orders']) {
         const {pageId} = await server.openPage(path);
-        assert.ok((await server.main(pageId)).includes('ok'), path);
+        assert.ok((await sourceText(server, pageId)).includes('ok'), path);
     }
     for (const path of ['/foo_aux', '/sub/foo_aux', '/only_py', '/a.b', '/à', '/a b', '/../index', '/a//b',
         '/index.js', '/missing', '/%2e%2e/index']) {
@@ -237,7 +245,7 @@ test('file server: requires names need a GramlotServer with a resource system', 
     await assert.rejects(server.openPage('/invalid'), /Invalid resource name/);
     assert.equal(server.pages.size, 0);
     const {pageId} = await server.openPage('/blank');
-    assert.ok((await server.main(pageId)).includes('ok'));
+    assert.ok((await sourceText(server, pageId)).includes('ok'));
 }));
 
 test('file server: a repeated URL loads once, in its last position', () => folder(async root => {
@@ -254,8 +262,7 @@ test('bootstrap: the mount prefix is added once, only to root-relative URLs', ()
     const mounted = await server.openPage('/', {prefix: '/js'});
     assert.deepEqual(links(mounted.html), ['/js/themes/x.css', ...URL_FORMS.slice(1), '/js/index.css']);
     assert.ok(mounted.html.includes('import {PageBootstrap} from "/js/assets/gramlot.js"'));
-    for (const [key, url] of [['mainUrl', '/gramlot/main'], ['sourceUrl', '/gramlot/source'],
-        ['closeUrl', '/gramlot/close']]) {
+    for (const [key, url] of [['rpcUrl', '/gramlot/rpc'], ['closeUrl', '/gramlot/close']]) {
         assert.ok(mounted.html.includes(`"${key}":"/js${url}"`), key);
     }
     assert.ok(!mounted.html.includes('/js/js'));
@@ -273,7 +280,7 @@ test('bootstrap: C02 and D8, the JS module URLs take the mount prefix only when 
     assert.deepEqual(mounted.resources.js, [{...js[0], url: '/js/a.js'}, ...js.slice(1)]);
     assert.deepEqual(bootstrapArguments((await server.openPage('/')).html).resources.js, js);
     assert.deepEqual(Object.keys(mounted), ['config', 'resources']);
-    assert.deepEqual(Object.keys(mounted.config), ['pageId', 'mainUrl', 'sourceUrl', 'closeUrl', 'rootId']);
+    assert.deepEqual(Object.keys(mounted.config), ['pageId', 'rpcUrl', 'closeUrl', 'rootId', 'capabilities']);
 });
 
 test('bootstrap: the nonce is new at each opening and distinct from the page ID', async () => {
@@ -298,9 +305,11 @@ test('neutral server: the contract, C03 before registration, capacity, expiry an
     const server = new MemoryServer({css: [], js: []}, {maxPages: 1});
     const {pageId} = await server.openPage('/', {owner: 'one'});
     await assert.rejects(server.openPage('/', {owner: 'one'}), ServerCapacity);
-    await assert.rejects(server.main(pageId, {owner: 'two'}), PageExpired);
+    const mainCode = async owner => JSON.parse(await server.call(toTytx({id: 'r1', pageId, contentType: 'source', name: 'main',
+        params: {}}), {owner})).error?.code;
+    assert.equal(await mainCode('two'), 'page_expired');
     server.pages.get(pageId).expires = 0;
-    await assert.rejects(server.main(pageId, {owner: 'one'}), PageExpired);
+    assert.equal(await mainCode('one'), 'page_expired');
 });
 
 test('Python and JavaScript give the same parser outcomes, descriptors, links and load order', () => folder(async root => {

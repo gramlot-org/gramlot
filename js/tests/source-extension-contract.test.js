@@ -328,16 +328,25 @@ test('Bag, SourceBag and GramlotBuilderBag share the TYTX subtype dictionary of 
     assert.equal(subtypes.GramlotBuilderBag, GramlotBuilderBag);
 });
 
+/** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
+function envelope({main, source, ...rest}) {
+    return {...rest, async call(text, signal) {
+        const {id, contentType, name, params} = fromTytx(text);
+        const value = name === 'main' ? await main() : await source(name, params, signal);
+        return toTytx({id, contentType, value});
+    }};
+}
+
 test('a Python GramlotBuilderBag Source reaches the browser as Gramlot classes through every path', async () => {
     const wire = pythonWire('gramlot');
     const rows = payload(wire);
     assert.equal(rows.__cls, 'GramlotBuilderBag');
     assert.equal(rows.rows.some(row => Object.hasOwn(row[4], '__cls')), false);
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
-    const app = new Gramlot({document, pageId: 'test', transport: {
+    const app = new Gramlot({document, pageId: 'test', transport: envelope({
         main: async () => wire,
         source: async () => wire,
-    }});
+    })});
     const decoded = sourceBagFromTytx(wire, app.src.builder);
     assertGramlotClasses(decoded);
     const bound = fromTytx(wire);

@@ -5,6 +5,7 @@ import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
 const CODE_ATTRIBUTES = {
     dataFormula: ['formula', '_if', '_else'],
     dataController: ['script', '_if', '_else'],
+    dataRpc: ['_if', '_else', '_onCalling', '_onResult', '_onError'],
     button: ['action'],
 };
 
@@ -28,7 +29,8 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /**
      * The inline code attributes of this node as `[name, text]`, under the names InlineCompiler uses:
-     * `formula` of a dataFormula, `script` of a dataController, `_if`/`_else` of both, `action` of a
+     * `formula` of a dataFormula, `script` of a dataController, `_if`/`_else` of the three providers and the
+     * `_onCalling`/`_onResult`/`_onError` of a dataRpc, `action` of a
      * button, every `connect_on<event>`, every `==` attribute (canonical name) and a `==` node value (`''`).
      */
     codeAttributes() {

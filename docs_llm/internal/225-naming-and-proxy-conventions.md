@@ -128,7 +128,8 @@ Block ID: **GC-225-020**.
 
 ## 025 · Current code against these rules
 
-Block ID: **GC-225-025**. State after 0.2.12 (browser in 0.2.10, server in 0.2.12).
+Block ID: **GC-225-025**. State after 0.2.14 (browser in 0.2.10, server in 0.2.12,
+client/server contract in 0.2.14).
 
 - `Gramlot` (`js/src/gramlot.js`) holds only lifecycle (`start`, `loadMain`,
   `dispose`, `abort`, `pagehide`, `loading`), data (`pageId`, `state`, `data`,
@@ -136,17 +137,26 @@ Block ID: **GC-225-025**. State after 0.2.12 (browser in 0.2.10, server in 0.2.1
   function is left on `Gramlot`.
 - The handlers live in `js/src/handlers/`; the existing classes they hold keep
   their names.
+- `gramlot.rpc` (`RpcHandler`) has one function, `call(contentType, name, params,
+  {signal})`, which sends the GC-230 envelope and resolves with the value or rejects
+  with `RpcError`. It holds the transport: `HttpTransport` (`js/src/http-transport.js`,
+  formerly `MainTransport` in `transport.js`) or one injected with the same `call`.
 - `GramlotServer` (`src/gramlot/server/gramlot_server.py`,
   `js/src/server/gramlot-server.js`) and `GramlotFileServer` assure the same
   functionality in both languages: `close_all`/`closeAll` empties the registry,
   the base `Page` is rejected as a page, an unknown Source method raises
   `SourceNotFound`, the Source builder carries the method name, JS errors carry
   their class `name`, `GramlotFileServer` reloads pages per `reload`/`GRAMLOT_DEV`.
+  Both answer every envelope with `call` and announce `capabilities`; the
+  `auth` evaluator is `evaluate_auth`/`evaluateAuth`.
   The page registry is private in Python (`_pages`, `_prune`) and public in JS
   (`pages`, `prune`); adapters call `close_all`/`closeAll` instead of reaching the
   registry. `registerPage` exists only in JS: only the
   serverless Worker uses it.
+  The run of a request and its parsing are private in both languages: `_run`/`#run`,
+  `_parse_request`/`parseRequest` (a module function not exported).
 - `Page.registerSource` replaces the free function `source` in JS; Python keeps
-  `@source`.
+  `@source`. Endpoints are declared with `@endpoint` (Python) and
+  `Page.registerEndpoint` (JS), both with an optional `auth` rule.
 - The protocol of every adapter is GC-230 (contract and realisations), with the
   conformance check `check_protocol`/`checkProtocol`.

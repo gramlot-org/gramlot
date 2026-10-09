@@ -182,7 +182,7 @@ test('P10: several dataController children or two mechanisms raise at mount, nam
         const button = root.button({id: 'b'});
         button.dataController({script: '1'});
         button.dataController({script: '2'});
-    })), /button 'button_0': several dataController children; a button has one click mechanism/);
+    })), /button 'button_0': several dataController or dataRpc children; a button has one click mechanism/);
     for (const [attrs, found] of [
         [{action: 'x()', fire: 'y'}, 'action and fire'],
         [{action: 'x()', fire_a: 'y'}, 'action and fire'],
@@ -203,7 +203,7 @@ test('P10: an ambiguity brought by a Source change raises at the change, not at 
     const {builder: second} = page();
     const other = second.root.button({id: 'c'});
     other.dataController({script: '1'});
-    assert.throws(() => other.dataController({script: '2'}), /several dataController children/);
+    assert.throws(() => other.dataController({script: '2'}), /several dataController or dataRpc children/);
 });
 
 test('R3: type="button" only with a mechanism, also when the mechanism appears later; an author type stays', () => {

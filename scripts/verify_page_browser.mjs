@@ -76,8 +76,8 @@ try {
         afterReplace: 'updated maggie', remoteApplied: true, afterRemote: 'remote homer', whileFrozen: 'remote homer',
         afterUnfreeze: 'frozen final tail', afterResume: 'live again tail', remaining: 0, children: 0});
     assert.deepEqual(errors, []);
-    assert.equal(requests.filter(([method, path]) => method === 'POST' && path === '/gramlot/main').length, 1);
-    assert.equal(requests.filter(([method, path]) => method === 'POST' && path === '/gramlot/source').length, 1);
+    // One envelope for `main`, one for the remote Source.
+    assert.equal(requests.filter(([method, path]) => method === 'POST' && path === '/gramlot/rpc').length, 2);
     console.log('Browser PASS: bootstrap, main, reported rendering error, nested updates, remote Source, branch freeze/unfreeze, disposal; no JS errors.');
 } finally {
     await browser?.close();

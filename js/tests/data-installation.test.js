@@ -8,12 +8,23 @@ import {Bag} from '@genrojs/bag';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
 
+/** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
+function envelope({main, source, ...rest}) {
+    return {...rest, async call(text, signal) {
+        const {id, contentType, name, params} = fromTytx(text);
+        const value = name === 'main' ? await main() : await source(name, params, signal);
+        return toTytx({id, contentType, value});
+    }};
+}
+
 function page(transport = false) {
     const document = new JSDOM('<main></main>').window.document;
-    const app = new Gramlot({document, pageId: 'test', element: document.querySelector('main'), transport});
+    const app = new Gramlot({document, pageId: 'test', element: document.querySelector('main'),
+        transport: transport && envelope(transport)});
     return {app, document, data: app.data, byId: id => document.getElementById(id)};
 }
 
@@ -418,7 +429,7 @@ test('Fable R1+R6: main never stays in the Source without NodeBindings; the page
     assert.throws(() => app.src.startSource(authored(root => {
         root.dataSetter({destination_path: 'before', value: 1});
         root.div({_init: true});
-    })), /div 'div_0': '_init' is allowed only on dataFormula and dataController/);
+    })), /div 'div_0': '_init' is allowed only on dataFormula, dataController and dataRpc/);
     assert.ok(!app.src.source.getNode('main'));
     assert.equal(data.getItem('before'), null);
     assert.equal(app.state, 'failed');
@@ -478,7 +489,7 @@ test('Fable R1: a candidate that is not installable changes nothing in the Sourc
     const events = [];
     other.app.src.source.subscribe('probe', {any: event => events.push(event.evt)});
     assert.throws(() => other.app.src.startSource(authored(root => root.div({_init: true}))),
-        /div 'div_0': '_init' is allowed only on dataFormula and dataController/);
+        /div 'div_0': '_init' is allowed only on dataFormula, dataController and dataRpc/);
     assert.deepEqual(events, []);
     other.app.dispose();
 });

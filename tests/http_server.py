@@ -15,9 +15,8 @@ from pathlib import Path
 from secrets import token_urlsafe
 from urllib.parse import unquote, urlsplit
 
-from gramlot.server import GramlotFileServer, PageExpired, PageNotFound, ServerCapacity, SourceNotFound, runtime_asset
+from gramlot.server import GramlotFileServer, InvalidRequest, PageNotFound, ServerCapacity, runtime_asset
 
-MAX_REQUEST_BYTES = 4096
 OWNER_COOKIE = "gramlot_owner"
 JSON_MEDIA_TYPE = "application/json"
 MEDIA_TYPES = {".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8"}
@@ -71,7 +70,7 @@ class Handler(BaseHTTPRequestHandler):
             if filename is None:
                 return self.reply(404, "Not found")
             return self.reply(200, filename.read_bytes(), MEDIA_TYPES.get(suffix, "application/octet-stream"))
-        if path in (gramlot.main_url, gramlot.source_url, gramlot.close_url):
+        if path in (gramlot.rpc_url, gramlot.close_url):
             if self.command != "POST":
                 return self.reply(405, "Method not allowed", headers=[("Allow", "POST")])
             return self.operation(path)
@@ -96,30 +95,25 @@ class Handler(BaseHTTPRequestHandler):
         gramlot = self.server.gramlot
         if self.headers.get("Content-Type", "").split(";")[0].strip().lower() != JSON_MEDIA_TYPE:
             return self.reply(415, "Expected application/json")
-        body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
-        if len(body) > MAX_REQUEST_BYTES:
-            return self.reply(413, "Request too large")
+        try:
+            body = self.rfile.read(int(self.headers.get("Content-Length") or 0)).decode()
+        except UnicodeDecodeError:
+            return self.reply(400, "Request body is not UTF-8")
+        owner = self.owner()
+        if path == gramlot.rpc_url:
+            try:
+                result = asyncio.run(gramlot.call(body, owner=owner))
+            except InvalidRequest:
+                return self.reply(400, "Invalid envelope")
+            return self.reply(200, result, JSON_MEDIA_TYPE)
         try:
             payload = json.loads(body)
             if not isinstance(payload, dict) or not isinstance(payload.get("pageId"), str):
                 raise ValueError("Missing pageId")
         except ValueError:
             return self.reply(400, "Invalid JSON request")
-        page_id, owner = payload["pageId"], self.owner()
-        if path == gramlot.close_url:
-            gramlot.close_page(page_id, owner=owner)
-            return self.reply(200, json.dumps({"ok": True}), JSON_MEDIA_TYPE)
-        try:
-            if path == gramlot.source_url:
-                method, params = payload.get("method"), payload.get("params")
-                if not isinstance(method, str) or not (params is None or isinstance(params, dict)):
-                    return self.reply(400, "Invalid Source request")
-                result = asyncio.run(gramlot.source(page_id, method, params, owner=owner))
-            else:
-                result = asyncio.run(gramlot.main(page_id, owner=owner))
-        except (PageExpired, SourceNotFound):
-            return self.reply(404, "Not found")
-        self.reply(200, result, JSON_MEDIA_TYPE)
+        gramlot.close_page(payload["pageId"], owner=owner)
+        self.reply(200, json.dumps({"ok": True}), JSON_MEDIA_TYPE)
 
     do_GET = do_HEAD = do_POST = do_PUT = do_DELETE = dispatch
 
@@ -135,7 +129,10 @@ def main():
     http_server.prefix = "/" + args.prefix.strip("/") if args.prefix.strip("/") else ""
     http_server.csp = args.csp
     print(f"http://127.0.0.1:{http_server.server_port}{http_server.prefix}", flush=True)
-    http_server.serve_forever()
+    try:
+        http_server.serve_forever()
+    finally:
+        http_server.gramlot.close_all()
 
 
 if __name__ == "__main__":

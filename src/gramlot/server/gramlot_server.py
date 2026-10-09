@@ -5,12 +5,14 @@ import json
 import math
 import secrets
 import time
+import traceback
 from dataclasses import dataclass
 from uuid import uuid4
-from genro_tytx import to_tytx
+from genro_tytx import from_tytx, to_tytx
 
-from ..page.base import Page, source_methods
+from ..page.base import Page, endpoint_methods, source_methods
 from ..page.builder import GramlotBuilder
+from .assets import gramlot_dev
 from .resources import load_order
 
 
@@ -26,8 +28,29 @@ class SourceNotFound(LookupError):
     pass
 
 
+class EndpointNotFound(LookupError):
+    pass
+
+
+class NotAuthenticated(PermissionError):
+    pass
+
+
+class NotAuthorized(PermissionError):
+    pass
+
+
+class InvalidRequest(ValueError):
+    pass
+
+
 class ServerCapacity(RuntimeError):
     pass
+
+
+# The single place the outcome codes are spelled; any other exception is application_error.
+OUTCOME_CODES = {PageExpired: "page_expired", SourceNotFound: "not_found", EndpointNotFound: "not_found",
+                 NotAuthenticated: "not_authenticated", NotAuthorized: "not_authorized"}
 
 
 @dataclass(frozen=True)
@@ -50,6 +73,24 @@ def _script_json(value):
     return json.dumps(value, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
 
 
+def _parse_request(text):
+    """Decode and check the request envelope ``{id, pageId, contentType, name, params}``."""
+    try:
+        request = from_tytx(text)
+    except Exception as error:
+        raise InvalidRequest("Request is not TYTX text") from error
+    if not isinstance(request, dict):
+        raise InvalidRequest("Request must be a mapping")
+    for field in ("id", "pageId", "contentType", "name"):
+        if not isinstance(request.get(field), str):
+            raise InvalidRequest(f"Request {field} must be a string")
+    if request["contentType"] not in ("source", "data"):
+        raise InvalidRequest("Request contentType must be source or data")
+    if not isinstance(request.get("params"), dict):
+        raise InvalidRequest("Request params must be a mapping")
+    return request
+
+
 class GramlotServer:
     """Subclass at the server boundary to connect routing, assets and identity.
 
@@ -61,7 +102,7 @@ class GramlotServer:
     """
 
     def __init__(self, *, runtime_url="/assets/gramlot.js",
-                 main_url="/gramlot/main", source_url="/gramlot/source", close_url="/gramlot/close",
+                 rpc_url="/gramlot/rpc", close_url="/gramlot/close",
                  root_id="gramlot-root",
                  page_ttl=1800, max_pages=1000):
         try:
@@ -71,8 +112,8 @@ class GramlotServer:
         if (ttl <= 0 or not math.isfinite(time.monotonic() + ttl)
                 or type(max_pages) is not int or max_pages < 1):
             raise ValueError("Page TTL must be finite and positive; capacity must be a positive integer")
-        self.runtime_url, self.main_url = runtime_url, main_url
-        self.source_url, self.close_url, self.root_id = source_url, close_url, root_id
+        self.runtime_url, self.rpc_url = runtime_url, rpc_url
+        self.close_url, self.root_id = close_url, root_id
         self.page_ttl, self.max_pages = ttl, max_pages
         self._pages = {}
 
@@ -84,6 +125,17 @@ class GramlotServer:
         """Return ``{"css": [url], "js": [{"url": url, "group": str | None}]}``, in load
         order and without mount prefix, or raise ``PageNotFound``."""
         raise PageNotFound(f"Page resources not found: {path}")
+
+    @property
+    def capabilities(self):
+        """The capabilities announced in the bootstrap; none in the base server."""
+        return []
+
+    def evaluate_auth(self, rule, *, owner):
+        """Return ``None`` when a target with ``rule`` may run for ``owner``, else
+        ``"not_authenticated"`` or ``"not_authorized"``. The base server knows no
+        identity: any rule is closed."""
+        return None if rule is None else "not_authenticated"
 
     def _prune(self):
         now = time.monotonic()
@@ -106,9 +158,9 @@ class GramlotServer:
         # The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9);
         # the compact JSON gives the same text as the JavaScript server.
         bootstrap = _script_json({
-            "config": {"pageId": page_id, "mainUrl": _prefixed(prefix, self.main_url),
-                       "sourceUrl": _prefixed(prefix, self.source_url),
-                       "closeUrl": _prefixed(prefix, self.close_url), "rootId": self.root_id},
+            "config": {"pageId": page_id, "rpcUrl": _prefixed(prefix, self.rpc_url),
+                       "closeUrl": _prefixed(prefix, self.close_url), "rootId": self.root_id,
+                       "capabilities": self.capabilities},
             "resources": {"css": [_prefixed(prefix, url) for url in resources["css"]],
                           "js": [{"url": _prefixed(prefix, entry["url"]), "group": entry["group"]}
                                  for entry in resources["js"]]}})
@@ -129,32 +181,53 @@ class GramlotServer:
         self._pages[page_id] = (time.monotonic() + self.page_ttl, cls, owner)
         return Bootstrap(page_id, markup, nonce)
 
-    async def main(self, page_id, *, owner=None):
-        return await self._source(page_id, "main", {}, owner=owner)
+    async def call(self, text, *, owner=None):
+        """Answer the request envelope ``text`` (TYTX) with the response envelope (TYTX).
+        Raises only ``InvalidRequest``; every other failure is an outcome in the response,
+        a value that TYTX cannot serialise included."""
+        request = _parse_request(text)
+        response = {"id": request["id"], "contentType": request["contentType"]}
+        try:
+            response["value"] = await self._run(request, owner)
+            return to_tytx(response)
+        except Exception as error:
+            response.pop("value", None)
+            response["error"] = {"code": OUTCOME_CODES.get(type(error), "application_error"),
+                                 "name": type(error).__name__, "message": str(error)}
+            if gramlot_dev() == "DEBUG":
+                response["error"]["details"] = traceback.format_exc()
+        return to_tytx(response)
 
-    async def source(self, page_id, method, params=None, *, owner=None):
-        if not isinstance(method, str) or method == "main":
-            raise SourceNotFound("Unknown Source method")
-        if params is not None and not isinstance(params, dict):
-            raise TypeError("Source params must be a dictionary")
-        return await self._source(page_id, method, params or {}, owner=owner)
-
-    async def _source(self, page_id, method, params, *, owner=None):
+    async def _run(self, request, owner):
         self._prune()
-        record = self._pages.get(page_id)
+        record = self._pages.get(request["pageId"])
         if record is None or record[2] != owner:
             raise PageExpired("Unknown, expired or unowned page")
         page = record[1]()
-        page.page_id = page_id
-        if method == "main":
-            function = page.main
+        page.page_id = request["pageId"]
+        name, params = request["name"], request["params"]
+        source = request["contentType"] == "source"
+        if source and name == "main":
+            function, rule = page.main, None
         else:
-            declared = source_methods(type(page))
-            if method not in declared:
-                raise SourceNotFound(f"Unknown Source method: {method}")
-            function = declared[method].__get__(page, type(page))
-        builder = page.source_builder(method)
-        result = function(builder.root, **dict(params))
+            declared = (source_methods if source else endpoint_methods)(type(page))
+            if name not in declared:
+                raise SourceNotFound(f"Unknown Source method: {name}") if source else EndpointNotFound(
+                    f"Unknown endpoint: {name}")
+            method = declared[name]
+            function = method.__get__(page, type(page))
+            rule = (method.__gramlot_source__ if source else method.__gramlot_endpoint__)["auth"]
+        refused = self.evaluate_auth(rule, owner=owner)
+        if refused not in (None, "not_authenticated", "not_authorized"):
+            raise TypeError("evaluate_auth must return None, 'not_authenticated' or 'not_authorized'")
+        if refused is not None:
+            raise {OUTCOME_CODES[cls]: cls for cls in (NotAuthenticated, NotAuthorized)}[refused](
+                f"Access refused: {name}")
+        if not source:
+            result = function(**params)
+            return await result if inspect.isawaitable(result) else result
+        builder = page.source_builder(name)
+        result = function(builder.root, **params)
         if inspect.isawaitable(result):
             result = await result
         if result is not None:

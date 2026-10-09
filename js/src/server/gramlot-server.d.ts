@@ -20,19 +20,36 @@ export class PageNotFound extends Error {
 export class SourceNotFound extends Error {
     name: 'SourceNotFound';
 }
+/** No endpoint of that name, as the Python `EndpointNotFound`. */
+export class EndpointNotFound extends Error {
+    name: 'EndpointNotFound';
+}
+/** The `auth` evaluator answered `not_authenticated`. */
+export class NotAuthenticated extends Error {
+    name: 'NotAuthenticated';
+}
+/** The `auth` evaluator answered `not_authorized`. */
+export class NotAuthorized extends Error {
+    name: 'NotAuthorized';
+}
+/** A request envelope that is not `{id, pageId, contentType, name, params}`, as the Python `InvalidRequest`. */
+export class InvalidRequest extends Error {
+    name: 'InvalidRequest';
+}
 /** The page registry is full. */
 export class ServerCapacity extends Error {
     name: 'ServerCapacity';
 }
 
+/** The outcome of a refused `auth` rule, or null when the call may proceed. */
+export type AuthOutcome = 'not_authenticated' | 'not_authorized' | null;
+
 /** The options of a `GramlotServer`. */
 export interface GramlotServerOptions {
     /** URL of the runtime bundle. */
     runtimeUrl?: string;
-    /** URL of the `main` Source endpoint. */
-    mainUrl?: string;
-    /** URL of the remote Source endpoint. */
-    sourceUrl?: string;
+    /** URL of the request envelopes. */
+    rpcUrl?: string;
     /** URL of the page close endpoint. */
     closeUrl?: string;
     /** Id of the root element of the page. */
@@ -70,10 +87,8 @@ export interface OpenedPage {
 export class GramlotServer {
     /** URL of the runtime bundle. */
     runtimeUrl: string;
-    /** URL of the `main` Source endpoint. */
-    mainUrl: string;
-    /** URL of the remote Source endpoint. */
-    sourceUrl: string;
+    /** URL of the request envelopes. */
+    rpcUrl: string;
     /** URL of the page close endpoint. */
     closeUrl: string;
     /** Id of the root element of the page. */
@@ -90,21 +105,18 @@ export class GramlotServer {
     resolvePage(path: string): Promise<typeof Page>;
     /** The resources of the page at `path` in load order and without mount prefix, or `PageNotFound`. */
     resolveResources(path: string, PageClass: typeof Page): Promise<Resources>;
+    /** The capabilities announced in the bootstrap; none in the base server. */
+    get capabilities(): string[];
+    /** null when a target with `rule` may run for `owner`; the base server refuses any rule. */
+    evaluateAuth(rule: string | null, options?: {owner?: unknown}): AuthOutcome;
     /** Drop the expired pages. */
     prune(): void;
     /** Register a page independently of its HTTP or Worker transport. */
     registerPage(path: string, options?: {owner?: unknown}): Promise<RegisteredPage>;
     /** Register the page and return its bootstrap; `prefix` is the mount prefix added to root-relative URLs. */
     openPage(path: string, options?: {owner?: unknown; prefix?: string}): Promise<OpenedPage>;
-    /** The `main` Source of a registered page, as TYTX text. */
-    main(pageId: string, options?: {owner?: unknown}): Promise<string>;
-    /** A remote Source of a registered page, as TYTX text; `params` null or omitted is `{}`. */
-    source(pageId: string, method: string, params?: Record<string, unknown> | null,
-        options?: {owner?: unknown}): Promise<string>;
-    /** Build the Source of a page by calling its `main` (`method` `'main'`) or a registered Source method;
-     * the Source builder is named after `method`. */
-    buildSource(pageId: string, method: string, params: Record<string, unknown>,
-        owner: unknown): Promise<string>;
+    /** Answer the request envelope `text` (TYTX) with the response envelope (TYTX); throws only `InvalidRequest`. */
+    call(text: string, options?: {owner?: unknown}): Promise<string>;
     /** Forget a registered page when `owner` owns it. */
     closePage(pageId: string, options?: {owner?: unknown}): void;
     /** Forget every registered page; adapters call it on shutdown. */

@@ -4,7 +4,7 @@
  *
  * @module
  */
-import {MainTransport} from './transport.js';
+import {HttpTransport} from './http-transport.js';
 import {SourceHandler} from './handlers/source-handler.js';
 import {RpcHandler} from './handlers/rpc-handler.js';
 import {DomHandler} from './handlers/dom-handler.js';
@@ -15,17 +15,18 @@ import {UtilitiesHandler} from './handlers/utilities-handler.js';
  * `SourceHandler` creates the builder, the binding runtime and the renderer in the order of source plan §4.3.
  */
 export class Gramlot {
-    constructor({pageId, mainUrl = '/gramlot/main', sourceUrl = '/gramlot/source', closeUrl = '/gramlot/close', rootId = 'gramlot-root',
+    constructor({pageId, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
                  element = null, document = globalThis.document, transport = null, collections = []} = {}) {
         this.pageId = pageId;
+        this.capabilities = Object.freeze([...capabilities]);
         this.src = new SourceHandler(this, {collections, destination: element ?? document.getElementById(rootId)});
         this.data = this.src.builder.data;
-        this.rpc = new RpcHandler(this, {mainUrl, sourceUrl, closeUrl, document, transport});
+        this.rpc = new RpcHandler(this, {rpcUrl, closeUrl, document, transport});
         this.dom = new DomHandler(this);
         this.utl = new UtilitiesHandler(this, document);
         this.state = 'ready';
         this.abort = new AbortController();
-        if (this.rpc.transport instanceof MainTransport) {
+        if (this.rpc.transport instanceof HttpTransport) {
             this.pagehide = event => { if (!event.persisted) this.dispose({beacon: true}); };
             document.defaultView.addEventListener('pagehide', this.pagehide);
             this.window = document.defaultView;
@@ -42,7 +43,7 @@ export class Gramlot {
     }
     async loadMain() {
         try {
-            const wire = await this.rpc.transport.main(this.pageId, this.abort.signal);
+            const wire = await this.rpc.call('source', 'main', {}, {signal: this.abort.signal});
             if (this.state === 'disposed') throw new Error('Gramlot was disposed during main');
             return this.src.mountMainSource(wire);
         } catch (error) {
@@ -61,7 +62,7 @@ export class Gramlot {
             try { this.src.binding.dispose(); }
             finally { this.src.renderer.dispose(); }
         } finally {
-            if (this.rpc.transport instanceof MainTransport) this.rpc.transport.close(this.pageId, {beacon});
+            if (this.rpc.transport instanceof HttpTransport) this.rpc.transport.close(this.pageId, {beacon});
             this.rpc.transport?.dispose?.();
         }
     }

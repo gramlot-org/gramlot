@@ -7,7 +7,8 @@ Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
 > and on npm and JSR (`@gramlot/gramlot`); the README states the current release. The previous release is **0.1.2**.
 > Sections 005-035 describe behavior that comes from 0.1.2, with explicit *0.2.0*
 > notes where 0.2.0 changes it. Sections 040-090 describe 0.2.0 behavior; section 060
-> includes the page module of 0.2.5, and section 095 describes `gramlot.utl.inout` (0.2.5, path since 0.2.10).
+> includes the page module of 0.2.5, section 095 describes `gramlot.utl.inout` (0.2.5, path since 0.2.10), and section
+> 100 describes `dataRpc` and endpoints (0.2.14).
 
 **Examples.** Two example families run the features of sections 040-080, each
 page in Python with its JavaScript equivalent, in the package gramlot-examples:
@@ -603,9 +604,11 @@ btn.dataController(func="orders.save", total="=.total")
     The Data node receives the attributes `modifier` and `_counter`;
   - `fire_<name>='.path'` calls `FIRE` on `.path` with the value `'<name>'`, for
     example `fire_save='.action', fire_close='.closing'`.
-- A button has one mechanism only. Several `dataController` children, or any
-  combination of nested controller, `action` and the `fire` family, produce an
-  error. Several `fire_*` attributes on the same button all fire, in attribute
+- A `dataRpc` nested in a `button` is a click mechanism like a nested
+  `dataController`: the click calls the endpoint (section 100).
+- A button has one mechanism only. Several `dataController` or `dataRpc` children,
+  or any combination of nested controller, `action` and the `fire` family, produce
+  an error. Several `fire_*` attributes on the same button all fire, in attribute
   order. `fire` together with `fire_*` is one mechanism: `fire` wins and the
   `fire_*` are ignored, as in the legacy chain. The `fire_*` attributes also
   write `modifier` and `_counter` on their Data nodes.
@@ -699,10 +702,11 @@ the first render to the close.
 
 ## 085 · Exclusions and deferred work (0.2.0)
 
-These declarations produce an explicit error in 0.2.0: `serverpath`, `dbenv`,
-`shared_id`, `remote`, `dataRpc`, `dataRemote`, `subscribe_*`,
+These declarations produce an explicit error: `serverpath`, `dbenv`,
+`shared_id`, `remote`, `dataRemote`, `subscribe_*`,
 `selfsubscribe_*`, `formsubscribe_*`, `PUBLISH`, `_ask`, `ask`. The same keys
-inside a user Data Bag remain ordinary data.
+inside a user Data Bag remain ordinary data. `dataRpc` left this list in 0.2.14
+(section 100).
 
 Outside 0.2.0, without a dedicated error: components and widgets; store, grid and
 tree; form, record and newrecord; server synchronisation; the CSS system beyond
@@ -811,3 +815,93 @@ root.button("Reload", action="gramlot.utl.inout.restore('modulo')")
   the functions from `Logic`.
 - `sendHttp` reaches the addresses that the Content Security Policy of the page
   allows in `connect-src`.
+
+<a id="gc-095-100"></a>
+
+## 100 · Calling the server: `dataRpc` and endpoints (0.2.14)
+
+An **endpoint** is a page method the browser calls for a value. The page declares
+it; a `dataRpc` in the Source calls it and writes the answer into Data.
+
+```python
+dataRpc(method, result_path=None, timeout=None, **params)
+```
+
+- `method` is the endpoint name, or a `^`/`=` pointer read from Data.
+- `result_path` is where the value is written; without it the value is not
+  written. It does not accept `?attr`.
+- `timeout` is in milliseconds; when it expires the call is aborted and fails
+  with an error whose `name` is `TimeoutError`.
+- The other keyword arguments are the endpoint arguments. `^` arguments trigger
+  the call, `=` arguments are only read, as for `dataController` (section 055).
+  The control attributes of section 055 apply: `_init`, `_onBuilt`, `_onStart`,
+  `_delay`, `_timing`, `_userChanges`, `_if`. A false `_if` makes no call; `_else`
+  then runs as inline code.
+- Inline callbacks (section 065): `_onCalling` runs before the call with the
+  arguments; `_onResult` runs after the value is written, with the arguments plus
+  `result`; `_onError` runs on failure, with the arguments plus `error` (an
+  `RpcError` with the outcome `code`, the server exception name in `remoteName`
+  and its `message`, a transport error or
+  the `TimeoutError`). Without `_onError` the failure is not hidden: it reaches the
+  browser console as an unhandled rejection.
+- The latest call of a `dataRpc` wins: a new trigger aborts the call in flight and
+  its answer is dropped. Removing the declaration aborts its call.
+- A `dataRpc` nested in a `button` runs on click (section 075).
+
+The page declares an endpoint with `@endpoint` in Python and
+`Page.registerEndpoint(name)` in JavaScript, called after the class. The method
+receives the arguments by name (Python) or as one object (JavaScript) and returns
+the value: a scalar, a Bag or null. The value is data and never runs code.
+`dataRpc` sends every argument the author writes. Python calls the method with
+them as keywords, and a keyword the method does not accept answers
+`application_error`; JavaScript ignores the keys it does not read. A Python endpoint
+called from `dataRpc` therefore declares `**kwargs`, as the legacy `rpc_*` methods
+do.
+
+```python
+from gramlot import Page as BasePage
+from gramlot import endpoint
+
+
+class Page(BasePage):
+    def main(self, root):
+        root.input(type="number", value="^.price")
+        root.dataRpc("with_vat", result_path=".gross", price="^.price",
+                     _onError="console.warn(error.message)")
+        root.span("^.gross")
+
+    @endpoint
+    def with_vat(self, price, **kwargs):
+        return round((price or 0) * 1.22, 2)
+```
+
+```javascript
+import {Page as BasePage} from '@gramlot/gramlot/page';
+
+export class Page extends BasePage {
+    main(root) {
+        root.input({type: 'number', value: '^.price'});
+        root.dataRpc({method: 'with_vat', result_path: '.gross', price: '^.price',
+            _onError: 'console.warn(error.message)'});
+        root.span('^.gross');
+    }
+
+    with_vat({price}) { return Math.round((price ?? 0) * 122) / 100; }
+}
+Page.registerEndpoint('with_vat');
+```
+
+- `@endpoint(auth="rule")` and `Page.registerEndpoint(name, {auth: 'rule'})`
+  protect the endpoint with a rule over tags (`|`, `&`, `!`). A server without the
+  `auth` capability knows no identity: every call of a protected endpoint answers
+  the outcome `not_authenticated` and the method does not run.
+- A name is `[A-Za-z]` followed by letters, digits and `_`; `main` is reserved,
+  and the same method cannot be both an endpoint and a `@source` method.
+- An unknown endpoint answers `not_found`; an exception raised by the method
+  answers `application_error` with its `name` and `message`. Both reach
+  `_onError`.
+- A string argument that carries a TYTX suffix (`"x::D"`) is decoded by TYTX, not
+  passed through as text: genro-tytx decodes only text it encoded, so an endpoint
+  does not rely on such strings.
+- The call travels as one envelope on `POST /gramlot/rpc`
+  ([GC-090](090-classes-and-hosts.md)); the page writes no `fetch`.

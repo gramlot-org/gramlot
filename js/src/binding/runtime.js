@@ -1,11 +1,11 @@
 import {SourceBag} from '@genrojs/builders';
 import {DataRouter} from './router.js';
 import {DataInstaller} from './installation.js';
-import {ControllerProvider, FormulaProvider} from './providers.js';
+import {ControllerProvider, FormulaProvider, RpcProvider} from './providers.js';
 import {InlineCompiler} from './inline.js';
 
 // The Provider class of each provider data-element (§4.8).
-const PROVIDERS = {dataFormula: FormulaProvider, dataController: ControllerProvider};
+const PROVIDERS = {dataFormula: FormulaProvider, dataController: ControllerProvider, dataRpc: RpcProvider};
 
 // Attributes whose change moves the Data context of a whole branch (§4.4, upd_attrs row).
 const CONTEXT_ATTRIBUTES = ['datapath', '_anchor', 'node_id', 'form', 'formId'];
@@ -345,7 +345,7 @@ export class NodeBinding {
     get closed() { return this.#closed; }
     /** The active DataRegistrations of the node. */
     get registrations() { return [...this.#registrations]; }
-    /** The Provider of a `dataFormula` or `dataController`, as a list of zero or one. */
+    /** The Provider of a `dataFormula`, `dataController` or `dataRpc`, as a list of zero or one. */
     get providers() { return this.#provider ? [this.#provider] : []; }
 
     /** The clicks counted by the node's ButtonBinding since the node entered the Source (P9). */

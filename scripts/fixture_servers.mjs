@@ -2,7 +2,7 @@
  * conformance tests and the browser checks: the JavaScript GramlotFileServer below, the Python one in
  * tests/http_server.py. Build the runtime first (npm --prefix js run build). Each server serves the
  * runtime, the core themes under /themes/, the .js and .css files below the pages folder, the pages,
- * and main, source and close as POST. No Content-Security-Policy unless `csp` is given: the pages put
+ * and rpc and close as POST. No Content-Security-Policy unless `csp` is given: the pages put
  * inline code in their Source. The Python server runs `GRAMLOT_TEST_PYTHON` (default python3) on the
  * src/ tree of this checkout.
  */
@@ -13,12 +13,10 @@ import {readFile, realpath, stat} from 'node:fs/promises';
 import {extname, isAbsolute, join, relative, sep} from 'node:path';
 import {createInterface} from 'node:readline';
 import {fileURLToPath} from 'node:url';
-import {GramlotFileServer, PageExpired, PageNotFound, ServerCapacity, SourceNotFound, runtimeAsset}
-    from '../js/src/server/index.js';
+import {GramlotFileServer, InvalidRequest, PageNotFound, ServerCapacity, runtimeAsset} from '../js/src/server/index.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const THEMES = join(root, 'themes');
-const MAX_REQUEST_BYTES = 4096;
 const OWNER_COOKIE = 'gramlot_owner';
 const JSON_MEDIA_TYPE = 'application/json';
 const MEDIA_TYPES = {'.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8'};
@@ -51,24 +49,21 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
         }
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
-        const body = Buffer.concat(chunks);
-        if (body.length > MAX_REQUEST_BYTES) return reply(413, 'Request too large');
-        let payload;
-        try { payload = JSON.parse(body.toString()); } catch { return reply(400, 'Invalid JSON request'); }
-        if (typeof payload?.pageId !== 'string') return reply(400, 'Invalid JSON request');
+        const body = Buffer.concat(chunks).toString();
         const owner = ownerOf(request);
-        if (path === server.closeUrl) {
-            server.closePage(payload.pageId, {owner});
-            return reply(200, JSON.stringify({ok: true}), JSON_MEDIA_TYPE);
-        }
-        if (path === server.sourceUrl) {
-            const {method, params = null} = payload;
-            if (typeof method !== 'string' || (params !== null && (typeof params !== 'object' || Array.isArray(params)))) {
-                return reply(400, 'Invalid Source request');
+        if (path === server.rpcUrl) {
+            let result;
+            try { result = await server.call(body, {owner}); } catch (error) {
+                if (error instanceof InvalidRequest) return reply(400, 'Invalid envelope');
+                throw error;
             }
-            return reply(200, await server.source(payload.pageId, method, params, {owner}), JSON_MEDIA_TYPE);
+            return reply(200, result, JSON_MEDIA_TYPE);
         }
-        return reply(200, await server.main(payload.pageId, {owner}), JSON_MEDIA_TYPE);
+        let payload;
+        try { payload = JSON.parse(body); } catch { return reply(400, 'Invalid JSON request'); }
+        if (typeof payload?.pageId !== 'string') return reply(400, 'Invalid JSON request');
+        server.closePage(payload.pageId, {owner});
+        return reply(200, JSON.stringify({ok: true}), JSON_MEDIA_TYPE);
     };
 
     const httpServer = createServer(async (request, response) => {
@@ -93,7 +88,7 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
                 if (!filename) return reply(404, 'Not found');
                 return reply(200, await readFile(filename), kind ?? 'application/octet-stream');
             }
-            if ([server.mainUrl, server.sourceUrl, server.closeUrl].includes(path)) {
+            if ([server.rpcUrl, server.closeUrl].includes(path)) {
                 if (request.method !== 'POST') return reply(405, 'Method not allowed', undefined, {Allow: 'POST'});
                 return await operation(request, path, reply);
             }
@@ -106,15 +101,16 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
             if (csp !== null) headers['Content-Security-Policy'] = csp.replaceAll('{nonce}', nonce);
             return reply(200, html, 'text/html; charset=utf-8', headers);
         } catch (error) {
-            if (error instanceof PageNotFound || error instanceof PageExpired || error instanceof SourceNotFound) {
-                return reply(404, 'Not found');
-            }
+            if (error instanceof PageNotFound) return reply(404, 'Not found');
             if (error instanceof ServerCapacity) return reply(503, 'Page registry capacity reached');
             reply(500, String(error.stack));
         }
     });
     await new Promise(done => httpServer.listen(0, '127.0.0.1', done));
-    return {url: `http://127.0.0.1:${httpServer.address().port}${mount}`, close: () => httpServer.close()};
+    return {url: `http://127.0.0.1:${httpServer.address().port}${mount}`, close: () => {
+        server.closeAll();
+        httpServer.close();
+    }};
 }
 
 function pythonHost(pages, {prefix = '', csp = null} = {}) {
@@ -132,8 +128,10 @@ function pythonHost(pages, {prefix = '', csp = null} = {}) {
     });
 }
 
-/** Start both servers on `pages`: `[['py', {url, close}], ['js', {url, close}]]`; `url` carries the
- * mount prefix. Options: `prefix` (mount prefix), `csp` (policy with `{nonce}`). */
+/** Start both servers on `pages`, one folder or `{py, js}` (a folder per server):
+ * `[['py', {url, close}], ['js', {url, close}]]`; `url` carries the mount prefix. Options: `prefix`
+ * (mount prefix), `csp` (policy with `{nonce}`). */
 export async function startServers(pages, options = {}) {
-    return [['py', await pythonHost(pages, options)], ['js', await nodeHost(pages, options)]];
+    const {py, js} = typeof pages === 'string' ? {py: pages, js: pages} : pages;
+    return [['py', await pythonHost(py, options)], ['js', await nodeHost(js, options)]];
 }

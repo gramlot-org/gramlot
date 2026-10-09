@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
+import {fromTytx, toTytx} from '@genrojs/tytx';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 
 function page() {
@@ -10,10 +11,12 @@ function page() {
     window.navigator.sendBeacon = (url, body) => { beacons.push({url, body}); return true; };
     const fetcher = (url, options) => {
         requests.push({url, options});
-        return Promise.resolve({ok: true, text: async () => new GramlotBuilder().toTytx()});
+        const {id, contentType} = fromTytx(options.body);
+        return Promise.resolve({ok: true, status: 200,
+            text: async () => toTytx({id, contentType, value: new GramlotBuilder().toTytx()})});
     };
     const app = new Gramlot({pageId: 'page', document: window.document,
-        mainUrl: '/prefix/main', sourceUrl: '/prefix/source', closeUrl: '/prefix/close'});
+        rpcUrl: '/prefix/rpc', closeUrl: '/prefix/close'});
     app.rpc.transport.fetcher = fetcher;
     return {window, app, requests, beacons};
 }
@@ -25,6 +28,7 @@ test('explicit disposal sends one owned close request and releases the page loca
     app.dispose();
     window.dispatchEvent(new window.Event('pagehide'));
     assert.equal(requests.length, 2);
+    assert.equal(requests[0].url, '/prefix/rpc');
     assert.equal(requests[1].url, '/prefix/close');
     assert.equal(requests[1].options.keepalive, true);
     assert.equal(requests[1].options.credentials, 'same-origin');

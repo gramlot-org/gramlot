@@ -16,12 +16,12 @@ from .source import GramlotBuilderBag
 # P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 DATA_FORBIDDEN = "data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element"
 # Declarations outside Gramlot 0.2.0 that fail explicitly (source plan, section 2).
-EXCLUDED_ELEMENTS = frozenset({"datarpc", "dataremote"})
+EXCLUDED_ELEMENTS = frozenset({"dataremote"})
 EXCLUDED_ATTRIBUTES = frozenset({"serverpath", "dbenv", "shared_id", "remote", "_ask", "ask"})
 EXCLUDED_ATTRIBUTE_PREFIXES = ("subscribe_", "selfsubscribe_", "formsubscribe_")
 # P18 and B8: the Data path of each data-element, which does not accept `?attr`,
 # and its inline attribute, which excludes `func` on the same node, as `_if` does (Q11.1).
-DATA_PATH_ATTRIBUTES = {"dataSetter": "destination_path", "dataFormula": "result_path"}
+DATA_PATH_ATTRIBUTES = {"dataSetter": "destination_path", "dataFormula": "result_path", "dataRpc": "result_path"}
 DATA_INLINE_ATTRIBUTES = {"dataFormula": "formula", "dataController": "script"}
 
 
