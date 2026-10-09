@@ -6,11 +6,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {GramlotBuilder} from '../src/index.js';
 import {authored, counters, delta, fullBranch, insertBranch, page, startHost} from './fixtures/lifecycle.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
+
+/** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
+function envelope({main, source, ...rest}) {
+    return {...rest, async call(text, signal) {
+        const {id, contentType, name, params} = fromTytx(text);
+        const value = name === 'main' ? await main() : await source(name, params, signal);
+        return toTytx({id, contentType, value});
+    }};
+}
 
 /** A transport whose `source` answers when the test resolves it, in call order. */
 function pendingTransport() {
     const answers = [];
-    return {answers, transport: {source: () => new Promise((resolve, reject) => answers.push({resolve, reject}))}};
+    return {answers, transport: envelope({source: () => new Promise((resolve, reject) => answers.push({resolve, reject}))})};
 }
 
 function wire(author) {
@@ -104,7 +114,7 @@ test('an installation error before any write closes the new NodeBindings and res
     assert.throws(() => insertBranch(app, host, 'b1', root => {
         root.div({node_id: 'kept', id: 'kept'}).dataSetter({destination_path: 'x', value: 1});
         root.div({_init: true});
-    }), /'_init' is allowed only on dataFormula and dataController/);
+    }), /'_init' is allowed only on dataFormula, dataController and dataRpc/);
     assert.deepEqual(trace, []);
     assert.deepEqual(delta(counters(ctx), base), {});
     // The node stays in the Source without NodeBinding or DOM; its removal leaves the baseline.

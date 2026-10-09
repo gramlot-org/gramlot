@@ -13,7 +13,7 @@ function page() {
 test('a Gramlot instance has only lifecycle, Data and the four proxies as own members', () => {
     const app = page();
     assert.deepEqual(Object.keys(app).sort(),
-        ['abort', 'data', 'dom', 'logic', 'pageId', 'rpc', 'src', 'state', 'utl']);
+        ['abort', 'capabilities', 'data', 'dom', 'logic', 'pageId', 'rpc', 'src', 'state', 'utl']);
 });
 
 test('each proxy is an instance of its handler and of Handler, pointing back to the page', () => {

@@ -5,13 +5,20 @@ import {fileURLToPath} from 'node:url';
 import {mkdtemp, writeFile, symlink, rm} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {tmpdir} from 'node:os';
-import {GramlotServer, Page, GramlotBuilder, PageExpired, ServerCapacity, PageNotFound, SourceNotFound} from '../src/server/index.js';
+import {GramlotServer, Page, GramlotBuilder, PageExpired, ServerCapacity, PageNotFound, SourceNotFound, EndpointNotFound,
+    InvalidRequest, NotAuthenticated, NotAuthorized} from '../src/server/index.js';
 import {GramlotFileServer} from '../src/server/gramlot-file-server.js';
 import {InvalidResourceName} from '../src/server/resources.js';
-import {fromTytx} from '@genrojs/tytx';
-import {SourceBag} from '@genrojs/builders';
+import {fromTytx, toTytx} from '@genrojs/tytx';
+import {SourceBag, sourceBagFromTytx} from '@genrojs/builders';
 
 const pages = fileURLToPath(new URL('./fixtures/pages/', import.meta.url));
+
+/** The decoded response envelope of one call. */
+const call = async (server, pageId, contentType, name, params = {}, options = {}) =>
+    fromTytx(await server.call(toTytx({id: 'r1', pageId, contentType, name, params}), options));
+const main = (server, pageId, options) => call(server, pageId, 'source', 'main', {}, options);
+const code = async response => (await response).error?.code;
 
 test('file server: bootstrap and async main, identity, fresh page state and cleanup', async () => {
     const server = new GramlotFileServer(pages);
@@ -23,16 +30,18 @@ test('file server: bootstrap and async main, identity, fresh page state and clea
     assert.ok(opened.html.includes(`<script type="module" nonce="${opened.nonce}">`));
     assert.notEqual(opened.nonce, opened.pageId);
     assert.ok(!opened.html.includes('<link'));
-    await assert.rejects(server.main(opened.pageId, {owner: 'bob'}), PageExpired);
-    const wire = await server.main(opened.pageId, {owner: 'alice'});
-    const bag = fromTytx(wire);
+    assert.equal(await code(main(server, opened.pageId, {owner: 'bob'})), 'page_expired');
+    // The value of a source response is the fragment text of 0.2.12, carried as a string in the envelope.
+    const text = JSON.parse(await server.call(toTytx({id: 'r1', pageId: opened.pageId, contentType: 'source',
+        name: 'main', params: {}}), {owner: 'alice'})).value;
+    const bag = sourceBagFromTytx(text, new GramlotBuilder());
     assert.ok(bag instanceof SourceBag);
     assert.equal(bag.getNodes()[0].attr._text, 'homer');
     assert.equal(bag.getNodes()[0].value.getNodes()[0].value, 'bart');
     server.closePage(opened.pageId, {owner: 'bob'});
     assert.equal(server.pages.size, 1);
     server.closePage(opened.pageId, {owner: 'alice'});
-    await assert.rejects(server.main(opened.pageId, {owner: 'alice'}), PageExpired);
+    assert.equal(await code(main(server, opened.pageId, {owner: 'alice'})), 'page_expired');
     class StatefulPage extends Page {
         count = 0;
         main(root) { root.div(String(++this.count), {id: this.pageId}); }
@@ -44,7 +53,7 @@ test('file server: bootstrap and async main, identity, fresh page state and clea
     const memory = new MemoryServer();
     const {pageId} = await memory.openPage('/');
     for (let i = 0; i < 2; i++) {
-        const node = fromTytx(await memory.main(pageId)).getNodes()[0];
+        const node = (await main(memory, pageId)).value.getNodes()[0];
         assert.equal(node.value, '1');
         assert.equal(node.attr.id, pageId);
     }
@@ -91,7 +100,7 @@ test('page isolation, expiration, capacity and bootstrap escaping', async () => 
     assert.ok(html.includes('"css":["/x\\" onload=\\"bad"]'));
     await assert.rejects(server.openPage('/'), ServerCapacity);
     server.pages.get(pageId).expires = 0;
-    await assert.rejects(server.main(pageId), PageExpired);
+    assert.equal(await code(main(server, pageId)), 'page_expired');
     await server.openPage('/');
     const other = new MemoryServer();
     assert.equal(other.pages.size, 0);
@@ -122,30 +131,126 @@ test('file loader rejects traversal, missing pages, symlink escapes and invalid 
     } finally { await rm(directory, {recursive: true, force: true}); }
 });
 
-test('remote Source requires an explicit method and cannot dispatch main', async () => {
+test('call: main and fragments build their Source; unknown names are not_found', async () => {
     const server = new GramlotFileServer(pages);
     const {pageId} = await server.openPage('/');
-    for (const method of [null, undefined, 'main']) {
-        await assert.rejects(server.source(pageId, method), SourceNotFound);
+    const response = await main(server, pageId);
+    assert.deepEqual(Object.keys(response), ['id', 'contentType', 'value']);
+    assert.equal(response.id, 'r1');
+    assert.equal(response.contentType, 'source');
+    assert.equal(response.value.getNodes()[0].attr._text, 'homer');
+    for (const params of [{}, {text: 'other'}]) {
+        const fragment = (await call(server, pageId, 'source', 'check_fragment', params)).value;
+        assert.equal(fragment.getNodes()[0].value, params.text ?? 'check');
     }
-    const block = fromTytx(await server.source(pageId, 'details', {name: 'remote'}));
-    assert.equal(block.getNodes()[0].value, 'remote');
+    for (const [contentType, name, errorName] of [['source', 'nope', 'SourceNotFound'], ['source', 'check_endpoint', 'SourceNotFound'],
+        ['data', 'nope', 'EndpointNotFound'], ['data', 'main', 'EndpointNotFound'], ['data', 'check_fragment', 'EndpointNotFound']]) {
+        const {error} = await call(server, pageId, contentType, name);
+        assert.equal(error.code, 'not_found');
+        assert.equal(error.name, errorName);
+    }
+    assert.deepEqual((await call(server, pageId, 'data', 'nope')).error,
+        {code: 'not_found', name: 'EndpointNotFound', message: 'Unknown endpoint: nope'});
 });
 
-// Phase 18 (Fable R4 a, b): the remote Source errors and the null params of the Python GramlotServer.
-test('Fable R4: an unknown Source method is SourceNotFound, as in Python; null params are {}', async () => {
+test('call: endpoints return typed values through the envelope', async () => {
+    const server = new GramlotFileServer(pages);
+    const {pageId} = await server.openPage('/', {owner: 'one'});
+    // The date crosses the envelope typed (::D) and comes back as the same typed value.
+    for (const value of [3, 'x', new Date(Date.UTC(2020, 0, 1))]) {
+        const response = await call(server, pageId, 'data', 'check_endpoint', {value}, {owner: 'one'});
+        assert.deepEqual(response, {id: 'r1', contentType: 'data', value});
+    }
+    assert.equal(await code(call(server, pageId, 'data', 'check_endpoint', {value: 3}, {owner: 'two'})), 'page_expired');
+    server.closePage(pageId, {owner: 'one'});
+    assert.equal(await code(call(server, pageId, 'data', 'check_endpoint', {value: 3}, {owner: 'one'})), 'page_expired');
+});
+
+test('call: auth is closed by default and evaluateAuth decides', async () => {
     const server = new GramlotFileServer(pages);
     const {pageId} = await server.openPage('/');
-    await assert.rejects(server.source(pageId, 'main'), error => error instanceof SourceNotFound
-        && !(error instanceof PageNotFound) && error.message === 'Unknown Source method');
-    await assert.rejects(server.source(pageId, 'nope'), error => error instanceof SourceNotFound
-        && error.message === 'Unknown Source method: nope');
-    for (const params of [null, undefined]) {
-        assert.equal(fromTytx(await server.source(pageId, 'details', params)).getNodes()[0].value, 'remote');
+    assert.deepEqual((await call(server, pageId, 'data', 'check_endpoint_auth')).error,
+        {code: 'not_authenticated', name: 'NotAuthenticated', message: 'Access refused: check_endpoint_auth'});
+    assert.equal((await call(server, pageId, 'data', 'check_endpoint', {value: 1})).value, 1);
+    for (const [outcome, expected] of [[null, {value: 'allowed'}], ['not_authorized', 'not_authorized']]) {
+        const rules = [];
+        const custom = new (class extends GramlotFileServer {
+            evaluateAuth(rule, {owner}) { rules.push([rule, owner]); return outcome; }
+        })(pages);
+        const opened = await custom.openPage('/', {owner: 'one'});
+        const response = await call(custom, opened.pageId, 'data', 'check_endpoint_auth', {}, {owner: 'one'});
+        if (outcome === null) assert.equal(response.value, 'allowed');
+        else assert.equal(response.error.code, expected);
+        assert.deepEqual(rules, [['admin', 'one']]);
     }
-    for (const params of [[], 'x', 1]) {
-        await assert.rejects(server.source(pageId, 'details', params), {name: 'TypeError', message: 'Source params must be an object'});
+});
+
+test('call: evaluateAuth outside its three outcomes is application_error', async () => {
+    const server = new (class extends GramlotFileServer {
+        evaluateAuth() { return 'maybe'; }
+    })(pages);
+    const {pageId} = await server.openPage('/');
+    assert.deepEqual((await call(server, pageId, 'data', 'check_endpoint_auth')).error,
+        {code: 'application_error', name: 'TypeError',
+            message: "evaluateAuth must return null, 'not_authenticated' or 'not_authorized'"});
+});
+
+test('call: a value TYTX cannot serialise and a thrown null are application_error', async () => {
+    class OddPage extends EmptyPage {
+        big() { return 1n; }
+        nothing() { throw null; }
     }
+    OddPage.registerEndpoint('big');
+    OddPage.registerEndpoint('nothing');
+    const server = memoryServer(OddPage);
+    const {pageId} = await server.openPage('/');
+    const big = (await call(server, pageId, 'data', 'big')).error;
+    assert.equal(big.code, 'application_error');
+    assert.equal(big.name, 'TypeError');
+    assert.deepEqual((await call(server, pageId, 'data', 'nothing')).error,
+        {code: 'application_error', name: 'Error', message: 'null'});
+});
+
+test('call: a failing method is application_error, with details only under GRAMLOT_DEV=DEBUG', async () => {
+    const server = new GramlotFileServer(pages);
+    const {pageId} = await server.openPage('/');
+    const saved = process.env.GRAMLOT_DEV;
+    try {
+        delete process.env.GRAMLOT_DEV;
+        assert.deepEqual((await call(server, pageId, 'data', 'check_endpoint_raise')).error,
+            {code: 'application_error', name: 'Error', message: 'check'});
+        process.env.GRAMLOT_DEV = 'DEBUG';
+        const {error} = await call(server, pageId, 'data', 'check_endpoint_raise');
+        assert.equal(error.code, 'application_error');
+        assert.match(error.details, /check/);
+    } finally {
+        if (saved === undefined) delete process.env.GRAMLOT_DEV;
+        else process.env.GRAMLOT_DEV = saved;
+    }
+});
+
+test('call: InvalidRequest is the only error it throws', async () => {
+    const server = new GramlotFileServer(pages);
+    const {pageId} = await server.openPage('/');
+    const valid = {id: 'r1', pageId, contentType: 'data', name: 'check_endpoint', params: {value: 1}};
+    const invalid = ['not json', '[1,2]', '"x"', 'null', ...[
+        {id: undefined}, {pageId: 1}, {contentType: 'other'}, {name: null},
+        {params: undefined}, {params: null}, {params: [1]}, {params: 'x'},
+    ].map(change => toTytx({...valid, ...change}))];
+    for (const text of invalid) {
+        await assert.rejects(server.call(text), error => error instanceof InvalidRequest && error.name === 'InvalidRequest', text);
+    }
+});
+
+test('main cannot be declared; a name is a Source method or an endpoint, not both', () => {
+    class Declared extends EmptyPage {
+        both(root) {}
+    }
+    assert.throws(() => Declared.registerSource('main'), {name: 'TypeError', message: 'registerSource cannot declare main'});
+    assert.throws(() => Declared.registerEndpoint('main'), {name: 'TypeError', message: 'registerEndpoint cannot declare main'});
+    Declared.registerSource('both');
+    assert.throws(() => Declared.registerEndpoint('both'),
+        {name: 'TypeError', message: 'both is declared both as Source method and endpoint'});
 });
 
 // Phase 18 (Fable M3): the namespace URIs and the name-segment rule are defined in one place in js/src.
@@ -179,7 +284,7 @@ test('closeAll empties the registry', async () => {
     await server.openPage('/', {owner: 'two'});
     assert.equal(server.closeAll(), undefined);
     assert.equal(server.pages.size, 0);
-    await assert.rejects(server.main(pageId, {owner: 'one'}), PageExpired);
+    assert.equal(await code(main(server, pageId, {owner: 'one'})), 'page_expired');
 });
 
 test('the base Page and non-Page classes are rejected', async () => {
@@ -190,7 +295,7 @@ test('the base Page and non-Page classes are rejected', async () => {
     }
 });
 
-test('a missing or unregistered Source method is SourceNotFound', async () => {
+test('a missing or unregistered Source method is not_found', async () => {
     class PlainPage extends EmptyPage {
         plain(root) { root.p('plain'); }
     }
@@ -198,7 +303,8 @@ test('a missing or unregistered Source method is SourceNotFound', async () => {
     const server = memoryServer(PlainPage);
     const {pageId} = await server.openPage('/');
     for (const method of ['plain', 'flag', 'missing', '_x']) {
-        await assert.rejects(server.source(pageId, method), {name: 'SourceNotFound', message: `Unknown Source method: ${method}`});
+        assert.deepEqual((await call(server, pageId, 'source', method)).error,
+            {code: 'not_found', name: 'SourceNotFound', message: `Unknown Source method: ${method}`});
     }
 });
 
@@ -217,13 +323,14 @@ test('the Source builder is named after the method', async () => {
     RecordingPage.registerSource('details');
     const server = memoryServer(RecordingPage);
     const {pageId} = await server.openPage('/');
-    await server.main(pageId);
-    await server.source(pageId, 'details');
+    await main(server, pageId);
+    await call(server, pageId, 'source', 'details');
     assert.deepEqual(names, ['main', 'details']);
 });
 
 test('every error class carries its own name', () => {
-    for (const ErrorClass of [PageExpired, PageNotFound, SourceNotFound, ServerCapacity, InvalidResourceName]) {
+    for (const ErrorClass of [PageExpired, PageNotFound, SourceNotFound, EndpointNotFound, NotAuthenticated, NotAuthorized,
+        InvalidRequest, ServerCapacity, InvalidResourceName]) {
         const error = new ErrorClass('x');
         assert.ok(error instanceof Error);
         assert.equal(error.name, ErrorClass.name);
@@ -250,18 +357,19 @@ test('registerSource marks an own method once; an unregistered override hides th
     assert.throws(() => Child.registerSource('local'), {name: 'TypeError', message: 'Source method already registered: local'});
     const server = memoryServer(Child);
     const {pageId} = await server.openPage('/');
-    await assert.rejects(server.source(pageId, 'hidden'), SourceNotFound);
-    assert.equal(fromTytx(await server.source(pageId, 'shared')).getNodes()[0].value, 'shared');
+    assert.equal(await code(call(server, pageId, 'source', 'hidden')), 'not_found');
+    assert.equal((await call(server, pageId, 'source', 'shared')).value.getNodes()[0].value, 'shared');
 });
 
-test('a Source method that returns a value is a TypeError', async () => {
+test('a Source method that returns a value is an application_error', async () => {
     class BadPage extends EmptyPage {
         bad(root) { return root.div('bad'); }
     }
     BadPage.registerSource('bad');
     const server = memoryServer(BadPage);
     const {pageId} = await server.openPage('/');
-    await assert.rejects(server.source(pageId, 'bad'), {name: 'TypeError', message: 'Source methods populate root and return no value'});
+    assert.deepEqual((await call(server, pageId, 'source', 'bad')).error,
+        {code: 'application_error', name: 'TypeError', message: 'Source methods populate root and return no value'});
 });
 
 test('registerPage registers a page without writing its HTML', async () => {
@@ -275,7 +383,7 @@ test('registerPage registers a page without writing its HTML', async () => {
     assert.equal(registered.title, 'Titled');
     assert.deepEqual(registered.resources, {css: [], js: []});
     assert.equal(server.pages.get(registered.pageId).owner, 'one');
-    assert.equal(fromTytx(await server.main(registered.pageId, {owner: 'one'})).getNodes().length, 0);
+    assert.equal((await main(server, registered.pageId, {owner: 'one'})).value.getNodes().length, 0);
 });
 
 test('no page is registered when the bootstrap fails', async () => {
@@ -284,12 +392,13 @@ test('no page is registered when the bootstrap fails', async () => {
     assert.equal(server.pages.size, 0);
 });
 
-test('configured URLs and root id reach the bootstrap', async () => {
-    const server = memoryServer(EmptyPage, {mainUrl: '/m', sourceUrl: '/s', closeUrl: '/c', rootId: 'here'});
-    const {html} = await server.openPage('/', {prefix: '/app'});
-    for (const text of ['"mainUrl":"/app/m"', '"sourceUrl":"/app/s"', '"closeUrl":"/app/c"', '"rootId":"here"', '<div id="here">']) {
-        assert.ok(html.includes(text), text);
-    }
+test('configured URLs, root id and capabilities reach the bootstrap', async () => {
+    const server = memoryServer(EmptyPage, {rpcUrl: '/r', closeUrl: '/c', rootId: 'here'});
+    const {pageId, html} = await server.openPage('/', {prefix: '/app'});
+    assert.ok(html.includes(`"config":{"pageId":"${pageId}","rpcUrl":"/app/r","closeUrl":"/app/c","rootId":"here","capabilities":[]}`));
+    assert.ok(html.includes('<div id="here">'));
+    assert.deepEqual(new GramlotServer().capabilities, []);
+    assert.equal(new GramlotServer().rpcUrl, '/gramlot/rpc');
 });
 
 test('pagesDir is the absolute pages folder', () => {

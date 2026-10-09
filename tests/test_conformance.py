@@ -4,6 +4,8 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 from gramlot.server.conformance import check_protocol
 
@@ -27,12 +29,20 @@ class ConformanceTests(unittest.TestCase):
     def test_reference_adapter_conforms_below_a_mount_prefix_with_a_policy(self):
         check_protocol(self.serve("--prefix", "/mount", "--csp", "script-src 'nonce-{nonce}'"), "/")
 
+    def test_a_body_that_is_not_utf8_answers_400(self):
+        base = self.serve()
+        for path in ("/gramlot/rpc", "/gramlot/close"):
+            with self.subTest(path=path), self.assertRaises(HTTPError) as raised:
+                urlopen(Request(base + path, data=b"\xff", method="POST", headers={"Content-Type": "application/json"}))
+            raised.exception.close()
+            self.assertEqual(raised.exception.code, 400)
+
     def test_failure_names_the_rule(self):
-        with self.assertRaisesRegex(AssertionError, r"^GC-230-020: "):
+        with self.assertRaisesRegex(AssertionError, r"^GC-230-115: "):
             check_protocol(self.serve(), "/gramlot-conformance-missing-page")
 
     def test_policy_without_the_nonce_fails(self):
-        with self.assertRaisesRegex(AssertionError, r"^GC-230-045: "):
+        with self.assertRaisesRegex(AssertionError, r"^GC-230-140: "):
             check_protocol(self.serve("--csp", "script-src 'self'"), "/")
 
 

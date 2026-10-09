@@ -17,13 +17,13 @@ import BINDING from './binding.json' with {type: 'json'};
 // P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 const DATA_FORBIDDEN = 'data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element';
 // Declarations outside Gramlot 0.2.0 that fail explicitly (source plan, section 2).
-const EXCLUDED_ELEMENTS = new Set(['datarpc', 'dataremote']);
+const EXCLUDED_ELEMENTS = new Set(['dataremote']);
 const EXCLUDED_ATTRIBUTES = new Set(['serverpath', 'dbenv', 'shared_id', 'remote', '_ask', 'ask']);
 const EXCLUDED_ATTRIBUTE_PREFIXES = ['subscribe_', 'selfsubscribe_', 'formsubscribe_'];
 
 // P18 and B8: the Data path of each data-element, which does not accept `?attr`,
 // and its inline attribute, which excludes `func` on the same node, as `_if` does (Q11.1).
-const DATA_PATH_ATTRIBUTES = {dataSetter: 'destination_path', dataFormula: 'result_path'};
+const DATA_PATH_ATTRIBUTES = {dataSetter: 'destination_path', dataFormula: 'result_path', dataRpc: 'result_path'};
 const DATA_INLINE_ATTRIBUTES = {dataFormula: 'formula', dataController: 'script'};
 
 /** The P18 violation of a data-element's attributes, or null. */

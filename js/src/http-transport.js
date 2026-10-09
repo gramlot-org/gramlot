@@ -1,32 +1,25 @@
-/* @ts-self-types="./transport.d.ts" */
+/* @ts-self-types="./http-transport.d.ts" */
 /**
- * Main and remote Source transport; application pages do not issue fetch calls.
+ * The HTTP realisation of the Gramlot envelope; application pages do not issue fetch calls.
  *
  * @module
  */
-/** The page-to-server transport: loads `main` and remote Sources and closes the server page. */
-export class MainTransport {
-    constructor(url, fetcher = globalThis.fetch?.bind(globalThis), sourceUrl = '/gramlot/source',
-                closeUrl = '/gramlot/close', navigator = globalThis.navigator) {
-        this.url = url;
+/** The page-to-server transport over HTTP: sends the envelope to the rpc URL and closes the server page. */
+export class HttpTransport {
+    constructor(rpcUrl, {fetcher = globalThis.fetch?.bind(globalThis), closeUrl = '/gramlot/close',
+                         navigator = globalThis.navigator} = {}) {
+        this.rpcUrl = rpcUrl;
         this.fetcher = fetcher;
-        this.sourceUrl = sourceUrl;
         this.closeUrl = closeUrl;
         this.navigator = navigator;
     }
-    async main(pageId, signal) {
-        return this.request('main', this.url, {pageId}, signal);
-    }
-    async source(pageId, method, params, signal) {
-        return this.request('source', this.sourceUrl, {pageId, method, params}, signal);
-    }
-    async request(operation, url, payload, signal) {
-        const response = await this.fetcher(url, {
+    async call(text, signal) {
+        const response = await this.fetcher(this.rpcUrl, {
             method: 'POST', credentials: 'same-origin', signal,
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload),
+            body: text,
         });
-        if (!response.ok) throw new Error(`${operation} failed: HTTP ${response.status}`);
+        if (response.status !== 200) throw new Error(`rpc failed: HTTP ${response.status}`);
         return response.text();
     }
     close(pageId, {beacon = false} = {}) {

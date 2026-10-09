@@ -1,7 +1,7 @@
 // Phase S16: the end-to-end story of source plan §8.1 (GC-210 §065) on `fixtures/qualification/09_end_to_end`,
 // once from the Python page and once from the JavaScript page, through the real path: the GramlotFileServer of each
 // language opens the page, the browser document is the bootstrap HTML the server wrote, PageBootstrap imports
-// the page module for its `Logic` and starts Gramlot, the Source travels as TYTX over the MainTransport, and the page
+// the page module for its `Logic` and starts Gramlot, the Source travels as TYTX in the envelope of the HttpTransport, and the page
 // closes on a real `pagehide`. Nothing is registered, mounted or wired by hand: the test only answers the
 // transport requests with the server, acts on the DOM with events, and observes.
 //
@@ -16,6 +16,7 @@ import {JSDOM} from 'jsdom';
 import {PageBootstrap} from '../src/index.js';
 import {GramlotFileServer} from '../src/server/index.js';
 import {counters, liveListeners, liveTimers} from './fixtures/lifecycle.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
 
 // The page module imports `@gramlot/gramlot/page`; inside `js/` Node resolves it by package self-reference
 // to `src/server/page.js`, the module GramlotFileServer loads: one `Page` class, so `instanceof Page` holds.
@@ -28,8 +29,7 @@ function jsHost() {
     return {
         language: 'js',
         open: async () => server.openPage(PATH, {prefix: PAGES}),
-        main: pageId => server.main(pageId),
-        source: (pageId, method, params) => server.source(pageId, method, params),
+        call: text => server.call(text),
         close: async pageId => server.closePage(pageId),
         stop() {},
     };
@@ -45,10 +45,8 @@ async def handle(request):
     if op == "open":
         opened = await server.open_page(request["path"], prefix=sys.argv[1])
         return {"pageId": opened.page_id, "html": opened.html}
-    if op == "main":
-        return {"wire": await server.main(request["pageId"])}
-    if op == "source":
-        return {"wire": await server.source(request["pageId"], request["method"], request["params"])}
+    if op == "call":
+        return {"text": await server.call(request["text"])}
     if op == "close":
         server.close_page(request["pageId"])
         return {}
@@ -76,8 +74,7 @@ function pythonHost() {
     return {
         language: 'py',
         open: () => ask({op: 'open', path: PATH}),
-        main: async pageId => (await ask({op: 'main', pageId})).wire,
-        source: async (pageId, method, params) => (await ask({op: 'source', pageId, method, params})).wire,
+        call: async text => (await ask({op: 'call', text})).text,
         close: pageId => ask({op: 'close', pageId}),
         stop() { child.stdin.end(); },
     };
@@ -121,10 +118,10 @@ async function runStory(t, server) {
     const mutations = [];
     const original = globalThis.fetch;
     globalThis.fetch = async (url, options) => {
-        const body = JSON.parse(options.body);
+        const body = fromTytx(options.body);
         assert.equal(body.pageId, opened.pageId);
-        let wire = '';
-        if (url === args.config.mainUrl) {
+        let text = '';
+        if (url === args.config.rpcUrl && body.name === 'main') {
             trace.transport.push('main');
             // The Gramlot instance exists (PageBootstrap set window.gramlot) and has not mounted yet.
             window.gramlot.data.subscribe('story-trace', {any: event => {
@@ -136,17 +133,17 @@ async function runStory(t, server) {
             observer = new window.MutationObserver(records => mutations.push(...records));
             observer.observe(document.getElementById(args.config.rootId), {subtree: true, childList: true,
                 attributes: true, characterData: true});
-            wire = await server.main(body.pageId);
-        } else if (url === args.config.sourceUrl) {
-            trace.transport.push(`source:${body.method}`);
-            wire = await server.source(body.pageId, body.method, body.params);
+            text = await server.call(options.body);
+        } else if (url === args.config.rpcUrl) {
+            trace.transport.push(`${body.contentType}:${body.name}`);
+            text = await server.call(options.body);
         } else if (url === args.config.closeUrl) {
             trace.transport.push('close');
             await server.close(body.pageId);
         } else {
             assert.fail(`unexpected request ${url}`);
         }
-        return {ok: true, status: 200, text: async () => wire};
+        return {ok: true, status: 200, text: async () => text};
     };
     const root = document.getElementById(args.config.rootId);
     const byId = id => document.getElementById(id);
@@ -262,7 +259,9 @@ async function runStory(t, server) {
         window.dispatchEvent(new window.Event('pagehide'));
         await Promise.all(beacons);
         assert.equal(app.state, 'disposed');
-        await assert.rejects(server.main(opened.pageId), /Unknown, expired or unowned page/);
+        const after = fromTytx(await server.call(toTytx(
+            {id: 'after', pageId: opened.pageId, contentType: 'source', name: 'main', params: {}})));
+        assert.equal(after.error.code, 'page_expired');
         const closed = root.innerHTML;
         app.data.setItem('story.quantity', 9);
         assert.equal(root.innerHTML, closed);

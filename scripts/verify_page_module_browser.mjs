@@ -82,11 +82,11 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(200, opened.html, "text/html; charset=utf-8",
                    {"Content-Security-Policy": csp.replace("{nonce}", opened.nonce)})
     def do_POST(self):
-        payload = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        body = self.rfile.read(int(self.headers["Content-Length"])).decode()
         if self.path == server.close_url:
-            server.close_page(payload["pageId"])
+            server.close_page(json.loads(body)["pageId"])
             return self.reply(200, "{}", "application/json")
-        self.reply(200, asyncio.run(server.main(payload["pageId"])), "application/json")
+        self.reply(200, asyncio.run(server.call(body)), "application/json")
 http_server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
 print(f"http://127.0.0.1:{http_server.server_port}", flush=True)
 http_server.serve_forever()
@@ -115,9 +115,12 @@ async function nodeHost(pages, runtime) {
             }
             const chunks = [];
             for await (const chunk of request) chunks.push(chunk);
-            const {pageId} = JSON.parse(Buffer.concat(chunks).toString());
-            if (request.url === server.closeUrl) { server.closePage(pageId); return reply(200, '{}', 'application/json'); }
-            return reply(200, await server.main(pageId), 'application/json');
+            const body = Buffer.concat(chunks).toString();
+            if (request.url === server.closeUrl) {
+                server.closePage(JSON.parse(body).pageId);
+                return reply(200, '{}', 'application/json');
+            }
+            return reply(200, await server.call(body), 'application/json');
         } catch (error) {
             reply(500, String(error.stack), 'text/plain');
         }

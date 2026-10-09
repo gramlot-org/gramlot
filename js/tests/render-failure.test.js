@@ -3,16 +3,26 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {HtmlElement} from '../src/view/html.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
+
+/** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
+function envelope({main, source, ...rest}) {
+    return {...rest, async call(text, signal) {
+        const {id, contentType, name, params} = fromTytx(text);
+        const value = name === 'main' ? await main() : await source(name, params, signal);
+        return toTytx({id, contentType, value});
+    }};
+}
 
 function wire(author) { const builder = new GramlotBuilder(); author(builder.root); return builder.toTytx(); }
 
 test('application disposal releases transport even when renderer cleanup fails', async () => {
     const document = new JSDOM('<main id="gramlot-root"></main>').window.document;
     let disposed = 0;
-    const app = new Gramlot({document, transport: {
+    const app = new Gramlot({document, transport: envelope({
         main: async () => wire(root => root.p('hello')),
         dispose: () => disposed++,
-    }});
+    })});
     await app.start();
     const node = app.src.source.getItem('main').getNodes()[0];
     app.src.renderer.onDispose(node, () => { throw new Error('cleanup failure'); });
@@ -32,7 +42,7 @@ class RejectBadText extends HtmlElement {
 
 test('DOM errors propagate after Source insertion, without speculative rendering or rollback', async () => {
     const document = new JSDOM('<main id="gramlot-root"></main>').window.document;
-    const app = new Gramlot({document, transport: {main: async () => wire(root => root.p('bad'))}});
+    const app = new Gramlot({document, transport: envelope({main: async () => wire(root => root.p('bad'))})});
     app.src.renderer.html = new RejectBadText();
     await assert.rejects(app.start(), /injected create failure/);
     assert.equal(app.src.source.getItem('main').getNodes()[0].value, 'bad');
@@ -43,10 +53,10 @@ test('DOM errors propagate after Source insertion, without speculative rendering
 
 test('remote DOM failure does not roll back the Source or resurrect removed records', async () => {
     const document = new JSDOM('<main id="gramlot-root"></main>').window.document;
-    const app = new Gramlot({document, transport: {
+    const app = new Gramlot({document, transport: envelope({
         main: async () => wire(root => root.section().span('old')),
         source: async () => wire(root => root.span('bad')),
-    }});
+    })});
     app.src.renderer.html = new RejectBadText();
     await app.start();
     const target = app.src.source.getItem('main').getNodes()[0];
@@ -63,7 +73,7 @@ test('remote DOM failure does not roll back the Source or resurrect removed reco
 test('replacement completes after cleanup failure and still surfaces the error', async () => {
     const document = new JSDOM('<main id="gramlot-root"></main>').window.document;
     const initial = wire(root => root.section(null, {id: 'target'}).span('old'));
-    const app = new Gramlot({document, transport: {main: async () => initial}});
+    const app = new Gramlot({document, transport: envelope({main: async () => initial})});
     await app.start();
 
     const target = app.src.source.getItem('main').getNodes()[0];

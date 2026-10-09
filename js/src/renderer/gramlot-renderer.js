@@ -361,7 +361,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     insert(node) {
         if (!this.attached(node) || this.records.has(node)) return;
         if (node._getMeta('data_element')) {
-            // A `dataController` inserted in a button may give it a mechanism, or an ambiguous one (S12).
+            // A `dataController` or `dataRpc` inserted in a button may give it a mechanism, or an ambiguous one (S12).
             this.records.get(node.parentBag?.parentNode)?.button?.refresh();
             this.binding.branchBuilt(node);
             return;

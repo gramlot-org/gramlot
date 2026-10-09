@@ -1,12 +1,12 @@
 import {Bag} from '@genrojs/bag';
 
 /**
- * Providers of one Gramlot page (source plan §4.8): the semantic runtime of a `dataFormula` or a
- * `dataController`, owned by its NodeBinding.
+ * Providers of one Gramlot page (source plan §4.8): the semantic runtime of a `dataFormula`, a
+ * `dataController` or a `dataRpc`, owned by its NodeBinding.
  *
  * One owner per trigger (B7): the router delivers the Data changes of the `^` pointers to
  * `receive`; `_timing` is started by `register`; `_init`, `_onBuilt` and `_onStart` are invoked by
- * BindingRuntime; the click of a button invokes the controller nested in it, through ButtonBinding. Every timer is tracked on the NodeBinding, so the close of the node cancels it.
+ * BindingRuntime; the click of a button invokes the controller or the rpc nested in it, through ButtonBinding. Every timer is tracked on the NodeBinding, so the close of the node cancels it.
  * A body is named logic (P20), the group method given by `LogicRegistry.resolve`, or inline code
  * compiled by the page's InlineCompiler (S09); there is no fallback from a name to inline.
  */
@@ -16,6 +16,7 @@ import {Bag} from '@genrojs/bag';
 const CONTROL_ATTRIBUTES = new Set([
     'destination_path', 'result_path', 'func', 'formula', 'script', 'if', 'else',
     '_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges',
+    'method', 'timeout', '_onCalling', '_onResult', '_onError',
 ]);
 
 export class Provider {
@@ -24,6 +25,8 @@ export class Provider {
     #timingRegistration = null;
     #stopTiming = null;
     #cancelDelay = null;
+    // The AbortController of the in-flight call of a `dataRpc`: a new call aborts it (latest wins).
+    #rpcCall = null;
 
     constructor(binding) {
         this.#binding = binding;
@@ -35,8 +38,8 @@ export class Provider {
 
     get binding() { return this.#binding; }
     get node() { return this.binding.node; }
-    /** 'formula' | 'controller'. */
-    get kind() { throw new Error('Provider.kind is defined by FormulaProvider and ControllerProvider'); }
+    /** 'formula' | 'controller' | 'rpc'. */
+    get kind() { throw new Error('Provider.kind is defined by FormulaProvider, ControllerProvider and RpcProvider'); }
 
     /**
      * Step 4 of §5.1, and every rebinding: the `^` pointers are registered again from the current
@@ -87,12 +90,14 @@ export class Provider {
      * `_else` are inline (Q11.1): a false `_if` stops, or `_else` replaces the body (D5); an empty `_if`
      * is absent and an empty `_else` or body is none, as legacy. A body is
      * the inline `formula`/`script`, compiled by the page's InlineCompiler, or the named `func`. An
-     * error propagates to the caller (P12). A closed node runs nothing.
+     * error propagates to the caller (P12). A closed node runs nothing. The body of a `dataRpc` is the
+     * call: `invoke` returns its promise, and a false `_if` runs `_else` as inline code without calling.
      */
     invoke(trigger) {
         if (this.binding.closed) return;
         const node = this.node;
         const formula = this.kind === 'formula';
+        const rpc = this.kind === 'rpc';
         const kwargs = this.readArguments(trigger);
         let [attr, body] = [formula ? 'formula' : 'script', node.getAttr(formula ? 'formula' : 'script')];
         // Truthiness of `_if`, `_else` and the body, as legacy (`gnrdomsource.js:371-385, 473-482`).
@@ -100,7 +105,12 @@ export class Provider {
         if (condition && !this.#inline('_if', condition, `return (${condition})`, kwargs, false)) {
             [attr, body] = ['_else', node.getAttr('_else')];
             if (!body) return;
+            if (rpc) {
+                this.#inline(attr, body, body, kwargs, true);
+                return;
+            }
         }
+        if (rpc) return this.#call(kwargs);
         const func = node.getAttr('func');
         let result;
         if (body) {
@@ -193,6 +203,54 @@ export class Provider {
         return this.binding.runtime.inlineCompiler.compile(this.node, attr, code, names, source)({...kwargs, _kwargs: kwargs});
     }
 
+    /**
+     * The call of a `dataRpc`: `_onCalling`, then `gramlot.rpc.call('data', method, …)` with the author
+     * arguments, then the value written at `result_path` when present and `_onResult`. The previous
+     * call of the node is aborted and its answer dropped (latest wins); the close of the node aborts
+     * the call too. `timeout` > 0 ms aborts it with a `TimeoutError`. A failure goes to `_onError`, or
+     * rejects the returned promise when the node declares none.
+     */
+    async #call(kwargs) {
+        const node = this.node;
+        const [onCalling, onResult, onError] = ['_onCalling', '_onResult', '_onError'].map(name => node.getAttr(name));
+        if (onCalling) this.#inline('_onCalling', onCalling, onCalling, kwargs, true);
+        this.#rpcCall?.abort();
+        const controller = new AbortController();
+        this.#rpcCall = controller;
+        const release = this.binding.track(() => controller.abort());
+        const timeout = this.#resolved('timeout');
+        const timer = timeout > 0 ? setTimeout(() => {
+            const error = new Error(`${node.nodeTag} '${node.label}': no answer within ${timeout} ms`);
+            error.name = 'TimeoutError';
+            controller.abort(error);
+        }, timeout) : null;
+        const aborted = new Promise((resolve, reject) => {
+            controller.signal.addEventListener('abort', () => reject(controller.signal.reason), {once: true});
+        });
+        let outcome;
+        try {
+            const call = this.binding.runtime.gramlot.rpc.call('data', this.#resolved('method'), authorArguments(kwargs),
+                {signal: controller.signal});
+            outcome = {result: await Promise.race([call, aborted])};
+        } catch (error) {
+            outcome = {error};
+        }
+        clearTimeout(timer);
+        release();
+        // Superseded by a newer call, or the node closed: the answer is dropped.
+        const current = this.#rpcCall === controller && !this.binding.closed;
+        if (this.#rpcCall === controller) this.#rpcCall = null;
+        if (!current) return;
+        if ('error' in outcome) {
+            if (!onError) throw outcome.error;
+            this.#inline('_onError', onError, onError, {...kwargs, error: outcome.error}, true);
+            return;
+        }
+        const {result} = outcome;
+        if (node.getAttr('result_path') != null) node.setRelativeData(node.pathAttribute('result_path'), result);
+        if (onResult) this.#inline('_onResult', onResult, onResult, {...kwargs, result}, true);
+    }
+
     #closeRegistrations() {
         for (const registration of this.#registrations.splice(0)) registration.close();
         this.#timingRegistration = null;
@@ -207,6 +265,11 @@ export class FormulaProvider extends Provider {
 /** The provider of a `dataController`: the body runs for its side effects on the node. */
 export class ControllerProvider extends Provider {
     get kind() { return 'controller'; }
+}
+
+/** The provider of a `dataRpc`: the body is the call of a server endpoint through `gramlot.rpc`. */
+export class RpcProvider extends Provider {
+    get kind() { return 'rpc'; }
 }
 
 // The trigger fields of the kwargs, in the legacy order of the inline parameters.

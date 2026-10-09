@@ -1,12 +1,19 @@
 /**
- * Server-side page base class and the `registerSource` marker.
+ * Server-side page base class and the `registerSource` and `registerEndpoint` markers.
  *
  * @module
  */
 import type {GramlotBuilder} from '../builder/gramlot-builder.js';
 
+/** The marker of a Source method: `{auth}` on the method. */
+export const SOURCE_METHOD: unique symbol;
+/** The marker of an endpoint: `{auth}` on the method. */
+export const ENDPOINT_METHOD: unique symbol;
+
 /** The registered Source method `name` of `page`, or null. */
 export function sourceMethod(page: Page, name: string): Function | null;
+/** The registered endpoint `name` of `page`, or null. */
+export function endpointMethod(page: Page, name: string): Function | null;
 
 /** Server-side page base; unrelated to browser view components. */
 export class Page {
@@ -30,7 +37,10 @@ export class Page {
      * its `root` argument and returns nothing.
      *
      * Source methods (`@source`, `registerSource`, `remoteSource`) are not yet part of the page-writing API:
-     * they arrive together with the `remote` grammar attribute and `@endpoint`.
+     * they arrive together with the `remote` grammar attribute.
      */
-    static registerSource(methodName: string): void;
+    static registerSource(methodName: string, options?: {auth?: string | null}): void;
+    /** Mark the own method `methodName` of this page class as an endpoint called with
+     * `contentType: 'data'`, equivalent to the Python `@endpoint`; call it after the class. */
+    static registerEndpoint(methodName: string, options?: {auth?: string | null}): void;
 }

@@ -1544,3 +1544,46 @@ Superseded §7 text, as updated by 11.52:
 
 Rules: [GC-005 §005](005-documentation-policy.md#gc-005-005),
 [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030). Record: GC-070 §690.
+
+### Amendment 11.58 — The client/server contract of 0.2.14: one envelope, two gramlot-content-types, endpoints, `auth` closed by default — 2026-10-09
+
+Owner decisions D1-D5 of 2026-10-09 for 0.2.14, taken in the coordinating chat:
+Gramlot is a JS rendering library plus the rules a server MUST or MAY satisfy; the
+contract is one and logical, realised separately per kind of server.
+
+1. Contract. GC-230 states the contract (Part A) and its realisations over HTTP
+   (Part B), inside a Worker (Part C) and over WebSocket (Part D). Every call is one
+   envelope `{id, pageId, contentType, name, params}` answered by
+   `{id, contentType, value}` or `{id, contentType, error: {code, name, message}}`.
+   The gramlot-content-type `source` carries a fragment (`main` is the whole page);
+   `data` carries the value of an endpoint. Outcomes travel inside the envelope;
+   status codes are for transport failures only.
+2. Server. `GramlotServer.call` (Python and JS) answers every envelope and raises only
+   `InvalidRequest`. Over HTTP every envelope goes to `POST /gramlot/rpc`, which
+   replaces `/gramlot/main` and `/gramlot/source`; the close message stays on
+   `/gramlot/close`. The bootstrap config is `{pageId, rpcUrl, closeUrl, rootId,
+   capabilities}`. `MAX_REQUEST_BYTES` and the mandatory 413 of 0.2.12 are removed.
+3. Endpoints. A page declares an endpoint with `@endpoint` (Python) or
+   `Page.registerEndpoint(name)` (JS), optionally with an `auth` rule. The base
+   `evaluate_auth`/`evaluateAuth` knows no identity and refuses every rule with
+   `not_authenticated` (closed by default); a server with an identity system
+   overrides it and announces the `auth` capability.
+4. Client. `gramlot.rpc.call(contentType, name, params, {signal})` sends the envelope
+   through `HttpTransport` (formerly `MainTransport`) or an injected transport;
+   `main` and the remote fragments go through it.
+5. `dataRpc`. The data-element `dataRpc(method, result_path, timeout)` enters the
+   binding grammar in Python and JS and leaves the exclusion list; `dataRemote` and
+   the attribute `remote` stay excluded. The latest call of a node wins; the inline
+   callbacks are `_onCalling`, `_onResult` and `_onError`; a `dataRpc` nested in a
+   `button` is a click mechanism.
+6. Deferred. The element-side `auth` (an element whose rule is unsatisfied is dropped
+   by `GramlotBuilderBag` when the fragment is serialised) is
+   gramlot-org/gramlot#34, after 0.2.14. The named form of the `dataRpc` callbacks
+   waits for a written naming convention (GC-225).
+
+Amendment of 11.53 item 1, by addition only: a `GramlotBuilderBag` inside a `data`
+value is a value and activates nothing (GC-230 §015). The rest of 11.53 is unchanged.
+
+Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
+[GC-090 §020](public/090-classes-and-hosts.md#gc-090-020). Contract: GC-230,
+`docs/internal/230-server-protocol.md`.

@@ -12,8 +12,9 @@ import {checkProtocol} from '../src/server/index.js';
 import {startServers} from '../../scripts/fixture_servers.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const PAGES = join(root, 'js/tests/fixtures/live');
-const PAGE = '/10_cards_with_icons';
+// The fixture index pages declare the fragment and the endpoints of GC-230 §150.
+const PAGES = {py: join(root, 'tests/fixtures/pages'), js: join(root, 'js/tests/fixtures/pages')};
+const PAGE = '/';
 
 /** The Python check_protocol on url, run by the interpreter of the tests. */
 const pythonCheck = (url, page) => promisify(execFile)(process.env.GRAMLOT_TEST_PYTHON ?? 'python3',
@@ -46,8 +47,8 @@ test('both reference adapters pass both checks below a mount prefix with a polic
 
 test('a failure names its GC-230 rule in both languages', async () => {
     await withServers({csp: "script-src 'self'"}, async url => {
-        await assert.rejects(checkProtocol(url, PAGE), {name: 'AssertionError', message: /^GC-230-045: /});
-        await assert.rejects(pythonCheck(url, PAGE), {stderr: /AssertionError: GC-230-045: /});
-        await assert.rejects(checkProtocol(url, '/gramlot-conformance-missing-page'), {message: /^GC-230-020: /});
+        await assert.rejects(checkProtocol(url, PAGE), {name: 'AssertionError', message: /^GC-230-140: /});
+        await assert.rejects(pythonCheck(url, PAGE), {stderr: /AssertionError: GC-230-140: /});
+        await assert.rejects(checkProtocol(url, '/gramlot-conformance-missing-page'), {message: /^GC-230-115: /});
     });
 });

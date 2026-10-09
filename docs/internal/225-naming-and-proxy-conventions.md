@@ -32,8 +32,8 @@ Block ID: **GC-225-010**.
 |---|---|---|
 | Python and JS | A name exists in both languages; an asymmetry is an error | constitution, owner rule 2026-09-26 (`00-constitution.md:1054`) |
 | Python and JS spelling | Python uses snake_case, JS uses camelCase; the JS name is the mechanical camelCase translation of the Python name (`load_collection` ↔ `loadCollection`, `add_branches` ↔ `addBranches`). Owner, 2026-10-06: "sì, traduzione meccanica a camel" | owner decision 2026-10-06 |
-| JS markers of Python decorators | A Python decorator `@x` corresponds in JS to the static method `registerX` of the base class of the declared type, called after the class: `InOut.registerRoute('sendMail', {...})`, `Page.registerSource('details')`, `Page.registerEndpoint('m')`. The method annotates the class method and wraps it with the parameter check. JS has no decorator syntax that Node and browsers run; a method named like the decorator would read as performing the action, while in Python the `@` makes the declaration recognisable. Supersedes the free function `source(Page.prototype.m)`; `Page.registerSource` is in force since 0.2.12 (`js/src/server/page.js`). Owner, 2026-10-06: "non mi piace la funzione volante route, preferirei avere una classe che ha vari metodi tra cui route"; "un metodo route mi pare che esegua il routing, non che lo annoti" | owner decisions 2026-10-06 |
-| Server object | The server counterpart of the browser `Gramlot` is `GramlotServer`, whatever the transport (HTTP or Worker messages); the `Gramlot` prefix separates it from the other servers (Kajenn, Node, uvicorn), as `GramlotBuilder` separates from genro-builders. Derived names keep the prefix and the word `Server`: `GramlotFileServer`, `GramlotWorkerServer`, `GramlotServerOptions`; the capacity error is `ServerCapacity`. Rejected: `Host` (owner: "host mi fa schifo e mi confonde"), `ServerAdapter` (an adapter is the code connecting a framework), `EndpointHandler` (`endpoint` is reserved to `@endpoint`, `Handler` to proxies), `GramlotMain` (`main` is already an operation and a URL), `Servant` | owner decision 2026-10-08 |
+| JS markers of Python decorators | A Python decorator `@x` corresponds in JS to the static method `registerX` of the base class of the declared type, called after the class: `InOut.registerRoute('sendMail', {...})`, `Page.registerSource('details')`, `Page.registerEndpoint('m')`. The method annotates the class method. The parameter check (`Signature`) left the core with the routes package in 0.2.9 and is not part of 0.2.14 (GC-230 §015); the marker annotates only. JS has no decorator syntax that Node and browsers run; a method named like the decorator would read as performing the action, while in Python the `@` makes the declaration recognisable. Supersedes the free function `source(Page.prototype.m)`; `Page.registerSource` is in force since 0.2.12 (`js/src/server/page.js`). Owner, 2026-10-06: "non mi piace la funzione volante route, preferirei avere una classe che ha vari metodi tra cui route"; "un metodo route mi pare che esegua il routing, non che lo annoti" | owner decisions 2026-10-06 |
+| Server object | The server counterpart of the browser `Gramlot` is `GramlotServer`, whatever the transport (HTTP or Worker messages); the `Gramlot` prefix separates it from the other servers (Kajenn, Node, uvicorn), as `GramlotBuilder` separates from genro-builders. Derived names keep the prefix and the word `Server`: `GramlotFileServer`, `GramlotWorkerServer`, `GramlotServerOptions`; the capacity error is `ServerCapacity`. Rejected: `Host` (owner: "host mi fa schifo e mi confonde"), `ServerAdapter` (an adapter is the code connecting a framework), `EndpointHandler` (`endpoint` is reserved to `@endpoint`, `Handler` to proxies), `GramlotMain` (`main` is already the name of the whole-page fragment; up to 0.2.12 also a URL), `Servant` | owner decision 2026-10-08 |
 | Python and JS servers | `GramlotServer` in Python and JS assure the same functionality; they are not identical member by member. Accepted idioms: `params` as keywords or as an object, `ValueError`/`TypeError` on configuration, page logic in `foo.js` or as the `Logic` export. Owner, 2026-10-08: "più che uguale deve assicurare le stesse funzionalità" | owner decision 2026-10-08 |
 | Attribute holding the server | An attribute, property or variable holding a `GramlotServer` is named `server`. Where `server` is already taken by the server of the framework or platform (Kajenn `BaseApplication.server`, the `http.Server`/`Bun.Server` returned by `startServer`, the HTTP server of a script), it is named after the class: `gramlot_server` in Python, `gramlotServer` in JS. Owner, 2026-10-08: "ok" | owner decision 2026-10-08 |
 | Files | A file is named after the class it holds: `gramlot-server.js`/`gramlot_server.py`, `gramlot-file-server.js`/`gramlot_file_server.py`, as `gramlot-builder.js` | owner decision 2026-10-08 |
@@ -128,7 +128,8 @@ Block ID: **GC-225-020**.
 
 ## 025 · Current code against these rules
 
-Block ID: **GC-225-025**. State after 0.2.12 (browser in 0.2.10, server in 0.2.12).
+Block ID: **GC-225-025**. State after 0.2.14 (browser in 0.2.10, server in 0.2.12,
+client/server contract in 0.2.14).
 
 - `Gramlot` (`js/src/gramlot.js`) holds only lifecycle (`start`, `loadMain`,
   `dispose`, `abort`, `pagehide`, `loading`), data (`pageId`, `state`, `data`,
@@ -136,17 +137,26 @@ Block ID: **GC-225-025**. State after 0.2.12 (browser in 0.2.10, server in 0.2.1
   function is left on `Gramlot`.
 - The handlers live in `js/src/handlers/`; the existing classes they hold keep
   their names.
+- `gramlot.rpc` (`RpcHandler`) has one function, `call(contentType, name, params,
+  {signal})`, which sends the GC-230 envelope and resolves with the value or rejects
+  with `RpcError`. It holds the transport: `HttpTransport` (`js/src/http-transport.js`,
+  formerly `MainTransport` in `transport.js`) or one injected with the same `call`.
 - `GramlotServer` (`src/gramlot/server/gramlot_server.py`,
   `js/src/server/gramlot-server.js`) and `GramlotFileServer` assure the same
   functionality in both languages: `close_all`/`closeAll` empties the registry,
   the base `Page` is rejected as a page, an unknown Source method raises
   `SourceNotFound`, the Source builder carries the method name, JS errors carry
   their class `name`, `GramlotFileServer` reloads pages per `reload`/`GRAMLOT_DEV`.
+  Both answer every envelope with `call` and announce `capabilities`; the
+  `auth` evaluator is `evaluate_auth`/`evaluateAuth`.
   The page registry is private in Python (`_pages`, `_prune`) and public in JS
   (`pages`, `prune`); adapters call `close_all`/`closeAll` instead of reaching the
   registry. `registerPage` exists only in JS: only the
   serverless Worker uses it.
+  The run of a request and its parsing are private in both languages: `_run`/`#run`,
+  `_parse_request`/`parseRequest` (a module function not exported).
 - `Page.registerSource` replaces the free function `source` in JS; Python keeps
-  `@source`.
-- The HTTP protocol of every adapter is GC-230, with the conformance check
-  `check_protocol`/`checkProtocol`.
+  `@source`. Endpoints are declared with `@endpoint` (Python) and
+  `Page.registerEndpoint` (JS), both with an optional `auth` rule.
+- The protocol of every adapter is GC-230 (contract and realisations), with the
+  conformance check `check_protocol`/`checkProtocol`.

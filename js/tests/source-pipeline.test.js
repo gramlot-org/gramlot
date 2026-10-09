@@ -10,9 +10,18 @@ import {
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 
 function wire(author) { const builder = new GramlotBuilder(); author(builder.root); return builder.toTytx(); }
+/** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
+function envelope({main, source, ...rest}) {
+    return {...rest, async call(text, signal) {
+        const {id, contentType, name, params} = fromTytx(text);
+        const value = name === 'main' ? await main() : await source(name, params, signal);
+        return toTytx({id, contentType, value});
+    }};
+}
+
 function appWith(transport) {
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
-    return new Gramlot({document, pageId: 'test', transport});
+    return new Gramlot({document, pageId: 'test', transport: envelope(transport)});
 }
 test('registered SourceBag root and branches survive JSON and MessagePack and bind in place', () => {
     for (const transport of ['json', 'msgpack']) {

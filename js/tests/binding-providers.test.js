@@ -12,6 +12,7 @@ import {Gramlot, GramlotBuilder, PageBootstrap} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
 import {GramlotFileServer} from '../src/server/index.js';
 import {mount} from './fixtures/mount.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
 const LOGIC = fileURLToPath(new URL('./fixtures/logic/', import.meta.url)).replace(/\/$/, '');
@@ -362,7 +363,7 @@ test('an _init error propagates; the NodeBindings of the branch stay open (P12, 
 
 test('gate decision 5: provider attributes on a visual node or a dataSetter are an error at installation', () => {
     for (const [author, pattern] of [
-        [root => root.div({_init: true}), /div 'div_0': '_init' is allowed only on dataFormula and dataController/],
+        [root => root.div({_init: true}), /div 'div_0': '_init' is allowed only on dataFormula, dataController and dataRpc/],
         [root => root.dataSetter({destination_path: 'x', value: 1, _delay: 5}), /dataSetter '.*': '_delay' is allowed only/],
         [root => root.p({_timing: 1}), /'_timing' is allowed only/],
         [root => root.span({_onStart: true}), /'_onStart' is allowed only/],
@@ -458,10 +459,18 @@ test('removing a provider closes its registrations', () => {
     app.dispose();
 });
 
+/** The fragment text of a source call: the value the fake fetch of `boot` answers in the envelope. */
+async function sourceText(server, pageId, name = 'main', params = {}) {
+    const response = JSON.parse(await server.call(toTytx({id: 'r1', pageId, contentType: 'source', name, params})));
+    if (response.error) throw new Error(response.error.message);
+    return response.value;
+}
+
 /** The Python GramlotFileServer of the fixture folder: page HTML and main wire. */
 function openPython(path) {
     return JSON.parse(execFileSync(python, ['-c', `
 import asyncio, json, sys
+from genro_tytx import to_tytx
 from gramlot.server import GramlotFileServer, parse_requires
 class LogicServer(GramlotFileServer):
     def resolve_resources(self, path, cls):
@@ -469,10 +478,16 @@ class LogicServer(GramlotFileServer):
             return super().resolve_resources(path, cls)
         return {"css": [], "js": [*({"url": f"/{name}.js", "group": name} for name in parse_requires(cls.js_requires)),
                                   {"url": "/calcolo_aux.js", "group": None}]}
+async def source_text(server, page_id, name="main", params=None):
+    response = json.loads(await server.call(to_tytx(
+        {"id": "r1", "pageId": page_id, "contentType": "source", "name": name, "params": params or {}})))
+    if "error" in response:
+        raise LookupError(response["error"]["message"])
+    return response["value"]
 async def run():
     server = LogicServer(sys.argv[1])
     opened = await server.open_page(sys.argv[2], prefix=sys.argv[1])
-    return {"html": opened.html, "wire": await server.main(opened.page_id)}
+    return {"html": opened.html, "wire": await source_text(server, opened.page_id)}
 print(json.dumps(asyncio.run(run())))
 `, LOGIC, path], {encoding: 'utf8'}));
 }
@@ -489,7 +504,10 @@ async function boot({html, wire}, name) {
     const {window} = new JSDOM(html, {url: pathToFileURL(`${LOGIC}/${name}`).href});
     window.navigator.sendBeacon = () => true;
     const original = globalThis.fetch;
-    globalThis.fetch = async () => ({ok: true, status: 200, text: async () => wire});
+    globalThis.fetch = async (url, {body}) => {
+        const {id, contentType} = fromTytx(body);
+        return {ok: true, status: 200, text: async () => toTytx({id, contentType, value: wire})};
+    };
     try {
         const app = await new PageBootstrap({...bootstrapArguments(html), document: window.document}).run();
         return {app, window};
@@ -511,7 +529,7 @@ test('the companion is registered before the first _init; opening the page on th
     globalThis.gramlotSentinel = 0;
     const server = new GramlotFileServer(LOGIC);
     const opened = await server.openPage('/avvio', {prefix: LOGIC});
-    const jsWire = await server.main(opened.pageId);
+    const jsWire = await sourceText(server, opened.pageId);
     const pythonOpened = openPython('/avvio');
     assert.equal(globalThis.gramlotSentinel, 0);
     for (const [pageOpened, wire] of [[pythonOpened, pythonOpened.wire], [opened, jsWire]]) {

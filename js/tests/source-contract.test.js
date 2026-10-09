@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {JSDOM} from 'jsdom';
-import {Gramlot, GramlotBuilder, MainTransport} from '../src/index.js';
+import {fromTytx, toTytx} from '@genrojs/tytx';
+import {Gramlot, GramlotBuilder, HttpTransport, RpcError} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
 
 /** A Gramlot page: its Source reaches the renderer as events while it is filled. */
@@ -27,13 +28,15 @@ test('Python authoring -> TYTX -> first subscriber insert; roots precede main', 
     const document = new JSDOM('<main id="custom"></main>').window.document;
     let calls = 0, app;
     app = new Gramlot({pageId: 'test', element: document.querySelector('main'), transport: {
-        async main(id) {
+        async call(text) {
             calls++;
-            assert.equal(id, 'test');
+            const request = fromTytx(text);
+            assert.deepEqual({...request, id: null},
+                {id: null, pageId: 'test', contentType: 'source', name: 'main', params: {}});
             assert.equal(app.src.binding.root.getItem('_root_'), app.data);
             assert.equal(app.data.getItem('main'), null);
             assert.equal(app.src.renderer.records.size, 0);
-            return fixture.wire;
+            return toTytx({id: request.id, contentType: 'source', value: fixture.wire});
         },
     }});
     let inserts = 0;
@@ -172,12 +175,18 @@ test('reference identity survives replacement and is invalidated on deletion', (
     builder.dispose();
 });
 
+/** The response envelope of `text` answering `value`. */
+function answer(text, value) {
+    const {id, contentType} = fromTytx(text);
+    return toTytx({id, contentType, value});
+}
+
 test('main failure is visible and retryable; disposal prevents late insertion', async () => {
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     let attempts = 0;
-    const app = new Gramlot({document, transport: {async main() {
+    const app = new Gramlot({document, transport: {async call(text) {
         if (!attempts++) throw new Error('offline');
-        return new GramlotBuilder().toTytx();
+        return answer(text, new GramlotBuilder().toTytx());
     }}});
     await assert.rejects(app.start(), /offline/);
     assert.equal(app.state, 'failed');
@@ -186,24 +195,59 @@ test('main failure is visible and retryable; disposal prevents late insertion', 
     app.dispose();
     await assert.rejects(app.start(), /disposed/);
     let release;
-    const late = new Gramlot({document, transport: {main: () => new Promise(r => { release = r; })}});
+    const late = new Gramlot({document, transport: {call: text => new Promise(r => { release = () => r(text); })}});
     const loading = late.start();
     late.dispose();
-    release(new GramlotBuilder().toTytx());
+    release();
     await assert.rejects(loading, /disposed/);
     assert.equal(late.src.source.getNodes().length, 0);
 });
 
-test('transport passes identity, cancellation and failures through the host contract', async () => {
+test('transport passes the envelope text, cancellation and failures through the host contract', async () => {
     const signal = new AbortController().signal;
-    const transport = new MainTransport('/main', async (url, options) => {
-        assert.equal(url, '/main');
+    const transport = new HttpTransport('/rpc', {fetcher: async (url, options) => {
+        assert.equal(url, '/rpc');
         assert.equal(options.signal, signal);
-        assert.equal(JSON.parse(options.body).pageId, 'page');
-        return {ok: true, text: async () => 'wire'};
+        assert.equal(options.method, 'POST');
+        assert.equal(options.credentials, 'same-origin');
+        assert.equal(options.headers['Content-Type'], 'application/json');
+        assert.equal(options.body, 'request');
+        return {ok: true, status: 200, text: async () => 'response'};
+    }});
+    assert.equal(await transport.call('request', signal), 'response');
+    const failing = new HttpTransport('/rpc', {fetcher: async () => ({ok: false, status: 400})});
+    await assert.rejects(failing.call('request'), {message: 'rpc failed: HTTP 400'});
+});
+
+test('gramlot.rpc.call sends one envelope and answers its value or an RpcError', async () => {
+    const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
+    const sent = [];
+    let reply = (request) => ({id: request.id, contentType: request.contentType, value: request.params.value});
+    const app = new Gramlot({document, pageId: 'page', transport: {async call(text) {
+        const request = fromTytx(text);
+        sent.push(request);
+        return toTytx(reply(request));
+    }}});
+    assert.equal(await app.rpc.call('data', 'check_endpoint', {value: 3}), 3);
+    assert.equal(await app.rpc.call('data', 'check_endpoint', {value: 'x'}), 'x');
+    assert.equal(sent[0].pageId, 'page');
+    assert.equal(sent[0].contentType, 'data');
+    assert.equal(sent[0].name, 'check_endpoint');
+    assert.notEqual(sent[0].id, sent[1].id);
+    assert.match(sent[0].id, /^[0-9a-f]{32}$/);
+    reply = request => ({id: request.id, contentType: 'data',
+        error: {code: 'application_error', name: 'ValueError', message: 'check', details: 'trace'}});
+    await assert.rejects(app.rpc.call('data', 'check_endpoint_raise'), error => {
+        assert.ok(error instanceof RpcError);
+        assert.equal(error.name, 'RpcError');
+        assert.equal(error.code, 'application_error');
+        assert.equal(error.remoteName, 'ValueError');
+        assert.equal(error.message, 'check');
+        assert.equal(error.details, 'trace');
+        return true;
     });
-    assert.equal(await transport.main('page', signal), 'wire');
-    const failing = new MainTransport('/main', async () => ({ok: false, status: 403}));
-    await assert.rejects(failing.main('p'), {message: 'main failed: HTTP 403'});
-    await assert.rejects(failing.source('p', 'details', {}), {message: 'source failed: HTTP 403'});
+    reply = () => ({id: 'other', contentType: 'data', value: 1});
+    await assert.rejects(app.rpc.call('data', 'check_endpoint'), {message: 'rpc response id mismatch'});
+    const offline = new Gramlot({document, transport: false});
+    await assert.rejects(offline.rpc.call('data', 'check_endpoint'), /unavailable without a server transport/);
 });

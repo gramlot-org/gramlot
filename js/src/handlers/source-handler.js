@@ -67,6 +67,8 @@ export class SourceHandler extends Handler {
             if (!(wire instanceof GramlotBuilderBag)) throw new TypeError('Source values must be GramlotBuilderBags');
             return wire.bindBuilder(builder).activateCode();
         }
+        // A source envelope decodes its value: anything but a SourceBag or a TYTX text is not a Source.
+        if (typeof wire !== 'string') throw new TypeError('Source value did not decode to SourceBag');
         const source = sourceBagFromTytx(wire, builder);
         if (!(source instanceof GramlotBuilderBag)) throw new TypeError('Source values must be GramlotBuilderBags');
         return source.activateCode();
@@ -82,7 +84,7 @@ export class SourceHandler extends Handler {
      */
     async remoteSource(target, method, params = {}) {
         const rpc = this.gramlot.rpc;
-        if (!rpc.transport?.source) throw new Error('Remote Source is unavailable without a server transport');
+        if (!rpc.transport?.call) throw new Error('Remote Source is unavailable without a server transport');
         const binding = this.binding.bindingFor(target);
         if (this.gramlot.state !== 'started' || !binding) throw new Error('Remote Source target is not mounted');
         rpc.remoteRequests.get(target)?.controller.abort();
@@ -93,7 +95,7 @@ export class SourceHandler extends Handler {
         const current = () => this.gramlot.state !== 'disposed' && !request.controller.signal.aborted &&
             rpc.remoteRequests.get(target) === request && !binding.closed;
         try {
-            const wire = await rpc.transport.source(this.gramlot.pageId, method, params, request.controller.signal);
+            const wire = await rpc.call('source', method, params, {signal: request.controller.signal});
             if (!current()) return false;
             const prepared = this.prepareSource(wire, target.builder);
             if (!current()) return false;
