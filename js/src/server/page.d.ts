@@ -36,8 +36,8 @@ export class Page {
      * equivalent to the Python `@source`; call it after the class. A Source method populates
      * its `root` argument and returns nothing.
      *
-     * Source methods (`@source`, `registerSource`, `remoteSource`) are not yet part of the page-writing API:
-     * they arrive together with the `remote` grammar attribute.
+     * A declared fragment is requested from code with `gramlot.src.remoteSource` (GC-230 §035); the
+     * declarative `remote` grammar attribute is not yet available.
      */
     static registerSource(methodName: string, options?: {auth?: string | null}): void;
     /** Mark the own method `methodName` of this page class as an endpoint called with

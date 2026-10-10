@@ -40,8 +40,8 @@ export class SourceHandler extends Handler {
      * Replace the children of one Source node with a remote Source, only after the incoming Source
      * validates. Resolves with true when applied, false when superseded or cancelled.
      *
-     * Source methods (`@source`, `registerSource`, `remoteSource`) are not yet part of the page-writing API:
-     * they arrive together with the `remote` grammar attribute and `@endpoint`.
+     * A declared fragment is requested from code with `gramlot.src.remoteSource` (GC-230 §035); the
+     * declarative `remote` grammar attribute is not yet available.
      */
     remoteSource(target: SourceBagNode, method: string, params?: Record<string, unknown>): Promise<boolean>;
 }
