@@ -64,11 +64,16 @@ export class GramlotBuilder extends HtmlBuilder {
         return prefixes;
     }
 
-    constructor(name = null, {collections = []} = {}) {
+    constructor(name = null, {collections = [], auth = null} = {}) {
         super(name);
         this._binding = null;
+        this._auth = auth;
         for (const collection of collections) this.loadCollection(collection);
     }
+
+    /** The `auth` evaluator, `rule => null | 'not_authenticated' | 'not_authorized'`, or null:
+     * without it every element is serialised. */
+    get auth() { return this._auth; }
 
     /** The BindingRuntime of the Gramlot page that owns this builder, or null for authoring alone. */
     get binding() { return this._binding; }
@@ -183,5 +188,7 @@ export class GramlotBuilder extends HtmlBuilder {
         return {$gramlotRef: id, kind};
     }
 
-    toTytx() { return toTytx(this.source); }
+    /** The Source encoded as TYTX text, as the Python `to_tytx`. With an `auth` evaluator, the elements
+     * whose `auth` rule it refuses are left out (GramlotBuilderBag.authorizedCopy). */
+    toTytx() { return toTytx(this.auth === null ? this.source : this.source.authorizedCopy(this.auth)); }
 }

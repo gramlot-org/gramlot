@@ -173,6 +173,15 @@ export async function checkProtocol(baseUrl, pagePath) {
         await outcome('GC-230-030', envelope('data', 'check_endpoint_auth'), 'not_authenticated', 'check_endpoint_auth');
     }
 
+    response = await call(envelope('source', 'check_fragment_auth'));
+    const guarded = parse(response.body, JSON.parse)?.value;
+    expect('GC-230-030', response.status === 200 && typeof guarded === 'string' && guarded.includes('check-public'),
+        `check_fragment_auth answers ${response.status} ${response.body.slice(0, 200)}, not a fragment document`);
+    if (!config.capabilities.includes('auth')) {
+        expect('GC-230-030', !guarded.includes('check-refused'),
+            `check_fragment_auth answers ${guarded.slice(0, 200)}, which contains the element of the refused auth rule`);
+    }
+
     const error = await outcome('GC-230-025', envelope('data', 'check_endpoint_raise'), 'application_error',
         'check_endpoint_raise');
     expect('GC-230-025', typeof error.name === 'string' && error.name !== '' && error.message === 'check',

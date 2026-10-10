@@ -14,8 +14,11 @@ export class GramlotBuilder extends HtmlBuilder {
     static _name: string;
     /** Tag prefixes of the parent dialects, from the names of the classes above `GramlotBuilder`. */
     static get dialectPrefixes(): string[];
-    /** Create a builder; `collections` are grammar documents loaded into it. */
-    constructor(name?: string | null, options?: {collections?: unknown[]});
+    /** Create a builder; `collections` are grammar documents loaded into it; `auth` evaluates the `auth` rules of the elements when the Source is serialised. */
+    constructor(name?: string | null, options?: {collections?: unknown[];
+        auth?: ((rule: string) => null | 'not_authenticated' | 'not_authorized') | null});
+    /** The `auth` evaluator, or null: without it every element is serialised. */
+    readonly auth: ((rule: string) => null | 'not_authenticated' | 'not_authorized') | null;
     /** The binding runtime of the Gramlot page that owns this builder, or null for authoring alone; set by `Gramlot` right after creating the builder. */
     binding: unknown;
     /** The node with `nodeId`; inside a Gramlot page it reads the node ids of the binding runtime. */
@@ -45,6 +48,6 @@ export class GramlotBuilder extends HtmlBuilder {
     promoteNodeValue(node: SourceBagNode, oldValue: unknown, branch: SourceBag): void;
     /** Create a transportable reference descriptor for an authored node. */
     reference(node: SourceBagNode, kind?: 'node' | 'dom'): SourceReference;
-    /** The Source encoded as TYTX text. */
+    /** The Source encoded as TYTX text; with an `auth` evaluator, without the elements whose `auth` rule it refuses. */
     toTytx(): string;
 }

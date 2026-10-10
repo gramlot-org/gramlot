@@ -137,6 +137,14 @@ class GramlotServer:
         identity: any rule is closed."""
         return None if rule is None else "not_authenticated"
 
+    def _auth_outcome(self, rule, owner):
+        """``evaluate_auth`` with its result checked: a value other than ``None``,
+        ``"not_authenticated"`` and ``"not_authorized"`` is a ``TypeError``."""
+        refused = self.evaluate_auth(rule, owner=owner)
+        if refused not in (None, "not_authenticated", "not_authorized"):
+            raise TypeError("evaluate_auth must return None, 'not_authenticated' or 'not_authorized'")
+        return refused
+
     def _prune(self):
         now = time.monotonic()
         self._pages = {key: record for key, record in self._pages.items() if record[0] > now}
@@ -217,22 +225,20 @@ class GramlotServer:
             method = declared[name]
             function = method.__get__(page, type(page))
             rule = (method.__gramlot_source__ if source else method.__gramlot_endpoint__)["auth"]
-        refused = self.evaluate_auth(rule, owner=owner)
-        if refused not in (None, "not_authenticated", "not_authorized"):
-            raise TypeError("evaluate_auth must return None, 'not_authenticated' or 'not_authorized'")
+        refused = self._auth_outcome(rule, owner)
         if refused is not None:
             raise {OUTCOME_CODES[cls]: cls for cls in (NotAuthenticated, NotAuthorized)}[refused](
                 f"Access refused: {name}")
         if not source:
             result = function(**params)
             return await result if inspect.isawaitable(result) else result
-        builder = page.source_builder(name)
+        builder = page.source_builder(name, auth=lambda element_rule: self._auth_outcome(element_rule, owner))
         result = function(builder.root, **params)
         if inspect.isawaitable(result):
             result = await result
         if result is not None:
             raise TypeError("Source methods must build into root and return None")
-        return to_tytx(builder.source)
+        return builder.to_tytx()
 
     def close_page(self, page_id, *, owner=None):
         record = self._pages.get(page_id)

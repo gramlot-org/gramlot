@@ -91,6 +91,16 @@ export class GramlotServer {
         return rule === null ? null : 'not_authenticated';
     }
 
+    /** evaluateAuth with its result checked: a value other than null, 'not_authenticated' and
+     * 'not_authorized' is a TypeError. */
+    #authOutcome(rule, owner) {
+        const refused = this.evaluateAuth(rule, {owner});
+        if (![null, 'not_authenticated', 'not_authorized'].includes(refused)) {
+            throw new TypeError("evaluateAuth must return null, 'not_authenticated' or 'not_authorized'");
+        }
+        return refused;
+    }
+
     prune() {
         const now = performance.now();
         for (const [id, record] of this.pages) if (record.expires <= now) this.pages.delete(id);
@@ -181,16 +191,14 @@ export class GramlotServer {
             }
             rule = callable[source ? SOURCE_METHOD : ENDPOINT_METHOD].auth;
         }
-        const refused = this.evaluateAuth(rule, {owner});
-        if (![null, 'not_authenticated', 'not_authorized'].includes(refused)) {
-            throw new TypeError("evaluateAuth must return null, 'not_authenticated' or 'not_authorized'");
-        }
+        const refused = this.#authOutcome(rule, owner);
         if (refused !== null) {
             const Refusal = [NotAuthenticated, NotAuthorized].find(ErrorClass => OUTCOME_CODES.get(ErrorClass) === refused);
             throw new Refusal(`Access refused: ${name}`);
         }
         if (!source) return callable.call(page, params);
-        const builder = new record.PageClass.sourceBuilder(name);
+        const builder = new record.PageClass.sourceBuilder(name,
+            {auth: elementRule => this.#authOutcome(elementRule, owner)});
         const result = await callable.call(page, builder.root, params);
         if (result !== undefined && result !== null) throw new TypeError('Source methods populate root and return no value');
         return builder.toTytx();

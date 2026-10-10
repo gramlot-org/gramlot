@@ -2,8 +2,9 @@
 
 The Python classes carry no runtime methods: PUT, FIRE, FIRE_AFTER and
 absDatapath stay in the browser classes. They may carry the value
-classification shared with JS (``pointer_type``) and the authoring dispatch
-of a GramlotBuilder (``GramlotBuilder.schema_tag``), which the JS classes get
+classification shared with JS (``pointer_type``), the copy without the
+elements refused by an ``auth`` evaluator (``authorized_copy``, JS
+``authorizedCopy``) and the authoring dispatch of a GramlotBuilder (``GramlotBuilder.schema_tag``), which the JS classes get
 from Builder's Proxy calling ``GramlotBuilder.schemaTag``.
 """
 
@@ -39,6 +40,33 @@ class GramlotBuilderBag(SourceBag):
     """Source Bag whose nodes are GramlotBuilderBagNode."""
 
     _node_class = GramlotBuilderBagNode
+
+    def authorized_copy(self, auth):
+        """A copy of this Source without the elements whose ``auth`` rule ``auth`` refuses.
+
+        ``auth`` is a callable ``rule -> None | "not_authenticated" | "not_authorized"``.
+        An element whose ``auth`` attribute ``auth`` answers with a code is left out
+        with its subtree; an accepted element is copied without its ``auth`` attribute
+        (the rule belongs to the server); nested Source branches are copied the same
+        way. This Bag is not changed. A non-string ``auth`` attribute is a ``TypeError``.
+        """
+        result = self.__class__()
+        for node in self:
+            rule = node.attr.get("auth")
+            if rule is not None:
+                if not isinstance(rule, str):
+                    raise TypeError(f"{node.node_tag} '{node.label}': 'auth' must be a string rule, "
+                                    f"not {type(rule).__name__}")
+                if auth(rule) is not None:
+                    continue
+            value = node.static_value
+            if isinstance(value, GramlotBuilderBag):
+                value = value.authorized_copy(auth)
+            attributes = {name: attr for name, attr in node.attr.items() if name != "auth"}
+            copied = result.set_item(node.label, value, _attributes=attributes,
+                                     _remove_null_attributes=False, node_tag=node.node_tag)
+            copied.xml_tag = node.xml_tag
+        return result
 
     def __getattribute__(self, name: str) -> Any:
         """Builder's grammar-first lookup; a GramlotBuilder resolves the name with ``schema_tag``."""

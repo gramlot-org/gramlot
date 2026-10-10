@@ -895,6 +895,12 @@ Page.registerEndpoint('with_vat');
   protect the endpoint with a rule over tags (`|`, `&`, `!`). A server without the
   `auth` capability knows no identity: every call of a protected endpoint answers
   the outcome `not_authenticated` and the method does not run.
+- `auth="rule"` on an element of `main` or of a `@source` fragment protects the
+  element with the same rule. The server drops an element whose rule it refuses,
+  with all its children, when it sends the fragment: the element never reaches the
+  client, and an accepted element is sent without its `auth` attribute. A server
+  without the `auth` capability refuses every rule, so the element is never sent. The rule is a string; any other value answers `application_error`.
+  A page built in the browser does not evaluate `auth`.
 - A name is `[A-Za-z]` followed by letters, digits and `_`; `main` is reserved,
   and the same method cannot be both an endpoint and a `@source` method.
 - An unknown endpoint answers `not_found`; an exception raised by the method
