@@ -293,7 +293,8 @@ export class GramlotBuilderBag extends SourceBag {
             }
             let value = node.staticValue;
             if (value instanceof GramlotBuilderBag) value = value.authorizedCopy(auth);
-            const copied = result.setItem(node.label, value, {...node.getAttr()}, '>', false, false, null, false, true,
+            const {auth: _rule, ...attributes} = node.getAttr();
+            const copied = result.setItem(node.label, value, attributes, '>', false, false, null, false, true,
                 null, node.nodeTag);
             copied.xmlTag = node.xmlTag;
         }

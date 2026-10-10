@@ -46,8 +46,9 @@ class GramlotBuilderBag(SourceBag):
 
         ``auth`` is a callable ``rule -> None | "not_authenticated" | "not_authorized"``.
         An element whose ``auth`` attribute ``auth`` answers with a code is left out
-        with its subtree; nested Source branches are copied the same way. This Bag
-        is not changed. A non-string ``auth`` attribute is a ``TypeError``.
+        with its subtree; an accepted element is copied without its ``auth`` attribute
+        (the rule belongs to the server); nested Source branches are copied the same
+        way. This Bag is not changed. A non-string ``auth`` attribute is a ``TypeError``.
         """
         result = self.__class__()
         for node in self:
@@ -61,7 +62,8 @@ class GramlotBuilderBag(SourceBag):
             value = node.static_value
             if isinstance(value, GramlotBuilderBag):
                 value = value.authorized_copy(auth)
-            copied = result.set_item(node.label, value, _attributes=dict(node.attr),
+            attributes = {name: attr for name, attr in node.attr.items() if name != "auth"}
+            copied = result.set_item(node.label, value, _attributes=attributes,
                                      _remove_null_attributes=False, node_tag=node.node_tag)
             copied.xml_tag = node.xml_tag
         return result

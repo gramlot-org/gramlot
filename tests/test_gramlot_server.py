@@ -162,7 +162,7 @@ class CallTests(unittest.TestCase):
         server = Allowing()
         main = call(server, open_page(server, owner="one"), "source", "main", owner="one")["value"]
         self.assertEqual([node.node_tag for node in main], ["p", "div"])
-        self.assertEqual(main.nodes[1].attr["auth"], "admin")
+        self.assertNotIn("auth", main.nodes[1].attr)
         self.assertEqual(main.nodes[1].value.nodes[0].value, "nested")
         self.assertEqual(rules, [(None, "one"), ("admin", "one")])
 

@@ -221,7 +221,7 @@ test('call: an evaluator that allows keeps every element', async () => {
     const {pageId} = await server.openPage('/', {owner: 'one'});
     const value = (await main(server, pageId, {owner: 'one'})).value;
     assert.deepEqual(value.getNodes().map(node => node.nodeTag), ['p', 'div']);
-    assert.equal(value.getNodes()[1].attr.auth, 'admin');
+    assert.equal(value.getNodes()[1].attr.auth, undefined);
     assert.equal(value.getNodes()[1].value.getNodes()[0].value, 'nested');
     assert.deepEqual(rules, [[null, 'one'], ['admin', 'one']]);
 });
@@ -247,7 +247,11 @@ test('GramlotBuilder.toTytx leaves out the refused elements from a copy; without
     assert.equal(plain.auth, null);
     assert.equal(plain.toTytx(), toTytx(plain.source));
     const allowing = authored({auth: () => null});
-    assert.equal(allowing.toTytx(), toTytx(allowing.source));
+    const kept = fromTytx(allowing.toTytx());
+    assert.deepEqual(kept.getNodes().map(node => node.nodeTag), ['p', 'div', 'svg']);
+    assert.equal(kept.getNodes()[1].attr.auth, undefined);
+    assert.equal(kept.getNodes()[2].value.getNodes()[0].attr.auth, undefined);
+    assert.equal(allowing.source.getNodes()[1].attr.auth, 'admin');
     const rules = [];
     const refusing = authored({auth: rule => { rules.push(rule); return 'not_authorized'; }});
     const wire = sourceBagFromTytx(refusing.toTytx(), new GramlotBuilder());

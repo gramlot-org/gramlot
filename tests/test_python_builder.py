@@ -125,9 +125,14 @@ class AuthSerialisationTests(unittest.TestCase):
         self.assertEqual([node.node_tag for node in builder.source], ["p", "div", "svg"])
         self.assertEqual(len(builder.source.nodes[2].value), 1)
 
-    def test_an_allowing_evaluator_serialises_the_same_text(self):
+    def test_an_allowing_evaluator_keeps_every_element_without_the_auth_attribute(self):
         builder = self.authored(auth=lambda rule: None)
-        self.assertEqual(builder.to_tytx(), to_tytx(builder.source))
+        wire = from_tytx(builder.to_tytx())
+        self.assertEqual([node.node_tag for node in wire], ["p", "div", "svg"])
+        self.assertEqual(len(wire.nodes[2].value), 1)
+        self.assertNotIn("auth", wire.nodes[1].attr)
+        self.assertNotIn("auth", wire.nodes[2].value.nodes[0].attr)
+        self.assertEqual(builder.source.nodes[1].attr["auth"], "admin")
 
     def test_a_non_string_auth_attribute_is_a_type_error(self):
         builder = GramlotBuilder("main", auth=lambda rule: None)

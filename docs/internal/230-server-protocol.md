@@ -166,8 +166,9 @@ Block ID: **GC-230-030**.
   owner (`gramlot_server.py:235`, `gramlot-server.js:200-201`).
   `GramlotBuilder.to_tytx()` and `toTytx()` (`builder.py:122-126`,
   `gramlot-builder.js:191-193`) serialise `GramlotBuilderBag.authorized_copy(auth)`
-  and `authorizedCopy(auth)` (`source.py:44-67`, `source.js:276-301`): a copy
-  without the refused elements, nested Source branches included. The live Source
+  and `authorizedCopy(auth)` (`source.py:44-69`, `source.js:284-302`): a copy
+  without the refused elements and without the `auth` attribute of the accepted
+  ones (the rule belongs to the server), nested Source branches included. The live Source
   of the builder is not changed. An `auth` value that is not a string is a
   `TypeError`, answered as `application_error`. A builder without evaluator (the
   browser, authoring alone) keeps every element. genro-builders is not changed

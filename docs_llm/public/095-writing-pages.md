@@ -482,7 +482,7 @@ every author argument: Python calls with keywords (an unaccepted keyword →
 `Page.registerEndpoint('with_vat')`. `auth` on a server without the `auth`
 capability → `not_authenticated`, method not run. `auth="rule"` on an element of
 `main` or of a `@source` fragment: the server drops the element and its children when
-it refuses the rule; the element never reaches the client (a server without the `auth`
+it refuses the rule; the element never reaches the client and an accepted one is sent without `auth` (a server without the `auth`
 capability refuses every rule). Non-string rule → `application_error`; a page built in
 the browser does not evaluate `auth`. Names `[A-Za-z][\w]*`, `main`
 reserved, not both endpoint and `@source`. Unknown endpoint → `not_found`; raised
