@@ -195,6 +195,77 @@ test('call: evaluateAuth outside its three outcomes is application_error', async
             message: "evaluateAuth must return null, 'not_authenticated' or 'not_authorized'"});
 });
 
+class ElementAuthPage extends Page {
+    main(root) {
+        root.p('public');
+        root.div(null, {auth: 'admin'}).span('nested');
+    }
+}
+
+test('call: an element whose auth rule is refused never reaches the client', async () => {
+    const server = memoryServer(ElementAuthPage);
+    const value = (await main(server, (await server.openPage('/')).pageId)).value;
+    assert.deepEqual(value.getNodes().map(node => [node.nodeTag, node.value]), [['p', 'public']]);
+    const fileServer = new GramlotFileServer(pages);
+    const fragment = (await call(fileServer, (await fileServer.openPage('/')).pageId, 'source', 'check_fragment_auth')).value;
+    assert.deepEqual(fragment.getNodes().map(node => [node.nodeTag, node.value]), [['span', 'check-public']]);
+});
+
+test('call: an evaluator that allows keeps every element', async () => {
+    const rules = [];
+    const server = new (class extends GramlotServer {
+        async resolvePage() { return ElementAuthPage; }
+        async resolveResources() { return {css: [], js: []}; }
+        evaluateAuth(rule, {owner}) { rules.push([rule, owner]); return null; }
+    })();
+    const {pageId} = await server.openPage('/', {owner: 'one'});
+    const value = (await main(server, pageId, {owner: 'one'})).value;
+    assert.deepEqual(value.getNodes().map(node => node.nodeTag), ['p', 'div']);
+    assert.equal(value.getNodes()[1].attr.auth, undefined);
+    assert.equal(value.getNodes()[1].value.getNodes()[0].value, 'nested');
+    assert.deepEqual(rules, [[null, 'one'], ['admin', 'one']]);
+});
+
+test('call: a non-string auth attribute is application_error', async () => {
+    class NumberAuthPage extends Page {
+        main(root) { root.p('number', {auth: 3}); }
+    }
+    const server = memoryServer(NumberAuthPage);
+    assert.deepEqual((await main(server, (await server.openPage('/')).pageId)).error,
+        {code: 'application_error', name: 'TypeError', message: "p 'p_0': 'auth' must be a string rule, not number"});
+});
+
+test('GramlotBuilder.toTytx leaves out the refused elements from a copy; without evaluator it keeps all', () => {
+    const authored = options => {
+        const builder = new GramlotBuilder('main', options);
+        builder.root.p('public');
+        builder.root.div(null, {auth: 'admin'}).span('nested');
+        builder.root.svg({width: 10}).circle({r: 3, auth: 'admin'});
+        return builder;
+    };
+    const plain = authored();
+    assert.equal(plain.auth, null);
+    assert.equal(plain.toTytx(), toTytx(plain.source));
+    const allowing = authored({auth: () => null});
+    const kept = fromTytx(allowing.toTytx());
+    assert.deepEqual(kept.getNodes().map(node => node.nodeTag), ['p', 'div', 'svg']);
+    assert.equal(kept.getNodes()[1].attr.auth, undefined);
+    assert.equal(kept.getNodes()[2].value.getNodes()[0].attr.auth, undefined);
+    assert.equal(allowing.source.getNodes()[1].attr.auth, 'admin');
+    const rules = [];
+    const refusing = authored({auth: rule => { rules.push(rule); return 'not_authorized'; }});
+    const wire = sourceBagFromTytx(refusing.toTytx(), new GramlotBuilder());
+    assert.equal(wire.constructor.name, 'GramlotBuilderBag');
+    assert.deepEqual(wire.getNodes().map(node => node.nodeTag), ['p', 'svg']);
+    assert.equal(wire.getNodes()[1].value.getNodes().length, 0);
+    assert.deepEqual(rules, ['admin', 'admin']);
+    assert.deepEqual(refusing.source.getNodes().map(node => node.nodeTag), ['p', 'div', 'svg']);
+    assert.equal(refusing.source.getNodes()[2].value.getNodes().length, 1);
+    const listed = new GramlotBuilder('main', {auth: () => null});
+    listed.root.p('number', {auth: ['admin']});
+    assert.throws(() => listed.toTytx(), {name: 'TypeError', message: "p 'p_0': 'auth' must be a string rule, not object"});
+});
+
 test('call: a value TYTX cannot serialise and a thrown null are application_error', async () => {
     class OddPage extends EmptyPage {
         big() { return 1n; }

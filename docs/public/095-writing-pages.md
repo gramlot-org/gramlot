@@ -75,9 +75,9 @@ validation and DOM construction, each branch installs its Data declarations
 
 <a id="gc-095-015"></a>
 
-## 015 · Remote Source (not yet available)
+## 015 · Remote Source
 
-Source methods (`@source`, `registerSource(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
+`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; §100 below). The declarative `remote` grammar attribute, which would mount a fragment from the Source itself, is not yet available: a fragment is requested from code with `gramlot.src.remoteSource(target, method, params)`.
 
 <a id="gc-095-020"></a>
 
@@ -760,9 +760,9 @@ Migration from legacy pages:
 Migration from 0.1.x:
 
 - a 0.1.x page without binding runs unchanged: HTML and SVG and `Page.css`
-  keep their behavior. Source methods (`@source`, `registerSource(...)`, `remoteSource`)
-  are not yet part of the page-writing API: they arrive together with the
-  `remote` grammar attribute and `@endpoint`;
+  keep their behavior. `@source` / `registerSource(...)` declare Source fragments
+  and `@endpoint` / `registerEndpoint(...)` declare endpoints (§100); the
+  declarative `remote` grammar attribute is not yet available;
 - a call `data(...)` in a 0.1.x page created the HTML5 `<data>` element; on `root`
   it now raises an error, on other nodes `data` is the Data Bag property. Write
   `html_data(...)` for the element;
@@ -895,6 +895,12 @@ Page.registerEndpoint('with_vat');
   protect the endpoint with a rule over tags (`|`, `&`, `!`). A server without the
   `auth` capability knows no identity: every call of a protected endpoint answers
   the outcome `not_authenticated` and the method does not run.
+- `auth="rule"` on an element of `main` or of a `@source` fragment protects the
+  element with the same rule. The server drops an element whose rule it refuses,
+  with all its children, when it sends the fragment: the element never reaches the
+  client, and an accepted element is sent without its `auth` attribute. A server
+  without the `auth` capability refuses every rule, so the element is never sent. The rule is a string; any other value answers `application_error`.
+  A page built in the browser does not evaluate `auth`.
 - A name is `[A-Za-z]` followed by letters, digits and `_`; `main` is reserved,
   and the same method cannot be both an endpoint and a `@source` method.
 - An unknown endpoint answers `not_found`; an exception raised by the method

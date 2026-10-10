@@ -181,6 +181,14 @@ function answer(text, value) {
     return toTytx({id, contentType, value});
 }
 
+test('the page builder has no auth evaluator: an element with auth is kept and rendered', () => {
+    const {author, destination} = setup();
+    assert.equal(author.auth, null);
+    author.root.p('guarded', {auth: 'admin', id: 'guarded'});
+    assert.equal(fromTytx(author.toTytx()).getNodes()[0].attr.auth, 'admin');
+    assert.equal(destination.querySelector('#guarded').textContent, 'guarded');
+});
+
 test('main failure is visible and retryable; disposal prevents late insertion', async () => {
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     let attempts = 0;

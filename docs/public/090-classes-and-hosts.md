@@ -345,7 +345,7 @@ export class Page extends BasePage {
 }
 ```
 
-Source methods (`@source`, `registerSource(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
+`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; GC-095 §100). The declarative `remote` grammar attribute, which would mount a fragment from the Source itself, is not yet available: a fragment is requested from code with `gramlot.src.remoteSource(target, method, params)`.
 
 The Worker entry belongs to the `@gramlot/gramlot-serverless` host configuration. This
 development boundary requires the matching core with the browser-safe `/gramlot-server`

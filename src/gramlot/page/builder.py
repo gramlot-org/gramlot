@@ -5,6 +5,7 @@ from uuid import uuid4
 from genro_bag import Bag
 from genro_builders.builder import SourceBag, SourceBagNode
 from genro_builders.contrib.html import HtmlBuilder
+from genro_tytx import to_tytx
 
 from ..renderer import GramlotHtmlRenderer
 from ._grammar_load import load_grammar
@@ -46,9 +47,10 @@ class GramlotBuilder(HtmlBuilder):
     # Builder applies it on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
     _grammar_documents = ("../collections/binding.json",)
 
-    def __init__(self, name=None, *, collections=()):
+    def __init__(self, name=None, *, collections=(), auth=None):
         super().__init__(name)
         self._collection = None
+        self._auth = auth
         for collection in collections:
             self.load_collection(collection)
 
@@ -110,6 +112,18 @@ class GramlotBuilder(HtmlBuilder):
     def renderer_html(self):
         """The string renderer of the Gramlot Source (static render; authoring stays inert)."""
         return GramlotHtmlRenderer(builder=self)
+
+    @property
+    def auth(self):
+        """The ``auth`` evaluator, ``rule -> None | "not_authenticated" | "not_authorized"``,
+        or None: without it every element is serialised."""
+        return self._auth
+
+    def to_tytx(self):
+        """The Source encoded as TYTX text, as the JS ``toTytx``. With an ``auth``
+        evaluator, the elements whose ``auth`` rule it refuses are left out
+        (``GramlotBuilderBag.authorized_copy``)."""
+        return to_tytx(self.source if self.auth is None else self.source.authorized_copy(self.auth))
 
     @property
     def root(self):

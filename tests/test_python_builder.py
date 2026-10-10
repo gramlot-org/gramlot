@@ -99,6 +99,48 @@ class BuilderTests(unittest.TestCase):
         self.assertIn("<p>true<span>child</span></p>", builder.render())
 
 
+class AuthSerialisationTests(unittest.TestCase):
+    @staticmethod
+    def authored(**options):
+        builder = GramlotBuilder("main", **options)
+        builder.root.p("public")
+        guarded = builder.root.div(auth="admin")
+        guarded.span("nested")
+        builder.root.svg(width=10).circle(r=3, auth="admin")
+        return builder
+
+    def test_without_evaluator_every_element_is_serialised(self):
+        builder = self.authored()
+        self.assertIsNone(builder.auth)
+        self.assertEqual(builder.to_tytx(), to_tytx(builder.source))
+
+    def test_refused_elements_are_left_out_of_a_copy_and_the_source_is_not_changed(self):
+        rules = []
+        builder = self.authored(auth=lambda rule: rules.append(rule) or "not_authorized")
+        wire = from_tytx(builder.to_tytx())
+        self.assertIsInstance(wire, GramlotBuilderBag)
+        self.assertEqual([node.node_tag for node in wire], ["p", "svg"])
+        self.assertEqual(len(wire.nodes[1].value), 0)
+        self.assertEqual(rules, ["admin", "admin"])
+        self.assertEqual([node.node_tag for node in builder.source], ["p", "div", "svg"])
+        self.assertEqual(len(builder.source.nodes[2].value), 1)
+
+    def test_an_allowing_evaluator_keeps_every_element_without_the_auth_attribute(self):
+        builder = self.authored(auth=lambda rule: None)
+        wire = from_tytx(builder.to_tytx())
+        self.assertEqual([node.node_tag for node in wire], ["p", "div", "svg"])
+        self.assertEqual(len(wire.nodes[2].value), 1)
+        self.assertNotIn("auth", wire.nodes[1].attr)
+        self.assertNotIn("auth", wire.nodes[2].value.nodes[0].attr)
+        self.assertEqual(builder.source.nodes[1].attr["auth"], "admin")
+
+    def test_a_non_string_auth_attribute_is_a_type_error(self):
+        builder = GramlotBuilder("main", auth=lambda rule: None)
+        builder.root.p("number", auth=["admin"])
+        with self.assertRaisesRegex(TypeError, "'auth' must be a string rule, not list"):
+            builder.to_tytx()
+
+
 class GramlotSourceClassTests(unittest.TestCase):
     def test_counterparts_use_the_builder_node_class_hook(self):
         self.assertTrue(issubclass(GramlotBuilderBag, SourceBag))
@@ -107,7 +149,7 @@ class GramlotSourceClassTests(unittest.TestCase):
         own = {cls: {name for name in vars(cls) if not name.startswith("__")}
                for cls in (GramlotBuilderBag, GramlotBuilderBagNode)}
         self.assertEqual(own[GramlotBuilderBagNode], {"pointer_type"})
-        self.assertEqual(own[GramlotBuilderBag], {"_node_class"})
+        self.assertEqual(own[GramlotBuilderBag], {"_node_class", "authorized_copy"})
 
     def test_a_double_equals_value_is_not_a_pointer(self):
         builder = GramlotBuilder()

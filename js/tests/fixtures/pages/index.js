@@ -10,11 +10,16 @@ export class Page extends BasePage {
         root.p('<literal text>', {id: 'literal'});
     }
     check_fragment(root, {text = 'check'} = {}) { root.span(text); }
+    check_fragment_auth(root) {
+        root.span('check-public');
+        root.div(null, {auth: 'admin'}).span('check-refused');
+    }
     check_endpoint({value}) { return value; }
     check_endpoint_auth() { return 'allowed'; }
     check_endpoint_raise() { throw new Error('check'); }
 }
 Page.registerSource('check_fragment');
+Page.registerSource('check_fragment_auth');
 Page.registerEndpoint('check_endpoint');
 Page.registerEndpoint('check_endpoint_auth', {auth: 'admin'});
 Page.registerEndpoint('check_endpoint_raise');
