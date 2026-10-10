@@ -25,8 +25,8 @@ def source(function=None, *, auth=None):
     """Mark an instance method as an explicitly exposed Source method: ``@source`` or
     ``@source(auth="rule")``.
 
-    Source methods (`@source`, `registerSource`, `remoteSource`) are not yet part of the page-writing API:
-    they arrive together with the `remote` grammar attribute.
+    A declared fragment is requested from code with ``gramlot.src.remoteSource`` (GC-230 §035);
+    the declarative ``remote`` grammar attribute is not yet available.
     """
     return _mark(function, "__gramlot_source__", auth)
 

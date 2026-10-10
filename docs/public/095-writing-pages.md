@@ -75,9 +75,9 @@ validation and DOM construction, each branch installs its Data declarations
 
 <a id="gc-095-015"></a>
 
-## 015 · Remote Source (not yet available)
+## 015 · Remote Source
 
-Source methods (`@source`, `registerSource(...)`, `remoteSource`) are not yet part of the page-writing API: they arrive together with the `remote` grammar attribute and `@endpoint`.
+`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; §100 below). The declarative `remote` grammar attribute, which would mount a fragment from the Source itself, is not yet available: a fragment is requested from code with `gramlot.src.remoteSource(target, method, params)`.
 
 <a id="gc-095-020"></a>
 
@@ -760,9 +760,9 @@ Migration from legacy pages:
 Migration from 0.1.x:
 
 - a 0.1.x page without binding runs unchanged: HTML and SVG and `Page.css`
-  keep their behavior. Source methods (`@source`, `registerSource(...)`, `remoteSource`)
-  are not yet part of the page-writing API: they arrive together with the
-  `remote` grammar attribute and `@endpoint`;
+  keep their behavior. `@source` / `registerSource(...)` declare Source fragments
+  and `@endpoint` / `registerEndpoint(...)` declare endpoints (§100); the
+  declarative `remote` grammar attribute is not yet available;
 - a call `data(...)` in a 0.1.x page created the HTML5 `<data>` element; on `root`
   it now raises an error, on other nodes `data` is the Data Bag property. Write
   `html_data(...)` for the element;
