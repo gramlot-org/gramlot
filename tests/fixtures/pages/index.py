@@ -15,6 +15,11 @@ class Page(BasePage):
     def check_fragment(self, root, text="check"):
         root.span(text)
 
+    @source
+    def check_fragment_auth(self, root):
+        root.span("check-public")
+        root.div(auth="admin").span("check-refused")
+
     @endpoint
     def check_endpoint(self, value):
         return value

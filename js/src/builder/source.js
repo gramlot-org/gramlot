@@ -274,6 +274,32 @@ export class GramlotBuilderBag extends SourceBag {
         return GramlotBuilderBagNode;
     }
 
+    /**
+     * A copy of this Source without the elements whose `auth` rule `auth` refuses, as the Python
+     * `authorized_copy`. `auth` is a function `rule => null | 'not_authenticated' | 'not_authorized'`.
+     * An element whose `auth` attribute `auth` answers with a code is left out with its subtree;
+     * nested Source branches are copied the same way. This Bag is not changed. A non-string `auth`
+     * attribute is a TypeError.
+     */
+    authorizedCopy(auth) {
+        const result = new this.constructor();
+        for (const node of this.getNodes()) {
+            const rule = node.getAttr('auth') ?? null;
+            if (rule !== null) {
+                if (typeof rule !== 'string') {
+                    throw new TypeError(`${node.nodeTag} '${node.label}': 'auth' must be a string rule, not ${typeof rule}`);
+                }
+                if (auth(rule) !== null) continue;
+            }
+            let value = node.staticValue;
+            if (value instanceof GramlotBuilderBag) value = value.authorizedCopy(auth);
+            const copied = result.setItem(node.label, value, {...node.getAttr()}, '>', false, false, null, false, true,
+                null, node.nodeTag);
+            copied.xmlTag = node.xmlTag;
+        }
+        return result;
+    }
+
     /** Activate the inline code of every node, nested Source branches included (GramlotBuilderBagNode.activateCode); returns this. */
     activateCode() {
         for (const node of this.getNodes()) {

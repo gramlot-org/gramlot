@@ -39,6 +39,21 @@ def memory_server(page_class):
     return MemoryServer()
 
 
+def server_and_page(server):
+    return server, open_page(server)
+
+
+class ElementAuthPage(Page):
+    def main(self, root):
+        root.p("public")
+        root.div(auth="admin").span("nested")
+
+
+class NumberAuthPage(Page):
+    def main(self, root):
+        root.p("number", auth=3)
+
+
 class CallTests(unittest.TestCase):
     def test_bootstrap_config_carries_rpc_url_close_url_and_capabilities(self):
         opened = asyncio.run(GramlotFileServer(PAGES).open_page("/"))
@@ -122,6 +137,39 @@ class CallTests(unittest.TestCase):
         self.assertEqual(call(server, open_page(server), "data", "check_endpoint_auth")["error"],
                          {"code": "application_error", "name": "TypeError",
                           "message": "evaluate_auth must return None, 'not_authenticated' or 'not_authorized'"})
+
+    def test_an_element_whose_auth_rule_is_refused_never_reaches_the_client(self):
+        main = call(*server_and_page(memory_server(ElementAuthPage)), "source", "main")["value"]
+        self.assertEqual([(node.node_tag, node.value) for node in main], [("p", "public")])
+        server = GramlotFileServer(PAGES)
+        fragment = call(server, open_page(server), "source", "check_fragment_auth")["value"]
+        self.assertEqual([(node.node_tag, node.value) for node in fragment], [("span", "check-public")])
+
+    def test_an_evaluator_that_allows_keeps_every_element(self):
+        rules = []
+
+        class Allowing(GramlotServer):
+            def resolve_page(self, path):
+                return ElementAuthPage
+
+            def resolve_resources(self, path, cls):
+                return {"css": [], "js": []}
+
+            def evaluate_auth(self, rule, *, owner):
+                rules.append((rule, owner))
+                return None
+
+        server = Allowing()
+        main = call(server, open_page(server, owner="one"), "source", "main", owner="one")["value"]
+        self.assertEqual([node.node_tag for node in main], ["p", "div"])
+        self.assertEqual(main.nodes[1].attr["auth"], "admin")
+        self.assertEqual(main.nodes[1].value.nodes[0].value, "nested")
+        self.assertEqual(rules, [(None, "one"), ("admin", "one")])
+
+    def test_a_non_string_auth_attribute_is_application_error(self):
+        self.assertEqual(call(*server_and_page(memory_server(NumberAuthPage)), "source", "main")["error"],
+                         {"code": "application_error", "name": "TypeError",
+                          "message": "p 'p_0': 'auth' must be a string rule, not int"})
 
     def test_a_value_tytx_cannot_serialise_is_application_error(self):
         class SetPage(Page):

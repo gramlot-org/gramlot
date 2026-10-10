@@ -188,6 +188,17 @@ def check_protocol(base_url, page_path):
     else:
         outcome("GC-230-030", envelope("data", "check_endpoint_auth"), "not_authenticated", "check_endpoint_auth")
 
+    status, _, body, _ = call(envelope("source", "check_fragment_auth"))
+    try:
+        value = json.loads(body).get("value")
+    except (ValueError, AttributeError):
+        value = None
+    _expect("GC-230-030", status == 200 and isinstance(value, str) and "check-public" in value,
+            f"check_fragment_auth answers {status} {body[:200]!r}, not a fragment document")
+    if "auth" not in config["capabilities"]:
+        _expect("GC-230-030", "check-refused" not in value,
+                f"check_fragment_auth answers {value[:200]!r}, which contains the element of the refused auth rule")
+
     error = outcome("GC-230-025", envelope("data", "check_endpoint_raise"), "application_error", "check_endpoint_raise")
     _expect("GC-230-025", isinstance(error.get("name"), str) and error["name"] and error.get("message") == "check",
             f"check_endpoint_raise answers the error {error!r}, not the exception name and the message 'check'")
