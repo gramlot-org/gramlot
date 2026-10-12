@@ -241,7 +241,7 @@ export class Page extends BasePage {
 }
 ```
 
-`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; GC-095 §100). The declarative `remote` grammar attribute, which would mount a fragment from the Source itself, is not yet available: a fragment is requested from code with `gramlot.src.remoteSource(target, method, params)`.
+`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; GC-095 §100). The `remote` attribute mounts a fragment declaratively as the content of an element (GC-095 §105); from code a fragment is requested with `gramlot.src.remoteSource(target, method, params)`.
 
 The Worker entry belongs to the `@gramlot/gramlot-serverless` host configuration. This
 development boundary requires the matching core with the browser-safe `/gramlot-server`

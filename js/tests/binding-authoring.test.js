@@ -53,8 +53,7 @@ test('data(...) is an error naming dataSetter and html_data, on a Source Bag and
 
 test('excluded declarations are errors naming the tag, and the node for a received Source', () => {
     const builder = new GramlotBuilder();
-    assert.throws(() => builder.root.dataRemote({destination: 'x'}), /dataRemote: excluded from Gramlot 0\.2\.0/);
-    for (const name of ['serverpath', 'dbenv', 'shared_id', 'remote', '_ask', 'ask', 'subscribe_x', 'selfsubscribe_x', 'formsubscribe_x']) {
+    for (const name of ['serverpath', 'dbenv', 'shared_id', '_ask', 'ask', 'subscribe_x', 'selfsubscribe_x', 'formsubscribe_x']) {
         assert.throws(() => builder.root.div({[name]: 'v'}), new RegExp(`div: attribute '${name}' is excluded from Gramlot 0\\.2\\.0`));
     }
     const received = new GramlotBuilder();
@@ -62,6 +61,42 @@ test('excluded declarations are errors naming the tag, and the node for a receiv
     div.attr.serverpath = 'y';
     const {mount} = mounted(received);
     assert.throws(mount, /div 'div_0': attribute 'serverpath' is excluded from Gramlot 0\.2\.0/);
+});
+
+test('dataRemote and the remote attribute build', () => {
+    const builder = new GramlotBuilder();
+    builder.root.dataRemote({destination_path: '.menu', method: 'loadMenu'});
+    builder.root.div({remote: 'details', remote_id: '^.id'});
+    const [menu, div] = builder.source.getNodes();
+    assert.equal(menu.nodeTag, 'dataRemote');
+    assert.equal(div.getAttr('remote'), 'details');
+    assert.equal(div.getAttr('remote_id'), '^.id');
+});
+
+test('dataRemote builds with its attributes and its destination_path refuses ?attr', () => {
+    const builder = new GramlotBuilder();
+    builder.root.dataRemote({destination_path: '.menu', method: 'loadMenu', cacheTime: 5, table: 'x'});
+    const node = builder.source.getNodes()[0];
+    assert.equal(node.nodeTag, 'dataRemote');
+    assert.deepEqual(['destination_path', 'method', 'cacheTime', 'table'].map(name => node.getAttr(name)),
+        ['.menu', 'loadMenu', 5, 'x']);
+    assert.throws(() => builder.root.dataRemote({destination_path: '.menu?a', method: 'loadMenu'}), /dataRemote: 'destination_path' does not accept '\?attr'/);
+    assert.throws(() => builder.root.dataRemote({destination_path: '.menu'}), /dataRemote: missing required attribute 'method'/);
+});
+
+test('remote writes its attributes on the node and returns it', () => {
+    const builder = new GramlotBuilder();
+    const div = sourceTarget(builder.root.div().remote('details', {record_id: '^.record_id', _cachedRemote: true, _if: 'record_id'}));
+    assert.equal(div.nodeTag, 'div');
+    const {_meta, ...attrs} = div.getAttr();
+    assert.deepEqual(attrs, {remote: 'details', remote_record_id: '^.record_id', _cachedRemote: true, _if: 'record_id'});
+    for (const name of [3, '1x', 'a-b', 'abc\n', 'a\u00e8']) {
+        assert.throws(() => builder.root.div().remote(name), {name: 'TypeError', message: /remote name must match/});
+    }
+    assert.throws(() => builder.root.div().remote('details', {_delay: 5}), {name: 'TypeError', message: /remote parameter '_delay' is not accepted; the control attributes are _cachedRemote, _if, _else, _onRemote$/});
+    const named = sourceTarget(builder.root.div().remote('details', {name: '^.name'}));
+    assert.equal(named.getAttr('remote_name'), '^.name');
+    assert.equal(sourceTarget(builder.root.div().remote('details').span('x')).nodeTag, 'span');
 });
 
 test('html_data renders the HTML5 data element and stays distinct from dataSetter', () => {
@@ -128,6 +163,14 @@ test('binding attributes never reach the DOM', () => {
     assert.deepEqual(document.querySelector('circle').getAttributeNames(), ['r']);
     sourceTarget(builder.source.getNodes()[0]).setAttr({live: false, title: 'shown'});
     assert.deepEqual(field.getAttributeNames(), ['id', 'style', 'value', 'title']);
+    renderer.dispose();
+});
+
+test('the attributes of remote never reach the DOM', () => {
+    const {builder, document, mount} = mounted();
+    builder.root.div('ph', {id: 'slot'}).remote('details', {id: 3, _cachedRemote: true, _onRemote: 'null', _if: 'false'});
+    const renderer = mount();
+    assert.deepEqual(document.getElementById('slot').getAttributeNames(), ['id']);
     renderer.dispose();
 });
 

@@ -1455,3 +1455,18 @@ value is a value and activates nothing (GC-230 §015). The rest of 11.53 is unch
 Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
 [GC-090 §020](public/090-classes-and-hosts.md#gc-090-020). Contract: GC-230,
 `docs/internal/230-server-protocol.md`.
+
+### Amendment 11.59 — `remote` and `dataRemote` realised in 0.2.16 — 2026-10-12
+
+Amendment of 11.58 item 5: the sentence "`dataRemote` and the attribute `remote` stay
+excluded" is superseded. In 0.2.16 both enter the grammar in Python and JS and leave
+the exclusion lists. The attribute `remote`, written by the node method
+`remote(name, …)`, makes the content of an element the fragment of a `@source`
+method, requested at the element's start and on every change of a `^` parameter.
+The data-element `dataRemote(destination_path, method, cacheTime, …)` installs at a
+Data path a resolver that calls an endpoint when the path is read. The client/server
+contract of 11.58 is unchanged. Out of 0.2.16: `lazy` loading by visibility,
+`_waitingMessage`, the `tbody` merge, `_resolved`, `_fired` and the legacy alias
+`data(path, remote=…)`.
+
+Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).

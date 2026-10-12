@@ -41,7 +41,7 @@ export class SourceHandler extends Handler {
      * validates. Resolves with true when applied, false when superseded or cancelled.
      *
      * A declared fragment is requested from code with `gramlot.src.remoteSource` (GC-230 §035); the
-     * declarative `remote` grammar attribute is not yet available.
+     * `remote` attribute requests it declaratively (GC-095 §105).
      */
     remoteSource(target: SourceBagNode, method: string, params?: Record<string, unknown>): Promise<boolean>;
 }

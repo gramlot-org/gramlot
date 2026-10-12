@@ -42,7 +42,7 @@ class BuilderTests(unittest.TestCase):
         with self.assertRaises(AttributeError):
             builder.root.recipe("cards.person")
 
-    def test_data_rpc_builds_with_result_path_and_data_remote_stays_excluded(self):
+    def test_data_rpc_builds_with_result_path(self):
         builder = GramlotBuilder()
         builder.root.dataRpc(method="m", result_path="x", timeout=500, value="^v")
         node = builder.source.nodes[0]
@@ -51,8 +51,33 @@ class BuilderTests(unittest.TestCase):
                          ("m", "x", 500, "^v"))
         with self.assertRaisesRegex(ValueError, r"dataRpc: 'result_path' does not accept '\?attr'"):
             builder.root.dataRpc(method="m", result_path="x?a")
-        with self.assertRaisesRegex(ValueError, r"dataRemote: excluded from Gramlot 0\.2\.0"):
-            builder.root.dataRemote(method="m")
+
+    def test_data_remote_builds_and_its_destination_path_refuses_attr(self):
+        builder = GramlotBuilder()
+        builder.root.dataRemote(".menu", "loadMenu", cacheTime=5, table="x")
+        node = builder.source.nodes[0]
+        self.assertEqual(node.node_tag, "dataRemote")
+        self.assertEqual((node.attr["destination_path"], node.attr["method"], node.attr["cacheTime"], node.attr["table"]),
+                         (".menu", "loadMenu", 5, "x"))
+        with self.assertRaisesRegex(ValueError, r"dataRemote: 'destination_path' does not accept '\?attr'"):
+            builder.root.dataRemote(".menu?a", "loadMenu")
+        with self.assertRaisesRegex(ValueError, r"dataRemote: missing required attributes \['method'\]"):
+            builder.root.dataRemote(destination_path=".menu")
+
+    def test_remote_writes_its_attributes_on_the_node(self):
+        builder = GramlotBuilder()
+        div = builder.root.div().remote("details", record_id="^.record_id", _cachedRemote=True, _if="record_id")
+        self.assertEqual(div.node_tag, "div")
+        self.assertEqual({k: v for k, v in div.attr.items() if k != "_meta"},
+                         {"remote": "details", "remote_record_id": "^.record_id", "_cachedRemote": True, "_if": "record_id"})
+        for name in (3, "1x", "a-b", "abc\n", "a\u00e8"):
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "remote name must match"):
+                builder.root.div().remote(name)
+        with self.assertRaisesRegex(ValueError, "remote parameter '_delay' is not accepted; "
+                                    "the control attributes are _cachedRemote, _if, _else, _onRemote$"):
+            builder.root.div().remote("details", _delay=5)
+        named = builder.root.div().remote("details", name="^.name")
+        self.assertEqual(named.attr["remote_name"], "^.name")
 
     def test_create_does_not_compute_browser_logic(self):
         class PageBuilder(GramlotBuilder):
@@ -148,7 +173,7 @@ class GramlotSourceClassTests(unittest.TestCase):
         self.assertIs(GramlotBuilderBag._node_class, GramlotBuilderBagNode)
         own = {cls: {name for name in vars(cls) if not name.startswith("__")}
                for cls in (GramlotBuilderBag, GramlotBuilderBagNode)}
-        self.assertEqual(own[GramlotBuilderBagNode], {"pointer_type"})
+        self.assertEqual(own[GramlotBuilderBagNode], {"pointer_type", "remote"})
         self.assertEqual(own[GramlotBuilderBag], {"_node_class", "authorized_copy"})
 
     def test_a_double_equals_value_is_not_a_pointer(self):

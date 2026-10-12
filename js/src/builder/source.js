@@ -1,4 +1,4 @@
-import {SourceBag, SourceBagNode, sourceAttributeItems} from '@genrojs/builders';
+import {SourceBag, SourceBagNode, sourceAttributeItems, wrapSource} from '@genrojs/builders';
 import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
 
 // The inline code attributes of each tag, besides `connect_on<event>` and the `==` expressions of any tag.
@@ -6,8 +6,15 @@ const CODE_ATTRIBUTES = {
     dataFormula: ['formula', '_if', '_else'],
     dataController: ['script', '_if', '_else'],
     dataRpc: ['_if', '_else', '_onCalling', '_onResult', '_onError'],
+    dataRemote: ['_if', '_else'],
     button: ['action'],
 };
+
+// The control attributes of `remote`, written on the node as they are; every other parameter becomes `remote_<k>`.
+const REMOTE_CONTROLS = ['_cachedRemote', '_if', '_else', '_onRemote'];
+// The inline code attributes of any node whose `remote` is a string.
+const REMOTE_CODE_ATTRIBUTES = ['_if', '_else', '_onRemote'];
+const REMOTE_NAME = /^[A-Za-z]\w*$/;
 
 /** Whether `value` is a `==` expression (Q11.2). */
 function isExpression(value) {
@@ -31,10 +38,12 @@ export class GramlotBuilderBagNode extends SourceBagNode {
      * The inline code attributes of this node as `[name, text]`, under the names InlineCompiler uses:
      * `formula` of a dataFormula, `script` of a dataController, `_if`/`_else` of the three providers and the
      * `_onCalling`/`_onResult`/`_onError` of a dataRpc, `action` of a
-     * button, every `connect_on<event>`, every `==` attribute (canonical name) and a `==` node value (`''`).
+     * button, `_if`/`_else`/`_onRemote` of a node whose `remote` is a string, every `connect_on<event>`,
+     * every `==` attribute (canonical name) and a `==` node value (`''`).
      */
     codeAttributes() {
-        const own = CODE_ATTRIBUTES[this.nodeTag] ?? [];
+        const own = [...(CODE_ATTRIBUTES[this.nodeTag] ?? []),
+            ...(typeof this.getAttr('remote') === 'string' ? REMOTE_CODE_ATTRIBUTES : [])];
         const items = [];
         for (const [name, value] of Object.entries(this.getAttr() ?? {})) {
             if (typeof value === 'string' && (own.includes(name) || name.startsWith('connect_on'))) items.push([name, value]);
@@ -67,6 +76,29 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     /** The text of the inline code `name` received with the Source, or null when it was not received. */
     activatedCode(name) {
         return this.#activatedCode?.get(name) ?? null;
+    }
+
+    /**
+     * Declare the content of this element as the fragment `name` of a `@source` method: writes
+     * `remote = name` and one `remote_<k> = v` per entry of `params` on this node; the control attributes
+     * `_cachedRemote`, `_if`, `_else` and `_onRemote` are written as they are. Returns this node. A bad
+     * name or another `_` parameter is a TypeError.
+     */
+    remote(name, params = {}) {
+        if (typeof name !== 'string' || !REMOTE_NAME.test(name)) {
+            throw new TypeError(`${this.nodeTag} '${this.label}': remote name must match ${REMOTE_NAME.source}, not ${JSON.stringify(name)}`);
+        }
+        const invalid = Object.keys(params).find(key => key.startsWith('_') && !REMOTE_CONTROLS.includes(key));
+        if (invalid) {
+            throw new TypeError(`${this.nodeTag} '${this.label}': remote parameter '${invalid}' is not accepted; `
+                + `the control attributes are ${REMOTE_CONTROLS.join(', ')}`);
+        }
+        const attributes = {remote: name};
+        for (const [key, value] of Object.entries(params)) {
+            attributes[REMOTE_CONTROLS.includes(key) ? key : `remote_${key}`] = value;
+        }
+        this.setAttr(attributes);
+        return wrapSource(this);
     }
 
     /** Builder's pointerType, except that a string starting with `==` is not a pointer. */

@@ -1,8 +1,9 @@
 import {Bag} from '@genrojs/bag';
+import {RpcResolver} from './rpc-resolver.js';
 
 /**
  * Providers of one Gramlot page (source plan §4.8): the semantic runtime of a `dataFormula`, a
- * `dataController` or a `dataRpc`, owned by its NodeBinding.
+ * `dataController`, a `dataRpc` or a `dataRemote`, owned by its NodeBinding.
  *
  * One owner per trigger (B7): the router delivers the Data changes of the `^` pointers to
  * `receive`; `_timing` is started by `register`; `_init`, `_onBuilt` and `_onStart` are invoked by
@@ -16,7 +17,7 @@ import {Bag} from '@genrojs/bag';
 const CONTROL_ATTRIBUTES = new Set([
     'destination_path', 'result_path', 'func', 'formula', 'script', 'if', 'else',
     '_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges',
-    'method', 'timeout', '_onCalling', '_onResult', '_onError',
+    'method', 'timeout', '_onCalling', '_onResult', '_onError', 'cacheTime',
 ]);
 
 export class Provider {
@@ -27,24 +28,30 @@ export class Provider {
     #cancelDelay = null;
     // The AbortController of the in-flight call of a `dataRpc`: a new call aborts it (latest wins).
     #rpcCall = null;
+    // The RpcResolver a `dataRemote` installed and its absolute Data path.
+    #installed = null;
+    // The resolver removed last had loaded or was loading: the next one loads at once.
+    #reload = false;
 
     constructor(binding) {
         this.#binding = binding;
         binding.track(() => {
             this.cancel();
             this.#closeRegistrations();
+            this.#uninstall();
         });
     }
 
     get binding() { return this.#binding; }
     get node() { return this.binding.node; }
-    /** 'formula' | 'controller' | 'rpc'. */
-    get kind() { throw new Error('Provider.kind is defined by FormulaProvider, ControllerProvider and RpcProvider'); }
+    /** 'formula' | 'controller' | 'rpc' | 'remote'. */
+    get kind() { throw new Error('Provider.kind is defined by FormulaProvider, ControllerProvider, RpcProvider and RemoteProvider'); }
 
     /**
      * Step 4 of §5.1, and every rebinding: the `^` pointers are registered again from the current
      * context (a pointer on a null path is not registered, Q7), and `_timing` starts again from its
-     * current value. A numeric `_onStart` must be a finite number not below zero (P22).
+     * current value. A numeric `_onStart` must be a finite number not below zero (P22). A `dataRemote`
+     * then installs its resolver with the current arguments.
      */
     register() {
         const node = this.node;
@@ -64,6 +71,7 @@ export class Provider {
             if (name === '_timing') this.#timingRegistration = registration;
         }
         this.#startTiming();
+        if (this.kind === 'remote') this.invoke({kind: 'install', change: null});
     }
 
     /**
@@ -92,25 +100,30 @@ export class Provider {
      * the inline `formula`/`script`, compiled by the page's InlineCompiler, or the named `func`. An
      * error propagates to the caller (P12). A closed node runs nothing. The body of a `dataRpc` is the
      * call: `invoke` returns its promise, and a false `_if` runs `_else` as inline code without calling.
+     * The body of a `dataRemote` is the installation of its resolver; a false `_if` removes it, the
+     * Data node keeping its last value, and runs `_else` as inline code.
      */
     invoke(trigger) {
         if (this.binding.closed) return;
         const node = this.node;
         const formula = this.kind === 'formula';
         const rpc = this.kind === 'rpc';
+        const remote = this.kind === 'remote';
         const kwargs = this.readArguments(trigger);
         let [attr, body] = [formula ? 'formula' : 'script', node.getAttr(formula ? 'formula' : 'script')];
         // Truthiness of `_if`, `_else` and the body, as legacy (`gnrdomsource.js:371-385, 473-482`).
         const condition = node.getAttr('_if');
         if (condition && !this.#inline('_if', condition, `return (${condition})`, kwargs, false)) {
+            if (remote) this.#uninstall();
             [attr, body] = ['_else', node.getAttr('_else')];
             if (!body) return;
-            if (rpc) {
+            if (rpc || remote) {
                 this.#inline(attr, body, body, kwargs, true);
                 return;
             }
         }
         if (rpc) return this.#call(kwargs);
+        if (remote) return this.#install(kwargs);
         const func = node.getAttr('func');
         let result;
         if (body) {
@@ -251,6 +264,45 @@ export class Provider {
         if (onResult) this.#inline('_onResult', onResult, onResult, {...kwargs, result}, true);
     }
 
+    /**
+     * The body of a `dataRemote`: a new RpcResolver on the Data node at `destination_path`, with the
+     * author arguments as params, in place of the previous one, so the next read loads again. When the
+     * resolver removed last, by this call or by a false `_if`, had loaded or was loading, the new one
+     * loads at once: its consumers receive the new value through the Data event without reading again.
+     * A failed load is thrown again naming the node, as an unhandled rejection. A null path (Q7)
+     * installs nothing.
+     */
+    #install(kwargs) {
+        this.#uninstall();
+        const reload = this.#reload;
+        this.#reload = false;
+        const node = this.node;
+        const path = node.absDatapath(node.pathAttribute('destination_path'));
+        if (path === null) return;
+        const resolver = new RpcResolver({
+            gramlot: this.binding.runtime.gramlot, method: this.#resolved('method'),
+            params: authorArguments(kwargs), cacheTime: this.#resolved('cacheTime'),
+            onError: error => {
+                throw new Error(`${node.nodeTag} '${node.label}': dataRemote '${resolver.method}' failed: ${error.message}`,
+                    {cause: error});
+            },
+        });
+        this.binding.runtime.data.setResolver(path, resolver);
+        this.#installed = {path, resolver};
+        if (reload) resolver.refresh();
+    }
+
+    /** Remove the resolver this `dataRemote` installed, when it is still on its Data node, and abort its load. */
+    #uninstall() {
+        if (!this.#installed) return;
+        const {path, resolver} = this.#installed;
+        this.#installed = null;
+        this.#reload = resolver.loaded || resolver.loading !== null;
+        resolver.abort();
+        const dataNode = this.binding.runtime.data.getNode(path);
+        if (dataNode?.resolver === resolver) dataNode.resolver = null;
+    }
+
     #closeRegistrations() {
         for (const registration of this.#registrations.splice(0)) registration.close();
         this.#timingRegistration = null;
@@ -270,6 +322,11 @@ export class ControllerProvider extends Provider {
 /** The provider of a `dataRpc`: the body is the call of a server endpoint through `gramlot.rpc`. */
 export class RpcProvider extends Provider {
     get kind() { return 'rpc'; }
+}
+
+/** The provider of a `dataRemote`: the body installs an RpcResolver, which calls its endpoint when the Data node is read. */
+export class RemoteProvider extends Provider {
+    get kind() { return 'remote'; }
 }
 
 // The trigger fields of the kwargs, in the legacy order of the inline parameters.

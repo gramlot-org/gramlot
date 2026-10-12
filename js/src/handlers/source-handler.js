@@ -80,7 +80,7 @@ export class SourceHandler extends Handler {
      * or a freeze keeps it, the removal of the target cancels it.
      *
      * `@source` / `registerSource` declare the fragments this method requests (GC-230 §035); the
-     * declarative `remote` grammar attribute is not yet available.
+     * `remote` attribute requests them declaratively (GC-095 §105).
      */
     async remoteSource(target, method, params = {}) {
         const rpc = this.gramlot.rpc;
