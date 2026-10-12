@@ -61,8 +61,8 @@ export class Page {
      * Mark the own method `methodName` of this page class as a remote Source method,
      * equivalent to Python `@source`; call it after the class.
      *
-     * A declared fragment is requested from code with `gramlot.src.remoteSource` (GC-230 §035); the
-     * declarative `remote` grammar attribute is not yet available.
+     * A declared fragment is requested from code with `gramlot.src.remoteSource` (GC-230 §035);
+     * the `remote` attribute requests it declaratively (GC-095 §105).
      */
     static registerSource(methodName, {auth = null} = {}) {
         declare(this, methodName, SOURCE_METHOD, auth);

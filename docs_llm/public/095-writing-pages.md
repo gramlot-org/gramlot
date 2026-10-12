@@ -507,7 +507,7 @@ flight cancelled, `_else` runs), `_onRemote` (inline after the mount). Name `[A-
 `_` parameter → error; a failed request → unhandled rejection naming the element.
 Nested `remote` inside a fragment works. Example:
 `root.div().remote("details", record_id="^.record_id", _cachedRemote=True)` with
-`@source def details(self, root, record_id=None)`; JS
+`@source def details(self, root, record_id=None, **kwargs)`; JS
 `root.div().remote('details', {record_id: '^.record_id'})`, method
 `details(root, {record_id})` and `Page.registerSource('details')`.
 `dataRemote(destination_path, method, cacheTime=None, **params)` installs at

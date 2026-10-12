@@ -952,7 +952,7 @@ class Page(BasePage):
         root.div().remote("details", record_id="^.record_id", _cachedRemote=True)
 
     @source
-    def details(self, root, record_id=None):
+    def details(self, root, record_id=None, **kwargs):
         root.span(f"Record {record_id}")
 ```
 
