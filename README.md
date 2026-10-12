@@ -66,7 +66,8 @@ import {GramlotFileServer} from '@gramlot/gramlot/server';
 
 const server = new GramlotFileServer('./pages');
 const {pageId, html, nonce} = await server.openPage('hello');
-// Answer the browser with `html`; it then requests `server.main(pageId)`.
+// Answer the browser with `html`; it then sends its envelopes to `POST /gramlot/rpc`,
+// which the adapter answers with `server.call(text, {owner})`.
 ```
 
 The example pages and their gallery are the separate package `gramlot-examples`.
