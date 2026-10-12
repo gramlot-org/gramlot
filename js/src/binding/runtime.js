@@ -1,11 +1,15 @@
 import {SourceBag} from '@genrojs/builders';
 import {DataRouter} from './router.js';
 import {DataInstaller} from './installation.js';
-import {ControllerProvider, FormulaProvider, RpcProvider} from './providers.js';
+import {ControllerProvider, FormulaProvider, RemoteProvider, RpcProvider} from './providers.js';
 import {InlineCompiler} from './inline.js';
+import {RemoteBinding} from './remote.js';
 
 // The Provider class of each provider data-element (§4.8).
-const PROVIDERS = {dataFormula: FormulaProvider, dataController: ControllerProvider, dataRpc: RpcProvider};
+const PROVIDERS = {
+    dataFormula: FormulaProvider, dataController: ControllerProvider, dataRpc: RpcProvider,
+    dataRemote: RemoteProvider,
+};
 
 // Attributes whose change moves the Data context of a whole branch (§4.4, upd_attrs row).
 const CONTEXT_ATTRIBUTES = ['datapath', '_anchor', 'node_id', 'form', 'formId'];
@@ -100,12 +104,15 @@ export class BindingRuntime {
 
     /**
      * Redo the registrations of `node` and of its descendants (change of Data context), then
-     * project the branch again: the elements already built follow the new paths.
+     * project the branch again: the elements already built follow the new paths, and a started
+     * `remote` requests its fragment for the new context. Not in `rebind`: the fragment mounted by
+     * `remoteSource` is a value event of the node itself, which rebinds it.
      */
     rebindBranch(node) {
         const nodes = this.#branchNodes(node);
         for (const each of nodes) this.bindingFor(each)?.rebind();
         for (const each of nodes) this.renderer.project(each);
+        for (const each of nodes) this.bindingFor(each)?.remote?.update();
     }
 
     /**
@@ -248,11 +255,12 @@ export class BindingRuntime {
         }
     }
 
-    /** The `_onStart` of a built node, once. */
+    /** The `_onStart` of a built node, then the first request of its `remote`, once. */
     #start(binding) {
         if (binding.hasStamp('start')) return;
         binding.stamp('start');
         this.#lifecycle(binding, 'start', '_onStart');
+        binding.remote?.update();
     }
 
     /** Invoke the providers of `binding` for the lifecycle trigger `kind` when `attribute` is on; a number delays it. */
@@ -330,6 +338,9 @@ export class NodeBinding {
     #registrations = [];
     #stamps = new Set();
     #provider = null;
+    #remote = null;
+    // The registrations of `remote` and of the `remote_<k>` parameters: their changes request the fragment again.
+    #remoteRegistrations = new Set();
     // The clicks of a button, counted for its whole semantic life: a rebuild keeps them (P9, S12).
     #clickCount = 0;
     // The registration of the node's own variable datapath, read in the parent's context.
@@ -345,8 +356,10 @@ export class NodeBinding {
     get closed() { return this.#closed; }
     /** The active DataRegistrations of the node. */
     get registrations() { return [...this.#registrations]; }
-    /** The Provider of a `dataFormula`, `dataController` or `dataRpc`, as a list of zero or one. */
+    /** The Provider of a `dataFormula`, `dataController`, `dataRpc` or `dataRemote`, as a list of zero or one. */
     get providers() { return this.#provider ? [this.#provider] : []; }
+    /** The RemoteBinding of a node whose `remote` attribute is a string, or null. */
+    get remote() { return this.#remote; }
 
     /** The clicks counted by the node's ButtonBinding since the node entered the Source (P9). */
     get clickCount() { return this.#clickCount; }
@@ -371,11 +384,13 @@ export class NodeBinding {
      * pointer on a null path (Q7) is not registered. The `datapath` pointer is resolved in the
      * parent's context. A `dataSetter` registers nothing; a `dataFormula` or `dataController`
      * registers its `datapath` here and the rest through its Provider, created once (§5.1 step 4).
+     * A node whose `remote` is a string gets its RemoteBinding, created once.
      */
     registerPointers() {
         const node = this.node;
         const dataElement = node._getMeta('data_element');
         if (dataElement && !PROVIDERS[node.nodeTag]) return;
+        if (!dataElement && typeof node.getAttr('remote') === 'string') this.#remote ??= new RemoteBinding(this);
         for (const [name, pointer] of node.pointers()) {
             if (dataElement && name !== 'datapath') continue;
             const context = name === 'datapath' ? node.parentNode : node;
@@ -385,6 +400,7 @@ export class NodeBinding {
             const registration = this.runtime.router.register({path, attr, recipient: this});
             this.#registrations.push(registration);
             if (name === 'datapath') this.#datapathRegistration = registration;
+            if (this.remote && (name === 'remote' || name.startsWith('remote_'))) this.#remoteRegistrations.add(registration);
         }
         if (!dataElement) return;
         this.#provider ??= new PROVIDERS[node.nodeTag](this);
@@ -397,10 +413,17 @@ export class NodeBinding {
         this.registerPointers();
     }
 
-    /** Router recipient: the node's datapath rebinds its branch; any other registration projects the node. */
+    /**
+     * Router recipient: the node's datapath rebinds its branch; any other registration projects the node,
+     * after a registration of `remote` or of a `remote_<k>` parameter requested the fragment again.
+     */
     receive(change) {
-        if (change.registration === this.#datapathRegistration) this.runtime.rebindBranch(this.node);
-        else this.runtime.renderer.project(this.node, change);
+        if (change.registration === this.#datapathRegistration) {
+            this.runtime.rebindBranch(this.node);
+            return;
+        }
+        if (this.#remoteRegistrations.has(change.registration)) this.remote.update();
+        this.runtime.renderer.project(this.node, change);
     }
 
     /** Own a semantic resource until close; the returned function releases it without running it. */
@@ -428,5 +451,6 @@ export class NodeBinding {
     #closeRegistrations() {
         for (const registration of this.#registrations.splice(0)) registration.close();
         this.#datapathRegistration = null;
+        this.#remoteRegistrations.clear();
     }
 }

@@ -8,12 +8,18 @@ elements refused by an ``auth`` evaluator (``authorized_copy``, JS
 from Builder's Proxy calling ``GramlotBuilder.schemaTag``.
 """
 
+import re
 from typing import Any
 
 from genro_builders.builder import SourceBag, SourceBagNode
 from genro_tytx import get_subtype_dict, set_subtype_dict
 
 from . import builder as builder_module
+
+# The control attributes of ``remote``, written on the node as they are; every other parameter becomes ``remote_<k>``.
+REMOTE_CONTROLS = ("_cachedRemote", "_if", "_else", "_onRemote")
+# ASCII and matched whole, as the JavaScript `/^[A-Za-z]\w*$/`.
+REMOTE_NAME = re.compile(r"^[A-Za-z]\w*$", re.ASCII)
 
 
 class GramlotBuilderBagNode(SourceBagNode):
@@ -24,6 +30,26 @@ class GramlotBuilderBagNode(SourceBagNode):
         if isinstance(v, str) and v.startswith("=="):
             return None
         return super().pointer_type(v)
+
+    def remote(self, name: str, /, **params: Any) -> "GramlotBuilderBagNode":
+        """Declare the content of this element as the fragment ``name`` of a ``@source`` method.
+
+        Writes ``remote = name`` and one ``remote_<k> = v`` per call parameter on this node;
+        the control attributes ``_cachedRemote``, ``_if``, ``_else`` and ``_onRemote`` are written
+        as they are. Returns this node. A bad name or another ``_`` parameter is a ``ValueError``.
+        """
+        if not isinstance(name, str) or not REMOTE_NAME.fullmatch(name):
+            raise ValueError(f"{self.node_tag} '{self.label}': remote name must match {REMOTE_NAME.pattern}, "
+                             f"not {name!r}")
+        invalid = next((key for key in params if key.startswith("_") and key not in REMOTE_CONTROLS), None)
+        if invalid is not None:
+            raise ValueError(f"{self.node_tag} '{self.label}': remote parameter '{invalid}' is not accepted; "
+                             f"the control attributes are {', '.join(REMOTE_CONTROLS)}")
+        attributes = {"remote": name}
+        for key, value in params.items():
+            attributes[key if key in REMOTE_CONTROLS else f"remote_{key}"] = value
+        self.set_attr(attributes)
+        return self
 
     def __getattr__(self, name: str) -> Any:
         """Builder's element dispatch; a GramlotBuilder resolves the name with ``schema_tag``."""

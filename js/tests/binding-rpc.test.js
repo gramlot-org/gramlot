@@ -205,13 +205,12 @@ test('a dataRpc child of a button runs on click with the author params; with a d
     }), /several dataController or dataRpc children/);
 });
 
-test('authoring: dataRpc builds in JS, rpc callbacks are refused elsewhere, dataRemote stays excluded', () => {
+test('authoring: dataRpc builds in JS, rpc callbacks are refused elsewhere', () => {
     const builder = new GramlotBuilder();
     const node = sourceTarget(builder.root.dataRpc({method: 'm', result_path: 'x', timeout: 500}));
     assert.equal(node.nodeTag, 'dataRpc');
     assert.deepEqual([node.getAttr('method'), node.getAttr('result_path'), node.getAttr('timeout')], ['m', 'x', 500]);
     assert.throws(() => builder.root.dataRpc({method: 'm', result_path: 'x?a'}), /dataRpc: 'result_path' does not accept '\?attr'/);
-    assert.throws(() => builder.root.dataRemote({method: 'm'}), /dataRemote: excluded from Gramlot 0\.2\.0/);
     for (const name of ['_onCalling', '_onResult', '_onError']) {
         const {app} = page();
         assert.throws(() => mount(app, root => root.dataController({[name]: 'x'})),

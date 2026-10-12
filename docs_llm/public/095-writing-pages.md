@@ -53,7 +53,7 @@ each branch installs Data declarations between validation and DOM (080).
 
 ## 015 · Remote Source
 
-`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; §100 below). The declarative `remote` grammar attribute, which would mount a fragment from the Source itself, is not yet available: a fragment is requested from code with `gramlot.src.remoteSource(target, method, params)`.
+`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; §100 below). The `remote` attribute mounts a fragment declaratively as the content of an element (§105); from code a fragment is requested with `gramlot.src.remoteSource(target, method, params)`.
 
 <a id="gc-095-020"></a>
 
@@ -398,14 +398,14 @@ rollback. Example: `controllers/08_end_to_end` (`c08`).
 
 ## 085 · Exclusions and deferred work (0.2.0)
 
-Explicit error: `serverpath`, `dbenv`, `shared_id`, `remote`,
-`dataRemote`, `subscribe_*`, `selfsubscribe_*`, `formsubscribe_*`, `PUBLISH`,
+Explicit error: `serverpath`, `dbenv`, `shared_id`,
+`subscribe_*`, `selfsubscribe_*`, `formsubscribe_*`, `PUBLISH`,
 `_ask`, `ask` (same keys inside user Data stay data). Outside 0.2.0 without a
 dedicated error: components/widgets; store, grid, tree; form, record, newrecord;
 server sync; CSS beyond `css_requires`; rich editing; async scheduling and
 transactions; developer warning Bag. Components (incl. `radioButtonText`) planned
 for 0.3.0. Source `script` stays native HTML5, not evaluated. `dataRpc` left the
-list in 0.2.14 (§100).
+list in 0.2.14 (§100); `remote` and `dataRemote` in 0.2.16 (§105).
 
 <a id="gc-095-090"></a>
 
@@ -423,7 +423,7 @@ Migration from legacy pages: `data(...)` → `dataSetter(...)`; `Page.css` URL l
 stays, a page-only stylesheet can move to same-name `foo.css`; inline controllers →
 named logic; macros → `node.SET(...)` etc.
 Migration from 0.1.x: pages without binding run unchanged (HTML/SVG, `Page.css`);
-`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (§100); the declarative `remote` grammar attribute is not yet available; `data(...)` created the HTML5 `<data>` element; on `root` it now
+`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (§100); the `remote` attribute mounts a fragment declaratively (§105); `data(...)` created the HTML5 `<data>` element; on `root` it now
 raises, on other nodes `data` is the Data Bag property: write `html_data(...)`; custom servers implement `resolve_page`/`resolvePage` and
 `resolve_resources`/`resolveResources`, pass the mount prefix to `open_page` and serve
 the companions, and the bootstrap writes the CSS links in the browser
@@ -490,3 +490,42 @@ exception → `application_error` with `name`/`message`; both reach `_onError`. 
 argument with a TYTX suffix (`"x::D"`) is decoded by TYTX, not passed as text
 (genro-tytx decodes only text it encoded): endpoints do not rely on it. Wire:
 one envelope on `POST /gramlot/rpc` ([GC-090](090-classes-and-hosts.md)).
+
+<a id="gc-095-105"></a>
+
+## 105 · Remote content and lazy Data: `remote` and `dataRemote` (0.2.16)
+
+`remote`: the content of an element is the fragment of a `@source` method (JS
+`Page.registerSource(name)`). Node method `remote(name, **params)` (JS
+`remote(name, params)`) writes `remote = name` and `remote_<k>` per parameter; returns
+the node. Requested at the element's start (§080) and on every change of a `^`
+pointer of `remote` or `remote_<k>` (`=` read only), through
+`gramlot.src.remoteSource` (latest wins, removal cancels). The fragment replaces the
+content; authored children stay until it arrives. Controls: `_cachedRemote` (equal
+parameters → no request), `_if` (inline, parameters as locals; false → no request, the request in
+flight cancelled, `_else` runs), `_onRemote` (inline after the mount). Name `[A-Za-z][\w]*`; another
+`_` parameter → error; a failed request → unhandled rejection naming the element.
+Nested `remote` inside a fragment works. Example:
+`root.div().remote("details", record_id="^.record_id", _cachedRemote=True)` with
+`@source def details(self, root, record_id=None)`; JS
+`root.div().remote('details', {record_id: '^.record_id'})`, method
+`details(root, {record_id})` and `Page.registerSource('details')`.
+`dataRemote(destination_path, method, cacheTime=None, **params)` installs at
+`destination_path` (no `?attr`) a resolver that calls the endpoint `method` (name or
+`^`/`=` pointer) when the path is read. `cacheTime` in seconds: negative/`None` → once,
+`0` → every read, positive → again on the first read after it. A read never waits:
+it returns the current value (`None` before the first call) and starts the call when
+expired; a read during a call starts no other. The answer is written at the path and
+projects every `^` consumer; with `cacheTime=0` it is written without notifying them
+(legacy: a value per explicit read). `^` argument change → new resolver, which calls at
+once when the previous one had called. False `_if` → resolver removed, last value kept,
+`_else` runs; true again → the new resolver calls at once if the removed one had
+called; `_delay`/`_timing`/`_userChanges` as `dataRpc`; `_init`/`_onBuilt`/`_onStart`
+→ error. Removal removes the resolver and aborts the call (an aborted call writes
+nothing); endpoint failure → value unchanged, unhandled rejection naming the
+declaration. Example: `root.dataRemote(".menu", "load_menu", cacheTime=5,
+table="dishes")`; JS `root.dataRemote({destination_path: '.menu', method:
+'load_menu', cacheTime: 5, table: 'dishes'})`.
+Intended legacy differences: `remote` is an attribute of the element (legacy: a child
+element writing on its parent); no `lazy` by visibility, `_waitingMessage`, `tbody`
+merge, `_resolved`, `_fired`; the alias `data(path, remote=…)` is not accepted.

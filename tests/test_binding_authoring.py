@@ -46,13 +46,20 @@ class ForbiddenDeclarationTests(unittest.TestCase):
 
     def test_excluded_declarations_are_errors_naming_the_tag(self):
         builder = GramlotBuilder()
-        with self.assertRaisesRegex(ValueError, r"dataRemote: excluded from Gramlot 0\.2\.0"):
-            builder.root.dataRemote(destination="x")
-        for name in ("serverpath", "dbenv", "shared_id", "remote", "_ask", "ask",
+        for name in ("serverpath", "dbenv", "shared_id", "_ask", "ask",
                      "subscribe_x", "selfsubscribe_x", "formsubscribe_x"):
             with self.subTest(name=name), self.assertRaisesRegex(
                     ValueError, rf"div: attribute '{name}' is excluded from Gramlot 0\.2\.0"):
                 builder.root.div(**{name: "v"})
+
+    def test_dataremote_and_remote_build(self):
+        builder = GramlotBuilder()
+        builder.root.dataRemote(".menu", "loadMenu")
+        builder.root.div(remote="details", remote_id="^.id")
+        menu, div = builder.source.nodes
+        self.assertEqual(menu.node_tag, "dataRemote")
+        self.assertEqual(div.attr["remote"], "details")
+        self.assertEqual(div.attr["remote_id"], "^.id")
 
 
 class LiteralDataElementTests(unittest.TestCase):
