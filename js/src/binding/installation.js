@@ -169,18 +169,20 @@ export function requireInstallable(branch) {
     }
 }
 
-// Provider attributes (§4.8): only a `dataFormula`, a `dataController` or a `dataRpc` carries them;
+// Provider attributes (§4.8): only a `dataFormula`, a `dataController`, a `dataRpc` or a `dataRemote`
+// carries them; the lifecycle attributes not a `dataRemote`, whose resolver loads when its Data is read;
 // the callbacks of the call only a `dataRpc`.
 const PROVIDER_ATTRIBUTES = ['_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges'];
-const PROVIDER_TAGS = new Set(['dataFormula', 'dataController', 'dataRpc']);
+const PROVIDER_TAGS = new Set(['dataFormula', 'dataController', 'dataRpc', 'dataRemote']);
 const RPC_ATTRIBUTES = ['_onCalling', '_onResult', '_onError'];
 // The lifecycle attributes: true, false, null or a number (a delay in ms, P22); a pointer is not read.
 const LIFECYCLE_ATTRIBUTES = ['_init', '_onBuilt', '_onStart'];
 
 /**
  * A provider attribute on any other node is an error before any write, and so is an rpc callback
- * outside a `dataRpc`; so is a `==` expression in an attribute of a provider node (S09: `==` belongs
- * to the visual nodes), and a lifecycle attribute whose value is not `true`, `false`, null or a number.
+ * outside a `dataRpc` and a lifecycle attribute on a `dataRemote`; so is a `==` expression in an
+ * attribute of a provider node (S09: `==` belongs to the visual nodes), and a lifecycle attribute
+ * whose value is not `true`, `false`, null or a number.
  */
 function requireProviderAttributes(node) {
     const isSet = name => node.getAttr(name) !== null && node.getAttr(name) !== undefined;
@@ -193,6 +195,11 @@ function requireProviderAttributes(node) {
         if (expression) {
             throw new Error(`${node.nodeTag} '${node.label}': '${expression[0]}' is a == expression, not accepted on ${node.nodeTag}`);
         }
+        const lifecycle = node.nodeTag === 'dataRemote' ? LIFECYCLE_ATTRIBUTES.find(isSet) : null;
+        if (lifecycle) {
+            throw new Error(`dataRemote '${node.label}': '${lifecycle}' is not accepted on dataRemote, `
+                + 'its resolver loads when the Data is read');
+        }
         for (const name of LIFECYCLE_ATTRIBUTES) {
             const value = node.getAttr(name);
             if (value === null || value === undefined || typeof value === 'boolean' || typeof value === 'number') continue;
@@ -202,7 +209,10 @@ function requireProviderAttributes(node) {
         return;
     }
     const name = PROVIDER_ATTRIBUTES.find(isSet);
-    if (name) throw new Error(`${node.nodeTag ?? 'fragment'} '${node.label}': '${name}' is allowed only on dataFormula, dataController and dataRpc`);
+    if (!name) return;
+    const tags = LIFECYCLE_ATTRIBUTES.includes(name) ? 'dataFormula, dataController and dataRpc'
+        : 'dataFormula, dataController, dataRpc and dataRemote';
+    throw new Error(`${node.nodeTag ?? 'fragment'} '${node.label}': '${name}' is allowed only on ${tags}`);
 }
 
 /** The nodes of `branch` (a SourceBagNode or a SourceBag), depth first, in document order. */

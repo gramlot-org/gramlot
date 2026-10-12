@@ -44,6 +44,11 @@ class StyleShortcutTests(unittest.TestCase):
                          '<div style="background-color: red; aspect-ratio: 16/9; border-top-left-radius: 10px; '
                          'border-top-right-radius: 10px"></div><div style="color: blue">t</div>')
 
+    def test_the_attributes_of_remote_are_not_written(self):
+        builder = GramlotBuilder()
+        builder.root.div("ph").remote("details", id=3, _cachedRemote=True, _onRemote="null", _if="id > 0")
+        self.assertIn("<div>ph</div>", builder.render())
+
     def test_null_values_are_not_written(self):
         def authoring(root, data):
             root.div(background_color="^bg", color="blue", title="^missing")

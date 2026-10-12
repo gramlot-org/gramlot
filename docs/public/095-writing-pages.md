@@ -77,7 +77,7 @@ validation and DOM construction, each branch installs its Data declarations
 
 ## 015 · Remote Source
 
-`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; §100 below). The declarative `remote` grammar attribute, which would mount a fragment from the Source itself, is not yet available: a fragment is requested from code with `gramlot.src.remoteSource(target, method, params)`.
+`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; §100 below). The `remote` attribute mounts a fragment declaratively as the content of an element (section 105); from code a fragment is requested with `gramlot.src.remoteSource(target, method, params)`.
 
 <a id="gc-095-020"></a>
 
@@ -703,10 +703,10 @@ the first render to the close.
 ## 085 · Exclusions and deferred work (0.2.0)
 
 These declarations produce an explicit error: `serverpath`, `dbenv`,
-`shared_id`, `remote`, `dataRemote`, `subscribe_*`,
+`shared_id`, `subscribe_*`,
 `selfsubscribe_*`, `formsubscribe_*`, `PUBLISH`, `_ask`, `ask`. The same keys
 inside a user Data Bag remain ordinary data. `dataRpc` left this list in 0.2.14
-(section 100).
+(section 100); `remote` and `dataRemote` left it in 0.2.16 (section 105).
 
 Outside 0.2.0, without a dedicated error: components and widgets; store, grid and
 tree; form, record and newrecord; server synchronisation; the CSS system beyond
@@ -762,7 +762,7 @@ Migration from 0.1.x:
 - a 0.1.x page without binding runs unchanged: HTML and SVG and `Page.css`
   keep their behavior. `@source` / `registerSource(...)` declare Source fragments
   and `@endpoint` / `registerEndpoint(...)` declare endpoints (§100); the
-  declarative `remote` grammar attribute is not yet available;
+  `remote` attribute mounts a fragment declaratively (§105);
 - a call `data(...)` in a 0.1.x page created the HTML5 `<data>` element; on `root`
   it now raises an error, on other nodes `data` is the Data Bag property. Write
   `html_data(...)` for the element;
@@ -911,3 +911,130 @@ Page.registerEndpoint('with_vat');
   does not rely on such strings.
 - The call travels as one envelope on `POST /gramlot/rpc`
   ([GC-090](090-classes-and-hosts.md)); the page writes no `fetch`.
+
+<a id="gc-095-105"></a>
+
+## 105 · Remote content and lazy Data: `remote` and `dataRemote` (0.2.16)
+
+**`remote`** makes the content of an element a Source fragment built on the server
+by a `@source` method (Python) or a method declared with `Page.registerSource(name)`
+(JavaScript). The element carries the attribute `remote` with the fragment name; the
+attributes `remote_<k>` are the call parameters. The node method writes them:
+
+```python
+remote(name, **params)
+```
+
+- The fragment is requested when the element starts (section 080) and again when a
+  `^` pointer of `remote` or of a `remote_<k>` parameter changes. `=` parameters are
+  only read. The fragment replaces the content of the element; the authored
+  children stay until the first fragment arrives.
+- The request goes through `gramlot.src.remoteSource(target, method, params)`: the
+  latest request wins, and removing the element cancels its request.
+- `_cachedRemote=True` makes no request when the parameters equal those of the last
+  request.
+- `_if` is inline code with the parameters as locals: false makes no request and
+  cancels the request in flight, and `_else` then runs as inline code. `_onRemote` runs as inline code after the
+  fragment is mounted, with the parameters as locals.
+- A name is `[A-Za-z]` followed by letters, digits and `_`. A parameter starting
+  with `_` other than the four control attributes is an error. A failed request
+  reaches the browser console as an unhandled rejection that names the element.
+- A fragment can carry elements with `remote` of their own.
+
+```python
+from gramlot import Page as BasePage
+from gramlot import source
+
+
+class Page(BasePage):
+    def main(self, root):
+        root.input(type="number", value="^.record_id")
+        root.div().remote("details", record_id="^.record_id", _cachedRemote=True)
+
+    @source
+    def details(self, root, record_id=None):
+        root.span(f"Record {record_id}")
+```
+
+```javascript
+import {Page as BasePage} from '@gramlot/gramlot/page';
+
+export class Page extends BasePage {
+    main(root) {
+        root.input({type: 'number', value: '^.record_id'});
+        root.div().remote('details', {record_id: '^.record_id', _cachedRemote: true});
+    }
+
+    details(root, {record_id}) { root.span(`Record ${record_id}`); }
+}
+Page.registerSource('details');
+```
+
+**`dataRemote`** installs at a Data path a resolver that computes the value with an
+endpoint (section 100). The endpoint is called when the path is read, not when the
+declaration is installed.
+
+```python
+dataRemote(destination_path, method, cacheTime=None, **params)
+```
+
+- `destination_path` is the Data path of the value; it does not accept `?attr`.
+  `method` is the endpoint name, or a `^`/`=` pointer read from Data.
+- `cacheTime` is in seconds: a negative value or `None` calls once; `0` calls at
+  every read; a positive value calls again on the first read after that many
+  seconds.
+- A read never waits. It returns the current value, `None` before the first call,
+  and starts the call when the cache has expired. A read during a call starts no
+  other call.
+- When the call answers, the value is written at the path and every `^` consumer
+  of the path is projected with it. With `cacheTime=0` the value is written
+  without notifying the consumers, as in the legacy: it is a value per explicit
+  read, and a `^` consumer would call again at each projection.
+- The other keyword arguments are the endpoint arguments. A change of a `^`
+  argument installs a new resolver. When the previous resolver had called, the
+  new one calls at once, and the consumers receive the new value.
+- A false `_if` removes the resolver: the path keeps its last value. `_else` then
+  runs as inline code. When `_if` is true again, the new resolver calls at once if
+  the removed one had called. `_delay`, `_timing` and `_userChanges` apply as for
+  `dataRpc`. `_init`, `_onBuilt` and `_onStart` are an error on `dataRemote`.
+- Removing the declaration removes the resolver and aborts its call; an aborted
+  call writes nothing.
+- An endpoint failure leaves the stored value unchanged. It reaches the browser
+  console as an unhandled rejection that names the declaration.
+
+```python
+from gramlot import Page as BasePage
+from gramlot import endpoint
+
+
+class Page(BasePage):
+    def main(self, root):
+        root.dataRemote(".menu", "load_menu", cacheTime=5, table="dishes")
+
+    @endpoint
+    def load_menu(self, table=None, **kwargs):
+        return f"menu of {table}"
+```
+
+```javascript
+import {Page as BasePage} from '@gramlot/gramlot/page';
+
+export class Page extends BasePage {
+    main(root) {
+        root.dataRemote({destination_path: '.menu', method: 'load_menu', cacheTime: 5,
+            table: 'dishes'});
+    }
+
+    load_menu({table}) { return `menu of ${table}`; }
+}
+Page.registerEndpoint('load_menu');
+```
+
+Intended differences from the legacy:
+
+- `remote` is an attribute of the element itself, written by the node method
+  `remote(name, …)`. Legacy `remote` was a child element that wrote its
+  attributes on the parent.
+- No `lazy` loading by visibility, no `_waitingMessage`, no `tbody` merge, no
+  `_resolved` and no `_fired`.
+- The legacy alias `data(path, remote=…)` is not accepted: write `dataRemote`.

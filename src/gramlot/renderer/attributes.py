@@ -13,8 +13,9 @@ SVG_NS = "http://www.w3.org/2000/svg"
 BINDING_ATTRIBUTES = frozenset({
     "default", "default_value", "live", "group", "visible", "action", "fire",
     "if", "else", "_init", "_onStart", "_onBuilt", "_delay", "_timing", "_userChanges",
+    "remote", "_cachedRemote", "_onRemote",
 })
-BINDING_ATTRIBUTE_PREFIXES = ("default_", "attr_", "fire_", "connect_on")
+BINDING_ATTRIBUTE_PREFIXES = ("default_", "attr_", "fire_", "connect_on", "remote_")
 
 # Legacy noConvertStyle (genro_wdg.js:102-108): these attributes stay native attributes, never style.
 NATIVE_ATTRIBUTES = {
