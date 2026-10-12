@@ -1,10 +1,10 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-05**.
+Document ID: **GC-070**. Updated: **2026-10-12**.
 
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
-**Current checkpoint:** documentation coherence pass and preparation of release 0.2.7 (2026-10-05). See [§690](#gc-070-690).
+**Current checkpoint:** released core and ecosystem audited on 2026-10-12, then core 0.2.16 (declarative `remote` and `dataRemote`) and examples 0.2.11 released the same day; local core suites pass and the hosted main checks pass. See [§695](#gc-070-695). The documentation coherence checkpoint of 2026-10-05 is historical ([§690](#gc-070-690)).
 
 **Release 0.2.6 (published 2026-10-04):** type declarations of the JavaScript package; the examples and the runner out of the core. See [§685](#gc-070-685). Released before: 0.2.5 (2026-10-03, page module and `gramlot.inout`, [§670](#gc-070-670)), 0.2.4 ([§665](#gc-070-665)), 0.2.3 ([§660](#gc-070-660)), 0.2.2 ([§655](#gc-070-655)).
 
@@ -16,7 +16,7 @@ Document ID: **GC-070**. Updated: **2026-10-05**.
 **0.2.0 checkpoint (2026-09-30, historical):** S16: qualification complete (Firefox by the owner, waivers R22, R24, L1); report [GC-215](215-qualification-0-2-0.md), see [§615](#gc-070-615). Earlier: S15bis: corrections from the review before qualification, see [§610](#gc-070-610); S15: documentation and leftovers delivered in GC-095, GC-090 and the internal documents, see [§605](#gc-070-605); S14: Q3 clear error for inline code under a strict CSP, verified in core and on Chromium and WebKit; gramlot-uvicorn, gramlot-js-server and gramlot-serverless verified from the reports of their delivery chats (2026-09-30), four blocked (deferred by the owner to after 0.2.0). See [§595](#gc-070-595).
 **Binding continuation:** [GC-210](210-binding-contract.md) replaces GC-165; GC-175 is historical. S00 accepted; S01 closed by the owner with proof 11 as debt, S02 and S03 start (2026-09-28).
 **Dependency fixes:** forbidden by owner decision, 2026-09-25; missing Builder behavior goes into GramlotBuilderBag/GramlotBuilderBagNode (S01). See [§495](#gc-070-495).
-**Hosted CI:** the `Core tests` workflow (Python, JavaScript with coverage, Chromium checks on core fixture pages, no runner) and the `Documentation` workflow pass on `main` (`b9b2feb`, checked 2026-10-05). The earlier core and runner workflow is history ([§400](#gc-070-400)).
+**Hosted CI checkpoint — 2026-10-05 (historical; current evidence in §695):** the `Core tests` workflow (Python, JavaScript with coverage, Chromium checks on core fixture pages, no runner) and the `Documentation` workflow pass on `main` (`b9b2feb`, checked 2026-10-05). The earlier core and runner workflow is history ([§400](#gc-070-400)).
 **Audit cleanup:** confirmed corrections implemented and locally verified; they are on `main`, whose hosted CI passes. See [§385](#gc-070-385).
 **Release source availability:** public source tags verified; N3 closed. See [§380](#gc-070-380).
 [Concise counterpart](../../docs_llm/internal/070-work-status.md).
@@ -3365,3 +3365,84 @@ README.
 **Closed:** GC-055 was assigned again on 2026-10-01 although GC-005 §010 item 4 forbids
 reusing a retired ID. Owner decision of 2026-10-05: The Gramlot family keeps GC-055, as
 an explicit exception recorded in GC-005 §010 item 4 and in `docs/02-documentation.md` §4.
+
+
+<a id="gc-070-695"></a>
+## 695 · Released ecosystem audit — 2026-10-12
+
+Block ID: **GC-070-695**.
+
+Inspection requested by the owner: "esamina situazione completa gramlot e gli ultimi lavori svolti".
+This records observed implementation and verification, not a new architecture decision,
+owner acceptance, release authorization or closure of historical debt.
+
+### Delivered work since the previous checkpoint
+
+- October 7: routes left the core; browser responsibilities were organised under
+  `gramlot.src`, `gramlot.rpc`, `gramlot.dom` and `gramlot.utl` (release notes 0.2.9–0.2.10).
+- October 8: `Host`/`FileHost` became `GramlotServer`/`GramlotFileServer`, with
+  aligned Python/JS functionality, `GRAMLOT_DEV`, readable/minified runtimes and
+  protocol conformance checks (0.2.12).
+- October 9: the single RPC envelope, `source`/`data`, declared endpoints,
+  `HttpTransport`, default-deny auth and `dataRpc` landed (0.2.14; constitution 11.58,
+  GC-230). `/gramlot/rpc` replaces the old main/source routes.
+- October 10: server serialization removes refused Source elements with their
+  subtrees and strips `auth` from accepted elements (0.2.15; PR #40, issue #34).
+  Both integration repositories subsequently aligned their conformance fixtures.
+  Python integration includes Kajenn avatar-tag auth; examples include c09–c11 for dataRpc.
+- October 12: declarative `remote` (node method `remote(name, …)`, `RemoteBinding`) and
+  `dataRemote` (`RpcResolver` on a genro-bag resolver, `RemoteProvider`) landed in 0.2.16
+  (PRs #43–#46; constitution 11.59, GC-095 §105); examples 0.2.11 adds c12–c14 and the
+  Chromium check of the three pages on the Python and JS servers passes. No protocol change:
+  js-server 0.2.8 and py-server 0.2.7 stay valid.
+
+### Evidence checked on October 12
+
+GitHub latest-release responses at audit time identified core [v0.2.15](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.15),
+Python integration [v0.2.7](https://github.com/gramlot-org/gramlot-py-server/releases/tag/v0.2.7),
+JS integration [v0.2.8](https://github.com/gramlot-org/gramlot-js-server/releases/tag/v0.2.8)
+and examples [v0.2.10](https://github.com/gramlot-org/gramlot-examples/releases/tag/v0.2.10),
+all published October 10; later the same day core [v0.2.16](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.16) and examples [v0.2.11](https://github.com/gramlot-org/gramlot-examples/releases/tag/v0.2.11) were published. Registry payloads were not downloaded or requalified.
+
+Local core at `9463c45`: `PYTHONPATH=src .venv/bin/python -m unittest discover -s tests`
+passes 125 tests; `GRAMLOT_TEST_PYTHON="$PWD/.venv/bin/python" npm --prefix js test`
+passes 523, with zero skips. Initial sandbox runs could not bind localhost; rerunning
+with local listener access passed. Existing installed dependencies were used; this
+is not a fresh dependency installation or a new browser qualification.
+
+Latest main CI runs on October 10 pass: core
+[tests](https://github.com/gramlot-org/gramlot/actions/runs/38039338739) and
+[documentation](https://github.com/gramlot-org/gramlot/actions/runs/38039338720),
+[Python integration](https://github.com/gramlot-org/gramlot-py-server/actions/runs/38052421294),
+[JS integration](https://github.com/gramlot-org/gramlot-js-server/actions/runs/38028348713)
+and [examples](https://github.com/gramlot-org/gramlot-examples/actions/runs/38026993134).
+No open PR was returned for these four repositories. No active phased plan was
+found by the workflow resolver or its reachable-plan inventory.
+
+### Remaining work and document drift
+
+- The 0.2.16 scope recorded in `temp/perimetro-0-2-x.md` (declarative `remote`,
+  remote parameters, `dataRemote` on a Bag resolver over the existing RPC envelope) is
+  implemented and released (above); out of it by decision: `lazy` loading by DOM
+  visibility, `_waitingMessage`, the `tbody` merge, `_resolved`, `_fired`, the alias
+  `data(path, remote=…)`.
+- `temp/perimetro-0-3-0.md` records component authoring, JSON collections, inputs
+  and containers; database widgets stay excluded. Details such as `gridbox` and
+  label wrapping remain open. Its rationale that server calls lack a contract
+  predates 0.2.14; this does not automatically reopen excluded scope.
+- GC-220 and the October 1 local residual-check report remain historical debt
+  inventories, not a fresh list of reproduced defects. Reassess each item before
+  closing it or treating it as a current blocker.
+- README no longer mentions `server.main(pageId)` (corrected with this update: the
+  browser requests `POST /gramlot/rpc`, answered by `server.call`); the workspace README
+  release table is updated to the October 12 versions.
+- Core open issues returned by GitHub: #1 pre-rendering/hydration and #2
+  desktop/mobile platforms. The three connected product repositories return no
+  open issues. Issue counts do not replace the local design and debt records.
+- Devtools has later work than the older PoC applications, but this audit does
+  not qualify it against the current core. Site and Rosetta still identify
+  themselves as PoC consumers; they are not current-core application evidence.
+
+Next action: the next scope is the owner's to decide (the Kajenn extended client with
+WebSocket, push and `serverpath`; the 0.3.0 components; CSP as grammar); GC-220 and the
+residual-check report remain debt inventories to reassess item by item.
