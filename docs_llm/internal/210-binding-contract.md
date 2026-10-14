@@ -217,7 +217,7 @@ settle previously unapproved proposals, not older approved behavior.
 | P22 | Numeric _onStart in ms; true and 0 immediate; negative/nonfinite error; independent of other-trigger _delay | S08 → virtual clock |
 | P23 | Same snake_case requires fields in Python and JS, no aliases | S06/S14 → authoring and all hosts |
 | P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins | S03 → rebuild, removal, late response, frozen living target |
-| P25 | Authoring dict/plain JS object becomes Bag(value); nested dicts become Bags, lists and their dictionary items remain lists/items, JSON strings stay strings. Supersedes scalar-only assumptions; no custom converter | S02 → TYTX cross-language payload identity/types |
+| P25 | Authoring dict/plain JS object becomes Bag(value) with default recursive population: nested dictionaries, lists and dictionaries inside lists become Bags, preserving order and scalar leaf values. A list supplied directly as a setter value remains a list; a JSON string remains a string. Owner clarification 2026-10-14, constitution 11.64; no custom converter | S02 → TYTX cross-language payload identity/types |
 
 *Historical (revision 6), open on 2026-09-25:*
 
@@ -247,6 +247,13 @@ symbolic `?attr`) live in the Gramlot source classes (§018); S04/S08 wait for n
 external release (*historical in part, Q9: no FIRE mark; S08 needs the published
 Bag releases*). S01 measures `Bag.fromTytx` null-attribute loss; any solution goes
 into those classes after owner approval. No Builder or Bag source is edited.
+
+**Dependency verification, 2026-10-14:** the preceding S01 null-attribute loss
+was an observation of older Bag versions. Python Bag 0.28.0 and JS Bag 0.11.0
+preserve null attributes explicitly carried by TYTX; the dependency probes now
+check that preservation. No Gramlot conversion or Source-class workaround is
+needed. R17 (a null attribute omitted when authoring a setter) is unchanged and
+remains separately tested.
 
 <a id="gc-210-018"></a>
 ## 018 · Gramlot source classes
@@ -389,7 +396,10 @@ without an element. project reuses runtimeValues/meta/
 adaptAttrs/html.update; render_attributes last. P1 only redundant origin value;
 other attributes/providers still react. Existing built views react while frozen.
 
-Style/class: string or null (remove), otherwise error; visible=false sets hidden
+Style/class: string or null (remove), otherwise error. Validate resolved attributes
+after render_attributes precedence and before composition. A rejected live projection
+leaves the DOM unchanged, without rolling back the triggering Data/Source write.
+Correcting the value resumes projection. visible=false sets hidden
 visibility, removal restores current style; hidden remains native. SVG presentation
 uses Builder SvgRenderer.adaptAttrs (svgAttributes) through GramlotSvgRenderer and
 namespaces, no style shortcuts; null removes. HTML style shortcuts (style_*, roots such
@@ -399,7 +409,8 @@ over the same property in style; null drops that property. Legacy noConvertStyle
 width/height on img/canvas/embed, width/border on table, height on editor as
 attributes. _class → class. data_/aria_/xmlns_ → data-/aria-/xmlns: in both renderers'
 adaptAttrs. Projection uses getRender(node.builder). No style Bags/dicts,
-themes/root.css, or format/mask/places in the live renderer. Safe text, SVG/XLink/foreignObject, stable DOM.
+themes/root.css, or format/places in the live renderer. `mask` is supported as specified by
+§010 Q11.2 and constitution 11.48 item 11; its earlier exclusion is superseded. Safe text, SVG/XLink/foreignObject, stable DOM.
 
 Renderer/Gramlot getBaseSourceNode climbs to generated element, skipping fragments;
 getDomNode uses records, null for fragment/nonvisual/unbuilt/removed. No object props.

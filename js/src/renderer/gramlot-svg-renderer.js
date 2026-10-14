@@ -6,7 +6,7 @@
  */
 import {SvgRenderer, svgAttributes} from '@genrojs/builders';
 import {
-    boundaryAttributes, domNames, requireNoScriptAttributes, textValue, withoutBindingAttributes, withoutNullValues,
+    boundaryAttributes, domNames, requireNoScriptAttributes, requireStyleClassAttributes, textValue, withoutBindingAttributes, withoutNullValues,
 } from './attributes.js';
 
 // SVG elements written `<tag … />`, as the Python SvgRenderer of Builder (the grammar gives them no children).
@@ -42,6 +42,7 @@ export class GramlotSvgRenderer extends SvgRenderer {
         const evaluated = this.owner.evaluateExpressions(node, runtimeAttrs);
         requireNoScriptAttributes(node, evaluated);
         const [tag, attrs] = super._handleMeta(node, evaluated);
+        requireStyleClassAttributes(node, attrs);
         return node._getMeta('subbuilder') ? [tag, svgAttributes(boundaryAttributes(attrs))] : [tag, attrs];
     }
 

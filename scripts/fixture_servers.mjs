@@ -49,7 +49,9 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
         }
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
-        const body = Buffer.concat(chunks).toString();
+        let body;
+        try { body = new TextDecoder('utf-8', {fatal: true}).decode(Buffer.concat(chunks)); }
+        catch { return reply(400, 'Request body is not UTF-8'); }
         const owner = ownerOf(request);
         if (path === server.rpcUrl) {
             let result;

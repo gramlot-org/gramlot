@@ -1,0 +1,287 @@
+/* @ts-self-types="./index-page-runtime.d.ts" */
+import {compactStyle} from './index-page-styles.js';
+import {THEME_READY, THEME_SET, THEMES, APPEARANCES} from './index-theme.js';
+
+/** Index-page behavior; writes UI state through the existing Source records. */
+export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEntry = () => {}) {
+    const shell = renderer.records.get(root).element;
+    const document = shell.ownerDocument;
+    const window = document.defaultView;
+    const byId = id => document.getElementById(id);
+    const node = element => renderer.elements.get(element).node;
+    const set = (element, attrs) => node(element).setAttr(attrs);
+    const keyboard = byId('keyboard-navigation');
+    const theme = byId('index-theme');
+    const appearance = byId('index-appearance');
+    const sidebar = byId('index-sidebar');
+    const sidebarHandle = byId('index-sidebar-divider');
+    // localStorage is scoped to this origin; the path separates mounted galleries.
+    const preferencesKey = `gramlot.${shell.id}.preferences:${window.location.pathname}`;
+    let preferences = {};
+    try {
+        const saved = JSON.parse(window.localStorage.getItem(preferencesKey));
+        if (saved !== null && typeof saved === 'object' && !Array.isArray(saved)) preferences = saved;
+    } catch (error) {
+        if (error.name !== 'SyntaxError' && error.name !== 'SecurityError') throw error;
+    }
+    const restoreChoice = (control, value, allowed) => {
+        if (!control || !allowed.has(value)) return;
+        set(control, {value});
+        for (const option of control.options) set(option, {selected: option.value === value});
+    };
+    restoreChoice(theme, preferences.theme, THEMES);
+    restoreChoice(appearance, preferences.appearance, APPEARANCES);
+    const families = [...shell.querySelectorAll('.index-sidebar details')];
+    const Bag = root.builder.data.constructor;
+    const state = new Bag();
+    const opened = new Bag();
+    state.setItem('opened', opened);
+    state.setItem('keyboard', (keyboard?.checked ?? false));
+    state.setItem('theme', (theme?.value ?? 'light'));
+    state.setItem('appearance', (appearance?.value ?? 'compact'));
+    const savePreferences = () => {
+        try {
+            window.localStorage.setItem(preferencesKey, JSON.stringify({
+                theme: state.getItem('theme'), appearance: state.getItem('appearance'),
+                sidebarWidth: state.getItem('preferredSidebarWidth'),
+            }));
+        } catch (error) {
+            // A browser may deny storage (including opaque file origins) or exhaust its quota.
+            // Keep the current interaction usable; no other persistence mechanism is used.
+            if (error.name !== 'SecurityError' && error.name !== 'QuotaExceededError') throw error;
+        }
+    };
+    const entries = new Map();
+    const releases = [];
+    const style = root.builder.wrapSource(root.value).style(compactStyle, {media: (appearance?.value ?? 'compact') === 'compact' ? 'all' : 'not all'});
+    let drag = null;
+    let disposed = false;
+    let installPrompt = null;
+    const previousTheme = document.documentElement.getAttribute('data-theme');
+    const listen = (element, type, handler) => {
+        if (!element) return;
+        element.addEventListener(type, handler);
+        releases.push(() => element.removeEventListener(type, handler));
+    };
+    const stopDrag = () => {
+        if (!drag) return;
+        const {handle, pointerId} = drag;
+        drag = null;
+        if (!disposed) set(shell, {data_resizing: null});
+        if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId);
+    };
+    const dispose = () => {
+        if (disposed) return;
+        disposed = true;
+        installPrompt = null;
+        stopDrag();
+        for (const release of releases.reverse()) release();
+        if (style.parentBag) style.parentBag.popNode(style.label);
+        if (previousTheme == null) document.documentElement.removeAttribute('data-theme');
+        else document.documentElement.setAttribute('data-theme', previousTheme);
+    };
+    const send = frame => frame.contentWindow.postMessage({type: THEME_SET, theme: state.getItem('theme'), appearance: state.getItem('appearance')}, '*');
+    const applyTheme = () => {
+        document.documentElement.setAttribute('data-theme', state.getItem('theme'));
+        style.setAttr({media: state.getItem('appearance') === 'compact' ? 'all' : 'not all'});
+        for (const {frame} of entries.values()) if (frame) send(frame);
+    };
+    const updateInspector = () => onSelection(entries, state.getItem('active'));
+    function select(key) {
+        const entry = entries.get(key);
+        if (!opened.getItem(key)) {
+            opened.setItem(key, true);
+            set(entry.tab, {hidden: false});
+            if (entry.frame) set(entry.frame, {src: entry.open.getAttribute('href')});
+        }
+        if (entry.family) set(entry.family, {open: true});
+        for (const [current, item] of entries) {
+            const active = current === key;
+            set(item.tab, {aria_selected: String(active), tabindex: active && state.getItem('keyboard') ? 0 : -1});
+            set(item.panel, {hidden: !active});
+            if (item.open) set(item.open, {aria_current: active ? 'page' : null});
+        }
+        state.setItem('active', key);
+        updateInspector();
+    }
+    function setRatio(entry, value) {
+        const ratio = Math.max(20, Math.min(80, value));
+        state.setItem(`ratio.${entry.key}`, ratio);
+        set(entry.split, {style: `--split-position: ${ratio}%`});
+        set(entry.handle, {aria_valuenow: ratio});
+    }
+    const sidebarMaximum = () => Math.max(120, Math.min(460, Math.floor(window.innerWidth * .6)));
+    const setSidebarWidth = (value, remember = false) => {
+        const maximum = sidebarMaximum();
+        const width = Math.max(120, Math.min(maximum, value));
+        state.setItem('sidebarWidth', width);
+        set(shell, {style: `--sidebar-width: ${width}px`});
+        set(sidebarHandle, {aria_valuenow: width, aria_valuemax: maximum});
+        if (remember) {
+            state.setItem('preferredSidebarWidth', width);
+            savePreferences();
+        }
+    };
+    const beginDrag = (handle, event, move) => {
+        if (event.button !== 0) return;
+        stopDrag();
+        handle.setPointerCapture(event.pointerId);
+        drag = {handle, pointerId: event.pointerId, move};
+        set(shell, {data_resizing: 'true'});
+        event.preventDefault();
+    };
+    try {
+        const install = byId('index-install-button');
+        if (install) {
+            listen(window, 'beforeinstallprompt', event => {
+                event.preventDefault();
+                installPrompt = event;
+                set(install, {hidden: false, disabled: false});
+            });
+            listen(window, 'appinstalled', () => {
+                installPrompt = null;
+                set(install, {hidden: true});
+                node(byId('index-install-status')).setValue('App installed.');
+            });
+            listen(install, 'click', async () => {
+                if (!installPrompt) return;
+                const prompt = installPrompt;
+                installPrompt = null;
+                set(install, {disabled: true});
+                try {
+                    await prompt.prompt();
+                    const {outcome} = await prompt.userChoice;
+                    if (!disposed) node(byId('index-install-status')).setValue(
+                        outcome === 'accepted' ? 'Installation accepted.' : 'Installation cancelled. You can also use the browser menu.');
+                } catch (error) {
+                    if (!disposed) node(byId('index-install-status')).setValue(`Installation failed: ${error.message}`);
+                } finally {
+                    if (!disposed) set(install, {hidden: true});
+                }
+            });
+        }
+        set(shell, {data_resizing: null});
+        // Retain the preferred width when a narrow viewport temporarily limits the visible sidebar.
+        const savedWidth = preferences.sidebarWidth;
+        const width = typeof savedWidth === 'number' && Number.isFinite(savedWidth) && savedWidth >= 120 && savedWidth <= 460
+            ? savedWidth : sidebar.getBoundingClientRect().width || Number(sidebarHandle.getAttribute('aria-valuenow'));
+        state.setItem('preferredSidebarWidth', width);
+        setSidebarWidth(width);
+        listen(sidebarHandle, 'keydown', event => {
+            const current = state.getItem('sidebarWidth');
+            const value = event.key === 'ArrowLeft' ? current - 10 : event.key === 'ArrowRight' ? current + 10
+                : event.key === 'Home' ? 120 : event.key === 'End' ? sidebarMaximum() : null;
+            if (value == null) return;
+            event.preventDefault();
+            setSidebarWidth(value, true);
+        });
+        listen(sidebarHandle, 'pointerdown', event => beginDrag(sidebarHandle, event,
+            x => setSidebarWidth(Math.round(x - shell.getBoundingClientRect().left), true)));
+        listen(sidebarHandle, 'lostpointercapture', () => {
+            if (drag?.handle === sidebarHandle) stopDrag();
+        });
+        listen(window, 'resize', () => setSidebarWidth(state.getItem('preferredSidebarWidth')));
+        for (const tab of shell.querySelectorAll('.index-tabs button')) {
+            const key = tab.id.slice('tab-'.length);
+            const entry = {key, tab, panel: byId(`panel-${key}`),
+                open: key === 'intro' ? null : byId(`open-${key}`)};
+            entries.set(key, entry);
+            if (!tab.hidden) opened.setItem(key, true);
+            if (tab.getAttribute('aria-selected') === 'true') state.setItem('active', key);
+            listen(tab, 'click', () => select(key));
+            if (entry.open) listen(entry.open, 'click', event => { event.preventDefault(); select(key); });
+            listen(tab, 'keydown', event => {
+                if (!state.getItem('keyboard') || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                const keys = [...entries.keys()].filter(key => opened.getItem(key));
+                const index = keys.indexOf(key);
+                const next = event.key === 'Home' ? 0 : event.key === 'End' ? keys.length - 1
+                    : (index + (event.key === 'ArrowRight' ? 1 : -1) + keys.length) % keys.length;
+                event.preventDefault();
+                select(keys[next]);
+                entries.get(keys[next]).tab.focus();
+            });
+            if (key === 'intro') continue;
+            entry.family = entry.open.closest('details');
+            prepareEntry(entry, {byId, node, set, listen});
+            if (entry.panel.classList.contains('index-category')) continue;
+            entry.frame = byId(`frame-${key}`);
+            entry.split = byId(`split-${key}`);
+            entry.handle = byId(`divider-${key}`);
+            if (entry.handle) state.setItem(`ratio.${key}`, Number(entry.handle.getAttribute('aria-valuenow')));
+            listen(entry.frame, 'load', () => send(entry.frame));
+            if (!entry.handle) continue;
+            listen(entry.handle, 'keydown', event => {
+                const current = state.getItem(`ratio.${key}`);
+                const value = event.key === 'ArrowLeft' ? current - 5 : event.key === 'ArrowRight' ? current + 5
+                    : event.key === 'Home' ? 20 : event.key === 'End' ? 80 : null;
+                if (value == null) return;
+                event.preventDefault();
+                setRatio(entry, value);
+            });
+            listen(entry.handle, 'pointerdown', event => beginDrag(entry.handle, event, x => {
+                const bounds = entry.split.getBoundingClientRect();
+                if (bounds.width > 0) setRatio(entry, Math.round((x - bounds.left) * 100 / bounds.width));
+            }));
+            listen(entry.handle, 'lostpointercapture', () => {
+                if (drag?.handle === entry.handle) stopDrag();
+            });
+        }
+        listen(document, 'pointermove', event => {
+            if (!drag || event.pointerId !== drag.pointerId) return;
+            drag.move(event.clientX);
+        });
+        for (const type of ['pointerup', 'pointercancel']) listen(document, type, event => {
+            if (drag && event.pointerId === drag.pointerId) stopDrag();
+        });
+        for (const family of families) listen(family, 'toggle', () => set(family, {open: family.open}));
+        listen(keyboard, 'change', () => {
+            state.setItem('keyboard', (keyboard?.checked ?? false));
+            set(keyboard, {checked: (keyboard?.checked ?? false)});
+            for (const [key, entry] of entries) {
+                if (entry.open) set(entry.open, {tabindex: (keyboard?.checked ?? false) ? 0 : -1});
+                set(entry.tab, {tabindex: (keyboard?.checked ?? false) && key === state.getItem('active') ? 0 : -1});
+            }
+        });
+        listen(appearance, 'change', () => {
+            if (!APPEARANCES.has((appearance?.value ?? 'compact'))) throw new Error('Index appearance must be base or compact');
+            state.setItem('appearance', (appearance?.value ?? 'compact'));
+            set(appearance, {value: (appearance?.value ?? 'compact')});
+            for (const option of appearance.options) set(option, {selected: option.value === (appearance?.value ?? 'compact')});
+            applyTheme();
+            savePreferences();
+        });
+        listen(theme, 'change', () => {
+            if (!THEMES.has((theme?.value ?? 'light'))) throw new Error('Index theme must be light or dark');
+            state.setItem('theme', (theme?.value ?? 'light'));
+            set(theme, {value: (theme?.value ?? 'light')});
+            for (const option of theme.options) set(option, {selected: option.value === (theme?.value ?? 'light')});
+            applyTheme();
+            savePreferences();
+        });
+        listen(window, 'message', event => {
+            if (event.data?.type !== THEME_READY) return;
+            for (const {frame} of entries.values()) {
+                if (frame && frame.contentWindow === event.source) { send(frame); updateInspector(); break; }
+            }
+        });
+        applyTheme();
+        updateInspector();
+        renderer.onDispose(root, dispose);
+    } catch (error) {
+        dispose();
+        throw error;
+    }
+    return {dispose};
+}
+
+
+/** Re-export as the page's Logic, or delegate indexMount from a custom Logic. */
+export class IndexLogic {
+    indexMount(node, {shell_id}) {
+        const renderer = this.page.src.renderer;
+        const element = renderer.destination.ownerDocument.getElementById(shell_id);
+        this.index = mountIndexPage(renderer, renderer.elements.get(element).node);
+    }
+}
+
+export {THEME_READY, THEME_SET, THEMES, APPEARANCES} from "./index-theme.js";

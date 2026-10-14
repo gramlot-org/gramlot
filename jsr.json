@@ -1,19 +1,22 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
     "./server": "./js/src/server/index.js",
     "./runtime": "./js/dist/gramlot.js",
     "./page": "./js/src/server/page.js",
-    "./gramlot-server": "./js/src/server/gramlot-server.js"
+    "./gramlot-server": "./js/src/server/gramlot-server.js",
+    "./tools/inspector": "./js/tools/gramlot-tools-inspector.js",
+    "./index-page-runtime": "./js/src/index-page-runtime.js"
   },
   "imports": {
-    "@genrojs/bag": "jsr:@genro/bag@^0.10.3",
-    "@genrojs/builders": "jsr:@genro/builders@^0.4.2",
+    "@genrojs/bag": "jsr:@genro/bag@^0.11.0",
+    "@genrojs/builders": "jsr:@genro/builders@^0.5.2",
     "@genrojs/tytx": "jsr:@genro/tytx@^0.16.2",
-    "@gramlot/gramlot/page": "./js/src/server/page.js"
+    "@gramlot/gramlot/page": "./js/src/server/page.js",
+    "@gramlot/gramlot": "./js/src/index.js"
   },
   "publish": {
     "include": [
@@ -28,11 +31,15 @@
       "assets/branding/svg/**",
       "README.md",
       "LICENSE",
-      "NOTICE"
+      "NOTICE",
+      "js/tools/**",
+      "assets/branding/app-icon.png"
     ],
     "exclude": [
       "!js/dist",
-      "!js/dist/**"
+      "!js/dist/**",
+      "!js/tools",
+      "!js/tools/**"
     ]
   },
   "lock": false,

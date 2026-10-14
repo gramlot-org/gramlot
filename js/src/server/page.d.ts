@@ -19,6 +19,9 @@ export function endpointMethod(page: Page, name: string): Function | null;
 export class Page {
     /** The title of the page document. */
     static title: string;
+    static installable: boolean;
+    static appIcon: string | null;
+    manifest(options?: {baseUrl?: string}): Record<string, unknown> | Promise<Record<string, unknown>>;
     /** CSS URLs of the page. */
     static css: string[];
     /** Comma-separated names of the CSS resources of the page. */
@@ -44,3 +47,6 @@ export class Page {
      * `contentType: 'data'`, equivalent to the Python `@endpoint`; call it after the class. */
     static registerEndpoint(methodName: string, options?: {auth?: string | null}): void;
 }
+
+export {IndexPage} from "./index-page.js";
+export {IndexLogic, mountIndexPage} from "../index-page-runtime.js";

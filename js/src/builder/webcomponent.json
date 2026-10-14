@@ -1,0 +1,51 @@
+{
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "grammar": {
+    "name": "webcomponent",
+    "version": null,
+    "title": "Gramlot webcomponent",
+    "description": "An explicitly loaded autonomous custom element."
+  },
+  "abstracts": {},
+  "elements": {
+    "webcomponent": {
+      "doc": "Create the custom-element tag named by literal code.",
+      "sub_tags": "*",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "code",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "type",
+              "module": "builtins",
+              "name": "str"
+            },
+            "has_default": false
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": null
+    }
+  }
+}

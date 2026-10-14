@@ -2,4 +2,6 @@
 from .page import GramlotBuilder, Page, endpoint, source
 from .renderer import GramlotHtmlRenderer, GramlotSvgRenderer
 
-__all__ = ["GramlotBuilder", "GramlotHtmlRenderer", "GramlotSvgRenderer", "Page", "endpoint", "source"]
+__all__ = ["GramlotBuilder", "GramlotHtmlRenderer", "GramlotSvgRenderer", "Page", "IndexPage", "endpoint", "source"]
+
+from .page.index_page import IndexPage

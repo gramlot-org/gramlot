@@ -13,6 +13,8 @@ import {GramlotBuilderBag} from './source.js';
 import {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 // Byte copy of src/gramlot/collections/binding.json: the JS package ships js/ only.
 import BINDING from './binding.json' with {type: 'json'};
+import WEBCOMPONENT from './webcomponent.json' with {type: 'json'};
+import {webcomponentCode} from '../webcomponent.js';
 
 // P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 const DATA_FORBIDDEN = 'data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element';
@@ -55,6 +57,7 @@ export class GramlotBuilder extends HtmlBuilder {
     static _sourceClass = GramlotBuilderBag;
     // Composed on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
     static { this.defineGrammar(BINDING); }
+    static { this.defineGrammar(WEBCOMPONENT); }
 
     /** Tag prefixes of the parent dialects, from the `_name` of the classes above GramlotBuilder. */
     static get dialectPrefixes() {
@@ -128,6 +131,7 @@ export class GramlotBuilder extends HtmlBuilder {
 
     /** Builder's value check, plus the excluded attributes (authoring names the tag). */
     validateNodeValues(tag, value, attrs = {}) {
+        if (tag === 'webcomponent') webcomponentCode(attrs);
         const excluded = excludedAttribute(attrs);
         if (excluded) throw new Error(`${tag}: attribute '${excluded}' is excluded from Gramlot 0.2.0`);
         const error = dataElementError(tag, attrs);
@@ -137,11 +141,17 @@ export class GramlotBuilder extends HtmlBuilder {
 
     /** Builder's node check, plus the excluded attributes (a Source node names tag and label). */
     validateNode(node, options = {}) {
+        if (node.nodeTag === 'webcomponent') webcomponentCode(options.attrs ?? node.getAttr());
         const excluded = excludedAttribute(options.attrs ?? node.getAttr());
         if (excluded) throw new Error(`${node.nodeTag} '${node.label}': attribute '${excluded}' is excluded from Gramlot 0.2.0`);
         const error = dataElementError(node.nodeTag, options.attrs ?? node.getAttr());
         if (error) throw new Error(`${node.nodeTag} '${node.label}': ${error}`);
         return super.validateNode(node, options);
+    }
+
+    /** Custom elements are outside the native HTML child catalogue, as components are. */
+    _countsForGrammar(info) {
+        return info !== this.schema.webcomponent && super._countsForGrammar(info);
     }
 
     /** Builder's child insertion; a plain object `value` of `dataSetter` becomes `new Bag(value)` (P25). */
@@ -183,7 +193,8 @@ export class GramlotBuilder extends HtmlBuilder {
         }
         let id = node.getAttr('__ref');
         if (id === null || id === undefined) {
-            id = crypto.randomUUID().replaceAll('-', '');
+            id = Array.from(crypto.getRandomValues(new Uint8Array(16)),
+                byte => byte.toString(16).padStart(2, '0')).join('');
             node.setAttr({__ref: id});
         }
         return {$gramlotRef: id, kind};

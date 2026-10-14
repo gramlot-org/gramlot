@@ -5,6 +5,7 @@
  * @module
  */
 import {Bag} from '@genrojs/bag';
+import {fromTytx} from '@genrojs/tytx';
 
 /** The practical length limit of a mailto: URL in mail programs and browsers. */
 export const MAILTO_LIMIT = 2000;
@@ -88,7 +89,8 @@ export class InOut {
         return new Promise((resolve, reject) => {
             input.addEventListener('change', async () => {
                 try {
-                    const bag = Bag.fromTytx(await input.files[0].text());
+                    const bag = fromTytx(await input.files[0].text());
+                    if (!(bag instanceof Bag)) throw new TypeError('the file must contain a typed Bag');
                     this.gramlot.data.setItem(path, bag);
                     resolve(bag);
                 } catch (error) {

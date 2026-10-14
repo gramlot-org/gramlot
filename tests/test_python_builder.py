@@ -263,13 +263,13 @@ class LegacyTransportProbeTests(unittest.TestCase):
         self.assertEqual(attrs[".arr"]["value"], [1, "a", None])
         self.assertNotIn("value", attrs[".nul"])
 
-    def test_from_tytx_drops_null_attributes_that_the_wire_carries(self):
+    def test_from_tytx_preserves_null_attributes_that_the_wire_carries(self):
         bag = Bag()
         bag["x"] = 1
         bag.get_node("x").attr.update({"keep": 1, "gone": None})
         wire = to_tytx(bag)
         self.assertIn('"gone": null', wire)
-        self.assertEqual(dict(from_tytx(wire).get_node("x").attr), {"keep": 1})
+        self.assertEqual(dict(from_tytx(wire).get_node("x").attr), {"keep": 1, "gone": None})
 
 
 async def fragment(server, page_id, name, params=None):

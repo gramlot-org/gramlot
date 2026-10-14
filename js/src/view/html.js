@@ -1,6 +1,7 @@
 import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder} from '@genrojs/builders';
 import {ControlAdapter} from './controls.js';
 import {SVG_NS, XHTML_NS} from '../renderer/attributes.js';
+import {webcomponentCode} from '../webcomponent.js';
 
 const DEFAULT_TEXT = Symbol('source text');
 const ATTRIBUTE_NS = {
@@ -42,7 +43,7 @@ export class HtmlElement {
         const builder = node.builder;
         const declaration = builder.schema[builder.schemaTag(node.nodeTag)];
         const meta = {...declaration._meta, ...node.getAttr('_meta')};
-        const tag = resolveRenderTag(node.nodeTag, {
+        const tag = node.nodeTag === 'webcomponent' ? webcomponentCode(node.getAttr()) : resolveRenderTag(node.nodeTag, {
             renderTag: meta.render_tag, ns: node.getAttr('ns'),
             dialectName: builder.constructor._name,
         });

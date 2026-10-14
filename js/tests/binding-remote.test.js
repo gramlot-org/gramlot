@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {RemoteBinding} from '../src/binding/remote.js';
+import {Bag} from '@genrojs/bag';
 import {fromTytx, toTytx} from '@genrojs/tytx';
 
 /** A fake server: `main` and the remote Sources answered by the given functions, in the response envelope. */
@@ -111,6 +112,152 @@ test('_cachedRemote: equal parameters do not request again', async () => {
     await settle();
     assert.deepEqual(calls.map(([, params]) => params.id), [3, 4, 3]);
     app.dispose();
+});
+
+test('_cachedRemote: returning to mounted parameters cancels a different pending request', async t => {
+    const calls = [];
+    let answer;
+    let signal;
+    const source = async (method, params, abort) => {
+        calls.push(params.id);
+        if (params.id === 'B') {
+            signal = abort;
+            return new Promise(resolve => { answer = () => resolve(wire(root => root.span('B'))); });
+        }
+        return wire(root => root.span(params.id));
+    };
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 'A'});
+        root.div({id: 'slot', remote: 'details', remote_id: '^id', _cachedRemote: true,
+            _onRemote: "this.setRelativeData('mounted', id)"});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    assert.equal(slot(document), 'A');
+    app.data.setItem('id', 'B');
+    await settle();
+    app.data.setItem('id', 'A');
+    await settle();
+    // The transport deliberately answers after cancellation: latest wins must hold at the mount.
+    answer();
+    await settle();
+    assert.equal(slot(document), 'A');
+    assert.equal(signal.aborted, true);
+    assert.equal(app.data.getItem('mounted'), 'A');
+    assert.deepEqual(calls, ['A', 'B']);
+});
+
+test('_cachedRemote: a changed reactive fragment name is not a cache hit', async t => {
+    const {calls, source} = recorder();
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'name', value: 'details'});
+        root.div({id: 'slot', remote: '^name', remote_id: 1, _cachedRemote: true});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    app.data.setItem('name', 'summary');
+    await settle();
+    assert.equal(slot(document), 'summary:1');
+    assert.deepEqual(calls, [['details', {id: 1}], ['summary', {id: 1}]]);
+    app.data.setItem('name', 'summary', {flag: true});
+    await settle();
+    assert.equal(calls.length, 2);
+});
+
+test('_cachedRemote: nested Bag parameter changes invalidate the mounted cache', async t => {
+    const calls = [];
+    const source = async (_method, params) => {
+        const id = params.filter.getItem('record.id');
+        calls.push(id);
+        return wire(root => root.span(id));
+    };
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'filter.record.id', value: 'A'});
+        root.div({id: 'slot', remote: 'details', remote_filter: '^filter', _cachedRemote: true});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    const filter = app.data.getItem('filter');
+    app.data.setItem('filter.record.id', 'B');
+    await settle();
+    assert.equal(app.data.getItem('filter'), filter);
+    assert.equal(slot(document), 'B');
+    assert.deepEqual(calls, ['A', 'B']);
+    // An attribute event on the parameter's containing node leaves its value unchanged.
+    app.data.setItem('filter', filter, {flag: true});
+    await settle();
+    assert.deepEqual(calls, ['A', 'B']);
+});
+
+for (const [kind, create, change] of [
+    ['object', () => ({id: 'A'}), value => { value.id = 'B'; }],
+    ['array', () => ['A'], value => { value[0] = 'B'; }],
+    ['date', () => new Date('2026-10-01T00:00:00Z'), value => { value.setUTCDate(2); }],
+    ['Bag attribute', () => {
+        const value = new Bag();
+        value.setItem('id', 'A', {labels: ['A']});
+        return value;
+    }, value => { value.getNode('id').attr.labels[0] = 'B'; }],
+]) {
+    test(`_cachedRemote: ${kind} parameters are captured before the pending response`, async t => {
+        const calls = [];
+        const answers = [];
+        const source = (_method, params) => new Promise(resolve => {
+            calls.push(params.filter);
+            const text = String(calls.length);
+            answers.push(() => resolve(wire(root => root.span(text))));
+        });
+        const {app, document} = page({source, main: async () => wire(root => {
+            root.div({id: 'slot', remote: 'details', remote_filter: '=filter', _cachedRemote: true});
+        })});
+        t.after(() => app.dispose());
+        const value = create();
+        app.data.setItem('filter', value);
+        await app.start();
+        await settle();
+        assert.equal(calls.length, 1);
+        change(value);
+        answers[0]();
+        await settle();
+        assert.equal(slot(document), '1');
+        const target = app.src.source.getItem('main').getNodes().find(node => node.getAttr('remote'));
+        const remote = app.src.binding.bindingFor(target).remote;
+        const update = remote.update();
+        await settle();
+        assert.equal(calls.length, 2);
+        assert.notDeepEqual(calls[0], calls[1]);
+        answers[1]();
+        await update;
+        assert.equal(slot(document), '2');
+        await remote.update();
+        assert.equal(calls.length, 2);
+    });
+}
+
+test('_cachedRemote: reordered object keys make another request under TYTX comparison', async t => {
+    const calls = [];
+    const source = async (_method, params) => {
+        calls.push(params.filter);
+        return wire(root => root.span(String(calls.length)));
+    };
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.div({id: 'slot', remote: 'details', remote_filter: '^filter', _cachedRemote: true});
+    })});
+    t.after(() => app.dispose());
+    app.data.setItem('filter', {a: 1, b: 2});
+    await app.start();
+    await settle();
+    app.data.setItem('filter', {b: 2, a: 1});
+    await settle();
+    assert.equal(calls.length, 2);
+    assert.deepEqual(calls[0], calls[1]);
+    assert.equal(slot(document), '2');
+    const target = app.src.source.getItem('main').getNodes().find(node => node.getAttr('remote'));
+    await app.src.binding.bindingFor(target).remote.update();
+    assert.equal(calls.length, 2);
 });
 
 test('_if false: no request, and _else runs with the parameters', async () => {

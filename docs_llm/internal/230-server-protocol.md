@@ -122,7 +122,7 @@ close:    {pageId}
   with `GRAMLOT_DEV=DEBUG` the server MAY add further fields (the core adds
   `details`, `gramlot_server.py:205-206`, `gramlot-server.js:171`).
 - Extra fields are allowed on both sides: the base library ignores them, an
-  extension reads them (the Kajenn client: `changes`, `serverpath`).
+  extension may read them (planned Genro/genro-kajenn: `changes`, `serverpath`).
 - A message without `id` from the server is reserved to push (§040); the base
   client ignores it.
 - The close message is `{pageId}` alone, sent without waiting for an answer
@@ -196,9 +196,9 @@ Block ID: **GC-230-035**.
 - JS: `Page.registerSource('name', {auth})` and
   `Page.registerEndpoint('name', {auth})` (`page.js:67-75`), static methods called after the
   class body (the decorator syntax is a `SyntaxError` on Node).
-- Kajenn: an endpoint is an entry of genro-routes with its plugins (auth,
-  permissions); the Kajenn adapter maps the envelope to the entry. Outside this
-  document.
+- The current Kajenn adapter calls the same Page endpoints and evaluates avatar
+  tags for auth. Mapping endpoints to genro-routes entries and their plugins is
+  planned genro-kajenn integration, not delivered by this adapter.
 - `main` is the method `Page.main` in both languages.
 
 <a id="gc-230-040"></a>
@@ -220,16 +220,16 @@ A server MUST, whatever its kind (the Worker included):
 A server MAY, and then names the capability in the bootstrap (`capabilities`,
 `gramlot_server.py:129-132`, `gramlot-server.js:83-86`; empty in the base server):
 
-| capability | Meaning | Realised by |
+| capability | Meaning | Implementation status |
 |---|---|---|
-| `auth` | evaluates `auth` rules against an identity (otherwise every rule is `not_authenticated`) | Kajenn |
-| `websocket` | the envelope over WebSocket (Part D) | Kajenn |
-| `push` | messages without `id` from the server | Kajenn |
-| `serverpath` | the client sends the changes of the `serverpath` Data branches with each call (extra field) | Kajenn |
-| `state` | page state kept between calls | Kajenn, Genro |
-| `grouplets` | catalogues of fragments | Kajenn, Genro |
+| `auth` | evaluates `auth` rules against an identity (otherwise every rule is `not_authenticated`) | Implemented by the Kajenn adapter for avatar-tag auth |
+| `websocket` | the envelope over WebSocket (Part D) | Planned extended Genro/genro-kajenn scope; not in current adapters |
+| `push` | messages without `id` from the server | Planned extended Genro/genro-kajenn scope; not in current adapters |
+| `serverpath` | the client sends the changes of the `serverpath` Data branches with each call (extra field) | Planned extended Genro/genro-kajenn scope; not in current adapters |
+| `state` | page state kept between calls | Planned extended Genro/genro-kajenn scope; not in current adapters |
+| `grouplets` | catalogues of fragments | Planned extended Genro/genro-kajenn scope; not in current adapters |
 
-The names are those of the 0.2.14 plan; the Kajenn extended client defines its
+The names are those of the 0.2.14 plan; a future Genro/genro-kajenn extended client may define its
 own, the base client only reads the list. A server MAY also reject a request
 body above a size of its choice (§130) and reload pages in development
 (`GRAMLOT_DEV`, GC-225).
@@ -245,7 +245,7 @@ The base library is extended without modification through:
 1. the extra fields of the envelope (§020);
 2. the transport of `gramlot.rpc` (`RpcHandler`, GC-225 §015): HTTP, Worker,
    WebSocket;
-3. the hook on Data changes (the Kajenn client collects `serverpath`);
+3. the hook on Data changes (planned Genro/genro-kajenn collection of `serverpath`);
 4. the `auth` evaluator of `GramlotServer`, used by the builders and by the endpoint
    resolution (§030).
 
@@ -307,7 +307,11 @@ Block ID: **GC-230-120**. Adapters: `tests/http_server.py:73-108`,
 `scripts/fixture_servers.mjs:46-61` and `:91-94`.
 
 - `/gramlot/rpc` accepts **POST** only (**405** otherwise) with
-  `Content-Type: application/json` (**415** otherwise). It replaces `/gramlot/main`
+  `Content-Type: application/json` (**415** otherwise). The media type is compared
+  case-insensitively, ignoring surrounding whitespace and semicolon parameters;
+  an absent/empty type or a lookalike such as `application/jsonp` is refused.
+  The body must be valid UTF-8: invalid bytes answer **400** before calling the
+  server, including a bad byte inside otherwise valid JSON. It replaces `/gramlot/main`
   and `/gramlot/source` of 0.2.12: `main` is the envelope
   `{contentType: 'source', name: 'main'}`.
 - The body is the request envelope of §020 as TYTX JSON text. A body that is not a
@@ -433,9 +437,12 @@ Standard library (`urllib`, `fetch`) plus genro-tytx / `@genrojs/tytx` for the e
 7. GC-230-145: each root-relative bootstrap resource answers 200 with its media type.
 8. GC-230-115: an unknown page answers 404; `POST <page>` answers 405; when
    `page_path` ends with `/`, `<page>index.html` answers the page.
-9. GC-230-120: `rpc` answers 405 to `GET`, 415 to `text/plain`, 400 to invalid
-   JSON, to a body without `pageId`, with `params: null`, with an array `params`,
-   with an unknown `contentType`.
+9. GC-230-120/125: `rpc` answers 405 to `GET`; both `rpc` and `close` answer
+   415 to `text/plain`, JSON-prefix lookalikes and empty media types, and 400 to
+   invalid UTF-8 inside otherwise valid JSON. Mixed-case JSON media types and
+   charset parameters are accepted. Invalid close requests leave the page usable.
+   `rpc` also answers 400 to invalid JSON, a body without `pageId`, `params: null`,
+   array `params` and an unknown `contentType`.
 10. GC-230-020: `source`/`main` answers 200 `application/json` with an envelope
     whose `id` and `contentType` echo the request and whose `value` is a string.
 11. GC-230-135: with an owner cookie, the same call without it answers
@@ -504,5 +511,27 @@ Block ID: **GC-230-305**.
 - A message without `id` from the server is a push (`push` capability).
 - The close message is `{pageId}` without `id`; closing the socket closes the
   page as well.
-- Realised by the Kajenn extended client after 0.2.14; the base client has no
+- Planned for an extended Genro/genro-kajenn client; not a delivered capability
+  of the current adapters. The base client has no
   WebSocket transport.
+
+
+## Part E · Application metadata
+
+<a id="gc-230-310"></a>
+
+### 310 · Root web-app manifest
+
+Block ID: **GC-230-310**. Development addition, constitution 11.63.
+
+`GET <prefix>/app.webmanifest` calls the root Page's `manifest` method only if
+its `installable` property is true. It returns a JSON object with
+`application/manifest+json`; HEAD has the same status/headers and no body.
+Other verbs return 405. A missing or disabled root returns 404. No page session
+is created, and no RPC envelope or endpoint registration is involved. Treat the
+result as public metadata. `page_manifest(prefix=...)` / `pageManifest({prefix})`
+are the shared server operations; adapters only map HTTP requests and responses.
+The root bootstrap adds the manifest link; child pages do not. An application
+mounted at `/demo` uses `/demo/` for the default scope, id and start URL. Directory
+exports materialize the same method as JSON with relative URLs. This resource
+does not introduce a service worker, offline behavior or another RPC transport.

@@ -6,9 +6,10 @@
  */
 import {HtmlBuilder, HtmlRenderer, SvgBuilder, sourceAttributeItems} from '@genrojs/builders';
 import {GramlotSvgRenderer} from './gramlot-svg-renderer.js';
+import {webcomponentCode} from '../webcomponent.js';
 import {
     SVG_NS, XHTML_NS, boundaryAttributes, displayItem, domNames, isExpression, requireNoExpressionTemplate,
-    requireNoScriptAttributes, splitNativeAttributes, textValue, withDataSrcdocSandbox, withoutBindingAttributes,
+    requireNoScriptAttributes, requireStyleClassAttributes, splitNativeAttributes, textValue, withDataSrcdocSandbox, withoutBindingAttributes,
     withoutNullValues,
 } from './attributes.js';
 
@@ -52,7 +53,13 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
         const prefixes = this.builder.constructor.dialectPrefixes;
         const evaluated = this.evaluateExpressions(node, runtimeAttrs);
         requireNoScriptAttributes(node, evaluated, prefixes);
-        const [tag, attrs] = super._handleMeta(node, withDataSrcdocSandbox(node, evaluated, prefixes));
+        let [tag, attrs] = super._handleMeta(node, withDataSrcdocSandbox(node, evaluated, prefixes));
+        requireStyleClassAttributes(node, attrs, prefixes);
+        if (node.nodeTag === 'webcomponent') {
+            tag = webcomponentCode(node.getAttr());
+            const {code, ...rest} = attrs;
+            attrs = rest;
+        }
         if (node._getMeta('subbuilder')) {
             const boundary = boundaryAttributes(attrs);
             if (node._getMeta('subbuilder') === 'html') boundary.xmlns = SVG_NS;

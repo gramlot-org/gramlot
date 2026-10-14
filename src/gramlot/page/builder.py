@@ -8,6 +8,7 @@ from genro_builders.contrib.html import HtmlBuilder
 from genro_tytx import to_tytx
 
 from ..renderer import GramlotHtmlRenderer
+from ..webcomponent import webcomponent_code
 from ._grammar_load import load_grammar
 
 # Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
@@ -46,7 +47,7 @@ class GramlotBuilder(HtmlBuilder):
     _name = "gramlot"
     _source_class = GramlotBuilderBag
     # Builder applies it on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
-    _grammar_documents = ("../collections/binding.json",)
+    _grammar_documents = ("../collections/binding.json", "../collections/webcomponent.json")
 
     def __init__(self, name=None, *, collections=(), auth=None):
         super().__init__(name)
@@ -151,6 +152,8 @@ class GramlotBuilder(HtmlBuilder):
 
     def _validate_call_args(self, info, node_value, attr, node_tag=""):
         """Enforce required parameters declared by Gramlot's loaded grammar and the excluded attributes."""
+        if node_tag == "webcomponent":
+            webcomponent_code(attr)
         excluded = next((name for name in attr if name in EXCLUDED_ATTRIBUTES
                          or name.startswith(EXCLUDED_ATTRIBUTE_PREFIXES)), None)
         if excluded is not None:
@@ -165,6 +168,10 @@ class GramlotBuilder(HtmlBuilder):
         if missing:
             raise ValueError(f"{node_tag}: missing required attributes {sorted(missing)}")
         return super()._validate_call_args(info, node_value, attr, node_tag)
+
+    def custom_require_sub_tag_validation(self, node):
+        """Custom elements are outside the native HTML child catalogue, as components are."""
+        return node.node_tag != "webcomponent"
 
     def _add_element(self, build_where, node_value=None, node_label=None, node_tag="", **attr):
         """Builder's element insertion; a dict ``value`` of ``dataSetter`` becomes ``Bag(value)`` (P25)."""

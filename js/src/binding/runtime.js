@@ -30,7 +30,8 @@ export class BindingRuntime {
     #router;
     #installer;
     #inlineCompiler;
-    #subscription = `gramlot-data-${crypto.randomUUID()}`;
+    #subscription = `gramlot-data-${Array.from(crypto.getRandomValues(new Uint8Array(16)),
+        byte => byte.toString(16).padStart(2, '0')).join('')}`;
     #disposed = false;
 
     constructor(gramlot) {

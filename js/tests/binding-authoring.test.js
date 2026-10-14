@@ -307,7 +307,8 @@ if sys.argv[1] == 'encode':
     builder = GramlotBuilder()
     bag = Bag(); bag.set_item('a', 1, colore='rosso')
     for path, value in (('.nul', None), ('.f', False), ('.z', 0), ('.e', ''), ('.bag', bag), ('.arr', [1, 'a', None]),
-                        ('.dict', {'nome': 'Ada', 'indirizzo': {'citta': 'Roma'}, 'tag': [1, 'a']}), ('.json', '{"a": 1}')):
+                        ('.dict', {'nome': 'Ada', 'indirizzo': {'citta': 'Roma'},
+                                   'tag': [1, 'a', {'name': 'Grace', 'items': [False, None]}, []]}), ('.json', '{"a": 1}')):
         builder.root.dataSetter(path, value)
     print(to_tytx(builder.source))
 else:
@@ -320,7 +321,14 @@ else:
     assert attrs['.arr']['value'] == [1, 'a', None]
     value = attrs['.dict']['value']
     assert type(value) is Bag and type(value['indirizzo']) is Bag and value['indirizzo.citta'] == 'Roma'
-    assert value['tag'] == [1, 'a'] and value['nome'] == 'Ada'
+    assert type(value['tag']) is Bag and value['nome'] == 'Ada'
+    items = [node.value for node in value['tag'].nodes]
+    assert len(items) == 4 and type(items[0]) is int and items[:2] == [1, 'a']
+    assert type(items[2]) is Bag and items[2]['name'] == 'Grace'
+    assert type(items[2]['items']) is Bag
+    leaves = [node.value for node in items[2]['items'].nodes]
+    assert len(leaves) == 2 and leaves[0] is False and leaves[1] is None
+    assert type(items[3]) is Bag and len(items[3]) == 0
     assert attrs['.json']['value'] == '{"a": 1}'
     print('ok')
 `;
@@ -338,17 +346,27 @@ function assertValueCases(source) {
     assert.ok(value instanceof Bag);
     assert.ok(value.getItem('indirizzo') instanceof Bag);
     assert.equal(value.getItem('indirizzo.citta'), 'Roma');
-    assert.deepEqual(value.getItem('tag'), [1, 'a']);
+    assert.ok(value.getItem('tag') instanceof Bag);
+    const items = value.getItem('tag').getNodes().map(node => node.value);
+    assert.equal(items.length, 4);
+    assert.deepEqual(items.slice(0, 2), [1, 'a']);
+    assert.ok(items[2] instanceof Bag);
+    assert.equal(items[2].getItem('name'), 'Grace');
+    assert.ok(items[2].getItem('items') instanceof Bag);
+    assert.deepEqual(items[2].getItem('items').getNodes().map(node => node.value), [false, null]);
+    assert.ok(items[3] instanceof Bag);
+    assert.equal(items[3].getNodes().length, 0);
     assert.equal(value.getItem('nome'), 'Ada');
     assert.equal(attrs['.json'].value, '{"a": 1}');
 }
 
-test('P25 and values round trip in four directions: a dict or plain object arrives as Bag, a JSON string stays a string', () => {
+test('P25 and values round trip in four directions: dictionaries and nested lists become Bags, a JSON string stays a string', () => {
     const builder = new GramlotBuilder();
     const bag = new Bag();
     bag.setItem('a', 1, {colore: 'rosso'});
     for (const [path, value] of [['.nul', null], ['.f', false], ['.z', 0], ['.e', ''], ['.bag', bag], ['.arr', [1, 'a', null]],
-        ['.dict', {nome: 'Ada', indirizzo: {citta: 'Roma'}, tag: [1, 'a']}], ['.json', '{"a": 1}']]) {
+        ['.dict', {nome: 'Ada', indirizzo: {citta: 'Roma'}, tag: [1, 'a', {name: 'Grace', items: [false, null]}, []]}],
+        ['.json', '{"a": 1}']]) {
         builder.root.dataSetter({destination_path: path, value});
     }
     const jsWire = builder.toTytx();

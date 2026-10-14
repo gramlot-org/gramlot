@@ -106,6 +106,15 @@ export class GramlotServer {
         for (const [id, record] of this.pages) if (record.expires <= now) this.pages.delete(id);
     }
 
+    /** Describe the root application without registering a page session. */
+    async pageManifest({prefix = ''} = {}) {
+        const PageClass = await this.resolvePage('/');
+        if (PageClass.installable !== true) throw new PageNotFound('The root page is not installable');
+        const result = await new PageClass().manifest({baseUrl: prefix + '/'});
+        if (!isMapping(result)) throw new TypeError('Page.manifest must return a JSON object');
+        return result;
+    }
+
     /** Register a page independently of its HTTP or Worker transport. */
     async registerPage(path, {owner = null} = {}) {
         const PageClass = await this.resolvePage(path);
@@ -139,6 +148,9 @@ export class GramlotServer {
             const head = root.head();
             head.meta({charset: 'utf-8'});
             head.title(title);
+            if (['', 'index'].includes(path.replace(/^\/+|\/+$/g, '')) && this.pages.get(pageId).PageClass.installable === true) {
+                head.link({rel: 'manifest', href: prefix + '/app.webmanifest'});
+            }
             // A page module served for its Logic imports the core from the runtime already loaded.
             head.script(scriptJson({imports: {'@gramlot/gramlot/page': prefixed(prefix, this.runtimeUrl)}}),
                 {type: 'importmap', nonce});

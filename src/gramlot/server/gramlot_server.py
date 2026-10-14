@@ -149,6 +149,19 @@ class GramlotServer:
         now = time.monotonic()
         self._pages = {key: record for key, record in self._pages.items() if record[0] > now}
 
+    async def page_manifest(self, *, prefix=""):
+        """Return the root app manifest without creating a page session."""
+        cls = self.resolve_page("/")
+        if cls.installable is not True:
+            raise PageNotFound("The root page is not installable")
+        result = cls().manifest(base_url=prefix + "/")
+        if inspect.isawaitable(result):
+            result = await result
+        if not isinstance(result, dict):
+            raise TypeError("Page.manifest must return a JSON object")
+        json.dumps(result, allow_nan=False)
+        return result
+
     async def open_page(self, path, *, owner=None, prefix=""):
         """Register the page and return its bootstrap. ``prefix`` is the mount prefix
         chosen by the adapter, added once to the root-relative bootstrap URLs."""
@@ -178,6 +191,8 @@ class GramlotServer:
         head = root.head()
         head.meta(charset="utf-8")
         head.title(cls.title)
+        if path.strip("/") in ("", "index") and cls.installable is True:
+            head.link(rel="manifest", href=prefix + "/app.webmanifest")
         # A page module served for its Logic imports the core from the runtime already loaded.
         head.script(_script_json({"imports": {"@gramlot/gramlot/page": _prefixed(prefix, self.runtime_url)}}),
                     type="importmap", nonce=nonce)

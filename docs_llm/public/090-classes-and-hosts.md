@@ -1,16 +1,16 @@
 # Classes, repository and server adapters
 
-Document ID: **GC-090**. 0.1.2 APIs; 0.2.0 changes are marked.
+Document ID: **GC-090**.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README). Previous release:
-> **0.1.2**. Unmarked text is behavior from 0.1.2; sections 030 and 035 are 0.2.0.
+> **Scope.** This is the maintained authoring guide. The repository README states
+> the current release. Dated release notes below describe when behavior entered;
+> they are not a list of current exclusions. Development-only differences are marked.
 
 <a id="gc-090-005"></a>
 
-## 005 · Reading this first draft
+## 005 · How to use this reference
 
-Core map, with the 0.2.0 binding layer marked. Published on PyPI (`gramlot`), npm and JSR
+Core map following the release sequence, with binding and later RPC/remote additions marked. Published on PyPI (`gramlot`), npm and JSR
 (`@gramlot/gramlot`); adapters are tested in their own repositories. Richer PoC behavior is not core evidence.
 
 <a id="gc-090-010"></a>
@@ -48,15 +48,16 @@ Their methods are part of the contract. Plain Bags are valid for Data, not Sourc
 | Python `GramlotServer` | Page resolution, IDs, bootstrap, every envelope through `call` |
 | Python/JS `GramlotBuilder` | Gramlot dialect over Python `BuilderBase` / JS `HtmlBuilder` with loaded collections |
 | JS `Gramlot` | Lifecycle and Data; proxies `src` (`SourceHandler`), `rpc` (`RpcHandler`), `dom` (`DomHandler`), `utl` (`UtilitiesHandler`) hold the themed members |
-| JS `GramlotRenderer` | Generic `RendererBase` specialization; live DOM and references |
+| Historical 0.1.2: JS `GramlotRenderer` | Generic `RendererBase` specialization; live DOM and references |
 | *0.2.0:* JS `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Extend Builder `HtmlRenderer`/`SvgRenderer`, inherit their attribute/style adaptation; string rendering. `GramlotRenderer` extends `GramlotHtmlRenderer` and keeps live DOM and references |
 | *0.2.0:* Python `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Static HTML/SVG rendering of a Gramlot Source, same rules as JS |
 | JS `HttpTransport` | Envelope to `rpcUrl`, close message to `closeUrl` (transport of `gramlot.rpc`) |
 | JS `GramlotServer`/`Page`/`GramlotFileServer` | Node/Bun server boundary and file loading |
 
 Dependency libraries own SourceBag, typed serialization and generic grammar/rendering. Pages
-author Source, never DOM. Data roots exist; resolvers do not.
-*0.2.0:* bindings and controllers enter, resolvers stay deferred; `gramlot.dom` holds
+author Source, never DOM. Data bindings/controllers and the endpoint-backed
+`dataRemote` resolver are available (GC-095 §105).
+*0.2.0:* bindings and controllers enter; *0.2.16:* adds `dataRemote` (GC-095 §105). `gramlot.dom` holds
 `getBaseSourceNode`/`getDomNode`; per-instance logic groups in `app.logic`
 ([GC-095 060](095-writing-pages.md)). Browser Source uses `GramlotBuilderBag`/
 `GramlotBuilderBagNode` (extend `SourceBag`/`SourceBagNode`) for `PUT`, `FIRE`,
@@ -225,7 +226,7 @@ npm package and the wheel. The rest of the identity kit is not packaged.
 
 ## 025 · JavaScript standalone host
 
-A dedicated browser Worker hosts one JavaScript Page. `WorkerHost` inherits `GramlotServer`
+A dedicated browser Worker hosts one JavaScript Page. `GramlotWorkerServer` inherits `GramlotServer`
 and reuses its page registration, `main`, explicitly marked Source methods, typed
 serialization, fresh instance per call, expiry and error rules. There is no separate
 standalone Page compiler. Python pages execute on Python servers only.
@@ -248,9 +249,9 @@ development boundary requires the matching core with the browser-safe `/gramlot-
 export; unchanged 0.1.0 archives do not provide it:
 
 ```javascript
-import {WorkerHost} from '@gramlot/gramlot-serverless/worker-host';
+import {GramlotWorkerServer} from '@gramlot/gramlot-serverless/gramlot-worker-server';
 import {Page} from './page.js';
-new WorkerHost(Page);
+new GramlotWorkerServer(Page);
 ```
 
 Bundle this entry and its imports into a classic Worker script. The browser runtime
@@ -271,11 +272,11 @@ Current scope: one Page per Worker, HTML Source, Source live, declared `Page.css
 passes in Chromium; an earlier local file check passed in Playwright WebKit.
 WebKit is not Safari. Safari and Firefox remain unverified.
 *0.2.0:* `Page.css` stays on every server path; `css_requires`/`js_requires` need a
-`GramlotServer` with a resource system (030); the WorkerHost is server side: it compiles no
+`GramlotServer` with a resource system (030); the GramlotWorkerServer is server side: it compiles no
 code and never runs the companion.
 
 Export shape (0.2.0), `@gramlot/gramlot-serverless`: one HTML file. The Worker script holds
-the Page and `WorkerHost`, without the inline compiler (`binding/inline.js` is not in
+the Page and `GramlotWorkerServer`, without the inline compiler (`binding/inline.js` is not in
 its bundle). The page logic (`Logic` export of the page module, else `foo_aux.js`) is a
 separate bundle that runs in the window only, through a blob URL that replaces its URL,
 resource order kept. The CSP is
@@ -291,9 +292,9 @@ exporter of the browser standalone profile: it bundles the Page without executin
 and generates the HTML through HtmlBuilder; it also exports a static directory of
 several documents, each with its own Worker. Assets must be included by the exporter
 and served at their declared paths. The exported gallery directory opens through `file://`
-(Blob Workers, explicit export root for local stylesheets). Dependencies:
-`@gramlot/gramlot >=0.2.5`, `@genrojs/builders >=0.4.1`, Node 22+; commands are in
-its repository.
+(Blob Workers, explicit export root for local stylesheets). Follow the integration
+README for installation/runtime requirements, keeping first-party dependencies
+updated without pins. This is not a frozen 0.2.0 setup.
 
 The published 0.1.0 archive retains `@gramlot/standalone` and its
 `gramlot-standalone` command; use its bundled README for that immutable release.
@@ -308,7 +309,7 @@ archived `gramlot-serverless` repository).
 
 ## 030 · Page resources and file layout (0.2.0)
 
-0.2.0 behavior.
+0.2.0 resources, with the 0.2.5 page-module/import-map additions marked below.
 `Page.css`: list of URLs as in `<link href>`, in the core for every server. `/…` gets
 the mount prefix once; `theme.css`, `https://…`, `//…` stay as written.
 

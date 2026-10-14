@@ -10,7 +10,7 @@ const {chromium} = await import(pathToFileURL(playwrightPath));
 const root = fileURLToPath(new URL('../', import.meta.url));
 const externalUrl = process.env.GRAMLOT_TEST_URL;
 if (language === 'js' && !externalUrl) throw new Error('JS verification requires GRAMLOT_TEST_URL from a running Node/Bun adapter');
-const server = externalUrl ? null : spawn(runtime, ['tests/http_server.py'], {
+const server = externalUrl ? null : spawn(runtime, ['tests/http_server.py', 'tests/fixtures/pages'], {
     cwd: root, env: {...process.env, PYTHONPATH: `${root}/src`}, stdio: ['ignore', 'pipe', 'inherit'],
 });
 let browser;
@@ -55,7 +55,7 @@ try {
         replacement.root.em(' maggie');
         panel.setValue(replacement.source);
         const afterReplace = document.querySelector('#panel').textContent;
-        const remoteApplied = await app.src.remoteSource(panel, 'details', {name: 'remote homer'});
+        const remoteApplied = await app.src.remoteSource(panel, 'check_fragment', {text: 'remote homer'});
         const afterRemote = document.querySelector('#panel').textContent;
         const child = panel.value.getNodes()[0];
         app.src.renderer.freeze(panel);

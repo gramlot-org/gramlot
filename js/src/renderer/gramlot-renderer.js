@@ -48,7 +48,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.disposed = false;
         this.elements = new WeakMap();
         // The instance id scopes the generated radio names to this page (P11, S11).
-        this.instanceId = crypto.randomUUID();
+        this.instanceId = Array.from(crypto.getRandomValues(new Uint8Array(16)),
+            byte => byte.toString(16).padStart(2, '0')).join('');
         this.radioGroups = new RadioGroups(this);
         this.subscription = `html-source-renderer-${this.instanceId}`;
         source.subscribe(this.subscription, {any: event => this.receive(event)});

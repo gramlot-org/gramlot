@@ -152,14 +152,33 @@ class DataElementSignatureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r"'total' contains a \$\{…\} template, not accepted in a == expression"):
             builder.renderer_html.render(builder.source.nodes[2])
 
-    def test_a_dict_value_becomes_a_bag_and_a_json_string_stays_a_string(self):
+    def test_a_dict_value_becomes_a_recursive_bag_and_a_json_string_stays_a_string(self):
         root = GramlotBuilder().root
-        node = root.dataSetter(".cliente", {"nome": "Ada", "indirizzo": {"citta": "Roma"}, "tag": [1, "a"]})
-        value = node.attr["value"]
-        self.assertIs(type(value), Bag)
-        self.assertIs(type(value["indirizzo"]), Bag)
-        self.assertEqual(value["indirizzo.citta"], "Roma")
-        self.assertEqual(value["tag"], [1, "a"])
+        node = root.dataSetter(".cliente", {
+            "nome": "Ada", "indirizzo": {"citta": "Roma"},
+            "tag": [1, "a", {"name": "Grace", "items": [False, None]}, []],
+        })
+        for stage, value in (("authored", node.attr["value"]),
+                             ("transported", from_tytx(to_tytx(root)).nodes[0].attr["value"])):
+            with self.subTest(stage=stage):
+                self.assertIs(type(value), Bag)
+                self.assertEqual(value["nome"], "Ada")
+                self.assertIs(type(value["indirizzo"]), Bag)
+                self.assertEqual(value["indirizzo.citta"], "Roma")
+                self.assertIs(type(value["tag"]), Bag)
+                items = [item.value for item in value["tag"].nodes]
+                self.assertEqual(len(items), 4)
+                self.assertIs(type(items[0]), int)
+                self.assertEqual(items[:2], [1, "a"])
+                self.assertIs(type(items[2]), Bag)
+                self.assertEqual(items[2]["name"], "Grace")
+                self.assertIs(type(items[2]["items"]), Bag)
+                leaves = [item.value for item in items[2]["items"].nodes]
+                self.assertEqual(len(leaves), 2)
+                self.assertIs(leaves[0], False)
+                self.assertIsNone(leaves[1])
+                self.assertIs(type(items[3]), Bag)
+                self.assertEqual(len(items[3]), 0)
         self.assertEqual(root.dataSetter(".s", '{"a": 1}').attr["value"], '{"a": 1}')
 
     def test_values_round_trip_python_to_python(self):

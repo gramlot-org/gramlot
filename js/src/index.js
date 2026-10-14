@@ -24,3 +24,6 @@ export {References} from './references.js';
 export {HttpTransport} from './http-transport.js';
 export {RpcError} from './handlers/rpc-handler.js';
 export {InOut} from './inout.js';
+
+export {IndexPage} from './server/index-page.js';
+export {IndexLogic, mountIndexPage} from './index-page-runtime.js';

@@ -120,8 +120,28 @@ export async function checkProtocol(baseUrl, pagePath) {
 
     response = await request('GET', rpc);
     expect('GC-230-120', response.status === 405, `GET ${rpc} answers ${response.status}, not 405`);
-    response = await request('POST', rpc, {body: toTytx(envelope('source', 'main')), contentType: 'text/plain'});
-    expect('GC-230-120', response.status === 415, `rpc as text/plain answers ${response.status}, not 415`);
+    for (const [path, rule, body] of [
+        [rpc, 'GC-230-120', toTytx(envelope('data', 'check_endpoint', {value: 'invalid-byte'}))],
+        [config.closeUrl, 'GC-230-125', JSON.stringify({pageId, value: 'invalid-byte'})],
+    ]) {
+        for (const contentType of ['text/plain', 'application/jsonp', 'application/json-extra', '']) {
+            response = await request('POST', path, {body, contentType});
+            expect(rule, response.status === 415, `${path} as ${JSON.stringify(contentType)} answers ${response.status}, not 415`);
+        }
+        // Keep JSON syntax valid: a replacing decoder would dispatch this body instead of rejecting it.
+        const invalidUtf8 = Buffer.from(body);
+        invalidUtf8[invalidUtf8.indexOf('invalid-byte')] = 0xff;
+        response = await request('POST', path, {body: invalidUtf8});
+        expect(rule, response.status === 400, `${path} with invalid UTF-8 inside a JSON string answers ${response.status}, not 400`);
+    }
+    for (const contentType of ['Application/JSON', 'application/json; charset=utf-8', 'application/json ; charset=UTF-8']) {
+        response = await call(envelope('data', 'check_endpoint', {value: 'media-type'}), {contentType});
+        expect('GC-230-120', response.status === 200 && response.received?.value === 'media-type',
+            `rpc as ${contentType} answers ${response.status} ${response.body.slice(0, 200)}, not the endpoint value`);
+        response = await request('POST', config.closeUrl, {body: JSON.stringify({pageId: '0'.repeat(32)}), contentType});
+        expect('GC-230-125', response.status === 200 && isDeepStrictEqual(parse(response.body, JSON.parse), {ok: true}),
+            `close as ${contentType} answers ${response.status} ${response.body.slice(0, 200)}, not 200 {"ok": true}`);
+    }
     response = await request('POST', rpc, {body: '{'});
     expect('GC-230-120', response.status === 400, `rpc with invalid JSON answers ${response.status}, not 400`);
     const {pageId: omitted, ...withoutPageId} = envelope('source', 'main');

@@ -6,10 +6,11 @@ from genro_builders.contrib.svg import SvgBuilder
 
 from .attributes import (
     SVG_NS, XHTML_NS, boundary_attributes, display_item, dom_names, is_expression, require_no_expression_template,
-    require_no_script_attributes, split_native_attributes, text_value, with_data_srcdoc_sandbox, without_binding_attributes,
+    require_no_script_attributes, require_style_class_attributes, split_native_attributes, text_value, with_data_srcdoc_sandbox, without_binding_attributes,
     without_null_values,
 )
 from .svg_renderer import GramlotSvgRenderer
+from ..webcomponent import webcomponent_code
 
 
 class GramlotHtmlRenderer(HtmlRenderer):
@@ -51,6 +52,10 @@ class GramlotHtmlRenderer(HtmlRenderer):
         evaluated = self.evaluate_expressions(node, runtime_attrs)
         require_no_script_attributes(node, evaluated, prefixes)
         tag, attrs = super()._handle_meta(node, with_data_srcdoc_sandbox(node, evaluated, prefixes))
+        require_style_class_attributes(node, attrs, prefixes)
+        if node.node_tag == "webcomponent":
+            tag = webcomponent_code(node.attr)
+            attrs = {name: value for name, value in attrs.items() if name != "code"}
         if node._get_meta("subbuilder"):
             boundary = boundary_attributes(attrs)
             if node._get_meta("subbuilder") == "html":

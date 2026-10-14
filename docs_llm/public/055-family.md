@@ -2,8 +2,10 @@
 
 Document ID: **GC-055**.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README).
+> **Scope.** This is the maintained introduction. The binding example belongs
+> to the 0.2.0 learning stage; the Page/Logic module arrangement arrived in 0.2.5.
+> Follow [Try Gramlot](025-try.md) for the chronological release sequence.
+> The README states the current release.
 
 <a id="gc-055-005"></a>
 
@@ -12,6 +14,12 @@ Document ID: **GC-055**.
 A web interface described as a tree of declarations in Python or JavaScript, bound to application state in the browser. Page: class with `main(root)` calling element methods. Source: the tree (native HTML5/SVG elements in a Bag); the DOM follows it. Data: a Bag of values; `^` follows, `=` reads once, `==` computes; native controls write back. Logic: `dataFormula`, `dataController`, buttons, `connect_on<event>`; code as methods of the `Logic` export of the page module `foo.js` (beside `foo.py` for Python), else of `class Logic` in `foo_aux.js`, or inline where the CSP allows. Server (`GramlotServer`): opens a page for a browser (Page, bootstrap, Source, close); an adapter connects it to a web server or packages pages without one.
 
 Example (Python): `pane = root.div(datapath="person")`; `pane.input(id="name", value="^.name", live=True)`; `pane.p("^.greeting")`; `pane.dataFormula(".greeting", "'Hello, ' + name", name="^.name", _init=True)`; `pane.dataSetter(".name", "Ada")` → shows `Hello, Ada`, and `Hello, Grace` while typing `Grace`. JavaScript: same methods, data-elements with an object. See [Writing pages](095-writing-pages.md).
+
+This compact example uses an inline formula: it requires the permissive CSP
+profile explained in [Classes and server adapters](090-classes-and-hosts.md).
+For a project using strict CSP, follow the named-Logic form in
+[Writing pages](095-writing-pages.md), section 060, and c03. The gallery teaches
+supported slices with explicit limits; it does not yet cover every option.
 
 <a id="gc-055-010"></a>
 

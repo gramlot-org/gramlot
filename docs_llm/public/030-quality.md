@@ -2,9 +2,9 @@
 
 Document ID: **GC-030**.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README). Previous release:
-> **0.1.2**. Unmarked text is behavior from 0.1.2.
+> **Scope.** This is the maintained authoring guide. The repository README states
+> the current release. Dated release notes below describe when behavior entered;
+> they are not a list of current exclusions. Development-only differences are marked.
 
 <a id="gc-030-005"></a>
 
@@ -20,6 +20,20 @@ CI measures `js/src` with `c8 --all` (every file, unimported ones included; line
 
 <a id="gc-030-015"></a>
 
-## 015 · Coverage is not a browser acceptance test
+## 015 · Runtime coverage and teaching coverage
 
-PoC JavaScript uses Node tests and jsdom. These do not establish real-browser behavior, visual quality, accessibility or all server/database combinations. Assess binding, cleanup and failure tests plus real-browser checks of the components you need. Coverage does not guarantee production readiness. *0.2.0:* real-browser binding tests use a separate runner, not jsdom.
+Core tests use core-owned fixtures. The integrations and gramlot-examples test
+their own delivery and pages; results from gramlot-poc do not qualify this core.
+Unit/DOM tests do not establish real-browser behavior, visual quality,
+accessibility or every server/database combination. Check observable binding,
+cleanup and request failures in the environments you intend to use.
+
+The example catalogue and a passing load check are not proof that every feature
+is taught. Record the installed catalogue, actions and environments checked. A
+count of mounted fragments cannot prove that no transport request occurred.
+
+Teaching follows release milestones. Verify each repeated example's earlier and
+later stages, the code replaced by the new feature and the stated result. Preserve
+historical context, but label unsupported historical syntax instead of presenting
+it as runnable current code. Prerequisites, expected results and explained exercises
+are part of the review. Coverage is not a production-readiness guarantee.

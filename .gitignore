@@ -25,6 +25,7 @@ docs/_build/
 
 js/resources/
 js/dist/
+js/tools/
 js/LICENSE
 js/NOTICE
 src/gramlot/resources/*.js

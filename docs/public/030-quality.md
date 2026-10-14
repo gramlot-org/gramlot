@@ -2,10 +2,9 @@
 
 Document ID: **GC-030**.
 
-> **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**, released on 2026-09-30 and is published on PyPI (`gramlot`)
-> and on npm and JSR (`@gramlot/gramlot`); the README states the current release. The previous release is **0.1.2**.
-> Text without a *0.2.0* mark describes behavior that comes from 0.1.2.
+> **Scope.** This is the maintained authoring guide. The repository README states
+> the current release. Dated release notes below describe when behavior entered;
+> they are not a list of current exclusions. Development-only differences are marked.
 
 <a id="gc-030-005"></a>
 
@@ -53,16 +52,20 @@ statements.
 
 <a id="gc-030-015"></a>
 
-## 015 · Coverage is not a browser acceptance test
+## 015 · Runtime coverage and teaching coverage
 
-The PoC currently runs its JavaScript suite with Node's test runner and uses jsdom
-for DOM tests. That evidence is useful but does not establish behavior in real
-browsers, visual quality, accessibility or every server/database combination.
+Core tests use core-owned fixtures. The integrations and gramlot-examples test
+their own delivery and pages; results from gramlot-poc do not qualify this core.
+Unit/DOM tests do not establish real-browser behavior, visual quality,
+accessibility or every server/database combination. Check observable binding,
+cleanup and request failures in the environments you intend to use.
 
-For adoption decisions, look for tests of observable binding behavior, lifecycle
-cleanup and request failures, together with real-browser checks for the components
-you intend to use. Do not interpret a coverage percentage as a compatibility or
-production-readiness guarantee.
+The example catalogue and a passing load check are not proof that every feature
+is taught. Record the installed catalogue, actions and environments checked. A
+count of mounted fragments cannot prove that no transport request occurred.
 
-*0.2.0:* real-browser binding tests use a separate runner; jsdom does not replace
-them.
+Teaching follows release milestones. Verify each repeated example's earlier and
+later stages, the code replaced by the new feature and the stated result. Preserve
+historical context, but label unsupported historical syntax instead of presenting
+it as runnable current code. Prerequisites, expected results and explained exercises
+are part of the review. Coverage is not a production-readiness guarantee.

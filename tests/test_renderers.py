@@ -230,3 +230,38 @@ class SrcdocSandboxTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StyleClassContractTests(unittest.TestCase):
+    def test_rejects_non_strings_before_style_composition(self):
+        for attribute in ('style', 'class', '_class', 'html_style', 'html_class'):
+            for value in ([], ['card'], {}, {'color': 'red'}, True, False, 0, 12, 1.5):
+                for pointer in (False, True):
+                    with self.subTest(attribute=attribute, value=value, pointer=pointer):
+                        builder = GramlotBuilder()
+                        builder.data.set_item('candidate', value)
+                        builder.root.div(**{attribute: '^candidate' if pointer else value})
+                        with self.assertRaisesRegex(TypeError, 'style|class'):
+                            builder.render()
+
+    def test_valid_strings_nulls_and_deferred_expressions(self):
+        builder = GramlotBuilder()
+        builder.root.div(style='color: red', class_='card', color='blue')
+        builder.root.div(style=None, class_=None)
+        builder.root.div(style='==candidate', class_='==candidate', candidate='^value')
+        self.assertEqual(builder.render(), '<div class="card" style="color: blue"></div><div></div><div></div>')
+
+    def test_svg_boundaries_and_render_attributes_follow_the_same_contract(self):
+        for attribute in ('style', 'class'):
+            for value in ([], {}, True, False, 0, 1.5):
+                for target in ('svg', 'rect', 'render_attributes'):
+                    with self.subTest(attribute=attribute, value=value, target=target):
+                        builder = GramlotBuilder()
+                        if target == 'svg':
+                            builder.root.svg(**{attribute: value})
+                        elif target == 'rect':
+                            builder.root.svg().rect(**{attribute: value})
+                        else:
+                            builder.root.div(_meta={'render_attributes': {attribute: value}})
+                        with self.assertRaisesRegex(TypeError, 'must be a string or null'):
+                            builder.render()

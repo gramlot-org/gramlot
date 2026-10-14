@@ -2,26 +2,58 @@
 
 Document ID: **GC-020**.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README). Previous release:
-> **0.1.2**. Unmarked text is behavior from 0.1.2.
+> **Scope.** This is the maintained authoring guide. The repository README states
+> the current release. Dated release notes below describe when behavior entered;
+> they are not a list of current exclusions. Development-only differences are marked.
 
 <a id="gc-020-005"></a>
 
 ## 005 · Who it is for
 
-Gramlot targets Python authors of interactive forms, data tools and application interfaces. This repository is the Gramlot core: release 0.2.0 (2026-09-30) has HTML/SVG pages with typed Source and HTML/SVG data binding (`dataSetter`, `^`/`=`/`==`, formulas/controllers with named logic, native controls, button controllers). Components start with 0.3.0. Core, adapters and how to choose: [The Gramlot family](055-family.md). gramlot-poc is a separate experimental runtime.
+Gramlot is for developers who describe an interface as a Page and keep its state
+in Data Bags. Python is the first authoring path; JavaScript implements behavior
+in the browser and is also available for Page authoring. You can build HTML/SVG
+interfaces with native controls, reactive values, formulas, controllers, endpoint
+calls and remote content. Start with [Try Gramlot](025-try.md).
+
+The [Gramlot family](055-family.md) separates the core, examples and hosting
+adapters. The experimental gramlot-poc is evidence for research, not the manual
+for an application using these packages.
 
 <a id="gc-020-010"></a>
 
 ## 010 · How you build an interface
 
-Source describes the interface; Data Bags hold state. Bindings, controllers, resolvers and shared controls are the wider model. Python authors the page and JavaScript runs browser rendering. A bound input reads/writes Data without application DOM wiring. Server and database choices remain independent. *0.2.0:* includes bindings and controllers; resolvers and shared controls stay outside; components planned for 0.3.0.
+**Source** is the tree of declarations: elements, attributes and behavior.
+**Data** is the Bag of values used by those declarations. The **DOM** is what the
+browser renders. A bound input reads and writes Data; other bindings update the
+display. Application code changes Source or Data through Gramlot, without
+scraping inputs or building a second DOM/state system.
+
+The Page's `main` and exposed methods execute in the Python/JavaScript server,
+or in the JavaScript Worker for a standalone page. `Logic` executes in the
+browser. Each server call gets a fresh Page; Page fields are not session storage.
+Learn this distinction before adding a server call.
+
+Use `dataRpc` to receive a value, `remote` to replace an element's content with
+Source, and `dataRemote` to load a Data value on demand when read. These mechanisms
+have different trigger and cache rules; [Writing pages](095-writing-pages.md)
+explains them. Choosing an HTTP framework does not choose a database or ORM.
 
 <a id="gc-020-015"></a>
 
 ## 015 · What is available
 
-The core contains Python/JS Page authoring, typed Source, live DOM updates, the minimal `GramlotServer` contract with `GramlotFileServer` and, since 0.2.0, bindings and controllers. Recipes, resolvers and shared components are not part of it. Adapters: `gramlot-py-server`, `gramlot-js-server`. The richer [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) remains separate evidence, not a core contract. Integrations define their own scope; see [Try Gramlot](025-try.md). *0.2.0:* binding syntax, differences from legacy and exclusions: [Writing pages](095-writing-pages.md).
+Available: Python/JavaScript Pages, typed Source, live HTML/SVG, Data bindings,
+formulas/controllers and named Logic, native input handling, `dataRpc`, declared
+Source fragments, `remote` and the endpoint-backed `dataRemote` resolver.
 
-For the core contract, read [Classes and server adapters](090-classes-and-hosts.md) and [Writing pages](095-writing-pages.md).
+Shared widgets, recipes, a record/form framework and database services are still
+outside this authoring surface. A native HTML form is not a record framework;
+the presence of `dataRemote` does not imply every legacy resolver is available.
+See [explicit limits](095-writing-pages.md).
+
+The examples teach supported slices, not every option or failure case. Read their
+prerequisites and limits and check the selected environment. The reference starts
+at [Classes and server adapters](090-classes-and-hosts.md); the learning route is
+in [Try Gramlot](025-try.md).

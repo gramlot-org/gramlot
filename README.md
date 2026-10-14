@@ -13,7 +13,7 @@
 [![Python coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=python)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=python)
 [![PyPI](https://img.shields.io/pypi/v/gramlot)](https://pypi.org/project/gramlot/)
 [![JSR](https://jsr.io/badges/@gramlot/gramlot)](https://jsr.io/@gramlot/gramlot)
-[![Status: 0.2.16 released](https://img.shields.io/badge/status-0.2.16%20released-green)](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.16)
+[![Status: 0.2.17 released](https://img.shields.io/badge/status-0.2.17%20released-green)](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.17)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
 **Describe application interfaces in Python; let a JavaScript runtime handle
@@ -25,11 +25,11 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a web server; the core is
 independent of server and database technology.
 
-> **Release status.** The current release is **0.2.16**, published on
+> **Release status.** The current release is **0.2.17**, published on
 > [PyPI](https://pypi.org/project/gramlot/) (`gramlot`), on
 > [npm](https://www.npmjs.com/package/@gramlot/gramlot) and
 > [JSR](https://jsr.io/@gramlot/gramlot) (`@gramlot/gramlot`) and as the
-> [GitHub release v0.2.16](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.16).
+> [GitHub release v0.2.17](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.17).
 > **0.2.0 (HTML/SVG data binding)**, released on 2026-09-30, was qualified on
 > Chromium, WebKit and Firefox and accepted by the owner; the patch releases that
 > follow it keep its contract.
@@ -123,7 +123,7 @@ with 0.3.0.
 - [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.
 
 - [Classes and server adapters](docs/public/090-classes-and-hosts.md) — repository map and responsibilities.
-- [Writing pages](docs/public/095-writing-pages.md) — HTML pages, lifecycle and the 0.2.0 data binding.
+- [Writing pages](docs/public/095-writing-pages.md) — release-by-release authoring: HTML/SVG, binding, data exchange, RPC and remote.
 - [Extending Gramlot](docs/public/100-extensions.md) — current extension points and contracts still to define.
 
 ## Project status
@@ -161,3 +161,7 @@ adapter repositories (`gramlot-uvicorn`, `gramlot-django`, `gramlot-fastapi`,
 `gramlot-flask`, `gramlot-kajenn`, `gramlot-serverless`, `gramlot-minimal`) are
 archived. See [the ownership contract](https://github.com/gramlot-org/gramlot/blob/main/docs/00-constitution.md).
 The published 0.1.0 archives keep their original names.
+
+
+Development preview: [Reusable application index and installable root](docs/public/095-writing-pages.md)
+shows Python-first authoring, a custom footer, iframe tabs and the root manifest.

@@ -39,6 +39,22 @@ def endpoint(function=None, *, auth=None):
 
 class Page:
     title = "Gramlot"
+    installable = False
+    app_icon = None
+
+    def manifest(self, *, base_url="./"):
+        """Describe the root app. app_icon is a 512px square PNG below the app root.
+
+        Overrides receive the deployed base URL, including its final slash.
+        This method is exposed by the manifest GET resource, not by data RPC.
+        """
+        if not isinstance(self.app_icon, str) or not self.app_icon:
+            raise ValueError("An installable Page needs app_icon")
+        return {"id": base_url, "name": self.title, "short_name": self.title,
+                "start_url": base_url, "scope": base_url, "display": "standalone",
+                "icons": [{"src": base_url + self.app_icon.lstrip("/"),
+                           "sizes": "512x512", "type": "image/png"}]}
+
     css = ()
     css_requires = ""
     js_requires = ""

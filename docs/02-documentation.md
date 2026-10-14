@@ -7,9 +7,9 @@
 The public manual helps a developer assess the current Gramlot core and
 distinguish richer experimental examples. It uses Sphinx, MyST Markdown and the
 classic Read the Docs theme. Its chapters describe classes, server adapters,
-page authoring and extension gaps. The public guides describe release 0.2.0
-(HTML/SVG data binding), released on 2026-09-30, and mark 0.2.0 behavior in each
-guide. The README is the only place that states the current release version.
+page authoring and extension gaps. The public guides follow the release sequence through the maintained authoring
+surface, including RPC, remote Source and lazy Data; historical release notes and development-only
+corrections are marked. The README states the current release version.
 
 `scripts/prepare_docs.py` stages the README as the home page, an explicit
 `PUBLIC_PAGES` allowlist and two logo assets in `build/docs-source/`. Only the

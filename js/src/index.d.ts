@@ -28,3 +28,6 @@ export {RpcError} from './handlers/rpc-handler.js';
 export type {RpcErrorOutcome, RpcTransport} from './handlers/rpc-handler.js';
 export {InOut} from './inout.js';
 export type {BeaconNavigator, DomDocument, DomElement, DomEvent, DomFragment, DomNode, DomWindow} from './dom.d.ts';
+
+export {IndexPage} from "./server/index-page.js";
+export {IndexLogic, mountIndexPage} from "./index-page-runtime.js";

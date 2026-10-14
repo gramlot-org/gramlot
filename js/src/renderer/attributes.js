@@ -38,6 +38,17 @@ export function withoutBindingAttributes(attrs) {
         && !BINDING_ATTRIBUTE_PREFIXES.some(prefix => name.startsWith(prefix))));
 }
 
+/** Validate resolved style/class before composition, including literal dialect attributes. */
+export function requireStyleClassAttributes(node, attrs, prefixes = []) {
+    for (const [name, value] of Object.entries(attrs)) {
+        const prefix = prefixes.find(candidate => name.startsWith(candidate)) ?? '';
+        const bare = name.slice(prefix.length);
+        if (['style', 'class', '_class'].includes(bare) && value != null && typeof value !== 'string') {
+            throw new TypeError(`${node.nodeTag} '${node.label}': '${name}' must be a string or null`);
+        }
+    }
+}
+
 /**
  * No attribute of `attrs` (resolved, `==` evaluated) makes the browser run a text outside InlineCompiler:
  * a name starting with `on` and longer than it, the form of the native event handlers, is an error pointing

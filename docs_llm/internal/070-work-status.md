@@ -1,10 +1,12 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-12**.
+Document ID: **GC-070**. Updated: **2026-10-14**.
 
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
-**Current checkpoint:** released core and ecosystem audited on 2026-10-12, then core 0.2.16 (declarative `remote` and `dataRemote`) and examples 0.2.11 released the same day; local core suites pass and the hosted main checks pass. See [§695](#gc-070-695). The documentation coherence checkpoint of 2026-10-05 is historical ([§690](#gc-070-690)).
+**Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
+
+**Current checkpoint:** stabilization qualification is complete and locally verified in the agreed scope (§825). Core: 580 JS tests, 139 Python tests and 254 subtests; Python adapters 92, Node/Bun 33 each, serverless 34; all 41 Python and 41 JS example interactions pass in Chromium. Qualification corrected multiple-select initialization and the typed Restore boundary. Teaching D1–D6 is owner-accepted (§790); additional remote/CustomTypes enforcement is owner-deferred (11.66), and Q2 remains undecided and unchanged. Builders JS 0.5.2 is published (§815); the Date/Decimal authoring exercise remains deferred pending Bag #69. The owner authorized release preparation: candidate artifacts and clean installations are verified (§830); publication is owner-authorized and in progress. Environment limits are recorded in §§825–830.
 
 **Release 0.2.6 (published 2026-10-04):** type declarations of the JavaScript package; the examples and the runner out of the core. See [§685](#gc-070-685). Released before: 0.2.5 (2026-10-03, page module and `gramlot.inout`, [§670](#gc-070-670)), 0.2.4 ([§665](#gc-070-665)), 0.2.3 ([§660](#gc-070-660)), 0.2.2 ([§655](#gc-070-655)).
 
@@ -78,6 +80,10 @@ resource/export checks, Python 17/17 and JS 75/75 pass. At that phase-6 checkpoi
 
 <a id="gc-070-015"></a>
 ## 015 · Release evidence, open work and next action
+
+> **Historical record (2026-09-24–2026-09-28):** release evidence and S00
+> instructions below describe that checkpoint, not current work. Current:
+> [§745](#gc-070-745). Do not resume from the old S00 instruction.
 
 **GitHub archives — 2026-09-24:** native 0.1.0 was accepted and published as the
 [archive set](https://github.com/gramlot-org/gramlot/releases/tag/v0.1.0).
@@ -2786,6 +2792,12 @@ Branch `docs/coherence` (from develop `18c51aa`): `24f3b66` README carries the c
 
 Block ID: **GC-070-695**.
 
+> **Historical record (2026-10-12):** the audit below records its original
+> observations. Chronology correction (2026-10-13): "later the same day" in
+> the release-evidence paragraph refers to October 12, the audit day, not
+> October 10. The October 10 Source-element auth entry remains correct.
+> Current work: [§745](#gc-070-745).
+
 Owner request: "esamina situazione completa gramlot e gli ultimi lavori svolti".
 Observed implementation and checks only; no new decision, acceptance or release authorization.
 
@@ -2827,3 +2839,2435 @@ product repositories. Devtools not requalified; Site/Rosetta remain PoC consumer
 Next: the next scope is the owner's to decide (Kajenn extended client with WebSocket,
 push, serverpath; 0.3.0 components; CSP as grammar); GC-220 and the residual report
 remain debt inventories to reassess item by item.
+
+
+<a id="gc-070-700"></a>
+## 700 · Technical review before the next scope — 2026-10-12
+
+Block ID: **GC-070-700**.
+
+Owner requested contradictions, duplication and prerequisites for the next phase.
+Core 729c542 reviewed with binding/renderer, Python/JS server contracts, relevant
+Node/Bun dispatch and docs. No runtime source fix, design approval or publication.
+
+Reproduced:
+1. P1: cached remote A mounted → B pending → Data back to A → B answer mounts B.
+   `binding/remote.js:48-56` skips the call without cancelling the pending B.
+2. P2: the remote cache omits the fragment name and retains mutable parameters.
+   Changing a ^remote name with equal params leaves the old fragment; mutating
+   a child of a ^Bag parameter also leaves it unchanged (`sameValue` identity).
+3. P1: Chromium starts the same bundle on localhost but fails on an ordinary
+   HTTP hostname: `crypto.randomUUID` is unavailable. BindingRuntime:33,
+   renderer:51 and builder references use it; RpcHandler's getRandomValues
+   implementation does not fix startup. Reproduced with a local mapped hostname.
+4. P2: actual Node/Bun dispatcher accepts application/jsonp (200), rejects
+   Application/JSON (415), and replaces invalid UTF-8 inside a JSON string,
+   passing it to an endpoint (200). Python rejects decoding errors. Adapter-owned
+   correction, and conformance input coverage, required; adapters unchanged.
+5. P2: GC-220 style/class mismatch reconfirmed. GC-210:458 says string/null;
+   Python emits lists/dicts as text, JS live rejects them; both accept class_=7.
+
+Contract questions, not newly approved triggers: clearing a ^remote name does not
+abort its pending response; live setAttr(remote_id=2) does not refresh content
+built with remote_id=1. GC-095 specifies startup/Data triggers, not these cases.
+
+Maintenance: cancellation repeated in SourceHandler, Provider and RpcResolver;
+provider/code/control attributes enumerated across grammar, activation,
+installation, runtime and rendering; common Provider holds rpc/resolver-only state
+while subclasses expose kind only. Review responsibility before components or
+new transports; no blanket deduplication or new manager justified. Python/JS
+separation is intentional; binding JSON copies are equal.
+
+Coverage/docs: C07 checks readable bundles only, although servers default to
+minified ones. GC-070 §015 retains stale S00/pre-binding instructions; GC-230
+"Realised by" blurs planned Kajenn extensions with implemented auth; §695's
+"later the same day" after October 10 is wrong for October 12 releases.
+
+Checks: Python129 pass; JS554 pass plus one stale-generated-bundle failure;
+normal build then C07 passes. Existing Chromium binding/lifecycle/CSP/srcdoc
+check passes. Docs preparation, strict Sphinx, public links/boundaries, mirror
+anchors and binding JSON equality pass. Diagnostic scripts/logs are local ignored
+files in temp/review-20261012; full counterpart lists evidence and locations.
+Not a complete adapter/browser matrix, dependency refresh or package download
+qualification. Other GC-220 items are not promoted to newly reproduced defects.
+
+Recommendation: fix cache/startup/HTTP defects, reconcile style/class, decide the
+two remote lifecycle cases before further features. No implementation phase begun.
+
+<a id="gc-070-705"></a>
+## 705 · Proposed stabilization plan — 2026-10-12
+
+Block ID: **GC-070-705**.
+
+> **Current contract correction (2026-10-13):** declarative `remote` has a fixed
+> method name (constitution 11.60, [§755](#gc-070-755)). Earlier reactive-name
+> observations, exercises and Q1 are historical records, not current requirements.
+> Q1 is outside contract; Q2 remains open only for otherwise permitted Source edits.
+
+Owner: "ok : pianifica", after §700. Planning authorized and complete; the plan
+was initially proposed; the owner subsequently authorized phase 1 with "si"
+(§710), then phase 2 with "si" (§720) and phase 3 with "vai con la 3" on October 13
+(§725). Phases 4–6 remain proposals;
+no release or deployment authorization.
+GC-110 remains the sole completed 0.1.0 execution plan.
+Record implementation, checks and acceptance separately after each phase.
+
+Sequence update, 2026-10-13: owner places §735 teaching/documentation work before
+phase 4; stabilization phases keep their numbers. §735 D2 takes the overlapping
+phase 5 editorial corrections; responsibility review and Q1/Q2 stay in phase 5.
+
+1. **Remote cache.** RemoteBinding, SourceHandler and binding-remote tests.
+   Regressions: A mounted/B pending/back to A/late B; changed remote name with
+   equal params; nested Bag mutation. Current declaration must win on a cache
+   hit; identity includes name and stable parameter state. Inspect Bag contracts
+   before choosing comparison/copy representation; confirm new representation
+   or naming decisions, no upstream edits or substitute Bag model. Preserve
+   unchanged-cache no-call behavior, latest request, removal and false `_if`.
+   Exit: three failures reproduced before correction, then all relevant tests
+   pass. Empty names/direct Source changes excluded pending Q1/Q2.
+2. **HTTP startup and bundles.** Browser identifiers in BindingRuntime,
+   GramlotRenderer and GramlotBuilder: one agreed HTTP-capable strategy, with
+   RpcHandler as existing evidence; no API fallback chain. Real-browser ordinary
+   HTTP hostname test covers startup/render/reference creation, localhost
+   control, HTTPS if available (otherwise disclose). C07 covers readable and
+   minified JS/Python copies using canonical build configuration. Exit: all four
+   artifacts match, HTTP startup/reference creation and default minified mount
+   pass. Any new helper follows GC-225 and its confirmation rule.
+3. **HTTP parity.** Core Python/JS conformance inputs; proposed connected work
+   confined to gramlot-js-server dispatcher, tests and paired docs. Exact JSON
+   media type case-insensitive with parameters; wrong/missing/lookalike type415;
+   invalid UTF-8 inside valid JSON400 before dispatch, for RPC and close. Same
+   cases against existing Python adapters and actual Node/Bun adapters. Exit:
+   matching semantics and no endpoint/close effect on rejected input; missing
+   Bun is an unverified gate. No new envelope or core-to-adapter dependency.
+4. **Style/class.** Apply existing GC-210 string/null rule in Gramlot-owned
+   Python static and JS static/live handling. Reject lists/maps/booleans/numbers;
+   preserve strings, shortcuts, deferred bindings and null removal. Test initial
+   values/reactive updates where applicable. Exit: parity and renderer/binding
+   checks pass. No coercion, widened contract or upstream workaround.
+5. **Responsibilities and docs.** Map cancellation ownership and provider/control
+   attributes to their contracts; report drift. No generic manager or automatic
+   Provider rewrite; any extraction requires a concrete benefit and approved
+   responsibility/name. Intentional Python/JS counterparts remain legitimate.
+   Correct unsupported variable remote names in runtime/tests (§760), following
+   constitution 11.60. Evaluate the owner's signature pointer-permission proposal;
+   settle design/ownership before implementation. Q1 is outside contract. Q2 still
+   asks whether otherwise permitted live Source edits trigger re-evaluation and how
+   addition/removal works; record confirmation before that contract/code change.
+   Correct §015 historical labeling, §695 chronology, GC-230 planned/delivered
+   Kajenn wording with mirrors/IDs preserved. Exit: contradictions disposed of;
+   remote questions confirmed with checks/docs or explicitly deferred by owner.
+6. **Qualification.** Rebuild then full Python/JS suites on final state; Chromium
+   binding/remote/HTTP tests and minified mount; affected Node/Bun integration
+   and Python conformance; strict docs/public checks, mirror anchors, binding
+   grammar parity. Refresh first-party dependencies during setup/update, no
+   pins. Review actual diff for unauthorized paths/state/names/ownership.
+   Exit: defects in agreed scope closed, gates evidenced, missing environments
+   disclosed, debt and owner acceptance recorded. No release/version bump,
+   deployment, new features, example migration or broad refactor.
+
+Phase 1 implemented and locally verified, with TYTX comparison confirmed by
+owner "ok"; evidence in §715. Phase 2 subsequently authorized and locally verified
+(§720). Phase 3 subsequently authorized and locally verified (§725). D1 inventory
+is complete (§740); D2 was subsequently authorized and implemented (§745). Complete and obtain acceptance of teaching
+work before proposing phase 4. Later phases and Q1/Q2 remain proposals.
+
+<a id="gc-070-710"></a>
+## 710 · Stabilization phase 1 in progress — 2026-10-12
+
+Block ID: **GC-070-710**.
+
+> **Historical record:** intermediate checkpoint; the comparison decision and
+> completion are recorded in §715. The pending statements below describe that checkpoint.
+
+Owner replied "si" to: "Confermi di iniziare dalla fase 1, limitata ai tre difetti
+della cache remote?" This authorizes the three cache corrections in §705 only.
+No subsequent phase or unresolved remote lifecycle rule is authorized.
+
+Three regression tests reproduce the reviewed defects before correction: 13 pass,
+3 fail in binding-remote. The pending B response no longer mounts after returning
+to cached A; the fragment name now participates in the mounted-cache identity.
+The existing AbortController/current-request mechanism handles cancellation; no
+new request manager, alternate transport, public name or dependency edit.
+GC-095 and its mirror clarify the corrected cache behavior.
+
+Verification so far: binding-remote, binding-cleanup and binding-lifetime together
+43 pass, 1 fail (nested Bag parameter mutation). Normal bundle build and C07 pass.
+Phase 1 is incomplete; this is not a full-suite or browser qualification.
+
+Bag inspection: the installed Bag.deepcopy() recursively copies Bags but retains
+non-Bag values by reference; Bag.equalTo() does not supply general structural
+comparison for mutable objects in values/attributes. This is the documented API,
+not a newly proved upstream defect. A consumer-side substitute Bag model is excluded.
+
+Pending owner decision, asked in this task: cache the existing TYTX serialization
+of name/parameters and compare serialized content. This would avoid mutable
+references; differing object-key order may cause another request. The alternative
+is retaining order-independent object equality, whose concrete strategy still
+requires agreement. No TYTX cache representation has been implemented or recorded
+as accepted. §705 requires confirmation of a new comparison representation under
+constitution 11.43; finish independent corrections while this decision is pending.
+
+Evidence logs: /private/tmp/gramlot-phase1-before.log (three reproduced failures),
+/private/tmp/gramlot-phase1-current.log (43 pass, 1 fail),
+/private/tmp/gramlot-phase1-build.log and /private/tmp/gramlot-phase1-bundle.log.
+Next: receive the comparison decision, finish the Bag correction, rerun the
+phase's required checks and report before proposing phase 2.
+
+<a id="gc-070-715"></a>
+## 715 · Stabilization phase 1 implemented and verified — 2026-10-12
+
+Block ID: **GC-070-715**.
+
+> **Historical record:** phase 1 closure checkpoint. The owner subsequently
+> authorized phase 2 with "si"; its completion and the current next action are in §720.
+
+Owner "ok" confirms the question "Confermi il confronto sul testo TYTX già usato
+nelle richieste? Evita riferimenti mutabili, ma un diverso ordine delle chiavi può
+causare una richiesta aggiuntiva." This approves TYTX comparison and the stated
+key-order consequence, not Q1/Q2, later phases or publication.
+
+RemoteBinding compares name and TYTX parameters captured before sending; only a
+mounted response updates the cache. Cache hits abort pending requests through the
+existing controller. Three original failures now pass: A/B/A late response,
+reactive name change and nested Bag mutation. Five added tests cover object,
+array, date and Bag-attribute mutations while pending, unchanged repeats and
+reordered object keys. Removed the old recursive comparison; no clone model,
+upstream edits, public API, generic manager or alternate transport. Private
+lastName follows existing lastParams spelling/ownership. GC-095 mirrors updated.
+
+Checks: remote/cleanup/lifetime49 pass; full JS563 pass with no skips (includes
+C07); Python129 pass after enabling localhost listeners (initial sandbox bind
+PermissionError cascaded into URL errors; no workaround); Chromium153 existing
+binding/controls/lifecycle/CSP/srcdoc script passes. Cache-specific checks are
+Node/JSDOM, not a browser matrix. Build, strict Sphinx, public docs, paired anchors
+and whitespace checks pass. Minified C07 coverage remains phase 2 work.
+Logs in /private/tmp/gramlot-phase1-{tytx,js,python-verified,browser,build,docs}.log;
+initial sandbox log gramlot-phase1-python.log. No dependency refresh, registry
+artifact qualification or full integration matrix claimed.
+
+Phase 1 implemented and locally verified; result acceptance remains pending.
+Next proposed action: owner authorization for phase 2 HTTP startup and served
+bundle variants. No next phase, release or deployment performed. Different object
+key order can cause another request under the explicitly confirmed rule.
+
+<a id="gc-070-720"></a>
+## 720 · Stabilization phase 2 implemented and verified — 2026-10-13
+
+Block ID: **GC-070-720**.
+
+> **Historical record:** phase 2 closure checkpoint. The owner subsequently
+> authorized phase 3 with "vai con la 3"; its completion and next action are in §725.
+
+Owner "si" answers "Confermi il passaggio alla fase 2: avvio su HTTP e verifica dei
+bundle minificati?" Scope: §705 phase 2 only; no adapter changes, later phase,
+publication or deployment.
+
+BindingRuntime subscription, renderer instanceId and builder references now use
+16 getRandomValues bytes as 32 hex characters, the existing RpcHandler strategy.
+No optional fallback, runtime helper or public API; generation remains with its
+existing owners. Reference reuse and radio isolation preserved; server-only
+identifier paths unchanged. C07 checks readable/minified copies in JS and Python
+resources, importing canonical runtime-options.mjs data also used by the build.
+Configuration import does not rebuild artifacts. Build notice paths resolve from
+its configured working directory. Build-data camelCase and existing
+verify_*_browser.mjs script naming patterns retained.
+
+Before correction: browser localhost4 pass, ordinary HTTP hostname4 fail with
+missing crypto.randomUUID. New core browser script serves all four actual local
+artifacts; asserts secure context/API availability, mounts typed Source, checks
+node/DOM reference creation/resolution/stability, reactive Data, two-page/radio
+isolation. After correction: 8/8 pass in Chromium153. Added to Core tests workflow;
+no hosted result yet. C07 detected all four stale pre-rebuild copies and passes
+after build; minified gap closed without claiming published artifacts were checked.
+
+Final checks: JS567 pass/no skips (four C07 subtests), Python129 pass, Chromium
+runtime-origin8 pass, existing binding/lifecycle/CSP/srcdoc pass; build, whitespace,
+mirror anchors, strict Sphinx and public docs pass. Logs: /private/tmp/gramlot-phase2-
+{browser-before,bundle-stale,build,bundle,browser,js,python,binding,docs}.log.
+HTTPS not tested: localhost is only a secure-context control. No dependency refresh,
+registry packages, other browser or full adapter matrix qualified.
+
+Phase 2 implemented and locally verified. Next: obtain owner authorization for
+phase 3 HTTP input parity, including bounded gramlot-js-server corrections.
+
+<a id="gc-070-725"></a>
+## 725 · Stabilization phase 3 implemented and verified — 2026-10-13
+
+Block ID: **GC-070-725**.
+
+Owner "vai con la 3" authorizes §705 phase 3 and bounded js-server work. No new
+RPC envelope, core-to-adapter dependency, publication or deployment.
+
+Node/Bun dispatcher: exact application/json media type (case-insensitive, trimmed,
+semicolon parameters allowed); missing/empty/lookalike types415. Fatal UTF-8
+validation before RPC/close: invalid bytes400 without endpoint invocation/page
+closure; valid multibyte text accepted. New shared core Python/JS conformance
+checks both paths, positive media types and negative malformed bodies, followed
+by valid calls proving page survival. Core Node reference fixture had the same
+invalid-byte replacement defect and is corrected. No Python adapter edits.
+GC-230 and both adapter reference views updated. Eighteen adapter boundary cases
+also cover truly absent headers, response semantics and absence of side effects.
+
+Before: 8/16 initial boundary cases failed; Node reference conformance failed
+UTF-8 cases, Python reference passed. Installed adapter core0.2.14 then failed
+newer auth conformance, not the corrected HTTP boundary. Linked current core
+using npm --no-save --package-lock=false --ignore-scripts file specifier; no
+manifest/lockfile/source-copy changes or old-version restoration. Link remains
+for local verification. Both runtimes pass full current Python/JS conformance
+at / and /js. No registry or hosted CI qualification claimed.
+
+Final: core JS567/Python129; Node33/Bun33; all pass. Python adapter conformance:
+10 parametrized tests pass on Uvicorn/Django/Flask/FastAPI/Kajenn, root and
+mount/policy, two pages each. Chromium153 browser and gallery harnesses pass
+on Node and Bun (33 installed examples each). Core strict docs/public checks,
+adapter paired guides and both Sphinx views, anchors/whitespace pass.
+Intermediate Bun under concurrent documentation builds timed out; isolated full
+rerun passed with unchanged 5-second timeouts/source. Retain this environment
+sensitivity in the record. Temporary Playwright entry selects installed Chromium;
+no product workaround. Logs /private/tmp/gramlot-phase3-*.log; expanded record
+lists them, including bun-current (failed timeout) and bun-final (33 pass).
+
+Phase 3 implemented and locally verified. Next: owner authorization for phase 4
+style/class string/null parity. Remote lifecycle decisions and responsibility
+review remain separately gated.
+
+<a id="gc-070-730"></a>
+## 730 · Documentation and example coverage review — 2026-10-13
+
+Block ID: **GC-070-730**.
+
+Owner asks whether docs/examples show and explain everything clearly. Local
+review: substantial coverage, but incomplete and inconsistent. No corrections,
+example behavior changes or phase 4 authorization implied; no online site audit.
+
+Current examples catalogue: 38 = HTML/SVG13 + binding11 + controllers14;
+every entry has .py/.js/.md. RPC, errors, unauthenticated refusal, remote and
+Data resolvers are represented. Issues:
+- JS/Python adapter guides still call Source methods/remote future APIs, conflicting
+  with GC-095 §105 and c12–c14 (expanded view lists paths).
+- GC-095 introduction stops at c08/§100 despite c09–c14/§105; GC-020's dated
+  0.2.0 scope excludes resolvers without a pointer to current dataRemote.
+- c13 README omits phase 1's name/successful-mount/TYTX/cancellation rules;
+  "Requests" actually counts _onRemote mounts. Browser test observes that counter,
+  not transport calls. No demo of late response, changed name or Bag mutation.
+- c14 explains cacheTime choices but demonstrates only 5 and argument changes;
+  expiry/read, zero, error and cancellation are not distinct demo exercises.
+- GC-095 admits no examples for js_requires groups, named connect_on handlers,
+  _userChanges, _onBuilt, #ANCHOR, inout. Common pages have no inout; separate
+  integration tutorials may. c11 auth is refusal without identity, not full
+  authenticated allow/deny or Source exclusion.
+
+Phase 3's installed gallery was 32 common pages (controllers c01–c08) plus one
+runtime-specific = 33. It did not reverify latest c09–c14. Current examples script
+has checks for them and dated earlier release evidence exists; no fresh 38-page
+run in this content review. This does not invalidate phase 3's HTTP-specific
+checks. Sphinx/mirrors/links do not prove pedagogical completeness or clarity.
+
+Recommend reconciled entry points, corrected c13 terminology, a feature→guide→
+example→test coverage map, explicit omissions and qualification of the current
+catalogue, plus a learner-path editorial walkthrough. Proposal only.
+
+<a id="gc-070-735"></a>
+## 735 · Documentation alignment and teaching examples plan — 2026-10-13
+
+Block ID: **GC-070-735**.
+
+> **Current contract correction (2026-10-13):** declarative `remote` has a fixed
+> method name (constitution 11.60, [§755](#gc-070-755)). Earlier reactive-name
+> observations, exercises and Q1 are historical records, not current requirements.
+> Q1 is outside contract; Q2 remains open only for otherwise permitted Source edits.
+
+Owner: "ok pianifica il lavoro per allineare la documentazione e completare gli
+esempi, prima di passare alla fase 4"; "l'importante è l'aspetto didattico per chin
+deve usare gli esempi per apprendere". Planning authorized and complete; priority
+is learning, before phase 4. Owner "\ùprocedi" subsequently authorized D1,
+completed/checked in §740. Owner "si" then authorized D2 (§745). D3–D6
+execution and teaching acceptance remain pending.
+
+Outcome: a developer starts a page, understands Source/Data and browser/server
+roles, predicts a change and builds a small page. Coverage concerns the agreed,
+implemented author-facing scope, not every HTML tag/internal detail.
+
+### Chronological teaching structure — owner clarification, 2026-10-13
+
+Release sequence is the primary learning structure. A recurring example is an
+intentional comparison: retain its earlier stage and then show which code the new
+feature replaces or eliminates, why, and whether the visible result is unchanged.
+Do not silently modernize the earlier lesson into the later one. Prerequisite maps
+and concept indexes support this sequence. Package versions have independent
+numbering; name the core milestone separately from the example package's release.
+Current catalogue entries are maintained pages, not frozen runnable snapshots.
+
+This supersedes the earlier proposal to use a cross-release concept route as the
+primary order. D3 labels and preserves the stages; D4 places each gap at the release
+where its feature entered; D5 returns to the same complete page in later stages;
+D6 checks the before/after claims as well as the final result. No runtime or gallery
+schema change, new example key or additional phase is authorized by this clarification.
+
+**Proposed teaching standard:** each example has an objective/prerequisites,
+environment/opening instructions and initial state, Python-first code explanation
+with equivalent JS and execution location, guided action/expected result/reason,
+a small prediction or modification exercise with its answer, a likely mistake,
+limitations/reference/next lesson. Explain new terms; one new idea in basic
+lessons, composed ideas in advanced ones. UI labels describe actual measurements.
+Separate advanced timing/errors; no internal-guide prerequisites or application
+instrumentation that conceals the framework.
+
+**D1 — Coverage and learning path.** Map all 38 entries and supported author APIs
+(GC-090/095/100, binding/server contracts, active adapter guides) to contract,
+guide, objective, example/exercise, check, language/environment and gap disposition.
+Statuses: covered, explanation incomplete, missing demonstration, environment-only,
+deferred, blocked. Original concept map (now a secondary index): setup/first page → HTML/SVG → Data/paths →
+controls → formulas/controllers/Logic → events/lifecycle → RPC/errors → remote
+Source → Data resolvers/cache → complete page. Essential path plus advanced
+material; one Python setup first (proposed Uvicorn), other environments separately.
+Preserve existing keys. Deliver matrix, prerequisite map and bounded revision/new
+lesson list with destinations before D2–D5. Names follow GC-225/GE-010; missing
+conventions require owner decision. Exit: every topic/example has a learning role
+or explicit exclusion, no unresolved lesson scope or unsupported coverage claim.
+
+**D2 — Guides.** Reconcile core orientation/GC-090/095, examples introductions and
+active adapter writing/reference/troubleshooting guides; remote is no longer
+future work, dataRemote does not imply all resolver features. Explain common
+concepts centrally, link instead of duplicating contracts/suites. Preserve dated
+text with Historical record banners and current pointers. Take phase 5 editorial
+items (§015, §695 chronology, GC-230 planned/delivered Kajenn), using dated
+corrections where necessary. Paired docs/anchors preserved; current releases only
+in README/badge, development cache fixes clearly separated from published behavior.
+Exit: coherent setup → lesson → reference without internal-history prerequisites.
+
+**D3 — Existing lessons.** Apply the teaching standard to all 38 explanations,
+pages, family introductions and cross-links; preserve equivalent Python/JS and
+show Python's Logic companion. Prioritize c09–c14. c13: label mounts correctly,
+explain last-successful-mount name/TYTX-parameter identity, key-order limitation
+and cancellation; verify skipped calls independently from _onRemote counts.
+Advanced exercises: delayed A/B/A and Bag mutation. The originally proposed
+name-change exercise is excluded by the owner decision in §755. c14: first read,
+response, expiry then read (not automatic TTL refresh), zero/one-time cache,
+reactive arguments, failures and supported cancellation/lifetime. Do not invent
+callbacks/error UI or reuse dataRpc-only callbacks. Exit: guided trial/self-check
+per page, accurate explanation; exposed runtime defects block affected exercises.
+
+**D4 — Missing coverage.** Follow D1, extending existing lessons or adding focused
+ones: _userChanges exact-path versus container/child writes (programmatic exact-path
+writes also trigger); named connect_on/context requires dotted resource groups and
+an external resource-host lesson, not the common gallery (D1 corrections, §740);
+_onBuilt versus _onStart/order/cleanup; #ANCHOR versus relative paths; inout typed
+save/restore/export and other supported operations with local fixtures or explicit
+manual checks, no real email/external-service effects. Auth: default refusal,
+Source omission versus browser visibility; authenticated allow/deny only through
+an existing environment identity integration, no new login system. Common resource
+lessons use Page.css/same-name CSS/Logic; named requires/groups need genro-kajenn,
+not the kajenn adapter or FileServer. Work outside the four Gramlot repositories
+requires separate authorization. Exit: supported common gaps demonstrated and
+checked; environment-specific/blocked/deferred items have destination/status/next
+action for owner review. A limitation note does not count as a working example.
+
+**D5 — Complete page.** Retain the earlier local-only stage, then revisit the
+same page in later release stages, showing the code replaced by each new feature. Prefer extending an existing complete/end-to-end lesson:
+initial Data, editing, computed value, action, server response, error. Related
+variations explain choosing dataRpc/remote/dataRemote without forcing all into one
+large page. A learner changes a requirement using previous lessons and checks the
+result. Only approved Source/Bags/bindings/controllers/server APIs, no hidden
+helpers or parallel state. Exit: equivalent Python/JS, no unexplained prerequisite.
+
+**D6 — Qualification and editorial walkthrough.** Establish installed core/examples
+state, refresh first-party dependencies at setup/update without pins/source-copy
+edits. Run all current catalogue entries (including c09–c14 and additions) with
+Python/JS tests and Chromium; derive expected entries from catalogue, detect skips,
+assert behavior. Verify gallery delivery on Node/Bun, five Python adapters and
+Worker/static export for supported scope. Record per-environment commands, entries,
+outcomes and exclusions; check changed setup instructions in a clean local setup.
+Examples checks stay downstream, never core-to-examples dependencies. Deterministic
+race tests plus browser checks; local file/download/mail verification and manual
+limits recorded. Required repo documentation/build checks, paired anchors/links,
+package assets when changed. Independently walk reader instructions from setup to
+complete page: rendering, source visibility, prerequisites, results, mistakes,
+links; correct and recheck. Agent review is not novice-user evidence. Present
+beginner, cache/remote and complete-page lessons for owner's didactic review.
+Exit: contradictions closed, no unexplained gap, checks accounted for; blocked or
+unavailable items explicitly disposed of, teaching acceptance separate from tests.
+
+**Boundaries:** core guides/contracts; examples repo common pages/READMEs/catalogue/
+gallery; Python/JS server repos environment setup/examples/checks. No runtime,
+dependency-source, authentication/resource system, gallery component, release,
+deployment or external-service action authorized. Style/class: teach agreed
+string/null, report pending phase 4 parity; no coercion or false fix claim.
+Q1/Q2 empty-name/direct Source changes stay undecided. Development corrections
+are not published releases. Record implemented/verified/blocked/accepted after
+each authorized step. D6 acceptance precedes separate phase 4 authorization;
+phase 5 retains responsibility/Q1/Q2 and phase 6 final technical qualification
+with affected teaching rechecks. GC-110 not reopened.
+
+**Next action:** D1–D3 implemented and locally verified (§740–750). The owner
+excluded variable remote methods (§755); there is no blocked name exercise to
+complete. Ask to start D4; D5/D6, owner acceptance and stabilization phase 4 remain
+pending. Track the unsupported runtime/test behavior separately as a technical
+nonconformity, not an authoring extension.
+
+<a id="gc-070-740"></a>
+## 740 · Teaching coverage inventory and learning path (D1) — 2026-10-13
+
+Block ID: **GC-070-740**.
+
+> **Current contract correction (2026-10-13):** declarative `remote` has a fixed
+> method name (constitution 11.60, [§755](#gc-070-755)). Earlier reactive-name
+> observations, exercises and Q1 are historical records, not current requirements.
+> Q1 is outside contract; Q2 remains open only for otherwise permitted Source edits.
+
+Owner "\ùprocedi" authorized D1 after the explicit request to start the coverage
+map/learning path. D1 complete, proposed deliveries not yet accepted or implemented.
+D2 subsequently authorized and completed (§745); D3–D6 and stabilization phase 4 remain gated.
+
+Evidence: current catalogue, all 38 READMEs, Python attributes, relevant paired
+source/test bodies, GC-090/095/100, binding/server contracts, integration tutorials.
+Checkout references: core729c542153ed, examples4c494800521b, py-server783de4298618,
+js-servere14a9b867741 plus existing local stabilization changes. Evidence IDs, not
+pins. No new runtime/browser/install tests, external service or deployed-site audit.
+
+Expanded [§740](../../docs/internal/070-work-status.md#gc-070-740) contains the
+per-capability matrix and source links. G90/G95/G100 below are public guide IDs;
+sections preserve their stable numbers. Authority: constitution §§3/9/13,
+11.48–59; GC-210 010–050 with supersessions, GC-225 and GC-230 010–045.
+Teaching labels: C narrow slice covered; E explanation/exercise incomplete;
+M common runnable demo missing; H environment-specific; B known mismatch/open
+contract; F deferred; R advanced reference outside common gallery. No label
+asserts tests were rerun or novice comprehension was established.
+
+All 38 have Python opening/Source checks (P) and browser startup checks (L).
+Additional inspected checks: J = JS/jsdom keyed behavior, b01–b11/c01–c14;
+W = real-browser interaction b08/c03/c08–c14; S = Python endpoint/fragment
+c09–c14; V = dedicated e10/e13 browser script. Sources: examples tests/test_pages.py,
+tests/examples.test.js, scripts/verify_pages_browser.mjs and
+scripts/verify_e10_e13_browser.mjs. Optional J/W dispatch can silently omit a new
+behavior case: D6 must check expected keys. Startup alone is not behavior coverage.
+
+### All 38 lessons and proposed prerequisites/exercises
+
+Every row is E for the full proposed teaching standard, even where its narrow
+feature slice is C. Add prerequisite, answer/reason, mistake and next links in D3.
+All paths resolve through catalogue key to pages/<family>/<folder>.py/.js/.md;
+no copied teaching suite. Exercise column describes the target, not completed work.
+
+| Key | Prerequisite | Target exercise / learning role | Extra checks |
+| --- | --- | --- | --- |
+| e01 | Python/setup | Add paragraph, edit/reload, explain main and Source/DOM. | — |
+| e02 | e01 | Inline text/local link, safe literal text and destination. | — |
+| e03 | e01 | Fourth list record; build-time loop, count after reload. | — |
+| e04 | e02 | Article/navigation target, semantic landmarks. | — |
+| e05 | e03 | Add row and predict fixed total. | — |
+| e06 | e02 | Edit/Reset native defaults; labels, disabled Submit. | — |
+| e07 | e03 | Expand details, change static meter. | — |
+| e08 | e01 | Move SVG coordinate, explain viewBox/paint. | — |
+| e09 | e03/e08 | Add group, predict transform. | — |
+| e10 | e03/e08/c07 basics | Remove Source card, reload; distinguish node_label/node_id/id. | V |
+| e11 | e05/e08 | Change dataset, reconcile chart/table/summary. | — |
+| e12 | e04/e07/e09 | Static capstone, add session/speaker/map stop. | — |
+| e13 | e10/c07/lifecycle intro | Live Source update/removal, animation cleanup. | V |
+| b01 | e01/e03/setter intro | ^ versus = first; relative/#node_id/#FORM/?attr later; add #parent/#ANCHOR. | J |
+| b02 | b01/b04 | Rename/switch/return record; advanced null-context boundary. | J |
+| b03 | b01 | Later setter, zero/default, null R1 versus runtime write. | J |
+| b04 | e06/b01 | input/change timing, numeric null, multi-select/Data types. | J |
+| b05 | b04 | Radio booleans, absent values, programmatic choice/isolation. | J |
+| b06 | b04 | Shortcut precedence, null removal, visible/hidden; phase 4 remains B. | J |
+| b07 | e08/b04 | Bind cy range, predict movement/units. | J |
+| b08 | c03/c06/e10 | Freeze/delete/change Data/thaw, immediate semantic cleanup. | J/W |
+| b09 | e06/b03–b05 | Static versus bound record, file/password/Reset limits. | J |
+| b10 | e08/b07 | Add cx binding; reactive SVG practice. | J |
+| b11 | e12/b05–b07 | Bound title/speaker/map/FAQ, layout space. | J |
+| c01 | b03/b04 | VAT then quantity, ^ triggers/= rereads, chains later. | J |
+| c02 | c01 | Effects first; firing/debounce/interval and path filter later. | J |
+| c03 | c01/c02 effects | Named Logic, price120→108, arguments/this/browser. | J/W |
+| c04 | c03 | Score threshold and ==; optional inline/CSP topic. | J |
+| c05 | c02/c06 basics | PUT/GET/SET timeline, equal FIRE and delayed-fire cleanup. | J |
+| c06 | c02 basics/c03 | Click modifiers, one mechanism, Enter/type/disabled limits. | J |
+| c07 | c03/c06 | Declaring node/event target/removal; named group form is H. | J |
+| c08 | b03–b05/b07/b08/c03/c06 | Lifecycle capstone; D5 RPC result/error after c09/c11. | J/W |
+| c09 | c03/c06/execution model | Price12.5/rate22→15.25; endpoint versus main/Worker. | J/W/S |
+| c10 | c02 timing/c09 | Quantity12→96 after debounce; add delayed race/timeout. | J/W/S |
+| c11 | c06/c09 | Errors preserve result; add Source omission; positive auth H. | J/W/S |
+| c12 | c09/b01 | Chair/12 stock fragment; Source versus Data, advanced nesting. | J/W/S |
+| c13 | c12/b02 | Equal category/cache, mounts versus calls, advanced races. | J/W/S |
+| c14 | c09/c10/c12 distinction | Read/menu/argument change, then TTL/zero/once and errors. | J/W/S |
+
+### Capability dispositions and executable evidence
+
+- **Structure/setup (C/E/H):** G90 015–030, G95 005/025/070 and adapter tutorials.
+  e01–e12 cover Page/main/HTML/SVG/loops/helpers. D2 explains Source/Data/DOM,
+  fresh Page per call, gallery versus editable project, reload, Python/browser
+  Logic. e02/e08 add safe text, namespaces/foreignObject; naming escapes and
+  node_label/node_id/id explained. Page.css/companions/load order/public imports
+  link c03 and adapter setup. Source/renderer/svg/page-resources/bootstrap specs.
+- **Data/paths (C/E/M):** G95 040–050, GC-210 018/035. b02/b03 show dict→Bag;
+  add lists/string literals/null R1/attributes/no reinstall. b03 defaults include
+  0/false/empty string and default_<attr>/attr_*. b01 covers ^/=, relative/absolute,
+  ?attr, #node_id/#FORM; #parent/#ANCHOR missing despite guide completeness claim.
+  b02 adds null-context read=null/write error. Bare _path fields and forbidden
+  ?attr destinations get validation callouts. Installation/defaults/projection/
+  source-extension and Python authoring tests; c01 distinguishes provider rereads.
+- **Controls/projection (C/E/M/B):** G95 070/GC-210 030. b04/b09 add lexical dates,
+  numeric empty/invalid drafts, missing option, multiple values, IME, input/change,
+  correction/rebuild; b05 group isolation/invalid initial booleans. e06/b09 compare
+  native Reset and bound fields/file limitations. b06 string/null rule still B
+  for phase 4 invalid-type parity; no coercion. Teach CSS/native width difference,
+  null, visible/hidden; b07/b10 reactive SVG. Native/boolean-controls, projection,
+  style-shortcuts and Python renderer specs.
+- **Templates/mask/==/srcdoc (M except c04 ==):** constitution 11.48 items7/11,
+  11.54, GC-210 010, G95 065, G100 090 static-only description. New projection
+  lesson: Gramlot ${name} differs from language templates, attributes only,
+  escaping/missing names, mask text and empty values, forbidden expression chains;
+  safe Data HTML preview/default sandbox. GC-210 030 wrongly still excludes mask.
+  Projection/inline/srcdoc-sandbox/Python renderer specs; D2 public explanation.
+- **Providers/Logic (C/E/M):** G95 055–065/080. c01/c02 calculate versus effects;
+  c03 root named methods/signatures/this/state/errors and strict CSP. c01 _if/_else
+  exists; remote/dataRemote conditional demos missing. _onBuilt absent, _init/
+  _onStart partly shown; new lifecycle lesson shows trace/removal/freeze, no repeat
+  on thaw. c02 advanced delay ms/timing seconds/delayed startup; _userChanges must
+  demonstrate exact-node versus container/child, not human versus program origin.
+  Programmatic node writes pass (providers.js receive, D2a test). Providers,
+  named-logic, bootstrap, timing, lifecycle/cleanup tests.
+- **Writes/buttons/events (C/E/H):** G95 065/075. c05 GET/SET/PUT/FIRE/FIRE_AFTER
+  needs value/event timeline and cancelled timer; c06/c11 need explicit one-click
+  mechanism, disabled behavior, modifiers, type/Enter/propagation. c07 inline
+  handler targets/removal. Named connect_on recognizes dotted group.method
+  (view/events.js); root func spelling is not a named-event equivalent. Resource
+  host required, no fake group/alias. Writes/lifetime/button/native-event tests.
+- **Live Source/lookup/lifetime (C/E/M):** G95 030/035/075/080. e10/e13/b08/c08
+  show mutations/freeze. Advanced ordering after events/Logic, delete+insert type
+  change and immediate semantic cleanup under frozen DOM; lookup/null-return
+  exercise with gramlot.dom, no direct DOM mutation. Freeze/live-source/lifetime/
+  projection tests.
+- **Inline/CSP (E):** constitution11.53, G90 035/G95 065. c04 needs actionable
+  named alternative and rejected examples for Data-as-code/native onclick/later
+  inserted text. Actual environment policy matters; strict project skeleton and
+  gallery inline lessons differ. Inline/embedded-source/bootstrap specs.
+- **Data exchange (M common, H/E GS-135):** G95 095; inout tests. New common
+  lesson: typed save/restore versus JSON/XML export, correct user gesture, missing
+  Bag/error. Advanced sendMail limit/user sends, sendHttp JSON/status/connect-src
+  and difference from dataRpc; local receiving fixture/manual limits, no real
+  external sends. GS-135 already teaches some operations, do not claim total absence.
+- **RPC (C/E/M):** constitution11.58, GC-230 015/025/035, G95 100. c09–c11 cover
+  endpoint/kwargs/basic value/callbacks/debounce/errors. Add scalar/Bag/null,
+  reactive method/no result_path, deterministic latest-wins/timeout/removal,
+  transport versus application errors; values do not activate code, Page is fresh.
+  RPC/server/Python specs; current c10 checks debounce, not reordered replies.
+- **Auth (C/M/H):** G95 100/GC-230 030. c11 common anonymous refusal; add protected
+  Source omission, not CSS hiding. Existing Kajenn avatar-tag implementation and
+  test_auth_capability_evaluates_the_avatar_tags in tests/kajenn/test_kajenn.py
+  cover anonymous/denied/allowed/logout. Adapter-owned GP-505 lesson can reuse
+  Basic-auth/site setup; no new login system. Identity differs from owner cookie;
+  Kajenn auth does not provide genro-kajenn resource hosting.
+- **Remote (C/E/M/B):** constitution11.59, G95 105, §715. c12 fragment/startup/
+  ^params, retained initial content; add name/nesting/removal/failure and _if/_else.
+  c13 counts mounts, not requests; last successful name+TYTX snapshot and pending
+  abort on hit, key-order limitation. Advanced A/B/A, Bag mutation, independent
+  request count. Local fix is not promised in published packages. Errors surface
+  in console, no invented _onError. binding-remote/source-pipeline specs.
+- **dataRemote (C/E/M):** G95 105. c14 lazy/read/reactive arg basics; add read
+  coalescing, TTL expiry then read, zero silent notification and one-time cache;
+  _if removal/reactivation, abort/unchanged value on failure. No unsupported lifecycle
+  callbacks. binding-dataremote tests specify these cases.
+- **Composition (E):** c08 currently local lifecycle, not “every piece” of updated
+  controllers. D5 adds c09/c11 server result/error step, with c12/c14 alternatives
+  linked rather than forced into one large app; J/W behavior checks to extend.
+- **Resources (H/M):** G90 030/constitution11.57. Requires/groups/named native
+  events await separate genro-kajenn delivery outside four-repo scope. FileServer
+  and current adapters do not supply it; tests of registration are not a host.
+- **Advanced reference (R/H):** G100 025/030/035/090 collections, grammar/void,
+  static HTML/XML/::HTML; G90/G95 015 custom host/bootstrap/transport/startSource/
+  direct remoteSource/rpc.call. Existing collections/renderers/source-pipeline/
+  handler/transport/conformance fixtures support reference walkthroughs, not a
+  new beginner gallery or manual-request shortcut. Static raw HTML is not live.
+  G90/GC-230 lifecycle/owner/TTL/close/prefix/assets/CSP remain adapter guides and
+  setup checks. No deployment needed.
+- **Deferred/blocked (F/B):** G95 085/G100 010/015 recipes/components/db/records/
+  unsupported declarations; explicit boundaries, no application substitutes.
+  §705 Q1/Q2 empty remote names/direct Source edits stay undecided; style/class
+  phase 4 stays pending. No completeness percentage that hides these gaps.
+
+### Route and bounded delivery
+
+Entry proposal: GP-020/105 Python/Uvicorn gallery then editable new project;
+required extras, saved-file reload, public JS Logic and CSP difference explained.
+Node/Bun/Worker are linked alternatives, not Python prerequisites. No commands
+rerun in D1. The following D1 concept route is historical as a primary order;
+the owner now requires release chronology (§745). Retain it as a supporting
+index, and preserve the earlier c08 stage. Essential units:
+1. e01/e03 structure and build-time iteration.
+2. e06/b01 basics/b04 native editing and Data.
+3. b03/c01/c02 concepts/c03 named logic (timing/inline detail deferred).
+4. c06/c09/c11 click, value, visible error.
+5. c12 Source replacement versus Data result.
+6. D5 revised c08; SVG/freeze optional tracks after b07/b08.
+
+Branches: e02/e04/e05/e07 HTML; e08→e09→e11 SVG/static; e12→b11 capstone;
+b05/b06→b09 forms; b07→b10 reactive SVG; c03/c06→c07→e10→e13→b08 Source/lifetime;
+c05 writes after click/effects; c04 optional inline; b01 symbols→b02→c12→c13
+contexts/cache; c09/c10→c14 lazy Data. Never require all 38 before building a page.
+Each trial has a predicted answer/reason and clear before/after observation.
+
+- D2 core: affected GC-020/025/030/055/090/095/100, overview/index, template/mask
+  coverage/GC-210 contradiction, b01 overclaim and already assigned historical
+  §015/§695/GC-230 corrections; mirrors. Examples: pages/family READMEs, GE-010,
+  catalogue descriptions/reading links in existing gallery. No UI component.
+- D2 adapters: Python GP-005/010/015/020/105/120 and affected framework guides;
+  JS introduction/tutorial/writing/reference/troubleshooting/serverless guides.
+  Correct stale remote claims and link shared explanations, preserve setup ownership.
+- D3: all 38 teaching passes, c09–c14/b01/b03/b08/c08 first; bounded extensions to
+  b01/b02/b03/b04, c02/c06/c10–c14 as mapped, optional advanced sections.
+- D4 proposes three unallocated paired slots under controllers using GE-010
+  NN_name keys/convention: c15 15_lifecycle (c03/c06/b08: hooks/cleanup/lookup),
+  c16 16_attribute_projection (b01/b06/c04: template/mask/safe preview),
+  c17 17_data_exchange (b09/c03/c06: save/restore/export, advanced transport).
+  Names/files not implemented or accepted. Cache/RPC extend existing lessons.
+- D4 Kajenn: GP-505 plus existing avatar test/site for environment lesson;
+  no new auth implementation, follow owning repo instructions. Resource-group/
+  named-event demonstration remains separate external genro-kajenn work.
+- D5 c08: explained stages, RPC result/error, learner modification/self-check;
+  preserve local lifecycle, SVG/freeze optional, compare c12/c14 alternatives.
+
+Bounded proposal: 38 revised + 3 new = 41 common pages, not 41 implemented.
+Environment pages separate; collections/static/custom hosting stay references.
+Missing external resource demos/phase4/Q1/Q2 are explicit open dispositions.
+
+D1 also corrected two §735 proposals (_userChanges and named connect_on), found
+positive Kajenn auth evidence, templates/mask/srcdoc and symbolic-path gaps, the
+GC-210 mask contradiction and stale c08 wording. Installed JS adapter still has
+32 common examples; no qualification of current 38 implied.
+
+Verification: catalogue/114 counterpart paths, 38 inventory rows/prerequisite
+references/three unoccupied proposed keys, paired anchors/local references. No
+example/adapter/runtime changed. Next: owner confirmation for D2; later lesson
+changes need their own authorization, D6 evidence and didactic acceptance precede
+stabilization phase 4.
+
+<a id="gc-070-745"></a>
+## 745 · Guide alignment and chronological teaching (D2) — 2026-10-13
+
+Block ID: **GC-070-745**.
+
+**Authorization.** After D1, the owner answered "si" to starting D2. During D2 the
+owner clarified: "la cosa importante è mantenere pero la costruzione cronologica.
+ovvero le varie sezi9oni ripercorrono la sequenza delle release. quindi lo stesso
+esempio ptrebbe tornare piu volte per mostrare come le features in piu riducano il
+codice necessario". This explicitly establishes chronological product teaching,
+including recurring examples and explained code reduction. It does not authorize
+D3–D6, stabilization phase 4, runtime changes or a new gallery representation.
+
+**Implemented and locally verified; owner acceptance pending.** Core orientation and reference
+entry points distinguish current capabilities, historical milestones and local
+unpublished cache corrections. The primary route follows core 0.1.x, 0.2.0,
+0.2.5, the intervening naming changes, 0.2.14, 0.2.15 and 0.2.16. Existing
+form/SVG comparisons (e06→b09, e08→b10, e12→b11) anchor the repeated-example
+approach; they are not claimed to be frozen old-package snapshots or to already
+include every before/after exercise. The page module and remote/RPC guidance link
+shared contracts; setup stays with the owning integration. Gallery introductions
+make chronology primary and prerequisites secondary. c08 remains a local story;
+a later server-connected revision must preserve that earlier teaching stage.
+
+Historical records retain their text with explicit banners/corrections; §695's
+"later the same day" refers to October 12, while Source auth landed October 10.
+GC-230 distinguishes implemented Kajenn auth from planned Genro resource/extended
+services. GC-210 no longer excludes the approved mask behavior. The public reference
+retains section IDs, release labels and earlier renderer history with clear labels.
+
+**Limits and next action.** D2 updates documentation and catalogue descriptions,
+not example application code. D3 must revise the 38 lesson explanations and make
+release-specific comparisons explicit; D4 fills gaps, D5 develops later revisions
+of the complete page, and D6 qualifies the resulting teaching sequence in real
+environments. Neither complete teaching coverage nor owner acceptance is claimed.
+**Verification (2026-10-13).** Core staging, strict Sphinx (`-W --keep-going -n`)
+and public-boundary check pass: 8 public pages, search/download sources, local
+links and mirrored anchors. Both Python integration views build successfully
+(14 paired guides, 80 identities); both JS integration views build successfully
+(22 paired guides, 122 identities). An additional D2 check preserves the anchors
+of 33 changed paired guides and resolves 507 local/cross-repository references.
+Catalogue structure, keys and order are unchanged; only b08/c08 descriptions
+changed. Existing build-gallery suites pass in JS and Python: 9 tests each.
+The gallery's own Markdown renderer renders all four revised introductions with
+the release table and route links intact. Chromium inspection of the core route
+revealed that the theme's wide table hid comparison text behind horizontal
+scrolling; the route now uses readable milestone paragraphs, retaining the theme.
+
+These checks verify D2 documentation and catalogue assembly. They are not a new
+runtime qualification of the 38 example pages, a clean-install check, a hosted
+site update or owner teaching acceptance; those remain D6 work. No application
+source, dependency or gallery schema changed in D2. Current source milestones
+were checked against guides and local history (core v0.2.16 and examples v0.2.11
+both dated October 12), not newly queried registry payloads.
+
+**Next action:** present D2 and ask to start D3, revising the 38 lessons in their
+release stages with explicit before/after comparisons. Do not start phase 4.
+
+**Subsequent action:** the owner explicitly authorized D3; its results and the
+reactive-name teaching limitation are recorded in §750.
+
+<a id="gc-070-750"></a>
+## 750 · Existing lesson revision (D3) — 2026-10-13
+
+Block ID: **GC-070-750**.
+
+> **Current contract correction (2026-10-13):** declarative `remote` has a fixed
+> method name (constitution 11.60, [§755](#gc-070-755)). Earlier reactive-name
+> observations, exercises and Q1 are historical records, not current requirements.
+> Q1 is outside contract; Q2 remains open only for otherwise permitted Source edits.
+
+**Authorization.** Owner: "si procedi con la 3, mantenendo la sequenza delle release
+e mostrando come le nuove funzionalità semplificano gli stessi esempi". Scope:
+revise all 38 existing lessons, their explanations and cross-links; make bounded
+example corrections and verify the described behavior. Preserve release progression,
+earlier examples and Python/JS equivalents. New lessons (D4), a later complete-page
+extension (D5), full ecosystem teaching qualification (D6) and stabilization phase 4
+are not started by this authorization. No framework/dependency edits are authorized.
+
+**Implemented and locally verified; owner didactic acceptance pending.** All 38
+existing lesson explanations now identify the core release stage, goal,
+prerequisites, edit/run instructions, execution location, guided trial with
+expected results, an exercise with its answer, limits and next links. Earlier
+pages remain separate. Comparisons include e06→b09, e08→b10, e12→b11, local
+controllers→endpoints, and endpoints→remote Source/lazy Data. They distinguish
+less synchronization/request coordination from added functionality; no universal
+line-count reduction or pixel-identical rewrite is claimed. Family introductions,
+catalogue descriptions and paired GE-010 explain this learning structure.
+
+Bounded page changes: b08's button now says "Increment Data count"; c13 labels
+successful mounts "Mounted fragments" and independently observes transport calls
+in tests; c14 adds a named Logic read action and a separate Data snapshot so the
+learner can observe first read, stored value and later response. The Python and
+JavaScript declarations remain equivalent. No framework, adapter or dependency
+implementation was changed by D3.
+
+**Historical record — superseded by §755: the exercise was classified as blocked.** The planned name-changing
+c13 exercise cannot use the public `remote(name, ...)` helper: both
+`src/gramlot/page/source.py` and `js/src/builder/source.js` reject `"^method"` as a
+name before Source reaches the browser. The runtime supports reactive remote
+attributes and the phase-1 tests cover them, but that does not establish this
+helper's authoring path. Removed the non-executable exercise and documented the
+limitation in c13 and paired GC-095 §105. This is an exposed core authoring/runtime
+discrepancy, not teaching coverage. No direct-attribute workaround, new helper
+contract or framework fix is authorized by this examples task. The affected
+exercise stays blocked pending owner/core contract review; Q1/Q2 stay undecided.
+The remaining c13 advanced trials clearly require the local unpublished cache
+correction. This refines the proposed name exercise in §735 and the broad runtime
+coverage row in §740; neither should be read as proof of helper support.
+
+**Verification (2026-10-13):**
+
+- Existing-installation JavaScript suite: 49 passed; Python suite: 14 passed.
+  Chromium through the repository's FileServer fixtures starts all 38 pages in
+  each language (76 starts), checks named Logic, endpoints and fragments, and
+  observes c13/c14 transport separately from visible state. Restored c13 status
+  assertions also pass in the targeted Node check and both browser languages.
+- Seven additional local-development JS exercise checks pass: delayed mounted
+  A/pending B/back to A, mutated Bag snapshot, lazy reads with cacheTime 5/0/null,
+  conditional cancellation/re-enable/disposal, and failed endpoint retention.
+  These checks use temporary copies of the existing examples against the local
+  core; they are not installed-release or full integration-matrix evidence.
+- All 38 lessons render with the gallery's Marked/DOMPurify renderer. Reviewed
+  representative b09/c13/c14 panels with the gallery/theme styles at 1200px and
+  390px; comparison and final sections remain reachable through the existing
+  scrolling panel. This is a documentation-layout preview, not mobile gallery
+  qualification. All 220 inspected local/cross-repository references resolve;
+  stable paired anchors and catalogue keys/order are preserved. Strict Sphinx
+  (`-W --keep-going -n`) and the public-boundary check also pass after the helper
+  limitation clarification: 8 public pages, search, sources and local links.
+- Gallery bundle build passes. npm dry-run contents include all 38 READMEs;
+  an offline-built Python wheel contains all 38 READMEs and their 76 Python/JS
+  source counterparts byte for byte, plus the gallery bundle. No clean install,
+  dependency refresh, publication or deployment is claimed.
+
+**Remaining work / next action:** D3's proposed variable-name exercise was
+removed as outside contract by the owner's subsequent decision (§755). Present
+D3 for didactic review, then ask to start D4's missing-topic lessons. D5's later complete-page
+revision, D6's real-environment qualification and didactic acceptance, and
+stabilization phase 4 remain separate and unstarted. The beginner and executable
+advanced lessons are revised; complete framework teaching coverage is not claimed.
+
+<a id="gc-070-755"></a>
+## 755 · Fixed remote method: owner clarification — 2026-10-13
+
+Block ID: **GC-070-755**.
+
+**Decision and authority.** Owner: "il metodo per il momento NON puo essere variabile: non lo ea nel legacy e se un domani lo volessimo ammettere sar5a per una decisione esplicita".
+Recorded in paired constitution amendment 11.60. The method of declarative
+`remote` is a fixed literal identifier; Data binding may vary parameters, not the
+method. No future variable-method feature is approved. The helper's rejection is
+correct; the previous suggestion to extend it and the D3 "blocked" classification
+were mistaken. The name-changing lesson is excluded, not deferred for completion.
+Q1's reactive-name-clearing premise is invalid for the current contract. Q2 is
+still separate; no new live Source mutation contract is approved.
+
+**Implemented documentation correction.** Paired GC-095, teaching plan/status
+and c13 now teach a fixed method with variable parameters. Earlier audit and
+phase-1 test observations remain historical evidence under an explicit correction;
+they do not authorize a variable method. The release sequence and earlier/later
+example comparisons remain intact. This decision does not start D4 or any later
+phase.
+
+**Remaining technical nonconformity.** `js/src/binding/remote.js` still resolves
+the `remote` attribute with runtime values; `js/tests/binding-remote.test.js`
+contains two positive reactive-name cases, including the cache regression added
+in phase 1. These behaviors/tests must be aligned with the fixed-method contract
+in the core's technical correction work. Do not extend the public helper or treat
+passing positive tests as acceptance. This clarification updated documentation;
+runtime implementation and tests have not been changed or requalified here.
+
+**Verification.** Documentation-only checks: paired constitution/guide/status
+anchors and matching decision records; strict Sphinx and public-boundary/local-link
+checks. D3's existing runtime checks retain their earlier scope; no new runtime
+verification or release is claimed.
+
+**Next action.** D4 remains the next teaching step, awaiting its own authorization.
+Carry the fixed-method runtime/test correction into the technical review without
+reopening the settled decision or adding a variable-method design. The owner
+subsequently requested the concrete TODO and proposed signature metadata (§760).
+
+<a id="gc-070-760"></a>
+## 760 · Remote correction backlog and builder-signature proposal — 2026-10-13
+
+Block ID: **GC-070-760**.
+
+**Owner instruction:** "si mettilo come cosa da sistemare. potrebbe essere un
+attributo della signatura dei builders dire se si accetta un pointer o no".
+Record the fixed-method correction as technical work to perform. The signature
+metadata is the owner's proposed design direction to evaluate, not an approved
+field name, default policy or implementation. Constitution 11.60 already settles
+the remote contract; that decision does not need to be asked again.
+
+**TODO — stabilization phase 5, responsibility/contract review:**
+
+- Align the remote runtime and its tests with the fixed literal method. Reject
+  pointer-valued names, including `^` and `=`, before resolution/subscription or
+  dispatch. Preserve variable parameters, cache behavior and cancellation for
+  valid declarations. Replace the two positive reactive-name tests with checks of
+  the approved rejection and the supported fixed-name/variable-parameter path.
+- Evaluate whether pointer acceptance belongs in each builder parameter's
+  signature metadata. Define ownership and the one authoritative declaration;
+  account for Python/JS authoring, serialization and runtime reception so direct
+  Source input cannot bypass the contract. `remote(...)` is currently a handwritten
+  Source-node helper, so an element-signature field alone would not cover it
+  without a defined mapping to the resulting `remote` attribute.
+- Before implementation, settle the metadata name through GC-225, its meaning
+  and behavior when absent, and whether one permission covers both `^` and `=`.
+  Keep the rule separate from the value's type: accepting a string does not by
+  itself mean accepting a Data pointer. This proposal does not authorize changes
+  to other APIs' existing pointer contracts.
+
+**Read-only evidence.** The installed Python Builder grammar format (§4.3) and
+its loader, and JS Builder's `src/grammar-loader.js`, describe parameter name,
+kind, role, annotation and default metadata; no pointer-acceptance field exists
+in that inspected descriptor. The JS loader checks exact parameter keys, so a
+new field requires coordinated format/export/loader support in the owning Builder
+projects, not an extra key silently added only in Gramlot. Current Gramlot remote
+helpers enforce a literal identifier separately. No dependency source was edited.
+
+**Completion criteria.** Python and JS reject prohibited pointer names consistently;
+received Source cannot call a method selected through Data; valid fixed-method
+calls still react to allowed parameters; relevant cache/cancellation checks pass.
+The ownership/design and documentation agree, and the runtime nonconformity is
+closed with evidence. Required Builder work must be handled in its owning project
+under the existing explicit authorization boundary, with no consumer workaround.
+
+**Status:** recorded, not implemented. This is technical follow-up after the
+teaching sequence; D4 and subsequent phases have not started. Verification here
+covers matching records/anchors and plan links only, not runtime behavior.
+
+**Upstream issue (2026-10-13).** Owner: "metti in issue su builders per dire se puo
+essere o noi poiinter". Opened and read back
+[genro-org/genro-builders #56 — Declare whether builder parameters accept Data pointers](https://github.com/genro-org/genro-builders/issues/56).
+The issue records the signature metadata proposal, the fixed-method Gramlot case,
+Python/JS format and validation coordination, open design choices and acceptance
+criteria. No field spelling, omitted-field policy or variable remote method is
+approved by filing it. The Gramlot runtime/test correction remains tracked here;
+no implementation or dependency source change was made. Checked both Builder
+issue lists before filing; no matching existing issue was identified.
+
+<a id="gc-070-765"></a>
+## 765 · Missing-topic teaching examples (D4) — 2026-10-13
+
+Block ID: **GC-070-765**.
+
+**Authorization.** Owner: "ok procedi con D4, mantenendo la sequenza delle release
+e l'aspetto didattico degli esempi". Implement the bounded D1/D4 delivery: c15
+lifecycle, c16 attribute projection, c17 data exchange, focused additions to
+existing lessons. The adapter-owned Kajenn guide/test was subsequently
+explicitly authorized and completed as recorded below. Stable keys are
+retained; catalogue placement and lesson links follow core release chronology.
+D5/D6 and stabilization phase 4 remain separate. Remote method names stay fixed;
+Builder #56 and the runtime correction remain technical follow-up, not D4 work.
+
+**Implemented locally.** The common catalogue has 41 paired Python/JS pages.
+New c15 follows `_init`/`_onBuilt`/`_onStart`, timer ownership, freeze/removal and
+read-only Source/DOM lookup; c16 separates 0.2.0 templates/mask from 0.2.3 bound
+srcdoc sandbox; c17 revisits the form record with 0.2.5 TYTX save/restore, JSON/XML
+export and mail-text preview (public utility path since 0.2.10). The existing
+keys stay stable: c15/c16/c17 precede c09 in the menu, and c08 now links to c15.
+Earlier examples remain available for comparison. b01 adds `#ANCHOR` and the
+Data-path cancellation segment `.#parent`; c02 adds exact-path `_userChanges`
+comparisons for input, SET, containing and descendant changes; c11 contrasts
+refused Source omission with a delivered hidden branch. c03 explains the companion
+stylesheet exercise and existing resource ownership. Paired public guides and
+catalogue documentation reflect the actual teaching route and its limits.
+
+**Teaching checks.** All 41 READMEs retain release stage, prerequisites, execution
+location, guided predictions, a source-change exercise with an answer, and limits.
+Examples compare reduced coordination with earlier versions of the same problem;
+they do not claim that every later interactive page has fewer total lines.
+New source uses Source/Data, named Logic and framework InOut; no application
+file picker, direct DOM mutation, request transport or parallel state was added.
+
+**Verified on the existing local dependency graph.** Examples: JavaScript 52/52,
+Python 15/15; Chromium started all 41 pages through each language's FileServer
+(82 page/language combinations) and checked the new interactions, existing RPCs
+and fragments. Real browser downloads/file choice passed TYTX restoration,
+JSON/XML export and rejection of exported JSON as a restore file. A separate
+both-language freeze/removal trial confirmed immediate timer cleanup with retained
+frozen DOM and absent Source. All 41 lessons rendered through the gallery's actual
+Marked/DOMPurify pipeline; the three new page previews were visually inspected.
+Gallery build, npm dry-run manifest and Python wheel contents passed; all 41
+lesson files are present in their respective language distributions. The lesson,
+guide and status audit checked stable keys, chronological menu order, paired
+anchors and 426 local/cross-repository references. Core strict Sphinx and the public
+documentation boundary/local-link/mirrored-anchor check passed. These are local
+checks, not a fresh installation, full integration matrix or owner acceptance.
+
+**Blocked date exercise — owning library.** A nested JavaScript Date in an object
+passed to `dataSetter` becomes an empty Bag. Minimal read-only reproduction with
+the installed `@genrojs/bag`: `new Bag({when: new Date('2026-10-03T09:30:00Z')})`
+yields a Bag, not a Date, at `when`. The c17 baseline therefore demonstrates
+string/number/boolean/null/nested-Bag values only. Its date/decimal extension is
+explicitly unverified and blocked; no date-from-string or alternate construction
+workaround was added. This is object-to-Bag initialization evidence, not proof
+that InOut's typed-date round trip fails. The owning-library contract/correction
+and paired initialization checks remain follow-up; no dependency source or new
+upstream issue was changed by D4.
+
+**Kajenn authorization resolved and delivery verified (2026-10-13).** After
+automatic approval review required separate repository permission, the owner
+answered the bounded guide/test question: "Sì, autorizzo guida e test Kajenn".
+Implemented the paired GP-505-030 walkthrough and the Source-auth test using the
+existing `auth_site` identity configuration. c11 now links to the walkthrough.
+The lesson preserves endpoint rules (0.2.14), then Source rules (0.2.15), with
+prerequisites, predictions, four request identities, an exercise/answer and limits.
+It distinguishes owner cookies from request identity and Source omission from
+visibility; it adds no login system or adapter runtime change.
+
+**Kajenn verification.** The initial installed core was 0.2.14: its endpoint test
+passed but Source filtering failed because that release precedes the capability.
+Updated only the local verification environment from the published unconstrained
+`gramlot` package to 0.2.16; no manifest, pin, dependency source or compatibility
+path was introduced. All 15 tests in `tests/kajenn/test_kajenn.py` then passed,
+including anonymous → refused Bob → allowed Ada → anonymous for both endpoint
+and Source outcomes. The guide explains the 0.2.15 prerequisite and environment
+update. The adapter documentation check validated 14 paired guides, 81 stable
+identities and both strict Sphinx builds. This qualifies the controlled test
+walkthrough, not a browser login/logout UI or the complete adapter matrix.
+
+**Other boundaries.** Named resource groups/native named-event exercises need
+genro-kajenn and remain reference-only; no replacement resource host or login
+system was authored. Mail/HTTP are the c17 advanced appendix pointing to existing
+local/intercepted verification fixtures, not a new external-service demonstration.
+No real mail or external HTTP action was run. Framework behavior, Builder #56,
+the fixed-remote runtime correction and undecided Source mutation semantics were
+not changed in this phase.
+
+**Status and next action.** Common D4 work and the authorized Kajenn portion
+are implemented and locally verified. The date initialization extension remains
+blocked on its owning library; complete D4 coverage/owner acceptance is not
+claimed. D5's later complete-page revision and D6's real-environment/clean-setup
+qualification and teaching acceptance remain pending, as does stabilization
+phase 4. Retain the date gap explicitly and obtain the owner's instruction before
+starting the next phase. The former Kajenn permission blocker is resolved.
+
+<a id="gc-070-770"></a>
+## 770 · Complete-page teaching progression (D5) — 2026-10-13
+
+Block ID: **GC-070-770**.
+
+**Authorization.** The owner answered "1ok" to the explicit proposal to proceed
+with D5, the didactic evolution of the complete example, retaining the date
+initialization problem as tracked work. Scope: the agreed c08 extension using
+c09/c11's dataRpc pattern, visible result/error, independent learner exercise
+and links to the later remote/dataRemote alternatives. Keep the local 0.2.0
+stage and optional SVG/freeze identifiable; preserve the release learning order.
+D6, stabilization phase 4 and dependency corrections are not started by this
+authorization.
+
+**Implemented.** c08 preserves the original local declarations and named Logic,
+with visible 0.2.0 labels and an identifiable optional freeze exercise. A separate
+0.2.14 section appends `Request quote`, a Page `quote` endpoint, bound result/error
+fields and small success/error callbacks. Arguments use `=` and are read on click;
+there is no automatic quote on initial load or field edits. The endpoint validates
+quantity and returns an arithmetic result; failure preserves the last successful
+quote and recovery clears the error. Python and JS author the same exercise.
+No order persistence or production pricing contract is implied.
+
+**Teaching progression.** c08 remains at its original catalogue position for the
+first local pass. c11 and GC-025 direct the learner back to its later section
+after endpoint basics, before the separately labelled 0.2.15 Source-auth stage.
+The README preserves the original local trial, adds a four-step quote/error/
+recovery trial, and explains the distinction between a live local preview and a
+server snapshot. Its source-change exercise adds a delivery charge only to the
+endpoint; the local result stays unchanged. An explicit comparison explains that
+new functionality adds code while `dataRpc` removes the need for application
+transport/result-copying code. The two arithmetic calculations are deliberately
+retained for this comparison, not a proposed shared production pricing design.
+Later remote/dataRemote responsibilities remain links to c12/c14, not additional
+mechanisms forced into this page. Stable keys, filenames and catalogue order stay
+unchanged; paired guides and catalogue explanations match the new lesson.
+
+**Verified locally.** JavaScript 52/52 and Python 15/15 pass. The original c08
+checks remain, including local formula/radio/paint, button modifiers, freeze and
+page disposal; its named Logic is unchanged. Added checks cover no quote calls
+during local work, fresh click arguments, scalar result, zero/empty-quantity
+refusal, retained result and error clearing on recovery. Chromium started all 41
+pages through each language's FileServer (82 combinations), including c08's local
+and later endpoint interactions. The rendered c08 page was visually inspected.
+The independent +4 exercise also passed in Chromium through both languages on
+temporary copies: local total 11, quote 15, then refusal retaining 15. Those
+modified copies were not installed as the delivered examples.
+
+Gallery build, npm dry-run manifest and wheel content checks pass. All 41 READMEs
+render through the gallery's actual Markdown pipeline. The audit checks 431
+local/cross-repository references, paired anchors, unchanged catalogue keys/order
+and the scoped c08 description/explanation updates. Core strict Sphinx and the
+public-documentation boundary/link/mirrored-anchor check passed. These checks use
+the current local dependencies; the full integration/clean-setup teaching matrix
+belongs to D6.
+
+**Status and next action.** D5 is implemented and locally verified, awaiting owner
+teaching acceptance. Propose D6 for real-environment qualification, clean setup
+and the final didactic review; do not start it or stabilization phase 4 without
+authorization. The owner-approved tracked gap from D4 remains explicit: nested
+Date initialization through JavaScript object-to-Bag conversion needs its owning
+library. No dependency or core runtime change, commit, publication or deployment
+was made for D5.
+
+<a id="gc-070-775"></a>
+## 775 · Teaching qualification and editorial walkthrough (D6) — 2026-10-13
+
+Block ID: **GC-070-775**.
+
+**Authorization.** Owner "ok" confirms the explicit proposal for D6: integration
+environment checks and final didactic review before stabilization phase 4.
+Implement verification and reader-facing corrections only; preserve the release
+sequence. Core/dependency runtime changes, release/publication and phase 4 remain
+outside scope. Owner teaching acceptance is separate from automated checks.
+
+**Implemented and verified; owner review pending.** Every common catalogue entry
+now requires an observable browser check; an omitted check fails immediately.
+The same exported `verifyExample` assertions were reused by the integration
+qualification. They cover static structure, editing/bindings, named Logic,
+endpoints, fragments/cache, lifecycle, projection and local file exchange.
+No runtime or dependency source was changed for D6.
+
+**Provenance.** Fresh environments resolved unconstrained first-party releases;
+no lockfile, pin or installed-source patch was introduced. Python 3.14.6 resolved
+core 0.2.16, genro-bag 0.27.0, genro-builders 0.28.0 and Kajenn 0.4.7. Node
+23.11.0 / Bun 1.3.14 resolved core 0.2.16, @genrojs/bag 0.10.3 and
+@genrojs/builders 0.5.0. These are dated observations, not installation pins.
+The gallery lane installed locally built teaching candidates: examples 0.2.11
+with 41 common entries, Python adapters 0.2.7 and JS server/serverless 0.2.8.
+Their versions do not imply that registry packages contain this unaccepted work.
+Source baselines: core `729c542`, examples `4c49480`, Python adapters `783de42`,
+JS server `e14a9b8`, plus the local work recorded in this status.
+
+The separate generated-project lane installed registry dependencies in a fresh
+Python environment shared by all five adapter extras, and separate npm projects
+for `page` and `site`. Python resolved core 0.2.16 / adapters 0.2.7 / Kajenn 0.4.7.
+This is not five isolated minimal-extra installations. No earlier virtualenv or
+node_modules tree was reused for either clean lane.
+
+**Integration checklist (Chromium, local delivery).** Common keys, in the exact
+verified menu order: `e01–e13`, `b01–b11`, `c01–c08`, `c15`, `c16`, `c17`,
+`c09–c14`. Each row executed every common key, not a sample. Each server adds its
+own `<environment>-01`; Worker adds `serverless-01` and `serverless-02`.
+
+| Environment | Mounted delivery: all page behaviors | Gallery | No-prefix additional checks |
+| --- | --- | --- | --- |
+| Uvicorn | 42/42, `/py` | pass | 4/4 |
+| Django | 42/42, `/py` | pass | 4/4 |
+| Flask | 42/42, `/py` | pass | 4/4 |
+| FastAPI | 42/42, `/py` | pass | 4/4 |
+| Kajenn | 42/42, `/py` | pass | 4/4 |
+| Node | 42/42, `/js` | pass | 4/4 |
+| Bun | 42/42, `/js` | pass | 4/4 |
+| Worker/static | 43/43, `file:` export | pass | not applicable |
+
+Total: 337 page/environment behavior checks (328 common + 9 environment pages),
+plus 28 no-prefix checks. The latter execute `e01`, `c08`, `c17` and the local
+`<environment>-01`. Gallery checks cover exact catalogue/order, README rendering,
+Python/JS/Logic source visibility, logo, iframe startup and theme propagation;
+server prefixes also return the expected redirect. c13 counts source-call
+request envelopes through HTTP or Worker messages, separately from mounts.
+Unexpected browser errors, failed responses and external HTTP requests fail the
+qualification. External requests were not used.
+
+**Commands and retained evidence.** Session artifacts are under
+`/private/tmp/gramlot-d6` (local evidence, not a published report or hosted CI).
+`matrix.mjs` starts the installed CLIs, calls the shared example assertions,
+checks galleries and closes the services. Final runs:
+
+```sh
+node /private/tmp/gramlot-d6/matrix.mjs uvicorn django flask
+node /private/tmp/gramlot-d6/matrix.mjs fastapi kajenn node
+node /private/tmp/gramlot-d6/matrix.mjs bun worker
+node /private/tmp/gramlot-d6/matrix.mjs worker
+```
+
+The final Worker-only JSON supersedes the first Worker gallery result: the test
+initially tried to read a `file:` iframe through its parent and hit the browser's
+origin boundary. The corrected test reads each Playwright frame in its own
+context; no browser security setting or product code was changed. The final
+per-key JSON reports are `matrix-uvicorn-django-flask.json`,
+`matrix-fastapi-kajenn-node.json`, the Bun row of `matrix-bun-worker.json`, and
+`matrix-worker.json`. CLI forms exercised by that harness:
+
+```sh
+gramlot <uvicorn|django|flask|fastapi|kajenn> gallery --port <port> --mount /py
+gramlot <node|bun> gallery --port <port> --mount /js
+gramlot-serverless gallery <output-folder>
+```
+
+The seven HTTP galleries were restarted without `--mount` for the root checks.
+A preliminary b02 check also used an input assertion on a paragraph; the selector
+assertion was corrected and the whole affected run repeated. Neither diagnostic
+attempt is counted as a product defect or as passing evidence.
+
+**Clean setup/editorial walkthrough.** The five documented Python `new` flows,
+then each generated start command, pass initial display, changing Ada to Grace
+through a binding, and changing the Python source to Mira followed by restart.
+`npm create @gramlot page` and `site` pass installation/build and browser use
+through Node, Bun and their file export: 11/11 setup/delivery cases overall.
+The site starts at its menu; selecting Registration opens the editable form.
+The final setup report is `setup-results.json`; a preliminary test that incorrectly
+expected that form at the menu was corrected and all three site cases rechecked.
+The gallery is a source viewer: editing happens in the generated project.
+
+Walked the public setup and release route, then e01/b01, c13 and c08 using their
+reader-facing prerequisites, predictions, exercises and answers. c08 keeps its
+local 0.2.0 trial and is revisited after c09/c11 for the labelled 0.2.14 quote;
+Source authorization remains 0.2.15, then remote/lazy Data 0.2.16. Existing keys
+are unchanged. The comparison explains reduced coordination code without
+pretending that added functionality always reduces total line count. Rendered
+Python and Worker galleries were visually inspected. This technical/editorial
+walkthrough is not proof of beginner comprehension; these representative lessons
+still require the owner's didactic review.
+
+**Corrections found by the clean checks.** Current Kajenn exposes
+`ServerApplication` from `kajenn.server_app`; the earlier environment exposed
+`kajenn_server_app`. Updated only the already authorized Kajenn guide pair and
+test import, using the existing identity system. No extra package or adapter
+fallback was added. The auth tests verify anonymous / staff / admin / anonymous
+Source filtering with the same page owner. Bun's default five-second test limit
+was incompatible with c14's intentional 5.1-second expiry observation; the page
+behavior tests now explicitly allow ten seconds. The ordinary documented Bun
+command subsequently passed; the lesson's cache duration and runtime are unchanged.
+
+**Checks.** `npm test`: 52/52; `bun test ./tests`: 52/52; Python examples unittest:
+15/15. Both FileServer browser commands pass with the final shared checker:
+41 Python + 41 JS pages, plus e10/e13 Source identity/removal and timer cleanup
+on both servers. The focused local-development core tests
+`binding-rpc.test.js`, `binding-remote.test.js`, `binding-dataremote.test.js` and
+`binding-timing.test.js` pass 60/60, including deterministic timing/race tests.
+This is distinct from the released-core integration lane. Existing positive
+reactive-method-name tests are technical nonconformities from §760, not approval
+of variable methods.
+
+Python README, Kajenn, Uvicorn tutorial and five project tests pass 23/23 on the
+clean environment. They emit 223 dependency deprecation warnings on Python 3.14;
+these do not imply an adapter runtime failure. Python guide/anchor validation
+passes 14 pairs / 81 identities; JS server/serverless passes 22 pairs / 122
+identities; strict Sphinx builds pass for both guide views. All 41 READMEs render
+through the gallery Markdown pipeline. The final teaching audit passes 41 lesson structures, Python/JS pairs, release
+order, stable anchors, 434 local/cross-repository references and packaged contents;
+gallery bundle and local npm/wheel builds are checked separately from publishing.
+Core strict Sphinx passes; public-documentation verification passes all eight
+published-guide pages, search/source boundaries, local links and mirrored anchors.
+
+**Limits and next action.** Keep c17's owning-library nested-Date initialization
+defect and absent date/decimal extension visible (§765). Reproduced again with
+the freshly installed @genrojs/bag 0.10.3: the nested value is a Bag, not a Date.
+No dependency workaround was added. Named resources/events need the separate genro-kajenn resource host;
+mail and HTTP examples use only local/intercepted fixtures or references, with no
+external delivery. OS-specific file-picker/mail-client interaction and novice
+comprehension are not automated acceptance claims. Advanced c13/c14 cache/error/
+lifetime behavior is qualified by the local development tests only to their tested
+scope, not by this released-core matrix. Fixed-method runtime/test alignment and
+builder pointer policy (§760), style/class parity (phase 4) and otherwise permitted
+Source mutation semantics (Q2) remain separate technical work.
+
+D6's implemented checks and editorial corrections are verified; owner didactic
+acceptance, including explicit disposition of the remaining teaching limits, is
+pending. Present e01→b01, c13 and c08 for that review. A local Uvicorn review
+gallery is available at `http://127.0.0.1:8185/` during this session. Do not start stabilization
+phase 4 until D6 acceptance and its separate authorization. No commit, publication
+or deployment is part of this qualification.
+
+**Owner review finding — Python source visibility.** The owner screenshot of e10
+shows the Python heading immediately followed by the Logic heading and the full
+JavaScript Page listing. The Python gallery appends two heading/pre pairs, but
+its code pane grid defines only two explicit rows; the implicit JS rows can
+consume the space intended for Python. The Logic pane also displays the entire
+shared JS module, including the equivalent Page, even when `Logic` is empty (e10).
+The earlier source assertions checked text presence, not usable visible height;
+the visual walkthrough missed this defect. The prior source-visibility claim is
+therefore insufficient. D6 remains unaccepted: correct the presentation and
+verify Python readability and the meaning of the Logic pane before closing it.
+The owner asked why JS was visible; no new presentation design is approved by
+that question alone.
+
+**Source-tab correction authorized.** Owner: "si dovrebbero essere com un tab".
+Scope: source-file tabs in the existing gallery, Python initially selected for
+Python pages, separate accurately labelled JavaScript module, one visible source
+at a time. Use the gallery's existing ordinary HTML ID and local behavior
+conventions (GE-010 §030); no new core component or dependency change.
+Implemented separate source tabs with Python initially selected in Python
+and JavaScript initially selected in JS/Worker galleries. Short labels keep
+both choices visible at desktop widths; filenames are available on hover.
+The complete JavaScript module is labelled JavaScript rather than Logic; a
+separate JS `_aux.js` companion retains its Logic tab. Hidden panels leave the
+layout, so the primary source no longer collapses. Selection uses Source
+attributes and the existing gallery event/disposal ownership. It does not
+reload the example iframe or reorder lessons.
+
+Added a source-tab regression covering selection, keyboard navigation, return
+to an opened lesson, retained iframe and listener disposal. Node 53/53, Bun
+53/53 and Python 15/15 pass. The new downstream
+`scripts/verify_gallery_browser.mjs` checks real visible width/height, one source
+at a time, source switching, keyboard and scroll/preview preservation. All 41
+common lessons pass through each of Python, Node and file-based Worker galleries
+(123 layout cases). These focused checks supplement the earlier eight-environment
+behavior matrix; that full matrix was not rerun for this presentation-only change.
+The final labels were also checked in the user's local review gallery, left on
+e10 with Python selected. Gallery bundle, wheel/npm contents and original
+package manifest pass, as do 41 Markdown renders and the 434-reference/paired
+anchor audit. No release, deployment or runtime/dependency change.
+
+The reported visual defect is resolved. Owner didactic acceptance of D6 and the
+previously recorded teaching limits remain separate; phase 4 is not started.
+
+**Owner refinement — environment-specific source and optional Logic tab.**
+Owner: "preferirei che i server python vedssero il codice python e quelli js il
+codice js mentre logic se c’è si chiama log.js ed e il secondo tab".
+The first tab must show only the environment’s authoring language. A second
+`log.js` tab is wanted only where meaningful Logic exists (currently b08, c02,
+c03, c08, c15, c17 and c14). It must not show the alternative Page as Logic.
+Clarification requested: whether `log.js` is a display label or a new physical
+module naming contract. Current FileServer accepts Logic in the page module or
+a same-stem `_aux.js`; a `log.js` file convention cannot be inferred from it.
+No dependent runtime or source-extraction change has been made pending that
+answer. The existing source tabs remain the last verified implementation, not
+acceptance of the refined presentation.
+
+**Owner clarified the source contract and label.** A Python author attaches a JS
+module containing browser logic; a JS author may put Page and Logic in one module.
+Shared example modules are a teaching-source convenience, not a requirement on
+Python applications. In the Python gallery show only the actual Logic class from
+that shared module, not its alternative JS Page. The owner corrected `log` to
+`logic`: the requested second-tab label is `logic.js`. Keep JS galleries showing
+their JS page module, with an optional Logic companion view when separate.
+
+A syntax-parser approach has been prepared for exact source-range extraction,
+including empty-class suppression and nested/comment/string cases. Automatic
+approval review rejected `npm install --save-dev --package-lock=false acorn` in
+the examples repository: it judged a new persistent dependency outside D6's
+approved boundary. No dependency or display change from this approach was applied.
+The proposed exception is Acorn as an examples-gallery build dependency only,
+bundled into its existing browser formatter; no core/adapter dependency or runtime
+contract change. A reviewable extractor and regression cases are staged in
+`/private/tmp/gramlot-d6/logic-proposal/`; they are not claimed verified without
+the parser. Request explicit owner authorization before applying this exception.
+
+**Parser proposal withdrawn; requested presentation implemented.** The owner
+challenged the parser proposal ("ma perche un parser ??? che ti viene in mente ???").
+No Acorn installation or dependency change was made. The source viewer now uses
+the existing shared-example layout: one final `export class Logic` declaration.
+A regression imports all 41 actual modules and compares each displayed nonempty
+excerpt to the original exported class source. Node supplies the source-preserving
+reference even in Bun tests because Bun rewrites imported source; Node is already
+required by both gallery-build CI jobs. This is a bounded teaching-file convention,
+not a JavaScript parser or a change to the runtime's supported modules.
+
+Python pages initially show only their Python source. `logic.js` appears for the
+seven nonempty classes (b08, c02, c03, c08, c15, c17, c14); it contains only the
+Logic declaration, never the alternative JS Page. Empty Logic tabs are hidden
+and omitted from keyboard navigation. JS/Worker pages retain their complete JS
+module; separately provided Logic companions use the optional second tab. The
+real files and their runtime loading are unchanged. Display text is always read
+from its original Source node, so gallery reattachment also handles empty Logic.
+The guide pair and affected lessons now explain the excerpt and environment
+boundary. This supersedes the earlier whole-JS-module tab in Python.
+
+Verified: Node 55/55, Bun 55/55, Python 15/15; browser visibility/content checks
+41/41 on each Python, Node and Worker gallery (123 cases), including the exact
+seven-versus-34 optional-tab split. Gallery build, package contents, 41 Markdown
+renders and the 434-reference/mirrored-anchor audit pass. The user's local gallery
+was refreshed and c03's `logic.js` tab visibly shows `export class Logic` and its
+methods, without Page. The parser proposal is closed and needs no authorization.
+D6 owner didactic acceptance and earlier teaching limits remain pending; phase 4
+is not started.
+
+
+Owner visual feedback, 2026-10-13: "padding eccessivi font eccessivi" and
+"la barra laterale ... dovrebbe avere uno splitter o essere piu larga" authorize
+a compact gallery and wider sidebar. Applied the wider-sidebar option, without
+adding another splitter: 240px desktop, 180px at <=800px, 140px at <=640px.
+Consolidated the overlapping gallery CSS rules; UI 13px, code 12px, smaller logo,
+26px navigation rows, explicit compact source-tab heights and a 28vh explanation
+limit. The existing frame bridge inserts preview-only compact CSS as a Source
+style node and disposes it with its script; direct pages and core theme are
+unchanged. No new framework capability, dependency or adapter runtime change.
+
+Verified: gallery lifecycle/source-tab tests 16/16; delivered galleries 41/41 on
+Python and Node (82 cases). Final Pointers preview fields are 28px high with 13px
+text in both environments. Desktop sidebar labels fit one row; whole-document
+horizontal overflow is absent at 1280, 800 and 640px. Source and long lesson
+regions remain scrollable. Rebuilt standalone export with the same assets; this
+turn did not open file:// in the integrated browser, whose URL policy rejects it.
+Python :8185 and Node :8187 review galleries are refreshed. Visual acceptance
+remains with the owner. The earlier requested removal of environment Quick start
+sections from the galleries is still pending; this CSS work does not close it.
+D6 owner didactic acceptance remains pending and phase 4 has not started.
+
+
+Owner instruction, 2026-10-13: "ok togli anche le sezioni Quick start da tutte
+le gallerie, lasciandole nella documentazione dei server". Removed the five
+Python and two Node/Bun built-in quick-start catalogues and their duplicated
+gallery pages; removed only serverless-01 from the standalone catalogue. Server
+READMEs, tutorials, scaffold templates and their quick-start tests are retained.
+Standalone serverless-02 (Registration form) remains an application example.
+Existing explicit --catalog support is unchanged. Updated gallery expectations,
+browser harnesses and paired integration/example guides. No HTTP/runtime contract,
+core or dependency change and no publication.
+
+Verified: Python gallery/README checks 15/15 (including all five adapters), Node
+server/standalone gallery and quick-start checks 9/9, Bun gallery/quick-start 5/5.
+Both server documentation trees and their concise mirrors build with strict
+checks. Live Python :8185 and Node :8187 galleries show exactly the three common
+families and 41 examples; no setup section. Rebuilt both local standalone review
+exports with 42 examples (41 common + Registration form), without serverless-01.
+The integrated browser still forbids file://; no new standalone browser run is
+claimed. The Quick start removal TODO is complete. D6 owner teaching acceptance
+and previously recorded teaching limits remain open; phase 4 is not started.
+
+
+Owner teaching feedback, 2026-10-13: descriptions should briefly explain what a
+page contains and teaches; every section must state which library features it
+uses. Added short visible introductions and a Uses line to all 41 lessons, plus
+feature boundaries in the three family introductions. Release chronology, stable
+catalogue order and comparisons of returning forms/SVG/pages are unchanged.
+Later browser actions in e10/e13, local controllers in b08 and multi-release
+controller pages remain explicitly identified. Maintained text stays English.
+
+The initial replacement proposal was rejected by automatic review because it
+would discard the existing detailed teaching material. The applied conservative
+alternative preserves every original lesson/family body inside a native More
+detail disclosure, closed by default. No lesson exercises, prerequisites or
+limitations were removed. Paired GE-010 and the shared reading route describe
+this short-introduction/optional-detail presentation.
+
+Verified: all 41 Markdown lessons render through the existing sanitizing pipeline
+with their original headings, answers and release labels; all visible lesson
+summaries are under 135 words and contain the feature scope. In the live Node
+gallery e06 has a 139px introduction with no internal scroll at 1280x800; More
+detail opens the original notes and closes again. Updated both local serving
+copies and rebuilt both standalone review exports. Example code is unchanged.
+D6 teaching acceptance remains with the owner; phase 4 has not started.
+
+
+**2026-10-14 — Additional compact application theme.** Owner request:
+"vorrei poter avere piu temi gia da subito non solo per chiaro e scuro ma anche
+per fissare dimensioni padding ecc. vorrei un tema piu compatto oltre a quello
+presente". This authorizes an additional application stylesheet; it does not
+start stabilization phase 4 or introduce a runtime theme API.
+
+Implemented `themes/gramlot-compact/theme.css`, following the sibling theme layout
+of constitution 11.22 and the Base theme extension guide. Compact loads after Base
+in the existing `Page.css` list, shares its color and semantic rules, and overrides
+only density: 13px root typography, 1.35 body line height, 28px minimum single-line
+controls/buttons, smaller gaps, headings, cards, table cells and native disclosures.
+Base is unchanged. No CSS imports, duplicated color palette, server dependencies,
+new builder attributes or dynamic theme registry are needed. The list can live on
+a shared application Page base class. Paired GC-095 and both theme READMEs explain
+selection; the binding-release exclusion now explicitly refers to a runtime theme
+API, to avoid contradicting the existing CSS themes.
+
+Verified: Chromium Base/Compact × light/dark, native field editing and keyboard
+focus; no horizontal document overflow at 320/640/1280px on a Gramlot Source form
+and table fixture. At 760px the input is 38.5px in Base and 28px in Compact; card
+padding is 11.4px and 7.8px respectively. Build passes, 23 resource/runtime tests
+pass with the repository Python environment, and strict public Sphinx plus local
+links/mirrored anchors pass (8 pages). npm and Python resource copies match the
+canonical CSS. Standalone single-file and directory exports both build and include
+the expected CSS; these exports were not browser-opened. The existing esbuild
+import.meta/iife warning appears in the standalone build, outside CSS scope.
+
+The gallery's earlier local compact styling and light/dark selector are unchanged;
+selecting Base/Compact interactively in the gallery is not implemented by this
+stylesheet addition. Owner visual acceptance remains pending; no publication.
+
+
+**2026-10-14 — Gallery appearance selector and sidebar splitter.** Owner confirmed:
+"si mettili uno sotto l'alytro. metti anche uno splitter alla colonna di sinistra".
+The shared Python and JS gallery now puts Theme (Base/Compact) above Color mode
+(Light/Dark); defaults remain Compact/Light. This completes the interactive
+selection left open in the preceding record. The canonical Compact stylesheet is
+embedded at gallery build time from the core package, replacing the old authored
+frame-style duplicate. Source style nodes enable/disable it via media; the existing
+parent/frame protocol carries appearance and color, validating both and accepting
+only the owning window. Styles and listeners are cleaned up with their Source.
+Core runtime and example teaching code are unchanged.
+
+A sidebar separator supports pointer drag and Left/Right, Home/End; Source owns its
+width and ARIA state. Bounds are 120px to min(460px, 60vw), with viewport resizing
+clamping the current width. Width survives lesson/theme switches and Source
+reattachment, but is not stored across reloads. Pointer capture is released on
+removal, and frames do not capture pointer input during a drag. Both splitters
+share the existing gallery drag lifecycle. Fixed a test-discovered cleanup error by
+placing the gallery style inside its Source branch and avoiding Source updates on
+a node already being disposed. Paired GE-010 describes these behaviors.
+
+Verified: 57 JavaScript and 16 Python example tests pass, including message origin
+validation, theme independence, no frame replacement, Source freeze/reattachment,
+sidebar bounds and removal during drag. Live Python (8185) and Node (8187) show both
+selectors; Base fields measure about 38.5px and Compact fields 28px. Node drag moved
+the sidebar to 300px; End reached 460px, viewport narrowing clamped it with no
+horizontal overflow. Entered form text survived theme/color changes. Both browser
+console error lists were empty. Standalone gallery export rebuilt with 42 examples;
+file browsing remains unverified. Screenshot: /private/tmp/gramlot-gallery-theme-splitter.png.
+No release/publication; D6 owner acceptance and phase 4 remain separate.
+
+
+**2026-10-14 — Persist gallery display preferences.** Owner request: "vorrei che
+il tema scelto e la larghezza della colonna sinistra venissero ricordati anche
+quando ricarico la pagina". The gallery now stores appearance, color mode and
+preferred sidebar width in browser localStorage, under
+`gramlot.gallery.preferences:<gallery pathname>` (origin isolation belongs to the
+browser). Restore updates Source controls/selected options, the local Bag, theme
+style and sidebar ARIA. A narrow viewport clamps only the visible width, preserving
+the desired width for a later wider viewport. User changes write the preference;
+initial rendering and viewport resize do not overwrite it. Invalid saved values
+are ignored without coercion; storage denial/quota errors leave the current UI
+usable without introducing another persistence mechanism. No example data, open
+tabs or other settings are stored. Paired GE-010 documents this behavior.
+
+Verified: 21 gallery tests pass, including a fresh gallery restore and theme delivery
+to newly opened frames, narrow/wide viewport behavior, malformed stored values and
+storage SecurityError/QuotaExceededError. Live reload on Node 8187 and Python 8185
+restored Base/Dark/130px; a newly opened Node form inherited Dark and Base's 38.5px
+field height. Restored Compact/Light/280px afterward and confirmed those values
+survived another Node reload. Standalone export rebuilt with 42 examples at
+/private/tmp/gramlot-gallery-controls-static/index.html and includes the same
+browser code; file-origin persistence has not been browser-qualified and requires
+localStorage to be allowed by the browser. No server or core runtime change,
+publication or phase-4 work. Screenshot: /private/tmp/gramlot-gallery-saved-preferences.png.
+
+
+**2026-10-14 — Owner defers c17 Date/Decimal coverage.** The owner requested:
+"per il moeto bnell esempio non mettere una data oppure inizializza la bag in un altro modo".
+Keep the existing Python/JavaScript record with strings, number, boolean, null and
+nested address; no alternate initialization or consumer workaround is introduced.
+The lesson introduction now describes those values without presenting the upstream
+defect as a prerequisite. The detailed limit and paired gallery guides link to
+[genro-bag #69](https://github.com/genro-org/genro-bag/issues/69), opened at the
+owner's request in the Python project with explicit coordination of the JS fix.
+Read-only reproduction with JS Bag 0.10.3/TYTX 0.16.2 showed that constructor
+ingestion and object-input fromJson lose Date/Decimal types; setItem followed by
+Bag TYTX round-trip preserves them. Python Bag 0.27.0 dictionary ingestion keeps
+both types. The deferred extension no longer blocks D6 teaching acceptance; the
+upstream defect remains open. This does not accept D6 as a whole or authorize
+stabilization phase 4. The executable c17 examples remain unchanged.
+
+
+**2026-10-14 — Gallery settings footer.** Owner requested moving Theme, Color
+mode and Keyboard navigation into a footer of the gallery shell. Both Python
+and JavaScript declarations now place these controls in one full-width footer
+below the sidebar and workspace. Compact inline groups wrap on narrow screens;
+the sidebar retains its splitter and gains navigation space. Existing control
+IDs, events and preference persistence are unchanged. Paired GE-010 and the
+introductory text describe the new location.
+
+Verified: gallery/browser build, 30 JS gallery/build tests and three Python
+gallery-page tests pass. Live Python 8185 and Node 8187 show the footer. Node
+1280x800 uses a 35px footer; the narrow Python viewport wraps the controls. Theme
+and color changes, keyboard opt-in and theme/color restoration after reload were
+checked in Node; no browser console errors were reported. Keyboard opt-in retains
+its existing non-persistent behavior. Screenshot: /private/tmp/gramlot-gallery-footer.png.
+This UI change does not authorize stabilization phase 4 or close D6 acceptance.
+
+<a id="gc-070-780"></a>
+
+## 780 · Dedicated inspector Web Component — 2026-10-14
+
+Block ID: **GC-070-780**.
+
+**Approved scope:** constitution 11.61 records the owner's request for a separate,
+optional `gramlot-tools-inspector` Web Component in this repository, independently
+of the Chrome extension and the future general component architecture. Work is in
+the dedicated `codex/gramlot-tools-inspector` worktree; no unrelated uncommitted
+changes from the coordinating checkout were imported.
+
+**Implemented, not yet owner-accepted:** `tools/gramlot-tools-inspector/` contains a
+private tool package, its separate build and a floating, resizable palette. Its UI
+uses an independent Gramlot instance, Source, Data and named logic within Shadow
+DOM. It observes an explicitly supplied `Gramlot` through public Data/Source Bag
+APIs and shows trees, cached values and attributes. Selection and collapsed state
+follow node identities. Inspection performs no target writes or resolver execution.
+Closing/retargeting releases subscriptions; disconnect disposes the UI. The core
+has no import or dependency on the tool. The Chrome extension and all dependencies
+remain unmodified. Contract and setup: [GC-195](195-tools-inspector.md#gc-195-005).
+
+**Verified in the dedicated worktree:** six Node tests PASS; separate tool build
+PASS; real Chromium and Playwright WebKit checks PASS (Data/Source selection and
+live updates, property view, keyboard movement, pointer dragging, native resize,
+close/reconnect, and script CSP without unsafe-eval or unsafe-inline). The fixture
+permits inline styles for bound position attributes. The Chromium screenshot was
+visually inspected. These checks use the worktree's current core; they do not
+qualify local changes in the coordinating checkout or claim a full core regression.
+
+**Remaining qualification:** Firefox could not launch its installed Playwright
+binary: "Could not find profile folder". The failure occurs before loading the
+fixture, also with /private/tmp and an explicit worktree profile. Its browser test
+remains available and is not weakened or silently skipped. Branded Safari and
+file-origin/single-file export have not been tested. WebKit PASS does not substitute
+for Safari. No target editing, debugger, cross-origin frame bridge, automatic gallery
+integration or general Web Component framework is part of this implementation.
+
+**Initial handoff:** review the component in its worktree, then qualify additional
+browsers before claiming them. The integration review below supersedes this
+handoff; owner acceptance and releases remain separate actions.
+No commit, push, release or deployment was performed.
+
+
+**Integration review completed — 2026-10-14:** the owner explicitly requested
+review/integration and a footer icon targeting the selected example (11.61).
+The tool is now integrated into the coordinating checkout, with the optional npm
+entry `@gramlot/gramlot/tools/inspector`. The core runtime does not import it.
+The palette's CSS is embedded in that optional artifact; it no longer needs an
+adjacent stylesheet. Close emits a component event for the gallery launcher.
+
+The Python and JS gallery footer now opens the tool in the selected preview.
+Switching examples closes the old palette and opens the new one; introductions
+disable the button. The existing gallery frame bridge carries only validated
+open/close messages. Runtime constructors come from the running example, avoiding
+a second bundled core; no adapter or dependency source was modified. Review found
+and fixed an incorrect Source builder reference in this binding and initial palette
+clipping in narrow previews. A regression executes the actual frame bundle with
+the example runtime, tests live values and the Close event. All component internals
+use Source/Data/named Logic; the gallery glue remains within its existing bounded
+DOM/event integration responsibility. No general component architecture is added.
+
+**Verified after integration:** core and gallery builds PASS; six component unit
+tests PASS; 32 gallery/build JS tests PASS; three Python gallery tests PASS; five
+core runtime-bundle checks PASS. Optional artifact exists and the served core
+bundles contain no inspector. Chromium and Playwright WebKit component checks PASS
+again after the final CSS/build changes. Real in-app browser checks cover the Node
+and Python launchers, live Data observation, selected-example targeting and Close
+synchronization. Static export regenerated all 42 examples; its Inspector and Source
+tree were verified through a local HTTP static server without console errors.
+Screenshot: `/private/tmp/gramlot-gallery-inspector.png`.
+
+**Limits and next action:** integration is implemented and verified, awaiting owner
+acceptance. Direct `file://`, branded Safari and Firefox remain unqualified (the
+previous Firefox launcher failure is recorded above). Static export still emits
+the existing esbuild warning about server assets' `import.meta` in IIFE output;
+this did not prevent export or the tested static gallery. This task adds no shortcut,
+package publication, release, commit or push, and does not start stabilization phase 4.
+
+
+**Owner correction completed — editing and breakpoints, 2026-10-14:** following
+"nell inspectorb manca la parte di editing sotto" and "anche i breakpoint", the
+component now places a typed property editor below the Data/Source tree. This
+supersedes the read-only implementation noted above; constitution 11.61 and GC-195
+§025 record the scope. Draft fields use the inspector Data Bag and named Logic.
+Apply validates cells and checks the selected node snapshot before public Bag
+writes; Revert reloads it. Scalar attributes can be added, renamed and removed;
+null attributes, unchanged value identity and schema metadata are preserved.
+Supported values: string, finite number, safe integer, boolean, null, UTC Date/time/
+datetime. Decimal, other objects, arrays, Bag branches, resolver values and `_meta`
+remain read-only; this is not full editing parity with every DevTools scalar type.
+
+Data and Source path breakpoints provide debugger/console modes, optional conditions,
+exact-path matching, hit counts and removal. Checks run synchronously in the Bag
+notification, retaining the writer stack. Conditions obey page CSP; invalid/blocked
+compilation preserves an existing breakpoint and evaluation errors do not abort the
+target write. Close/retarget releases subscriptions and clears configuration.
+Browser debugger controls still own pause/resume/stepping; no privileged extension
+API, dependency-source modification or general component framework was added.
+
+Verification: 14 component/scalar tests PASS; 32 gallery/build checks PASS; five
+core runtime-bundle checks PASS; core/tool/gallery builds PASS. Chromium and WebKit
+browser tests PASS for Data/Source edits, console breakpoints, CSP rejection and
+existing move/resize/reconnect behavior. Chromium additionally verified a real
+Debugger pause/resume with the Bag writer in its stack. Node gallery UI verified
+Data edits and a console hit; Python gallery verified a Source edit. Static export
+regenerated 42 examples; its Source edit and console breakpoint were verified via
+HTTP, with no console errors. Screenshot:
+`/private/tmp/gramlot-inspector-editor-breakpoints.png`.
+
+Still unqualified: branded Safari, Firefox and direct file-origin execution. WebKit
+is not Safari. Implementation and these checks are complete for this correction;
+owner acceptance and any later extension of the editor's type coverage remain
+separate. No commit, push, release or deployment; stabilization phase 4 is unchanged.
+
+
+**2026-10-14 — Provisional tree, first slice (constitution 11.62):** owner confirmed
+`pane.webcomponent(code='gramlot-poc-tree')`, the staged plan and the explicit JS
+Bag connection. The prior palette appearance is rejected, not accepted merely
+because its editing/breakpoint tests passed. Implemented the generic declaration
+in both languages, static/live tag rendering, literal-code validation and the
+optional tree subset in `tools/poc/`. Named Logic receives selection through
+`connect_onchange`; Bag transfer is the actual `storeBag` property. This slice is
+not yet substituted into the gallery inspector.
+
+Verification: 570/570 core JS tests, 133/133 core Python tests, 19/19 inspector/tool
+unit tests pass. The first browser slice passes Chromium and Playwright WebKit for
+both Python-authored TYTX and JS Source: rendering, selection, live updates, Source
+inspection and row-action delivery. Reviewed screenshot:
+`/private/tmp/gramlot-poc-tree-python.png`. Initial full-suite failures were local
+server sandbox restrictions and stale generated runtime bundles; rebuilt bundles
+and reran with local-server authorization. No remaining test failure.
+The public Sphinx build and link/mirrored-anchor check also pass.
+
+Pending: owner review of this tree, remaining provisional layout components, full
+DevTools properties-grid/editing/breakpoint composition, visual comparison and
+integrated three-gallery verification. Branded Safari, Firefox and direct-file
+qualification remain unclaimed. Contract, sequence and provenance: GC-195 §030–035
+and PORT-0006-inspector-components. No commit, push, release or deployment.
+
+
+**2026-10-14 — Full provisional inspector composition (supersedes the first-slice
+pending list above):** owner answered "ok" after the first tree review and proposed
+full composition. Implemented `gramlot-poc-palette`, `gramlot-poc-tabs` and
+`gramlot-poc-splitter`, isolated beside the tree in `tools/poc/`. The optional
+inspector now declares all four via `webcomponent(code=...)` and retains
+Source/Data/named Logic for its Properties grid, editing, breakpoint dialogs/list
+and path footer. No PoC runtime, registry, duplicate core or dependency-source edits.
+
+The interface follows the DevTools reference: compact label-only tree, underline
+tabs, horizontal divider, grey property labels, editable value cells, + and hover
+trash. Existing names/types stay fixed. Row exit/Enter commits; Escape reloads.
+Focus survives commits between existing cells. Breakpoint dots target their own
+row without changing selection; active dots, count/list (including deleted paths)
+and selected-path hits remain available. The prior large form UI is replaced.
+
+Verification: 20/20 tool/scalar/tree unit tests and 5/5 core runtime-bundle tests
+pass. Core/tool/gallery builds pass; static export regenerated 42 examples.
+Chromium and WebKit pass the real-browser fixture: Data/Source edits, typed
+attribute add/remove, focusout commit, strict-CSP condition rejection, console
+breakpoints, move/resize/splitter by pointer/keyboard and reconnect. Chromium also
+verifies debugger pause/resume with the Bag writer frame still present.
+Both engines pass Python 8185, Node 8187 and direct-file serverless integration:
+Data/Source edits, breakpoint console hit and footer closure. Node was restarted
+to replace its in-memory old assets. Visual review screenshot:
+`/private/tmp/gramlot-inspector-devtools-style.png`.
+
+Firefox qualification could not start: the installed Playwright Firefox exits with
+"Could not find profile folder", including a retry with `/private/tmp` as its temp
+root. Branded Safari remains untested; WebKit is not Safari. Decimal and unsupported
+object editing remain read-only, as in the existing editor contract; this is not a
+claim of full DevTools API parity. Final owner visual acceptance is separate.
+The scoped implementation/integration is complete. No commit, push, release or
+deployment; phase 4 has not started. Contracts/provenance: GC-195 and PORT-0006.
+
+
+**2026-10-14 — Side-by-side density correction:** the owner supplied a screenshot
+with the palette and extension together. Reference CSS confirms a remaining
+mismatch: the extension tree inherits 11px from its inspector container, whereas
+the provisional tree fixed 13px; the Properties heading inherited the palette’s
+13px instead of the reference 11px. Both now use 11px; property cells align to
+20px rows/19px inputs. Browser page zoom still affects an in-page tool independently
+of DevTools zoom; no counter-zoom transform or browser-zoom override is introduced.
+
+Density correction checks: 20/20 tool tests pass; Chromium and WebKit browser
+qualification passes. Core/tool/gallery builds and the 42-example static export
+were refreshed; Node 8187 restarted to serve the new in-memory assets.
+
+
+**2026-10-14 — Single gallery palette and explicit page connections:** owner
+confirmed "Sì, palette unica e collegamento completo" after requesting the same
+shell/example selector as DevTools. Constitution 11.62 extends the former 11.61
+open/close-only boundary. GC-195 §040 and GC-225 §035 record the names and contract.
+
+Implemented one palette in the gallery shell. Its selector offers the shell and
+the visible example; gallery tab changes follow the new example, while a manual
+shell choice leaves that example visible. Introduction keeps shell inspection.
+Explicit MessagePorts join registered frames to the palette. Page-side agents
+read cached values, validate node identity/revision before edits, preserve unedited
+values/metadata, and run conditions/breakpoints in the owning realm and writer
+stack. Hidden examples retain their breakpoint configurations until reload or
+palette close. No dependency source edits or automatic frame discovery.
+
+The red breakpoint dot is in the left gutter, visible only on hover/keyboard
+focus, never pinned by selection or an active breakpoint. The properties grid
+preserves focus across remote commits. Tabs use string ARIA selection values and
+the expected blue underline. Browser qualification exposed excessive redraws
+while applying a large shell snapshot on WebKit: the provisional tree now
+coalesces Bag event bursts, with a regression check for a 300-node update and
+queued-render cancellation on disconnect. Unchanged snapshot attributes are not
+rewritten in the panel copy.
+
+Verification: 25/25 tool tests, 62/62 gallery tests and 5/5 runtime-bundle tests
+pass. Chromium/WebKit pass the independent opaque-frame bridge fixture (Data and
+Source editing, shell/child isolation, focus, page CSP and disconnect cleanup);
+Chromium also verifies debugger pause/resume with the actual child writer stack.
+Both engines pass integrated Python 8185, Node 8187 and direct-file serverless:
+selector, shell and example edits, breakpoint console hits, hidden-tab preservation,
+Introduction, close and reopen. Local-tool browser checks also pass, including
+hover-only red/left actions, active-tab underline, dragging, resizing and keyboard.
+Core/tool/gallery assets and the 42-example static export were rebuilt; the local
+servers were refreshed. Public documentation link/mirrored-anchor checks pass.
+Visual capture: `/private/tmp/gramlot-inspector-shell-selector.png`.
+
+The requested scope is implemented and verified; final owner visual acceptance is
+separate. Firefox remains unqualified because the installed Playwright browser
+fails before page load with "Could not find profile folder". WebKit is not branded
+Safari. Existing Decimal/object read-only limits remain; full DevTools API parity
+is not claimed. No commit, push, release or deployment; phase 4 has not started.
+
+
+Final-asset check: Chromium and WebKit also pass frame reload/reconnection and
+active-tab blue underline on all three galleries, with no page errors. The local
+Python launch must include the core and examples checkout `src` directories in
+`PYTHONPATH`; without them its virtualenv resolves older installed packages. The
+running 8185 server was corrected to use those explicit checkout paths. No package
+installation or dependency-source change was needed.
+
+
+**2026-10-14 — Breakpoint indicator states corrected at owner request:** this
+supersedes the preceding hover-only active-state description. The left indicator
+is a grey outlined circle on hover/keyboard focus when inactive. A set breakpoint
+stays visible: red without a condition, yellow with a condition. Removing it
+restores the inactive appearance. `conditionalPaths` accompanies `activePaths` in
+the provisional tree descriptor, derived from existing breakpoint configuration.
+Constitution, GC-195, GC-225, tool and gallery guides record the correction.
+
+Verified: 25/25 tool tests; Chromium and WebKit browser checks cover the grey ring,
+red/yellow persistent states, condition removal and breakpoint removal, in addition
+to existing editor and CSP checks. Integrated Chromium checks pass on Python 8185,
+Node 8187 and direct-file serverless through the real frame connection. Assets
+and 42-example static export rebuilt; Node 8187 restarted. Scope complete; no
+commit, push, release or deployment.
+
+
+**2026-10-14 — Collapsible palette and header proportions:** owner requested a
+collapsible floating palette, centered title and proportionate upper typography,
+with a screenshot showing the previous oversized tabs. Constitution 11.62's
+extension and GC-225 record the bounded `collapsed` contract. The left −/+ button
+collapses to the title bar and restores the original size. Contents stay mounted,
+so selection, breakpoints and live updates survive. Movement remains available
+while collapsed; resize is hidden. The centered title has balanced left/right
+controls. Header and tabs now use 11px, matching the tree/selector; tabs are 25px high.
+
+Verification: 25/25 tool tests pass. Chromium and WebKit verify collapse/keyboard
+restore, preserved dimensions, movement, continued updates, centered title and tab
+font size, along with the existing editing/breakpoint checks. Chromium integration
+passes Python 8185, Node 8187 and file serverless, including preserved selection
+and conditional breakpoint indicators. Core/gallery assets and the 42-example
+static export were refreshed; Node restarted. Visual checks:
+`/private/tmp/inspector-expanded.png`, `/private/tmp/inspector-collapsed.png`.
+Scope complete; no commit, push, release or deployment.
+
+
+**2026-10-14 — Header alignment follow-up:** owner requested title on the left
+and collapse/close together on the right, superseding the preceding centered title.
+Updated the palette, guide mirrors and visual assertion. Verification: 25/25 tool
+tests and Chromium/WebKit browser checks pass, including alignment, collapse,
+restore, movement and close. Shared gallery assets and static export rebuilt;
+Node 8187 restarted. Scope complete; no commit, push or release.
+
+
+<a id="gc-070-785"></a>
+
+## 785 · Reusable index and root installation — 2026-10-14
+
+Block ID: **GC-070-785**.
+
+Owner approval: constitution 11.63 records the overridable root manifest,
+property-based opt-in and reusable index; the owner confirmed "Sì, schede con
+iframe come nella galleria". Implemented and locally verified; visual/owner
+acceptance remains with the owner. No release, publication or deployment.
+
+Implemented:
+
+- Core Python/JS `IndexPage` and `IndexLogic`: grouped navigation, lazy iframe
+  tabs reused on reselection, fixed logo slot, sidebar splitter and replaceable
+  or extensible footer. Standard Base/Compact, Light/Dark and sidebar width keep
+  per-origin/path preferences; keyboard navigation remains a per-page choice.
+- Root `installable`, `app_icon`/`appIcon`, default overridable `manifest` and
+  `page_manifest`/`pageManifest`. Python's five adapters and Node expose plain
+  GET/HEAD `app.webmanifest`; disabled roots return 404 and other verbs 405.
+  Root bootstrap only; no page session, RPC registration or user data.
+- Serverless directory export materializes the JSON and icon; a single-file
+  export explicitly rejects an installable root. File execution still works;
+  installation uses HTTPS or localhost. No service worker or offline cache.
+- All galleries extend the reusable index while keeping catalogue, Markdown,
+  source viewer and inspector in gramlot-examples. The footer has installation
+  instructions and a native prompt button only when the browser supplies one.
+- GC-095 §110 provides an independent Python-first application, its one-line
+  Logic companion, the JS equivalent, footer customization and manifest override.
+  Connected guides and their mirrors describe each environment. `_gramlot`
+  system Data, fire services/mixins and legacy window-title behavior stay deferred.
+
+Verification:
+
+- Core: 131 Python tests passed in the first run; its five conformance cases
+  then passed with local-server permission (the initial failure was socket
+  sandboxing). JavaScript: 572 passed, then all three conformance tests passed
+  with local-server permission; 575 cases in total. Includes new manifest,
+  navigation, footer replacement, preference restoration and prompt/disposal tests.
+- Examples: 16 Python tests plus 53 subtests; 62 JavaScript tests pass. Node:
+  33 tests pass. Serverless: 34 tests pass, including refusal of single-file
+  installation without overwriting existing output.
+- Python adapters: 77 tests pass excluding `tests/kajenn/test_kajenn.py`.
+  Correction after owner review (2026-10-14): `kajenn.server_app` was NOT removed.
+  The installed Kajenn is 0.4.1, where the package is `kajenn_server_app`.
+  Upstream commit `72c665afc096a1232f78711a6bcd6c476767eb1e` (2026-10-10),
+  first included in v0.4.5, moved it to `kajenn.server_app` without an alias.
+  The test imports the newer API; the local dependency is stale. The earlier
+  attribution to an obsolete test was incorrect. Refresh the environment's
+  Kajenn and rerun the full suite; do not introduce a compatibility import.
+  The five new real-HTTP manifest cases pass, including on installed Kajenn 0.4.1.
+  This was the initial verification limit; the follow-up below resolves it.
+- Chromium and WebKit: all three galleries, direct-file serverless, theme
+  propagation, iframe reuse and inspector opening pass. Chromium reports no
+  manifest/installability errors for the three served galleries. Installation
+  into the operating system was not performed; WebKit automation is not a
+  claim of testing Safari's actual Add to Dock command.
+- Independent IndexPage on Node and direct-file serverless passes both engines.
+  The Python example copied verbatim from GC-095 also passes both engines,
+  including its companion, footer, child iframe, manifest and served icon.
+- Core public Sphinx build, links and paired anchors pass; both views of Node,
+  serverless and Python server documentation build without warnings.
+
+Local previews refreshed: Python 8185, Node 8187, static serverless 8189; static
+export at `/private/tmp/gramlot-gallery-controls-static`. The separate example
+qualification used temporary port 8190. This work does not close stabilization
+phase 4 or the owner's didactic acceptance.
+
+
+**2026-10-14 — Kajenn environment refresh:** owner requested the update and
+asked whether 0.5.0 was available. PyPI and GitHub's latest published release
+both report 0.4.7 (GitHub release published 2026-10-13); no v0.5 tag was returned
+at verification time. Updated only gramlot-py-server's local virtual environment
+from Kajenn 0.4.1 to 0.4.7, also installing kajenn-kbus 0.1.2. The import
+`kajenn.server_app.ServerApplication` now resolves without code changes or aliases.
+The complete five-adapter suite passes: **92 tests**, including authentication
+and all five manifest cases. `pip check` finds no broken requirements. The only
+test warning is an existing Starlette/httpx deprecation, unrelated to Kajenn.
+The environment mismatch is resolved; no dependency pin, test exclusion or
+source compatibility workaround was added.
+
+
+**2026-10-14 — Kajenn 0.5.0 follow-up:** a fresh owner-requested check now finds
+0.5.0 on both PyPI and GitHub (release published at 18:27:12 UTC). Completed the
+already authorized environment update from 0.4.7 to 0.5.0. The full five-adapter
+suite again passes: **92 tests**, including authentication and manifest; `pip
+check` reports no broken requirements. The same existing Starlette/httpx
+warning remains. No application code or dependency constraints changed.
+
+
+<a id="gc-070-790"></a>
+
+## 790 · Stabilization phase 4 — Style/class parity — 2026-10-14
+
+Block ID: **GC-070-790**.
+
+Owner confirmation: replied "ok" to accepting the gallery/documentation and
+starting phase 4; after asking what phase 4 meant, confirmed "ok" again following
+the explanation of string/null validation. Teaching acceptance is therefore
+recorded; phase 4 implementation is complete and locally verified. This does not
+start phase 5 or authorize a release.
+
+Python and JavaScript Gramlot renderers now validate resolved `style`/`class`
+values before Builder's attribute/style composition. The internal shared guard
+also covers literal `html_style`/`html_class`, `_class`, SVG nodes, sub-builder
+boundaries and metadata-provided render attributes. Lists/arrays, mappings,
+booleans and numbers are rejected. Style shortcuts keep their own existing
+contract, including numeric widths and other legitimate values. No upstream
+Builder/Bag edits, aliases or type coercions were introduced.
+
+Static renderers still defer inline `==` expressions; live rendering validates
+the evaluated result. The same guard runs on initial rendering, Data projection
+and Source attribute edits. Invalid updates leave the last displayed attribute
+unchanged; there is no rollback of the triggering Data/Source write. A later
+valid string or null resumes projection without replacing the DOM node.
+
+Verification: before the fix the new Python matrix exposed 90 failing subcases;
+new JavaScript checks reproduced missing or inconsistent rejection. After the
+fix, **139 Python tests plus 252 subtests** and **580 JavaScript tests** pass
+across the full core suites. Chromium and WebKit each pass 18 invalid Data
+projections plus valid-value recovery, null removal and stable element identity
+against the rebuilt runtime. Public documentation builds with warnings as errors,
+and all eight published pages pass local-link and mirrored-anchor checks.
+The Python suite's warnings exercise existing deprecated `_class`/`_if` spellings;
+these are unrelated to the validation correction.
+
+Next: request phase 5 (responsibility review and fixed remote method/pointer-policy
+follow-up). Its unresolved live remote Source semantics require the owner's
+explicit decision before implementation. Final cross-environment qualification
+remains phase 6. No commit, push, release or deployment was performed.
+
+
+**2026-10-14 — Builder pointer policy resolved upstream:** owner clarified
+"per i pointer nei builder è stato risolto". Read-only verification confirms
+[genro-builders #56](https://github.com/genro-org/genro-builders/issues/56) is
+closed (2026-10-13), and main contains the Python CustomTypes guide and the JS
+custom-types contract tests. The earlier phase-5 design TODO in §760 is superseded:
+do not reopen the field/default-policy design or invent a pointer flag.
+
+The delivered solution is `CustomTypes` with reusable named constraints, e.g.
+`ct.no_pointer`, applied to original input before runtime resolution or pointer
+discovery. A grammar 1.2 catalog carries the constraint to JavaScript; ordinary
+strings retain their existing behavior. Builder tests cover authoring, edited and
+serialized Source. A handwritten helper must attach the constraint to the actual
+Source attribute (`remote` for Gramlot's remote method), not only validate its
+argument. Upstream documentation explicitly leaves Gramlot integration to Gramlot.
+
+Remaining phase-5 work is to adopt that existing contract in Gramlot and verify
+the fixed remote method, alongside the responsibility review. This inspection
+found older core test installations (Python genro-builders 0.27.0; JS builders
+0.4.2), not evidence that current upstream is missing the feature. No dependency
+update, framework implementation or phase-5 start occurred in this clarification.
+Evidence: upstream `docs/builders/custom-types.md` and JS
+`tests/custom-types.test.js` on main. No Builder or Bag source was edited.
+
+
+<a id="gc-070-795"></a>
+## 795 · CustomTypes adoption: dependency qualification — 2026-10-14
+
+Block ID: **GC-070-795**.
+
+Owner confirmation: "ok", following the upstream pointer-policy resolution in
+§790. Scope: adopt the delivered Builder constraint for the fixed remote method;
+reactive parameters remain supported. This does not decide live Source mutation
+semantics or authorize changes to Builder/Bag sources.
+
+Phase 5 started with a dependency refresh. Python now uses genro-builders 0.28.1,
+genro-bag 0.28.0 and genro-tytx 0.16.2. The npm update installs Builders 0.5.0,
+Bag 0.10.3 and TYTX 0.16.2. The new Python Bag serializes row parent paths as
+arrays; npm Bag 0.10.3 expects strings. A minimal Bag containing only `name: Ada`
+fails Python-to-JavaScript decoding with `Missing or undecodable TYTX parent
+branch`, without importing Gramlot.
+
+Read-only upstream inspection found Bag JS main at 0.11.0 (observed commit
+6aea9bfd923a0ea66529e773e01aab78920cbdb7). Installing that branch locally through
+npm, without a lockfile or saved version pin, makes the minimal interchange pass.
+However, Builders JS 0.5.0, including its upstream main package manifest, requires
+`@genrojs/bag: ^0.10.3`. npm therefore retains a second Bag 0.10.3 beneath Builders;
+importing both throws `TYTX suffix 'X' is already registered for Bag`. This
+upstream dependency range must be aligned in its owning repository. No installed
+source patch, override, old-version pin or Gramlot transport workaround was added.
+
+Independent core correction: the instance grammar loader now copies its schema
+with the existing `deepcopy()` API. `Bag(source=existing_bag)` is no longer a
+supported constructor call. All six focused collection/copy tests and eight
+subtests pass, including instance isolation, atomic failure and whole-declaration
+replacement. The full Python suite now has 137 passing tests and 252 passing
+subtests, with two failures retained for explicit review:
+
+- P25 promises nested lists remain lists; new Bag population converts them into
+  Bags. Do not silently change Gramlot's documented P25 or introduce a converter.
+- The historical null-attribute probe expects deserialization to drop nulls;
+  the new Bag preserves them. This is changed upstream behavior, not proof of a
+  new Gramlot failure, and needs its legacy probe/documentation reconciled.
+
+Before the JS main install, the full JS run reported 550/580 passing tests; after
+it, duplicate Bag registration prevents 49 test files from loading (10 tests
+pass). These are different runs, not a comparable regression count. Runtime
+bundles were rebuilt during qualification; the current local environment is not
+qualified for use or release. Earlier §790 green results apply to its earlier
+dependency set, not this refreshed installation.
+
+The CustomTypes grammar mapping and fixed-remote runtime correction remain
+unimplemented. Resume after the dependency alignment and P25 contract review;
+then cover authoring, received/edited Source and valid variable parameters.
+No new issue, commit, push, release or deployment was performed. No Builder/Bag
+source was edited. Local evidence: `/private/tmp/phase5-python-after-copy.log`,
+`/private/tmp/phase5-js-baseline.log`, `/private/tmp/phase5-js-upstream-main.log`,
+`/private/tmp/phase5-collection-check.log`, and `/private/tmp/phase5-bag-wire.json`.
+
+
+<a id="gc-070-800"></a>
+## 800 · Recursive authoring contract aligned — 2026-10-14
+
+Block ID: **GC-070-800**.
+
+Owner correction: "se inizializzi una bag da un json è perche vuoi creare una
+bag dello stesso contenuto logico. per questo il default e recursive"; explicit
+scope: "ok procedi ad aggiornare documentazione e test per il comportamento
+ricorsivo". Constitution 11.64 records this clarification and supersedes the
+nested-list clause of 11.47 item 2/P25. The P25 mismatch reported in §795 was an
+outdated Gramlot expectation, not a Bag defect or a remaining design blocker.
+
+Maintained authoring guides and the P25 contract now describe default recursive
+Bag population: nested dictionaries and lists become Bags, preserving order and
+scalar leaf values, including empty containers. Direct literal list values and
+JSON strings are outside the dictionary/plain-object conversion trigger and keep
+their existing behavior. No runtime converter or dependency-source change was
+introduced.
+
+Python authoring/transport checks and the four-direction Python/JS fixture now
+assert nested Bag types, sequence order, dictionaries inside lists, further nested
+lists, false/null leaves and empty lists. Direct list and JSON-string checks
+remain. Verification: all 16 Python binding-authoring tests plus 23 subtests pass;
+JavaScript syntax validation passes; strict Sphinx build and all eight public
+pages' link/mirrored-anchor checks pass. The targeted JS P25 test cannot start:
+Builders' nested Bag 0.10.3 and root Bag 0.11.0 both register TYTX suffix X. Its
+runtime assertions and cross-language round trips are therefore still unverified
+in this environment; no successful JS run is claimed.
+
+Remaining phase-5 work: resolve the separate upstream Builders JS dependency
+alignment, rerun the cross-language tests, reconcile the unrelated legacy null
+probe, and resume fixed-remote/CustomTypes integration. The recursive-population
+documentation/test update is complete. No commit, push or publication was made.
+Evidence: `/private/tmp/recursive-authoring-python.log`,
+`/private/tmp/recursive-authoring-js.log`, `/private/tmp/recursive-docs.log`.
+
+
+<a id="gc-070-805"></a>
+## 805 · Builders JS Bag alignment verified locally — 2026-10-14
+
+Block ID: **GC-070-805**.
+
+Owner: "ok procedi, ti autorizzo a correggere la dipendenza in Builders JS e poi
+aggiorna Gramlot e verifica i test". Constitution 11.65 records the bounded
+exception to the dependency-edit restriction.
+
+Builders JS was corrected in its owning checkout
+`/Users/gporcari/Sviluppo/genro_ng/meta-genro-modules/sub-projects/genro-builders-js`,
+starting from current upstream main. npm and JSR now require Bag >=0.11.0 and TYTX
+>=0.16.2 without upper caps. Its tracked dependency lock was removed and ignored;
+CI/setup use `npm install --no-package-lock`, with the npm cache keyed by the
+package manifest. README installation guidance matches. No Builder runtime or
+Bag source was changed. All 150 Builders JS tests pass with published Bag 0.11.0
+and TYTX 0.16.2.
+
+The corrected Builders checkout was packed locally and installed into Gramlot
+without saving the temporary archive as a dependency or creating a lockfile.
+`npm ls` confirms a single shared Bag 0.11.0 and a single TYTX 0.16.2 instance,
+including through Builders 0.5.0. Gramlot npm/JSR minimum requirements now name
+Bag 0.11.0, Builders 0.5.0 and TYTX 0.16.2 without upper caps. Python requirements
+match the verified Bag 0.28.0, Builders 0.28.1 and TYTX 0.16.2. Runtime bundles were
+rebuilt from that dependency set.
+
+The two historical dependency probes expecting TYTX null-attribute loss now
+assert preservation, matching both current Bags. No transport workaround or
+setter-rule change was introduced: R17 authoring checks still pass. The recursive
+P25 tests from §800 now pass through all four Python/JavaScript transport paths.
+
+Verification: **150 Builders JS tests; 580 Gramlot JavaScript tests; 139 Python
+tests plus 254 subtests; eight Chromium runtime-origin checks** all pass. Browser
+checks cover debug/minified bundles in both package locations, localhost and an
+ordinary HTTP origin, mount, Data binding, references and instance isolation.
+The Python warnings concern existing deprecated `_class`/`_if` spellings, not
+failed checks. HTTPS, JSR installation and hosted CI were not exercised here.
+
+Important distribution boundary: the corrected Builders archive still carries
+its existing 0.5.0 version and is used only for local verification. The published
+Builders 0.5.0 still has the old requirement; reinstalling it from the registry
+would reintroduce the conflict. A separately authorized version bump/publication
+is needed before the correction is available to normal external installations.
+No commit, push, version bump, package release or deployment was performed.
+
+The dependency correction requested here is complete and locally verified. The
+remaining phase-5 fixed-remote/CustomTypes implementation and undecided live Source
+semantics are separate work; this verification does not claim they are complete.
+Evidence: `/private/tmp/builders-bag-tests.log`,
+`/private/tmp/gramlot-bag-js-final.log`, `/private/tmp/gramlot-bag-python-final.log`,
+`/private/tmp/gramlot-bag-browser.log`; local verification archive:
+`/private/tmp/gramlot-builders-bag-verification/genrojs-builders-0.5.0.tgz`.
+
+
+<a id="gc-070-810"></a>
+## 810 · Builders JS release: npm published, JSR decision pending — 2026-10-14
+
+Block ID: **GC-070-810**.
+
+Owner explicitly authorized the Builders JS version bump, commit, push and
+publication. Commit `05b505bef79b8eac55c0be5758c0c37587d95049` and tag `v0.5.1`
+were pushed to upstream main. All 150 tests pass locally and hosted Test CI
+succeeded. Publish run 38630263058 passed its test and npm jobs; npm
+`@genrojs/builders@0.5.1` is published and its dependency metadata is verified.
+Gramlot now installs that registry artifact and shares Bag 0.11.0 with it.
+After rebuilding the runtime, all 580 Gramlot JavaScript tests pass against the
+published artifact (`/private/tmp/gramlot-builders-051-registry-tests.log`).
+
+JSR publication failed before uploading: its package specifier grammar rejects
+`>=0.11.0`. A local 0.5.2 repair draft with wildcard JSR ranges was checked with
+`npx jsr publish --dry-run`; JSR also rejects `*` as a missing version constraint.
+No 0.5.2 commit/tag/publication has occurred. A question is pending with the owner
+because the repository rule forbids first-party upper caps: permit bounded ranges
+only in JSR (`^0.11.0` for Bag, `^0.16.2` for TYTX), or retain npm-only publication.
+No exception is inferred from the failed publication or the earlier release request.
+The wildcard draft is not a valid release and must be resolved before continuation.
+
+Evidence: [publish run](https://github.com/genro-org/genro-builders-js/actions/runs/38630263058),
+[Test CI](https://github.com/genro-org/genro-builders-js/actions/runs/38630263817),
+`/private/tmp/builders-052-jsr-dry.log`, and
+`/private/tmp/gramlot-builders-051-registry-tree.log`.
+
+
+<a id="gc-070-815"></a>
+## 815 · Builders JS 0.5.2 published on npm and JSR — 2026-10-14
+
+Block ID: **GC-070-815**.
+
+Owner confirmed "Sì, eccezione solo per JSR" for Bag `^0.11.0` and TYTX `^0.16.2`;
+constitution 11.65 records the bounded exception. The earlier wildcard draft was
+replaced by those approved constraints. npm retains minimum-only ranges. README,
+changelog and JSR metadata reflect the final release configuration. JSR dry-run
+passed, as did all 150 Builders JS tests.
+
+Commit `7984db59e7eeef63fcc2b22adc5092505a00d0fb` and tag `v0.5.2` are on upstream
+main. [Publish run 38631140108](https://github.com/genro-org/genro-builders-js/actions/runs/38631140108)
+succeeded in all three jobs (test, npm, JSR); the independent
+[Test run 38631141935](https://github.com/genro-org/genro-builders-js/actions/runs/38631141935)
+also succeeded. Registry metadata confirms npm `@genrojs/builders@0.5.2` and JSR
+`@genro/builders@0.5.2`, both latest. The partially published 0.5.1 was not rewritten.
+The Builders checkout has no uncommitted changes.
+
+Gramlot's minimum npm requirement is now Builders >=0.5.2. Its JSR imports use the
+approved JSR-only bounded form for this alignment (Builders ^0.5.2, Bag ^0.11.0,
+TYTX ^0.16.2). Installing the published npm 0.5.2 with a fresh cache succeeded;
+`npm ls` confirms one Bag 0.11.0 and one TYTX 0.16.2 shared with Builders.
+After rebuilding runtime bundles, all **580 Gramlot JS tests pass** against the
+published artifact, including the four-direction recursive P25 cases. Python and
+browser checks from §805 were not repeated for this metadata-only release repair.
+
+The authorized Builders bump/commit/push/publication and Gramlot dependency update
+are complete. No Gramlot commit, release or deployment was made. Fixed-remote/
+CustomTypes implementation and live Source semantics remain separate phase-5 work.
+Evidence: `/private/tmp/builders-052-jsr-final-dry.log`,
+`/private/tmp/builders-052-tests.log`, `/private/tmp/builders-052-npm-latest.json`,
+`/private/tmp/builders-052-jsr-receipt.json`, `/private/tmp/gramlot-builders-052-tests.log`.
+
+<a id="gc-070-820"></a>
+## 820 · Phase 5 — Responsibility review and scoped deferral — 2026-10-14
+
+Block ID: **GC-070-820**.
+
+**Authority and scope.** The owner instructed "allora lascia stare questo punto
+e prcedi col resto", after declining the common-attribute Builder extension and
+stating that documenting the unsupported dynamic remote method is enough for now.
+Constitution 11.66 records the deferral of additional enforcement/CustomTypes
+integration. Existing helpers and runtime behavior are unchanged; a dynamic
+method is not thereby supported. Q2 (live Source declaration edits) remains an
+open contract decision: this review adds no trigger or lifecycle semantics.
+
+### Request ownership
+
+| Owner | Lifetime and effect | Cancellation and completion |
+| --- | --- | --- |
+| `SourceHandler.remoteSource` | One replacement per mounted target NodeBinding; validates incoming Source before replacing children | Superseding requests and node removal abort; request identity, signal, page state and binding state guard the mount; `finally` releases tracking and deletes only the matching map entry |
+| `RemoteBinding` | Declarative parameters, condition, last successfully mounted cache and callback | Delegates transport/mount to SourceHandler; a false condition or cache hit cancels the pending request; failure does not overwrite the last successful cache |
+| `Provider` for `dataRpc` | One triggered endpoint call per provider, optional result-path write and callbacks | Latest call wins; removal aborts; timeout races the call even if transport ignores its signal; superseded/closed calls cannot write or invoke completion callbacks |
+| `Provider` for `dataRemote` and `RpcResolver` | Provider installs/replaces the resolver; resolver loads on reads, coalesces pending reads and applies cacheTime | Uninstall aborts its load and removes only the resolver it owns; resolver checks the signal even after an answer arrives; failure leaves the last value unchanged |
+| `RpcHandler.call` | Shared envelope, request identity and typed response/error decoding | Passes the owner's signal to the transport; does not choose the owner's lifetime or Data/Source effect |
+
+The shared invariants are ownership of the result, suppression of late answers,
+cleanup on node removal and preservation of the last valid contents on failure.
+Timers, callbacks, Source replacement and lazy Data loading have different
+contracts. Similar AbortController/finally code is not evidence that one generic
+request manager would be simpler. **Review conclusion:** no extraction or Provider
+hierarchy rewrite is warranted by the inspected paths; none was implemented.
+A false `dataRpc` condition only suppresses that invocation, whereas declarative
+`remote` explicitly cancels in-flight work and `dataRemote` uninstalls its resolver.
+Those different semantics must not be homogenized by a refactor.
+
+### Provider and attribute ownership
+
+| Declaration/table | Authoritative purpose | Review disposition |
+| --- | --- | --- |
+| Python `collections/binding.json`, packaged JS `builder/binding.json` | Five data elements and their signatures; `data_element` metadata | Byte-identical; `dataSetter` installs values, the other four have providers |
+| `BindingRuntime.PROVIDERS` | Four concrete provider dispatch targets | Matches the grammar's executable providers; excluding dataSetter is intentional |
+| `installation.js` provider/lifecycle/RPC lists | Received-Source placement rules; lifecycle restrictions; callbacks only on dataRpc | Same four provider tags; dataRemote intentionally has no startup lifecycle trigger |
+| `providers.js` control attributes | Exclude control fields from endpoint/body arguments | Execution contract, not the HTML filtering list; includes resolved `if`/`else`, method, timeout and cacheTime |
+| `source.js` code-attribute lists | Activate only declared inline code on received Source | Formula/controller bodies, RPC callbacks and remote controls have distinct roles; this is not a provider dispatch registry |
+| Python/JS builder Data-path/inline maps | P18 path restrictions and mutually exclusive inline/named bodies | Corresponding mappings agree; no new grammar metadata is needed |
+| Python/JS renderer binding filters | Keep runtime-only attributes out of DOM output | Matching names/prefixes; provider-only controls need not become universal HTML filters because provider nodes do not render |
+
+No conflicting provider enumeration was found in these inspected paths. The
+lists overlap because they answer different questions; replacing them with a
+single new registry is not justified. Existing behavioral tests remain the parity
+checks, rather than tests that merely copy the implementation's constants.
+
+### Documentation, verification and next gate
+
+The earlier editorial work already marks §015's S00 instructions historical,
+corrects §695's chronology and distinguishes delivered Kajenn avatar auth from
+planned genro-routes integration in GC-230. Public GC-095 and its mirror now
+explicitly distinguish helper rejection from incomplete direct/edited Source
+validation; no universal rejection is claimed.
+
+**167 targeted JavaScript tests pass**, covering RPC, remote, dataRemote,
+Source pipeline, providers, installation, inline code, authoring and lifecycle.
+The first invocation used the system Python and failed subprocess imports; rerun
+with the repository `.venv/bin` on PATH passed all cases without exclusions or
+source changes. Evidence: `/private/tmp/gramlot-phase5-review-tests.log`.
+The two existing dynamic-remote-name tests still characterize incidental runtime
+behavior; they do not approve that API or prove enforcement of the literal-method
+contract. Their correction is part of the owner's deferred item.
+
+Strict Sphinx, public documentation checks (eight pages, search, sources and
+local links), paired anchors for the three edited document pairs, binding grammar
+byte identity, Python/JS Data-path/body maps and renderer binding filters pass.
+Documentation log: `/private/tmp/gramlot-phase5-docs.log`.
+
+The remaining responsibility review is complete, with no new runtime defect
+reproduced in the reviewed supported cases. Owner acceptance and the phase-6
+integrated qualification remain separate. Q2 is still undecided; it must not be
+reported as implemented, tested to an agreed rule or implicitly accepted.
+No new runtime architecture, dependency extension, release or deployment.
+
+<a id="gc-070-825"></a>
+## 825 · Phase 6 — Integrated qualification — 2026-10-14
+
+Block ID: **GC-070-825**.
+
+**Authority:** owner replied "ok" to proceeding with phase 6, the final integrated
+qualification of core, browsers and servers. Qualification is complete in the
+agreed scope. Acceptance, versioning and publication remain separate actions.
+The remote enforcement deferral in 11.66 remains in force; Q2 is undecided and
+unchanged, not a new lifecycle feature delivered by these checks.
+
+### Corrections exposed by qualification
+
+- **Multiple-select initialization:** b09 put `topics: ['html']` inside the
+  initial record. Recursive Bag population correctly made it a nested Bag,
+  while a multiple select requires an array. Both Python and JS examples now
+  initialize `.topics` with a direct list-valued dataSetter. The lesson explains
+  the distinction; regression checks cover initial selection and editing.
+  No Bag conversion policy or control coercion was changed.
+- **Typed Restore boundary:** the current `Bag.fromTytx` can populate a Bag from
+  an untyped object/array. Using it in Restore therefore accepted a JSON export
+  and replaced the target with the wrong logical structure. InOut now decodes
+  with TYTX and requires a Bag root before writing Data, preserving the existing
+  Save/Restore contract. Tests reject malformed JSON, plain objects, arrays,
+  null/scalars and Bag JSON exports, retaining the original branch identity;
+  typed date/datetime/decimal round trips still pass. GC-095 and its mirror
+  state the boundary. No dependency source or permissive alternate path added.
+- **Verification harnesses:** the Python page-browser check now supplies the
+  existing fixture folder and calls its registered `check_fragment`; the
+  Node/Bun gallery check uses IndexPage's current logo/color selectors. These
+  correct stale test references, not application behavior.
+
+### Verified final state
+
+Runtime bundles were rebuilt after the Restore correction. Full core suites
+then passed on that state; C07 verifies all four readable/minified artifacts.
+
+| Gate | Result |
+| --- | --- |
+| Core JavaScript | 580 passed |
+| Core Python (`pytest tests`) | 139 passed, 254 subtests passed |
+| Python adapters against this core (`PYTHONPATH=core/src`) | 92 passed across Uvicorn, Django, Flask, FastAPI and Kajenn, including HTTP conformance/auth/manifest |
+| Node and Bun adapter suites | 33 passed each |
+| Serverless / project templates | 34 / 3 passed |
+| Examples JS / Python | 62 / 16 passed; Python also 53 subtests |
+| Chromium examples interactions | 41 Python and 41 JavaScript pages passed, including b09 multiple selection, c17 failed restore preservation, endpoints, remote fragments and local file exchange |
+| Chromium hosted galleries | Node and Bun: 41 pages each, frame/theme propagation and named Logic |
+| Chromium runtime origins | 8 checks: all four bundles on localhost and ordinary HTTP |
+| Chromium HTTP page checks | Python remote Source/freeze/disposal; Node/Bun mounted paths and CSP; four Python/JS module/companion cases |
+| Chromium live Source fixtures | Python and JS cards/playground: removal, sibling identity, insertion/text/SVG, animation and timer cleanup |
+| Chromium and WebKit | Native binding/CSP/srcdoc, style/class rejection/recovery on the minified bundle (18 invalid projections per engine), typed InOut file round trips and errors |
+| Chromium serverless browser | Quick start runs from one file and directory export without HTTP(S) |
+| Documentation | Strict Sphinx; eight public pages, search/sources/local links; 55 document mirror pairs and anchors; both paired grammars byte-identical |
+
+Reviewed the stabilization corrections against their agreed responsibilities:
+TYTX cache snapshots/latest-wins belong to remote binding, HTTP-origin identifiers
+to the existing runtime owners, HTTP input checks to adapters and shared
+conformance fixtures, style/class checks to renderers, typed Restore to InOut.
+No new generic manager, common-attribute Builder extension, fallback Source type
+or dependency-source patch was introduced by qualification.
+
+### Environment and limits
+
+The server test installations were stale. Refreshed Python Bag/Builders/TYTX to
+0.28.0/0.28.1/0.16.2 and JS Bag/Builders/TYTX to 0.11.0/0.5.2/0.16.2, without
+first-party pins or lockfiles. JS tests resolve local core and examples checkouts;
+Python adapter tests explicitly resolve this core source. The first JS setup
+used the wrong examples package path and temporarily selected old nested copies;
+correcting the link to the examples repository root removed the manifest failures.
+The initial Bun errors disappeared with that correction. Playwright was installed
+for the complete examples browser run. A bare pytest invocation also collected
+retired code in `temp/`; the complete official suite is `pytest tests`.
+
+Python adapter `pip check` passes with Kajenn 0.5.0. The core development virtual
+environment still contains the obsolete installed `gramlot-kajenn 0.0.0.dev0`,
+whose `genro-asgi`/`gramlot-minimal` dependencies are missing; it is not a core
+requirement and was not used for qualification. This environment-cleanup debt
+is not reported as a clean-environment installation check. Existing deprecated
+attribute/Starlette warnings and serverless bundler import.meta warnings remain;
+the tested paths pass. No real Safari UI, Firefox, HTTPS deployment, OS app
+installation or clean release-artifact installation was newly qualified.
+
+Evidence: `/private/tmp/gramlot-phase6-*.log`, notably `js`, `python-pytest`,
+`py-adapters`, `bun`, `js-workspace`, `examples-tests`, `examples-python`,
+`examples-browser`, `node-gallery`, `bun-gallery`, `browser-runtime`,
+`style-browser`, `inout` and `docs`. Logs are local evidence, not released assets.
+
+Next: owner acceptance and, if requested separately, release preparation.
+The Date/Decimal authoring exercise remains deferred pending Bag #69; this does
+not contradict successful typed Save/Restore. No commit, push, bump, publication
+or deployment was performed by phase 6.
+
+
+<a id="gc-070-830"></a>
+## 830 · Integrated release preparation (2026-10-14)
+
+Owner authorization: “ok” in reply to preparing the release after §825. This
+covers preparation and verification; publication remains a separate approval.
+
+Prepared candidates: core 0.2.17 (Python/npm/JSR), examples 0.2.12 (Python/npm),
+JS server/serverless/create 0.2.9 and Python server 0.2.8. Package versions,
+minimum dependencies, generated project requirements and release notes are
+aligned. README notices explicitly distinguish prepared from published versions.
+No first-party upper bound or lockfile was added; the approved JSR-only caret
+exception remains in force. The deferred remote enforcement and Q2 are unchanged.
+
+Packaging checks found the optional inspector missing from the JSR publish set;
+added its generated bundle, its export, the index runtime export and app icon,
+with an explicit self-import mapping to this core. Python metadata now includes
+the README. All eleven wheel/sdist/npm archives contain licenses and exclude
+local agent directories, node_modules, caches and credentials. Runtime, theme,
+icon and gallery bundle bytes agree across the corresponding Python/npm archives.
+
+Additional qualification:
+
+- Fresh Python environment installed the three candidate wheels and all five
+  adapter extras: `pip check` clean; all 92 adapter tests pass without a core
+  source override. Kajenn resolves to 0.5.0. The obsolete package in the old
+  development environment (§825) is absent from this installation.
+- Fresh npm installation from all five candidate tarballs resolves without local
+  checkout links or dependency errors. Generated serverless gallery succeeds.
+- Chromium checks these installed Node and direct-file serverless galleries:
+  native multiple selection, inspector Source tab, no page errors; hosted
+  manifest/icon and the materialized static manifest pass.
+- Workspace suites: server 33 and serverless 34 pass; the three generator tests
+  pass after updating the expected core minimum. Inspector: 25 tests pass;
+  Chromium and WebKit verify editing, breakpoints, CSP, keyboard, drag, resize
+  and reconnection; Chromium also verifies debugger pause with writer stack.
+- Python distribution metadata passes strict Twine checks. JSR dry-run passes
+  with `--allow-dirty` for the uncommitted candidate (no publication). It retains
+  warnings for dynamic imports and JavaScript entry points without declarations.
+- Firefox inspector qualification could not start: the local headless browser
+  reports a missing profile. No Firefox, branded Safari or OS app-installation
+  result is claimed here. Prior §825 coverage remains applicable.
+
+Artifacts and SHA-256 inventory: `/private/tmp/gramlot-release-candidate/`.
+Detailed local evidence: `/private/tmp/gramlot-release-*.log` and the candidate
+`RELEASE-CANDIDATE.md`. No commit, push, tag, registry publication or deployment
+was performed during preparation. Next: owner authorization for release
+consolidation/publication, in dependency order core → examples → servers.
+
+
+<a id="gc-070-835"></a>
+## 835 · Integrated publication authorized (2026-10-14)
+
+Owner confirmation: “ok” to “Procedo con commit, push e pubblicazione?” after
+§830. Scope: commit, push and publish core 0.2.17, examples 0.2.12, JS
+server/serverless/create 0.2.9 and Python server 0.2.8, in dependency order.
+Publication is in progress; registry success has not yet been recorded.

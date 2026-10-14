@@ -131,8 +131,31 @@ def check_protocol(base_url, page_path):
 
     status, _, _ = request("GET", rpc)
     _expect("GC-230-120", status == 405, f"GET {rpc} answers {status}, not 405")
-    status, _, _ = request("POST", rpc, to_tytx(envelope("source", "main")).encode(), content_type="text/plain")
-    _expect("GC-230-120", status == 415, f"rpc as text/plain answers {status}, not 415")
+    for path, rule, body in (
+        (rpc, "GC-230-120", to_tytx(envelope("data", "check_endpoint", {"value": "invalid-byte"})).encode()),
+        (config["closeUrl"], "GC-230-125", json.dumps({"pageId": page_id, "value": "invalid-byte"}).encode()),
+    ):
+        for content_type in ("text/plain", "application/jsonp", "application/json-extra", ""):
+            status, _, _ = request("POST", path, body, content_type=content_type)
+            _expect(rule, status == 415, f"{path} as {content_type!r} answers {status}, not 415")
+        # Valid JSON syntax: a replacing decoder would dispatch this body instead of rejecting it.
+        invalid_utf8 = body.replace(b"invalid-byte", b"\xffnvalid-byte")
+        status, _, _ = request("POST", path, invalid_utf8)
+        _expect(rule, status == 400,
+                f"{path} with invalid UTF-8 inside a JSON string answers {status}, not 400")
+    for content_type in ("Application/JSON", "application/json; charset=utf-8", "application/json ; charset=UTF-8"):
+        status, _, body, received = call(envelope("data", "check_endpoint", {"value": "media-type"}),
+                                       content_type=content_type)
+        _expect("GC-230-120", status == 200 and isinstance(received, dict) and received.get("value") == "media-type",
+                f"rpc as {content_type} answers {status} {body[:200]!r}, not the endpoint value")
+        status, _, body = request("POST", config["closeUrl"], json.dumps({"pageId": "0" * 32}).encode(),
+                                  content_type=content_type)
+        try:
+            closed = json.loads(body)
+        except ValueError:
+            closed = None
+        _expect("GC-230-125", status == 200 and closed == {"ok": True},
+                f"close as {content_type} answers {status} {body[:200]!r}, not 200 {{\"ok\": true}}")
     status, _, _ = request("POST", rpc, b"{")
     _expect("GC-230-120", status == 400, f"rpc with invalid JSON answers {status}, not 400")
     invalid = {"without pageId": {key: value for key, value in envelope("source", "main").items() if key != "pageId"},

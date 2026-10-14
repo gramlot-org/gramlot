@@ -2,9 +2,10 @@
 
 Document ID: **GC-055**.
 
-> **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data binding)**,
-> released on 2026-09-30, and is published on PyPI (`gramlot`) and on npm and JSR
-> (`@gramlot/gramlot`); the README states the current release.
+> **Scope.** This is the maintained introduction. The binding example belongs
+> to the 0.2.0 learning stage; the Page/Logic module arrangement arrived in 0.2.5.
+> Follow [Try Gramlot](025-try.md) for the chronological release sequence.
+> The README states the current release.
 
 <a id="gc-055-005"></a>
 
@@ -53,7 +54,13 @@ The page shows a field with `Ada` and the text `Hello, Ada`; typing `Grace` in t
 field changes the text to `Hello, Grace` at every keystroke. The same page in
 JavaScript calls the same methods; data-elements take an object
 (`pane.dataSetter({destination_path: '.name', value: 'Ada'})`).
-[Writing pages](095-writing-pages.md) explains every part.
+[Writing pages](095-writing-pages.md) explains the declarations and their limits.
+
+This compact example uses an inline formula: it requires the permissive CSP
+profile explained in [Classes and server adapters](090-classes-and-hosts.md).
+For a project using strict CSP, follow the named-Logic form in
+[Writing pages](095-writing-pages.md), section 060, and c03. The gallery teaches
+supported slices with explicit limits; it does not yet cover every option.
 
 <a id="gc-055-010"></a>
 
@@ -64,7 +71,7 @@ JavaScript calls the same methods; data-elements take an object
 | [gramlot](https://github.com/gramlot-org/gramlot) | The core: Page, Source, Data, binding, the browser runtime, the minimal `GramlotServer` contract and `GramlotFileServer`. PyPI `gramlot`, npm and JSR `@gramlot/gramlot`. | Always: every page and every adapter depends on it. | Published |
 | [gramlot-py-server](https://github.com/gramlot-org/gramlot-py-server) | Adapters for Python pages, one extra each: `uvicorn` (Uvicorn or any ASGI server), `django`, `flask`, `fastapi`, `kajenn`. PyPI `gramlot-py-server`, commands `gramlot <environment> new` and `gramlot <environment> gallery`. | Your pages are in Python and you serve them from a Python web server. | Published |
 | [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server) | Three packages for JavaScript pages: `@gramlot/gramlot-js-server`, the HTTP adapter on Node.js 22 and Bun; `@gramlot/gramlot-serverless`, the exporter to one HTML file, or one static folder, that opens from disk, with the Page in a Web Worker; `@gramlot/create`, new projects. | Your pages are in JavaScript: you serve them from Node.js or Bun, or you want a page without any server, a file to open, send or host as static content. | Published |
-| [gramlot-examples](https://github.com/gramlot-org/gramlot-examples) | The example pages, in Python and JavaScript, and the gallery. PyPI `gramlot-examples`, npm `@gramlot/gramlot-examples`. | You want to see every feature at work, with its source. | Published |
+| [gramlot-examples](https://github.com/gramlot-org/gramlot-examples) | The example pages, in Python and JavaScript, and the gallery. PyPI `gramlot-examples`, npm `@gramlot/gramlot-examples`. | You want guided examples of supported features, with their source and stated limits. | Published |
 | [gramlot-devtools](https://github.com/gramlot-org/gramlot-devtools) | Chrome DevTools extension that shows and edits the Data and the Source of a page. | You develop pages and want to inspect them. | Development tool |
 | [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) | The earlier experimental runtime, with a different scope. | Research only. | Experimental |
 

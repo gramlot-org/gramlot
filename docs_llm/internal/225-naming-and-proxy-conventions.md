@@ -160,3 +160,105 @@ client/server contract in 0.2.14).
   `Page.registerEndpoint` (JS), both with an optional `auth` rule.
 - The protocol of every adapter is GC-230 (contract and realisations), with the
   conformance check `check_protocol`/`checkProtocol`.
+
+<a id="gc-225-030"></a>
+
+## 030 · Dedicated inspector tool
+
+Block ID: **GC-225-030**.
+
+Owner, 2026-10-14: "esatto : ora noi dovremo fae poi molti webcomponent ma ueto è a
+parte e dovrebbe evere un suo nome sesempio gramlot-tools-inspector", followed by
+the explicit implementation instruction recorded in constitution 11.61.
+
+The dedicated tool and custom-element name are `gramlot-tools-inspector`.
+`GramlotToolsInspector` is the mechanical class spelling of that name; its file is
+`gramlot-tools-inspector.js`, applying §010's class/file convention. Its folder is
+`tools/gramlot-tools-inspector/`. The explicit target property is `gramlot`, using
+the existing name for a browser `Gramlot` instance. Browser lifecycle methods use
+the platform's `connectedCallback` and `disconnectedCallback` names.
+
+This names this browser-only component; it establishes no general Web Component
+naming hierarchy, Python widget grammar, registry, or server counterpart. Local
+state and implementation methods follow the existing JS camelCase spelling.
+
+The optional package entry is `@gramlot/gramlot/tools/inspector`, separate from
+the core runtime entry. The component's native `close` event reports user closure.
+The gallery uses `gallery:inspector-set` and `gallery:inspector-state`, following
+its existing `gallery:theme-set`/`gallery:theme-ready` message convention. The
+footer button is `gallery-inspector`; these are gallery-local HTML IDs/messages,
+not framework proxies or a new component registry.
+
+
+The owner's editing/breakpoint correction (11.61, 2026-10-14) retains the same
+component name and target property. Internal editor state uses `editor` and
+`breakpoints` Data paths; named Logic methods use camelCase (`applyEdit`,
+`addAttribute`, `removeAttribute`, `setBreakpoint`, `removeBreakpoint`). Breakpoint
+roots are `data` and `source`, modes are `debugger` and `console`, following the
+DevTools tool's existing vocabulary. No new core proxy or public event is added.
+
+
+<a id="gc-225-035"></a>
+
+## 035 · Provisional inspector components
+
+Block ID: **GC-225-035**. Owner decision: constitution 11.62.
+
+The generic Source element is `webcomponent` in both languages, with the literal
+`code` parameter. Temporary custom elements use `gramlot-poc-<name>`, separate from
+`gramlot-tools-inspector`. Their implementation lives under `tools/poc/`; classes
+and files mechanically follow the tag (`gramlot-poc-tree` → `GramlotPocTree` and
+`gramlot-poc-tree.js`). Helpers follow the Python/JS spelling rule:
+`webcomponent_code` ↔ `webcomponentCode`.
+
+The tree preserves PoC property names `storeBag`, `selectedPath`, `rowActions` and
+its `tree-action` event. Selection uses the browser `change` event, handled through
+`connect_onchange`. No `gnr-set` compatibility route is introduced. These are
+provisional component contracts, not a general property-binding convention.
+
+The composition applies the same mechanical naming to `gramlot-poc-palette`,
+`gramlot-poc-tabs` and `gramlot-poc-splitter`. Palette `title`/`close` and tab
+`role`/`aria-selected` use platform vocabulary. The splitter slots are `top` and
+`bottom` for its bounded vertical layout. Tree row actions retain their descriptor
+and add `activePaths` (relative paths) for the DevTools breakpoint indicators.
+These names describe provisional component internals, not additional core proxies.
+
+The approved frame bridge uses `InspectorConnection` (panel-side connection),
+`attachInspectorAgent` (explicit page-side binding) and `targets`/`selectedTarget`
+on the tool. Target records use `id`, `title`, `connection`; these are tool-local
+metadata, not application Source proxies. Files use `inspector-bridge.js`. Gallery
+handshake names `gallery:inspector-ready` and `gallery:inspector-connect` extend
+the existing gallery message prefix; actual inspection uses a transferred port.
+
+The owner's 2026-10-14 indicator correction extends the existing `activePaths`
+row-action descriptor with `conditionalPaths`, using the same relative-path
+convention. It marks which active breakpoint indicators are conditional; the
+CSS state class is `conditional`. No new core API or application state is added.
+
+The owner's 2026-10-14 palette correction adds `collapsed` as a boolean property
+and reflected attribute on `gramlot-poc-palette`, following native boolean
+attribute conventions. Its toggle uses standard `aria-expanded`/`aria-controls`.
+
+
+Root installation and index-page names (11.63): `installable`, `app_icon` ↔
+`appIcon`, and `manifest(base_url=...)` ↔ `manifest({baseUrl})` follow the Page
+property/method and mechanical snake/camel conventions. `page_manifest` ↔
+`pageManifest` belongs to GramlotServer. The reusable Page is `IndexPage`, in
+`index_page.py`/`index-page.js`; its authoring hooks use the same snake/camel rule.
+The application-root manifest resource is `app.webmanifest`, with standard web
+manifest keys (not translated to Python spelling). These names implement the
+owner-confirmed root-installation and reusable-index scope of 11.63.
+
+The index's properties are `logo_url` ↔ `logoUrl`, `shell_id` ↔ `shellId`, and
+`navigation`; navigation records use `key`, `title`, `children` and `url`.
+The Page hooks are `introduction`, `group_panel` ↔ `groupPanel`, `panel`, `footer`
+and `behavior`. `IndexLogic.indexMount` and `mountIndexPage` name the browser
+implementation, exported through the Page entry; the runtime subpath is
+`index-page-runtime`. Shell DOM classes use `index-`; the owned-frame theme
+messages use `index:theme-ready` and `index:theme-set`. These are index internals,
+not new builder attributes or markers. Gallery-specific content keeps its names.
+
+Phase 4 uses `require_style_class_attributes` ↔ `requireStyleClassAttributes`
+for the shared renderer guard, following existing `require_no_script_attributes`
+↔ `requireNoScriptAttributes`. This is an internal validation function for the
+already approved string/null contract, not a new authoring API.

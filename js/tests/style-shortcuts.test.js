@@ -338,3 +338,93 @@ test('an SVG setAttr keeps SVG names and no style; the live text uses mask and _
     assert.equal(document.getElementById('mixed').hasAttribute('_text'), false);
     app.dispose();
 });
+
+const INVALID_STYLE_CLASS = [[], ['card'], {}, {color: 'red'}, true, false, 0, 12, 1.5];
+const STYLE_CLASS_NAMES = ['style', 'class', '_class', 'html_style', 'html_class'];
+
+test('style/class reject non-strings in static and initial live rendering', () => {
+    for (const name of STYLE_CLASS_NAMES) for (const value of INVALID_STYLE_CLASS) {
+        assert.throws(() => rendered(root => root.div({[name]: value})), /style|class/);
+        assert.throws(() => rendered((root, data) => {
+            data.setItem('candidate', value);
+            root.div({[name]: '^candidate'});
+        }), /style|class/);
+        assert.throws(() => mounted(root => root.div({[name]: value})), /style|class/);
+    }
+});
+
+test('style/class Data projection rejects invalid values, preserves DOM and recovers with string/null', () => {
+    for (const name of STYLE_CLASS_NAMES) {
+        const {app, document} = mounted(root => root.div({id: 'candidate', [name]: '^candidate'}));
+        try {
+            const element = document.getElementById('candidate');
+            const attr = name.includes('style') ? 'style' : 'class';
+            const valid = attr === 'style' ? 'color: red' : 'card';
+            for (const value of INVALID_STYLE_CLASS) {
+                app.data.setItem('candidate', valid);
+                assert.equal(element.getAttribute(attr), valid);
+                assert.throws(() => app.data.setItem('candidate', value), /must be a string or null/);
+                assert.equal(element.getAttribute(attr), valid);
+                app.data.setItem('candidate', null);
+                assert.equal(element.hasAttribute(attr), false);
+                assert.equal(document.getElementById('candidate'), element);
+            }
+        } finally { app.dispose(); }
+    }
+});
+
+test('style/class inline expressions validate their result, while static rendering defers them', () => {
+    assert.equal(rendered(root => root.div({style: '==42', class: '==false'})), '<div></div>');
+    for (const name of ['style', 'class']) {
+        assert.throws(() => mounted(root => root.div({[name]: '==42'})), /must be a string or null/);
+    }
+});
+
+test('initial resolved Data and later Source edits use the style/class contract', () => {
+    for (const name of STYLE_CLASS_NAMES) {
+        for (const value of INVALID_STYLE_CLASS) {
+            const document = new JSDOM('<main id="gramlot-root"></main>').window.document;
+            const app = new Gramlot({document, transport: false});
+            try {
+                app.data.setItem('candidate', value);
+                const builder = new GramlotBuilder();
+                builder.root.div({[name]: '^candidate'});
+                assert.throws(() => app.src.startSource(builder.source), /must be a string or null/);
+            } finally { app.dispose(); }
+        }
+        const {app, document, main} = mounted(root => root.div({id: 'candidate'}));
+        try {
+            const node = main.getNodes()[0];
+            const element = document.getElementById('candidate');
+            const attr = name.includes('style') ? 'style' : 'class';
+            const valid = attr === 'style' ? 'color: red' : 'card';
+            for (const value of INVALID_STYLE_CLASS) {
+                node.setAttr({[name]: valid});
+                assert.throws(() => node.setAttr({[name]: value}), /style|class/);
+                assert.equal(element.getAttribute(attr), valid);
+                node.setAttr({[name]: null});
+                assert.equal(element.hasAttribute(attr), false);
+                assert.equal(document.getElementById('candidate'), element);
+            }
+        } finally { app.dispose(); }
+    }
+});
+
+test('SVG, sub-builder boundaries and render_attributes cannot bypass style/class validation', () => {
+    for (const name of ['style', 'class']) for (const value of INVALID_STYLE_CLASS) {
+        for (const authoring of [
+            root => root.svg({[name]: value}),
+            root => root.svg().rect({[name]: value}),
+            root => root.div({_meta: {render_attributes: {[name]: value}}}),
+        ]) assert.throws(() => rendered(authoring), /must be a string or null/);
+    }
+    for (const name of ['style', 'class']) {
+        const {app, document} = mounted(root => root.svg().rect({id: 'shape', [name]: '^candidate'}));
+        try {
+            app.data.setItem('candidate', name === 'style' ? 'fill: red' : 'shape');
+            assert.throws(() => app.data.setItem('candidate', false), /must be a string or null/);
+            app.data.setItem('candidate', null);
+            assert.equal(document.getElementById('shape').hasAttribute(name), false);
+        } finally { app.dispose(); }
+    }
+});

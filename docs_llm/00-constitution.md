@@ -869,7 +869,8 @@ reopening. Runner-local UI ownership from 11.44 remains unchanged.
 ### Amendment 11.47 — HTML/SVG binding 0.2.0 contract — 2026-09-25
 
 **Superseded in part by 11.48:** items 2, 5, 7, 8, 9, 10 and 11 as listed there;
-**superseded in part by 11.49:** item 1; the text below stays as history.
+**superseded in part by 11.49:** item 1; **clarified by 11.64:** item 2's
+recursive Bag population; the text below stays as history.
 
 Owner confirms the unified plan's section 2 decisions and section 3 proposals
 “per ora” (for now), and explicitly authorizes S00 transcription through the S00 brief, kept outside the
@@ -1470,3 +1471,245 @@ contract of 11.58 is unchanged. Out of 0.2.16: `lazy` loading by visibility,
 `data(path, remote=…)`.
 
 Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).
+
+### Amendment 11.60 — Fixed method name for declarative `remote` — 2026-10-13
+
+Owner confirmation: "il metodo per il momento NON puo essere variabile: non lo ea nel legacy e se un domani lo volessimo ammettere sar5a per una decisione esplicita".
+Scope: the fragment method named by declarative `remote`, including the
+`remote(name, ...)` authoring helper. The method name is a fixed literal identifier;
+it cannot be supplied or varied by a Data pointer. Parameters may remain bound:
+`^` parameters trigger calls; `=` parameters are read when a call is triggered.
+The owner identifies the fixed method as the legacy contract. A future variable
+method requires a separate explicit owner decision; it is not a pending feature
+or an authoring capability to add implicitly.
+
+This clarifies 11.59 and supersedes GC-095 §105's earlier description of reactive
+fragment names, GC-070's proposed name-change exercise and its classification as
+blocked by a missing helper capability. Rejection of pointer-valued names by the
+helper is correct. Existing runtime behavior/tests permitting reactive fragment
+names are implementation nonconformities, not evidence of an approved contract.
+The old Q1 about clearing a reactive remote name is outside the current contract;
+no clearing/cancellation semantics are newly approved. Other APIs and the open Q2
+about live Source declaration edits are outside this clarification.
+
+Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).
+Decision and remaining implementation work: GC-070 §755.
+
+### Amendment 11.61 — A dedicated optional inspector Web Component — 2026-10-14
+
+Owner decisions in the coordinating chat: "la mia idea era di metterlo nel repo di
+gramlot come tool", clarified by "un conto è devtool un conto è un webcomponent
+particolare"; the owner confirmed the distinction with "esatto" and proposed the
+name "gramlot-tools-inspector". Implementation was authorized with "si metterei un
+agente a parte a realizzare questo mentre noi procediamo sul nostro lavoro"; the
+owner subsequently requested a dedicated worktree.
+
+1. Scope. A specific optional Web Component, `gramlot-tools-inspector`, lives as
+   a tool in this repository and opens an in-page floating palette to inspect
+   Gramlot Data and Source across browsers, including the Safari use case.
+2. Separation. The Chrome DevTools extension stays in its separate repository.
+   This component neither transfers that extension nor imports its PoC runtime.
+   The core has no dependency on or automatic activation of this tool.
+3. Boundary. The palette uses current Gramlot Source, Data and named logic.
+   This approval covers this particular browser tool, not a general component
+   framework, widget grammar, component registry, or the future component series.
+   No dependency-source edits, publication, release or deployment are authorized.
+4. Verification. Cross-browser usability is an objective; claims name the engines
+   actually tested. Playwright WebKit does not establish branded Safari support.
+
+Bounded supersession: the Inspector exclusion in 11.22–11.24 and the separate-
+approval requirement for future web components associated with 11.44/11.56 are
+satisfied for this specific tool only. The extension's ownership is unchanged.
+Implementation and remaining qualification are recorded in GC-070 §780;
+[GC-195](internal/195-tools-inspector.md#gc-195-005) describes the tool.
+
+
+Owner integration authorization, 2026-10-14: "si procedi con la revisione e
+integrazione del componente e metti l'icona nel footer per aprire l'inspector
+sull'esempio selezionato". This authorizes the optional tool artifact in the core
+npm package, the gallery footer launcher, and explicit targeting of the selected
+example. The runtime entry point does not import the tool. The gallery frame
+bundle binds the tool's core import to the public constructors of its already
+running Gramlot instance; it must not bundle a second core. Parent/frame messages
+carry only open/close state, validate their source, and work for hosted and static
+galleries. No keyboard shortcut or editing capability is introduced.
+
+Owner scope correction, 2026-10-14: after reporting "nell inspectorb manca la
+parte di editing sotto", the owner added "anche i breakpoint" to the proposal
+for a Data/Source editor below the tree. This supersedes the initial read-only
+and no-breakpoint limits for this specific tool. The component may edit the
+selected node's scalar value and attributes through public Bag APIs and configure
+path breakpoints (debugger/console, optional expression condition) as in DevTools.
+The editor and breakpoint controls remain Source/Data/named Logic. Conditional
+expressions are explicitly authored debug code subject to the inspected page's
+CSP; errors must be shown rather than bypassing that policy. Pause/resume and
+stepping remain browser debugger functions. No general component framework,
+dependency-source edits or changes to the Chrome extension are authorized.
+
+
+### Amendment 11.62 — Provisional inspector components — 2026-10-14
+
+Owner: "si facciamo pane.webcomponent(code='gramlot-poc-tree'). pianifica come
+usarlo per i componenti provvisori dell'inspector mantenendo l'aspetto dei devtools",
+followed by "ok" to the five-step plan. The plan starts with the generic declaration
+and one tree, to be validated before composing the full inspector. Owner then
+confirmed "ok" to the clarified first-step connection: inspector JavaScript assigns
+the actual Bag to the tree's `storeBag`; selection is received through Gramlot's
+existing `connect_on...` event mechanism. Python can declare the component.
+
+1. Introduce `webcomponent(code=...)` in Gramlot's Python and JS vocabulary. `code`
+   is a required literal custom-element tag; its module is explicitly loaded.
+   It does not automatically load or select a provisional implementation.
+2. Confine the temporary `gramlot-poc-*` components to `tools/poc/`. Transfer only
+   the inspector's needed tree, tabs, split containers and palette, with provenance,
+   contracts and omissions recorded under PORT-0006-inspector-components.
+3. Preserve the DevTools interface and interactions, including the properties grid
+   and breakpoints. The previous custom palette appearance was rejected by the owner.
+4. The first slice passes a Bag by JavaScript property; generic declarative Bag
+   properties and selection writeback are not introduced. Current Gramlot Source,
+   Data and named Logic compose the tool. PoC Application, renderer and registry
+   are not imported; no second Bag or Gramlot runtime is bundled.
+5. Replace provisional components progressively under their verified contracts.
+   The first tree must be reviewed before completing the full inspector composition.
+
+This supersedes 11.61's exclusion of a generic component declaration and bounded
+PoC component transfers, only within this scope. Dependency-source edits, the
+Chrome extension, publication and deployment remain outside this authorization.
+
+Owner first-slice review, 2026-10-14: after the first tree/declaration qualification
+and the proposed next step (layout/splitter, Properties grid, editing and
+breakpoints), the owner answered "ok". This satisfies 11.62(5)'s first-tree gate
+and authorizes full composition within the already stated boundary. It does not
+constitute advance visual acceptance of the completed inspector.
+
+
+Owner frame-selection extension, 2026-10-14: "deve funzionare esattamente come il
+dev tools" and explicit confirmation "Sì, palette unica e collegamento completo"
+to a single palette in the gallery shell with read/edit/breakpoint communication
+to each example. This supersedes 11.61’s open/close-only gallery message boundary
+for this tool. Explicitly registered gallery frames may receive a dedicated
+MessagePort; only those channels carry inspection snapshots and validated commands.
+The shell itself is also an explicit target, including on Introduction. The tool
+uses current Bags and Source/named Logic for its UI; no extension privilege, PoC
+runtime, arbitrary frame discovery, dependency-source edit or package publication
+is authorized. Breakpoint execution and condition compilation stay in the selected
+page, preserving its CSP and synchronous writer stack. The red breakpoint action
+belongs on the left and is shown only on hover/keyboard focus, never pinned by
+selection or an active breakpoint.
+
+
+Owner breakpoint-indicator correction, 2026-10-14: "il pallino deve essere un
+cerchietto grigio con l'hover ma se lo setto deve diventare rosso se non è
+cindiziuonato e giallo se è condizionato e non essere con hover". This supersedes
+the hover-only active-breakpoint appearance above: inactive actions are grey
+outlined circles on hover/keyboard focus; active breakpoints stay visible, red
+without a condition and yellow with a condition. Position remains on the left.
+
+
+Owner palette correction, 2026-10-14: "palette collassabile e titolo centarto
+nella floating e dimensione font sopra (ad esempio tab) proporxioanta". This
+supersedes the provisional palette's no-collapse scope: the dedicated tool may
+collapse to its title bar and restore its contents and size. Center the title
+and use compact, proportionate header/tab typography. No persistence or general
+layout framework is added.
+
+
+Owner header alignment correction, 2026-10-14: "metti collapse e chiudi a destra
+e titolo a sinistra" supersedes the preceding centered-title/left-toggle layout.
+The title is left-aligned; collapse and close are adjacent on the right.
+
+
+### Amendment 11.63 — Installable root and reusable index page — 2026-10-14
+
+Owner confirms the default overridable Page manifest method, explicitly enabled
+through page properties: "mi piace molto e lo metterei solo in radice"; then
+"puoi provvedere a tutto ?" authorizes implementation with the reusable index.
+This replaces the proposed manifest-file URL property, which was not implemented.
+The root opts in with `installable` and supplies `title` and `app_icon` (JS
+`appIcon`). A default `manifest` method returns the standard JSON; it may be
+overridden. HTTP integrations expose it by GET at the application root; directory
+exports materialize the same result as a file. No RPC envelope, offline cache,
+service worker, publication or deployment is authorized. Non-root pages do not
+expose their own manifest. Python, Node and serverless galleries are consumers.
+
+The reusable Page subclass owns a fixed logo position, navigation, resizable
+sidebar, iframe tabs and a customizable footer. Owner confirms: "Sì, schede con
+iframe come nella galleria"; reopening a navigation item selects its existing tab.
+The application chooses its logo, contents and footer. An app icon may derive from
+the logo, but a separate icon remains possible. This bounded extraction supersedes
+11.44/11.56's gallery-only placement for these reusable responsibilities; gallery
+catalogues, Markdown and source viewers remain in gramlot-examples. Core tests
+use independent fixtures. This does not approve a general widget/mixin framework.
+
+The proposed `_gramlot` system Data branch, fire-driven services and system mixins
+are deferred design work, at the owner's explicit request; they are not introduced
+by this change. The legacy window-title investigation is evidence, not an approved
+port of automatic frame-title synchronization.
+
+
+### Amendment 11.64 — Recursive Bag population in authoring — 2026-10-14
+
+Owner clarification: "se inizializzi una bag da un json è perche vuoi creare una
+bag dello stesso contenuto logico. per questo il default e recursive".
+Implementation scope confirmed: "ok procedi ad aggiornare documentazione e test
+per il comportamento ricorsivo".
+
+This supersedes 11.47 item 2 and GC-210 P25 only where they say that lists nested
+inside an authoring dictionary/plain object, and dictionaries within those lists,
+remain native containers. Gramlot delegates dictionary/plain-object conversion to
+`Bag(value)` with its default recursive population. Nested dictionaries and lists
+become Bags; sequence order and scalar leaf values are preserved. Empty nested
+containers become empty Bags. No Gramlot converter or opt-out from recursion is
+introduced.
+
+A list supplied directly as a `dataSetter` value is still a literal list: this
+amendment does not widen the existing dictionary/plain-object conversion trigger.
+A JSON string supplied directly is still a string; it is not implicitly parsed.
+The change aligns documentation and tests with Bag's recursive contract. It does
+not authorize dependency-source changes or claim cross-language qualification
+while the separate Builders JS/Bag dependency alignment remains unresolved.
+
+
+### Amendment 11.65 — Bounded Builders JS dependency correction — 2026-10-14
+
+Owner authorization: "ok procedi, ti autorizzo a correggere la dipendenza in
+Builders JS e poi aggiorna Gramlot e verifica i test". This is a bounded exception
+to the dependency-edit boundary: correct Builders JS's Bag requirement for the
+current Bag, align dependency installation metadata and verification, then refresh
+Gramlot and run the relevant suites. No Bag source changes, dependency runtime
+workarounds, package publication or deployment are authorized. The general
+dependency-source restriction remains in force outside this correction.
+
+
+Owner release authorization, 2026-10-14: "ok fai bump versione, commit e push di
+Builders JS e pubblica la versione corretta" authorizes the patch release of the
+11.65 dependency correction, including commit/push and npm/JSR publication. This
+supersedes 11.65's no-publication scope for Builders JS only; it does not authorize
+a Gramlot release or deployment.
+
+
+Owner JSR-only exception, 2026-10-14: "Sì, eccezione solo per JSR", in response
+to the explicit proposal to use Bag `^0.11.0` and TYTX `^0.16.2` because JSR
+rejects both `>=` and `*`. This supersedes the no-upper-cap rule only for JSR
+import specifiers needed by this dependency alignment. npm retains minimum-only
+requirements; no version lockfile or cap is introduced there. Builders JS 0.5.2
+completes the previously authorized patch release, without rewriting v0.5.1.
+
+
+### Amendment 11.66 — Defer additional remote-method enforcement — 2026-10-14
+
+Owner clarification: "inoltre non è strettamente necessario proteggersi. basta
+anche solo dirlo per oa che non è anmesso", followed by "inoltre potremmo pi
+decidere che inece accettamo" and "allora lascia stare questo punto e prcedi
+col resto". The current authoring contract remains a literal `remote` method
+with reactive parameters. Existing helper checks stay in place; additional
+runtime/received-Source enforcement and CustomTypes integration are deferred.
+The proposed common-attribute extension to Builders is not approved and is
+withdrawn from this work. No dependency extension or replacement validator is
+required to finish the remaining responsibility review.
+
+This supersedes the immediate enforcement requirement associated with 11.60 and
+GC-070 §760, not the documented literal-method contract. Incidental runtime
+acceptance of dynamic names is not a supported API; a future decision may allow
+it. Live Source declaration mutation semantics (Q2) remain undecided and unchanged.
+No new trigger, cancellation or rollback behavior is approved.

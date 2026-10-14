@@ -2,63 +2,58 @@
 
 Document ID: **GC-020**.
 
-> **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**, released on 2026-09-30 and is published on PyPI (`gramlot`)
-> and on npm and JSR (`@gramlot/gramlot`); the README states the current release. The previous release is **0.1.2**.
-> Text without a *0.2.0* mark describes behavior that comes from 0.1.2.
+> **Scope.** This is the maintained authoring guide. The repository README states
+> the current release. Dated release notes below describe when behavior entered;
+> they are not a list of current exclusions. Development-only differences are marked.
 
 <a id="gc-020-005"></a>
 
 ## 005 · Who it is for
 
-Gramlot is aimed at Python developers who want to describe interactive application
-interfaces using Python declarations. Forms and data-oriented interfaces are useful
-places to evaluate the approach. Application authors work with shared controls and
-state bindings; reusable browser behavior belongs in the JavaScript framework.
+Gramlot is for developers who describe an interface as a Page and keep its state
+in Data Bags. Python is the first authoring path; JavaScript implements behavior
+in the browser and is also available for Page authoring. You can build HTML/SVG
+interfaces with native controls, reactive values, formulas, controllers, endpoint
+calls and remote content. Start with [Try Gramlot](025-try.md).
 
-This repository is the Gramlot core. Release 0.2.0 (2026-09-30) provides
-HTML and SVG pages with a typed Source and HTML/SVG data binding: initial values
-with `dataSetter`, `^`/`=` pointers and `==` expressions, formulas and controllers
-with named logic, native controls and button controllers. Components (shared
-controls such as labelled fields) start with 0.3.0. The core, its adapters and how
-to choose among them are in [The Gramlot family](055-family.md). The earlier
-`gramlot-poc` is a separate experimental runtime.
+The [Gramlot family](055-family.md) separates the core, examples and hosting
+adapters. The experimental gramlot-poc is evidence for research, not the manual
+for an application using these packages.
 
 <a id="gc-020-010"></a>
 
 ## 010 · How you build an interface
 
-A Source tree describes the interface. Data Bags hold application state. Bindings
-connect controls to that state, controllers react to changes and events, and
-resolvers provide data through explicit contracts. Shared components supply the
-controls. Python is the primary authoring language; interaction runs in JavaScript
-in the browser.
+**Source** is the tree of declarations: elements, attributes and behavior.
+**Data** is the Bag of values used by those declarations. The **DOM** is what the
+browser renders. A bound input reads and writes Data; other bindings update the
+display. Application code changes Source or Data through Gramlot, without
+scraping inputs or building a second DOM/state system.
 
-For example, a bound text field reads and writes a Data path. Other declarations
-can react to that value without your application scraping the input or manually
-wiring DOM events. Use the current implementation’s guide for executable examples.
+The Page's `main` and exposed methods execute in the Python/JavaScript server,
+or in the JavaScript Worker for a standalone page. `Logic` executes in the
+browser. Each server call gets a fresh Page; Page fields are not session storage.
+Learn this distinction before adding a server call.
 
-A server adapter supplies hosting integration. Choosing a server and choosing a
-database are separate decisions; core does not require a particular server or ORM.
-Bindings, controllers, resolvers and shared controls describe the wider Gramlot
-model. *0.2.0:* bindings and controllers are part of 0.2.0. Resolvers and shared
-controls stay outside it; components are planned for 0.3.0.
+Use `dataRpc` to receive a value, `remote` to replace an element's content with
+Source, and `dataRemote` to load a Data value on demand when read. These mechanisms
+have different trigger and cache rules; [Writing pages](095-writing-pages.md)
+explains them. Choosing an HTTP framework does not choose a database or ORM.
 
 <a id="gc-020-015"></a>
 
 ## 015 · What is available
 
-The core contains Python and JavaScript Page authoring, typed Source, live DOM
-updates, the minimal `GramlotServer` contract with `GramlotFileServer`, and, since 0.2.0, Data bindings
-and controllers. Recipes, resolvers and shared components are not part of it. The
-adapters are in `gramlot-py-server` and `gramlot-js-server`. The richer
-[gramlot-poc](https://github.com/gramlot-org/gramlot-poc) has separate examples and
-tests; its behavior is not a contract for this core. Check each integration's
-documented scope before using it.
+Available: Python/JavaScript Pages, typed Source, live HTML/SVG, Data bindings,
+formulas/controllers and named Logic, native input handling, `dataRpc`, declared
+Source fragments, `remote` and the endpoint-backed `dataRemote` resolver.
 
-*0.2.0:* [Writing pages](095-writing-pages.md) describes the binding syntax,
-its differences from legacy GenroPy and its exclusions.
+Shared widgets, recipes, a record/form framework and database services are still
+outside this authoring surface. A native HTML form is not a record framework;
+the presence of `dataRemote` does not imply every legacy resolver is available.
+See [explicit limits](095-writing-pages.md).
 
-Continue with [Try Gramlot](025-try.md).
-
-For the core contract, read [Classes and server adapters](090-classes-and-hosts.md) and [Writing pages](095-writing-pages.md).
+The examples teach supported slices, not every option or failure case. Read their
+prerequisites and limits and check the selected environment. The reference starts
+at [Classes and server adapters](090-classes-and-hosts.md); the learning route is
+in [Try Gramlot](025-try.md).

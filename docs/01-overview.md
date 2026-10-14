@@ -2,10 +2,9 @@
 
 [Constitution](00-constitution.md). [Concise version](../docs_llm/01-overview.md).
 
-> **Release status.** This overview describes the Gramlot model, including
-> release **0.2.0 (HTML/SVG data binding)**, released on 2026-09-30. The README
-> states the current release. The previous release, **0.1.2**, has no Data
-> bindings or controllers.
+> **Scope.** Current authoring concepts and the agreed wider architecture.
+> The README states the release; components, recipes and database directions
+> below are not a claim that those APIs are available.
 
 ## 1. Purpose
 
@@ -148,3 +147,8 @@ core release it verifies. See constitution section 7 for the approved ownership.
 [GC-140 · Agreed integrations and examples](internal/140-integrations-and-examples.md)
 records how the integration environments were reorganized up to 0.2.0. It does not
 define further PoC transfers.
+
+For learning, start with [Try Gramlot](public/025-try.md#gc-025-015).
+`dataRpc`, `remote` and `dataRemote` are documented in
+[Writing pages](public/095-writing-pages.md#gc-095-100). The endpoint-backed
+resolver does not imply a record framework, database adapter or general widget API.

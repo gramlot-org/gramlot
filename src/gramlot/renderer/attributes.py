@@ -50,6 +50,15 @@ def without_binding_attributes(attrs):
             if name not in BINDING_ATTRIBUTES and not name.startswith(BINDING_ATTRIBUTE_PREFIXES)}
 
 
+def require_style_class_attributes(node, attrs, prefixes=()):
+    """Validate resolved style/class before style composition, including literal dialect attributes."""
+    for name, value in attrs.items():
+        prefix = next((candidate for candidate in prefixes if name.startswith(candidate)), "")
+        bare = name[len(prefix):]
+        if bare in ("style", "class", "_class") and value is not None and not isinstance(value, str):
+            raise TypeError(f"{node.node_tag} '{node.label}': '{name}' must be a string or null")
+
+
 def require_no_script_attributes(node, attrs, prefixes=()):
     """No attribute of ``attrs`` (resolved, ``==`` handled) makes the browser run a text outside InlineCompiler.
 

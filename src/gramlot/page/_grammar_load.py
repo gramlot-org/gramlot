@@ -257,7 +257,7 @@ def load_grammar(builder: Any, document: Any) -> Any:
     parsed_abs = {name: _entry(raw, f"abstracts.{name}", abstract=True) for name, raw in abstracts.items()}
     parsed_elements = {name: _entry(raw, f"elements.{name}", abstract=False) for name, raw in elements.items()}
 
-    schema = Bag(source=type(builder)._class_schema)
+    schema = type(builder)._class_schema.deepcopy()
     # The copy carries the class ``_get_schema_info`` cache; a declaration below may replace an abstract.
     for node in schema:
         node.attr.pop("_cached_info", None)

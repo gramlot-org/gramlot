@@ -4,7 +4,9 @@
 
 ## 1. Audience and sources
 
-Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Chapters cover classes, server adapters, page authoring and extension gaps. Public guides describe 0.2.0 (HTML/SVG data binding), released 2026-09-30, and mark 0.2.0 behavior; only the README states the current release version. `prepare_docs.py` stages README, seven explicit `PUBLIC_PAGES`
+Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Chapters cover classes, server adapters, page authoring and extension gaps. Public guides follow the release sequence, including later RPC/remote additions;
+historical notes and development-only corrections are marked. Only the README
+states the current release version. `prepare_docs.py` stages README, seven explicit `PUBLIC_PAGES`
 guides and two logo assets. New files are not automatically public. Constitution,
 architecture, ports and docs_llm are excluded from pages, source downloads and
 search, but remain readable in the public Git repository. Pair guides and preserve

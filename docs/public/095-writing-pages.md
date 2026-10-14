@@ -1,24 +1,44 @@
 # Writing pages
 
-Document ID: **GC-095**. 0.1.2 APIs plus the 0.2.0 data binding.
+Document ID: **GC-095**.
 
-> **Release status.** This page describes Gramlot **0.2.0 (HTML/SVG data
-> binding)**, released on 2026-09-30 and is published on PyPI (`gramlot`)
-> and on npm and JSR (`@gramlot/gramlot`); the README states the current release. The previous release is **0.1.2**.
-> Sections 005-035 describe behavior that comes from 0.1.2, with explicit *0.2.0*
-> notes where 0.2.0 changes it. Sections 040-090 describe 0.2.0 behavior; section 060
-> includes the page module of 0.2.5, section 095 describes `gramlot.utl.inout` (0.2.5, path since 0.2.10), and section
-> 100 describes `dataRpc` and endpoints (0.2.14).
+> **Scope.** This is the maintained authoring guide. The repository README states
+> the current release. Dated release notes below describe when behavior entered;
+> they are not a list of current exclusions. Development-only differences are marked.
 
-**Examples.** Two example families run the features of sections 040-080, each
-page in Python with its JavaScript equivalent, in the package gramlot-examples:
-[`binding/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/binding) (routes `b01`-`b11` in the gallery) and
-[`controllers/`](https://github.com/gramlot-org/gramlot-examples/tree/main/src/gramlot_examples/pages/controllers) (routes `c01`-`c08`).
-The sections below name the example they illustrate. These features have no
-example: `js_requires` groups, `connect_on<event>` by name, `_userChanges`,
-`_onBuilt`, `#ANCHOR` and `gramlot.utl.inout`. The `html_svg` family is
-HTML and SVG without binding. A reader follows the Python-first example
-using only the functions documented here.
+Start with [the learning route](025-try.md) and an editable page from
+your adapter's setup guide. The sections retain their release progression: 0.1.x structure (005–035),
+0.2.0 Data and local behavior (040–090), with the 0.2.5 page module in 060;
+0.2.5 data exchange (095, its public path since 0.2.10), 0.2.14 endpoint calls
+(100), and 0.2.16 remote Source and lazy Data (105). Later additions within an
+earlier section are marked. The same example may return at a later stage to
+show which new declaration replaces earlier code; topic links are a secondary index.
+
+**Execution model.** Page/main and exposed methods run on the server (or the JS
+Worker). Logic runs in the browser. Source describes what to build; Data holds
+the values; bindings connect them to the rendered DOM. Each server call creates
+a fresh Page, so its fields are not persistent application state.
+
+**Examples and limits.** gramlot-examples has HTML/SVG e01–e13, binding b01–b11 and
+controllers c01–c17, in Python and JavaScript. c09–c11 cover dataRpc, c12–c13 remote
+Source and c14 dataRemote. In chronological menu order, c15 (0.2.0 lifecycle),
+c16 (0.2.0 projection, then 0.2.3 sandbox) and c17 (0.2.5 local Data exchange)
+precede the endpoint lessons. b01 adds anchor/parent paths, c02 path filtering,
+and c11 a separately labelled 0.2.15 Source-auth step. c08 retains the local
+0.2.0 story and adds a distinct 0.2.14 quote/result/error exercise after c09/c11;
+editing the form alone never requests that quote. A successful basic trial
+is not exhaustive qualification. c17's nested-Date initialization extension is
+blocked by a detected JavaScript object-to-Bag conversion defect; it does not
+demonstrate dates/decimals. Mail/HTTP require environment-owned checks. Named connect_on handlers and js_requires groups need a resource host;
+the common FileServer gallery cannot demonstrate that environment. Authentication
+allow/deny belongs to an identity-aware adapter; c11 shows default refusal.
+
+The examples use maintained APIs, not frozen installations of those releases.
+Earlier/later code comparisons must be labelled; completeness of such teaching
+comparisons remains work in progress.
+
+Use [the catalogue and explanations](https://github.com/gramlot-org/gramlot-examples/blob/main/src/gramlot_examples/pages/README.md)
+to choose a lesson; the current walkthrough improvements are still in progress.
 
 <a id="gc-095-005"></a>
 
@@ -40,10 +60,8 @@ class Page(BasePage):
 
 `root.div(...)` returns a real SourceBagNode, so nested calls create child Source
 nodes. Text is literal text, not parsed HTML. Native attributes such as `id` are
-supported; `class_` escapes the Python keyword. Convenience attributes such as
-`color` and `background` are not implemented. The vocabulary comes from the exported HTML5 collection. Its open signatures
-accept attributes without a separate Gramlot whitelist; accepting `color` as a
-literal attribute does not turn it into CSS styling.
+supported; `class_` escapes the Python keyword. The exported HTML5 collection defines the vocabulary. Its open signatures accept
+native attributes; Gramlot also applies the style shortcuts described in section 070.
 
 *0.2.0:* the legacy style shortcuts become CSS styling in the browser:
 `color='red'`, `font_size='12px'`, `margin_top=4`, `style_aspect_ratio='16/9'`,
@@ -73,23 +91,44 @@ starts the page ([GC-090 section 030](090-classes-and-hosts.md)). Between
 validation and DOM construction, each branch installs its Data declarations
 (section 080).
 
+Choose **Base** for the original spacing, or **Compact** for smaller headings,
+gaps, card padding and form controls. Both support light and dark mode. Compact
+uses Base followed by its size overrides, through the existing resource list:
+
+```python
+class Page(BasePage):
+    css = (
+        "/themes/gramlot-base/theme.css",
+        "/themes/gramlot-compact/theme.css",
+    )
+```
+
+In JavaScript, use the same ordered URLs in `static css = [...]`. Put the list on
+a shared application Page base class to avoid repeating it in every page. Native
+elements and classes in `main` stay the same. Load only Base for its original
+appearance. Application CSS can override theme rules. Color mode remains separate:
+`data-theme="light"` or `data-theme="dark"` on the document root, or the system
+preference when absent. These are CSS themes; no `Page.theme` or `root.css()` API
+is introduced.
+
 <a id="gc-095-015"></a>
 
 ## 015 · Remote Source
+
+The declarative `remote` and lazy Data lesson belongs to the later **0.2.16**
+stage (§105); this early section is a reference pointer, not a 0.1.x capability claim.
 
 `@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; §100 below). The `remote` attribute mounts a fragment declaratively as the content of an element (section 105); from code a fragment is requested with `gramlot.src.remoteSource(target, method, params)`.
 
 <a id="gc-095-020"></a>
 
-## 020 · Deferred capabilities
+## 020 · Capabilities outside this guide
 
-Recipes, Data bindings, controllers, resolvers and shared components are outside
-this Source-live increment. They are not available page APIs.
-
-*0.2.0:* Data bindings, `dataSetter`, `dataFormula` and `dataController` enter
-with 0.2.0 (sections 040-090). Recipes, resolvers and shared components remain
-deferred; components are planned for 0.3.0. Section 085 lists
-all exclusions.
+Data bindings, formulas/controllers, endpoint calls, remote Source and
+`dataRemote` are available in the sections linked above. Recipes, shared widgets,
+record/form management and database services remain separate future capabilities;
+do not infer them from a native HTML form or an endpoint-backed resolver.
+Section 085 lists rejected declarations and deferred work.
 
 <a id="gc-095-025"></a>
 
@@ -175,7 +214,7 @@ value and attribute updates continue through their existing Source methods.
 
 Each page instance has one Data Bag, `app.data`. It is the same Bag as
 `app.src.builder.data`. Paths written by the author never contain the internal
-`main` segment. Gramlot owns one subscription to the Data and routes each change
+`_root_` wrapper segment; a user Data field named `main` is ordinary data. Gramlot owns one subscription to the Data and routes each change
 to the declarations that use the changed path.
 
 A native attribute or a node value can hold a pointer to a Data path:
@@ -192,7 +231,6 @@ A change of the Source or of the context re-registers the affected pointers.
 
 **Symbolic paths.** A path can start from a symbolic origin resolved by Builder:
 
-- `#parent` goes up one level;
 - `#FORM` is the first ancestor with `formId` or `form=True`;
 - `#ANCHOR` is the first ancestor with `_anchor`;
 - `#<node_id>` is the node with that `node_id`.
@@ -200,8 +238,12 @@ A change of the Source or of the context re-registers the affected pointers.
 Example: `value='^#FORM.customer.name'`. The legacy origins `#WORKSPACE`, `#ROW`
 and `#DATA` and their aliases are outside 0.2.0.
 
-Examples: `binding/01_pointers` (`b01`, every pointer form and symbolic
-origin) and `02_variable_datapath` (`b02`).
+`#parent` is instead a path segment cancelling the previous Data-path segment.
+For a node in `contexts.child`, `^.#parent.name` resolves to `contexts.name`; a
+bare leading `^#parent.name` is not a symbolic node origin.
+
+Examples: `binding/01_pointers` (`b01`, including #ANCHOR and parent-path comparison)
+and `02_variable_datapath` (`b02`).
 
 ```python
 panel = root.div(datapath=".customer")
@@ -255,9 +297,13 @@ def main(self, root):
   `?attr`: a `destination_path` with `?` is a validation error.
 - `value` is optional. The remaining keyword arguments become attributes of the
   Data node.
-- A Python `dict` or a plain JavaScript object becomes a `Bag`. Read it as a JSON
-  structure: nested dictionaries become nested Bags; lists stay lists, and
-  dictionaries inside lists stay dictionaries. A JSON string stays a string.
+- A Python `dict` or a plain JavaScript object becomes a `Bag` using the default
+  recursive population. Nested dictionaries and lists, including dictionaries
+  inside lists, become Bags too. This preserves the logical content: sequence
+  order and scalar leaf values stay the same; empty nested containers become
+  empty Bags. In the example, both `filters` and its `tags` child are Bags.
+- A list passed directly as `value` remains a literal list. A JSON string passed
+  directly remains a string: `dataSetter` does not implicitly parse JSON.
 
 **Installation order.** For the initial Source, and for every branch inserted
 later, all `dataSetter` declarations of the branch are installed before its DOM
@@ -362,6 +408,11 @@ distinguish the user from the program. Removing the declaration stops its timers
 <a id="gc-095-060"></a>
 
 ## 060 · Named logic (0.2.0)
+
+Named Logic begins in 0.2.0; the Page/Logic module shown here is the **0.2.5**
+arrangement. The `business` resource-group example requires genro-kajenn
+resources. For the common FileServer gallery and a first editable page, use the
+root-group method `func="add"` as in c03; `js_requires` is not available there.
 
 Named logic is the primary way to attach behavior. Each logic file exports a
 class called `Logic`. Its methods are copied into a group of the page instance.
@@ -468,7 +519,7 @@ root.dataController("this.SET('.count', 0)", _fired="^.reset")
 ```
 
 No server compiles code: not the Python `GramlotServer`, the JavaScript
-`GramlotServer`, the WorkerHost nor the DevTools panel. A page with inline code
+`GramlotServer`, the GramlotWorkerServer nor the DevTools panel. A page with inline code
 needs `'unsafe-eval'` when its server sets a Content Security Policy. Under a policy without it, the browser
 refuses the compilation and Gramlot raises an `EvalError` that names the node and
 the attribute and points to named logic or to the permissive profile
@@ -578,6 +629,35 @@ with the components in 0.3.0.
 
 For `style` and `class`, a value other than a string or null is an error.
 Excluded: `style` as a Bag or dictionary, themes and `root.css()`.
+
+### Attribute templates and text masks
+
+An attribute template `${name}` uses another attribute of the same Source node
+after pointer resolution. It is not a Python f-string or a JavaScript template
+literal. For example:
+
+```python
+root.div("Preview", title="Customer: ${customer}", customer="^.name")
+root.p("^.name", mask="Hello, %s")
+```
+
+The title follows `.name`; `customer` supplies the template and is not projected
+to the DOM. A preceding backslash escapes `${`. An unknown parameter is an error.
+Templates apply to visual attributes, not node text or data-element declarations.
+`${...}` in a controller script remains JavaScript syntax. A template cannot use
+an `==` attribute as its parameter, and an `==` expression cannot contain a
+`${...}` template. An `==` expression can read a resolved template and its consumed
+pointer parameter; it cannot read a template-valued attribute that another
+template has itself consumed. Those unsupported combinations raise errors. `mask` formats the node's text, replacing
+`%s`; an empty formatted value stays empty. It does not enable raw HTML.
+
+Development correction: Python static, JavaScript static and live rendering now
+reject non-string, non-null `style` and `class` values before attribute composition.
+This includes resolved pointers and live `==` results; static renderers still defer
+`==` expressions. A rejected live projection leaves the displayed attribute unchanged;
+it does not undo the Data/Source write. Correct the value to resume projection.
+The same check applies to SVG and literal `html_style`/`html_class` attributes.
+Numeric style shortcuts such as `width=10` retain their existing contract.
 
 <a id="gc-095-075"></a>
 
@@ -810,6 +890,8 @@ root.button("Reload", action="gramlot.utl.inout.restore('modulo')")
   `gramlot.utl.inout: no data Bag at '<path>'`.
 - `restore` opens a file dialog, so it runs from a user action such as a button.
 - JSON and XML are export formats only: `restore` reads back the files of `save`.
+  The decoded root must be a typed Bag; plain objects, lists and scalar roots
+  are rejected without replacing the existing Data branch.
 - Inline code needs a Content Security Policy that allows `'unsafe-eval'`
   ([GC-090 §035](090-classes-and-hosts.md)); under a strict policy call
   the functions from `Logic`.
@@ -895,7 +977,7 @@ Page.registerEndpoint('with_vat');
   protect the endpoint with a rule over tags (`|`, `&`, `!`). A server without the
   `auth` capability knows no identity: every call of a protected endpoint answers
   the outcome `not_authenticated` and the method does not run.
-- `auth="rule"` on an element of `main` or of a `@source` fragment protects the
+- **0.2.15 addition:** `auth="rule"` on an element of `main` or of a `@source` fragment protects the
   element with the same rule. The server drops an element whose rule it refuses,
   with all its children, when it sends the fragment: the element never reaches the
   client, and an accepted element is sent without its `auth` attribute. A server
@@ -916,6 +998,11 @@ Page.registerEndpoint('with_vat');
 
 ## 105 · Remote content and lazy Data: `remote` and `dataRemote` (0.2.16)
 
+> **Development note (2026-10-13):** the last-successful-result cache and
+> cancellation corrections described below are locally implemented and tested,
+> but are not a new published release. An installed package may still have the
+> earlier cache behavior; the repository README identifies published releases.
+
 **`remote`** makes the content of an element a Source fragment built on the server
 by a `@source` method (Python) or a method declared with `Page.registerSource(name)`
 (JavaScript). The element carries the attribute `remote` with the fragment name; the
@@ -925,14 +1012,24 @@ attributes `remote_<k>` are the call parameters. The node method writes them:
 remote(name, **params)
 ```
 
+**Fixed method:** `name` is a literal method identifier. It cannot be a Data
+pointer or vary through Data. Passing `"^method"` to the `remote(...)` helper is rejected during Source
+construction in both Python and JavaScript. Directly supplied or edited Source
+is not yet checked consistently for this rule; that does not make dynamic method
+names part of the supported contract. A future variable method would require
+an explicit owner decision; it is not part of this contract.
+
 - The fragment is requested when the element starts (section 080) and again when a
-  `^` pointer of `remote` or of a `remote_<k>` parameter changes. `=` parameters are
-  only read. The fragment replaces the content of the element; the authored
+  `^` pointer of a `remote_<k>` parameter changes. `=` parameters are only read. The fragment replaces the content of the element; the authored
   children stay until the first fragment arrives.
 - The request goes through `gramlot.src.remoteSource(target, method, params)`: the
   latest request wins, and removing the element cancels its request.
-- `_cachedRemote=True` makes no request when the parameters equal those of the last
-  request.
+- `_cachedRemote=True` makes no request when the fragment name and parameters
+  equal those of the last successfully mounted request. Keeping that fragment
+  cancels any request still in flight; its late response cannot replace it.
+  Parameters are compared by their TYTX serialization, captured before sending
+  the request, so later mutations cannot alter the cached values. A different
+  object-key order can cause another request even when the values are equal.
 - `_if` is inline code with the parameters as locals: false makes no request and
   cancels the request in flight, and `_else` then runs as inline code. `_onRemote` runs as inline code after the
   fragment is mounted, with the parameters as locals.
@@ -1038,3 +1135,151 @@ Intended differences from the legacy:
 - No `lazy` loading by visibility, no `_waitingMessage`, no `tbody` merge, no
   `_resolved` and no `_fired`.
 - The legacy alias `data(path, remote=…)` is not accepted: write `dataRemote`.
+
+
+<a id="gc-095-110"></a>
+
+## 110 · A reusable application index and an installable root
+
+Block ID: **GC-095-110**. Development addition; not yet a published release.
+
+`IndexPage` supplies grouped navigation, a resizable sidebar and iframe tabs. A
+page opens on first selection; selecting it again reuses the same iframe and its
+state. The gallery extends this class with its explanations, source viewer and
+inspector. Your application does not need the gallery package.
+
+For a Python application, put this in `pages/index.py`:
+
+```python
+from gramlot import IndexPage
+
+
+class Page(IndexPage):
+    title = "My application"
+    logo_url = "/app-icon.png"
+    installable = True
+    app_icon = "/app-icon.png"
+    navigation = (
+        {"key": "work", "title": "Work", "children": [
+            {"key": "hello", "title": "Hello", "url": "hello"},
+        ]},
+    )
+
+    def introduction(self, pane):
+        pane.h2("Welcome")
+        pane.p("Choose Hello in the sidebar to open your first page.")
+
+    def footer(self, pane):
+        super().footer(pane)
+        pane.span("My application")
+```
+
+Its companion `pages/index.js` connects the standard browser behavior:
+
+```javascript
+export {IndexLogic as Logic} from '@gramlot/gramlot/page';
+```
+
+Finally, create `pages/hello.py`:
+
+```python
+from gramlot import Page as BasePage
+
+
+class Page(BasePage):
+    def main(self, root):
+        root.h1("Hello")
+        root.p("This page keeps its own Data and Source inside its iframe.")
+```
+
+Serve a square **512×512 PNG** at `/app-icon.png` using the environment's asset
+map. The default manifest declares precisely that size and media type; it does
+not convert images. The same image can be the sidebar logo, or `logo_url` can
+point to a separate logo. A mounted application must use the mounted URL for
+`logo_url`; `app_icon` is an application-relative asset path, and the manifest
+method adds the mount prefix itself. Leading `/` on `app_icon` is accepted.
+
+Each navigation group has `key`, `title` and `children`; each child has `key`,
+`title` and `url`. Use unique keys across groups and children, and reserve `intro`
+for the introduction. URLs are those of the environment: for example `hello` on
+a Python server, or `hello/index.html` for a static directory route. Use one
+index shell per document. `shell_id` defaults to `index` and separates its saved
+preferences from other index shells at the same origin and path.
+
+Override `introduction(pane)` and `group_panel(pane, group)` for introductory
+content. Override `footer(pane)` to replace the footer, or call `super()` to keep
+its theme, color mode, keyboard-navigation and installation controls. The
+standard footer remembers Base/Compact, Light/Dark and sidebar width in local
+storage; the keyboard checkbox is a per-page choice. A replacement footer need
+not contain the standard controls. The default `panel(parent, item)` creates an
+iframe; `behavior(shell)` activates `IndexLogic` through a named controller.
+
+The shell's theme does not automatically style arbitrary iframe documents.
+The gallery supplies the corresponding frame-side theme receiver for its examples.
+
+The JavaScript equivalent exports both classes from the page module:
+
+```javascript
+import {IndexPage} from '@gramlot/gramlot/page';
+export {IndexLogic as Logic} from '@gramlot/gramlot/page';
+
+export class Page extends IndexPage {
+    static title = 'My application';
+    static logoUrl = '/app-icon.png';
+    static installable = true;
+    static appIcon = '/app-icon.png';
+    static navigation = [{key: 'work', title: 'Work', children: [
+        {key: 'hello', title: 'Hello', url: 'hello/index.html'},
+    ]}];
+
+    footer(pane) {
+        super.footer(pane);
+        pane.span('My application');
+    }
+}
+```
+
+### The manifest belongs to the root
+
+Installation is also available to an ordinary `Page`: it does not require
+`IndexPage`. `installable` defaults to false. Only the application's root page
+can advertise `/app.webmanifest`; enabling it on a child page has no effect.
+The root's default `manifest` method builds `id`, `name`, `short_name`,
+`start_url`, `scope`, `display: "standalone"` and `icons` from its properties.
+It uses the application's mount prefix for identity, scope and launch URL.
+
+Override the method to customize standard manifest fields:
+
+```python
+def manifest(self, *, base_url="./"):
+    return {
+        **super().manifest(base_url=base_url),
+        "description": "My team's workspace",
+        "background_color": "#ffffff",
+    }
+```
+
+In JavaScript the signature is `manifest({baseUrl = './'} = {})`, with
+`super.manifest({baseUrl})`. The result must be a JSON object. An override may
+supply additional icon sizes or replace the icons. The manifest is public
+application metadata: keep user/session data out of it.
+
+Python and Node serve this method as a plain HTTP GET/HEAD resource, without a
+Gramlot RPC envelope, `@endpoint` or `registerEndpoint`. A disabled root returns
+404. Serverless directory export writes the method's result to
+`app.webmanifest`, with relative scope and start URL. A single-file export rejects
+an installable root: choose directory export for installation.
+
+### Open the application in its own window
+
+Serve the application over HTTPS, or on localhost for development. The index
+footer offers installation instructions and, when the browser supplies its
+installation prompt, an **Install** button. Dismissing the prompt leaves the
+browser's own installation menu available. On Safari for macOS Sonoma or later,
+use **File → Add to Dock**; see [Apple's web-app guide](https://support.apple.com/en-gb/104996).
+
+The Python and Node servers must remain available. Serverless runs its application
+in the browser, but installation still needs a static HTTP(S) origin. Opening
+`index.html` directly from disk remains supported for running a directory export;
+it is not the installation path. This feature adds no service worker or offline
+cache, and does not install anything without the user's browser confirmation.

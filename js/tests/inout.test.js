@@ -106,8 +106,11 @@ test('save and restore: the TYTX file comes back with its exact date, datetime a
     assert.ok(isDecimal(app.data.getItem('copia.quota')));
     assert.equal(String(app.data.getItem('copia.quota')), '12.5');
     assert.equal(app.data.getItem('copia.indirizzo.via'), 'Roma 1');
-    chosen = '{"not": "a branch"';
-    await assert.rejects(app.utl.inout.restore('copia'), /^Error: gramlot\.utl\.inout\.restore: the file is not a saved Gramlot branch: /);
+    for (const invalid of ['{"not": "a branch"', '{"name":"Ada"}', '[1,2]', 'null', '42', restored.toJson()]) {
+        chosen = invalid;
+        await assert.rejects(app.utl.inout.restore('copia'), /^Error: gramlot\.utl\.inout\.restore: the file is not a saved Gramlot branch: /);
+        assert.equal(app.data.getItem('copia'), restored, 'invalid input preserves the existing branch');
+    }
     app.dispose();
 });
 

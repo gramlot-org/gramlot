@@ -102,6 +102,7 @@ export class GramlotServer {
     /** Create a server. */
     constructor(options?: GramlotServerOptions);
     /** The Page class of `path`, or `PageNotFound`. */
+    pageManifest(options?: {prefix?: string}): Promise<Record<string, unknown>>;
     resolvePage(path: string): Promise<typeof Page>;
     /** The resources of the page at `path` in load order and without mount prefix, or `PageNotFound`. */
     resolveResources(path: string, PageClass: typeof Page): Promise<Resources>;

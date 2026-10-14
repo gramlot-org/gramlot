@@ -8,6 +8,14 @@
 
 The adapters of `gramlot-py-server` and `gramlot-js-server` serve the themes packaged with the core at `/themes/…`, below the mount prefix, and `@gramlot/gramlot-serverless` copies or inlines them in its export. Another host must serve this file at that path. The theme styles semantic HTML, forms, tables, dialogs, details, code, focus states, and a few optional layout classes: `.example-page`, `.stack`, `.grid`, `.card`, `.muted`, and fluid SVG `.example-art`. Secondary button variants are `.button--secondary` and `.button--quiet`; status chips use `.status` with a semantic modifier. SVG icons can use `.gramlot-icon` (fill) or `.gramlot-icon--stroke` (stroke) and inherit `currentColor`. Supply an accessible name or mark decorative icons `aria-hidden="true"` in the application.
 
+## Available themes
+
+Base is the original theme. [Compact](../gramlot-compact/README.md) is its denser
+alternative, with smaller headings, gaps, card padding and form controls. Both
+support light and dark mode. Load Base alone for the original appearance, or Base
+followed by `/themes/gramlot-compact/theme.css` for Compact. The existing `Page.css`
+list can be declared once on a shared application Page base class.
+
 ## Tokens and extension
 
 The light palette follows [`assets/branding/theme-tokens.json`](../../assets/branding/theme-tokens.json) and the [visual guide](../../assets/branding/theme-guide.md). All theme variables use the `--gramlot-` prefix. The design primitives include spacing, radii, font stacks, a shadow, focus ring, and page width. Override variables after this stylesheet to customize a page or create a sibling theme:

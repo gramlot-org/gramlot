@@ -3,7 +3,7 @@
 from genro_builders.contrib.svg.svg_renderer import SvgRenderer
 
 from .attributes import (
-    boundary_attributes, dom_names, require_no_script_attributes, text_value, without_binding_attributes, without_null_values,
+    boundary_attributes, dom_names, require_no_script_attributes, require_style_class_attributes, text_value, without_binding_attributes, without_null_values,
 )
 
 
@@ -28,6 +28,7 @@ class GramlotSvgRenderer(SvgRenderer):
         evaluated = self.owner.evaluate_expressions(node, runtime_attrs)
         require_no_script_attributes(node, evaluated)
         tag, attrs = super()._handle_meta(node, evaluated)
+        require_style_class_attributes(node, attrs)
         if node._get_meta("subbuilder"):
             return tag, boundary_attributes(attrs)
         return tag, attrs

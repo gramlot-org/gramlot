@@ -1,10 +1,10 @@
 # Extending Gramlot
 
-Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
+Document ID: **GC-100**.
 
-> **Release status.** Describes **0.2.0 (HTML/SVG data binding)**: released 2026-09-30
-> (PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; current release in the README). Previous release:
-> **0.1.2**. Unmarked text is behavior from 0.1.2.
+> **Scope.** This is the maintained authoring guide. The repository README states
+> the current release. Dated release notes below describe when behavior entered;
+> they are not a list of current exclusions. Development-only differences are marked.
 
 <a id="gc-100-005"></a>
 
@@ -16,11 +16,11 @@ Document ID: **GC-100**. 0.1.2 APIs; 0.2.0 changes are marked.
 | Routing, identity, HTTP | Python `GramlotServer`; JS `GramlotServer`/`GramlotFileServer` adapter |
 | Reusable Source macros | Deferred; no active recipe API |
 | Static HTML text | Generic HtmlBuilder + HtmlRenderer |
-| Reactive DOM | GramlotRenderer (extends RendererBase) + HtmlElement |
+| Historical 0.1.2: reactive DOM | GramlotRenderer (extends RendererBase) + HtmlElement |
 | *0.2.0:* reactive DOM | GramlotRenderer (extends GramlotHtmlRenderer, which extends HtmlRenderer), GramlotSvgRenderer (extends SvgRenderer) + HtmlElement |
 | Types, serialization, notifications | Bag/TYTX contracts |
 | Source grammar/association | Generic SourceBag, BuilderBase, RendererBase |
-| *0.2.0:* page behavior | Application `Logic` export of the page module `foo.js`, else `foo_aux.js`, or `js_requires` resource |
+| Named behavior (0.2.0), page module (0.2.5) | Application `Logic` export of the page module `foo.js`, else `foo_aux.js`, or `js_requires` resource |
 
 These extension points exist but compatibility is not frozen. Keep HTTP server technology
 out of core; implement missing shared behavior in its owning library, not locally.
@@ -41,7 +41,7 @@ Open outlines: component/mixin parameters and cleanup; third-party collection
 naming/registration/discovery/collisions; Python authoring from JS descriptions;
 controller/resolver lifecycle and Data ownership (*0.2.0:* `dataFormula`,
 `dataController` and named logic defined, [GC-095 055](095-writing-pages.md);
-resolvers open); shared versus technology-specific
+dataRpc/remote/dataRemote in GC-095 100–105, broader resolver extensions open); shared versus technology-specific
 database operations. These headings define no plugin loader, package convention or
 final hierarchy. Each capability needs a bounded contract, owner and behavior tests
 before examples rely on it.
@@ -136,3 +136,26 @@ The generic Python and JS Builders interpolate `${name}` only in attributes.
 A preceding backslash escapes a token; node content is not interpolated.
 Static HTML rendering accepts a terminal `::HTML` marker to omit escaping and
 removes that marker. This is not a new live-renderer capability.
+
+
+<a id="gc-100-095"></a>
+
+## 095 · An explicitly loaded Web Component
+
+Development addition; not yet part of a published release. Declare a custom element
+without a dedicated Python builder:
+
+```python
+pane.webcomponent(code="gramlot-poc-tree")
+```
+
+JavaScript authoring uses `pane.webcomponent({code: 'gramlot-poc-tree'})`.
+`code` is a required literal custom-element name. Gramlot emits that tag, consumes
+`code`, and renders declared child Source and ordinary scalar attributes. Existing
+`connect_on...` declarations handle its browser events. Load and register the
+component module explicitly before use; this declaration does not import it.
+
+Object properties, such as a tree's Bag, are not HTML attributes. The provisional
+inspector assigns `storeBag` in its JavaScript implementation. Generic declarative
+Bag properties are not provided by this addition. The first temporary tree is a development tool; its integration into the inspector
+is still pending.

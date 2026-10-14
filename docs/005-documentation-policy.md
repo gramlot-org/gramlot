@@ -64,6 +64,16 @@ is [GC-210](internal/210-binding-contract.md); section IDs inside older document
 (such as GC-070-210) do not occupy document ID GC-210. Preserve paired anchors and
 five-step spacing. This extends allocation policy without renumbering older guides.
 
+Owner clarification, 2026-10-13: teaching sections follow the chronological
+sequence of product releases. The same example may return in a later release's
+section to show how a new feature reduces the necessary code. Preserve the earlier
+learning stage, label the release and prerequisites of each later comparison,
+identify the code replaced and explain whether the observable result stays the
+same. Topic indexes are supplementary, not a replacement for this progression.
+Maintained examples use supported APIs; historical snippets must be labelled and
+do not require pinned or downgraded dependencies. This is product learning history,
+not a migration-work log. Owner's words and delivery scope: GC-070 §745.
+
 <a id="gc-005-015"></a>
 
 ## 015 · Adoption status

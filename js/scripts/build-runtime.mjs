@@ -3,14 +3,16 @@ import {build} from 'esbuild';
 import {mkdir, copyFile, cp, readFile, readdir, writeFile, rm} from 'node:fs/promises';
 import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {bundleBanner, moduleDoc} from './bundle-banner.mjs';
+import {moduleDoc} from './bundle-banner.mjs';
+import {runtimeOptions} from './runtime-options.mjs';
 const root = new URL('../', import.meta.url);
 const path = value => fileURLToPath(new URL(value, root));
+await writeFile(path('src/index-page-styles.js'), '// Generated from themes/gramlot-compact/theme.css.\nexport const compactStyle = ' + JSON.stringify(await readFile(path('../themes/gramlot-compact/theme.css'), 'utf8')) + ';\n');
 await mkdir(path('dist/'), {recursive: true});
 for (const name of ['LICENSE', 'NOTICE']) await copyFile(path(`../${name}`), path(name));
 // Theme and identity files ship in the npm package (js/) and in the wheel (resources/), as in jsr.json.
 const shipped = ['themes', 'assets/branding/gramlot-logo.svg', 'assets/branding/gramlot-logo-dark.svg',
-    'assets/branding/gramlot-mark.png', 'assets/branding/gramlot-mark-dark.png', 'assets/branding/svg'];
+    'assets/branding/app-icon.png', 'assets/branding/gramlot-mark.png', 'assets/branding/gramlot-mark-dark.png', 'assets/branding/svg'];
 for (const target of ['', '../src/gramlot/resources/']) {
     for (const folder of ['themes', 'assets']) await rm(path(`${target}${folder}`), {recursive: true, force: true});
     for (const name of shipped) {
@@ -18,22 +20,20 @@ for (const target of ['', '../src/gramlot/resources/']) {
         await cp(path(`../${name}`), path(`${target}${name}`), {recursive: true});
     }
 }
-const options = {
-    bundle: true, platform: 'browser', target: 'es2022', metafile: true,
-    legalComments: 'inline',
-};
-const hosted = await build({...options, entryPoints: [path('src/index.js')], format: 'esm', outfile: path('dist/gramlot.js'),
-    banner: {js: bundleBanner}});
+// Optional inspector artifact: shipped separately, never imported by the runtime entry.
+await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/gramlot-tools-inspector.js')],
+    outfile: path('tools/gramlot-tools-inspector.js'), bundle: true, format: 'esm',
+    target: 'es2022', external: ['@gramlot/gramlot'], loader: {'.css': 'text'}});
+const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist/gramlot.js')});
 // The minified runtime is served in deploy and in development without GRAMLOT_DEV=DEBUG.
-await build({...options, entryPoints: [path('src/index.js')], format: 'esm', outfile: path('dist/gramlot.min.js'),
-    banner: {js: bundleBanner}, minify: true, legalComments: 'eof', metafile: false});
+await build({...runtimeOptions['gramlot.min.js'], outfile: path('dist/gramlot.min.js')});
 await writeFile(path('dist/gramlot.d.ts'), `${moduleDoc}\nexport * from '../src/index.d.ts';\n`);
 // Standalone startup and Worker integration now belong to gramlot-serverless.
 await rm(path('dist/standalone.js'), {force: true});
 await rm(path('../src/gramlot/resources/standalone.js'), {force: true});
 const packages = new Map();
 for (const input of new Set(Object.keys(hosted.metafile.inputs))) {
-    let directory = dirname(resolve(input));
+    let directory = dirname(resolve(runtimeOptions['gramlot.js'].absWorkingDir, input));
     while (directory !== dirname(directory)) {
         let metadata;
         try { metadata = JSON.parse(await readFile(resolve(directory, 'package.json'), 'utf8')); }

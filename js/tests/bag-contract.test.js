@@ -87,13 +87,13 @@ test('BagNode.setAttr turns the attribute event reason into a string; value even
     ]);
 });
 
-test('Bag.fromTytx drops null attributes that the wire carries', () => {
+test('Bag.fromTytx preserves null attributes that the wire carries', () => {
     const bag = new Bag();
     bag.setItem('x', 1, {keep: 1}).setAttr({gone: null}, false, true, false);
     assert.deepEqual(bag.getNode('x').getAttr(), {keep: 1, gone: null});
     const wire = toTytx(bag);
     assert.match(wire, /"gone":null/);
-    assert.deepEqual(fromTytx(wire).getNode('x').getAttr(), {keep: 1});
+    assert.deepEqual(fromTytx(wire).getNode('x').getAttr(), {keep: 1, gone: null});
 });
 
 test('the builder Data Bag mounts under an outer main without copy and reports main-prefixed paths', () => {

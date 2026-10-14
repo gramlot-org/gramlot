@@ -194,7 +194,7 @@ settle previously unapproved proposals, not older approved behavior.
 | P22 | Numeric _onStart in ms; true and 0 immediate; negative/nonfinite error; independent of other-trigger _delay | S08 → virtual clock |
 | P23 | Same snake_case requires fields in Python and JS, no aliases | S06/S14 → authoring and all hosts |
 | P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins | S03 → rebuild, removal, late response, frozen living target |
-| P25 | Authoring dict/plain JS object becomes Bag(value); nested dicts become Bags, lists and their dictionary items remain lists/items, JSON strings stay strings. Supersedes scalar-only assumptions; no custom converter | S02 → TYTX cross-language payload identity/types |
+| P25 | Authoring dict/plain JS object becomes Bag(value) with default recursive population: nested dictionaries, lists and dictionaries inside lists become Bags, preserving order and scalar leaf values. A list supplied directly as a setter value remains a list; a JSON string remains a string. Owner clarification 2026-10-14, constitution 11.64; no custom converter | S02 → TYTX cross-language payload identity/types |
 
 *Historical (revision 6):* the open questions below were still open on 2026-09-25.
 
@@ -230,6 +230,13 @@ in part (Q9, 2026-09-28): FIRE carries no mark and S08 needs the published Bag
 releases listed above.* S01
 measures the TYTX null-attribute loss in `Bag.fromTytx`; any solution goes into
 those classes after owner approval. No Builder or Bag source is edited.
+
+**Dependency verification, 2026-10-14:** the preceding S01 null-attribute loss
+was an observation of older Bag versions. Python Bag 0.28.0 and JS Bag 0.11.0
+preserve null attributes explicitly carried by TYTX; the dependency probes now
+check that preservation. No Gramlot conversion or Source-class workaround is
+needed. R17 (a null attribute omitted when authoring a setter) is unchanged and
+remains separately tested.
 
 <a id="gc-210-018"></a>
 ## 018 · Gramlot source classes
@@ -455,7 +462,7 @@ Existing built elements react during freeze; no fake Source events.
 
 | Style vocabulary | Projection and null rule |
 | --- | --- |
-| style, class | String or null only; null removes attribute |
+| style, class | String or null only; null removes attribute. Validate resolved values after render_attributes precedence, before composition; invalid live projections do not change DOM or roll back the triggering Data/Source write |
 | visible | false sets style.visibility=hidden; otherwise no override; removal restores current style |
 | hidden | Existing native boolean behavior |
 | HTML style shortcuts: style_*, roots (width, height, color, background_*, font_*, margin_*, padding_*, border_*, …), macros (rounded, shadow, transform, filter, transition, zoom, gradient) | One style attribute composed by Builder HtmlRenderer.adaptAttrs (renderer/html.js:151) with style='…'; the shortcut wins over the same property in style; null drops that property only |
@@ -466,7 +473,8 @@ Existing built elements react during freeze; no fake Source events.
 | Other native attributes | HtmlElement boolean/reflected/namespace rules |
 
 Projection calls _handleMeta and adaptAttrs on `getRender(node.builder)`. No style
-Bags/dicts, themes, root.css, or format/mask/places in the live renderer. Text
+Bags/dicts, themes, root.css, or format/places in the live renderer. `mask` is supported as specified by
+§010 Q11.2 and constitution 11.48 item 11; its earlier exclusion is superseded. Text
 remains safe text; SVG/XLink and foreignObject preserve namespaces and DOM identity.
 `getBaseSourceNode` climbs parentNode to the first generated element in elements,
 returning its record.node or null; a DocumentFragment is not an element.
