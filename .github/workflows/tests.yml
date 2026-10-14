@@ -39,11 +39,11 @@ jobs:
       - name: Select Python for JavaScript interoperability tests
         run: python -c 'import os, sys; open(os.environ["GITHUB_ENV"], "a").write("GRAMLOT_TEST_PYTHON=" + sys.executable + "\n")'
       - name: Test Python
-        run: python -m unittest discover -s tests
+        run: python -m pytest -q tests
       - name: Python coverage on the source tree
         run: |
           python -m pip install coverage
-          PYTHONPATH=src python -m coverage run --source=src/gramlot -m unittest discover -s tests
+          PYTHONPATH=src python -m coverage run --source=src/gramlot -m pytest -q tests
           python -m coverage xml -o coverage-python.xml
       - name: Test JavaScript including quiet-write and symbolic-attribute contracts, with coverage of every js/src file
         run: js/node_modules/.bin/c8 --all --src js/src --include 'js/src/**' --reporter=lcov --reporter=text-summary --report-dir coverage-js npm --prefix js test

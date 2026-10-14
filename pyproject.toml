@@ -17,7 +17,7 @@ Issues = "https://github.com/gramlot-org/gramlot/issues"
 Documentation = "https://github.com/gramlot-org/gramlot/tree/main/docs/public"
 
 [project.optional-dependencies]
-test = ["genro-tytx[msgpack]"]
+test = ["genro-tytx[msgpack]", "pytest>=8"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
