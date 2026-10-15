@@ -6,7 +6,7 @@ Document ID: **GC-070**. Updated: **2026-10-15**.
 
 **Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
 
-**Documentation follow-up:** alignment of all four manuals and the new examples Read the Docs site is locally verified; hosted builds are being checked (§840).
+**Documentation follow-up:** all four public manuals are aligned; the examples Read the Docs site is live with 41 lessons and complete Python/JavaScript sources. Hosted documentation and CI checks passed (§840).
 
 **Current checkpoint:** the integrated release is published and verified (§835): core 0.2.17 on PyPI/npm/JSR, examples 0.2.12 on PyPI/npm, JS server/serverless/create 0.2.9 on npm and Python server 0.2.8 on PyPI. All four release pipelines succeeded, including required tests, browser checks and clean-install gates. Teaching D1–D6 is owner-accepted (§790); additional remote/CustomTypes enforcement remains owner-deferred (11.66), Q2 is unchanged and the Date/Decimal authoring exercise is deferred pending Bag #69. Qualification details and limits are in §§825–835.
 
@@ -6366,4 +6366,25 @@ Required pre-commit checks: Node server 33, serverless 34, create 3 and Bun 33 p
 Python adapters: 92 pass after refreshing the local environment from stale core
 0.2.16/examples 0.2.9 to the published dependencies. The initial five manifest
 failures were from that old environment; no test or runtime workaround was added.
-Hosted publication verification is pending the documentation pushes.
+Publication completed after explicit owner confirmation: “Sì, commit e push sui
+quattro repository”. The initial automatic approval review rejected the push for
+lack of explicit publication authorization; that confirmation resolved the block.
+All changes were committed and pushed to develop and main without force pushes.
+No package release or tag was changed.
+
+Published source revisions: core 16f7c40 (manual changes), examples 465dff9,
+JS server 97121fe, Python server dddb26e. The final JS correction also aligns the
+reference dependency floors with package metadata. Successful hosted checks:
+core documentation 38693133205 and tests 38693133132; examples 38693112586;
+JS server 38693403786; Python server 38693125040. All required jobs passed.
+
+Read the Docs examples build [35159090](https://app.readthedocs.org/projects/gramlot-examples/builds/35159090/)
+succeeded on 465dff9. The public [examples manual](https://gramlot-examples.readthedocs.io/en/latest/)
+was opened and verified. Updated core, Python and JS reference pages were also
+verified online. The public manual follows main through latest, as required by
+GC-005. Read the Docs additionally attempted an automatic stable build (35159093)
+from the existing release tag, which predates the documentation configuration;
+that historical-tag build fails for the absent YAML. It does not block latest,
+and the published tag was deliberately not rewritten. A future release tag will
+include the new configuration. Package-registry README snapshots likewise retain
+their original release contents; this work updates GitHub and the live manuals.
