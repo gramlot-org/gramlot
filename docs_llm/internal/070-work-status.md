@@ -6057,3 +6057,26 @@ completed serverless lesson embeds. Publication is pending, not yet confirmed.
 Firefox installed here fails to start (profile folder error); branded Safari and
 Chrome are not separately qualified. Deferred messaging/widget features remain
 explicit in GC-095 §115. No dependency source changes or alternate APIs introduced.
+
+
+**Publication completed (2026-10-15).** Core 0.2.18 is published on PyPI, npm,
+JSR and GitHub; release pipeline 38771000459 passed every job. Core release commit
+is b8c95d2. DevTools 0.1.3 uses the shared inspector; pipeline 38771526377 passed
+and the published ZIP was downloaded and checked for integrity, manifest version,
+panel/agent entries and absence of the feasibility test page.
+
+Examples 0.2.14 is published on PyPI, npm and GitHub (pipeline 38772203488).
+The 0.2.13 tag remains as an unpublished attempt: initial registry propagation
+blocked dependency installation, and the required all-pages browser suite exposed
+missing c18/c19 registrations. The dedicated checks already passed; they now share
+verifyExample with the complete suite. Version 0.2.14 preserves the old tag and
+passes all 43 pages on both Python/JS servers, Node/Bun, Python 3.11/3.12,
+documentation and packaging. Both new lesson embeds also pass Chromium/WebKit.
+
+Read the Docs latest builds succeeded for core (35172507), examples (35172728)
+and DevTools (35172617), on the corresponding release commits. Source changes,
+paired guides, quick start, CSS guide, shared inspector, examples and compact
+emoji control are consolidated on main/develop. No package from the server adapter
+repositories changed; they consume the core/examples packages. No Chrome Web Store
+submission or application deployment was performed. The release is complete;
+future scope and browser qualification limits above remain explicit.

@@ -1,6 +1,6 @@
 # PORT-0007-publish-subscribe
 
-- **Status:** accepted for release; final publication checks in progress.
+- **Status:** accepted and published in core 0.2.18.
 - **Legacy evidence:** genropy/genropy@fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea.
 - **Destination revision:** release tag v0.2.18.
 - **Authority:** constitution 11.68–11.72, GC-225 §040; GM-030 release plan.
