@@ -7146,4 +7146,18 @@ c20/c21 and navigation are verified there in Chromium. Native Safari and Firefox
 are not claimed. See [PORT-0008](../../ports/PORT-0008-plain-and-delayed-buttons/README.md).
 Implementation and verification complete. Owner authorized publication with
 "pubblichiamo" on 2026-10-15. Releasing core 0.2.19 and examples 0.2.15;
-registry verification is pending. Existing 0.2.18 artifacts remain unchanged.
+official publication completed successfully. Existing 0.2.18 artifacts remain unchanged.
+
+Core tag v0.2.19 is `86d4024d5f4d3512f316f966e600f88cfa772613`; workflow
+38782280286 passed verification, artifact build, GitHub release, PyPI, npm and JSR.
+Examples tag v0.2.15 is `f3b92bf55690eb7aaac9d983592aaaebbadf337d`; workflow
+38783025449 passed all 45 pages on Python/Node, Node/Bun tests, Python 3.11/3.12,
+documentation, build and PyPI/npm publication. Its first browser job stopped at
+installation because one PyPI edge still lacked core 0.2.19; rerunning that job
+passed without code changes. Latest release Python qualification: 140 pytest tests
+and 255 subtests. Published wheel/npm archives contain the new grammar/lessons;
+core runtime bytes match across the distributions.
+
+Read the Docs built the release commits successfully: core stable 35174149;
+examples latest 35174219 and stable 35174220. Release commits and tags are pushed
+on main/develop. The server adapters and DevTools packages are unchanged.

@@ -1,8 +1,8 @@
 # PORT-0008-plain-and-delayed-buttons
 
-- **Status:** accepted for release by the owner ("pubblichiamo", 2026-10-15); publication pending.
+- **Status:** accepted and published; owner "pubblichiamo", 2026-10-15.
 - **Evidence revision:** `genropy/genropy@fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea`; no PoC promotion.
-- **Destination revision:** core 0.2.19 release candidate.
+- **Destination revision:** `86d4024d5f4d3512f316f966e600f88cfa772613` (v0.2.19).
 - **Constitution:** §§3–5, 9–10, 13; 11.47 button mechanism and new owner decision 11.75.
 
 ## Evidence
@@ -55,7 +55,7 @@ New functionality requires core 0.2.19; examples 0.2.15 requires that release.
 - **Result:** verified within the owner's bounded instruction and accepted for publication.
 - Plain/native identity is retained through Python/JS serialization and rendering.
 - No application-side DOM wiring or timer workaround; examples use Source/Data/Logic.
-- No constitutional conflict after 11.75; no package publication performed.
+- No constitutional conflict after 11.75; core 0.2.19 and examples 0.2.15 published after explicit authorization.
 
 ## Feedback for later ports
 
