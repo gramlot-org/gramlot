@@ -6,6 +6,9 @@
 import type {DomElement} from './dom.d.ts';
 import type {SourceBag, SourceBagNode} from '@genrojs/builders';
 
+/** @internal Reject live Source/DOM objects and cycles before serializing transport data. */
+export function assertTransportData(value: unknown): void;
+
 /** A transportable descriptor of one Source node, as made by `GramlotBuilder.reference`. */
 export interface SourceReference {
     /** The unique id stored in the `__ref` attribute of the Source node. */
@@ -30,4 +33,6 @@ export class References {
     remove(node: SourceBagNode): void;
     /** The Source node or the DOM element a descriptor points to; raises when it is not mounted. */
     resolve(reference: SourceReference): SourceBagNode | DomElement;
+    /** Resolve direct reference-valued arguments against the currently mounted Source. */
+    resolveArguments(attributes: Record<string, unknown>): Record<string, unknown>;
 }

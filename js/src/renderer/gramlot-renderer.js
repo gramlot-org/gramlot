@@ -180,13 +180,16 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         if (!(block instanceof GramlotBuilderBag)) throw new TypeError('Source values must be GramlotBuilderBags');
         const excluded = new Set();
         const exclude = node => {
+            if (excluded.has(node)) return;
             excluded.add(node);
             for (const child of this.records.get(node)?.children ?? []) exclude(child);
+            if (node.value instanceof SourceBag) for (const child of node.value.getNodes()) exclude(child);
         };
         // Replacing a node's VALUE retains that node and its reference. Only
         // the rendered descendants which the replacement removes leave the ref set.
         // During freeze these can differ from the current Source descendants.
         for (const child of this.records.get(replacingNode)?.children ?? []) exclude(child);
+        if (replacingNode?.value instanceof SourceBag) for (const child of replacingNode.value.getNodes()) exclude(child);
         this.#validateBlock(block, replacingNode ? replacingNode.nodeTag : null);
         requireInstallable(block);
         this.references?.validate(block, excluded);

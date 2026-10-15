@@ -82,3 +82,38 @@ test('breakpoints run synchronously in the owning page, preserve old config on e
         assert.equal(Object.keys(f.app.data._updSubscribers).filter(id=>id.startsWith('inspector-bridge-')).length,0);
     } finally {f.close();}
 });
+
+test('snapshot reconciliation preserves sibling order and identity after insertion and moves', async () => {
+    const f = setup();
+    try {
+        await wait(() => f.client.state === 'started');
+        const retained = f.client.data.getNode('name');
+        f.app.data.setItem('first', 1, null, '<');
+        await wait(() => f.client.data.getItem('first') === 1);
+        assert.deepEqual(f.client.data.getNodes().map(node => node.label), f.app.data.getNodes().map(node => node.label));
+        f.app.data.move(0, 2);
+        await f.client.request('refresh');
+        assert.deepEqual(f.client.data.getNodes().map(node => node.label), f.app.data.getNodes().map(node => node.label));
+        assert.equal(f.client.data.getNode('name'), retained);
+        f.app.data.clear();
+        await f.client.request('refresh');
+        assert.equal(f.client.data.getNodes().length, 0);
+    } finally { f.close(); }
+});
+
+test('separately bundled agents coexist without replacing each other’s subscriptions', async () => {
+    const f = setup();
+    const separate = await import('../src/inspector-agent.js?independent-bundle');
+    const channel = new MessageChannel();
+    const agent = separate.attachInspectorAgent(f.app, channel.port1);
+    const second = new InspectorConnection(channel.port2);
+    try {
+        await wait(() => f.client.state === 'started' && second.state === 'started');
+        f.app.data.setItem('name', 'Both');
+        await wait(() => f.client.data.getItem('name') === 'Both' && second.data.getItem('name') === 'Both');
+        agent.dispose();
+        f.app.data.setItem('name', 'First remains');
+        await wait(() => f.client.data.getItem('name') === 'First remains');
+        assert.equal(Object.keys(f.app.data._updSubscribers).filter(key => key.startsWith('inspector-bridge-')).length, 1);
+    } finally {second.close(); agent.dispose(); f.close();}
+});

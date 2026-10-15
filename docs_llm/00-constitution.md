@@ -1713,3 +1713,211 @@ GC-070 §760, not the documented literal-method contract. Incidental runtime
 acceptance of dynamic names is not a supported API; a future decision may allow
 it. Live Source declaration mutation semantics (Q2) remain undecided and unchanged.
 No new trigger, cancellation or rollback behavior is approved.
+
+
+### Amendment 11.67 — Optional DevTools download in core documentation — 2026-10-15
+
+Owner confirmation: "ok per collegamento e istruzioni", followed by the request
+for a practical page for readers in a hurry to try and understand Gramlot.
+The core README and public manual may link to the Chrome extension's releases
+and explain ZIP extraction, unpacked installation, file-URL permission and reload.
+The extension remains owned, built and released by `gramlot-devtools`; no extension
+code, ZIP copy, runtime dependency or automatic installation enters core.
+
+This narrowly supersedes the former external-tool rule forbidding any mention
+or documentation of the extension in Gramlot (also recorded in the DevTools
+repository instructions). Amendment 11.61's separation of the Chrome extension
+and the optional in-page inspector remains in force. The practical entry page
+points to `gramlot-py-server` and `gramlot-js-server` for their installation and
+CLI instructions; the chronological teaching route remains separate and unchanged.
+
+
+### Amendment 11.68 — Subscriptions access point approved — 2026-10-15
+
+**Superseded access-point placement:** see 11.70; payload decisions remain in force.
+
+Owner asked whether publish/subscribe would use an object on Gramlot and answered
+"si" to: "Ti convince `gramlot.subscriptions` come nome e punto di accesso?".
+The dedicated instance-owned access point is named `gramlot.subscriptions`.
+This is a bounded exception to GC-225 §015's three-letter proxy naming rule for
+this access point only; the other proxy conventions remain in force.
+
+This approves the name and access point, not the illustrative method signatures,
+payload format, declaration syntax, delivery semantics or release scope. Page-local,
+interframe and cross-user coverage still require explicit decisions. This record
+adds no runtime implementation or general application bridge; existing inspector
+bridge approval remains tool-specific. No earlier runtime exclusion is lifted by
+this naming decision. Record the name in both GC-225 views before implementation.
+
+
+Owner follow-up on 2026-10-15: "sei tu che sai come funzionava. quindi se ti sembra
+corretto procedi pure", answering the single-object `publish(topic, payload)`
+proposal. Under that explicit delegation, retain one object of named message data;
+there is no variadic positional-message form. This settles that base publication
+shape only, not routing options, declaration syntax or provider merge behavior.
+The next owner instruction requests documentation of the complete syntax even
+though only part will be implemented initially. Complete-syntax proposals remain
+separate from accepted implementation scope and available runtime behavior.
+
+
+### Amendment 11.69 — Object references belong to the subscription port — 2026-10-15
+
+Owner: "questo meccanismo era molto utile e va ripristrinato e lo metterei nel
+perimetro della subxscribe", referring to the investigated legacy Python-to-browser
+references, including explicit Source/widget/DOM/form references and automatic
+conversion of a directly supplied Python Source object.
+
+Restore that useful authoring capability within the publish/subscribe workstream,
+including references among the declared arguments of subscription-triggered
+controllers. The plan must include it in the initial local-controller slice for
+existing Source/DOM targets, with corresponding JavaScript authoring behavior.
+Component/widget and framework-form targets belong to the complete design and
+must be connected to their own approved object/lifecycle contracts as available;
+this does not authorize creating a general widget/form framework in this port.
+
+Existing Gramlot `GramlotBuilder.reference`, `$gramlotRef` descriptors and renderer
+`References` / `gramlot.dom.reference` already implement Source/DOM identity,
+transport and explicit resolution. Reuse the existing primary representation and
+lifecycle rather than introducing a parallel registry or expression protocol.
+Automatic author-argument conversion/resolution is the missing integration to
+qualify. Detailed public helper names and resolution timing/error semantics must
+be finalized before implementation; the existing mounted-reference contract is
+not silently changed.
+
+This supersedes the earlier deferred/no-approved-port status of the object-reference
+objective in GM-025, not the historical evidence or existing runtime contract.
+It does not approve arbitrary `==` expression evaluation, Dojo imports, automatic
+payload-string evaluation or transporting live objects across pages/users. A
+serializable descriptor is not by itself a cross-page identity or authorization.
+
+
+### Amendment 11.70 — Public publish command, internal subscriptions — 2026-10-15
+
+Owner correction: "poi ho detto che preferisco che il comando sia gramlot publish e poi lui usi subscriptions o addirittura _sunscriptrios per ditre che è privato".
+
+The public publication command is `gramlot.publish(topic, payload)`. It delegates
+to the instance-owned subscription service; callers do not need to access that
+service. This supersedes 11.68's public `gramlot.subscriptions` access point and
+the proposal excluding a primary `gramlot.publish` method. It is the primary
+command, not an alias for a second public publication API. The accepted single
+object payload and 11.69's reference scope remain unchanged.
+
+The owner also suggested `_subscriptions` to mark the service private. Its exact
+internal spelling is not a public contract; record the final implementation name
+before introducing it. Public subscribe/unsubscribe placement and signatures
+remain proposals. This correction does not implement messaging or accept the
+pending routing, delivery or release-scope decisions.
+
+
+Owner follow-up (2026-10-15): "anche subscribe e unsubscribe li metterei direttamente su gramlot, con _subscriptions privato. poi vediamo come fare il publish verso un nodo specifico".
+The public methods are `gramlot.publish`, `gramlot.subscribe` and
+`gramlot.unsubscribe`; all delegate to the private instance-owned `_subscriptions`
+service. This confirms the exact private property spelling and supersedes the
+pending placement/name statements above. Subscription signatures, return handles
+and lifecycle details remain proposed. Publication to a specific node is explicitly
+left for the next design discussion; existing node-routing examples are proposals,
+not accepted syntax. No runtime implementation is introduced by this decision.
+
+
+### Amendment 11.71 — Actions, controllers and ask share the messaging design — 2026-10-15
+
+Owner: "fa sempre parte del giro controller aioni ecc. tieni anche conto della
+opzione ask e della sintassi button().dataController(....).ask()".
+
+Prepare button `action`, the `ask` option and chained
+`button().dataController(...).ask()` within the controller/action/messaging design,
+including authored object references and subscription-triggered execution. Do not
+exclude ask from that design as an unrelated feature. The chain is a requested
+authoring form to specify, not a claim of an existing Gramlot or legacy helper.
+
+Define confirmation, parameter collection, cancellation, argument precedence,
+trigger eligibility, delay and disposal together with the existing provider
+pipeline. Preserve the single button execution mechanism; this does not approve
+running a child controller and a separate action on the same click. Dialog/input
+presentation must respect approved component boundaries. Detailed ask signatures,
+UI dependencies and implementation slice remain to be settled. This design scope
+does not yet lift the existing runtime rejection of unsupported ask declarations.
+
+
+### Amendment 11.72 — Legacy-shaped messaging port authorized — 2026-10-15
+
+Owner: "ok aggiorna il piano mantenendo il più possibile la sintassi legacy e poi
+procedi con l'implementazione", following explicit examples of
+`gramlot.publish('refresh', data)`,
+`gramlot.publish({topic: 'refresh', parent: true}, data)` and
+`gramlot.publish({topic: 'refresh', iframe: 'detail'}, data)`, and the confirmation
+that local publication precedes forwarding as in legacy. An authored iframe
+reference is an extension of the existing `iframe` selector. This supersedes the
+third-argument/options/targets publication proposal and its no-local-echo rule.
+
+Proceed with the bounded port in GM-030: references, page/node subscriptions and
+provider integration, parent/child communication, actions and ask, qualification
+and teaching. Use legacy `subscribe_<topic>`, `selfsubscribe_<topic>`, `action`,
+`ask`/`_ask` as the baseline, instead of inventing an alternate authoring language.
+The proposed fluent `.ask()` has not been selected. Keep the accepted single
+object payload and the direct Gramlot methods/private service of 11.70.
+
+This lifts earlier subscription/ask exclusions only as each bounded capability
+is implemented and tested. Existing single button mechanism, CSP and lifecycle
+contracts remain in force. Record exact supported variants and unsupported ones;
+form/widget frameworks, cross-user/server delivery and unrelated windows are not
+approved by this instruction. Interframe transport across isolated/file frames
+requires a concrete connection and async behavior decision, not reuse of the
+inspector bridge by inference. No dependency patch or package publication.
+
+
+11.72 transport follow-up: owner "le chiamate interfreame le farei solo con post".
+All parent/child calls use browser postMessage, including same-origin pages. Local
+publication remains synchronous and first; forwarding is asynchronous. Implement
+an explicit direct-frame connection with instance identity, source/origin checks
+and readiness/disposal, including opaque file/srcdoc frames; no direct calls into
+another page's Gramlot instance. This is separate from the inspector protocol.
+
+
+11.72 ask follow-up: owner explicitly accepted "Sì, dialog e campi nativi" to a
+Gramlot Source/Data dialog using native controls for confirmation and base fields,
+retaining ask/_ask, title, fields, name and lbl. Unsupported legacy widgets error.
+This authorizes that bounded internal UI, not a general component collection.
+
+
+### Amendment 11.73 — Inspector CSS variable trial — 2026-10-15
+
+Owner request: "si ma anche solo un modo di editare le variabili css", followed
+by "proviamo" after the proposal of a third Styles tab, grouped --gramlot-*
+variables, colour controls, value fields, live preview and individual/all reset.
+This authorizes that bounded trial in the optional inspector, including its
+existing explicit page connections. General CSS editing, individual-element
+styling, theme switching, downloads and persistence are deferred. The earlier
+endpoint discussion does not authorize implementing a persistence service.
+
+Extends 11.61–11.62 only for this tool's document-root variable editor. UI remains
+Source/Data/named Logic; browser CSS operations belong to tool internals. Core
+runtime, dependency sources, integrations, publication and deployment are unchanged.
+Implementation/verification and owner visual acceptance remain distinct.
+
+Owner layout clarification (same trial, 2026-10-15): "metti in colonna 1 il nome
+var in 2 il valore in 3 il picker". Each variable occupies one compact row with
+aligned name, value and colour-picker columns; this supersedes the initial
+stacked presentation and the proposed multi-column wrapping of variable rows.
+
+Owner follow-up (2026-10-15): "metti il reset dopo il picker, così le prime tre
+colonne sono proprio nome, valore e picker". Reset occupies a fourth column
+after the picker, including rows without a colour picker.
+
+Owner download approval (2026-10-15): "ok" to the proposal "esporterei le sole
+variabili modificate in un file theme-overrides.css, pronto da aggiungere dopo
+il CSS del tema" and "Partiamo dal download CSS?". This supersedes the download
+deferral in 11.73 only. Export the selected target's applied overrides through
+the optional inspector, with no persistence endpoint or theme selection.
+
+### Amendment 11.74 — Shared inspector in DevTools — 2026-10-15
+
+Owner: "sì facciamo un unico inspector condiviso anche nei devtools", confirming
+the proposal of one shared inspector with a DevTools-specific page connection.
+This authorizes bounded connected work in gramlot-devtools and the optional
+Gramlot inspector: shared Data/Source/Styles UI, editing, breakpoints and CSS
+download, an embedded panel presentation, and shared page-side inspection
+behavior behind the existing Chrome frame routing. DevTools imports Gramlot;
+Gramlot never depends on, imports or distributes the extension. Supersedes the
+separate inspector implementation described in 11.61/11.67; no application
+runtime discovery hook, upstream dependency edit, release or deployment.

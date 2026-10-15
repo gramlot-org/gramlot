@@ -28,7 +28,8 @@ test('core has no runner theme protocol in framed pages', () => {
     for (const type of ['gramlot:theme-set', 'runner:theme-set']) {
         frame.dispatchEvent(new frame.MessageEvent('message', {source: parent, data: {type, theme: 'dark'}}));
     }
-    assert.deepEqual(messages, []);
+    assert.ok(messages.every(([message]) => message.type === 'gramlot:publish' && message.kind === 'hello'));
+    assert.equal(messages.some(([message]) => message.type.includes('theme')), false);
     assert.equal(frame.document.documentElement.hasAttribute('data-theme'), false);
     app.dispose();
 });

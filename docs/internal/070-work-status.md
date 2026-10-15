@@ -2,9 +2,19 @@
 
 Document ID: **GC-070**. Updated: **2026-10-15**.
 
+**Inspector CSS variables:** the Styles trial and CSS download are implemented; locally verified; owner visual acceptance pending. See [§945](#gc-070-945).
+
+**Themes and CSS guide:** GC-096 implemented and locally verified, including larger inline results with responsive code/result comparisons, reader-facing headings, the complete token catalogue and practical guidance; see [§950](#gc-070-950), [§935](#gc-070-935), [§930](#gc-070-930) and [§925](#gc-070-925).
+
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
 **Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
+
+**Next release direction:** publish/subscribe targets 0.2.18 by owner agreement (§865); legacy review and release scope remain to be defined. Other [workstream priorities and parallel assignments](../future/README.md) remain open; website/system-Data notes are retained.
+
+**Deferred website design:** editorial HTML companions and two interactive-region modes for gramlot.org, asqueel.org and kajenn.org are recorded for later discussion (§850); no implementation started.
+
+**Practical entry page:** GC-018 and the optional Chrome extension installation link are implemented and locally verified; publication pending (§845).
 
 **Documentation follow-up:** all four public manuals are aligned; the examples Read the Docs site is live with 41 lessons and complete Python/JavaScript sources. Hosted documentation and CI checks passed (§840).
 
@@ -6388,3 +6398,703 @@ that historical-tag build fails for the absent YAML. It does not block latest,
 and the published tag was deliberately not rewritten. A future release tag will
 include the new configuration. Package-registry README snapshots likewise retain
 their original release contents; this work updates GitHub and the live manuals.
+
+
+<a id="gc-070-845"></a>
+## 845 · Practical entry page and optional Chrome DevTools link (2026-10-15)
+
+Owner confirmation: "ok per collegamento e istruzioni" and "si in pratica deve
+esserci nella doc di gramot una pagibetta pratica per chi ha fretta di provcare e
+capire". Amendment 11.67 allows documentation links and installation instructions
+for the separately maintained Chrome extension; it introduces no runtime dependency.
+
+Implemented GC-018, a short public entry page linked from the README, the learning
+guide and the public navigation. It compares Python/Uvicorn, Node.js and serverless,
+links to the owning server repositories for installation and CLI instructions,
+suggests Hello World, Forms and Native editing in teaching order, and directs the
+reader to project creation. The optional extension section covers release ZIP,
+extraction, unpacked loading, file-URL permission and reloading. GC-025 retains the
+chronological release route. Expanded/concise copies and the public page allowlist
+are aligned. The DevTools repository's documentation rule records the same bounded
+exception.
+
+Verified locally: Sphinx with warnings as errors and the public boundary/link/
+anchor checks pass (nine pages including the README). Both DevTools documentation
+views also build with warnings as errors. Documentation only; no runtime or package
+version changes. These follow-up edits have not been committed or published.
+
+
+<a id="gc-070-850"></a>
+## 850 · Public websites: editorial HTML and interactive regions (2026-10-15, deferred)
+
+Retained at the owner's request: "annotati queste cose perche ci torneremo su".
+The detailed discussion now lives in [GC-190](../future/190-public-websites.md).
+It covers the three public sites, HTML companions, a bounded dynamic root,
+thumbnail activation versus expansion of an active region, legacy HtmlChunk,
+and unanswered questions. This stable checkpoint is retained; no implementation
+was started or authorized by the note.
+
+<a id="gc-070-855"></a>
+## 855 · Future-work directory and next-phase selection (2026-10-15)
+
+Owner requested a directory for future work, parallel candidates and choosing the
+next phase. [The future-work index](../future/README.md) collects separate cards
+for public websites (GC-190), system Data/actions (GC-200) and general components
+(GC-205), plus references to existing deferred items and the documentation delivery.
+Each card distinguishes requirements, proposals, dependencies, possible parallel
+work and completion evidence. The earlier GC-070 §850 link remains valid.
+No priority or implementation phase was approved by organizing the backlog. The
+initial website-first recommendation was subsequently withdrawn at the owner's
+clarification; see §860.
+
+Verified: paired card paths/anchors, relative links and documentation whitespace.
+Internal planning material only; public documentation staging is unchanged.
+
+
+<a id="gc-070-860"></a>
+## 860 · Owner workstream inventory; priorities remain open (2026-10-15)
+
+Owner corrected the proposed next-phase choice: "no. volevo elencarti i possibili
+filoni per decidere priorita o parallelizzazione" (spelling normalized).
+The website-first suggestion is withdrawn. The future-work index now preserves
+his numbered groups: (1) legacy publish/subscribe, including interframe and
+separate pages/users; (2) final Gramlot component definition, with (2.1) inputs and
+(2.2) border/tab and other layouts; (3) database connections, with (3.1) dataRecord,
+dataSelection and db selection; (4) stores; (5) store-based tree/grid widgets.
+
+This is an inventory, not an approved execution sequence, architecture or assignment
+to parallel workers. Existing website and system-Data notes remain available.
+Compare scope, shared contracts and dependencies after the owner finishes listing
+candidates. No implementation or next phase has started.
+
+Verified: mirrored index/component card, preserved anchors, relative link targets
+and whitespace. Internal documentation only.
+
+
+<a id="gc-070-865"></a>
+## 865 · Publish/subscribe release direction (2026-10-15)
+
+Owner: "idealmente per finire la parte di data controller formula ecc farei la
+publish e subscribe" (spelling normalized), then "si la 0.2.18 potrebbe gestire
+publish e subscribe". Record **0.2.18 as the target for publish/subscribe**.
+This supersedes the entirely unprioritized state of §860 for this workstream only.
+
+The requested investigation includes the legacy pattern, interframe communication
+and separate pages/users. Which of those belongs in the first release remains
+undecided; do not infer a transport, delivery policy, authorization model or API.
+Next: inspect the legacy and propose a bounded contract and verification scope.
+The broader component/database/store workstreams retain their pending priorities.
+No implementation, package-version change, commit/push or release is performed
+or authorized by this planning record. Current published versions are unchanged.
+
+Verified: matching planning statements and stable anchors in both views.
+
+<a id="gc-070-870"></a>
+## 870 · Detailed legacy publish/subscribe analysis (2026-10-15)
+
+Owner requested an extremely detailed analysis of legacy publish/subscribe and its
+interaction with dataControllers, then a separate decision on the porting plan.
+The request includes local, interframe and cross-user communication from the
+previous workstream discussion.
+
+[GC-196](196-legacy-publish-subscribe.md) now records the source investigation at
+GenroPy revision `fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea`: local Dojo delivery,
+Python declarations, provider argument construction and precedence, Data/formula/RPC
+interaction, fire/reset, lifecycle, node/form scope, frame/window routing, system
+`gnr.publisher`, queued datachanges, WebSocket routes, user stores and shared objects.
+It separates observed behavior, reproduced quirks, inactive proposal code and
+unverified deployment behavior. Complete isolated reproduction programs and pinned
+source references are retained in the expanded document.
+
+Verification: 21 focused JavaScript probes and 4 extracted Python-method probes
+pass; the existing legacy Source lifecycle suite passes 8/8. This is not browser,
+network, authentication or multi-user deployment qualification. The paired document
+and future-work index were checked for anchors, links and evidence consistency.
+
+Status: analysis delivered, owner review pending. No runtime implementation,
+Builder/Bag changes, architectural amendment, release bump or publication.
+**Next:** discuss and confirm the porting scope/contract after owner review; the
+0.2.18 direction remains a target, not an approved full local/interframe/cross-user
+feature set or an execution plan.
+
+<a id="gc-070-875"></a>
+## 875 · Private shared development guidance (2026-10-15)
+
+Owner requested a private `gramlot-meta` repository in the Gramlot workspace to
+share development guidance previously outside version control, after requesting
+collaboration with fporcari. The existing private repository was reused:
+[gramlot-org/gramlot-meta](https://github.com/gramlot-org/gramlot-meta).
+
+Published a dated collection of 169 documents: workspace guidance, Astra/Claude
+analyses, historical 0.2.0 plans, ignored core/DevTools documentation, original
+PoC notes, pending worktree documents, GC-196 and the future-work pairs. Added
+paired GM-010 onboarding and GM-015 catalogue with provenance, source state and
+SHA-256 records. The 655 prior snapshots and all source originals remain intact.
+No ownership transfer or automatic synchronization; core constitution and product
+contracts remain canonical in their owning repositories. Historical drafts are
+not promoted into approved plans. Recovery/session dumps, dependencies, runtime
+source, environment files, databases, packages and operational logs are excluded.
+
+Verified: all 824 archive hashes, all 169 new source-copy comparisons, maintained
+guide links and the three guide pairs' stable anchors. Historical source-link gaps
+are recorded separately. Both remote branches contain commit `8c84920`; main is
+the default reference and GitHub confirms repository privacy. fporcari has read
+access; no collaborator permission change was performed. Write access was offered
+as a separate question and is not assumed.
+
+Status: shared collection published. Publish/subscribe implementation scope and
+port plan still await owner review of GC-196; no runtime or release change.
+
+
+<a id="gc-070-880"></a>
+## 880 · Publish/subscribe access point named (2026-10-15)
+
+Owner resumed the porting discussion, asked whether messaging uses an object on
+Gramlot, and answered "si" to the explicit `gramlot.subscriptions` name/access-point
+question. Recorded the bounded naming decision in constitution 11.68 and GC-225
+§040, including the exception to the three-letter proxy rule. Both views agree.
+
+Only the name/access point is accepted. The illustrative methods, payload contract,
+Source declaration syntax, dispatch and cleanup semantics and first-release scope
+remain proposals/open decisions. The earlier page-only versus interframe question
+has not been answered. No runtime implementation, dependency changes or release.
+Next: settle the remaining contract one decision at a time, using GC-196 evidence.
+
+Verification: paired amendment, naming and status records checked for identical
+scope and matching stable anchors. Runtime tests do not apply to this decision-only
+record; no behavior is claimed as implemented or verified.
+
+
+<a id="gc-070-885"></a>
+## 885 · Complete messaging syntax prepared for staged porting (2026-10-15)
+
+Owner delegated the single-object publication choice ("sei tu che sai come
+funzionava. quindi se ti sembra corretto procedi pure") and then explicitly
+requested documentation of the complete syntax even if only part is implemented
+initially. Recorded the selected `publish(topic, payload)` object shape as a
+follow-up to constitution 11.68 / GC-225 §040, without approving every option.
+
+Prepared [GM-020](https://github.com/gramlot-org/gramlot-meta/blob/main/docs/020-publish-subscribe-port.md)
+and its compact counterpart in the private shared repository: twelve paired
+sections cover the accepted decision ledger, callback/handle surface, payload and
+provider argument proposals, Python/JS Source declarations, page/node/form scopes,
+local/parent/frame/window/page/user destinations, lifecycle/errors, typed transport
+boundaries, server-side proposal, legacy differences, implementation slices and
+chronological teaching. Accepted naming/payload decisions remain distinct from
+proposed scope/routing/dispatch behavior. No runtime feature is claimed available.
+
+The recommended first slice is page-local dispatch with dataController/formula;
+node/rendered/button/RPC extensions, related browsers and server delivery follow
+separately, with framework-form support dependent on its own component contract.
+All future syntax must be rejected explicitly until its capability is implemented;
+no no-op routes or implicit local fallback. Exact implementation scope and the
+remaining detailed semantics still need owner review of the prepared contract.
+
+Verification: 12 matching anchors, maintained document links, Python snippet
+parsing and five JavaScript syntax-only checks. Existing and new meta guide pairs
+also match. These are documentation checks, not runtime or transport qualification.
+The proposal is shared in gramlot-meta at `28f5efe`; core has documentation-only
+updates and no code or dependency changes. fporcari's previously authorized write
+access was verified, and the shared onboarding now reflects that permission.
+
+
+<a id="gc-070-890"></a>
+## 890 · Legacy object-reference investigation (2026-10-15)
+
+Owner requested the important legacy "jsref" deviation before proceeding with
+messaging. Found the concrete `js_sourceNode()` / `js_widget` / `js_domNode` /
+`js_form` authoring helpers and browser `pyref`, at legacy revision
+`fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea`. Python adds a `__ref` attribute and emits
+`==pyref(...)`; passing a GnrStructData directly as a child keyword value invokes
+js_sourceNode automatically. This conversion is shallow. Browser attribute
+resolution obtains the real current Source/widget/DOM/form object in that page.
+
+Real dialog/login examples use the helpers, including subscription controllers.
+Declared attributes are resolved after raw message payload fields are merged:
+payload strings do not automatically gain expression evaluation. Local live-object
+references and remote serialization are distinct. Missing/unbuilt targets have no
+implicit readiness wait; generated references are not durable remote identities.
+
+Recorded paired GM-025 in private gramlot-meta, linked from GM-020 as an open
+reference-authoring design dependency. The single-object payload does not exclude
+live local field values. No final Gramlot reference syntax, generic eval support,
+transport mechanism or runtime implementation is approved by this investigation.
+Verified 7 Python and 9 JS assertions on original extracted code, with controlled
+Source lookup in a VM. Not full browser/network/serialization qualification.
+Source locations/revision and assertion cases are retained in GM-025; guide
+anchors and local links checked. No legacy or Gramlot runtime changes.
+
+
+<a id="gc-070-895"></a>
+## 895 · Object-reference restoration included in messaging scope (2026-10-15)
+
+Owner explicitly required restoration of the legacy reference convenience within
+subscribe. Constitution 11.69 records the functional scope: authored references,
+automatic direct-node arguments and client object resolution for controllers;
+Source/DOM in the initial local slice, component/form references tied to their
+own contracts. Detailed helper syntax and timing/error semantics remain pending.
+
+Read-only comparison found the existing Gramlot reference infrastructure:
+`GramlotBuilder.reference(node, kind)`, descriptor `$gramlotRef`/`kind`, renderer
+`References` and `gramlot.dom.reference`. Current kinds are node/dom; existing
+cleanup/replacement/mounted checks must be reused. The missing author-argument
+integration must not become a second registry or generic expression evaluator.
+Updated GM-020's decision ledger, first-slice requirements and tests, and GM-025's
+approved follow-up, distinguishing existing behavior from work still to implement.
+
+Verification: two Python SourceTests and two selected JS source-contract tests
+pass, covering Source transport, reference resolution, replacement and deletion.
+These verify the existing foundation, not the new convenience or messaging.
+No runtime/dependency changes, no completed port or release claim.
+
+
+<a id="gc-070-900"></a>
+## 900 · Public publish entry point corrected (2026-10-15)
+
+Owner explicitly prefers `gramlot.publish`, with the subscription service used
+internally, potentially named `_subscriptions`. Constitution 11.70 and GC-225
+§040 supersede the earlier public service access point. GM-020 examples and
+acceptance ledger follow the correction; subscribe/unsubscribe placement remains
+proposed. No runtime changes or implementation test claims. Verified paired
+anchors and removed the contradictory prohibition of `gramlot.publish` from the
+maintained proposal; historical records remain historical.
+
+
+<a id="gc-070-905"></a>
+## 905 · Direct messaging methods and private service confirmed (2026-10-15)
+
+Owner confirmed `gramlot.subscribe` and `gramlot.unsubscribe` alongside
+`gramlot.publish`, with the exact private property `_subscriptions`. Updated
+constitution 11.70, GC-225 §040 and paired GM-020. Node-targeted publication syntax
+remains explicitly open for the next discussion; no proposal becomes accepted by
+this naming decision. Documentation consistency checks only; no runtime changes.
+
+
+<a id="gc-070-910"></a>
+## 910 · Action and ask included in controller design (2026-10-15)
+
+Owner requires button action, ask and chained button/controller/ask in the same
+messaging/controller design (11.71). Legacy inspection confirms button `action`
+with `ask`, nested controller activation via fireNode, and provider `_ask` before
+execution, including subscription triggers. String confirmation and parameter
+collection differ; results become run arguments with `_askResult`. A literal
+chain `.ask()` was not established in the inspected legacy source/examples.
+GM-020 records design coverage and qualification cases; exact syntax/implementation
+remain pending. Source inspection and paired-document checks only, no runtime changes.
+
+
+<a id="gc-070-915"></a>
+## 915 · Messaging release plan prepared for owner review (2026-10-15)
+
+Owner requested a logical plan for the 0.2.18 target before proceeding. Paired
+GM-030 in private gramlot-meta proposes: settle contracts; authored references;
+local page/node messaging; provider/button actions; ask; teaching/qualification.
+GM-010 links the plan; GM-020 retains the complete wider syntax and roadmap.
+
+Recommended release boundary is local messaging with references, actions and ask;
+interframe/windows/server/users and framework-form/widget scopes are documented
+future work. This boundary and the remaining detailed signatures are proposals,
+not owner-approved by the act of planning. Start by confirming the boundary, then
+node-target syntax; evaluate fluent ask and conditional behavior with the common
+provider flow. Missing dialog/input capability must be addressed explicitly.
+
+Verified paired plan anchors, local links, decision/proposal distinctions and the
+phase dependency sequence. Runtime inspection confirms existing references and
+nested provider activation, with ask/subscription declarations still excluded.
+No runtime edits, new runtime test results, package publication or deployment.
+
+
+<a id="gc-070-920"></a>
+## 920 · Parent/child messaging added to release proposal (2026-10-15)
+
+Owner prefers interframe in 0.2.18 so the primary page and its children can talk
+in both directions. Revised paired GM-030: explicit direct parent/selected-child
+exchange, followed by ask and qualification; seven phases. GM-010/020 linked
+coverage updated. Unrelated windows, server/users, recursive broadcast and remote
+live-object identity remain outside this bounded proposal. Frame addressing,
+transport/connection, readiness, serialization and lifecycle require decisions.
+
+Qualification includes child isolation, both directions, controller activation,
+reload/close and unexpected senders, across Python/Node/serverless (including
+file exports) and actual browsers. No automatic inspector bridge reuse or claim
+that local Source/DOM references cross frames. Checked plan mirrors and anchors;
+no runtime edits or new runtime tests. The full plan remains proposed for review.
+
+
+<a id="gc-070-925"></a>
+## 925 · Public themes and CSS guide (2026-10-15)
+
+Owner instruction in the themes/CSS documentation chat: "Crea una guida completa
+ai temi e ai CSS nel manuale pubblico, con catalogo delle variabili, esempi in
+Python e best practice per personalizzare un'applicazione", emphasizing clear
+explanations and examples. Scope is documentation of existing styling, without
+new theme APIs or runtime changes.
+
+Implemented paired GC-096 with a practical reading route, complete Python pages
+and companion CSS, expected results, Base/Compact setup, shared application CSS,
+cascade and scope, explicit/system colour modes, all 35 Base tokens, optional
+classes, reactive styles, shell/frame boundaries, best practices and troubleshooting.
+The guide enters the public Sphinx allowlist and navigation, with README/GC-095
+entry links. Documentation-map/build-policy references and the concise view agree.
+
+Verified all seven Python blocks by executing their declarations; checked complete
+token-name coverage against Base. Chromium checks through the core's loopback test
+server pass for Base, companion overrides, automatic dark mode, inherited Compact,
+reactive class/width/visibility, narrow layout and no page errors. The interactive
+snippet explicitly scopes its relative Data paths with datapath="appearance";
+the initial missing-context draft was corrected before delivery. Public Sphinx
+build passes with warnings treated as errors; generated pages, search, downloadable
+sources, local links and paired anchors pass. Desktop/mobile manual screenshots
+and rendered example screenshots were inspected. Guide-scoped table wrapping keeps
+all nine reference tables within the desktop content column, preserving the
+classic Read the Docs colours and typography. This is bounded Chromium evidence,
+not an accessibility or cross-browser certification.
+
+Existing CSS detail documented: explicit dark on a light system retains the blue
+focus token, whereas automatic dark sets yellow. No theme/runtime correction is
+part of this delivery. Guide implemented and locally verified; owner acceptance
+and publication remain separate. No deployment or release performed.
+
+
+<a id="gc-070-930"></a>
+## 930 · Visual results in the CSS guide (2026-10-15)
+
+Owner request in the themes/CSS documentation chat: "Negli esempi vorrei vedere
+anche il risultato grafico, non solo il codice, così si capisce subito cosa
+cambia quando personalizziamo i CSS." Scope: illustrate the existing guide with
+actual rendered results and show the updated local manual.
+
+Implemented six captioned comparisons using ten browser captures: Base before/
+after companion CSS, Base/Compact, scoped Summary tokens, larger root text/card
+padding, light/dark subtle surface, and initial/changed reactive controls.
+Twelve figures reuse the common baseline and link to full-size images. Captions
+name the corresponding declarations, mode or selected controls and their effects;
+static screenshots are explicitly distinguished from running the Python page.
+Paired guide, image allowlist and build/capture documentation updated.
+
+Verified each capture visually. The examples ran through the core loopback test
+host from temporary files extracted from the guide, using Gramlot Python Source
+and Data bindings. The reactive capture follows real select/checkbox actions.
+No runtime/theme edits, permanent core example app, or manual DOM construction.
+Sphinx strict build passes; public-page/search/source/link/mirrored-anchor checks
+pass for ten pages. In the rendered manual all twelve figures load, have alt text
+and stay within the content column, without horizontal page overflow. The first
+comparison was opened and inspected in the local browser preview. Implemented
+and locally verified; owner acceptance and publication remain separate.
+
+
+<a id="gc-070-935"></a>
+## 935 · Code beside results and reader-facing headings (2026-10-15)
+
+Owner request: "Mettiamo codice e risultato grafico affiancati, così si vede subito
+quale modifica CSS produce quel risultato." The owner also asked whether the
+visible `050`/`Block ID: GC-096-050` references are needed. They remain stable source
+identities; the rendered manual omits their standalone labels and heading prefixes.
+
+Implemented twelve code/result rows in GC-096, keeping complete Python examples,
+placing the relevant declarations beside their captures, and explicitly labelling
+the changed reactive Data values as a state snapshot rather than Python code.
+Rows use two columns at desktop widths and stack on narrow screens. Full-size
+image links remain. Sphinx renders clean titles in both headings and navigation;
+numbered sources, mirrors, source downloads, section IDs and explicit anchors stay.
+No framework or application theme changes. A new README link to GC-095 used a raw
+HTML fragment MyST could not resolve; it now links to the authoring guide, matching
+the other README entry and restoring the strict build.
+
+Verified: strict Sphinx build and public-doc boundary/link/mirrored-anchor checks
+pass for ten pages. Browser inspection confirms all twelve pairs have loaded images,
+two columns at desktop size and a single column in the narrow preview, without
+horizontal page overflow. The visible guide and its navigation have no metadata
+labels or numeric heading prefixes. Desktop screenshot inspected; temporary
+viewport override reset. Paired build notes and guide summary updated. Implemented
+and locally verified; owner acceptance and publication remain separate.
+
+
+<a id="gc-070-940"></a>
+## 940 · Legacy-shaped messaging and native ask implemented (2026-10-15)
+
+Owner authorized implementation after requesting legacy syntax preservation;
+constitution 11.72 records that instruction, postMessage-only interframe calls
+and explicit acceptance of native dialog/fields. GM-020/030 and their mirrors now
+replace the superseded third-argument routing/scope proposal with the executable
+contract and deferred grammar. PORT-0007 records the bounded port.
+
+Implemented page publish/subscribe/unsubscribe over private _subscriptions;
+legacy string/descriptor publication, Source self-topics, page/self declarations
+on controllers/formulas/RPCs and rendered nodes. Existing Provider owns precedence,
+filters, delays, cancellation and execution. Python/JS direct authored Source
+arguments use the existing reference registry, including non-DOM controller nodes.
+Live Source/DOM objects are rejected before frame/RPC serialization. No dependency
+source changes, compatibility aliases, form framework or server/user bus.
+
+Frame connections use postMessage exclusively with exact source/origin, readiness
+and session checks. Local delivery is synchronous before asynchronous forwarding;
+no queue or automatic retransmission. File/sandbox origins, load/reconnect,
+pagehide/pageshow and Source-owned frame removal are covered. Native ask uses
+Source/Data fields and named internal Logic, preserves legacy ask/_ask conditions,
+removes temporary state and prevents execution after cancellation/owner disposal.
+Fluent .ask, legacy widgets, unrelated windows and recursive broadcasts remain out.
+
+Added chronological development examples c18/c19 in gramlot-examples: revisit c06
+with page messages, self receivers/references and ask, then direct parent/child
+exchange. Python authored first with equivalent JS/shared Logic. GC-095 §115 and
+README link document the development feature without changing release numbers.
+
+Verified: core JavaScript 601/601; Python 139 plus 250 subtests; examples JavaScript
+64/64 and Python 16 plus 55 subtests. Core-owned browser harness passes on Chromium
+and Playwright WebKit, HTTP and file, including opaque child frames, typed values,
+reference routing, receiver controller, native modal confirmation/Escape and
+reload/disposal. Both lessons pass in Chromium and WebKit through Python/Uvicorn,
+Node and serverless directory export. WebKit coverage is not a claim of testing
+the installed Safari app; other Python adapters and Bun were not run for these
+new lessons. Core strict Sphinx/public-document checks pass. The examples strict
+Sphinx build and validation of 43 lessons, paired guides and local links pass.
+
+Verification found and fixed: file URL origin mismatch in Chromium, asymmetric
+ready handshake after load, live-object serialization, non-DOM controller reference
+registration and iframe connection cleanup. New regression tests preserve these
+cases. Full pytest was rerun against maintained tests, not archived temp material;
+fixture servers ran with loopback permission and an absolute Python interpreter.
+
+Implemented and locally verified; owner acceptance and publication remain separate.
+No version bump, package release or deployment. Next: owner review of this bounded
+0.2.18 implementation, then an explicitly authorized release if accepted.
+
+
+<a id="gc-070-945"></a>
+
+## 945 · Inspector CSS variable trial (2026-10-15)
+
+Owner: "si ma anche solo un modo di editare le variabili css", then "proviamo"
+for the bounded proposal; constitution 11.73. The third Styles tab is implemented
+for existing document-root --gramlot-* variables, grouped fields, hexadecimal
+colour pickers, live temporary previews and individual/all reset. Local and
+explicit MessagePort targets share tool-owned preview sheets. Removing the sheet
+reveals the current cascade without rewriting application Source or CSS files.
+
+Implemented and locally verified: 25/25 inspector/tool Node tests pass; the
+optional package artifact builds. Chromium and WebKit pass the Styles fixture
+(Base/Compact, 35 Base variables, text/colour edits, syntax rejection, references,
+reset against the current cascade, Source preservation, independent preview
+sheets, close/reconnect and empty state). The opaque-frame bridge checks pass in
+both engines, including target isolation, retained previews across selection,
+command rejection, close cleanup and preservation of another row's draft while
+a reply is delayed. Existing Data/Source/editor/breakpoint browser checks also
+pass in both engines. Documentation pairs have matching unique anchors.
+
+The colour picker follows the existing Gramlot change-event contract; other CSS
+values remain editable as text. Preview conflicts follow the ordinary cascade;
+inline-important or descendant declarations may win. Root variables only. No
+Firefox or branded Safari qualification is claimed for this trial. The standalone
+Source fixture is available with `tests/styles-browser.mjs --serve` from the tool
+folder; no integration-repository changes or publication were made. Visual
+capture: `/private/tmp/gramlot-inspector-styles-chromium.png`.
+
+Owner visual acceptance is pending. Persistence, theme selection and
+individual-element styling remain deferred; the next action is the owner's trial.
+
+Owner layout correction: "metti in colonna 1 il nome var in 2 il valore in 3
+il picker". Compact rows now use aligned name, value, colour picker, and reset
+columns, following the owner's clarification "metti il reset dopo il picker". Computed values move to field tooltips. Tool and optional
+package builds pass; the Styles browser checks pass again in Chromium and
+WebKit. Updated screenshot inspected and local preview refreshed. Owner visual
+acceptance remains pending.
+
+
+**Download follow-up (2026-10-15).** Owner "ok" to downloading only modified
+variables as `theme-overrides.css`; recorded in constitution 11.73. Implemented
+a Source-declared download link backed by a tool-owned Blob URL from applied
+overrides. Expressions and preview priorities are retained. No defaults or
+unapplied drafts, endpoint, theme selector or bridge command. URL cleanup covers
+replacement/reset/retarget/close; downloads are unavailable during requests.
+Verified: 25/25 Node tests, tool and optional package builds, Chromium/WebKit
+Styles download/reapplication and opaque-frame download isolation pass. Pending
+requests disable download. Screenshot inspected; local preview updated. Owner
+visual acceptance remains separate.
+
+
+<a id="gc-070-950"></a>
+## 950 · Larger inline CSS results (2026-10-15)
+
+Owner request: "Le immagini affiancate al codice sono un po' piccole: possiamo
+renderle più leggibili, così si vedono bene le differenze senza doverle aprire
+ogni volta?" Adjusted GC-096 presentation: at viewport widths of 1600px and above,
+code/result columns use a 1:3 ratio; below that threshold results occupy the full
+content width under the code. The guide content cap grows to 1440px. Images keep
+their original pixels and aspect ratio and never enlarge beyond 1080px. Paired
+guide/build descriptions updated; existing examples and application CSS unchanged.
+
+Verified strict Sphinx build and ten-page public-doc checks. Browser measurement
+at 1280px: preview width 861px (previously 489px), all images loaded, no horizontal
+page overflow. At 1760px: code/result widths 328/984px, no overflow; screenshot
+visually inspected. Temporary viewport reset and the user's guide refreshed.
+Implemented and locally verified; owner visual acceptance remains separate.
+
+
+<a id="gc-070-955"></a>
+## 955 · Read the Docs inspector embed trial (2026-10-15)
+
+Owner request: "Facciamo una prova con un esempio serverless incorporato in una
+pagina del manuale di gramlot-examples e verifichiamo che funzioni su Read the
+Docs. ad esempio dove parliamo del inspector". Scope: one existing Pointers
+example and the existing gallery inspector, exported with the public serverless
+build tool and served within the examples manual version. No core/runtime changes,
+CDN dependency or package release. The trial is on develop pending owner acceptance.
+
+Implemented in an isolated examples checkout to preserve unrelated ongoing work.
+Local verification: strict Sphinx build, all 41 lesson links/anchors and search
+coverage pass. Chrome loads the nested iframe, runs the Worker, updates the
+heading through the Caption input, and updates the example through inspector
+Data > settings.caption > Value. Native browser input confirms both directions.
+Read the Docs build [35170555](https://app.readthedocs.org/projects/gramlot-examples/builds/35170555/)
+succeeded for examples commit `0e8cb9c854d4727bd55badd170e58614272b3a26`.
+[Examples CI](https://github.com/gramlot-org/gramlot-examples/actions/runs/38758754933)
+also passed for that commit.
+Hosted Chrome verification passed: Caption input updates the heading and symbolic
+binding; inspector Data > settings.caption > Value updates those same outputs and
+the input; Source expands main and its children. No page console errors were
+captured. The example runtime and assets are served by Read the Docs itself.
+The [live trial](https://gramlot-examples.readthedocs.io/en/develop/docs/010-gallery.html#ge-010-042)
+is implemented and verified on develop. Owner acceptance and consolidation into
+main remain separate from this completed trial.
+
+
+**Compact embed follow-up (2026-10-15).** Owner: "bene. eviterei tutta la pagina
+contorno e fareu solo un blocchetto dove c'è l'esempio e senz ail codive a fianco".
+The manual export now runs Pointers directly, with only an Inspector button above
+it. The existing inspector palette attaches to that example; gallery navigation
+and the adjacent source pane are absent. No core/runtime changes. Local Chrome
+verification confirms inspector Data edits update the example; strict Sphinx and
+all public documentation checks pass, and all 62 examples tests pass.
+Examples develop commit `0fa91e1` passed CI run `38761416321`. Read the Docs build
+`35171072` successfully published the same commit (retry after build `35170994`
+failed during RTD upload, with all build commands already successful). Fresh HTTP
+responses contained the compact Pointers HTML and Worker, but browsers retained
+the previous gallery from cache. Following the owner's screenshot, the manual
+playground is now exported under `playgrounds/b01/`, separate from every former
+gallery asset path, and both the iframe and open-in-tab link use that location.
+The clean strict Sphinx build and all public page/link/anchor checks pass. Examples
+develop commit `6e063c5` passed CI run `38763870748` and Read the Docs build
+`35171361`. Hosted in-app browser verification passed: the manual iframe shows
+only Pointers and its Inspector button; Caption edits update the heading and
+symbolic binding, Inspector Data edits update those same outputs and the input,
+and the Source tab displays the source tree. Opening and closing the Inspector
+also works. The runtime and assets remain served entirely by Read the Docs.
+The compact embed is implemented and verified on develop. Owner acceptance and
+consolidation into main remain separate; main remains unchanged.
+
+
+**Gallery inspector icon (2026-10-15).** Owner requested a small emoji instead of
+the large inspector button. Python and JavaScript gallery footers now show only
+🔍 in a 28 × 28 px transparent button, retaining the Inspector accessible name,
+Open inspector tooltip, keyboard focus and pressed state. This shared gallery
+source also serves the serverless export; existing exports need regeneration.
+Verified: Python gallery page tests (3), JS gallery build tests (9), JavaScript
+syntax and whitespace checks. Chromium on the Python preview confirms dimensions,
+emoji, accessible label and palette opening. The separate inspector work is still
+in progress; the owner requested waiting and including it in the 0.2.18 release.
+No release or publication was performed for this UI change.
+
+
+<a id="gc-070-960"></a>
+## 960 · One inspector shared with Chrome DevTools (2026-10-15)
+
+Owner confirmation: "sì facciamo un unico inspector condiviso anche nei devtools".
+Constitution 11.74 authorizes this bounded core/extension integration. Implemented
+on develop; owner visual acceptance and consolidation remain separate.
+
+The extension imports the optional Gramlot inspector in embedded presentation:
+Data, Source, Styles, property editing, breakpoints and CSS download are the same
+implementation used in the page. The shared page agent has a separate optional
+package entry, with no bundled Bag or runtime. Chrome discovery, frame visibility
+and transport remain in gramlot-devtools. Its vendored PoC inspector, editor and
+Source subtype codec are removed. Core has no dependency on the extension and
+no new runtime discovery hook. No release, publication or deployment was made.
+
+Shared fixes retain snapshot sibling order/node identity, avoid duplicate CSS
+saves when leaving an Enter-confirmed field (which interrupted remote downloads),
+release old colour bindings before replacing rows, and give separately loaded
+agents unique subscription IDs so in-page and DevTools connections can coexist.
+The Chrome host keeps successful breakpoint settings across reconnects, while
+CSS previews are cleared on frame change, reload or panel close. Inspector copies
+use supported scalar descriptors and omit `_meta`; they are not Source subtype
+wire clones. Unsupported values stay read-only and resolvers remain unevaluated.
+
+Verified: core and extension builds; 27 shared-tool unit tests and five extension
+unit tests; shared UI, opaque-frame connection and Styles/download fixtures in
+Chromium and WebKit; MV3 feasibility without evaluation; all 22 routed extension
+checks and eight checks inside real Chromium DevTools; both extension manual
+builds with strict Sphinx and paired identities. The Styles panel was visually
+checked, including name/value/picker/reset and Download CSS. The extension has
+no unexpected browser errors. Tests also cover stale edits, live updates,
+Source DOM effects, frame isolation, worker restart, back/forward cache,
+conditional breakpoints, debugger writer stack, cleanup and independent agents.
+
+Firefox's installed headless executable failed at startup (profile folder error);
+this change is not Firefox-qualified. Chromium/WebKit do not qualify branded
+Chrome/Safari, and direct file-origin extension behavior is not newly qualified.
+The new package entry is available from the built local checkout; existing npm
+packages and release ZIPs are unchanged. Reload the unpacked extension from its
+rebuilt dist directory and reopen DevTools to use the shared inspector.
+
+
+**All lesson embeds (2026-10-15).** Owner: "Bene, facciamo lo stesso anche per gli
+altri esempi del manuale, ciascuno con il suo blocchetto per l'inspector usa solo
+uan emoji piccoal com e statamessa nell pagina indice". Extend the approved
+serverless manual presentation to every catalogue lesson and use the index's 🔍
+icon-only Inspector control (28px, accessible name retained). The documentation
+build now exports all 41 current examples, including their original Logic and
+same-name stylesheets, and inserts one lazy iframe before each lesson's details.
+The source remains below the lesson. No example behavior, core/runtime or adapter
+changes. All 62 examples tests and the strict Sphinx build pass; coverage checks
+verify one matching iframe per lesson, every export and all local links/anchors.
+Local browser checks confirm named Logic, endpoint execution and remote selection
+updates in the Worker. Develop commit 4008b78 passed CI run 38765864272 and Read
+the Docs build 35171705. Hosted HTTP checks verified all 41 lesson iframe targets
+and all 41 standalone exports. In the hosted c03 lesson, changing price to 120
+updated the result to 108; the compact Inspector opened and closed successfully.
+The development preview is implemented and verified; main consolidation remains
+subject to owner acceptance.
+
+
+**Dark-theme verification (2026-10-15).** Owner asked to test the reported
+invisible inspector trees in dark mode. No rendering change was made. The current
+shared inspector does not reproduce the defect: 36 geometry/contrast checks pass
+for Data and Source, normal and selected rows, covering Base light, Base dark,
+system dark and Compact dark in Chromium/WebKit, plus the actual routed extension
+panel with a dark inspected page and dark system preference. Measured label
+contrast is 6.12:1–10.37:1. Screenshots were visually reviewed.
+A separate real-DevTools check selects Dark, reloads the frontend and confirms
+`chrome.devtools.panels.themeName === 'dark'`: both trees remain visible with
+`rgb(56, 65, 75)` text over the panel's white background. The inspector intentionally
+keeps its existing light presentation; this verifies visibility under dark host
+themes, not a new dark inspector design. The result covers the current locally
+built shared inspector, not earlier released extension archives or arbitrary
+application stylesheet overrides. Branded Chrome/Safari were not separately run.
+
+
+<a id="gc-070-965"></a>
+## 965 · Integrated release preparation (2026-10-15)
+
+Owner: "ok procedi con la revisione conclusiva e poi chiudi la release 0.2.18 con
+bump versione, commit, push e pubblicazione", followed by "aspetta e mettiamo
+anche inspector" and "possiamo chiudere la release 0.2.18 con tutto dentro?".
+The shared inspector work is complete. Scope includes core messaging/ask/references,
+shared inspector/agent and Styles, teaching documentation and examples, and the
+corresponding Chrome extension. No store submission or application deployment.
+
+Final review found and fixed unconditional crypto.randomUUID calls in the new
+frame sessions and native ask dialog. They now use the established getRandomValues
+pattern so ordinary HTTP still works. The shipped-runtime qualification now opens,
+confirms and cleans up ask on both localhost and an ordinary HTTP origin. Messaging
+browser qualification is also part of CI. npm and JSR both export inspector-agent.
+
+Verified locally: 601 core JS tests, 139 Python tests and 250 subtests; 27 shared
+tool unit tests; inspector UI, opaque-frame bridge and Styles/download tests in
+Chromium and WebKit; HTTP/file messaging in both engines; eight shipped-runtime
+origin checks; extension unit, routed panel and real Chromium DevTools checks.
+The complete manual and examples are being consolidated with the previously
+completed serverless lesson embeds. Publication is pending, not yet confirmed.
+Firefox installed here fails to start (profile folder error); branded Safari and
+Chrome are not separately qualified. Deferred messaging/widget features remain
+explicit in GC-095 §115. No dependency source changes or alternate APIs introduced.

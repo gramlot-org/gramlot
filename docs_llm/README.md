@@ -3,7 +3,8 @@
 ## For application developers
 
 Start with [Classes and server adapters](public/090-classes-and-hosts.md), then
-[Writing pages](public/095-writing-pages.md) and [Extending Gramlot](public/100-extensions.md).
+[Writing pages](public/095-writing-pages.md), [Themes and CSS](public/096-themes-and-css.md)
+and [Extending Gramlot](public/100-extensions.md).
 These chapters describe the released core and explicitly mark gaps. They describe
 release **0.2.0 (HTML/SVG data binding)**, released on 2026-09-30; each chapter marks
 0.2.0 behavior. The repository README states the current release.

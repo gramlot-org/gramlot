@@ -66,6 +66,8 @@ jobs:
         run: |
           node scripts/verify_live_cards.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"
           node scripts/verify_live_playground.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"
+      - name: Browser check of messaging, references, ask and parent-child transport
+        run: node scripts/verify_messaging_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
       - name: Upload JavaScript coverage
         if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5

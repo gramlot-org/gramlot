@@ -19,8 +19,8 @@ from .source import GramlotBuilderBag
 DATA_FORBIDDEN = "data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element"
 # Declarations outside Gramlot 0.2.0 that fail explicitly (source plan, section 2).
 EXCLUDED_ELEMENTS = frozenset()
-EXCLUDED_ATTRIBUTES = frozenset({"serverpath", "dbenv", "shared_id", "_ask", "ask"})
-EXCLUDED_ATTRIBUTE_PREFIXES = ("subscribe_", "selfsubscribe_", "formsubscribe_")
+EXCLUDED_ATTRIBUTES = frozenset({"serverpath", "dbenv", "shared_id"})
+EXCLUDED_ATTRIBUTE_PREFIXES = ("formsubscribe_",)
 # P18 and B8: the Data path of each data-element, which does not accept `?attr`,
 # and its inline attribute, which excludes `func` on the same node, as `_if` does (Q11.1).
 DATA_PATH_ATTRIBUTES = {"dataSetter": "destination_path", "dataFormula": "result_path", "dataRpc": "result_path",
@@ -30,6 +30,13 @@ DATA_INLINE_ATTRIBUTES = {"dataFormula": "formula", "dataController": "script"}
 
 def data_element_error(tag, attrs):
     """The P18 violation of a data-element's attributes, or None."""
+    if "ask" in attrs and tag != "button":
+        return "'ask' is supported on buttons"
+    if "_ask" in attrs and tag not in ("dataController", "dataFormula", "dataRpc"):
+        return "'_ask' requires a controller, formula or RPC"
+    if tag in ("dataSetter", "dataRemote") and any(
+            name.startswith(("subscribe_", "selfsubscribe_")) for name in attrs):
+        return "topic subscriptions are supported on controllers, formulas, RPCs and rendered elements"
     path_name = DATA_PATH_ATTRIBUTES.get(tag)
     if path_name is not None and "?" in str(attrs.get(path_name, "")):
         return f"'{path_name}' does not accept '?attr': {attrs[path_name]!r}"
@@ -175,6 +182,8 @@ class GramlotBuilder(HtmlBuilder):
 
     def _add_element(self, build_where, node_value=None, node_label=None, node_tag="", **attr):
         """Builder's element insertion; a dict ``value`` of ``dataSetter`` becomes ``Bag(value)`` (P25)."""
+        attr = {key: self.reference(value) if isinstance(value, SourceBagNode) else value
+                for key, value in attr.items()}
         if node_tag == "dataSetter" and isinstance(attr.get("value"), dict):
             attr["value"] = Bag(attr["value"])
         return super()._add_element(build_where, node_value, node_label, node_tag, **attr)

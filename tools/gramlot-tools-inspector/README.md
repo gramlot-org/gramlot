@@ -1,9 +1,9 @@
 # gramlot-tools-inspector
 
 Optional in-page inspector for a live Gramlot instance. It opens a movable,
-resizable palette with Data and Source trees, a property editor and path breakpoints.
-It is a specific Web Component, separate from the Chrome DevTools extension and
-from Gramlot's future general component architecture.
+resizable palette with Data and Source trees, Styles, a property editor and path breakpoints.
+The Chrome DevTools extension imports this same component with `embedded` presentation.
+It remains a specific tool, separate from Gramlot's future general component architecture.
 
 Build and test from the repository root:
 
@@ -87,3 +87,39 @@ qualify branded Safari.
 
 Architecture, qualification and remaining limits:
 [GC-195](../../docs/internal/195-tools-inspector.md#gc-195-005).
+
+
+## CSS variables
+
+Open **Styles** to edit the selected document's `--gramlot-*` root variables.
+Use the colour picker or enter CSS text and press Enter/leave the field. Changes
+preview immediately; reset one row or **Reset all** to reveal the current theme.
+**Refresh** reloads values after external theme changes. Escape discards the field
+draft. The preview is temporary: local close/retarget clears it; with connected
+pages it remains until that page connection closes. **Download CSS** saves only the applied overrides as `theme-overrides.css`;
+load it after the theme stylesheet. Expressions and preview `!important` priorities
+are retained. The link is unavailable without changes or during pending operations.
+No endpoint is needed.
+
+Native pickers cover hexadecimal RGB values; other CSS values remain editable as
+text. The computed value appears in the field tooltip. The usual cascade still
+applies to descendant or inline-important overrides. Only root variables are
+shown; theme selection, element styling and persistence are deferred.
+
+Run `node tools/gramlot-tools-inspector/tests/styles-browser.mjs` from the repository
+root for Chromium/WebKit checks, or append `--serve` to open the local Source-based
+fixture interactively at the printed URL. Stop the fixture server when finished.
+
+
+## Embedded DevTools presentation
+
+Set `embedded` before attaching the element to fill its parent panel without the
+movable palette. Supply explicit `targets` connections as above; the component
+still owns every Data/Source/Styles interaction. Chrome discovery and routing
+remain in `gramlot-devtools`, which imports this tool rather than copying it.
+
+The optional `@gramlot/gramlot/tools/inspector-agent` entry exports the same
+`attachInspectorAgent` without a runtime dependency, for page-side injection.
+It uses the target's own Bag class. The panel imports `InspectorConnection` from
+`tools/inspector` and adapts Chrome messages to its MessagePort. No extension
+code or discovery hook is added to the core runtime.

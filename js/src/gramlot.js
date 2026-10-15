@@ -8,6 +8,7 @@ import {HttpTransport} from './http-transport.js';
 import {SourceHandler} from './handlers/source-handler.js';
 import {RpcHandler} from './handlers/rpc-handler.js';
 import {DomHandler} from './handlers/dom-handler.js';
+import {SubscriptionsHandler} from './handlers/subscriptions-handler.js';
 import {UtilitiesHandler} from './handlers/utilities-handler.js';
 
 /**
@@ -16,8 +17,9 @@ import {UtilitiesHandler} from './handlers/utilities-handler.js';
  */
 export class Gramlot {
     constructor({pageId, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
-                 element = null, document = globalThis.document, transport = null, collections = []} = {}) {
+                 element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = []} = {}) {
         this.pageId = pageId;
+        Object.defineProperty(this, '_subscriptions', {value: new SubscriptionsHandler(this)});
         this.capabilities = Object.freeze([...capabilities]);
         this.src = new SourceHandler(this, {collections, destination: element ?? document.getElementById(rootId)});
         this.data = this.src.builder.data;
@@ -25,6 +27,7 @@ export class Gramlot {
         this.dom = new DomHandler(this);
         this.utl = new UtilitiesHandler(this, document);
         this.state = 'ready';
+        this._subscriptions.attach(document);
         this.abort = new AbortController();
         if (this.rpc.transport instanceof HttpTransport) {
             this.pagehide = event => { if (!event.persisted) this.dispose({beacon: true}); };
@@ -32,6 +35,10 @@ export class Gramlot {
             this.window = document.defaultView;
         }
     }
+    publish(topic, payload = {}) { return this._subscriptions.publish(topic, payload); }
+    subscribe(topic, callback) { return this._subscriptions.subscribe(topic, callback); }
+    unsubscribe(registration) { this._subscriptions.unsubscribe(registration); }
+
     start() {
         if (this.state === 'disposed') return Promise.reject(new Error('Gramlot is disposed'));
         if (!this.rpc.transport) return Promise.reject(new Error('This Gramlot instance has no server transport'));
@@ -54,6 +61,7 @@ export class Gramlot {
     dispose({beacon = false} = {}) {
         if (this.state === 'disposed') return;
         this.state = 'disposed';
+        this._subscriptions.dispose();
         if (this.pagehide) this.window.removeEventListener('pagehide', this.pagehide);
         this.abort.abort();
         for (const request of this.rpc.remoteRequests.values()) request.controller.abort();

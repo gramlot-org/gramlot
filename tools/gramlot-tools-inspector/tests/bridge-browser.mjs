@@ -32,7 +32,7 @@ if(location.pathname==='/child.html') {
  });
  frame.src='/child.html';
 }`;
-const html = child => `<!doctype html><meta charset="utf-8"><script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js"}}</script><main></main>${child?'':'<iframe sandbox="allow-scripts"></iframe>'}<script type="module" src="/fixture.js"></script>`;
+const html = child => `<!doctype html><meta charset="utf-8"><style>:root{--gramlot-action:#456bc4;--gramlot-space-4:1rem}main{color:var(--gramlot-action)}</style><script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js"}}</script><main></main>${child?'':'<iframe sandbox="allow-scripts"></iframe>'}<script type="module" src="/fixture.js"></script>`;
 const files = new Map([['/',html(false)],['/child.html',html(true)],['/fixture.js',bootstrap],['/core.js',core.outputFiles[0].text],['/inspector.js',await readFile(new URL('../dist/gramlot-tools-inspector.js',import.meta.url),'utf8')]]);
 const server=createServer((request,response)=>{
  response.writeHead(200,{'Content-Type':request.url.endsWith('.js')?'text/javascript':'text/html','Access-Control-Allow-Origin':'*',
@@ -81,10 +81,51 @@ try {
    await tool.locator('gramlot-poc-tree[data-root=source] [data-node-path="main.greeting"]').click();
    await tool.getByLabel('Value',{exact:true}).fill('Remote Source');await tool.getByLabel('Value',{exact:true}).press('Enter');
    await child.waitForFunction(()=>app.src.source.getItem('main.greeting')==='Remote Source');
+   await tool.getByRole('tab',{name:'Styles',exact:true}).click();
+   const color=tool.getByLabel('--gramlot-action value',{exact:true});
+   await color.fill('#cc2244');await color.press('Enter');
+   await child.waitForFunction(()=>getComputedStyle(document.querySelector('main')).color==='rgb(204, 34, 68)');
+   assert.equal(await page.evaluate(()=>getComputedStyle(document.querySelector('main')).color),'rgb(69, 107, 196)');
+   await select.selectOption('top');
+   await page.waitForFunction(()=>inspector.shadowRoot.querySelector('[aria-label="--gramlot-action value"]')?.value==='#456bc4');
+   await color.fill('#228866');await color.press('Enter');
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('main')).color==='rgb(34, 136, 102)');
+   await select.selectOption('child');
+   await page.waitForFunction(()=>inspector.shadowRoot.querySelector('[aria-label="--gramlot-action value"]')?.value==='#cc2244');
+   const exportLink=tool.getByText('Download CSS',{exact:true});
+   const downloadEvent=page.waitForEvent('download');
+   await exportLink.click();
+   const download=await downloadEvent;
+   assert.equal(download.suggestedFilename(),'theme-overrides.css');
+   assert.equal(await readFile(await download.path(),'utf8'),'/* Gramlot overrides. Load after the theme stylesheet. */\n:root {\n  --gramlot-action: #cc2244 !important;\n}\n');
+   await tool.getByLabel('Reset --gramlot-action',{exact:true}).click();
+   await child.waitForFunction(()=>getComputedStyle(document.querySelector('main')).color==='rgb(69, 107, 196)');
+   await assert.rejects(page.evaluate(()=>connections[1].request('setStyle',{name:'--other-variable',value:'red'})),/existing --gramlot/);
+   await assert.rejects(page.evaluate(()=>connections[1].request('setStyle',{name:'--gramlot-action',value:'red; color:red'})),/valid CSS/);
+   // A reply to one row must not replace the next row's still-unsubmitted draft.
+   await page.evaluate(()=>{
+    const connection=connections[1], request=connection.request.bind(connection);
+    connection.request=async (type,command)=>{
+     await request(type,command);
+     if(type==='setStyle')await new Promise(resolve=>{window.releaseStyleReply=resolve;});
+    };
+    window.restoreStyleRequest=()=>{connection.request=request;};
+   });
+   await color.fill('#cc2244');
+   const spacing=tool.getByLabel('--gramlot-space-4 value',{exact:true});
+   await spacing.fill('2rem');
+   await child.waitForFunction(()=>getComputedStyle(document.querySelector('main')).color==='rgb(204, 34, 68)');
+   await page.waitForFunction(()=>typeof window.releaseStyleReply==='function');
+   assert.equal(await exportLink.getAttribute('href'),null);
+   await page.evaluate(()=>{releaseStyleReply();restoreStyleRequest();});
+   await page.waitForFunction(()=>[...inspector.shadowRoot.querySelectorAll('button')].some(button=>button.textContent==='Refresh'&&!button.disabled));
+   assert.equal(await spacing.inputValue(),'2rem');
    await page.evaluate(()=>{inspector.remove();for(const connection of connections)connection.close();});
    await child.waitForFunction(()=>Object.keys(app.data._updSubscribers).every(id=>!id.startsWith('inspector-bridge-')));
+   await child.waitForFunction(()=>getComputedStyle(document.querySelector('main')).color==='rgb(69, 107, 196)');
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('main')).color==='rgb(69, 107, 196)');
    assert.deepEqual(errors,[]);
-   console.log(`${engine.name()}: PASS — opaque frame, shell/child selection, Data/Source edits, page CSP, target-local breakpoint${engine===chromium?', debugger writer stack':''}, cleanup`);
+   console.log(`${engine.name()}: PASS — opaque frame, shell/child selection, Data/Source edits, CSS previews/reset/isolation, page CSP, target-local breakpoint${engine===chromium?', debugger writer stack':''}, cleanup`);
   } finally {await browser.close();}
  }
 } finally {await new Promise(resolve=>server.close(resolve));}

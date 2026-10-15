@@ -20,6 +20,10 @@ for (const target of ['', '../src/gramlot/resources/']) {
         await cp(path(`../${name}`), path(`${target}${name}`), {recursive: true});
     }
 }
+// Page-side optional agent is independent of the application runtime bundle.
+await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/inspector-agent.js')],
+    outfile: path('tools/inspector-agent.js'), bundle: true, format: 'esm',
+    platform: 'browser', target: 'es2022'});
 // Optional inspector artifact: shipped separately, never imported by the runtime entry.
 await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/gramlot-tools-inspector.js')],
     outfile: path('tools/gramlot-tools-inspector.js'), bundle: true, format: 'esm',

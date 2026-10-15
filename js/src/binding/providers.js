@@ -1,3 +1,4 @@
+import {AskDialog} from './ask-dialog.js';
 import {Bag} from '@genrojs/bag';
 import {RpcResolver} from './rpc-resolver.js';
 
@@ -17,6 +18,7 @@ import {RpcResolver} from './rpc-resolver.js';
 const CONTROL_ATTRIBUTES = new Set([
     'destination_path', 'result_path', 'func', 'formula', 'script', 'if', 'else',
     '_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges',
+    '_ask', '_ask_if', '_ask_title', '_ask_onCancel',
     'method', 'timeout', '_onCalling', '_onResult', '_onError', 'cacheTime',
 ]);
 
@@ -70,6 +72,22 @@ export class Provider {
             this.#registrations.push(registration);
             if (name === '_timing') this.#timingRegistration = registration;
         }
+        const subscriptions = this.binding.runtime.gramlot._subscriptions;
+        for (const name of Object.keys(node.getAttr())) {
+            const prefix = name.startsWith('selfsubscribe_') ? 'selfsubscribe_' : name.startsWith('subscribe_') ? 'subscribe_' : null;
+            if (!prefix) continue;
+            const topic = prefix === 'selfsubscribe_'
+                ? subscriptions.topicFor(node, name.slice(prefix.length)) : name.slice(prefix.length);
+            // Legacy provider declarations subscribe by presence, including a false value.
+            const handle = subscriptions.subscribe(topic, payload => {
+                const trigger = {kind: 'subscription', topic, payload};
+                if (this.#resolved('_userChanges') && topic !== 'node') return;
+                const delay = this.#resolved('_delay');
+                if (delay > 0) this.#debounce(trigger, delay);
+                else this.invoke(trigger);
+            });
+            this.#registrations.push({close: () => subscriptions.unsubscribe(handle)});
+        }
         this.#startTiming();
         if (this.kind === 'remote') this.invoke({kind: 'install', change: null});
     }
@@ -110,6 +128,22 @@ export class Provider {
         const rpc = this.kind === 'rpc';
         const remote = this.kind === 'remote';
         const kwargs = this.readArguments(trigger);
+        if (trigger.askResult) {
+            Object.assign(kwargs, trigger.askResult);
+            kwargs._askResult = trigger.askResult;
+        }
+        const ask = node.getAttr('_ask');
+        if (ask && !trigger.askDone && AskDialog.required(this.binding, ask, kwargs, '_ask')) {
+            return AskDialog.show(this.binding, ask, kwargs, node.getAttr('_ask_title') ?? 'Warning').then(result => {
+                if (this.binding.closed) return;
+                if (result === null) {
+                    const cancel = node.getAttr('_ask_onCancel');
+                    if (cancel) this.#inline('_ask_onCancel', cancel, cancel, kwargs, true);
+                    return;
+                }
+                return this.invoke({...trigger, askDone: true, askResult: result});
+            });
+        }
         let [attr, body] = [formula ? 'formula' : 'script', node.getAttr(formula ? 'formula' : 'script')];
         // Truthiness of `_if`, `_else` and the body, as legacy (`gnrdomsource.js:371-385, 473-482`).
         const condition = node.getAttr('_if');
@@ -148,12 +182,13 @@ export class Provider {
     readArguments(trigger) {
         const node = this.node;
         const [, attrs] = node.builder.runtimeValues(node);
-        const kwargs = {};
-        for (const [name, value] of Object.entries(attrs)) {
-            if (!CONTROL_ATTRIBUTES.has(name)) kwargs[name] = value;
-        }
+        const authored = Object.fromEntries(Object.entries(attrs).filter(([name]) =>
+            !CONTROL_ATTRIBUTES.has(name) && !name.startsWith('subscribe_') && !name.startsWith('selfsubscribe_')));
+        const kwargs = {...(trigger.kind === 'subscription' ? trigger.payload : {}),
+            ...this.binding.runtime.renderer.references.resolveArguments(authored)};
+        if (trigger.kind === 'subscription') kwargs._subscription_kwargs = trigger.payload;
         const change = trigger.change ?? null;
-        const reason = change ? change.level : trigger.kind;
+        const reason = change ? change.level : trigger.kind === 'subscription' ? trigger.topic : trigger.kind;
         kwargs._node = change ? change.node : null;
         kwargs._triggerpars = {kw: change, trigger_reason: reason};
         kwargs._reason = reason;
@@ -330,7 +365,7 @@ export class RemoteProvider extends Provider {
 }
 
 // The trigger fields of the kwargs, in the legacy order of the inline parameters.
-const TRIGGER_FIELDS = ['_node', '_triggerpars', '_reason'];
+const TRIGGER_FIELDS = ['_node', '_triggerpars', '_reason', '_subscription_kwargs', '_askResult'];
 // The fields a click adds (P9): locals of the inline bodies, never author arguments.
 const CLICK_FIELDS = ['_evt', 'button_counter', 'button_shift', 'button_ctrl', 'button_alt', 'button_meta'];
 

@@ -46,8 +46,8 @@ class ForbiddenDeclarationTests(unittest.TestCase):
 
     def test_excluded_declarations_are_errors_naming_the_tag(self):
         builder = GramlotBuilder()
-        for name in ("serverpath", "dbenv", "shared_id", "_ask", "ask",
-                     "subscribe_x", "selfsubscribe_x", "formsubscribe_x"):
+        for name in ("serverpath", "dbenv", "shared_id",
+                     "formsubscribe_x"):
             with self.subTest(name=name), self.assertRaisesRegex(
                     ValueError, rf"div: attribute '{name}' is excluded from Gramlot 0\.2\.0"):
                 builder.root.div(**{name: "v"})

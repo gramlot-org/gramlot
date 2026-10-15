@@ -2,6 +2,9 @@
 
 Document ID: **GC-095**.
 
+For appearance, use [Themes and CSS](096-themes-and-css.md): complete Python
+examples, variable and class catalogues, overrides and light/dark customization.
+
 > **Scope.** This is the maintained authoring guide. The repository README states
 > the current release. Dated release notes below describe when behavior entered;
 > they are not a list of current exclusions. Development-only differences are marked.
@@ -636,7 +639,9 @@ merge, `_resolved`, `_fired`; the alias `data(path, remote=…)` is not accepted
 
 ## 110 · A reusable application index and an installable root
 
-Block ID: **GC-095-110**. Introduced in core 0.2.17.
+Block ID: **GC-095-110**.
+
+Introduced in core 0.2.17.
 
 `IndexPage` supplies grouped navigation, a resizable sidebar and iframe tabs. A
 page opens on first selection; selecting it again reuses the same iframe and its
@@ -778,3 +783,134 @@ in the browser, but installation still needs a static HTTP(S) origin. Opening
 `index.html` directly from disk remains supported for running a directory export;
 it is not the installation path. This feature adds no service worker or offline
 cache, and does not install anything without the user's browser confirmation.
+
+<a id="gc-095-115"></a>
+
+## 115 · Messages, authored references and ask
+
+Page and Source-node topics extend the existing controller pipeline. Earlier
+release sections retain their original scope. The matching gallery lessons are
+**Publish and subscribe** and **Parent and child messages**.
+
+### Reuse a controller from a click or a message
+
+```python
+from gramlot import Page as BasePage
+
+
+class Page(BasePage):
+    def main(self, root):
+        pane = root.main(datapath="messages")
+        pane.p("^.summary")
+        pane.dataController("this.SET('.summary', text)", subscribe_saved=True)
+        pane.button("Publish").dataController(
+            "gramlot.publish('saved', {text: 'Hello'})")
+```
+
+`subscribe_saved=True` activates that controller whenever the page publishes
+`saved`. No Data trigger path is needed. Repeating the same message delivers it
+again. Use `func` with a named Logic method for reusable behavior and strict CSP;
+the inline snippets here require the existing permissive inline-code policy.
+
+A message adds named arguments. Declared controller arguments take precedence;
+`_reason` is the topic and `_subscription_kwargs` is the original payload.
+Data triggers and messages share the same controller/formula/RPC implementation,
+including `_delay`, `_if`/`_else` and lifecycle. As in legacy, a provider subscription
+registers by declaration presence, even with `False`. `_userChanges` retains its
+exact-level filter: ordinary topic names do not pass that filter.
+
+For an imperative subscription:
+
+```javascript
+const handle = gramlot.subscribe('saved', payload => console.log(payload.text));
+gramlot.publish('saved', {text: 'Hello'});
+gramlot.unsubscribe(handle);
+```
+
+Callbacks run synchronously in registration order; equal payloads are not suppressed.
+Exceptions stop the remaining callbacks. Nested publication is allowed. A registration
+added during delivery starts with the next publication; removal is immediate.
+Unsubscribe handles belong to their page. Declarative subscriptions disappear with
+the Source node; imperative subscriptions last until unsubscribed or page disposal.
+Returned callback promises are not awaited by `publish`.
+
+### Address an individual Source node
+
+```python
+target = pane.div(selfsubscribe_refresh="this.SET('.summary', p_0.text)")
+pane.button("Refresh", target=target,
+            action="target.publish('refresh', {text: 'Updated'})")
+```
+
+Passing the Source node directly as a Python or JS attribute creates the existing
+`$gramlotRef` descriptor. At execution Gramlot resolves the current mounted node.
+An explicit `builder.reference(node, kind="dom")` requests its DOM element.
+Conversion applies to direct authored arguments, not arbitrary nested data.
+Removed references fail explicitly, including after an ask wait.
+
+`target.publish` addresses its `selfsubscribe_refresh` handler. Rendered-node inline
+handlers receive the single payload as `p_0`; dotted named Logic handlers receive
+`(node, payload)`. Providers use their usual argument signatures. A node with
+`node_id="editor"` can also receive
+`gramlot.publish({topic: 'refresh', nodeId: 'editor'}, {text: 'Updated'})`.
+Source `subscribe`/`unsubscribe` retain their existing Bag-observation meaning;
+they are not topic APIs. Node self-topics retain legacy qualified topic naming.
+
+### Ask before executing
+
+```python
+pane.button("Send").dataController(
+    "gramlot.publish('saved', {text})",
+    _ask=dict(title="Message", fields=[
+        dict(name="text", lbl="Message", required=True)
+    ]),
+    text="Hello")
+```
+
+The internal dialog uses Gramlot Source, Data and native HTML controls. Confirm
+runs the controller once; Cancel or Escape runs no action. Values entered in the
+dialog override current arguments and are also available as `_askResult`. A node
+removed while waiting cannot execute later. Temporary Source and Data are removed
+when the dialog closes. Repeated activations create separate prompts.
+
+Use `ask` for a button `action`, `_ask` for a controller, formula or RPC. A string
+`_ask="Proceed?"` accepts `_ask_title`, `_ask_if` and `_ask_onCancel`. A false
+`_ask_if` skips the prompt and continues execution. A dictionary accepts `title`,
+`msg`, `fields`, `_if` and legacy `askIf`; dictionary `_if` controls prompting.
+The legacy `askIf` option by itself does **not** suppress the dialog when false;
+its modifier options are deferred. Provider `_if` is evaluated after ask, as in
+legacy. There is no fluent `.ask()` method.
+
+Each field requires a unique simple `name`; optional `lbl` is its label. Supported
+fields: native `input` or `textarea`, input types `text`, `number`, `date`,
+`checkbox`, `email`, `password`, `url`, `tel`; options `default_value`, `required`,
+`min`, `max`, `step`, `placeholder`. Current arguments supply initial values before
+field defaults. Native browser validity checks apply. Unsupported legacy widgets
+or options raise an error; no general widget collection is implied.
+
+### Publish to a parent or selected child
+
+```javascript
+gramlot.publish({topic: 'refresh', iframe: 'detail'}, {text: 'Hello'});
+gramlot.publish({topic: 'refresh', parent: true}, {text: 'Reply'});
+```
+
+The `iframe` selector accepts its HTML ID or a local iframe Source reference passed
+from Python. `parent` addresses the direct parent. The descriptor replaces the
+first topic argument, as in legacy; there is no third routing argument.
+
+Local subscribers run first, then forwarding uses `postMessage`, even for same-origin
+frames. The receiving page activates its ordinary subscriptions and does not forward
+again automatically. The target must be a connected, ready Gramlot page. Invalid or
+unready targets fail before local delivery; no queue, replay or acknowledgement is
+provided. A local callback error prevents forwarding. Reloading a child establishes
+a new session; disposed/stale sessions are rejected.
+
+The connection checks the exact parent/owned iframe window, expected origin and
+session. Opaque sandbox/file origins use wildcard targetOrigin with the exact
+window/session checks retained. Payloads cross as TYTX data. Live Source/DOM
+objects remain local and are rejected by frame and RPC transport; the iframe
+reference selects a local destination, not a remote live object.
+
+Recursive `iframe:'*'`, unrelated windows, forms, server/user recipients and combined
+remote `nodeId` routing are deferred. Unsupported descriptor keys fail explicitly.

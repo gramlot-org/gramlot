@@ -12,6 +12,9 @@ function page() {
 
 test('a Gramlot instance has only lifecycle, Data and the four proxies as own members', () => {
     const app = page();
+    assert.equal(Object.getOwnPropertyDescriptor(app, '_subscriptions').enumerable, false);
+    for (const name of ['publish', 'subscribe', 'unsubscribe']) assert.equal(typeof app[name], 'function');
+    assert.equal(app.subscriptions, undefined);
     assert.deepEqual(Object.keys(app).sort(),
         ['abort', 'capabilities', 'data', 'dom', 'logic', 'pageId', 'rpc', 'src', 'state', 'utl']);
 });

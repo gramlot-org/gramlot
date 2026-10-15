@@ -11,7 +11,7 @@ export {SourceHandler} from './handlers/source-handler.js';
 export {RpcHandler} from './handlers/rpc-handler.js';
 export {DomHandler} from './handlers/dom-handler.js';
 export {UtilitiesHandler} from './handlers/utilities-handler.js';
-export type {GramlotOptions, GramlotState} from './gramlot.js';
+export type {GramlotOptions, GramlotState, Publication, SubscriptionHandle} from './gramlot.js';
 export {PageBootstrap} from './bootstrap.js';
 export type {PageBootstrapOptions, PageResources} from './bootstrap.js';
 export {Page} from './server/page.js';

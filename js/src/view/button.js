@@ -9,6 +9,7 @@
  * native. A closed NodeBinding does nothing (R12).
  */
 
+import {AskDialog} from '../binding/ask-dialog.js';
 import {XHTML_NS} from '../renderer/attributes.js';
 
 export class ButtonBinding {
@@ -102,9 +103,22 @@ export class ButtonBinding {
             const provider = this.binding.runtime.bindingFor(this.controllers[0])?.providers[0];
             provider?.invoke({kind: 'click', event, counter});
         } else if (mechanism === 'action') {
-            const [, attrs] = node.builder.runtimeValues(node);
-            const values = {...attrs, event, _counter: counter, modifiers};
-            this.binding.runtime.inlineCompiler.compile(node, 'action', node.getAttr('action'), Object.keys(values))(values);
+            const read = () => {
+                const [, attrs] = node.builder.runtimeValues(node);
+                const authored = Object.fromEntries(Object.entries(attrs).filter(([name]) => name !== 'ask'));
+                return {...this.binding.runtime.renderer.references.resolveArguments(authored), event, _counter: counter, modifiers};
+            };
+            const execute = result => {
+                if (this.binding.closed || result === null) return;
+                const values = {...read(), ...result};
+                if (result) values._askResult = result;
+                this.binding.runtime.inlineCompiler.compile(node, 'action', node.getAttr('action'), Object.keys(values))(values);
+            };
+            const ask = node.getAttr('ask');
+            if (ask && AskDialog.required(this.binding, ask, read(), 'ask')) {
+                return AskDialog.show(this.binding, ask, read()).then(execute);
+            }
+            execute(undefined);
         } else {
             const attributes = {modifier: modifiers, _counter: counter};
             // `fire` wins over the `fire_*` of the same button, as the legacy chain.

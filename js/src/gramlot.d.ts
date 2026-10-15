@@ -5,6 +5,7 @@
  */
 import type {DomElement, DomDocument, DomEvent, DomWindow} from './dom.d.ts';
 import type {Bag} from '@genrojs/bag';
+import type {SourceBagNode} from '@genrojs/builders';
 import type {RpcTransport} from './handlers/rpc-handler.js';
 import type {SourceHandler} from './handlers/source-handler.js';
 import type {RpcHandler} from './handlers/rpc-handler.js';
@@ -36,6 +37,13 @@ export interface GramlotOptions {
 /** The lifecycle state of a `Gramlot` instance. */
 export type GramlotState = 'ready' | 'loading' | 'started' | 'failed' | 'disposed';
 
+/** Opaque registration returned by subscribe; meaningful only to its owning page. */
+export interface SubscriptionHandle { readonly __subscriptionHandle: unique symbol; }
+
+/** Legacy-shaped publication. Frame forwarding follows synchronous local delivery. */
+export type Publication = string | {topic: string; nodeId: string} |
+    {topic: string; parent?: boolean; iframe?: string | SourceBagNode};
+
 /** One Gramlot page: lifecycle, Data and the four proxies `src`, `rpc`, `dom`, `utl`. */
 export class Gramlot {
     /** The id of the server page. */
@@ -66,6 +74,12 @@ export class Gramlot {
     pagehide?: (event: DomEvent) => void;
     /** Create the page instance; the construction order is the one of the source plan. */
     constructor(options?: GramlotOptions);
+    /** Publish one named payload; forwarding uses postMessage and requires a ready page. */
+    publish(topic: Publication, payload?: Record<string, unknown>): void;
+    /** Subscribe to a local page topic, synchronously in registration order. */
+    subscribe(topic: string, callback: (payload: Record<string, unknown>) => unknown): SubscriptionHandle;
+    /** Remove a registration; repeating removal of an owned handle is harmless. */
+    unsubscribe(registration: SubscriptionHandle): void;
     /** Load `main` from the server and mount it; resolves with the instance. */
     start(): Promise<Gramlot>;
     /** Request `main` from the transport and mount it. */

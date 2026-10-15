@@ -7,6 +7,7 @@
 import {fromTytx, toTytx} from '@genrojs/tytx';
 import {Handler} from './handler.js';
 import {HttpTransport} from '../http-transport.js';
+import {assertTransportData} from '../references.js';
 
 /** A request id: 16 random bytes as 32 hex characters; getRandomValues, unlike randomUUID,
  * exists outside secure contexts too. */
@@ -35,6 +36,7 @@ export class RpcHandler extends Handler {
     /** Send one envelope of `contentType` to `name` with `params`; resolves with the value or rejects with an RpcError. */
     async call(contentType, name, params = {}, {signal} = {}) {
         if (!this.transport?.call) throw new Error(`rpc '${name}' is unavailable without a server transport`);
+        assertTransportData(params);
         const id = requestId();
         const text = toTytx({id, pageId: this.gramlot.pageId, contentType, name, params});
         const response = fromTytx(await this.transport.call(text, signal));

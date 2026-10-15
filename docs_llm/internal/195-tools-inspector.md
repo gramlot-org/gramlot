@@ -9,8 +9,9 @@ Document ID: **GC-195**. Constitution 11.61 approves this specific tool only.
 
 Block ID: **GC-195-005**.
 
-`tools/gramlot-tools-inspector/` is an optional in-page Web Component, separate from
-the Chrome extension and the future general component architecture. Its palette shows Data/Source trees, cached values and attributes with live updates,
+`tools/gramlot-tools-inspector/` is an optional Web Component shared by the in-page
+palette and separately owned Chrome extension (§050), outside the future general
+component architecture. Its palette shows Data/Source trees, cached values and attributes with live updates,
 selection, collapsed branches, move, resize and close/reconnect, plus the editor and
 path breakpoints in §025. It does not execute deferred resolvers, discover frames
 or provide browser-debugger privileges.
@@ -259,3 +260,82 @@ Qualification includes a core-only opaque-origin iframe fixture, typed snapshots
 revision conflicts, metadata/identity preservation, agent disposal, Data/Source
 editing, target CSP and synchronous writer-stack checks. Integrated gallery
 results are recorded in GC-070; core tests do not depend on gallery repositories.
+
+
+<a id="gc-195-045"></a>
+
+## 045 · CSS variable trial
+
+Block ID: **GC-195-045**. Approved by "proviamo", constitution 11.73.
+
+**Styles** edits existing document-root `--gramlot-*` variables, grouped by
+colours, typography, spacing, dimensions, effects and other values. CSS text
+applies on Enter/change; hexadecimal RGB pickers use the existing colour
+control's change event. Compact rows align four columns: name, value,
+colour picker, reset. Truncated names retain full-name tooltips; computed values
+appear in value-field tooltips separately from entered expressions.
+Escape reloads drafts; **Refresh** rereads external theme/stylesheet changes.
+No polling or arbitrary rule inspection.
+
+`InspectorStyles` owns one temporary `:root` stylesheet per local tool or agent.
+Individual reset removes a declaration; **Reset all** removes the sheet and
+reveals the current cascade. Application Source, inline styles and files remain
+untouched. Independent sheets support multiple sessions. Overrides use
+`!important`, subject to the cascade (inline important/descendant rules can win).
+CSS syntax validity does not imply a valid value for every consuming property.
+Blocked preview stylesheets report an error.
+
+Local close/retarget removes previews. Connected previews survive target selection
+until their agent connection closes or the page exits. Commands `styles`,
+`setStyle`, `resetStyle`, `resetStyles` use the existing explicit MessagePort;
+no live DOM crosses it. Replies carry current values; old-target replies and
+unrelated field acknowledgements cannot overwrite the current draft.
+
+Only root variables: element styling, general CSS, theme switching and
+persistence are deferred. Owner visual acceptance remains pending. GC-070 §945
+records checks. From the repository root, build the tool then run
+`node tools/gramlot-tools-inspector/tests/styles-browser.mjs --serve` for the local
+Source fixture; stop its server after use.
+
+**Download CSS** saves `theme-overrides.css` with only the selected target's
+applied overrides in a `:root` rule. CSS expressions and preview `!important`
+priorities are preserved; computed defaults and unapplied drafts are excluded.
+Load the file after the theme stylesheet. The existing cascade limitations apply.
+The Source-declared download link uses an inspector-owned Blob URL; it is
+unavailable without overrides or while a target operation is pending. Replacement,
+reset, retarget and close revoke the previous URL. Local and connected targets
+use their acknowledged snapshots; no new bridge command or endpoint is added.
+
+
+<a id="gc-195-050"></a>
+## 050 · Shared DevTools inspector
+
+Block ID: **GC-195-050**.
+
+Owner confirmation, 2026-10-15: "sì facciamo un unico inspector condiviso anche nei devtools"
+(constitution 11.74). The optional component now also serves the Chrome extension.
+Declaring `<gramlot-tools-inspector embedded>` renders the existing Data, Source,
+Styles, property editor, breakpoint dialogs and CSS download in a panel without
+palette dragging, resizing or closing controls. Source, Data and named Logic
+remain the single UI implementation. The attribute is supplied before connection.
+
+`@gramlot/gramlot/tools/inspector-agent` exports `attachInspectorAgent` separately,
+without importing the runtime or a second Bag class. It uses the supplied page's
+Bag constructor for scalar TYTX encoding and the renderer's document for CSS.
+`tools/inspector` still exports the connection and agent for existing integrations.
+Separately loaded agents use unique subscription IDs, so opening DevTools beside
+an in-page connection cannot replace or unsubscribe the other inspector.
+
+The extension owns `window.gramlot` discovery, visibility and Chrome routing.
+It adapts that transport to native MessagePorts and gives the component an
+explicit `InspectorConnection`. Revisions, read-only descriptors, scalar edits,
+breakpoints, CSS preview and download keep the shared connection contract (§040).
+Snapshots preserve sibling order and surviving node identity. The extension has
+removed its vendored PoC inspector and Source subtype codec; `_meta` remains
+omitted, and Source copies are passive descriptors rather than exact wire clones.
+
+A selected extension frame has one connection. Switching frame or closing
+DevTools releases its previews and subscriptions. Successful breakpoint settings
+are retained by the Chrome host and reapplied on reconnect, preserving its existing
+behavior. The core does not import or depend on the extension. This development
+change does not publish a package or replace a released extension archive.

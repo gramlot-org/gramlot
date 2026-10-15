@@ -20,8 +20,8 @@ import {webcomponentCode} from '../webcomponent.js';
 const DATA_FORBIDDEN = 'data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element';
 // Declarations outside Gramlot 0.2.0 that fail explicitly (source plan, section 2).
 const EXCLUDED_ELEMENTS = new Set();
-const EXCLUDED_ATTRIBUTES = new Set(['serverpath', 'dbenv', 'shared_id', '_ask', 'ask']);
-const EXCLUDED_ATTRIBUTE_PREFIXES = ['subscribe_', 'selfsubscribe_', 'formsubscribe_'];
+const EXCLUDED_ATTRIBUTES = new Set(['serverpath', 'dbenv', 'shared_id']);
+const EXCLUDED_ATTRIBUTE_PREFIXES = ['formsubscribe_'];
 
 // P18 and B8: the Data path of each data-element, which does not accept `?attr`,
 // and its inline attribute, which excludes `func` on the same node, as `_if` does (Q11.1).
@@ -31,6 +31,11 @@ const DATA_INLINE_ATTRIBUTES = {dataFormula: 'formula', dataController: 'script'
 
 /** The P18 violation of a data-element's attributes, or null. */
 function dataElementError(tag, attrs) {
+    if (Object.hasOwn(attrs, 'ask') && tag !== 'button') return "'ask' is supported on buttons";
+    if (Object.hasOwn(attrs, '_ask') && !['dataController', 'dataFormula', 'dataRpc'].includes(tag)) return "'_ask' requires a controller, formula or RPC";
+    if (['dataSetter', 'dataRemote'].includes(tag) && Object.keys(attrs).some(name => name.startsWith('subscribe_') || name.startsWith('selfsubscribe_'))) {
+        return 'topic subscriptions are supported on controllers, formulas, RPCs and rendered elements';
+    }
     const pathName = DATA_PATH_ATTRIBUTES[tag];
     if (pathName && String(attrs[pathName] ?? '').includes('?')) {
         return `'${pathName}' does not accept '?attr': '${attrs[pathName]}'`;
@@ -156,6 +161,8 @@ export class GramlotBuilder extends HtmlBuilder {
 
     /** Builder's child insertion; a plain object `value` of `dataSetter` becomes `new Bag(value)` (P25). */
     setChild(bag, tag, value, attrs, parentOverride = null) {
+        attrs = Object.fromEntries(Object.entries(attrs ?? {}).map(([key, value]) =>
+            [key, sourceTarget(value) instanceof SourceBagNode ? this.reference(value) : value]));
         const plain = tag === 'dataSetter' && attrs?.value !== null && typeof attrs?.value === 'object'
             && Object.getPrototypeOf(attrs.value) === Object.prototype;
         const actual = plain ? {...attrs, value: new Bag(attrs.value)} : attrs;

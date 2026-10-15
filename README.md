@@ -13,7 +13,7 @@
 [![Python coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=python)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=python)
 [![PyPI](https://img.shields.io/pypi/v/gramlot)](https://pypi.org/project/gramlot/)
 [![JSR](https://jsr.io/badges/@gramlot/gramlot)](https://jsr.io/@gramlot/gramlot)
-[![Status: 0.2.17 released](https://img.shields.io/badge/status-0.2.17%20released-green)](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.17)
+[![Status: 0.2.18 released](https://img.shields.io/badge/status-0.2.18%20released-green)](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.18)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
 **Describe application interfaces in Python; let a JavaScript runtime handle
@@ -25,11 +25,11 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a web server; the core is
 independent of server and database technology.
 
-> **Release status.** The current release is **0.2.17**, published on
+> **Release status.** The current release is **0.2.18**, published on
 > [PyPI](https://pypi.org/project/gramlot/) (`gramlot`), on
 > [npm](https://www.npmjs.com/package/@gramlot/gramlot) and
 > [JSR](https://jsr.io/@gramlot/gramlot) (`@gramlot/gramlot`) and as the
-> [GitHub release v0.2.17](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.17).
+> [GitHub release v0.2.18](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.18).
 > **0.2.0 (HTML/SVG data binding)**, released on 2026-09-30, was qualified on
 > Chromium, WebKit and Firefox and accepted by the owner; the patch releases that
 > follow it keep its contract.
@@ -83,7 +83,10 @@ The example pages and their gallery are the separate package `gramlot-examples`.
   (Node.js and Bun) or `@gramlot/gramlot-serverless` (no server) for JavaScript pages;
   `npm create @gramlot page|site` starts a JavaScript project.
 
-Start with [Try Gramlot](docs/public/025-try.md) and
+For a first look, use [Try Gramlot: the quick route](docs/public/018-quickstart.md):
+choose Python, Node.js or serverless, open the gallery, then create your own page.
+It also explains how to install the optional [Chrome DevTools extension](https://github.com/gramlot-org/gramlot-devtools/releases/latest).
+Continue with [the learning route](docs/public/025-try.md) and
 [Writing pages](docs/public/095-writing-pages.md). The broader experimental
 implementation remains in [gramlot-poc](https://github.com/gramlot-org/gramlot-poc).
 
@@ -117,13 +120,16 @@ with 0.3.0.
 
 ## Start here
 
+- [Try Gramlot: the quick route](docs/public/018-quickstart.md) — choose an environment, try three examples and create a project with its CLI.
+
 - [The Gramlot family](docs/public/055-family.md) — what Gramlot is, the core and the adapters, and which one to choose.
 - [Is Gramlot a fit?](docs/public/020-evaluate.md) — the development model and its current limits.
-- [Try Gramlot](docs/public/025-try.md) — open the gallery of examples, then choose a server.
+- [Try Gramlot](docs/public/025-try.md) — the complete learning route, in release order.
 - [Tests and coverage](docs/public/030-quality.md) — what the badges mean and why JavaScript coverage matters.
 
 - [Classes and server adapters](docs/public/090-classes-and-hosts.md) — repository map and responsibilities.
 - [Writing pages](docs/public/095-writing-pages.md) — release-by-release authoring: HTML/SVG, binding, data exchange, RPC and remote.
+- [Themes and CSS](docs/public/096-themes-and-css.md) — Python examples, complete variable and class catalogues, light/dark customization and practical styling advice.
 - [Extending Gramlot](docs/public/100-extensions.md) — current extension points and contracts still to define.
 
 ## Project status
@@ -165,3 +171,6 @@ The published 0.1.0 archives keep their original names.
 
 [Reusable application index and installable root](docs/public/095-writing-pages.md)
 shows Python-first authoring, a custom footer, iframe tabs and the root manifest.
+
+Development work on publish/subscribe, authored references and native ask is documented in
+[the authoring guide](docs/public/095-writing-pages.md). This is not a release announcement.

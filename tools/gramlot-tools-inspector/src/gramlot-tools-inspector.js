@@ -3,6 +3,7 @@ import {Bag, Gramlot, GramlotBuilder} from '@gramlot/gramlot';
 import {InspectorConnection, encodeScalar} from './inspector-bridge.js';
 export {InspectorConnection, attachInspectorAgent} from './inspector-bridge.js';
 import {editorTypes, scalarType, scalarText, parseScalar} from './editor-values.js';
+import {InspectorStyles} from './inspector-styles.js';
 import inspectorStyle from './gramlot-tools-inspector.css';
 import '../../poc/gramlot-poc-tree.js';
 import '../../poc/gramlot-poc-palette.js';
@@ -33,6 +34,10 @@ export class GramlotToolsInspector extends HTMLElement {
     #breakpointTests = new Map();
     #trees = {};
     #breakpointTarget = null;
+    #styles = null;
+    #styleNames = '';
+    #styleRequest = 0;
+    #styleDownloadUrl = null;
 
     constructor() {
         super();
@@ -67,6 +72,7 @@ export class GramlotToolsInspector extends HTMLElement {
             this.#ui.data.setItem('breakpointStatus', '');
             this.#subscribe();
             this.#refresh();
+            if (this.#ui.data.getItem('tab') === 'styles') this.#loadStyles();
         }
     }
 
@@ -101,6 +107,7 @@ export class GramlotToolsInspector extends HTMLElement {
             this.#ui.data.setItem('editor.dirty', false);
             this.#ui.data.setItem('breakpointDirty', false);
             this.#subscribe(); this.#refresh();
+            if (this.#ui.data.getItem('tab') === 'styles') this.#loadStyles();
         }
     }
     #renderTargets() {
@@ -175,14 +182,33 @@ export class GramlotToolsInspector extends HTMLElement {
             }
             selectRoot(node) {
                 const choose = () => {
-                    ui.data.setItem('root', node.getAttr('data-root'));
-                    ui.data.setItem('selection', null);
-                    inspector.#snapshot = null;
+                    const tab = node.getAttr('data-root');
+                    ui.data.setItem('tab', tab);
+                    if (tab !== 'styles') {
+                        ui.data.setItem('root', tab);
+                        ui.data.setItem('selection', null);
+                        inspector.#snapshot = null;
+                    }
                     inspector.#refresh();
+                    if (tab === 'styles') inspector.#loadStyles();
                 };
                 if (ui.data.getItem('editor.dirty')) inspector.#applyEdit(choose);
                 else choose();
             }
+            refreshStyles() { inspector.#loadStyles(); }
+            styleChanged(node) { ui.data.setItem(`styles.rows.${node.getAttr('data-row')}.dirty`, true); }
+            setStyle(node) {
+                const row = ui.data.getItem(`styles.rows.${node.getAttr('data-row')}`);
+                if (node.getAttr('data-field') === 'color') row.setItem('dirty', false);
+                else if (!row.getItem('dirty')) return;
+                inspector.#loadStyles('setStyle', {name: row.getItem('name'), value: row.getItem(node.getAttr('data-field'))});
+            }
+            styleKey(node, event) {
+                if (event.key === 'Enter' && !event.isComposing) { event.preventDefault(); this.setStyle(node); }
+                if (event.key === 'Escape') { event.preventDefault(); inspector.#loadStyles(); }
+            }
+            resetStyle(node) { inspector.#loadStyles('resetStyle', {name: ui.data.getItem(`styles.rows.${node.getAttr('data-row')}.name`)}); }
+            resetStyles() { inspector.#loadStyles('resetStyles'); }
             selectNode(node, event) {
                 const choose = () => {
                     const entry = inspector.#nodes.find(item => item.node === event.detail.node);
@@ -225,22 +251,25 @@ export class GramlotToolsInspector extends HTMLElement {
             }
         }
         ui.src.logicRegistry.register(Logic, {group: 'inspector', resource: 'gramlot-tools-inspector'});
-        for (const [key, value] of Object.entries({root: 'data', dataActive: true, sourceActive: false, targetId: '', singleTarget: true, busy: false,
+        for (const [key, value] of Object.entries({root: 'data', tab: 'data', stylesActive: false, treeActive: true, dataActive: true, sourceActive: false, targetId: '', singleTarget: true, busy: false,
             selection: null, path: '', error: '', status: '', breakpointWhere: '', breakpointLine: '', breakpointStatus: '', breakpointError: '', breakpointCount: '● 0', noBreakpoints: true})) ui.data.setItem(key, value);
         ui.data.setItem('editor', new Bag({dirty: false, disabled: true, status: '', mode: '', condition: ''}));
         ui.data.setItem('breakpoints', new Bag());
         ui.data.setItem('breakpointDirty', false);
+        ui.data.setItem('styles', new Bag({status: '', busy: false, noChanges: true, noDownload: true, downloadUrl: null, rows: new Bag()}));
         const builder = new GramlotBuilder();
         const root = builder.root;
         root.style(inspectorStyle);
-        const palette = root.webcomponent({code: 'gramlot-poc-palette', node_label: 'palette', title: 'Gramlot inspector', connect_onclose: 'inspector.close'});
+        const palette = this.hasAttribute('embedded')
+            ? root.section({node_label: 'palette', class: 'embedded-panel', 'aria-label': 'Gramlot inspector'})
+            : root.webcomponent({code: 'gramlot-poc-palette', node_label: 'palette', title: 'Gramlot inspector', connect_onclose: 'inspector.close'});
         const targetbar = palette.div({node_label: 'targetbar', class: 'targetbar', hidden: '^singleTarget'});
         targetbar.select({node_label: 'targets', value: '^targetId', disabled: '^busy', 'aria-label': 'Inspected page', connect_onchange: 'inspector.selectTarget'});
         const toolbar = palette.webcomponent({code: 'gramlot-poc-tabs', node_label: 'tabs', role: 'tablist', 'aria-label': 'Inspected root'});
-        for (const name of ['Data', 'Source']) toolbar.button(name, {node_label: name.toLowerCase(), type: 'button', role: 'tab', 'data-root': name.toLowerCase(),
+        for (const name of ['Data', 'Source', 'Styles']) toolbar.button(name, {node_label: name.toLowerCase(), type: 'button', role: 'tab', 'data-root': name.toLowerCase(),
             'aria-selected': 'false', connect_onclick: 'inspector.selectRoot'});
         palette.p('^error', {role: 'alert', class: 'error'});
-        const content = palette.webcomponent({code: 'gramlot-poc-splitter', node_label: 'content'});
+        const content = palette.webcomponent({code: 'gramlot-poc-splitter', node_label: 'content', hidden: '^stylesActive'});
         const trees = content.div({node_label: 'tree', slot: 'top', class: 'tree'});
         for (const name of ['data', 'source']) trees.webcomponent({code: 'gramlot-poc-tree', node_label: name, 'data-root': name,
             hidden: name === 'data' ? '^sourceActive' : '^dataActive', connect_onchange: 'inspector.selectNode', 'connect_ontree-action': 'inspector.openBreakpoint'});
@@ -256,7 +285,17 @@ export class GramlotToolsInspector extends HTMLElement {
         const editor = properties.fieldset({node_label: 'editor', disabled: '^editor.disabled'});
         editor.div({node_label: 'rows', class: 'rows'});
         properties.p('^editor.status', {role: 'status', class: 'edit-status'});
-        const footer = palette.footer({class: 'path'});
+        const styles = palette.section({node_label: 'styles', class: 'styles-panel', hidden: '^treeActive', 'aria-label': 'CSS variables'});
+        const stylebar = styles.div({class: 'styles-toolbar'});
+        stylebar.span('Document variables');
+        stylebar.button('Refresh', {type: 'button', disabled: '^styles.busy', connect_onclick: 'inspector.refreshStyles'});
+        stylebar.button('Reset all', {type: 'button', disabled: '^styles.noChanges', connect_onclick: 'inspector.resetStyles'});
+        stylebar.a('Download CSS', {href: '^styles.downloadUrl', download: 'theme-overrides.css', 'aria-disabled': '^styles.noDownload'});
+        styles.p('Temporary preview · Enter or leave a field to apply. Closing the connection clears previews.', {class: 'styles-help'});
+        styles.p('^styles.status', {role: 'status', class: 'styles-status'});
+        styles.p('No --gramlot-* variables on this document root. Load a Gramlot theme, then Refresh.', {class: 'styles-empty', node_label: 'empty'});
+        styles.div({node_label: 'rows', class: 'styles-rows'});
+        const footer = palette.footer({class: 'path', hidden: '^stylesActive'});
         footer.span('Path: '); footer.em('^path');
         const breakpoint = palette.dialog({node_label: 'breakpoint', 'aria-label': 'Breakpoint', class: 'breakpoint-dialog', connect_oncancel: 'inspector.closeBreakpoint'});
         breakpoint.h2('^breakpointWhere');
@@ -302,6 +341,14 @@ export class GramlotToolsInspector extends HTMLElement {
     }
 
     #unsubscribe() {
+        ++this.#styleRequest;
+        this.#styles?.dispose();
+        this.#styles = null;
+        if (this.#ui) {
+            this.#renderStyles([]);
+            this.#ui.data.setItem('styles.busy', false);
+            this.#ui.data.setItem('styles.status', '');
+        }
         this.#connectionRelease?.();
         this.#connectionRelease = null;
         ++this.#generation;
@@ -331,6 +378,12 @@ export class GramlotToolsInspector extends HTMLElement {
         try {
             this.#nodes = [];
             const root = ui.data.getItem('root');
+            const tab = ui.data.getItem('tab');
+            ui.data.setItem('stylesActive', tab === 'styles');
+            ui.data.setItem('treeActive', tab !== 'styles');
+            for (const name of ['data', 'source', 'styles']) {
+                ui.src.source.getNode(`main.palette.tabs.${name}`).setAttr({'aria-selected': String(tab === name)});
+            }
             if (this.#connection) {
                 const configurations = new Bag();
                 for (const [index, record] of this.#connection.breakpoints.entries()) configurations.setItem(`b${index}`, new Bag(record));
@@ -343,7 +396,6 @@ export class GramlotToolsInspector extends HTMLElement {
             ui.data.setItem('dataActive', root === 'data');
             ui.data.setItem('sourceActive', root === 'source');
             for (const name of ['data', 'source']) {
-                ui.src.source.getNode(`main.palette.tabs.${name}`).setAttr({'aria-selected': String(root === name)});
                 const tree = this.#trees[name];
                 tree.storeBag = (this.#connection || this.#target) ? this.#targetBag(name) : null;
                 const breakpoints = ui.data.getItem('breakpoints').getNodes().filter(node => node.value.getItem('root') === name);
@@ -356,6 +408,101 @@ export class GramlotToolsInspector extends HTMLElement {
             ui.data.setItem('error', this.#connection ? this.#connection.error || (this.#state() === 'disposed' ? 'Inspected page disconnected.' : this.#state() === 'connecting' ? 'Connecting…' : '') : this.#target ? '' : 'No Gramlot instance selected.');
             this.#details();
         } catch (error) { ui.data.setItem('error', error.message); }
+    }
+
+    async #loadStyles(type = 'styles', command = {}) {
+        const ui = this.#ui;
+        const request = ++this.#styleRequest;
+        ui.data.setItem('styles.busy', true);
+        ui.data.setItem('styles.downloadUrl', null);
+        ui.data.setItem('styles.noDownload', true);
+        ui.data.setItem('styles.status', '');
+        try {
+            if (!this.#state() || this.#state() === 'disposed' || (this.#connection && this.#state() !== 'started')) {
+                throw new Error('Select a connected page before editing CSS variables');
+            }
+            let rows;
+            if (this.#connection) {
+                const connection = this.#connection;
+                await connection.request(type, command);
+                rows = connection.styles;
+            } else {
+                this.#styles ??= new InspectorStyles(this.#target.src.renderer.destination.ownerDocument);
+                if (type === 'setStyle') this.#styles.set(command.name, command.value);
+                if (type === 'resetStyle') this.#styles.reset(command.name);
+                if (type === 'resetStyles') this.#styles.dispose();
+                rows = this.#styles.snapshot();
+            }
+            if (this.#ui !== ui || request !== this.#styleRequest) return;
+            this.#renderStyles(rows, type, command);
+        } catch (error) {
+            if (this.#ui === ui && request === this.#styleRequest) ui.data.setItem('styles.status', error.message);
+        } finally {
+            if (this.#ui === ui && request === this.#styleRequest) {
+                ui.data.setItem('styles.busy', false);
+                ui.data.setItem('styles.downloadUrl', this.#styleDownloadUrl);
+                ui.data.setItem('styles.noDownload', !this.#styleDownloadUrl);
+            }
+        }
+    }
+
+    #renderStyles(rows, type = 'styles', command = {}) {
+        const ui = this.#ui;
+        const browser = this.ownerDocument.defaultView;
+        if (this.#styleDownloadUrl) browser.URL.revokeObjectURL(this.#styleDownloadUrl);
+        this.#styleDownloadUrl = null;
+        const overrides = rows.filter(row => row.override);
+        if (overrides.length) {
+            const declarations = overrides.map(row => `  ${browser.CSS.escape(row.name)}: ${row.override} !important;`).join('\n');
+            const css = `/* Gramlot overrides. Load after the theme stylesheet. */\n:root {\n${declarations}\n}\n`;
+            this.#styleDownloadUrl = browser.URL.createObjectURL(new browser.Blob([css], {type: 'text/css;charset=utf-8'}));
+        }
+        ui.data.setItem('styles.downloadUrl', ui.data.getItem('styles.busy') ? null : this.#styleDownloadUrl);
+        ui.data.setItem('styles.noDownload', ui.data.getItem('styles.busy') || !this.#styleDownloadUrl);
+        const names = JSON.stringify(rows.map(row => row.name));
+        const rebuild = names !== this.#styleNames;
+        this.#styleNames = names;
+        const builder = rebuild ? new GramlotBuilder() : null;
+        const groups = new Map();
+        if (rebuild) {
+            // Release old bindings before replacing their rows, including native color controls.
+            ui.src.source.getNode('main.palette.styles.rows').setValue(ui.src.prepareSource(new GramlotBuilder().source));
+            ui.data.setItem('styles.rows', new Bag());
+        }
+        for (const [index, record] of rows.entries()) {
+            const id = `v${index}`, path = `styles.rows.${id}`;
+            const color = /^#[\da-f]{6}$/i.test(record.value) ? record.value
+                : /^#[\da-f]{3}$/i.test(record.value) ? '#' + [...record.value.slice(1)].map(char => char + char).join('') : null;
+            const fields = {name: record.name, text: record.override || record.value, computed: record.value, dirty: false,
+                color: color ?? '#000000', noColor: color === null, unchanged: !record.override};
+            if (!rebuild && ui.data.getItem(`${path}.dirty`) && !['styles', 'resetStyles'].includes(type)) {
+                const acknowledged = record.name === command.name && (type === 'resetStyle' || ui.data.getItem(`${path}.text`) === command.value);
+                if (!acknowledged) { delete fields.text; delete fields.dirty; }
+            }
+            if (rebuild) ui.data.setItem(path, new Bag(fields));
+            else for (const [key, value] of Object.entries(fields)) ui.data.setItem(`${path}.${key}`, value);
+            if (!rebuild) continue;
+            const group = record.name.includes('-font-') ? 'Typography' : record.name.includes('-space-') ? 'Spacing'
+                : /-(radius|page-width)/.test(record.name) ? 'Dimensions' : record.name.endsWith('-shadow') ? 'Effects'
+                : color ? 'Colors' : 'Other';
+            if (!groups.has(group)) {
+                const section = builder.root.section({class: 'styles-group'});
+                section.h3(group);
+                groups.set(group, section);
+            }
+            const row = groups.get(group).div({class: 'style-row'});
+            row.html_label(record.name, {for: `${this.#subscriber}-${id}`, title: record.name});
+            row.input({id: `${this.#subscriber}-${id}`, value: `^${path}.text`, live: true,
+                'aria-label': `${record.name} value`, title: `^${path}.computed`, 'data-row': id, 'data-field': 'text',
+                connect_oninput: 'inspector.styleChanged', connect_onchange: 'inspector.setStyle', connect_onkeydown: 'inspector.styleKey', spellcheck: 'false'});
+            row.input({type: 'color', value: `^${path}.color`, hidden: `^${path}.noColor`,
+                'aria-label': `${record.name} color`, 'data-row': id, 'data-field': 'color', connect_onchange: 'inspector.setStyle'});
+            row.button('↶', {type: 'button', 'aria-label': `Reset ${record.name}`, title: 'Reset variable',
+                disabled: `^${path}.unchanged`, 'data-row': id, connect_onclick: 'inspector.resetStyle'});
+        }
+        if (rebuild) ui.src.source.getNode('main.palette.styles.rows').setValue(ui.src.prepareSource(builder.source));
+        ui.data.setItem('styles.noChanges', !rows.some(row => row.override));
+        ui.src.source.getNode('main.palette.styles.empty').setAttr({hidden: rows.length !== 0});
     }
 
     #index(bag, labels) {

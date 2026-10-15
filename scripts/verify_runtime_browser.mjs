@@ -53,6 +53,7 @@ try {
                             const dom = builder.reference(pane, 'dom');
                             builder.root.input({id: `${id}-input`, value: '^text'});
                             builder.root.input({id: `${id}-radio`, type: 'radio', group: 'choice', value: '^chosen'});
+                            builder.root.button('Confirm', {id: `${id}-ask`, action: "this.SET('confirmed', true);", ask: 'Continue?'});
                             app.data.setItem('text', 'initial');
                             app.src.startSource(builder.toTytx());
                             if (app.state !== 'started') throw new Error('Source did not start');
@@ -60,6 +61,12 @@ try {
                             if (app.dom.reference(dom) !== document.getElementById(`${id}-pane`)) throw new Error('DOM reference failed');
                             if (app.dom.reference(node) !== app.dom.getBaseSourceNode(app.dom.reference(dom))) throw new Error('Source reference failed');
                             references.push(node.$gramlotRef);
+                            document.getElementById(`${id}-ask`).click();
+                            const dialog = document.querySelector('dialog');
+                            if (!dialog?.open) throw new Error('Ask dialog did not open');
+                            dialog.querySelector('button[type=submit]').click();
+                            await new Promise(resolve => setTimeout(resolve, 0));
+                            if (app.data.getItem('confirmed') !== true || document.querySelector('dialog')) throw new Error('Ask did not confirm and clean up');
                         }
                         apps[0].data.setItem('text', 'changed');
                         return {

@@ -388,6 +388,11 @@ export class NodeBinding {
      * A node whose `remote` is a string gets its RemoteBinding, created once.
      */
     registerPointers() {
+        // Data elements have semantic lifetime but no rendered item to register their reference.
+        if (this.node._getMeta('data_element')) {
+            this.runtime.renderer.references.remove(this.node);
+            this.runtime.renderer.references.register(this.node, null);
+        }
         const node = this.node;
         const dataElement = node._getMeta('data_element');
         if (dataElement && !PROVIDERS[node.nodeTag]) return;
@@ -403,9 +408,38 @@ export class NodeBinding {
             if (name === 'datapath') this.#datapathRegistration = registration;
             if (this.remote && (name === 'remote' || name.startsWith('remote_'))) this.#remoteRegistrations.add(registration);
         }
-        if (!dataElement) return;
+        if (!dataElement) {
+            this.#registerTopics();
+            return;
+        }
         this.#provider ??= new PROVIDERS[node.nodeTag](this);
         this.#provider.register();
+    }
+
+    /** Rendered node topic handlers share semantic lifetime, not DOM lifetime. */
+    #registerTopics() {
+        const node = this.node;
+        const subscriptions = this.runtime.gramlot._subscriptions;
+        for (const [name, handler] of Object.entries(node.getAttr())) {
+            const prefix = name.startsWith('selfsubscribe_') ? 'selfsubscribe_' : name.startsWith('subscribe_') ? 'subscribe_' : null;
+            if (!prefix) continue;
+            if (typeof handler !== 'string' || !handler) throw new TypeError(`${name} requires a handler`);
+            const topic = prefix === 'selfsubscribe_'
+                ? subscriptions.topicFor(node, name.slice(prefix.length)) : name.slice(prefix.length);
+            const handle = subscriptions.subscribe(topic, payload => {
+                if (this.closed) return;
+                if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/.test(handler)) {
+                    const {group, method} = this.runtime.logicRegistry.resolve(handler, node);
+                    return method.call(group, node, payload);
+                }
+                const [, attrs] = node.builder.runtimeValues(node);
+                const authored = Object.fromEntries(Object.entries(attrs).filter(([key]) =>
+                    !key.startsWith('subscribe_') && !key.startsWith('selfsubscribe_')));
+                const values = {...this.runtime.renderer.references.resolveArguments(authored), p_0: payload};
+                return this.runtime.inlineCompiler.compile(node, name, handler, Object.keys(values))(values);
+            });
+            this.#registrations.push({close: () => subscriptions.unsubscribe(handle)});
+        }
     }
 
     /** Close the registrations and make them again from the current pointers, the provider's included (D1). */
@@ -441,6 +475,7 @@ export class NodeBinding {
     close() {
         if (this.closed) return;
         this.#closed = true;
+        if (this.node._getMeta('data_element')) this.runtime.renderer.references.remove(this.node);
         this.#closeRegistrations();
         const errors = [];
         for (const disposer of this.#disposers.splice(0).reverse()) {

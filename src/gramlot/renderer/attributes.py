@@ -11,11 +11,11 @@ SVG_NS = "http://www.w3.org/2000/svg"
 # Binding attributes are read by the Gramlot runtime and never reach the output (source plan, S02).
 # The names are the resolved ones: runtime_values turns the keyword names ``_if``/``_else`` into ``if``/``else``.
 BINDING_ATTRIBUTES = frozenset({
-    "default", "default_value", "live", "group", "visible", "action", "fire",
+    "default", "default_value", "live", "group", "visible", "action", "fire", "ask", "_ask", "_ask_if", "_ask_title", "_ask_onCancel",
     "if", "else", "_init", "_onStart", "_onBuilt", "_delay", "_timing", "_userChanges",
     "remote", "_cachedRemote", "_onRemote",
 })
-BINDING_ATTRIBUTE_PREFIXES = ("default_", "attr_", "fire_", "connect_on", "remote_")
+BINDING_ATTRIBUTE_PREFIXES = ("default_", "attr_", "fire_", "connect_on", "subscribe_", "selfsubscribe_", "formsubscribe_", "remote_")
 
 # Legacy noConvertStyle (genro_wdg.js:102-108): these attributes stay native attributes, never style.
 NATIVE_ATTRIBUTES = {
@@ -47,7 +47,8 @@ JAVASCRIPT_SCHEME = re.compile(r"^javascript:", re.IGNORECASE)
 def without_binding_attributes(attrs):
     """The attributes of ``attrs`` that are not binding attributes."""
     return {name: value for name, value in attrs.items()
-            if name not in BINDING_ATTRIBUTES and not name.startswith(BINDING_ATTRIBUTE_PREFIXES)}
+            if not (isinstance(value, dict) and "$gramlotRef" in value)
+            and name not in BINDING_ATTRIBUTES and not name.startswith(BINDING_ATTRIBUTE_PREFIXES)}
 
 
 def require_style_class_attributes(node, attrs, prefixes=()):

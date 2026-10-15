@@ -55,6 +55,7 @@ export class SourceHandler extends Handler {
         }
         this.gramlot.state = 'started';
         this.binding.pageStarted();
+        this.gramlot._subscriptions.ready();
         return this.gramlot;
     }
     /**

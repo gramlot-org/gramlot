@@ -8,11 +8,11 @@ export const SVG_NS = 'http://www.w3.org/2000/svg';
 // Binding attributes are read by the Gramlot runtime and never reach the output (source plan, S02).
 // The names are the resolved ones: runtimeValues turns the keyword names `_if`/`_else` into `if`/`else`.
 const BINDING_ATTRIBUTES = new Set([
-    'default', 'default_value', 'live', 'group', 'visible', 'action', 'fire',
+    'default', 'default_value', 'live', 'group', 'visible', 'action', 'fire', 'ask', '_ask', '_ask_if', '_ask_title', '_ask_onCancel',
     'if', 'else', '_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges',
     'remote', '_cachedRemote', '_onRemote',
 ]);
-const BINDING_ATTRIBUTE_PREFIXES = ['default_', 'attr_', 'fire_', 'connect_on', 'remote_'];
+const BINDING_ATTRIBUTE_PREFIXES = ['default_', 'attr_', 'fire_', 'connect_on', 'subscribe_', 'selfsubscribe_', 'formsubscribe_', 'remote_'];
 
 // Legacy noConvertStyle (genro_wdg.js:102-108): these attributes stay native attributes, never style.
 const NATIVE_ATTRIBUTES = {
@@ -34,7 +34,7 @@ const URL_ATTRIBUTES = new Set(['href', 'src', 'formaction', 'xlink:href', 'xlin
 
 /** The attributes of `attrs` that are not binding attributes. */
 export function withoutBindingAttributes(attrs) {
-    return Object.fromEntries(Object.entries(attrs).filter(([name]) => !BINDING_ATTRIBUTES.has(name)
+    return Object.fromEntries(Object.entries(attrs).filter(([name, value]) => !(value && typeof value === 'object' && Object.hasOwn(value, '$gramlotRef')) && !BINDING_ATTRIBUTES.has(name)
         && !BINDING_ATTRIBUTE_PREFIXES.some(prefix => name.startsWith(prefix))));
 }
 

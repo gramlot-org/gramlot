@@ -61,7 +61,7 @@ export class HtmlElement {
             throw new TypeError('HTML text must be scalar');
         }
         for (const [key, value] of Object.entries(node.attr)) {
-            if (this.metadataAttributes.has(key)) continue;
+            if (this.metadataAttributes.has(key) || ['ask', '_ask'].includes(key) || (value && typeof value === 'object' && Object.hasOwn(value, '$gramlotRef'))) continue;
             if (value != null && !['string', 'number', 'boolean'].includes(typeof value)) {
                 throw new TypeError(`HTML attribute ${key} must be scalar`);
             }
@@ -117,7 +117,7 @@ export class HtmlElement {
         // The browser reads `sandbox` when `src` or `srcdoc` starts a navigation: `sandbox` is written first.
         keys.sort((a, b) => (b === 'sandbox') - (a === 'sandbox'));
         for (const key of keys) {
-            if (this.metadataAttributes.has(key) || (controlled && key === 'value')) continue;
+            if (this.metadataAttributes.has(key) || ['ask', '_ask'].includes(key) || (controlled && key === 'value')) continue;
             const value = attrs[key];
             const attrName = key;
             const propertyName = domPropertyName(attrName);

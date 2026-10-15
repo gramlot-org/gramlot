@@ -3,11 +3,11 @@ import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
 
 // The inline code attributes of each tag, besides `connect_on<event>` and the `==` expressions of any tag.
 const CODE_ATTRIBUTES = {
-    dataFormula: ['formula', '_if', '_else'],
-    dataController: ['script', '_if', '_else'],
-    dataRpc: ['_if', '_else', '_onCalling', '_onResult', '_onError'],
+    dataFormula: ['formula', '_if', '_else', '_ask_if', '_ask_onCancel'],
+    dataController: ['script', '_if', '_else', '_ask_if', '_ask_onCancel'],
+    dataRpc: ['_ask_if', '_ask_onCancel', '_if', '_else', '_onCalling', '_onResult', '_onError'],
     dataRemote: ['_if', '_else'],
-    button: ['action'],
+    button: ['action', '_ask_if'],
 };
 
 // The control attributes of `remote`, written on the node as they are; every other parameter becomes `remote_<k>`.
@@ -46,7 +46,15 @@ export class GramlotBuilderBagNode extends SourceBagNode {
             ...(typeof this.getAttr('remote') === 'string' ? REMOTE_CODE_ATTRIBUTES : [])];
         const items = [];
         for (const [name, value] of Object.entries(this.getAttr() ?? {})) {
-            if (typeof value === 'string' && (own.includes(name) || name.startsWith('connect_on'))) items.push([name, value]);
+            if (typeof value === 'string' && (own.includes(name) || name.startsWith('connect_on') || name.startsWith('subscribe_') || name.startsWith('selfsubscribe_'))) items.push([name, value]);
+        }
+        for (const attribute of ['ask', '_ask']) {
+            const spec = this.getAttr(attribute);
+            if (spec && typeof spec === 'object') {
+                for (const key of ['_if', 'askIf']) {
+                    if (typeof spec[key] === 'string') items.push([`${attribute}.${key}`, spec[key]]);
+                }
+            }
         }
         for (const [name, value] of sourceAttributeItems(this.getAttr())) {
             if (isExpression(value)) items.push([name, value]);
@@ -99,6 +107,11 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         }
         this.setAttr(attributes);
         return wrapSource(this);
+    }
+
+    /** Publish to this node's selfsubscribe topics, as in the legacy Source API. */
+    publish(topic, payload = {}) {
+        return this.builder.binding.gramlot._subscriptions.publishNode(this, topic, payload);
     }
 
     /** Builder's pointerType, except that a string starting with `==` is not a pointer. */

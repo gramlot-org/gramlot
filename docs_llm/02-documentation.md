@@ -4,13 +4,21 @@
 
 ## 1. Audience and sources
 
-Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Chapters cover classes, server adapters, page authoring and extension gaps. Public guides follow the release sequence, including later RPC/remote additions;
+Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Chapters cover classes, server adapters, page authoring, themes/CSS and extension gaps. Public guides follow the release sequence, including later RPC/remote additions;
 historical notes and development-only corrections are marked. Only the README
-states the current release version. `prepare_docs.py` stages README, seven explicit `PUBLIC_PAGES`
-guides and two logo assets. New files are not automatically public. Constitution,
+states the current release version. `prepare_docs.py` stages README, nine explicit `PUBLIC_PAGES`
+guides and explicit logo/theme-guide image assets. New files are not automatically public. Constitution,
 architecture, ports and docs_llm are excluded from pages, source downloads and
 search, but remain readable in the public Git repository. Pair guides and preserve
 IDs; public guides do not link internal mirrors.
+
+
+HTML omits standalone document/block identity paragraphs and three-digit heading
+prefixes, before table-of-contents collection; source metadata and section/explicit
+anchors remain. Downloadable Markdown stays numbered. MyST colon containers pair
+code/results in GC-096: 1:3 columns from 1600px, full-width results below that,
+1440px content cap and no image enlargement beyond 1080px;
+Read the Docs colours and typography remain.
 
 ## 2. Build and checks
 
@@ -20,6 +28,16 @@ Use Python 3.12; install `requirements-docs.txt`, run
 and `python scripts/check_public_docs.py`. Preparation removes previous staging
 and site output, including stale MkDocs pages. Edit originals only. Preview with
 `python -m http.server 8000 --directory build/docs-site`; rebuild after edits.
+
+GC-096 screenshots are browser captures of its Python/CSS through the core test
+host, using temporary pages outside the repository. Explicit `PUBLIC_ASSETS`
+stages them; Sphinx provides full-size image links. Refresh from the documented
+Base/companion, Compact, Summary, larger-text, light/dark surface and reactive
+variants. Reactive captures use Success/Narrow/checked then Warning/Wide/unchecked.
+Use matching viewport/crops per pair; 2026-10-15: 1280×720, crop x=100/y=0,
+1080px wide, 400–520px high. Modes are set by the test host. Preserve browser
+pixels, alt text and captions; inspect the built guide. No core example app/runner.
+
 CI runs the strict build and boundary check on main/develop pushes and PRs and
 uploads an HTML artifact without deploying. The README badge tracks main and
 needs an actual workflow run; it does not represent runtime correctness.
@@ -40,3 +58,12 @@ GC-055 (earlier Italian explanatory guide with HTML exports) was removed on
 2026-09-25 by owner decision; superseded by the 0.2.0 docs. Since 2026-10-01 GC-055
 is the public guide The Gramlot family (`docs/public/055-family.md`); owner decision of 2026-10-05:
 it keeps the ID, an explicit exception to [GC-005 §010](005-documentation-policy.md#gc-005-010) item 4.
+
+
+## 5. Future-work notes
+
+[Future work](future/README.md) is the internal backlog for deferred ideas and
+next-phase candidates. Separate cards record owner requirements, proposals,
+dependencies and opportunities for parallel work. GC-070 remains the current
+delivery checkpoint. This directory is excluded from the public manual; listing
+an item does not approve implementation or reopen a completed phase.

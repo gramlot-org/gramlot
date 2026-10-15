@@ -4,7 +4,23 @@
  *
  * @module
  */
-import {SourceBag} from '@genrojs/builders';
+import {SourceBag, SourceBagNode, sourceTarget} from '@genrojs/builders';
+import {Bag} from '@genrojs/bag';
+
+/** Live references have meaning only in their owning page, never on the wire. */
+export function assertTransportData(value, ancestors = new Set()) {
+    if (!value || typeof value !== 'object') return;
+    const nodeClass = value.ownerDocument?.defaultView?.Node ?? value.defaultView?.Node;
+    if (sourceTarget(value) instanceof SourceBagNode || (nodeClass && value instanceof nodeClass)) {
+        throw new TypeError('Live Source/DOM references cannot cross a transport boundary');
+    }
+    if (ancestors.has(value)) throw new TypeError('Transport data cannot contain circular references');
+    ancestors.add(value);
+    const children = value instanceof Bag
+        ? value.getNodes().flatMap(node => [node.staticValue, node.getAttr()]) : Object.values(value);
+    for (const child of children) assertTransportData(child, ancestors);
+    ancestors.delete(value);
+}
 
 export class References {
     constructor(sourceRoot = null) { this.entries = new Map(); this.sourceRoot = sourceRoot; }
@@ -36,6 +52,12 @@ export class References {
         for (const [id, entry] of this.entries) {
             if (entry.node === node) this.entries.delete(id);
         }
+    }
+    /** Resolve only directly authored descriptors; message payloads are not expressions. */
+    resolveArguments(attrs) {
+        return Object.fromEntries(Object.entries(attrs).map(([name, value]) => [name,
+            value && typeof value === 'object' && Object.hasOwn(value, '$gramlotRef')
+                ? this.resolve(value) : value]));
     }
     resolve(reference) {
         if (!reference || !['node', 'dom'].includes(reference.kind)) {

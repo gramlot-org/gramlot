@@ -262,3 +262,86 @@ Phase 4 uses `require_style_class_attributes` ↔ `requireStyleClassAttributes`
 for the shared renderer guard, following existing `require_no_script_attributes`
 ↔ `requireNoScriptAttributes`. This is an internal validation function for the
 already approved string/null contract, not a new authoring API.
+
+
+<a id="gc-225-040"></a>
+
+## 040 · Public messaging methods and private subscriptions
+
+Block ID: **GC-225-040**. Owner decisions: constitution 11.68, superseded in
+access-point placement by 11.70 (2026-10-15).
+
+The primary command is `gramlot.publish(topic, payload)`, with one object of named
+data. It delegates to an instance-owned subscription service. Applications do not
+publish through `gramlot.subscriptions.publish`; there is no second public alias.
+The owner corrected the earlier access-point decision: "poi ho detto che preferisco che il comando sia gramlot publish e poi lui usi subscriptions o addirittura _sunscriptrios per ditre che è privato".
+
+Owner follow-up (constitution 11.70): "anche subscribe e unsubscribe li metterei direttamente su gramlot, con _subscriptions privato. poi vediamo come fare il publish verso un nodo specifico".
+The public methods are `gramlot.publish`, `gramlot.subscribe` and
+`gramlot.unsubscribe`. Their instance-owned service is named `_subscriptions`,
+a private property, not a public proxy. The earlier long public proxy exception
+is superseded. Internal class/file names still require a naming record before
+implementation.
+
+Subscription signatures, further publication options, Source declarations and
+delivery/lifecycle/routing semantics remain proposals. The syntax for publishing
+to a specific node is explicitly left for a subsequent design discussion.
+The object payload was selected under the owner's explicit delegation in 11.68;
+reference restoration remains in scope under 11.69. No new runtime API is claimed.
+
+
+Implementation follow-up (11.72): preserve the legacy topic string or object
+containing `topic`, `nodeId`, `parent`, `iframe` as appropriate; no third routing
+argument. `nodeId` is the legacy descriptor key and refers to Gramlot's existing
+`node_id` Source identity. `SubscriptionsHandler` / `subscriptions-handler.js`
+follow the established Handler/class-file convention and are private behind
+`_subscriptions`; public `subscribe(topic, callback)` returns a registration for
+`unsubscribe(registration)`, as the legacy topic subscription API. Source-node
+`publish(topic, payload)` retains the legacy self-topic operation. Source-node
+`subscribe`/`unsubscribe` already belong to Bag change observation and must not be
+overridden. Declaration prefixes retain the legacy spelling. No public alias or
+second registry is introduced for authored references.
+
+
+Interframe implementation naming (11.72 postMessage follow-up): internal
+`FrameMessages` in `frame-messages.js` describes the transport responsibility,
+following existing PascalCase class / kebab-case file convention. The protocol
+marker `gramlot:publish` is namespaced to this application messaging feature,
+separate from inspector messages. No new public proxy or page authoring API.
+
+
+Native ask implementation: internal `AskDialog` / `ask-dialog.js` follows the
+class/file convention. One generated `ask_<id>` named Logic group per page owns
+its request lifecycle. Each dialog has a temporary `ask_<id>` Source branch and
+Data context, removed on completion/disposal; these are private generated names,
+not the deferred reserved `_gramlot` system Data contract. Existing `ask`/`_ask`,
+`_ask_if`, `_ask_title`, `_ask_onCancel`, `askIf`, `_if` and `_askResult` retain
+legacy spelling. Fluent `.ask()` remains unimplemented rather than an alias.
+
+
+Transport boundary: internal `assertTransportData` in `references.js` rejects live
+Source nodes and DOM objects before TYTX serialization for RPC or frame messages.
+It validates named payload content, including Bag values/attributes; it does not
+convert live objects to alternate addresses or resolve descriptors remotely.
+
+
+Inspector CSS trial (11.73): `InspectorStyles` / `inspector-styles.js` follows
+§010's class/file spelling and §030's browser-only tool boundary. The tab and its
+private Data branch are `styles`; named Logic and explicit port commands use
+camelCase (`setStyle`, `resetStyle`, `resetStyles`). Existing CSS variables keep
+their `--gramlot-` names. No core proxy, JS marker or Python authoring API is added.
+
+Inspector CSS download (11.73 follow-up): private `styleDownloadUrl` and
+`styles.downloadUrl` / `styles.noDownload` follow the tool's camelCase field
+and Data conventions. The downloaded artifact is `theme-overrides.css`, as
+approved in the owner's download proposal. No new public API or port command.
+
+Shared DevTools inspector (11.74): `inspector-agent.js` holds the existing
+`attachInspectorAgent` responsibility without importing a page runtime. The
+optional package entry is `@gramlot/gramlot/tools/inspector-agent`, alongside
+`tools/inspector`. The `embedded` attribute selects panel presentation. The
+extension retains its existing namespaced envelope and uses `connectionId` to
+isolate each explicit inspection connection. No core proxy or discovery marker.
+
+The existing `inspector-bridge-` subscription prefix has a random per-connection
+suffix, avoiding collisions between separately loaded copies of the shared agent.

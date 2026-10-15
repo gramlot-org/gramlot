@@ -12,7 +12,7 @@ Block ID: **GC-195-005**.
 `gramlot-tools-inspector` is an optional browser tool in
 `tools/gramlot-tools-inspector/`. It inspects a supplied Gramlot instance through
 `gramlot.data` and `gramlot.src.source`, in a floating palette usable without the
-Chrome DevTools panel. The extension remains separate. The generic `webcomponent` declaration and provisional components are described in §030–035.
+Chrome DevTools panel. The separately owned Chrome extension imports this same component and agent (§050). The generic `webcomponent` declaration and provisional components are described in §030–035.
 There is no general component registry or public component base class in this work.
 
 The component provides Data/Source trees, cached values and attributes, live updates,
@@ -275,3 +275,90 @@ Qualification includes a core-only opaque-origin iframe fixture, typed snapshots
 revision conflicts, metadata/identity preservation, agent disposal, Data/Source
 editing, target CSP and synchronous writer-stack checks. Integrated gallery
 results are recorded in GC-070; core tests do not depend on gallery repositories.
+
+
+<a id="gc-195-045"></a>
+
+## 045 · CSS variable trial
+
+Block ID: **GC-195-045**. Owner approval: constitution 11.73 (2026-10-15).
+
+The third **Styles** tab reads existing `--gramlot-*` custom properties from the
+selected document's root computed style. Groups cover colours, typography,
+spacing, dimensions, effects and other variables. Values can be entered as CSS
+text; hexadecimal RGB colours also have a native colour picker. Text applies on
+Enter or change (leaving the field); the picker applies on change, following the Gramlot colour control contract. Escape reloads
+the current snapshot. Each variable uses one compact row: name in the first
+column, value in the second, colour picker in the third, reset in the fourth. Names truncate
+with a full-name tooltip when space is limited. The computed value appears in
+the value field tooltip, separately from the entered override, so references
+such as `var(--gramlot-brand-blue)` remain editable.
+**Refresh** rereads the current cascade after external theme or stylesheet changes.
+There is no polling or arbitrary stylesheet-rule inspection.
+
+Each local tool session or explicit page agent owns a temporary stylesheet with
+one `:root` rule. Individual reset removes that variable; **Reset all** removes
+the sheet. These operations reveal the current cascade, including changes made
+by the application while the preview was active. Application Source, inline
+styles and stylesheet files are untouched. Independent sessions own independent
+sheets. Preview declarations use `!important`; the CSS cascade still governs
+conflicts, notably existing inline important declarations and descendant overrides.
+CSS syntax validation does not promise semantic validity for every consuming
+property; a custom property may be valid CSS yet unusable where it is referenced.
+
+Local close/retarget removes previews. Connected previews remain with their page
+agent when selecting another target and are cleared when its connection is closed
+or the page exits. Agent commands `styles`, `setStyle`, `resetStyle`, `resetStyles`
+use the existing explicit port; no DOM objects cross the connection. Replies
+carry fresh values. Pending replies from an earlier target cannot update the
+current tab. A CSP-blocked preview stylesheet reports an error.
+
+Only document-root variables are included: element-scoped variables, general CSS
+editing, theme switching and persistence are deferred. This is a local
+development trial; owner visual acceptance is separate. Browser qualification is
+recorded in GC-070 §945. The test fixture can be opened with
+`node tools/gramlot-tools-inspector/tests/styles-browser.mjs --serve` after the tool
+build; it prints a local URL and stays running until stopped.
+
+**Download CSS** saves `theme-overrides.css` with only the selected target's
+applied overrides in a `:root` rule. CSS expressions and preview `!important`
+priorities are preserved; computed defaults and unapplied drafts are excluded.
+Load the file after the theme stylesheet. The existing cascade limitations apply.
+The Source-declared download link uses an inspector-owned Blob URL; it is
+unavailable without overrides or while a target operation is pending. Replacement,
+reset, retarget and close revoke the previous URL. Local and connected targets
+use their acknowledged snapshots; no new bridge command or endpoint is added.
+
+
+<a id="gc-195-050"></a>
+## 050 · Shared DevTools inspector
+
+Block ID: **GC-195-050**.
+
+Owner confirmation, 2026-10-15: "sì facciamo un unico inspector condiviso anche nei devtools"
+(constitution 11.74). The optional component now also serves the Chrome extension.
+Declaring `<gramlot-tools-inspector embedded>` renders the existing Data, Source,
+Styles, property editor, breakpoint dialogs and CSS download in a panel without
+palette dragging, resizing or closing controls. Source, Data and named Logic
+remain the single UI implementation. The attribute is supplied before connection.
+
+`@gramlot/gramlot/tools/inspector-agent` exports `attachInspectorAgent` separately,
+without importing the runtime or a second Bag class. It uses the supplied page's
+Bag constructor for scalar TYTX encoding and the renderer's document for CSS.
+`tools/inspector` still exports the connection and agent for existing integrations.
+Separately loaded agents use unique subscription IDs, so opening DevTools beside
+an in-page connection cannot replace or unsubscribe the other inspector.
+
+The extension owns `window.gramlot` discovery, visibility and Chrome routing.
+It adapts that transport to native MessagePorts and gives the component an
+explicit `InspectorConnection`. Revisions, read-only descriptors, scalar edits,
+breakpoints, CSS preview and download keep the shared connection contract (§040).
+Snapshots preserve sibling order and surviving node identity. The extension has
+removed its vendored PoC inspector and Source subtype codec; `_meta` remains
+omitted, and Source copies are passive descriptors rather than exact wire clones.
+
+A selected extension frame has one connection. Switching frame or closing
+DevTools releases its previews and subscriptions. Successful breakpoint settings
+are retained by the Chrome host and reapplied on reconnect, preserving its existing
+behavior. The core does not import or depend on the extension. This development
+change does not publish a package or replace a released extension archive.

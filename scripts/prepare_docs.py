@@ -4,17 +4,29 @@ from pathlib import Path
 import shutil
 
 PUBLIC_PAGES = (
+    "docs/public/018-quickstart.md",
     "docs/public/055-family.md",
     "docs/public/020-evaluate.md",
     "docs/public/025-try.md",
     "docs/public/030-quality.md",
     "docs/public/090-classes-and-hosts.md",
     "docs/public/095-writing-pages.md",
+    "docs/public/096-themes-and-css.md",
     "docs/public/100-extensions.md",
 )
 PUBLIC_ASSETS = (
     "assets/branding/gramlot-logo.svg",
     "assets/branding/gramlot-logo-dark.svg",
+    "docs/public/assets/themes/appearance-after.jpg",
+    "docs/public/assets/themes/appearance-before.jpg",
+    "docs/public/assets/themes/compact.jpg",
+    "docs/public/assets/themes/larger-text.jpg",
+    "docs/public/assets/themes/state-after.jpg",
+    "docs/public/assets/themes/state-before.jpg",
+    "docs/public/assets/themes/summary-after.jpg",
+    "docs/public/assets/themes/summary-before.jpg",
+    "docs/public/assets/themes/surface-dark.jpg",
+    "docs/public/assets/themes/surface-light.jpg",
 )
 
 

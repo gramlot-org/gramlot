@@ -53,7 +53,7 @@ test('data(...) is an error naming dataSetter and html_data, on a Source Bag and
 
 test('excluded declarations are errors naming the tag, and the node for a received Source', () => {
     const builder = new GramlotBuilder();
-    for (const name of ['serverpath', 'dbenv', 'shared_id', '_ask', 'ask', 'subscribe_x', 'selfsubscribe_x', 'formsubscribe_x']) {
+    for (const name of ['serverpath', 'dbenv', 'shared_id', 'formsubscribe_x']) {
         assert.throws(() => builder.root.div({[name]: 'v'}), new RegExp(`div: attribute '${name}' is excluded from Gramlot 0\\.2\\.0`));
     }
     const received = new GramlotBuilder();
