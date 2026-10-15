@@ -31,6 +31,10 @@ const DATA_INLINE_ATTRIBUTES = {dataFormula: 'formula', dataController: 'script'
 
 /** The P18 violation of a data-element's attributes, or null. */
 function dataElementError(tag, attrs) {
+    if (tag === 'html_button' && Object.keys(attrs).some(name =>
+        ['action', 'ask', '_delay', 'fire'].includes(name) || name.startsWith('fire_'))) {
+        return 'plain HTML button: use button for action, ask, fire or _delay';
+    }
     if (Object.hasOwn(attrs, 'ask') && tag !== 'button') return "'ask' is supported on buttons";
     if (Object.hasOwn(attrs, '_ask') && !['dataController', 'dataFormula', 'dataRpc'].includes(tag)) return "'_ask' requires a controller, formula or RPC";
     if (['dataSetter', 'dataRemote'].includes(tag) && Object.keys(attrs).some(name => name.startsWith('subscribe_') || name.startsWith('selfsubscribe_'))) {
@@ -152,6 +156,12 @@ export class GramlotBuilder extends HtmlBuilder {
         const error = dataElementError(node.nodeTag, options.attrs ?? node.getAttr());
         if (error) throw new Error(`${node.nodeTag} '${node.label}': ${error}`);
         return super.validateNode(node, options);
+    }
+
+    /** Both button declarations occupy the native button slot in HTML content models. */
+    _validateChildren(parentTag, info, tags, includeMinimum) {
+        return super._validateChildren(parentTag, info,
+            tags.map(tag => tag === 'html_button' ? 'button' : tag), includeMinimum);
     }
 
     /** Custom elements are outside the native HTML child catalogue, as components are. */

@@ -347,3 +347,129 @@ test('R3 side effects: Enter and Space keydown on a button with a mechanism are 
         assert.equal(event.defaultPrevented, false, key);
     }
 });
+
+test('html_button keeps a distinct Source identity, native form behavior and explicit events', () => {
+    const {app, byId, window, record} = page();
+    const calls = [];
+    const form = mount(app, root => {
+        const form = root.form({id: 'form'});
+        form.input({id: 'field', value: 'initial'});
+        form.html_button('Submit', {id: 'submit', connect_onclick: "this.SET('explicitEvent', true)"});
+        form.html_button('Reset', {id: 'reset', type: 'reset'});
+        return form;
+    });
+    const submit = sourceTarget(form).value.getNodes()[1];
+    assert.equal(submit.nodeTag, 'html_button');
+    assert.equal(byId('submit').localName, 'button');
+    assert.equal(byId('submit').getAttribute('type'), null);
+    assert.equal(record(submit).button, undefined);
+    byId('form').addEventListener('submit', event => { event.preventDefault(); calls.push('submit'); });
+    byId('form').addEventListener('click', () => calls.push('bubble'));
+    click(window, byId('submit'));
+    assert.deepEqual(calls, ['bubble', 'submit']);
+    assert.equal(app.data.getItem('explicitEvent'), true);
+    byId('field').value = 'changed';
+    click(window, byId('reset'));
+    assert.equal(byId('field').value, 'initial');
+    assert.throws(() => app.src.builder.root.html_button('Invalid', {action: 'true'}), /plain HTML button/);
+    app.dispose();
+});
+
+test('button _delay restarts from the last click and resets the burst counter after delivery', t => {
+    t.mock.timers.enable({apis: ['setTimeout']});
+    const {app, byId, window} = page();
+    const calls = [];
+    companion(app, {pressed(node, args) { calls.push([args.button_counter, args.button_shift, args.text]); }});
+    mount(app, root => {
+        root.button('Delayed', {id: 'delayed', _delay: 300}).dataController({func: 'pressed', text: '=text'});
+    });
+    app.data.setItem('text', 'before');
+    click(window, byId('delayed'));
+    t.mock.timers.tick(200);
+    click(window, byId('delayed'), {shiftKey: true});
+    t.mock.timers.tick(299);
+    assert.deepEqual(calls, []);
+    app.data.setItem('text', 'at delivery');
+    t.mock.timers.tick(1);
+    assert.deepEqual(calls, [[2, true, 'at delivery']]);
+    click(window, byId('delayed'));
+    t.mock.timers.tick(300);
+    assert.deepEqual(calls[1], [1, false, 'at delivery']);
+    app.dispose();
+});
+
+test('inherited _delay precedes action/fire; explicit zero and native events remain immediate', t => {
+    t.mock.timers.enable({apis: ['setTimeout']});
+    const {app, byId, window} = page();
+    mount(app, root => {
+        const box = root.div({_delay: 200});
+        box.button('Action', {id: 'action', action: "this.SET('count', _counter)",
+            connect_onclick: "this.SET('eventSeen', true)"});
+        box.button('Fire', {id: 'fire', fire: 'fired'});
+        box.button('Immediate', {id: 'now', _delay: 0, action: "this.SET('immediate', _counter)"});
+    });
+    click(window, byId('action')); click(window, byId('action'));
+    click(window, byId('fire')); click(window, byId('fire'));
+    click(window, byId('now'));
+    assert.equal(app.data.getItem('eventSeen'), true);
+    assert.equal(app.data.getItem('immediate'), 1);
+    assert.equal(app.data.getItem('count'), null);
+    t.mock.timers.tick(200);
+    assert.equal(app.data.getItem('count'), 2);
+    assert.equal(app.data.getNode('fired').getAttr('_counter'), 2);
+    app.dispose();
+});
+
+test('pending button clicks are cancelled on semantic removal and disposal', t => {
+    t.mock.timers.enable({apis: ['setTimeout']});
+    const {app, builder, byId, window} = page();
+    const b = builder.root.button('Delayed', {id: 'b', _delay: 100, action: "this.SET('called', true)"});
+    click(window, byId('b'));
+    app.src.source.popNode(sourceTarget(b).label);
+    t.mock.timers.tick(100);
+    assert.equal(app.data.getItem('called'), null);
+    builder.root.button('Delayed', {id: 'c', _delay: 100, action: "this.SET('called', true)"});
+    click(window, byId('c'));
+    app.dispose();
+    t.mock.timers.tick(100);
+    assert.equal(app.data.getItem('called'), null);
+});
+
+test('plain button obeys HTML content models and survives TYTX with no button binding', () => {
+    const {app, byId, record} = page();
+    const builder = new GramlotBuilder();
+    const node = builder.root.p().html_button('Plain', {id: 'plain', type: 'button'});
+    assert.match(builder.renderer_html.render(sourceTarget(node)), /<button/);
+    assert.throws(() => builder.root.table().html_button('Invalid'), /not allowed/);
+    app.src.startSource(builder.toTytx());
+    const mounted = app.src.renderer.getBaseSourceNode(byId('plain'));
+    assert.equal(mounted.nodeTag, 'html_button');
+    assert.equal(record(mounted).button, undefined);
+    app.dispose();
+});
+
+test('frozen removal, disabled delivery and rebuild discard pending button work', t => {
+    t.mock.timers.enable({apis: ['setTimeout']});
+    const {app, builder, byId, window} = page();
+    const pane = builder.root.div();
+    const make = id => pane.button('Delayed', {id, _delay: 100, action: "this.SET('called', true)"});
+    const removed = make('removed');
+    click(window, byId('removed'));
+    app.src.renderer.freeze(sourceTarget(pane));
+    sourceTarget(pane).value.popNode(sourceTarget(removed).label);
+    assert.ok(byId('removed'));
+    t.mock.timers.tick(100);
+    assert.equal(app.data.getItem('called'), null);
+    app.src.renderer.unfreeze(sourceTarget(pane));
+    const disabled = make('disabled');
+    click(window, byId('disabled'));
+    disabled.setAttr({disabled: true});
+    t.mock.timers.tick(100);
+    assert.equal(app.data.getItem('called'), null);
+    const rebuilt = make('rebuilt');
+    click(window, byId('rebuilt'));
+    rebuilt.span('Child');
+    t.mock.timers.tick(100);
+    assert.equal(app.data.getItem('called'), null);
+    app.dispose();
+});

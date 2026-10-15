@@ -459,6 +459,32 @@ owner accepted R3 as built for 0.2.0 and reviews it after the release. Examples:
 or null; `getDomNode(sourceNode)` → element or null (fragment, data element, removed
 or unbuilt node). No properties are added to DOM elements or Source nodes.
 
+
+**Added in 0.2.19 — plain and delayed buttons.**
+`html_button` is a distinct Source element that renders native `<button>`.
+It preserves native submit/reset and bubbling, without an implicit `type` or
+Gramlot action/ask/fire/controller dispatch. Use `type="button"` when it should
+not submit a form; explicit events still use `connect_onclick`. Declare
+`action`, `ask`, `fire` and `_delay` on `button`, not `html_button`.
+
+```python
+form.html_button("Reset", type="reset")
+pane.button("Run", _delay=300).dataController(func="run")
+```
+
+With a positive button `_delay` (milliseconds), each click restarts the wait.
+One execution follows the last click, using its event/modifiers and the number
+of clicks in that group: `_counter` for action/fire, `button_counter` for the
+nested controller/RPC. The next group starts again at 1. Arguments are read
+when the mechanism runs. With no delay or zero, the existing immediate lifetime
+counter remains. An ancestor may supply `_delay`; a button's zero overrides it.
+The delay runs before ask and before the selected click mechanism. A provider's
+own `_delay` remains separate for Data/subscription triggers. Explicit native
+event listeners still execute on each click, without waiting. Removal, page
+disposal or DOM detachment cancels pending work; a disabled button cannot deliver
+it. R3 and the one-mechanism rule remain unchanged. The legacy's separate 200 ms
+immediate-click disabled guard is not ported.
+
 <a id="gc-095-080"></a>
 
 ## 080 · Lifecycle order (0.2.0)

@@ -345,3 +345,9 @@ isolate each explicit inspection connection. No core proxy or discovery marker.
 
 The existing `inspector-bridge-` subscription prefix has a random per-connection
 suffix, avoiding collisions between separately loaded copies of the shared agent.
+
+
+Plain button (11.75): `html_button` uses the existing `html_` authoring convention
+but is a distinct Source tag in both languages; grammar `render_tag: button`
+maps it to native HTML. `button` keeps its Gramlot identity. `_delay`, `_counter`
+and `button_counter` retain their existing/legacy spelling. No new proxy or marker.

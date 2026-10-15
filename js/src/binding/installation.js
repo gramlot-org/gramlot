@@ -171,7 +171,8 @@ export function requireInstallable(branch) {
 
 // Provider attributes (§4.8): only a `dataFormula`, a `dataController`, a `dataRpc` or a `dataRemote`
 // carries them; the lifecycle attributes not a `dataRemote`, whose resolver loads when its Data is read;
-// the callbacks of the call only a `dataRpc`.
+// the callbacks of the call only a `dataRpc`. `_delay` also belongs to Gramlot buttons
+// and rendered ancestors that supply their inherited click delay.
 const PROVIDER_ATTRIBUTES = ['_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges'];
 const PROVIDER_TAGS = new Set(['dataFormula', 'dataController', 'dataRpc', 'dataRemote']);
 const RPC_ATTRIBUTES = ['_onCalling', '_onResult', '_onError'];
@@ -208,7 +209,8 @@ function requireProviderAttributes(node) {
         }
         return;
     }
-    const name = PROVIDER_ATTRIBUTES.find(isSet);
+    const name = PROVIDER_ATTRIBUTES.find(name => isSet(name)
+        && !(name === '_delay' && !node._getMeta('data_element') && node.nodeTag !== 'html_button'));
     if (!name) return;
     const tags = LIFECYCLE_ATTRIBUTES.includes(name) ? 'dataFormula, dataController and dataRpc'
         : 'dataFormula, dataController, dataRpc and dataRemote';

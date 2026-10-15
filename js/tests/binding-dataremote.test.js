@@ -254,8 +254,7 @@ test('authoring: the lifecycle attributes are refused on dataRemote; _delay, _ti
     mount(app, root => root.dataRemote({destination_path: 'menu', method: 'loadMenu', _delay: 10, _timing: 0, _userChanges: true}));
     app.dispose();
     const other = page();
-    assert.throws(() => mount(other.app, root => root.div({_delay: 10})),
-        /'_delay' is allowed only on dataFormula, dataController, dataRpc and dataRemote/);
+    assert.doesNotThrow(() => mount(other.app, root => root.div({_delay: 10}))); // inherited button delay
     other.app.dispose();
 });
 

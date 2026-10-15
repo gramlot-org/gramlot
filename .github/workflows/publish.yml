@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           (cd dist && sha256sum * > SHA256SUMS)
           gh release create "$RELEASE_TAG" dist/* --verify-tag \
-            --title "Gramlot ${RELEASE_TAG#v} — Messaging and shared inspector" \
+            --title "Gramlot ${RELEASE_TAG#v} — Plain and delayed buttons" \
             --notes-file ".github/release-notes/${RELEASE_TAG}.md"
 
   pypi:

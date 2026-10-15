@@ -1921,3 +1921,24 @@ behavior behind the existing Chrome frame routing. DevTools imports Gramlot;
 Gramlot never depends on, imports or distributes the extension. Supersedes the
 separate inspector implementation described in 11.61/11.67; no application
 runtime discovery hook, upstream dependency edit, release or deployment.
+
+
+### Amendment 11.75 — Plain HTML button and delayed Gramlot clicks — 2026-10-15
+
+Owner: "si procedi con html_button plain e button con i comportamenti Gramlot,
+aggiungi anche _delay come nel legacy e gli esempi che mancano".
+
+`html_button` is a distinct Source element rendered as native HTML `button`,
+without ButtonBinding, implicit type, click counters or action/ask/fire dispatch.
+Explicit `connect_on` events and ordinary Source/Data attributes remain available.
+`button` retains the single Gramlot mechanism and R3 semantics of 11.47.
+Its positive `_delay` in milliseconds restarts on each click and executes once
+with the last event and the number of clicks in that burst. The burst count resets
+after delivery; action/fire use `_counter`, nested providers keep `button_counter`.
+No delay retains the existing immediate lifetime counter. Pending clicks belong
+to the node and are cancelled on removal, disposal or DOM detachment.
+This extends the bounded button contract, not the component hierarchy; it does
+not port the legacy's separate 200 ms disabled guard for immediate clicks.
+Complete Python-first and equivalent JS examples for plain/Gramlot buttons,
+delay, action with ask, conditional ask and Source/DOM references, preserving
+release progression. No dependency edits, release or publication are authorized.

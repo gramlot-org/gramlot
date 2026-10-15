@@ -7121,3 +7121,29 @@ emoji control are consolidated on main/develop. No package from the server adapt
 repositories changed; they consume the core/examples packages. No Chrome Web Store
 submission or application deployment was performed. The release is complete;
 future scope and browser qualification limits above remain explicit.
+
+
+<a id="gc-070-970"></a>
+
+## 970 · Plain and delayed buttons — 0.2.19 release
+
+Owner approved on 2026-10-15: `html_button` plain, `button` with Gramlot behavior,
+legacy `_delay`, and missing examples (constitution 11.75). Implemented distinct
+Source identity/static and live HTML output; native submit/reset/explicit events;
+trailing click delay, burst counters, inherited delay and lifecycle cancellation.
+No Builder/Bag changes. Existing immediate button behavior remains.
+
+Examples c20 covers core 0.2.18 action/ask, conditional confirmations and local
+Source/DOM references; c21 demonstrates subsequent plain/delayed button additions.
+Both are Python-first with equivalent JS and short didactic descriptions.
+Verified: 608 core JS tests, 137 Python tests; 32 focused button/ask checks
+repeated after final cleanup. Examples: 66 JS checks (including the corrected
+Logic-count assertion), 16 Python tests. c20/c21 pass Chromium and WebKit on
+Python, Node and direct-file serverless pages. Strict Sphinx and links/anchors
+pass: 10 core pages, 45 lessons and two paired example guides.
+The user's Uvicorn gallery on localhost:8195 now uses the development sources;
+c20/c21 and navigation are verified there in Chromium. Native Safari and Firefox
+are not claimed. See [PORT-0008](../../ports/PORT-0008-plain-and-delayed-buttons/README.md).
+Implementation and verification complete. Owner authorized publication with
+"pubblichiamo" on 2026-10-15. Releasing core 0.2.19 and examples 0.2.15;
+registry verification is pending. Existing 0.2.18 artifacts remain unchanged.

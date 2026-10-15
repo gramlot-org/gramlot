@@ -30,6 +30,9 @@ DATA_INLINE_ATTRIBUTES = {"dataFormula": "formula", "dataController": "script"}
 
 def data_element_error(tag, attrs):
     """The P18 violation of a data-element's attributes, or None."""
+    if tag == "html_button" and any(
+            name in ("action", "ask", "_delay", "fire") or name.startswith("fire_") for name in attrs):
+        return "plain HTML button: use button for action, ask, fire or _delay"
     if "ask" in attrs and tag != "button":
         return "'ask' is supported on buttons"
     if "_ask" in attrs and tag not in ("dataController", "dataFormula", "dataRpc"):
@@ -175,6 +178,11 @@ class GramlotBuilder(HtmlBuilder):
         if missing:
             raise ValueError(f"{node_tag}: missing required attributes {sorted(missing)}")
         return super()._validate_call_args(info, node_value, attr, node_tag)
+
+    def _validate_children_tags(self, node_tag, sub_tags_compiled, children_tags):
+        """Both button declarations occupy the native button slot in HTML content models."""
+        return super()._validate_children_tags(node_tag, sub_tags_compiled,
+                                              ["button" if tag == "html_button" else tag for tag in children_tags])
 
     def custom_require_sub_tag_validation(self, node):
         """Custom elements are outside the native HTML child catalogue, as components are."""

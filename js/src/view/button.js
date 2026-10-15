@@ -15,11 +15,13 @@ import {XHTML_NS} from '../renderer/attributes.js';
 export class ButtonBinding {
     #binding;
     #record;
+    #cancelDelay = null;
+    #pendingCount = 0;
 
-    /** The ButtonBinding of a built element, or null when the element is not a `<button>`. */
+    /** The binding of a Gramlot button; html_button remains native despite its DOM tag. */
     static for(binding, record) {
         const element = record.element;
-        if (element?.namespaceURI !== XHTML_NS || element.localName !== 'button') return null;
+        if (binding.node.nodeTag !== 'button' || element?.namespaceURI !== XHTML_NS || element.localName !== 'button') return null;
         return new ButtonBinding(binding, record);
     }
 
@@ -79,6 +81,7 @@ export class ButtonBinding {
 
     detach() {
         this.element.removeEventListener('click', this);
+        this.#cancelDelay?.();
     }
 
     handleEvent(event) {
@@ -97,6 +100,38 @@ export class ButtonBinding {
         event.stopPropagation();
         if (this.element.disabled) return;
         const counter = this.binding.countClick();
+        // Legacy reads inherited _delay. An explicit zero overrides an ancestor's delay.
+        let owner = this.node;
+        while (owner && owner.getAttr('_delay') == null) owner = owner.parentNode;
+        const delay = owner ? owner.builder.runtimeValues(owner)[1]._delay : 0;
+        if (delay > 0) {
+            const count = this.#pendingCount + 1;
+            this.#cancelDelay?.();
+            this.#pendingCount = count;
+            const timer = setTimeout(() => {
+                release();
+                this.#cancelDelay = null;
+                this.#pendingCount = 0;
+                this.#execute(event, count);
+            }, delay);
+            const release = this.binding.track(() => this.#cancelDelay?.());
+            this.#cancelDelay = () => {
+                clearTimeout(timer);
+                release();
+                this.#cancelDelay = null;
+                this.#pendingCount = 0;
+            };
+            return;
+        }
+        this.#cancelDelay?.();
+        return this.#execute(event, counter);
+    }
+
+    /** Deliver the last event once; arguments are read when the mechanism executes. */
+    #execute(event, counter) {
+        if (this.binding.closed || this.element.disabled) return;
+        const mechanism = this.mechanism;
+        if (!mechanism) return;
         const node = this.node;
         const modifiers = eventToString(event);
         if (mechanism === 'controller') {

@@ -108,3 +108,26 @@ test('pending ask rereads authored references and rejects a removed target witho
     assert.equal(document.querySelector('dialog'), null);
     app.dispose();
 });
+
+test('button _delay groups clicks before ask and confirmation retains the group count', async t => {
+    t.mock.timers.enable({apis: ['setTimeout']});
+    const {app, document, window} = page(root => root.button('Delayed', {id: 'delayed', _delay: 300,
+        action: "this.SET('answer', _counter);", ask: 'Proceed?'}));
+    document.getElementById('delayed').click();
+    t.mock.timers.tick(100);
+    document.getElementById('delayed').click();
+    t.mock.timers.tick(299);
+    assert.equal(document.querySelector('dialog'), null);
+    t.mock.timers.tick(1);
+    assert.equal(document.querySelectorAll('dialog').length, 1);
+    assert.equal(app.data.getItem('answer'), null);
+    confirm(document, window);
+    await Promise.resolve();
+    assert.equal(app.data.getItem('answer'), 2);
+    document.getElementById('delayed').click();
+    t.mock.timers.tick(300);
+    document.querySelector('dialog button').click();
+    await Promise.resolve();
+    assert.equal(app.data.getItem('answer'), 2);
+    app.dispose();
+});

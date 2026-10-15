@@ -337,6 +337,21 @@ class Page(BasePage):
                              {"code": "application_error", "name": "TypeError",
                               "message": "Source methods must build into root and return None"})
 
+class PlainButtonTest(unittest.TestCase):
+    def test_plain_button_identity_render_and_roundtrip(self):
+        builder = GramlotBuilder()
+        button = builder.root.div().html_button('Reset', type='reset')
+        self.assertEqual(button.node_tag, 'html_button')
+        self.assertIn('<button', builder.renderer_html.render(button))
+        self.assertIn('type="reset"', builder.renderer_html.render(button))
+        restored = from_tytx(builder.to_tytx())
+        self.assertEqual(restored.nodes[0].value.nodes[0].node_tag, 'html_button')
+        for attr in ('action', 'ask', 'fire', 'fire_save', '_delay'):
+            with self.subTest(attr=attr), self.assertRaisesRegex(ValueError, 'plain HTML button'):
+                builder.root.html_button('Invalid', **{attr: 'x'})
+        with self.assertRaises(ValueError):
+            builder.root.table().html_button('Not a table row')
+
 
 if __name__ == "__main__":
     unittest.main()

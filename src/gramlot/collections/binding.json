@@ -7,7 +7,7 @@
     "name": "binding",
     "version": null,
     "title": "Gramlot binding",
-    "description": "Data-elements of Gramlot 0.2.0 with the signatures of decision P18; loaded after the HTML grammar."
+    "description": "Gramlot Data declarations and the plain HTML button; loaded after the HTML grammar."
   },
   "abstracts": {},
   "elements": {
@@ -373,6 +373,31 @@
       "collection_key": null,
       "_meta": {
         "data_element": true
+      }
+    },
+    "html_button": {
+      "doc": "Plain native HTML button without Gramlot click mechanisms.",
+      "sub_tags": "a,abbr,area,audio,b,bdi,bdo,br,button,canvas,cite,code,data,datalist,del_,dfn,em,embed,i,iframe,img,input,ins,kbd,label,link,map,mark,meta,meter,noscript,object,output,picture,progress,q,ruby,s,samp,script,select,selectedcontent,slot,small,span,strong,sub,sup,template,textarea,time,u,var,video,wbr",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "kwargs",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": null,
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "node_label": null,
+      "collection_key": null,
+      "_meta": {
+        "render_tag": "button"
       }
     }
   }
