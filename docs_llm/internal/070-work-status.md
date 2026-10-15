@@ -6,6 +6,8 @@ Document ID: **GC-070**. Updated: **2026-10-15**.
 
 **Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
 
+**Documentation follow-up:** alignment of all four manuals and the new examples Read the Docs site is locally verified; hosted builds are being checked (§840).
+
 **Current checkpoint:** the integrated release is published and verified (§835): core 0.2.17 on PyPI/npm/JSR, examples 0.2.12 on PyPI/npm, JS server/serverless/create 0.2.9 on npm and Python server 0.2.8 on PyPI. All four release pipelines succeeded, including required tests, browser checks and clean-install gates. Teaching D1–D6 is owner-accepted (§790); additional remote/CustomTypes enforcement remains owner-deferred (11.66), Q2 is unchanged and the Date/Decimal authoring exercise is deferred pending Bag #69. Qualification details and limits are in §§825–835.
 
 **Release 0.2.6 (published 2026-10-04):** type declarations of the JavaScript package; the examples and the runner out of the core. See [§685](#gc-070-685). Released before: 0.2.5 (2026-10-03, page module and `gramlot.inout`, [§670](#gc-070-670)), 0.2.4 ([§665](#gc-070-665)), 0.2.3 ([§660](#gc-070-660)), 0.2.2 ([§655](#gc-070-655)).
@@ -5313,3 +5315,35 @@ Earlier environment/browser limits in §§825–830 remain: no new branded Safar
 Firefox inspector or OS app-installation qualification. Remote enforcement is
 owner-deferred, Q2 remains undecided, and the Date/Decimal authoring exercise
 remains deferred pending Bag #69. The integrated release itself is complete.
+
+
+<a id="gc-070-840"></a>
+## 840 · Documentation alignment and examples manual (2026-10-15)
+
+Owner instruction: “ok allinea tutto e configura read the docs anche per gli esempi”.
+Scope: align the four repositories' README/manual claims with the published
+releases, and configure and publish the examples manual. The owner created the
+Read the Docs project (“l'ho fatto io”); its initial build 35158970 failed because
+the repository configuration had not yet been pushed.
+
+Corrected the server README qualification tables, Python core dependency floors,
+obsolete development-only claims for the index, manifest, webcomponent and remote
+cache corrections, and examples dependency/lesson status. Historical qualification
+records and deferred work retain their meaning. Added cross-links to the examples
+manual; no runtime behavior or package version changed.
+
+The examples manual stages 48 public pages: README, two paired GE guides, learning
+introduction, three family introductions and all 41 catalogue lessons. Navigation
+keeps catalogue/release order. Source files are included with Python first; lesson
+Markdown remains beside the executable pages. The classic Read the Docs theme and
+logo are shared with the family. Configuration builds from main without importing
+the application runtime. CI checks the complete page set, search scope, local links,
+anchors and paired guide anchors. Local clean Sphinx builds pass with warnings as
+errors for all four repositories (including the two server concise views). Browser
+inspection confirms lesson navigation, expandable detail and highlighted sources.
+
+Required pre-commit checks: Node server 33, serverless 34, create 3 and Bun 33 pass.
+Python adapters: 92 pass after refreshing the local environment from stale core
+0.2.16/examples 0.2.9 to the published dependencies. The initial five manifest
+failures were from that old environment; no test or runtime workaround was added.
+Hosted publication verification is pending the documentation pushes.

@@ -163,5 +163,5 @@ archived. See [the ownership contract](https://github.com/gramlot-org/gramlot/bl
 The published 0.1.0 archives keep their original names.
 
 
-Development preview: [Reusable application index and installable root](docs/public/095-writing-pages.md)
+[Reusable application index and installable root](docs/public/095-writing-pages.md)
 shows Python-first authoring, a custom footer, iframe tabs and the root manifest.

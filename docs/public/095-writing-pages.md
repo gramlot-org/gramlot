@@ -998,10 +998,9 @@ Page.registerEndpoint('with_vat');
 
 ## 105 · Remote content and lazy Data: `remote` and `dataRemote` (0.2.16)
 
-> **Development note (2026-10-13):** the last-successful-result cache and
-> cancellation corrections described below are locally implemented and tested,
-> but are not a new published release. An installed package may still have the
-> earlier cache behavior; the repository README identifies published releases.
+> **Release history:** core 0.2.17 corrects the last-successful-result cache and
+> cancellation behavior described below. Update older installations before
+> trying these cases; see the repository README for the current release.
 
 **`remote`** makes the content of an element a Source fragment built on the server
 by a `@source` method (Python) or a method declared with `Page.registerSource(name)`
@@ -1141,7 +1140,7 @@ Intended differences from the legacy:
 
 ## 110 · A reusable application index and an installable root
 
-Block ID: **GC-095-110**. Development addition; not yet a published release.
+Block ID: **GC-095-110**. Introduced in core 0.2.17.
 
 `IndexPage` supplies grouped navigation, a resizable sidebar and iframe tabs. A
 page opens on first selection; selecting it again reuses the same iframe and its

@@ -41,3 +41,6 @@ Shared contract: [classes and server adapters](090-classes-and-hosts.md) (mount 
 ## 015 · Choosing a path
 
 Python pages: core + the adapter of your framework in gramlot-py-server. JavaScript with a server: core + @gramlot/gramlot-js-server. JavaScript without a server: core + @gramlot/gramlot-serverless. To try first: the gallery of gramlot-examples, served by each environment ([Try Gramlot](025-try.md)).
+
+The [examples manual](https://gramlot-examples.readthedocs.io/en/latest/)
+presents all shared lessons in release order, with Python and JavaScript source.

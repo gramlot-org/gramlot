@@ -142,7 +142,7 @@ removes that marker. This is not a new live-renderer capability.
 
 ## 095 · An explicitly loaded Web Component
 
-Development addition; not yet part of a published release. Declare a custom element
+Introduced in core 0.2.17. Declare a custom element
 without a dedicated Python builder:
 
 ```python
@@ -157,5 +157,6 @@ component module explicitly before use; this declaration does not import it.
 
 Object properties, such as a tree's Bag, are not HTML attributes. The provisional
 inspector assigns `storeBag` in its JavaScript implementation. Generic declarative
-Bag properties are not provided by this addition. The first temporary tree is a development tool; its integration into the inspector
-is still pending.
+Bag properties are not provided by this addition. The temporary tree is used by
+the optional inspector; it remains a provisional tool component, not a general
+application widget API.

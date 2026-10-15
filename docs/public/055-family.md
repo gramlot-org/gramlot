@@ -94,3 +94,6 @@ adapter repository documents its installation, configuration and deployment.
 - **Trying it first:** the gallery of `gramlot-examples`, served by the gallery
   command of each environment, shows every example in Python and JavaScript, with
   its source; see [Try Gramlot](025-try.md).
+
+The [examples manual](https://gramlot-examples.readthedocs.io/en/latest/)
+presents all shared lessons in release order, with Python and JavaScript source.
