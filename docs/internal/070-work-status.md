@@ -1,12 +1,12 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-14**.
+Document ID: **GC-070**. Updated: **2026-10-15**.
 
 **Graphic assets:** rich identity kit implemented and verified (2026-10-02); new vector artwork and layouts await owner visual acceptance. See [§650](#gc-070-650).
 
 **Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
 
-**Current checkpoint:** stabilization qualification is complete and locally verified in the agreed scope (§825). Core: 580 JS tests, 139 Python tests and 254 subtests; Python adapters 92, Node/Bun 33 each, serverless 34; all 41 Python and 41 JS example interactions pass in Chromium. Qualification corrected multiple-select initialization and the typed Restore boundary. Teaching D1–D6 is owner-accepted (§790); additional remote/CustomTypes enforcement is owner-deferred (11.66), and Q2 remains undecided and unchanged. Builders JS 0.5.2 is published (§815); the Date/Decimal authoring exercise remains deferred pending Bag #69. The owner authorized release preparation: candidate artifacts and clean installations are verified (§830); publication is owner-authorized and in progress. Environment limits are recorded in §§825–830.
+**Current checkpoint:** the integrated release is published and verified (§835): core 0.2.17 on PyPI/npm/JSR, examples 0.2.12 on PyPI/npm, JS server/serverless/create 0.2.9 on npm and Python server 0.2.8 on PyPI. All four release pipelines succeeded, including required tests, browser checks and clean-install gates. Teaching D1–D6 is owner-accepted (§790); additional remote/CustomTypes enforcement remains owner-deferred (11.66), Q2 is unchanged and the Date/Decimal authoring exercise is deferred pending Bag #69. Qualification details and limits are in §§825–835.
 
 **Release 0.2.6 (published 2026-10-04):** type declarations of the JavaScript package; the examples and the runner out of the core. See [§685](#gc-070-685). Released before: 0.2.5 (2026-10-03, page module and `gramlot.inout`, [§670](#gc-070-670)), 0.2.4 ([§665](#gc-070-665)), 0.2.3 ([§660](#gc-070-660)), 0.2.2 ([§655](#gc-070-655)).
 
@@ -6285,9 +6285,51 @@ consolidation/publication, in dependency order core → examples → servers.
 
 
 <a id="gc-070-835"></a>
-## 835 · Integrated publication authorized (2026-10-14)
+## 835 · Integrated release published (2026-10-15)
 
-Owner confirmation: “ok” to “Procedo con commit, push e pubblicazione?” after
-§830. Scope: commit, push and publish core 0.2.17, examples 0.2.12, JS
-server/serverless/create 0.2.9 and Python server 0.2.8, in dependency order.
-Publication is in progress; registry success has not yet been recorded.
+Owner authorization: “ok” to “Procedo con commit, push e pubblicazione?” after
+§830; renewed as “Sì, riprova e completa il rilascio” after two automatic
+approval-review deadlines interrupted read-only status checks. Scope: consolidate
+verified work on main, commit, push, tag and publish the four connected releases.
+
+| Repository | Release | Registries | Successful publishing workflow |
+| --- | --- | --- | --- |
+| Core | 0.2.17 | PyPI, npm, JSR | [38641715360](https://github.com/gramlot-org/gramlot/actions/runs/38641715360) |
+| Examples | 0.2.12 | PyPI, npm | [38689407064](https://github.com/gramlot-org/gramlot-examples/actions/runs/38689407064) |
+| JS server, serverless, create | 0.2.9 | npm, all three packages | [38689661132](https://github.com/gramlot-org/gramlot-js-server/actions/runs/38689661132) |
+| Python server | 0.2.8 | PyPI | [38690143904](https://github.com/gramlot-org/gramlot-py-server/actions/runs/38690143904) |
+
+All workflows, including their required verification jobs, completed successfully.
+PyPI confirms both wheel and source archives for all three Python packages; npm
+confirms the five exact versions and latest tags. The JSR publishing job records
+successful publication of @gramlot/gramlot@0.2.17; a local metadata request was
+403, so it is not claimed as an independent JSR read check. GitHub releases carry
+the built distributions and SHA-256 inventories. Develop was merged with the
+existing main history and both branches were pushed without force-pushing them.
+
+### Corrections encountered while publishing
+
+- The initial core workflow 38641516590 stopped before build/publication because
+  pytest was missing from the test extra. Added pytest and switched both the test
+  and coverage commands to the complete pytest suite (139 tests, 254 subtests
+  locally). Updated only the unpublished tag and reran the workflow successfully.
+- Python and serverless gallery verifiers still used old gallery logo/theme
+  selectors. Updated them to the shared IndexPage selectors. All 42 serverless
+  pages pass from disk; the five Python galleries pass. The initial local FastAPI
+  and serverless timeouts did not reproduce in the diagnostic reruns or final CI.
+- The first JS server publishing attempt could not install the newly published
+  examples while npm propagation was incomplete. After confirming npm visibility,
+  reran the failed jobs; the complete workflow and publication passed.
+- Python clean-install checks still opened the removed environment Quick start
+  routes. They now assert HTTP 404 while retaining the generated-project and e01
+  browser checks. The corrected Uvicorn clean install passed locally; final CI
+  passed clean installs for all five adapters, Python 3.11/3.12 adapter tests,
+  documentation and browser galleries. Updated only the unpublished Python tag
+  before the successful complete rerun; no published version was replaced.
+
+Evidence is in the linked workflows and `/private/tmp/gramlot-publish-*.log`.
+The development-only `.claude/` directory was not committed or distributed.
+Earlier environment/browser limits in §§825–830 remain: no new branded Safari,
+Firefox inspector or OS app-installation qualification. Remote enforcement is
+owner-deferred, Q2 remains undecided, and the Date/Decimal authoring exercise
+remains deferred pending Bag #69. The integrated release itself is complete.
