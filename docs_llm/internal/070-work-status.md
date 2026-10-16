@@ -2,6 +2,8 @@
 
 Document ID: **GC-070**. Updated: **2026-10-16**.
 
+**Current checkpoint:** the intermediate formatting/pointer release is published and verified across core, examples and JS integration. Release gates, registry checks and documentation receipts are recorded in [§1000](#gc-070-1000). The next component workstream has not started.
+
 **Inspector CSS variables:** the Styles trial and CSS download are implemented; locally verified; owner visual acceptance pending. See [§945](#gc-070-945).
 
 **Themes and CSS guide:** GC-096 implemented and locally verified, including larger inline results with responsive code/result comparisons, reader-facing headings, the complete token catalogue and practical guidance; see [§950](#gc-070-950), [§935](#gc-070-935), [§930](#gc-070-930) and [§925](#gc-070-925).
@@ -10,7 +12,7 @@ Document ID: **GC-070**. Updated: **2026-10-16**.
 
 **Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
 
-**Next release direction:** publish/subscribe targets 0.2.18 by owner agreement (§865); legacy review and release scope remain to be defined. Other [workstream priorities and parallel assignments](../future/README.md) remain open; website/system-Data notes are retained.
+**Next workstream:** Gramlot components for 0.3 remain the next owner-directed design/implementation stage. Component and localization design records are preparation, not implemented services. Other [workstream priorities and parallel assignments](../future/README.md) remain open; website/system-Data notes are retained.
 
 **Deferred website design:** editorial HTML companions and two interactive-region modes for gramlot.org, asqueel.org and kajenn.org are recorded for later discussion (§850); no implementation started.
 
@@ -18,7 +20,7 @@ Document ID: **GC-070**. Updated: **2026-10-16**.
 
 **Documentation follow-up:** all four public manuals are aligned; the examples Read the Docs site is live with 41 lessons and complete Python/JavaScript sources. Hosted documentation and CI checks passed (§840).
 
-**Current checkpoint:** the integrated release is published and verified (§835): core 0.2.17 on PyPI/npm/JSR, examples 0.2.12 on PyPI/npm, JS server/serverless/create 0.2.9 on npm and Python server 0.2.8 on PyPI. All four release pipelines succeeded, including required tests, browser checks and clean-install gates. Teaching D1–D6 is owner-accepted (§790); additional remote/CustomTypes enforcement remains owner-deferred (11.66), Q2 is unchanged and the Date/Decimal authoring exercise is deferred pending Bag #69. Qualification details and limits are in §§825–835.
+**Historical record — integrated release checkpoint (§835):** core 0.2.17 on PyPI/npm/JSR, examples 0.2.12 on PyPI/npm, JS server/serverless/create 0.2.9 on npm and Python server 0.2.8 on PyPI. All four release pipelines succeeded, including required tests, browser checks and clean-install gates. Teaching D1–D6 is owner-accepted (§790); additional remote/CustomTypes enforcement remains owner-deferred (11.66), Q2 is unchanged and the Date/Decimal authoring exercise is deferred pending Bag #69. Qualification details and limits are in §§825–835.
 
 **Release 0.2.6 (published 2026-10-04):** type declarations of the JavaScript package; the examples and the runner out of the core. See [§685](#gc-070-685). Released before: 0.2.5 (2026-10-03, page module and `gramlot.inout`, [§670](#gc-070-670)), 0.2.4 ([§665](#gc-070-665)), 0.2.3 ([§660](#gc-070-660)), 0.2.2 ([§655](#gc-070-655)).
 
@@ -6704,3 +6706,47 @@ integration has no pending source change and needs no package release. Existing
 core and companion verification remains the release baseline; publication results
 will be recorded after registry/CI confirmation. Local .claude settings are not
 part of the release.
+
+<a id="gc-070-1000"></a>
+## 1000 · Intermediate formatting and pointer release — 2026-10-16
+
+Owner authorization: "procedi" in response to the request to bump, commit, push
+and publish the verified increment. This covers core 0.2.20, examples 0.2.16 and
+JS integration 0.2.10, in dependency order. The unchanged Python integration
+requires no new package version. Components remain the subsequent 0.3 workstream.
+
+Core 0.2.20: the [release pipeline](https://github.com/gramlot-org/gramlot/actions/runs/38918818020)
+passed all gates and published the [GitHub release](https://github.com/gramlot-org/gramlot/releases/tag/v0.2.20),
+PyPI, npm and JSR distributions. PyPI/npm metadata confirms the version; the JSR
+publish job confirms publication. Local JSR metadata retrieval is unavailable
+(HTTP 403), so that endpoint is not claimed as an independent verification.
+
+Examples 0.2.16: the [release pipeline](https://github.com/gramlot-org/gramlot-examples/actions/runs/38920430051)
+passed Python 3.11/3.12, Node/Bun, documentation and the complete Chromium gallery
+check. The new c22 behavior check exercises width templates, boolean expressions,
+format/mask and local _F while checking numeric Data. It was added after the
+required gate correctly rejected the missing browser-suite registration. The
+[GitHub release](https://github.com/gramlot-org/gramlot-examples/releases/tag/v0.2.16)
+and PyPI/npm publications succeeded; both registries expose 0.2.16. The dependent
+JS integration release started only after npm made the examples installable.
+
+Core and examples Read the Docs builds succeeded at their released commits.
+Earlier npm dependency-install failures occurred before the new core package
+became visible; verification was rerun successfully against the released package,
+without dependency pins or relaxed checks.
+
+JS integration 0.2.10: the [release pipeline](https://github.com/gramlot-org/gramlot-js-server/actions/runs/38921763094)
+passed both released-core and core-main suites, Node/Bun contracts, Chromium
+server/serverless galleries, CLI template generation and documentation. The first
+runner was retried after slow system-package downloads during browser setup;
+no test was skipped or weakened. The [GitHub release](https://github.com/gramlot-org/gramlot-js-server/releases/tag/v0.2.10)
+contains all three tarballs and checksums. npm accepted @gramlot/gramlot-js-server,
+@gramlot/gramlot-serverless and @gramlot/create 0.2.10. Public npm metadata now
+confirms all three versions and their latest tags. Read the Docs succeeded at
+the released integration commit.
+
+Local final documentation verification passed strict Sphinx and the ten-page
+public source/link/anchor check. No component or localization service
+implementation is implied by this release. Formatter limits remain documented
+in the release notes: advanced patterns and Decimal support are incomplete;
+static rendering does not run Intl or JavaScript expressions.
