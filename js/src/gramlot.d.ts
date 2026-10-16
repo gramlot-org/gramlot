@@ -14,6 +14,10 @@ import type {UtilitiesHandler} from './handlers/utilities-handler.js';
 
 /** The options of a `Gramlot` instance. */
 export interface GramlotOptions {
+    /** Formatting locale of this page; null/omitted uses the browser locale. */
+    locale?: string | null;
+    /** Timezone for instants; null/omitted uses the browser timezone. */
+    timeZone?: string | null;
     /** The id of the server page, as registered by the server. */
     pageId?: string;
     /** The URL of the rpc endpoint that receives the envelopes. */
@@ -40,12 +44,27 @@ export type GramlotState = 'ready' | 'loading' | 'started' | 'failed' | 'dispose
 /** Opaque registration returned by subscribe; meaningful only to its owning page. */
 export interface SubscriptionHandle { readonly __subscriptionHandle: unique symbol; }
 
+/** Bounded formatting subset. Call options override the page context. */
+export interface FormatOptions {
+    /** Numeric pattern or temporal short (default), medium, long, full. */
+    pattern?: string;
+    locale?: string;
+    /** Overrides value inference; does not coerce strings or other incompatible values. */
+    dtype?: 'L' | 'R' | 'N' | 'D' | 'H' | 'DHZ';
+    /** Overrides the page timezone for DHZ; D/H do not shift. */
+    timeZone?: string;
+    /** Wrap formatted text using {}. Null and an empty zero section bypass the mask. */
+    mask?: string;
+}
+
 /** Legacy-shaped publication. Frame forwarding follows synchronous local delivery. */
 export type Publication = string | {topic: string; nodeId: string} |
     {topic: string; parent?: boolean; iframe?: string | SourceBagNode};
 
 /** One Gramlot page: lifecycle, Data and the four proxies `src`, `rpc`, `dom`, `utl`. */
 export class Gramlot {
+    locale: string;
+    timeZone: string;
     /** The id of the server page. */
     pageId: string | undefined;
     /** The capabilities announced by the server in the bootstrap, frozen. */
@@ -80,6 +99,8 @@ export class Gramlot {
     subscribe(topic: string, callback: (payload: Record<string, unknown>) => unknown): SubscriptionHandle;
     /** Remove a registration; repeating removal of an owned handle is harmless. */
     unsubscribe(registration: SubscriptionHandle): void;
+    /** Format a number, Date or null. Explicit dtype overrides TYTX-style Date inference. */
+    format(value: number | Date | null, options?: string | FormatOptions): string;
     /** Load `main` from the server and mount it; resolves with the instance. */
     start(): Promise<Gramlot>;
     /** Request `main` from the transport and mount it. */

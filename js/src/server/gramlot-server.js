@@ -126,20 +126,23 @@ export class GramlotServer {
         if (this.pages.size >= this.maxPages) throw new ServerCapacity('Page registry capacity reached');
         const pageId = crypto.randomUUID().replaceAll('-', '');
         this.pages.set(pageId, {PageClass, owner, expires: performance.now() + this.pageTtl * 1000});
-        return {pageId, title: PageClass.title, resources};
+        return {pageId, title: PageClass.title, resources,
+            ...(PageClass.locale == null ? {} : {locale: PageClass.locale}),
+            ...(PageClass.timeZone == null ? {} : {timeZone: PageClass.timeZone})};
     }
 
     /** Register the page and return its bootstrap. prefix is the mount prefix chosen
      * by the adapter, added once to the root-relative bootstrap URLs. */
     async openPage(path, {owner = null, prefix = ''} = {}) {
         if (typeof prefix !== 'string') throw new TypeError('Mount prefix must be a string');
-        const {pageId, title, resources} = await this.registerPage(path, {owner});
+        const {pageId, title, resources, locale, timeZone} = await this.registerPage(path, {owner});
         try {
             const nonce = createNonce();
             // The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9).
             const bootstrap = scriptJson({
                 config: {pageId, rpcUrl: prefixed(prefix, this.rpcUrl), closeUrl: prefixed(prefix, this.closeUrl),
-                    rootId: this.rootId, capabilities: this.capabilities},
+                    rootId: this.rootId, capabilities: this.capabilities,
+                    ...(locale === undefined ? {} : {locale}), ...(timeZone === undefined ? {} : {timeZone})},
                 resources: {css: resources.css.map(url => prefixed(prefix, url)),
                     js: resources.js.map(({url, group}) => ({url: prefixed(prefix, url), group}))},
             });

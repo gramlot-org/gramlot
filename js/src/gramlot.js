@@ -10,6 +10,7 @@ import {RpcHandler} from './handlers/rpc-handler.js';
 import {DomHandler} from './handlers/dom-handler.js';
 import {SubscriptionsHandler} from './handlers/subscriptions-handler.js';
 import {UtilitiesHandler} from './handlers/utilities-handler.js';
+import {formatValue} from './format.js';
 
 /**
  * One Gramlot page: lifecycle, Data and the four proxies `src`, `rpc`, `dom`, `utl`.
@@ -17,8 +18,13 @@ import {UtilitiesHandler} from './handlers/utilities-handler.js';
  */
 export class Gramlot {
     constructor({pageId, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
-                 element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = []} = {}) {
+                 element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = [],
+                 locale = null, timeZone = null} = {}) {
         this.pageId = pageId;
+        const browserContext = locale == null || timeZone == null
+            ? document.defaultView.Intl.DateTimeFormat().resolvedOptions() : null;
+        this.locale = locale ?? browserContext.locale;
+        this.timeZone = timeZone ?? browserContext.timeZone;
         Object.defineProperty(this, '_subscriptions', {value: new SubscriptionsHandler(this)});
         this.capabilities = Object.freeze([...capabilities]);
         this.src = new SourceHandler(this, {collections, destination: element ?? document.getElementById(rootId)});
@@ -38,6 +44,7 @@ export class Gramlot {
     publish(topic, payload = {}) { return this._subscriptions.publish(topic, payload); }
     subscribe(topic, callback) { return this._subscriptions.subscribe(topic, callback); }
     unsubscribe(registration) { this._subscriptions.unsubscribe(registration); }
+    format(value, options) { return formatValue(value, options, {locale: this.locale, timeZone: this.timeZone}); }
 
     start() {
         if (this.state === 'disposed') return Promise.reject(new Error('Gramlot is disposed'));

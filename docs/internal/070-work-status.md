@@ -1,6 +1,6 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-15**.
+Document ID: **GC-070**. Updated: **2026-10-16**.
 
 **Inspector CSS variables:** the Styles trial and CSS download are implemented; locally verified; owner visual acceptance pending. See [§945](#gc-070-945).
 
@@ -7163,6 +7163,189 @@ examples latest 35174219 and stable 35174220. Release commits and tags are pushe
 on main/develop. The server adapters and DevTools packages are unchanged.
 
 
+<a id="gc-070-975"></a>
+
+## 975 · Component contract research, awaiting API decisions (2026-10-15)
+
+Owner: "ok procedi con l'analisi di legacy e poc e prepara il documento sul
+contratto dei componenti, poi decidiamo le API". Completed the read-only comparison
+of legacy authoring/widget adapters, PoC descriptions/bases/inputs/layout and current
+Gramlot binding/lifecycle. [GC-205](../future/205-components.md#gc-205-015) now holds
+the evidence snapshot, proposed responsibilities, behavior matrix, pilot acceptance
+cases and ordered owner decision register. APIs and implementation remain unapproved.
+
+Findings: distinguish Python composition and Source expansion from browser controls;
+reuse current Source/Data rather than porting PoC Application. Resolve draft/echo/IME,
+property channels, lifecycle and child selection explicitly. The GC-040 experiment's
+recorded worktree is absent, so it was not reproduced. Constitution 11.14 describes
+additive collection merge; later GC-210 §090 records a 2026-09-30 owner decision
+for whole-declaration replacement, matching current ASTRA-03 tests. Reconcile the
+historical wording with that later record before collection override design; this
+research changes neither policy nor dependencies.
+
+Verified: 4/4 existing PoC component-alpha tests, 35/35 existing core collection,
+native-control and webcomponent tests (corrected local Python environment). Legacy
+is source-traced, not live-browser tested. Paired documentation anchors and local
+links checked, six pinned source references verified against Git objects; strict
+Sphinx and public documentation checks pass (10 pages). Public boundary preserved.
+No runtime changes, new API, release number or publication. Next: owner review of GC-205, starting with component
+responsibilities and description ownership, then a bounded implementation plan.
+
+
+<a id="gc-070-980"></a>
+
+## 980 · Component description ownership approved (2026-10-15)
+
+Owner confirmed "si" to one JS module holding component description and implementation,
+generated JSON for Builders, and no manually duplicated Python definition. Recorded
+in constitution 11.76 and [GC-205 §075](../future/205-components.md#gc-205-075).
+Python consumes metadata without browser code execution or a server-side Node
+requirement. Exact exports/schema/names/bases, collection selection and asset loading
+remain open; no runtime implementation or publication is claimed or authorized.
+Owner then clarified that collection requirements belong to the application and
+explicitly deferred the concrete mechanism. Recorded in constitution 11.76 and
+GC-205 §075; page-level selection remains an unaccepted proposal. Paired records
+and anchors checked. Next: individual component parameters and value/edit contract;
+collection declaration/loading design stays deferred.
+
+
+<a id="gc-070-985"></a>
+
+## 985 · Modern platform direction and legacy compatibility (2026-10-16)
+
+Owner requires modern HTML/CSS/JavaScript implementations, compatibility where
+feasible, and documented, motivated differences for the Softwell team. Recorded in
+constitution 11.77 and [GC-205 §080](../future/205-components.md#gc-205-080).
+The component comparison now requires platform evidence, concrete benefits,
+semantic differences, migration instructions and qualification before adoption.
+The maxlength/validation overlap remains a design question, not an approved mapping.
+No runtime changes or browser compatibility claims. Paired records, anchors and
+new local links verified. Next: apply this direction to input parameters/binding/
+events; collection selection/loading remains explicitly deferred.
+
+
+<a id="gc-070-990"></a>
+
+## 990 · Gramlot validation priority (2026-10-16)
+
+Owner clarified that Gramlot validation has priority and may automatically guide
+native browser constraints where usable. Recorded in constitution 11.77 follow-up
+and [GC-205 §085](../future/205-components.md#gc-205-085). The design explanation
+makes the overlap explicit and avoids duplicate application declarations; concrete
+attribute mappings and validation/commit behavior remain open. Documentation only,
+no runtime implementation or new browser verification. Next: settle the textual
+input validation contract before implementing its native integration.
+
+
+<a id="gc-070-995"></a>
+
+## 995 · Legacy localization analysis (2026-10-16)
+
+Owner requested the complete legacy Python/JS mechanism before choosing localization
+APIs. [GC-235](../future/235-localization.md) traces marking/identity, extraction and
+catalog editing, server serialization, client caches/synchronous RPC, locale and
+language propagation, validation, accessibility and formatting boundaries. It compares
+Intl, gettext/Babel, ICU/MessageFormat, Fluent and i18next against official sources.
+
+15 isolated Python and 9 JS source probes passed. They confirm explicit-key/default
+key discrepancies and cache/extraction limits; no legacy code was changed. Full
+legacy suites could not collect because the current environment lacks `unidecode`;
+no dependency installation or live browser qualification claimed. Paired anchors,
+local links and pinned evidence paths verified. Analysis complete, no runtime/API
+implementation or release. Next: decide whether to retain legacy `!!` marking, then
+message identity and runtime language behavior; collection loading remains deferred.
+
+
+Follow-up, 2026-10-16: owner prioritizes modern locale/format conventions when there
+is no legacy correspondence; legacy application code must be adapted. Recorded in
+constitution 11.77 and [GC-235 §070](../future/235-localization.md#gc-235-070).
+Document migration for Softwell instead of adding legacy-format emulation. Exact
+formatting grammar, parsing and translation marker/engine remain open. Paired
+records and links verified; documentation only, no runtime tests required.
+
+
+Decision checkpoint, 2026-10-16: [GC-240](../future/240-localization-decisions.md)
+records the owner's signature-driven localization direction. `intl_str` identifies
+localizable parameters (`label`, and SQL `name_long`/`name_plural` as the semantic
+example); ordinary `str` remains unmarked technical/ordinary text. Typed parameters
+no longer require `!!`. Source language is contextual; Gramlot page classes and
+`pages/_metadata` provide page/shared metadata direction. The DB work stays with
+its owner. Constitution 11.78 and GC-225 §045 record scope and names.
+
+The earlier next step of confirming `!!` is superseded for typed parameters.
+Collector/type implementation, metadata format/hierarchy and translation engine
+remain undecided; no runtime change. Paired documents/anchors/local links and strict
+public documentation checks passed. Next: settle type ownership/representation and
+signature exposure before implementation; do not reopen confirmed authoring choices.
+
+
+### Local gallery recovery — 2026-10-16
+
+Owner reported missing publish/subscribe content and the Styles inspector in the
+local galleries. The processes on ports 8185 (Python) and 8187 (Node) had started
+on October 14 and still returned 404 for `/c18`; the newer 8195/8197 processes
+served it. Restarted 8185/8187 with their existing commands and Python source paths.
+The restarted Node process exposed a second local setup defect: examples resolved
+an installed core 0.2.18 while the server resolved the workspace core 0.2.19,
+causing `Page modules must export a subclass of Page`. Aligned the examples' local
+core package link to the same workspace core and preserved the previous package
+in a temporary backup. No runtime source or dependency manifest was changed.
+
+Verified HTTP 200 for `/`, `/c18`, `/c19`, `/c20`, `/c21` on both ports. In both
+browser galleries, clicking Publish in the c18 iframe produced `Hello (saved)`;
+the shared inspector exposes Data, Source and Styles. These are local development
+startup/dependency checks, not a new release or a full regression-suite run.
+Localization and component design decisions remain unchanged.
+
+### Explicit update instructions — 2026-10-16
+
+Owner reported that a collaborator recovered the gallery inspector after an npm
+refresh and requested clear update instructions. GC-018 §025 now routes readers
+to GP-020 §025 (published Python packages), GN-110 §035 (npm hosts/exports) and
+GE-010 §050 (source builds). Each README links the update path. Instructions
+separate packaged bundles from checkout builds, require explicit package updates,
+core-before-examples build order, a shared physical core for linked JS packages,
+server restart or complete export regeneration, and version/path/UI verification.
+The collaborator's exact npm command was not supplied; no unverified diagnosis of
+that machine is asserted. The separate extension update remains explicit.
+
+Verification: all four documentation checks/builds passed, including both server
+views and the core's 10-page public-site/link/anchor check. Commands were reviewed
+against the current CLI/build scripts and npm/pip documentation; no package update
+or source build was executed on a collaborator's environment. Runtime is unchanged;
+no package release or documentation publication was performed.
+
+Publication follow-up, 2026-10-16: owner authorized "ok fai commit e push sui
+quattro repo e pubblica le istruzioni su Read the Docs". The update guides and
+README links were committed and pushed to both develop and main: core b78866c,
+examples 927a46f, JS server f813c02, Python server a87a95f. Read the Docs latest
+builds 35186589, 35186591, 35186594 and 35186597 respectively finished successfully
+on those exact commits. Server pre-commit checks passed: Python 92; Node 33;
+Bun 33; serverless 34; create 3. The Python run emitted one upstream Starlette
+httpx deprecation warning. This is documentation publication, without package
+version bumps, package releases or changes to the ongoing localization design.
+
+Public browser verification also confirmed the new sections on all four latest
+manuals: GC-018 §025, GE-010 §050, GN-110 §035 and GP-020 §025. Direct automated
+HTML requests returned 403, so the published content was verified in the browser.
+
+Localization planning follow-up — 2026-10-16: owner requests recording the accepted
+annotation/component/message decisions and a future plan, explicitly non-priority
+and non-blocking. GC-240 §§035–060 now records the shared Annotated-string direction,
+JS component metadata/generated Python signatures, `lbl`/labels/accessibility text,
+notifications/alerts/confirmations and validation/errors, separate templates/arguments
+and stable technical error codes. Shared package and descriptor details, collector,
+metadata, engine and runtime policy remain open. The staged plan covers shared type,
+Builder/Routes, components, messages, translation and teaching; it is not activated.
+Constitution 11.78 follow-up, GC-225 and the component/backlog cards agree. No dependency,
+runtime, DB or release changes. Next localization action only when the owner schedules
+it: choose the shared package and precise descriptor contract; current work can proceed.
+
+Documentation verification for this follow-up: six full/compact document pairs
+have matching explicit anchor sets and existing relative link targets; whitespace
+checks pass. No runtime tests were run for this documentation-only update.
+
+
 ### Kajenn folder-page routing correction — 2026-10-16
 
 Owner requested the analysis of gramlot-py-server issue #16, then authorized the
@@ -7195,6 +7378,28 @@ dependency. The full 102-test suite passes without warnings; Ruff passes.
 Correction and test dependency update are committed as `469aa68` in
 `gramlot-org/gramlot-py-server` on `develop`. No package release or deployment.
 
+Labelbox contract follow-up — 2026-10-16: owner confirms shared labelbox, lbl_/box_
+with label/control container subdivisions, and reactive lbl_position using
+TL/TC/TR/L/R/BL/BC/BR with default TL. GC-205 §090 records prefix routing, framework
+binding ownership, preserved input identity/focus/selection and deferred intl_str.
+GC-225 §050 and constitution 11.79 record names and exact owner evidence. The input
+API, invalid-value commit policy, missing/invalid position handling and detailed
+layout remain open. Documentation only; implementation and runtime tests not started.
+Verification: all four full/compact pairs have matching explicit anchors and
+existing relative link targets; whitespace checks pass. No runtime behavior is claimed.
+
+Style teaching follow-up — 2026-10-16: owner requests a side-by-side Python, Source
+and DOM explanation in the public guide and gallery. GC-096 §040 and gallery b06
+now show literal and bound style attributes, unchanged Source pointers after Data
+updates, shortcut precedence versus the CSS cascade, and the limits of reverse
+editing. Examples use existing native controls; no application/runtime code or new
+API is introduced. Matching compact core guide updated. Strict Sphinx builds and
+link/anchor checks pass: core 10 pages; examples 45 lessons and 2 paired guides.
+Existing style-shortcuts suite passes 11/11. Generated HTML contains the comparison
+tables and inverse-direction explanation. Browser visual verification was not
+performed: the file URL was blocked by browser policy. Documentation is locally
+verified, not published; no version bump, commit or push was requested.
+
 
 ### Python adapter quick bugfix release — 2026-10-16
 
@@ -7213,3 +7418,339 @@ clean-install checks, documentation, core-main, artifact build and publication.
 The downloaded GitHub wheel/sdist hashes match SHA256SUMS and the actual PyPI
 artifacts; published wheel metadata, routing fix, py.typed and httpx2 test extra
 are verified. Release complete; no application deployment or dependency-source edit.
+
+Pointer mask design follow-up — 2026-10-16: owner chooses the general pointer suffix
+`:xxxx`, with `{}` as the placeholder, and the same placeholder for `mask` instead
+of `%s`. Applies to every supported pointer kind/consumer, not only styles.
+GC-210 §095, GC-225 §055 and constitution 11.81 record the decision and unresolved
+parser/escape/null/typing/write-back/composition details. Runtime and public examples
+remain unchanged; localization is unrelated and still deferred. Next: settle those
+semantics before implementing the shared pointer behavior, without CSS-only handling.
+
+Pointer transform contract follow-up — 2026-10-16: owner confirms `:` for text
+templates, `:=` for expressions, `{}` for the pointer value and `{name}` for other
+resolved attributes on the same Source node. Updated GC-210 §095, GC-225 §055 and
+constitution 11.81 follow-up in both views. Explicit delimiter selects the mode;
+`#`, content-based inference and always-evaluate proposals are superseded. Examples
+cover units, another bound attribute and boolean readonly; Data stays unchanged by
+projection. Remaining parser/escape/dependency/static/write-back details are listed.
+No runtime or public-example changes; next work is the remaining contract decisions,
+not implementation inferred from this documentation request.
+Verification: explicit anchor sets match across all four updated pairs; the two
+current contract sections match in both views; whitespace checks pass. No runtime
+tests were run for this documentation-only change.
+
+Pointer transform scope correction — 2026-10-16: owner explicitly excludes widget
+value from both suffix modes. GC-210 §095, GC-225 §055 and constitution 11.81 record
+attribute use, rejection of transformed widget values and preservation of plain value
+bindings. Inverse widget-value conversion is removed from the open decisions. This
+supersedes unrestricted consumer scope, not all writable attribute bindings. No runtime
+implementation; remaining grammar/null/dependency/static-rendering decisions still open.
+Verification: updated contract/naming sections match across both views; whitespace
+checks pass. No runtime tests for this documentation-only clarification.
+
+Pointer transform null decision — 2026-10-16: owner confirms template null pass-through
+without interpolation, expression evaluation with typed null, and preservation of
+zero/false as valid inputs. GC-210 §095 and constitution 11.81 updated in both views.
+Empty strings, missing/null named references and the remaining grammar/dependency/static
+rules stay open. Documentation only; runtime unchanged.
+
+Pointer transform missing-attribute decision — 2026-10-16: owner confirms an explicit
+node/attribute diagnostic for absent `{name}` attributes in both suffix modes; no
+silent empty text. GC-210 §095 and constitution 11.81 aligned in both views. Null
+existing attributes and missing Data paths remain distinct open cases. Documentation
+only; runtime unchanged. Paired contract sections and whitespace checks verified.
+
+Pointer transform null-attribute decision — 2026-10-16: owner confirms that a null
+referenced attribute makes the template result null, while expressions receive typed
+null normally. Updated GC-210 §095 and constitution 11.81 in both views. Missing
+Source attributes still error; empty strings and missing Data paths remain open.
+Documentation only; paired contract sections and whitespace checks verified.
+
+Pointer template required-value decision — 2026-10-16: owner approves required slots
+`{}`/`{name}` by default and explicit empty-string admission with `{?}`/`{?name}`.
+Null still yields null; missing attributes still error; zero/false remain valid.
+Contract, naming and constitution updated in both views. The output when required
+empty text blocks composition remains to decide; expression inputs are unchanged.
+Documentation only. Paired contract/naming sections and whitespace checks verified.
+
+Pointer template required-empty result — 2026-10-16: owner confirms null for the
+whole template when a required slot contains empty text. GC-210 §095, GC-225 §055
+and constitution 11.81 updated in both views. This closes the required-empty output
+decision; optional empty strings still interpolate. Remaining grammar/dependency/static
+questions remain open. Documentation only; paired sections and whitespace verified.
+
+Formatting direction and Toolbox check — 2026-10-16: owner authorizes recovering,
+improving, documenting and implementing the legacy formatting API with modern tools.
+Public name `gramlot.format` recorded in GC-225 §060 and constitution 11.82;
+GC-235 §075 records scope, legacy evidence and remaining contract decisions.
+Runtime implementation is still pending pattern/option/temporal scope and engine
+selection. Toolbox `parse_period` exists in Python with IT/EN dictionaries and a
+legacy corpus; the inspected upstream main tree has no JS implementation. No
+Toolbox files changed, no parser port started. Documentation pairs and whitespace
+checked; runtime tests were not run for this research/documentation update.
+
+PoC parser correction — 2026-10-16: `parseDateExpression` already exists in the
+PoC date-parser module and is used by its symbolic-date editor. The earlier
+absence claim was too broad: Toolbox main has only Python, while the PoC has JS.
+GC-235 §075 corrected in both views. Existing parser tests passed 11/11; no
+runtime or dependency edits. A bounded port and Python/JS contract comparison
+remain necessary before claiming core availability. Paired correction text and
+whitespace verified.
+
+Date-expression parser port — 2026-10-16: owner "allora portiamola subito in gramlot"
+authorizes PORT-0009. Implemented the reviewed PoC parser as named export
+`parseDateExpression` from `@gramlot/gramlot`, with declarations and normal runtime
+bundle inclusion. No dependencies, editor/calendar, Data writes, Python parser or
+formatter added. GC-095 §120 documents the complete contract and Toolbox differences;
+GC-225 §065 and constitution 11.83 record names and scope. Verification: 15 parser
+checks, full JS suite 623/623, build and bundle identity, three process timezones,
+strict TypeScript consumer fixture, Sphinx -W -n and 10-page public documentation
+checks all pass. Paired sections and whitespace verified. Implemented and locally
+verified; owner acceptance/release/publication not claimed. The separate formatting
+assignment and future editor integration remain outside this completed parser port.
+
+Toolbox parser semantic alignment — 2026-10-16: owner "o procedi" confirms the
+proposal to use Toolbox Python behavior and its reference corpus. Implemented
+missing named dates, articles, named-month last/next, quarter forms, English keyword
+fallback, year inference, empty open periods and the Python two-digit-year window.
+Existing JS names/results remain; incompatible PoC-only forms are rejected. IT/EN
+dictionaries match the inspected Toolbox revision. Corpus/declared divergence files
+are copied unchanged, without a runtime or CI dependency on Toolbox. The public
+GC-095 §120 guide documents exact rules, surprising reference behavior, migration
+and retained API differences; constitution 11.83 and GC-225 §065 record the decision.
+Verification: 2796 reference cases, 2812 parser-suite tests, 3420 full JS tests and
+2835 read-only upstream Python tests pass; build/bundle checks, strict TypeScript
+consumer check, Sphinx -W -n, public documentation and paired/whitespace checks pass.
+PORT-0009 destination technical review accepts the bounded alignment. Implemented
+and locally verified; publication and completed-work owner acceptance are not
+claimed. Custom locale loading, date editor and the separate formatter remain out
+of this task's scope.
+
+Formatter Unicode pattern decision — 2026-10-16: owner confirms Unicode/LDML
+number/date pattern conventions (`#,##0.00`, `dd/MM/yyyy`) for `gramlot.format`.
+Constitution 11.82 follow-up and GC-235 §080 updated in both views. Grammar family
+accepted; token coverage, engine, option shape, type/default/null/mask semantics
+and `_F` integration still open. Documentation only; runtime unchanged. Paired
+sections and whitespace checked; no runtime tests repeated.
+
+Formatter pattern option — 2026-10-16: owner confirms `pattern` in the second-
+argument options object; the short string form is equivalent. Constitution 11.82,
+GC-225 and GC-235 §085 updated in both views. Legacy numeric branch evidence is
+recorded: positive/zero/negative, with conditional null-to-zero conversion before
+type inference. Gramlot's branch semantics remain under discussion. Documentation
+only; paired additions and whitespace verified, no runtime tests repeated.
+
+Formatter zero-case decision — 2026-10-16: owner "zero va bene" accepts the
+special numeric zero case. Constitution 11.82 and GC-235 §085 updated in both
+views. Null handling remains open; no implicit null-to-zero conversion approved.
+Documentation only; paired additions and whitespace verified.
+
+Formatter null decision — 2026-10-16: owner explicitly confirms empty text for
+null, bypassing pattern and mask. Constitution 11.82 and GC-235 §085 updated in
+both views; zero remains distinct. Typed dispatch, defaults and bounded formatting
+coverage remain open. Documentation only; paired additions and whitespace verified.
+
+Formatter typed-value decision — 2026-10-16: owner provisionally accepts dispatch
+from actual values/TYTX typing and no implicit number/date parsing of strings.
+Constitution 11.82 and GC-235 §085 updated in both views. A later change requires
+an explicit decision; locale/timezone defaults and remaining formatting contract
+work stay open. Documentation only; paired additions and whitespace verified.
+
+Formatter locale precedence — 2026-10-16: owner confirms explicit `locale` option
+over page locale, which is used when the option is omitted. Constitution 11.82 and
+GC-235 §085 updated in both views. Locale configuration/absence and timezone policy
+remain open. Documentation only; paired additions and whitespace verified.
+
+Formatter timezone decision — 2026-10-16: owner confirms unshifted civil dates and
+timezone-free datetimes; typed instants display in explicit timezone, otherwise
+page timezone. Constitution 11.82 and GC-235 §085 updated in both views. Option
+spelling/configuration/absence and remaining pattern details stay open.
+Documentation only; paired additions and whitespace verified.
+
+Formatter three-section decision — 2026-10-16: owner confirms numeric
+positive/zero/negative order for three sections, as a Gramlot Unicode-pattern
+extension. Constitution 11.82 and GC-235 §085 updated in both views. Two-section
+meaning, empty sections and quoting remain open. Documentation only; paired
+additions and whitespace verified.
+
+Formatter two-section decision — 2026-10-16: owner confirms Unicode
+positive/negative for two sections; the three-section Gramlot extension remains
+positive/zero/negative. The legacy two-section positive/zero meaning is explicitly
+superseded and needs migration guidance. Constitution 11.82 and GC-235 §085
+updated in both views; paired additions and whitespace verified. Runtime unchanged.
+
+Formatter mask-order decision — 2026-10-16: owner confirms pattern first, then
+mask with `{}` holding the formatted result. Null bypasses both as already agreed.
+Constitution 11.82 and GC-235 §085 updated in both views. Other mask grammar and
+non-null empty-result rules remain open. Documentation only; paired additions and
+whitespace verified, no runtime tests repeated.
+
+Formatter empty-zero-section decision — 2026-10-16: owner confirms an empty
+zero section produces empty text and skips the mask. Constitution 11.82 and
+GC-235 §085 updated in both views; no implicit default replaces the empty section.
+Documentation only; paired additions and whitespace verified. Formatter pattern
+coverage, engine and remaining context/composition details remain to settle.
+
+Formatter date-default decision — 2026-10-16: owner confirms named date formats
+`short`, `medium`, `long`, `full`, explicit date patterns and `short` when the
+pattern is omitted. Constitution 11.82 and GC-235 §085 updated in both views.
+Documentation only; paired additions and whitespace verified. Formatter engine,
+bounded coverage and remaining context/composition decisions remain pending.
+
+Formatter initial numeric slice — 2026-10-16: implemented after the owner's
+request to deliver working cases without waiting for complete coverage.
+`Gramlot.format` supports finite JS numbers, explicit pattern/locale, decimal
+precision/grouping through Intl.NumberFormat, Unicode positive/negative sections,
+Gramlot positive/zero/negative sections, null and empty-zero mask bypass, and
+`{}` mask composition. TypeScript declarations and GC-095 §125 document exactly
+this subset. No rendering-attribute or pointer-suffix behavior changes.
+
+Verified: five focused integration tests, all 3,425 JS tests, runtime bundle
+identity, strict TypeScript consumer check, Sphinx with warnings as errors,
+public documentation checks (10 pages) and paired additions/whitespace. The
+first full run encountered three sandbox-denied fixture-server binds; rerunning
+with local-server permission passed completely. No browser visual test claimed.
+
+Remaining: page locale/timezone configuration and shorthand context, date/time
+formatting, Decimal/BigInt and non-numeric inputs, advanced patterns, helper and
+attribute integration. TYTX 0.16.2 erases D/DH/DHZ distinction on decoding; the
+temporal blocker is demonstrated in a regression test and documented without a
+consumer workaround or dependency edit. Broader design acceptance remains as
+recorded in GC-235; this numeric implementation is verified, not owner-reviewed
+or published. No version bump, commit, push or release performed.
+
+Formatter dtype and temporal styles — 2026-10-16: owner explicitly confirms
+inference with `dtype` taking precedence. Implemented D/H/DHZ interpretation of
+Date, matching TYTX inference when dtype is absent, with short/medium/long/full
+styles (default short), D date fields, H time fields, DHZ date+time and explicit
+timeZone. D/H keep UTC fields. Numeric L/R/N validate matching number inputs.
+Null and mask behavior remain unchanged. This supersedes the earlier temporal
+blocker: no dependency change is necessary for the newly approved interpretation
+contract. Explicit date patterns, timezone-free datetimes and page context remain
+pending, along with the previously documented advanced-format limits.
+
+Verified: 8 focused formatting tests, 3,428/3,428 full JS tests including rebuilt
+runtime bundles, TypeScript consumer checking, strict Sphinx and 10-page public
+documentation validation. Temporal tests cover the same midnight Date as D versus
+DHZ, all named styles, invalid/mismatched types, default short, and identical
+results under Europe/Rome, America/Los_Angeles and Pacific/Kiritimati process
+zones. Paired documentation and whitespace verified. Implemented and verified;
+not yet owner-reviewed or published. No TYTX edits or release actions.
+
+Page formatting context and display integration — 2026-10-16: implemented the
+owner's requested intermediate-release increment, with web components retained
+for 0.3. Page.locale and Python Page.time_zone / JS Page.timeZone reach HTTP and
+Worker bootstraps. Browser instances resolve missing fields from browser Intl at
+startup, as explicitly confirmed by "Sì, usa i valori del browser". Precedence
+is call/node > Page > browser. No implicit server context or _gramlot Data
+initialization protocol was introduced.
+
+Live HTML scalar text and _text now call the same gramlot.format engine before
+mask composition. Data/format/mask/locale/timeZone/dtype pointer changes reproject
+without rewriting typed Data or rebuilding the element. Editable value remains
+under its native binding contract. Plain masks share {} composition in the
+browser and static Python/JS output. Removed legacy %s substitution; migrated
+the two affected controller examples and the relevant lesson while preserving
+release chronology. The separate preexisting style-lesson work is untouched.
+
+Verified: all 3,434 core JS tests; 42 focused Python tests plus 155 subtests;
+35 serverless tests; 66 example tests; strict TypeScript consumer check; core
+Sphinx/public docs and both serverless documentation builds with stable-ID
+validation. Real Chromium and WebKit checks passed both single-file and directory
+serverless exports, page context overriding a different browser context, explicit
+instant zone, civil dates, and input-driven formatting/masks with numeric Data
+preserved and no page errors. Export bundling still emits the previously known
+import.meta/IIFE warning, without failing these checks. Source whitespace and
+paired documentation additions verified. Runtime bundles rebuilt locally.
+
+Current limits: static renderers still consume but do not apply Intl format;
+SVG display formatting, pointer suffixes, _F, advanced number/date patterns and
+Decimal remain incomplete. Changing browser-instance context properties after
+startup does not trigger global reprojection; node-level context pointers do.
+This increment is implemented and verified, not yet owner-reviewed/published.
+No version bump, commit, push or package release was performed.
+
+
+Pointer path-name decision — 2026-10-16: owner restricts path segment names to
+ASCII letters, digits and underscore (`[A-Za-z0-9_]+`). Recorded in constitution
+11.81, GC-210 §095 and GC-225 §055, with paired mirrors. Existing addressing
+operators remain syntax; the first colon starts the transform, with no colon-in-name
+escape. Inspection reproduced the currently permissive behavior (a colon-bearing
+Data label resolves through GramlotBuilder); validation and suffix execution are
+still pending. No Bag dependency changes or release actions. Corrected the stale
+GC-210 claim that node-text masks still use %s; masks already use {}.
+
+
+Bag path-contract issue — 2026-10-16: created
+[genro-bag #73](https://github.com/genro-org/genro-bag/issues/73), requesting
+Python/JavaScript documentation of ASCII letters, digits and underscore in ordinary
+path segment names. Owner clarified that runtime validation is not required; callers
+using unsupported characters may encounter side effects. This supersedes the previous
+status statement treating validation as required pending work. Constitution and
+contracts aligned in both documentation views. Pointer implementation remains pending;
+no Bag source edits or release actions were performed.
+
+
+Attribute pointer transforms — 2026-10-16: implemented the authorized read-first
+algorithm: split at the first colon, resolve the original pointer, then interpolate
+`:` text or evaluate `:=` with typed arguments in the existing InlineCompiler.
+`{}` and `{name}` are supported; named reads retain the attribute's normal
+projection. `{?}` / `{?name}` allow empty template strings, not null. Null output,
+zero/false, missing-attribute errors and cycles follow the documented contract.
+The owner clarified there is no blanket exclusion of datapath/*_path; variable
+contexts, provider arguments, computed result paths and remote parameters use the
+same sequence. Widget value suffixes are rejected; ordinary editing stays unchanged.
+`_F` is local to pointer/== expressions and calls the page's format/mask engine.
+
+No second JavaScript evaluator, application proxy, global helper, dependency edit
+or inverse parsing was added. Python/JS static templates use available Data;
+expressions stay browser-owned and inert in static output. The existing Python
+static variable-datapath limitation remains. Literal-brace escapes and slots inside
+JS literals are outside this increment; normal string mask arguments are preserved.
+Following the owner's request not to block on marginal cases, these limits are
+recorded rather than broadening the implementation.
+
+The new gallery c22 lesson follows c21 in release order, with Python/JS twins:
+CSS width, boolean readonly, text format/mask and expression-local _F. Earlier
+lessons retain their release scope. Core public/contract docs and mirrors explain
+the same progression. Legacy ${name} templates retain their existing behavior.
+
+Verified: 3,452/3,452 full JS tests after rebuilding runtime bundles; 157 core Python
+tests and 255 subtests (plus the focused rerun after named-attribute projection);
+67 example JS tests and 16 example Python tests with 58 subtests. Chromium and
+WebKit passed real single-file and directory serverless exports: editing drives
+width, readonly, format/mask and _F while Data retains its type. Existing export
+import.meta/IIFE warnings remain, with no browser page errors. Core strict Sphinx
+and its 10-page public documentation check passed; example strict Sphinx and
+46 lessons/two paired guides, links, anchors and search checks passed.
+
+Implemented and verified for the intermediate release; not yet owner-reviewed or
+published. No bump, commit, push or release action. Advanced formatter patterns and
+the previously recorded formatter limits remain separate work; Web Components
+remain the subsequent 0.3 workstream.
+
+
+Source attribute snapshot correction — 2026-10-16: owner clarifies that named
+references must read the Source node, with all attribute inputs brought current
+before use. Inspection confirmed no DOM read existed, but referenced bindings
+could be read again during projection. Python/JS now capture all current attribute
+inputs before suffix transformation, and projection reuses them. This is local to
+one resolution, not a second Data store; authored Source remains unchanged.
+A regression test modifies DOM attributes and verifies that Source/Data still
+control the result, with named and unrelated attribute bindings read once per
+resolution. Python verifies the same single-read behavior.
+
+Verified after rebuilding runtime bundles: 3,453 JS tests, 158 Python tests plus
+255 subtests, strict Sphinx and public-documentation validation. Paired contract,
+constitution, naming and authoring guide updated. Implemented and verified; no
+release action or dependency modification.
+
+
+Intermediate release preparation — 2026-10-16: owner authorizes "procedi" in
+response to bump, commit, push and publication of the verified increment. Prepare
+core 0.2.20, examples 0.2.16 and JS integration 0.2.10 in dependency order. Python
+integration has no pending source change and needs no package release. Existing
+core and companion verification remains the release baseline; publication results
+will be recorded after registry/CI confirmation. Local .claude settings are not
+part of the release.

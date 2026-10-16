@@ -15,6 +15,7 @@ from genro_builders.builder import SourceBag, SourceBagNode
 from genro_tytx import get_subtype_dict, set_subtype_dict
 
 from . import builder as builder_module
+from .pointer import pointer_transform, prepare_pointer_items
 
 # The control attributes of ``remote``, written on the node as they are; every other parameter becomes ``remote_<k>``.
 REMOTE_CONTROLS = ("_cachedRemote", "_if", "_else", "_onRemote")
@@ -24,6 +25,18 @@ REMOTE_NAME = re.compile(r"^[A-Za-z]\w*$", re.ASCII)
 
 class GramlotBuilderBagNode(SourceBagNode):
     """Source node of a Gramlot document."""
+
+    def runtime_to_evaluate(self):
+        items = super().runtime_to_evaluate()
+        for name, raw in items.items():
+            if pointer_transform(raw):
+                if name is None:
+                    raise ValueError("Pointer suffixes belong to attributes; use format/mask for node text")
+        return prepare_pointer_items(self, items)
+
+    def abs_datapath(self, path):
+        transform = pointer_transform(path)
+        return super().abs_datapath(transform[0] if transform else path)
 
     def pointer_type(self, v: Any) -> str | None:
         """Builder's ``pointer_type``, except that a string starting with ``==`` is not a pointer."""

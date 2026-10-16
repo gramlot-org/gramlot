@@ -4,6 +4,7 @@ import {DataInstaller} from './installation.js';
 import {ControllerProvider, FormulaProvider, RemoteProvider, RpcProvider} from './providers.js';
 import {InlineCompiler} from './inline.js';
 import {RemoteBinding} from './remote.js';
+import {pointerDependencies} from './pointer.js';
 
 // The Provider class of each provider data-element (§4.8).
 const PROVIDERS = {
@@ -345,7 +346,7 @@ export class NodeBinding {
     // The clicks of a button, counted for its whole semantic life: a rebuild keeps them (P9, S12).
     #clickCount = 0;
     // The registration of the node's own variable datapath, read in the parent's context.
-    #datapathRegistration = null;
+    #datapathRegistrations = new Set();
 
     constructor(runtime, node) {
         this.#runtime = runtime;
@@ -397,6 +398,10 @@ export class NodeBinding {
         const dataElement = node._getMeta('data_element');
         if (dataElement && !PROVIDERS[node.nodeTag]) return;
         if (!dataElement && typeof node.getAttr('remote') === 'string') this.#remote ??= new RemoteBinding(this);
+        const remoteDependencies = new Set();
+        if (this.remote) for (const [name, raw] of Object.entries(node.getAttr())) {
+            if (name.startsWith('remote_')) for (const dependency of pointerDependencies(node, raw)) remoteDependencies.add(dependency);
+        }
         for (const [name, pointer] of node.pointers()) {
             if (dataElement && name !== 'datapath') continue;
             const context = name === 'datapath' ? node.parentNode : node;
@@ -405,8 +410,8 @@ export class NodeBinding {
             const [path, attr = null] = absolute.split('?', 2);
             const registration = this.runtime.router.register({path, attr, recipient: this});
             this.#registrations.push(registration);
-            if (name === 'datapath') this.#datapathRegistration = registration;
-            if (this.remote && (name === 'remote' || name.startsWith('remote_'))) this.#remoteRegistrations.add(registration);
+            if (name === 'datapath') this.#datapathRegistrations.add(registration);
+            if (this.remote && (name === 'remote' || name.startsWith('remote_') || remoteDependencies.has(name))) this.#remoteRegistrations.add(registration);
         }
         if (!dataElement) {
             this.#registerTopics();
@@ -453,7 +458,7 @@ export class NodeBinding {
      * after a registration of `remote` or of a `remote_<k>` parameter requested the fragment again.
      */
     receive(change) {
-        if (change.registration === this.#datapathRegistration) {
+        if (this.#datapathRegistrations.has(change.registration)) {
             this.runtime.rebindBranch(this.node);
             return;
         }
@@ -486,7 +491,7 @@ export class NodeBinding {
 
     #closeRegistrations() {
         for (const registration of this.#registrations.splice(0)) registration.close();
-        this.#datapathRegistration = null;
+        this.#datapathRegistrations.clear();
         this.#remoteRegistrations.clear();
     }
 }

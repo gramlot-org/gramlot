@@ -402,7 +402,7 @@ literal. For example:
 
 ```python
 root.div("Preview", title="Customer: ${customer}", customer="^.name")
-root.p("^.name", mask="Hello, %s")
+root.p("^.name", mask="Hello, {}")
 ```
 
 The title follows `.name`; `customer` supplies the template and is not projected
@@ -413,7 +413,9 @@ an `==` attribute as its parameter, and an `==` expression cannot contain a
 `${...}` template. An `==` expression can read a resolved template and its consumed
 pointer parameter; it cannot read a template-valued attribute that another
 template has itself consumed. Those unsupported combinations raise errors. `mask` formats the node's text, replacing
-`%s`; an empty formatted value stays empty. It does not enable raw HTML.
+`{}`; empty plain text stays empty. It does not enable raw HTML. Live `format` uses
+`gramlot.format` before applying the mask; see §125. The old `%s` placeholder is
+no longer interpreted.
 
 Development correction: Python static, JavaScript static and live rendering now
 reject non-string, non-null `style` and `class` values before attribute composition.
@@ -940,3 +942,335 @@ reference selects a local destination, not a remote live object.
 
 Recursive `iframe:'*'`, unrelated windows, forms, server/user recipients and combined
 remote `nodeId` routing are deferred. Unsupported descriptor keys fail explicitly.
+
+<a id="gc-095-120"></a>
+## 120 · Natural-language dates and periods
+
+Available in development sources; not yet included in a published release.
+`parseDateExpression` uses the built-in Italian/English semantics of Toolbox
+Python `parse_period`, with structured JavaScript results. It interprets complete
+expressions; it does not format values, edit a widget or write a Data Bag.
+
+```javascript
+import {parseDateExpression} from '@gramlot/gramlot';
+
+const context = {locale: 'it-IT', workdate: '2026-10-16'};
+parseDateExpression('domani', context);
+// {ok: true, kind: 'date', date: '2026-10-17'}
+parseDateExpression('10 gennaio 2026', context);
+// {ok: true, kind: 'date', date: '2026-01-10'}
+parseDateExpression('mese scorso', context);
+// {ok: true, kind: 'period', start: '2026-09-01', end: '2026-09-30'}
+parseDateExpression('dicembre;marzo', context);
+// {ok: true, kind: 'period', start: '2026-12-01', end: '2027-03-31'}
+parseDateExpression('', context);
+// {ok: true, kind: 'period', start: null, end: null}
+parseDateExpression('31/02/2026', context);
+// {ok: false, error: {code: 'INVALID_DATE', message: '...'}}
+```
+
+Use the named export from page JavaScript Logic, Node or Worker code. The normal
+browser runtime also exports it. No Python Builder method, symbolic date editor
+or calendar is introduced. The parser implementation has no dependencies, network,
+DOM, clock or timezone conversion. The caller supplies the working date, checks
+`ok`, distinguishes `date`/`period`, and owns conversion and any Data write.
+
+### Context, dates and outcomes
+
+- `workdate` is required: a Gregorian civil ISO string `YYYY-MM-DD`, years
+  `0001`–`9999`. JavaScript `Date`/timestamp objects are not accepted.
+- `locale` defaults to `it-IT`. Built-in languages are `it` and `en`; region and
+  case variants and hyphen/underscore separators use Toolbox's interpretation.
+  Italian defaults to DMY, English to MDY; English GB/AU/IE/NZ/IN use DMY.
+  Other regions use their language's default, rather than loading another locale.
+  Unsupported languages fail. Custom Python `locale_dir` packs have no JS API yet.
+- English **keywords** are accepted in Italian too (`today`, `from`, `to`, etc.).
+  Month and weekday names still belong to the selected language.
+- `twoDigitYearAhead` retains the JS name but has Python `pivot_year` semantics:
+  integer 0–99, default 20; inclusive window
+  `[workdate.year + value - 100, workdate.year + value - 1]`.
+  In 2026 the default is **1946–2045**: `46` means 1946, `45` means 2045.
+- A single day returns `{ok:true, kind:'date', date}`; a period returns
+  `{ok:true, kind:'period', start, end}`. Endpoints are inclusive civil ISO strings,
+  with `null` for an open bound. An explicit range remains a period even if its
+  endpoints are equal. TypeScript declarations expose this discriminated union.
+- Empty/whitespace-only input means a fully open period, as in Toolbox. A field
+  that requires a date must reject this result; the parser does not decide whether
+  empty input should clear a field or remove a filter.
+
+### Supported expressions
+
+| Meaning | Italian | English |
+| --- | --- | --- |
+| Relative days | `oggi`, `ieri`, `domani`, `oggi-3` | `today`, `yesterday`, `tomorrow`, `today+7` |
+| Weeks | `questa settimana`, `la settimana scorsa`, `settimana prossima+2` | `this week`, `last week`, `next week+2` |
+| Months | `questo mese`, `il mese scorso`, `mese prossimo` | `this month`, `last month`, `next month` |
+| Named month | `marzo`, `mar`, `m3`, `marzo 26` | `march`, `mar`, `m3`, `march 2026` |
+| Last/next named month | `lo scorso ottobre`, `marzo prossimo` | `last october`, `next march` |
+| Named date | `10 gennaio 2026`, `10 gennaio` | `january 10, 2026`, `10 january 2026` |
+| Quarter | `q1`, `t1`, `1º trimestre`, `2024Q1` | `q1`, `1st quarter`, `Q1 2024` |
+| Weekday | `lunedì`, `lun` | `monday`, `mon` |
+| Year | `2026`, `26` | `2026`, `26` |
+| Closed range | `dal gennaio al marzo`, `tra gennaio e marzo`, `oggi;domani` | `from january to march`, `between january and march` |
+| Open range | `da oggi`, `a marzo`, `oggi;`, `;marzo` | `from today`, `to march` |
+| Fully open | empty text, `sempre`, `senza periodo`, `-`, `;` | empty text, `always`, `no period`, `;` |
+
+Weeks run Monday–Sunday. A weekday means that weekday in the reference week.
+Offsets are integer days/weeks/months according to the keyword. A named month
+without a year starts from the working year. `scorso`/`last` selects the latest
+such month, including the current month; `prossimo`/`next` selects the first such
+month from the current month, also including it.
+
+Month and quarter endpoints are resolved together using Toolbox's year inference:
+`dicembre;marzo` crosses into the next year, and `from december to march 2025`
+with locale `en` and workdate in 2026 gives December 2024 through March 2025.
+Toolbox can also adjust the year of explicitly named month endpoints against the
+opposite bound: `da 2025 a gennaio 2024` gives January 2025. Use complete ISO dates
+when endpoints must stay literal. Explicit complete-date ranges are preserved even
+when reversed (`2026-10-17;2026-10-16`); consumers requiring an ordered interval
+must validate `start <= end`. No automatic clipping or swapping of these bounds.
+
+Numeric forms include exact ISO `2026-01-10`, locale-ordered `10/1/26`, `10-1-2026`
+and compact six/eight-digit forms (`100126` in Italian). Separated numeric dates
+follow Toolbox: mixed/repeated separators are accepted; if the parsed month is over
+12 and the day is at most 12, the two are exchanged. Thus Italian `1/13/08` means
+13 January 2008, while compact `011308` fails. Two-part dates such as `1/3` fail.
+A bare two/four-digit number is a year period, not an unfinished day.
+
+Input is lowercased and outer whitespace trimmed; commas are removed, allowing
+`january 10, 2026` but not making a comma a range separator. Articles such as
+`il`, `lo`, `la`, `the` are discarded within bounds; unknown words remain errors.
+Accents and abbreviations must be in the language dictionary (`lunedì` or `lun`,
+not `lun.`). There is no implicit accent removal or editor `/` prefix.
+
+### Errors and migration
+
+Failures return `{ok:false, error:{code, message}}`. Codes are `INVALID_CONTEXT`,
+`INVALID_INPUT`, `UNRECOGNIZED_EXPRESSION`, `INVALID_DATE`, `INVALID_RANGE`.
+Messages are English diagnostics; an application can map codes to localized text.
+Impossible dates and arithmetic outside years 0001–9999 fail without rollover.
+Times, timezones and partial input such as `oggi+` are not parsed.
+
+The initial PoC-derived port used a different year window and rejected empty and
+cross-year ranges. The owner requested Toolbox alignment before release: these
+semantics now follow Python, including empty input. Earlier `EMPTY_EXPRESSION`
+and `REVERSED_RANGE` outcomes no longer apply. PoC-only forms such as `/oggi`,
+`1/3`, `mar.`, `LUNEDI` and `2 trimestre` were removed; use `oggi`, a complete
+numeric date, `mar`, `LUNEDÌ` and `2º trimestre` respectively.
+
+The shipped tests run all **2,796 Toolbox reference cases**, applying its declared
+legacy divergences unchanged. Differences retained at the API boundary:
+Python returns `DatePeriod` with Python dates and raises exceptions; JS distinguishes
+single dates from periods, returns civil ISO strings and structured errors. JS has
+a default locale, a validated 0–99 pivot option and no filesystem locale loader.
+This is not a claim that the two APIs have identical types or extension mechanisms.
+
+<a id="gc-095-125"></a>
+## 125 · Formatting values: numbers and temporal styles
+
+The page instance exposes `gramlot.format(value, options)`. This first implementation
+supports finite JavaScript numbers, Date objects and null. Numeric values need an
+explicit `pattern`. Locale and instant timezone come from the page unless the call
+overrides them.
+Use this method from page Logic or a controller expression:
+
+```javascript
+gramlot.format(12345.5, {pattern: '#,##0.00', locale: 'it-IT'})
+// "12.345,50"
+gramlot.format(-12.5, {pattern: '0.00;-;(0.00)', locale: 'it-IT'})
+// "(12,50)"
+gramlot.format(1234.5, {pattern: '0.00', locale: 'it-IT', mask: 'Totale: {} €'})
+// "Totale: 1234,50 €"
+gramlot.format(0, {pattern: '0.00;;(0.00)', locale: 'it-IT', mask: '{} €'})
+// ""
+gramlot.format(null) // ""
+```
+
+Supported numeric skeletons contain one or more integer `0` digits, or `#,##0`
+for grouping, optionally followed by a decimal point and required `0` / optional
+`#` fractional digits (required digits come first). Examples: `0000`, `0.00`,
+`0.0##`, `#,##0.00`. Decimal rounding and locale symbols use
+[Intl.NumberFormat](https://tc39.es/ecma402/#sec-intl.numberformat).
+This is a bounded [Unicode pattern](https://unicode.org/reports/tr35/tr35-numbers.html#Number_Format_Patterns)
+subset, not full LDML support.
+
+Two sections mean **positive;negative**; zero uses the positive section. Three
+mean **positive;zero;negative**, a Gramlot extension. The negative section can
+have a minus prefix or enclosing parentheses; its digit settings come from the
+positive section, as in Unicode. The zero section can be a numeric section, the
+literal `-`, or empty. Empty suppresses zero and skips the mask. Negative zero
+uses the zero case. Null always returns empty text without pattern or mask.
+
+Mask composition follows formatting and substitutes each `{}` with the formatted
+text. Other brace forms are not implemented. Legacy `%s` has no placeholder
+meaning. In migrating legacy numeric formats, review two-section patterns: legacy
+used positive/zero, whereas Gramlot uses Unicode positive/negative.
+
+**Current limits:** no implicit numeric pattern,
+strings/booleans, Decimal/BigInt, explicit temporal patterns, currency/percent/scientific patterns,
+quoted pattern literals, arbitrary affixes, named/optional mask slots or brace
+escaping. Unsupported inputs/options/patterns raise errors. String pattern shorthand uses the page context. JavaScript Number precision
+still applies.
+
+**Temporal values and dtype:** `dtype` overrides type inference. Without it,
+Date inference follows TYTX: a non-midnight time on 1970-01-01 UTC is H, UTC
+midnight on another day is D, otherwise DHZ. These are interpretation rules, not
+a recovery of the original wire type. Explicit `dtype` disambiguates midnight
+instants and date/time values on the epoch day. Numeric L/R/N require finite JS
+numbers (L requires an integer); they do not convert strings or Decimal objects.
+
+D formats the UTC calendar fields without shifting them. H formats the UTC time
+fields without shifting them. DHZ displays an instant in the explicit `timeZone`,
+from the call or page context. If neither supplies it, formatting raises an error.
+D/H are unaffected by `timeZone`. Styles `short` (the default), `medium`, `long`,
+and `full` use Intl.DateTimeFormat: D includes the date, H the time, DHZ both.
+
+```javascript
+const value = new Date('2026-10-16T00:00:00Z');
+gramlot.format(value, {dtype: 'D', locale: 'it-IT'})
+// "16/10/26"
+gramlot.format(value, {
+    dtype: 'DHZ', pattern: 'short', locale: 'it-IT',
+    timeZone: 'America/Los_Angeles'
+})
+// "15/10/26, 17:00"
+gramlot.format(value, {dtype: 'D', pattern: 'long', locale: 'it-IT'})
+// "16 ottobre 2026"
+```
+
+Locale data may affect punctuation and wording. Formatting leaves the Date
+unchanged. Null still bypasses all formatting and masks. Invalid Dates, incompatible
+dtypes and missing instant timezone raise errors. The old DH alias is not included
+in this formatter; use DHZ for instants. Timezone-free datetimes and explicit date
+patterns such as `dd/MM/yyyy` remain unimplemented. No TYTX modification is needed
+for the approved inferred-type / explicit-dtype rule.
+
+### Page context and declarative text
+
+Declare the page context in Python:
+
+```python
+class Page(BasePage):
+    locale = "it-IT"
+    time_zone = "Europe/Rome"
+
+    def main(self, root):
+        root.dataSetter(destination_path="amount", value=1234.5)
+        root.p("^amount", format="0.00", mask="Total: {} €")
+```
+
+Equivalent JavaScript Page metadata is `static locale = 'it-IT'` and
+`static timeZone = 'Europe/Rome'`. The HTTP bootstrap and serverless Worker
+carry these values to the browser instance as `gramlot.locale` and
+`gramlot.timeZone`. A direct `new Gramlot({locale, timeZone, ...})` uses the
+same context. Metadata is applied at startup; changing those properties later
+does not automatically refresh existing text. For omitted page settings, startup uses the browser locale and timezone from
+`Intl.DateTimeFormat().resolvedOptions()`. Precedence is call/node, then Page,
+then browser. Each iframe has its own context; the host server timezone is not
+used as an implicit default.
+
+`gramlot.format(1234.5, '0.00')` uses the page locale. Explicit call `locale` or
+`timeZone` takes precedence. D/H keep their civil fields; only DHZ shifts zones.
+
+In live HTML text, Source `format` supplies `pattern` to that same method; node
+`locale`, `timeZone` and `dtype` options override the page. Format and mask are
+applied to the resolved scalar node text or `_text` before child elements, not
+to a form control's editable `value`. Data, format, mask, locale, timezone and
+dtype pointers participate in the existing reactive projection. Formatting does
+not write the transformed string back into Data. These directives are consumed
+and do not appear as DOM attributes. Unsupported `places` with active formatting
+raises an error; express precision in the pattern.
+
+A mask without `format` wraps ordinary text, preserving booleans/zero and
+skipping null/empty text, with the same `{}` composition. This also works in
+Python and JavaScript static HTML rendering. **Static rendering still consumes
+but does not apply `format`**, as in the earlier contract: the Intl engine is
+currently attached only to the live browser renderer. SVG text formatting is
+also outside this increment. No Python Intl substitute is introduced.
+
+Migration: replace mask `%s` with `{}`. `%s` now remains literal text; there is
+no compatibility mode. Existing declarations with ignored `format` placeholders
+must use supported patterns before rendering in the browser. A Python formatter is not implemented by this increment. Attribute pointer
+suffixes and expression-local `_F` are described in <a href="#gc-095-130">§130</a>.
+
+
+<a id="gc-095-130"></a>
+## 130 · Attribute pointer templates and expressions
+
+Introduced in core 0.2.20. Start with the simple
+cases; use an expression only when the result must retain a type or call a function.
+
+```python
+# Text: the number 38 becomes the CSS length "38px".
+pane.div(width="^width:{}px")
+
+# Boolean: editing is disabled when draft is false.
+pane.input(value="^name", readonly="^draft:=!{}")
+
+# Text content: format the number, then wrap the formatted text.
+pane.p("^amount", format="0.00", mask="Total: {} €")
+```
+
+The runtime reads the pointer up to the first `:` in the normal Data context.
+Without a suffix it returns the original value. `:` applies a text template;
+`:=` evaluates a JavaScript expression and retains its result type. Further colons
+belong to that template or expression. Data is never rewritten by this transformation.
+A plain literal containing a colon does not become a pointer.
+
+`{}` supplies the pointer value. `{name}` reads another attribute on the same
+Source node, including its binding, without removing that attribute from its normal
+projection. First the runtime brings all Source attribute inputs current; references
+and projection reuse that same set of values. It never reads these values from DOM
+attributes or computed CSS. Reactive `^` dependencies update the result;
+`=` remains a read without its own subscription. Relative paths, symbolic paths
+and Bag attribute selectors keep their usual addressing rules.
+
+```python
+pane.div(width="^width:{}{unit}", unit="^settings.unit")
+pane.div(title="^name:Customer: {}")
+```
+
+For a tooltip that needs formatting, the expression-local `_F` calls this page's
+`gramlot.format`. It uses the same options and locale/timezone precedence as
+<a href="#gc-095-125">§125</a>; it does not install a global function.
+
+```python
+pane.p("Hover here",
+       title="^amount:=_F({}, {pattern: '0.00', mask: '{} €'})")
+```
+
+The first `{}` is a typed expression argument. The quoted `'{} €'` stays the mask
+passed to the formatter. Data values are passed as arguments, never pasted into
+JavaScript code. Expressions use the existing inline compiler, Source activation
+rules and CSP requirements; templates do not require JavaScript evaluation.
+`_F` is also available in the existing `==` expression form.
+
+A template returns null if its leading value or any required slot is null or an
+empty string. Use `{?}` / `{?name}` to admit an empty string explicitly; null still
+blocks the whole result. Zero and false are valid, and whitespace is not trimmed.
+A missing Data path follows the existing null behavior. A missing Source attribute
+or a circular attribute dependency raises an error rather than inventing a value.
+Expressions receive typed null and empty strings and decide their own result.
+
+```python
+pane.div(title="^name:Customer: {?}")  # "" → "Customer: "; null → null
+```
+
+Suffixes are prohibited in the `value` of native inputs, textareas, selects and
+custom widgets. Keep ordinary value bindings for editing; no inverse conversion
+is defined. Node text uses `format` and `mask`, as above. Other attributes, including
+live `datapath` and computed `*_path` attributes, use the same read-then-transform
+rule, followed by the destination's existing checks. Data-path segment names use
+letters, digits and underscore; dots and addressing operators remain path syntax.
+
+Python authoring sends the same Source declarations as JavaScript authoring. Static
+Python/JavaScript rendering resolves templates from the available Data; expressions
+stay inert until browser startup. This does not add static variable-context support
+to the Python renderer. Existing `${name}` templates remain supported; their
+existing interpolation/projection phase is unchanged.
+
+Placeholder tokens in expressions are recognized outside quoted strings, template
+literals, comments and regular-expression literals. An empty object or a shorthand
+object such as `{name}` conflicts with the placeholder syntax: write explicit object
+members when an object is intended. Template braces must form supported slots;
+no literal-brace escape is provided in this increment.

@@ -49,6 +49,23 @@ function slot(document) {
     return document.getElementById('slot').textContent;
 }
 
+test('remote transforms parameters and refreshes when a referenced attribute changes', async t => {
+    const {calls, source} = recorder();
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 3});
+        root.dataSetter({destination_path: 'unit', value: 'px'});
+        root.div({id: 'slot', remote: 'details', remote_id: '^id:{}{unit}', unit: '^unit'});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    assert.deepEqual(calls, [['details', {id: '3px'}]]);
+    app.data.setItem('unit', 'em');
+    await settle();
+    assert.deepEqual(calls, [['details', {id: '3px'}], ['details', {id: '3em'}]]);
+    assert.equal(slot(document), 'details:3em');
+});
+
 test('remote requests the fragment with its parameters at start and mounts it', async () => {
     const {calls, source} = recorder();
     const {app, document} = page({source, main: async () => wire(root => {

@@ -19,6 +19,8 @@ export function endpointMethod(page: Page, name: string): Function | null;
 export class Page {
     /** The title of the page document. */
     static title: string;
+    static locale: string | null;
+    static timeZone: string | null;
     static installable: boolean;
     static appIcon: string | null;
     manifest(options?: {baseUrl?: string}): Record<string, unknown> | Promise<Record<string, unknown>>;

@@ -44,7 +44,7 @@ const CASES = {
         data.setItem('m.no', false);
         data.setItem('m.pct', 'a%sb');
         data.setItem('m.num', 1234.5);
-        for (const name of ['none', 'empty', 'zero', 'no', 'pct']) root.div(`^m.${name}`, {mask: 'Ciao %s'});
+        for (const name of ['none', 'empty', 'zero', 'no', 'pct']) root.div(`^m.${name}`, {mask: 'Ciao {}'});
         root.div('^m.num', {format: '#,###.00', places: 2, locale: 'it', dtype: 'N'});
     },
     foreign(root) {
@@ -125,7 +125,7 @@ def mask(root, data):
     data.set_item("m.pct", "a%sb")
     data.set_item("m.num", 1234.5)
     for name in ("none", "empty", "zero", "no", "pct"):
-        root.div(f"^m.{name}", mask="Ciao %s")
+        root.div(f"^m.{name}", mask="Ciao {}")
     root.div("^m.num", format="#,###.00", places=2, locale="it", dtype="N")
 
 def foreign(root, data):
@@ -319,7 +319,7 @@ test('setAttr updates a shortcut in style and a noConvertStyle attribute nativel
 test('an SVG setAttr keeps SVG names and no style; the live text uses mask and _text as the string render', () => {
     const {document, app, main} = mounted(root => {
         root.svg().rect({id: 'rect', width: 1, font_size: 2});
-        root.div('v', {id: 'masked', mask: 'Ciao %s', format: 'x', places: 2});
+        root.div('v', {id: 'masked', mask: 'Ciao {}'});
         root.p({id: 'mixed', _text: 'hello'}).span('x');
     });
     const rectNode = sourceTarget(main.getNodes()[0].value.getNodes()[0]);

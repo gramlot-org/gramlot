@@ -27,3 +27,5 @@ export {InOut} from './inout.js';
 
 export {IndexPage} from './server/index-page.js';
 export {IndexLogic, mountIndexPage} from './index-page-runtime.js';
+
+export {parseDateExpression} from './date-parser/index.js';

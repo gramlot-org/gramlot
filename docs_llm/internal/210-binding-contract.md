@@ -848,3 +848,152 @@ rule has a regression test that fails before its correction.
 - Fable M3: namespace URIs and the segment rule are defined once per language.
 - Outside the repository: `gramlot-js-server` maps only `PageExpired`/`PageNotFound` to 404,
   not `SourceNotFound`.
+
+<a id="gc-210-095"></a>
+## 095 · Pointer templates and expressions — development implementation (2026-10-16)
+
+Owner confirmation: "ok teniamo : per i template e := per le espressioni, con {} per
+il valore e {nome} per gli altri attributi. aggiorna il contratto". This refines the
+previous pointer-wide mask decision (constitution 11.81 and its follow-up) and
+supersedes the intervening proposals to use `#`, infer mode from placeholder content,
+or evaluate every suffix as JavaScript.
+
+The suffix belongs to shared pointer resolution for attributes, across supported
+pointer kinds; it is not CSS-only. Owner scope correction: "la sintassi col : NON è
+ammessa in value. seve oer attributi ma non per il valore del widget". Neither `:` nor
+`:=` suffixes are allowed in a widget's `value`, even for a read-only widget. A plain
+pointer in `value` remains supported under its existing contract. This supersedes
+the earlier unrestricted "every consumer" wording; the boundary is the widget value,
+not an inferred general ban on every writable binding. Existing addressing and
+subscription semantics remain the pointer's responsibility. A colon in an ordinary
+non-pointer literal does not activate this syntax.
+
+| Declaration | Meaning | Result |
+| --- | --- | --- |
+| `pointer` | Read the referenced value | Original value/type |
+| `pointer:template` | Interpolate the template, without JavaScript evaluation | Text |
+| `pointer:=expression` | Evaluate a JavaScript expression with resolved values | Expression result, retaining its type |
+
+Recognize `:=` as the expression mode, not as a template starting with `=`.
+Do not guess the mode from the presence of `{}`, `#`, quotes or other content.
+
+Both modes use:
+
+- `{}`: the value resolved from the leading pointer.
+- `{name}`: the value of another attribute of the same Source node, resolved through
+  its own supported binding mechanism. This is an attribute reference, not a new
+  direct Data-path syntax or an arbitrary JavaScript variable lookup.
+
+```python
+# Intermediate development syntax:
+pane.div(width="^width:{}px")
+pane.div(width="^width:{}{unit}", unit="^settings.unit")
+pane.input(value="^name", readonly="^draft:=!{}")
+pane.div(title="^name:Customer: {}")
+pane.p("^name", mask="Hello, {}")
+```
+
+With Data width = 38, the first template yields "38px" while Data retains the number
+38. In the second, `unit` is supplied by another Source attribute; its resolved value
+participates in the template. Reactive dependencies must include the referenced
+attributes according to their binding semantics, not only the leading pointer.
+With draft = false, `!{}` yields boolean true; with draft = true it yields false.
+`^draft:!{}` would instead be a text template, not boolean negation. Text such as
+"L'amico" is data: template insertion must not turn it into executable source.
+
+For expression mode, placeholders supply typed values to the expression evaluation
+context, rather than pasting their contents into code. Evaluation uses the existing InlineCompiler; quoting/interpolation does not create
+a second expression engine. A literal `#` no longer selects a mode or denotes the pointer value.
+Neither mode changes the referenced Data merely by displaying the result.
+`value="^price:{} €"` and `value="^price:={}"` are invalid declarations: reject them
+rather than silently stripping the suffix, treating them as literals or making the
+widget read-only. No inverse parsing/conversion for widget values is needed or
+introduced. In `readonly="^draft:=!{}"`, the transformed attribute is `readonly`,
+while `value="^name"` remains an ordinary value binding.
+
+Owner-confirmed null behavior (2026-10-16, "ok" to the specific proposal): when
+the leading pointer resolves to null, template mode returns null without applying
+the template; the receiving attribute follows its existing null projection contract
+(e.g. remove the width declaration). Expression mode receives null as its typed input
+and evaluates normally: `!{}` returns true. Zero and false are valid inputs, not
+absence: width = 0 with `:{}px` yields "0px". This rule concerns the leading pointer;
+missing Data paths retain their existing null-read behavior. It does not change the separate text `mask` empty-value contract by implication.
+
+Owner-confirmed missing attribute behavior (2026-10-16, "si" to the explicit
+proposal): a `{name}` reference to an attribute absent from the same Source node
+raises an explicit error identifying the node and missing attribute. It must not
+silently interpolate an empty string or fall back to another scope. This applies
+to both suffix modes. An attribute that exists but resolves to null is a separate
+case; missing Data paths are also not decided by this attribute-existence rule.
+
+Owner-confirmed null named-attribute behavior (2026-10-16, "ok" to the explicit
+proposal): when an existing attribute referenced by `{name}` resolves to null,
+template mode returns null for the whole result, rather than interpolating "null"
+or omitting that part. Expression mode receives the typed null and evaluates
+normally. For `width="^w:{}{unit}"`, w = 38 and unit = null yield null, not "38" or
+"38null". This extends the leading-pointer null rule to referenced attributes;
+unreferenced attributes do not affect the result. An absent Source attribute still
+raises the separately approved error. The subsequent rule below settles empty-string
+admission and the confirmed null result for a required empty string.
+
+Owner-confirmed empty-string opt-in (2026-10-16): after the clarification that
+`?` permits an empty string but not null, the owner confirms "mi piace. di norma
+prevale il fatto che è obbligatorio ma abbiamo una escape lane". In template mode,
+`{}` and `{name}` require a nonempty value; `""` prevents template composition.
+`{?}` and `{?name}` explicitly allow `""` and insert empty text while continuing
+the template. Zero and false remain valid in either form. This is not a truthiness
+check and does not introduce trimming or classify whitespace-only strings as empty.
+
+Null still produces a null template result even at a `?` placeholder. A nonexistent
+named attribute still raises an error; `?` does not hide misspelled names. Examples:
+`title="^name:Customer: {?}"` with name = "" yields "Customer: "; name = null yields
+null. `width="^w:{}px"` with w = "" returns null, not "px" or empty text: the owner
+confirmed "sin null" to the proposed null result on 2026-10-16. The destination uses
+its existing null projection behavior; the transform does not retain an old result.
+These template rules do not change expression-mode typed inputs; no `?`
+placeholder behavior for expressions or standalone `mask` is inferred here.
+
+The existing `mask` parameter remains text formatting, with `{}` replacing the legacy
+`%s` placeholder in the new design. No `%s` compatibility alias or `msk` name is
+approved. The new suffix replaces the auxiliary-attribute form for the single-value
+formatting case. Existing `${...}` multi-parameter templates are not removed by this
+decision; define their coexistence/migration without silently changing shipped code.
+
+Owner path-name correction (2026-10-16, constitution 11.81): every path segment
+name matches `[A-Za-z0-9_]+`; dots separate segments. Existing addressing operators
+remain syntax rather than part of a segment name. Thus `:` cannot be a name
+character: the first `:` opens the suffix and a following `=` selects expression
+mode. Further colons are part of the template/expression. No escape for colons in
+path names is needed. This is the intended Gramlot contract; the currently permissive
+Bag implementation is not changed by this record. Owner follow-up does not require
+runtime validation: callers using other characters are outside the supported contract
+and may encounter side effects. Documentation alignment for both Python and JavaScript
+is requested in [genro-bag #73](https://github.com/genro-org/genro-bag/issues/73).
+
+Implementation update — 2026-10-16: the owner authorized implementation after the
+progressive examples and clarified that transformed path-oriented attributes use
+the same algorithm (constitution 11.81). Templates and typed expressions now share
+the pointer split/resolution, with local `_F` delegating to page formatting. Existing
+InlineCompiler activation, lifecycle and CSP rules apply. Missing Data follows
+existing null reads; circular/missing attribute references raise errors. Slots are
+recognized outside JS literals/comments/regex, repeated slots are supported, and
+object members must be explicit where shorthand would collide with placeholders.
+No template literal-brace escape is introduced. Static templates resolve available
+Data; static expressions remain inert. Python static variable datapath support is
+not added. Native/custom widget `value` suffixes are rejected. These facts supersede
+the earlier statements that suffix execution is entirely unimplemented.
+
+A `{name}` reference reads the resolved attribute without consuming its normal
+projection. The older `${name}` interpolation retains its existing consumption
+behavior. This keeps the ordinary responsibility of each attribute unchanged. The
+owner asked not to block this intermediate increment on marginal cases; advanced
+syntax limits remain documented rather than expanding the scope. No publication
+is claimed.
+
+
+Source-attribute resolution clarification — 2026-10-16: the owner requires all
+attribute inputs to be brought current from the Source node before suffixes use
+them. The resolver now captures that complete typed input set once per resolution;
+named dependencies and projection reuse it. DOM attributes/computed styles never
+supply `{name}` values. Dependency transforms still resolve in dependency order,
+using the shared current inputs; Source retains its authored pointers.

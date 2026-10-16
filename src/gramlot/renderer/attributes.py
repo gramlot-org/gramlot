@@ -30,7 +30,7 @@ NATIVE_ATTRIBUTES = {
 TEMPLATE_REFERENCE = re.compile(r"(?<!\\)\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 
 # Display directives of the node text: consumed by the renderer, never written as attributes.
-DISPLAY_ATTRIBUTES = ("format", "mask", "locale", "places", "dtype")
+DISPLAY_ATTRIBUTES = ("format", "mask", "locale", "timeZone", "places", "dtype")
 
 # Output attributes whose ``javascript:`` value the browser runs as code (``action`` never reaches the output).
 URL_ATTRIBUTES = frozenset({"href", "src", "formaction", "xlink:href", "xlink_href"})
@@ -161,24 +161,29 @@ def text_value(value):
 
 
 def display_item(item, attrs):
-    """``(item, attrs)`` with the display directives consumed (HTML only).
-
-    ``format``, ``places``, ``locale`` and ``dtype`` do not format the text in 0.2.0. ``mask``
-    follows the legacy rule (gnrlang.js asText): ``%s`` replaced by the value, no mask when the
-    value is empty.
-    """
+    """Consume display directives; static output supports {} masks, not Intl formatting."""
     rest = dict(attrs)
     mask = rest.get("mask")
     for name in DISPLAY_ATTRIBUTES:
         rest.pop(name, None)
+
+    def display(value):
+        if isinstance(value, bool):
+            value = text_value(value)
+        if mask is None:
+            return value
+        text = "" if value is None else text_value(value)
+        if not text:
+            return text
+        if not isinstance(mask, str) or re.search(r"[{}]", mask.replace("{}", "")):
+            raise ValueError("This formatter mask supports only {} placeholders")
+        return mask.replace("{}", text)
+
     if isinstance(item, list):
+        if "_text" in rest:
+            rest["_text"] = display(rest["_text"])
         return item, rest
-    if isinstance(item, bool):
-        item = text_value(item)
-    if mask is None:
-        return item, rest
-    text = "" if item is None else text_value(item)
-    return (str(mask).replace("%s", text) if text else text), rest
+    return display(item), rest
 
 
 def is_expression(value):

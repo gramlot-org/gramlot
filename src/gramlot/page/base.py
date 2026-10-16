@@ -39,6 +39,8 @@ def endpoint(function=None, *, auth=None):
 
 class Page:
     title = "Gramlot"
+    locale = None
+    time_zone = None
     installable = False
     app_icon = None
 

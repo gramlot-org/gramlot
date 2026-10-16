@@ -101,7 +101,7 @@ class TextTests(unittest.TestCase):
             root.div(False)
         self.assertEqual(rendered(authoring), "<p>hello<span>x</span></p><div>true</div><div>false</div>")
 
-    def test_mask_follows_the_legacy_rule_and_format_does_not_format(self):
+    def test_mask_uses_braces_and_static_output_does_not_apply_format(self):
         def authoring(root, data):
             data.set_item("m.empty", "")
             data.set_item("m.zero", 0)
@@ -109,7 +109,7 @@ class TextTests(unittest.TestCase):
             data.set_item("m.pct", "a%sb")
             data.set_item("m.num", 1234.5)
             for name in ("none", "empty", "zero", "no", "pct"):
-                root.div(f"^m.{name}", mask="Ciao %s")
+                root.div(f"^m.{name}", mask="Ciao {}")
             root.div("^m.num", format="#,###.00", places=2, locale="it", dtype="N")
         self.assertEqual(rendered(authoring),
                          "<div></div><div></div><div>Ciao 0</div><div>Ciao false</div><div>Ciao a%sb</div>"

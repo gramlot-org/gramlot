@@ -15,6 +15,7 @@ import {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 import BINDING from './binding.json' with {type: 'json'};
 import WEBCOMPONENT from './webcomponent.json' with {type: 'json'};
 import {webcomponentCode} from '../webcomponent.js';
+import {pointerTransform} from '../binding/pointer.js';
 
 // P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 const DATA_FORBIDDEN = 'data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element';
@@ -31,6 +32,9 @@ const DATA_INLINE_ATTRIBUTES = {dataFormula: 'formula', dataController: 'script'
 
 /** The P18 violation of a data-element's attributes, or null. */
 function dataElementError(tag, attrs) {
+    if (['input', 'textarea', 'select', 'webcomponent'].includes(tag) && pointerTransform(attrs.value)) {
+        return "'value' does not accept pointer suffixes; use an ordinary value pointer";
+    }
     if (tag === 'html_button' && Object.keys(attrs).some(name =>
         ['action', 'ask', '_delay', 'fire'].includes(name) || name.startsWith('fire_'))) {
         return 'plain HTML button: use button for action, ask, fire or _delay';

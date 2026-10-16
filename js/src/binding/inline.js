@@ -117,7 +117,7 @@ export class InlineCompiler {
     compileExpression(node, attr, code) {
         const expr = code.slice(2);
         const items = sourceAttributeItems(node.getAttr()).filter(([, raw]) => !isExpression(raw));
-        const run = this.compile(node, attr, code, items.map(([name]) => name), `return ${expr}`);
+        const run = this.compile(node, attr, code, [...items.map(([name]) => name).filter(name => name !== '_F'), '_F'], `return ${expr}`);
         return resolved => {
             const values = {};
             for (const [name, raw] of items) {
@@ -133,8 +133,14 @@ export class InlineCompiler {
                     values[name] = node.pointerType(raw) ? node.getRelativeData(raw) : raw;
                 }
             }
-            return run(values);
+            return run({...values, _F: (value, options) => this.runtime.gramlot.format(value, options)});
         };
+    }
+
+    /** Typed placeholder inputs, compiled under the exact declaration activated with Source. */
+    compilePointerExpression(node, attr, code, expression) {
+        const run = this.compile(node, attr, code, ['_pointerValues', '_F'], `return (${expression}\n)`);
+        return values => run({_pointerValues: values, _F: (value, options) => this.runtime.gramlot.format(value, options)});
     }
 
     /**

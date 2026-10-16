@@ -153,6 +153,17 @@ Block ID: **GC-096-040**.
 dicts/Bags/lists. Shortcuts compose inline style and win over the same property
 in `style`; null removes a shortcut property. SVG stays SVG; width/height on
 img/canvas/embed and width/border on table remain HTML attributes.
+The full guide adds a three-column Python → Source → DOM comparison: literal
+color/font_size, duplicate style/shortcut precedence, and a pointer before/after a
+Data update. Source snapshots are attribute excerpts, not a serialized Bag. DOM
+snapshots omit unrelated declarations and may be browser-normalized. A complete
+main-body color-input excerpt demonstrates Data → CSS, with Source retaining the
+pointer. Shortcut precedence composes inline CSS before the browser cascade;
+!important can affect computed results; null removes rather than restores a base
+style property. Reverse-direction table distinguishes Data edits, literal Source
+edits, DevTools DOM edits and theme-variable previews. DOM/CSS edits do not write
+Source/Data or source files; later projection can overwrite them. Inspector theme
+previews can be exported with Download CSS. Links to gallery b06 for practice.
 The full `style_state.py` example uses `datapath="appearance"` for relative paths,
 setters, two bound selects, a bound class,
 bound width with max-width 100%, a checkbox and bound visibility. No JS file is

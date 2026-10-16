@@ -2,6 +2,7 @@ import {Bag} from '@genrojs/bag';
 import {META_ATTRS, SourceBag} from '@genrojs/builders';
 import {isExpression, withoutBindingAttributes} from '../renderer/attributes.js';
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
+import {pointerTransform, resolvePointerAttribute} from './pointer.js';
 
 /**
  * Installation of the `dataSetter`s and of the defaults of one Source branch (source plan §4.6,
@@ -114,7 +115,8 @@ export class DataInstaller {
         const special = {};
         for (const [name, value] of Object.entries(attrs)) {
             if (name.startsWith('attr_')) {
-                special[name.slice(5)] = node.pointerType(value) ? node.getRelativeData(value) : value;
+                special[name.slice(5)] = pointerTransform(value) ? resolvePointerAttribute(node, name)
+                    : node.pointerType(value) ? node.getRelativeData(value) : value;
             }
         }
         if (!Object.keys(special).length) return;

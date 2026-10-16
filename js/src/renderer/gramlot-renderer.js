@@ -125,7 +125,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         let attrs = runtimeAttrs;
         item = this.expressionValue(node, item);
         if (this.getRender(node.builder) === this) {
-            [item, attrs] = displayItem(item, this.restoreNativeAttributes(node, runtimeAttrs));
+            [item, attrs] = displayItem(item, this.restoreNativeAttributes(node, runtimeAttrs),
+                (value, options) => this._binding.gramlot.format(value, options));
         }
         const children = Array.isArray(item) ? item : [];
         const text = Array.isArray(item) ? attrs._text : item;
@@ -471,7 +472,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         let attrs = node._getMeta('subbuilder') ? resolvedAttrs : renderer.adaptAttrs(resolvedAttrs);
         const branch = node.value instanceof SourceBag;
         let text = branch ? [] : this.expressionValue(node, value);
-        if (renderer === this) [text, attrs] = displayItem(text, this.restoreNativeAttributes(node, attrs));
+        if (renderer === this) [text, attrs] = displayItem(text, this.restoreNativeAttributes(node, attrs),
+            (value, options) => this._binding.gramlot.format(value, options));
         this.html.update(record, node, attrs, branch ? attrs._text : text, resolved.visible ?? null);
         this.#projectControl(record, node, attrs, change);
         record.control?.refresh();

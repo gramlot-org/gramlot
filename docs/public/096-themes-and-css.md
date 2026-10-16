@@ -751,6 +751,66 @@ attributes remain SVG attributes, not HTML style shortcuts. `width`/`height` on
 `img`, `canvas` and `embed`, and `width`/`border` on `table`, remain HTML attributes.
 The [binding reference](095-writing-pages.md) gives the full rules.
 
+### Follow one style from Python to the browser
+
+Read the columns from left to right. **Source is the declaration; DOM is the rendered
+result.** Source entries below are readable attribute excerpts, not a Bag serialization
+or a second API. DOM entries show only the relevant inline declarations; browsers
+may normalize colors to `rgb(...)` and change spacing/order.
+
+| Python inside `main` | Source node attributes | Rendered DOM style |
+| --- | --- | --- |
+| `pane.div("Hello", color="red", font_size="18px")` | `color: "red"`, `font_size: "18px"` | `style="color: red; font-size: 18px;"` |
+| `pane.div("Hello", style="color: red; padding: 8px", color="blue")` | `style: "color: red; padding: 8px"`, `color: "blue"` | `style="color: blue; padding: 8px;"` |
+| `pane.div("Hello", color="^text_color")` with Data `text_color = "red"` | `color: "^text_color"` | `style="color: red;"` |
+| The same bound node after Data `text_color = "green"` | Still `color: "^text_color"` | `style="color: green;"` |
+
+`color="red"` becomes a CSS declaration, not a `color="red"` HTML attribute on the
+div. `font_size` becomes `font-size`. The Source keeps the original attributes:
+Gramlot composes the browser's inline style without rewriting the declaration.
+
+Try the binding with this excerpt inside `main(root)`:
+
+```python
+pane = root.div()
+pane.html_label("Text color", for_="text-color")
+pane.input(id="text-color", type="color", value="^text_color")
+pane.div("Watch my color", id="style-demo", color="^text_color")
+pane.dataSetter("text_color", "#ff0000")
+```
+
+Choose a color: the native control writes its `value` to Data, and the div's `color`
+binding projects that Data into CSS. The Source of the div still says
+`color="^text_color"`. This is two bindings sharing Data, not CSS writing back to Data.
+
+**Which value wins?** Gramlot first composes the inline style: an explicit shortcut
+wins over the same property in the `style` string; unrelated properties remain.
+For example, blue wins over red in the second row, but padding stays 8px. Afterwards,
+the browser applies the CSS cascade, including stylesheets and `!important` rules.
+The computed color can therefore differ from the inline declaration; inspect both
+in browser DevTools. A null shortcut removes its property from the composed style;
+it is not a request to restore that property from the original `style` string.
+
+### What happens in the reverse direction?
+
+| What you edit | What changes | What does not happen automatically |
+| --- | --- | --- |
+| A bound color input, or the corresponding Data value | Data changes; the binding updates the DOM style | The Source pointer is not replaced by the color |
+| A literal Source style attribute in Gramlot's Source inspector | The renderer projects the new declaration | The Python file is not edited or saved |
+| An element's inline CSS in browser DevTools | The rendered DOM changes for that inspection | Source and Data are not rewritten |
+| A stylesheet rule or an inspector **Styles** theme variable | The cascade changes the appearance of elements that use it | Gramlot does not reconstruct per-node Source attributes or Data values |
+
+A direct DOM edit is a debugging experiment. A later projection of the affected
+style can overwrite it; reloading rebuilds the page from its declarations. There is
+no automatic inverse mapping: a computed color might come from a shortcut, an inline
+style, a class, inheritance or a theme variable. Gramlot cannot infer which original
+authoring choice you intended to change. To keep a change, edit the appropriate
+Python/JS declaration, stylesheet or application data through its normal persistence.
+Inspector Styles previews are temporary; **Download CSS** exports their theme overrides.
+
+Practice the same steps in the gallery's
+[b06 · Style and visibility](https://github.com/gramlot-org/gramlot-examples/blob/main/src/gramlot_examples/pages/binding/06_style_and_visibility.md).
+
 ### Let Data select a class and a width
 
 Save this complete page as `pages/style_state.py`. It needs only Base, so no

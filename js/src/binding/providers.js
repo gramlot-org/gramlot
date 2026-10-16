@@ -1,6 +1,7 @@
 import {AskDialog} from './ask-dialog.js';
 import {Bag} from '@genrojs/bag';
 import {RpcResolver} from './rpc-resolver.js';
+import {pointerTransform, pointerDependencies, resolvePointerAttribute} from './pointer.js';
 
 /**
  * Providers of one Gramlot page (source plan §4.8): the semantic runtime of a `dataFormula`, a
@@ -25,7 +26,7 @@ const CONTROL_ATTRIBUTES = new Set([
 export class Provider {
     #binding;
     #registrations = [];
-    #timingRegistration = null;
+    #timingRegistrations = new Set();
     #stopTiming = null;
     #cancelDelay = null;
     // The AbortController of the in-flight call of a `dataRpc`: a new call aborts it (latest wins).
@@ -63,6 +64,7 @@ export class Provider {
         }
         this.#closeRegistrations();
         const router = this.binding.runtime.router;
+        const timingDependencies = pointerDependencies(node, node.getAttr('_timing'));
         for (const [name, pointer] of node.pointers()) {
             if (name === 'datapath') continue;
             const absolute = node.absDatapath(pointer);
@@ -70,7 +72,7 @@ export class Provider {
             const [path, attr = null] = absolute.split('?', 2);
             const registration = router.register({path, attr, recipient: this});
             this.#registrations.push(registration);
-            if (name === '_timing') this.#timingRegistration = registration;
+            if (name === '_timing' || timingDependencies.has(name)) this.#timingRegistrations.add(registration);
         }
         const subscriptions = this.binding.runtime.gramlot._subscriptions;
         for (const name of Object.keys(node.getAttr())) {
@@ -98,7 +100,7 @@ export class Provider {
      * debounces, the last call wins, and the arguments are read when the body runs.
      */
     receive(change) {
-        if (change.registration === this.#timingRegistration) {
+        if (this.#timingRegistrations.has(change.registration)) {
             this.#startTiming();
             return;
         }
@@ -236,6 +238,7 @@ export class Provider {
     #resolved(name) {
         const node = this.node;
         const value = node.getAttr(name);
+        if (pointerTransform(value)) return resolvePointerAttribute(node, name);
         return node.pointerType(value) ? node.getRelativeData(value) : value ?? null;
     }
 
@@ -340,7 +343,7 @@ export class Provider {
 
     #closeRegistrations() {
         for (const registration of this.#registrations.splice(0)) registration.close();
-        this.#timingRegistration = null;
+        this.#timingRegistrations.clear();
     }
 }
 

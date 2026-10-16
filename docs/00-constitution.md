@@ -2076,6 +2076,150 @@ delay, action with ask, conditional ask and Source/DOM references, preserving
 release progression. No dependency edits, release or publication are authorized.
 
 
+### Amendment 11.76 — JS-owned component definitions and Python metadata — 2026-10-15
+
+Owner confirmed "si" to the specific proposal: "descrizione e implementazione
+nello stesso modulo JavaScript, JSON generato per i Builders e nessuna definizione
+Python duplicata". Component implementations and their public descriptions have
+one JavaScript source of truth. Collection preparation exports portable Builder
+metadata; Python consumes the shipped JSON to declare Source, without executing
+browser code or requiring Node on the Python server. There is no manually maintained
+Python counterpart for each component. Generated editor support, if later provided,
+is derived from the same description.
+
+This resolves the description-ownership direction left open by GC-040 and GC-205 D2.
+It does not approve the illustrative names `description`, `createImplementation`,
+`Control`, `text_box` or `gramlot-text-box`, a metadata schema, base-class hierarchy,
+collection-selection API, packaging/loading protocol, or an implementation port.
+Those remain decisions for the component design. No dependency change, version,
+publication or deployment is authorized by this confirmation.
+
+
+Owner clarification, 2026-10-15: "direi che ogni applicazione deve dicgiatare le
+cllezini che usa : per ora direi di non p'reoccuparcene in qualche modo faremo".
+Collection requirements belong to the application. This supersedes the proposed
+page-level selection direction, which was not approved. The owner explicitly defers
+the declaration syntax and concrete selection/loading mechanism; do not make that
+design a prerequisite for discussing the individual component contract. No automatic
+loading policy, application API or implementation is established by this clarification.
+
+
+### Amendment 11.77 — Modern web platform and documented legacy differences — 2026-10-16
+
+Owner: "gramlot deve essere invece molto modero" and "massimizzare l'uso delle
+miogliori feature di js css e html mantenendo quando possibile retrocompatibilita
+o documentando per il team softwell le discrepanze e motivandole".
+
+Use modern JavaScript, CSS and HTML capabilities when they provide a suitable,
+verified implementation of the agreed behavior. Legacy remains the behavioral and
+authoring reference, not a requirement to preserve its browser-era limitations,
+Dojo mechanisms or hand-built substitutes for available platform features.
+Preserve useful authoring and observable semantics where feasible. For proposed
+incompatibilities, document the old behavior, new behavior, rationale, affected
+applications and migration guidance for the Softwell team before adoption.
+
+This clarifies constitution §5 and the component design direction. It does not
+approve a specific browser feature, compatibility baseline, API change or port.
+Evaluate semantics, accessibility, browser support and tests per feature; modern
+syntax alone is not evidence of a better implementation. Source/Data ownership,
+explicit owner decisions and the single agreed path remain in force. This is not
+blanket permission for aliases, compatibility layers, fallbacks or polyfills.
+
+
+Owner clarification, 2026-10-16: "darei la priorita alla validazione gramlot che
+semmai guida in automatico quella nativa laddove sia usabile". Gramlot validation
+owns the rules; native browser constraints may be configured automatically from
+those rules where their semantics match. Explain the overlap without requiring
+application authors to duplicate the same rule. This refines the modern-platform
+direction, not the existing runtime: concrete mappings, validator APIs and editing/
+commit behavior remain undecided. See GC-205 §085. No implementation is authorized
+by this documentation clarification.
+
+
+Owner clarification on locale/format compatibility, 2026-10-16: "preferisco
+adeguarmi alla versione moderna se non c'è corrispondfenza il codice legacy dovra
+essere adattato". For localized formatting, modern platform conventions take
+precedence where legacy formats have no corresponding semantics. Application code
+must be adapted; do not build legacy-format emulation solely to preserve those
+incompatible declarations. Document concrete before/after examples and reasons for
+Softwell. This supersedes compatibility-first assumptions for this bounded formatting
+choice, not the whole legacy authoring contract. Exact Gramlot attributes/options,
+input parsing, translation markers/catalog engine and browser qualification remain
+open. No runtime change is made by recording this decision. See GC-235 §070.
+
+
+### Amendment 11.78 — Signature-driven localization and page metadata — 2026-10-16
+
+Owner proposes "un tipo per le stringhe localizzabili nelle firme dei builder e
+delle routes. intl_str", then defines the concrete SQL distinction: `name` is
+`str`, `name_long` and `name_plural` are `intl_str`. The owner states that the
+collector should recognize the text from this declared type, asks "non serve forse
+nemmeno !!", and subsequently confirms "label è intl_str". These concrete examples
+establish typed recognition: localizable parameters do not require `!!` on each
+supplied text. This refines the earlier preference to retain the legacy marker;
+it does not decide compatibility for untyped strings or old catalogs.
+
+Owner places source language at package scope, then specifies page class/common
+folder metadata for Gramlot, naming "pages/_metadata" and confirming "in metadata
+possiamo mettere tutte le cose che accomunano certe pagine". The direction is shared
+page metadata defaults with page-specific declarations possible, not a language-only
+file. Exact file format/extension, language key, permitted properties, nested-folder
+lookup and merge semantics remain open. Source language is distinct from user target
+language. Shared component text provenance is not yet settled.
+
+The DB example explains semantics; the owner says "per il db lo spiego al db".
+Do not change database repositories or Builder/Routes dependencies under this record.
+The request is to document decisions. This refines the component/localization
+contract without choosing a type implementation, collector, message engine, runtime
+language-switch policy or port. No publication is authorized. GC-240 contains the
+owner evidence, unresolved annotation-payload question and implementation boundaries;
+GC-225 §045 records owner-supplied names before future implementation.
+
+11.78 follow-up — 2026-10-16: owner confirms "ok aggiorna il documento con queste
+decisioni e fai un piano per introdurre intl_str nei builder, nelle routes, nei
+componenti e nei messaggi", explicitly "non è preioritario o bloccante". Record the
+proposed shared `Annotated[str, "intl_str"]` alias as the design direction: values
+remain strings; concrete text is in arguments/defaults. The shared Genro package
+and Routes/JS descriptor details remain open. This supersedes the earlier unresolved
+class/alias and annotation-text choices in 11.78, without implementing the alias.
+
+Scope includes component display labels (including an existing `lbl` parameter),
+placeholders, tooltips, accessible descriptions, notification/alert/confirmation
+text and titles/action captions, and user-facing validation/error messages. JS-owned
+component descriptions carry the qualification into generated Python signatures.
+Recognition follows the actual type, not a parameter-name heuristic; no `lbl` alias
+is introduced. Keep message templates separate from variable arguments, and stable
+error codes separate from translated messages. User data and raw exceptions/logs
+are not automatically collected or translated. Exact template/escaping/plural syntax,
+collector, engine, source metadata and runtime language behavior remain open.
+
+GC-240 §§050–060 records the decisions, future sequence and acceptance scenarios.
+This work is explicitly deferred, non-priority and non-blocking for components or
+releases. The request authorizes documentation/planning only, not dependency changes,
+implementation, agent assignments or publication. DB work remains with its owner.
+
+### Amendment 11.79 — Shared labelbox and reactive label position — 2026-10-16
+
+Owner: "si includiamo labelbox con lbl_ e box_ nel contratto condiviso", followed by
+"per position prevedevo TL TC TR per il top poi L e R e poi BL BC e BR per iol bottom",
+"e puo essere ^position", and "si TL come default. aggiorna il contratto con labelbox,
+lbl_ e box_ e lbl_position anche reattivo".
+
+Accept shared labelbox presentation with `lbl`, `lbl_`, `box_` and the described
+`box_l_`/`box_c_` label/control-container subdivisions. The explicit `lbl_position`
+parameter resolves before generic label attributes; specific box prefixes resolve
+before the general prefix. Its domain is TL/TC/TR/L/R/BL/BC/BR, default TL on omission;
+it accepts reactive pointers such as `^position`. Framework binding resolves values;
+layout updates preserve the existing input, value, focus and caret/selection.
+
+This supersedes the proposed lbl_side/top/bottom/left/right contract; no alias is
+added. Label text is qualified as intl_str; localization remains deferred. See
+GC-205 §090 and GC-225 §050. This is contract documentation only, not an implementation,
+Builder extension, finalized export schema or authorization of the earlier proposed
+invalid-value commit policy. Unknown/null position behavior, detailed layout and
+remaining input decisions stay open.
+
+
 ### Amendment 11.80 — Fourth version segment for quick Python bugfixes — 2026-10-16
 
 Owner selected `gramlot-py-server` 0.2.8.1 ("no farei 0.2.8.1") for the Kajenn
@@ -2085,3 +2229,301 @@ package. The concrete authorized release is 0.2.8.1, superseding the proposed
 0.2.9 number; no existing release is replaced. This does not prescribe a version
 representation for npm/JSR packages. Publication of subsequent releases still
 requires explicit owner authorization under section 10.
+
+### Amendment 11.81 — General pointer suffix masks and `{}` placeholder — 2026-10-16
+
+Owner: "allora toglierei width="${pixels}px", pixels="^width" e manterrei :{}px";
+"anche in mask userei {} invece di %s"; "la regola è che quando ho un pointer in
+qualunque modo fatto e ovunqu vedo se è seguio da :xxxx".
+
+Accept the pointer-wide `:xxxx` mask suffix for any supported pointer kind and
+consumer, using `{}` as the value placeholder. This is shared pointer semantics,
+not an attribute- or CSS-specific feature. The existing `mask` parameter uses the
+same placeholder in the new design, replacing `%s`. Formatting leaves the Data
+value intact. The single-pointer example becomes `width="^width:{}px"`; the
+multi-parameter template facility is not removed. No compatibility alias or inverse
+write-back conversion is approved. GC-210 §095 records remaining delimiter,
+escaping, null, typing, write-back and composition decisions. This records the
+accepted direction without claiming runtime implementation or changing public
+examples ahead of implementation. Names are recorded in GC-225 §055.
+
+11.81 follow-up — 2026-10-16: owner confirms "ok teniamo : per i template e := per
+le espressioni, con {} per il valore e {nome} per gli altri attributi. aggiorna il
+contratto". The shared pointer suffix now distinguishes text templates (`:`) from
+JavaScript expressions with typed results (`:=`). Both use `{}` for the resolved
+pointer value and `{name}` for another resolved Source-node attribute. Referenced
+attribute bindings participate in the dependencies. Expression inputs are passed
+as typed values, not pasted as executable data text. Neither mode implies inverse
+write-back conversion. The `{}` choice for the separate text `mask` remains in force.
+
+This refines 11.81's mask-only suffix description and supersedes the unimplemented
+`#`, mode inference and always-evaluate proposals. Existing `${...}` templates are
+not removed. GC-210 §095 and GC-225 §055 record the accepted contract and remaining
+escape, grammar, dependency, static rendering and write-back details. Documentation
+only: no runtime implementation, dependency edit or release is claimed or authorized
+by the request to update this contract.
+
+11.81 scope correction — 2026-10-16: owner states "la sintassi col : NON è ammessa
+in value. seve oer attributi ma non per il valore del widget". Both pointer suffix
+modes (`:` templates and `:=` expressions) apply to attributes but are prohibited
+in widget `value`; a plain value pointer retains its existing behavior. This
+supersedes the earlier unrestricted "every consumer" wording. Reject transformed
+widget-value declarations; do not invent inverse conversion or silently change their
+binding mode. The rule does not establish a blanket ban on other writable attributes.
+GC-210 §095 and GC-225 §055 are aligned. Contract clarification only; no runtime change.
+
+11.81 null behavior — 2026-10-16: owner answers "ok" to the explicit proposal that
+a null leading pointer skips template interpolation and returns null, while expression
+mode receives null and evaluates normally. Zero and false remain valid values:
+`^w:{}px` yields "0px" for zero; `^draft:=!{}` yields true for null. Null output uses
+the destination attribute's existing projection rules. This does not settle empty
+strings or missing/null named references, nor amend the standalone mask contract.
+GC-210 §095 records this accepted behavior; no runtime implementation is claimed.
+
+11.81 missing named attribute — 2026-10-16: owner answers "si" to the proposal
+that a `{name}` reference to a nonexistent Source-node attribute raises an explicit
+error identifying the node and missing attribute, rather than silently yielding
+empty text. This governs both suffix modes. Existing attributes resolving to null
+and missing Data paths remain separate unresolved cases. GC-210 §095 records the
+rule; no runtime implementation is claimed.
+
+11.81 null named attributes — 2026-10-16: owner answers "ok" to applying the same
+null rule to existing referenced Source attributes: a null `{name}` makes the whole
+template result null; expression mode receives typed null and evaluates normally.
+For w = 38 and unit = null, `^w:{}{unit}` yields null. This settles the null-attribute
+case left open in the earlier follow-ups; absent Source attributes still raise errors.
+Empty strings and missing Data paths remain undecided. GC-210 §095 is aligned;
+this is a contract decision, not a runtime implementation.
+
+11.81 required template values and empty-string opt-in — 2026-10-16: owner confirms
+"mi piace. di norma prevale il fatto che è obbligatorio ma abbiamo una escape lane"
+after the proposal `{}`/`{name}` versus `{?}`/`{?name}`. In text templates, ordinary
+slots require nonempty values; an empty string blocks composition. `?` explicitly
+allows an empty string and continues interpolation. Zero/false remain valid. Null
+still yields null even with `?`; nonexistent Source attributes still raise errors.
+This supersedes the earlier unresolved empty-string admission rule, but does not yet
+choose null versus empty string as the blocked required-empty result. It does not
+amend typed expression inputs or implicitly extend optional slots to standalone mask.
+GC-210 §095 and GC-225 §055 record the bounded decision. Documentation only.
+
+11.81 required-empty result — 2026-10-16: owner answers "sin null" to choosing null
+when a required template slot contains an empty string. The complete template result
+is null and follows the destination's existing null projection behavior. This settles
+the blocked-result choice left open in the previous follow-up. Optional empty strings,
+null inputs, zero/false and expression-mode behavior remain as already agreed.
+GC-210 §095 and GC-225 §055 are aligned; documentation only, no runtime change.
+
+11.81 path names and suffix delimiter — 2026-10-16: after being shown that the
+current implementation accepts colons and hyphens in Data labels, the owner corrects
+the intended path contract: "no :desideri che come path siano amiuscole minuscole _
+0-0 e basta direi." Path segment names use ASCII letters, digits and underscore
+only (`[A-Za-z0-9_]+`). Dots separate segments; existing pointer/addressing operators
+are syntax, not characters in segment names. A colon cannot belong to a segment:
+the first `:` starts the transform, with `:=` selecting expression mode; later
+colons belong to its body. No colon-in-name escape is introduced. This supersedes
+the unresolved delimiter question in GC-210 §095. This records the intended path contract; it does not authorize modifying the Bag
+library. The owner clarification below removes mandatory runtime validation.
+
+11.81 path-contract enforcement clarification — 2026-10-16: owner requests an
+issue on Bag "senza necessariamente mettere una validazione per evitare il cntrollo
+ma chi usa caratteri diversi puo avere side effects". The supported segment alphabet
+is a caller contract, not a requirement to validate every path operation. Unsupported
+characters can produce side effects; acceptance does not establish support or promise
+an exception. This supersedes the preceding mandatory-enforcement wording. Issue
+[genro-bag #73](https://github.com/genro-org/genro-bag/issues/73) requests aligned
+Python and JavaScript documentation. No dependency implementation changes authorized
+or performed by this issue request.
+
+11.81 formatting helper — 2026-10-16: owner confirms "Sì, _F locale alle
+espressioni" to `title="^prezzo:=_F({}, {pattern: '0.00', mask: '{} €'})"`.
+`_F` calls the owning page's `gramlot.format` from Gramlot expressions only, with no
+global function. Node text retains its existing `format` then `mask` pipeline.
+Owner subsequently says "ok procedi" after the progressive syntax examples.
+
+11.81 path-consumer clarification — 2026-10-16: the owner rejects a proposed
+blanket exclusion of `datapath` and `*_path`: "quando trovi un ponter ... prendo
+dopo il ^ o = fino alla fie o fino a ':' ... con quel path reso assoluto prendo il
+valore ... è un '=' ? ... eval se no ... template", followed by "ok".
+Apply that same read-then-transform sequence to attribute consumers; the previously
+confirmed widget-value prohibition remains. Typed arguments enter the existing
+compiler rather than being pasted as executable data text. This supersedes the
+agent's proposed address-attribute restriction; it was never an approved constraint.
+
+11.81 Source-attribute resolution — 2026-10-16: owner clarifies "non va letto dal
+dom ma dal spource npde" and "in questi casi bisogna attualizzare tutti gli attributi
+e usarli". Named references read Source-node attributes, never DOM attributes.
+Resolve the complete current attribute input set before applying suffixes, and
+reuse those values for named references and projection rather than rereading
+bindings independently. Source declarations and Data remain unchanged.
+
+### Amendment 11.82 — Legacy formatting API with modern implementation — 2026-10-16
+
+Owner confirmation: "ok recuperiamo api vecchia miglioraimola nel casom
+diovumentiamola e realizziamola con strumenti moderni", following the comparison
+of `gramlot.format` and `gramlot.formatter.format`.
+
+Use `gramlot.format` as the public formatting entry point; recover the useful
+legacy `_F` calling model, document intentional improvements and implement with
+modern tools. This authorizes formatting work, not a wholesale Dojo port or a
+translation engine. The modern-conventions priority of 11.77 remains in force.
+The exact supported patterns, options, temporal/precision handling and execution
+context for `_F` still require a bounded contract; do not infer these from the
+legacy implementation alone. GC-235 §075 records evidence and remaining work.
+The separate question about Toolbox natural-language dates is an investigation,
+not authorization to add a parser to Gramlot or modify Toolbox.
+
+### Amendment 11.83 — Bounded JavaScript date-expression parser port — 2026-10-16
+
+Owner: "allora portiamola subito in gramlot", replying to the confirmed presence
+of `parseDateExpression` in the PoC, with an example of its explicit locale and
+workdate, date/period/error outcomes and 11 passing parser tests.
+
+Port that standalone JavaScript parser into Gramlot. Preserve its existing name
+and bounded parsing contract; document differences from Toolbox Python. This is
+a browser/Node utility port, not a Python authoring builder or a Python parser
+replacement. It does not add an editor/calendar, implicit Data writes, remote
+parsing, translation or the separate `gramlot.format` implementation. Existing
+PoC normalization and supported language forms are retained as part of this
+specific port, not a general authorization for compatibility fallbacks.
+This supersedes the investigation-only boundary for the parser in 11.82.
+Record destination scope and verification in PORT-0009-date-expression-parser.
+
+11.83 follow-up — 2026-10-16: owner answers "o procedi" to the proposal to use
+Toolbox Python as the semantic reference, complete missing forms and exercise
+JavaScript against its test corpus, retaining structured browser outcomes.
+This supersedes preservation of conflicting PoC parsing rules: align month/year
+inference, the two-digit-year window, vocabulary and empty input (open period).
+Keep `parseDateExpression` and its existing option names; `twoDigitYearAhead`
+now uses Toolbox's pivot window [work year + value - 100, work year + value - 1].
+Python date/exception types do not dictate JS representation. No Toolbox edits,
+new parser aliases, custom-locale loading API, editor or formatter are authorized.
+Document accepted/rejected syntax changes and any residual differences explicitly.
+
+11.82 Unicode pattern decision — 2026-10-16: owner answers "si" to "confermi i
+pattern Unicode usati anche da Dojo, come #,##0.00 e dd/MM/yyyy, implementati con
+strumenti moderni?". Use Unicode/LDML number and date pattern conventions for
+`gramlot.format`. This chooses the grammar family, not a Dojo dependency or a
+claim that native Intl accepts pattern strings. Exact supported tokens/features,
+engine, options shape, type/locale/timezone defaults, null/mask behavior and `_F`
+exposure remain to settle. GC-235 §080 records this bounded decision.
+
+11.82 pattern option decision — 2026-10-16: owner answers "ok" to using `pattern`
+in the options object and making `gramlot.format(value, "#,##0.00")` equivalent to
+`gramlot.format(value, {pattern: "#,##0.00"})`. The options object is the second
+argument. This supersedes the proposed object key `format`; no alias is approved.
+The subsequent request to examine separate numeric positive/negative/null formats
+opens their contract discussion; it does not approve a particular section order
+or grouping of zero and null.
+
+11.82 numeric zero case — 2026-10-16: owner replies "zero va bene" after the
+legacy positive/zero/negative explanation. Record approval of zero as the special
+numeric case. This brief response does not explicitly choose null-to-zero
+conversion, a separate null format or a new null default. Keep those open.
+
+11.82 null output — 2026-10-16: owner confirms "si, null stringa vuota senza mask"
+in response to returning empty text without applying either the numeric pattern
+or mask. `gramlot.format(null, ...)` returns `""`, bypassing pattern formatting
+and mask composition. This replaces the unresolved null choice and excludes
+legacy null-to-zero conversion. It does not settle undefined or empty-string input,
+which must not be silently conflated with null.
+
+11.82 typed-value dispatch — 2026-10-16: owner answers "per ora si: sesara
+necessario cambieremo poi" to inferring the formatter's type from the value and
+its TYTX typing, distinguishing civil dates, datetimes and timezone-bearing
+datetimes, without interpreting numeric/date-looking strings as typed values.
+This is the current approved contract, open to a later explicit revision if needed;
+it does not authorize automatic future coercions or settle missing type metadata.
+
+11.82 locale precedence — 2026-10-16: owner answers "ok" to giving the formatter's
+explicit `locale` option precedence over the page locale, and using the page locale
+when the option is omitted. This settles that precedence only: the page locale's
+storage/configuration and behavior when no page locale exists remain undefined.
+No implicit browser/server locale fallback or timezone policy is approved here.
+
+11.82 timezone behavior — 2026-10-16: owner answers "ok" to preserving civil date
+and timezone-free datetime fields without timezone shifts, and displaying datetime
+instants in the explicit call timezone or, when omitted, the page timezone. This
+does not select the option spelling, page configuration path or fallback when the
+page has no timezone. Preserve the actual TYTX type distinction; do not infer an
+instant from an untyped date-looking string.
+
+11.82 three numeric sections — 2026-10-16: owner answers "ok" to retaining the
+legacy order `positive;zero;negative` for three numeric sections, explicitly as a
+Gramlot extension to Unicode patterns. Confirmed example:
+`{pattern: "#,##0.00;-;(#,##0.00)", locale: "it-IT"}` produces `12,50`, `-`,
+`(12,50)` for positive/zero/negative values; null remains empty without a mask.
+This settles three-section order, not the meaning of two sections, empty sections
+or quoted separators.
+
+11.82 two numeric sections — 2026-10-16: owner answers "si" to using Unicode
+`positive;negative` for two numeric sections, while retaining the confirmed
+Gramlot `positive;zero;negative` extension for three. This explicitly supersedes
+the legacy positive/zero meaning of a two-section format; document migration.
+It does not settle empty sections, literal separator escaping or mask composition.
+
+11.82 mask composition order — 2026-10-16: owner answers "ok" to formatting the
+value with `pattern` first, then inserting that formatted result into `mask` at
+`{}`. Confirmed example: 1234.5 with pattern `0.00`, locale `it-IT` and mask
+`Totale: {} €` yields `Totale: 1234,50 €`. Null still returns empty text without
+pattern or mask. This does not settle optional/named mask slots, escaping or the
+handling of an empty formatted result for non-null input.
+
+11.82 empty zero section — 2026-10-16: owner answers "ok" to the example
+`#,##0.00;;(#,##0.00)`: the empty middle (zero) section produces `""` for zero
+and skips mask composition. This is intentional suppression, not an omitted
+section that falls back to another numeric pattern. It does not settle empty
+positive/negative sections or empty-string input.
+
+11.82 named date formats and default — 2026-10-16: owner states "per le date vale
+l9ng short ecc" and answers "ok" to the explicit proposal of `short`, `medium`,
+`long`, `full` or an explicit date pattern, with `short` used when `pattern` is
+omitted. Named date formats follow the agreed locale precedence. This settles
+this date default only; it does not approve defaults for numbers/booleans or
+select which time fields are included for datetime values. Engine and bounded
+pattern coverage remain to define; no formatter runtime implementation claimed.
+
+11.82 incremental implementation — 2026-10-16: owner says "per ora impostalo
+anche se incompletom non serve sia perfetto subito. basat che sia predisposto
+efunzioni in alcuni casi". Implement a bounded working subset of the confirmed
+contract now, explicitly documenting unsupported cases rather than treating the
+remaining design work as a prerequisite for all implementation. This does not
+approve silent fallbacks, dependency workarounds or publication. The initial
+numeric subset requires explicit pattern and locale; page-context defaults and
+temporal dispatch remain incomplete. TYTX 0.16.2 decodes D, DH and DHZ to Date
+without retaining their distinction; do not recreate that distinction heuristically.
+
+11.82 explicit dtype and inferred dates — 2026-10-16: owner says "noi posso o
+anche nel caso passare il tipo" and confirms "ok" to "tipo dedotto dal valore,
+con dtype esplicito quando serve disambiguare, come nel legacy". The `dtype`
+option takes precedence over inference, allowing the same Date to be formatted
+as D or DHZ. This supersedes the no-inference constraint in the typed-dispatch
+and initial numeric-slice records, specifically for Date inference following the
+existing TYTX rules (UTC midnight => D, non-midnight epoch day => H, otherwise
+DHZ). Inference does not recover the original wire type; dtype is the explicit
+override. No string coercion or TYTX modification is authorized or required.
+The incremental implementation may now support temporal named styles. Civil D/H
+fields retain UTC fields; DHZ is an instant. Page locale/timezone defaults remain
+pending, so the first slice requires explicit call context for instant display.
+
+11.82 page context and live display — 2026-10-16: owner authorizes "ok procedi
+con locale e timezone della pagina e poi collega format e mask al motore. lo
+scopo e una release intermedia con questo e poi alla ,3 i famosi webcomponent".
+Provide startup Page locale/timezone metadata in Python and JS, propagated to
+the browser in HTTP and Worker bootstraps. Call/node options take precedence.
+Connect live HTML text `format` and `mask` to the existing formatter; keep the
+original Data and editable control values unchanged. Apply the previously agreed
+`{}` mask syntax to static and live text, replacing `%s` without an alias. This
+supersedes the older legacy-mask display rule. Static Intl formatting, SVG display
+formatting and pointer suffixes remain incomplete in this bounded increment;
+static renderers retain their existing consumed-but-unapplied `format` behavior.
+No new dependency or Python formatting substitute is introduced. A question on
+browser defaults when Page context is absent remains pending; keep the existing
+explicit-context requirement until answered. The intermediate release direction
+does not select a version or authorize publication in this turn; web components
+remain assigned to 0.3.
+
+11.82 browser defaults — 2026-10-16: owner answers "Sì, usa i valori del browser"
+to the question about missing Page locale/timezone. Resolve each omitted setting
+from the browser at page startup. Precedence is explicit call/node option, then
+Page metadata, then browser. This supersedes the pending/missing-context policy
+in the earlier follow-ups; server system locale/timezone is not a fallback.

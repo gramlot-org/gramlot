@@ -340,10 +340,10 @@ test('null removes style and class; hidden stays a native boolean', () => {
     assert.equal(element.hidden, false);
 });
 
-test('mask: div(^.utente, mask=Ciao %s) is projected, empty value gives empty text, same string in Python', () => {
+test('mask: div(^.utente, mask=Ciao {}) is projected, empty value gives empty text, same string in Python', () => {
     const {builder, data, byId} = page();
     data.setItem('u.utente', 'Mario');
-    builder.root.div({datapath: 'u'}).div('^.utente', {id: 'm', mask: 'Ciao %s'});
+    builder.root.div({datapath: 'u'}).div('^.utente', {id: 'm', mask: 'Ciao {}'});
     const element = byId('m');
     assert.equal(element.textContent, 'Ciao Mario');
     assert.equal(element.hasAttribute('mask'), false);
@@ -357,12 +357,12 @@ test('mask: div(^.utente, mask=Ciao %s) is projected, empty value gives empty te
 from gramlot import GramlotBuilder
 builder = GramlotBuilder()
 builder.data.set_item("u.utente", "Mario")
-builder.root.div(datapath="u").div("^.utente", mask="Ciao %s")
+builder.root.div(datapath="u").div("^.utente", mask="Ciao {}")
 print(builder.render(), end="")
 `], {encoding: 'utf8'});
     const js = new GramlotBuilder();
     js.data.setItem('u.utente', 'Mario');
-    js.root.div({datapath: 'u'}).div('^.utente', {mask: 'Ciao %s'});
+    js.root.div({datapath: 'u'}).div('^.utente', {mask: 'Ciao {}'});
     assert.equal(js.render(), py);
     assert.equal(py, '<div><div>Ciao Mario</div></div>');
 });

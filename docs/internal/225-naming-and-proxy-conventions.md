@@ -351,3 +351,152 @@ Plain button (11.75): `html_button` uses the existing `html_` authoring conventi
 but is a distinct Source tag in both languages; grammar `render_tag: button`
 maps it to native HTML. `button` keeps its Gramlot identity. `_delay`, `_counter`
 and `button_counter` retain their existing/legacy spelling. No new proxy or marker.
+
+
+<a id="gc-225-045"></a>
+## 045 · Localization type and shared page metadata
+
+Owner, 2026-10-16: proposes `intl_str` for localizable parameters in Builder/Routes
+signatures, distinguishes SQL `name: str` from `name_long`/`name_plural: intl_str`,
+and confirms that display `label` must be typed accordingly. The name denotes a
+semantic string type. Owner follow-up accepts the design alias
+`intl_str = Annotated[str, "intl_str"]`: the same spelling identifies the annotation
+marker. Concrete text stays in arguments/defaults; values stay strings. The shared
+Genro owning package/import path and Routes/JS descriptor details remain undecided.
+Do not invent additional public aliases, a string subclass or a TYTX value tag.
+
+Owner names `pages/_metadata` and confirms it holds common page properties, including
+source language. Preserve `_metadata` as the chosen location/name direction; no
+extension, file format or specific source-language metadata key has been chosen.
+See [GC-240](../future/240-localization-decisions.md) and constitution 11.78.
+These names are recorded for design; no API implementation is claimed.
+
+<a id="gc-225-050"></a>
+## 050 · Shared labelbox presentation
+
+Owner-approved contract, 2026-10-16 (GC-205 §090; constitution 11.79): `labelbox`
+names shared label/control presentation, not yet a standalone Builder method or
+custom-element tag. `lbl` is its localizable label text. `lbl_` addresses label
+attributes; `box_` addresses the outer container; `box_l_` and `box_c_` address
+the label and control containers. Specific groups take precedence over `box_`.
+The explicit parameter `lbl_position` takes precedence over generic `lbl_` routing.
+Its resolved values are `TL`, `TC`, `TR`, `L`, `R`, `BL`, `BC`, `BR`; omission defaults
+to `TL`. It accepts a literal or reactive pointer, including `^position`.
+
+Use `lbl_position` instead of legacy `lbl_side`; no alias, `lbl:position` syntax or
+`lbl_c_` group is introduced. This settles these contract names only; JS descriptor
+keys, classes, DOM tags and the input's authoring name remain proposals.
+
+<a id="gc-225-055"></a>
+## 055 · Pointer templates, expressions and placeholders
+
+Owner confirmation, 2026-10-16: "ok teniamo : per i template e := per le espressioni,
+con {} per il valore e {nome} per gli altri attributi. aggiorna il contratto".
+Use `pointer:template` for text interpolation and `pointer:=expression` for a typed
+JavaScript expression result. Recognize the explicit delimiter; do not infer mode
+from content. In both modes `{}` denotes the resolved pointer value and `{name}`
+another resolved attribute of the same Source node. `#` is not a placeholder.
+
+Examples: `width="^width:{}px"`, `width="^width:{}{unit}"` with `unit="^settings.unit"`,
+and `readonly="^draft:=!{}"`. This is shared attribute-pointer syntax, not CSS-only.
+Owner clarification excludes widget `value`: neither suffix mode is permitted there;
+ordinary `value="^name"` remains unchanged. See GC-210 §095 for the exact boundary.
+`mask` uses `{}` instead of `%s` in the new design; no `msk` or legacy placeholder
+alias is approved. The intervening `#`, automatic mode-detection and always-evaluate
+proposals are superseded. Existing `${...}` templates are not removed by this decision.
+
+Owner follow-up accepts required-by-default template slots: `{}` / `{name}` block
+composition and return null on an empty string, while `{?}` / `{?name}` explicitly
+allow empty-string interpolation. The `?`
+marker does not allow null or nonexistent attributes. This scope is text templates;
+expression-mode optional slots and standalone mask behavior are not inferred.
+
+See GC-210 §095 and constitution 11.81 follow-up for scope, typed-value handling and
+remaining grammar/consumer details. These names now have a development implementation, not a published release; expression evaluation must not paste data contents into executable code.
+
+Owner path-name correction (2026-10-16, constitution 11.81): every path segment
+name matches `[A-Za-z0-9_]+`; dots separate segments. Existing addressing operators
+remain syntax rather than part of a segment name. Thus `:` cannot be a name
+character: the first `:` opens the suffix and a following `=` selects expression
+mode. Further colons are part of the template/expression. No escape for colons in
+path names is needed. This is the intended Gramlot contract; the currently permissive
+Bag implementation is not changed by this record. Owner follow-up does not require
+runtime validation: callers using other characters are outside the supported contract
+and may encounter side effects. Documentation alignment for both Python and JavaScript
+is requested in [genro-bag #73](https://github.com/genro-org/genro-bag/issues/73).
+
+Implementation naming (2026-10-16): internal `binding/pointer.js` owns
+`pointerTransform`, `pointerDependencies`, `preparePointerItems` and
+`resolvePointerAttribute`; these are
+module functions, not new application proxies. Python static authoring uses
+`page/pointer.py` with snake_case equivalents. Source uses Builder's existing
+runtime-value resolver hook to supply transformed, typed attribute values. A
+per-resolution `current` map holds all Source attribute inputs, shared by named
+references and projection; it is neither DOM-derived nor persistent page state.
+`InlineCompiler.compilePointerExpression` uses the existing activated-code compiler.
+Typed expression inputs use the compiler-local parameter `_pointerValues`; it is
+not a Source attribute or a public variable. Existing datapath/timer registration
+fields become private registration sets to include named reactive dependencies.
+Owner confirms "Sì, _F locale alle espressioni": `_F` is an expression-local helper
+calling the owning page's `gramlot.format`; it is not installed on window/globalThis.
+
+<a id="gc-225-060"></a>
+## 060 · Formatting entry point
+
+Owner-confirmed direction, 2026-10-16 (constitution 11.82): use `gramlot.format`
+for formatting a value. Do not introduce the competing `gramlot.formatter.format`
+proxy or a formatter-factory meaning for this entry point. Recover the useful
+legacy `_F` calling model with a modern implementation; the exact overloads,
+supported patterns and helper exposure are still to be documented and confirmed.
+Natural-language date parsing remains a separate responsibility. This is an
+accepted API name and implementation assignment, not a claim of shipped support.
+
+<a id="gc-225-065"></a>
+## 065 · Date-expression parser port
+
+Owner, 2026-10-16: "allora portiamola subito in gramlot" after the demonstrated
+PoC `parseDateExpression(text, options)` API. Preserve this function name and its
+`workdate`, `locale`, `twoDigitYearAhead` options and result keys. It is a named
+JavaScript package export, usable by page Logic, Node and Workers. It is not a
+new Gramlot proxy, instance alias or Python Builder method. Keep the bounded
+PoC `date-parser/index.js`, `civil.js` and `locales.js` module organization.
+Public type names follow the function: `DateExpressionOptions`,
+`DateExpressionResult`, `DateExpressionErrorCode`. No alternate parser API is
+introduced. See constitution 11.83 and PORT-0009-date-expression-parser.
+
+
+Toolbox alignment, owner "o procedi", 2026-10-16: retain this JS API, but
+`twoDigitYearAhead` has the same numerical meaning as Python `pivot_year`.
+The window is now [work year + value - 100, work year + value - 1].
+Empty input returns an open period; `EMPTY_EXPRESSION` and `REVERSED_RANGE`
+are no longer parser error codes. No alternate spelling or compatibility option.
+
+Formatter option follow-up — 2026-10-16: owner "ok" confirms the second argument
+as a pattern string or options object using `pattern`. The short string form means
+`{pattern: string}`. `format` remains the operation name; no `format` option alias
+is approved. See GC-235 §085 and constitution 11.82 follow-up.
+
+Incremental formatter implementation, 2026-10-16 (owner "per ora impostalo anche
+se incompletom"): retain the sole public method `gramlot.format(value, options)`.
+`FormatOptions` names its TypeScript options, following the method's name.
+Internal `format.js`/`formatValue` implement that method without another package
+export or public proxy. Initial options are the agreed `pattern`, `locale` and
+`mask`; no page-locale configuration name or `_F` alias is introduced yet.
+
+Formatter dtype follow-up — 2026-10-16: owner "ok" approves `dtype` as the
+explicit override of inferred type, retaining the legacy spelling. Temporal
+codes follow TYTX: D, H, DHZ; numeric codes L, R, N are accepted for matching
+finite JavaScript numbers, without conversion of strings or Decimal objects.
+The explicit instant timezone option uses the standard Intl spelling `timeZone`;
+no synonym or page-context storage API is introduced. These extend FormatOptions
+for the bounded formatter implementation authorized under constitution 11.82.
+
+Page formatting context — 2026-10-16: owner authorizes "procedi con locale e
+timezone della pagina e poi collega format e mask al motore", for an intermediate
+release before 0.3 web components. Page metadata uses `locale` and Python
+`time_zone` / JavaScript `timeZone`, following existing Page snake/camel naming.
+Bootstrap and browser instance use `locale` / `timeZone`; individual call and
+Source display attributes override page context. Source's existing `format`
+attribute supplies the formatter's `pattern`, while `mask` composes the result
+using `{}`. No new `_gramlot` Data initialization protocol or pointer suffix
+implementation is implied. Missing-page-context policy is under owner discussion.

@@ -62,6 +62,8 @@ export interface GramlotServerOptions {
 
 /** The result of `registerPage`. */
 export interface RegisteredPage {
+    locale?: string;
+    timeZone?: string;
     /** The id of the registered page. */
     pageId: string;
     /** The title of the page. */

@@ -181,7 +181,9 @@ class GramlotServer:
         bootstrap = _script_json({
             "config": {"pageId": page_id, "rpcUrl": _prefixed(prefix, self.rpc_url),
                        "closeUrl": _prefixed(prefix, self.close_url), "rootId": self.root_id,
-                       "capabilities": self.capabilities},
+                       "capabilities": self.capabilities,
+                       **({"locale": cls.locale} if cls.locale is not None else {}),
+                       **({"timeZone": cls.time_zone} if cls.time_zone is not None else {})},
             "resources": {"css": [_prefixed(prefix, url) for url in resources["css"]],
                           "js": [{"url": _prefixed(prefix, entry["url"]), "group": entry["group"]}
                                  for entry in resources["js"]]}})

@@ -1,5 +1,6 @@
 import {SourceBag, SourceBagNode, sourceAttributeItems, wrapSource} from '@genrojs/builders';
 import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
+import {pointerTransform, pointerDependencies, preparePointerItems, resolvePointerAttribute} from '../binding/pointer.js';
 
 // The inline code attributes of each tag, besides `connect_on<event>` and the `==` expressions of any tag.
 const CODE_ATTRIBUTES = {
@@ -78,6 +79,9 @@ export class GramlotBuilderBagNode extends SourceBagNode {
             }
             code.set(name, text);
         }
+        for (const [name, text] of [...sourceAttributeItems(this.getAttr()), ['datapath', this.getAttr('datapath')]]) {
+            if (pointerTransform(text)?.expression) code.set(name, text);
+        }
         this.#activatedCode = code;
     }
 
@@ -122,7 +126,15 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /** Builder's `^` pointers, except the attributes ending in `_path`, which hold a bare path. */
     pointers() {
-        return super.pointers().filter(([name, pointer]) => !this.#isPathAttribute(name, pointer));
+        const datapath = this.getAttr('datapath');
+        const dependencies = pointerTransform(datapath) ? pointerDependencies(this, datapath) : new Set();
+        const result = super.pointers().filter(([name, pointer]) => !dependencies.has(name) && !this.#isPathAttribute(name, pointer))
+            .map(([name, pointer]) => [name, pointerTransform(pointer)?.pointer ?? pointer]);
+        for (const name of dependencies) {
+            const value = this.getAttr(name);
+            if (this.pointerType(value) === '^') result.push(['datapath', pointerTransform(value)?.pointer ?? value]);
+        }
+        return result;
     }
 
     /**
@@ -134,10 +146,14 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         const items = super.runtimeToEvaluate();
         for (const [name, value] of items) {
             if (!this.pointerType(value)) continue;
+            if (pointerTransform(value)) {
+                if (typeof name !== 'string') throw new Error(`${this.nodeTag} '${this.label}': pointer suffixes belong to attributes; use format/mask for node text`);
+                continue;
+            }
             if (this.#isPathAttribute(name, value)) items.set(name, value.slice(1));
             else if (this.absDatapath(value) === null) items.set(name, null);
         }
-        return items;
+        return preparePointerItems(this, items);
     }
 
     /**
@@ -147,6 +163,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
      */
     pathAttribute(name) {
         const value = this.getAttr(name);
+        if (pointerTransform(value)) return resolvePointerAttribute(this, name);
         return this.pointerType(value) && this.#isPathAttribute(name, value) ? value.slice(1) : value;
     }
 
@@ -232,6 +249,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /** Builder's absDatapath, keeping `?attr` on symbolic paths. */
     absDatapath(path) {
+        path = pointerTransform(path)?.pointer ?? path;
         const bare = this.pointerType(path) ? path.slice(1) : path;
         if (bare.startsWith('#') && bare.includes('?')) {
             const [target, attr] = bare.split('?', 2);
@@ -288,6 +306,10 @@ export class GramlotBuilderBagNode extends SourceBagNode {
      * the context of the carrier's parent; the value counts as if written in place of the pointer.
      */
     #variableDatapath(carrier, pointer) {
+        if (pointerTransform(pointer)) {
+            const value = resolvePointerAttribute(carrier, 'datapath', carrier.parentNode);
+            return value == null || value === '' ? null : value;
+        }
         const path = carrier.parentNode.absDatapath(pointer);
         if (path === null) return null;
         const value = this.data.getItem(path);
@@ -296,6 +318,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /** Whether `name` ends in `_path`; a pointer there loses its symbol, with one warning per attribute. */
     #isPathAttribute(name, value) {
+        if (pointerTransform(value)) return false;
         if (typeof name !== 'string' || !name.endsWith('_path')) return false;
         if (!this.#reportedPathPointers.has(name)) {
             this.#reportedPathPointers.add(name);

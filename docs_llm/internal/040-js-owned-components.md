@@ -53,6 +53,11 @@ Third-party JS is trusted installed code, not sandboxed by JSON.
 
 ## 025 · Evidence and reproducibility
 
+**Reproducibility update, 2026-10-15:** the recorded worktree path below is absent.
+The historical results are retained, but the separate experiment was not rerun.
+Current checked-in PoC component-alpha tests did pass; they do not reproduce the
+JS-owned metadata export probe. See [GC-205 §035](../future/205-components.md#gc-205-035).
+
 PoC baseline `10478b57ce3f22e6445eb6b72eba343520cbebac`; local branch
 codex/js-component-manifest, worktree /private/tmp/gramlot-js-component-manifest.
 Uncommitted experiment in experiments/js-component-manifest/ is not in baseline.

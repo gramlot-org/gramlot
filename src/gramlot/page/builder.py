@@ -30,6 +30,10 @@ DATA_INLINE_ATTRIBUTES = {"dataFormula": "formula", "dataController": "script"}
 
 def data_element_error(tag, attrs):
     """The P18 violation of a data-element's attributes, or None."""
+    value = attrs.get("value")
+    if (tag in ("input", "textarea", "select", "webcomponent") and isinstance(value, str)
+            and value.startswith(("^", "=")) and not value.startswith("==") and ":" in value):
+        return "'value' does not accept pointer suffixes; use an ordinary value pointer"
     if tag == "html_button" and any(
             name in ("action", "ask", "_delay", "fire") or name.startswith("fire_") for name in attrs):
         return "plain HTML button: use button for action, ask, fire or _delay"
