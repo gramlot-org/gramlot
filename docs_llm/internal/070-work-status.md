@@ -6120,3 +6120,27 @@ core runtime bytes match across the distributions.
 Read the Docs built the release commits successfully: core stable 35174149;
 examples latest 35174219 and stable 35174220. Release commits and tags are pushed
 on main/develop. The server adapters and DevTools packages are unchanged.
+
+
+### Kajenn folder-page routing correction — 2026-10-16
+
+Owner authorized the correction after analysis of gramlot-py-server issue #16:
+"puoi correggere?". Kajenn consumes `index` as a route selector; the adapter lost
+that segment when reconstructing paths from route arguments. `Application.index`
+now uses the request path already relative to the mount; `_RuntimeAssets.index`
+forwards the unchanged request. No core or dependency contract changes.
+
+Ten regression cases cover root/mounted applications, `index`/ordinary folders
+including `assets/`, bootstrap URLs, JS/CSS, GET/HEAD, method/file rejection and
+symlink escape. Before: six failures, four passing controls. After: 25 Kajenn
+module tests and all 102 repository tests pass, plus Ruff/whitespace checks.
+Environment: Kajenn 0.5.0, genro-routes 0.30.1, released core 0.2.17. One upstream
+Starlette/httpx deprecation warning. Implemented and locally verified; owner
+acceptance and source delivery/publication remain separate. No browser run or release.
+
+Delivery follow-up: owner accepted the correction and requested "ok allora commit
+e push e aggiorna". Added `httpx2` to the adapter repository's test extra and
+installed httpx2 2.13.1 locally. Existing direct `httpx` consumers retain their
+dependency. The full 102-test suite passes without warnings; Ruff passes.
+Correction and test dependency update are committed as `469aa68` in
+`gramlot-org/gramlot-py-server` on `develop`. No package release or deployment.
