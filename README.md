@@ -83,6 +83,8 @@ The example pages and their gallery are the separate package `gramlot-examples`.
   (Node.js and Bun) or `@gramlot/gramlot-serverless` (no server) for JavaScript pages;
   `npm create @gramlot page|site` starts a JavaScript project.
 
+For updates, follow [Updating an existing installation](docs/public/018-quickstart.md): packages, source builds, restart/export and verification.
+
 For a first look, use [Try Gramlot: the quick route](docs/public/018-quickstart.md):
 choose Python, Node.js or serverless, open the gallery, then create your own page.
 It also explains how to install the optional [Chrome DevTools extension](https://github.com/gramlot-org/gramlot-devtools/releases/latest).

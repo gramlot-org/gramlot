@@ -82,3 +82,34 @@ extension's details. After updating its files, reload the extension and reopen
 DevTools. See the [extension guide](https://github.com/gramlot-org/gramlot-devtools/blob/main/docs/010-usage.md)
 for editing and breakpoints. This optional Chrome extension is separate from the
 gallery's in-page inspector, opened from its footer.
+
+<a id="gc-018-025"></a>
+
+## 025 · Update an existing installation
+
+Block ID: **GC-018-025**.
+
+Choose the instructions for **how you installed it**, not just the language of
+the pages. A Python gallery uses JavaScript bundles too. A published Python wheel
+already includes them; a source checkout must rebuild them after browser changes.
+
+| Your installation | Update procedure |
+| --- | --- |
+| Python packages from PyPI | [Update the active virtual environment](https://github.com/gramlot-org/gramlot-py-server/blob/main/docs/020-command.md#gp-020-025). Update core, examples and adapter explicitly; restart the server. No npm build is needed. |
+| npm packages, Node/Bun or serverless | [Update the project packages](https://github.com/gramlot-org/gramlot-js-server/blob/main/docs/010-tutorial.md#gn-110-035). Run the command in the same project used to start/export the gallery. Restart the server or regenerate the entire export. |
+| Local repository checkouts, including a Python gallery using editable sources | [Refresh dependencies and rebuild in order](https://github.com/gramlot-org/gramlot-examples/blob/main/docs/010-gallery.md#ge-010-050): core, gallery bundles, then restart/export. A Git pull alone does not rebuild browser files. |
+
+Stop the old gallery process first. After the update, reopen the printed address
+and reload the page; an installed web app still depends on that server/export.
+The gallery footer's magnifying glass opens the **in-page inspector**, bundled
+with `gramlot-examples`. The Chrome extension is separate and follows section 020.
+
+Verify the result: open **Controllers → Publish and subscribe**, press **Publish**,
+and check that the summary changes. Open the footer inspector and check its
+**Data**, **Source** and **Styles** tabs. Compare installed versions with each
+repository's README; core, examples and adapters have independent version numbers.
+
+If something is missing, report the start command, URL, installed versions and
+resolved package paths from the linked procedure. A menu entry can come from a
+new catalogue while an old process still serves the previous routes. Reloading
+alone cannot refresh a running server's imported modules or rebuild its assets.
