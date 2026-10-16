@@ -1942,3 +1942,14 @@ not port the legacy's separate 200 ms disabled guard for immediate clicks.
 Complete Python-first and equivalent JS examples for plain/Gramlot buttons,
 delay, action with ask, conditional ask and Source/DOM references, preserving
 release progression. No dependency edits, release or publication are authorized.
+
+
+### Amendment 11.80 — Fourth version segment for quick Python bugfixes — 2026-10-16
+
+Owner selected `gramlot-py-server` 0.2.8.1 ("no farei 0.2.8.1") for the Kajenn
+routing correction and confirmed "per i bugfix al volo mi va bene la 4 cifra".
+A fourth numeric release segment is accepted for quick bugfixes of this Python
+package. The concrete authorized release is 0.2.8.1, superseding the proposed
+0.2.9 number; no existing release is replaced. This does not prescribe a version
+representation for npm/JSR packages. Publication of subsequent releases still
+requires explicit owner authorization under section 10.

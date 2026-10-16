@@ -7194,3 +7194,22 @@ installed httpx2 2.13.1 locally. Existing direct `httpx` consumers retain their
 dependency. The full 102-test suite passes without warnings; Ruff passes.
 Correction and test dependency update are committed as `469aa68` in
 `gramlot-org/gramlot-py-server` on `develop`. No package release or deployment.
+
+
+### Python adapter quick bugfix release — 2026-10-16
+
+Owner requested publication after the Kajenn issue #16 correction, selected
+"no farei 0.2.8.1", and confirmed "per i bugfix al volo mi va bene la 4 cifra".
+Constitution 11.80 records the fourth numeric segment for this Python package's
+quick bugfix releases. Prepared version 0.2.8.1, README and release notes;
+102 tests pass without warnings, Ruff and both documentation builds pass.
+The wheel and sdist build successfully; version ordering, wheel metadata,
+py.typed, the routing correction and httpx2 test-extra dependency are verified.
+Published successfully on GitHub and PyPI: tag `v0.2.8.1`, commit `e101b925d7b82058edc47e698a1f89982b153f6c`,
+consolidated on main/develop. Official release workflow
+[38875820015](https://github.com/gramlot-org/gramlot-py-server/actions/runs/38875820015)
+passed all jobs, including the Python 3.11/3.12 adapter matrix, browser and
+clean-install checks, documentation, core-main, artifact build and publication.
+The downloaded GitHub wheel/sdist hashes match SHA256SUMS and the actual PyPI
+artifacts; published wheel metadata, routing fix, py.typed and httpx2 test extra
+are verified. Release complete; no application deployment or dependency-source edit.
