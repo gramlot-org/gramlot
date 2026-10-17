@@ -12,6 +12,8 @@ Document ID: **GC-070**. Updated: **2026-10-17**.
 
 **Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
 
+**Hosted galleries:** Python and Node galleries are live on gallery-py.gramlot.dev and gallery-js.gramlot.dev, each with the verified offline ZIP download and automatic updates after successful releases of the four repositories; see [§1190](#gc-070-1190) and [§1195](#gc-070-1195).
+
 **Next workstream:** the approved 0.3 scope is complete and released. Translation services, DB/grid/store work and broader containers remain separate workstreams to prioritize with the owner; see [GC-245 §110](../future/245-components-0-3-plan.md#gc-245-110).
 
 **Deferred website design:** editorial HTML companions and two interactive-region modes for gramlot.org, asqueel.org and kajenn.org are recorded for later discussion (§850); no implementation started.
@@ -8716,3 +8718,63 @@ stable w25 page renders its components and completes remote validation, updating
 both the field and accepted Data to NEWNAME. Public manuals contain 71 lessons
 with Python and JavaScript sources. No separate DevTools extension release is
 included in this release scope.
+
+
+<a id="gc-070-1190"></a>
+## 1190 · Hosted Python/Node galleries and offline download — 2026-10-17
+
+Owner requests container-hosted Python and Node galleries with a serverless
+archive available from both, then confirms: “Sì, usa gallery-py e gallery-js”.
+Published https://gallery-py.gramlot.dev/ and https://gallery-js.gramlot.dev/ on
+the existing Hetzner host, in the independent gramlot-galleries Compose project.
+Python/Uvicorn and Node listen on host loopback ports 19182 and 19183. nginx
+provides HTTPS and the same /downloads/gramlot-gallery-serverless.zip on both
+origins. DNS and the new certificate were created for these two names only;
+existing applications, deployment accounts and their configuration are preserved.
+Certbot's existing active timer and nginx reload hook cover certificate renewal.
+
+The gallery footer has an optional native download link. Python and Node gallery
+commands accept --serverless-download; class properties are serverless_download_url
+and serverlessDownloadUrl, following existing language conventions. The host owns
+the static archive; there is no per-request export, new core API or DOM workaround.
+Omission keeps ordinary local galleries unchanged. These bounded additions and
+paired guides are local development changes packaged into the deployment images;
+no replacement npm/PyPI release or source push was performed for this deployment.
+
+Deployment assets/runbook are in the workspace deploy/galleries directory and
+/opt/gramlot-galleries on the host. The Python image is
+sha256:1eacf3d9d8e46e70755fcf425bfdcff96153f38c785275a60b1f0bd69a90ee1a;
+the Node image is
+sha256:6c1821999966b618934f983cbb6b4c1cb901990cd4eb0dc79c39ea5b8067efd5.
+Both run as non-root with read-only filesystems, bounded temporary storage and
+resource limits. Updates are manual; no automatic deployment credentials or jobs
+were introduced.
+
+The shared ZIP contains the published serverless gallery and 72 examples, a README
+and exact package-version receipt. It is 26,606,055 bytes with SHA256
+f86cb02b1a5342d323cfbb93e74754aee57eb80d05460f3239deb1a5d71cf856.
+Users unzip it and open index.html; page/endpoint execution uses JavaScript Workers,
+not a bundled Python or Node server. Both public downloads match that checksum.
+
+Verification: gallery JS suite and 17 Python tests pass; adapter gallery/CLI tests
+pass; all paired manuals build and their identity/link checks pass. The 25 component
+interactions pass against each real container and from the offline directory.
+Public HTTPS checks verify the visible footer link and w25 invalid-draft/last-valid-
+Data behavior with asynchronous validation on both origins. Both container health
+checks pass. The release versions and registry receipts in §1185 remain unchanged.
+
+
+<a id="gc-070-1195"></a>
+## 1195 · Automatic gallery updates after releases — 2026-10-17
+
+Owner: “si confermo, dopo ogni release dei quattro repo. procedi anche a includere il link di download nei pacchetti ufficiali”. This supersedes §1190's manual-update policy. The bounded deployment is owned by gramlot-examples/deploy/galleries; core runtime and dependency direction are unchanged.
+
+The host checks public stable releases every ten minutes, requiring successful publication workflows and matching npm/PyPI versions in all four repositories. It builds both containers and the ZIP from uncapped official packages, checks resolved versions against the release set, verifies candidate browsers and offline output, then promotes both upstreams and one immutable ZIP through nginx. Failure restores the preceding nginx configuration. No GitHub SSH credential or webhook listener is introduced.
+
+Published and verified: official download-link patches (examples 0.3.1, JS packages 0.2.12, Python server 0.2.10) and the first automatic deployment. Core remains 0.3.0. Local checks pass: examples JavaScript and 17 Python tests; Python adapter suite 102; JS server 33, serverless 35, scaffold 3, plus Bun; deployment gate/archive/rollback tests 12. Both adapter manuals compile successfully. Initial test-environment restrictions were resolved by allowing local sockets and refreshing the old examples Python environment from official packages.
+
+All three release pipelines succeeded (examples 39059652682, JS 39059940631, Python 39059937448). The Python browser job was retried after the new examples wheel propagated to the package index; no dependency was pinned or downgraded. The final automation commit c8b6f12 also passes both branch CI runs.
+
+The enabled systemd timer and service are gramlot-galleries-update.timer/service. First registry-only generation 20261017T190256Z is active on slot 1 (loopback 19184/19185). Both containers are healthy. Browser checks pass on both candidates, the offline file export and both public HTTPS origins: all 25 component lessons start, textbox binding and invalid-draft/async-validation interactions work, and the hosted footer link is present. Both public ZIP downloads match SHA256 60413953c15faac5e180fb8525efbcb55ce509c260b3f4aa59898487d3431518. The preceding manual containers stopped only after promotion succeeded; their images/config/archive remain available.
+
+The updater records current.json and per-generation receipts on the host, excludes simultaneous updates, reuses already verified release checks, and bounds only its dedicated BuildKit cache. No unrelated service or cache is changed. Existing page sessions may require a reload after a deployment. Instructions and tested automation are maintained in gramlot-examples/deploy/galleries; the updater does not automatically replace its own control scripts.
