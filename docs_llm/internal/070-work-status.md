@@ -14,7 +14,7 @@ Document ID: **GC-070**. Updated: **2026-10-17**.
 
 **Hosted galleries:** Python and Node galleries are live on gallery-py.gramlot.dev and gallery-js.gramlot.dev, each with the verified offline ZIP download and automatic updates after successful releases of the four repositories; see [§1190](#gc-070-1190) and [§1195](#gc-070-1195).
 
-**Mobile gallery:** published and verified on both public galleries and the downloaded serverless ZIP in Chromium and WebKit. See [§1205](#gc-070-1205) and [§1210](#gc-070-1210).
+**Mobile gallery:** published and verified on both public galleries and the downloaded serverless ZIP in Chromium and WebKit. See [§1205](#gc-070-1205), [§1210](#gc-070-1210) and the English-label correction in [§1215](#gc-070-1215).
 
 **Next workstream:** the approved 0.3 scope is complete and released. Translation services, DB/grid/store work and broader containers remain separate workstreams to prioritize with the owner; see [GC-245 §110](../future/245-components-0-3-plan.md#gc-245-110).
 
@@ -7846,3 +7846,33 @@ checking initial visibility and recognizes file-based example paths. This is a
 test-only follow-up; released runtime artifacts are unchanged. WebKit engine
 qualification is not a physical iPhone/iPad Safari test. Release, deployment and
 verification are complete.
+
+
+<a id="gc-070-1215"></a>
+## 1215 · English gallery labels — 2026-10-17
+
+Owner requested all gallery labels in English and publication to both hosted
+galleries and the serverless ZIP. Python/JS gallery captions and paired guides
+now use Example / Code / Inspector and Normal / Mobile. Core component-guide
+references are aligned; no core runtime or dependency change.
+
+Completed: examples 0.3.3 published on PyPI/npm from commit `2c0d148` and tag
+`v0.3.3`, consolidated on main. Local tests: 98 JavaScript and 18 Python passed.
+All release CI gates passed, including browser checks of every page and docs:
+[publication run](https://github.com/gramlot-org/gramlot-examples/actions/runs/39067766196).
+Downloaded wheel/npm checksums and their English gallery captions were verified.
+
+Both public galleries now run generation `20261017T204807Z`, with core 0.3.1,
+examples 0.3.3 and unchanged server integrations. A first installation attempt
+resolved the old wheel during PyPI propagation and stopped before promotion;
+the successful attempt passed all 25 component-page/binding/validation checks
+on Python, Node, offline files and public HTTPS. Previous generation retained;
+update timer active.
+
+Both public ZIPs are identical (27,153,615 bytes), SHA-256
+`2bec23b2b92184edc67f4c398779dc595e837393d69eb2eecd515406af4414d5`.
+Chromium and WebKit checks passed on both public galleries and the downloaded
+ZIP opened with file://, explicitly asserting Example / Code / Inspector and
+Normal / Mobile, as well as the existing mobile/desktop state-preservation
+checks. Physical iOS testing remains outside this verification. Publication
+and deployment are complete.

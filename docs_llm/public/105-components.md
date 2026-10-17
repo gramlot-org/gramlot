@@ -641,7 +641,7 @@ choice rows gain touch targets. Palette, light/dark mode, validation, keyboard
 editing and Data binding retain their meaning. Validation messages remain
 available on focus, so reading them does not require hover.
 
-The gallery offers **Normale / Mobile** immediately above the example. Normale
+The gallery offers **Normal / Mobile** immediately above the example. Normal
 uses available width and ordinary theme density; Mobile uses up to 390 CSS pixels
 and forces touch sizing. Both views share the same iframe and preserve Data and
 unaccepted editor text. A Mobile button tooltip reports the page's declaration
