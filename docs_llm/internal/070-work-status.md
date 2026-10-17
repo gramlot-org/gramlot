@@ -7614,3 +7614,11 @@ increments into main, tags, package publication and the associated public manual
 Dependency minimums reflect the new collection-loading API without upper caps.
 Local integration suites pass: all five Python adapters (102 tests), the JS
 workspace suites and Bun. Publication results will be recorded separately.
+
+Release-gate follow-up: the first CI run stopped before packaging/publication on
+an obsolete native-submit browser fixture. The native declaration now uses
+html_button; command type=submit explicitly verifies that no implicit submission
+occurs, as documented in GC-105. All core CI browser harnesses pass locally after
+this fixture correction. Integration gallery harnesses now open Settings before
+changing the theme. Node/Bun gallery checks pass. The unpublished version tag is
+recreated on this corrected verification commit; no registry version is replaced.

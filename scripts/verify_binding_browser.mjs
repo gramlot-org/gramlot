@@ -72,7 +72,7 @@ try {
         const buttons = root.div({id: 'buttons', connect_onclick: 'window.seen.push("pane " + event.target.id)'});
         const form1 = buttons.form({id: 'form1'});
         form1.input({id: 'field1', value: '^k.field1'});
-        form1.button('native', {id: 'bnative'});
+        form1.html_button('native', {id: 'bnative'});
         const bctrl = form1.button({id: 'bctrl'});
         bctrl.span('Save', {id: 'bctrl-text'});
         bctrl.svg({id: 'bctrl-icon', width: 12, height: 12}).circle({id: 'bctrl-dot', cx: 6, cy: 6, r: 6});
@@ -313,7 +313,7 @@ try {
     await page.focus('#bctrl');
     r3['Enter on controller button'] = await observe(() => page.keyboard.press('Enter'));
     r3['Space on controller button'] = await observe(() => page.keyboard.press('Space'));
-    r3['click authored type=submit with fire'] = await observe(() => page.click('#btyped'));
+    r3['command type=submit with fire does not submit'] = await observe(() => page.click('#btyped'));
     await page.focus('#field1');
     r3['Enter in form1 field (native button first)'] = await observe(() => page.keyboard.press('Enter'));
     await page.focus('#field2');
@@ -328,8 +328,8 @@ try {
     assert.deepEqual(r3['Enter on controller button'], ['author capture bctrl', 'controller 3 bctrl', 'author on bctrl']);
     assert.deepEqual(r3['Space on controller button'], ['author capture bctrl', 'controller 4 bctrl', 'author on bctrl']);
     assert.ok(r3['click native button in form'].includes('submit form1 by bnative'));
-    assert.ok(r3['click authored type=submit with fire'].includes('submit form1 by btyped'));
-    assert.ok(!r3['click authored type=submit with fire'].some(line => line.startsWith('pane') || line.startsWith('author bubble')));
+    assert.ok(!r3['command type=submit with fire does not submit'].some(line => line.startsWith('submit ')));
+    assert.ok(!r3['command type=submit with fire does not submit'].some(line => line.startsWith('pane') || line.startsWith('author bubble')));
     assert.strictEqual(await get('k.typed'), null);
     checks.push('button R3 ' + JSON.stringify(r3));
 
