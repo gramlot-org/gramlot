@@ -2395,3 +2395,207 @@ to the question about missing Page locale/timezone. Resolve each omitted setting
 from the browser at page startup. Precedence is explicit call/node option, then
 Page metadata, then browser. This supersedes the pending/missing-context policy
 in the earlier follow-ups; server system locale/timezone is not a fallback.
+
+
+### Amendment 11.84 — Component 0.3 planning, callback selection and radio review — 2026-10-16
+
+Owner: "ok includiamo callbackSelect nella 0.3 con questo esempio random. aggiorna
+il piano e partiamo dal textbox con labelbox", followed by the request to revisit
+registration, hierarchies and feature mixins and design several components together.
+The owner then asks about radio buttons/groups and directs: "se non trovi ispirati
+a legacy genropy come sintassi".
+
+Include callbackSelect and the discussed page-local random-data example in the 0.3
+plan. Start from textbox with shared labelbox and use several concrete control
+shapes to assess generality. Include single/group radio in the design review, using
+legacy authoring evidence where the PoC lacks dedicated components. GC-245 records
+the proposed stages, registration flow, hierarchy/capability composition, radio
+syntax evidence and validation gates; GC-205 retains the earlier analysis.
+
+This supersedes the earlier agent proposal to defer callbackSelect and its
+textbox-then-tabs pilot order. It authorizes the requested planning update; it does
+not turn proposed public names, schemas, registration/override policies, lifecycle
+hooks, null/draft policies or the whole PoC inventory into accepted runtime contracts.
+Existing confirmed decisions in 11.76–11.79 remain; application collection-selection
+syntax and localization implementation stay deferred. No dependency edits, package
+publication or parallel agent assignment are authorized by this plan update.
+
+
+11.84 widget naming correction — 2026-10-16: owner states "i nomi dei widget sono
+idewntici e possinilment non case sensitive in python e js". Widget authoring
+names are identical in Python and JavaScript, superseding GC-225's mechanical
+snake_case/camelCase mapping for widget names only. Prefer case-insensitive
+widget lookup; installed Python and JS Builders already provide it through their
+schema tag lookup. Keep a single canonical declaration/documented spelling; case
+variants resolve that declaration, not separately registered widgets. This does
+not change parameter names, ordinary language identifiers or DOM custom-element
+tag rules. GC-245's earlier mapping requirement is superseded. Runtime component
+implementation remains pending.
+
+
+11.84 component definition implementation — 2026-10-16: owner confirms "ok mi
+torna, aggiorna il contratto e procedi con textbox e labelbox, verificando che la
+stessa struttura funzioni anche per checkbox e radioButtonText" after reviewing
+the defineComponent/defineCollection sketch. Implement JS-owned descriptors with
+name, tag, base, mixins, parameters and implementation(Base); explicit collection
+membership activates Builder grammar and browser custom-element registration.
+NativeControl and ChoiceGroup share lifecycle and compose Labelbox and FieldState.
+Labelbox owns lbl, reactive lbl_position (TL default), lbl_*, box_*, box_l_* and
+box_c_* routing. The runtime owns pointer resolution and Data writes. Export the
+same effective parameter declarations as JSON for Python, including intl_str
+qualification without implementing translation. Start with textbox and labelbox;
+checkbox (boolean) and radioButtonText (one string code, values and cols) qualify
+the shared structure. This approves the concrete API sketch for this increment,
+not the remaining input inventory or application collection-loading syntax.
+
+
+11.84 gallery collection activation — 2026-10-16: owner confirms "Sì, collega
+inputs all’avvio della gallery" and subsequently "ok procedi con questo
+collegamento e aggiungi gli esempi di textbox checkbox e radioButtonText con
+labelbox nella gallery così li provo". The gallery explicitly selects inputs at
+application startup in Python, Node and serverless. Each collection pairs generated
+Builder JSON with a browser JS module exporting its ComponentCollection. Application
+server configuration supplies `collections` entries with `grammar` and `module`;
+the server loads grammar for Source requests and PageBootstrap imports/registers the
+modules before mounting Source. Serverless embeds the same modules and grammar.
+This resolves the bounded loading gap deferred in 11.76/11.84 for this gallery
+increment; it does not authorize discovery, automatic dependency resolution or a
+release. Connected changes in gramlot-examples and both server integrations belong
+to this scope.
+
+
+### Gallery toolbar and side panels — owner follow-up, 2026-10-16
+
+Within amendment 11.63, the owner requests "una barra sueriore col titolo e i due switch" and
+"il codice potrebbe esserte simmetrico alla barra di navigazieone". The gallery
+gets a top toolbar, independently collapsible navigation and code sidebars,
+resizable separators, smaller code typography and internal padding. Source owns
+the structure and UI changes; closing a panel preserves the existing iframe.
+The reusable IndexPage exposes an optional `header(shell)` hook before navigation;
+its shared runtime owns panel toggles, resizing and saved preferences. Gallery
+source contents and their styles remain in gramlot-examples. This supersedes the
+gallery's preview/code splitter inside each example, not the iframe-tab model.
+
+
+11.84 simple input family — owner authorization, 2026-10-16: "ok procedi con
+il primo blocco: textarea, password, radio singolo, colore e slider orizzontale
+e verticale, con labelbox ed esempi compatti nella gallery". Implement these six
+controls using the accepted component definitions, NativeControl, Labelbox and
+existing runtime binding; extend metadata with numeric parameters for ranges.
+Single radio retains the documented legacy/native boolean-per-button `group`
+contract, including renderer/form scoping. Gallery lessons remain Python-first
+and portable across Python, Node and serverless. Typed editors, callback choices
+and a validation engine remain subsequent blocks; no publication is requested.
+
+
+11.84 portable component types — owner correction, 2026-10-16: "ma ndeve
+esportare come dtype gramlot T L N R DH DHZ X Ecc", followed by "esatto" after
+reviewing a value descriptor using dtype, nullable and binding. Export shared
+Gramlot/TYTX dtype codes, not Python class names, as the component's portable type
+contract. Each language interprets that contract through its type facilities.
+Binding/pointer acceptance and nullability remain separate from the value dtype.
+Reuse the owning type libraries rather than duplicating a type catalog in widgets.
+This supersedes the proposed named-Python-type extension for typed editors in
+GC-245 §070. The typed editor assignment and text-editor choice remain approved;
+this record does not claim an implemented dtype grammar or authorize publication.
+
+
+11.84 dtype implementation — owner, 2026-10-16: "ok procedi con il supporto dei dtype nei builder e poi completa gli input numerici, date e orari con labelbox ed esempi compatti nella gallery". Bounded connected edits to Builder Python/JS are explicitly authorized for portable dtype annotations, and to Gramlot's loader/components and gallery for the typed editors. Use the TYTX registry for type identity. No publication or unrelated dependency changes are authorized.
+
+
+11.84 choice input implementation — owner, 2026-10-16: requested select and callbackSelect with compact labelbox gallery lessons, and confirmed "Sì, confermo questa API" to filteringSelect(value='^choice', values='a:Alpha,b:Beta', lbl='Choice') and callbackSelect(value='^choice', callback='searchChoices', lbl='Choice'). The named Logic method receives the Source node and query keywords (_querystring for search or _id for identity lookup), returning {rows, identifier, caption}, synchronously or through a Promise. Native select remains unchanged. Reuse the existing Logic registry and binding adapter; no new evaluator or application DOM wiring. This resolves GC-245 §035's callback API gap for this bounded block. The random lesson generates its Data Bag once; regeneration and other choice families are not part of this increment. No publication is authorized.
+
+
+11.84 remaining local choices — owner, 2026-10-16: "procedi" in response to
+"Partirei da comboBox e checkBoxText, per completare le scelte prima del calendario.
+Procediamo con questi due?" authorizes these two components and compact gallery
+lessons using existing labelbox/binding. comboBox accepts free text alongside
+suggestions; checkBoxText is a multiple-choice checkbox group. No calendar,
+validation engine, new dependencies or publication is included. The group's value
+representation remains a separate explicit question before its implementation.
+
+
+11.84 checkBoxText value confirmation — owner, 2026-10-16: "Sì, stringa di
+codici come nel PoC" confirms comma-separated selected codes (for example
+"email,sms") and null for no selection. This resolves the remaining local-choice
+value question above. Implement the inline group with shared ChoiceGroup,
+Labelbox and the existing Data writer; the current increment does not introduce
+store-backed values or the PoC popup variant.
+
+
+11.84 calendar integration — owner, 2026-10-16: "si confermo calendar=True di default, disattivabile con calendar=False. procedi con dateCalendar e collegamento a dateTextBox, con labelbox ed esempi compatti nella gallery". Implement standalone dateCalendar (nullable D value) and reuse its calendar view in dateTextBox's optional popup. calendar defaults to true; false keeps text editing only. Both use existing Labelbox and ControlAdapter Data writes. Include compact Python-first lessons on Python, Node and serverless. No release or dependency edits are authorized. This supersedes the earlier increment's calendar deferral only.
+
+
+11.84 basic input validation — owner, 2026-10-17: "si confermo, il valore non valido resta nel campo con il messaggio e la Data mantiene l'ultimo valore valido. procedi con obbligatorietà e lunghezza." Implements the reviewed validate_notnull / validate_len syntax and their *_error messages, shared by input components. A rejected edit remains visible with its message; Data keeps the last valid value. Keep the existing live/change editing timing and IME gate. Reuse native validity presentation where its meaning agrees, without a second rule engine. This bounded block does not authorize remote/custom validators, form/save orchestration or publication.
+
+
+11.84 validation presentation correction — owner, 2026-10-17: "il messaggio occupa spazio e sposta in basso il resto: non deve succedere. il campo sbagliato deve essere rosso. verifica come faceva il legacy. per il messaggio lo metterei floating e che scompare" (spelling normalized). Supersedes the initial inline validation message presentation: invalid state is red and persists until corrected; the message floats without affecting layout and disappears. Reuse FieldState and the existing last-valid Data policy; no new validation rules, dependencies or publication.
+
+
+11.84 theme families — owner, 2026-10-17: "gramlot nasce per avere molti temi";
+requests looks analogous to legacy Mimi and Gioanna, proposing genropy-mimi and
+genropy-gioanna. Implement these theme profiles and connect shared input/component
+presentation to theme tokens. Legacy reference is resources/common/themes/mimi.css
+and joanna.css (legacy spelling); Gramlot retains the owner's genropy-gioanna name.
+The existing light/dark choice stays independent. Light palettes follow legacy;
+dark variants are Gramlot adaptations, not claims of legacy parity. This approves
+bounded theme/gallery integration, not legacy widgets or publication.
+
+
+11.84 gallery settings — owner, 2026-10-17: requests a footer gear opening a popup for themes, color mode, label position and shared variants. Keep these gallery-only controls in gramlot-examples; reuse native popover, existing IndexPage preferences and the owned-frame postMessage bridge. Label position is an explicit preview override of labelled component Source attributes, with an example-default choice restoring authored declarations. Keep the local position control only in the dedicated labelbox lesson. The supplied Demetra manual illustrates an application-specific theme layered on a base; its palette is not the definition of Mimi or Gioanna. No publication is authorized.
+
+Theme naming correction to §11.84 (owner, 2026-10-17): “per i temi chiamali mimi e joanna ma non mettere genropy davanti”. The theme IDs, displayed names and directories are mimi and joanna, superseding genropy-mimi and genropy-gioanna. Scope is naming only; theme behavior is unchanged.
+
+Validation presentation refinement to §11.84, owner 2026-10-17: request “il messaggio potrebbe sparire piu velocemente ... in dissolvenza ... background rosso invece del bordo” and reduction of unwanted OS assistance. Use the shared error background instead of an error outline, shorter fading tooltip, and standard text assistance opt-out attributes on component editors. This supersedes the prior four-second/error-outline presentation, preserving Data validation and focus behavior.
+
+
+Touch preview — owner, 2026-10-17: “ok procedi con la modalità touch, l’attributo di pagina e le linguette Normale e Mobile nella gallery, mantenendo lo stesso esempio e i dati quando cambio vista”. Add independent touch sizing, informational Page device suitability, and same-iframe gallery previews. This authorizes bounded gallery and serverless bootstrap integration. It does not promise automatic responsive conversion or real-device emulation, and does not authorize publication.
+
+
+Popup trigger presentation, owner 2026-10-17: “mi piacerebbe che per i pop up si mettesse iconcina dentro al widget a dx e non esterna” (spelling normalized). Place dateTextBox’s calendar trigger inside the right edge of the field, reserving text space and preserving the real button, keyboard operation, disabled/readonly state and touch sizing. Choice editor dropdown triggers follow the same inside-field presentation. No new component API or publication.
+
+
+Formlet, groupBox and switch — owner, 2026-10-17: “ok TYTX di default e menu per scegliere JSON. procedi con formlet, groupBox con copia e checkbox in modalità switch, con esempi compatti nella gallery”. Approves the reviewed layout-only formlet (columns or col_min_width, shared reactive lbl_*/box_* defaults, explicit field overrides), groupBox with title and opt-in Data-scope copy (TYTX by default, JSON from its menu), and checkbox variant="switch". Extend component declarations to containers and activate the layout collection in the Python/JS/serverless gallery. Reuse existing Source, Data, labelbox, themes and binding. No database/form-save services, drag/drop, paste, dependency changes or publication. TYTX supersedes the initially proposed default JSON copy.
+
+
+Component review cleanup — owner, 2026-10-17: “ok procedi con le correzioni e la pulizia di tutti i punti della revisione, aggiungi i test che mancavano e verifica tutto prima di costruire altri componenti”. This authorizes the bounded R1–R10 corrections recorded under PORT-0011, including shared state/projection, effective theme tokens, copy recovery, and removal of tag/child-grammar coupling. Internal descriptor presentationDefaults lists inherited attribute prefixes; dataScope explicitly requests the existing readDataScope capability. Neither defines a general inheritance/service framework. No new component, dependency edit or publication is included.
+
+R10 correction detail within the authorized review cleanup: all local choice widgets use one code:caption parser. Empty whole values means no options; empty codes/entries and duplicate codes are rejected rather than skipped or admitted inconsistently. No new serialization or compatibility syntax is introduced.
+
+
+Button component direction — owner, 2026-10-17: proposes `button` as the Web Component
+`gramlot-button`, retaining `html_button` as plain HTML, then confirms “si” and
+requests analysis of legacy button syntax including dropdown and state-indicator
+buttons. Follow-up includes the button bar with alternative/sticky commands,
+dropdowns, dynamic addition/removal and leading/trailing objects. This extends
+the 0.3 design scope; the extended APIs remain proposals in GC-310. It supersedes
+only the native DOM representation of Gramlot `button` in the planned component
+increment, not the single command mechanism, plain html_button, delay and lifecycle
+contracts of 11.75. No implementation or publication is claimed by this record.
+
+
+Unified dropdown and scope correction — owner, 2026-10-17: defers the button bar
+(including add/remove and leading/trailing objects) to containers. Requests one
+dropdown widget: main click executes its default action without opening the menu;
+arrow opens the menu; main action and label can change together, with optional
+persistence. Supersedes the proposed separate dropDownButton/comboButton direction
+and current-increment mixed-bar delivery, while retaining legacy analysis in
+GC-310 §040. Exact API, menu-item execution timing and persistence details remain
+proposed; no runtime change or publication is implied.
+
+
+Button family implementation — owner, 2026-10-17: “ok aggiorna il contratto e procedi con button, toggle con led e dropdown unico con questa logica e persist, lasciando fuori la bottoniera. aggiungi gli esempi nella gallery”. Implements GC-310 §045: button, toggleButton with LED and one dropDownButton; normal menu selection executes only, Shift+selection executes and changes default action/caption, optional persistence stores the selected code. Built-in command component definitions retain button availability; Python consumes generated metadata. html_button stays native; button bars are deferred. Bounded gallery examples are authorized; publication is not. Supersedes the preceding pending-implementation/API status.
+
+
+Builder alignment — owner, 2026-10-17: “si procedi con l'allineamento ai nuovi builder, togli le duplicazioni e verifica tutti i test e gli esempi della gallery”. Gramlot consumes genro-builders >=0.29.0 and @genrojs/builders >=0.6.0. Builder owns portable signature/dtype decoding and attribute-pointer parsing, templates, dependency discovery and runtime resolution. Gramlot supplies the activation/CSP-aware expression hook with page-local `_F`, reactive subscriptions and structural/variable-datapath context. Ordinary `${name}` text is literal, including a preceding backslash: it neither interpolates nor consumes helper attributes. Explicit `:`/`:=` suffixes replace automatic attribute templates; referenced attributes retain their normal projection. JavaScript template literals in authored scripts and grammar `collection_key` substitution remain unchanged. This supersedes the automatic-template and coexistence Q6 provisions and 11.81, GC-210 §095 and GC-225. The authorization includes consumer/gallery migration and verification, not upstream source edits or publication.
+
+
+Checkbox mode and inspector enumerations — owner, 2026-10-17: “se ci sono valori predefiniti l'inspector dovrebbe avere una tendina”, followed by “piu che variant forse mi piacerebbe 'mode'”. Use checkbox `mode="checkbox"` (default) or `mode="switch"`, including reactive pointers; this supersedes the checkbox `variant` spelling in the formlet/groupBox/switch increment of §11.84. No compatibility alias. Component parameter enumerations feed the inspector's literal-value dropdowns through Source metadata and the existing page bridge. Authored pointers remain textual. `groupBox.lbl_variant` is unchanged.
+
+Switch active color — owner, 2026-10-17: proposed `switch_color`, confirmed “ok perfetto”. Approves a reactive checkbox parameter that sets only the active switch track color; omission/null uses the theme, the off state remains theme-controlled, and `color` retains text styling. Extends the checkbox mode contract without a new widget or theme alias.
+
+
+Automatic formlet label columns — owner, 2026-10-17: “ok fai adattare automaticamente la larghezza delle label nel formlet alla più larga per ogni colonna, mantenendo i campi allineati. lbl_width solo se esplicito e togli le larghezze fisse dalla gallery”. Formlet owns intrinsic alignment of left labels per rendered column; explicit lbl_width remains an override. Recompute on label/column/container changes without replacing fields or Data. Gallery demonstrates this library behavior with formlets instead of fixed label tracks. Supersedes the gallery-only fixed-width alignment workaround; no publication authorized.
+
+
+Full input validation — owner, 2026-10-17: “tutte le validazioni”, followed by “Motore completo; DB/grid nel loro filone”. Supersedes the basic-validation deferral of custom/remote rules in §11.84. Port the shared ordered validation engine, transformations, per-rule conditions, warnings, custom callbacks, asynchronous RPC validators and acceptance/rejection callbacks. Preserve rejected drafts and the last accepted Data value. Reuse Source activation, Logic, RPC and the existing single ControlAdapter Data writer. `validate_nodup`, `validate_exist` and `validate_gridnodup` remain explicitly deferred to DB/grid. This does not introduce a form persistence/save service, dependencies or publication.

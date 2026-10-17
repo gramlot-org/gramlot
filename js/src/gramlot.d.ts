@@ -5,6 +5,7 @@
  */
 import type {DomElement, DomDocument, DomEvent, DomWindow} from './dom.d.ts';
 import type {Bag} from '@genrojs/bag';
+import type {createDecimal} from '@genrojs/tytx';
 import type {SourceBagNode} from '@genrojs/builders';
 import type {RpcTransport} from './handlers/rpc-handler.js';
 import type {SourceHandler} from './handlers/source-handler.js';
@@ -16,6 +17,8 @@ import type {UtilitiesHandler} from './handlers/utilities-handler.js';
 export interface GramlotOptions {
     /** Formatting locale of this page; null/omitted uses the browser locale. */
     locale?: string | null;
+    /** Declared device suitability; empty means unspecified. */
+    devices?: Array<'desktop' | 'tablet' | 'phone'>;
     /** Timezone for instants; null/omitted uses the browser timezone. */
     timeZone?: string | null;
     /** The id of the server page, as registered by the server. */
@@ -63,6 +66,7 @@ export type Publication = string | {topic: string; nodeId: string} |
 
 /** One Gramlot page: lifecycle, Data and the four proxies `src`, `rpc`, `dom`, `utl`. */
 export class Gramlot {
+    readonly devices: readonly ('desktop' | 'tablet' | 'phone')[];
     locale: string;
     timeZone: string;
     /** The id of the server page. */
@@ -100,7 +104,7 @@ export class Gramlot {
     /** Remove a registration; repeating removal of an owned handle is harmless. */
     unsubscribe(registration: SubscriptionHandle): void;
     /** Format a number, Date or null. Explicit dtype overrides TYTX-style Date inference. */
-    format(value: number | Date | null, options?: string | FormatOptions): string;
+    format(value: number | Date | ReturnType<typeof createDecimal> | null, options?: string | FormatOptions): string;
     /** Load `main` from the server and mount it; resolves with the instance. */
     start(): Promise<Gramlot>;
     /** Request `main` from the transport and mount it. */

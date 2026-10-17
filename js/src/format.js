@@ -1,3 +1,4 @@
+import {isDecimal} from '@genrojs/tytx';
 /** Bounded numeric patterns and temporal styles for Gramlot's formatting contract. */
 
 export function validateMask(mask) {
@@ -22,8 +23,9 @@ function inferredType(value) {
         if (midnight && !epochDay) return 'D';
         return 'DHZ';
     }
+    if (isDecimal(value)) return 'N';
     if (typeof value === 'number') return Number.isInteger(value) ? 'L' : 'R';
-    throw new TypeError('Formatting requires finite JavaScript numbers or valid Date objects');
+    throw new TypeError('Formatting requires finite JavaScript numbers, TYTX Decimal values or valid Date objects');
 }
 
 function temporalText(value, dtype, {pattern = 'short', locale, timeZone}) {
@@ -88,8 +90,8 @@ export function formatValue(value, options = {}, context = {}) {
     if (!temporal && !['L', 'R', 'N'].includes(dtype)) throw new RangeError(`Unsupported format dtype: ${dtype}`);
     if (temporal) {
         if (!(value instanceof Date) || !Number.isFinite(value.getTime())) throw new TypeError(`${dtype} requires a valid Date object`);
-    } else if (typeof value !== 'number' || !Number.isFinite(value)) {
-        throw new TypeError(`${dtype} formatting requires finite JavaScript numbers`);
+    } else if (!(typeof value === 'number' && Number.isFinite(value)) && !(isDecimal(value) && !['NaN', 'Infinity', '-Infinity'].includes(value.toString()))) {
+        throw new TypeError(`${dtype} formatting requires finite JavaScript numbers or TYTX Decimal values`);
     }
     if (dtype === 'L' && !Number.isInteger(value)) throw new TypeError('L formatting requires an integer');
     const {pattern, locale, mask} = options;
@@ -104,8 +106,12 @@ export function formatValue(value, options = {}, context = {}) {
         return applyMask(text, mask);
     }
     const {positive, zero, negative} = numericPattern(pattern);
+    const decimal = isDecimal(value);
+    const zeroValue = decimal ? value.eq(0) : value === 0;
+    const negativeValue = decimal ? value.lt(0) : value < 0;
+    if (decimal && new Intl.NumberFormat('en', {useGrouping: false}).format('9007199254740993') !== '9007199254740993') throw new Error('This browser cannot format Decimal without precision loss');
     let text;
-    if (value === 0 && zero !== null) {
+    if (zeroValue && zero !== null) {
         if (zero === '') return '';
         if (zero === '-') text = '-';
         else {
@@ -113,8 +119,9 @@ export function formatValue(value, options = {}, context = {}) {
             text = section.prefix + new Intl.NumberFormat(locale, section.intl).format(0) + section.suffix;
         }
     } else {
-        const affix = value < 0 && negative ? negative : positive;
-        const number = value < 0 && negative ? -value : (value === 0 ? 0 : value);
+        const affix = negativeValue && negative ? negative : positive;
+        const number = decimal ? (negativeValue && negative ? value.abs() : value).toString()
+            : negativeValue && negative ? -value : (value === 0 ? 0 : value);
         text = affix.prefix + new Intl.NumberFormat(locale, positive.intl).format(number) + affix.suffix;
     }
     return applyMask(text, mask);

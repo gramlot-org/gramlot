@@ -1,6 +1,7 @@
 import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder} from '@genrojs/builders';
 import {ControlAdapter} from './controls.js';
 import {SVG_NS, XHTML_NS} from '../renderer/attributes.js';
+import {requireNoScriptAttributes, requireStyleClassAttributes} from '../renderer/attributes.js';
 import {webcomponentCode} from '../webcomponent.js';
 
 const DEFAULT_TEXT = Symbol('source text');
@@ -61,6 +62,7 @@ export class HtmlElement {
             throw new TypeError('HTML text must be scalar');
         }
         for (const [key, value] of Object.entries(node.attr)) {
+            if (key === 'value' && this.definition(node).meta.gramlot_component) continue;
             if (this.metadataAttributes.has(key) || ['ask', '_ask'].includes(key) || (value && typeof value === 'object' && Object.hasOwn(value, '$gramlotRef'))) continue;
             if (value != null && !['string', 'number', 'boolean'].includes(typeof value)) {
                 throw new TypeError(`HTML attribute ${key} must be scalar`);
@@ -79,6 +81,15 @@ export class HtmlElement {
         tag ??= defaultTag;
         const element = namespace === XHTML_NS
             ? document.createElement(tag) : document.createElementNS(namespace, tag);
+        if (meta.gramlot_component && element.constructor.gramlotComponent?.tag !== tag) {
+            throw new Error(`Component collection must be activated before rendering ${tag}`);
+        }
+        if (meta.gramlot_component?.dataScope) {
+            element.readDataScope = () => {
+                if (!node.getAttr('datapath')) throw new Error('Data scope requires an explicit datapath');
+                return node.getRelativeData('.');
+            };
+        }
         const text = document.createTextNode(this.text(node));
         if (namespace !== XHTML_NS || !meta.void) element.append(text);
         const record = {element, text, tag};
@@ -108,6 +119,13 @@ export class HtmlElement {
         const isHtml = element.namespaceURI === XHTML_NS;
         const renderAttributes = this.definition(node).meta.render_attributes ?? {};
         const previous = record.attrs ?? {};
+        if (this.definition(node).meta.gramlot_component) {
+            attrs = element.projectAttributes(attrs, values => {
+                requireNoScriptAttributes(node, values, node.builder.constructor.dialectPrefixes);
+                requireStyleClassAttributes(node, values, node.builder.constructor.dialectPrefixes);
+                return node.builder.renderer_html.adaptAttrs(values);
+            });
+        }
         attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...renderAttributes}));
         const controlled = ControlAdapter.classFor(element, attrs) !== null;
         if (textValue === DEFAULT_TEXT) textValue = this.text(node);

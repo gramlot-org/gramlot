@@ -5,7 +5,7 @@ from genro_builders.contrib.html.html_renderer import HtmlRenderer
 from genro_builders.contrib.svg import SvgBuilder
 
 from .attributes import (
-    SVG_NS, XHTML_NS, boundary_attributes, display_item, dom_names, is_expression, require_no_expression_template,
+    SVG_NS, XHTML_NS, boundary_attributes, display_item, dom_names, is_expression,
     require_no_script_attributes, require_style_class_attributes, split_native_attributes, text_value, with_data_srcdoc_sandbox, without_binding_attributes,
     without_null_values,
 )
@@ -70,9 +70,8 @@ class GramlotHtmlRenderer(HtmlRenderer):
         """Step 3 of Q11.2 on the attributes of ``node`` resolved by runtime_values, for HTML and SVG nodes.
 
         A string renderer has no page runtime: every ``==`` attribute is None and nothing is written,
-        as in the JS GramlotHtmlRenderer. A template using a ``==`` attribute is an error.
+        as in the JS GramlotHtmlRenderer.
         """
-        require_no_expression_template(node)
         expressions = {name for name, raw in node.fixed_attr_items() if is_expression(raw)}
         return {name: None if name in expressions else value for name, value in runtime_attrs.items()}
 

@@ -1,11 +1,10 @@
 """Gramlot Source classes, symmetric with ``js/src/builder/source.js``.
 
-The Python classes carry no runtime methods: PUT, FIRE, FIRE_AFTER and
-absDatapath stay in the browser classes. They may carry the value
-classification shared with JS (``pointer_type``), the copy without the
-elements refused by an ``auth`` evaluator (``authorized_copy``, JS
-``authorizedCopy``) and the authoring dispatch of a GramlotBuilder (``GramlotBuilder.schema_tag``), which the JS classes get
-from Builder's Proxy calling ``GramlotBuilder.schemaTag``.
+Python keeps authoring checks and authorization filtering. Builder owns pointer
+classification and static suffix resolution; browser-only Source methods such as
+PUT, FIRE, FIRE_AFTER and variable datapath remain in the JavaScript classes.
+Python's ``__getattr__`` uses ``GramlotBuilder.schema_tag`` for authoring dispatch;
+JavaScript uses Builder's Source proxy and ``GramlotBuilder.schemaTag``.
 """
 
 import re
@@ -15,7 +14,7 @@ from genro_builders.builder import SourceBag, SourceBagNode
 from genro_tytx import get_subtype_dict, set_subtype_dict
 
 from . import builder as builder_module
-from .pointer import pointer_transform, prepare_pointer_items
+from genro_builders.builder.pointers import pointer_transform
 
 # The control attributes of ``remote``, written on the node as they are; every other parameter becomes ``remote_<k>``.
 REMOTE_CONTROLS = ("_cachedRemote", "_if", "_else", "_onRemote")
@@ -32,17 +31,7 @@ class GramlotBuilderBagNode(SourceBagNode):
             if pointer_transform(raw):
                 if name is None:
                     raise ValueError("Pointer suffixes belong to attributes; use format/mask for node text")
-        return prepare_pointer_items(self, items)
-
-    def abs_datapath(self, path):
-        transform = pointer_transform(path)
-        return super().abs_datapath(transform[0] if transform else path)
-
-    def pointer_type(self, v: Any) -> str | None:
-        """Builder's ``pointer_type``, except that a string starting with ``==`` is not a pointer."""
-        if isinstance(v, str) and v.startswith("=="):
-            return None
-        return super().pointer_type(v)
+        return items
 
     def remote(self, name: str, /, **params: Any) -> "GramlotBuilderBagNode":
         """Declare the content of this element as the fragment ``name`` of a ``@source`` method.

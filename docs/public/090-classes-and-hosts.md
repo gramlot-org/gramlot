@@ -577,8 +577,7 @@ Source or resolved from Data:
 **An `iframe` `srcdoc` from Data.** The renderers, Python and JavaScript, add
 `sandbox=""` to an `iframe` whose `srcdoc` comes from Data: the browser shows its
 HTML and runs nothing of it. The declaration decides, not the value: a `^`/`=`
-pointer, a `==` expression, a `${…}` template reading a pointer, also through
-another template, or a node value that is a pointer, whose datum can carry `srcdoc`
+pointer, a `==` expression, an explicit pointer template, or a node value that is a pointer, whose datum can carry `srcdoc`
 in its `_wdg`. The iframe has its `sandbox` while `srcdoc` is still null, so a Data
 change writes only `srcdoc`. A literal `srcdoc` gets no `sandbox`. A `sandbox`
 declared in the Source, with any value, is kept as declared and turns the rule off

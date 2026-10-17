@@ -123,7 +123,7 @@ test('R08: literal data-elements mount with no resolution and no DOM, also witho
     const renderer = mount();
     const main = document.querySelector('main');
     // The nested dataController is the button's click mechanism: R3 gives it type="button" (S12).
-    assert.equal(elementsHtml(main), '<button id="save" type="button">Save</button>');
+    assert.equal(elementsHtml(main), '<gramlot-button id="save" type="button">Save</gramlot-button>');
     const setter = builder.source.getNodes()[1];
     assert.deepEqual({...setter.getAttr(), _meta: undefined}, {
         destination_path: 'literal', value: '^.unresolved', title: '=.other',
@@ -136,7 +136,7 @@ test('R08: literal data-elements mount with no resolution and no DOM, also witho
     assert.deepEqual(data.getNode('literal').getAttr(), {title: '=.other', expression: '==a + b', template: '${width}px'});
     builder.root.dataSetter({destination_path: 'later', value: '^.again'});
     setter.setAttr({value: '=.changed'});
-    assert.equal(elementsHtml(main), '<button id="save" type="button">Save</button>');
+    assert.equal(elementsHtml(main), '<gramlot-button id="save" type="button">Save</gramlot-button>');
     assert.equal(data.getItem('later'), '^.again');
     assert.equal(data.getItem('literal'), '^.unresolved');
     renderer.dispose();

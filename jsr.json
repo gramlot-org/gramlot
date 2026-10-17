@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.20",
+  "version": "0.3.0",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
@@ -10,11 +10,14 @@
     "./gramlot-server": "./js/src/server/gramlot-server.js",
     "./tools/inspector": "./js/tools/gramlot-tools-inspector.js",
     "./index-page-runtime": "./js/src/index-page-runtime.js",
-    "./tools/inspector-agent": "./js/tools/inspector-agent.js"
+    "./tools/inspector-agent": "./js/tools/inspector-agent.js",
+    "./components": "./js/src/components/index.js",
+    "./components/inputs": "./js/src/components/inputs.js",
+    "./components/layout": "./js/src/components/layout.js"
   },
   "imports": {
     "@genrojs/bag": "jsr:@genro/bag@^0.11.0",
-    "@genrojs/builders": "jsr:@genro/builders@^0.5.2",
+    "@genrojs/builders": "jsr:@genro/builders@^0.6.0",
     "@genrojs/tytx": "jsr:@genro/tytx@^0.16.2",
     "@gramlot/gramlot/page": "./js/src/server/page.js",
     "@gramlot/gramlot": "./js/src/index.js"

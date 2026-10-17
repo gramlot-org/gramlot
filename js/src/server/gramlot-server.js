@@ -64,7 +64,7 @@ const prefixed = (prefix, url) => url.startsWith('/') && !url.startsWith('//') ?
  */
 export class GramlotServer {
     constructor({runtimeUrl = '/assets/gramlot.js', rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close',
-                 rootId = 'gramlot-root', pageTtl = 1800, maxPages = 1000} = {}) {
+                 rootId = 'gramlot-root', pageTtl = 1800, maxPages = 1000, collections = []} = {}) {
         if (typeof pageTtl !== 'number' || pageTtl <= 0 ||
             !Number.isFinite(performance.now() + pageTtl * 1000) ||
             !Number.isSafeInteger(maxPages) || maxPages < 1) {
@@ -72,6 +72,7 @@ export class GramlotServer {
         }
         Object.assign(this, {runtimeUrl, rpcUrl, closeUrl, rootId, pageTtl, maxPages});
         this.pages = new Map();
+        this.collections = [...collections];
     }
 
     /** The Page class of path, or PageNotFound. */
@@ -122,11 +123,13 @@ export class GramlotServer {
             throw new TypeError('Page modules must export a subclass of Page');
         }
         const resources = loadOrder(await this.resolveResources(path, PageClass));
+        if (this.collections.length) resources.collections = this.collections.map(item => item.module);
         this.prune();
         if (this.pages.size >= this.maxPages) throw new ServerCapacity('Page registry capacity reached');
         const pageId = crypto.randomUUID().replaceAll('-', '');
         this.pages.set(pageId, {PageClass, owner, expires: performance.now() + this.pageTtl * 1000});
         return {pageId, title: PageClass.title, resources,
+            ...(PageClass.devices.length ? {devices: [...PageClass.devices]} : {}),
             ...(PageClass.locale == null ? {} : {locale: PageClass.locale}),
             ...(PageClass.timeZone == null ? {} : {timeZone: PageClass.timeZone})};
     }
@@ -135,15 +138,17 @@ export class GramlotServer {
      * by the adapter, added once to the root-relative bootstrap URLs. */
     async openPage(path, {owner = null, prefix = ''} = {}) {
         if (typeof prefix !== 'string') throw new TypeError('Mount prefix must be a string');
-        const {pageId, title, resources, locale, timeZone} = await this.registerPage(path, {owner});
+        const {pageId, title, resources, locale, timeZone, devices} = await this.registerPage(path, {owner});
         try {
             const nonce = createNonce();
             // The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9).
             const bootstrap = scriptJson({
                 config: {pageId, rpcUrl: prefixed(prefix, this.rpcUrl), closeUrl: prefixed(prefix, this.closeUrl),
                     rootId: this.rootId, capabilities: this.capabilities,
+                    ...(devices === undefined ? {} : {devices}),
                     ...(locale === undefined ? {} : {locale}), ...(timeZone === undefined ? {} : {timeZone})},
-                resources: {css: resources.css.map(url => prefixed(prefix, url)),
+                resources: {...(resources.collections ? {collections: resources.collections.map(url => prefixed(prefix, url))} : {}),
+                    css: resources.css.map(url => prefixed(prefix, url)),
                     js: resources.js.map(({url, group}) => ({url: prefixed(prefix, url), group}))},
             });
             const document = new GramlotBuilder();
@@ -214,6 +219,7 @@ export class GramlotServer {
         if (!source) return callable.call(page, params);
         const builder = new record.PageClass.sourceBuilder(name,
             {auth: elementRule => this.#authOutcome(elementRule, owner)});
+        for (const collection of this.collections) builder.loadCollection(collection.grammar);
         const result = await callable.call(page, builder.root, params);
         if (result !== undefined && result !== null) throw new TypeError('Source methods populate root and return no value');
         return builder.toTytx();

@@ -1,4 +1,5 @@
 /** Build installed browser entry points and preserve their dependency notices. */
+import './export-components.mjs';
 import {build} from 'esbuild';
 import {mkdir, copyFile, cp, readFile, readdir, writeFile, rm} from 'node:fs/promises';
 import {dirname, resolve} from 'node:path';
@@ -7,7 +8,12 @@ import {moduleDoc} from './bundle-banner.mjs';
 import {runtimeOptions} from './runtime-options.mjs';
 const root = new URL('../', import.meta.url);
 const path = value => fileURLToPath(new URL(value, root));
-await writeFile(path('src/index-page-styles.js'), '// Generated from themes/gramlot-compact/theme.css.\nexport const compactStyle = ' + JSON.stringify(await readFile(path('../themes/gramlot-compact/theme.css'), 'utf8')) + ';\n');
+const compactStyle = await readFile(path('../themes/gramlot-compact/theme.css'), 'utf8');
+const appearanceStyles = {base:'', compact:compactStyle};
+for (const name of ['mimi', 'joanna']) {
+    appearanceStyles[name] = compactStyle + '\n' + await readFile(path(`../themes/${name}/theme.css`), 'utf8');
+}
+await writeFile(path('src/index-page-styles.js'), '// Generated from canonical themes; edit themes/, not this file.\nexport const appearanceStyles = ' + JSON.stringify(appearanceStyles) + ';\n');
 await mkdir(path('dist/'), {recursive: true});
 for (const name of ['LICENSE', 'NOTICE']) await copyFile(path(`../${name}`), path(name));
 // Theme and identity files ship in the npm package (js/) and in the wheel (resources/), as in jsr.json.

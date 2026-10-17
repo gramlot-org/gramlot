@@ -1,6 +1,10 @@
 /* Gramlot Compact: load after gramlot-base/theme.css. Colors and behavior stay in Base. */
 @layer gramlot.tokens {
   :root {
+    --gramlot-field-height: 28px;
+    --gramlot-field-line-height: 1.35;
+    --gramlot-field-padding: .25rem .5rem;
+    --gramlot-field-font-size: 1rem;
     --gramlot-space-1: .2rem;
     --gramlot-space-2: .4rem;
     --gramlot-space-3: .5rem;
@@ -35,10 +39,10 @@
   }
   :where(label) { font-size: .95rem; }
   :where(input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]), select, textarea) {
-    min-block-size: 28px;
-    padding: .25rem .5rem;
-    font-size: 1rem;
-    line-height: 1.35;
+    min-block-size: var(--gramlot-field-height);
+    padding: var(--gramlot-field-padding);
+    font-size: var(--gramlot-field-font-size);
+    line-height: var(--gramlot-field-line-height);
   }
   :where(textarea) { min-block-size: 5rem; }
   :where(input[type="color"]) { min-block-size: 28px; }

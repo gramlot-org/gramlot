@@ -36,3 +36,9 @@ Modern evergreen browsers are the intended target. Cascade layers, `clamp()`, CS
 Syntax highlighting uses `.hljs-*` token classes mapped to the same semantic colors in light and dark mode. Python and JavaScript detection belongs to the runtime; the theme only styles the resulting code spans.
 
 The base text size is 14px with compact headings and spacing. Navigation surfaces use the tokens `--gramlot-navigation` and `--gramlot-navigation-text`, the approved navy surface; a selected item uses the blue and the brand accent the yellow of the existing palette, not new colors.
+
+
+For additional compact palettes, load `mimi/theme.css` or
+`joanna/theme.css` after Base and Compact. Both inherit the same semantic
+variables and style input components as well as ordinary HTML. See
+[theme profiles](../../docs/public/096-themes-and-css.md#gc-096-017).

@@ -143,8 +143,10 @@ markup. Gramlot continues to own reactive DOM rendering.
 
 ## 090 · Static templates and raw HTML
 
-The generic Python and JS Builders interpolate `${name}` only in attributes.
-A preceding backslash escapes a token; node content is not interpolated.
+The generic Python and JS Builders resolve explicit attribute pointer templates
+(`title="^name:Customer: {}"`). Ordinary `${name}` text and a preceding backslash
+remain literal. Named slots retain their referenced attributes. Static expression
+suffixes (`:=`) are inert until the Gramlot browser runtime supplies its compiler.
 Static HTML rendering accepts a terminal `::HTML` marker to omit escaping and
 removes that marker. This is not a new live-renderer capability.
 

@@ -48,6 +48,7 @@ function declare(PageClass, methodName, marker, auth) {
 /** Server-side page base; unrelated to browser view components. */
 export class Page {
     static title = 'Gramlot';
+    static devices = [];
     static locale = null;
     static timeZone = null;
     static installable = false;

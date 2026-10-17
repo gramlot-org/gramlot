@@ -2,7 +2,7 @@
 import {Bag, Gramlot, GramlotBuilder} from '@gramlot/gramlot';
 import {InspectorConnection, encodeScalar} from './inspector-bridge.js';
 export {InspectorConnection, attachInspectorAgent} from './inspector-bridge.js';
-import {editorTypes, scalarType, scalarText, parseScalar} from './editor-values.js';
+import {editorTypes, scalarType, scalarText, parseScalar, readParameterEnums} from './editor-values.js';
 import {InspectorStyles} from './inspector-styles.js';
 import inspectorStyle from './gramlot-tools-inspector.css';
 import '../../poc/gramlot-poc-tree.js';
@@ -138,6 +138,10 @@ export class GramlotToolsInspector extends HTMLElement {
                 ui.data.setItem('editor.dirty', true);
                 ui.data.setItem('editor.status', 'Unsaved changes');
             }
+            enumChanged(node) {
+                this.editChanged(node);
+                inspector.#applyEdit();
+            }
             typeChanged(node) {
                 const row = ui.data.getItem(`editor.rows.${node.getAttr('data-row')}`);
                 row.setItem('inputType', inspector.#inputType(row.getItem('type')));
@@ -266,7 +270,7 @@ export class GramlotToolsInspector extends HTMLElement {
         const targetbar = palette.div({node_label: 'targetbar', class: 'targetbar', hidden: '^singleTarget'});
         targetbar.select({node_label: 'targets', value: '^targetId', disabled: '^busy', 'aria-label': 'Inspected page', connect_onchange: 'inspector.selectTarget'});
         const toolbar = palette.webcomponent({code: 'gramlot-poc-tabs', node_label: 'tabs', role: 'tablist', 'aria-label': 'Inspected root'});
-        for (const name of ['Data', 'Source', 'Styles']) toolbar.button(name, {node_label: name.toLowerCase(), type: 'button', role: 'tab', 'data-root': name.toLowerCase(),
+        for (const name of ['Data', 'Source', 'Styles']) toolbar.html_button(name, {node_label: name.toLowerCase(), type: 'button', role: 'tab', 'data-root': name.toLowerCase(),
             'aria-selected': 'false', connect_onclick: 'inspector.selectRoot'});
         palette.p('^error', {role: 'alert', class: 'error'});
         const content = palette.webcomponent({code: 'gramlot-poc-splitter', node_label: 'content', hidden: '^stylesActive'});
@@ -276,9 +280,9 @@ export class GramlotToolsInspector extends HTMLElement {
         const properties = content.section({node_label: 'properties', slot: 'bottom', class: 'properties', 'aria-label': 'Selected node properties'});
         const heading = properties.div({class: 'properties-heading'});
         heading.span('Properties', {class: 'heading-label'});
-        heading.button('^breakpointCount', {type: 'button', class: 'breakpoint-count', hidden: '^noBreakpoints',
+        heading.html_button('^breakpointCount', {type: 'button', class: 'breakpoint-count', hidden: '^noBreakpoints',
             'aria-label': 'Active breakpoints', title: 'Active breakpoints', connect_onclick: 'inspector.showBreakpoints'});
-        heading.button('+', {type: 'button', 'aria-label': 'Add attribute', title: 'Add attribute', disabled: '^editor.disabled',
+        heading.html_button('+', {type: 'button', 'aria-label': 'Add attribute', title: 'Add attribute', disabled: '^editor.disabled',
             connect_onpointerdown: 'inspector.keepFocus', connect_onclick: 'inspector.addAttribute'});
         properties.p('^breakpointLine', {class: 'breakpoint-line'});
         properties.p('^breakpointError', {class: 'breakpoint-status', role: 'alert'});
@@ -288,8 +292,8 @@ export class GramlotToolsInspector extends HTMLElement {
         const styles = palette.section({node_label: 'styles', class: 'styles-panel', hidden: '^treeActive', 'aria-label': 'CSS variables'});
         const stylebar = styles.div({class: 'styles-toolbar'});
         stylebar.span('Document variables');
-        stylebar.button('Refresh', {type: 'button', disabled: '^styles.busy', connect_onclick: 'inspector.refreshStyles'});
-        stylebar.button('Reset all', {type: 'button', disabled: '^styles.noChanges', connect_onclick: 'inspector.resetStyles'});
+        stylebar.html_button('Refresh', {type: 'button', disabled: '^styles.busy', connect_onclick: 'inspector.refreshStyles'});
+        stylebar.html_button('Reset all', {type: 'button', disabled: '^styles.noChanges', connect_onclick: 'inspector.resetStyles'});
         stylebar.a('Download CSS', {href: '^styles.downloadUrl', download: 'theme-overrides.css', 'aria-disabled': '^styles.noDownload'});
         styles.p('Temporary preview · Enter or leave a field to apply. Closing the connection clears previews.', {class: 'styles-help'});
         styles.p('^styles.status', {role: 'status', class: 'styles-status'});
@@ -304,12 +308,12 @@ export class GramlotToolsInspector extends HTMLElement {
         breakpoint.input({value: '^editor.condition', live: true, connect_oninput: 'inspector.breakpointChanged', 'aria-label': 'Breakpoint condition', placeholder: 'Condition (optional)'});
         breakpoint.p('^breakpointStatus', {role: 'status', class: 'breakpoint-status'});
         const actions = breakpoint.div({class: 'dialog-actions'});
-        actions.button('Cancel', {type: 'button', connect_onclick: 'inspector.closeBreakpoint'});
-        actions.button('Save', {type: 'button', connect_onclick: 'inspector.setBreakpoint'});
+        actions.html_button('Cancel', {type: 'button', connect_onclick: 'inspector.closeBreakpoint'});
+        actions.html_button('Save', {type: 'button', connect_onclick: 'inspector.setBreakpoint'});
         const list = palette.dialog({node_label: 'breakpoints', 'aria-label': 'Active breakpoints', class: 'breakpoint-dialog'});
         list.h2('Active breakpoints');
         list.div({node_label: 'entries'});
-        list.div({class: 'dialog-actions'}).button('Close', {type: 'button', connect_onclick: 'inspector.closeBreakpoints'});
+        list.div({class: 'dialog-actions'}).html_button('Close', {type: 'button', connect_onclick: 'inspector.closeBreakpoints'});
         ui.src.startSource(builder.source);
         for (const name of ['data', 'source']) this.#trees[name] = ui.dom.getDomNode(ui.src.source.getNode(`main.palette.content.tree.${name}`));
         this.#renderTargets();
@@ -497,7 +501,7 @@ export class GramlotToolsInspector extends HTMLElement {
                 connect_oninput: 'inspector.styleChanged', connect_onchange: 'inspector.setStyle', connect_onkeydown: 'inspector.styleKey', spellcheck: 'false'});
             row.input({type: 'color', value: `^${path}.color`, hidden: `^${path}.noColor`,
                 'aria-label': `${record.name} color`, 'data-row': id, 'data-field': 'color', connect_onchange: 'inspector.setStyle'});
-            row.button('↶', {type: 'button', 'aria-label': `Reset ${record.name}`, title: 'Reset variable',
+            row.html_button('↶', {type: 'button', 'aria-label': `Reset ${record.name}`, title: 'Reset variable',
                 disabled: `^${path}.unchanged`, 'data-row': id, connect_onclick: 'inspector.resetStyle'});
         }
         if (rebuild) ui.src.source.getNode('main.palette.styles.rows').setValue(ui.src.prepareSource(builder.source));
@@ -555,6 +559,8 @@ export class GramlotToolsInspector extends HTMLElement {
     #loadEditor(entry) {
         const ui = this.#ui;
         this.#snapshot = entry ? {node: entry.node, value: entry.node.getValue(true),
+            parameterEnums: ui.data.getItem('root') !== 'source' ? {} : this.#connection
+                ? this.#connection.nodeInfo(entry.node).parameterEnums : readParameterEnums(entry.node),
             attrs: {...entry.node.getAttr()}, resolver: entry.node.resolver, revision: this.#connection?.nodeInfo(entry.node)?.revision} : null;
         const rows = new Bag();
         if (entry) {
@@ -586,7 +592,14 @@ export class GramlotToolsInspector extends HTMLElement {
             if (fresh) label.input({value: '^.name', live: true, 'aria-label': 'New attribute name', 'data-row': row.label, connect_oninput: 'inspector.editChanged'});
             else label.span(name);
             const cell = line.div({class: 'property-value'});
-            cell.input({value: '^.text', type: '^.inputType', live: true, step: data.getItem('type') === 'integer' ? '1' : 'any', disabled: locked,
+            const choices = !primary && this.#snapshot.parameterEnums[name];
+            const value = data.getItem('text');
+            if (choices && choices.includes(value)) {
+                const select = cell.select({value: '^.text', class: 'enum-value', disabled: locked,
+                    'aria-label': `${name} value`, 'data-row': row.label,
+                    connect_onchange: 'inspector.enumChanged', connect_onkeydown: 'inspector.editKey'});
+                for (const choice of choices) select.option(choice, {value: choice});
+            } else cell.input({value: '^.text', type: '^.inputType', live: true, step: data.getItem('type') === 'integer' ? '1' : 'any', disabled: locked,
                 'aria-label': primary ? 'Value' : `${name || 'New attribute'} value`, 'data-row': row.label,
                 title: data.getItem('isNull') ? 'Null value. Backspace on an empty cell sets null.' : 'Enter to save; Escape to revert; Backspace on an empty cell sets null.',
                 connect_oninput: 'inspector.editChanged', connect_onkeydown: 'inspector.editKey'});
@@ -595,7 +608,7 @@ export class GramlotToolsInspector extends HTMLElement {
                 for (const value of editorTypes) type.option(value, {value});
             }
             if (!primary) {
-                const button = cell.button({type: 'button', disabled: locked, 'aria-label': `Remove ${name || 'new attribute'}`, class: 'remove',
+                const button = cell.html_button({type: 'button', disabled: locked, 'aria-label': `Remove ${name || 'new attribute'}`, class: 'remove',
                     'data-row': row.label, connect_onpointerdown: 'inspector.keepFocus', connect_onclick: 'inspector.removeAttribute'});
                 button.svg({viewBox: '0 0 24 24', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', stroke_width: 1.5,
                     stroke_linecap: 'round', stroke_linejoin: 'round'}).path({d: 'M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5 6l1 14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-14M10 10v7M14 10v7'});
@@ -618,7 +631,7 @@ export class GramlotToolsInspector extends HTMLElement {
         if (rows.some(row => row.value.getItem('removed') || row.value.getItem('initialName') === '')) {
             this.#loadEditor(this.#selected());
         } else {
-            this.#snapshot = {node: target, value: target.getValue(true), attrs: {...target.getAttr()}, resolver: target.resolver,
+            this.#snapshot = {...this.#snapshot, node: target, value: target.getValue(true), attrs: {...target.getAttr()}, resolver: target.resolver,
                 revision: this.#connection?.nodeInfo(target).revision};
             for (const row of rows) {
                 row.value.setItem('initialText', row.value.getItem('text'));
@@ -752,7 +765,7 @@ export class GramlotToolsInspector extends HTMLElement {
             const config = node.value;
             const row = builder.root.div({class: 'breakpoint-entry'});
             row.span(`${config.getItem('root')}: ${config.getItem('path')} · ${config.getItem('mode')} · ${config.getItem('hits')} hits`);
-            row.button('×', {type: 'button', 'aria-label': `Remove breakpoint ${config.getItem('root')}: ${config.getItem('path')}`,
+            row.html_button('×', {type: 'button', 'aria-label': `Remove breakpoint ${config.getItem('root')}: ${config.getItem('path')}`,
                 'data-breakpoint': node.label, connect_onclick: 'inspector.removeBreakpoint'});
         }
         this.#ui.src.source.getNode('main.palette.breakpoints.entries').setValue(this.#ui.src.prepareSource(builder.source));

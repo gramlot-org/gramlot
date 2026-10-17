@@ -10,6 +10,7 @@ from genro_tytx import to_tytx
 from ..renderer import GramlotHtmlRenderer
 from ..webcomponent import webcomponent_code
 from ._grammar_load import load_grammar
+from genro_builders.builder.pointers import pointer_transform
 
 # Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 # dictionary of X, so every GramlotBuilder user can encode and decode it.
@@ -37,7 +38,7 @@ def data_element_error(tag, attrs):
     if tag == "html_button" and any(
             name in ("action", "ask", "_delay", "fire") or name.startswith("fire_") for name in attrs):
         return "plain HTML button: use button for action, ask, fire or _delay"
-    if "ask" in attrs and tag != "button":
+    if "ask" in attrs and tag not in ("button", "toggleButton", "dropDownButton", "menuline"):
         return "'ask' is supported on buttons"
     if "_ask" in attrs and tag not in ("dataController", "dataFormula", "dataRpc"):
         return "'_ask' requires a controller, formula or RPC"
@@ -61,7 +62,7 @@ class GramlotBuilder(HtmlBuilder):
     _name = "gramlot"
     _source_class = GramlotBuilderBag
     # Builder applies it on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
-    _grammar_documents = ("../collections/binding.json", "../collections/webcomponent.json")
+    _grammar_documents = ("../collections/binding.json", "../collections/webcomponent.json", "../collections/buttons.json")
 
     def __init__(self, name=None, *, collections=(), auth=None):
         super().__init__(name)
@@ -166,6 +167,10 @@ class GramlotBuilder(HtmlBuilder):
 
     def _validate_call_args(self, info, node_value, attr, node_tag=""):
         """Enforce required parameters declared by Gramlot's loaded grammar and the excluded attributes."""
+        if (info.get("_meta", {}) or {}).get("gramlot_component"):
+            value = attr.get("value")
+            if isinstance(value, str) and pointer_transform(value):
+                raise ValueError("'value' does not accept pointer suffixes")
         if node_tag == "webcomponent":
             webcomponent_code(attr)
         excluded = next((name for name in attr if name in EXCLUDED_ATTRIBUTES
@@ -190,7 +195,7 @@ class GramlotBuilder(HtmlBuilder):
 
     def custom_require_sub_tag_validation(self, node):
         """Custom elements are outside the native HTML child catalogue, as components are."""
-        return node.node_tag != "webcomponent"
+        return node.node_tag == "button" or (node.node_tag != "webcomponent" and not node._get_meta("gramlot_component"))
 
     def _add_element(self, build_where, node_value=None, node_label=None, node_tag="", **attr):
         """Builder's element insertion; a dict ``value`` of ``dataSetter`` becomes ``Bag(value)`` (P25)."""

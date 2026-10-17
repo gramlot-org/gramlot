@@ -95,8 +95,8 @@ export class AskDialog {
                     else row.input({...attrs, type: field.type ?? 'text'});
                 }
                 const buttons = form.div({style: 'display:flex;justify-content:flex-end;gap:8px;margin-top:16px;'});
-                buttons.button('Cancel', {type: 'button', request: id, connect_onclick: `${page.group}.cancel`});
-                buttons.button('Confirm', {type: 'submit', autofocus: fields.length === 0});
+                buttons.html_button('Cancel', {type: 'button', request: id, connect_onclick: `${page.group}.cancel`});
+                buttons.html_button('Confirm', {type: 'submit', autofocus: fields.length === 0});
                 app.src.source.setItem(id, app.src.prepareSource(builder.source));
                 const node = app.src.binding.nodeIds.get(id);
                 app.dom.getDomNode(node).showModal();

@@ -23,20 +23,20 @@ def test_static_projection_resolves_each_source_attribute_once(monkeypatch):
     builder.data.set_item("other", "current")
     node = builder.root.div(width="^width:{}{unit}", title="^width:{unit}", unit="^unit", other="^other")
     reads = []
-    original = type(node).get_relative_data
+    original = type(builder.data).get_item
 
-    def read(self, pointer):
+    def read(self, pointer, *args, **kwargs):
         reads.append(pointer)
-        return original(self, pointer)
+        return original(self, pointer, *args, **kwargs)
 
-    monkeypatch.setattr(type(node), "get_relative_data", read)
+    monkeypatch.setattr(type(builder.data), "get_item", read)
     _, attrs = builder.runtime_values(node)
     assert attrs["width"] == "38px"
     assert attrs["title"] == "px"
     assert attrs["unit"] == "px"
     assert attrs["other"] == "current"
-    assert reads.count("^unit") == 1
-    assert reads.count("^other") == 1
+    assert reads.count("unit") == 1
+    assert reads.count("other") == 1
 
 
 @pytest.mark.parametrize("value,required,optional", [
@@ -61,7 +61,7 @@ def test_static_expressions_are_inert_and_template_errors_are_explicit():
     with pytest.raises(ValueError, match="absent.*does not exist"):
         builder.runtime_values(node)
     node = builder.root.div(title="^draft:{other}", other="^draft:{title}")
-    with pytest.raises(ValueError, match="cyclic attribute dependency"):
+    with pytest.raises(ValueError, match="(?i)cyclic attribute dependency"):
         builder.runtime_values(node)
 
 

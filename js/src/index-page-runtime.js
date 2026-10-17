@@ -1,5 +1,5 @@
 /* @ts-self-types="./index-page-runtime.d.ts" */
-import {compactStyle} from './index-page-styles.js';
+import {appearanceStyles} from './index-page-styles.js';
 import {THEME_READY, THEME_SET, THEMES, APPEARANCES} from './index-theme.js';
 
 /** Index-page behavior; writes UI state through the existing Source records. */
@@ -15,6 +15,10 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
     const appearance = byId('index-appearance');
     const sidebar = byId('index-sidebar');
     const sidebarHandle = byId('index-sidebar-divider');
+    const navigationToggle = byId('index-navigation-toggle');
+    const codeToggle = byId('index-code-toggle');
+    const codeSidebar = byId('index-code');
+    const codeHandle = byId('index-code-divider');
     // localStorage is scoped to this origin; the path separates mounted galleries.
     const preferencesKey = `gramlot.${shell.id}.preferences:${window.location.pathname}`;
     let preferences = {};
@@ -39,11 +43,16 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
     state.setItem('keyboard', (keyboard?.checked ?? false));
     state.setItem('theme', (theme?.value ?? 'light'));
     state.setItem('appearance', (appearance?.value ?? 'compact'));
+    state.setItem('navigationVisible', preferences.navigationVisible !== false);
+    state.setItem('codeVisible', preferences.codeVisible !== false);
     const savePreferences = () => {
         try {
             window.localStorage.setItem(preferencesKey, JSON.stringify({
                 theme: state.getItem('theme'), appearance: state.getItem('appearance'),
                 sidebarWidth: state.getItem('preferredSidebarWidth'),
+                codeWidth: state.getItem('preferredCodeWidth'),
+                navigationVisible: state.getItem('navigationVisible'),
+                codeVisible: state.getItem('codeVisible'),
             }));
         } catch (error) {
             // A browser may deny storage (including opaque file origins) or exhaust its quota.
@@ -53,7 +62,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
     };
     const entries = new Map();
     const releases = [];
-    const style = root.builder.wrapSource(root.value).style(compactStyle, {media: (appearance?.value ?? 'compact') === 'compact' ? 'all' : 'not all'});
+    const style = root.builder.wrapSource(root.value).style(appearanceStyles[appearance?.value ?? 'compact']);
     let drag = null;
     let disposed = false;
     let installPrompt = null;
@@ -83,10 +92,27 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
     const send = frame => frame.contentWindow.postMessage({type: THEME_SET, theme: state.getItem('theme'), appearance: state.getItem('appearance')}, '*');
     const applyTheme = () => {
         document.documentElement.setAttribute('data-theme', state.getItem('theme'));
-        style.setAttr({media: state.getItem('appearance') === 'compact' ? 'all' : 'not all'});
+        style.setValue(appearanceStyles[state.getItem('appearance')]);
         for (const {frame} of entries.values()) if (frame) send(frame);
     };
     const updateInspector = () => onSelection(entries, state.getItem('active'));
+    const updatePanels = () => {
+        if (navigationToggle) {
+            const visible = state.getItem('navigationVisible');
+            set(sidebar, {hidden: !visible});
+            set(sidebarHandle, {hidden: !visible});
+            set(navigationToggle, {aria_expanded: String(visible)});
+            set(shell, {data_navigation_hidden: String(!visible)});
+        }
+        if (codeSidebar) {
+            const available = Boolean(entries.get(state.getItem('active'))?.code);
+            const visible = available && state.getItem('codeVisible');
+            set(codeSidebar, {hidden: !visible});
+            set(codeHandle, {hidden: !visible});
+            set(codeToggle, {disabled: !available, aria_expanded: String(visible)});
+            set(shell, {data_code_visible: String(visible)});
+        }
+    };
     function select(key) {
         const entry = entries.get(key);
         if (!opened.getItem(key)) {
@@ -99,26 +125,35 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             const active = current === key;
             set(item.tab, {aria_selected: String(active), tabindex: active && state.getItem('keyboard') ? 0 : -1});
             set(item.panel, {hidden: !active});
+            if (item.code) set(item.code, {hidden: !active});
             if (item.open) set(item.open, {aria_current: active ? 'page' : null});
         }
         state.setItem('active', key);
+        updatePanels();
         updateInspector();
     }
-    function setRatio(entry, value) {
-        const ratio = Math.max(20, Math.min(80, value));
-        state.setItem(`ratio.${entry.key}`, ratio);
-        set(entry.split, {style: `--split-position: ${ratio}%`});
-        set(entry.handle, {aria_valuenow: ratio});
-    }
     const sidebarMaximum = () => Math.max(120, Math.min(460, Math.floor(window.innerWidth * .6)));
+    const applyWidths = () => set(shell, {style: `--sidebar-width: ${state.getItem('sidebarWidth')}px; --code-width: ${state.getItem('codeWidth') ?? 420}px`});
     const setSidebarWidth = (value, remember = false) => {
         const maximum = sidebarMaximum();
         const width = Math.max(120, Math.min(maximum, value));
         state.setItem('sidebarWidth', width);
-        set(shell, {style: `--sidebar-width: ${width}px`});
+        applyWidths();
         set(sidebarHandle, {aria_valuenow: width, aria_valuemax: maximum});
         if (remember) {
             state.setItem('preferredSidebarWidth', width);
+            savePreferences();
+        }
+    };
+    const codeMaximum = () => Math.max(200, Math.floor(window.innerWidth * .6));
+    const setCodeWidth = (value, remember = false) => {
+        const maximum = codeMaximum();
+        const width = Math.max(200, Math.min(maximum, value));
+        state.setItem('codeWidth', width);
+        applyWidths();
+        set(codeHandle, {aria_valuenow: width, aria_valuemax: maximum});
+        if (remember) {
+            state.setItem('preferredCodeWidth', width);
             savePreferences();
         }
     };
@@ -167,6 +202,36 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             ? savedWidth : sidebar.getBoundingClientRect().width || Number(sidebarHandle.getAttribute('aria-valuenow'));
         state.setItem('preferredSidebarWidth', width);
         setSidebarWidth(width);
+        listen(navigationToggle, 'click', () => {
+            state.setItem('navigationVisible', !state.getItem('navigationVisible'));
+            updatePanels();
+            savePreferences();
+        });
+        listen(codeToggle, 'click', () => {
+            state.setItem('codeVisible', !state.getItem('codeVisible'));
+            updatePanels();
+            savePreferences();
+        });
+        if (codeHandle) {
+            const saved = preferences.codeWidth;
+            const width = typeof saved === 'number' && Number.isFinite(saved) && saved >= 200 ? saved : 420;
+            state.setItem('preferredCodeWidth', width);
+            setCodeWidth(width);
+            listen(codeHandle, 'keydown', event => {
+                const current = state.getItem('codeWidth');
+                const value = event.key === 'ArrowLeft' ? current + 10 : event.key === 'ArrowRight' ? current - 10
+                    : event.key === 'Home' ? 200 : event.key === 'End' ? codeMaximum() : null;
+                if (value == null) return;
+                event.preventDefault();
+                setCodeWidth(value, true);
+            });
+            listen(codeHandle, 'pointerdown', event => beginDrag(codeHandle, event,
+                x => setCodeWidth(Math.round(shell.getBoundingClientRect().right - x), true)));
+            listen(codeHandle, 'lostpointercapture', () => {
+                if (drag?.handle === codeHandle) stopDrag();
+            });
+            listen(window, 'resize', () => setCodeWidth(state.getItem('preferredCodeWidth')));
+        }
         listen(sidebarHandle, 'keydown', event => {
             const current = state.getItem('sidebarWidth');
             const value = event.key === 'ArrowLeft' ? current - 10 : event.key === 'ArrowRight' ? current + 10
@@ -184,6 +249,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         for (const tab of shell.querySelectorAll('.index-tabs button')) {
             const key = tab.id.slice('tab-'.length);
             const entry = {key, tab, panel: byId(`panel-${key}`),
+                code: byId(`codepane-${key}`),
                 open: key === 'intro' ? null : byId(`open-${key}`)};
             entries.set(key, entry);
             if (!tab.hidden) opened.setItem(key, true);
@@ -205,26 +271,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             prepareEntry(entry, {byId, node, set, listen});
             if (entry.panel.classList.contains('index-category')) continue;
             entry.frame = byId(`frame-${key}`);
-            entry.split = byId(`split-${key}`);
-            entry.handle = byId(`divider-${key}`);
-            if (entry.handle) state.setItem(`ratio.${key}`, Number(entry.handle.getAttribute('aria-valuenow')));
             listen(entry.frame, 'load', () => send(entry.frame));
-            if (!entry.handle) continue;
-            listen(entry.handle, 'keydown', event => {
-                const current = state.getItem(`ratio.${key}`);
-                const value = event.key === 'ArrowLeft' ? current - 5 : event.key === 'ArrowRight' ? current + 5
-                    : event.key === 'Home' ? 20 : event.key === 'End' ? 80 : null;
-                if (value == null) return;
-                event.preventDefault();
-                setRatio(entry, value);
-            });
-            listen(entry.handle, 'pointerdown', event => beginDrag(entry.handle, event, x => {
-                const bounds = entry.split.getBoundingClientRect();
-                if (bounds.width > 0) setRatio(entry, Math.round((x - bounds.left) * 100 / bounds.width));
-            }));
-            listen(entry.handle, 'lostpointercapture', () => {
-                if (drag?.handle === entry.handle) stopDrag();
-            });
         }
         listen(document, 'pointermove', event => {
             if (!drag || event.pointerId !== drag.pointerId) return;
@@ -243,7 +290,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             }
         });
         listen(appearance, 'change', () => {
-            if (!APPEARANCES.has((appearance?.value ?? 'compact'))) throw new Error('Index appearance must be base or compact');
+            if (!APPEARANCES.has((appearance?.value ?? 'compact'))) throw new Error('Unknown index appearance');
             state.setItem('appearance', (appearance?.value ?? 'compact'));
             set(appearance, {value: (appearance?.value ?? 'compact')});
             for (const option of appearance.options) set(option, {selected: option.value === (appearance?.value ?? 'compact')});
@@ -265,6 +312,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             }
         });
         applyTheme();
+        updatePanels();
         updateInspector();
         renderer.onDispose(root, dispose);
     } catch (error) {

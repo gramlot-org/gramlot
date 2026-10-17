@@ -49,3 +49,9 @@ export function parseScalar(type, text) {
     }
     throw new Error(`Invalid ${type} value: ${text || '(empty)'}`);
 }
+
+/** Read the portable component contract from a real Source node. */
+export function readParameterEnums(node) {
+    return Object.fromEntries(Object.entries(node._getMeta('gramlot_component')?.parameters ?? {})
+        .filter(([, spec]) => spec.enum).map(([name, spec]) => [name, spec.enum]));
+}

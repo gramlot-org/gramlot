@@ -4,6 +4,8 @@
  *
  * @module
  */
+import buttons from '../components/buttons.js';
+import {ComponentCollection} from '../components/registry.js';
 import {Bag} from '@genrojs/bag';
 import {HtmlBuilder, SourceBagNode, sourceTarget} from '@genrojs/builders';
 import {toTytx} from '@genrojs/tytx';
@@ -15,7 +17,8 @@ import {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 import BINDING from './binding.json' with {type: 'json'};
 import WEBCOMPONENT from './webcomponent.json' with {type: 'json'};
 import {webcomponentCode} from '../webcomponent.js';
-import {pointerTransform} from '../binding/pointer.js';
+import {pointerTransform} from '@genrojs/builders';
+
 
 // P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 const DATA_FORBIDDEN = 'data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element';
@@ -39,7 +42,7 @@ function dataElementError(tag, attrs) {
         ['action', 'ask', '_delay', 'fire'].includes(name) || name.startsWith('fire_'))) {
         return 'plain HTML button: use button for action, ask, fire or _delay';
     }
-    if (Object.hasOwn(attrs, 'ask') && tag !== 'button') return "'ask' is supported on buttons";
+    if (Object.hasOwn(attrs, 'ask') && !['button', 'toggleButton', 'dropDownButton', 'menuline'].includes(tag)) return "'ask' is supported on buttons";
     if (Object.hasOwn(attrs, '_ask') && !['dataController', 'dataFormula', 'dataRpc'].includes(tag)) return "'_ask' requires a controller, formula or RPC";
     if (['dataSetter', 'dataRemote'].includes(tag) && Object.keys(attrs).some(name => name.startsWith('subscribe_') || name.startsWith('selfsubscribe_'))) {
         return 'topic subscriptions are supported on controllers, formulas, RPCs and rendered elements';
@@ -71,6 +74,7 @@ export class GramlotBuilder extends HtmlBuilder {
     // Composed on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
     static { this.defineGrammar(BINDING); }
     static { this.defineGrammar(WEBCOMPONENT); }
+    static { this.defineGrammar(buttons.toDocument()); }
 
     /** Tag prefixes of the parent dialects, from the `_name` of the classes above GramlotBuilder. */
     static get dialectPrefixes() {
@@ -97,6 +101,13 @@ export class GramlotBuilder extends HtmlBuilder {
     /** Set by Gramlot right after creating the builder (§4.3). */
     set binding(runtime) { this._binding = runtime; }
 
+    /** Builder supplies typed slots; Gramlot owns activation, CSP and page-local _F. */
+    evaluatePointerExpression(node, name, raw, expression, inputs) {
+        return this.binding
+            ? this.binding.inlineCompiler.compilePointerExpression(node, name, raw, expression.text)(inputs)
+            : null;
+    }
+
     /** Builder's nodeById; inside a Gramlot page it reads the node_id map of the BindingRuntime (R06). */
     nodeById(nodeId) {
         if (!this.binding) return super.nodeById(nodeId);
@@ -105,7 +116,7 @@ export class GramlotBuilder extends HtmlBuilder {
         return node.builder.wrapSource(node);
     }
     loadCollection(document) {
-        this.loadGrammar(document);
+        this.loadGrammar(document instanceof ComponentCollection ? document.toDocument() : document);
         return this;
     }
 
@@ -144,6 +155,9 @@ export class GramlotBuilder extends HtmlBuilder {
 
     /** Builder's value check, plus the excluded attributes (authoring names the tag). */
     validateNodeValues(tag, value, attrs = {}) {
+        if (this.schema[tag]?._meta?.gramlot_component && pointerTransform(attrs.value)) {
+            throw new Error("'value' does not accept pointer suffixes");
+        }
         if (tag === 'webcomponent') webcomponentCode(attrs);
         const excluded = excludedAttribute(attrs);
         if (excluded) throw new Error(`${tag}: attribute '${excluded}' is excluded from Gramlot 0.2.0`);
@@ -154,6 +168,9 @@ export class GramlotBuilder extends HtmlBuilder {
 
     /** Builder's node check, plus the excluded attributes (a Source node names tag and label). */
     validateNode(node, options = {}) {
+        if (node._getMeta('gramlot_component') && pointerTransform((options.attrs ?? node.getAttr()).value)) {
+            throw new Error("'value' does not accept pointer suffixes");
+        }
         if (node.nodeTag === 'webcomponent') webcomponentCode(options.attrs ?? node.getAttr());
         const excluded = excludedAttribute(options.attrs ?? node.getAttr());
         if (excluded) throw new Error(`${node.nodeTag} '${node.label}': attribute '${excluded}' is excluded from Gramlot 0.2.0`);
@@ -170,7 +187,7 @@ export class GramlotBuilder extends HtmlBuilder {
 
     /** Custom elements are outside the native HTML child catalogue, as components are. */
     _countsForGrammar(info) {
-        return info !== this.schema.webcomponent && super._countsForGrammar(info);
+        return info === this.schema.button || (!info?._meta?.gramlot_component && info !== this.schema.webcomponent && super._countsForGrammar(info));
     }
 
     /** Builder's child insertion; a plain object `value` of `dataSetter` becomes `new Bag(value)` (P25). */

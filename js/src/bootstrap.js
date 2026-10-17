@@ -43,7 +43,7 @@ export class PageBootstrap {
             this.closePage();
         };
         window.addEventListener('pagehide', pagehide);
-        let entries;
+        let entries, collections;
         try {
             // A relative module URL is resolved against the document, as in HTML (D8).
             const settled = await Promise.allSettled(resources.js.map(({url}) => import(new URL(url, document.baseURI).href)));
@@ -56,13 +56,20 @@ export class PageBootstrap {
                 return {logicClass: outcome.value.Logic, group, resource: url};
             });
             LogicRegistry.check(entries);
+            collections = await Promise.all((resources.collections ?? []).map(async url => {
+                try { return (await import(new URL(url, document.baseURI).href)).default; }
+                catch (error) { throw new Error(`${url}: collection import failed: ${error.message}`, {cause: error}); }
+            }));
+            if (closed) return null;
+            for (const collection of collections) collection.register(window);
         } catch (error) {
             this.closePage();
             throw error;
         } finally {
             window.removeEventListener('pagehide', pagehide);
         }
-        const app = new Gramlot({...config, document});
+        const app = new Gramlot({...config, document,
+            collections: [...(config.collections ?? []), ...collections.map(collection => collection.toDocument())]});
         for (const {logicClass, group, resource} of entries) app.src.logicRegistry.register(logicClass, {group, resource});
         window.gramlot = app;
         await app.start();

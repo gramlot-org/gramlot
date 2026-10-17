@@ -45,6 +45,20 @@ test('index opens pages lazily, reuses iframe and keeps Source selection',()=>{
     f.app.dispose();
 });
 test('custom footer can replace every standard control',()=>{const f=fixture(true);f.get('open-one').click();assert.equal(f.get('panel-one').hidden,false);f.app.dispose();});
+test('GenroPy appearances replace the current CSS and survive remount independently of color mode',()=>{
+    const f=fixture(),win=f.document.defaultView;
+    const select=(id,value)=>{f.get(id).value=value;f.get(id).dispatchEvent(new win.Event('change'));};
+    select('index-appearance','mimi');select('index-theme','dark');
+    const css=()=>[...f.document.querySelectorAll('style')].map(el=>el.textContent).join('\n');
+    assert.match(css(),/--gramlot-field-height: 18px/);
+    select('index-appearance','joanna');
+    assert.match(css(),/--gramlot-field-height: 20px/);
+    assert.doesNotMatch(css(),/--gramlot-field-height: 18px/);
+    const saved=win.localStorage.getItem('gramlot.index.preferences:/app/');f.app.dispose();
+    const g=fixture(false,w=>w.localStorage.setItem('gramlot.index.preferences:/app/',saved));
+    assert.equal(g.get('index-appearance').value,'joanna');
+    assert.equal(g.get('index-theme').value,'dark');g.app.dispose();
+});
 test('sidebar and theme preferences survive remount; disposed listeners stop',()=>{
     const f=fixture();f.get('index-theme').value='dark';f.get('index-theme').dispatchEvent(new f.document.defaultView.Event('change'));
     f.get('index-sidebar-divider').dispatchEvent(new f.document.defaultView.KeyboardEvent('keydown',{key:'ArrowRight'}));

@@ -8,6 +8,8 @@ implemented/released work; it links here for future topics.
 
 ## Workstreams listed by the owner
 
+**Component planning, 2026-10-16:** [GC-245](245-components-0-3-plan.md) updates the 0.3 proposal: textbox/labelbox with multiple early control shapes, callbackSelect and the random-data lesson, and single/group radio based on legacy syntax. Registration, hierarchy and mixin APIs remain proposals for concrete review; no new component runtime is implemented.
+
 **Current checkpoint, 2026-10-15:** local publish/subscribe, direct-frame messaging,
 references and ask were delivered; see [GC-070 §965](../internal/070-work-status.md#gc-070-965).
 Plain/delayed buttons and their examples were subsequently delivered
@@ -84,3 +86,11 @@ deferred or completed; change the state only with evidence.
 Retain stable document IDs, paired docs/docs_llm paths and links when a card moves
 or closes. Update the index and the current-status checkpoint when work advances.
 These cards are not a second execution plan and do not reopen completed phases.
+
+
+## Button-family follow-up — 2026-10-17
+
+[GC-310 · Buttons and button bars](310-buttons-and-button-bars.md) records the
+legacy analysis and 0.3 proposal: button Web Component, dropdown/split/state
+controls and mixed dynamic button bars. Core button direction accepted; extended
+API and sequence remain proposed. No runtime delivery is claimed.

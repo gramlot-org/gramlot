@@ -78,7 +78,7 @@ export class InspectorConnection {
             if (!previous || previous.attrsWire.size !== row.attrs.length || row.attrs.some(([name, descriptor]) => previous.attrsWire.get(name) !== JSON.stringify(descriptor))) {
                 node.setAttr(attrs, true, false, false);
             }
-            this.#info.set(node, {id: row.id, revision: row.revision, branch,
+            this.#info.set(node, {id: row.id, revision: row.revision, branch, parameterEnums: row.parameterEnums,
                 readonly: row.readonly || !!row.value?.readonly,
                 readonlyAttrs: new Set(row.attrs.filter(([, descriptor]) => descriptor.readonly).map(([name]) => name)),
                 valueWire: JSON.stringify(row.value), attrsWire: new Map(row.attrs.map(([name, descriptor]) => [name, JSON.stringify(descriptor)]))});

@@ -207,7 +207,7 @@ class SrcdocSandboxTests(unittest.TestCase):
         def authoring(root, data):
             data["doc"] = "d"
             data.set_item("w", "x", _attributes={"_wdg": {"srcdoc": "<b>w</b>"}})
-            root.iframe(srcdoc="<p>${d}</p>", d="^doc")
+            root.iframe(srcdoc="^doc:<p>{}</p>")
             root.iframe("^w", srcdoc="<i>lit</i>")
         self.assertEqual(rendered(authoring), '<iframe sandbox="" srcdoc="&lt;p&gt;d&lt;/p&gt;"></iframe>'
                                               '<iframe sandbox="" srcdoc="&lt;b&gt;w&lt;/b&gt;">x</iframe>')
@@ -220,7 +220,7 @@ class SrcdocSandboxTests(unittest.TestCase):
             root.iframe(srcdoc="<p>${t}</p>", t="lit")
         self.assertEqual(rendered(authoring), '<iframe srcdoc="d" sandbox="allow-scripts"></iframe>'
                                               '<iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe>'
-                                              '<iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe>')
+                                              '<iframe srcdoc="&lt;p&gt;${t}&lt;/p&gt;" t="lit"></iframe>')
 
     def test_the_html_prefix_is_read_and_kept(self):
         def authoring(root, data):

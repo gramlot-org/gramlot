@@ -281,7 +281,7 @@ test('a listener error propagates from the click, naming the node (as Q7)', () =
     assert.match(errors[0].message, /button 'button_0': write on a null path: '\.x'/);
 });
 
-test('R3 side effects: a button in a form, with and without type, with and without a mechanism', () => {
+test('command components never implicitly submit forms; html_button owns native submission', () => {
     const {builder, byId, window, document} = page();
     const form = builder.root.form({id: 'f'});
     form.button('native', {id: 'native'});
@@ -298,7 +298,7 @@ test('R3 side effects: a button in a form, with and without type, with and witho
         const notCancelled = click(window, byId(id));
         results[id] = {type: byId(id).getAttribute('type'), defaultPrevented: !notCancelled};
     }
-    assert.deepEqual(submits, ['native', 'typed']);
+    assert.deepEqual(submits, []);
     assert.deepEqual(results, {
         native: {type: null, defaultPrevented: false},
         typed: {type: 'submit', defaultPrevented: false},

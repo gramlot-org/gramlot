@@ -1,0 +1,89 @@
+/* Gramlot adaptation of legacy joanna; load after Base and Compact. */
+@layer gramlot.tokens {
+  :root {
+    --gramlot-background: #F2F2F7;
+    --gramlot-surface: #FFFFFF;
+    --gramlot-surface-subtle: #F2F2F7;
+    --gramlot-ink: #3A3A3C;
+    --gramlot-text-secondary: #636366;
+    --gramlot-border: #D1D1D6;
+    --gramlot-border-control: #AEAEB2;
+    --gramlot-navigation: #3A3A3C;
+    --gramlot-navigation-text: #FFFFFF;
+    --gramlot-action: #007AFF;
+    --gramlot-action-hover: #0061CC;
+    --gramlot-brand-blue: #007AFF;
+    --gramlot-brand-yellow: #AEAEB2;
+    --gramlot-selected: #E0EFFF;
+    --gramlot-focus-ring: #007AFF;
+    --gramlot-field-background: #FFFFFF;
+    --gramlot-field-readonly-background: #F2F2F7;
+    --gramlot-error: #B3261E;
+    --gramlot-error-background: #FFF1F0;
+    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 6%);
+    --gramlot-radius-sm: 6px;
+    --gramlot-radius: 6px;
+    --gramlot-radius-lg: 6px;
+    --gramlot-field-height: 20px;
+    --gramlot-field-padding: 1px 3px;
+    --gramlot-field-line-height: 1.15;
+    --gramlot-field-font-size: 1rem;
+    --gramlot-label-size: .8em;
+    --gramlot-label-gap: 2px;
+    --gramlot-label-color: var(--gramlot-text-secondary);
+    --gramlot-space-4: 6px;
+    --gramlot-font-ui: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --gramlot-background: #1C1C1E;
+    --gramlot-surface: #2C2C2E;
+    --gramlot-surface-subtle: #3A3A3C;
+    --gramlot-ink: #F2F2F7;
+    --gramlot-text-secondary: #C7C7CC;
+    --gramlot-border: #636366;
+    --gramlot-border-control: #8E8E93;
+    --gramlot-navigation: #1C1C1E;
+    --gramlot-action: #78B7FF;
+    --gramlot-action-hover: #A6CFFF;
+    --gramlot-brand-blue: #3478CA;
+    --gramlot-selected: #254163;
+    --gramlot-focus-ring: #78B7FF;
+    --gramlot-field-background: #202124;
+    --gramlot-field-readonly-background: #3A3A3C;
+    --gramlot-error: #FFB4AB;
+    --gramlot-error-background: #482524;
+    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+    }
+  }
+  :root[data-theme="dark"] {
+    --gramlot-background: #1C1C1E;
+    --gramlot-surface: #2C2C2E;
+    --gramlot-surface-subtle: #3A3A3C;
+    --gramlot-ink: #F2F2F7;
+    --gramlot-text-secondary: #C7C7CC;
+    --gramlot-border: #636366;
+    --gramlot-border-control: #8E8E93;
+    --gramlot-navigation: #1C1C1E;
+    --gramlot-action: #78B7FF;
+    --gramlot-action-hover: #A6CFFF;
+    --gramlot-brand-blue: #3478CA;
+    --gramlot-selected: #254163;
+    --gramlot-focus-ring: #78B7FF;
+    --gramlot-field-background: #202124;
+    --gramlot-field-readonly-background: #3A3A3C;
+    --gramlot-error: #FFB4AB;
+    --gramlot-error-background: #482524;
+    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+  }
+}
+@layer gramlot.base {
+  html { font-size: 13px; }
+}
+@layer gramlot.components {
+  :where(label) { font-size: var(--gramlot-label-size); font-weight: normal; color: var(--gramlot-label-color); margin-block-end: var(--gramlot-label-gap); }
+  :where(button, input[type="button"], input[type="submit"], input[type="reset"], .button) { min-block-size: 26px; padding: 2px 8px; font-weight: 500; }
+}
+@layer gramlot.utilities {
+  .card { box-shadow: var(--gramlot-shadow); }
+}

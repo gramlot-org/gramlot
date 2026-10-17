@@ -24,9 +24,6 @@ const NATIVE_ATTRIBUTES = {
     canvas: ['width', 'height'],
 };
 
-// A `${name}` template reference; `\${` stays text (Builder's runtimeValues rule).
-const TEMPLATE_REFERENCE = /(?<!\\)\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g;
-
 // Display directives of the node text: consumed by the renderer, never written as attributes.
 const DISPLAY_ATTRIBUTES = ['format', 'mask', 'locale', 'timeZone', 'places', 'dtype'];
 
@@ -80,7 +77,7 @@ function isJavascriptUrl(value) {
 /**
  * `attrs` of an `iframe` whose `srcdoc` comes from Data, with an empty `sandbox` first: the browser shows
  * the HTML of a datum and runs nothing of it. `srcdoc` comes from Data when it is a `^`/`=` pointer, a `==`
- * expression or a `${…}` template reading one, or when the node value is a pointer, whose datum can carry
+ * expression, or when the node value is a pointer, whose datum can carry
  * `srcdoc` in its `_wdg`. The declaration decides, so the iframe has `sandbox` while `srcdoc` is still null.
  * A `sandbox` declared in the Source stays as declared; a literal `srcdoc` gets none. The names are read
  * without the dialect `prefixes` (`html_`); `sandbox` takes the prefix of `srcdoc`.
@@ -94,15 +91,8 @@ export function withDataSrcdocSandbox(node, attrs, prefixes = []) {
     const declared = Object.fromEntries(sourceAttributeItems(node.getAttr()));
     const srcdoc = [...Object.keys(declared), ...Object.keys(attrs)].find(name => bare(name)[1] === 'srcdoc');
     if (srcdoc === undefined || Object.keys(declared).some(name => bare(name)[1] === 'sandbox')) return attrs;
-    const fromData = (name, seen) => {
-        const raw = declared[name];
-        seen.add(name);
-        return node.pointerType(raw) !== null || isExpression(raw) || templateParameters(raw)
-            .some(param => Object.hasOwn(declared, param) && !seen.has(param) && fromData(param, seen));
-    };
-    if (node.pointerType(node.value) === null && !(Object.hasOwn(declared, srcdoc) && fromData(srcdoc, new Set()))) {
-        return attrs;
-    }
+    if (node.pointerType(node.value) === null && !(Object.hasOwn(declared, srcdoc)
+        && (node.pointerType(declared[srcdoc]) !== null || isExpression(declared[srcdoc])))) return attrs;
     const rest = Object.fromEntries(Object.entries(attrs).filter(([name]) => bare(name)[1] !== 'sandbox'));
     return {[`${bare(srcdoc)[0]}sandbox`]: '', ...rest};
 }
@@ -171,34 +161,7 @@ export function displayItem(item, attrs, format = null) {
     return [display(item), rest];
 }
 
-/** The parameter names of the `${name}` templates of `value`, in order; none for a value that is not a string. */
-export function templateParameters(value) {
-    return typeof value === 'string' ? [...value.matchAll(TEMPLATE_REFERENCE)].map(([, name]) => name) : [];
-}
-
 /** Whether `value` is a `==` expression (Q11.2). */
 export function isExpression(value) {
     return typeof value === 'string' && value.startsWith('==');
-}
-
-/**
- * Templates and `==` expressions do not mix (Q11.2): a template that uses a `==` attribute of the same
- * node is an error naming both attributes; a `${…}` inside a `==` attribute or node value is an error
- * naming it.
- */
-export function requireNoExpressionTemplate(node) {
-    if (isExpression(node.value) && templateParameters(node.value).length) {
-        throw new Error(`${node.nodeTag} '${node.label}': the == node value contains a \${…} template, not accepted in a == expression`);
-    }
-    const attrs = Object.fromEntries(sourceAttributeItems(node.getAttr()));
-    for (const [name, raw] of Object.entries(attrs)) {
-        if (isExpression(raw) && templateParameters(raw).length) {
-            throw new Error(`${node.nodeTag} '${node.label}': '${name}' contains a \${…} template, not accepted in a == expression`);
-        }
-        for (const param of templateParameters(raw)) {
-            if (isExpression(attrs[param])) {
-                throw new Error(`${node.nodeTag} '${node.label}': the template of '${name}' uses '${param}', a == expression`);
-            }
-        }
-    }
 }

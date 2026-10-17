@@ -2,6 +2,8 @@
 
 Document ID: **GC-205**. Status: **analysis complete; JS description ownership and shared labelbox contract approved; remaining input decisions open**.
 
+**Current planning:** [GC-245 · Component 0.3 plan](245-components-0-3-plan.md) includes callbackSelect, the random example and legacy-derived radio design. See [§095](#gc-205-095).
+
 [Expanded counterpart](../../docs/future/205-components.md).
 
 <a id="gc-205-005"></a>
@@ -455,3 +457,22 @@ preserve input identity/value/focus/selection; accessible association survives l
 changes; label text remains literal without localization. Define unresolved errors
 and side-label layout before testing their behavior. No runtime work is authorized
 by this documentation update; invalid-value commit policy remains undecided.
+
+
+<a id="gc-205-095"></a>
+## 095 · Component 0.3 planning follow-up — 2026-10-16
+
+The owner includes callbackSelect and the random-data lesson, asks to start from
+textbox/labelbox while designing multiple controls together, and requests radio
+buttons/groups with legacy-inspired syntax. [GC-245](245-components-0-3-plan.md)
+contains the updated plan, including inherited metadata, automatic activation of
+selected collections, explicit capability mixins and stateful collaborators.
+The earlier textbox-then-tabs sequence in §060/D8 is superseded as a proposal by
+this multi-control input plan; layout remains a separate workstream.
+
+Confirmed scope and proposed architecture are kept distinct (constitution 11.84).
+Legacy radioButton and radioButtonText are the relevant authoring evidence; the
+old radiogroup helper is deprecated, and existing native boolean radio semantics
+remain unchanged. The subsequent definition sketch was accepted and its first
+implementation is recorded in [GC-245 §060](245-components-0-3-plan.md#gc-245-060).
+No new release is claimed.

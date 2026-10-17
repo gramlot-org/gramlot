@@ -359,3 +359,31 @@ test('CSP without unsafe-eval: a page with named logic only never calls the inli
         globalThis.Function = original;
     }
 });
+
+test('application collection grammar and browser module load before Source, including fragments', () => folder(async root => {
+    const {default: inputs} = await import('../src/components/inputs.js');
+    const moduleUrl = new URL('../src/components/inputs.js', import.meta.url).href;
+    await write(root, 'index.js', `import {Page as Base} from ${JSON.stringify(PAGE_MODULE)};
+export class Page extends Base {
+    main(root) { root.textbox({id:'customer', value:'^customer', lbl:'Customer'}); root.dataSetter({destination_path:'customer',value:'Ada'}); }
+    more(root) { root.checkbox({value:false, lbl:'Contact'}); }
+}
+Page.registerSource('more');`);
+    await write(root, 'inputs.js', `export {default} from ${JSON.stringify(moduleUrl)};`);
+    const server = new GramlotFileServer(root, {collections:[{grammar:inputs.toDocument(), module:'/inputs.js'}]});
+    const opened = await server.openPage('/', {prefix:root});
+    const args = bootstrapArguments(opened.html);
+    assert.deepEqual(args.resources.collections,[root+'/inputs.js']);
+    const wire = await sourceText(server, opened.pageId);
+    assert.match(await sourceText(server, opened.pageId, 'more'), /gramlot-checkbox/);
+    const {window} = browser(EMPTY_PAGE, pathToFileURL(root+'/index.html').href);
+    await withFetch(wire, async () => {
+        const app = await new PageBootstrap({...args, document:window.document}).run();
+        const field = window.document.getElementById('customer');
+        assert.equal(field.control.value,'Ada');
+        field.control.value='Grace';
+        field.control.dispatchEvent(new window.Event('change',{bubbles:true}));
+        assert.equal(app.data.getItem('customer'),'Grace');
+        app.dispose();
+    });
+}));

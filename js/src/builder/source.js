@@ -1,6 +1,8 @@
+import {BagCbResolver} from '@genrojs/bag';
 import {SourceBag, SourceBagNode, sourceAttributeItems, wrapSource} from '@genrojs/builders';
 import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
-import {pointerTransform, pointerDependencies, preparePointerItems, resolvePointerAttribute} from '../binding/pointer.js';
+import {pointerTransform, pointerDependencies} from '@genrojs/builders';
+import {resolvePointerAttribute} from '../binding/pointer.js';
 
 // The inline code attributes of each tag, besides `connect_on<event>` and the `==` expressions of any tag.
 const CODE_ATTRIBUTES = {
@@ -8,7 +10,6 @@ const CODE_ATTRIBUTES = {
     dataController: ['script', '_if', '_else', '_ask_if', '_ask_onCancel'],
     dataRpc: ['_ask_if', '_ask_onCancel', '_if', '_else', '_onCalling', '_onResult', '_onError'],
     dataRemote: ['_if', '_else'],
-    button: ['action', '_ask_if'],
 };
 
 // The control attributes of `remote`, written on the node as they are; every other parameter becomes `remote_<k>`.
@@ -44,10 +45,11 @@ export class GramlotBuilderBagNode extends SourceBagNode {
      */
     codeAttributes() {
         const own = [...(CODE_ATTRIBUTES[this.nodeTag] ?? []),
+            ...(this._getMeta('gramlot_component')?.command ? ['action', '_ask_if'] : []),
             ...(typeof this.getAttr('remote') === 'string' ? REMOTE_CODE_ATTRIBUTES : [])];
         const items = [];
         for (const [name, value] of Object.entries(this.getAttr() ?? {})) {
-            if (typeof value === 'string' && (own.includes(name) || name.startsWith('connect_on') || name.startsWith('subscribe_') || name.startsWith('selfsubscribe_'))) items.push([name, value]);
+            if (typeof value === 'string' && (own.includes(name) || name === 'validate_call' || name === 'validate__onResult' || name === 'validate_onAccept' || name === 'validate_onReject' || /^validate_\w+_if$/.test(name) || name.startsWith('connect_on') || name.startsWith('subscribe_') || name.startsWith('selfsubscribe_'))) items.push([name, value]);
         }
         for (const attribute of ['ask', '_ask']) {
             const spec = this.getAttr(attribute);
@@ -118,12 +120,6 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         return this.builder.binding.gramlot._subscriptions.publishNode(this, topic, payload);
     }
 
-    /** Builder's pointerType, except that a string starting with `==` is not a pointer. */
-    pointerType(v) {
-        if (typeof v === 'string' && v.startsWith('==')) return null;
-        return super.pointerType(v);
-    }
-
     /** Builder's `^` pointers, except the attributes ending in `_path`, which hold a bare path. */
     pointers() {
         const datapath = this.getAttr('datapath');
@@ -148,12 +144,17 @@ export class GramlotBuilderBagNode extends SourceBagNode {
             if (!this.pointerType(value)) continue;
             if (pointerTransform(value)) {
                 if (typeof name !== 'string') throw new Error(`${this.nodeTag} '${this.label}': pointer suffixes belong to attributes; use format/mask for node text`);
+                // Gramlot's empty variable context has no absolute Data path. Resolve
+                // that structural state here; Builder receives an already typed value.
+                if (this.absDatapath(value) === null) {
+                    items.set(name, new BagCbResolver(() => resolvePointerAttribute(this, name)));
+                }
                 continue;
             }
             if (this.#isPathAttribute(name, value)) items.set(name, value.slice(1));
             else if (this.absDatapath(value) === null) items.set(name, null);
         }
-        return preparePointerItems(this, items);
+        return items;
     }
 
     /**

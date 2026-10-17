@@ -13,6 +13,7 @@ PUBLIC_PAGES = (
     "docs/public/095-writing-pages.md",
     "docs/public/096-themes-and-css.md",
     "docs/public/100-extensions.md",
+    "docs/public/105-components.md",
 )
 PUBLIC_ASSETS = (
     "assets/branding/gramlot-logo.svg",

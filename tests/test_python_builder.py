@@ -173,7 +173,7 @@ class GramlotSourceClassTests(unittest.TestCase):
         self.assertIs(GramlotBuilderBag._node_class, GramlotBuilderBagNode)
         own = {cls: {name for name in vars(cls) if not name.startswith("__")}
                for cls in (GramlotBuilderBag, GramlotBuilderBagNode)}
-        self.assertEqual(own[GramlotBuilderBagNode], {"pointer_type", "remote", "runtime_to_evaluate", "abs_datapath"})
+        self.assertEqual(own[GramlotBuilderBagNode], {"remote", "runtime_to_evaluate"})
         self.assertEqual(own[GramlotBuilderBag], {"_node_class", "authorized_copy"})
 
     def test_a_double_equals_value_is_not_a_pointer(self):
@@ -186,7 +186,7 @@ class GramlotSourceClassTests(unittest.TestCase):
         self.assertEqual(node.pointer_type("^x"), "^")
         self.assertEqual(node.pointer_type("=y"), "=")
         self.assertEqual(node.pointers(), [("alt", "^x")])
-        self.assertEqual(builder.runtime_values(node), (None, {"title": "==1+1", "alt": "X", "lang": "Y"}))
+        self.assertEqual(builder.runtime_values(node), (None, {"title": None, "alt": "X", "lang": "Y"}))
 
     def test_authoring_on_a_gramlot_bag_propagates_the_classes_to_branches(self):
         builder = GramlotBuilder()

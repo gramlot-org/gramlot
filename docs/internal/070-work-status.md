@@ -1,8 +1,8 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-16**.
+Document ID: **GC-070**. Updated: **2026-10-17**.
 
-**Current checkpoint:** the intermediate formatting/pointer release is published and verified across core, examples and JS integration. Release gates, registry checks and documentation receipts are recorded in [§1000](#gc-070-1000). The next component workstream has not started.
+**Current checkpoint:** the intermediate formatting/pointer release is published (§1000). The approved 0.3 component increments are implemented locally: seventeen inputs, labelbox, formlet/groupBox, command buttons, themes/touch and the complete field-validation engine. Final cross-host, package and documentation qualification has passed; see [§1175](#gc-070-1175). No 0.3 publication has occurred.
 
 **Inspector CSS variables:** the Styles trial and CSS download are implemented; locally verified; owner visual acceptance pending. See [§945](#gc-070-945).
 
@@ -12,7 +12,7 @@ Document ID: **GC-070**. Updated: **2026-10-16**.
 
 **Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
 
-**Next workstream:** Gramlot components for 0.3 remain the next owner-directed design/implementation stage. Component and localization design records are preparation, not implemented services. Other [workstream priorities and parallel assignments](../future/README.md) remain open; website/system-Data notes are retained.
+**Next workstream:** the 0.3 closing checks are complete; obtain release authorization before bump, consolidation and publication. Translation services, DB/grid/store work and broader containers remain separate workstreams; see [GC-245 §110](../future/245-components-0-3-plan.md#gc-245-110).
 
 **Deferred website design:** editorial HTML companions and two interactive-region modes for gramlot.org, asqueel.org and kajenn.org are recorded for later discussion (§850); no implementation started.
 
@@ -7800,3 +7800,867 @@ public source/link/anchor check. No component or localization service
 implementation is implied by this release. Formatter limits remain documented
 in the release notes: advanced patterns and Decimal support are incomplete;
 static rendering does not run Intl or JavaScript expressions.
+
+
+<a id="gc-070-1005"></a>
+## 1005 · Component 0.3 plan and radio review — 2026-10-16
+
+Owner requests the 0.3 plan, explicitly including callbackSelect and its random-data
+example; textbox with shared labelbox is the starting point, with multiple control
+shapes reviewed together. Radio buttons/groups were added to the design review at
+the owner's request, using legacy syntax where dedicated PoC components are absent.
+
+[GC-245](../future/245-components-0-3-plan.md) records ownership, proposed hierarchy,
+explicit mixins/stateful collaborators, metadata inheritance, selected-collection
+registration, staged gates and chronological teaching. PoC bases/registry/editors,
+GC-040's historical probe, current core binding/radios, legacy radioButton and
+radioButtonText, and the HTML standard were inspected. No new runtime or component
+browser tests were executed. The legacy lowercase radiogroup helper is deprecated;
+current native radio semantics are not changed by the proposed group component.
+
+Paired section anchors, the plan’s local links and whitespace checks passed.
+The planning review is complete; architecture/API proposals await concrete owner
+review. Next is P0's JS definition and Python signature sketch, comparing textbox,
+checkbox and radio group before implementation. No dependency edits, publication
+or agent delegation occurred.
+
+
+Follow-up, 2026-10-16: the textbox/checkbox/radio-group JS and Python sketch was
+shown to the owner. The owner corrected widget naming: identical names across
+languages, preferably case-insensitive. Recorded in constitution 11.84 and GC-225;
+GC-245 no longer requires snake/camel translation for widgets. Read-only inspection
+confirmed case-insensitive schema lookup in installed Python Builders
+(`builder/source_bag.py`) and JS Builders (`src/builder-base.js`). No dependency or
+runtime code changed. The proposed component-definition API remains under review.
+Verification: paired naming/decision records and whitespace checked; runtime tests
+not needed for this documentation correction.
+
+
+<a id="gc-070-1010"></a>
+## 1010 · First input components and shared labelbox — 2026-10-16
+
+Owner accepted the concrete JS/Python definition sketch and requested implementation
+of textbox/labelbox qualified by checkbox and radioButtonText. Constitution 11.84,
+GC-225 and GC-245 §055 record approval. Implemented defineComponent/defineCollection,
+NativeControl/ChoiceGroup, Labelbox/FieldState, explicit realm-local registration
+and DOM-free JSON export consumed by Python. Widget names match across languages
+and use the existing case-insensitive Builder lookup. intl_str qualification is
+retained without a translation engine. Existing ControlAdapter owns commits, IME,
+reactive context and cleanup; the component does not access the Data Bag.
+
+The labelbox supports eight reactive positions, shared prefix routing and renderer
+style conversion, preserves the inner control/focus/caret and maintains accessible
+label/group association. Checkbox and radioButtonText exercise different control
+shapes. Radio options share native grouping inside each instance's shadow tree.
+Python's grammar loader now supplies the upstream nullable-name information so
+explicit None remains accepted only by nullable signatures.
+
+Verified: full core JS suite 3461/3461; Python 162 passed + 259 subtests, with one
+expected failure reproducing the upstream nested-Regex/Union issue. The focused
+component suite subsequently passed all 9 cases including shared Data and reactive
+datapath rebinding. Python-first browser qualification passed Chromium and WebKit;
+screenshots reviewed, native radio arrow keys and group isolation included.
+The public component guide passed the strict Sphinx build. The first sandboxed
+full-suite attempts could not bind conformance servers and had stale bundles;
+regeneration and authorized local-server runs resolved those environmental failures.
+
+Open dependency defect: Python Builders 0.28.1 ignores Regex nested in a Union,
+so a bool/int-or-pointer authoring signature can accept arbitrary literal strings;
+JS rejects them. Direct regression: test_upstream_annotated_regex_inside_union.
+No dependency edit, weakening of the declared schema or consumer workaround was
+introduced. Fix belongs to Builders; full invalid-input parity is not claimed.
+
+[GC-105](../public/105-components.md) documents actual usage, activation, export,
+limits and component authoring. PORT-0010-input-components records the bounded
+review. Implemented and locally verified; owner runtime review and broader 0.3
+work remain. No version bump, commit, publication or gallery integration occurred.
+Next: owner review of the first three-control increment before expanding the input
+family, callbackSelect or application-wide collection configuration.
+
+
+Follow-up, 2026-10-16: owner classifies the nested-Regex/Union discrepancy as an
+edge case and authorizes opening the upstream issue ("ok ma è un edge case. apri
+pure l'issue"). Filed [Builders Python #59](https://github.com/genro-org/genro-builders/issues/59)
+with the minimal reproduction, expected branch-local validation and JS parity.
+Track it as non-blocking for the component work; the known limitation and direct
+expected-failure regression remain explicit until upstream resolves it.
+
+<a id="gc-070-1015"></a>
+## 1015 · Input collection loading and gallery examples — 2026-10-16
+
+Owner confirms "Sì, collega inputs all’avvio della gallery", then requests the
+JS + generated JSON collection connection and three labelbox examples. The gallery
+selects inputs explicitly at application startup. Core servers load its generated
+grammar for main and remote Source; PageBootstrap imports/registers the browser
+module before mounting. All five Python adapters forward the configuration; Node
+and serverless consume the same gallery declaration. The directory exporter embeds
+collection modules for offline file opening.
+
+The new chronological components section contains w01 textbox/shared text/live and
+readonly, w02 checkbox/lbl versus label/disabled, and w03 two independent radio groups
+with bound column count. All demonstrate reactive label positioning; textbox also
+shows lbl_, box_, box_l_ and box_c_ style routing. Python and JS sources are paired.
+
+Verification: core JS 3463 passed; core Python 163 passed, 259 subtests and one known
+upstream expected failure; examples JS 70 passed and Python 16 passed/61 subtests;
+JS server 33 passed, serverless 35 passed; Python adapters 102 passed. Browser checks
+pass in Chromium and WebKit for Python, Node and the file:// serverless export:
+three controls, Data writes, mirrored values, label positions and gallery frames.
+WebKit is not a Safari application test. Visual review of the radio example completed.
+
+No dependency patches, version bump, commit, push or publication. The upstream
+Builders issue #59 remains nonblocking. Owner trial/acceptance and the rest of the
+0.3 component family remain next work; this requested gallery increment is complete.
+
+Documentation gate: strict core Sphinx build passes. The examples manual builds
+49 interactive lessons, including the three components; paired guide identities,
+search scope and all local links/anchors pass. Host guide pairs retain stable IDs.
+
+Gallery code splitter follow-up — 2026-10-16: the owner requests resizing the
+source panel. The existing preview/code divider already had pointer/keyboard
+behavior but lacked the shared index-divider styling. Python and JS gallery pages
+now apply that class and a drag tooltip, restoring the visible handle and resize
+cursor without another splitter implementation. The 23 gallery tests pass; actual
+widen/narrow dragging passes in Chromium and WebKit on Python, Node and file://
+serverless galleries. Local galleries restarted and the static export rebuilt.
+
+
+Gallery frame follow-up — 2026-10-16: the owner requests a top title/toolbar,
+independent Navigation/Code toggles, a full-height right code sidebar symmetric
+to navigation, smaller code and breathing room at the edge. Implemented in
+Python and JavaScript gallery Source; IndexPage adds the optional `header(shell)`
+hook and its runtime owns both sidebar controls, resizing and stored preferences.
+The former per-example preview/code splitter is replaced by one right separator.
+Code uses 11px text, inner padding and an inset scroll viewport. Hidden panes
+release space without replacing the example iframe or resetting its source tabs.
+Introduction/category pages suppress code without changing the user's preference.
+
+Verification: 71 examples JS tests, 5 core index tests and 6 Python index/gallery
+tests pass. Chromium and WebKit pass pointer/keyboard resizing, sidebar toggles,
+full-height alignment, retained iframe values, and restored widths/visibility in
+Python, Node and the file:// static export (six scenarios). A reusable gallery
+browser regression is stored in gramlot-examples/scripts/verify_gallery_layout.mjs.
+Preview servers remain on 8205 (Python) and 8207 (Node); static export rebuilt.
+No version bump or publication in this increment. Ready for the owner's visual trial.
+
+
+Radio example slider follow-up — 2026-10-16: owner reports that the Columns
+slider stops in the middle. A hard limit at 2 was not reproduced: click, keyboard
+and continuous drag reach 3 in Chromium and WebKit. The measured usability defect
+was vertical movement of the slider when the radio group changed row count.
+The Python and JS examples now declare controls above the groups and show the
+bound column count beside the label; no control/runtime workaround was added.
+The browser regression checks full mouse drags 3 → 1 → 3, the numeric Data value,
+visible count and unchanged slider Y position. All six Python/Node/file:// cases
+pass in Chromium and WebKit. Local previews restarted and static export rebuilt.
+The owner's exact reported middle-stop remains unconfirmed; this change removes
+the observed layout instability.
+
+Radio example compact sizing — 2026-10-16: owner requests controls that do not fill the entire row. Python/JS now declare a 16rem range, 8rem position selector, 24rem control card and 36rem radio card, all capped at 100% of available width through ordinary Source style attributes. Browser verification covers retained bindings and full slider travel on Python, Node and serverless in Chromium/WebKit; visual review confirms the compact arrangement.
+
+Textbox/checkbox compact sizing — 2026-10-16: owner explicitly requests the same compact sizing as the radio example. Both Python/JS versions now use 24rem maximum control cards, 32rem maximum field cards and 8rem selectors. Cards take available width up to their cap; this also corrects the radio example to avoid intrinsic grid expansion from fixed widths. Chromium visual checks at 1200px and overflow checks at 360px pass for textbox and checkbox. Previews and static export updated; ordinary Source style declarations only.
+
+
+<a id="gc-070-1020"></a>
+## 1020 · Simple inputs with labelbox — 2026-10-16
+
+Owner-authorized first block implemented: textBoxArea, passwordbox, radioButton,
+colorpicker, horizontalSlider and verticalSlider. The collection now contains nine
+controls. All use the existing component bases/mixins, binding lifecycle and
+auto-registration; Python consumes the regenerated JSON. Numeric range metadata
+supports literal integers/fractions and reactive min/max/step. Single radios reuse
+the renderer's boolean RadioGroups and add cross-shadow arrow navigation.
+
+Compact Python/JS gallery lessons w04–w09 cover shared values, live/commit,
+reactive label positions and disabling. Cards are capped at 24rem. Preview servers
+8205 (Python) and 8207 (Node) run the updated collection; the static export is rebuilt.
+GC-105 §040 documents native limits and GC-245 §065 tracks this bounded increment.
+
+Verification: 3,467 core JS tests and 163 core Python tests pass (one existing
+expected failure for Builders nested Regex/Union, 259 Python subtests). The focused
+component/native-control set passes 61 tests. Gallery tests pass 77 JS tests and
+16 Python tests (67 subtests), including every new Python route. Chromium and
+WebKit pass all nine controls on Python, Node and file:// serverless: shared values,
+live/commit, radio arrow selection, full range dragging, disabled state and 360px
+layout without overflow. Core and examples Sphinx builds succeed with warnings
+as errors. Desktop screenshots reviewed for textarea, radios, vertical slider and
+gallery embedding. Color tests dispatch native value events; the OS picker is not
+automated. Vertical Home/End follow browser-native writing-mode differences,
+explicitly documented. No forced native behavior replacement was introduced.
+
+Verification setup notes: the first Python core run lacked local-socket permission;
+rerunning with permission passed. The first gallery Python run imported installed
+packages; rerunning with the current core/examples source paths passed. Neither
+was a product defect. The gallery count assertion was updated from 50 to 56 routes.
+
+Implemented and verified for owner trial; visual acceptance remains with the owner.
+No bump, commit, push or publication requested/performed in this increment.
+Next blocks remain typed editors and selection controls (including callbackSelect
+with random options), then their agreed validation work. Do not treat this as
+completion of the full 0.3 input collection.
+
+
+Typed editor block started — 2026-10-16: owner authorizes numeric/date/time editors
+and explicitly chooses PoC-style text entry with Gramlot formatting. Investigation
+of numberTextBox/dateTextBox/timeTextBox confirms draft/committed-value separation
+and existing reusable date-expression parsing. Portable Builder signatures reject
+datetime.date, datetime.time and decimal.Decimal; the Python core loader is also
+missing those named types. Explicit authorization for a bounded owning-library
+extension is pending (AGENTS dependency boundary). No implementation workaround,
+dependency edit or publication performed. See GC-245 §070 for the reproduction
+and selected direction. Next: resolve the signature prerequisite, then implement
+and qualify typed editing plus compact cross-host gallery examples.
+
+
+Typed editor contract correction — 2026-10-16: owner confirms shared dtype codes
+for exported component signatures (GC-245 §075, constitution 11.84 follow-up).
+The previous named-class extension proposal is superseded. Decision recorded in
+both mirrors; runtime and collection JSON remain unchanged. Next: establish dtype
+support in the owning grammar/type interfaces, then wire the component export and
+complete the authorized numeric/date/time editors and gallery examples. Do not
+report these editors or dtype export as already implemented. No dependency changes
+or publication performed in this decision-record update.
+
+
+<a id="gc-070-1025"></a>
+## 1025 · Typed input editors and portable dtype signatures — 2026-10-16
+
+Owner authorization: "ok procedi con il supporto dei dtype nei builder e poi
+completa gli input numerici, date e orari con labelbox ed esempi compatti nella
+gallery". This follows the explicit PoC-style text editor choice and the dtype
+contract correction (GC-245 §075). Implemented locally; owner visual acceptance
+and publication remain separate.
+
+Builder Python/JS now load `{kind: 'dtype', dtype: code}` through their existing
+TYTX registries; Python exports registered domain annotations as dtype descriptors.
+All component parameter metadata uses dtype, with independent nullable/binding and
+intl_str qualification. Core's Python loader consumes the same grammar. No changes
+to Bag/TYTX or conversions to strings/Number are used to bypass typed signatures.
+
+The inputs collection now includes numberTextBox, dateTextBox and timeTextBox:
+shared TypedEditor/Labelbox/FieldState, locale-aware numeric drafts, exact Decimal,
+existing natural-language date parser, civil time with seconds/milliseconds,
+formatting through the page, live/commit, Enter/Escape and invalid draft feedback.
+Empty typed input writes null. D/H retain civil meaning without timezone shifts.
+Renderer display directives remain available to component parameters. Decimal
+services come from the page runtime, so a separately bundled collection uses the
+same TYTX identity. GC-105 §045–050 documents supported syntax and current limits.
+
+Gallery lessons w10–w12 are compact (24rem), Python-first with equivalent JS,
+reactive label placement and shared values. The numeric JS page imports Bag inside
+async Page.main, retaining Page and Logic in one module without a host-only import
+executing in browser Logic. Python/Node previews are 8205/8207; the file export is
+`/tmp/gramlot-components-gallery-static`. These are local development previews.
+
+Verification:
+- Builders JS: 151 tests pass, including dtype validation and value identity.
+- Builders Python: all 75 grammar export/load tests pass. The attempted full
+  dependency suite could not collect three unrelated XML/XSLT modules because
+  this environment lacks lxml; no full Builder Python-suite claim is made.
+- Core: 3473 JavaScript tests pass; 163 Python tests pass, one existing expected
+  failure for upstream nested Regex/Union validation, 259 subtests.
+- Gallery: 80 JavaScript and 16 Python tests pass; 70 Python subtests.
+- Chromium/WebKit: all three typed pages pass on Python, Node and file://, including
+  invalid/null edits, Decimal beyond 2^53, natural date words, time precision,
+  readonly, labelbox and 360px overflow checks. Desktop screenshot reviewed.
+- Core and example Sphinx builds pass with warnings treated as errors.
+
+No bump, release or publication. Coordinated development installs need the edited
+Builder JS plus rebuilt core and gallery; the public package versions do not yet
+include this work. Remaining 0.3 work includes selection families/callbackSelect,
+full validation and later store-based controls; no calendar/time popup or spinner
+is claimed in this bounded text-editor increment.
+
+
+<a id="gc-070-1030"></a>
+## 1030 · Local and callback choices — 2026-10-16
+
+Owner requested the next block and confirmed "Sì, confermo questa API" to
+filteringSelect with values and callbackSelect with a named Logic callback.
+Implemented both over shared ChoiceEditor/NativeControl, Labelbox and FieldState.
+The existing Logic registry invokes (node, kw); _querystring/_id and the
+{rows, identifier, caption} envelope retain the confirmed PoC contract. No new
+callback evaluator, endpoint or dependency change is introduced.
+
+The controls keep query drafts out of Data, commit string codes, resolve captions,
+handle invalid/empty edits, keyboard/mouse selection and pending/error states.
+Responses cannot replace newer searches/external selections or survive disposal.
+Portable inputs grammar contains both declarations. GC-105 §055 explains use and
+limits; GC-245 §085 records the bounded delivery. Native select stays unchanged.
+
+Gallery w13/w14 are Python-first with JS twins: compact cards, shared labelbox,
+readonly and a Data Bag of 100 random records generated once by a startup
+controller. Repeated queries reuse those records. Python 8205, Node 8207 and the
+static gallery in /tmp/gramlot-components-gallery-static were rebuilt.
+
+Verification:
+- Core JS: 3478 passed, including five focused choice tests for initial lookup,
+  Data writes, reactivity, keyboard, invalid/null, asynchronous races, failures and
+  disposal. Core Python: 163 passed, one existing expected failure, 259 subtests.
+- Gallery JS: 82 passed. Gallery Python: 16 passed, 72 subtests. The catalogue has
+  60 examples plus its index. Tests check stable random records and caption lookup.
+- Chromium and WebKit: both pages pass on Python, Node and file://, including
+  real popup interaction, shared value, readonly/labelbox and 360px no-overflow.
+  The desktop callback screenshot was reviewed.
+- Core and examples Sphinx builds pass with warnings treated as errors. The
+  example playground bundle still emits its existing import.meta/IIFE warnings;
+  the browser qualification has no page errors.
+
+Implemented and automatically verified, awaiting owner visual acceptance. No
+version bump, commit, push or publication. Other choice families (comboBox,
+checkBoxText), store/DB providers, full validation and the optional regeneration
+reset policy remain outside this block. No additional phase has been started.
+
+
+<a id="gc-070-1035"></a>
+## 1035 · Remaining local choices completed — 2026-10-16
+
+Owner authorizes comboBox/checkBoxText with "procedi", then confirms
+"Sì, stringa di codici come nel PoC" for checkBoxText: comma-separated codes or
+null when no option is selected. This resolves the initial value-contract question.
+
+Implemented comboBox as the free-text ChoiceEditor/localChoices policy: unlisted
+text, suggestion captions, null/empty distinction and normal live/IME binding.
+checkBoxText uses ChoiceGroup's multiple policy with stable selected-code order,
+shared Data, reactive values/columns/labelbox, readonly/disabled and keyboard focus.
+The runtime binding remains the sole Data writer. Portable metadata keeps dtype T
+and nullable/twoWay independently; both Python and JS use the same widget names.
+No new dependency, callback evaluator or application state system was introduced.
+
+Compact Python-first gallery w15/w16 have JS twins. Python 8205, Node 8207 and the
+file:// static output in /tmp/gramlot-components-gallery-static were rebuilt.
+GC-105 §§060–065 documents the contracts; GC-245 §090 records delivery scope.
+
+Verification:
+- Core JS: 3482 passed, including shared radio/select regression coverage and
+  free-text, IME, ordered multiple selection, null, locks, focus and disposal tests.
+- Core Python: 163 passed, one existing expected failure, 261 subtests; generated
+  signatures include case-insensitive comboBox/checkBoxText and explicit null.
+- Gallery JS: 84 passed. Gallery Python: 16 passed, 74 subtests. The catalogue
+  now contains 62 examples plus the index.
+- Chromium and WebKit: both new lessons pass on Python, Node and file://, including
+  keyboard/mouse input, shared values, null/empty, readonly, labelbox and 360px
+  no-overflow. The desktop group screenshot was reviewed.
+- Core and examples Sphinx builds pass with warnings treated as errors. The
+  playground build retains the previously recorded import.meta/IIFE warnings.
+
+Implemented and verified locally; owner visual acceptance is still separate.
+No version bump, commit, push or publication. The accepted inline/free-text choice
+block is complete. Calendar, basic shared validation, theme refinement and final
+collection qualification remain later work. PoC checkbox popup/store-backed
+options are not part of this increment; no additional phase was started.
+
+
+<a id="gc-070-1040"></a>
+## 1040 · Calendar and date editor integration — 2026-10-16
+
+Owner approved dateCalendar and dateTextBox calendar=True default / calendar=False opt-out. Implemented shared civil-date calendar, Labelbox, typed D binding, keyboard month/day navigation, null clearing, readonly/disabled, popup cleanup and external Data refresh. Generated Python grammar matches JS descriptors. Gallery w17 compares inline calendar, popup and text-only editing; w11 demonstrates the opt-out. Core checks: 3487 JS tests; Python 163 passed, one existing xfail, 261 subtests. Gallery: 85 JS tests; Python 16 passed and 75 subtests. Chromium and WebKit pass on Python 8205, Node 8207 and the file:// serverless export; compact layout was visually reviewed. Core and examples Sphinx builds pass with warnings treated as errors. The selected date remains typed through the adapter (including live mode), avoiding short-year caption reparsing; Python TYTX dateCalendar authoring is covered. Local development only, no release. Remaining wider 0.3 work: agreed basic validation, theme refinement and final distribution qualification.
+
+
+<a id="gc-070-1045"></a>
+## 1045 · Shared required/length validation — 2026-10-17
+
+Implemented the owner-confirmed rejected-draft policy for validate_notnull and validate_len with customizable messages. FieldState shares messages/ARIA/native validity; conversion and choice checks run before rule acceptance, while ControlAdapter remains the only writer. Declared component parameters use resolved Source values before HTML-specific filtering; no dependency edits. Invalid drafts survive equal Data projections and label changes; different external Data replaces them. Existing live/change/IME timing is retained. Generated Python metadata and compact gallery w18 are included. Core suite: 3493 JS tests; Python 163 passed, one existing xfail and 261 subtests. Gallery: 86 JS tests; Python 16 passed and 76 subtests. Final focused component tests: 38 passed. Chromium and WebKit pass on Python 8205, Node 8207 and the file:// serverless export; compact error presentation visually reviewed. Core and examples Sphinx builds pass with warnings treated as errors. No publication; owner visual acceptance remains separate. Remaining 0.3 work: themes, extension/distribution proof and final qualification. Full validation and form orchestration remain outside this increment.
+
+
+<a id="gc-070-1050"></a>
+## 1050 · Floating validation feedback — 2026-10-17
+
+Owner rejected inline messages that move following controls and requested red
+invalid fields with disappearing floating messages. Legacy inspection confirmed
+Error state plus dijit tooltip (not inline layout); legacy Tundra used yellow,
+whereas the owner explicitly requests red here. FieldState now owns a manual
+native popover, four-second dismissal, Escape/scroll/resize hiding, focus/hover
+redisplay and cleanup. Error state/accessibility text and last-valid Data survive
+dismissal. WebKit changes native input dimensions when background/border styling
+is changed, so the red indication uses an external outline and text color only.
+
+Core suite: 3494 JS tests passed; final focused validation: 7 passed; gallery: 86 passed. Browser checks
+pass on Chromium and WebKit for Python 8205, Node 8207 and file:// serverless,
+including unchanged field height and following-control position, red indication,
+timeout/reopen, recovery, Data separation and compact layout. Screenshots reviewed.
+Python runtime/signatures are unchanged. Core and gallery documentation builds pass.
+Gallery test harness now supplies jsdom's missing popover methods, while actual
+rendering is tested in browsers. No publication. Remaining 0.3 work is unchanged:
+shared theme refinement and final extension/distribution qualification.
+
+
+<a id="gc-070-1055"></a>
+## 1055 · GenroPy-inspired theme families — 2026-10-17
+
+Implemented genropy-mimi and genropy-gioanna (legacy file joanna.css), using legacy
+light palette/proportion references and separate Gramlot dark adaptations. Base and
+Compact remain available. Canonical core theme assets ship through the existing
+build. Shared input shadow styling consumes semantic palette/field/label tokens;
+calendar, choices and validation popovers follow the theme. Explicit Source styles
+retain precedence. Index/gallery Python and JS selectors expose both profiles;
+existing frame messages and preference storage synchronize them without navigation
+or rebuilding controls. Theme CSS replaces the previous profile instead of stacking
+active profiles. No dependency edits or publication.
+
+Verified: 3494 core JS tests; final index tests 6 passed (including new profile
+replacement/persistence check); Python 163 passed, 1 preexisting xfail, 261 subtests;
+gallery 86 JS tests. Chromium and WebKit pass both theme profiles in light/dark on
+Python 8205, Node 8207 and file:// serverless: actual shadow styles, Data editing,
+calendar, choices, error messages and hosted persistence. Validation browser checks
+also pass all six environments, including no error-induced layout shift. Light
+screenshots reviewed; visual fidelity remains an owner review, not a pixel-parity
+claim. Core/gallery docs cover usage and tokens. Remaining wider 0.3 work: final
+extension/distribution qualification and any owner-requested visual refinements.
+
+
+<a id="gc-070-1060"></a>
+
+## 1060 · Gallery settings and legacy visual reference (2026-10-17)
+
+Owner requested a footer gear for shared settings and provided the Demetra manual
+as evidence of an application theme layered over a GenroPy base. Implemented in
+gramlot-examples: native popover containing theme/color, keyboard navigation, label
+position and installation instructions. Label overrides travel to owned preview
+frames by postMessage and update Source attributes; the example-default choice
+restores authored pointers. The choice persists independently per gallery origin
+and path. Only the dedicated textbox/labelbox lesson retains its local position
+selector; later component lessons focus on their specific behavior.
+
+Verified: 88 gallery JS tests; 16 Python tests with 76 subtests; documentation build;
+six Chromium/WebKit × Python/Node/file-export settings checks (open/close, no layout
+shift, theme/color, lazy frames, pointer restoration, persistence and narrow viewport).
+Visual comparison of Demetra manual pages 5–7 is recorded under PORT-0010. It does
+not establish pixel parity or live interaction equivalence. No core runtime,
+dependency or release change. Local implementation verified; owner visual acceptance
+and wider 0.3 qualification remain separate.
+
+Additional verification: all six existing input-family browser runs and all six Mimi/Gioanna theme runs passed after moving the controls into Settings. Core and gallery documentation builds passed with warnings treated as errors.
+
+
+<a id="gc-070-1065"></a>
+
+## 1065 · Live invoice theme comparison awaiting login (2026-10-17)
+
+Owner authorized comparing test_invoice_pg visually and adjusting Gramlot theme
+field/label sizes and spacing. Started the existing GenroPy daemon on localhost
+40404 and test_invoice_pg on 127.0.0.1:8210 without editing the legacy repository
+or application records. The page loads Mimi and requires authentication; a Chrome
+tab is open and the owner was asked to sign in. No form-page visual equivalence
+is claimed and no theme changes have been made in this follow-up yet.
+
+Preliminary browser measurements at normal scale: legacy login field 23.69px high,
+12px text, 4px radius (login-specific padding); Gramlot Mimi 24px / 12px / 3px,
+label 11.04px and label gap 3px; Gramlot Gioanna 26px / 13px / 6px, label 11.96px
+and gap 3.25px. Login dimensions must not be generalized to invoice forms. Legacy
+form CSS uses 6px formbuilder spacing, normal label weight and theme-specific
+label ratios (.9em default, .8em Joanna). Next: after login, inspect actual invoice
+form fields and adjust shared theme tokens with browser regression checks.
+
+
+<a id="gc-070-1070"></a>
+
+## 1070 · Live invoice density refinement verified (2026-10-17)
+
+Owner opened the invoice in test_invoice_pg and authorized the visual comparison
+and theme adjustments. Inspected that authenticated invoice in Chrome, including
+locked and enabled fields, then restored its locked state without changing records.
+Live Mimi: 17.5px fields, 12px text, 10.8px labels, 1px top/3px left field padding,
+4px corners and 4px formbuilder cell spacing (3px in the totals area).
+
+Implemented: Mimi 18px minimum fields / .9em labels; Gioanna 20px / .8em labels,
+retaining their separate 12px/13px typography and palettes. Both use 1px × 3px
+field padding, 2px label gap and 6px stack spacing. Field line-height and label
+spacing/color are shared CSS tokens read inside component shadow roots. The date
+calendar button matches field height. Base/Compact density remains unchanged.
+This is a proportional adaptation, not a layout/formbuilder port; Joanna's own
+live invoice was not measured. WebKit may render an input one pixel above the
+CSS minimum because of native font metrics.
+
+Verified: 39 component/typed/calendar/choice/validation tests; all six theme browser
+runs (Chromium/WebKit × Python/Node/file-export), covering actual compact geometry,
+light/dark, Data editing, calendar, choice popup, validation with no layout shift,
+and hosted persistence. Documentation build passes with warnings treated as errors.
+Python 8205, Node 8207 and the local serverless export were rebuilt/refreshed.
+Local implementation verified; owner visual acceptance and the wider 0.3 release
+remain separate. No publication performed.
+
+
+<a id="gc-070-1075"></a>
+
+## 1075 · Theme names simplified (2026-10-17)
+
+Owner: “per i temi chiamali mimi e joanna ma non mettere genropy davanti”.
+Canonical IDs, selector captions and theme directories are now `mimi` and `joanna`.
+Updated Python/JS index pages, gallery build and selectors, public documentation
+and tests. Historical decisions above retain their original names; the naming
+correction supersedes them. No compatibility aliases were added. Existing saved
+preview preferences with old IDs require selecting the renamed theme again.
+Core and gallery assets rebuilt, Python/Node galleries restarted, serverless
+export refreshed. Index tests: 6 JS + 3 Python; gallery tests: 26 JS + 3 Python.
+No publication requested or performed.
+
+Rename verification also passed all six Chromium/WebKit × Python/Node/file theme checks and both documentation builds.
+
+
+<a id="gc-070-1080"></a>
+
+## 1080 · Relative date reference corrected (2026-10-17)
+
+Owner reported that ieri on October 17 yielded October 15. The gallery date
+lessons w11/w17 explicitly fixed workdate to October 16; that override is removed
+from Python and JS. The component also failed to supply a default workdate to the
+pure parser. dateTextBox now supplies the browser's local date at each parse when
+workdate is omitted, matching calendar Today; an explicit workdate still wins.
+The initial field value does not determine the reference day. Parser API unchanged.
+
+Regression coverage fixes the clock in tests only: October 17 gives ieri=16,
+oggi=17, domani=18; advancing the clock to October 18 without rebuilding the field
+makes ieri=17. Existing explicit-workdate tests remain. Eleven typed/calendar unit
+tests passed. Gallery browser checks use a fixed test clock rather than modifying
+example declarations. Python/Node galleries and serverless export refreshed.
+
+Verified all 12 browser runs: typed editors and calendar, Chromium/WebKit × Python/Node/file export. Local correction complete; no release or publication performed.
+
+
+<a id="gc-070-1085"></a>
+
+## 1085 · Quieter editor assistance and error presentation (2026-10-17)
+
+Owner requested avoiding unrelated macOS suggestions, a shorter fading validation
+message and a red field background instead of the error border. NativeControl now
+sets autocomplete/autocorrect/autocapitalize off and spellcheck false on internal
+text/password inputs and textarea. These are browser hints, not a guarantee against
+external OS/password-manager suggestions. Filtering/callback list behavior remains.
+FieldState uses error-background and error text, retaining normal focus indication;
+the floating message stays for 1800ms, fades for 200ms, then closes. Reduced-motion
+preferences disable the animation. Escape/scroll/resize/disposal hide immediately.
+Reopening cancels the old timer/fade. Data acceptance and validation rules unchanged.
+
+Verified 23 validation/typed/choice unit tests, including timer phases/cleanup and
+assistance attributes. Core documentation build passes. Gallery and runtime assets
+rebuilt; hosted galleries restarted and local file export refreshed. Local change,
+no publication. Browser qualification is recorded below when complete.
+
+Browser qualification completed: all 12 validation/theme runs passed (Chromium/WebKit × Python/Node/file export), including error background, unchanged geometry, timeout/reopen, assistance attributes, dark mode and persistence.
+
+
+<a id="gc-070-1090"></a>
+## 1090 · Touch density and same-page mobile previews (2026-10-17)
+
+Owner authorized touch mode, a page suitability declaration, and Normale/Mobile gallery controls while retaining the same example and Data. Implemented Page.devices (desktop/tablet/phone; empty is undeclared), HTTP/Worker propagation and frozen gramlot.devices. Existing gramlot.dom.setTouchMode controls automatic coarse-pointer detection or explicit on/off; shared theme tokens size input shadow controls, choice rows and calendars without changing palette.
+
+Gallery preview controls retain the iframe and URL, use Source-owned presentation attributes, and send the selected touch mode over the existing owned-frame settings bridge. Mobile is at most 390 CSS pixels; Normale uses available width and ordinary density. Accepted Data and rejected input drafts survive switches, as does each example's mode when changing tabs. w01/w17/w18 demonstrate device declarations. Metadata is informational, and the preview does not emulate an OS keyboard or certify real-device compatibility.
+
+Verified: 51 selected core JS tests (the server subprocess test was rerun successfully with the project Python interpreter), 4 Python core tests, 27 gallery JS tests, 3 Python gallery tests and 12 standalone tests. Browser checks passed on Python 8205, Node 8207 and file-based serverless in Chromium and WebKit: six preview cases plus two automatic-touch checks; six theme regression cases also passed. Visual review confirmed compact chrome, centered mobile preview and larger fields without a page replacement. Core, gallery and server documentation builds passed, including core public-link/mirror checks and both adapter documentation trees.
+
+Implemented and verified locally; final owner visual acceptance remains separate. No release or publication performed. Running galleries and the local static export contain the updated runtime and examples.
+
+
+<a id="gc-070-1095"></a>
+## 1095 · Gallery left-label alignment (2026-10-17)
+
+Owner: “ok applicalo agli esempi della gallery: quando scelgo label a sinistra voglio etichette allineate a destra e campi allineati, senza aspettare il formlet”. Implemented only in the existing gallery preview settings bridge: position L applies an 8rem label column, right-aligned text, consistent padding and a flexible control column through existing Source labelbox attributes. Other positions restore original layout declarations; Example also restores the original position/pointer. No core component API or formlet was introduced.
+
+Verified locally: all 27 gallery JS tests passed, including repeated overrides and restoration of authored styles/pointers. Six browser cases passed across Python 8205, Node 8207 and file-based serverless in Chromium/WebKit, measuring textarea/textbox/checkbox alignment and checking mobile fit, unchanged Data/text and original padding restoration. Visual review of the mobile textarea lesson confirms the requested alignment. The galleries and static export were refreshed; no publication was requested.
+
+
+2026-10-17 refinement to GC-070 §1095: owner requested 1–2 additional pixels to the right of left-position labels. Gallery LEFT_LABEL_LAYOUT now uses box_l_padding="0px 2px 0px 0px". The common columns and restoration behavior are unchanged. Browser assets rebuilt; no new API or publication.
+
+
+<a id="gc-070-1100"></a>
+## 1100 · Popup icons inside the field (2026-10-17)
+
+Owner requested popup icons inside the right edge of widgets instead of external buttons. dateTextBox now overlays its real calendar button within the input bounds, with no separate border/background, and reserves padding only when calendar is enabled. Choice triggers use the same inside-field geometry and field font sizing. Explicit internal control selectors ensure base input styles cannot override the required text padding. Touch targets remain inside the input; readonly, disabled and keyboard behavior are retained.
+
+Verified: 14 calendar/choice JS tests passed; six calendar browser regression cases checked editing, typed dates, natural text, keyboard, null, readonly and opt-out across Python, Node and serverless in Chromium/WebKit. Six additional browser cases measured both triggers and text padding in Base/Compact/mimi/joanna, normal and touch modes, and checked opening/Escape and calendar=False. Visual review confirmed the icon inside the field. Core documentation builds passed. Gallery inputs bundles, running servers and static export were rebuilt; no publication.
+
+
+<a id="gc-070-1105"></a>
+## 1105 · Formlet, groupBox copy and switch (2026-10-17)
+
+Owner authorized this bounded port, including default TYTX copy with JSON menu
+and compact gallery lessons. Implemented a separate layout collection with
+portable container grammar, slotted formlet/groupBox, Source-scoped reactive
+lbl_*/box_* defaults, explicit field overrides and stable controls/drafts on
+layout-only updates. GroupBox reads only its explicit Data scope, serializes TYTX
+or values-only JSON, and reports clipboard errors without changing Data.
+Checkbox variant="switch" reuses the native boolean binding and labelbox.
+
+Python-first gallery w19/w20/w21 and matching JS pages are connected on Python,
+Node and serverless. Gallery settings adjust field labels without changing group
+headings. The JS typed example imports Bag through Gramlot's public export, like
+the existing numeric lesson, keeping the same runtime type registry.
+
+Verified: 3503 core JS tests (3500 in the sandbox plus the three socket-based
+conformance tests rerun successfully outside it); 5 core Python component tests
+and 6 subtests, with one pre-existing expected upstream failure; 92 gallery JS
+tests; 4 gallery Python tests and 79 subtests. Six Chromium/WebKit cases cover all
+three gallery environments, layout/draft/focus retention, copy actions and typed
+wire payloads, responsive mobile fit, switch keyboard/binding/readonly. A separate
+Chromium check writes and reads actual clipboard TYTX and JSON. The cross-browser
+action tests isolate clipboard permission with a test writer; actual Safari
+clipboard permissions remain browser-controlled. Core and gallery docs build
+successfully. Visual review corrected dark group header contrast and confirmed
+compact desktop/touch layouts.
+
+Implemented and verified locally; owner visual acceptance is separate. Running
+galleries 8205/8207 and the temporary static export are updated. No release or
+publication. See PORT-0011 and GC-105 §085 for scope and exclusions.
+
+
+<a id="gc-070-1110"></a>
+## 1110 · Adversarial component review (2026-10-17)
+
+Owner requested review of duplication, non-parametric code, inconsistencies and
+arbitrary constants before building more components. Reviewed the input/layout
+collections, shared mixins, renderer/adapter integration and theme behavior.
+[Detailed findings and reproducible probes](../../ports/PORT-0011-formlet-group-box/review-2026-10-17.md)
+are retained under PORT-0011 and cross-referenced by PORT-0010.
+
+Six defects reproduced: plain textbox drafts lost on direct label updates;
+repeated ancestor evaluation and unnecessary formlet descendant projection;
+readonly ignored by radioButtonText; root formlet gap token overridden; switch
+thumb geometry not following its height token; stale copy error title after
+successful retry. Four additional cleanup findings cover duplicate parameter
+projection, renderer coupling to concrete tags/child grammar, repeated popup
+placement and constants, and diverging local-option parsers.
+
+47 existing targeted tests passed, including Python grammar fixtures; source
+probes reproduced four findings and Chromium measurements reproduced two theme
+findings. This review is not a full-repository or all-browser qualification.
+Production behavior is unchanged; only review records/probes were added.
+Both ports are revision-requested. The local implementation and prior verification
+remain, but cleanup and regression coverage are incomplete. Next proposed work is
+to correct these issues before adding more components; no new architecture/API,
+publication or acceptance is implied by this review.
+
+
+<a id="gc-070-1115"></a>
+## 1115 · Component review corrections verified (2026-10-17)
+
+Owner authorized corrections and cleanup of every point in the adversarial review,
+with missing tests and complete verification before adding components. R1–R10 are
+implemented and verified locally. The [review closing table](../../ports/PORT-0011-formlet-group-box/review-2026-10-17.md#review-corrections)
+retains evidence and the mapping from each defect to its correction.
+
+Shared component value projection now preserves uncommitted text during direct or
+inherited presentation changes and retains real Data/IME updates. Formlet caches
+own resolved defaults and refreshes only unmasked consumers of changed defaults;
+columns-only changes no longer reproject fields or repeatedly evaluate ancestors.
+ChoiceGroup owns readonly for both radio and checkbox groups. Formlet theme gaps,
+switch dimensions, copy recovery and popup lifecycle/sizing are corrected.
+projectParameters, parseChoices and positionPopup remove duplicated operations;
+explicit presentationDefaults/dataScope metadata replaces tag/child-grammar
+coupling. The obsolete presentationOnly project argument was removed.
+
+Verification: 3511 core JS tests passed; 163 core Python tests and 261 subtests
+passed, with one pre-existing expected upstream Builder regex failure. Gallery:
+92 JS tests; 4 Python tests and 79 subtests passed. Eight new regression cases plus
+the expanded Python grammar fixture cover the functional failures and structural
+contracts. Chromium/WebKit measure all four themes with touch off/on, geometry,
+popup bounds/cleanup and transient errors; six gallery cases pass on Python,
+Node and serverless. Screenshots inspected. Docs build and whitespace checks pass.
+
+Core/gallery assets and the 68-page static export are rebuilt; galleries 8205 and
+8207 restarted with regenerated metadata. The corrective assignment is complete.
+Both port records retain the initial review and verified resolution. Owner visual
+acceptance and publication remain separate; no new component or release added.
+
+
+<a id="gc-070-1120"></a>
+## 1120 · Button component and button-bar analysis (2026-10-17)
+
+Owner accepts the button/gramlot-button direction while retaining html_button,
+then requests legacy syntax analysis including dropdown, LED/state buttons and
+the multiButton bar (alternative/sticky items, dropdowns, add/remove, leading and
+trailing objects). [GC-310](../future/310-buttons-and-button-bars.md) records the
+Python declarations, JS/Dojo execution, menu and bar composition, present core
+boundaries and proposed port stages. The source audit distinguishes toggle from
+radio, and local Bag removal from database deletion. Actual MultiButton generates
+lightButton items; arbitrary dropdown/side-subtree composition is an explicit new
+requirement, not falsely attributed to that implementation.
+
+Analysis complete; no runtime change, tests or publication claimed. The previously
+verified R1–R10 corrections remain complete. Final extended API/scope and sequence
+are pending owner review; this added direction precedes 0.3 package qualification.
+
+
+Scope follow-up (2026-10-17): owner defers button bars to containers and chooses
+a single dropdown with separate main action/arrow, changeable action+label and
+optional persistence. GC-310 §040 supersedes the earlier split-family/bar proposal.
+Analysis/contract update only; no runtime changes or tests required. Remaining:
+consolidate the bounded button API and persistence behavior before implementation.
+
+
+<a id="gc-070-1125"></a>
+## 1125 · Command components and gallery — 2026-10-17
+
+Owner: “ok aggiorna il contratto e procedi con button, toggle con led e dropdown unico con questa logica e persist, lasciando fuori la bottoniera. aggiungi gli esempi nella gallery”. GC-310 §045 supersedes §1120's pending API status.
+
+Implemented: built-in button/gramlot-button, toggleButton with boolean Data and LED, unified dropDownButton with main action and menu arrow, menu/menuline, normal execute versus Shift execute-and-select, code-only persistence. Generated JSON gives Python the same definitions. Shared ButtonBinding owns all action/ask/delay/controller dispatch; html_button retains native form behavior. Native shell/dialog/example controls were adjusted accordingly. No dependency edit or publication.
+
+Verified: 3521 JS core tests; 164 Python tests and 264 subtests with one existing expected upstream failure. Ten focused command tests; real Chromium/WebKit fixtures cover keyboard, persistence, visible LED, ask, four themes and touch. Gallery w22–w24 passed in Python 8205, Node 8207 and static serverless (six browser runs). Gallery JS 95 tests and Python 16 tests/82 subtests pass. Public doc checker and Sphinx -W pass. PORT-0012 records the bounded port and review feedback.
+
+Remaining: owner visual review of w22/w23/w24 before broader 0.3 acceptance. Button bars/nested menus stay deferred. No bump, commit, push or publication performed.
+
+
+<a id="gc-070-1130"></a>
+## 1130 · Builder upstream changes identified — 2026-10-17
+
+Owner: “nel frattempo builder ha fatto modifiche di cui devi tenere conto”. Read-only upstream inspection identifies Python 0.29.0 at 20487ed (PR #61) and JS 0.6.0 at de3957c (PR #22). Their migration guides document shared dtype signatures, explicit pointer suffixes, dependency discovery, and literal ordinary ${name} text without helper consumption. JS exposes evaluatePointerExpression(node, name, raw, expression, inputs); static rendering remains inert.
+
+The current core environment still installs Python 0.28.1 and JS 0.5.2. The §1125 qualification therefore applies to those installed dependencies, not yet to the new Builder versions. Gramlot still duplicates pointer parsing/resolution in page/pointer.py and binding/pointer.js, including automatic ${name} interpolation. Merely updating the package would leave overlapping responsibility.
+
+Next bounded consumer migration: refresh both Builder packages; use their shared parsing/resolution/dependency APIs; connect the existing activation/CSP-aware InlineCompiler and local _F through the expression hook; retain Gramlot-specific subscriptions, variable datapath, value restrictions, format/mask and lifecycle. Re-evaluate local dtype grammar loading against the new base capability, update GC-210/public guidance and test the complete runtime/gallery before release. Upstream repositories and installed source copies were not edited; no dependency refresh, consumer migration or new-version compatibility has yet been claimed.
+
+
+<a id="gc-070-1135"></a>
+## 1135 · Builder alignment and duplicate removal — 2026-10-17
+
+Owner: “si procedi con l'allineamento ai nuovi builder, togli le duplicazioni e verifica tutti i test e gli esempi della gallery”. Supersedes the pending consumer migration in §1130.
+
+Implemented:
+- Refreshed Python Builder to 0.29.0 and JS Builder to 0.6.0; raised the unbounded minimum requirements. The existing JSR-only bounded-range exception uses ^0.6.0.
+- Removed Gramlot's Python pointer module and duplicate JS pointer parser, template engine and expression scanner. Ordinary projection uses Builder runtime resolution; the page hook compiles activated expressions with local `_F`, including HTML/SVG subbuilders.
+- Retained Gramlot-owned structural reads (parent-context variable datapath, null contexts, provider/path attributes) and subscriptions. A regression covers transformed attributes across a selected context becoming null and returning, without reading the Data root.
+- Replaced the Python signature/dtype decoder with Builder's declaration compiler. Gramlot retains instance-collection composition, which Python Builder does not yet expose. Built-in button metadata is loaded with the class grammar, like HTML and binding declarations.
+- Retired automatic `${name}` interpolation and consumption checks; literal text/backslashes survive. JavaScript template literals inside authored code remain JS. Migrated c16 in Python/JS and its lesson/tests to explicit pointer suffixes with retained named attributes.
+- Rebuilt the core and gallery artifacts, refreshed the Python gallery environment and serverless export. Updated paired public/internal contracts and the constitution; upstream repositories/installed source were not patched.
+
+Verified: full core JavaScript suite (3,522 tests); Python suite (164 tests and 264 subtests, with the existing upstream nested-Annotated/Union Regex expected failure still present on Builder 0.29.0); gallery suites (95 JS, 16 Python plus 82 subtests). Core real-browser button/review qualifications and eight gallery interaction scripts pass in Chromium/WebKit across Python, Node and serverless: inputs, typed editors, filtering/callback choices, local choices, calendar, validation, layouts and commands. Public documentation checks and Sphinx warnings-as-errors build pass.
+
+Final isolated whole-gallery sweep passed: 71/71 pages (index plus 70 catalogue examples) in each of six combinations: Chromium/WebKit × Python/Node/serverless, 426 page checks total. Each page starts and renders without browser errors; c16 also verifies reactive title and retained customer projection. The first reused-page WebKit sweep produced navigation-abort noise; isolated pages finish startup requests before checking and closing. The repeatable verifier is in gramlot-examples/scripts/verify_all_gallery_pages_browser.mjs. Gallery documentation also passes Sphinx warnings-as-errors and link checks for 70 lessons/two paired guides. A duplicate development anchor for command components was corrected to GE-010 §195, preserving the original §150 choice-component anchor.
+
+No version bump, commit, push or publication. Broader 0.3 release acceptance remains separate.
+
+
+<a id="gc-070-1140"></a>
+## 1140 · Inspector native controls after button migration — 2026-10-17
+
+Owner reported the property-delete icon below its row with an unreadable dark background. The inspector still authored its internal commands with `button`, now a themed webcomponent: native-button CSS no longer reached the actual control. Its tabs, property actions, breakpoint dialogs and style commands now use `html_button` with their existing explicit `connect_on` handlers. The trash icon is centered with inline flex; hover/focus visibility and deletion behavior remain unchanged.
+
+Verified: reproduced the inherited dark background before the fix; all 27 inspector unit tests and Chromium/WebKit browser qualifications pass after rebuilding. The browser regression checks a dark application's inherited tokens, a white add control, a transparent visible trash control, icon/row vertical alignment and attribute deletion. Core distributable inspector artifacts and the local gallery bundle rebuilt. No release or publication.
+
+
+<a id="gc-070-1145"></a>
+## 1145 · Inspector enumerations and checkbox mode — 2026-10-17
+
+Owner: “se ci sono valori predefiniti l'inspector dovrebbe avere una tendina”; naming preference “piu che variant forse mi piacerebbe 'mode'”. Checkbox presentation is now `mode="checkbox"` (default) or `mode="switch"`, with the same reactive binding; gallery recipes and public documentation are aligned. GroupBox's separate `lbl_variant` remains unchanged.
+
+Component descriptors expose string enumerations through `enum`, included in generated Python/JS metadata. Checkbox mode, labelbox position and groupBox header variant reuse those lists. The inspector reads them from actual Source metadata and transports them through its existing bridge. Existing literal enum attributes use native selects, committing changes immediately; pointers remain text. No inferred choices from the DOM, separate inspector choice tables or compatibility aliases.
+
+Verified: 29 inspector tests (including repeated enum changes locally and through MessagePort, preservation of pointers and ordinary editing); 17 component/layout tests including generated Python grammar and reactive mode. Inspector browser qualifications and gallery layout/switch checks pass in Chromium and WebKit. In the live Python gallery, changing mode from switch to checkbox and back updates the actual widget while retaining its checked Data. Rebuilt core and gallery artifacts; restarted Python gallery on 8205. No release or publication. The owner's question about switch color was answered; using `color` for the active track is only a proposal, not implemented.
+
+
+<a id="gc-070-1150"></a>
+## 1150 · Reactive switch color — 2026-10-17
+
+Owner proposed `switch_color` and confirmed “ok perfetto”. Implemented as a nullable, read-bound checkbox parameter in the shared descriptor/generated grammar. In switch mode it overrides the existing active-track token on the internal control; null/omission removes that override. The off state, other instances and ordinary text color remain unchanged. Gallery w21 uses a purple Data-bound color in both Python and JS.
+
+Verified: 18 component/layout tests, including portable Python grammar, reactive color updates, null reset, mode changes, instance isolation, unchanged text color and boolean Data. Chromium/WebKit gallery checks verify actual purple/red active backgrounds, unchanged off background and restoration of the theme against another switch. Core/gallery bundles rebuilt; Python gallery restarted on 8205. No publication. This completes the previously proposed color capability from §1145.
+
+
+<a id="gc-070-1155"></a>
+## 1155 · Gallery Left-preview label spacing — 2026-10-17
+
+Owner reported excessive spacing between left labels and controls in the formlet example. The gallery's Left override supplied an 8rem label track while the formlet's inherited lbl_width remained 6rem, leaving an extra 2rem (24px in the reproduced view). The gallery override now sets lbl_width to 100% of its label track alongside the existing right alignment and 2px padding. Its existing Source snapshot restores authored/inherited widths when leaving the override; core labelbox and theme spacing are unchanged.
+
+Verified: browser regression failed before the fix (29.25px actual versus 5.25px intended separation) and passes afterward in Chromium/WebKit. It also verifies restoration of the formlet's 6rem label width. All 27 gallery tests pass, including restoration of a bound lbl_width. Existing textarea/textbox/checkbox alignment, mobile fit and Data-retention checks pass. Gallery bundle rebuilt for the running Python server. No release or publication.
+
+
+<a id="gc-070-1160"></a>
+## 1160 · Intrinsic formlet label columns — 2026-10-17
+
+Owner: “ok fai adattare automaticamente la larghezza delle label nel formlet alla più larga per ogni colonna, mantenendo i campi allineati. lbl_width solo se esplicito e togli le larghezze fisse dalla gallery”. Implemented in the library: FormletLabels measures directly slotted Labelbox fields in each rendered column, right-aligns left labels and aligns control boxes. Explicit lbl_width overrides remain; automatic widths are internal CSS state, never Source/Data. Intrinsic label observation, slot changes and batched animation-frame measurement handle growing/shrinking labels, font/theme changes, responsive columns and removal. Disconnect releases observers/listeners/frames; nested formlets remain independent. Calculated width tokens reset at each labelbox to prevent inheritance leaks.
+
+Gallery preview now overrides only lbl_position. Grouped input examples use real formlets, and fixed label widths were removed from Python and JS recipes. Authored padding and other styles are preserved. This supersedes the fixed-column workaround in §1155: useful automatic layout belongs to the library, not demonstration-specific compensation.
+
+Verified: 27 focused component/layout tests, including observer batching and disconnect/reconnect cleanup. The full JS suite passed 3,521 tests in the sandbox; the remaining 3 local-server conformance tests passed when rerun with network permissions (3,524 total, no unresolved failure). Gallery: all 95 JS and 16 Python tests pass. Python-first core browser qualification passes Chromium/WebKit for independent column maxima, label growth/shrink/empty/removal, CSS font changes, responsive layout, nested isolation, explicit widths, retained draft/focus/caret and unchanged Data. Gallery browser checks pass both engines for textarea/textbox/checkbox alignment, mobile fit, restored authored presentation, formlet editing, group copy and switch behavior. Separate gallery collection bundles are covered, not just the single-bundle fixture. Core/gallery artifacts rebuilt and Python gallery restarted at 8205. No commit, release or publication. Implementation is verified locally; owner visual acceptance remains pending.
+
+
+<a id="gc-070-1165"></a>
+## 1165 · Full field validation — 2026-10-17
+
+Owner confirms the complete engine, leaving DB/grid to their own scope. Local rules, transformations, conditional execution, warnings, named/activated callbacks, asynchronous existing RPC, result notifications and stale-reply cancellation are implemented. Generated component grammar is shared with Python. Gallery w25 supplies compact Python/JS examples including an actual endpoint. No form persistence or publication. Qualification is recorded below. See PORT-0013 and GC-105 §076.
+
+
+Qualification complete: the full JS suite passes 3,543 tests with local-server permissions. The final additional constrained-selection regression passes in the 20-test validation-engine suite (3,544 total covered tests). Python: 146 tests covered; the five HTTP conformance tests required an unrestricted rerun and pass, with the one pre-existing expected Builder failure unchanged. Gallery: 96 JS and 16 Python tests pass, including accepted/rejected endpoint responses. Chromium and WebKit pass the Python gallery's full-engine lesson and the existing basic-validation regression: real RPC, normalization, warning/blocking modes, callbacks, invalid draft/Data separation, tooltip expiry/reopening and no layout shift. Sphinx strict build and public documentation checks pass. Core/gallery bundles rebuilt; Python gallery remains available on 8205, new lesson /w25.
+
+Adversarial follow-up addressed obsolete replies after input/IME, rebinding, external Data, rule/lock changes, disposal and Escape; typed candidates stay uncommitted until acceptance. Unknown selected captions and invalid normalized types are rejected. Returned Bag patches apply only on acceptance. The existing command toggle path retains synchronous acceptance and action ordering. Literal regexes with a leading anchor use ordinary noncapturing grouping to avoid Source's leading-^ pointer grammar; the gallery and guide show the correct declaration.
+
+This completes the approved field-engine scope locally. DB/grid validators and form persistence remain separate as agreed. No commit, package release or publication; owner acceptance of the visible result remains pending.
+
+
+<a id="gc-070-1170"></a>
+## 1170 · Validation playground formlet — 2026-10-17
+
+Owner requests a dedicated validation page with a labelled group and a formlet containing different widgets. Gallery w25 now composes one groupBox and one formlet with intrinsically aligned left labels: required/length text, normalized code, fallback text, bounded number, warning controls, conditional length, local/remote callbacks, multiline notes, required date and required filteringSelect. An expandable accepted-Data panel shows the retained values independently of rejected drafts. Python and JavaScript recipes and the lesson text agree; no framework behavior or form-save service was added.
+
+Verified: all 96 gallery JavaScript and 16 Python tests pass. Chromium and WebKit checks pass for the group/formlet structure, required name/date/selection, multiline length, existing rules and actual Python endpoint RPC. The initial page screenshot was visually reviewed for compact grouping and aligned fields. Python gallery restarted on port 8205; /w25 is ready for owner review. No publication.
+
+
+Copy follow-up (owner: “mettimi il copy nel groupbox”): w25 enables the existing groupBox copy control, TYTX by default and JSON through its menu. The explicit `profile` Bag is the copied scope; drafts remain outside Data. Python and JS authoring use explicit profile pointers. Chromium/WebKit verify both serialization results with an intercepted clipboard (no real clipboard overwritten), plus the full lesson validation/RPC checks; the focused JS example test passes.
+
+**Historical observation, superseded by §1175:** when trialling relative pointers under a page `datapath="profile"` and a nested group datapath, the strict checkbox writes profile.strict but the email warning parameter does not refresh. Absolute profile pointers refresh correctly. This needs an isolated core binding reproduction before any framework change; do not interpret the working example as qualification of that relative-binding case.
+
+
+Calendar icon follow-up — owner reports the date picker trigger looks like a white square. Replaced the font-dependent grid glyph with a small decorative inline SVG calendar (binding rings, header and date marks), using currentColor and relative size. The existing accessible button name, inside-right placement, disabled state and popup behavior are preserved across themes. Five calendar component tests pass; Chromium and WebKit verify the visible icon, popup opening and Escape closing. Gallery assets rebuilt and local server refreshed. No publication.
+
+
+<a id="gc-070-1175"></a>
+## 1175 · Corrected relative example and final 0.3 qualification — 2026-10-17
+
+Owner: “ok correggi l'esempio togliendo quel datapath inutile, rimetti i pointer
+relativi e poi procedi con le verifiche finali per chiudere la 0.3”. Removed the
+unnecessary datapath="." declaration. The w25 groupBox owns datapath="profile";
+its formlet fields use ^.field, conditions use the same context and callbacks use
+node.SET('.validation_status', ...). The outside accepted-Data panel retains its
+explicit profile paths. The copied scope is still the profile Bag.
+
+This corrects the diagnosis in §1170: the failed trial introduced a redundant dot
+context and double-dot paths. Ordinary inherited relative pointers work; switching
+the example to absolute pointers was unnecessary. No general relative-binding
+release blocker is established and no Builder change or consumer workaround is
+part of this correction.
+
+Full suites pass: 3,544 JavaScript core tests; 146 Python tests with one pre-existing
+expected Builder failure; 96 JavaScript and 16 Python gallery tests. The calendar
+SVG reuses the existing SVG_NS constant, satisfying the namespace ownership test.
+A stale browser fixture now uses the approved checkbox mode parameter.
+
+All nine gallery interaction scripts and full validation/RPC checks pass on Python,
+Node and serverless in Chromium and WebKit. Core adversarial component, intrinsic
+formlet and command-button browser checks pass both engines. w25 TYTX/JSON copy
+passes again with clipboard interception. Inspector: 29 unit tests and Chromium/
+WebKit browser checks pass. Firefox cannot launch its local profile, so it is not
+qualified by this run; this is an environment limitation, not a passed product test.
+
+Fresh core/gallery wheels and npm archives install in isolated temporary environments
+using registry dependencies. Python dependency consistency and all installed-page
+construction tests pass; installed JS collection metadata, assets and gallery Source
+construction pass. Candidate archives retain the current versions: no bump or
+publication has been performed. Whole-catalogue smoke and strict documentation
+checks are recorded below when complete.
+
+Final receipts: all 72 common pages start and render without browser errors on
+Python, Node and serverless in Chromium and WebKit (432 page runs). The additional
+serverless-only page passes both engines. Strict Sphinx builds and documentation
+checks pass: 11 core public pages; 71 gallery lessons and two paired guides, with
+search, sources, local links and mirrored anchors verified. The serverless build
+warns about import.meta in the exported server-only runtimeAsset helper; that helper
+and its URL expression are removed from the generated tested Worker bundle. No
+warning suppression or workaround was introduced.
+
+The approved local correction and final qualification are complete. Remaining
+release actions are version bump, final owner acceptance, commit/consolidation,
+push and package publication, when explicitly authorized. Known limits remain the
+pre-existing expected Python Builder failure and the local Firefox launch issue;
+no failing product test remains in the completed qualification.
+
+
+<a id="gc-070-1180"></a>
+## 1180 · Component release authorized — 2026-10-17
+
+Owner answered “si” to “Procedo con bump, commit, push e pubblicazione?” after
+completion of §1175. Release scope: core and examples 0.3.0; connected JS packages
+0.2.11 and Python adapters 0.2.9. This authorizes consolidation of the verified
+increments into main, tags, package publication and the associated public manuals.
+Dependency minimums reflect the new collection-loading API without upper caps.
+Local integration suites pass: all five Python adapters (102 tests), the JS
+workspace suites and Bun. Publication results will be recorded separately.

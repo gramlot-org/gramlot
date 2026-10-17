@@ -1,5 +1,5 @@
 /** Shared page-side inspector; the supplied page owns its Bag and runtime. */
-import {scalarType} from './editor-values.js';
+import {scalarType, readParameterEnums} from './editor-values.js';
 import {InspectorStyles} from './inspector-styles.js';
 
 const roots = ['data', 'source'];
@@ -43,19 +43,19 @@ export function attachInspectorAgent(gramlot, port) {
         if (!identities.has(node)) identities.set(node, ++nextNode);
         return identities.get(node);
     };
-    const describe = (store, ancestors = new Set()) => {
+    const describe = (store, root, ancestors = new Set()) => {
         if (ancestors.has(store)) throw new Error('Inspector snapshots require an acyclic Bag');
         const next = new Set([...ancestors, store]);
         return store.getNodes().map(node => {
             const value = node.getValue(true);
             const branch = !node.resolver && value instanceof Bag;
             return {id: identity(node), label: node.label, revision: versions.get(node) ?? 0,
-                value: branch ? null : cell(value), children: branch ? describe(value, next) : null,
-                readonly: !!node.resolver,
+                value: branch ? null : cell(value), children: branch ? describe(value, root, next) : null,
+                readonly: !!node.resolver, parameterEnums: root === 'source' ? readParameterEnums(node) : {},
                 attrs: Object.entries(node.getAttr()).filter(([name]) => name !== '_meta').map(([name, value]) => [name, cell(value)])};
         });
     };
-    const snapshot = () => ({data: describe(bag('data')), source: describe(bag('source')),
+    const snapshot = () => ({data: describe(bag('data'), 'data'), source: describe(bag('source'), 'source'),
         breakpoints: [...breakpoints.values()].map(({test, ...record}) => record)});
     const send = data => { if (!stopped) port.postMessage(data); };
     const flush = () => {

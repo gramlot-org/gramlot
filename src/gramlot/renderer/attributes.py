@@ -26,8 +26,7 @@ NATIVE_ATTRIBUTES = {
     "canvas": ("width", "height"),
 }
 
-# A ``${name}`` template reference; ``\${`` stays text (Builder's runtime_values rule).
-TEMPLATE_REFERENCE = re.compile(r"(?<!\\)\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
+
 
 # Display directives of the node text: consumed by the renderer, never written as attributes.
 DISPLAY_ATTRIBUTES = ("format", "mask", "locale", "timeZone", "places", "dtype")
@@ -90,7 +89,7 @@ def with_data_srcdoc_sandbox(node, attrs, prefixes=()):
     """``attrs`` of an ``iframe`` whose ``srcdoc`` comes from Data, with an empty ``sandbox`` first.
 
     The browser shows the HTML of a datum and runs nothing of it. ``srcdoc`` comes from Data when it is
-    a ``^``/``=`` pointer, a ``==`` expression or a ``${…}`` template reading one, or when the node value
+    a ``^``/``=`` pointer or a ``==`` expression, or when the node value
     is a pointer, whose datum can carry ``srcdoc`` in its ``_wdg``. The declaration decides, so the iframe
     has ``sandbox`` while ``srcdoc`` is still None. A ``sandbox`` declared in the Source stays as declared;
     a literal ``srcdoc`` gets none. The names are read without the dialect ``prefixes`` (``html_``);
@@ -108,13 +107,8 @@ def with_data_srcdoc_sandbox(node, attrs, prefixes=()):
     if srcdoc is None or any(bare(name)[1] == "sandbox" for name in declared):
         return attrs
 
-    def from_data(name, seen):
-        raw = declared[name]
-        seen.add(name)
-        return node.pointer_type(raw) is not None or is_expression(raw) or any(
-            param in declared and param not in seen and from_data(param, seen) for param in template_parameters(raw))
-
-    if node.pointer_type(node.value) is None and not (srcdoc in declared and from_data(srcdoc, set())):
+    if node.pointer_type(node.value) is None and not (srcdoc in declared and (
+            node.pointer_type(declared[srcdoc]) is not None or is_expression(declared[srcdoc]))):
         return attrs
     rest = {name: value for name, value in attrs.items() if bare(name)[1] != "sandbox"}
     return {f"{bare(srcdoc)[0]}sandbox": "", **rest}
@@ -189,27 +183,3 @@ def display_item(item, attrs):
 def is_expression(value):
     """Whether ``value`` is a ``==`` expression (Q11.2)."""
     return isinstance(value, str) and value.startswith("==")
-
-
-def template_parameters(value):
-    """The parameter names of the ``${name}`` templates of ``value``, in order; none for a value that is not a string."""
-    return TEMPLATE_REFERENCE.findall(value) if isinstance(value, str) else []
-
-
-def require_no_expression_template(node):
-    """Templates and ``==`` expressions do not mix (Q11.2).
-
-    A template that uses a ``==`` attribute of the same node is an error naming both attributes;
-    a ``${…}`` inside a ``==`` attribute or node value is an error naming it.
-    """
-    if is_expression(node.value) and template_parameters(node.value):
-        raise ValueError(f"{node.node_tag} '{node.label}': the == node value contains a ${{…}} template, "
-                         "not accepted in a == expression")
-    attrs = dict(node.fixed_attr_items())
-    for name, raw in attrs.items():
-        if is_expression(raw) and template_parameters(raw):
-            raise ValueError(f"{node.node_tag} '{node.label}': '{name}' contains a ${{…}} template, "
-                             "not accepted in a == expression")
-        for param in template_parameters(raw):
-            if is_expression(attrs.get(param)):
-                raise ValueError(f"{node.node_tag} '{node.label}': the template of '{name}' uses '{param}', a == expression")

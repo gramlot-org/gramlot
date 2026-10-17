@@ -348,7 +348,7 @@ Source (not run; use named logic); a code attribute holding a pointer
 (`formula='^.code'`), refused at reception (data reaches inline code as parameters,
 never as text); an attribute of the form `onclick` (write `connect_onclick`); a
 `javascript:` URL in `href`, `src`, `formaction`, `xlink:href`, written or from Data.
-An `iframe` `srcdoc` from Data (pointer, `==`, `${…}` template reading a pointer, or a
+An `iframe` `srcdoc` from Data (pointer, `==`, explicit pointer template, or a
 pointer node value whose datum carries `srcdoc` in `_wdg`) gets `sandbox=""`: HTML shown,
 nothing runs. Literal `srcdoc`: no `sandbox`. A `sandbox` written in the Source is kept
 (`sandbox='allow-scripts'` runs scripts) and turns the rule off (GC-090 §035).
@@ -396,26 +396,24 @@ other HTML attributes as in 0.1.2. Excluded: style as Bag/dict, a runtime theme 
 
 ### Attribute templates and text masks
 
-An attribute template `${name}` uses another attribute of the same Source node
-after pointer resolution. It is not a Python f-string or a JavaScript template
-literal. For example:
+An explicit pointer template reads its leading Data value with `{}` and other
+current attributes of the same Source node with `{name}`. For example:
 
 ```python
-root.div("Preview", title="Customer: ${customer}", customer="^.name")
+root.div("Preview", title="^.name:Customer: {customer}", customer="^.name")
 root.p("^.name", mask="Hello, {}")
 ```
 
-The title follows `.name`; `customer` supplies the template and is not projected
-to the DOM. A preceding backslash escapes `${`. An unknown parameter is an error.
-Templates apply to visual attributes, not node text or data-element declarations.
-`${...}` in a controller script remains JavaScript syntax. A template cannot use
-an `==` attribute as its parameter, and an `==` expression cannot contain a
-`${...}` template. An `==` expression can read a resolved template and its consumed
-pointer parameter; it cannot read a template-valued attribute that another
-template has itself consumed. Those unsupported combinations raise errors. `mask` formats the node's text, replacing
-`{}`; empty plain text stays empty. It does not enable raw HTML. Live `format` uses
+The title follows `.name`; `customer` remains a normal projected attribute.
+Ordinary `${customer}` text is literal, including any preceding backslash. To
+migrate `title="Customer: ${customer}"`, write the explicit pointer template above.
+An unknown Source attribute is an error. `:=` evaluates an activated JavaScript
+expression using typed slots; `:` only composes text. JavaScript template literals
+inside scripts or `==` expressions retain normal JavaScript semantics.
+
+`mask` formats node text using `{}` and never enables raw HTML. Live `format` uses
 `gramlot.format` before applying the mask; see §125. The old `%s` placeholder is
-no longer interpreted.
+not interpreted. Widget `value` keeps an ordinary pointer without a suffix.
 
 Development correction: Python static, JavaScript static and live rendering now
 reject non-string, non-null `style` and `class` values before attribute composition.
@@ -461,6 +459,8 @@ owner accepted R3 as built for 0.2.0 and reviews it after the release. Examples:
 or null; `getDomNode(sourceNode)` → element or null (fragment, data element, removed
 or unbuilt node). No properties are added to DOM elements or Source nodes.
 
+
+**0.3 development preview:** `button` now renders `gramlot-button`; toggleButton and dropDownButton share its command engine. Use html_button for native form submission/reset. The preceding R3 native-DOM description is the historical 0.2 behavior. See [command components](105-components.md) for the current preview contract.
 
 **Added in 0.2.19 — plain and delayed buttons.**
 `html_button` is a distinct Source element that renders native `<button>`.
@@ -741,6 +741,15 @@ standard footer remembers Base/Compact, Light/Dark and sidebar width in local
 storage; the keyboard checkbox is a per-page choice. A replacement footer need
 not contain the standard controls. The default `panel(parent, item)` creates an
 iframe; `behavior(shell)` activates `IndexLogic` through a named controller.
+
+The optional `header(shell)` hook declares an application toolbar before navigation
+and content. It is empty by default; the application supplies its Source and layout.
+The example gallery uses it for its title and Navigation/Code toggles. Its code
+viewer is a full-height right sidebar: both sidebars can be hidden and resized
+without reloading the selected example. Widths and visibility are saved alongside
+theme preferences when browser local storage is available. Introduction and category
+pages hide the code sidebar automatically; returning to an example restores its
+visibility preference and selected source tab.
 
 The shell's theme does not automatically style arbitrary iframe documents.
 The gallery supplies the corresponding frame-side theme receiver for its examples.
@@ -1069,7 +1078,7 @@ This is not a claim that the two APIs have identical types or extension mechanis
 ## 125 · Formatting values: numbers and temporal styles
 
 The page instance exposes `gramlot.format(value, options)`. This first implementation
-supports finite JavaScript numbers, Date objects and null. Numeric values need an
+supports finite JavaScript numbers, TYTX Decimal objects, Date objects and null. Numeric values need an
 explicit `pattern`. Locale and instant timezone come from the page unless the call
 overrides them.
 Use this method from page Logic or a controller expression:
@@ -1107,7 +1116,7 @@ meaning. In migrating legacy numeric formats, review two-section patterns: legac
 used positive/zero, whereas Gramlot uses Unicode positive/negative.
 
 **Current limits:** no implicit numeric pattern,
-strings/booleans, Decimal/BigInt, explicit temporal patterns, currency/percent/scientific patterns,
+strings/booleans, BigInt, explicit temporal patterns, currency/percent/scientific patterns,
 quoted pattern literals, arbitrary affixes, named/optional mask slots or brace
 escaping. Unsupported inputs/options/patterns raise errors. String pattern shorthand uses the page context. JavaScript Number precision
 still applies.
@@ -1117,7 +1126,7 @@ Date inference follows TYTX: a non-midnight time on 1970-01-01 UTC is H, UTC
 midnight on another day is D, otherwise DHZ. These are interpretation rules, not
 a recovery of the original wire type. Explicit `dtype` disambiguates midnight
 instants and date/time values on the epoch day. Numeric L/R/N require finite JS
-numbers (L requires an integer); they do not convert strings or Decimal objects.
+numbers (L requires an integer); N/R also format finite TYTX Decimal values without converting them to Number. Decimal inference selects N. Strings are not implicitly parsed. Decimal output requires Intl exact decimal-string support; otherwise it raises explicitly.
 
 D formats the UTC calendar fields without shifting them. H formats the UTC time
 fields without shifting them. DHZ displays an instant in the explicit `timeZone`,
@@ -1266,8 +1275,7 @@ letters, digits and underscore; dots and addressing operators remain path syntax
 Python authoring sends the same Source declarations as JavaScript authoring. Static
 Python/JavaScript rendering resolves templates from the available Data; expressions
 stay inert until browser startup. This does not add static variable-context support
-to the Python renderer. Existing `${name}` templates remain supported; their
-existing interpolation/projection phase is unchanged.
+to the Python renderer. Ordinary `${name}` text is literal; use explicit pointer suffixes for interpolation.
 
 Placeholder tokens in expressions are recognized outside quoted strings, template
 literals, comments and regular-expression literals. An empty object or a shorthand

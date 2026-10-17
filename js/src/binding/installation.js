@@ -2,7 +2,8 @@ import {Bag} from '@genrojs/bag';
 import {META_ATTRS, SourceBag} from '@genrojs/builders';
 import {isExpression, withoutBindingAttributes} from '../renderer/attributes.js';
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
-import {pointerTransform, resolvePointerAttribute} from './pointer.js';
+import {pointerTransform} from '@genrojs/builders';
+import {resolvePointerAttribute} from './pointer.js';
 
 /**
  * Installation of the `dataSetter`s and of the defaults of one Source branch (source plan §4.6,

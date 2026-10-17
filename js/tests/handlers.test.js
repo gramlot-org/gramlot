@@ -16,7 +16,7 @@ test('a Gramlot instance has lifecycle, Data, formatting context and the four pr
     for (const name of ['publish', 'subscribe', 'unsubscribe']) assert.equal(typeof app[name], 'function');
     assert.equal(app.subscriptions, undefined);
     assert.deepEqual(Object.keys(app).sort(),
-        ['abort', 'capabilities', 'data', 'dom', 'locale', 'logic', 'pageId', 'rpc', 'src', 'state', 'timeZone', 'utl']);
+        ['abort', 'capabilities', 'data', 'devices', 'dom', 'locale', 'logic', 'pageId', 'rpc', 'src', 'state', 'timeZone', 'utl']);
 });
 
 test('each proxy is an instance of its handler and of Handler, pointing back to the page', () => {

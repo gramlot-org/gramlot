@@ -12,6 +12,7 @@ export class IndexPage extends GramlotPage {
     main(root) {
         const families = this.constructor.navigation;
         const shell = root.div({class: 'index-shell', id: this.constructor.shellId});
+        this.header(shell);
         const sidebar = shell.aside({class: 'index-sidebar', id: 'index-sidebar'});
         const brand = sidebar.header();
         if (this.constructor.logoUrl) brand.img({src: this.constructor.logoUrl, alt: this.constructor.title, class: 'index-logo'});
@@ -33,12 +34,12 @@ export class IndexPage extends GramlotPage {
             aria_valuemin: 120, aria_valuemax: 460, aria_valuenow: 240});
         const content = shell.main({class: 'index-main'});
         const tabs = content.div({class: 'index-tabs', role: 'tablist', aria_label: 'Open pages'});
-        tabs.button('Introduction', {type: 'button', role: 'tab', id: 'tab-intro',
+        tabs.html_button('Introduction', {type: 'button', role: 'tab', id: 'tab-intro',
             aria_controls: 'panel-intro',
             aria_selected: 'true', tabindex: -1, hidden: false});
         for (const family of families) {
             for (const {key, title} of [family, ...family.children]) {
-                tabs.button(title, {type: 'button', role: 'tab', id: `tab-${key}`,
+                tabs.html_button(title, {type: 'button', role: 'tab', id: `tab-${key}`,
                     aria_controls: `panel-${key}`,
                     aria_selected: 'false', tabindex: -1, hidden: true});
             }
@@ -61,6 +62,8 @@ export class IndexPage extends GramlotPage {
         this.behavior(shell);
     }
 
+    header(shell) {}
+
     behavior(shell) {
         shell.dataController({func: 'indexMount', _onStart: true, shell_id: this.constructor.shellId});
     }
@@ -75,6 +78,8 @@ export class IndexPage extends GramlotPage {
         const appearance = theme.select({id: 'index-appearance', value: 'compact'});
         appearance.option('Base', {value: 'base', selected: false});
         appearance.option('Compact', {value: 'compact', selected: true});
+        appearance.option('mimi', {value: 'mimi'});
+        appearance.option('joanna', {value: 'joanna'});
         const color = footer.div({class: 'index-theme'});
         color.html_label('Color mode', {for: 'index-theme'});
         const choices = color.select({id: 'index-theme', value: 'light'});
@@ -88,7 +93,7 @@ export class IndexPage extends GramlotPage {
         if (this.constructor.installable) {
             const app = footer.details({class: 'index-install'});
             app.summary('Install app');
-            app.button('Install', {type: 'button', id: 'index-install-button', hidden: true});
+            app.html_button('Install', {type: 'button', id: 'index-install-button', hidden: true});
             app.p('', {id: 'index-install-status', role: 'status'});
             app.p('Chrome: use Install page as app in the browser menu. Safari on macOS Sonoma or later: File > Add to Dock.');
             app.p('Use HTTPS or localhost. For a static export, serve the directory; direct file opening is not installable. Keep the server running for hosted pages.');

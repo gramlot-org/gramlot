@@ -135,7 +135,7 @@ beyond `Page.css`, companions and `css_requires` (kajenn)".
 - Q7 null path: reads null, no registration, setters/defaults skipped, writes raise
   "write on a null path" (node, attribute); check in
   `getRelativeData`/`setRelativeData`/`PUT`. S04–S10.
-- Template `${name}` (Q6): visual attributes only, not node value or data-elements;
+- Historical template `${name}` (Q6, superseded 2026-10-17): visual attributes only, not node value or data-elements;
   `\${` literal; missing name → "Unknown template parameter"; genro-builders 0.26.0.
 - Source class and wire: builder declares `_source_class`/`_sourceClass`; `::X`,
   `__cls` rules; `SOURCE` gone. Q13: `pointer_type`/`pointerType` excludes `==`
@@ -956,8 +956,7 @@ placeholder behavior for expressions or standalone `mask` is inferred here.
 The existing `mask` parameter remains text formatting, with `{}` replacing the legacy
 `%s` placeholder in the new design. No `%s` compatibility alias or `msk` name is
 approved. The new suffix replaces the auxiliary-attribute form for the single-value
-formatting case. Existing `${...}` multi-parameter templates are not removed by this
-decision; define their coexistence/migration without silently changing shipped code.
+formatting case. Historical record: that decision left `${...}` coexistence open. Owner-approved Builder alignment (2026-10-17) supersedes it: ordinary `${...}` text is literal; use explicit pointer suffixes.
 
 Owner path-name correction (2026-10-16, constitution 11.81): every path segment
 name matches `[A-Za-z0-9_]+`; dots separate segments. Existing addressing operators
@@ -984,8 +983,7 @@ not added. Native/custom widget `value` suffixes are rejected. These facts super
 the earlier statements that suffix execution is entirely unimplemented.
 
 A `{name}` reference reads the resolved attribute without consuming its normal
-projection. The older `${name}` interpolation retains its existing consumption
-behavior. This keeps the ordinary responsibility of each attribute unchanged. The
+projection. The older `${name}` interpolation is retired by the owner-approved 2026-10-17 Builder alignment: it is literal text, without consumption. This keeps the ordinary responsibility of each attribute unchanged. The
 owner asked not to block this intermediate increment on marginal cases; advanced
 syntax limits remain documented rather than expanding the scope. No publication
 is claimed.
@@ -997,3 +995,6 @@ them. The resolver now captures that complete typed input set once per resolutio
 named dependencies and projection reuse it. DOM attributes/computed styles never
 supply `{name}` values. Dependency transforms still resolve in dependency order,
 using the shared current inputs; Source retains its authored pointers.
+
+
+Builder ownership update — 2026-10-17: see the constitution's Builder alignment amendment. The historical Q6 automatic `${name}` contract is superseded. Python delegates static suffix resolution and dtype/signature decoding to genro-builders 0.29.0; JavaScript delegates ordinary projection to Builder 0.6.0 and connects `evaluatePointerExpression` to InlineCompiler, including HTML/SVG subbuilders. Structural attributes retain Gramlot's parent-context reads. Static `==` attributes resolve to null; the live renderer evaluates activated Source declarations. No global `_F` or upstream source patch is introduced.

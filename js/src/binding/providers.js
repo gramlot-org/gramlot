@@ -1,7 +1,8 @@
 import {AskDialog} from './ask-dialog.js';
 import {Bag} from '@genrojs/bag';
 import {RpcResolver} from './rpc-resolver.js';
-import {pointerTransform, pointerDependencies, resolvePointerAttribute} from './pointer.js';
+import {pointerTransform, pointerDependencies} from '@genrojs/builders';
+import {resolvePointerAttribute} from './pointer.js';
 
 /**
  * Providers of one Gramlot page (source plan §4.8): the semantic runtime of a `dataFormula`, a

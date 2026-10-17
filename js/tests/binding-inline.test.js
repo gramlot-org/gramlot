@@ -12,7 +12,6 @@ import {fromTytx, toTytx} from '@genrojs/tytx';
 import {sourceTarget} from '@genrojs/builders';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import {GramlotBuilderBag} from '../src/builder/source.js';
-import {templateParameters} from '../src/renderer/attributes.js';
 import {mount} from './fixtures/mount.js';
 
 function page() {
@@ -177,25 +176,23 @@ test('gate fix 2: a compiled declaration is released when its attribute changes 
     app.dispose();
 });
 
-test('gate fix 3: a ${…} template inside a == attribute or node value is an explicit error naming it', () => {
-    const {app, data} = page();
-    data.setItem('price', 10);
-    assert.throws(() => app.src.builder.root.div({a: '^price', total: '==${a} * 2'}),
-        /div '.*': 'total' contains a \$\{…\} template, not accepted in a == expression/);
-    const other = page();
-    assert.throws(() => other.app.src.builder.root.div('==${a}', {a: 1}),
-        /the == node value contains a \$\{…\} template/);
-    app.dispose();
-    other.app.dispose();
-});
-
-test('gate fix 5: one template rule for Builder templates, the == checks and the chain check: \\${ stays text', () => {
-    assert.deepEqual(templateParameters('${a}px \\${b} ${c_1}'), ['a', 'c_1']);
-    assert.deepEqual(templateParameters(3), []);
+test('JavaScript template literals inside == are handled by the JS compiler', () => {
     const {app, data, byId} = page();
     data.setItem('price', 10);
-    mount(app, root => root.div({id: 'box', a: '^price', title: '\\${a}px', total: '=="\\${x}" + a'}));
-    assert.equal(byId('box').getAttribute('title'), '${a}px');
+    mount(app, root => root.div('==`Price: ${a}`', {id: 'box', a: '^price', total: '==`${a * 2}`'}));
+    assert.equal(byId('box').textContent, 'Price: 10');
+    assert.equal(byId('box').getAttribute('total'), '20');
+    data.setItem('price', 12);
+    assert.equal(byId('box').textContent, 'Price: 12');
+    app.dispose();
+});
+
+test('ordinary dollar-brace text and its backslash stay literal without consuming attributes', () => {
+    const {app, data, byId} = page();
+    data.setItem('price', 10);
+    mount(app, root => root.div({id: 'box', a: '^price', title: String.raw`\${a}px`, total: '=="${x}" + a'}));
+    assert.equal(byId('box').title, String.raw`\${a}px`);
+    assert.equal(byId('box').getAttribute('a'), '10');
     assert.equal(byId('box').getAttribute('total'), '${x}10');
     app.dispose();
 });
@@ -334,36 +331,34 @@ test('Q11.2: an == does not see the other ==; an == node value is the element te
     app.dispose();
 });
 
-test('D6: a template-consumed pointer is an argument of ==, read from Data, and never reaches the DOM', () => {
+test('named template slots retain attributes as arguments of ==' , () => {
     const {app, data, byId} = page();
     data.setItem('price', 10);
-    mount(app, root => root.div({id: 'box', a: '^price', title: '${a}', total: '==a*2'}));
+    mount(app, root => root.div({id: 'box', a: '^price', title: '^price:{a}', total: '==a*2'}));
     assert.equal(byId('box').getAttribute('title'), '10');
     assert.equal(byId('box').getAttribute('total'), '20');
-    assert.equal(byId('box').hasAttribute('a'), false);
+    assert.equal(byId('box').getAttribute('a'), '10');
     data.setItem('price', 11);
     assert.equal(byId('box').getAttribute('total'), '22');
     app.dispose();
 });
 
-test('revision 10: the expanded template and the consumed parameter are both available to ==', () => {
+test('the explicit template and its named parameter are both available to ==', () => {
     const {app, data, byId} = page();
     data.setItem('price', 10);
-    mount(app, root => root.div({id: 'box', a: '^price', title: '${a}px', total: '==title + a'}));
+    mount(app, root => root.div({id: 'box', a: '^price', title: '^price:{a}px', total: '==title + a'}));
     assert.equal(byId('box').getAttribute('total'), '10px10');
     app.dispose();
 });
 
-test('a template chain used by == is an error naming both attributes; a template using an == is an error', () => {
-    const {app, data} = page();
+test('a named template chain stays projected and is available to ==', () => {
+    const {app, data, byId} = page();
     data.setItem('price', 10);
-    assert.throws(() => mount(app, root => root.div({a: '^price', title: '${a}px', aria_label: '${title}', total: '==title + a'})),
-        /'total' uses 'title', a template consumed by another template/);
-    const other = page();
-    assert.throws(() => other.app.src.builder.root.div({title: '${t}', t: '==1 + 1'}),
-        /the template of 'title' uses 't', a == expression/);
+    mount(app, root => root.div({id: 'box', a: '^price', title: '^price:{a}px', aria_label: '^price:{title}', total: '==title + a'}));
+    assert.equal(byId('box').title, '10px');
+    assert.equal(byId('box').getAttribute('aria-label'), '10px');
+    assert.equal(byId('box').getAttribute('total'), '10px10');
     app.dispose();
-    other.app.dispose();
 });
 
 test('an == expression in an SVG attribute is computed by the same point', () => {
@@ -392,8 +387,7 @@ test('the string renderer has no page runtime and writes no == attribute or valu
     builder.root.div('==1 + 1', {title: '==2', alt: 'x'});
     assert.equal(builder.renderer_html.render(builder.source.getNodes()[0]), '<div alt="x"></div>');
     builder.root.div({title: '${t}', t: '==1 + 1'});
-    assert.throws(() => builder.renderer_html.render(builder.source.getNodes()[1]),
-        /the template of 'title' uses 't', a == expression/);
+    assert.equal(builder.renderer_html.render(builder.source.getNodes()[1]), '<div title="${t}"></div>');
 });
 
 test('import graph: inline.js is reachable from the page runtime only', async () => {

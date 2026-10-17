@@ -104,7 +104,7 @@ class GramlotServer:
     def __init__(self, *, runtime_url="/assets/gramlot.js",
                  rpc_url="/gramlot/rpc", close_url="/gramlot/close",
                  root_id="gramlot-root",
-                 page_ttl=1800, max_pages=1000):
+                 page_ttl=1800, max_pages=1000, collections=()):
         try:
             ttl = float(page_ttl) if type(page_ttl) in (int, float) else float("nan")
         except OverflowError:
@@ -116,6 +116,7 @@ class GramlotServer:
         self.close_url, self.root_id = close_url, root_id
         self.page_ttl, self.max_pages = ttl, max_pages
         self._pages = {}
+        self.collections = tuple(collections)
 
     def resolve_page(self, path):
         """Return the ``Page`` class of ``path``, or raise ``PageNotFound``."""
@@ -182,9 +183,11 @@ class GramlotServer:
             "config": {"pageId": page_id, "rpcUrl": _prefixed(prefix, self.rpc_url),
                        "closeUrl": _prefixed(prefix, self.close_url), "rootId": self.root_id,
                        "capabilities": self.capabilities,
+                       **({"devices": list(cls.devices)} if cls.devices else {}),
                        **({"locale": cls.locale} if cls.locale is not None else {}),
                        **({"timeZone": cls.time_zone} if cls.time_zone is not None else {})},
-            "resources": {"css": [_prefixed(prefix, url) for url in resources["css"]],
+            "resources": {**({"collections": [_prefixed(prefix, item["module"]) for item in self.collections]}
+                             if self.collections else {}), "css": [_prefixed(prefix, url) for url in resources["css"]],
                           "js": [{"url": _prefixed(prefix, entry["url"]), "group": entry["group"]}
                                  for entry in resources["js"]]}})
         runtime = _script_json(_prefixed(prefix, self.runtime_url))
@@ -250,6 +253,8 @@ class GramlotServer:
             result = function(**params)
             return await result if inspect.isawaitable(result) else result
         builder = page.source_builder(name, auth=lambda element_rule: self._auth_outcome(element_rule, owner))
+        for collection in self.collections:
+            builder.load_collection(collection["grammar"])
         result = function(builder.root, **params)
         if inspect.isawaitable(result):
             result = await result

@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
-import {pointerTemplate, pointerExpression} from '../src/binding/pointer.js';
+import {pointerTemplate, pointerExpression} from '@genrojs/builders';
+
 import {sourceTarget} from '@genrojs/builders';
 
 function mount(t, author) {
@@ -66,8 +67,8 @@ test('one current Source attribute set supplies references and projection, never
     box.setAttribute('factor', '999');
     box.style.height = '999px';
     const node = sourceTarget(app.src.builder.nodeById('box'));
-    const read = node.getRelativeData, reads = [];
-    t.mock.method(node, 'getRelativeData', function (pointer) {
+    const read = node.data.getItem, reads = [];
+    t.mock.method(node.data, 'getItem', function (pointer) {
         reads.push(pointer);
         return read.call(this, pointer);
     });
@@ -76,8 +77,8 @@ test('one current Source attribute set supplies references and projection, never
     assert.equal(attrs.title, '2');
     assert.equal(attrs.factor, 2);
     assert.equal(attrs['data-other'], 'current');
-    assert.equal(reads.filter(pointer => pointer === '^factor').length, 1);
-    assert.equal(reads.filter(pointer => pointer === '^other').length, 1);
+    assert.equal(reads.filter(pointer => pointer === 'factor').length, 1);
+    assert.equal(reads.filter(pointer => pointer === 'other').length, 1);
     assert.equal(node.getAttr('factor'), '^factor');
     app.data.setItem('factor', 3);
     assert.equal(box.style.height, '15px');
@@ -160,8 +161,8 @@ test('transforms are rejected on native and custom widget values at authoring', 
 });
 
 test('missing references and cyclic dependencies produce explicit node errors', t => {
-    assert.throws(() => mount(t, root => root.div({title: '^name:{absent}'})), /div.*absent.*does not exist/);
-    assert.throws(() => mount(t, root => root.div({title: '^name:{other}', other: '^name:{title}'})), /cyclic attribute dependency/);
+    assert.throws(() => mount(t, root => root.div({title: '^name:{absent}'})), /absent.*does not exist/);
+    assert.throws(() => mount(t, root => root.div({title: '^name:{other}', other: '^name:{title}'})), /cyclic attribute dependency/i);
 });
 
 test('relative paths, symbolic paths and Bag attribute selectors keep their addressing', t => {
@@ -256,4 +257,21 @@ test('a named dependency of transformed _timing restarts the timer rather than i
     app.data.setItem('enabled', false);
     t.mock.timers.tick(2000);
     assert.equal(app.data.getItem('ticks'), 1);
+});
+
+test('suffixes follow a variable context through null and back without reading the Data root', t => {
+    const {app, document} = mount(t, root => {
+        root.dataSetter({destination_path: 'selected', value: 'records.a'});
+        root.dataSetter({destination_path: 'records.a.width', value: 38});
+        root.div({datapath: '^selected'}).div({id: 'context', title: '^.width:{}px',
+            'data-empty': '^.width:={} === null'});
+    });
+    const box = document.querySelector('#context');
+    assert.equal(box.title, '38px');
+    app.data.setItem('selected', null);
+    assert.equal(box.hasAttribute('title'), false);
+    assert.equal(box.getAttribute('data-empty'), 'true');
+    app.data.setItem('selected', 'records.a');
+    assert.equal(box.title, '38px');
+    assert.equal(box.getAttribute('data-empty'), 'false');
 });

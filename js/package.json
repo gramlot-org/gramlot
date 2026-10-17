@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.2.20",
+  "version": "0.3.0",
   "description": "Declarative HTML/SVG interfaces with live data binding, authored in JavaScript or Python.",
   "license": "Apache-2.0",
   "repository": {
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@genrojs/bag": ">=0.11.0",
-    "@genrojs/builders": ">=0.5.2",
+    "@genrojs/builders": ">=0.6.0",
     "@genrojs/tytx": ">=0.16.2"
   },
   "devDependencies": {
@@ -35,7 +35,10 @@
     "./assets/branding/*": "./assets/branding/*",
     "./tools/inspector": "./tools/gramlot-tools-inspector.js",
     "./index-page-runtime": "./src/index-page-runtime.js",
-    "./tools/inspector-agent": "./tools/inspector-agent.js"
+    "./tools/inspector-agent": "./tools/inspector-agent.js",
+    "./components": "./src/components/index.js",
+    "./components/inputs": "./src/components/inputs.js",
+    "./components/layout": "./src/components/layout.js"
   },
   "files": [
     "LICENSE",

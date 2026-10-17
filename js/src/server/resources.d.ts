@@ -22,6 +22,8 @@ export function parseRequires(text: string): string[];
 export interface Resources {
     /** CSS URLs. */
     css: string[];
+    /** Application collection module URLs, added by GramlotServer. */
+    collections?: string[];
     /** JS module URLs with their Logic group. */
     js: {url: string; group: string | null}[];
 }

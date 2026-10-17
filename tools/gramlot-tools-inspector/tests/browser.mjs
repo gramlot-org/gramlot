@@ -25,7 +25,7 @@ window.ready = true;`;
 const files = new Map([
     ['/', ['text/html', `<!doctype html><html><head><meta charset="utf-8"><title>Inspector qualification</title>
 <script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js"}}</script></head>
-<body><main id="app"></main><script type="module" src="/fixture.js"></script></body></html>`]],
+<body style="--gramlot-field-background:#222;--gramlot-ink:#eee;--gramlot-button-background:#222"><main id="app"></main><script type="module" src="/fixture.js"></script></body></html>`]],
     ['/fixture.js', ['text/javascript', fixture]],
     ['/core.js', ['text/javascript', core.outputFiles[0].text]],
     ['/gramlot-tools-inspector.js', ['text/javascript', await readFile(new URL('dist/gramlot-tools-inspector.js', root))]],
@@ -54,11 +54,30 @@ try {
             await page.goto(url);
             await page.waitForFunction(() => window.ready);
             const palette = page.locator('gramlot-tools-inspector');
+            // Inspector chrome stays legible over an application with dark button tokens.
+            const add = palette.getByRole('button', {name: 'Add attribute', exact: true});
+            assert.equal(await add.evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(255, 255, 255)');
             assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).getAttribute('aria-selected'), 'true');
             assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).evaluate(el => getComputedStyle(el).borderBottomColor), 'rgb(11, 87, 208)');
             assert.equal(await palette.locator('.error').textContent(), '');
             await palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]').click();
             assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), 'Ada');
+            const remove = palette.getByRole('button', {name: 'Remove description', exact: true});
+            await palette.getByLabel('description value', {exact: true}).focus();
+            const geometry = await remove.evaluate(el => {
+                const button = el.getBoundingClientRect();
+                const icon = el.querySelector('svg').getBoundingClientRect();
+                const row = el.closest('.property-row').getBoundingClientRect();
+                const css = getComputedStyle(el);
+                return {centerOffset: Math.abs(icon.y + icon.height / 2 - row.y - row.height / 2),
+                    inside: icon.y >= button.y && icon.bottom <= button.bottom,
+                    background: css.backgroundColor, color: css.color, opacity: css.opacity};
+            });
+            assert.ok(geometry.centerOffset <= 1, 'trash icon vertically centered in the property row');
+            assert.ok(geometry.inside, 'trash icon remains inside its button');
+            assert.equal(geometry.background, 'rgba(0, 0, 0, 0)');
+            assert.equal(geometry.color, 'rgb(124, 135, 151)');
+            assert.equal(geometry.opacity, '1');
             await page.evaluate(() => window.app.data.setItem('name', 'Grace'));
             await page.waitForFunction(() => window.inspector.shadowRoot.querySelector('[aria-label=Value]')?.value === 'Grace');
             assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), 'Grace');

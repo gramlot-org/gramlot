@@ -49,7 +49,7 @@ test('mask follows formatting; null and the empty zero section bypass it', t => 
 test('unsupported inputs and incomplete context fail explicitly instead of coercing', t => {
     const app = page(t);
     const options = {pattern: '0.00', locale: 'it-IT'};
-    for (const value of [undefined, '', '123', true, {}, [], NaN, Infinity, 123n, createDecimal('1.2')]) {
+    for (const value of [undefined, '', '123', true, {}, [], NaN, Infinity, 123n]) {
         assert.throws(() => app.format(value, options), /finite JavaScript numbers/);
     }
     assert.throws(() => app.format(1), /explicit pattern/);
@@ -121,4 +121,12 @@ test('civil fields and explicit instant zones do not depend on the process timez
         const output = execFileSync(process.execPath, ['--input-type=module', '-e', script], {encoding: 'utf8', env: {...process.env, TZ}});
         assert.deepEqual(JSON.parse(output), ['16/10/26', '00:00', '15/10/26, 17:00']);
     }
+});
+
+
+test('Decimal formatting retains precision and sign sections', t => {
+    const app = page(t);
+    assert.equal(app.format(createDecimal('9007199254740993.25'), {pattern:'0.00',locale:'en-US'}),'9007199254740993.25');
+    assert.equal(app.format(createDecimal('-12.5'), {pattern:'0.00;-;(0.00)',locale:'it-IT'}),'(12,50)');
+    assert.equal(app.format(createDecimal('0'), {pattern:'0.00;-;(0.00)',locale:'it-IT'}),'-');
 });

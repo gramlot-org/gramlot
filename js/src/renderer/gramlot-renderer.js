@@ -28,6 +28,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     #resolvedAttributes = new WeakMap();
     // The resolved projection that `project` hands to the rebuild of a control whose shape changed.
     #rebuildAttributes = new WeakMap();
+    // Own presentation defaults, resolved once in their declaring Source scope.
+    #presentationDefaults = new WeakMap();
 
     /** The live renderer of one Gramlot page: `binding` is the page's BindingRuntime (§4.3). */
     constructor(builder, source, destination, {binding} = {}) {
@@ -66,7 +68,20 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
      * its `==` are evaluated once.
      */
     evaluateExpressions(node, runtimeAttrs) {
-        const attrs = this.#rebuildAttributes.get(node) ?? super.evaluateExpressions(node, runtimeAttrs);
+        let attrs = this.#rebuildAttributes.get(node) ?? super.evaluateExpressions(node, runtimeAttrs);
+        const component = node._getMeta('gramlot_component');
+        if (component?.presentationDefaults.length) {
+            const declared = node.getAttr();
+            this.#presentationDefaults.set(node, Object.fromEntries(Object.entries(attrs)
+                .filter(([name]) => Object.hasOwn(declared, name) && component.presentationDefaults.some(prefix => name.startsWith(prefix)))));
+        }
+        if (component && (component.parameters.value?.binding === 'twoWay' || component.presentationDefaults.length)) {
+            const ancestors = [];
+            for (let parent = node.parentNode; parent; parent = parent.parentNode) {
+                if (this.#presentationDefaults.has(parent)) ancestors.unshift(this.#presentationDefaults.get(parent));
+            }
+            attrs = Object.assign({}, ...ancestors, attrs);
+        }
         this.#rebuildAttributes.delete(node);
         this.#resolvedAttributes.set(node, attrs);
         return attrs;
@@ -125,9 +140,12 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         let attrs = runtimeAttrs;
         item = this.expressionValue(node, item);
         if (this.getRender(node.builder) === this) {
-            [item, attrs] = displayItem(item, this.restoreNativeAttributes(node, runtimeAttrs),
+            attrs = this.restoreNativeAttributes(node, runtimeAttrs);
+            // Component parameters (including format/locale/dtype) belong to its editor.
+            if (!node._getMeta('gramlot_component')) [item, attrs] = displayItem(item, attrs,
                 (value, options) => this._binding.gramlot.format(value, options));
         }
+        attrs = this.componentAttributes(node, attrs);
         const children = Array.isArray(item) ? item : [];
         const text = Array.isArray(item) ? attrs._text : item;
         const resolved = this.#resolvedAttributes.get(node);
@@ -458,6 +476,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         const record = this.records.get(node);
         if (!record?.element) return;
         const renderer = this.getRender(node.builder);
+        const previousDefaults = this.#presentationDefaults.get(node);
         const [value, runtimeAttrs] = node.builder.runtimeValues(node);
         const [, resolvedAttrs] = renderer._handleMeta(node, runtimeAttrs);
         const resolved = this.#resolvedAttributes.get(node);
@@ -472,16 +491,53 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         let attrs = node._getMeta('subbuilder') ? resolvedAttrs : renderer.adaptAttrs(resolvedAttrs);
         const branch = node.value instanceof SourceBag;
         let text = branch ? [] : this.expressionValue(node, value);
-        if (renderer === this) [text, attrs] = displayItem(text, this.restoreNativeAttributes(node, attrs),
-            (value, options) => this._binding.gramlot.format(value, options));
+        if (renderer === this) {
+            attrs = this.restoreNativeAttributes(node, attrs);
+            if (!node._getMeta('gramlot_component')) [text, attrs] = displayItem(text, attrs,
+                (value, options) => this._binding.gramlot.format(value, options));
+        }
+        attrs = this.componentAttributes(node, attrs);
         this.html.update(record, node, attrs, branch ? attrs._text : text, resolved.visible ?? null);
         this.#projectControl(record, node, attrs, change);
         record.control?.refresh();
         record.button?.refresh();
         this.#connectEvents(record);
+        const defaults = this.#presentationDefaults.get(node);
+        if (defaults) {
+            const changed = new Set([...Object.keys(previousDefaults ?? {}), ...Object.keys(defaults)]
+                .filter(name => !Object.is(previousDefaults?.[name], defaults[name])));
+            if (changed.size) this.#refreshPresentation(node, changed);
+        }
         if (record.element.localName === 'option' || record.element.localName === 'optgroup') {
             this.#optionsChanged(record.parent);
         }
+    }
+
+    /** Only affected consumers project; nested providers mask their own declared defaults. */
+    #refreshPresentation(parent, changed) {
+        if (!(parent.value instanceof SourceBag)) return;
+        for (const child of parent.value.getNodes()) {
+            const component = child._getMeta('gramlot_component');
+            const declared = child.getAttr();
+            let inherited = changed;
+            if (component?.presentationDefaults.length) {
+                inherited = new Set([...changed].filter(name => !Object.hasOwn(declared, name)));
+            } else if (component?.parameters.value?.binding === 'twoWay'
+                && [...changed].some(name => !Object.hasOwn(declared, name))) {
+                this.project(child);
+            }
+            if (inherited.size) this.#refreshPresentation(child, inherited);
+        }
+    }
+
+    /** Component parameters use resolved Source values, before HTML-only filtering (e.g. validate_*). */
+    componentAttributes(node, attrs) {
+        const component = node._getMeta('gramlot_component');
+        if (!component) return attrs;
+        const resolved = this.#resolvedAttributes.get(node);
+        const parameters = Object.fromEntries([...new Set([...Object.keys(component.parameters), ...Object.keys(resolved).filter(name => name.startsWith('validate_'))])]
+            .filter(name => Object.hasOwn(resolved, name)).map(name => [name, resolved[name]]));
+        return {...attrs, ...parameters};
     }
 
     /**
@@ -610,6 +666,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         record.end?.remove();
         record.parent?.children.delete(node);
         this.records.delete(node);
+        this.#resolvedAttributes.delete(node);
+        this.#presentationDefaults.delete(node);
         if (errors.length) throw new AggregateError(errors, 'Source cleanup failed');
     }
 

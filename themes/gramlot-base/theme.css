@@ -1,5 +1,5 @@
 /* Gramlot Base: application UI theme. Brand sources: assets/branding/theme-tokens.json. */
-@layer gramlot.reset, gramlot.tokens, gramlot.base, gramlot.components, gramlot.utilities;
+@layer gramlot.reset, gramlot.tokens, gramlot.base, gramlot.components, gramlot.utilities, gramlot.touch;
 
 @layer gramlot.reset {
   *, *::before, *::after { box-sizing: border-box; }
@@ -34,6 +34,12 @@
     --gramlot-error: #b13d48;
     --gramlot-error-background: #fceef0;
 
+    --gramlot-field-height: 2.75rem;
+    --gramlot-field-padding: .55rem .75rem;
+    --gramlot-field-font-size: .875rem;
+    --gramlot-field-background: var(--gramlot-surface);
+    --gramlot-field-readonly-background: var(--gramlot-surface-subtle);
+    --gramlot-label-size: 1em;
     --gramlot-font-ui: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     --gramlot-font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     --gramlot-space-1: 0.25rem;
@@ -185,14 +191,14 @@
     display: block;
     inline-size: 100%;
     min-inline-size: 0;
-    min-block-size: 2.75rem;
+    min-block-size: var(--gramlot-field-height);
     border: 1px solid var(--gramlot-border-control);
     border-radius: var(--gramlot-radius-sm);
-    background: var(--gramlot-surface);
+    background: var(--gramlot-field-background);
     color: var(--gramlot-ink);
-    padding: 0.55rem 0.75rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
+    padding: var(--gramlot-field-padding);
+    font-size: var(--gramlot-field-font-size);
+    line-height: var(--gramlot-field-line-height,1.5);
   }
   :where(textarea) { min-block-size: 7rem; resize: vertical; }
   :where(input, textarea)::placeholder { color: var(--gramlot-text-secondary); opacity: 1; }
@@ -261,4 +267,26 @@
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* Interaction density is independent of the selected color/profile theme. */
+@layer gramlot.touch {
+  :root[data-gramlot-touch="on"] {--gramlot-touch-target:44px; --gramlot-field-height:44px; --gramlot-field-font-size:16px;
+    --gramlot-field-padding:8px 10px; --gramlot-field-line-height:1.35;
+    --gramlot-label-size:14px; --gramlot-label-gap:6px; --gramlot-space-2:10px;
+    --gramlot-calendar-width:322px; --gramlot-choice-toggle-width:44px;}
+  @media (pointer: coarse) {
+    :root:not([data-gramlot-touch="off"]) {--gramlot-touch-target:44px; --gramlot-field-height:44px; --gramlot-field-font-size:16px;
+    --gramlot-field-padding:8px 10px; --gramlot-field-line-height:1.35;
+    --gramlot-label-size:14px; --gramlot-label-gap:6px; --gramlot-space-2:10px;
+    --gramlot-calendar-width:322px; --gramlot-choice-toggle-width:44px;}
+  }
+  button, select, input:not([type=checkbox]):not([type=radio]), summary {
+    min-block-size:var(--gramlot-touch-target, revert-layer);
+  }
+  button { min-inline-size:var(--gramlot-touch-target, revert-layer); }
+  input[type=checkbox], input[type=radio] {
+    min-inline-size:calc(var(--gramlot-touch-target, 0px) / 2);
+    min-block-size:calc(var(--gramlot-touch-target, 0px) / 2);
+  }
 }

@@ -535,3 +535,17 @@ The root bootstrap adds the manifest link; child pages do not. An application
 mounted at `/demo` uses `/demo/` for the default scope, id and start URL. Directory
 exports materialize the same method as JSON with relative URLs. This resource
 does not introduce a service worker, offline behavior or another RPC transport.
+
+
+<a id="gc-230-315"></a>
+### 315 · Device suitability metadata
+
+Block ID: **GC-230-315**. Development addition, owner 2026-10-17.
+
+Page.devices is a Python tuple / JS array of desktop, tablet and phone identifiers.
+An empty default means undeclared. For a nonempty declaration, HTTP bootstrap
+config includes a copied devices array. registerPage returns the same optional
+field for Worker hosts; standalone startup forwards it into GramlotOptions.
+The client freezes its own copy as gramlot.devices. This is informational metadata,
+not a permission, redirect rule or responsive transformation. Transport hosts do
+not interpret its contents.

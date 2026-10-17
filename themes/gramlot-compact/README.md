@@ -47,3 +47,9 @@ Color mode is independent: `data-theme="light"` or `data-theme="dark"` on the
 document root selects it, otherwise Base follows the system preference. Application
 CSS outside the Gramlot cascade layers can override both themes. Browser zoom remains
 available; multiline controls keep their native behavior.
+
+
+For additional compact palettes, load `mimi/theme.css` or
+`joanna/theme.css` after Base and Compact. Both inherit the same semantic
+variables and style input components as well as ordinary HTML. See
+[theme profiles](../../docs/public/096-themes-and-css.md#gc-096-017).

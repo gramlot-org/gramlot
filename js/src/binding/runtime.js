@@ -4,7 +4,8 @@ import {DataInstaller} from './installation.js';
 import {ControllerProvider, FormulaProvider, RemoteProvider, RpcProvider} from './providers.js';
 import {InlineCompiler} from './inline.js';
 import {RemoteBinding} from './remote.js';
-import {pointerDependencies} from './pointer.js';
+import {pointerDependencies} from '@genrojs/builders';
+
 
 // The Provider class of each provider data-element (§4.8).
 const PROVIDERS = {

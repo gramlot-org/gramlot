@@ -40,6 +40,15 @@ Block ID: **GC-225-010**.
 | Example pages | A generic `div` is held in `pane`; `html_main` is held in `main_content`; an element is never named `page` | GC-210 row S14bis (`210-binding-contract.md:755`) |
 | Commands | Environment, then verb: `gramlot <environment> new\|gallery`, `gramlot node\|bun gallery`, `gramlot-serverless build\|gallery`, `npm create @gramlot page\|site` | owner decisions 2026-10-02 and 2026-10-05; GC-055 |
 
+
+Widget-name exception (owner, 2026-10-16; constitution 11.84): widget authoring
+names are identical in Python and JavaScript. Do not translate a compound widget
+name into snake_case in Python. Use one canonical spelling in metadata and docs;
+prefer case-insensitive lookup, already supported by both installed Builders.
+For example, the proposed `radioButtonText` spelling is shared by both languages;
+`radiobuttontext` is a case variant, while `radio_button_text` is not. This exception
+concerns widget names, not parameter names or ordinary Python/JS methods and classes.
+
 <a id="gc-225-015"></a>
 
 ## 015 · Primary objects and proxies
@@ -251,7 +260,7 @@ owner-confirmed root-installation and reusable-index scope of 11.63.
 
 The index's properties are `logo_url` ↔ `logoUrl`, `shell_id` ↔ `shellId`, and
 `navigation`; navigation records use `key`, `title`, `children` and `url`.
-The Page hooks are `introduction`, `group_panel` ↔ `groupPanel`, `panel`, `footer`
+The Page hooks are `introduction`, `group_panel` ↔ `groupPanel`, `panel`, `header`, `footer`
 and `behavior`. `IndexLogic.indexMount` and `mountIndexPage` name the browser
 implementation, exported through the Page entry; the runtime subpath is
 `index-page-runtime`. Shell DOM classes use `index-`; the owned-frame theme
@@ -403,7 +412,7 @@ Owner clarification excludes widget `value`: neither suffix mode is permitted th
 ordinary `value="^name"` remains unchanged. See GC-210 §095 for the exact boundary.
 `mask` uses `{}` instead of `%s` in the new design; no `msk` or legacy placeholder
 alias is approved. The intervening `#`, automatic mode-detection and always-evaluate
-proposals are superseded. Existing `${...}` templates are not removed by this decision.
+proposals are superseded. Historical scope: that decision did not remove `${...}` templates. The owner-authorized Builder alignment of 2026-10-17 now makes ordinary `${...}` text literal; use explicit pointer suffixes.
 
 Owner follow-up accepts required-by-default template slots: `{}` / `{name}` block
 composition and return null on an empty string, while `{?}` / `{?name}` explicitly
@@ -500,3 +509,141 @@ Source display attributes override page context. Source's existing `format`
 attribute supplies the formatter's `pattern`, while `mask` composes the result
 using `{}`. No new `_gramlot` Data initialization protocol or pointer suffix
 implementation is implied. Missing-page-context policy is under owner discussion.
+
+
+Component increment (owner approval, 2026-10-16; constitution 11.84):
+`defineComponent`, `defineCollection`, `NativeControl`, `ChoiceGroup`, `Labelbox`,
+`FieldState`; descriptor keys `name`, `tag`, `base`, `mixins`, `parameters`,
+`implementation`; hooks `createControl`, `readControlValue`, `writeControlValue`.
+Widget names: `textbox`, `checkbox`, `radioButtonText`; DOM tags:
+`gramlot-textbox`, `gramlot-checkbox`, `gramlot-radio-button-text`.
+Internal collection wrapper `ComponentCollection`, DOM projection `projectAttributes`
+and control adapter `ComponentControl` describe their existing responsibilities.
+Portable `_meta.gramlot_component` carries effective parameter descriptors and
+`_meta.render_tag` carries the DOM name; it does not use Builder's recipe marker
+`component`. Module files follow kebab-case. These internal names add no proxy.
+
+
+Component gallery loading — 2026-10-16: the approved application option is
+`collections` in both Python and JS, with entries `grammar` (portable JSON object)
+and `module` (browser ES module URL). Bootstrap `resources.collections` carries
+these module URLs. This uses the existing collection vocabulary; component names
+remain textbox, checkbox and radioButtonText in both languages.
+
+Gallery toolbar follow-up (owner, 2026-10-16): `header(shell)` follows the existing
+`footer` hook spelling in both languages; `code_panel` ↔ `codePanel` follows the
+ordinary snake/camel method rule. Optional shell controls and sidebars retain the
+`index-` internal DOM prefix; gallery markup and styling retain `gallery-`.
+
+Simple input family (2026-10-16 owner scope, GC-245 inventory): canonical widget
+names are `textBoxArea`, `passwordbox`, `radioButton`, `colorpicker`,
+`horizontalSlider`, `verticalSlider`, identical in Python/JS with existing
+case-insensitive Builder lookup. `textBoxArea` preserves the inventoried PoC/legacy
+name and leaves native `textarea` unchanged. DOM tags are respectively
+`gramlot-text-box-area`, `gramlot-passwordbox`, `gramlot-radio-button`,
+`gramlot-colorpicker`, `gramlot-horizontal-slider`, `gramlot-vertical-slider`.
+Descriptor exports use the existing PascalCase convention. Native parameters
+keep `rows`, `cols`, `min`, `max`, `step`; radio keeps the existing `group` and
+boolean `value` contract. `number` in component metadata exports Python `float`.
+
+
+Component dtype correction — owner confirmed, 2026-10-16: portable parameter
+metadata uses `dtype` with the shared Gramlot/TYTX codes. `nullable` and `binding`
+retain their existing meanings. Do not represent portable domain types with Python
+module/class names. This supersedes the component-specific primitive type mapping
+as the implemented component contract. Existing
+`intl_str` qualification must remain distinguishable from underlying text type.
+
+
+Typed editor implementation, 2026-10-16: canonical names numberTextBox, dateTextBox, timeTextBox follow GC-245's PoC inventory; tags gramlot-number-text-box, gramlot-date-text-box, gramlot-time-text-box. Portable annotation shape is {kind: 'dtype', dtype: code}. Component dtype metadata exports that shape, with nullable/binding union branches. Internal typed-editor.js owns draft/commit presentation; TypedEditor composes NativeControl. acceptControlValue, setPageContext and sameControlValue extend the shared control protocol without an application proxy.
+
+The runtime page context passes the existing TYTX names createDecimal, isDecimal and getDecimalLibrary unchanged; it is not a second registry or public proxy. A dtype array declares a union.
+
+
+Choice inputs — owner-confirmed API, 2026-10-16: filteringSelect and callbackSelect retain identical canonical Python/JS names; descriptor exports FilteringSelect and CallbackSelect; tags gramlot-filtering-select and gramlot-callback-select. Parameters value, values, callback and placeholder retain PoC roles; callback names existing Logic, whose (node, keywords) signature is unchanged. Keywords _querystring/_id and result rows/identifier/caption retain the PoC spelling. Internal ChoiceEditor composes NativeControl and owns popup/draft/identity presentation in choice-editor.js; page context callLogic invokes the existing registry, isActive checks binding lifetime. Internal commitOnChange prevents query text from live-writing Data; releaseControl invalidates async work when the binding detaches. These are component/runtime protocol members, not public application proxies.
+
+
+Remaining local choices — 2026-10-16 owner scope: canonical names comboBox and
+checkBoxText retain the GC-245 inventory and same Python/JS spelling, with
+ComboBox/CheckBoxText descriptor exports and gramlot-combo-box/gramlot-check-box-text
+DOM tags. comboBox composes the existing ChoiceEditor and localChoices, using its
+internal constrained policy (the PoC term) to distinguish free text from code
+selection. checkBoxText extends the existing ChoiceGroup multiple policy. Reuse
+value, values, cols, lbl and box_* rather than adding public aliases.
+
+
+checkBoxText value — 2026-10-16 owner confirmation: value has dtype T, nullable,
+and twoWay binding; it contains comma-separated codes or null. Reuse ChoiceGroup's
+multiple/choiceType policies and values/cols declarations. No new value wrapper,
+list representation or application proxy is added.
+
+
+Calendar increment — owner, 2026-10-16: canonical widget `dateCalendar`, export `DateCalendar`, DOM tag `gramlot-date-calendar`; dateTextBox parameter `calendar` defaults true. Internal `CalendarView` composes the shared day/month UI, while `CalendarControl` implements the existing control protocol. These names follow the component descriptor and collaborator conventions above; there is no new public proxy or event protocol.
+
+Calendar typed-editor collaboration uses `readDraftValue` and `selectControlValue`, following the existing read/write/accept control hooks. They are internal component methods, not a new Source or page API.
+
+
+Basic validation — owner, 2026-10-17: approved legacy parameter names are `validate_notnull`, `validate_len`, `validate_notnull_error`, `validate_len_error`, identical in Python/JS; message parameters carry intl_str qualification. Internal `validateInput` evaluates these rules, `validateControlValue` gates a candidate before acceptance, and `shouldProjectControlValue` preserves a rejected draft on equal Data echoes. FieldState owns the shared message and ARIA/native validity presentation. No new application proxy or form service is introduced.
+
+Validation presentation correction (2026-10-17): FieldState keeps the existing
+field-message identity. Private #showMessage / #hideMessage own the transient
+popover and its lifecycle; no public parameter, proxy or service is added.
+
+Theme families (owner 2026-10-17): genropy-mimi and genropy-gioanna are appearance
+IDs and themes/<id>/theme.css paths; the latter references legacy joanna. Generated
+appearanceStyles maps IDs to canonical CSS for index/frame use. Shared CSS tokens
+follow --gramlot-<role>: field-height, field-padding, field-font-size,
+field-background, field-readonly-background and label-size. Existing semantic
+palette/focus/error tokens also apply inside component shadow roots. No new builder
+parameters or component aliases are introduced.
+
+
+Gallery settings (owner 2026-10-17) follow the existing gallery-local conventions: gallery-settings and gallery-label-position DOM IDs; gallery:settings-set postMessage, with labelPosition payload. The example sentinel restores authored lbl_position; no new component parameter or core protocol. mountGallerySettings / mountFrameSettings name the gallery-owned lifecycle helpers.
+
+Live invoice theme refinement (owner 2026-10-17): existing semantic token naming also covers field-line-height, label-gap and label-color. They control the same input/labelbox presentation in native HTML and component shadow roots; no new Source API.
+
+Theme naming correction — owner 2026-10-17: “per i temi chiamali mimi e joanna ma non mettere genropy davanti”. Canonical IDs, selector captions and themes/<id>/theme.css paths are now mimi and joanna. This supersedes the earlier genropy-mimi/genropy-gioanna naming; no compatibility aliases.
+
+Validation presentation refinement, owner 2026-10-17: FieldState reuses the error-background token and its existing message timer. Internal data-fading marks only the tooltip opacity transition; no public parameters are added. NativeControl sets standard assistance attributes on its internal text editor.
+
+
+Touch preview (2026-10-17): Page.devices uses desktop/tablet/phone identifiers in both languages (empty means undeclared), passed as bootstrap devices and frozen gramlot.devices. The existing DOM proxy exposes setTouchMode('auto'|'on'|'off'); data-gramlot-touch and --gramlot-touch-target follow the DOM marker and semantic token conventions. Gallery-owned preview controls use gallery-preview-* identities and the existing settings-set message, with touchMode. This implements the owner's touch/page/preview request without another proxy or component alias.
+
+
+Layout increment — owner-approved scope, 2026-10-17: `formlet`, `groupBox` and `checkbox(variant="switch")` keep identical Python/JS authoring names. Descriptor exports Formlet/GroupBox use gramlot-formlet/gramlot-group-box tags in the layout collection. Existing columns, col_min_width, lbl_*, box_*, lbl_variant and copy retain the reviewed PoC roles. `subTags` on a component definition maps to the existing portable `sub_tags` field (default empty, containers `*`). Internal Container owns the slotted content; readDataScope is the renderer-installed Data-reading capability used by groupBox, not an application proxy. Formlet defaults resolve on their declaring Source node and never mutate descendant Source. Shared labelbox remains the field presentation owner. Switch tokens follow --gramlot-switch-<role>.
+
+
+Review cleanup (owner-authorized R1–R10, 2026-10-17): descriptor `presentationDefaults` lists Source presentation prefixes supplied by a container; `dataScope` requests renderer-installed `readDataScope`. These fields travel in gramlot_component metadata. A `value` parameter with binding="twoWay" identifies a control independently of subTags. Internal `projectParameters`, `parseChoices` and `positionPopup` name the shared parameter, local-choice and geometry operations; they introduce no application proxies. ControlAdapter `preservesUnchangedValue` gates unchanged-value projection for component drafts. Theme roles follow --gramlot-<component>-<role>: formlet-gap; switch-width/height/inset; group-padding/header-padding/action-padding/action-size; choice-max-height; slider-width/height. Popup viewport margin/gap and feedback timings are named internal constants, not new page parameters.
+
+Shared popup geometry writes internal --gramlot-popup-available-width/height properties; these are calculated viewport constraints, not author configuration. --gramlot-popup-padding is a theme token. Local options use one strict parseChoices contract: empty whole list is allowed, empty/duplicate codes or comma entries are rejected, and caption colons are retained. This resolves the R10 divergence under the owner's complete-review correction instruction.
+
+
+Button naming direction (owner, 2026-10-17): retain authoring name `button` in
+Python and JS and use custom-element tag `gramlot-button`; `html_button` retains
+the native HTML button. The owner confirms this direction before requesting
+GC-310's legacy-family analysis. Other family/bar names in GC-310 are legacy
+evidence or proposals, not additional approved runtime APIs.
+
+
+Button family implementation (owner authorization, 2026-10-17; GC-310 §045): canonical names button, toggleButton, dropDownButton, menu, menuline are shared by Python/JS; tags gramlot-button, gramlot-toggle-button, gramlot-drop-down-button, gramlot-menu, gramlot-menu-line follow the existing component convention. The built-in buttons collection uses generated portable metadata. Descriptor command explicitly requests the shared ButtonBinding. Internal commandTarget/prepareCommand/attachCommand/releaseCommand and binding-installed activateCommand follow the existing capability/lifecycle convention; they are not page proxies. persist stores a code under the page URL and authored id, not executable content. Button presentation tokens use --gramlot-button-<role>.
+
+
+Component enumerations (owner, 2026-10-17: “se ci sono valori predefiniti l'inspector dovrebbe avere una tendina”): parameter metadata `enum` lists the admitted literal strings, following the conventional schema name. It travels in the existing generated `gramlot_component.parameters` metadata. Inspector `parameterEnums` carries only these lists across its existing bridge; `readParameterEnums` reads them from Source metadata, never from rendered controls. The inspector uses native selects for literal enum attributes and preserves authored pointers as text.
+
+Checkbox naming refinement (owner, 2026-10-17: “piu che variant forse mi piacerebbe 'mode'”): `mode` replaces `variant` for checkbox presentation, identically in Python/JS; literals remain checkbox/switch. Existing `lbl_variant` for groupBox is a separate parameter.
+
+Checkbox color (owner, 2026-10-17: `switch_color?`, confirmed “ok perfetto”): `switch_color` is the shared Python/JS parameter for the active switch track. It supports read binding and overrides the existing --gramlot-switch-on token on the internal control only; null restores theme inheritance. `color` keeps its text/CSS meaning.
+
+
+Automatic formlet alignment (owner, 2026-10-17): internal FormletLabels owns slotted-field measurement and observer cleanup. Labelbox emits gramlot-label-layout after projection; data-formlet-aligned and --gramlot-formlet-label-width are internal calculated layout state. The existing --gramlot-label-width represents only explicit lbl_width. No new authoring parameters or application proxy.
+
+FormletLabels identifies the existing Labelbox composition by its owned fieldLabel property, independent of constructor identity across separately bundled collections. It operates on that composition directly; ordinary slotted content is not a labelled field.
+
+
+### Input validation engine (owner scope, 2026-10-17)
+
+Retain legacy `validate_<rule>`, `validate_<rule>_if`, `_error`, `_warning`, `_iswarning`, `validate_onAccept` and `validate_onReject`. Rules: `select`, `notnull`, `empty`, `case`, `len`, `min`, `max`, `email`, `regex`, `call`, `remote`; DB/grid names are reserved and explicitly unsupported. `validate_timeout` is an optional millisecond bound for asynchronous validation. Named Logic callbacks use the existing method-name convention; inline bodies/conditions use activated Source and InlineCompiler. Internal `validateInput` returns a validation result; FieldState owns `validateCandidate`, `cancelValidation`, `finishValidation` and `validationResult`. Component acceptance stays `acceptControlValue`; adapters remain the sole Data writers. No new page-level form/save API is introduced.
+
+The legacy remote observation callback retains `validate__onResult` (double underscore); it follows the same activated/named callback policy. Internal `validationRules` and `validationParameters` share rule ordering and generated grammar. `componentContext` connects controls to existing services; `commitComponent` handles synchronous/asynchronous acceptance without adding a Data writer.
+
+`validateSelection` is the component-owned selection-integrity check; constrained choice editors implement it, and other controls reject an explicit validate_select rather than silently ignoring it.

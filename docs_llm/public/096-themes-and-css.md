@@ -58,6 +58,63 @@ inheritance example and stylesheet placement. Root-relative URLs receive mount
 prefix once; relative URLs resolve against page URL. Custom hosts serve their
 resources; Python is not executed by JavaScript serverless exports.
 
+<a id="gc-096-017"></a>
+
+## 017 · GenroPy-inspired themes
+
+The compact proportions were checked against the live `test_invoice_pg` invoice:
+Mimi fields measured 17.5px with 12px text and 10.8px labels. Gramlot uses an 18px
+minimum field height, 1px × 3px padding and a 2px label gap. joanna uses a 20px
+minimum with 13px text and .8em labels, following Joanna’s label ratio. Its live
+invoice appearance has not been measured independently. These are desktop density
+profiles, not a port of the legacy formbuilder layout. Widths remain page choices.
+
+Choose **mimi** or **joanna** in the gallery/index Theme selector.
+The selection reaches open example frames and uses the existing preference storage.
+Color mode is independent.
+
+| Profile | Legacy reference | Light appearance | Root font / field minimum |
+| --- | --- | --- | --- |
+| mimi | mimi.css | Titanium grays, dark navigation, blue actions, small corners | 12px / 18px |
+| joanna | joanna.css | Light gray/white surfaces, softer corners, blue actions | 13px / 20px |
+
+The Gramlot name `joanna` follows the requested name; the legacy file is
+spelled `joanna.css`. These profiles adapt the legacy light palettes and compact
+proportions. They do not port Dojo widgets or guarantee pixel-identical layouts.
+Dark palettes are new Gramlot adaptations. Legacy user color variants are not part
+of this increment; Base and Compact remain available.
+
+In an application, load the three stylesheets in order:
+
+```python
+from gramlot import Page as BasePage
+
+class Page(BasePage):
+    css = (
+        "/themes/gramlot-base/theme.css",
+        "/themes/gramlot-compact/theme.css",
+        "/themes/mimi/theme.css",
+    )
+```
+
+Use `/themes/joanna/theme.css` as the last path for joanna. JavaScript
+`static css` uses the same list. Assets ship in core packages and serverless exports;
+no legacy runtime or remotely downloaded font is needed.
+
+Input components inherit theme variables into their shadow roots, including
+labelbox, choices, calendar and validation messages. Shared metrics are
+`--gramlot-field-height`, `--gramlot-field-padding`, `--gramlot-field-font-size`,
+`--gramlot-field-line-height`, `--gramlot-label-size`, `--gramlot-label-gap`
+and `--gramlot-label-color`. Field surfaces are `--gramlot-field-background` and
+`--gramlot-field-readonly-background`. Colors use the existing palette, including
+`--gramlot-ink`, `--gramlot-text-secondary`, `--gramlot-error` and
+`--gramlot-error-background`. Override these variables in your application CSS;
+explicit `lbl_*`/`box_*` Source styles retain their precedence.
+
+Changing themes does not reconstruct components or change Data. Error indication
+uses an outline and text color without changing field dimensions. Native checkboxes,
+radios and sliders retain browser rendering with the theme accent color.
+
 <a id="gc-096-020"></a>
 
 ## 020 · Customize with variables, classes or inline styles
@@ -211,3 +268,22 @@ misnamed companions, relative URL mistakes, cascade/inline conflicts, unused
 tokens, missing dark overrides, incorrect mode target, iframe isolation, invalid
 binding types and stale exports. Use Network and Computed/Styles panels. Rebuild
 exports after edits. Continue with GC-095 authoring and GC-090 host/resources.
+
+
+<a id="gc-096-060"></a>
+## 060 · Touch density across themes
+
+Block ID: **GC-096-060**.
+
+Touch density is a separate Base layer (`gramlot.touch`, after utilities), shared
+by Base, Compact, mimi and joanna. The layer adjusts field height, padding, text,
+label gap and control targets without replacing the selected palette. It is active
+for `(pointer: coarse)` unless disabled, or explicitly through
+`gramlot.dom.setTouchMode('on')`. Use `off` for ordinary theme sizes and `auto`
+to restore detection. The root marker `data-gramlot-touch` is runtime-owned.
+The touch target token is `--gramlot-touch-target`; calendar width and choice
+button width use `--gramlot-calendar-width` and `--gramlot-choice-toggle-width`.
+Existing field and label tokens also flow into component shadow roots.
+Application inline sizing can still override ordinary CSS; declared phone
+suitability is not an automatic layout conversion. See
+[Touch interaction](105-components.md) for Page.devices and previews.

@@ -10,6 +10,8 @@ import {RpcHandler} from './handlers/rpc-handler.js';
 import {DomHandler} from './handlers/dom-handler.js';
 import {SubscriptionsHandler} from './handlers/subscriptions-handler.js';
 import {UtilitiesHandler} from './handlers/utilities-handler.js';
+import buttons from './components/buttons.js';
+import {ComponentCollection} from './components/registry.js';
 import {formatValue} from './format.js';
 
 /**
@@ -19,10 +21,15 @@ import {formatValue} from './format.js';
 export class Gramlot {
     constructor({pageId, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
                  element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = [],
-                 locale = null, timeZone = null} = {}) {
+                 locale = null, timeZone = null, devices = []} = {}) {
+        buttons.register(document.defaultView);
+        for (const collection of collections) {
+            if (collection instanceof ComponentCollection) collection.register(document.defaultView);
+        }
         this.pageId = pageId;
         const browserContext = locale == null || timeZone == null
             ? document.defaultView.Intl.DateTimeFormat().resolvedOptions() : null;
+        this.devices = Object.freeze([...devices]);
         this.locale = locale ?? browserContext.locale;
         this.timeZone = timeZone ?? browserContext.timeZone;
         Object.defineProperty(this, '_subscriptions', {value: new SubscriptionsHandler(this)});

@@ -10,6 +10,8 @@ import type {Gramlot, GramlotOptions} from './gramlot.js';
 export interface PageResources {
     /** CSS stylesheet URLs. */
     css: string[];
+    /** Application collection modules, each exporting its ComponentCollection as default. */
+    collections?: string[];
     /** JavaScript module URLs, each with its Logic group (null for the page logic). */
     js: {url: string; group: string | null}[];
 }

@@ -5,6 +5,8 @@
  * Checkbox and radio consume `value` as a boolean; RadioGroups gives the radios of a group their name.
  */
 
+import {createDecimal, isDecimal, getDecimalLibrary} from '@genrojs/tytx';
+import {Bag} from '@genrojs/bag';
 import {XHTML_NS} from '../renderer/attributes.js';
 
 // The elements whose `type`, `multiple` and `group` have no setter: a change rebuilds (C04.1, D7).
@@ -22,6 +24,9 @@ export class ControlAdapter {
     static liveWrites = false;
     // Whether a literal `value` is also written as the default a native form Reset restores.
     static writesDefault = true;
+    static preservesUnchangedValue = false;
+    #projectedValue;
+    #hasProjectedValue = false;
     #binding;
     #record;
     #committing = false;
@@ -41,6 +46,10 @@ export class ControlAdapter {
      */
     static classFor(element, attrs) {
         if (element.namespaceURI !== XHTML_NS) return null;
+        if (element.constructor.gramlotComponent) {
+            if (element.constructor.gramlotComponent.parameters.value?.binding !== 'twoWay') return null;
+            return element.control.type === 'radio' ? ComponentRadioControl : ComponentControl;
+        }
         if (element.localName === 'textarea') return TextControl;
         if (element.localName === 'select') return SelectControl;
         if (element.localName !== 'input') return null;
@@ -54,6 +63,7 @@ export class ControlAdapter {
      * `attrs` are the attributes of the renderer's resolved projection (`^`, `=` and `==` resolved).
      */
     static shape(element, attrs) {
+        if (element?.constructor.gramlotComponent?.parameters.value?.binding === 'twoWay' && element.control.type === 'radio') return JSON.stringify([attrs.group ?? null]);
         if (element?.namespaceURI !== XHTML_NS || !CONTROL_TAGS.has(element.localName)) return null;
         return JSON.stringify(REBUILD_ATTRIBUTES.map(name => attrs[name] ?? null));
     }
@@ -66,6 +76,7 @@ export class ControlAdapter {
     get binding() { return this.#binding; }
     get element() { return this.#record.element; }
     get node() { return this.binding.node; }
+    get eventElement() { return this.element; }
     /** The attributes of the last resolved projection of the node (`^`, `=` and `==` resolved). */
     get resolved() { return this.#record.resolved; }
     /**
@@ -88,6 +99,9 @@ export class ControlAdapter {
             this.#pending = true;
             return;
         }
+        if (this.constructor.preservesUnchangedValue && this.#hasProjectedValue && this.same(this.#projectedValue, value)) return;
+        this.#projectedValue = value;
+        this.#hasProjectedValue = true;
         if (this.#committing && this.same(this.read(), value)) return;
         if (this.constructor.writesDefault && !this.node.pointerType(this.node.getAttr('value'))) {
             this.writeDefault(value);
@@ -129,13 +143,13 @@ export class ControlAdapter {
      * input and writes nothing (gate decision 5); a null path raises from the listener (Q7). A closed
      * NodeBinding writes nothing (R12).
      */
-    commit(event) {
+    commit(event, value = this.read()) {
         if (this.binding.closed) return;
         const pointer = this.node.getAttr('value');
         if (this.node.pointerType(pointer) !== '^') return;
         this.#committing = true;
         try {
-            this.node.setRelativeData(pointer.slice(1), this.read());
+            this.node.setRelativeData(pointer.slice(1), value);
         } finally {
             this.#committing = false;
         }
@@ -143,13 +157,13 @@ export class ControlAdapter {
 
     attach() {
         for (const type of ['input', 'change', 'compositionstart', 'compositionend']) {
-            this.element.addEventListener(type, this);
+            this.eventElement.addEventListener(type, this);
         }
     }
 
     detach() {
         for (const type of ['input', 'change', 'compositionstart', 'compositionend']) {
-            this.element.removeEventListener(type, this);
+            this.eventElement.removeEventListener(type, this);
         }
         this.#pending = false;
     }
@@ -178,6 +192,41 @@ export class ControlAdapter {
         }
         if (this.#composing || event.isComposing) return;
         if (event.type === this.writeEvent) this.commit(event);
+    }
+}
+
+/** Custom controls share the existing typed commit, IME and cleanup machinery. */
+class ComponentControl extends ControlAdapter {
+    static writesDefault = false;
+    static preservesUnchangedValue = true;
+    get eventElement() { return this.element.control; }
+    attach() {
+        this.element.setPageContext(componentContext(this));
+        super.attach();
+    }
+    project(value, change) {
+        if (this.element.shouldProjectControlValue(value)) super.project(value, change);
+    }
+    same(a, b) { return this.element.sameControlValue(a, b); }
+    detach() { this.element.releaseControl(); super.detach(); }
+    commit(event) {
+        if (this.binding.closed || this.element.control.disabled || this.element.control.readOnly) return;
+        commitComponent(this.element, this.element.acceptControlValue(), result => super.commit(event, result.value));
+    }
+    get writeEvent() {
+        if (this.element.commitOnChange) return 'change';
+        const control = this.element.control;
+        return this.live && (control.localName === 'textarea' || ['text', 'password', 'range', 'color'].includes(control.type)) ? 'input' : 'change';
+    }
+    read() { return this.element.readControlValue(); }
+    write(value) { this.element.writeControlValue(value); }
+    handleEvent(event) {
+        super.handleEvent(event);
+        // Native change does not cross a shadow boundary; expose it to connect_onchange.
+        if (!event.composed && !this.binding.closed && ['input', 'change'].includes(event.type)) {
+            const Event = this.element.ownerDocument.defaultView.Event;
+            this.element.dispatchEvent(new Event(event.type, {bubbles: true, composed: true}));
+        }
     }
 }
 
@@ -395,6 +444,54 @@ export class RadioControl extends CheckboxControl {
     }
 }
 
+/** A single radio component joins the same Source-scoped groups as native radios. */
+class ComponentRadioControl extends RadioControl {
+    static writesDefault = false;
+    get host() { return super.element; }
+    get element() { return this.host.control; }
+    project(value, change) {
+        if (this.host.shouldProjectControlValue(value)) super.project(value, change);
+    }
+    commit(event) {
+        if (this.binding.closed || this.element.disabled || this.element.readOnly) return;
+        commitComponent(this.host, this.host.acceptControlValue(), () => super.commit(event));
+    }
+    read() { return this.host.readControlValue(); }
+    write(value) { this.host.writeControlValue(value); }
+    attach() {
+        this.host.setPageContext(componentContext(this));
+        super.attach();
+        this.element.addEventListener('keydown', this);
+    }
+    detach() {
+        this.host.releaseControl();
+        this.element.removeEventListener('keydown', this);
+        super.detach();
+    }
+    handleEvent(event) {
+        if (this.binding.closed) return;
+        // Separate shadow roots cannot use the browser's same-tree radio navigation.
+        if (event.type === 'keydown') {
+            if (this.resolved.group == null || !['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) return;
+            const peers = this.groups.peersOf(this.resolved.group, formNode(this.node))
+                .filter(peer => !peer.binding.closed && !peer.element.disabled);
+            const index = peers.indexOf(this);
+            if (index < 0) return;
+            event.preventDefault();
+            const delta = ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 1;
+            const next = peers[(index + delta + peers.length) % peers.length];
+            next.element.focus();
+            next.element.click();
+            return;
+        }
+        super.handleEvent(event);
+        if (!event.composed && !this.binding.closed && ['input', 'change'].includes(event.type)) {
+            const Event = this.host.ownerDocument.defaultView.Event;
+            this.host.dispatchEvent(new Event(event.type, {bubbles: true, composed: true}));
+        }
+    }
+}
+
 /**
  * The radio groups of one live renderer (P11). A group is the `group` value within its form: the
  * nearest Source ancestor with `formId` or `form=true`, or none. The generated `name` joins the
@@ -467,3 +564,54 @@ const INPUT_CONTROLS = {
     hidden: null, file: null,
     button: null, submit: null, reset: null, image: null,
 };
+
+
+/** Component validation uses the same Source, activated code and RPC services as controllers. */
+function componentContext(adapter) {
+    const {binding, node} = adapter, app = binding.runtime.gramlot;
+    const invoke = (attribute, code, keywords, expression = false) => {
+        if (!expression && /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/.test(code)) {
+            const {group, method} = app.src.logicRegistry.resolve(code, node);
+            return method.call(group, node, keywords);
+        }
+        return binding.runtime.inlineCompiler.compile(node, attribute, code, Object.keys(keywords),
+            expression ? `return (${code});` : code)(keywords);
+    };
+    return {
+        locale:app.locale, timeZone:app.timeZone, createDecimal, isDecimal, getDecimalLibrary,
+        isActive:() => !binding.closed,
+        callLogic:(name, keywords) => {
+            const {group, method} = app.src.logicRegistry.resolve(name, node);
+            return method.call(group, node, keywords);
+        },
+        format:(value, options) => app.format(value, options), invoke,
+        remote:(method, keywords, signal) => app.rpc.call('data', method, keywords, {signal}),
+        validationCurrent:() => {
+            const pointer = node.getAttr('value');
+            const path = node.pointerType(pointer) ? node.absDatapath(pointer) : null;
+            return () => !binding.closed && node.getAttr('value') === pointer && (path === null || node.absDatapath(pointer) === path);
+        },
+        finishValidation:({ok, result, rules}) => {
+            if (binding.closed) return;
+            if (ok) for (const patch of result.datachanges) node.getRelativeData('.').update(patch);
+            const attribute = ok ? 'validate_onAccept' : 'validate_onReject';
+            if (rules[attribute]) {
+                const report = error => console.error('Validation notification failed:', error);
+                try {
+                    const validations = Object.fromEntries(Object.entries(rules).map(([key, value]) => [key.slice(9), value]));
+                    const returned = invoke(attribute, rules[attribute], {value:result.value, result, validations, userChange:true});
+                    if (returned instanceof Promise) returned.catch(report);
+                } catch (error) { report(error); }
+            }
+        },
+        checkDataPatch:patch => {
+            if (!(patch instanceof Bag)) throw new TypeError('Validation data changes must be a Bag.');
+            if (!(node.getRelativeData('.') instanceof Bag)) throw new TypeError('Validation data changes require a Bag datapath.');
+        }
+    };
+}
+function commitComponent(host, outcome, commit) {
+    const finish = result => { if (result.ok && result.isCurrent()) { commit(result); host.finishValidation(result); } };
+    if (outcome instanceof Promise) outcome.then(finish).catch(error => console.error('Validation notification failed:', error));
+    else finish(outcome);
+}

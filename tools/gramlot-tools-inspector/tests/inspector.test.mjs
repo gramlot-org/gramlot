@@ -326,3 +326,47 @@ test('a breakpoint action targets its own row; the active list removes deleted p
     assert.equal(button(element, 'Active breakpoints').hidden, true);
     element.remove(); app.dispose();
 });
+
+for (const remote of [false, true]) test(`enum editors use component metadata and preserve pointers (${remote ? 'bridge' : 'local'})`, async () => {
+    const {default: inputs} = await import('@gramlot/gramlot/components/inputs');
+    const mount = window.document.createElement('main'); window.document.body.append(mount);
+    const app = new Gramlot({document: window.document, element: mount, transport: false, collections: [inputs]});
+    const builder = new GramlotBuilder(null, {collections: [inputs]});
+    builder.root.checkbox({node_label: 'check', mode: 'switch', value: '^enabled', lbl_position: 'L'});
+    app.data.setItem('enabled', true); app.data.setItem('presentation', 'switch');
+    app.src.startSource(builder.source);
+    const channel = remote ? new MessageChannel() : null;
+    const agent = remote ? attachInspectorAgent(app, channel.port1) : null;
+    const connection = remote ? new InspectorConnection(channel.port2) : null;
+    const element = inspector(remote ? null : app);
+    const wait = async predicate => {
+        const end = Date.now() + 3000;
+        while (!predicate()) {
+            if (Date.now() > end) throw new Error('Inspector enum update timeout');
+            await new Promise(resolve => setTimeout(resolve, 5));
+        }
+    };
+    try {
+        if (remote) { element.targets = [{id: 'page', title: 'Page', connection}]; await wait(() => connection.state === 'started'); }
+        button(element, 'Source').click(); select(element, 'main.check');
+        const mode = field(element, 'mode value');
+        assert.equal(mode.tagName, 'SELECT');
+        assert.deepEqual([...mode.options].map(option => option.value), ['checkbox', 'switch']);
+        assert.deepEqual([...field(element, 'lbl_position value').options].map(option => option.value), ['TL','TC','TR','L','R','BL','BC','BR']);
+        edit(element, 'mode value', 'checkbox');
+        const node = app.src.source.getNode('main.check');
+        await wait(() => node.getAttr('mode') === 'checkbox');
+        assert.equal(mount.querySelector('gramlot-checkbox').control.getAttribute('role'), null);
+        // A second edit must retain the metadata after accepting the first one.
+        await wait(() => !field(element, 'mode value').disabled);
+        edit(element, 'mode value', 'switch');
+        await wait(() => node.getAttr('mode') === 'switch');
+        await wait(() => !field(element, 'mode value').disabled);
+        node.setAttr({mode: '^presentation'});
+        await wait(() => field(element, 'mode value')?.tagName === 'INPUT');
+        assert.equal(field(element, 'mode value').value, '^presentation');
+        assert.equal(field(element, 'value value').value, '^enabled');
+        app.data.setItem('presentation', 'checkbox');
+        assert.equal(node.getAttr('mode'), '^presentation');
+    } finally {element.remove(); connection?.close(); agent?.dispose(); app.dispose(); mount.remove();}
+});

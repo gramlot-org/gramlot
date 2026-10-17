@@ -1,16 +1,9 @@
-/**
- * The click of a `<button>` (source plan §2 Button, §4.11, S12). One mechanism per button (P10): the
- * `dataController` or `dataRpc` nested in it, `action`, or the `fire`/`fire_*` family. The nested
- * provider is a normal ControllerProvider or RpcProvider (B7); the click is one more trigger. Controller, `action` and counter use
- * the button's own node, also when the click hits a descendant (R11).
- *
- * R3, provisional: only a button with a mechanism gets `type="button"` when the author wrote no
- * `type`, and its click stops propagating; no `preventDefault`. A button without a mechanism stays
- * native. A closed NodeBinding does nothing (R12).
+/** Shared command engine for the built-in button components (GC-310 §045).
+ * One action, nested provider or fire mechanism. Components own presentation and
+ * target selection; this binding owns execution, ask, delay and disposal.
  */
 
 import {AskDialog} from '../binding/ask-dialog.js';
-import {XHTML_NS} from '../renderer/attributes.js';
 
 export class ButtonBinding {
     #binding;
@@ -21,7 +14,7 @@ export class ButtonBinding {
     /** The binding of a Gramlot button; html_button remains native despite its DOM tag. */
     static for(binding, record) {
         const element = record.element;
-        if (binding.node.nodeTag !== 'button' || element?.namespaceURI !== XHTML_NS || element.localName !== 'button') return null;
+        if (!element?.constructor.gramlotComponent?.command) return null;
         return new ButtonBinding(binding, record);
     }
 
@@ -65,6 +58,8 @@ export class ButtonBinding {
     /** Check the mechanism, apply R3's `type`, then listen to `click`. */
     attach() {
         this.refresh();
+        this.element.activateCommand = event => this.onClick(event);
+        this.element.attachCommand();
         this.element.addEventListener('click', this);
     }
 
@@ -81,6 +76,8 @@ export class ButtonBinding {
 
     detach() {
         this.element.removeEventListener('click', this);
+        this.element.releaseCommand();
+        delete this.element.activateCommand;
         this.#cancelDelay?.();
     }
 
@@ -94,7 +91,14 @@ export class ButtonBinding {
      * the mechanism. An error propagates from the listener.
      */
     onClick(event) {
-        if (this.binding.closed) return;
+        if (this.binding.closed || this.element.disabled) return;
+        const target = this.element.commandTarget(event);
+        if (target === null) return;
+        if (target !== this.element) {
+            event.stopPropagation();
+            return target.activateCommand(event);
+        }
+        if (!this.element.prepareCommand(event)) return;
         const mechanism = this.mechanism;
         if (!mechanism) return;
         event.stopPropagation();
@@ -144,7 +148,7 @@ export class ButtonBinding {
                 return {...this.binding.runtime.renderer.references.resolveArguments(authored), event, _counter: counter, modifiers};
             };
             const execute = result => {
-                if (this.binding.closed || result === null) return;
+                if (this.binding.closed || this.element.disabled || result === null) return;
                 const values = {...read(), ...result};
                 if (result) values._askResult = result;
                 this.binding.runtime.inlineCompiler.compile(node, 'action', node.getAttr('action'), Object.keys(values))(values);

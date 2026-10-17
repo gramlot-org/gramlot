@@ -11,6 +11,7 @@ from gramlot.server import GramlotServer
 class FormatContextTests(unittest.TestCase):
     def test_python_page_metadata_reaches_bootstrap_with_browser_names(self):
         class Localized(Page):
+            devices = ("desktop", "phone")
             locale = "it-IT"
             time_zone = "Europe/Rome"
 
@@ -26,5 +27,6 @@ class FormatContextTests(unittest.TestCase):
 
         page = asyncio.run(Server().open_page("/"))
         bootstrap = json.loads(re.search(r"new PageBootstrap\((.*)\)\.run\(\)", page.html, re.S)[1])
+        self.assertEqual(bootstrap["config"]["devices"], ["desktop", "phone"])
         self.assertEqual(bootstrap["config"]["locale"], "it-IT")
         self.assertEqual(bootstrap["config"]["timeZone"], "Europe/Rome")

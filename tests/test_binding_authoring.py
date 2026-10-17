@@ -146,11 +146,9 @@ class DataElementSignatureTests(unittest.TestCase):
         builder.root.div("==1 + 1", title="==2", alt="x")
         self.assertEqual(builder.renderer_html.render(builder.source.nodes[0]), '<div alt="x"></div>')
         builder.root.div(title="${t}", t="==1 + 1")
-        with self.assertRaisesRegex(ValueError, "the template of 'title' uses 't', a == expression"):
-            builder.renderer_html.render(builder.source.nodes[1])
-        builder.root.div(a=1, total="==${a} * 2")
-        with self.assertRaisesRegex(ValueError, r"'total' contains a \$\{…\} template, not accepted in a == expression"):
-            builder.renderer_html.render(builder.source.nodes[2])
+        self.assertEqual(builder.renderer_html.render(builder.source.nodes[1]), '<div title="${t}"></div>')
+        builder.root.div(a=1, total='==`${a}`')
+        self.assertEqual(builder.renderer_html.render(builder.source.nodes[2]), '<div a="1"></div>')
 
     def test_a_dict_value_becomes_a_recursive_bag_and_a_json_string_stays_a_string(self):
         root = GramlotBuilder().root

@@ -65,8 +65,8 @@ const CASES = {
         root.iframe({srcdoc: '=doc'});
         root.iframe({srcdoc: '^missing'});
         root.iframe({srcdoc: '==doc'});
-        root.iframe({srcdoc: '<p>${d}</p>', d: '^doc'});
-        root.iframe({t: '<i>${d}</i>', d: '^doc', srcdoc: '<p>${t}</p>'});
+        root.iframe({srcdoc: '^doc:<p>{}</p>'});
+        root.iframe({t: '^doc:<i>{}</i>', srcdoc: '^doc:<p>{t}</p>'});
         root.iframe({html_srcdoc: '^doc'});
         root.iframe('^w', {srcdoc: '<i>lit</i>'});
         root.iframe({srcdoc: '^doc', sandbox: 'allow-scripts'});
@@ -146,8 +146,8 @@ def srcdoc(root, data):
     root.iframe(srcdoc="=doc")
     root.iframe(srcdoc="^missing")
     root.iframe(srcdoc="==doc")
-    root.iframe(srcdoc="<p>\u0024{d}</p>", d="^doc")
-    root.iframe(t="<i>\u0024{d}</i>", d="^doc", srcdoc="<p>\u0024{t}</p>")
+    root.iframe(srcdoc="^doc:<p>{}</p>")
+    root.iframe(t="^doc:<i>{}</i>", srcdoc="^doc:<p>{t}</p>")
     root.iframe(html_srcdoc="^doc")
     root.iframe("^w", srcdoc="<i>lit</i>")
     root.iframe(srcdoc="^doc", sandbox="allow-scripts")
@@ -207,11 +207,11 @@ const EXPECTED = {
         + '<iframe sandbox="" srcdoc="&lt;script&gt;run()&lt;/script&gt;"></iframe>'
         + '<iframe sandbox=""></iframe><iframe sandbox=""></iframe>'
         + '<iframe sandbox="" srcdoc="&lt;p&gt;&lt;script&gt;run()&lt;/script&gt;&lt;/p&gt;"></iframe>'
-        + '<iframe sandbox="" srcdoc="&lt;p&gt;&lt;i&gt;&lt;script&gt;run()&lt;/script&gt;&lt;/i&gt;&lt;/p&gt;"></iframe>'
+        + '<iframe sandbox="" t="&lt;i&gt;&lt;script&gt;run()&lt;/script&gt;&lt;/i&gt;" srcdoc="&lt;p&gt;&lt;i&gt;&lt;script&gt;run()&lt;/script&gt;&lt;/i&gt;&lt;/p&gt;"></iframe>'
         + '<iframe sandbox="" srcdoc="&lt;script&gt;run()&lt;/script&gt;"></iframe>'
         + '<iframe sandbox="" srcdoc="&lt;b&gt;w&lt;/b&gt;">x</iframe>'
         + '<iframe srcdoc="&lt;script&gt;run()&lt;/script&gt;" sandbox="allow-scripts"></iframe>'
-        + '<iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe><iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe>'
+        + '<iframe srcdoc="&lt;p&gt;lit&lt;/p&gt;"></iframe><iframe srcdoc="&lt;p&gt;${t}&lt;/p&gt;" t="lit"></iframe>'
         + '<div title="&lt;script&gt;run()&lt;/script&gt;"></div>',
 };
 

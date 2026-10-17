@@ -224,7 +224,7 @@ test('runtimeValues resolves pointers; pointers() lists only reactive ones with 
     assert.deepEqual(builder.runtimeValues(node), ['V', {title: 'X', alt: 'Y', tabindex: 3}]);
 });
 
-test('a value starting with == is not a pointer: runtimeValues keeps it and pointers() skips it', () => {
+test('a value starting with == is not a pointer: static runtimeValues makes it inert and pointers() skips it', () => {
     const builder = new GramlotBuilder();
     builder.data.setItem('x', 'X');
     builder.data.setItem('y', 'Y');
@@ -235,7 +235,7 @@ test('a value starting with == is not a pointer: runtimeValues keeps it and poin
     assert.equal(node.pointerType('^x'), '^');
     assert.equal(node.pointerType('=y'), '=');
     assert.deepEqual(node.pointers(), [['alt', '^x']]);
-    assert.deepEqual(builder.runtimeValues(node), [null, {title: '==1+1', alt: 'X', lang: 'Y'}]);
+    assert.deepEqual(builder.runtimeValues(node), [null, {title: null, alt: 'X', lang: 'Y'}]);
 });
 
 test('Builder _resolveLogicFunc finds static functions only', () => {
@@ -418,5 +418,5 @@ test('a Python Source reaches the browser as GramlotBuilderBagNode and classifie
     assert.equal(node.constructor, GramlotBuilderBagNode);
     assert.equal(node.pointerType(node.getAttr('title')), null);
     assert.deepEqual(node.pointers(), [['alt', '^x']]);
-    assert.deepEqual(builder.runtimeValues(node), [null, {title: '==1+1', alt: 'X', lang: 'Y'}]);
+    assert.deepEqual(builder.runtimeValues(node), [null, {title: null, alt: 'X', lang: 'Y'}]);
 });

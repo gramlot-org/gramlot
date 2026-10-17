@@ -8,7 +8,7 @@ import {HtmlBuilder, HtmlRenderer, SvgBuilder, sourceAttributeItems} from '@genr
 import {GramlotSvgRenderer} from './gramlot-svg-renderer.js';
 import {webcomponentCode} from '../webcomponent.js';
 import {
-    SVG_NS, XHTML_NS, boundaryAttributes, displayItem, domNames, isExpression, requireNoExpressionTemplate,
+    SVG_NS, XHTML_NS, boundaryAttributes, displayItem, domNames, isExpression,
     requireNoScriptAttributes, requireStyleClassAttributes, splitNativeAttributes, textValue, withDataSrcdocSandbox, withoutBindingAttributes,
     withoutNullValues,
 } from './attributes.js';
@@ -31,6 +31,8 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
     /** HTML nodes (GramlotBuilder, HtmlBuilder) → this renderer; SVG nodes → one GramlotSvgRenderer owned by it. */
     getRender(builder) {
         if (!this.renders.has(builder)) {
+            // HTML/SVG subbuilders share the page's expression hook and compiler.
+            builder.evaluatePointerExpression = this.builder.evaluatePointerExpression.bind(this.builder);
             if (builder instanceof HtmlBuilder) this.addRender(builder, this);
             else if (builder instanceof SvgBuilder) this.addRender(builder, new GramlotSvgRenderer(builder, this));
         }
@@ -73,10 +75,9 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
     /**
      * Step 3 of Q11.2 on the attributes of `node` resolved by runtimeValues, for HTML and SVG nodes: every
      * `==` attribute, and a `==` node value, evaluated by the page's InlineCompiler (§4.10); without a
-     * compiler they are null and nothing is written. A template using a `==` attribute is an error.
+     * compiler they are null and nothing is written.
      */
     evaluateExpressions(node, runtimeAttrs) {
-        requireNoExpressionTemplate(node);
         const compiler = this.inlineCompiler;
         const evaluate = (attr, expr) => (compiler ? compiler.compileExpression(node, attr, expr)(runtimeAttrs) : null);
         const attrs = {...runtimeAttrs};

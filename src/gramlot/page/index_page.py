@@ -17,6 +17,7 @@ class IndexPage(GramlotPage):
     def main(self, root):
         families = self.navigation
         shell = root.div(class_="index-shell", id=self.shell_id)
+        self.header(shell)
         sidebar = shell.aside(class_="index-sidebar", id="index-sidebar")
         brand = sidebar.header()
         if self.logo_url:
@@ -39,13 +40,13 @@ class IndexPage(GramlotPage):
                   aria_valuemin=120, aria_valuemax=460, aria_valuenow=240)
         content = shell.main(class_="index-main")
         tabs = content.div(class_="index-tabs", role="tablist", aria_label="Open pages")
-        tabs.button("Introduction", type="button", role="tab", id="tab-intro",
+        tabs.html_button("Introduction", type="button", role="tab", id="tab-intro",
                     aria_controls="panel-intro",
                     aria_selected="true", tabindex=-1, hidden=False)
         for family in families:
             for item in (family, *family["children"]):
                 key = item["key"]
-                tabs.button(item["title"], type="button", role="tab", id=f"tab-{key}",
+                tabs.html_button(item["title"], type="button", role="tab", id=f"tab-{key}",
                             aria_controls=f"panel-{key}",
                             aria_selected="false", tabindex=-1, hidden=True)
 
@@ -66,6 +67,9 @@ class IndexPage(GramlotPage):
         self.footer(footer)
         self.behavior(shell)
 
+    def header(self, shell):
+        """Optional application toolbar, declared before navigation and content."""
+
     def behavior(self, shell):
         shell.dataController(func="indexMount", _onStart=True, shell_id=self.shell_id)
 
@@ -83,6 +87,8 @@ class IndexPage(GramlotPage):
         appearance = theme.select(id="index-appearance", value="compact")
         appearance.option("Base", value="base", selected=False)
         appearance.option("Compact", value="compact", selected=True)
+        appearance.option("mimi", value="mimi")
+        appearance.option("joanna", value="joanna")
         color = footer.div(class_="index-theme")
         color.html_label("Color mode", for_="index-theme")
         choices = color.select(id="index-theme", value="light")
@@ -96,7 +102,7 @@ class IndexPage(GramlotPage):
         if self.installable:
             app = footer.details(class_="index-install")
             app.summary("Install app")
-            app.button("Install", type="button", id="index-install-button", hidden=True)
+            app.html_button("Install", type="button", id="index-install-button", hidden=True)
             app.p("", id="index-install-status", role="status")
             app.p("Chrome: use Install page as app in the browser menu. "
                   "Safari on macOS Sonoma or later: File > Add to Dock.")

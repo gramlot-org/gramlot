@@ -9,6 +9,7 @@ export class IndexPage extends Page {
     introduction(pane: any): void;
     groupPanel(pane: any, group: IndexGroup): void;
     panel(pane: any, item: IndexItem): void;
+    header(shell: any): void;
     footer(pane: any): void;
     behavior(pane: any): void;
 }

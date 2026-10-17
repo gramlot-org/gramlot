@@ -129,7 +129,7 @@ unified-plan §§2–4, revision 10.
 | Literal `dataSetter` (2026-09-28) | `value` and attributes as written: no pointer, no `==`, no template; computed values use `dataFormula`. R17: a null attribute counts as omitted | S02, S03bis, S05 | `'^y'`, `'==a+b'`, `'a${b}'` stored as strings; static render without errors (R08, revision 10) |
 | Relative variable datapath (2026-09-28) | `datapath='^.foo'`: `.foo` read in the parent's context; the value read acts as if written in place of the pointer; absolute or symbolic value acts as such | S04 | Parent `ordini`, `ordini.foo='.x1'` → `ordini.x1`; absolute and symbolic values |
 | Q7 null path (2026-09-28) | Empty variable datapath → null path: reads null, no registration, defaults/setters skipped, writes raise "write on a null path" with node and attribute; the check is in `getRelativeData`/`setRelativeData` and `PUT` of `GramlotBuilderBagNode` | S04, S05, S08, S10 | valid → empty → valid; GET null; SET/PUT/FIRE/setRelativeData errors |
-| Template `${name}`, Q6 (2026-09-28) | Visual attributes only, never node value or data-elements; resolved attribute of the same node; follows Data; parameter not in DOM; `\${` literal; missing name → "Unknown template parameter"; scripts pass unchanged. genro-builders 0.26.0 | S03bis, S04 | Python/JS parity |
+| Historical template `${name}`, Q6 (superseded 2026-10-17) | Visual attributes only, never node value or data-elements; resolved attribute of the same node; follows Data; parameter not in DOM; `\${` literal; missing name → "Unknown template parameter"; scripts pass unchanged. genro-builders 0.26.0 | S03bis, S04 | Python/JS parity |
 | Source class and wire (2026-09-26/28) | Builder declares the Source class (`_source_class`/`_sourceClass`); suffix `::X`; `__cls` on differing branch rows and on the root payload; payload decides the root; unknown name error; `__cls` reserved; `SOURCE` gone. Q13: `pointer_type`/`pointerType` excludes `==` in Python and JS (`0b7f913`) | S01 (closed), S02 | Existing proof 11 tests; S02 verifies `==` classification |
 | Q8, Q9, D4 FIRE (2026-09-28) | FIRE always fires: silent reset, then write with fired; `FIRE(path, null)` → `FIRE(path, true)`; reset in finally (P12, R10). No FIRE mark: the router reads `event.fired` (genro-bag 0.27.0, genro-bag-js 0.10.0, genro-builders-js 0.3.1, published 2026-09-28). Supersedes the FireMark of §018 | S08 | Equal-value FIRE, null FIRE, throwing recipient, nested SET not fired |
 | R13 silent PUT (2026-09-28) | Gramlot does not react; autocreate `ins` of missing branches are discarded by the router; no suppression | S08 | Recipient counts on existing, missing-branch and `?attr` paths |
@@ -1135,8 +1135,7 @@ placeholder behavior for expressions or standalone `mask` is inferred here.
 The existing `mask` parameter remains text formatting, with `{}` replacing the legacy
 `%s` placeholder in the new design. No `%s` compatibility alias or `msk` name is
 approved. The new suffix replaces the auxiliary-attribute form for the single-value
-formatting case. Existing `${...}` multi-parameter templates are not removed by this
-decision; define their coexistence/migration without silently changing shipped code.
+formatting case. Historical record: that decision left `${...}` coexistence open. Owner-approved Builder alignment (2026-10-17) supersedes it: ordinary `${...}` text is literal; use explicit pointer suffixes.
 
 Owner path-name correction (2026-10-16, constitution 11.81): every path segment
 name matches `[A-Za-z0-9_]+`; dots separate segments. Existing addressing operators
@@ -1163,8 +1162,7 @@ not added. Native/custom widget `value` suffixes are rejected. These facts super
 the earlier statements that suffix execution is entirely unimplemented.
 
 A `{name}` reference reads the resolved attribute without consuming its normal
-projection. The older `${name}` interpolation retains its existing consumption
-behavior. This keeps the ordinary responsibility of each attribute unchanged. The
+projection. The older `${name}` interpolation is retired by the owner-approved 2026-10-17 Builder alignment: it is literal text, without consumption. This keeps the ordinary responsibility of each attribute unchanged. The
 owner asked not to block this intermediate increment on marginal cases; advanced
 syntax limits remain documented rather than expanding the scope. No publication
 is claimed.
@@ -1176,3 +1174,6 @@ them. The resolver now captures that complete typed input set once per resolutio
 named dependencies and projection reuse it. DOM attributes/computed styles never
 supply `{name}` values. Dependency transforms still resolve in dependency order,
 using the shared current inputs; Source retains its authored pointers.
+
+
+Builder ownership update — 2026-10-17: see the constitution's Builder alignment amendment. The historical Q6 automatic `${name}` contract is superseded. Python delegates static suffix resolution and dtype/signature decoding to genro-builders 0.29.0; JavaScript delegates ordinary projection to Builder 0.6.0 and connects `evaluatePointerExpression` to InlineCompiler, including HTML/SVG subbuilders. Structural attributes retain Gramlot's parent-context reads. Static `==` attributes resolve to null; the live renderer evaluates activated Source declarations. No global `_F` or upstream source patch is introduced.

@@ -1,5 +1,5 @@
 import {sourceAttributeItems} from '@genrojs/builders';
-import {isExpression, templateParameters} from '../renderer/attributes.js';
+import {isExpression} from '../renderer/attributes.js';
 
 /**
  * Inline code of one Gramlot page (source plan §4.10): the `formula`/`script` bodies, `_if`/`_else`,
@@ -110,9 +110,8 @@ export class InlineCompiler {
      * The function of the `==` expression `code` of the attribute `attr` of `node` (`''` for the node
      * value), as written in the Source: `run(resolved)` evaluates it on the attributes resolved by
      * runtimeValues. Its arguments are the
-     * other attributes of the node, except the other `==` (Q11.2): the resolved value, or, for an
-     * attribute a template consumed, its pointer resolved from Data (D6). A consumed attribute that is
-     * itself a template has no value: an expression using it is an error naming both attributes.
+     * other attributes of the node, except the other `==` (Q11.2). Named pointer slots retain
+     * those attributes in the resolved projection; ordinary ${name} strings remain literal.
      */
     compileExpression(node, attr, code) {
         const expr = code.slice(2);
@@ -123,12 +122,6 @@ export class InlineCompiler {
             for (const [name, raw] of items) {
                 if (Object.hasOwn(resolved, name)) {
                     values[name] = resolved[name];
-                } else if (templateParameters(raw).length) {
-                    // Only a parameter can be used by name; the text of the expression is searched for it.
-                    if (isIdentifier(name) && new RegExp(`(?<![\\w$])${name.replaceAll('$', '\\$')}(?![\\w$])`).test(expr)) {
-                        throw new Error(`${node.nodeTag} '${node.label}': '${attr}' uses '${name}', a template consumed by `
-                            + 'another template, whose value is not available; write a dataFormula');
-                    }
                 } else {
                     values[name] = node.pointerType(raw) ? node.getRelativeData(raw) : raw;
                 }

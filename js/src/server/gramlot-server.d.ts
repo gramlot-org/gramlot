@@ -58,10 +58,13 @@ export interface GramlotServerOptions {
     pageTtl?: number;
     /** Maximum number of registered pages. */
     maxPages?: number;
+    /** Application collections: generated Builder grammar and root-relative browser module URL. */
+    collections?: {grammar: Record<string, unknown>; module: string}[];
 }
 
 /** The result of `registerPage`. */
 export interface RegisteredPage {
+    devices?: Array<'desktop' | 'tablet' | 'phone'>;
     locale?: string;
     timeZone?: string;
     /** The id of the registered page. */

@@ -19,6 +19,7 @@ export function endpointMethod(page: Page, name: string): Function | null;
 export class Page {
     /** The title of the page document. */
     static title: string;
+    static devices: Array<'desktop' | 'tablet' | 'phone'>;
     static locale: string | null;
     static timeZone: string | null;
     static installable: boolean;
