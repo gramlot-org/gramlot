@@ -7882,7 +7882,7 @@ and deployment are complete.
 ## 1220 · CI-triggered gallery updates — 2026-10-17
 
 Owner authorized replacing the ten-minute timer with deployment directly after
-successful publication in all four repositories. Prepared matching independent
+successful publication in all four repositories. Published matching independent
 workflow_run workflows; core does not depend on an integration checkout/action.
 The server updater queues concurrent events with its file lock and handles
 duplicate events as no-ops. A bounded wait retries only registry/readiness and
@@ -7894,5 +7894,23 @@ YAML, publication gates and shell syntax pass. Documentation updated.
 
 Owner explicitly approved the restricted infrastructure access: “Sì, autorizzo
 questo accesso ristretto”. This resolves the preceding automatic approval-review
-block. Restricted-access setup, workflow publication, CI end-to-end verification
-and timer retirement are in progress. No package version bump is needed.
+block. Restricted access is installed and verified: separate repository keys,
+main-only deployment environments, forced command, no command arguments, shell,
+uploads or forwarding. Server scripts match the reviewed repository hashes.
+
+All four manual CI probes succeeded: core [39070151062](https://github.com/gramlot-org/gramlot/actions/runs/39070151062),
+examples [39070153518](https://github.com/gramlot-org/gramlot-examples/actions/runs/39070153518),
+Python server [39070155739](https://github.com/gramlot-org/gramlot-py-server/actions/runs/39070155739),
+and JS server [39070158048](https://github.com/gramlot-org/gramlot-js-server/actions/runs/39070158048).
+Re-running only the idempotent npm job of the existing core publication skipped
+its already-published package and generated a real successful `workflow_run`
+deployment: [39070194955](https://github.com/gramlot-org/gramlot/actions/runs/39070194955).
+These were unchanged-release no-ops, confirming the event and restricted access
+without rebuilding an already verified generation or republishing packages.
+
+The old timer was disabled and removed: systemd reports `not-found` / `inactive`.
+The manual operator service remains available. Production generation remains
+`20261017T204807Z`. Both public ZIP downloads passed integrity/version checks
+and have SHA-256 `2bec23b2b92184edc67f4c398779dc595e837393d69eb2eecd515406af4414d5`.
+Implementation and operational verification are complete; no package bump was
+needed. CI/operations changes are published on main and develop in all four repos.
