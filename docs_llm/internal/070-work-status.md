@@ -7876,3 +7876,23 @@ ZIP opened with file://, explicitly asserting Example / Code / Inspector and
 Normal / Mobile, as well as the existing mobile/desktop state-preservation
 checks. Physical iOS testing remains outside this verification. Publication
 and deployment are complete.
+
+
+<a id="gc-070-1220"></a>
+## 1220 · CI-triggered gallery updates — 2026-10-17
+
+Owner authorized replacing the ten-minute timer with deployment directly after
+successful publication in all four repositories. Prepared matching independent
+workflow_run workflows; core does not depend on an integration checkout/action.
+The server updater queues concurrent events with its file lock and handles
+duplicate events as no-ops. A bounded wait retries only registry/readiness and
+installed-version races; build/browser failures remain visible failures.
+
+Local verification: 21 deployment/security-entry tests passed; Python adapter
+102 tests; JS server 33 Node and 33 Bun tests, serverless 35, create 3. Workflow
+YAML, publication gates and shell syntax pass. Documentation updated.
+
+Owner explicitly approved the restricted infrastructure access: “Sì, autorizzo
+questo accesso ristretto”. This resolves the preceding automatic approval-review
+block. Restricted-access setup, workflow publication, CI end-to-end verification
+and timer retirement are in progress. No package version bump is needed.
