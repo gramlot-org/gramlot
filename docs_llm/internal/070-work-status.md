@@ -2,7 +2,7 @@
 
 Document ID: **GC-070**. Updated: **2026-10-17**.
 
-**Current checkpoint:** the intermediate formatting/pointer release is published (§1000). The approved 0.3 component increments are implemented locally: seventeen inputs, labelbox, formlet/groupBox, command buttons, themes/touch and the complete field-validation engine. Final cross-host, package and documentation qualification has passed; see [§1175](#gc-070-1175). No 0.3 publication has occurred.
+**Current checkpoint:** the 0.3 component release is published and verified from the public registries: seventeen inputs, labelbox, formlet/groupBox, command buttons, themes/touch and the complete field-validation engine. Final cross-host qualification and publication receipts are in [§1175](#gc-070-1175) and [§1185](#gc-070-1185).
 
 **Inspector CSS variables:** the Styles trial and CSS download are implemented; locally verified; owner visual acceptance pending. See [§945](#gc-070-945).
 
@@ -12,13 +12,13 @@ Document ID: **GC-070**. Updated: **2026-10-17**.
 
 **Reusable index and root installation:** implemented and locally verified; see [§785](#gc-070-785). The stale Kajenn test environment is now updated and the full adapter suite passes.
 
-**Next workstream:** the 0.3 closing checks are complete; obtain release authorization before bump, consolidation and publication. Translation services, DB/grid/store work and broader containers remain separate workstreams; see [GC-245 §110](../future/245-components-0-3-plan.md#gc-245-110).
+**Next workstream:** the approved 0.3 scope is complete and released. Translation services, DB/grid/store work and broader containers remain separate workstreams to prioritize with the owner; see [GC-245 §110](../future/245-components-0-3-plan.md#gc-245-110).
 
 **Deferred website design:** editorial HTML companions and two interactive-region modes for gramlot.org, asqueel.org and kajenn.org are recorded for later discussion (§850); no implementation started.
 
-**Practical entry page:** GC-018 and the optional Chrome extension installation link are implemented and locally verified; publication pending (§845).
+**Practical entry page:** GC-018 and the optional Chrome extension installation link are published in the public manual; see §845 for the original implementation checkpoint.
 
-**Documentation follow-up:** all four public manuals are aligned; the examples Read the Docs site is live with 41 lessons and complete Python/JavaScript sources. Hosted documentation and CI checks passed (§840).
+**Documentation follow-up:** all four public manuals are aligned and built from the release sources. The examples manual contains 71 lessons and complete Python/JavaScript sources; its embedded component lessons were rebuilt after serverless publication (§1185).
 
 **Historical record — integrated release checkpoint (§835):** core 0.2.17 on PyPI/npm/JSR, examples 0.2.12 on PyPI/npm, JS server/serverless/create 0.2.9 on npm and Python server 0.2.8 on PyPI. All four release pipelines succeeded, including required tests, browser checks and clean-install gates. Teaching D1–D6 is owner-accepted (§790); additional remote/CustomTypes enforcement remains owner-deferred (11.66), Q2 is unchanged and the Date/Decimal authoring exercise is deferred pending Bag #69. Qualification details and limits are in §§825–835.
 
@@ -7622,3 +7622,47 @@ occurs, as documented in GC-105. All core CI browser harnesses pass locally afte
 this fixture correction. Integration gallery harnesses now open Settings before
 changing the theme. Node/Bun gallery checks pass. The unpublished version tag is
 recreated on this corrected verification commit; no registry version is replaced.
+
+
+<a id="gc-070-1185"></a>
+## 1185 · Component release published and installed — 2026-10-17
+
+The owner-authorized release in §1180 is published. All four release workflows
+completed successfully, including their required test, browser, documentation,
+package and installation gates:
+
+| Repository / packages | Release | Successful workflow |
+| --- | --- | --- |
+| Core, Python and JavaScript | 0.3.0 | [39045160604](https://github.com/gramlot-org/gramlot/actions/runs/39045160604) |
+| Shared examples, Python and JavaScript | 0.3.0 | [39046014939](https://github.com/gramlot-org/gramlot-examples/actions/runs/39046014939) |
+| JS server, serverless and create | 0.2.11 | [39046309522](https://github.com/gramlot-org/gramlot-js-server/actions/runs/39046309522) |
+| Python server, all five adapters | 0.2.9 | [39046314006](https://github.com/gramlot-org/gramlot-py-server/actions/runs/39046314006) |
+
+Core is on PyPI, npm and JSR; examples are on PyPI and npm; integrations are on
+PyPI/npm respectively. GitHub releases and version tags identify the published
+sources. The JSR publish receipt is the successful official workflow log; a local
+metadata request returning HTTP 403 is not counted as independent verification.
+
+Release qualification corrected obsolete browser fixtures without weakening the
+contract: html_button tests native submission, while Gramlot button does not
+implicitly submit. The examples CI harness now loads declared collections/assets
+and exercises each of w01–w25 in both authoring languages. Its final run passes all
+71 Python and 71 JavaScript lesson behaviors. A transient npm propagation failure
+in the JS integration was rerun successfully after examples became available.
+No published package version was overwritten.
+
+Fresh isolated installations from PyPI and npm resolve the released core, examples
+and integrations. Python pip check reports no broken requirements. All 25 component
+lesson interactions pass against both installed Python and Node galleries, including
+relative w25 bindings, invalid drafts and asynchronous validation. These checks use
+registry artifacts rather than linked working copies. The previously recorded local
+Chromium/WebKit matrix and the expected upstream Builder failure remain as qualified
+in §1175; no Firefox pass is claimed.
+
+All four Read the Docs projects built successfully from their release sources.
+After serverless publication, examples stable and latest were rebuilt as 35212135
+and 35212142 so embedded lessons use the collection-aware exporter. The public
+stable w25 page renders its components and completes remote validation, updating
+both the field and accepted Data to NEWNAME. Public manuals contain 71 lessons
+with Python and JavaScript sources. No separate DevTools extension release is
+included in this release scope.

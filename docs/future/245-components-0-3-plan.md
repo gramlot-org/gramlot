@@ -1,7 +1,7 @@
 # 245 · Component collection plan for 0.3
 
 Document ID: **GC-245**. Updated: **2026-10-17**.
-Status: **approved increments implemented and locally qualified; release authorized; publication in progress**.
+Status: **approved 0.3 scope implemented, qualified, accepted for release and published**.
 
 [Concise counterpart](../../docs_llm/future/245-components-0-3-plan.md).
 [Previous investigation and decisions](205-components.md).
@@ -587,4 +587,4 @@ The original stage proposals are not evidence that an unimplemented feature ship
 Still outside this release: DB/grid validators and stores, tree/grid widgets,
 buttonbars and the wider container collection, form persistence/save, rich editors,
 and actual intl_str translation services. Localization metadata preparation remains
-available. Version bump, public consolidation and publication are separate actions.
+available. The owner subsequently authorized version bump, public consolidation and publication; all four releases succeeded. See GC-070 §§1180–1185 for authorization, package versions, registry installation checks and public documentation receipts.
