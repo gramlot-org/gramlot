@@ -155,6 +155,7 @@ export class GramlotServer {
             const root = document.root.html();
             const head = root.head();
             head.meta({charset: 'utf-8'});
+            head.meta({name: 'viewport', content: 'width=device-width,initial-scale=1'});
             head.title(title);
             if (['', 'index'].includes(path.replace(/^\/+|\/+$/g, '')) && this.pages.get(pageId).PageClass.installable === true) {
                 head.link({rel: 'manifest', href: prefix + '/app.webmanifest'});

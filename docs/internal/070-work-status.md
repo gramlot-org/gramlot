@@ -14,6 +14,8 @@ Document ID: **GC-070**. Updated: **2026-10-17**.
 
 **Hosted galleries:** Python and Node galleries are live on gallery-py.gramlot.dev and gallery-js.gramlot.dev, each with the verified offline ZIP download and automatic updates after successful releases of the four repositories; see [§1190](#gc-070-1190) and [§1195](#gc-070-1195).
 
+**Mobile gallery:** implemented and locally verified on Python/Node in Chromium and WebKit; publication pending. See [§1205](#gc-070-1205).
+
 **Next workstream:** the approved 0.3 scope is complete and released. Translation services, DB/grid/store work and broader containers remain separate workstreams to prioritize with the owner; see [GC-245 §110](../future/245-components-0-3-plan.md#gc-245-110).
 
 **Deferred website design:** editorial HTML companions and two interactive-region modes for gramlot.org, asqueel.org and kajenn.org are recorded for later discussion (§850); no implementation started.
@@ -8778,3 +8780,88 @@ All three release pipelines succeeded (examples 39059652682, JS 39059940631, Pyt
 The enabled systemd timer and service are gramlot-galleries-update.timer/service. First registry-only generation 20261017T190256Z is active on slot 1 (loopback 19184/19185). Both containers are healthy. Browser checks pass on both candidates, the offline file export and both public HTTPS origins: all 25 component lessons start, textbox binding and invalid-draft/async-validation interactions work, and the hosted footer link is present. Both public ZIP downloads match SHA256 60413953c15faac5e180fb8525efbcb55ce509c260b3f4aa59898487d3431518. The preceding manual containers stopped only after promotion succeeded; their images/config/archive remain available.
 
 The updater records current.json and per-generation receipts on the host, excludes simultaneous updates, reuses already verified release checks, and bounds only its dedicated BuildKit cache. No unrelated service or cache is changed. Existing page sessions may require a reload after a deployment. Instructions and tested automation are maintained in gramlot-examples/deploy/galleries; the updater does not automatically replace its own control scripts.
+
+<a id="gc-070-1200"></a>
+## 1200 · New public welcome website — 2026-10-17
+
+Owner requested www.gramlot.org with product explanation, server choices, current
+and planned widgets, both galleries and their source languages, inspector,
+technology comparisons, repository/manual links; explicitly excluded Rosetta.
+Follow-up: “non aggiornate rifai ex novo usa delle skill per un sito bello elegante”
+and a reminder to include validation. This is bounded gramlot-site editorial and
+hosting work, not a framework implementation or a change to gallery automation.
+
+Built from scratch in gramlot-site/welcome: seven static English pages, original
+branding, actual gallery screenshots, a searchable 22-component catalogue,
+dedicated validation explanation, current/planned distinctions, Python/JS/Worker
+hosting, inspector and primary-source technology comparisons. The editorial shell
+does not simulate a Gramlot application or bundle the historical PoC runtime.
+The old README and pipeline instructions remain explicitly historical; the
+previous unrelated README note is preserved.
+
+Published at https://www.gramlot.org/ through the existing nginx/TLS host. Only the
+www server block now serves /var/www/gramlot-site/current, generation
+20261017T192720Z. Archive SHA256:
+c905bc77c6118a41148e2b09675a67df1aab23b813248a287728471e23d97544.
+The prior nginx configuration and historical container are retained for rollback;
+apex redirect, other virtual hosts, gallery containers and update timer are
+unchanged. The first immediate post-reload check saw the preceding worker and
+restored the configuration; retry waited for worker transition and succeeded.
+
+Verified locally and on public HTTPS: seven pages in Chromium and WebKit at
+390/768/1440 pixels, image loading, no page overflow, menu/Escape, catalogue
+filtering and disclosure interactions. No-JavaScript mobile navigation and full
+catalogue pass. Static checks cover eight HTML documents including 404, internal
+links/fragments, assets and metadata. Public sitemap, robots, apex/legacy redirects
+and true 404 status pass. Manual/repository/gallery/download links checked; two
+npm web pages reject automated HEAD requests, but their package destinations are
+the existing official package names. Product comparisons cite official docs.
+Website visual acceptance remains with the owner; implementation and publication
+are complete. The proposed CI-triggered gallery updater remains a separate item.
+
+
+Homepage visual follow-up — owner found the validation-error hero unclear.
+Replaced it with an actual valid Customer group from gallery w20 and its textbox
+Python declaration. The complete form is visible without crop or overlay; the
+validation error screenshot remains on the dedicated validation page. Chromium
+and WebKit desktop/mobile checks and static checks pass; public HTTPS hero/image
+and example link verified. Deployed generation 20261017T193724Z; previous
+20261017T192720Z retained for rollback.
+
+
+<a id="gc-070-1205"></a>
+## 1205 · Responsive gallery — 2026-10-17
+
+Owner-approved scope: full-width example, off-canvas navigation and separate
+Esempio / Codice / Inspector views in both Python and JS galleries, preserving
+Data. Below 1024 CSS pixels the existing panels switch presentation; the same
+iframe and inspector remain mounted. Navigation closes on selection (including
+the current page), backdrop or Escape and manages keyboard focus/inert content.
+Wider windows restore desktop sidebar preferences. Normal preview now uses
+automatic touch detection; explicit Mobile preview still forces touch sizing.
+
+Owned core additions: Python/JS server HTML declares the device-width viewport
+(already present in serverless); the optional inspector supports dynamic
+`docked` presentation and hiding without disconnecting. Touch presentation has
+larger rows, tabs and splitter, with visible breakpoint affordances on devices
+without hover. No Builder/Bag/adapter source changes or parallel page state.
+
+Verification: core Node suite 3,541 passed in sandbox; the only three failures
+were loopback permission denials and all three conformance tests passed when
+rerun with local-network permission (3,544 total). Core Python server tests
+16 passed. Inspector 30 tests plus Chromium/WebKit existing browser qualification
+pass. Examples Node suite 98 passed; targeted gallery rerun 29 passed.
+Python declaration regression and full example suite: 18 tests passed. Real Chromium and WebKit on Python (8235) and Node
+(8237) pass 320/390/768/1023px, full-width panels, drawer dismissal, same iframe
+and Data, inspector edits/selection, rejected widget draft retention, and a
+round trip to desktop. Existing desktop layout/resize/preferences qualification
+also passes on both hosts and engines. WebKit is not a physical iOS Safari test.
+
+Implemented and verified locally; owner visual acceptance and a coordinated
+core/examples release remain pending. Hosted galleries and their downloadable
+ZIP still use published packages. No release, push or production deployment was
+performed for this increment. Preview URLs: http://127.0.0.1:8235/ (Python),
+http://127.0.0.1:8237/ (Node).
+
+
+Release authorization — 2026-10-17: owner confirmed “si procedi con bump, commit, push e pubblicazione di core ed esempi e verifica che si aggiornino entrambe le gallery online e lo zip serverless”. Core patch and examples patch publication, main consolidation, hosted-gallery update and regenerated serverless ZIP are authorized. Release and deployment verification are in progress; the earlier publication-pending statement is superseded only for this coordinated increment.

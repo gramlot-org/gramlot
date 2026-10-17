@@ -14,6 +14,14 @@ let nextId = 0;
 
 /** Inspect one explicitly supplied Gramlot instance in a floating palette. */
 export class GramlotToolsInspector extends HTMLElement {
+    static observedAttributes = ['docked'];
+
+    attributeChangedCallback() {
+        if (this.#ui && !this.hasAttribute('embedded')) {
+            this.#ui.src.source.getNode('main.palette').setAttr({docked: this.hasAttribute('docked') ? '' : null});
+        }
+    }
+
     #target = null;
     #connection = null;
     #connectionRelease = null;
@@ -266,7 +274,7 @@ export class GramlotToolsInspector extends HTMLElement {
         root.style(inspectorStyle);
         const palette = this.hasAttribute('embedded')
             ? root.section({node_label: 'palette', class: 'embedded-panel', 'aria-label': 'Gramlot inspector'})
-            : root.webcomponent({code: 'gramlot-poc-palette', node_label: 'palette', title: 'Gramlot inspector', connect_onclose: 'inspector.close'});
+            : root.webcomponent({code: 'gramlot-poc-palette', node_label: 'palette', title: 'Gramlot inspector', docked: this.hasAttribute('docked') ? '' : null, connect_onclose: 'inspector.close'});
         const targetbar = palette.div({node_label: 'targetbar', class: 'targetbar', hidden: '^singleTarget'});
         targetbar.select({node_label: 'targets', value: '^targetId', disabled: '^busy', 'aria-label': 'Inspected page', connect_onchange: 'inspector.selectTarget'});
         const toolbar = palette.webcomponent({code: 'gramlot-poc-tabs', node_label: 'tabs', role: 'tablist', 'aria-label': 'Inspected root'});

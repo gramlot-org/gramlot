@@ -24,6 +24,7 @@ test('file server: bootstrap and async main, identity, fresh page state and clea
     const server = new GramlotFileServer(pages);
     const opened = await server.openPage('/', {owner: 'alice'});
     assert.ok(opened.html.includes('id="gramlot-root"'));
+    assert.ok(opened.html.includes('name="viewport" content="width=device-width,initial-scale=1"'));
     assert.ok(!opened.html.includes('homer'));
     assert.ok(opened.html.includes(opened.pageId));
     assert.ok(opened.html.includes('"closeUrl":"/gramlot/close"'));

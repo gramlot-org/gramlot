@@ -59,6 +59,7 @@ class CallTests(unittest.TestCase):
         opened = asyncio.run(GramlotFileServer(PAGES).open_page("/"))
         self.assertIn(f'"config":{{"pageId":"{opened.page_id}","rpcUrl":"/gramlot/rpc",'
                       '"closeUrl":"/gramlot/close","rootId":"gramlot-root","capabilities":[]}', opened.html)
+        self.assertIn('name="viewport" content="width=device-width,initial-scale=1"', opened.html)
         self.assertNotIn("mainUrl", opened.html)
         self.assertNotIn("sourceUrl", opened.html)
 

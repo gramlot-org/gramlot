@@ -7,7 +7,10 @@ export class GramlotPocPalette extends HTMLElement {
         this.attachShadow({mode:'open'}).innerHTML = `<style>
 :host{box-sizing:border-box;position:fixed;z-index:2147483647;left:16px;top:16px;width:480px;height:620px;min-width:min(280px,100vw);min-height:200px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);display:block;font:11px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:white;color:#38414b;border:1px solid #b9bec5;border-radius:4px;box-shadow:0 6px 22px #20283026;overflow:hidden}
 *{box-sizing:border-box}.frame{height:100%;display:flex;flex-direction:column}.bar{display:flex;align-items:center;height:25px;min-height:25px;padding:0 4px;border-bottom:1px solid #d8d8dc;background:#eceef1;cursor:move;touch-action:none;user-select:none}.title{flex:1;min-width:0;text-align:left;padding-left:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:600}.body{flex:1;min-height:0;display:flex;flex-direction:column}.resize{position:absolute;right:2px;bottom:2px;width:14px;height:14px;cursor:nwse-resize;touch-action:none;background:repeating-linear-gradient(135deg,transparent 0 3px,#aab0b8 3px 4px,transparent 4px 6px);clip-path:polygon(100% 0,100% 100%,0 100%)}button{font:inherit;color:#69727c;background:transparent;border:0;cursor:pointer}.close,.collapse{width:22px;flex:none;height:22px;font-size:18px;line-height:18px;padding:0}.close:hover,.collapse:hover{background:#dce1e7}.bar:focus-visible,button:focus-visible{outline:2px solid #356f9f;outline-offset:-2px}.resize:focus-visible{clip-path:none}::slotted(*){min-height:0}
-:host([collapsed]){height:27px!important;min-height:27px}:host([collapsed]) .body,:host([collapsed]) .resize{display:none}
+:host([docked]){position:relative!important;inset:0!important;width:100%!important;height:100%!important;min-width:0;min-height:0;max-width:none;max-height:none;border:0;border-radius:0;box-shadow:none}
+:host([docked]) .bar,:host([docked]) .resize{display:none}
+:host([docked][collapsed]) .body{display:flex}
+:host([collapsed]:not([docked])){height:27px!important;min-height:27px}:host([collapsed]:not([docked])) .body,:host([collapsed]:not([docked])) .resize{display:none}
 </style><div class="frame" role="dialog" aria-modal="false" aria-labelledby="title"><div class="bar" tabindex="0" aria-label="Move inspector: arrow keys, Home to reset"><span class="title" id="title"></span><button class="collapse" type="button" aria-label="Collapse inspector" aria-expanded="true" aria-controls="palette-body">−</button><button class="close" type="button" aria-label="Close inspector">×</button></div><div class="body" id="palette-body"><slot></slot></div><button class="resize" type="button" aria-label="Resize inspector: arrow keys"></button></div>`;
         this._bar=this.shadowRoot.querySelector('.bar');
         this._grip=this.shadowRoot.querySelector('.resize');
@@ -33,7 +36,7 @@ export class GramlotPocPalette extends HTMLElement {
                 if(delta){event.preventDefault();this._adjust(this.getBoundingClientRect(),...delta,handle===this._grip);}
             });
         }
-        this._fit=()=>this._adjust(this.getBoundingClientRect(),0,0,false);
+        this._fit=()=>!this.hasAttribute('docked') && this._adjust(this.getBoundingClientRect(),0,0,false);
     }
     get collapsed(){return this.hasAttribute('collapsed');}
     set collapsed(value){this.toggleAttribute('collapsed',value);}

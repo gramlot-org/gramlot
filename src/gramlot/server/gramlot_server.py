@@ -195,6 +195,7 @@ class GramlotServer:
         root = document.source.html()
         head = root.head()
         head.meta(charset="utf-8")
+        head.meta(name="viewport", content="width=device-width,initial-scale=1")
         head.title(cls.title)
         if path.strip("/") in ("", "index") and cls.installable is True:
             head.link(rel="manifest", href=prefix + "/app.webmanifest")

@@ -35,6 +35,14 @@ import '@gramlot/gramlot/tools/inspector';
 document.getElementById('inspector').gramlot = window.gramlot;
 ```
 
+The boolean `docked` attribute switches an existing floating inspector to fill
+its parent's height, without a title bar, collapse control or resize grip. It is
+dynamic: removing it restores floating presentation. The parent must provide a
+height. Use `hidden` to suspend its presentation without detaching the component;
+selection, connections and live updates remain. The gallery uses this for its
+separate mobile Inspector view. This differs from `embedded`, which chooses the
+initial DevTools structure when the component connects.
+
 A bundler or import map must resolve the optional package entry.
 Assign the instance explicitly once it exists; the component does not discover
 frames or read a global automatically. Assign `null` to detach the target. Close

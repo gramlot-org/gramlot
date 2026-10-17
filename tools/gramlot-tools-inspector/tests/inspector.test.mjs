@@ -370,3 +370,24 @@ for (const remote of [false, true]) test(`enum editors use component metadata an
         assert.equal(node.getAttr('mode'), '^presentation');
     } finally {element.remove(); connection?.close(); agent?.dispose(); app.dispose(); mount.remove();}
 });
+
+test('docking keeps the inspector, selected path and unfinished editor value alive', async () => {
+    const app = target(), element = inspector(app);
+    await tick();
+    select(element, 'name');
+    const palette = element.shadowRoot.querySelector('gramlot-poc-palette');
+    const editor = field(element);
+    editor.value = 'Uncommitted';
+    for (const docked of [true, false, true]) {
+        element.toggleAttribute('docked', docked);
+        assert.equal(element.shadowRoot.querySelector('gramlot-poc-palette'), palette);
+        assert.equal(palette.hasAttribute('docked'), docked);
+        assert.equal(field(element), editor);
+        assert.equal(editor.value, 'Uncommitted');
+        assert.equal(app.data.getItem('name'), 'Ada');
+    }
+    element.hidden = true; element.hidden = false;
+    assert.equal(field(element), editor);
+    assert.equal(editor.value, 'Uncommitted');
+    element.remove(); app.dispose();
+});
