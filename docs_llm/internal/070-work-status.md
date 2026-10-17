@@ -14,7 +14,7 @@ Document ID: **GC-070**. Updated: **2026-10-17**.
 
 **Hosted galleries:** Python and Node galleries are live on gallery-py.gramlot.dev and gallery-js.gramlot.dev, each with the verified offline ZIP download and automatic updates after successful releases of the four repositories; see [§1190](#gc-070-1190) and [§1195](#gc-070-1195).
 
-**Mobile gallery:** implemented and locally verified on Python/Node in Chromium and WebKit; publication pending. See [§1205](#gc-070-1205).
+**Mobile gallery:** published and verified on both public galleries and the downloaded serverless ZIP in Chromium and WebKit. See [§1205](#gc-070-1205) and [§1210](#gc-070-1210).
 
 **Next workstream:** the approved 0.3 scope is complete and released. Translation services, DB/grid/store work and broader containers remain separate workstreams to prioritize with the owner; see [GC-245 §110](../future/245-components-0-3-plan.md#gc-245-110).
 
@@ -7800,4 +7800,49 @@ performed for this increment. Preview URLs: http://127.0.0.1:8235/ (Python),
 http://127.0.0.1:8237/ (Node).
 
 
-Release authorization — 2026-10-17: owner confirmed “si procedi con bump, commit, push e pubblicazione di core ed esempi e verifica che si aggiornino entrambe le gallery online e lo zip serverless”. Core patch and examples patch publication, main consolidation, hosted-gallery update and regenerated serverless ZIP are authorized. Release and deployment verification are in progress; the earlier publication-pending statement is superseded only for this coordinated increment.
+Release authorization — 2026-10-17: owner confirmed “si procedi con bump, commit, push e pubblicazione di core ed esempi e verifica che si aggiornino entrambe le gallery online e lo zip serverless”. Core patch and examples patch publication, main consolidation, hosted-gallery update and regenerated serverless ZIP are authorized. Release and deployment verification are complete; §1210 supersedes the earlier publication-pending statement for this coordinated increment.
+
+
+<a id="gc-070-1210"></a>
+## 1210 · Responsive gallery publication receipts — 2026-10-17
+
+Historical record. Owner authorization is recorded in §1205. Published core
+0.3.1 on PyPI, npm and JSR, and examples 0.3.2 on PyPI and npm. Release commits
+are `af01784` and `772bee2`, respectively; both were consolidated into main and
+pushed with their annotated version tags. No adapter release was required.
+
+- [Core release and assets](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.1),
+  [successful publication](https://github.com/gramlot-org/gramlot/actions/runs/39065912112).
+- [Examples release and assets](https://github.com/gramlot-org/gramlot-examples/releases/tag/v0.3.2),
+  [successful publication](https://github.com/gramlot-org/gramlot-examples/actions/runs/39066293003).
+
+All required release tests pass. The examples Python 3.11 job initially ran
+before the new core propagated to its PyPI index; the failed job and the same
+branch checks passed on retry without code changes. Downloaded release checksums
+pass; core wheel/npm runtimes match, as do examples wheel/npm gallery styles.
+
+The existing hosted updater promoted generation `20261017T202810Z`, slot 0,
+after checking the resolved package versions, all 25 component pages, binding,
+validation and remote validation in Python, Node and file-based serverless, then
+repeating hosted checks through both public HTTPS origins. An earlier attempt
+resolved the old examples wheel while PyPI was propagating and stopped before
+promotion. Previous generation `20261017T190256Z` remains available for rollback.
+The update timer was restored and is active; deployment used the existing
+service, not a new CI-triggered deployment mechanism.
+
+Both https://gallery-py.gramlot.dev/ and https://gallery-js.gramlot.dev/ serve the
+new core/examples versions. Downloads from both hosts are identical, 27,153,602
+bytes, SHA-256:
+`c1bfe0e4f37afa95ed6f41f63d87ee1d6067c48fd811b79ef0f9b294cd8cbc3b`.
+The archive's actual packaged-version receipt includes core 0.3.1, examples
+0.3.2, Python server 0.2.10 and JS server/serverless 0.2.12.
+
+Post-publication Chromium and WebKit checks pass against both public galleries
+and the downloaded ZIP opened directly with `file://`: 320/390/768/1023px,
+full-width example/code/inspector, drawer dismissal, the same iframe and Data,
+inspector edit/selection, rejected input draft retention and desktop round trip.
+The browser qualification now waits for the asynchronous gallery mount before
+checking initial visibility and recognizes file-based example paths. This is a
+test-only follow-up; released runtime artifacts are unchanged. WebKit engine
+qualification is not a physical iPhone/iPad Safari test. Release, deployment and
+verification are complete.
