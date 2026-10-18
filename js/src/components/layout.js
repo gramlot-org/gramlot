@@ -1,33 +1,16 @@
 /** Slotted layout components; Source owns children and Data owns field values. */
 import {defineComponent, defineCollection} from './registry.js';
 import {Labelbox} from './labelbox.js';
-import {projectParameters} from './parameters.js';
+import {Container} from './container.js';
+import {BorderContainer, ContentPane} from './border-container.js';
+export {BorderContainer, ContentPane};
+import {StackContainer, TabContainer} from './selected-container.js';
+export {StackContainer, TabContainer};
 import {positionPopup} from './popup.js';
 import {FormletLabels} from './formlet-labels.js';
 
 const COPY_FEEDBACK_DURATION = 1600;
 
-function Container(HTMLElement) {
-    return class extends HTMLElement {
-        constructor() {
-            super();
-            const shadow = this.attachShadow({mode: 'open'});
-            const style = this.ownerDocument.createElement('style');
-            style.textContent = `:host{display:block;min-width:0;font:inherit;color:var(--gramlot-ink,CanvasText)}
-                *,*::before,*::after{box-sizing:border-box}.control-box{min-width:0}slot{display:contents}
-                ::slotted(*){min-width:0;max-width:100%}`;
-            this.controlBox = this.ownerDocument.createElement('div');
-            this.controlBox.className = 'control-box';
-            this.control = this.controlBox; this.control.id = 'control';
-            this.control.append(this.ownerDocument.createElement('slot'));
-            shadow.append(style, this.controlBox);
-        }
-        projectAttributes(attrs) {
-            return projectParameters(this, attrs);
-        }
-    };
-}
-Container.parameters = {};
 
 export const Formlet = defineComponent({
     name: 'formlet', tag: 'gramlot-formlet', base: Container, subTags: '*', presentationDefaults: ['lbl_', 'box_'],
@@ -187,4 +170,4 @@ export const GroupBox = defineComponent({
         }
     }
 });
-export default defineCollection({name: 'layout', components: [Formlet, GroupBox]});
+export default defineCollection({name: 'layout', components: [Formlet, GroupBox, ContentPane, BorderContainer, StackContainer, TabContainer]});

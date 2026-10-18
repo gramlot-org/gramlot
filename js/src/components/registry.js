@@ -16,7 +16,7 @@ function annotation(parameter) {
 }
 
 /** Compose effective metadata without invoking a DOM class factory. */
-export function defineComponent({name, tag, base, mixins = [], parameters = {}, subTags = '', presentationDefaults = [], dataScope = false, command = false, implementation}) {
+export function defineComponent({name, tag, base, mixins = [], parameters = {}, subTags = '', presentationDefaults = [], dataScope = false, command = false, childParameters = {}, sourceContext = false, implementation}) {
     webcomponentCode({code: tag});
     if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) throw new TypeError('Invalid component authoring name');
     const effective = {...base.parameters};
@@ -29,7 +29,7 @@ export function defineComponent({name, tag, base, mixins = [], parameters = {}, 
     Object.assign(effective, parameters);
     for (const spec of Object.values(effective)) annotation(spec);
     return Object.freeze({name, tag, base, subTags, presentationDefaults: Object.freeze([...presentationDefaults]), dataScope, command, mixins: Object.freeze([...mixins]),
-        parameters: freeze(structuredClone(effective)), implementation});
+        parameters: freeze(structuredClone(effective)), childParameters: freeze(structuredClone(childParameters)), sourceContext, implementation});
 }
 
 export class ComponentCollection {
@@ -60,7 +60,9 @@ export class ComponentCollection {
                         annotation: {kind: 'any'}, has_default: false}],
                     accepts_var_keyword: true, accepts_var_positional: false},
                 _meta: {render_tag: component.tag, gramlot_component: {parameters: structuredClone(component.parameters),
-                    presentationDefaults: [...component.presentationDefaults], dataScope: component.dataScope, command: component.command}}
+                    presentationDefaults: [...component.presentationDefaults], dataScope: component.dataScope, command: component.command,
+                    ...(Object.keys(component.childParameters).length ? {childParameters: structuredClone(component.childParameters)} : {}),
+                    ...(component.sourceContext ? {sourceContext: true} : {})}}
             }]))};
     }
     /** Register once per document realm, only when the collection is activated. */

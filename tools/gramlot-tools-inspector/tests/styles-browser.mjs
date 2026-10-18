@@ -19,7 +19,7 @@ pane.p('Try the Styles tab: change a color, spacing or the corner radius.');
 const card = pane.section({class: 'card stack'});
 card.h2('A shared theme'); card.p('These controls use the real Gramlot Base stylesheet.');
 card.html_label('Project name'); card.input({value: '^name', placeholder: 'Your project'});
-card.button('Primary action', {type: 'button'}); card.a('A themed link', {href: '#preview'});
+card.html_button('Primary action', {type: 'button'}); card.a('A themed link', {href: '#preview'});
 pane.pre('Change --gramlot-action or --gramlot-radius-lg, then reset.');
 app.data.setItem('name', 'Gramlot'); app.src.startSource(builder.source);
 const inspector = document.createElement('gramlot-tools-inspector');
@@ -62,7 +62,7 @@ if (process.argv.includes('--serve')) {
                 const exportLink = tool.getByText('Download CSS', {exact: true});
                 await field('--gramlot-action').waitFor();
                 assert.equal(await exportLink.getAttribute('href'), null);
-                assert.equal(await tool.locator('.style-row').count(), 35);
+                assert.equal(await tool.locator('.style-row').count(), 41); // Current Base theme root tokens.
                 assert.equal(await tool.locator('.styles-empty').isVisible(), false);
                 assert.equal(await tool.locator('gramlot-poc-splitter').isVisible(), false);
                 assert.equal(await tool.getByRole('heading', {name: 'Spacing', exact: true}).count(), 1);

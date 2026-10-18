@@ -131,3 +131,24 @@ The optional `@gramlot/gramlot/tools/inspector-agent` entry exports the same
 It uses the target's own Bag class. The panel imports `InspectorConnection` from
 `tools/inspector` and adapts Chrome messages to its MessagePort. No extension
 code or discovery hook is added to the core runtime.
+
+
+## Source structure and Undo/Redo
+
+Hover or focus a Source row: **+** adds a child through a dialog (HTML tag or installed
+widget/container); **−** removes the whole branch. The root is protected. Drag onto
+the middle of a row to reparent, or its top/bottom edge to reorder. The outline/line
+shows the drop position. Data has no structural controls.
+
+**Undo / Redo** reverse Source/Data value and attribute edits and every structural
+operation above. Ctrl/Cmd-Z and Shift-Ctrl/Cmd-Z or Ctrl/Cmd-Y work outside editable
+fields. Undo restores a deleted subtree and its original position. External changes
+that conflict with the recorded operation are reported instead of overwritten.
+Reparenting can recreate rendered components; controller/network side effects are
+not rolled back. Edits are live runtime changes, not saved Python definitions.
+
+History clears when a local target is detached or a page connection closes; connected
+targets retain their own history when switching the selector. Breakpoints and Styles
+retain their separate configuration/reset lifecycle. See GC-195 §055 for details.
+Run `node tools/gramlot-tools-inspector/tests/structure-browser.mjs` for the complete
+Source editing sequence in Chromium/WebKit, both local and over a MessagePort.

@@ -1,6 +1,15 @@
 /* Gramlot adaptation of legacy joanna; load after Base and Compact. */
 @layer gramlot.tokens {
   :root {
+    --gramlot-tab-height: 26px;
+    --gramlot-tab-padding: 3px 10px;
+    --gramlot-tab-radius: 6px;
+    --gramlot-tab-gap: 2px;
+    --gramlot-tab-strip-padding: 3px;
+    --gramlot-tab-background: var(--gramlot-background);
+    --gramlot-tab-selected-background: var(--gramlot-surface);
+    --gramlot-tab-selected-color: var(--gramlot-ink);
+    --gramlot-tab-border: var(--gramlot-border);
     --gramlot-background: #F2F2F7;
     --gramlot-surface: #FFFFFF;
     --gramlot-surface-subtle: #F2F2F7;

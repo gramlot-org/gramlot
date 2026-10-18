@@ -13,7 +13,7 @@ SVG_NS = "http://www.w3.org/2000/svg"
 BINDING_ATTRIBUTES = frozenset({
     "default", "default_value", "live", "group", "visible", "action", "fire", "ask", "_ask", "_ask_if", "_ask_title", "_ask_onCancel",
     "if", "else", "_init", "_onStart", "_onBuilt", "_delay", "_timing", "_userChanges",
-    "remote", "_cachedRemote", "_onRemote",
+    "remote", "_cachedRemote", "_onRemote", "onClose",
 })
 BINDING_ATTRIBUTE_PREFIXES = ("default_", "attr_", "fire_", "connect_on", "subscribe_", "selfsubscribe_", "formsubscribe_", "remote_")
 
@@ -67,6 +67,8 @@ def require_no_script_attributes(node, attrs, prefixes=()):
     Every such name is refused, not a list of events, so an event a browser adds is refused too. The
     names are read without the dialect ``prefixes`` (``html_``).
     """
+    if attrs.get("onClose") is not None and (node.parent_node is None or not (node.parent_node._get_meta("gramlot_component") or {}).get("childParameters", {}).get("onClose")):
+        raise ValueError("onClose is only supported on a tab/stack panel")
     for name, value in without_null_values(without_binding_attributes(attrs)).items():
         prefix = next((candidate for candidate in prefixes if name.startswith(candidate)), None)
         bare = name[len(prefix):] if prefix else name

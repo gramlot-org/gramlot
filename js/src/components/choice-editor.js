@@ -19,6 +19,7 @@ export function ChoiceEditor(HTMLElement) {
             const doc = this.ownerDocument;
             const style = doc.createElement('style');
             style.textContent = `.option{position:relative} #control{width:100%;padding-right:calc(var(--gramlot-choice-toggle-width,1.6em) + .2em)}
+                #control:focus-visible{outline:1px solid var(--gramlot-border-control,#7a8798);outline-offset:-3px}
                 .toggle{position:absolute;right:0;top:0;bottom:0;width:var(--gramlot-choice-toggle-width,1.6em);min-width:0;min-height:0;font:inherit;font-size:var(--gramlot-field-font-size,1em);padding:0;border:0;background:transparent;color:inherit}
                 .choices{max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);box-sizing:border-box;max-height:min(var(--gramlot-choice-max-height,12rem),var(--gramlot-popup-available-height,100vh));overflow:auto;
                     border:1px solid var(--gramlot-border-control,#aab4c2);border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-surface,Canvas);color:var(--gramlot-ink,CanvasText);font:inherit;box-shadow:var(--gramlot-shadow,0 3px 9px #0002)}
@@ -158,7 +159,8 @@ export function ChoiceEditor(HTMLElement) {
             if (!rows.length) this.choices.textContent = 'No results';
             const view = doc.defaultView;
             this.choices.hidden = false; this.choices.showPopover(); this.#opened = true;
-            positionPopup(this.choices, this.control, {matchWidth: true});
+            const inset = parseFloat(view.getComputedStyle(this).getPropertyValue('--gramlot-choice-popup-inset') || '2');
+            positionPopup(this.choices, this.control, {matchWidth: true, inset});
             this.control.setAttribute('aria-expanded', 'true'); this.activate(0);
             const close = () => this.closeChoices();
             const outside = event => { if (!event.composedPath().includes(this)) close(); };

@@ -15,6 +15,29 @@ defaults:
     working-directory: gramlot
 
 jobs:
+  inspector:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: gramlot
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install core and inspector dependencies
+        run: |
+          npm --prefix js install --ignore-scripts --package-lock=false
+          npm --prefix tools/gramlot-tools-inspector install --ignore-scripts --package-lock=false
+      - name: Test inspector history, bridge and tree
+        run: npm --prefix tools/gramlot-tools-inspector test
+      - name: Install inspector qualification browsers
+        run: tools/gramlot-tools-inspector/node_modules/.bin/playwright install --with-deps chromium firefox webkit
+      - name: Verify inspector editing, breakpoints and lifecycle
+        run: node tools/gramlot-tools-inspector/tests/browser.mjs
+      - name: Verify local and bridged Source structure and Undo/Redo
+        run: node tools/gramlot-tools-inspector/tests/structure-browser.mjs
+      - name: Verify inspector theme editor
+        run: node tools/gramlot-tools-inspector/tests/styles-browser.mjs
   core:
     runs-on: ubuntu-latest
     permissions:
@@ -68,6 +91,8 @@ jobs:
           node scripts/verify_live_playground.mjs "$PLAYWRIGHT_ENTRY" "$CHROMIUM"
       - name: Browser check of messaging, references, ask and parent-child transport
         run: node scripts/verify_messaging_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
+      - name: Browser check of live border splitters and retained content
+        run: node scripts/verify_border_browser.mjs python "$PLAYWRIGHT_ENTRY" chromium
       - name: Upload JavaScript coverage
         if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5

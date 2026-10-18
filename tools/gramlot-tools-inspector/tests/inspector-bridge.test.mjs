@@ -117,3 +117,43 @@ test('separately bundled agents coexist without replacing each other’s subscri
         assert.equal(Object.keys(f.app.data._updSubscribers).filter(key => key.startsWith('inspector-bridge-')).length, 1);
     } finally {second.close(); agent.dispose(); f.close();}
 });
+
+test('structural commands and history execute in the target, reject stale nodes and retain bindings', async () => {
+    const f = setup();
+    const command = path => {
+        const info = f.client.nodeInfo(f.client.source.getNode(path));
+        return {path, nodeId: info.id, revision: info.revision};
+    };
+    try {
+        await wait(() => f.client.state === 'started');
+        const catalog = (await f.client.request('catalog', {path:'main'})).catalog;
+        assert.ok(catalog.some(item => item.tag === 'div' && item.kind === 'html'));
+        assert.ok(!catalog.some(item => item.tag === 'dataSetter'));
+        const added = await f.client.request('insert', {...command('main'), tag:'div'});
+        assert.ok(f.app.src.source.getNode(added.selection));
+        assert.equal(f.client.history.undo, 'Add element');
+        const stale = command('main.greeting');
+        await edit(f.client, 'source', 'main.greeting', {set:[['title', encodeScalar('Edited')]]});
+        await assert.rejects(f.client.request('remove', stale), /changed/);
+        const target = command(added.selection);
+        const moved = await f.client.request('move', {...command('main.greeting'), destination:added.selection,
+            placement:'inside', targetId:target.nodeId, targetRevision:target.revision});
+        assert.equal(f.app.src.source.getItem(moved.selection), '^name');
+        await f.client.request('remove', command(added.selection));
+        assert.equal(f.app.src.renderer.destination.querySelector('p'), null);
+        await f.client.request('undo');
+        assert.equal(f.app.src.renderer.destination.querySelector('p').textContent, 'Ada');
+        await f.client.request('undo');
+        assert.equal(f.app.src.source.getItem('main.greeting'), '^name');
+        await f.client.request('undo');
+        assert.equal(f.app.src.source.getNode('main.greeting').getAttr('title'), null);
+        await f.client.request('undo');
+        assert.equal(f.app.src.source.getNode(added.selection), null);
+        assert.equal(f.client.history.undo, '');
+        for (let i=0;i<4;i++) await f.client.request('redo');
+        assert.equal(f.app.src.renderer.destination.querySelector('p'), null);
+        await f.client.request('undo');
+        f.app.data.setItem('name','Grace');
+        assert.equal(f.app.src.renderer.destination.querySelector('p').textContent,'Grace');
+    } finally {f.close();}
+});

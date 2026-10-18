@@ -362,3 +362,52 @@ DevTools releases its previews and subscriptions. Successful breakpoint settings
 are retained by the Chrome host and reapplied on reconnect, preserving its existing
 behavior. The core does not import or depend on the extension. This development
 change does not publish a package or replace a released extension archive.
+
+
+<a id="gc-195-055"></a>
+## 055 · Source structure and edit history
+
+Block ID: **GC-195-055**. Owner authorization: constitution, Source inspector
+structural editing, 2026-10-18.
+
+Source rows expose **+** and **−** on hover/focus (always available on touch).
+**+** opens a Source-authored dialog: type an HTML tag or select an installed
+widget/container. The catalog comes from the selected node's actual Builder
+schema; commands use its validation and metadata. Data elements and subbuilder
+declarations are not offered. An empty element is created as a child and selected;
+its attributes/value can then be edited in Properties. Adding children to scalar
+Source preserves its leading text through the existing Builder promotion contract.
+**−** removes the entire selected branch; the page root cannot be removed or moved.
+
+Drag a Source row onto another row's middle to make it a child, or its top/bottom
+edge to place it before/after that row. An outline or insertion line shows the drop.
+Self/descendant moves, incompatible Builder grammars, duplicate sibling labels and
+invalid grammar nesting are rejected. The Data tree has no structural actions.
+The provisional tree emits `tree-drop`; named inspector Logic submits the command.
+It does not construct application DOM or maintain an alternate Source representation.
+
+**Undo / Redo** cover inspector Source/Data scalar values and attributes, child
+insertion, complete subtree removal and movement. A completed drag is one entry.
+Ctrl/Cmd-Z, Shift-Ctrl/Cmd-Z and Ctrl/Cmd-Y work when focus is outside an editable
+field; native text undo remains available within fields. A new effective edit clears
+Redo. No-op edits do not consume history. Restoring a branch restores its Source
+attributes, binding expressions, nested content and position through public Bag APIs.
+Same-parent movement uses `Bag.move`; reparenting uses removal/insertion and may
+recreate rendered components. Business Data is retained, but controller, network or
+other application side effects are not undone. This is not a general transaction API.
+
+History belongs to the inspected target: locally it clears on close/retarget; with
+MessagePort targets it survives target switching until that connection closes.
+A conflicting external edit blocks Undo/Redo and reports an error instead of
+replacing application changes. Structural entries conservatively check the entire
+Source; ordinary edits check the edited node. Errors after a committed Bag change
+retain a recoverable entry where the public mutation contract permits it. Breakpoint
+configuration and the separate Styles preview/reset lifecycle are outside this
+Source/Data edit journal. Reloading the application discards the journal; no Python
+source file or server-side definition is saved by editing the live Source.
+
+Qualification uses `tests/history.test.mjs`, `tests/inspector-bridge.test.mjs` and
+`tests/structure-browser.mjs` under the inspector tool. The browser fixture covers
+local and connected targets, native drag, HTML/widget/container insertion, deletion,
+attribute edits, restored bindings and conflict handling. See GC-070 for actual runs;
+Playwright WebKit is not a branded Safari qualification.

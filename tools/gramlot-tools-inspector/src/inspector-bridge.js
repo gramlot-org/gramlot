@@ -24,6 +24,7 @@ export class InspectorConnection {
     error = '';
     breakpoints = [];
     styles = null;
+    history = {undo: '', redo: ''};
     #info = new WeakMap();
     #listeners = new Set();
     #pending = new Map();
@@ -45,6 +46,7 @@ export class InspectorConnection {
             if (message.snapshot) {
                 for (const root of roots) this.#reconcile(this[root], message.snapshot[root]);
                 this.breakpoints = message.snapshot.breakpoints;
+                this.history = message.snapshot.history;
                 this.state = 'started'; this.error = '';
             } else if (message.type === 'error') this.error = message.error;
         } catch (error) { this.error = error.message; }
@@ -52,7 +54,7 @@ export class InspectorConnection {
             const pending = this.#pending.get(message.id);
             if (pending) {
                 this.#pending.delete(message.id);
-                if (message.ok && !this.error) pending.resolve();
+                if (message.ok && !this.error) pending.resolve(message);
                 else pending.reject(new Error(message.error || this.error));
             }
         }

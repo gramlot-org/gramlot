@@ -1,8 +1,12 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-17**.
+Document ID: **GC-070**. Updated: **2026-10-18**.
+
+**Release preparation:** JavaScript gallery aligned with Python, packaged Python/Node/offline qualification and inspector CI prepared; publication remains pending. See [§1395](#gc-070-1395).
 
 **Current checkpoint:** the 0.3 component release is published and verified from the public registries: seventeen inputs, labelbox, formlet/groupBox, command buttons, themes/touch and the complete field-validation engine. Final cross-host qualification and publication receipts are in [§1175](#gc-070-1175) and [§1185](#gc-070-1185).
+
+**Website expansion:** 30-page welcome site and six-chapter guided tour implemented and locally verified; owner review/publication pending. Optional presenter-video storyboard drafted; see [§1300](#gc-070-1300).
 
 **Inspector CSS variables:** the Styles trial and CSS download are implemented; locally verified; owner visual acceptance pending. See [§945](#gc-070-945).
 
@@ -16,7 +20,7 @@ Document ID: **GC-070**. Updated: **2026-10-17**.
 
 **Mobile gallery:** published and verified on both public galleries and the downloaded serverless ZIP in Chromium and WebKit. See [§1205](#gc-070-1205), [§1210](#gc-070-1210) and the English-label correction in [§1215](#gc-070-1215).
 
-**Next workstream:** the approved 0.3 scope is complete and released. Translation services, DB/grid/store work and broader containers remain separate workstreams to prioritize with the owner; see [GC-245 §110](../future/245-components-0-3-plan.md#gc-245-110).
+**Next workstream:** container analysis for 0.4 is complete, including legacy Dojo and Genro patches; the proposed contract awaits owner review. See [§1230](#gc-070-1230). No new container runtime has been implemented.
 
 **Deferred website design:** editorial HTML companions and two interactive-region modes for gramlot.org, asqueel.org and kajenn.org are recorded for later discussion (§850); no implementation started.
 
@@ -7914,3 +7918,658 @@ The manual operator service remains available. Production generation remains
 and have SHA-256 `2bec23b2b92184edc67f4c398779dc595e837393d69eb2eecd515406af4414d5`.
 Implementation and operational verification are complete; no package bump was
 needed. CI/operations changes are published on main and develop in all four repos.
+
+
+<a id="gc-070-1230"></a>
+## 1230 · Container analysis for 0.4 — 2026-10-18
+
+Block ID: **GC-070-1230**.
+
+Owner requested analysis of legacy/Dojo and PoC border, tab and stack containers, then clarified that layout/selection should use dimensions and visibility without replacing or reparenting content, Source or business Data. This presentation constraint is recorded in the constitution; detailed APIs remain proposed.
+
+The paired [GM-035 analysis and proposal](https://github.com/gramlot-org/gramlot-meta/blob/develop/docs/035-containers-0-4.md) is prepared locally in the private shared repository (not yet pushed by this task). It traces Python Source construction, Genro wrappers and installed patches, vendored Dojo geometry/selection/close/load behavior, PoC differences, modern CSS responsibilities and a staged qualification plan. Ordinary legacy selection already retains widgets; actual Genro header close instead pops Source, bypassing the upstream closeChild path. CSS can replace recursive geometry propagation without introducing a content-state cache.
+
+Verification: the existing PoC stack/container suites passed 22 tests, zero failures (jsdom); source revisions and paths are recorded in GM-035. This is not new core/browser qualification. A concrete integration gap is the current input-value-specific ControlAdapter: panel-selection bindings need a bounded core design, not an application bridge.
+
+Completed: investigation and proposed contract. Pending: owner review of the public surface, then implementation and browser/cross-host qualification. No new runtime, dependency edit, release or deployment in this increment.
+
+
+Container follow-up, 2026-10-18: owner requests preserving legacy drawer behavior and analysis of splitter_* and framePane. GM-035 §060 records verified drawer open/close, fixed-versus-draggable handle and drawer_* forwarding, plus Python autoslots and browser frame-to-border expansion. Region metadata belongs to the parent layout relationship, not exclusively contentPane. The exact legacy splitter_* forwarding implementation remains unlocated; no parameter list is claimed verified. No runtime implementation.
+
+
+Container syntax review, 2026-10-18: GM-035 §065 now retains the owner-confirmed legacy parameters, drawer and framePane. Verified the source-viewer Python example's drawer position/size/class/style controls and the wrapper's style precedence/callback handling. Generic splitter_* is no longer a required port surface, following the owner's clarification. Complete Python review examples prepared and syntax checked; no implementation started.
+
+
+Container simplification, 2026-10-18: owner chooses always-live resizing without a public liveSplitters parameter. Paired GM-035 contract and Python review examples updated and syntax checked; historical Dojo behavior retained as evidence. Runtime implementation remains pending.
+
+
+Border-first scope, 2026-10-18: paired GM-035 §075 includes splitter_* customization alongside drawer_* and focuses the proposed first increment on borderContainer; tab/stack/frame follow. Always-live resizing remains unchanged. Checked README and Python/JS manifests: 0.3.1 is current and marked released; 0.3.2 is only a proposed next patch, not a version change. Contract examples syntax checked; implementation still pending syntax review.
+
+<a id="gc-070-1235"></a>
+## 1235 · BorderContainer first increment — 2026-10-18
+
+Block ID: **GC-070-1235**.
+
+Owner explicitly authorized borderContainer for the intended 0.3.2 increment,
+including always-live splitters, splitter_* customization, legacy drawers,
+connected gallery examples and tests. This supersedes the implementation-pending
+status in §1230 for this bounded scope only; tab/stack/framePane remain deferred.
+
+Implemented: layout collection borderContainer/contentPane, nested CSS grid
+regions, headline/sidebar, numeric splitter limits, pointer capture and keyboard
+resizing, open/closed fixed or draggable drawers, drawer_* placement/style and
+activated drawer_onclick, optional session-cookie sizes with stable container id.
+Resolved Source attributes supply parent-owned region configuration; normal
+layout/toggle/resize preserves mounted content, iframe contexts, drafts and Data.
+No dependency source edits, duplicate Data writer or application DOM workaround.
+Public contract: GC-105 §100. Destination record: PORT-0014.
+
+Review found and fixed a bundle-boundary defect: a module-local region WeakMap
+cannot be shared implicitly between the runtime and separately bundled layout
+collection. Projection now enters the registered component class's static
+projectChild method and keeps state in the collection. The core browser verifier
+loads that collection as a separate module, matching the production bootstrap.
+A second review fixed aria-disabled inheritance that blocked reopening a drawer.
+
+Verification: core JavaScript full suite 3,548 passed; Python 165 passed, one
+pre-existing expected failure and 264 subtests. Four focused border tests cover
+Source-driven updates, drafts, all-axis keyboard bounds, fixed drawers, callbacks,
+placement and cookie restore. Chromium and WebKit passed four-direction live drag,
+nested geometry, drawer cycles, retained invalid drafts/Data/iframe contexts,
+viewport resize, keyboard and reactive styles. The browser check is added to CI.
+
+Gallery: l01 Border regions and drawers and l02 Nested borders and layout designs,
+Python first with equivalent JavaScript. Full gallery suites: 100 JavaScript and
+18 Python tests passed (87 Python subtests). Both new examples passed editing and
+layout interactions on Python, Node and file:// serverless in both browsers
+(12 combinations). Core public docs build with warnings as errors and link/anchor
+checks passed; examples docs passed for 73 lessons and two paired guides.
+Local serverless verification refreshed an obsolete installed exporter to the
+current local adapter checkout; no adapter source changes were necessary.
+
+Implemented and locally verified; visual owner acceptance remains separate.
+The Python gallery is available locally at http://127.0.0.1:8243/ under Border
+layouts. No version bump, commit, push, package publication or deployment was
+performed by this increment. Target 0.3.2 remains unreleased.
+
+<a id="gc-070-1240"></a>
+## 1240 · Rounded nested border qualification — 2026-10-18
+
+Block ID: **GC-070-1240**.
+
+Owner requested: “ok aggiungi l'esempio con rounded, container annidati e drawer sui quattro lati e verifica che angoli, splitter e popup funzionino bene prima di chiudere la 0.3.2”. Added gallery l03, Rounded borders and popups, Python first and equivalent JavaScript, with explicit 24px outer / 16px inner radii, headline/sidebar selection, four live splitters/drawers, calendar, filteringSelect and validation feedback. It uses existing Source/Data and components; no application DOM wiring or new rounded-mode API.
+
+No production runtime correction was needed: existing border clipping respects CSS radii, and native top-layer popovers remain interactive beyond rounded ancestors. The JavaScript example's initial civil date was corrected to UTC midnight to follow the existing date contract. Documentation records that popup placement remains bounded by the browsing viewport, including an iframe.
+
+Verification: extended the existing CI core browser fixture with outer/nested radii and real popup controls. Chromium and WebKit pass all four corner hit tests, previous four-axis live drag/keyboard/iframe/draft checks, drawer reopening and calendar-day selection outside the inner rounded outline. Dedicated gallery verifier passes Python, Node and file:// serverless in both browsers (six combinations), including both layout designs, four-sided live resize, drawer cycles, calendar controls beyond the inner outline, choice commit, top-layer validation message, rejected draft/Data retention and narrow-screen handle reopening. Screenshots inspected for desktop calendar and narrow layout. Full gallery suites: 101 JS tests and 18 Python tests with 88 subtests, all passing. Public docs checks pass: core 11 pages; gallery 74 lessons/two paired guides. Full-gallery l03 navigation passed with no browser errors.
+
+Local gallery http://127.0.0.1:8243/ now includes l03 under Border layouts. Implemented and verified; owner visual acceptance is separate. No release bump, publication or deployment performed.
+
+<a id="gc-070-1245"></a>
+## 1245 · Border visual feedback and shared rounded binding — 2026-10-18
+
+Block ID: **GC-070-1245**.
+
+Owner's four-point feedback asks for removing the outer blue menu-selection frame,
+a slightly inset rounded dropdown, distinguishable regions, drawer styling checked
+against legacy, and `rounded='^rounded'` driven by a slider for outer/inner borders.
+Implemented the bounded visual follow-up; no publication authorization inferred.
+
+Legacy evidence: GenroPy fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea,
+gnrjs/gnr_d11/css/gnrbase_css/09_gnr_dialogs_forms.css lines 66–127, plus
+resources/common/gnrcomponents/source_viewer/source_viewer.py lines 33–37.
+Drawer handles attach to the separator, omit the joined border and round only the
+protruding corners. Gramlot now uses that shape, slim unlabelled handles and compact
+labelled tabs with theme-controlled font/padding. Explicit drawer_* styling remains
+available. This replaces the initial generic rounded-button presentation.
+
+ChoiceEditor and native-select focus is a neutral inset indicator. Shared popup
+geometry accepts an inset; ChoiceEditor defaults to 2px per side through a theme
+token. Native operating-system select popup sizing is unchanged; l02/l03 use the
+existing filteringSelect for predictable popup styling. All three layout examples
+now distinguish side/header/footer surfaces from their center with theme colors.
+
+The Builder already implements rounded as a numeric-pixel style macro. No new
+macro or dependency change: l03 explicitly binds both borders to the same Data
+value and a live horizontalSlider, including zero. This does not introduce
+implicit radius inheritance. Tests check both radii and stable element identity.
+
+Verification: core full JS suite 3,548 passed. Gallery full suites 101 JS and
+18 Python tests passed (88 subtests). Extended core browser qualification passes
+Chromium/WebKit. Gallery l01/l02 pass Python/Node on both engines; updated l03
+passes Python/Node/file:// serverless on both engines, including slider keyboard
+changes, matching radii, neutral focus, popup inset, corner clipping, live drag,
+retained drafts and four drawer reopening on a narrow viewport. Mimi/Joanna
+screenshots reviewed. Public documentation builds and checks pass: core 11 pages,
+gallery 74 lessons/two paired guides.
+
+Local gallery restarted at http://127.0.0.1:8243/. Implementation and local
+verification complete; visual owner acceptance remains separate. No version bump,
+commit/push, package publication or deployment in this follow-up.
+
+
+<a id="gc-070-1250"></a>
+## 1250 — Discreet container controls and explicit region boundaries (2026-10-18)
+
+Owner request: gallery section “containers”, thin/discreet drawer handles with
+hover tooltips rather than buttons, less invasive default splitters, and visible
+region borders instead of relying on similar grey backgrounds. This supersedes
+the visible text tabs used in the first gallery examples of §1245.
+
+Implemented: the gallery section is **Containers** (the layout collection and
+route keys remain stable). Shared defaults are 1px separator lines and 4×28px
+drawer grips, rotated by side. Transparent hit areas retain pointer/touch access;
+the touch target does not enlarge the painted grip. Existing drawer_title sets
+the tooltip; otherwise it describes the open/close operation. Explicit
+splitter_*/drawer_* styles and opt-in drawer_label remain supported. Python and
+JavaScript examples l01–l03 use tooltip grips and explicit region boundary lines.
+
+Verified: 3,548 core JS tests; 101 gallery JS tests; 18 gallery Python tests with
+88 subtests. Chromium/WebKit pass core border qualification, including thin
+geometry, tooltip text, larger touch hit targets, live resizing, keyboard,
+retained draft/Data/iframe, rounded clipping and top-layer popups. Gallery
+l01–l03 pass Python/Node browser checks; l03 passes file:// serverless on both
+engines. Actual gallery section title and default geometry verified; Mimi light
+and Joanna dark screenshots inspected. Gallery documentation build/check passes
+for 74 lessons and two paired guides.
+
+Local gallery refreshed at http://127.0.0.1:8243/. Implementation and verification
+complete; owner visual acceptance remains separate. No version bump, commit,
+push, release or deployment in this follow-up.
+
+
+<a id="gc-070-1255"></a>
+## 1255 — Drag the splitter from its drawer handle (2026-10-18)
+
+Owner request: “c'è un'attesa psicologica di poter draggare lo splitter anche
+trascinando la relativa etichettina” (spelling normalized). An open region with
+splitter=True now accepts live resizing from its drawer grip or label. The
+existing region drag lifecycle owns capture and cleanup. A 4px axial threshold
+separates click jitter from dragging; releasing a drag does not toggle the drawer
+or invoke drawer_onclick. Ordinary click and keyboard activation still toggle;
+closed drawers and splitter=False retain ordinary click behavior. No new API.
+
+Verified: all 3,548 core JS tests and four focused border tests pass. Extended
+Chromium/WebKit qualification covers live handle drags on all four sides, no
+release toggle, subsequent click, Enter activation and 2px click jitter without
+resize, alongside existing draft/Data/iframe and popup checks. The actual local
+gallery also passes handle drag/click checks in Mimi light and Joanna dark after
+rebuilding its separate layout collection bundle. Local gallery remains on 8243.
+No version bump, commit/push, publication or deployment.
+
+
+<a id="gc-070-1260"></a>
+## 1260 — Keep narrow navigation open for section browsing (2026-10-18)
+
+Owner report: in narrow/auto-hiding navigation, clicking a section closed the
+sidebar and made its examples inconvenient to reach. Fixed in the shared gallery
+mobile presentation: section-summary links are excluded from page-link dismissal,
+and selecting a category introduction keeps the menu open and does not move focus
+to the covered content. Example selection/reselection, Escape and backdrop still
+close navigation. Desktop index behavior and iframe/Data ownership are unchanged.
+
+Verification: all 102 gallery JS tests pass, including a regression covering new
+and active section selection, native summary collapse/expand and example
+selection/reselection. Full mobile browser qualification passes Chromium/WebKit
+against Python (8243) and Node (8244), covering 320–1023px, section browsing,
+view changes, inspector editing, retained Data/drafts/iframe and desktop return.
+Gallery bundles rebuilt; paired GE-010 §205 updated. No release or deployment.
+
+
+<a id="gc-070-1265"></a>
+## 1265 — Pull closed drawers open and inflate handles on hover (2026-10-18)
+
+Owner feedback: closed drawers could not be dragged; requested enlarging the
+handle on hover with a “gonfiare” transition. This supersedes the closed-drawer
+click-only limit in §1255 for regions with splitter=True. Pulling the handle
+inwards opens and sizes the region from its collapsed extent, respecting the
+existing size limits. Opening invokes drawer_onclick once; release does not
+re-toggle. Splitter=False remains a fixed-size click drawer.
+
+Shared CSS grows the grip towards the content over 160ms (subtler scaling for
+explicit text labels), without changing layout tracks; reduced-motion disables
+the transition. The closed resizable handle also has the resizing cursor.
+No additional public parameters or application Data state.
+
+Verification: all 3,548 core JS tests pass. Extended Chromium/WebKit browser
+qualification covers closed-drawer dragging on all four sides, live opening and
+sizing, stable release, hover growth without layout change and reduced-motion,
+plus the earlier click/keyboard/draft/iframe/popup checks. Gallery collection
+bundles rebuilt; actual gallery checked in Mimi light and Joanna dark, including
+pulling the closed handle open. Local gallery restarted on 8243. No release,
+version bump, commit/push or deployment.
+
+
+<a id="gc-070-1270"></a>
+## 1270 — Themeable drawer variants and gallery lesson (2026-10-18)
+
+Owner instruction: “ok procedi con le variabili css e aggiungi nella gallery
+esempi con icona, testo ruotato e testo che compare quando la maniglia si gonfia
+in hover, senza spostare il contenuto. su touch lascialo visibile”.
+
+Implemented in the shared BorderContainer: configurable resting dimensions,
+opacity, hover scales, timing/easing, hit target and reveal dimensions, alongside
+existing colors/font/padding/radius tokens. Existing drawer_class selects
+shared drawer-rotated and drawer-reveal presentations; drawer_label supplies an
+emoji or text. The stable inner label span supports clipping/fade independently
+of the pointer target. Hover/focus only animates the handle. Native touch media
+and the existing Mobile-preview touch token keep reveal text visible.
+Reduced-motion disables both growth and fade. Explicit drawer_* styling remains
+supported; no alternative component, event state or application DOM wiring.
+
+Gallery l04, Drawer icons and labels, provides equivalent Python/JavaScript
+pages with an icon, rotated text and vertical/horizontal hover-reveal handles.
+It includes a closed drawer and a retained editable value. CSS customization is
+shown in Source and documented in GC-105/GE-010 and their compact mirrors; names
+are recorded in GC-225. Gallery now has 75 lessons and 76 routes including index.
+
+Verification: 3,548 core JS tests; 103 gallery JS tests; 18 gallery Python tests
+with 89 subtests, all passed. Core Chromium/WebKit qualification covers reactive
+label/class projection, theme size overrides, reveal, keyboard operation, touch
+media/preview, stable geometry and existing drag/popup/data behavior. Gallery
+l04 passes Python, Node and file:// serverless on both engines; full gallery
+Normal/Mobile checks preserve iframe identity and Data in Mimi light and Joanna
+dark. Screenshots inspected. Public documentation builds/checks pass: core 11
+pages; gallery 75 lessons and two paired guides.
+
+Local Python gallery refreshed on 8243; Node verification gallery on 8244.
+Implementation and verification complete, visual owner acceptance separate.
+No version bump, commit/push, publication or deployment.
+
+<a id="gc-070-1275"></a>
+## 1275. Borderless reveal grips — 2026-10-18
+
+Owner correction: "vedo soltanto l'etichettuna grigia ... se ci vado sopra si gonfia fino a mostrare il testo", "non metterei mai un bordo", and "non vorrei il doppio bordo". All four Python l04 handles now rest as gray grips, reveal on hover/focus and stay visible on touch. Removed handle inset stroke and blue focus outline; expansion/contrast signal keyboard focus. CSS relative color derives white captions on dark fills and dark gray on pale fills, with the existing explicit color override. The search symbol is monochrome so it follows that color. Removed duplicate example region borders alongside the splitter.
+
+Owner testing scope: "d'ora in avanti fai sempre solo le prove inpython ... fino ... release finale". Iterative verification uses the Python gallery only; Node/serverless qualification and JS example alignment are deferred until final release preparation. No publication authorized. Current visual correction awaits owner acceptance.
+
+Verification: Python gallery 8243 passed Chromium and WebKit checks for all four grips, no border/shadow/outline, dark/light automatic contrast, stable content geometry and Data, closed-handle dragging, keyboard, real touch and Normal/Mobile preview. Screenshot reviewed. No Node or serverless run.
+
+2026-10-18 follow-up: owner requests thinner rotated labels with more space at their ends. Shared rotated-reveal padding is now 8px 2px; Python l04 uses 20px by 88px expanded grips. Desktop rest remains caption-hidden; touch or keyboard focus intentionally reveals it.
+
+The owner also requests a slightly smaller presentation; Python l04 sets the existing drawer font-size token to 11px (was 12px), retaining the mouse/touch hit area.
+
+Padding/scale follow-up verified on Python gallery 8243 in Chromium and WebKit: reveal/contrast, fixed content geometry, retained Data, keyboard/drag and touch/Mobile preview passed. Desktop captions are hidden at rest; screenshot reviewed. No Node/serverless qualification.
+
+<a id="gc-070-1280"></a>
+## 1280. Separate drawer icon and caption — 2026-10-18
+
+Owner: "ok separa drawer_icon e drawer_label: icona sempre visibile e testo a comparsa con drawer-reveal. aggiorna il contratto e l'esempio nella gallery python". Source projection now separates drawer_icon from styling and drawer_label; a stable icon span stays visible while the caption reveals. The icon-size CSS token reserves its resting area. Existing label-hover-scale also controls reveal zoom (subtle 1.04 default, 1 disables zoom independently of expansion). Python l04 shows persistent search icon plus revealing Search caption with zoom disabled. JS example alignment remains deferred to final qualification as recorded above.
+
+Verified on Python gallery 8243 with Chromium and WebKit: icon visible before/during/after caption reveal; zoom disabled at scale 1 while width still expands; no content movement or Data loss; closed drag, keyboard, touch and preview checks passed. Screenshot reviewed. No Node/serverless tests or publication.
+
+<a id="gc-070-1285"></a>
+## 1285. Simple drawer authoring defaults — 2026-10-18
+
+Owner explicitly confirms drawer_minimize and asks to implement the agreed defaults, update the contract and Python gallery. Parent-owned drawer_minimize is boolean/read-bound, default false. Ordinary captions are small, visible, intrinsically sized and rotated automatically on lateral regions. Minimized captions reveal on hover/focus, stay visible on touch, and never hide the independent icon. Internal presentation classes now derive from Source parameters rather than author class strings. Explicit CSS remains optional.
+
+Python l04 compares default left/bottom captions with minimized top/right captions and a persistent search icon, removing all presentation classes and CSS sizing from the page. Updated constitutional/public/naming contracts. Python-only Chromium and WebKit verification passed: visible/default versus hidden/minimized captions, rotation, icon, contrast, zoom opt-out, retained geometry/Data, keyboard, closed drawer dragging and touch/preview behavior. Screenshot reviewed. JS example alignment/final environment qualification are deferred until final release preparation. Visual owner acceptance and release remain separate.
+
+<a id="gc-070-1290"></a>
+## 1290. Nested regions Python playground — 2026-10-18
+
+Owner requests opening l04 and adding a highly dynamic example with many nested border containers, widgets and sliders driving region sizes. l04 was opened in the existing Python gallery. New Python development lesson l05 contains five borderContainers across three levels, seven compact size sliders with reactive pixel labels, shared rounded/design/minimize controls, textbox validation, radio choices, switches, date/calendar, filteringSelect, number editor and shared notes. Ordinary regions.* Data paths feed width/height through :{}px. No new regions API or manual application DOM/events was introduced. Splitter dragging remains local geometry rather than writing slider Data back, explicitly explained in the lesson.
+
+The Python catalogue now has 76 lessons / 77 routes. This new lesson has no JS counterpart yet: Python-first iteration was requested; final Node/serverless alignment is a release prerequisite. No publication performed.
+
+Python gallery Chromium/WebKit checks pass: five containers render, all seven sliders reach both numeric geometry limits, invalid customer draft stays in the widget while Data preserves its accepted value, notes and component/DOM identity survive resizing and ancestor drawer toggles; radius and minimize remain reactive. Screenshot reviewed. Durable browser qualification is in the examples repository's verify_nested_regions_browser.mjs. Awaiting owner's visual feedback, without beginning another phase.
+
+
+<a id="gc-070-1295"></a>
+## 1295. Stack/tab selection and legacy notification analysis — 2026-10-18
+
+Owner asks to investigate stackContainer/tabContainer while reviewing the Python border gallery, recalling legacy container publishes. Read-only runtime investigation completed; paired GM-035 §085–090 records evidence and unapproved proposals. No new container implementation or event API approval.
+
+Legacy Stack owns selection and Tab extends it; PoC reverses that hierarchy and hides the tab bar for Stack. Legacy container-local hiding/showing/selected publishes differ from Dojo's internal widget topics. selected may be emitted separately for each bound selection attribute, an incidental duplication to avoid reproducing without an explicit contract. Border publishes pane-local closable_change for the separate closable-side mechanism; splitter completion writes a bound regions Bag and triggers fakeResize, leading to global gnrWindowResize. The inspected drawer handler only invokes optional drawer_onclick; it does not unconditionally publish a drawer event.
+
+Proposed direction: shared selection responsibility, retained mounted panels, selectedPage/pageName and selected grammar, existing Gramlot publish/subscribe/controller integration, explicit distinction between incoming commands and outgoing state notifications. Border event names/payloads/timing and regions-Bag orchestration remain to review with the owner. Current l05 regions.* paths are ordinary Data bindings and do not receive splitter writes. No runtime changes or new test runs for this documentation-only analysis. Python gallery visual review remains ongoing; Node/serverless alignment and release qualification remain deferred.
+
+
+<a id="gc-070-1300"></a>
+## 1300 · Public website editorial expansion — 2026-10-18
+
+Owner requests a much larger site, progressive explanations/demo, serverless offline forms and JSON-to-PDF handoff, binding, controllers, remote blocks and endpoints; also expresses interest in an AI presenter video. Bounded gramlot-site editorial work only; no new framework capability, PDF service or deployment authorized.
+
+Implemented 30 English pages in welcome: original seven, six tour chapters, eight feature articles, three scenarios, three hubs, serverless, start and questions. Internal homepage calls to action, next-step links and keyboard-native predictions keep the learning journey on site. Illustrations are labelled; actual gallery captures and external working lessons remain distinct. Evidence: GC-095/105/025, gallery lessons and GS-135. Explicit boundaries: JavaScript-only Worker pages; TYTX draft round trips versus JSON interchange; PDF receiver/output handling are application work; no automatic persistence/sync or complete PDF product. No new runtime behavior or promotion of unreleased containers.
+
+Verified: static links/anchors/assets/metadata, sitemap and homepage reachability; Chromium/WebKit each pass 90 responsive checks (390/768/1440), 30 no-JS routes, full tour, keyboard disclosures, navigation and filtering. Representative screenshots inspected; 14/14 official guide/gallery destinations HTTP 200; installed 42-file build matches preview. Repeated WebKit local navigation may validly return HTTP 304, handled by the checker alongside rendered-content verification. No framework tests required for editorial-only changes.
+
+Eight-scene English video script/storyboard drafted (~140 seconds). HeyGen discovered/suggested, not connected; no generated/uploaded video. Implemented and locally verified; owner editorial/visual acceptance, publication and optional video provider/presenter choices remain pending. Public generation unchanged; no commits, pushes, releases or deployment. Next: owner preview review and explicit publication confirmation.
+
+
+<a id="gc-070-1305"></a>
+## 1305. Compact touch drawer captions — 2026-10-18
+
+Owner: “ok correggi solo l'errore: etichette compatte a riposo anche su mobile, mantenendo zoom e transizione quando interagisco. verifica nella gallery python”. The defect conflated touch caption visibility with fixed hover-expanded dimensions. Reveal handles now size to their text, bounded by existing reveal dimensions; centering follows their actual box. Icons keep their reserved area and the larger invisible touch target is unchanged. Hover/focus/press retain zoom and transitions. Transient drawer data-active bridges touch pointer capture clearing :active, with release/cancel/lost-capture/leave cleanup. No region state, mobile overlay, auto-collapse or Data behavior changes.
+
+Built core and gallery assets; verified only the Python gallery at port 8243. Chromium and WebKit pass the extended verify_drawer_handles_browser.mjs: compact readable rest geometry, real Chromium touch press/release, WebKit press and touch tap, hover zoom in Mobile preview, normal-mode reveal, keyboard, closed-handle dragging, icon/contrast, stable field geometry, iframe identity and retained Data. Preview covers mimi/light and joanna/dark; nested l05 checks all four outer labels. Screenshots reviewed. Horizontal l05 labels now measure about 17px high instead of 28px; lateral labels about 17px wide instead of 20px, with text-sized length instead of a fixed 88px. No Node/serverless gallery tests, publication or release.
+
+
+<a id="gc-070-1310"></a>
+## 1310. Border container notifications — 2026-10-18
+
+Owner confirms closable_change for drawers and splitter_resize, asks for implementation, a Python gallery example, and subsequent tab/stack planning. Implemented through the existing Source publish/subscribe service: pane-local closable_change carries {open, region} after an effective visibility change; border-local splitter_resize carries {region, size, previousSize} after a live gesture ends or a keyboard resize step. Sizes are measured pixel strings. Startup, no-ops, intermediate moves and programmatic size changes do not publish completion. Cancellation retains the live size and publishes its completion after capture/drag cleanup. No regions-Bag writeback or new global event bus.
+
+GC-105 §105 and GC-225 document the approved contract and internal responsibilities. Python l06 demonstrates both subscriptions in dataController, counts, payloads, Data-driven hiding, live splitters and retained invalid drafts. Core and gallery bundles rebuilt. Python-gallery Chromium/WebKit checks cover click, Data updates, no-ops, timing, keyboard limits, closed-handle drag, pointer cancellation and retained Data/DOM/draft identity. Nested l05 and handle l04 regression checks pass in both engines. The core suite also passes all 3,548 tests with the project Python environment and local fixture-server permissions. Initial environment-only failures were resolved by using the project Python and allowing local fixture servers. Only Python gallery was exercised; JS/serverless alignment remains deferred to final release qualification.
+
+Tab/stack remain planning only in GM-035: a common mounted-panel selection responsibility, stack without a hidden tab bar, tab adding its presentation, legacy selection names and existing subscriptions. Selection-event payload/order, initial notification and structural close semantics remain proposals for owner review. No new selection API is recorded as approved. No release or publication; visual acceptance remains separate.
+
+
+<a id="gc-070-1315"></a>
+## 1315. Tab and stack containers — 2026-10-18
+
+Owner explicitly confirms closable removes panel Source but retains Data, and requests implementation and Python-gallery examples. The reviewed contract is recorded in GC-105 §110, GC-225 and the constitution; PORT-0015 records bounded legacy/PoC review. SelectedContainer provides mounted-panel selection; tabContainer adds the strip while stackContainer creates none. named/index bindings agree, hiding/showing and selected notifications follow the documented order, and startup/no-op handling avoids duplicate publications. Closable tabs run an activated synchronous onClose veto, publish closing, delete Source, resolve selection, then publish closed. Application Data remains untouched. Close code is scoped to selection panels and never emitted as a DOM attribute.
+
+Python l07 demonstrates dual selection bindings, subscriptions/event log, retained invalid drafts, close veto, surviving notes Data and a nested border. l08 demonstrates Data-driven stack selection without tabs. Both are compact and responsive; gallery now has 79 lessons / 80 routes. The catalogue tests now reflect those routes and verify optional Logic modules only when declared (l05–l08 intentionally have no JS companion during Python-first iteration). All Python route Source responses are still checked. JavaScript/serverless example alignment remains a final-release prerequisite.
+
+Verified: 3,555 core JavaScript tests pass; Python 167 pass with one existing expected failure and 266 passing subtests; 18 Python gallery tests pass. Durable Chromium/WebKit l07/l08 checks cover initial/event ordering, both bindings, veto, close/removal, accepted Data plus rejected draft and DOM identity, nested border, keyboard, narrow viewport and touch-emulated taps. Border l06 regression passes both browsers. Mobile screenshots reviewed. Core/gallery bundles rebuilt. Initial broad Python discovery touched retired temp tests; official tests/ scope and local fixture-server permissions were used for the successful suite.
+
+Implemented and verified, awaiting owner visual acceptance. No commit, push, version bump, package publication or hosted deployment. FramePane, incoming switchPage command topics, asynchronous close guards and alternate tab-strip positions remain outside this increment.
+
+
+<a id="gc-070-1320"></a>
+## 1320. Tab theme refinement and slider-selected stack — 2026-10-18
+
+Owner requests more careful presentation, especially mimi/joanna, and a two-panel stack controlled by a slider. Tab entries now use compact theme-owned height, spacing, rounded upper corners, a coherent selected entry and integrated close control. Keyboard focus remains visible and touch targets retain their existing size. Python l08 binds a 0/1 horizontalSlider to selected, alongside selectedPage, with details and review/preferences panels. No application DOM wiring or panel recreation.
+
+Verified: seven selected-container core tests, eighteen Python gallery tests, Chromium/WebKit Python l07/l08 selection/close/draft/Data/identity checks and touch checks. Gallery settings exercised mimi/joanna in both light/dark modes; screenshots reviewed. Bundles rebuilt and Python gallery restarted on 8243. Visual acceptance remains with the owner. No release/publication or JS/serverless gallery qualification.
+
+Owner additionally requests underline-only tabs, all four strip positions, icons and reactive badges. These capabilities are requested, but their parameter names/defaults remain a proposal pending confirmation; current implementation still has top tabs only. Legacy Dojo TabContainer uses tabPosition (top/bottom/left-h/right-h); modern left/right spelling and tabMode are proposals. Publish inspector remains deferred while container presentation is reviewed.
+
+
+<a id="gc-070-1325"></a>
+## 1325. Reactive tab presentation — 2026-10-18
+
+Owner explicitly approves tabMode, tabPosition, icons and reactive badges, with a Python-gallery example and mimi/joanna visual care. GC-105 §115, GC-225 and the constitution record the contract. tabMode=tabs/underline and tabPosition=top/bottom/left/right use typed read bindings and generated Builder enum metadata. CSS positions the same strip and panels; vertical keyboard navigation and aria-orientation follow the axis. Stable icon/caption/badge spans update from parent-owned panel metadata. Null/empty hides the badge, zero stays visible; arbitrary text is escaped. No panel recreation or selection notifications for presentation-only changes. Theme tokens cover density, shape, indicator, badges and side-strip bounds.
+
+Python l07 now has responsive compact controls for mode, position, unread count, badge color and icon, together with existing selection/close/draft tests. l08 retains its 0/1 slider. Core: 3,556 JS tests pass; Python: 168 passed, one existing expected failure, 266 passing subtests. Gallery: 18 Python tests pass. Chromium/WebKit qualify all eight mode/position combinations, mimi/joanna light/dark, reactive inactive-tab metadata, keyboard, retained invalid drafts and Data/DOM identity, and 390px touch layouts. Screenshots inspected. Initial Python sandbox-only failures were resolved by enabling local fixture server permissions; a browser navigation test was corrected to avoid collapsing an already-open section.
+
+Implemented and verified; owner visual acceptance pending. Python gallery remains on port 8243. No version bump, publication, deployment or JS/serverless gallery qualification. Publish Inspector remains deferred.
+
+
+<a id="gc-070-1330"></a>
+## 1330. Catalogue-sized iframe stack preview — 2026-10-18
+
+Owner replaces the two-panel slider example with one miniature iframe per demo. Python l08 now reads the common gallery catalogue and declares 78 stack panels, excluding only itself to prevent recursion. The slider binds to selected; selectedPage and a normal selected subscription provide the demo key/title. CSS scales iframe content to 50%; native lazy loading leaves scheduling to the browser. Visited frames retain their independent documents and Data. No new component/runtime behavior or application DOM wiring. The title is now Demo thumbnails in a stack.
+
+Verified: 18 Python gallery tests pass. Dedicated Chromium/WebKit checks confirm catalogue count, self-exclusion, slider endpoints, a bound input retained across panel changes, stable iframe/window/document identity, actual half-scale geometry and no outer horizontal overflow at 390px. Initial visual checks caught transform_origin being composed as a transform function (the example now declares standard transform-origin explicitly in style), the container's normal max-width constraint (explicitly removed for the double-sized frame), and the slider's intrinsic width (now shrinking). Screenshots reviewed. All changes remain Python-gallery development work; no release/publication or JS/serverless checks.
+
+
+<a id="gc-070-1335"></a>
+## 1335. Drawer carousel with debounced center preview — 2026-10-18
+
+Owner requests a borderContainer drawer containing the carousel, with a delay after stopping before showing the selected demo in the center. Python l08 composes existing borderContainer, two stackContainers and dataController(_delay=350). The miniature follows the slider immediately. The center retains the previous demo until the debounce fires, then sets that demo's bound src and selectedPage. Unvisited center iframes have no src; visited URLs/documents stay in place. The thumbnail and full-size views are explicitly independent page instances. No core API, manual event wiring, application timer or DOM state cache was introduced. The existing drawer frees center space on narrow screens without remounting either stack.
+
+Verified on Chromium/WebKit: 78 preview/full pairs, slider endpoints, actual half scale, delayed center assignment, skipped intermediate src URLs, retained edits and document identity in both independent instances, narrow layout and drawer close/reopen. Eighteen Python gallery tests pass. Desktop/mobile screenshots reviewed. Python-only development; no release/publication.
+
+
+<a id="gc-070-1340"></a>
+## 1340. Container gallery and readable lessons — 2026-10-18
+
+The Python gallery now composes navigation, center and code with borderContainer/contentPane, shared live splitters and drawer handles. Each preview uses tabContainer with Example/Explanation; the existing iframe remains mounted. The artificial Mobile preview panel is removed; actual narrow-screen navigation, code and Inspector views remain. The shared index service has an explicit containerLayout integration option: it delegates geometry to components, observes existing closable_change/splitter_resize notifications and retains its existing page/theme/preferences responsibilities. Plain IndexPage retains its previous splitter layout. No new component API, duplicated drag engine or application state cache was added.
+
+The eight container lessons now include detailed Try it / How it works explanations. l01 concentrates on region sizing, l02 contains editable customer/state/notes, and l04 is a dedicated four-drawer workspace with search, filters, customer details and shared output. More complex l05–l08 retain their existing interactions. This is a container-focused enrichment, not a rewrite of every input/HTML demo.
+
+Verification: 18 Python gallery tests and six core index tests pass. Chromium/WebKit verify drawer and toolbar synchronization, splitter resizing, switching Explanation/Example and demos without losing iframe/document identity or bound edits, mimi/joanna presentation, and narrow navigation/code/Inspector views. Screenshots reviewed. Python development preview pending owner visual acceptance; shared gallery changes require the already deferred JS/serverless authoring alignment before final release. No release/publication.
+
+
+<a id="gc-070-1345"></a>
+## 1345. First guided drawer lesson — 2026-10-18
+
+Owner-approved Python-only l04 tour: the gallery composes a bottom contentPane drawer with Source-authored Start/Resume, Pause, Stop, Back, Next, Voice and narration-speed controls. Eight declarative steps are authored in Python; gallery-owned sequencing writes explicit example Data paths. Existing drawer bindings and closable_change controllers keep the manual controls usable. No synthetic DOM input, publish recording, application request or core narration service was introduced.
+
+Automatic steps wait for optional English narration to finish, then allow observation time. Pause cancels narration; resume re-reads the current explanation without reapplying its action. Back reviews text only. Stop keeps values. Leaving the example/tab, opening another mobile view, closing the guide or hiding the document pauses playback. Listeners, timers and speech are released on disposal. Missing voices/errors keep captions usable. Voice availability/quality depends on the browser and operating system.
+
+Implemented and verified: 18 Python tests, four deterministic player tests and Chromium/WebKit integration for all steps, retained Data/document identity, pause/resume, review, speech completion/cancellation, mimi/joanna and narrow views. Speech integration uses a controlled synthesis double; audible quality remains for the owner's trial. The workspace now fits the preview height so Output stays visible above the guide. Existing gallery regression checks also pass in Chromium/WebKit. Python development preview pending visual acceptance; no release or expansion to other examples.
+
+
+<a id="gc-070-1350"></a>
+## 1350. Tutorial explanations and minimized drawer default — 2026-10-18
+
+Owner requests welcoming beginner-oriented lessons, a smaller uncut teaching handle, and minimized captions as the general drawer default. drawer_minimize now defaults to True; explicit False and reactive bindings remain supported. Icons stay visible; touch captions remain readable and compact, with existing interaction zoom. The Guide handle uses existing scoped CSS variables for an 18px icon and a short caption; no special core rendering path.
+
+Eight Python container lessons and their family introduction now teach through concrete tasks, observable outcomes and explanations of Data, bindings, regions, nested layouts, events and stack selection. The drawer narration is rewritten in the same voice, with longer reading pauses. These lessons are ordinary readable text in Explanation, not a duplicate source listing. Full Python remains in Code. This increment does not claim the remaining gallery families have been rewritten.
+
+Verification: five border-container tests include omitted/explicit/bound minimize and icon retention. Eighteen Python tests pass. Chromium/WebKit exercise the guided sequence, retained Data, themes and narrow views; dedicated visual checks measure the compact Guide grip and confirm its caption is uncut on hover. No publication; Python preview awaits owner feedback.
+
+
+<a id="gc-070-1355"></a>
+## 1355. Thin drawer grips with unified icon and caption — 2026-10-18
+
+Owner corrects the presentation contract: minimizing must reduce cross-axis thickness, with icon and caption hidden/revealed together. Replaced the independent square icon slot with one internal flowing content group. Default resting thickness remains 4px; expanded content is text-sized within 20px cross-axis bounds. Upright icons precede automatically oriented captions, without imposing a square minimum. Theme variables retain control; pointer hit areas remain separate. Explicit non-minimized presentation and compact readable touch captions remain supported.
+
+Removed the gallery's temporary icon-size/reveal-size overrides so Guide and navigation handles use the common behavior. Five core border tests pass. Python-gallery Chromium/WebKit checks measure both orientations at rest and on hover, ensure complete caption visibility, and exercise click/drag with retained iframe identity. Touch contexts in both engines confirm visible combined content within 20px thickness; the guided-tour regressions also pass. No release/publication; awaiting owner visual feedback.
+
+
+<a id="gc-070-1360"></a>
+## 1360. Source inspector structural editing and history — 2026-10-18
+
+Owner-approved scope: Source hover/focus +/−, a child-insertion dialog, branch drag and Undo/Redo. Implemented in the shared optional inspector and target-side agent. The catalog comes from the selected Builder's installed HTML/component grammar. Root removal, cycles, duplicate sibling labels and invalid nesting are rejected. Native tree dragging emits a named-Logic intent; actual Source mutations use public Builder/Bag APIs. Data has no structural controls.
+
+The target-owned journal reverses Source/Data value and attribute changes, insertion, complete subtree removal, reordering and reparenting. Restoration retains metadata, binding expressions and sibling position. Connected pages keep separate histories across selector changes; local detach or connection close clears the journal. External conflicts are reported without overwriting application writes. Reparenting can recreate rendered components; application effects such as controllers or requests are not transactions and are not rolled back. Styles preview/reset and breakpoint configuration retain their separate lifecycle. Live edits do not save Python definitions.
+
+Verified: 38 inspector unit/integration tests; Chromium and Playwright WebKit local and MessagePort UI sequences for HTML/widget/container insertion, invalid input, attributes, native drag/reorder, subtree deletion, repeated Undo/Redo, keyboard focus, live two-way bindings and conflict refusal. Existing browser editing/breakpoint/CSP/palette tests, opaque-frame bridge tests and Styles preview/reset/export tests also pass in both engines. The Styles fixture was aligned with the already-current Base theme token count and explicit html_button declaration. Optional tool and package artifacts rebuilt; Source editing screenshot reviewed. No dependency edits, publication or deployment. Implementation and checks complete; owner visual acceptance is pending.
+
+
+<a id="gc-070-1365"></a>
+## 1365. Adversarial review of containers and gallery integration — 2026-10-18
+
+Owner asks for a thorough review of recent work for duplication, inconsistent
+behavior, arbitrary constants and adherence to Gramlot's architecture. This is
+an analysis phase: no implementation fixes, new API decisions, release or
+publication are approved by this entry. Prior verification remains historical
+evidence; it does not cover the reproduced gaps below.
+
+Scope: border/drawer and selected containers; parent/renderer integration;
+Python gallery composition, mobile presentation, guided lesson and layout
+examples; connected themes/popup changes; the new inspector structural history
+and its interaction with containers. JavaScript/serverless gallery qualification
+remains deferred by the owner. The inspector's entire pre-existing feature set
+was not requalified in this review.
+
+### Reproduced findings
+
+- **R01 / P1 — Inspector insertion leaves invalid container Source.**
+  `InspectorHistory.insert()` invokes the Builder with empty attributes
+  (`tools/gramlot-tools-inspector/src/inspector-history.js`, insert).
+  Inserting contentPane into a borderContainer throws
+  `Invalid border region: undefined`, but the Source child count increases
+  from 1 to 2 and the inserted child has no region. Undo recovers it.
+  Parent-specific required metadata must be collected/validated before the
+  mutation; inventing an implicit region is not an approved solution. The
+  generic HTML topology tests do not exercise this component constraint.
+- **R02 / P2 — Tab keyboard order diverges from Source/display order.**
+  `selected-container.js`, renderTabs keydown handler, iterates the insertion
+  order of `#tabs`; moving existing entries in the DOM does not reorder that Map.
+  Reproduction: Source.move(2, 0) changes visible order from Alpha/Beta/Gamma to
+  Gamma/Alpha/Beta, but Home still selects Alpha. Navigation must use the same
+  current ordered records as rendering. This matters with the newly supported
+  inspector branch reordering.
+- **R03 / P2 — Drawer background and automatic foreground have different
+  sources.** `border-container.js` computes contrast from --drawer-background,
+  while drawer_background is projected as an inline background property.
+  On the Python l04 page, drawer_background='#eeeeee' produces background
+  rgb(238,238,238) with white text. Both authoring paths must feed the same
+  effective color before deriving contrast; an explicit foreground still wins.
+- **R04 / P2 — Font customization can clip drawer captions.** The minimized
+  reveal cross-axis default is capped at 20px independently of the font/padding.
+  On Python l04, the default 11px font fits (17px client/scroll width), but
+  --gramlot-drawer-font-size:18px gives 20px client width and 23px scroll width.
+  Default geometry should derive from content/font/padding; explicit maximums
+  may remain opt-in constraints. Requiring a theme to coordinate several
+  independent tokens is not the automatic behavior the owner requested.
+- **R05 / P2 — Guided review and execution share one cursor.** Back calls show()
+  and changes position; resumed automatic advancement reads position+1 and can
+  execute an already-applied action again. Reproduction: Next twice, Back,
+  edit the target value, Resume, advance the timer: the edit is overwritten by
+  the already-executed second step. The existing test checks only immediately
+  after Resume and pauses before that timer. Review-only navigation needs a
+  distinct execution cursor or a clearly confirmed replay contract; do not
+  silently interpret review as replay.
+
+### Structural cleanup findings (not additional proven runtime failures)
+
+- **R06 — The gallery conversion is incomplete.** Example/Explanation uses
+  tabContainer, but open-page tabs in page.py/index-page-runtime and source-file
+  tabs in gallery.js still maintain their own selection, keyboard and hiding
+  loops. Mobile keeps a separate Bag and restores some preferences by reading
+  rendered data-* attributes. These are existing services reused during the
+  approved transition, not evidence that example business Data are duplicated;
+  nevertheless the gallery is not yet the fully declarative reference that the
+  new components should make possible. Consolidate state ownership and migrate
+  the remaining tab behavior instead of extending these parallel loops.
+- **R07 — Parent component responsibilities leak into generic renderer code.**
+  html.js, gramlot-renderer.js and Python/JS attribute filtering each name tab /
+  stack / border tags explicitly. Parent metadata projection, callbacks and
+  selection writes should converge on one reviewed component contract rather
+  than requiring another set of renderer branches for every new container.
+  This is a proposed architecture cleanup, not authorization to invent a new
+  generic plugin/proxy API during a bug fix.
+- **R08 — Presentation and qualification need consolidation.** Drawer CSS
+  retains overridden labelled-handle width/height/padding rules alongside the
+  newer unified-content rules. Gallery CSS retains selectors for the old shell
+  alongside its container composition. Breakpoint 1023 appears in both JS and
+  CSS; drawer icon gap and some tab geometry are fixed values. Audit active
+  selectors, centralize semantic defaults and keep theme-sensitive dimensions
+  derivable. Several new browser/history tests are densely compressed, which
+  makes missing transitions and combinations harder to notice. Rewrite their
+  setup/actions/assertions clearly and cover the five reproductions above.
+
+### Parameterization assessment
+
+Existing good choices: shared SelectedContainer for tab/stack semantics; stable
+slotted panels; Source-owned structural closing; existing publish/subscribe;
+Python examples using bindings and dataControllers; shared popup positioning;
+CSS theme tokens; gallery-owned tutorial sequencing as explicitly authorized.
+DOM creation inside a web component is its implementation responsibility, not an
+application workaround. Observer/timer/drag handles are legitimate lifecycle
+state, not duplicated application Data.
+
+Do not turn every number into an authoring parameter. Demo sizes, slider bounds,
+350ms carousel delay and per-step seconds already belong to the authored lesson.
+Theme colors, spacing, typography and interaction presentation need coherent
+semantic variables and useful derived defaults. The first guided lesson's l04
+association and named controls are acceptable within its expressly bounded
+scope; before extending to other lessons, move lesson identity, paths and voice
+language into one lesson configuration rather than copying conditionals. Do not
+create a general replay engine without a separate approved design.
+
+### Verification and next step
+
+Read-only qualification reran 13 core border/selection tests, 4 guided-player
+unit tests and 7 inspector-history tests: **24 passed**. Additional temporary
+probes reproduced R01, R02 and R05 using the actual Source/Bag/runtime/player;
+Chromium against the Python gallery reproduced R03/R04. Reloading the example
+iframe correctly stopped the guide and restored availability; that suspected
+lifecycle defect was rejected. These checks are not a claim of complete suite
+or audible narration qualification. No Node/serverless gallery was exercised.
+
+Review complete. Fixes remain pending owner instruction. Recommended order:
+R01-R05 regressions and repairs, then the bounded R06-R08 consolidation with any
+new component-interface decision reviewed before implementation. Retain Python
+preview-only verification until the owner accepts the final release phase.
+
+
+<a id="gc-070-1370"></a>
+## 1370. Three-minute introduction with live Source editing — 2026-10-18
+
+Owner: “bene, aggiorna la demo e il video di 3 minuti mostrando anche l’aggiunta di un elemento, lo spostamento di un ramo e l’undo, sempre con Michael e in modo graduale”. Local production revision 5 uses three small Python-authored pages with actual Gramlot Source/Data/bindings and the updated optional inspector. The standalone launcher reuses the existing gallery tool integration and the page's runtime constructors; no dependency-source edits or simulated application mutations.
+
+The 180-second cut introduces Source/Data, a literal div, a pointer and a shared input before the inspector at 1:50. The final demonstration adds a div via + and the dialog, gives it literal text, drags the bound div inside it, then undoes the move. Recorded assertions confirm the subtree positions, retained ^message pointer and unchanged Data. Michael (Kokoro am_michael, English) narrates all chapters. The persistent diagram, code excerpts, cursor halo/click pulses and step cards are editorial overlays; dialogs and real application results remain visible. No avatar or embedded subtitles.
+
+Verified: all six scene recordings have no page errors; full MP4 decode, 180 seconds, H.264/AAC, 1600×900, six chapters, measured audio peak -2 dBFS; player playback/seeking and mobile width; 14 final frames visually reviewed. Source edit actions align with their measured sentence timings. Local artifact: /Users/gporcari/.codex/visualizations/2026/10/18/01a14e31-2853-7731-9f18-4ec18414ef69/gramlot-intro-video-v5/index.html. The shared screenplay is updated and revision 4 preserved. The local demo is served at http://127.0.0.1:8261/. Production complete, owner editorial review pending; no site publication or deployment.
+
+### Editorial revision 6 — 2026-10-18
+
+Owner requested a larger inspector in the final sequence, the female voice, and a better Source/Data diagram ("Nella parte finale ingrandirei l’inspector", "mettere quella femminile", "non possiamo ... fare qualcosa di piu bello?"). Local revision 6 applies those editorial changes to the existing real recordings: a 1.7x inspector close-up preserves the Source rows, toolbar, edited property and path while omitting empty property space; the running page remains alongside it. The Add dialog is enlarged separately and the recorded pointer movements are mapped into the reframed view. The diagram now uses a Source tree, a Screen window and a Data path/value with distinct colors and directional connections. Application behavior is unchanged.
+
+Heart (Kokoro af_heart, American English, from the original voice comparison) replaces Michael throughout. All 42 sentences retain the prior action-aligned start/end times using pitch-preserving tempo adjustment. Verified: 180-second H.264/AAC output, 1600×900, six chapters, complete decode without errors, audio peak -2 dBFS / mean -18.8 dBFS, browser playback/seeking and mobile width. All chapters and the enlarged dialog, destination branch, moved div and Undo result were visually reviewed. Local player: /Users/gporcari/.codex/visualizations/2026/10/18/01a14e31-2853-7731-9f18-4ec18414ef69/gramlot-intro-video-v6/index.html. Revision 5 and its screenplay are preserved. Editorial production is complete; owner acceptance remains pending. No publication or deployment.
+
+
+<a id="gc-070-1375"></a>
+## 1375. Review repairs and structural consolidation — 2026-10-18
+
+Owner: “ok procedi con le cinque correzioni e poi con la pulizia strutturale, mantenendo automatismi e default sensati. aggiungi i test mancanti e verifica nella gallery python”. This authorizes R01–R08 from §1365; the constitution and GC-225 record the bounded responsibility changes.
+
+Implemented:
+
+- R01: required child attributes come from the parent component declaration. The inspector asks for an explicit unused border region and validates insertion/reparenting before changing Source. Rejected operations leave Source and edit history unchanged; valid insertion supports Undo/Redo locally and through the page bridge.
+- R02: keyboard traversal follows current Source indices after panel reorder, matching visual order while retaining the mounted controls.
+- R03/R04: drawer_background feeds the same color used for automatic foreground contrast. Explicit color still wins. Natural icon/caption/font/padding measurements determine reveal dimensions; explicit reveal limits remain optional. Measurements belong to the internal region, so Source style projection cannot erase them. Compact touch rest, zoom, transitions and the outer hit target remain intact.
+- R05: galleryGuide.executed records the last applied action independently of the explanation position. Back/Next review and Resume never reapply an already executed action. Stop/completion followed by Start still explicitly restarts the lesson.
+- R06: the Python gallery uses tabContainer for open pages, Example/Explanation and Python/Logic files. galleryIndex is the shared Data scope for selection, opened pages, responsive views and preferences. The existing HTML IndexPage composition remains available; no application Data are cloned and iframe loading remains lazy.
+- R07: childParameters and sourceContext consolidate the existing parent projection, callback argument and Source-write responsibilities. Generic renderer/Builder filtering no longer dispatches by border/tab/stack tag names. No new application authoring API or dependency-source modifications.
+- R08: removed overridden drawer dimensions and obsolete gallery selectors; intrinsic geometry replaces fixed cross-axis limits; icon/caption spacing is a theme token. The responsive service reads a CSS flag instead of repeating the breakpoint. Compressed history/guide tests were reformatted and obsolete drawer browser expectations replaced with the current contract.
+
+Verification: the complete core JavaScript suite passed 3,558 tests. Core Python passed 168 tests and 266 subtests, with one existing expected failure and 60 deprecation warnings. Inspector unit suite passed 39 tests; local and bridged structural insertion/Undo/Redo passed in Chromium and WebKit. Guide unit suite passed five tests including resumed-timer replay regression. Python gallery tests passed 18 tests and 93 subtests, including all routes and shared-container authoring.
+
+Python browser qualification covers drawer contrast and larger typography on both axes, reactive Source styling, closed-handle dragging, touch press/rest, retained Data, guided playback/review/cancellation, page and source-file tabs, mobile Example/Code/Inspector, and unchanged iframe identity. Mimi/Joanna desktop and phone captures were visually inspected. Speech timing uses deterministic synthesis doubles; audible voice quality is not claimed. Final Chromium/WebKit reruns passed for all four Python browser probes (container gallery, guided playback, intrinsic drawer styling and gallery grips). The final focused core checks passed 14 container tests and 11 index/bundle tests; public documentation validation passed (11 pages, search, sources, local links and mirrored anchors). No outstanding repair from R01–R08 remains in the approved Python scope.
+
+Implemented and verified work remains distinct from owner visual acceptance. Preview: http://127.0.0.1:8256/. JavaScript/serverless gallery authoring and qualification remain explicitly deferred; shared browser assets are not ready to publish against the previous JS shell. No release, commit, push or deployment in this repair phase.
+
+
+<a id="gc-070-1380"></a>
+## 1380. Visible tab comparisons in the Python gallery — 2026-10-18
+
+Owner: “mi sembrano troppo pochi esempi ... vari tipi di tab ... posizione ... sopra sotto sinistra destra ... se non mostri delle varianti non capisco”. Implemented the already supported scope in Python l07: eight simultaneously visible working cards (tabs/underline × top/bottom/left/right), exact authoring options, icons, reactive badges and shared Profile/Message Data with independent panel selection. The existing interactive selection/closing editor remains below. No application DOM construction or bespoke browser behavior.
+
+Verified: four Python page tests and 93 route subtests; Chromium and WebKit checked each variant in mimi/light and joanna/dark, preserved/shared edits, correct horizontal/vertical orientation and no phone page overflow. Captures were visually reviewed. Preview: http://127.0.0.1:8257/l07. JavaScript/serverless qualification remains deferred; no release/publication.
+
+Remaining request: alignment along the tab strip (left/center/right horizontally, top/center/bottom vertically) has no supported API. Proposed tabAlign=start/center/end, default start, in one pending owner question under §11.43. No core implementation or approved contract for that proposal yet. Continue that affected part only after the owner's answer; no example-only shadow-DOM or CSS workaround.
+
+### Editorial revision 7 — 2026-10-18
+
+Owner requested an animated input → Data → div schema, selectable or faster playback, and the inspector progression "1) cambio dei dati 2) cambio qualcosa nel source 3) aggiungo un attributo come il colore ... solo poi aggiungo o sposto i nodi ... un crescendo". Revision 7 retains a 180-second master with shorter early pauses and a newly recorded 76-second inspector sequence starting at 1:35. The actual demo edits message to Hello again, replaces the div pointer with Welcome, restores ^message, adds color=#4169c8, adds a section, moves the original div into it, and undoes the move. The enlarged view includes both property rows and the resulting page.
+
+The chapter-four diagram animates recorded values from input to Data and then to div. Its explanatory timing is explicitly expanded for readability; the real application remains immediate. Heart narrates all 41 sentence slots. The player provides 0.75×, 1×, 1.15×, 1.25×, 1.5× and 2×, defaults to 1.15× (about 2:37 viewing time), and preserves voice pitch. Verified: actual browser edits and DOM/binding/color assertions, no page errors, complete 180-second H.264/AAC decode at 1600×900, six chapters, audio peak -2 dBFS, player playback/seeking, all speed choices and mobile width. Fifteen final frames and the binding/crescendo close-ups were visually reviewed. Local player: /Users/gporcari/.codex/visualizations/2026/10/18/01a14e31-2853-7731-9f18-4ec18414ef69/gramlot-intro-video-v7/index.html. Revision 6 and its screenplay are preserved. Production complete; owner review pending; no publication or deployment.
+
+
+<a id="gc-070-1385"></a>
+## 1385. Tab alignment and visible comparisons — 2026-10-18
+
+Owner confirmed “Sì, aggiungi tabAlign”, resolving §1380's pending API question. tabContainer now declares read-bound tabAlign=start/center/end, default start, independently of mode and side. CSS safe justification aligns horizontal/vertical strips while preserving access to overflowed entries. Parameter changes retain Source, Data, mounted editors and selection; invalid enum values are rejected. The exported collection grammar, constitution, GC-225 and public component contract are aligned.
+
+Python l07 contains 14 working comparisons: the existing eight mode/side combinations plus six horizontal/vertical alignment cards, constructed by one shared page helper. Its interactive editor adds the bound alignment selector. Captions show the Python options; fields remain shared Data with independent panel selection.
+
+Verified: ten selected-container tests, including default/invalid values and live alignment without draft loss or selection notifications; eleven collection/bundle checks; four Python page tests and 93 route subtests. Chromium and WebKit verified geometric alignment for both modes/all four sides/all three alignments in mimi/light and joanna/dark, safe overflow with Home/End, shared values, all 14 cards and phone width. Captures reviewed visually. Public documentation validation passed. Preview: http://127.0.0.1:8257/l07.
+
+Approved scope implemented and verified; owner visual acceptance remains separate. No remaining tabAlign decision. JavaScript/serverless gallery alignment remains deferred by the owner; no release/publication.
+
+
+<a id="gc-070-1390"></a>
+## 1390. Release readiness and inspector review — 2026-10-18
+
+Owner asked what remains for release and whether the inspector changes are sound. Read-only implementation review covered Source insertion/removal/reparenting, edit history, local/MessagePort command paths and tree drag feedback; no implementation changes or publication were authorized in this review.
+
+Fresh verification: 39 inspector unit tests passed. Structural browser qualification passed all four Chromium/WebKit × local/bridge cases, including insertion, attributes, native drag/reorder, deletion, Undo/Redo, binding restoration and conflict guards. Styles qualification passed Chromium/WebKit. General inspector qualification passed Chromium and WebKit, including scalar editing, breakpoints, CSP rejection, keyboard/move/resize and reconnection; Chromium also verified debugger pause/writer stack. Firefox failed before executing assertions because its local browser process could not open the temporary profile, including a retry with /private/tmp. Firefox qualification remains unverified; this is not evidence of an application assertion failure. No new blocking implementation defect was identified in the inspected scope.
+
+Release preparation remains: align JavaScript gallery authoring with the verified Python shell/examples before publishing their shared assets; then qualify packaged Python/Node/serverless artifacts and the downloadable ZIP. Python-only gallery verification remains in force until the owner starts the final release phase. The core CI workflow currently does not execute the separate inspector unit/structural/styles suites; adding them is recommended before release. The Chrome extension bundles the shared inspector, so delivering these changes there requires its own refreshed build and qualification, not only publishing core. Final version metadata/release notes, consolidation and publication remain separate authorized steps. No claim of a fresh complete core suite or release-artifact qualification in this review.
+
+
+<a id="gc-070-1395"></a>
+## 1395. Cross-host release preparation and inspector CI — 2026-10-18
+
+Owner answered “si” to “Passiamo alla preparazione finale, iniziando dall’allineamento JavaScript e dalla CI?”. This authorizes final JavaScript/serverless alignment after the Python-first review, superseding the temporary qualification deferrals in §§1375–1390. It does not publish packages or deploy the galleries.
+
+Implemented: the JavaScript gallery now authors the same shared border/tab containers, eight layout lessons, fourteen tab comparisons and guided drawer controls as Python. Nine parity tests compare actual Source trees, bindings and controllers. The carousel gets its route map from the gallery exporter, so the offline version uses relative HTML paths and retains visited live frames; hosted Python and Node expose the common catalogue resource. The documentation generator no longer requires the removed expandable tutorial block. Gallery reconstruction retains selection and opened Source panels. Core CI now has a separate inspector job for unit, general browser, structural local/bridge and style suites. The Chrome extension was rebuilt against the shared inspector, with an additional protocol test for insertion and Undo/Redo.
+
+Fresh local verification:
+
+- Core: 3,559 JavaScript tests; 168 Python tests and 266 subtests, with one existing expected failure and 60 deprecation warnings.
+- Examples: 106 tests under Node and 106 under Bun; 18 Python tests and 93 subtests. Includes nine Python/JavaScript Source parity checks and reconstructed-gallery behavior.
+- Adapters: 33 Node-server and 35 serverless tests. Inspector: 39 unit tests; Chromium/WebKit structural, general and styling evidence remains as in §1390. Extension: five unit tests, 22 browser checks and eight real DevTools checks passed.
+- Installed local wheels and npm archives were used for fresh Python and Node galleries. All 80 common pages start/render in Chromium and WebKit across Python, Node and file:// serverless. The first complete matrix had one 15-second network-idle timeout on Chromium's offline carousel, without page errors; an isolated repeat with the same timeout passed. Separate carousel interactions passed on all six host/browser combinations, including delayed loading, relative file routes, unchanged iframe identity and retained edits.
+- Container gallery interactions, fourteen tab variants, mimi/joanna, mobile Example/Code/Inspector views, guided playback and Data retention passed in Chromium and WebKit. Speech sequencing uses deterministic browser doubles, not an audible voice-quality claim.
+- Core public documentation, all 79 example lessons and paired adapter/extension guides build and validate. Candidate gallery and extension ZIPs were assembled and checked for archive integrity; the gallery contains 80 examples including its environment-specific lesson.
+
+Firefox remains unqualified locally: the browser fails before application assertions with its temporary-profile startup error (§1390). The new CI job includes Firefox on Linux, but its remote result is pending a source push; no claim that hosted CI has already run. Package versions remain unchanged in these unpublished candidate archives. Final version metadata/release notes, consolidation, push, release publication and online gallery/ZIP rollout are the remaining release steps requiring owner authorization. No release or deployment occurred in this preparation.
+
+
+<a id="gc-070-1400"></a>
+## 1400. Gallery footer and settings dismissal — 2026-10-18
+
+Owner: “lo toglerei. inoltre se apro l'ingranaggio e clicco fuori vorrei si chiudesse”. Both Python and JavaScript indices omit the serverless ZIP link, even when the deployment supplies its URL. Archive generation and the independent download endpoint are unchanged. Deployment browser qualification now checks absence of the index link instead of requiring it.
+
+The native auto popover already dismisses outside clicks in the parent document. Iframe interactions do not bubble there, so the existing gallery settings service closes the popover when focus enters an iframe, after focus has settled in the next animation frame. Its blur listener and pending animation frame are released on disposal. No separate popup state or application-specific event code is introduced. The attempted CSS backdrop approach was removed after full-browser qualification showed it did not solve iframe dismissal.
+
+Verified: five Python gallery-page tests and fifteen JavaScript gallery tests. Chromium and WebKit on the Python preview at port 8257 verify theme/label settings, clicks inside, outside on the main page and inside an example iframe, Escape/Close, retained field values, persistence and narrow viewport dismissal. GE-010 and its mirror record the updated contract. Reload the preview to load the new gallery bundle. No publication/deployment; release candidates assembled in §1395 must be regenerated with this subsequent UI change before publication.

@@ -42,7 +42,9 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this._binding = binding;
         this.source = source;
         this.destination = destination;
-        this.html = new HtmlElement({metadataAttributes: ['__ref']});
+        this.html = new HtmlElement({metadataAttributes: ['__ref'],
+            invokeScript: (node, name, code, keywords) => this.inlineCompiler.compile(
+                node, name, code, node.parentNode._getMeta('gramlot_component').childParameters[name].inline)(keywords)});
         this.records = new Map();
         this.references = new References(source);
         this.pending = [];
@@ -533,9 +535,10 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     /** Component parameters use resolved Source values, before HTML-only filtering (e.g. validate_*). */
     componentAttributes(node, attrs) {
         const component = node._getMeta('gramlot_component');
-        if (!component) return attrs;
+        const childParameters = node.parentNode?._getMeta('gramlot_component')?.childParameters;
+        if (!component && !childParameters) return attrs;
         const resolved = this.#resolvedAttributes.get(node);
-        const parameters = Object.fromEntries([...new Set([...Object.keys(component.parameters), ...Object.keys(resolved).filter(name => name.startsWith('validate_'))])]
+        const parameters = Object.fromEntries([...new Set([...Object.keys(component?.parameters ?? {}), ...Object.keys(childParameters ?? {}), ...Object.keys(resolved).filter(name => name.startsWith('validate_'))])]
             .filter(name => Object.hasOwn(resolved, name)).map(name => [name, resolved[name]]));
         return {...attrs, ...parameters};
     }

@@ -120,3 +120,15 @@ Owner correction, 2026-10-14: the preceding hover-only active-state rule is
 superseded. Inactive indicators are grey outlined circles on hover/keyboard focus;
 active indicators stay visible, red without a condition and yellow with one.
 `conditionalPaths` extends the existing row-action descriptor (GC-225 §035).
+
+
+## Owner-approved structural tree extension — 2026-10-18
+
+The explicit Source +/−, add dialog, branch drag and Undo/Redo instruction extends
+this bounded tree contract (constitution, Source inspector structural editing).
+`rowActions` can occupy the row end and hide actions on fixed paths; `dragEnabled`
+and `fixedPaths` control native Source dragging, and `revealPath` exposes selection.
+The `tree-drop` event carries path, destination and before/inside/after intent.
+No additional PoC subsystem is imported. The tree never performs Bag mutations:
+the existing inspector and target agent own Builder/Source edits and their history.
+See GC-195 §055 for behavior, limits and qualification.

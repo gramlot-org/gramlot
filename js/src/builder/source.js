@@ -45,6 +45,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
      */
     codeAttributes() {
         const own = [...(CODE_ATTRIBUTES[this.nodeTag] ?? []),
+            ...Object.entries(this.parentNode?._getMeta('gramlot_component')?.childParameters ?? {}).filter(([, spec]) => spec.inline).map(([name]) => name),
             ...(this._getMeta('gramlot_component')?.command ? ['action', '_ask_if'] : []),
             ...(typeof this.getAttr('remote') === 'string' ? REMOTE_CODE_ATTRIBUTES : [])];
         const items = [];

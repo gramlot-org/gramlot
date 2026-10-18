@@ -271,12 +271,13 @@
 
 /* Interaction density is independent of the selected color/profile theme. */
 @layer gramlot.touch {
-  :root[data-gramlot-touch="on"] {--gramlot-touch-target:44px; --gramlot-field-height:44px; --gramlot-field-font-size:16px;
+  :root[data-gramlot-touch="off"] {--gramlot-drawer-reveal:0;}
+  :root[data-gramlot-touch="on"] {--gramlot-drawer-reveal:1;--gramlot-touch-target:44px; --gramlot-field-height:44px; --gramlot-field-font-size:16px;
     --gramlot-field-padding:8px 10px; --gramlot-field-line-height:1.35;
     --gramlot-label-size:14px; --gramlot-label-gap:6px; --gramlot-space-2:10px;
     --gramlot-calendar-width:322px; --gramlot-choice-toggle-width:44px;}
   @media (pointer: coarse) {
-    :root:not([data-gramlot-touch="off"]) {--gramlot-touch-target:44px; --gramlot-field-height:44px; --gramlot-field-font-size:16px;
+    :root:not([data-gramlot-touch="off"]) {--gramlot-drawer-reveal:1;--gramlot-touch-target:44px; --gramlot-field-height:44px; --gramlot-field-font-size:16px;
     --gramlot-field-padding:8px 10px; --gramlot-field-line-height:1.35;
     --gramlot-label-size:14px; --gramlot-label-gap:6px; --gramlot-space-2:10px;
     --gramlot-calendar-width:322px; --gramlot-choice-toggle-width:44px;}

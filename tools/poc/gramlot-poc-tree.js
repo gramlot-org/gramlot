@@ -21,6 +21,9 @@ export class GramlotPocTree extends HTMLElement {
         this._expanded = new Set();
         this._nodes = new Map();
         this._rowActions = [];
+        this.dragEnabled = false;
+        this.fixedPaths = [];
+        this._drag = null;
         this._pendingRender = null;
         this._subId = `gramlot-poc-tree-${++sequence}`;
     }
@@ -45,6 +48,13 @@ export class GramlotPocTree extends HTMLElement {
         if (path !== null && typeof path !== 'string') throw new TypeError('selectedPath requires a string or null');
         this._selectedPath = path;
         if (this.isConnected) this._markSelection();
+    }
+
+    revealPath(path) {
+        for (const details of this._root.querySelectorAll('details')) {
+            if (path.startsWith(details.dataset.path + '.')) details.open = true;
+        }
+        this.selectedPath = path;
     }
 
     get rowActions() { return this._rowActions; }
@@ -75,6 +85,9 @@ export class GramlotPocTree extends HTMLElement {
 
     _render() {
         this._pendingRender = null;
+        const focused = this.shadowRoot.activeElement;
+        const focusedPath = focused?.closest('[data-node-path]')?.dataset.nodePath;
+        const focusedAction = focused?.dataset.action;
         // Read open state before replacing rows; a native toggle notification can still be queued.
         for (const details of this._root.querySelectorAll('details')) {
             if (details.open) this._expanded.add(details.dataset.path);
@@ -82,6 +95,13 @@ export class GramlotPocTree extends HTMLElement {
         }
         this._nodes.clear();
         this._root.replaceChildren(...(this._store ? [this._buildLevel(this._store, '', new Set())] : []));
+        if (focusedPath) {
+            let path = focusedPath;
+            while (path && !this._nodes.has(path)) path = path.includes('.') ? path.slice(0, path.lastIndexOf('.')) : '';
+            const row = [...this._root.querySelectorAll('[data-node-path]')].find(item => item.dataset.nodePath === path);
+            const action = focusedAction && row && [...row.querySelectorAll('button')].find(button => button.dataset.action === focusedAction);
+            (action || row)?.focus({preventScroll: true});
+        }
         if (this._selectedPath !== null && !this._nodes.has(this._selectedPath)) {
             this._selectedPath = null;
             this._notifySelection();
@@ -126,6 +146,7 @@ export class GramlotPocTree extends HTMLElement {
             row.append(caption);
             row.addEventListener('click', () => this._select(path));
             this._actions(row, path, node);
+            this._dragEvents(row, path, node);
             list.append(item);
         }
         return list;
@@ -133,26 +154,71 @@ export class GramlotPocTree extends HTMLElement {
 
     _actions(row, path, node) {
         if (!this._rowActions.length) return;
-        const actions = this.ownerDocument.createElement('span');
-        actions.className = 'actions';
-        for (const action of this._rowActions) {
-            const button = this.ownerDocument.createElement('button');
-            button.type = 'button';
-            button.textContent = action.icon ?? action.label;
-            button.title = action.label;
-            button.setAttribute('aria-label', action.label);
-            button.dataset.action = action.id;
-            button.classList.toggle('active', action.activePaths?.includes(path) ?? false);
-            button.classList.toggle('conditional', action.conditionalPaths?.includes(path) ?? false);
-            button.addEventListener('click', event => {
-                event.preventDefault(); event.stopPropagation();
-                this.dispatchEvent(new this.ownerDocument.defaultView.CustomEvent('tree-action', {
-                    bubbles: true, composed: true, detail: {action: action.id, path, node},
-                }));
-            });
-            actions.append(button);
+        for (const position of ['start', 'end']) {
+            const actions = this.ownerDocument.createElement('span');
+            actions.className = `actions actions-${position}`;
+            for (const action of this._rowActions) {
+                if ((action.position ?? 'start') !== position || action.hiddenPaths?.includes(path)) continue;
+                const button = this.ownerDocument.createElement('button');
+                button.type = 'button';
+                button.textContent = action.icon ?? action.label;
+                button.title = action.label;
+                button.setAttribute('aria-label', action.label);
+                button.dataset.action = action.id;
+                button.classList.toggle('active', action.activePaths?.includes(path) ?? false);
+                button.classList.toggle('conditional', action.conditionalPaths?.includes(path) ?? false);
+                button.addEventListener('click', event => {
+                    event.preventDefault(); event.stopPropagation();
+                    this.dispatchEvent(new this.ownerDocument.defaultView.CustomEvent('tree-action', {
+                        bubbles: true, composed: true, detail: {action: action.id, path, node},
+                    }));
+                });
+                actions.append(button);
+            }
+            if (actions.childElementCount) row.append(actions);
         }
-        row.append(actions);
+    }
+
+    _clearDrop() {
+        for (const row of this._root.querySelectorAll('[data-drop]')) delete row.dataset.drop;
+    }
+
+    _dragEvents(row, path, node) {
+        if (!this.dragEnabled) return;
+        row.draggable = !this.fixedPaths.includes(path);
+        row.addEventListener('dragstart', event => {
+            if (!row.draggable || event.target.closest('button')) { event.preventDefault(); return; }
+            event.stopPropagation();
+            this._drag = {path, node};
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('application/x-gramlot-source', this._subId);
+        });
+        const placement = event => {
+            const rect = row.getBoundingClientRect();
+            const fraction = (event.clientY - rect.top) / rect.height;
+            return this.fixedPaths.includes(path) ? 'inside' : fraction < .25 ? 'before' : fraction > .75 ? 'after' : 'inside';
+        };
+        const valid = () => this._drag && this._drag.path !== path && !path.startsWith(this._drag.path + '.');
+        row.addEventListener('dragover', event => {
+            if (!valid()) return;
+            event.preventDefault(); event.stopPropagation();
+            event.dataTransfer.dropEffect = 'move';
+            this._clearDrop();
+            row.dataset.drop = placement(event);
+        });
+        row.addEventListener('dragleave', () => { delete row.dataset.drop; });
+        row.addEventListener('drop', event => {
+            event.preventDefault(); event.stopPropagation();
+            this._clearDrop();
+            if (!valid() || event.dataTransfer.getData('application/x-gramlot-source') !== this._subId) return;
+            const source = this._drag;
+            this._drag = null;
+            if (this._store.getNode(source.path) !== source.node) return;
+            this.dispatchEvent(new this.ownerDocument.defaultView.CustomEvent('tree-drop', {
+                bubbles: true, composed: true, detail: {path: source.path, destination: path, placement: placement(event)},
+            }));
+        });
+        row.addEventListener('dragend', () => { this._drag = null; this._clearDrop(); });
     }
 
     _markSelection() {

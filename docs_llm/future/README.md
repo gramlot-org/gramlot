@@ -8,6 +8,8 @@ implemented/released work; it links here for future topics.
 
 ## Workstreams listed by the owner
 
+**Container investigation, 2026-10-18:** legacy/Dojo and PoC analysis and proposed 0.4 contract are prepared in private gramlot-meta, GM-035. The owner requires CSS-first presentation that retains the same content tree. Detailed APIs remain proposed; see [GC-070 §1230](../internal/070-work-status.md#gc-070-1230) for verification and pending work.
+
 **Component delivery, 2026-10-17:** the approved input, labelbox, layout, command and validation increments are implemented and qualified. [GC-245 §110](245-components-0-3-plan.md#gc-245-110) separates the delivered scope from deferred work; release authorization and publication receipts live in GC-070. Earlier proposals remain historical evidence.
 
 **Current checkpoint, 2026-10-15:** local publish/subscribe, direct-frame messaging,

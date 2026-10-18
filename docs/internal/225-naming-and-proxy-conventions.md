@@ -207,6 +207,18 @@ roots are `data` and `source`, modes are `debugger` and `console`, following the
 DevTools tool's existing vocabulary. No new core proxy or public event is added.
 
 
+The owner-approved 2026-10-18 structural inspector increment retains these conventions:
+`InspectorHistory` / `inspector-history.js` follows the existing InspectorStyles class/file
+pattern. Local `history` and `insert` Data paths and camelCase Logic methods describe
+tool-owned state. Commands `catalog`, `insert`, `remove`, `move`, `undo`, `redo` extend
+the explicit bridge protocol; `history` reports available operation labels. The tree
+adds `dragEnabled`, `fixedPaths`, `revealPath` and `rowActions.position` (`start`/`end`)
+and `hiddenPaths`, following its existing property vocabulary. `tree-drop` extends
+`tree-action` with `{path, destination, placement}` (`before`/`inside`/`after`).
+`application/x-gramlot-source` identifies an internal native drag, not a serialized
+Source or a public transfer format. These are tool contracts, not core proxies.
+
+
 <a id="gc-225-035"></a>
 
 ## 035 · Provisional inspector components
@@ -647,3 +659,54 @@ Retain legacy `validate_<rule>`, `validate_<rule>_if`, `_error`, `_warning`, `_i
 The legacy remote observation callback retains `validate__onResult` (double underscore); it follows the same activated/named callback policy. Internal `validationRules` and `validationParameters` share rule ordering and generated grammar. `componentContext` connects controls to existing services; `commitComponent` handles synchronous/asynchronous acceptance without adding a Data writer.
 
 `validateSelection` is the component-owned selection-integrity check; constrained choice editors implement it, and other controls reject an explicit validate_select rather than silently ignoring it.
+
+
+Border layout (owner-authorized, 2026-10-18): BorderContainer/contentPane declarations use borderContainer/contentPane and gramlot-border-container/gramlot-content-pane in layout. Container is the existing shared slotted base, extracted to container.js. border-container.js owns region geometry and separators. projectBorderChild is the renderer projection boundary for parent-owned region metadata; borderRegions is an internal WeakMap, not a public DOM/Data proxy. projectRegion refreshes a region from resolved Source attributes. splitter_* and drawer_* use the existing style adaptation; drawer_class is the verified legacy spelling. Theme roles use --gramlot-splitter-size/background/hover and --gramlot-drawer-background/color; existing touch target and radius/focus tokens apply. Internal region and separator elements use ordinary shadow classes/data attributes, with no new application events or stores.
+
+Border projection crosses independently bundled runtime/collection modules through `BorderContainer`'s registered DOM class static `projectChild` method. Its internal `borderRegions` WeakMap remains collection-owned; the renderer never imports a second copy of that state. `projectBorderChild` is an internal collection helper, not a public export.
+
+Border visual refinement (owner, 2026-10-18): existing `rounded` style macro remains the single authoring API, with ordinary Data bindings. Drawer theme roles add `--gramlot-drawer-font-size` and `--gramlot-drawer-padding`; labeled handles use internal `data-labelled`. Shared popup geometry accepts internal `inset` (pixels, default zero); choice menus use the theme token `--gramlot-choice-popup-inset` (2px default). These are presentation settings, not new Data stores or widget modes.
+
+Owner refinement, 2026-10-18: drawer_title uses the existing native title attribute through drawer_* projection. Unlabelled defaults use a thin grip and a tooltip; theme touch targets enlarge hit areas rather than visible geometry. No new public parameters.
+
+Drawer drag refinement: internal captureTarget is the pointer capture owner (separator or drawer); suppressDrawerClick distinguishes the release click from ordinary activation. Both belong to the existing per-region pointer lifecycle, with no new authoring parameters or Data state.
+
+Drawer reopening/hover refinement (owner, 2026-10-18): internal data-resizable on the existing drawer reflects splitter capability independently of open/closed geometry. Hover growth uses CSS transforms anchored at the joined edge, with reduced-motion support; no public parameter or Data proxy is added.
+
+Owner-authorized drawer presentations (2026-10-18): drawer_class accepts shared presentation classes drawer-rotated and drawer-reveal. Existing drawer_label supplies text/markup, including an emoji; internal drawer-label span separates label clipping/fade from the pointer target. Theme roles under --gramlot-drawer- add thickness, length, opacity, active-opacity, hover-cross-scale, hover-length-scale, label-hover-scale, duration, easing, hit-target, label-offset, reveal-width, reveal-height and reveal. The numeric reveal token is 1 for always-visible touch labels and 0 for hover-only labels; existing page touch mode supplies it. Internal --drawer-open and --drawer-closed-width/height compute presentation only. No extra widget parameter or application state.
+
+Drawer contrast refinement (owner, 2026-10-18): internal --drawer-background resolves the existing public background token once; CSS relative HSL derives white captions on dark fills and dark gray on light fills. The existing color token remains an explicit override. Reveal grips have no border, inset stroke or focus outline; keyboard focus reveals/enlarges the caption.
+
+Owner-approved icon separation (2026-10-18): drawer_icon is independent from drawer_label, follows drawer_* Source projection, and uses a stable internal drawer-icon span with data-icon presence marker. --gramlot-drawer-icon-size sets its visible square and resting handle size. drawer-reveal hides only the label. Existing --gramlot-drawer-label-hover-scale also controls reveal zoom; 1 disables scaling without disabling expansion.
+
+Owner-confirmed drawer defaults (2026-10-18): drawer_minimize is a boolean parent-owned Source parameter, default true (owner revision 2026-10-18), consumed alongside drawer_label/icon. Internal drawer-reveal and drawer-rotated classes are now derived from minimize and region axis; applications need neither class for normal authoring. Internal --drawer-reveal-width/height resolve orientation-specific defaults before existing public theme overrides.
+
+
+Drawer mobile correction (owner, 2026-10-18): the existing reveal token controls caption availability, not forced expanded dimensions at rest. Intrinsic caption geometry is bounded by the existing reveal dimensions; hover/focus/press retain expanded geometry and zoom. Internal data-active on the drawer is transient pointer-pressed presentation, cleared on release/cancel/lost capture or uncaptured leave; it compensates for touch browsers clearing :active during capture. No new authoring parameter, Data state or layout policy.
+
+
+Border notifications (owner-confirmed 2026-10-18): closable_change retains the legacy topic spelling and extends it to drawers; splitter_resize is the explicitly approved completion topic. Source node_id prefixes topics through existing publishNode routing. Payload names open/region and region/size/previousSize are the reviewed contract. Internal projectBorderChild notification callbacks closableChange/splitterResize follow the existing camelCase callback boundary; the component has no subscription service dependency. #commitResize shares keyboard/pointer completion, and per-region visibility records the last projected open/drawer state to suppress initial/no-op notifications. No new global event bus or proxy.
+
+
+Tab/stack (owner-approved 2026-10-18): authoring names tabContainer/stackContainer and tags gramlot-tab-container/gramlot-stack-container follow the established component naming. SelectedContainer is the shared slotted container factory; StackContainer and TabContainer are declarations. Parent-owned pageName/title/closable/onClose describe child panels. selectedPage and selected retain legacy selection spelling; hiding/showing/selected retain legacy topics, closing/closed are reviewed additions. Internal selectionPanels WeakMap and static projectChild follow border projection across bundles. setSelectionContext supplies Source-only publish/writeSelection/remove/allowClose callbacks; the component owns visibility, selection and tab interaction. Named shadow slots and panel viewport records preserve light DOM identity. No alternate event bus, application state cache or new public proxy. --gramlot-tab-* CSS tokens cover strip gap, padding, background, selected background/color and border.
+
+Tab presentation refinement (owner request, 2026-10-18): extend the existing --gramlot-tab-* family with height, radius, strip-padding, color and hover-background. Themes own density and palette; the selected entry is styled through its existing aria-selected tab, including its close control. No selection protocol or public component parameter changes.
+
+Tab presentation (owner-confirmed 2026-10-18): tabMode/tabPosition are read-bound enum parameters of tabContainer. Panel icon/badge/badge_color are resolved parent-owned metadata; badge accepts a number or text, null/empty hides it and zero remains visible. Internal data-mode/data-position on the selection wrapper drive CSS geometry; icon/caption/badge spans update in place. aria-orientation follows the strip axis. Extend --gramlot-tab-* theme tokens with content-gap, side-width, indicator-color, indicator-size, badge-background, badge-color, badge-size and badge-padding. No selection-state cache or new publication.
+
+
+Gallery container composition (owner request, 2026-10-18): mountIndexPage accepts the explicit internal option containerLayout for indexes whose Navigation and Code panes belong to a borderContainer. data-index-regions identifies that container; pane node_id values scope the existing closable_change subscriptions. No new component parameter or event is introduced. The Python gallery uses the existing gallery-/index- DOM prefixes; Example and Explanation are tabContainer panel titles.
+
+
+Guided gallery preview (owner-authorized 2026-10-18): gallery-guide.js and GuidedDemo are gallery-owned teaching support, not a core service. galleryGuide is the gallery Data scope; steps carry title, text, changes and seconds. Changes map explicit example Data paths to values. galleryGuidePlay/Pause/Stop/Previous/Next node_id values publish the existing Source-local command topic. galleryGuidePanel_closable_change pauses when the teaching drawer closes; galleryGuidePreview_selected observes the existing selected event to pause on Explanation. Source IDs and CSS use gallery-guide-; no new application proxy, synthetic DOM event or arbitrary-code step.
+
+Drawer content grouping (owner 2026-10-18): internal drawer-content wraps drawer-icon and drawer-label as one clipped/revealed presentation. Both follow drawer_minimize. The existing --gramlot-drawer-icon-size controls glyph size (default 1em), not a reserved square/hit area. Thickness and hit-target tokens retain their separate responsibilities.
+
+
+Review consolidation (owner instruction, 2026-10-18): internal component declaration metadata childParameters describes parent-owned child constraints (required, enum, unique) and inline callback arguments. sourceContext marks components using the existing Source callback boundary, renamed setSourceContext; projectChild receives one context object (adapt, invoke, publish, publishParent, remove). This consolidates the approved container-specific callbacks, without adding an authoring API. Internal drawer-viewport clips the intrinsic drawer-content while preserving the outer hit target; ResizeObserver supplies --drawer-content-width/height, and explicit reveal limits remain overrides. galleryGuide.executed tracks the last applied step separately from position (the explanation being reviewed). Inspector insertion fields are generated from required childParameters, with no implicit region choice.
+
+
+Gallery selection consolidation (owner-approved review repair, 2026-10-18): galleryIndex is the single Data scope for active page, opened pages, mobile view/menu and appearance/label preferences. mountIndexPage receives it through the explicit state option. Open-page and source-file tabs use tabContainer/contentPane. --gallery-narrow is the gallery-owned CSS breakpoint flag read by responsive presentation; --gramlot-tab-strip-display controls the outer strip without hiding nested preview strips. The existing HTML IndexPage remains supported by its own declared composition.
+
+
+Tab alignment (owner-confirmed 2026-10-18): tabAlign follows tabMode/tabPosition camelCase authoring conventions; enum start/center/end, default start, read-bound. The internal selection wrapper uses data-align to drive strip justification. Overflow uses safe alignment, preserving access to the first entry when the strip is too small. No new proxy or selection state.

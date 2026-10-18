@@ -36,7 +36,8 @@ function domPropertyName(name) {
  * names and style arrive adapted by the renderers (GramlotHtmlRenderer, GramlotSvgRenderer).
  */
 export class HtmlElement {
-    constructor({metadataAttributes = []} = {}) {
+    constructor({metadataAttributes = [], invokeScript = null} = {}) {
+        this.invokeScript = invokeScript;
         this.metadataAttributes = new Set([...META_ATTRS, '_text', ...metadataAttributes]);
     }
 
@@ -90,6 +91,17 @@ export class HtmlElement {
                 return node.getRelativeData('.');
             };
         }
+        if (meta.gramlot_component?.sourceContext) {
+            element.setSourceContext({
+                publish: (topic, payload) => node.publish(topic, payload),
+                writeParameter: (name, value) => {
+                    const pointer = node.getAttr(name);
+                    if (node.pointerType(pointer) === '^' && !Object.is(node.getRelativeData(pointer.slice(1)), value)) {
+                        node.setRelativeData(pointer.slice(1), value);
+                    }
+                },
+            });
+        }
         const text = document.createTextNode(this.text(node));
         if (namespace !== XHTML_NS || !meta.void) element.append(text);
         const record = {element, text, tag};
@@ -119,12 +131,24 @@ export class HtmlElement {
         const isHtml = element.namespaceURI === XHTML_NS;
         const renderAttributes = this.definition(node).meta.render_attributes ?? {};
         const previous = record.attrs ?? {};
-        if (this.definition(node).meta.gramlot_component) {
-            attrs = element.projectAttributes(attrs, values => {
-                requireNoScriptAttributes(node, values, node.builder.constructor.dialectPrefixes);
-                requireStyleClassAttributes(node, values, node.builder.constructor.dialectPrefixes);
-                return node.builder.renderer_html.adaptAttrs(values);
+        const adapt = values => {
+            requireNoScriptAttributes(node, values, node.builder.constructor.dialectPrefixes);
+            requireStyleClassAttributes(node, values, node.builder.constructor.dialectPrefixes);
+            return node.builder.renderer_html.adaptAttrs(values);
+        };
+        const parent = node.parentNode;
+        if (parent?._getMeta('gramlot_component')?.childParameters) {
+            const Parent = element.ownerDocument.defaultView.customElements.get(parent._getMeta('render_tag'));
+            attrs = Parent.projectChild(element, attrs, {
+                adapt,
+                invoke: (name, code, keywords) => this.invokeScript(node, name, code, keywords),
+                publish: (topic, payload) => node.publish(topic, payload),
+                publishParent: (topic, payload) => parent.publish(topic, payload),
+                remove: () => node.parentBag.popNode(node.label),
             });
+        }
+        if (this.definition(node).meta.gramlot_component) {
+            attrs = element.projectAttributes(attrs, adapt);
         }
         attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...renderAttributes}));
         const controlled = ControlAdapter.classFor(element, attrs) !== null;

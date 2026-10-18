@@ -1,6 +1,15 @@
 /* Gramlot adaptation of legacy mimi; load after Base and Compact. */
 @layer gramlot.tokens {
   :root {
+    --gramlot-tab-height: 24px;
+    --gramlot-tab-padding: 3px 10px;
+    --gramlot-tab-radius: 3px;
+    --gramlot-tab-gap: 2px;
+    --gramlot-tab-strip-padding: 3px;
+    --gramlot-tab-background: var(--gramlot-background);
+    --gramlot-tab-selected-background: var(--gramlot-surface);
+    --gramlot-tab-selected-color: var(--gramlot-ink);
+    --gramlot-tab-border: var(--gramlot-border);
     --gramlot-background: #EDEEF0;
     --gramlot-surface: #F5F5F6;
     --gramlot-surface-subtle: #E0E1E3;

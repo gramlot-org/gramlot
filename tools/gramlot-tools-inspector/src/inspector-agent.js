@@ -1,5 +1,6 @@
 /** Shared page-side inspector; the supplied page owns its Bag and runtime. */
 import {scalarType, readParameterEnums} from './editor-values.js';
+import {InspectorHistory} from './inspector-history.js';
 import {InspectorStyles} from './inspector-styles.js';
 
 const roots = ['data', 'source'];
@@ -30,6 +31,7 @@ export function attachInspectorAgent(gramlot, port) {
     const document = gramlot.src.renderer.destination.ownerDocument;
     const window = document.defaultView;
     const styles = new InspectorStyles(document);
+    const history = new InspectorHistory(gramlot);
     const subscriber = `inspector-bridge-${window.crypto.getRandomValues(new Uint32Array(4)).join("-")}`;
     const identities = new WeakMap();
     const versions = new WeakMap();
@@ -56,7 +58,7 @@ export function attachInspectorAgent(gramlot, port) {
         });
     };
     const snapshot = () => ({data: describe(bag('data'), 'data'), source: describe(bag('source'), 'source'),
-        breakpoints: [...breakpoints.values()].map(({test, ...record}) => record)});
+        breakpoints: [...breakpoints.values()].map(({test, ...record}) => record), history: history.state});
     const send = data => { if (!stopped) port.postMessage(data); };
     const flush = () => {
         if (scheduled || stopped) return;
@@ -113,8 +115,7 @@ export function attachInspectorAgent(gramlot, port) {
             value = decodeScalar(command.value);
         }
         // Decode and validate the entire command before the first real write.
-        if (command.set.length || command.remove.length) node.setAttr(attrs, true, false, false);
-        if (Object.hasOwn(command, 'value')) node.setValue(value);
+        history.edit(node, attrs, value, !!(command.set.length || command.remove.length), Object.hasOwn(command, 'value'));
     };
     const setBreakpoint = command => {
         bag(command.root);
@@ -137,10 +138,28 @@ export function attachInspectorAgent(gramlot, port) {
                 send({type: 'result', id: message.id, ok: true, styles: styles.snapshot()});
                 return;
             }
-            if (message.type === 'edit') edit(message.command);
+            let selection;
+            if (message.type === 'catalog') {
+                send({type: 'result', id: message.id, ok: true, catalog: history.catalog(message.command.path)});
+                return;
+            }
+            if (['insert', 'remove', 'move'].includes(message.type)) {
+                const command = message.command, node = bag('source').getNode(command.path);
+                if (!node || identity(node) !== command.nodeId || (versions.get(node) ?? 0) !== command.revision) throw new Error('Source node changed. Select it again.');
+                if (message.type === 'insert') selection = history.insert(command.path, command.tag, command.attrs);
+                if (message.type === 'remove') selection = history.remove(command.path);
+                if (message.type === 'move') {
+                    const target = bag('source').getNode(command.destination);
+                    if (!target || identity(target) !== command.targetId || (versions.get(target) ?? 0) !== command.targetRevision) throw new Error('Drop target changed. Try again.');
+                    selection = history.move(command.path, command.destination, command.placement);
+                }
+            }
+            else if (message.type === 'undo') history.undo();
+            else if (message.type === 'redo') history.redo();
+            else if (message.type === 'edit') edit(message.command);
             else if (message.type === 'breakpoint') setBreakpoint(message.command);
             else if (message.type !== 'refresh') throw new Error(`Unknown inspector command: ${message.type}`);
-            send({type: 'result', id: message.id, ok: true, snapshot: snapshot()});
+            send({type: 'result', id: message.id, ok: true, selection, snapshot: snapshot()});
         } catch (error) { send({type: 'result', id: message.id, ok: false, error: error.message}); }
     };
     function dispose() {
@@ -149,6 +168,7 @@ export function attachInspectorAgent(gramlot, port) {
         stopped = true;
         for (const root of roots) bag(root).unsubscribe(subscriber, {any: true});
         breakpoints.clear();
+        history.clear();
         styles.dispose();
         port.removeEventListener('message', receive);
         window.removeEventListener('pagehide', dispose);

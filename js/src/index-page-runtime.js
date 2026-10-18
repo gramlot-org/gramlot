@@ -3,7 +3,7 @@ import {appearanceStyles} from './index-page-styles.js';
 import {THEME_READY, THEME_SET, THEMES, APPEARANCES} from './index-theme.js';
 
 /** Index-page behavior; writes UI state through the existing Source records. */
-export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEntry = () => {}) {
+export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEntry = () => {}, {containerLayout = false, state: suppliedState = null} = {}) {
     const shell = renderer.records.get(root).element;
     const document = shell.ownerDocument;
     const window = document.defaultView;
@@ -37,7 +37,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
     restoreChoice(appearance, preferences.appearance, APPEARANCES);
     const families = [...shell.querySelectorAll('.index-sidebar details')];
     const Bag = root.builder.data.constructor;
-    const state = new Bag();
+    const state = suppliedState ?? new Bag();
     const opened = new Bag();
     state.setItem('opened', opened);
     state.setItem('keyboard', (keyboard?.checked ?? false));
@@ -99,38 +99,45 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
     const updatePanels = () => {
         if (navigationToggle) {
             const visible = state.getItem('navigationVisible');
-            set(sidebar, {hidden: !visible});
-            set(sidebarHandle, {hidden: !visible});
+            set(sidebar, containerLayout ? {drawer: visible ? true : 'close'} : {hidden: !visible});
+            if (!containerLayout) set(sidebarHandle, {hidden: !visible});
             set(navigationToggle, {aria_expanded: String(visible)});
             set(shell, {data_navigation_hidden: String(!visible)});
         }
         if (codeSidebar) {
             const available = Boolean(entries.get(state.getItem('active'))?.code);
             const visible = available && state.getItem('codeVisible');
-            set(codeSidebar, {hidden: !visible});
-            set(codeHandle, {hidden: !visible});
+            set(codeSidebar, containerLayout ? {hidden: !available, drawer: visible ? true : 'close'} : {hidden: !visible});
+            if (!containerLayout) set(codeHandle, {hidden: !visible});
             set(codeToggle, {disabled: !available, aria_expanded: String(visible)});
             set(shell, {data_code_visible: String(visible)});
         }
     };
+    let selecting = false;
     function select(key) {
-        const entry = entries.get(key);
-        if (!opened.getItem(key)) {
-            opened.setItem(key, true);
-            set(entry.tab, {hidden: false});
-            if (entry.frame) set(entry.frame, {src: entry.open.getAttribute('href')});
-        }
-        if (entry.family) set(entry.family, {open: true});
-        for (const [current, item] of entries) {
-            const active = current === key;
-            set(item.tab, {aria_selected: String(active), tabindex: active && state.getItem('keyboard') ? 0 : -1});
-            set(item.panel, {hidden: !active});
-            if (item.code) set(item.code, {hidden: !active});
-            if (item.open) set(item.open, {aria_current: active ? 'page' : null});
-        }
-        state.setItem('active', key);
-        updatePanels();
-        updateInspector();
+        if (selecting) return;
+        selecting = true;
+        try {
+            const entry = entries.get(key);
+            if (!opened.getItem(key)) {
+                opened.setItem(key, true);
+                set(containerLayout ? entry.panel : entry.tab, {hidden: false});
+                if (entry.frame) set(entry.frame, {src: entry.open.getAttribute('href')});
+            }
+            if (entry.family) set(entry.family, {open: true});
+            for (const [current, item] of entries) {
+                const active = current === key;
+                if (!containerLayout) {
+                    set(item.tab, {aria_selected: String(active), tabindex: active && state.getItem('keyboard') ? 0 : -1});
+                    set(item.panel, {hidden: !active});
+                }
+                if (item.code) set(item.code, {hidden: !active});
+                if (item.open) set(item.open, {aria_current: active ? 'page' : null});
+            }
+            if (state.getItem('active') !== key) state.setItem('active', key);
+            updatePanels();
+            updateInspector();
+        } finally { selecting = false; }
     }
     const sidebarMaximum = () => Math.max(120, Math.min(460, Math.floor(window.innerWidth * .6)));
     const applyWidths = () => set(shell, {style: `--sidebar-width: ${state.getItem('sidebarWidth')}px; --code-width: ${state.getItem('codeWidth') ?? 420}px`});
@@ -197,11 +204,38 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         }
         set(shell, {data_resizing: null});
         // Retain the preferred width when a narrow viewport temporarily limits the visible sidebar.
-        const savedWidth = preferences.sidebarWidth;
-        const width = typeof savedWidth === 'number' && Number.isFinite(savedWidth) && savedWidth >= 120 && savedWidth <= 460
-            ? savedWidth : sidebar.getBoundingClientRect().width || Number(sidebarHandle.getAttribute('aria-valuenow'));
-        state.setItem('preferredSidebarWidth', width);
-        setSidebarWidth(width);
+        if (!containerLayout) {
+            const savedWidth = preferences.sidebarWidth;
+            const width = typeof savedWidth === 'number' && Number.isFinite(savedWidth) && savedWidth >= 120 && savedWidth <= 460
+                ? savedWidth : sidebar.getBoundingClientRect().width || Number(sidebarHandle.getAttribute('aria-valuenow'));
+            state.setItem('preferredSidebarWidth', width);
+            setSidebarWidth(width);
+        } else {
+            const gramlot = renderer.binding.gramlot;
+            for (const [pane, property, widthProperty] of [[sidebar, 'navigationVisible', 'sidebarWidth'], [codeSidebar, 'codeVisible', 'codeWidth']]) {
+                const source = node(pane);
+                const savedWidth = preferences[widthProperty];
+                if (typeof savedWidth === 'number' && Number.isFinite(savedWidth) && savedWidth > 0) set(pane, {width: `${savedWidth}px`});
+                const handle = gramlot.subscribe(`${source.getAttr('node_id')}_closable_change`, ({open}) => {
+                    if (source.getAttr('hidden') === true || source.getAttr('drawer') === false) return;
+                    state.setItem(property, open);
+                    set(pane, {drawer: open ? true : 'close'});
+                    set(property === 'navigationVisible' ? navigationToggle : codeToggle, {aria_expanded: String(open)});
+                    set(shell, {[property === 'navigationVisible' ? 'data_navigation_hidden' : 'data_code_visible']: String(property === 'navigationVisible' ? !open : open)});
+                    savePreferences();
+                });
+                releases.push(() => gramlot.unsubscribe(handle));
+            }
+            const border = shell.querySelector('[data-index-regions]');
+            const handle = gramlot.subscribe(`${node(border).getAttr('node_id')}_splitter_resize`, ({region, size}) => {
+                set(region === 'left' ? sidebar : codeSidebar, {width: size});
+                state.setItem(region === 'left' ? 'preferredSidebarWidth' : 'preferredCodeWidth', Number.parseFloat(size));
+                savePreferences();
+            });
+            releases.push(() => gramlot.unsubscribe(handle));
+            state.setItem('preferredSidebarWidth', preferences.sidebarWidth);
+            state.setItem('preferredCodeWidth', preferences.codeWidth);
+        }
         listen(navigationToggle, 'click', () => {
             state.setItem('navigationVisible', !state.getItem('navigationVisible'));
             updatePanels();
@@ -212,7 +246,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             updatePanels();
             savePreferences();
         });
-        if (codeHandle) {
+        if (!containerLayout && codeHandle) {
             const saved = preferences.codeWidth;
             const width = typeof saved === 'number' && Number.isFinite(saved) && saved >= 200 ? saved : 420;
             state.setItem('preferredCodeWidth', width);
@@ -232,31 +266,34 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             });
             listen(window, 'resize', () => setCodeWidth(state.getItem('preferredCodeWidth')));
         }
-        listen(sidebarHandle, 'keydown', event => {
-            const current = state.getItem('sidebarWidth');
-            const value = event.key === 'ArrowLeft' ? current - 10 : event.key === 'ArrowRight' ? current + 10
-                : event.key === 'Home' ? 120 : event.key === 'End' ? sidebarMaximum() : null;
-            if (value == null) return;
-            event.preventDefault();
-            setSidebarWidth(value, true);
-        });
-        listen(sidebarHandle, 'pointerdown', event => beginDrag(sidebarHandle, event,
-            x => setSidebarWidth(Math.round(x - shell.getBoundingClientRect().left), true)));
-        listen(sidebarHandle, 'lostpointercapture', () => {
-            if (drag?.handle === sidebarHandle) stopDrag();
-        });
-        listen(window, 'resize', () => setSidebarWidth(state.getItem('preferredSidebarWidth')));
-        for (const tab of shell.querySelectorAll('.index-tabs button')) {
-            const key = tab.id.slice('tab-'.length);
+        if (!containerLayout) {
+            listen(sidebarHandle, 'keydown', event => {
+                const current = state.getItem('sidebarWidth');
+                const value = event.key === 'ArrowLeft' ? current - 10 : event.key === 'ArrowRight' ? current + 10
+                    : event.key === 'Home' ? 120 : event.key === 'End' ? sidebarMaximum() : null;
+                if (value == null) return;
+                event.preventDefault();
+                setSidebarWidth(value, true);
+            });
+            listen(sidebarHandle, 'pointerdown', event => beginDrag(sidebarHandle, event,
+                x => setSidebarWidth(Math.round(x - shell.getBoundingClientRect().left), true)));
+            listen(sidebarHandle, 'lostpointercapture', () => {
+                if (drag?.handle === sidebarHandle) stopDrag();
+            });
+            listen(window, 'resize', () => setSidebarWidth(state.getItem('preferredSidebarWidth')));
+        }
+        const choices = containerLayout ? byId('index-pages').children : shell.querySelectorAll('.index-tabs button');
+        for (const tab of choices) {
+            const key = tab.id.slice(containerLayout ? 'panel-'.length : 'tab-'.length);
             const entry = {key, tab, panel: byId(`panel-${key}`),
                 code: byId(`codepane-${key}`),
                 open: key === 'intro' ? null : byId(`open-${key}`)};
             entries.set(key, entry);
-            if (!tab.hidden) opened.setItem(key, true);
-            if (tab.getAttribute('aria-selected') === 'true') state.setItem('active', key);
-            listen(tab, 'click', () => select(key));
+            if (containerLayout ? node(tab).getAttr('hidden') !== true : !tab.hidden) opened.setItem(key, true);
+            if (!containerLayout && tab.getAttribute('aria-selected') === 'true') state.setItem('active', key);
+            if (!containerLayout) listen(tab, 'click', () => select(key));
             if (entry.open) listen(entry.open, 'click', event => { event.preventDefault(); select(key); });
-            listen(tab, 'keydown', event => {
+            if (!containerLayout) listen(tab, 'keydown', event => {
                 if (!state.getItem('keyboard') || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
                 const keys = [...entries.keys()].filter(key => opened.getItem(key));
                 const index = keys.indexOf(key);
@@ -273,6 +310,13 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             entry.frame = byId(`frame-${key}`);
             listen(entry.frame, 'load', () => send(entry.frame));
         }
+        if (containerLayout) {
+            const subscription = `${shell.id}-selection`;
+            state.subscribe(subscription, {any: event => {
+                if (event.node === state.getNode('active')) select(state.getItem('active'));
+            }});
+            releases.push(() => state.unsubscribe(subscription, {any: true}));
+        }
         listen(document, 'pointermove', event => {
             if (!drag || event.pointerId !== drag.pointerId) return;
             drag.move(event.clientX);
@@ -286,7 +330,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             set(keyboard, {checked: (keyboard?.checked ?? false)});
             for (const [key, entry] of entries) {
                 if (entry.open) set(entry.open, {tabindex: (keyboard?.checked ?? false) ? 0 : -1});
-                set(entry.tab, {tabindex: (keyboard?.checked ?? false) && key === state.getItem('active') ? 0 : -1});
+                if (!containerLayout) set(entry.tab, {tabindex: (keyboard?.checked ?? false) && key === state.getItem('active') ? 0 : -1});
             }
         });
         listen(appearance, 'change', () => {

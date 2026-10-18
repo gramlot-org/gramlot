@@ -932,3 +932,251 @@ DB/grid integrations arrive. Try **w25 · Validation rules and callbacks** along
 **w18 · Required values and length**.
 
 A literal regular expression starting with `^` must be enclosed, for example `(?:^[A-Z]+$)`, because a leading `^` is a Data pointer in Source. This is ordinary regex grouping, not another validation syntax; `validate_regex="^.pattern"` deliberately reads a pattern from Data.
+
+<a id="gc-105-100"></a>
+## 100 · Border regions, live splitters and drawers
+
+Development increment targeting 0.3.2, in the `layout` collection. The same
+collection declaration activates `borderContainer` and `contentPane` in Python
+and JavaScript. Give the container a bounded height, or place it in a bounded
+parent region. Each direct visual child has one `region`: `top`, `bottom`, `left`,
+`right` or `center`, with at most one child per region.
+
+```python
+border = pane.borderContainer(height="420px", design="headline")
+left = border.contentPane(region="left", width="180px", splitter=True,
+                          minSize=100, maxSize=320, drawer=True,
+                          drawer_label="Filters", drawer_top="12px",
+                          drawer_margin_top="0", drawer_width="44px",
+                          drawer_height="24px")
+left.textbox(value="^.filter", lbl="Filter", width="100%")
+center = border.contentPane(region="center", padding="16px")
+center.textBoxArea(value="^.notes", lbl="Notes", rows=4)
+border.contentPane(region="bottom", height="100px", splitter=True,
+                   drawer="close", drawer_label="Output").p("^.notes")
+```
+
+`design="headline"` gives top and bottom the whole width; `"sidebar"` gives left
+and right the whole height. Design and ordinary regional attributes can use Data
+pointers. A nested `borderContainer(region="center")` uses the same regional
+contract as a contentPane. Width controls left/right; height controls top/bottom;
+the center receives the remaining space. Normal CSS lengths are accepted.
+
+`splitter=True` enables continuous pointer/touch resizing and arrow-key resizing.
+`minSize` and `maxSize` are numeric pixel drag limits. There is no `liveSplitters`
+option: resizing is always live. `splitter_width` sets a vertical separator's
+thickness, `splitter_height` a horizontal separator's thickness;
+`splitter_background`, `splitter_style` and other ordinary styling attributes use
+the shared style projection. Explicit individual styles override the style string.
+The `splitter_*` namespace is a Gramlot addition, not a claimed legacy API.
+
+`drawer=True` starts open; `drawer="close"` starts closed. A drawer also works
+with `splitter=False`: its handle toggles a fixed-size region. `drawer_label`
+provides the handle's HTML label; `drawer_top`, `drawer_left`, `drawer_width`,
+`drawer_height`, margins, `drawer_style` and `drawer_class` customize it. Keep the
+handle within the container's visible bounds. `drawer_onclick` is an activated
+Source script with `evt` and `show` (the new visible state), and the region's Source
+node as `this`. For example, `drawer_onclick="this.setRelativeData('.open', show);"`
+explicitly reports the UI state to Data. Closing does not automatically rewrite
+an application's data or its authored `drawer` attribute.
+
+Optional `persist=True` requires a stable container `id` and remembers resized
+pixel sizes in same-origin session cookies, as a presentation preference. It does
+not persist business Data or drawer visibility. A changed authored width/height
+supersedes the previous drag size during the mounted page's lifetime.
+
+Layout and drawer changes operate on CSS tracks and visibility. They do not
+remove, move or recreate content nodes: drafts (including invalid text), Data,
+nested components and iframe browsing contexts stay intact. Resizing to a narrow
+viewport uses the same content and touch targets; no automatic mobile drawer
+policy is imposed. Themes can set `--gramlot-splitter-size`,
+`--gramlot-splitter-background`, `--gramlot-splitter-hover`,
+`--gramlot-drawer-color` and `--gramlot-drawer-background`.
+
+Try gallery **l01 · Border regions and drawers** and **l02 · Nested borders and
+layout designs**. Tab/stack selection is described in §110 below; framePane and application-level region
+state orchestration remain separate increments.
+
+Gallery **l03 · Rounded borders and popups** binds the existing `rounded="^rounded"` style macro
+on both outer and nested borders to one live slider. Numeric values are pixels;
+zero removes rounding. The shared value changes both outlines without replacing
+their DOM or Data. This is explicit binding, not implicit inheritance of a parent
+radius. Ordinary pane backgrounds are clipped at their
+container's rounded outline; internal region joints remain square. Drawer handles
+are placed toward the interior and remain reachable when a region closes. Calendar,
+choice and validation popovers use the native top layer, so the rounded ancestor
+does not clip them; the browser viewport (including an example iframe) still
+limits their placement. This uses the existing CSS/popover behavior, not an extra
+rounded mode or a separate mobile tree.
+
+Drawer handles follow the legacy attached-tab shape: corners on the protruding
+edge are rounded, and the edge joined to the separator has no border. Unlabelled
+handles are 4px thick and 28px long, with a tooltip (`drawer_title`, or the
+automatic open/close description). Splitters default to a 1px line. Invisible
+hit areas retain mouse/touch usability without enlarging the visible controls.
+Text is opt-in: `drawer_label` gives a compact text tab. Themes can adjust
+`--gramlot-drawer-font-size` and `--gramlot-drawer-padding`, while explicit
+`drawer_*` dimensions and placement still override defaults. The reference is
+GenroPy's `09_gnr_dialogs_forms.css` drawerHandle rules, not the browser's default
+button appearance.
+
+Choice editors and native selects use a neutral inset focus indicator instead
+of an outer blue ring. Gramlot choice popups are inset by 2px on each side of
+their field; themes can set `--gramlot-choice-popup-inset`. The native HTML
+select's operating-system popup is not restyled by this setting. Gallery border
+examples use filteringSelect for consistent choice popup rendering.
+
+A drawer handle also drags its splitter when `splitter=True`. Pulling a closed
+drawer towards the content reopens and sizes it, respecting minSize/maxSize;
+opening this way invokes drawer_onclick once with show=true. A click (including
+small pointer jitter) still toggles the drawer; releasing a drag does not toggle
+it or invoke drawer_onclick. Regions with splitter=False retain ordinary click
+activation.
+On hover, grips gently grow towards the content using a transform, without
+changing layout dimensions. Explicit labels grow more subtly. The transition
+respects prefers-reduced-motion.
+
+
+Drawer authoring requires no presentation class:
+
+```python
+# Small, always-visible caption; rotation follows the region.
+border.contentPane(region="left", width="120px", drawer=True,
+                   drawer_label="Filters", drawer_minimize=False)
+# Icon and text appear together on hover/focus.
+border.contentPane(region="top", height="48px", drawer=True,
+                   drawer_icon="⌕", drawer_label="Search", drawer_minimize=True)
+# A slim grip without an icon, initially closed.
+border.contentPane(region="right", width="120px", drawer="close",
+                   drawer_label="Details", drawer_minimize=True)
+```
+
+`drawer_minimize` is boolean, defaults to True and accepts Data bindings.
+With False, captions are visible and sized to their text; left/right captions
+rotate automatically, top/bottom remain horizontal. With True, the handle expands
+and fades in its caption on hover or keyboard focus. On touch the caption remains visible in a compact, text-sized handle at rest.
+Hover, keyboard focus and pointer press retain enlargement and zoom; release restores
+the compact touch presentation. The hit area remains large without enlarging the
+resting label. `drawer_icon` is an upright text symbol or emoji in the same flow
+as the caption. Minimize hides both together; no square icon slot remains at rest.
+`drawer_title` is its tooltip. Expanded side handles stay narrow and top/bottom
+handles stay shallow; their content determines length along the separator.
+
+Handles have a solid gray fill and no border, inset stroke or outline. Caption
+color is white on dark fills and dark gray on pale fills; explicit color overrides
+are supported. Multicolor emoji keep their own colors. Keyboard focus reveals
+minimized captions. Layout, Source, Data and content identity do not change.
+
+`drawer-reveal` and `drawer-rotated` are internal classes derived from these
+parameters, not required authoring settings. Optional CSS variables on an ancestor
+or in drawer_style customize the theme; explicit drawer dimensions still override.
+
+| CSS variable (prefix `--gramlot-drawer-`) | Default / role |
+| --- | --- |
+| `thickness`, `length` | `4px`, `28px`: plain resting grip |
+| `icon-size` | `1em`: glyph size, without a reserved square |
+| `content-gap` | `4px`: space between icon and caption |
+| `opacity`, `active-opacity` | `.45`, `1`: plain grip / active or readable caption |
+| `hover-cross-scale`, `hover-length-scale` | `1.75`, `1.12`: unlabelled grip zoom |
+| `label-hover-scale` | `1.04`: caption/icon zoom; `1` disables zoom only |
+| `duration`, `easing` | `.16s`, `ease-out`: growth and fade |
+| `font-size` | `11px`: compact caption and icon text |
+| `padding` | `2px 8px` horizontal, `8px 2px` vertical |
+| `hit-target` | `12px`: minimum mouse target; touch sizing takes precedence |
+| `reveal-width`, `reveal-height` | Intrinsic icon/text size including padding; optional explicit limits override the measured defaults |
+| `reveal` | `0` normally; `1` keeps minimized captions visible, as on touch |
+| `background`, `color` | Gray fill; automatic caption contrast unless overridden |
+
+Zoom and expansion are independent. Setting
+`drawer_style="--gramlot-drawer-label-hover-scale:1;"` disables zoom but still lets
+a minimized handle expand to reveal its text. Reduced-motion disables transitions.
+The Python gallery **l04 · Drawer icons and labels** demonstrates defaults and
+minimized captions without custom classes or CSS dimensions.
+
+
+<a id="gc-105-105"></a>
+## 105 · Border notifications
+
+Owner confirmed on 2026-10-18: closable_change applies to drawers and splitter_resize reports completed resizing. These use the existing Source-local publish/subscribe service, not a new DOM or global event bus.
+
+| Topic suffix | Publishing Source | Payload |
+| --- | --- | --- |
+| closable_change | The drawer's region/pane | open (boolean), region (top/bottom/left/right) |
+| splitter_resize | The borderContainer | region, size, previousSize (CSS pixel strings) |
+
+Give the emitter a node_id to subscribe by its stable qualified topic: filters_closable_change or workspace_splitter_resize. selfsubscribe on a controller addresses that controller, not its containing pane.
+
+closable_change fires after the region's effective visibility and handle state have changed. It covers handle activation, reopening through dragging, and reactive drawer/hidden changes. Initial mounting, unchanged visibility and teardown emit nothing. drawer_onclick remains the separately authored interaction callback. Neither notification writes application Data automatically.
+
+splitter_resize fires once after a pointer gesture ends (including cancellation/lost capture when the live size is retained), or after an effective arrow-key resize. Payload sizes are the measured before/after pixel extents; unchanged size emits nothing. It does not fire for every pointermove, an authored width/height change or window resize. Pointer capture and the drag cover are released before subscribers execute. regions-Bag writeback remains outside this increment.
+
+```python
+border = pane.borderContainer(node_id="workspace", height="360px")
+border.contentPane(node_id="filters", region="left", width="160px",
+                   splitter=True, drawer=True, drawer_label="Filters")
+border.contentPane(region="center")
+pane.dataController("this.SET('.filtersOpen', open)",
+                    subscribe_filters_closable_change=True)
+pane.dataController("this.SET('.lastRegion', region); this.SET('.lastSize', size)",
+                    subscribe_workspace_splitter_resize=True)
+```
+
+Payload fields are normal controller arguments; _reason is the qualified topic and _subscription_kwargs is the original payload. The current synchronous publish delivery and exception rules apply. Subscribers should not unconditionally toggle the same region back, which would create an application feedback loop. Geometry, drafts and mounted content keep their existing lifecycle.
+
+<a id="gc-105-110"></a>
+## 110. Stack and tab selection and closing
+
+Owner approved the reviewed contract and implementation on 2026-10-18, explicitly confirming that closable removes the panel from Source while preserving Data. This is a development increment; publication is separate.
+
+`stackContainer` and `tabContainer` share selection. Tab adds a scrollable, touch-aware tab strip (presentation and orientation: §115); stack creates no strip. A panel can be contentPane or a nested component/container. Selection changes only shadow viewport visibility; light DOM, Source, widget instances, invalid drafts and iframe contexts remain mounted in place.
+
+Use `selectedPage="^.page"` with a child's unique `pageName`, or `selected="^.index"` with a zero-based index. Both may be bound and are updated together without duplicate notifications. A changed named request takes precedence if both inputs change in the same turn; otherwise the changed index is honored. Omitted selection starts at the first available panel. Unknown requests leave the current available selection unchanged. Parent-owned child metadata is pageName, title, closable (default false), onClose, hidden and disabled. Hidden/disabled panels cannot be chosen; an unavailable or removed current panel selects the next available child, otherwise the previous. Empty selection writes null to both bound selection attributes. `^` writes back; literal/`=` selection is read-only from the application's perspective. The component keeps its current user selection until a declared selection input changes.
+
+For A → B, container-local publications use the existing node_id prefix:
+
+| Topic | Timing | Payload |
+| --- | --- | --- |
+| hiding | Before hiding A | {pageName, index} |
+| showing | Before showing B | {pageName, index} |
+| selected | After visibility and both selection bindings are updated, once for A | {page, index, selected: false, change: "A_hide"} |
+| selected | After the same update, once for B | {page, index, selected: true, change: "B_show"} |
+
+`page` is pageName when supplied, otherwise the numeric index; change uses that identity plus _show/_hide. Initial selection publishes only selected:true once, after Source construction so controller subscriptions exist. No publications for no-op selection, resize or ancestor drawer toggling. Source/Data projections are coalesced within the current turn before resolving selection. The same notifications follow clicks, keyboard and Data-driven requests. ArrowLeft/ArrowRight and Home/End select and focus tabs, scrolling only the strip as necessary; Delete requests closing of the focused closable tab.
+
+`closable=True` offers a close button on a tab. The shared closing operation calls the panel's activated `onClose` code first, if supplied. It must return a synchronous boolean; false vetoes without notifications. It is not a DOM event handler, is allowed only on direct tab/stack panels, and never becomes a DOM attribute. As with other inline code, later unactivated Source replacement cannot execute it.
+
+If allowed, the container publishes closing {pageName, index, wasSelected}, removes the panel Source node, resolves selection and its normal notifications, then publishes closed with the same pre-removal identity. Closing an inactive panel has no selection notifications. Application Data is not cleared; rejected local drafts disappear with the deleted widget. Direct application Source removal also resolves selection, but is not a close-button request and does not run onClose or emit closing/closed. Ordinary switching never deletes Source. `onClose` restores the useful Dojo veto; the inspected Genropy close-button patch bypassed it. closing/closed are explicit Gramlot additions. Legacy per-binding duplicate selected publications are intentionally not reproduced.
+
+```python
+pane.dataSetter(".page", "customer")
+tabs = pane.tabContainer(node_id="editor", selectedPage="^.page", height="360px")
+tabs.contentPane(pageName="customer", title="Customer").textbox(
+    value="^.customer.name", lbl="Name")
+tabs.contentPane(pageName="notes", title="Notes", closable=True,
+                 onClose="return !this.GET('.notesDirty')").textBoxArea(
+    value="^.customer.notes", lbl="Notes")
+pane.dataController("if (selected) { this.SET('.lastVisited', page); }",
+                    subscribe_editor_selected=True)
+pane.dataController("this.SET('.lastClosed', pageName)",
+                    subscribe_editor_closed=True)
+```
+
+Substitute stackContainer to retain the same selection and notification contract without tabs. Controllers receive named payload variables and the complete _subscription_kwargs object. FramePane, incoming switchPage commands, asynchronous close guards and alternate tab positions are not included in this increment. Examples are authored and qualified in the Python gallery first; final release alignment remains separate.
+
+
+<a id="gc-105-115"></a>
+## 115. Tab presentation, icons and badges
+
+Owner approved on 2026-10-18. `tabMode="tabs"` (default) displays compact tab shapes; `tabMode="underline"` displays text with a selection indicator, without tab outlines. `tabPosition="top"` (default), `"bottom"`, `"left"` or `"right"` places the strip. `tabAlign="start"` (default), `"center"` or `"end"` aligns the entries along that strip: left/center/right horizontally, top/center/bottom vertically. All three parameters accept Data pointers. If the entries overflow, alignment falls back to the start so no tab becomes unreachable. Left/right strips stack horizontally written labels vertically; their width is bounded and long captions ellipsize with a title tooltip. The strip scrolls on its own axis. ArrowLeft/Right navigate horizontal strips; ArrowUp/Down navigate vertical strips. Home/End and Delete retain their existing semantics.
+
+Direct panels accept `icon` (text/emoji, matching button icons), `badge` (number or short text) and `badge_color` (CSS background color). These are parent-owned presentation metadata, including when the child is another container. Null/empty badges disappear; zero remains visible. A badge stays reactive while its panel is unselected; `hidden=True` hides the entire tab. Icon/caption/badge are rendered as text, never injected HTML. Icons are decorative; the tab accessible name includes its caption and badge. Badge foreground defaults to the theme's contrasting text token; authors choosing a custom fill must keep that contrast suitable.
+
+```python
+tabs = pane.tabContainer(tabMode="^.mode", tabPosition="^.position", tabAlign="^.align",
+                         selectedPage="^.page", height="300px")
+tabs.contentPane(pageName="profile", title="Profile", icon="👤")
+tabs.contentPane(pageName="messages", title="Messages", icon="✉",
+                 badge="^.unread", badge_color="crimson")
+```
+
+Changing mode, position, alignment, icons or badge values never rebuilds panels or emits selection notifications. CSS owns layout and theme presentation. Existing --gramlot-tab-* tokens cover density, shape, palette and indicator/badge styling; mimi and joanna use their own compact defaults. Touch retains larger interaction targets and scrollable strips. This is a development increment; JS/serverless gallery qualification and publication remain separate.
