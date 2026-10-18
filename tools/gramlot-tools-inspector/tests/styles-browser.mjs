@@ -1,5 +1,7 @@
 /** CSS cascade and tool lifecycle checks need a real browser, not jsdom. */
 import assert from 'node:assert/strict';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -69,7 +71,7 @@ if (process.argv.includes('--serve')) {
                 await field('--gramlot-action').fill('#cc2244'); await field('--gramlot-action').press('Enter');
                 await page.waitForFunction(() => getComputedStyle(document.querySelector('main button')).backgroundColor === 'rgb(204, 34, 68)');
                 assert.equal(await field('--gramlot-action').inputValue(), '#cc2244');
-                await page.screenshot({path: `/private/tmp/gramlot-inspector-styles-${engine.name()}.png`});
+                await page.screenshot({path: join(tmpdir(), `gramlot-inspector-styles-${engine.name()}.png`)});
                 await tool.getByLabel('--gramlot-action color', {exact: true}).fill('#228866');
                 await page.waitForFunction(() => getComputedStyle(document.querySelector('main button')).backgroundColor === 'rgb(34, 136, 102)');
                 await field('--gramlot-space-4').fill('2rem'); await field('--gramlot-space-4').press('Enter');

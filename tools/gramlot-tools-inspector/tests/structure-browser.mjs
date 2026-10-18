@@ -1,5 +1,7 @@
 /** Source editing through the real inspector, including native branch dragging. */
 import assert from 'node:assert/strict';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {createServer} from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {build} from 'esbuild';
@@ -79,7 +81,7 @@ try {
    await add('component','formlet');await page.locator('#app gramlot-formlet').waitFor({state:'attached'});
    if(engine===chromium && !remote) {
     await row('main.right').hover();
-    await page.screenshot({path:'/private/tmp/gramlot-inspector-source-editing.png'});
+    await page.screenshot({path:join(tmpdir(), 'gramlot-inspector-source-editing.png')});
    }
    // Container child constraints are collected before a Source mutation, locally and over MessagePort.
    await add('component', 'borderContainer');

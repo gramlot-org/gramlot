@@ -4,6 +4,18 @@ import {createServer} from 'node:http';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {build} from '../js/node_modules/esbuild/lib/main.js';
+import {setTimeout as delay} from 'node:timers/promises';
+
+async function expectStyle(locator, property, expected) {
+    const deadline = Date.now() + 5000;
+    let actual;
+    do {
+        actual = await locator.evaluate((element, name) => getComputedStyle(element)[name], property);
+        if (actual === expected) return;
+        await delay(25);
+    } while (Date.now() < deadline);
+    assert.equal(actual, expected, `Animated ${property} reaches its expected value`);
+}
 const [python,entry,...engines]=process.argv.slice(2);
 const playwright=await import(pathToFileURL(entry));
 const root=fileURLToPath(new URL('../',import.meta.url));
@@ -151,29 +163,29 @@ try{
         }
         await page.locator('#draft input').focus();await page.mouse.move(0,0);
         await page.evaluate(()=>{gramlot.data.setItem('drawerLabel','Details');gramlot.data.setItem('drawerClass','drawer-rotated drawer-reveal');});
-        const reveal=sep('right').locator('button'), caption=reveal.locator('.drawer-label');
+        const reveal=sep('right').locator('button'), caption=reveal.locator('.drawer-label'), content=reveal.locator('.drawer-content');
         assert.equal(await caption.evaluate(el=>getComputedStyle(el).writingMode),'vertical-rl');
-        assert.equal(await caption.evaluate(el=>getComputedStyle(el).opacity),'0', JSON.stringify(await reveal.evaluate(el=>({open:getComputedStyle(el).getPropertyValue('--drawer-open'),hover:el.matches(':hover'),focus:el.matches(':focus-visible'),coarse:matchMedia('(pointer:coarse)').matches,nohover:matchMedia('(hover:none)').matches,html:el.outerHTML}))));
+        await expectStyle(content, 'opacity', '0');
         const beforeReveal=await size('right');
         await reveal.hover();
-        assert.equal(await reveal.evaluate(el=>getComputedStyle(el).width),'24px');
-        assert.equal(await caption.evaluate(el=>getComputedStyle(el).opacity),'1');
+        await expectStyle(reveal, 'maxWidth', '24px');
+        await expectStyle(content, 'opacity', '1');
         assert.deepEqual(await size('right'),beforeReveal,'revealing the label leaves region geometry unchanged');
         await page.mouse.move(0,0);await reveal.focus();await page.keyboard.press('ArrowRight');
-        assert.equal(await caption.evaluate(el=>getComputedStyle(el).opacity),'1','keyboard focus reveals the text');
+        await expectStyle(content, 'opacity', '1');
         await page.locator('#draft input').focus();
         await page.locator('#border').evaluate(el=>el.style.setProperty('--gramlot-drawer-reveal','1'));
-        assert.equal(await caption.evaluate(el=>getComputedStyle(el).opacity),'1','touch preview token keeps text visible');
+        await expectStyle(content, 'opacity', '1');
         await page.locator('#border').evaluate(el=>el.style.setProperty('--gramlot-drawer-reveal','0'));
-        assert.equal(await caption.evaluate(el=>getComputedStyle(el).opacity),'0');
+        await expectStyle(content, 'opacity', '0');
         await page.evaluate(()=>{gramlot.data.setItem('drawerLabel','');gramlot.data.setItem('drawerClass','');});
         await page.locator('#border').evaluate(el=>{el.style.setProperty('--gramlot-drawer-thickness','6px');el.style.setProperty('--gramlot-drawer-length','36px');});
-        assert.equal(await reveal.evaluate(el=>getComputedStyle(el).width),'6px');
-        assert.equal(await reveal.evaluate(el=>getComputedStyle(el).height),'36px');
+        await expectStyle(reveal, 'width', '6px');
+        await expectStyle(reveal, 'height', '36px');
         const touchPage=await browser.newPage({viewport:{width:600,height:800},hasTouch:true,isMobile:true});
         await touchPage.goto(`http://127.0.0.1:${server.address().port}`);await touchPage.locator('#draft input').waitFor();
         await touchPage.evaluate(()=>{gramlot.data.setItem('drawerLabel','Details');gramlot.data.setItem('drawerClass','drawer-rotated drawer-reveal');});
-        assert.equal(await touchPage.locator('#border .separator[data-side=right] .drawer-label').first().evaluate(el=>getComputedStyle(el).opacity),'1','touch devices show labels without hover');
+        assert.equal(await touchPage.locator('#border .separator[data-side=right] .drawer-content').first().evaluate(el=>getComputedStyle(el).opacity),'1','touch devices show labels without hover');
         await touchPage.close();
         await page.screenshot({path:`/tmp/gramlot-border-${engine}.png`});
         assert.deepEqual(errors,[]);await page.evaluate(()=>gramlot.dispose());

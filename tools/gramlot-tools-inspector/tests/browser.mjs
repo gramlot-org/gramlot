@@ -1,5 +1,7 @@
 /** Real-engine qualification; Playwright WebKit is not branded Safari. */
 import assert from 'node:assert/strict';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
@@ -223,7 +225,7 @@ try {
             await palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]').click();
             assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), 'Grace');
             assert.deepEqual(errors, []);
-            if (name === 'chromium') await page.screenshot({path: '/private/tmp/gramlot-tools-inspector.png'});
+            if (name === 'chromium') await page.screenshot({path: join(tmpdir(), 'gramlot-tools-inspector.png')});
             await page.goto(`${url}?conditions`);
             await page.waitForFunction(() => window.ready);
             const conditionalRow = palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]');
