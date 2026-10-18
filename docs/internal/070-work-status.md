@@ -9795,3 +9795,26 @@ The isolated core 0.3.5 candidate excludes concurrent database work and passes a
 failure). Its Python-authored quantization browser fixture passes Chromium and
 WebKit. Examples 0.3.8 requires core >=0.3.5 without an upper bound. Publication
 and final public/downloaded-archive checks are in progress.
+
+
+Final publication verification (2026-10-18): core 0.3.5 is on npm/PyPI/JSR;
+examples 0.3.8 is on npm/PyPI. Release workflows and gallery deployment succeeded.
+Generation `20261018T205005Z` updates both public galleries and the official serverless ZIP.
+Python adapter 0.2.10 and JS/serverless 0.2.13 remain unchanged. PyPI propagation
+required retrying dependent failed jobs. After a prolonged JSR wait, only that job
+was retried and recognized the already published version. The initial deploy timed
+out awaiting readiness; its retry and the core event succeeded. No release gate was bypassed and ephemeral CI authentication was retained.
+
+Chromium and WebKit pass all seven l05 region bindings on both HTTPS galleries and
+the downloaded file-based ZIP. External `176.73` becomes `177` in Data, slider,
+label and panel CSS, with exactly one corrective write after the external write.
+Fractional splitter drags synchronize before pointer release; keyboard resize,
+reverse slider updates and retained customer content pass with no page errors.
+Runtime/input/layout assets on both hosts use gzip, invalidate old validators
+(200) and validate current ones (304). The ZIP matches the version/deployment
+receipt; SHA-256 `21ccd6cc65019c4ba97aa45d806e421f9077e6f76d2ed161e45534f177d2477e`.
+
+Evidence: gramlot-examples/deploy/galleries/reports/2026-10-18-slider-quantization.json.
+Owner-authorized publication and public verification are complete. No new mobile
+or performance qualification is claimed; shared slider constraints must remain
+compatible. Concurrent database work and the unpublished c23 lesson were excluded.
