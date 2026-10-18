@@ -8660,3 +8660,25 @@ for the exact HTTPS GitHub API origin, refuses redirects and does not forward it
 to registries or build processes. Existing generation validators and gzip remain.
 All 26 updater tests, including isolated nginx integration, pass on the server.
 Public deployment and online/offline synchronization checks remain pending JSR.
+
+
+Final publication verification (2026-10-18): core 0.3.4 is available on npm, PyPI
+and JSR; examples 0.3.7 is on npm/PyPI. Core publication run 39156891686 and examples
+run 39157348538 succeeded. JSR completed the existing upload during its retry.
+The owner-authorized temporary CI authentication is verified for readiness and
+post-build consistency checks. All 28 updater tests pass on the server, including
+nginx integration. Deployment run 39159454181 succeeded; repeated core event
+39159300531 also succeeded without rebuilding the unchanged generation.
+
+Public generation `20261018T193539Z` runs the corrected core/examples with unchanged
+Python adapter 0.2.10 and JS/serverless 0.2.13. Chromium and WebKit each pass l05 on
+both public HTTPS hosts and the downloaded ZIP opened locally: all seven numeric
+bindings, real drag writeback before pointer release, keyboard resizing, slider
+to region updates, retained customer content, and no page errors. Both hosts serve
+gzip, invalidate the preceding generation validator (200), and honor the current
+validator (304). The 30,900,752-byte ZIP matches its version receipt and SHA-256
+`1173ba13e4ce4b2176d5afa1ac4d5efdd129a270f7da2a7132d36d6eb736afcc`.
+The previous generation remains available for rollback. Detailed evidence and
+recovery notes: gramlot-examples `deploy/galleries/reports/2026-10-18-border-binding.json`.
+The requested publication and verification are complete; no new mobile or
+performance measurement is claimed by these desktop binding checks.
