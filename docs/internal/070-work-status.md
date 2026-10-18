@@ -9750,3 +9750,48 @@ The previous generation remains available for rollback. Detailed evidence and
 recovery notes: gramlot-examples `deploy/galleries/reports/2026-10-18-border-binding.json`.
 The requested publication and verification are complete; no new mobile or
 performance measurement is claimed by these desktop binding checks.
+
+
+<a id="gc-070-1435"></a>
+## 1435. Slider quantization corrects external Data — 2026-10-18
+
+Owner: “esatto, aggiorna il contratto e lo slider così corregge anche i valori
+esterni secondo lo step, senza cicli, e verifica nell’esempio che splitter e slider
+rimangano sincronizzati”. Implemented on develop with paired constitution,
+GC-105 and GC-225 updates. No release/deployment is authorized by this request.
+
+Horizontal/vertical rangeEditor uses the existing sourceContext/writeParameter
+boundary. Native range projection applies min/max/step; differing finite numeric
+values are written through the plain reactive value pointer. Initial values and
+reactive constraint changes follow the same path. Equality and a synchronous
+reentrancy guard prevent corrective write loops. No custom quantization algorithm,
+splitter parameter, dependency edit or application synchronization controller was
+introduced. Literal/read-only values and other editors retain their contracts.
+Compatible grids are required for controls sharing Data.
+
+Verification: all 3,570 JavaScript core tests pass; 29 focused component/border/review
+tests pass. Python components/collections: 11 tests and 17 subtests pass, with one
+pre-existing expected failure. The Python-authored browser fixture passes Chromium
+and WebKit for initial/external quantization, negative fractional steps, reactive
+step/max, exact corrective-write counts, two linked sliders, read-only pointers,
+real live splitter drag, keyboard updates, retained content and disposal. The
+browser regression is included in core CI.
+
+Connected examples l05 verification now injects fractional external values into
+all seven region dimensions, checks corrected Data/slider/panel sizes, and drags
+with a fractional displacement before release. Both Python (8271/l05) and Node
+(8272/l05) previews pass on Chromium/WebKit with no page errors. The gallery's
+previously built input collection had to be regenerated with the new sourceContext
+metadata; no framework workaround was needed. Its lesson explains the step=1
+correction and the Inspector exercise. Evidence: /tmp/slider-core-suite.log,
+/tmp/slider-browser.log, /tmp/slider-gallery-results.json. Implementation and local
+verification are complete; public packages and galleries remain unchanged.
+
+
+Release preparation (2026-10-18): owner explicitly authorized publication of this
+correction, both galleries and the offline ZIP, followed by online verification.
+The isolated core 0.3.5 candidate excludes concurrent database work and passes all
+3,563 JavaScript tests, 168 Python tests and 266 subtests (one existing expected
+failure). Its Python-authored quantization browser fixture passes Chromium and
+WebKit. Examples 0.3.8 requires core >=0.3.5 without an upper bound. Publication
+and final public/downloaded-archive checks are in progress.

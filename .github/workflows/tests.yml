@@ -93,6 +93,8 @@ jobs:
         run: node scripts/verify_messaging_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
       - name: Browser check of live border splitters and retained content
         run: node scripts/verify_border_browser.mjs python "$PLAYWRIGHT_ENTRY" chromium
+      - name: Browser check of external slider quantization and shared splitter binding
+        run: node scripts/verify_slider_quantization_browser.mjs python "$PLAYWRIGHT_ENTRY" chromium
       - name: Upload JavaScript coverage
         if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5

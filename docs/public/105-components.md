@@ -284,8 +284,18 @@ disabled controls. An unrelated group remains independent.
 Text, password, multiline, color and range controls write on `change` by default;
 `live=True` writes on `input`. Slider writes are numbers, including fractional
 steps. Color writes are the native browser's serialized color string; the initial
-scope uses ordinary opaque hex colors. Native normalization/clamping changes the
-displayed control without rewriting Data until an editing event commits it.
+scope uses ordinary opaque hex colors. Color normalization remains presentation-only
+until an editing event commits it.
+
+Horizontal and vertical sliders also correct finite numeric values received from
+Data: the native range applies `min`, `max` and `step`, then the slider writes the
+result back through its plain reactive `value` pointer only if it differs. This
+also applies initially and when reactive limits or step change. With `step=1`,
+`176.73` becomes `177` in Data, so a bound panel and its label follow the same
+number. This correction is independent of `live`, which governs user editing
+events. Equal writes and reentrant corrections are suppressed; literal and `=`
+values never write Data. Controls sharing a Data path must use compatible ranges
+and step grids. Other component normalization contracts are unchanged.
 `disabled` works across the family; native `readonly` applies to text/password/
 multiline editing, not to radios, color pickers or sliders. Use `disabled` there.
 Password masking hides the display only: its Data value remains inspectable.

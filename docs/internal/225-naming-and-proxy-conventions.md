@@ -717,3 +717,10 @@ childParameters so projection receives their typed resolved values. Reuse the
 existing writeParameter callback spelling at the projectChild Source boundary;
 HtmlElement.writeParameter applies the existing plain reactive pointer write with
 no inverse transformation. No new public attribute, proxy or regions Data structure.
+
+
+Slider external quantization (owner, 2026-10-18): horizontalSlider/verticalSlider
+reuse descriptor sourceContext and setSourceContext/writeParameter. The existing
+rangeEditor owns projection; private #sourceContext and #correcting hold only the
+callback boundary and a synchronous reentrancy guard, not a parallel value. Native
+range min/max/step remain the canonical parameter names and numeric semantics.

@@ -2687,3 +2687,24 @@ package release or deployment is authorized by this implementation request.
 
 
 Release authorization — owner, 2026-10-18: “bene, pubblica la correzione e aggiorna entrambe le gallery e lo zip serverless, poi verifica che anche online slider e splitter siano sincronizzati”. Authorizes the bounded core/examples correction release, both hosted galleries and their downloadable serverless ZIP. The implementation scope above is unchanged.
+
+
+### Slider correction of external values — owner, 2026-10-18
+
+Owner: “esatto, aggiorna il contratto e lo slider così corregge anche i valori
+esterni secondo lo step, senza cicli, e verifica nell’esempio che splitter e slider
+rimangano sincronizzati”. For horizontalSlider and verticalSlider, the native
+range's finite numeric value after applying min/max/step is also the bound value.
+An external finite number, including initial Data and subsequent limit/step
+changes, is corrected through the existing plain reactive value pointer when it
+differs. The native range defines step anchoring, rounding and bounds. Equal
+values are not written again, and correction is guarded against reentrancy.
+Literal and read-only pointers are not written; other input controls retain their
+existing projection contract. This supersedes the simple-input increment's
+presentation-only normalization for these two sliders. It adds no splitter step,
+parallel Data state or application controller. Controls sharing a path must have
+compatible range constraints; conflict resolution between incompatible constraints
+is not introduced. No publication or deployment is authorized by this request.
+
+
+Release authorization — owner, 2026-10-18: “bene, pubblica anche questa correzione e aggiorna entrambe le gallery e lo zip serverless, poi verifica online che lo slider corregga i decimali dello splitter”. Authorizes the bounded slider quantization correction release, both hosted galleries and the regenerated serverless ZIP, followed by live browser verification.

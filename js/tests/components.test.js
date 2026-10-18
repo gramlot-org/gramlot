@@ -209,7 +209,7 @@ test('textarea and password reuse editing, shared Data, labels and native constr
     app.dispose();
 });
 
-test('color and both ranges project native values without writing normalized values back', () => {
+test('color preserves its projection contract and both ranges correct external bounds', () => {
     const {app, window, element} = fixture((pane, app) => {
         app.data.setItem('form.amount',.5);app.data.setItem('maximum',2);app.data.setItem('form.color','#315fa8');
         for(const name of ['horizontalSlider','verticalSlider']) pane[name]({id:name,value:'^.amount',min:-2,max:'^maximum',step:.5,live:true,lbl:'Amount',disabled:'^locked'});
@@ -221,9 +221,9 @@ test('color and both ranges project native values without writing normalized val
     h.control.value='1.5';change(window,h.control,'input');
     assert.equal(app.data.getItem('form.amount'),1.5);assert.equal(v.control.value,'1.5');
     app.data.setItem('maximum',1);assert.equal(h.control.max,'1');
-    assert.equal(app.data.getItem('form.amount'),1.5,'bounds changes do not rewrite Data');
+    assert.equal(app.data.getItem('form.amount'),1,'bounds changes correct Data');
     app.data.setItem('form.amount',9);assert.equal(h.control.value,'1');
-    assert.equal(app.data.getItem('form.amount'),9,'native clamping does not rewrite Data');
+    assert.equal(app.data.getItem('form.amount'),1,'native clamping corrects Data');
     app.data.setItem('locked',true);assert.equal(v.control.disabled,true);
     color.control.value='#123456';change(window,color.control,'input');
     assert.equal(app.data.getItem('form.color'),'#123456');

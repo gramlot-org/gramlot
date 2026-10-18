@@ -123,6 +123,17 @@ const rangeParameters = {
 };
 function rangeEditor(vertical) {
     return Base => class extends Base {
+        #sourceContext;
+        #correcting = false;
+        setSourceContext(context) { this.#sourceContext = context; }
+        projectAttributes(attrs, adapt) {
+            const previous = this.parameters;
+            const rest = super.projectAttributes(attrs, adapt);
+            if (previous && ['min', 'max', 'step'].some(name => previous[name] !== this.parameters[name])) {
+                this.writeControlValue(this.parameters.value);
+            }
+            return rest;
+        }
         createControl() {
             const control = this.ownerDocument.createElement('input');
             control.type = 'range';
@@ -133,16 +144,24 @@ function rangeEditor(vertical) {
             return control;
         }
         readControlValue() { return this.control.valueAsNumber; }
-        writeControlValue(value) { if (this.control.valueAsNumber !== value) this.control.value = String(value); }
+        writeControlValue(value) {
+            this.control.value = String(value);
+            const corrected = this.control.valueAsNumber;
+            if (!this.#correcting && Number.isFinite(value) && Number.isFinite(corrected) && corrected !== value) {
+                this.#correcting = true;
+                try { this.#sourceContext.writeParameter('value', corrected); }
+                finally { this.#correcting = false; }
+            }
+        }
     };
 }
 export const HorizontalSlider = defineComponent({
     name: 'horizontalSlider', tag: 'gramlot-horizontal-slider', base: NativeControl,
-    mixins: [Labelbox, FieldState], parameters: rangeParameters, implementation: rangeEditor(false)
+    mixins: [Labelbox, FieldState], parameters: rangeParameters, sourceContext: true, implementation: rangeEditor(false)
 });
 export const VerticalSlider = defineComponent({
     name: 'verticalSlider', tag: 'gramlot-vertical-slider', base: NativeControl,
-    mixins: [Labelbox, FieldState], parameters: rangeParameters, implementation: rangeEditor(true)
+    mixins: [Labelbox, FieldState], parameters: rangeParameters, sourceContext: true, implementation: rangeEditor(true)
 });
 export const NumberTextBox = defineComponent({
     name: 'numberTextBox', tag: 'gramlot-number-text-box', base: TypedEditor, mixins: [Labelbox, FieldState],
