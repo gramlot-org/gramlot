@@ -79,3 +79,50 @@ test('install action uses a browser-provided prompt once, and reports dismissal'
     const later=new f.document.defaultView.Event('beforeinstallprompt',{cancelable:true});
     f.document.defaultView.dispatchEvent(later);assert.equal(later.defaultPrevented,false);
 });
+
+test('container index creates Source on demand, deduplicates pending requests and retains loaded panels', async t => {
+    const {default: layout} = await import('../src/components/layout.js');
+    const {mountIndexPage} = await import('../src/index-page-runtime.js');
+    const document = new JSDOM('<main id="gramlot-root"></main>', {url: 'https://index.test/'}).window.document;
+    document.defaultView.ResizeObserver = class {observe() {} unobserve() {} disconnect() {}};
+    document.defaultView.HTMLElement.prototype.scrollIntoView = function () {};
+    const builder = new GramlotBuilder(null, {collections: [layout.toDocument()]});
+    const shell = builder.root.div({id: 'index'});
+    shell.html_button('Navigation', {id: 'index-navigation-toggle'});
+    shell.html_button('Code', {id: 'index-code-toggle'});
+    const regions = shell.borderContainer({data_index_regions: true, node_id: 'regions'});
+    const sidebar = regions.contentPane({region: 'left', id: 'index-sidebar', class: 'index-sidebar', node_id: 'nav'});
+    const links = sidebar.details({open: true});
+    for (const key of ['one', 'two']) links.a(key, {id: `open-${key}`, href: key});
+    shell.dataSetter({destination_path: 'indexState.active', value: 'intro'});
+    const pages = regions.contentPane({region: 'center'}).tabContainer({id: 'index-pages', selectedPage: '^indexState.active'});
+    pages.contentPane({id: 'panel-intro', title: 'Intro', pageName: 'intro'}).p('Welcome');
+    regions.contentPane({region: 'right', id: 'index-code', node_id: 'code'}).div('Code');
+    const app = new Gramlot({document, transport: false, collections: [layout]}).src.startSource(builder.source);
+    t.after(() => {app.dispose(); document.defaultView.close();});
+    const renderer = app.src.renderer;
+    const node = id => renderer.elements.get(document.getElementById(id)).node;
+    const calls = [], gates = new Map();
+    const state = app.data.getItem('indexState');
+    mountIndexPage(renderer, node('index'), () => {}, () => {}, {containerLayout: true, state,
+        async createEntry({key}) {
+            calls.push(key);
+            await new Promise(resolve => gates.set(key, resolve));
+            app.src.builder.wrapSource(node('index-pages')).contentPane({id: `panel-${key}`, pageName: key, title: key, hidden: true})
+                .iframe({id: `frame-${key}`});
+        },
+    });
+    const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+    document.getElementById('open-one').click(); document.getElementById('open-one').click();
+    document.getElementById('open-two').click(); await settle();
+    assert.deepEqual(calls, ['one', 'two']);
+    gates.get('two')(); await settle();
+    assert.equal(state.getItem('active'), 'two');
+    gates.get('one')(); await settle();
+    assert.equal(state.getItem('active'), 'two');
+    const frame = document.getElementById('frame-one');
+    document.getElementById('open-one').click(); await settle();
+    assert.equal(state.getItem('active'), 'one');
+    assert.equal(document.getElementById('frame-one'), frame);
+    assert.deepEqual(calls, ['one', 'two']);
+});

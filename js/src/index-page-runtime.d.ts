@@ -1,7 +1,8 @@
 export function mountIndexPage(renderer: any, root: any,
     onSelection?: (entries: Map<string, any>, active: string) => void,
     prepareEntry?: (entry: any, context: any) => void,
-    options?: {containerLayout?: boolean; state?: any}): {dispose(): void};
+    options?: {containerLayout?: boolean; state?: any; createEntry?: (entry: any) => Promise<void>;
+        onLoad?: (key: string, status: string, error?: Error) => void}): {dispose(): void};
 /** Re-export as Logic, or delegate indexMount from an application's Logic. */
 export class IndexLogic {
     indexMount(node: any, args: {shell_id: string}): void;

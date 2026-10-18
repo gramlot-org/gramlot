@@ -3,7 +3,8 @@ import {appearanceStyles} from './index-page-styles.js';
 import {THEME_READY, THEME_SET, THEMES, APPEARANCES} from './index-theme.js';
 
 /** Index-page behavior; writes UI state through the existing Source records. */
-export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEntry = () => {}, {containerLayout = false, state: suppliedState = null} = {}) {
+export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEntry = () => {}, {containerLayout = false, state: suppliedState = null, createEntry = null, onLoad = () => {}} = {}) {
+    if (createEntry && !containerLayout) throw new TypeError('Deferred index entries require containerLayout');
     const shell = renderer.records.get(root).element;
     const document = shell.ownerDocument;
     const window = document.defaultView;
@@ -113,17 +114,49 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             set(shell, {data_code_visible: String(visible)});
         }
     };
+    const prepare = entry => {
+        entry.panel = byId(`panel-${entry.key}`);
+        entry.tab = containerLayout ? entry.panel : byId(`tab-${entry.key}`);
+        entry.code = byId(`codepane-${entry.key}`);
+        if (entry.key === 'intro') return;
+        prepareEntry(entry, {byId, node, set, listen});
+        entry.frame = byId(`frame-${entry.key}`);
+        if (entry.frame) listen(entry.frame, 'load', () => send(entry.frame));
+    };
+    const openEntry = entry => {
+        if (opened.getItem(entry.key)) return;
+        opened.setItem(entry.key, true);
+        set(containerLayout ? entry.panel : entry.tab, {hidden: false});
+        if (entry.frame) set(entry.frame, {src: entry.open.getAttribute('href')});
+    };
     let selecting = false;
     function select(key) {
-        if (selecting) return;
+        if (selecting || disposed) return;
+        const requested = entries.get(key);
+        if (!requested) return;
+        state.setItem('requested', key);
+        if (!requested.panel) {
+            onLoad(key, 'loading');
+            if (!requested.loading) {
+                requested.loading = Promise.resolve().then(() => { if (!disposed) return createEntry(requested); }).then(() => {
+                    if (disposed) return;
+                    prepare(requested);
+                    openEntry(requested);
+                    if (state.getItem('requested') === key) {
+                        onLoad(key, 'ready');
+                        select(key);
+                    }
+                }).catch(error => {
+                    if (!disposed && state.getItem('requested') === key) onLoad(key, 'error', error);
+                }).finally(() => { requested.loading = null; });
+            }
+            return;
+        }
+        onLoad(key, 'ready');
         selecting = true;
         try {
             const entry = entries.get(key);
-            if (!opened.getItem(key)) {
-                opened.setItem(key, true);
-                set(containerLayout ? entry.panel : entry.tab, {hidden: false});
-                if (entry.frame) set(entry.frame, {src: entry.open.getAttribute('href')});
-            }
+            openEntry(entry);
             if (entry.family) set(entry.family, {open: true});
             for (const [current, item] of entries) {
                 const active = current === key;
@@ -282,14 +315,16 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             });
             listen(window, 'resize', () => setSidebarWidth(state.getItem('preferredSidebarWidth')));
         }
-        const choices = containerLayout ? byId('index-pages').children : shell.querySelectorAll('.index-tabs button');
+        const choices = createEntry
+            ? [byId('panel-intro'), ...shell.querySelectorAll('.index-sidebar a[id^="open-"]')]
+            : containerLayout ? byId('index-pages').children : shell.querySelectorAll('.index-tabs button');
         for (const tab of choices) {
-            const key = tab.id.slice(containerLayout ? 'panel-'.length : 'tab-'.length);
+            const key = tab.id.slice(createEntry && tab.id.startsWith('open-') ? 'open-'.length : containerLayout ? 'panel-'.length : 'tab-'.length);
             const entry = {key, tab, panel: byId(`panel-${key}`),
                 code: byId(`codepane-${key}`),
                 open: key === 'intro' ? null : byId(`open-${key}`)};
             entries.set(key, entry);
-            if (containerLayout ? node(tab).getAttr('hidden') !== true : !tab.hidden) opened.setItem(key, true);
+            if (entry.panel && (containerLayout ? node(entry.panel).getAttr('hidden') !== true : !tab.hidden)) opened.setItem(key, true);
             if (!containerLayout && tab.getAttribute('aria-selected') === 'true') state.setItem('active', key);
             if (!containerLayout) listen(tab, 'click', () => select(key));
             if (entry.open) listen(entry.open, 'click', event => { event.preventDefault(); select(key); });
@@ -305,12 +340,17 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             });
             if (key === 'intro') continue;
             entry.family = entry.open.closest('details');
-            prepareEntry(entry, {byId, node, set, listen});
-            if (entry.panel.classList.contains('index-category')) continue;
-            entry.frame = byId(`frame-${key}`);
-            listen(entry.frame, 'load', () => send(entry.frame));
+            if (entry.panel) prepare(entry);
         }
         if (containerLayout) {
+            const pages = byId('index-pages');
+            listen(pages, 'click', event => {
+                // Re-clicking the active tab need not change Data, but supersedes a pending navigation.
+                if (event.target === pages && event.composedPath().some(element =>
+                    element instanceof window.Element && element.getAttribute('role') === 'tab')) {
+                    select(state.getItem('active'));
+                }
+            });
             const subscription = `${shell.id}-selection`;
             state.subscribe(subscription, {any: event => {
                 if (event.node === state.getNode('active')) select(state.getItem('active'));
