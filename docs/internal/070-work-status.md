@@ -9714,3 +9714,17 @@ and owner visual acceptance are separate and remain pending.
   (127.0.0.1:8269/l05) and Node (127.0.0.1:8270/l05), real live drag and keyboard
   interaction, reverse slider updates and content retention. Browser receipt:
   /tmp/border-numeric-browser.log. No package or production deployment performed.
+
+
+Publication follow-up (2026-10-18): the owner authorized publishing the correction,
+updating both galleries and the serverless ZIP, then checking the live binding.
+Core v0.3.4 and examples v0.3.7 sources are consolidated on main. npm/PyPI and the
+examples publication workflow succeeded; core JSR remains in progress. The first
+gallery deployment stopped at the anonymous GitHub API rate limit without
+promoting an incomplete generation. The owner then explicitly approved: “Sì,
+usa l’autenticazione temporanea della CI”. The four gallery workflows send their
+short-lived read-only token over SSH stdin; the updater uses it only in memory
+for the exact HTTPS GitHub API origin, refuses redirects and does not forward it
+to registries or build processes. Existing generation validators and gzip remain.
+All 26 updater tests, including isolated nginx integration, pass on the server.
+Public deployment and online/offline synchronization checks remain pending JSR.
