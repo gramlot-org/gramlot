@@ -387,6 +387,8 @@
               ],
               "unique": true
             },
+            "width": {},
+            "height": {},
             "drawer_onclick": {
               "inline": [
                 "evt",

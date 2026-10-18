@@ -2662,3 +2662,28 @@ Review repairs and consolidation — owner, 2026-10-18: “ok procedi con le cin
 
 
 Tab strip alignment — owner, 2026-10-18: “Sì, aggiungi tabAlign”, confirming the proposed tabAlign=start/center/end, default start. It aligns entries along the strip: horizontal start/center/end and vertical top/center/bottom, independently of tabMode and tabPosition. Supports the existing Data-binding contract and Python-gallery comparisons; no panel replacement, dependency changes or publication.
+
+
+### Numeric border dimensions and live binding — owner, 2026-10-18
+
+Owner: “esatto, lo splitter deve aggiornare lo stesso valore numerico tramite il
+binding, così si aggiorna anche lo slider. aggiorna il contratto e correggi il
+componente e l’esempio”. Confirms the preceding numeric-pixel proposal: regional
+width (left/right) and height (top/bottom) accept finite nonnegative numbers,
+interpreted as pixels by borderContainer. A plain reactive pointer to that numeric
+value is bidirectional: each effective live splitter resize, including keyboard
+resizing, writes the constrained number through the same Source binding. Relative
+paths and Data-node attribute pointers retain the existing binding semantics.
+The declaration and mounted content are preserved; no separate regions Data Bag
+or application controller is introduced. Literal dimensions and read-only pointers
+do not write Data. Existing CSS string dimensions remain supported; transformed
+pointers remain read-only, without inverse parsing or unit conversion. The numeric
+path is the gallery's primary slider/splitter example in Python and JavaScript.
+This supersedes the earlier border increment's exclusion of automatic Data writes
+for this bounded numeric dimension binding. It does not extend notification timing:
+splitter_resize still fires after a completed gesture, with CSS pixel strings.
+Persistence and drawer behavior otherwise retain their existing contracts. No
+package release or deployment is authorized by this implementation request.
+
+
+Release authorization — owner, 2026-10-18: “bene, pubblica la correzione e aggiorna entrambe le gallery e lo zip serverless, poi verifica che anche online slider e splitter siano sincronizzati”. Authorizes the bounded core/examples correction release, both hosted galleries and their downloadable serverless ZIP. The implementation scope above is unchanged.

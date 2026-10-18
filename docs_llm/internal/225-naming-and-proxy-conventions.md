@@ -710,3 +710,10 @@ Gallery selection consolidation (owner-approved review repair, 2026-10-18): gall
 
 
 Tab alignment (owner-confirmed 2026-10-18): tabAlign follows tabMode/tabPosition camelCase authoring conventions; enum start/center/end, default start, read-bound. The internal selection wrapper uses data-align to drive strip justification. Overflow uses safe alignment, preserving access to the first entry when the strip is too small. No new proxy or selection state.
+
+
+Numeric border binding (owner, 2026-10-18): reuse width/height as parent-owned
+childParameters so projection receives their typed resolved values. Reuse the
+existing writeParameter callback spelling at the projectChild Source boundary;
+HtmlElement.writeParameter applies the existing plain reactive pointer write with
+no inverse transformation. No new public attribute, proxy or regions Data structure.

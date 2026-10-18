@@ -8609,3 +8609,40 @@ Chromium/WebKit pass both public hosts and the extracted official ZIP for on-dem
 Public HTTPS medians over three cold/repeat pairs per host: Python index 2149→1461 ms cold and 1763→819 ms repeat; JavaScript 1944→1465 and 1076→882 ms. First selection is now about 1.3 s versus 0.6–0.7 s; reopening takes about 50–60 ms and no new lesson request. These sequential public samples show a smaller gain than the controlled candidate comparison. Combined index plus first example is nearly unchanged for Python cold, improves for Python repeat, and is slower for JavaScript in this sample. This tradeoff must remain explicit; index improvements do not imply that every end-to-end path is faster. Full evidence and CI URLs are in the examples measurement report.
 
 Private comparison containers/proxy and local test servers/tunnels are closed. Release source was prepared in isolated copies, preserving concurrent database-selector and c23 work. Implemented, verified and owner-authorized publication is complete.
+
+
+<a id="gc-070-1430"></a>
+## 1430. Numeric border dimensions and live slider synchronization — 2026-10-18
+
+Owner explicitly requested: “esatto, lo splitter deve aggiornare lo stesso valore
+numerico tramite il binding, così si aggiorna anche lo slider. aggiorna il contratto
+e correggi il componente e l’esempio”. Contract amendment and GC-105/GC-225 mirrors
+record the bounded numeric regional binding. Implemented on develop; publication
+and owner visual acceptance are separate and remain pending.
+
+- Regional width/height retain their typed values through childParameters. Finite
+  nonnegative numbers render as pixels. Live splitter drag and keyboard resize
+  write constrained numbers through the same plain reactive Source binding.
+- Reuse the existing writeParameter boundary; no regions Data orchestration,
+  inverse pointer transformation, Source rewrite or application controller.
+  Relative paths, Data attribute pointers, limits and equal-write suppression are
+  verified. CSS strings, literal sizes, read-only and transformed pointers retain
+  presentation-only behavior. Persistence behavior is unchanged.
+- Connected gramlot-examples l05 Python/JS uses direct numeric pointers for all
+  seven region dimensions. Its tutorial and durable browser behavior check now
+  exercise splitter-to-slider and slider-to-region synchronization, including a
+  Data assertion before pointerup and retained customer content.
+- Core regression: 8 border tests plus 10 selected-container tests pass on final
+  sources. Numeric live writes precede the unchanged completed-resize event;
+  Data/slider projections do not duplicate notifications. Python collection
+  metadata checks: 5 tests and 8 subtests pass.
+- Isolated core suite: 3,563 tests; 3,560 passed in the sandbox and the three
+  network-listener conformance tests passed when rerun with local-port permission.
+  The first attempt used a Python without project dependencies; the configured
+  run used the project venv. Final shared writeParameter extraction was rechecked
+  by the 18 focused container tests.
+- Isolated examples: 112 JS tests and 19 Python tests pass, including Python/JS
+  Source parity. Chromium and WebKit each pass all seven bindings on Python
+  (127.0.0.1:8269/l05) and Node (127.0.0.1:8270/l05), real live drag and keyboard
+  interaction, reverse slider updates and content retention. Browser receipt:
+  /tmp/border-numeric-browser.log. No package or production deployment performed.

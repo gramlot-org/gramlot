@@ -960,7 +960,29 @@ border.contentPane(region="bottom", height="100px", splitter=True,
 and right the whole height. Design and ordinary regional attributes can use Data
 pointers. A nested `borderContainer(region="center")` uses the same regional
 contract as a contentPane. Width controls left/right; height controls top/bottom;
-the center receives the remaining space. Normal CSS lengths are accepted.
+the center receives the remaining space. Numeric regional dimensions are finite,
+nonnegative pixel values; the component adds the CSS unit. Normal CSS lengths
+remain accepted for presentation.
+
+Use a plain pointer to a number when both a slider and the splitter control the
+same size:
+
+```python
+pane.dataSetter("navigationWidth", 150)
+pane.horizontalSlider(value="^navigationWidth", min=90, max=240, live=True)
+border = pane.borderContainer(height="420px")
+border.contentPane(region="left", width="^navigationWidth", splitter=True,
+                   minSize=90, maxSize=240)
+border.contentPane(region="center")
+```
+
+Dragging writes the constrained number through that same binding on every effective
+resize; keyboard resizing does the same. The slider and other Data consumers update
+immediately. Source pointers and mounted content are retained. There is no need for
+`:{}px`, a controller, or an additional regions Bag. Literal sizes, `=` pointers,
+CSS string values and transformed pointers do not write Data; templates and expressions
+have no inverse conversion. Regional numeric dimensions are distinct from the
+separator's own thickness (`splitter_width` / `splitter_height`).
 
 `splitter=True` enables continuous pointer/touch resizing and arrow-key resizing.
 `minSize` and `maxSize` are numeric pixel drag limits. There is no `liveSplitters`
@@ -1106,9 +1128,9 @@ Owner confirmed on 2026-10-18: closable_change applies to drawers and splitter_r
 
 Give the emitter a node_id to subscribe by its stable qualified topic: filters_closable_change or workspace_splitter_resize. selfsubscribe on a controller addresses that controller, not its containing pane.
 
-closable_change fires after the region's effective visibility and handle state have changed. It covers handle activation, reopening through dragging, and reactive drawer/hidden changes. Initial mounting, unchanged visibility and teardown emit nothing. drawer_onclick remains the separately authored interaction callback. Neither notification writes application Data automatically.
+closable_change fires after the region's effective visibility and handle state have changed. It covers handle activation, reopening through dragging, and reactive drawer/hidden changes. Initial mounting, unchanged visibility and teardown emit nothing. drawer_onclick remains the separately authored interaction callback. The notifications themselves do not write application Data. Numeric regional bindings are updated by the splitter during resizing, before the completed-resize notification.
 
-splitter_resize fires once after a pointer gesture ends (including cancellation/lost capture when the live size is retained), or after an effective arrow-key resize. Payload sizes are the measured before/after pixel extents; unchanged size emits nothing. It does not fire for every pointermove, an authored width/height change or window resize. Pointer capture and the drag cover are released before subscribers execute. regions-Bag writeback remains outside this increment.
+splitter_resize fires once after a pointer gesture ends (including cancellation/lost capture when the live size is retained), or after an effective arrow-key resize. Payload sizes are the measured before/after pixel extents; unchanged size emits nothing. It does not fire for every pointermove, an authored width/height change or window resize. Pointer capture and the drag cover are released before subscribers execute. Numeric dimension writeback happens during resizing through the declared width/height binding; it does not introduce a separate regions Bag.
 
 ```python
 border = pane.borderContainer(node_id="workspace", height="360px")

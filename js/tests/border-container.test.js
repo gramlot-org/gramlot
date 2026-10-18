@@ -117,3 +117,86 @@ test('drawer captions minimize by default; explicit and bound false keep them vi
     assert(handle('bottom').classList.contains('drawer-reveal'));
     app.dispose();
 });
+
+test('numeric regional bindings keep sliders synchronized during drag and keyboard resize', async()=>{
+    const {app,window,element}=await fixture((root,app)=>{
+        const pane=root.div({datapath:'layout'});
+        const bc=pane.borderContainer({id:'border',node_id:'workspace',height:'500px'});
+        for(const side of ['left','right','top','bottom']) {
+            app.data.setItem(`layout.${side}`,100);
+            pane.horizontalSlider({id:`slider-${side}`,value:`^.${side}`,min:90,max:110,live:true});
+            bc.contentPane({id:side,region:side,[['top','bottom'].includes(side)?'height':'width']:`^.${side}`,splitter:true,minSize:90,maxSize:110});
+        }
+        bc.contentPane({region:'center'}).textbox({id:'draft',value:'^.draft'});
+    });
+    const border=element('border');geometry(border);
+    const draft=element('draft'), events=[];
+    app._subscriptions.subscribe('workspace_splitter_resize', payload=>events.push({...payload, data:app.data.getItem('layout.'+payload.region)}));
+    for(const side of ['left','right','top','bottom']) {
+        const sep=separator(border,side), vertical=['top','bottom'].includes(side);
+        assert.equal(border.control.style.getPropertyValue(`--${side}`),'100px');
+        sep.setPointerCapture=()=>{};sep.hasPointerCapture=()=>false;
+        const event=(type,position)=>new window.MouseEvent(type,{bubbles:true,button:0,[vertical?'clientY':'clientX']:position});
+        const count=events.length;
+        sep.dispatchEvent(event('pointerdown',100));
+        sep.dispatchEvent(event('pointermove',105));
+        const expected=['left','top'].includes(side)?105:95;
+        assert.equal(app.data.getItem(`layout.${side}`),expected,'Data changes before release');
+        assert.equal(Number(element(`slider-${side}`).control.value),expected);
+        assert.equal(events.length,count,'live Data writes do not emit completion notifications');
+        sep.dispatchEvent(event('pointerup',105));
+        assert.deepEqual(events.at(-1),{region:side,size:`${expected}px`,previousSize:'100px',data:expected});
+        assert.equal(events.length,count+1);
+        sep.dispatchEvent(new window.KeyboardEvent('keydown',{key:vertical?'ArrowDown':'ArrowRight'}));
+        assert.equal(app.data.getItem(`layout.${side}`),expected+(['left','top'].includes(side)?1:-1));
+        const slider=element(`slider-${side}`).control;
+        slider.value='102';slider.dispatchEvent(new window.Event('input',{bubbles:true}));
+        assert.equal(app.data.getItem(`layout.${side}`),102);
+        assert.equal(border.control.style.getPropertyValue(`--${side}`),'102px');
+        assert.equal(events.length,count+2,'only drag completion and keyboard resize publish');
+        assert.equal(app.dom.getBaseSourceNode(element(side)).getAttr(vertical?'height':'width'),`^.${side}`);
+    }
+    assert.equal(element('draft'),draft);
+    app.dispose();
+});
+
+test('resize respects limits and the current relative or attribute binding without feedback', async()=>{
+    const {app,window,element}=await fixture((root,app)=>{
+        app.data.setItem('layout.measure',null,{pixels:100});
+        app.data.setItem('layout.other',103);
+        const bc=root.borderContainer({id:'border',datapath:'layout',height:'400px'});
+        bc.contentPane({id:'left',region:'left',width:'^.measure?pixels',splitter:true,minSize:99,maxSize:101});
+        bc.contentPane({region:'center'});
+    });
+    const border=element('border');geometry(border);
+    const sep=separator(border,'left');
+    const key=()=>sep.dispatchEvent(new window.KeyboardEvent('keydown',{key:'ArrowRight'}));
+    key();key();
+    assert.equal(app.data.getItem('layout.measure?pixels'),101);
+    assert.equal(border.control.style.getPropertyValue('--left'),'101px');
+    const node=app.dom.getBaseSourceNode(element('left'));
+    node.setAttr({width:'^.other'});
+    assert.equal(border.control.style.getPropertyValue('--left'),'103px');
+    key();
+    assert.equal(app.data.getItem('layout.other'),101);
+    assert.equal(app.data.getItem('layout.measure?pixels'),101);
+    app.dispose();
+});
+
+test('literal, read-only, CSS string and transformed dimensions never acquire writeback',async()=>{
+    for(const width of [100,'=size','^size:{}px','^size:= {} + 0','^css']) {
+        const {app,window,element}=await fixture((root,app)=>{
+            app.data.setItem('size',100);app.data.setItem('css','100px');
+            const bc=root.borderContainer({id:'border',height:'400px'});
+            bc.contentPane({id:'left',region:'left',width,splitter:true});bc.contentPane({region:'center'});
+        });
+        const border=element('border');geometry(border);
+        assert.equal(border.control.style.getPropertyValue('--left'),'100px');
+        separator(border,'left').dispatchEvent(new window.KeyboardEvent('keydown',{key:'ArrowRight'}));
+        assert.equal(border.control.style.getPropertyValue('--left'),'101px');
+        assert.equal(app.data.getItem('size'),100);
+        assert.equal(app.data.getItem('css'),'100px');
+        assert.equal(app.data.getNodes().length,2);
+        app.dispose();
+    }
+});

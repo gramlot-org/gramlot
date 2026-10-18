@@ -8,7 +8,7 @@ const borderRegions = new WeakMap();
 const horizontal = side => side === 'top' || side === 'bottom';
 
 /** Resolved Source attributes, not DOM scraping, supply the parent's region contract. */
-function projectBorderChild(element, attrs, {adapt, invoke, publish, publishParent}) {
+function projectBorderChild(element, attrs, {adapt, invoke, publish, publishParent, writeParameter}) {
     const rest = {...attrs}, splitter = {}, drawer = {};
     for (const [name, value] of Object.entries(rest)) {
         for (const [prefix, group] of [['splitter_', splitter], ['drawer_', drawer]]) {
@@ -24,7 +24,14 @@ function projectBorderChild(element, attrs, {adapt, invoke, publish, publishPare
     if (![undefined, null, false, true, 'close'].includes(rest.drawer)) throw new TypeError('drawer must be true, false or close');
     const probe = element.ownerDocument.createElement('div');
     probe.style.cssText = rest.style ?? '';
-    const size = probe.style[horizontal(region) ? 'height' : 'width'];
+    const dimension = horizontal(region) ? 'height' : 'width';
+    const numeric = typeof rest[dimension] === 'number';
+    if (numeric) {
+        if (!Number.isFinite(rest[dimension]) || rest[dimension] < 0) throw new TypeError('Border numeric dimensions must be finite nonnegative pixels');
+        probe.style[dimension] = `${rest[dimension]}px`;
+    }
+    const size = probe.style[dimension];
+    delete rest.width; delete rest.height;
     // The region owns its authored size; its child fills the allotted viewport.
     probe.style.width = '100%'; probe.style.height = '100%';
     rest.style = probe.style.cssText;
@@ -38,7 +45,8 @@ function projectBorderChild(element, attrs, {adapt, invoke, publish, publishPare
     if (drawerAttrs.style != null) drawerAttrs.style = drawerProbe.style.cssText;
     borderRegions.set(element, {region, size, min, max, splitter: rest.splitter === true,
         drawer: rest.drawer, hidden: rest.hidden === true,
-        splitterAttrs: adapt(splitter), drawerAttrs, label, icon, minimize, notifications: {
+        splitterAttrs: adapt(splitter), drawerAttrs, label, icon, minimize,
+        writeParameter: size => { if (numeric) writeParameter(dimension, size); }, notifications: {
             closableChange: payload => publish('closable_change', payload),
             splitterResize: payload => publishParent('splitter_resize', payload),
         },
@@ -71,7 +79,7 @@ export const ContentPane = defineComponent({
 
 export const BorderContainer = defineComponent({
     name: 'borderContainer', tag: 'gramlot-border-container', base: Container, subTags: '*',
-    childParameters: {region: {required: true, enum: REGIONS, unique: true}, drawer_onclick: {inline: ['evt', 'show']}},
+    childParameters: {region: {required: true, enum: REGIONS, unique: true}, width: {}, height: {}, drawer_onclick: {inline: ['evt', 'show']}},
     parameters: {
         design: {dtype: 'T', default: 'headline', binding: 'read', enum: ['headline', 'sidebar']},
         persist: {dtype: 'B', default: false, binding: 'read'},
@@ -326,6 +334,7 @@ export const BorderContainer = defineComponent({
             const available = Math.max(0, (horizontal(side) ? box.height : box.width) - this.#extent(opposite));
             const size = Math.max(Math.min(c.min, available), Math.min(desired, c.max, available));
             state.size = `${size}px`; this.#render(side);
+            c.writeParameter(size);
         }
         #keyResize(side, evt) {
             const state = this.#regions.get(side);

@@ -1,4 +1,4 @@
-import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder} from '@genrojs/builders';
+import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder, pointerTransform} from '@genrojs/builders';
 import {ControlAdapter} from './controls.js';
 import {SVG_NS, XHTML_NS} from '../renderer/attributes.js';
 import {requireNoScriptAttributes, requireStyleClassAttributes} from '../renderer/attributes.js';
@@ -94,12 +94,7 @@ export class HtmlElement {
         if (meta.gramlot_component?.sourceContext) {
             element.setSourceContext({
                 publish: (topic, payload) => node.publish(topic, payload),
-                writeParameter: (name, value) => {
-                    const pointer = node.getAttr(name);
-                    if (node.pointerType(pointer) === '^' && !Object.is(node.getRelativeData(pointer.slice(1)), value)) {
-                        node.setRelativeData(pointer.slice(1), value);
-                    }
-                },
+                writeParameter: (name, value) => this.writeParameter(node, name, value),
             });
         }
         const text = document.createTextNode(this.text(node));
@@ -113,6 +108,15 @@ export class HtmlElement {
         const {tag, namespace} = this.definition(node);
         return (namespace === XHTML_NS ? record.tag.toLowerCase() === tag.toLowerCase() : record.tag === tag)
             && record.element.namespaceURI === namespace;
+    }
+
+    /** Write a component interaction through a plain reactive Source pointer. */
+    writeParameter(node, name, value) {
+        const pointer = node.getAttr(name);
+        if (node.pointerType(pointer) === '^' && !pointerTransform(pointer)
+            && !Object.is(node.getRelativeData(pointer.slice(1)), value)) {
+            node.setRelativeData(pointer.slice(1), value);
+        }
     }
 
     compose(record, text, children) {
@@ -144,6 +148,7 @@ export class HtmlElement {
                 invoke: (name, code, keywords) => this.invokeScript(node, name, code, keywords),
                 publish: (topic, payload) => node.publish(topic, payload),
                 publishParent: (topic, payload) => parent.publish(topic, payload),
+                writeParameter: (name, value) => this.writeParameter(node, name, value),
                 remove: () => node.parentBag.popNode(node.label),
             });
         }
