@@ -2,53 +2,35 @@
 
 Document ID: **GC-095**.
 
-For appearance, use [Themes and CSS](096-themes-and-css.md): complete Python
-examples, variable and class catalogues, overrides and light/dark customization.
-
-> **Scope.** This is the maintained authoring guide. The repository README states
-> the current release. Dated release notes below describe when behavior entered;
-> they are not a list of current exclusions. Development-only differences are marked.
-
-Start with [the learning route](025-try.md) and an editable page from
-your adapter's setup guide. The sections retain their release progression: 0.1.x structure (005–035),
-0.2.0 Data and local behavior (040–090), with the 0.2.5 page module in 060;
-0.2.5 data exchange (095, its public path since 0.2.10), 0.2.14 endpoint calls
-(100), and 0.2.16 remote Source and lazy Data (105). Later additions within an
-earlier section are marked. The same example may return at a later stage to
-show which new declaration replaces earlier code; topic links are a secondary index.
+This guide covers the structure of a page: its Source, the way it reaches the
+browser, SVG, live Source changes, data exchange, the application index, messages,
+dates and formatting. The Data of a page and its bindings are in
+[Data binding and controllers](097-data-binding.md); endpoints are in
+[Calling the server](098-server-calls.md); Source and Data loaded from the server
+are in [Remote content and lazy Data](099-remote-content.md). For appearance, use
+[Themes and CSS](096-themes-and-css.md). Start with [Try Gramlot](025-try.md) and
+an editable page from your adapter's setup guide.
 
 **Execution model.** Page/main and exposed methods run on the server (or the JS
 Worker). Logic runs in the browser. Source describes what to build; Data holds
 the values; bindings connect them to the rendered DOM. Each server call creates
 a fresh Page, so its fields are not persistent application state.
 
-**Examples and limits.** gramlot-examples has HTML/SVG e01–e13, binding b01–b11 and
-controllers c01–c17, in Python and JavaScript. c09–c11 cover dataRpc, c12–c13 remote
-Source and c14 dataRemote. In chronological menu order, c15 (0.2.0 lifecycle),
-c16 (0.2.0 projection, then 0.2.3 sandbox) and c17 (0.2.5 local Data exchange)
-precede the endpoint lessons. b01 adds anchor/parent paths, c02 path filtering,
-and c11 a separately labelled 0.2.15 Source-auth step. c08 retains the local
-0.2.0 story and adds a distinct 0.2.14 quote/result/error exercise after c09/c11;
-editing the form alone never requests that quote. A successful basic trial
-is not exhaustive qualification. c17's nested-Date initialization extension is
-blocked by a detected JavaScript object-to-Bag conversion defect; it does not
-demonstrate dates/decimals. Mail/HTTP require environment-owned checks. Named connect_on handlers and js_requires groups need a resource host;
-the common FileServer gallery cannot demonstrate that environment. Authentication
-allow/deny belongs to an identity-aware adapter; c11 shows default refusal.
-
-The examples use maintained APIs, not frozen installations of those releases.
-Earlier/later code comparisons must be labelled; completeness of such teaching
-comparisons remains work in progress.
-
-Use [the catalogue and explanations](https://github.com/gramlot-org/gramlot-examples/blob/main/src/gramlot_examples/pages/README.md)
-to choose a lesson; the current walkthrough improvements are still in progress.
+**Examples.** The gallery of gramlot-examples shows these guides in Python and
+JavaScript, in families by topic, from HTML and SVG structure to binding,
+controllers, server calls, input components and containers. Choose a lesson in the
+[examples manual](https://gramlot-examples.readthedocs.io/en/latest/), or open the
+hosted gallery for [Python](https://gallery-py.gramlot.dev/) or
+[JavaScript](https://gallery-js.gramlot.dev/). The gallery runs on servers without a
+resource system and without an identity system: `js_requires` groups and the allow
+and deny of an `auth` rule need a server that has them.
 
 <a id="gc-095-005"></a>
 
 ## 005 · A first HTML page
 
-This is an authoring example for the development foundation, not a standalone
-server command. A server loads the module and supplies `root`.
+This is an authoring example, not a standalone server command. A server loads the
+module and supplies `root`.
 
 ```python
 from gramlot import Page as BasePage
@@ -62,76 +44,84 @@ class Page(BasePage):
 ```
 
 `root.div(...)` returns a real SourceBagNode, so nested calls create child Source
-nodes. Text is literal text, not parsed HTML. Native attributes such as `id` are
-supported; `class_` escapes the Python keyword. The exported HTML5 collection defines the vocabulary. Its open signatures accept
-native attributes; Gramlot also applies the style shortcuts described in section 070.
+nodes. Text is literal text, not parsed HTML. HTML attributes such as `id` are
+supported; `class_` escapes the Python keyword. The exported HTML5 collection
+defines the vocabulary; its open signatures accept any HTML attribute.
 
-*0.2.0:* the legacy style shortcuts become CSS styling in the browser:
-`color='red'`, `font_size='12px'`, `margin_top=4`, `style_aspect_ratio='16/9'`,
-`rounded=8`. They compose one `style` attribute with `style='…'`, as the static
-Builder `HtmlRenderer` already does. `_class` is `class`. They react to Data like
-any attribute (section 070).
+The legacy style shortcuts become CSS styling in the browser: `color='red'`,
+`font_size='12px'`, `margin_top=4`, `style_aspect_ratio='16/9'`, `rounded=8`. They
+compose one `style` attribute with `style='…'`, as the static Builder
+`HtmlRenderer` does. `_class` is `class`. They react to Data like any attribute
+([Data binding and controllers](097-data-binding.md#gc-095-070)).
 
 <a id="gc-095-010"></a>
 
 ## 010 · From a page to the browser
 
-1. The server returns a document with a root element, default `gramlot-root`, and runtime bootstrap.
+1. The server returns a document with a root element, default `gramlot-root`, and
+   the runtime bootstrap.
 2. `Gramlot` prepares Data and Source roots and subscribes before requesting main.
 3. The server executes `main(root)` and sends a typed SourceBag through TYTX.
-4. The generic builder decodes and associates the Source, then Gramlot validates it before insertion.
+4. The generic builder decodes and associates the Source, then Gramlot validates it
+   before insertion.
 5. Inserting the completed block under Source `main` triggers the renderer.
 
-Later Source insertions, removals and updates use the same subscription. Native
-attribute updates can update an existing element; structural changes rebuild the
-affected subtree and release its owned objects. Framework code owns this work.
+Later Source insertions, removals and updates use the same subscription. Attribute
+updates can update an existing element; structural changes rebuild the affected
+subtree and release its owned objects. Framework code owns this work.
 
-*0.2.0:* the bootstrap document carries a script that creates `PageBootstrap`
-with the page's resources. In the browser it writes the stylesheet links (the
+The bootstrap document carries a script that creates `PageBootstrap` with the
+page's resources. In the browser it writes the stylesheet links (the theme, the
 `Page.css` URLs, then the same-name `foo.css`), imports the page's JavaScript
-modules, creates the `Gramlot` instance, registers the named logic and then
-starts the page ([GC-090 section 030](090-classes-and-hosts.md)). Between
-validation and DOM construction, each branch installs its Data declarations
-(section 080).
+modules, creates the `Gramlot` instance, registers the named logic and then starts
+the page ([Classes and server adapters](090-classes-and-hosts.md#gc-090-030)).
+Between validation and DOM construction, each branch installs its Data
+declarations ([lifecycle](097-data-binding.md#gc-095-080)).
 
-Choose **Base** for the original spacing, or **Compact** for smaller headings,
-gaps, card padding and form controls. Both support light and dark mode. Compact
-uses Base followed by its size overrides, through the existing resource list:
+Every page loads a theme before its own CSS: Gramlot Base, unless the server or
+the page chooses another ([Themes and CSS](096-themes-and-css.md#gc-096-005)).
+**Base** has the original spacing. **Compact** is an overlay with smaller headings,
+gaps, card padding and form controls; load it after Base with `Page.css`:
 
 ```python
 class Page(BasePage):
-    css = (
-        "/themes/gramlot-base/theme.css",
-        "/themes/gramlot-compact/theme.css",
-    )
+    css = ("/themes/gramlot-compact/theme.css",)
 ```
 
-In JavaScript, use the same ordered URLs in `static css = [...]`. Put the list on
-a shared application Page base class to avoid repeating it in every page. Native
-elements and classes in `main` stay the same. Load only Base for its original
-appearance. Application CSS can override theme rules. Color mode remains separate:
-`data-theme="light"` or `data-theme="dark"` on the document root, or the system
-preference when absent. These are CSS themes; no `Page.theme` or `root.css()` API
-is introduced.
+In JavaScript, write `static css = ['/themes/gramlot-compact/theme.css']`. Put the
+list on a shared application Page base class to avoid repeating it in every page.
+HTML elements and classes in `main` stay the same. Application CSS can override
+theme rules. Color mode is separate: `data-theme="light"` or `data-theme="dark"` on
+the document root, or the system preference when absent. There is no `root.css()`
+API.
 
 <a id="gc-095-015"></a>
 
-## 015 · Remote Source
+## 015 · Source built on the server
 
-The declarative `remote` and lazy Data lesson belongs to the later **0.2.16**
-stage (§105); this early section is a reference pointer, not a 0.1.x capability claim.
-
-`@source` / `registerSource(...)` declare Source fragments and `@endpoint` / `registerEndpoint(...)` declare endpoints (GC-230 §035; §100 below). The `remote` attribute mounts a fragment declaratively as the content of an element (section 105); from code a fragment is requested with `gramlot.src.remoteSource(target, method, params)`.
+`main` builds the whole page on the server. A page can declare more Source
+fragments with `@source` / `registerSource(...)` and endpoints with `@endpoint` /
+`registerEndpoint(...)`. The `remote` attribute mounts a fragment as the content of
+an element; from code a fragment is requested with
+`gramlot.src.remoteSource(target, method, params)`. See
+[Remote content and lazy Data](099-remote-content.md) and
+[Calling the server](098-server-calls.md).
 
 <a id="gc-095-020"></a>
 
-## 020 · Capabilities outside this guide
+## 020 · Where to find the other capabilities
 
-Data bindings, formulas/controllers, endpoint calls, remote Source and
-`dataRemote` are available in the sections linked above. Recipes, shared widgets,
-record/form management and database services remain separate future capabilities;
-do not infer them from a native HTML form or an endpoint-backed resolver.
-Section 085 lists rejected declarations and deferred work.
+- Data, pointers, formulas, controllers, named logic, bound controls and buttons:
+  [Data binding and controllers](097-data-binding.md).
+- Endpoints and `dataRpc`: [Calling the server](098-server-calls.md).
+- `remote` and `dataRemote`: [Remote content and lazy Data](099-remote-content.md).
+- Input components, command buttons and containers:
+  [Components](105-components.md).
+
+Recipes, record and form management, stores, grids, trees and database services are
+not provided; do not infer them from an HTML form or an endpoint-backed resolver.
+[Excluded declarations](097-data-binding.md#gc-095-085) lists the legacy
+declarations that raise an error.
 
 <a id="gc-095-025"></a>
 
@@ -150,17 +140,15 @@ class Page(BasePage):
 
 `html` creates an SVG `foreignObject` whose children are HTML. The same Source
 subscription handles SVG insertions, attribute changes and removals; ordinary
-attribute changes preserve the DOM element. `stroke_width` becomes the native
-SVG `stroke-width` attribute. This is SVG attribute adaptation, not general CSS
-styling or a new Data-binding API. JavaScript page authoring has equivalent
-`root.svg({...}).circle({...})` calls.
+attribute changes preserve the DOM element. `stroke_width` becomes the SVG
+`stroke-width` attribute. This is SVG attribute adaptation, not general CSS
+styling. JavaScript page authoring has equivalent `root.svg({...}).circle({...})`
+calls.
 
-*0.2.0:* SVG presentation attributes (`fill`, `stroke`, `stroke-width`,
-`opacity`, `transform` and the others) accept `^` pointers like every native
-attribute. A null value removes the attribute (section 070).
-
-Next: [Extending Gramlot](100-extensions.md).
-
+SVG presentation attributes (`fill`, `stroke`, `stroke-width`, `opacity`,
+`transform` and the others) accept `^` pointers like every other attribute. A null
+value removes the attribute
+([Data binding and controllers](097-data-binding.md#gc-095-070)).
 
 <a id="gc-095-030"></a>
 
@@ -191,13 +179,12 @@ renderer disposal, even for descendants removed from Source during freeze. If th
 frozen root itself was deleted, unfreeze removes its old DOM without recreating it.
 An ancestor removed/rebuilt outside that frozen branch disposes its records normally;
 freeze/unfreeze require a currently mounted record. These are runtime APIs, not
-new Python page event declarations or generic SourceBag methods.
+Python page event declarations or generic SourceBag methods.
 
-*0.2.0:* freeze suspends only structural rebuilding. Elements already built
-inside a frozen branch still react to Data changes. A branch inserted under a
-freeze installs its Data declarations at once; its DOM and `_onBuilt` wait for
-the thaw (section 080).
-
+Freeze suspends only structural rebuilding. Elements already built inside a frozen
+branch still react to Data changes. A branch inserted under a freeze installs its
+Data declarations at once; its DOM and `_onBuilt` wait for the thaw
+([lifecycle](097-data-binding.md#gc-095-080)).
 
 <a id="gc-095-035"></a>
 
@@ -206,701 +193,13 @@ the thaw (section 080).
 To replace a live `div` with a `section`, delete its Source node and insert a new
 `section` through the builder. Deletion releases the old DOM and owned resources;
 insertion renders the new node. Choose the insertion position explicitly when
-sibling order matters. In-place tag-only mutation is outside this increment's
-live contract; do not use an extended BagNode.setValue tag argument. Ordinary
-value and attribute updates continue through their existing Source methods.
-
-
-<a id="gc-095-040"></a>
-
-## 040 · Data and pointers (0.2.0)
-
-Each page instance has one Data Bag, `app.data`. It is the same Bag as
-`app.src.builder.data`. Paths written by the author never contain the internal
-`_root_` wrapper segment; a user Data field named `main` is ordinary data. Gramlot owns one subscription to the Data and routes each change
-to the declarations that use the changed path.
-
-A native attribute or a node value can hold a pointer to a Data path:
-
-| Form | Meaning |
-| --- | --- |
-| `'^.name'` | Reads the value and reacts when it changes |
-| `'=.name'` | Reads the value when the declaration runs; a change does not trigger it |
-| `'==expression'` | Inline JavaScript expression, compiled only by the page runtime in the browser and evaluated at each projection of the node |
-| `'^.name?color'` | Pointer to the `color` attribute of the Data node at `.name` |
-
-A path starting with `.` is relative to the `datapath` of the enclosing branch.
-A change of the Source or of the context re-registers the affected pointers.
-
-**Symbolic paths.** A path can start from a symbolic origin resolved by Builder:
-
-- `#FORM` is the first ancestor with `formId` or `form=True`;
-- `#ANCHOR` is the first ancestor with `_anchor`;
-- `#<node_id>` is the node with that `node_id`.
-
-Example: `value='^#FORM.customer.name'`. The legacy origins `#WORKSPACE`, `#ROW`
-and `#DATA` and their aliases are outside 0.2.0.
-
-`#parent` is instead a path segment cancelling the previous Data-path segment.
-For a node in `contexts.child`, `^.#parent.name` resolves to `contexts.name`; a
-bare leading `^#parent.name` is not a symbolic node origin.
-
-Examples: `binding/01_pointers` (`b01`, including #ANCHOR and parent-path comparison)
-and `02_variable_datapath` (`b02`).
-
-```python
-panel = root.div(datapath=".customer")
-panel.h2("^.name")                      # shows customer.name
-panel.input(value="^.name", live=True)  # edits customer.name
-```
-
-**Variable datapath.** `datapath='^.foo'` makes the value stored at `.foo` the
-datapath of the branch. When `.foo` changes, every relative path of the branch
-changes and its registrations are redone. An empty value gives a null path.
-Gramlot implements this rule in `absDatapath` of `GramlotBuilderBagNode`, which
-also keeps `?attr` on symbolic paths. Builder and Bag are not modified.
-
-**Attributes ending in `_path`.** An attribute whose name ends in `_path`, such
-as `destination_path` or `result_path`, holds a bare path without `^` or `=`. If
-the author writes a pointer there, the symbol is removed and a `console.warn`
-appears once per declaration. A name ending in `path` without the underscore,
-such as `foopath`, is an ordinary attribute. `datapath` follows its own rule
-above.
-
-<a id="gc-095-045"></a>
-
-## 045 · Initial values: `dataSetter` (0.2.0)
-
-```python
-dataSetter(destination_path, value=None, **attr)
-```
-
-`dataSetter` writes an initial value into the Data. It replaces the legacy
-`data(path, value)` declaration. There is no alias. `root.data(...)` raises an error that names
-`dataSetter` and `html_data`. On any other Source node `data` is the
-genro-builders property that returns the Data Bag; it does not declare a value and a
-call does not raise that error. The HTML5
-`<data>` element is written `html_data(...)`, in Python and JavaScript:
-`root.html_data("one", value="1")` gives `<data value="1">`.
-
-In JavaScript the parameters go in one object:
-`root.dataSetter({destination_path: '.settings.caption', value: 'Orders'})`. The
-same rule holds for `dataFormula` and `dataController`; JavaScript positional
-arguments of the data elements are not available yet.
-
-```python
-def main(self, root):
-    root.h1("^.settings.caption")
-    root.dataSetter(".settings.caption", "Orders")
-    root.dataSetter(".settings", None, theme="light")   # attributes only
-    root.dataSetter(".filters", {"year": 2026, "tags": ["open"]})
-```
-
-- `destination_path` is a Data path, relative or absolute. It does not accept
-  `?attr`: a `destination_path` with `?` is a validation error.
-- `value` is optional. The remaining keyword arguments become attributes of the
-  Data node.
-- A Python `dict` or a plain JavaScript object becomes a `Bag` using the default
-  recursive population. Nested dictionaries and lists, including dictionaries
-  inside lists, become Bags too. This preserves the logical content: sequence
-  order and scalar leaf values stay the same; empty nested containers become
-  empty Bags. In the example, both `filters` and its `tags` child are Bags.
-- A list passed directly as `value` remains a literal list. A JSON string passed
-  directly remains a string: `dataSetter` does not implicitly parse JSON.
-
-**Installation order.** For the initial Source, and for every branch inserted
-later, all `dataSetter` declarations of the branch are installed before its DOM
-is built. They run in document order, including a `dataSetter` nested after a
-visual sibling. An element declared before a `dataSetter` therefore shows the
-final value at the first render. For the same path, the later declaration wins.
-Duplicate declarations produce no warning.
-
-**Null values (rule R1).** Only during installation:
-
-- a non-null value is written; the later one wins;
-- a null value on an existing path leaves the value and applies the attributes;
-- a null value on a missing path creates the path with null and the attributes.
-
-So `dataSetter('x', 7)` followed by `dataSetter('x', None)` leaves 7. Writes at
-runtime are not affected by R1.
-
-`value` and the attributes are stored as written: `'^y'`, `'==a+b'` and
-`'a${b}'` stay strings. A computed value comes from `dataFormula`.
-
-Removing a `dataSetter` from the Source does not delete its Data. A rebuild or a
-thaw does not install it again. A `Bag` value moves into the Data without a copy;
-the Source node then no longer carries it. Example:
-`binding/03_setters_and_defaults` (`b03`).
-
-<a id="gc-095-050"></a>
-
-## 050 · Build-time defaults and data defaults (0.2.0)
-
-A declaration can give a default to its own pointers:
-
-- `default` and `default_value` give the default of the `value` pointer;
-  `default_value` prevails over `default`;
-- `default_<attr>` gives the default of the pointer in attribute `<attr>`;
-- `attr_<name>=v` sets the attribute `<name>` on the Data node of the control's
-  `value` (or `src`). `v` can be a pointer.
-
-Defaults are applied after all `dataSetter` declarations of the branch, and only
-on empty paths. Null and a missing path count as empty. `false`, `0` and the
-empty string are values. A default never overrides a `dataSetter`, even one
-declared later.
-
-`attr_*` follows the legacy rule. It applies only if the Data node of the
-`value` exists, and without an emptiness check. It applies after the node's own
-defaults, so a default that has just created the Data node receives the
-attribute.
-
-```python
-root.input(type="number", value="^.font_size", default_value=14)
-root.input(value="^.price", attr_dtype="N")   # dtype='N' on the Data node .price
-```
-
-These are **build-time defaults**: parameters of the page structure, such as a
-font size or a colour. They are not the defaults of application records. Most
-page Data arrives after construction, in a cycle of loading (for example from a
-remote call), editing, saving and loading again. When a user inserts a new
-record, a "newrecord" is loaded, and the record defaults belong to it. Forms,
-records and newrecord are outside 0.2.0, so 0.2.0 offers only build-time defaults.
-Do not use build-time defaults to model record defaults. Example:
-`binding/03_setters_and_defaults` (`b03`).
-
-<a id="gc-095-055"></a>
-
-## 055 · Formulas and controllers (0.2.0)
-
-```python
-dataFormula(result_path, formula=None, func=None, **params)
-dataController(script=None, func=None, **params)
-```
-
-- `dataFormula` computes a value and writes it at `result_path`. `result_path`
-  does not accept `?attr`.
-- `dataController` runs code; the code writes Data itself.
-- `func` names a registered logic method (section 060). This is
-  the recommended form.
-- `formula` and `script` hold inline code (section 065).
-- A declaration uses either `func` or inline code: both together are an error.
-
-Keyword arguments with `^` trigger the declaration; with `=` they are only read.
-The legacy form `dataFormula('.total', 'a + b', a='^.a', b='^.b')` keeps working
-as inline code. Examples: `controllers/01_formula` (`c01`) and
-`02_controller` (`c02`).
-
-Control attributes:
-
-| Attribute | Effect |
-| --- | --- |
-| `_if`, `_else` | If `_if` is false, `_else` runs when present, then execution stops |
-| `_init` | Runs once, before the DOM is built |
-| `_onBuilt` | Runs after the first successful build |
-| `_onStart` | Runs when the page is ready; a number is a delay in ms; `true` and `0` mean no delay; a negative or non-finite number is an error |
-| `_delay` | Debounce in ms; the last call wins |
-| `_timing` | Repeats every given number of seconds |
-| `_userChanges` | Runs only when the changed path is the registered path itself; changes of a containing path or of a path below it are skipped |
-
-`_init`, `_onBuilt` and `_onStart` accept `true`, `false`, null or a number; any other
-value, a pointer included, is an error naming node and attribute.
-
-`_userChanges` separates edits from the loading of a whole structure. It does not
-distinguish the user from the program. Removing the declaration stops its timers.
-
-<a id="gc-095-060"></a>
-
-## 060 · Named logic (0.2.0)
-
-Named Logic begins in 0.2.0; the Page/Logic module shown here is the **0.2.5**
-arrangement. The `business` resource-group example requires genro-kajenn
-resources. For the common FileServer gallery and a first editable page, use the
-root-group method `func="add"` as in c03; `js_requires` is not available there.
-
-Named logic is the primary way to attach behavior. A logic file that has logic
-methods exports a class called `Logic`. Its methods are copied into a group of the
-page instance. A module without `Logic` has no logic methods.
-
-```python
-class Page(BasePage):
-    js_requires = "business"
-
-    def main(self, root):
-        root.input(type="number", value="^.price")
-        root.dataFormula(".discounted", func="business.discount", price="^.price")
-        root.dataFormula(".total", func="add", a="^.a", b="^.b")
-```
-
-```javascript
-// _resources/business.js
-export class Logic {
-    discount(kwargs) { return round(kwargs.price * 0.9); }
-}
-function round(x) { return Math.round(x * 100) / 100; }   // private to the file
-```
-
-```javascript
-// orders.js: the page module, with the page's name. The JavaScript page uses Page and
-// Logic; the Python page orders.py beside it takes Logic only.
-import {Page as BasePage} from '@gramlot/gramlot/page';
-
-export class Page extends BasePage {
-    main(root) { root.dataFormula({result_path: '.total', func: 'add', a: '^.a', b: '^.b'}); }
-}
-
-export class Logic {
-    add(kwargs) { return kwargs.a + kwargs.b; }
-    reset(node, kwargs) { this.page.logic.business.discount(kwargs); }
-}
-```
-
-- The page logic is the `Logic` export of the page module: `orders.js` for the
-  JavaScript page, and `orders.js` beside `orders.py` for the Python page, whose
-  `Page` export stays unused. A separate companion `orders_aux.js` that exports
-  `Logic` stays admitted; a page with both raises an error. Use the companion when
-  the JavaScript `Page` imports server-only modules: the page module is imported by
-  the browser too, so all its imports must resolve there. A page module without
-  `Logic`, also beside a Python page, gives no logic methods: write `Logic` only when
-  the page has methods. A misspelt export (`logic`) is not an error at load; it shows
-  when a `func="..."` looks for its method and the error names the method and the
-  resources of the group.
-- The page logic's methods live in `page.logic`. Each name in `js_requires`
-  becomes a group: `page.logic.business`. A name with `/` becomes a nested group.
-- `func='business.discount'` calls a group method; `func='add'` calls a
-  method of the page logic.
-- A formula method is called as `method(kwargs)` and returns the value. A
-  controller method is called as `method(node, kwargs)`.
-- `kwargs` contains the resolved author attributes, plus `_node`, `_triggerpars`,
-  `_reason` and, for a button, `_evt` and the `button_*` arguments. Control
-  attributes (`destination_path`, `result_path`, `func`, `formula`, `script`, `_if`, `_else`,
-  `_init`, `_onStart`, `_onBuilt`, `_delay`, `_timing`, `_userChanges`) are not
-  in `kwargs`.
-- Inside a method, `this` is the group and `this.page` is the page instance.
-- The same resource found at several levels fills the same group, from the
-  generic to the specific; for the same method name the specific one wins.
-
-These cases are errors: a `Logic` class with an explicit constructor; a method
-named `page` or named like a child group; a missing name. A missing name never
-falls back to inline code. State lives on the group or on the page, assigned by
-the methods.
-
-Named logic works under a Content Security Policy without `'unsafe-eval'`.
-[GC-090 section 030](090-classes-and-hosts.md) describes resource
-lookup and file layout. With the minimal `GramlotFileServer` only the page logic exists
-(the `Logic` of `foo.js`, or `foo_aux.js`), and its methods are the root group:
-`func='add'`. A dotted name such as `business.discount` needs a `js_requires`
-group, that is a `GramlotServer` with a resource system. Example:
-`controllers/03_named_logic` (`c03`).
-
-The same method name registered twice in the same group: the last registration
-wins. The page logic registers after the `js_requires` names.
-
-<a id="gc-095-065"></a>
-
-## 065 · Writing Data from code and inline code (0.2.0)
-
-Code writes Data through the methods of the Source node. Gramlot adds no
-separate set of operations.
-
-| Method | Effect |
-| --- | --- |
-| `node.GET(path)` / `getRelativeData` | Reads a value |
-| `node.SET(path, value)` / `setRelativeData` | Writes and triggers reactions |
-| `node.PUT(path, value)` | Writes without triggering reactions |
-| `node.FIRE(path, value=true)` | Triggers even with an equal value, then resets the path to null silently |
-| `node.FIRE_AFTER(path, value=true, delay=10)` | Fires after `delay` ms; 10 ms is the legacy default |
-
-In the browser every Source node is a `GramlotBuilderBagNode`, in a
-`GramlotBuilderBag`. These Gramlot classes extend Builder's `SourceBagNode` and
-`SourceBag`. `GET`, `SET`, `getRelativeData` and `setRelativeData` are Builder's.
-Gramlot's node class provides the silent `PUT`, the `FIRE` that marks its write
-for the Data router, `FIRE_AFTER` with its timer tied to the node, and
-`absDatapath`. Builder and Bag are not modified.
-
-**Inline code** is allowed but discouraged, and may be deprecated. `formula` and
-`script` strings are compiled only in the page runtime in the browser, with
-`this` bound to the Source node:
-
-```python
-root.dataController("this.SET('.count', 0)", _fired="^.reset")
-```
-
-No server compiles code: not the Python `GramlotServer`, the JavaScript
-`GramlotServer`, the GramlotWorkerServer nor the DevTools panel. A page with inline code
-needs `'unsafe-eval'` when its server sets a Content Security Policy. Under a policy without it, the browser
-refuses the compilation and Gramlot raises an `EvalError` that names the node and
-the attribute and points to named logic or to the permissive profile
-([GC-090 section 035](090-classes-and-hosts.md)). The error covers every inline
-declaration: `formula`, `script`, `_if`/`_else`, `==`, `action` and
-`connect_on<event>`. Examples: `controllers/04_inline_expressions`
-(`c04`) and `05_node_methods` (`c05`). The file exported by
-`@gramlot/gramlot-serverless` allows `'unsafe-eval'`, so inline code runs there too.
-
-Inline code runs only as written in the Source the page receives: `main`, a remote
-Source, or a `GramlotBuilderBag` given to `startSource`. Write it in `main` or in the
-method of a remote Source, as a literal string. These are errors that name the node
-and the attribute ([GC-090 section 035](090-classes-and-hosts.md)):
-
-- a code attribute changed by page code after the start, or a node with inline code
-  inserted in the live Source: its text is not run. Code that must change at run time
-  belongs in named logic;
-- inline code built from data: a code attribute that holds a pointer
-  (`formula='^.code'`) is refused when the Source is received. Data reaches inline
-  code as parameters (`a='^.a'`), never as text;
-- an attribute with the form of a native event handler (`onclick='…'`): write
-  `connect_onclick` instead;
-- a `javascript:` URL in `href`, `src`, `formaction` or `xlink:href`, written or
-  from Data.
-
-An `iframe` whose `srcdoc` comes from Data gets `sandbox=""`: the HTML is shown and
-runs nothing, no script, form, popup or access to the page. `srcdoc` comes from Data
-when it is a pointer (`srcdoc='^.preview'`), a `==` expression or an explicit pointer template, or when the node value is a pointer, whose datum can carry
-`srcdoc` in its `_wdg`. A literal `srcdoc` gets no `sandbox`. A `sandbox` written in
-the Source is kept as written: `sandbox='allow-scripts'` lets the HTML run scripts,
-and is the way to turn the rule off ([GC-090 section 035](090-classes-and-hosts.md)).
-
-```python
-pane.dataFormula(".total", "price * quantity", price="^.price", quantity="^.quantity")
-pane.button("Save", action="this.FIRE('.save')")
-pane.span("x", connect_onclick="this.SET('.clicked', true)")
-```
-
-**Legacy macros** (`GET .a`, `SET .a = v`, `PUT`, `FIRE`, `FIRE_AFTER`, `$1`)
-are accepted only by a deprecated compatibility preprocessor for inline code. It
-uses the legacy regular expressions and translates to `this.GET(...)`,
-`this.SET(...)` and the matching methods; `$1` becomes `arguments[0]`. Like the
-legacy, it also translates a macro inside a string or a comment. A
-`console.warn` appears once per declaration and shows the new form. Code already
-written as `this.SET(...)` passes unchanged and without warning.
-
-<a id="gc-095-070"></a>
-
-## 070 · Native controls and reactive attributes (0.2.0)
-
-`value='^path'` binds a native control to a Data path in both directions. The
-Data representation of each control:
-
-| Control | Data value | Boundary behavior |
-| --- | --- | --- |
-| text, textarea (and `password`, `email`, `url`, `tel`, `search`) | string, or null shown empty | an empty string is kept; a Data change during an IME composition is shown when it ends |
-| number | finite number, or null | an empty field writes null; an invalid draft stays in the DOM and writes nothing, never `NaN` |
-| range | finite number, or null | the browser clamp writes nothing |
-| select (single) | string, or null | a missing option selects nothing and leaves the Data unchanged |
-| select (multiple) | array of strings, `[]` included, or null | null selects nothing; no delimiter strings; any other value is an error |
-| date, time, month, week, datetime-local | string in the native lexical form, or null | no `Date` object, no time-zone conversion |
-| color | string as serialized by the browser | a browser normalization writes nothing |
-
-`hidden` and `file` inputs have no adapter; checkbox and radio are below; button
-inputs stay native. An input type the browser does not know behaves as text. A
-literal or `=` value sets the control and never writes. A literal `value` (neither
-`^` nor `=`) is also written as the control's default: `defaultValue` for an input,
-the text for a textarea, so a native form Reset restores the value written in the
-page. A `^` value sets the property only. Select, checkbox and radio keep the
-default of their authored `selected` or `checked` attribute.
-
-- `live=False` is the default: the Data is written on `change`. `live=True`
-  writes on every `input`, for text, textarea, number and range. Select, color
-  and the temporal types always write on `change`.
-- A correction written by a controller is shown on the control that produced the
-  edit. Other attributes bound to the same path update while the user types.
-- Changing `type`, `multiple` or `group` rebuilds the element and keeps its
-  binding.
-
-Examples: `binding/04_native_editing` (`b04`), `05_checkbox_radio`
-(`b05`), `06_style_and_visibility` (`b06`) and `07_bound_svg` (`b07`).
-
-**Checkbox:** `input(type='checkbox', value='^.flag')` holds a boolean. Data
-receives only `true` or `false`, never `'on'`.
-
-**Radio:** `input(type='radio', group='size', value='^.small')`. Each button
-has its own boolean. When the user chooses a button, it becomes `true` and the
-other buttons of the group become `false`. `group` produces the generated `name`
-in the DOM, scoped to the page instance. More than one initial `true` in a group
-is an error. A radio group bound to a single value (`radioButtonText`) arrives
-with the components in 0.3.0.
-
-**Reactive attributes:**
-
-| Attribute | Effect | Null |
-| --- | --- | --- |
-| `style='…'` | `style` attribute, a string | removes `style` |
-| `class='…'` | `class` attribute, a string | removes `class` |
-| `visible=…` | `false` sets `style.visibility='hidden'`; the element keeps its space | the current `style` returns |
-| `hidden=…` | native boolean attribute | as any native boolean |
-| style shortcuts: `style_*`, `color`, `width`, `background_*`, `font_*`, `margin_*`, `padding_*`, `border_*`, …; `rounded`, `shadow`, `transform`, `filter`, `transition`, `zoom`, `gradient` | one CSS property in the composed `style`; a shortcut wins over the same property in `style='…'` | removes that property only |
-| `width`/`height` on `img`, `canvas`, `embed`; `width`/`border` on `table` | native attribute, not CSS, as in legacy GenroPy | removes the attribute |
-| SVG presentation attributes | SVG attribute; no style shortcuts on SVG | removes the attribute |
-| `data_*`, `aria_*` | `data-*`, `aria-*` attribute | removes the attribute |
-| other HTML attributes | existing attribute projection | as in 0.1.2 |
-
-For `style` and `class`, a value other than a string or null is an error.
-Excluded: `style` as a Bag or dictionary, themes and `root.css()`.
-
-### Attribute templates and text masks
-
-An explicit pointer template reads its leading Data value with `{}` and other
-current attributes of the same Source node with `{name}`. For example:
-
-```python
-root.div("Preview", title="^.name:Customer: {customer}", customer="^.name")
-root.p("^.name", mask="Hello, {}")
-```
-
-The title follows `.name`; `customer` remains a normal projected attribute.
-Ordinary `${customer}` text is literal, including any preceding backslash. To
-migrate `title="Customer: ${customer}"`, write the explicit pointer template above.
-An unknown Source attribute is an error. `:=` evaluates an activated JavaScript
-expression using typed slots; `:` only composes text. JavaScript template literals
-inside scripts or `==` expressions retain normal JavaScript semantics.
-
-`mask` formats node text using `{}` and never enables raw HTML. Live `format` uses
-`gramlot.format` before applying the mask; see §125. The old `%s` placeholder is
-not interpreted. Widget `value` keeps an ordinary pointer without a suffix.
-
-Development correction: Python static, JavaScript static and live rendering now
-reject non-string, non-null `style` and `class` values before attribute composition.
-This includes resolved pointers and live `==` results; static renderers still defer
-`==` expressions. A rejected live projection leaves the displayed attribute unchanged;
-it does not undo the Data/Source write. Correct the value to resume projection.
-The same check applies to SVG and literal `html_style`/`html_class` attributes.
-Numeric style shortcuts such as `width=10` retain their existing contract.
-
-<a id="gc-095-075"></a>
-
-## 075 · Buttons and events (0.2.0)
-
-A `dataController` nested in a `button` is the main way to handle a click:
-
-```python
-btn = root.button("Save")
-btn.dataController(func="orders.save", total="=.total")
-```
-
-- The nested controller is an ordinary `dataController`: it also reacts to `^`
-  pointers, `_init`, `_onStart` and `_timing`. The click is one more trigger.
-- It receives `_evt`, `button_counter`, `button_shift`, `button_ctrl`,
-  `button_alt` and `button_meta`. The counter lasts as long as the Source node,
-  including across rebuilds.
-- `action`, `fire` and `fire_*` are alternatives to the nested controller:
-  - `action='…'` is inline code run on click, with `this` bound to the button
-    node. It receives the current button attributes plus `event`, `_counter` and
-    `modifiers`. The inline code rules of section 065 apply;
-  - `fire='.path'` calls `FIRE` on `.path` at each click. The value is the
-    modifier string (`'Shift'`, `'CtrlAlt'`, …), or `true` without modifiers.
-    The Data node receives the attributes `modifier` and `_counter`;
-  - `fire_<name>='.path'` calls `FIRE` on `.path` with the value `'<name>'`, for
-    example `fire_save='.action', fire_close='.closing'`.
-- A `dataRpc` nested in a `button` is a click mechanism like a nested
-  `dataController`: the click calls the endpoint (section 100).
-- A button has one mechanism only. Several `dataController` or `dataRpc` children,
-  or any combination of nested controller, `action` and the `fire` family, produce
-  an error. Several `fire_*` attributes on the same button all fire, in attribute
-  order. `fire` together with `fire_*` is one mechanism: `fire` wins and the
-  `fire_*` are ignored, as in the legacy chain. The `fire_*` attributes also
-  write `modifier` and `_counter` on their Data nodes.
-- `connect_on<event>`, for example `connect_onclick`, attaches a native event
-  listener to any element. On a button it runs after the Gramlot mechanism.
-
-**Rule R3.** For a button with a Gramlot mechanism only:
-
-- without a `type` written by the author, the framework sets `type="button"`; an
-  author's `type` stays, and `type="button"` stays if the mechanism is removed
-  later;
-- the click calls `stopPropagation`, as in legacy;
-- no `preventDefault`;
-- a disabled button does nothing and does not count the click.
-
-A button without a Gramlot mechanism stays native, also when a parent node holds
-a `dataController`. Only the `<button>` tag gets this behavior: `input`
-elements of type button, submit, reset and image stay native. The 200 ms
-automatic disable, click bursts and LightButton are not part of 0.2.0.
-
-Known effect of R3: in a form with a single text field whose only button has a
-Gramlot mechanism (and so `type="button"`), Enter submits the form natively and
-the mechanism does not run. A form with a native submit button keeps the native
-behavior. The owner accepted R3 as built for 0.2.0 and reviews it after the
-release.
-
-Examples: `controllers/06_button_controller` (`c06`) and `07_events`
-(`c07`). A `connect_on<event>` value made of dotted names (`group.method`) is
-named logic; any other value is inline code. The event name is the text after
-`connect_on`, lower-cased.
-
-`gramlot.dom` relates Source and DOM through two methods with the legacy names.
-`getBaseSourceNode(domNode)` climbs the DOM to the first rendered element and
-returns its Source node, or null. `getDomNode(sourceNode)` returns the element of
-the node, or null for a fragment, a data element, a removed node or a node not
-yet built. Gramlot adds no properties to DOM elements or Source nodes.
-
-
-**0.3 development preview:** `button` now renders `gramlot-button`; toggleButton and dropDownButton share its command engine. Use html_button for native form submission/reset. The preceding R3 native-DOM description is the historical 0.2 behavior. See [command components](105-components.md) for the current preview contract.
-
-**Added in 0.2.19 — plain and delayed buttons.**
-`html_button` is a distinct Source element that renders native `<button>`.
-It preserves native submit/reset and bubbling, without an implicit `type` or
-Gramlot action/ask/fire/controller dispatch. Use `type="button"` when it should
-not submit a form; explicit events still use `connect_onclick`. Declare
-`action`, `ask`, `fire` and `_delay` on `button`, not `html_button`.
-
-```python
-form.html_button("Reset", type="reset")
-pane.button("Run", _delay=300).dataController(func="run")
-```
-
-With a positive button `_delay` (milliseconds), each click restarts the wait.
-One execution follows the last click, using its event/modifiers and the number
-of clicks in that group: `_counter` for action/fire, `button_counter` for the
-nested controller/RPC. The next group starts again at 1. Arguments are read
-when the mechanism runs. With no delay or zero, the existing immediate lifetime
-counter remains. An ancestor may supply `_delay`; a button's zero overrides it.
-The delay runs before ask and before the selected click mechanism. A provider's
-own `_delay` remains separate for Data/subscription triggers. Explicit native
-event listeners still execute on each click, without waiting. Removal, page
-disposal or DOM detachment cancels pending work; a disabled button cannot deliver
-it. R3 and the one-mechanism rule remain unchanged. The legacy's separate 200 ms
-immediate-click disabled guard is not ported.
-
-<a id="gc-095-080"></a>
-
-## 080 · Lifecycle order (0.2.0)
-
-For a branch that is not frozen:
-
-1. validation of the whole branch, without effects;
-2. `dataSetter` installation, in document order;
-3. defaults;
-4. registration of pointers, formulas and controllers;
-5. `_init`, once per node;
-6. DOM construction with the current values;
-7. `_onBuilt`, after the first successful build;
-8. `_onStart`: after page readiness for the initial Source; right after step 7
-   for a branch inserted later.
-
-This order applies to the initial Source, to `remoteSource` and to every branch
-inserted into the Source. Observers already active see the `dataSetter` writes
-synchronously; the new branch's formulas and controllers wait until steps 2 and 3
-end. On error, the new registrations are closed; Data is not rolled back.
-
-**Source changes during a build.** Each build runs from start to end. A Source
-change made during a build is queued and runs after it, in arrival order. A
-change to a node that is being built is ignored.
-
-**Freeze.** Freeze suspends only structural rebuilding. A branch inserted under a
-freeze runs steps 1-5 at once; its DOM and `_onBuilt` wait for the thaw; `_onStart`
-waits for the first build. A thaw performs one build of the current Source,
-without installing Data again and without repeating `_init` or `_onStart`.
-Removing a branch closes its registrations and timers, also under freeze.
-Example: `binding/08_freeze` (`b08`).
-
-**Cleanup.** Removing a Source node closes its bindings: providers, timers,
-registrations, event listeners and pending requests stop, and the renderer removes
-the DOM. Closing the page disposes the `Gramlot` instance and does the same for
-the whole page.
-
-- Handlers of a node removed under freeze do nothing: a control does not write
-  the Data, a button and a `connect_on<event>` do not run.
-- A callback that removes its own node runs to its end: a `SET` after the removal
-  still writes. Only the Gramlot handlers stop: the `fire_*` loop, the radio peer
-  loop and the listeners.
-- A failing disposer does not stop the others. The renderer completes the removal
-  and then throws the closing errors: one error as it is, several as an
-  `AggregateError`.
-- A first render that fails removes the records its children created before the
-  error (listeners, controls, radio groups, references); the Data is not rolled
-  back.
-
-Example: `controllers/08_end_to_end` (`c08`) walks the lifecycle from
-the first render to the close.
-
-<a id="gc-095-085"></a>
-
-## 085 · Exclusions and deferred work (0.2.0)
-
-These declarations produce an explicit error: `serverpath`, `dbenv`,
-`shared_id`, `subscribe_*`,
-`selfsubscribe_*`, `formsubscribe_*`, `PUBLISH`, `_ask`, `ask`. The same keys
-inside a user Data Bag remain ordinary data. `dataRpc` left this list in 0.2.14
-(section 100); `remote` and `dataRemote` left it in 0.2.16 (section 105).
-
-Outside 0.2.0, without a dedicated error: components and widgets; store, grid and
-tree; form, record and newrecord; server synchronisation; the CSS system beyond
-`css_requires`; rich editing; asynchronous scheduling and transactions; the
-developer warning Bag. Components, including `radioButtonText`, are planned for
-0.3.0. `script` in the Source stays the native HTML5 element and is not evaluated.
-
-<a id="gc-095-090"></a>
-
-## 090 · Differences from legacy GenroPy and migration (0.2.0)
-
-Intentional differences:
-
-- `dataSetter(destination_path, …)` replaces `data(path, value)`, without alias.
-- R1: a null `dataSetter` value keeps an existing value but applies its
-  attributes. Legacy skipped the whole write, attributes included.
-- All `dataSetter` declarations of a branch are installed before its DOM. Legacy
-  prepared only a node and its direct children before building it.
-- `destination_path` and `result_path` do not accept `?attr`.
-- R3: a Gramlot button calls `stopPropagation` but not `preventDefault`, and gets
-  `type="button"` when the author wrote none. Legacy called both and set no
-  type. In a one-field form Enter then submits natively (section 075).
-- `css_requires` and `js_requires` need a `GramlotServer` with a resource system, which
-  comes with genro-kajenn, part of Genro, the framework that succeeds GenroPy
-  (built on Kajenn, Gramlot and Asqueel); the minimal `GramlotFileServer` and the current
-  adapters raise an error for any name. When
-  the same method name is registered twice in a group, the last registration
-  wins.
-- `data(...)` is not a declaration: `root.data(...)` raises an error naming
-  `dataSetter` and `html_data`; on other nodes `data` is the Data Bag property. The
-  HTML5 `<data>` element is `html_data(...)`.
-- `name:media` in `css_requires` is an error.
-- Combining a nested controller, `action` and the `fire` family on one button is
-  an error. Legacy chained them (`action`, then `fire`, then `fire_*`) and also
-  ran the nested controller.
-- `#WORKSPACE`, `#ROW` and `#DATA` are not available.
-- No `sourceNode.domNode` or `element.sourceNode` properties: use
-  `getBaseSourceNode` and `getDomNode`.
-- `script` in the Source is native HTML5, without `dojo.eval`.
-- Legacy macros work only through the deprecated preprocessor.
-
-Migration from legacy pages:
-
-- replace each `data(path, value, …)` with `dataSetter(path, value, …)`;
-- `Page.css` (a list of URLs) stays; a stylesheet of the page alone can move to
-  the same-name file `foo.css` beside the page;
-- move inline controller code to named logic in the page module's `Logic` or in
-  a `js_requires` resource;
-- write Data with `node.SET(...)` and the matching methods instead of macros.
-
-Migration from 0.1.x:
-
-- a 0.1.x page without binding runs unchanged: HTML and SVG and `Page.css`
-  keep their behavior. `@source` / `registerSource(...)` declare Source fragments
-  and `@endpoint` / `registerEndpoint(...)` declare endpoints (§100); the
-  `remote` attribute mounts a fragment declaratively (§105);
-- a call `data(...)` in a 0.1.x page created the HTML5 `<data>` element; on `root`
-  it now raises an error, on other nodes `data` is the Data Bag property. Write
-  `html_data(...)` for the element;
-- custom servers implement `resolve_page`/`resolvePage` and
-  `resolve_resources`/`resolveResources`, pass the mount prefix to `open_page`
-  and serve the page companions; the bootstrap now writes the stylesheet links
-  in the browser ([GC-090](090-classes-and-hosts.md));
-- the standalone integration and the ASGI integration moved from
-  `gramlot-minimal` (retired) to `@gramlot/gramlot-serverless`, in
-  `gramlot-js-server`, and to the `uvicorn` adapter of `gramlot-py-server`;
-- the Python and JavaScript renderers of the static HTML now share the attribute
-  and style rules, so `style_*`, `color` and the other shortcuts compose a
-  `style` attribute in both. The node text of a number differs: Python writes
-  `str(value)`, so `1.0` stays `1.0`, while JavaScript writes `String(value)`,
-  which gives `1`. The live page always writes the text in JavaScript; there
-  `format` gives the same precise text from either authoring language. Static
-  output does not apply `format`, and `mask` only wraps the text: a static page
-  that needs an exact number text passes it as a string.
-
-Check migrated pages for remaining `data(` calls.
+sibling order matters. Changing only the tag in place is not supported; do not use
+an extended `BagNode.setValue` tag argument. Ordinary value and attribute updates
+continue through their Source methods.
 
 <a id="gc-095-095"></a>
 
-## 095 · Sending and saving data: `gramlot.utl.inout` (0.2.5, path since 0.2.10)
+## 095 · Sending and saving data: `gramlot.utl.inout`
 
 `gramlot.utl.inout` holds what a page sends, receives, saves and downloads. It is part
 of the browser runtime, so Python and JavaScript pages use it alike: from inline
@@ -932,356 +231,18 @@ root.button("Reload", action="gramlot.utl.inout.restore('modulo')")
   The decoded root must be a typed Bag; plain objects, lists and scalar roots
   are rejected without replacing the existing Data branch.
 - Inline code needs a Content Security Policy that allows `'unsafe-eval'`
-  ([GC-090 §035](090-classes-and-hosts.md)); under a strict policy call
-  the functions from `Logic`.
+  ([Classes and server adapters](090-classes-and-hosts.md#gc-090-035)); under a
+  strict policy call the functions from `Logic`.
 - `sendHttp` reaches the addresses that the Content Security Policy of the page
   allows in `connect-src`.
 
-<a id="gc-095-100"></a>
-
-## 100 · Calling the server: `dataRpc` and endpoints (0.2.14)
-
-An **endpoint** is a page method the browser calls for a value. The page declares
-it; a `dataRpc` in the Source calls it and writes the answer into Data.
-
-```python
-dataRpc(method, result_path=None, timeout=None, **params)
-```
-
-- `method` is the endpoint name: a method of the page or a path from the page,
-  `orders.total` (section 105, "The method name"). It can also be a `^`/`=` pointer
-  read from Data; read the warning in section 105 first.
-- `result_path` is where the value is written; without it the value is not
-  written. It does not accept `?attr`.
-- `timeout` is in milliseconds; when it expires the call is aborted and fails
-  with an error whose `name` is `TimeoutError`.
-- The other keyword arguments are the endpoint arguments. `^` arguments trigger
-  the call, `=` arguments are only read, as for `dataController` (section 055).
-  The control attributes of section 055 apply: `_init`, `_onBuilt`, `_onStart`,
-  `_delay`, `_timing`, `_userChanges`, `_if`. A false `_if` makes no call; `_else`
-  then runs as inline code.
-- Inline callbacks (section 065): `_onCalling` runs before the call with the
-  arguments, and a result `false` makes no call; `_onResult` runs after the value is written, with the arguments plus
-  `result`; `_onError` runs on failure, with the arguments plus `error` (an
-  `RpcError` with the outcome `code`, the server exception name in `remoteName`
-  and its `message`, a transport error or
-  the `TimeoutError`). Without `_onError` the failure is not hidden: it reaches the
-  browser console as an unhandled rejection.
-- The calls of a `dataRpc` follow the request rule of section 105: one call in
-  flight, its answer always written; the first trigger during the flight waits with
-  its arguments and is sent when the answer arrives; later triggers do nothing
-  while one waits. Removing the declaration aborts its call.
-- A `dataRpc` nested in a `button` runs on click (section 075).
-
-The page declares an endpoint with `@endpoint` in Python and
-`Page.registerEndpoint(name)` in JavaScript, called after the class. The method
-receives the arguments by name (Python) or as one object (JavaScript) and returns
-the value: a scalar, a Bag or null. The value is data and never runs code.
-`dataRpc` sends every argument the author writes. Python calls the method with
-them as keywords, and a keyword the method does not accept answers
-`application_error`; JavaScript ignores the keys it does not read. A Python endpoint
-called from `dataRpc` therefore declares `**kwargs`, as the legacy `rpc_*` methods
-do.
-
-```python
-from gramlot import Page as BasePage
-from gramlot import endpoint
-
-
-class Page(BasePage):
-    def main(self, root):
-        root.input(type="number", value="^.price")
-        root.dataRpc("with_vat", result_path=".gross", price="^.price",
-                     _onError="console.warn(error.message)")
-        root.span("^.gross")
-
-    @endpoint
-    def with_vat(self, price, **kwargs):
-        return round((price or 0) * 1.22, 2)
-```
-
-```javascript
-import {Page as BasePage} from '@gramlot/gramlot/page';
-
-export class Page extends BasePage {
-    main(root) {
-        root.input({type: 'number', value: '^.price'});
-        root.dataRpc({method: 'with_vat', result_path: '.gross', price: '^.price',
-            _onError: 'console.warn(error.message)'});
-        root.span('^.gross');
-    }
-
-    with_vat({price}) { return Math.round((price ?? 0) * 122) / 100; }
-}
-Page.registerEndpoint('with_vat');
-```
-
-- `@endpoint(auth="rule")` and `Page.registerEndpoint(name, {auth: 'rule'})`
-  protect the endpoint with a rule over tags (`|`, `&`, `!`). A server without the
-  `auth` capability knows no identity: every call of a protected endpoint answers
-  the outcome `not_authenticated` and the method does not run.
-- **0.2.15 addition:** `auth="rule"` on an element of `main` or of a `@source` fragment protects the
-  element with the same rule. The server drops an element whose rule it refuses,
-  with all its children, when it sends the fragment: the element never reaches the
-  client, and an accepted element is sent without its `auth` attribute. A server
-  without the `auth` capability refuses every rule, so the element is never sent. The rule is a string; any other value answers `application_error`.
-  A page built in the browser does not evaluate `auth`.
-- A declared method name is `[A-Za-z]` followed by ASCII letters, digits and `_`;
-  `main` is reserved, and the same method cannot be both an endpoint and a `@source`
-  method. A request names it directly or through a path (section 105).
-- An unknown endpoint answers `not_found`; an exception raised by the method
-  answers `application_error` with its `name` and `message`. Both reach
-  `_onError`.
-- A string argument that carries a TYTX suffix (`"x::D"`) is decoded by TYTX, not
-  passed through as text: genro-tytx decodes only text it encoded, so an endpoint
-  does not rely on such strings.
-- The call travels as one envelope on `POST /gramlot/rpc`
-  ([GC-090](090-classes-and-hosts.md)); the page writes no `fetch`.
-
-<a id="gc-095-105"></a>
-
-## 105 · Remote content and lazy Data: `remote` and `dataRemote` (0.2.16)
-
-**`remote`** makes the content of an element a Source fragment built on the server
-by a `@source` method (Python) or a method declared with `registerSource(name)`
-(JavaScript). The element carries the attribute `remote` with the method name; the
-attributes `remote_<k>` are the call parameters. The node method writes them:
-
-```python
-remote(name, **params)
-```
-
-- The fragment is requested when the element starts (section 080) and again when a
-  `^` pointer of `remote` or of a `remote_<k>` parameter changes. `=` parameters are
-  only read. The fragment replaces the content of the element; the authored
-  children stay until the first fragment arrives.
-- The request goes through `gramlot.src.remoteSource(target, method, params)` and
-  follows the request rule below. Removing the element cancels its request.
-- `_cachedRemote=True` makes no request when the method name and the parameters
-  equal those of the request in flight or, with none in flight, those of the
-  fragment mounted last. A fragment mounted by `remoteSource` from code replaces
-  that record. Parameters are compared by their TYTX serialization, captured when
-  the request is made, so later mutations cannot alter the comparison. A different
-  object-key order can cause another request even when the values are equal.
-- `_if` is inline code with the parameters as locals. It is a readiness condition:
-  false makes no request, cancels nothing and leaves the content as it is; `_else`
-  then runs as inline code. Example: `_if="record_id"`. To clear the content when
-  the condition turns false, write `_else="this.setValue(null)"`; when `_if` is
-  true again, the fragment is mounted again.
-- `_onCalling` runs as inline code at each request, with the parameters as locals,
-  before the request rule below decides whether the request is sent, waits or does
-  nothing; a result `false` makes no request. `_onRemote` runs as inline code after
-  the fragment is mounted, with the parameters as locals.
-- `_delay` (milliseconds), `_timing` (seconds) and `_userChanges` apply as for
-  `dataRpc` (section 100). `_delay` delays the request after a change, and a new
-  change in the meantime replaces it; it never cancels the request in flight.
-  There is no default delay; set `_delay` when a parameter changes at every
-  keystroke.
-- A parameter starting with `_` other than the eight control attributes
-  (`_cachedRemote`, `_if`, `_else`, `_onRemote`, `_onCalling`, `_delay`, `_timing`,
-  `_userChanges`) is an error. A failed request reaches the browser console as an
-  unhandled rejection that names the element.
-- A fragment can carry elements with `remote` of their own.
-
-**The method name** of `remote`, `dataRpc`, `dataRemote` and `remoteSource` is a
-string:
-
-- `"details"`: a method of the page;
-- `"orders.details"` or `"a.b.c.details"`: a path read from the page. Each segment
-  before the last is a public attribute: its name does not start with `_`. A
-  property is read, so its getter runs when a request names it. The last segment is
-  a method declared with `@source` or `@endpoint` (Python), or with
-  `registerSource` or `registerEndpoint` (JavaScript), on the class of the object
-  before it. Its `auth` rule is the only authorization of the request.
-- The syntax of the name belongs to the server: `GramlotServer.name_syntax` (JS
-  `nameSyntax`) declares it as a portable regex, and the bootstrap carries it to
-  the browser, where the `remote(…)` helper and a name read from Data are checked
-  with it. With the core server each segment is an ASCII letter followed by ASCII
-  letters, digits and `_`. Any other name answers `not_found`.
-- In JavaScript, every object on the path is an instance of a class that extends
-  `Exposed`, the base of `Page` that holds `registerSource` and `registerEndpoint`.
-  A member inherited from `Object`, such as `constructor`, never leads to a method.
-  In Python the objects on the path are ordinary objects.
-- The name can be a `^` or `=` pointer: the method is then read from Data. Use it
-  with care: a reader of the Source no longer sees which method runs. An empty or
-  `null` name rejects the request with an error, as a name outside the syntax does.
-  To make no request while no method is chosen, write `_if`.
-- The page decides which objects a path reaches. For an object with state, a cached
-  property is the recommended form.
-
-**The request rule** is the same for `remote`, `dataRpc`, `dataRemote` and
-`gramlot.src.remoteSource`:
-
-- one request is in flight for each Source node;
-- a request in flight always finishes, and its answer is applied: the fragment is
-  mounted, the value is written, `_onRemote` or `_onResult` runs;
-- the first change during the flight waits, with its method and parameters of that
-  moment; later changes do nothing while one waits;
-- when the answer arrives, the waiting request is sent.
-
-The content can therefore stay behind the Data until the next change. Only the
-removal of the element and the close of the page abort a request; `timeout` of
-`dataRpc` aborts its call.
-
-Inline code reaches the state of the requests through `this.requests`, where `this`
-is the Source node:
-
-- `this.requests.inflight` is the request in flight, `{method, params, sentAt,
-  cancel()}`, or `null`; `params` are the parameters sent and `sentAt` the send time
-  in milliseconds (`Date.now()`);
-- `this.requests.pending` is the waiting request, `{method, params}`, or `null`;
-- `inflight.cancel()` makes the node ignore the answer of the request in flight.
-  The server may still compute it. Called inside `_onCalling`, the new request is
-  sent at once and replaces the waiting one; called elsewhere, the waiting request
-  is sent.
-
-```python
-root.div().remote("details", record_id="^.record_id",
-                  _onCalling="if (this.requests.inflight) this.requests.inflight.cancel()")
-```
-
-```python
-from gramlot import Page as BasePage
-from gramlot import source
-
-
-class Orders:
-    @source
-    def details(self, root, record_id=None, **kwargs):
-        root.span(f"Order {record_id}")
-
-
-class Page(BasePage):
-    @property
-    def orders(self):
-        return Orders()
-
-    def main(self, root):
-        root.input(type="number", value="^.record_id")
-        root.div().remote("details", record_id="^.record_id", _cachedRemote=True)
-        root.div().remote("orders.details", record_id="^.record_id")
-
-    @source
-    def details(self, root, record_id=None, **kwargs):
-        root.span(f"Record {record_id}")
-```
-
-```javascript
-import {Exposed, Page as BasePage} from '@gramlot/gramlot/page';
-
-class Orders extends Exposed {
-    details(root, {record_id}) { root.span(`Order ${record_id}`); }
-}
-Orders.registerSource('details');
-
-export class Page extends BasePage {
-    get orders() { return new Orders(); }
-
-    main(root) {
-        root.input({type: 'number', value: '^.record_id'});
-        root.div().remote('details', {record_id: '^.record_id', _cachedRemote: true});
-        root.div().remote('orders.details', {record_id: '^.record_id'});
-    }
-
-    details(root, {record_id}) { root.span(`Record ${record_id}`); }
-}
-Page.registerSource('details');
-```
-
-**`dataRemote`** installs at a Data path a resolver that computes the value with an
-endpoint (section 100). The endpoint is called when the path is read, not when the
-declaration is installed.
-
-```python
-dataRemote(destination_path, method, cacheTime=None, sync=True, **params)
-```
-
-- `destination_path` is the Data path of the value; it does not accept `?attr`.
-  `method` is the endpoint name, a path from the page or a `^`/`=` pointer read from
-  Data, as for `remote` (above, "The method name").
-- `cacheTime` is in seconds: a negative value or `None` calls once; `0` calls at
-  every read; a positive value calls again on the first read after that many
-  seconds.
-- `sync`, true by default as in the legacy, makes the read wait when the transport
-  of the page sends synchronous calls (HTTP, GC-090 §015): a read whose cache has
-  expired calls the endpoint synchronously and returns the answer; the value is
-  stored at the path without notifying the consumers, because the reader receives
-  it. A failed call raises the error, naming the declaration, to the reader; the
-  next read calls again. The browsers deprecate the synchronous request on the main
-  thread, and the page is blocked until the answer arrives: a later step aims to
-  avoid synchronous calls.
-- With `sync=False`, and on a transport without synchronous calls (the serverless
-  Worker), a read never waits. It returns the current value, `None` before the
-  first call, and starts the call when the cache has expired. A read during a call
-  starts no other call. On the Worker this also holds for `sync=True`: a debt that
-  the plan of the asynchronous resolvers resolves.
-- When an asynchronous call answers, the value is written at the path and every `^`
-  consumer of the path is projected with it. With `cacheTime=0` the value is
-  written without notifying the consumers, as in the legacy: it is a value per
-  explicit read, and a `^` consumer would call again at each projection.
-- The other keyword arguments are the endpoint arguments. A change of a `^`
-  argument installs a new resolver. When the previous resolver had called, the
-  new one calls at once, asynchronously also with `sync`, and the consumers receive
-  the new value.
-- The calls follow the request rule above: a call in flight is not aborted by a
-  new resolver and writes its value; the call of the new resolver waits for it.
-- `_onCalling` runs as inline code before each call, with the arguments of the
-  declaration; a result `false` makes no call, and a later read tries again.
-- A false `_if` removes the resolver: the path keeps its last value, and a call in
-  flight still writes its own. `_else` then runs as inline code. When `_if` is true
-  again, the new resolver calls at once if the removed one had called. `_delay`,
-  `_timing` and `_userChanges` apply as for `dataRpc`. `_init`, `_onBuilt` and
-  `_onStart` are an error on `dataRemote`.
-- Removing the declaration removes the resolver and aborts its call; an aborted
-  call writes nothing.
-- An endpoint failure leaves the stored value unchanged. It reaches the browser
-  console as an unhandled rejection that names the declaration.
-
-```python
-from gramlot import Page as BasePage
-from gramlot import endpoint
-
-
-class Page(BasePage):
-    def main(self, root):
-        root.dataRemote(".menu", "load_menu", cacheTime=5, table="dishes")
-
-    @endpoint
-    def load_menu(self, table=None, **kwargs):
-        return f"menu of {table}"
-```
-
-```javascript
-import {Page as BasePage} from '@gramlot/gramlot/page';
-
-export class Page extends BasePage {
-    main(root) {
-        root.dataRemote({destination_path: '.menu', method: 'load_menu', cacheTime: 5,
-            table: 'dishes'});
-    }
-
-    load_menu({table}) { return `menu of ${table}`; }
-}
-Page.registerEndpoint('load_menu');
-```
-
-Intended differences from the legacy:
-
-- `remote` is an attribute of the element itself, written by the node method
-  `remote(name, …)`. Legacy `remote` was a child element that wrote its
-  attributes on the parent.
-- No `lazy` loading by visibility, no `_waitingMessage`, no `tbody` merge, no
-  `_resolved` and no `_fired`.
-- The legacy alias `data(path, remote=…)` is not accepted: write `dataRemote`.
-
+Gallery lesson: *Data exchange*.
 
 <a id="gc-095-110"></a>
 
 ## 110 · A reusable application index and an installable root
 
 Block ID: **GC-095-110**.
-
-Introduced in core 0.2.17.
 
 `IndexPage` supplies grouped navigation, a resizable sidebar and iframe tabs. A
 page opens on first selection; selecting it again reuses the same iframe and its
@@ -1349,8 +310,8 @@ preferences from other index shells at the same origin and path.
 Override `introduction(pane)` and `group_panel(pane, group)` for introductory
 content. Override `footer(pane)` to replace the footer, or call `super()` to keep
 its theme, color mode, keyboard-navigation and installation controls. The
-standard footer remembers Base/Compact, Light/Dark and sidebar width in local
-storage; the keyboard checkbox is a per-page choice. A replacement footer need
+standard footer remembers the theme (Base, Compact, mimi, joanna), Light/Dark and
+sidebar width in local storage; the keyboard checkbox is a per-page choice. A replacement footer need
 not contain the standard controls. The default `panel(parent, item)` creates an
 iframe; `behavior(shell)` activates `IndexLogic` through a named controller.
 
@@ -1365,6 +326,9 @@ visibility preference and selected source tab.
 
 The shell's theme does not automatically style arbitrary iframe documents.
 The gallery supplies the corresponding frame-side theme receiver for its examples.
+The browser behavior of the index, `IndexLogic` and `mountIndexPage`, is also
+exported alone as `@gramlot/gramlot/index-page-runtime`
+([Classes and server adapters](090-classes-and-hosts.md#gc-090-024)).
 
 The JavaScript equivalent exports both classes from the page module:
 
@@ -1437,9 +401,10 @@ cache, and does not install anything without the user's browser confirmation.
 
 ## 115 · Messages, authored references and ask
 
-Page and Source-node topics extend the existing controller pipeline. Earlier
-release sections retain their original scope. The matching gallery lessons are
-**Publish and subscribe** and **Parent and child messages**.
+Page and Source-node topics use the controller pipeline of
+[Data binding and controllers](097-data-binding.md#gc-095-055). Gallery lessons:
+*Publish and subscribe*, *Parent and child messages* and *Actions, confirmations and
+references*.
 
 ### Reuse a controller from a click or a message
 
@@ -1458,8 +423,8 @@ class Page(BasePage):
 
 `subscribe_saved=True` activates that controller whenever the page publishes
 `saved`. No Data trigger path is needed. Repeating the same message delivers it
-again. Use `func` with a named Logic method for reusable behavior and strict CSP;
-the inline snippets here require the existing permissive inline-code policy.
+again. Use `func` with a named Logic method for reusable behavior and a strict
+Content Security Policy; the inline snippets here require the permissive profile.
 
 A message adds named arguments. Declared controller arguments take precedence;
 `_reason` is the topic and `_subscription_kwargs` is the original payload.
@@ -1491,7 +456,7 @@ pane.button("Refresh", target=target,
             action="target.publish('refresh', {text: 'Updated'})")
 ```
 
-Passing the Source node directly as a Python or JS attribute creates the existing
+Passing the Source node directly as a Python or JS attribute creates a
 `$gramlotRef` descriptor. At execution Gramlot resolves the current mounted node.
 An explicit `builder.reference(node, kind="dom")` requests its DOM element.
 Conversion applies to direct authored arguments, not arbitrary nested data.
@@ -1502,7 +467,7 @@ handlers receive the single payload as `p_0`; dotted named Logic handlers receiv
 `(node, payload)`. Providers use their usual argument signatures. A node with
 `node_id="editor"` can also receive
 `gramlot.publish({topic: 'refresh', nodeId: 'editor'}, {text: 'Updated'})`.
-Source `subscribe`/`unsubscribe` retain their existing Bag-observation meaning;
+Source `subscribe`/`unsubscribe` keep their Bag-observation meaning;
 they are not topic APIs. Node self-topics retain legacy qualified topic naming.
 
 ### Ask before executing
@@ -1516,7 +481,7 @@ pane.button("Send").dataController(
     text="Hello")
 ```
 
-The internal dialog uses Gramlot Source, Data and native HTML controls. Confirm
+The dialog is built with Gramlot Source, Data and HTML controls. Confirm
 runs the controller once; Cancel or Escape runs no action. Values entered in the
 dialog override current arguments and are also available as `_askResult`. A node
 removed while waiting cannot execute later. Temporary Source and Data are removed
@@ -1527,14 +492,14 @@ Use `ask` for a button `action`, `_ask` for a controller, formula or RPC. A stri
 `_ask_if` skips the prompt and continues execution. A dictionary accepts `title`,
 `msg`, `fields`, `_if` and legacy `askIf`; dictionary `_if` controls prompting.
 The legacy `askIf` option by itself does **not** suppress the dialog when false;
-its modifier options are deferred. Provider `_if` is evaluated after ask, as in
+its modifier options are not supported. Provider `_if` is evaluated after ask, as in
 legacy. There is no fluent `.ask()` method.
 
 Each field requires a unique simple `name`; optional `lbl` is its label. Supported
-fields: native `input` or `textarea`, input types `text`, `number`, `date`,
+fields: HTML `input` or `textarea`, input types `text`, `number`, `date`,
 `checkbox`, `email`, `password`, `url`, `tel`; options `default_value`, `required`,
 `min`, `max`, `step`, `placeholder`. Current arguments supply initial values before
-field defaults. Native browser validity checks apply. Unsupported legacy widgets
+field defaults. The validity checks of the browser apply. Unsupported legacy widgets
 or options raise an error; no general widget collection is implied.
 
 ### Publish to a parent or selected child
@@ -1562,12 +527,11 @@ objects remain local and are rejected by frame and RPC transport; the iframe
 reference selects a local destination, not a remote live object.
 
 Recursive `iframe:'*'`, unrelated windows, forms, server/user recipients and combined
-remote `nodeId` routing are deferred. Unsupported descriptor keys fail explicitly.
+remote `nodeId` routing are not supported. Unsupported descriptor keys fail explicitly.
 
 <a id="gc-095-120"></a>
 ## 120 · Natural-language dates and periods
 
-Available in development sources; not yet included in a published release.
 `parseDateExpression` uses the built-in Italian/English semantics of Toolbox
 Python `parse_period`, with structured JavaScript results. It interprets complete
 expressions; it does not format values, edit a widget or write a Data Bag.
@@ -1604,7 +568,7 @@ DOM, clock or timezone conversion. The caller supplies the working date, checks
   case variants and hyphen/underscore separators use Toolbox's interpretation.
   Italian defaults to DMY, English to MDY; English GB/AU/IE/NZ/IN use DMY.
   Other regions use their language's default, rather than loading another locale.
-  Unsupported languages fail. Custom Python `locale_dir` packs have no JS API yet.
+  Unsupported languages fail. Custom Python `locale_dir` packs have no JavaScript counterpart.
 - English **keywords** are accepted in Italian too (`today`, `from`, `to`, etc.).
   Month and weekday names still belong to the selected language.
 - `twoDigitYearAhead` retains the JS name but has Python `pivot_year` semantics:
@@ -1672,11 +636,8 @@ Messages are English diagnostics; an application can map codes to localized text
 Impossible dates and arithmetic outside years 0001–9999 fail without rollover.
 Times, timezones and partial input such as `oggi+` are not parsed.
 
-The initial PoC-derived port used a different year window and rejected empty and
-cross-year ranges. The owner requested Toolbox alignment before release: these
-semantics now follow Python, including empty input. Earlier `EMPTY_EXPRESSION`
-and `REVERSED_RANGE` outcomes no longer apply. PoC-only forms such as `/oggi`,
-`1/3`, `mar.`, `LUNEDI` and `2 trimestre` were removed; use `oggi`, a complete
+The semantics follow Toolbox Python, including empty input. The forms `/oggi`,
+`1/3`, `mar.`, `LUNEDI` and `2 trimestre` are not accepted; write `oggi`, a complete
 numeric date, `mar`, `LUNEDÌ` and `2º trimestre` respectively.
 
 The shipped tests run all **2,796 Toolbox reference cases**, applying its declared
@@ -1689,8 +650,8 @@ This is not a claim that the two APIs have identical types or extension mechanis
 <a id="gc-095-125"></a>
 ## 125 · Formatting values: numbers and temporal styles
 
-The page instance exposes `gramlot.format(value, options)`. This first implementation
-supports finite JavaScript numbers, TYTX Decimal objects, Date objects and null. Numeric values need an
+The page instance exposes `gramlot.format(value, options)`. It supports finite
+JavaScript numbers, TYTX Decimal objects, Date objects and null. Numeric values need an
 explicit `pattern`. Locale and instant timezone come from the page unless the call
 overrides them.
 Use this method from page Logic or a controller expression:
@@ -1727,7 +688,7 @@ text. Other brace forms are not implemented. Legacy `%s` has no placeholder
 meaning. In migrating legacy numeric formats, review two-section patterns: legacy
 used positive/zero, whereas Gramlot uses Unicode positive/negative.
 
-**Current limits:** no implicit numeric pattern,
+**Limits:** no implicit numeric pattern,
 strings/booleans, BigInt, explicit temporal patterns, currency/percent/scientific patterns,
 quoted pattern literals, arbitrary affixes, named/optional mask slots or brace
 escaping. Unsupported inputs/options/patterns raise errors. String pattern shorthand uses the page context. JavaScript Number precision
@@ -1763,8 +724,7 @@ Locale data may affect punctuation and wording. Formatting leaves the Date
 unchanged. Null still bypasses all formatting and masks. Invalid Dates, incompatible
 dtypes and missing instant timezone raise errors. The old DH alias is not included
 in this formatter; use DHZ for instants. Timezone-free datetimes and explicit date
-patterns such as `dd/MM/yyyy` remain unimplemented. No TYTX modification is needed
-for the approved inferred-type / explicit-dtype rule.
+patterns such as `dd/MM/yyyy` are not supported.
 
 ### Page context and declarative text
 
@@ -1797,100 +757,28 @@ In live HTML text, Source `format` supplies `pattern` to that same method; node
 `locale`, `timeZone` and `dtype` options override the page. Format and mask are
 applied to the resolved scalar node text or `_text` before child elements, not
 to a form control's editable `value`. Data, format, mask, locale, timezone and
-dtype pointers participate in the existing reactive projection. Formatting does
+dtype pointers participate in the reactive projection. Formatting does
 not write the transformed string back into Data. These directives are consumed
 and do not appear as DOM attributes. Unsupported `places` with active formatting
 raises an error; express precision in the pattern.
 
 A mask without `format` wraps ordinary text, preserving booleans/zero and
 skipping null/empty text, with the same `{}` composition. This also works in
-Python and JavaScript static HTML rendering. **Static rendering still consumes
-but does not apply `format`**, as in the earlier contract: the Intl engine is
-currently attached only to the live browser renderer. SVG text formatting is
-also outside this increment. No Python Intl substitute is introduced.
+Python and JavaScript static HTML rendering. SVG text is not formatted.
 
-Migration: replace mask `%s` with `{}`. `%s` now remains literal text; there is
-no compatibility mode. Existing declarations with ignored `format` placeholders
-must use supported patterns before rendering in the browser. A Python formatter is not implemented by this increment. Attribute pointer
-suffixes and expression-local `_F` are described in <a href="#gc-095-130">§130</a>.
+Migration from legacy: replace mask `%s` with `{}`; `%s` stays literal text. A
+legacy `format` pattern outside the supported patterns raises an error in the
+browser: rewrite it. Attribute pointer suffixes and the expression-local `_F` are
+described in [pointer templates](097-data-binding.md#gc-095-130).
 
+### Static rendering
 
-<a id="gc-095-130"></a>
-## 130 · Attribute pointer templates and expressions
-
-Introduced in core 0.2.20. Start with the simple
-cases; use an expression only when the result must retain a type or call a function.
-
-```python
-# Text: the number 38 becomes the CSS length "38px".
-pane.div(width="^width:{}px")
-
-# Boolean: editing is disabled when draft is false.
-pane.input(value="^name", readonly="^draft:=!{}")
-
-# Text content: format the number, then wrap the formatted text.
-pane.p("^amount", format="0.00", mask="Total: {} €")
-```
-
-The runtime reads the pointer up to the first `:` in the normal Data context.
-Without a suffix it returns the original value. `:` applies a text template;
-`:=` evaluates a JavaScript expression and retains its result type. Further colons
-belong to that template or expression. Data is never rewritten by this transformation.
-A plain literal containing a colon does not become a pointer.
-
-`{}` supplies the pointer value. `{name}` reads another attribute on the same
-Source node, including its binding, without removing that attribute from its normal
-projection. First the runtime brings all Source attribute inputs current; references
-and projection reuse that same set of values. It never reads these values from DOM
-attributes or computed CSS. Reactive `^` dependencies update the result;
-`=` remains a read without its own subscription. Relative paths, symbolic paths
-and Bag attribute selectors keep their usual addressing rules.
-
-```python
-pane.div(width="^width:{}{unit}", unit="^settings.unit")
-pane.div(title="^name:Customer: {}")
-```
-
-For a tooltip that needs formatting, the expression-local `_F` calls this page's
-`gramlot.format`. It uses the same options and locale/timezone precedence as
-<a href="#gc-095-125">§125</a>; it does not install a global function.
-
-```python
-pane.p("Hover here",
-       title="^amount:=_F({}, {pattern: '0.00', mask: '{} €'})")
-```
-
-The first `{}` is a typed expression argument. The quoted `'{} €'` stays the mask
-passed to the formatter. Data values are passed as arguments, never pasted into
-JavaScript code. Expressions use the existing inline compiler, Source activation
-rules and CSP requirements; templates do not require JavaScript evaluation.
-`_F` is also available in the existing `==` expression form.
-
-A template returns null if its leading value or any required slot is null or an
-empty string. Use `{?}` / `{?name}` to admit an empty string explicitly; null still
-blocks the whole result. Zero and false are valid, and whitespace is not trimmed.
-A missing Data path follows the existing null behavior. A missing Source attribute
-or a circular attribute dependency raises an error rather than inventing a value.
-Expressions receive typed null and empty strings and decide their own result.
-
-```python
-pane.div(title="^name:Customer: {?}")  # "" → "Customer: "; null → null
-```
-
-Suffixes are prohibited in the `value` of native inputs, textareas, selects and
-custom widgets. Keep ordinary value bindings for editing; no inverse conversion
-is defined. Node text uses `format` and `mask`, as above. Other attributes, including
-live `datapath` and computed `*_path` attributes, use the same read-then-transform
-rule, followed by the destination's existing checks. Data-path segment names use
-letters, digits and underscore; dots and addressing operators remain path syntax.
-
-Python authoring sends the same Source declarations as JavaScript authoring. Static
-Python/JavaScript rendering resolves templates from the available Data; expressions
-stay inert until browser startup. This does not add static variable-context support
-to the Python renderer. Ordinary `${name}` text is literal; use explicit pointer suffixes for interpolation.
-
-Placeholder tokens in expressions are recognized outside quoted strings, template
-literals, comments and regular-expression literals. An empty object or a shorthand
-object such as `{name}` conflicts with the placeholder syntax: write explicit object
-members when an object is intended. Template braces must form supported slots;
-no literal-brace escape is provided in this increment.
+The Python and JavaScript static renderers apply the same attribute and style
+rules, so `style_*`, `color` and the other shortcuts compose a `style` attribute in
+both. Static rendering consumes `format` but does not apply it: the Intl formatter
+runs only in the live renderer of the browser, and Python has no formatter. The
+node text of a number differs: Python writes `str(value)`, so `1.0` stays `1.0`,
+while JavaScript writes `String(value)`, which gives `1`. The live page always
+writes the text in JavaScript; there `format` gives the same exact text from either
+authoring language. `mask` only wraps the text: a static page that needs an exact
+number text passes it as a string.

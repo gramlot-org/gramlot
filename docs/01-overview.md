@@ -38,7 +38,7 @@ parallel event and state system.
 
 *0.2.0:* the declaration is `root.input(value='^.name')`. With the
 default `live=False` the edit is written to the Data on `change`; `live=True`
-writes on every `input` ([GC-095](public/095-writing-pages.md#gc-095-070)).
+writes on every `input` ([GC-095 §070](public/097-data-binding.md#gc-095-070)).
 
 ## 3. Building blocks
 
@@ -71,7 +71,7 @@ framework's JavaScript services and components.
 *0.2.0:* named logic is the primary path for page behavior: a logic file with
 logic methods exports `class Logic`, and declarations call its methods by name. Inline code is
 allowed but discouraged, and runs only in the browser page runtime
-([GC-095](public/095-writing-pages.md#gc-095-060)).
+([GC-095 §060](public/097-data-binding.md#gc-095-060)).
 
 Application UI, state, events and requests use Gramlot mechanisms. Direct DOM
 construction, manual event wiring and separate request/state machinery are not
@@ -139,7 +139,8 @@ configure and try Gramlot:
 The example pages and their gallery are in `gramlot-examples`; each environment
 serves them with its gallery command. The earlier repositories `gramlot-uvicorn`,
 `gramlot-django`, `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn` (formerly
-`gramlot-genro-asgi`), `gramlot-serverless` and `gramlot-minimal` (retired on
+`gramlot-genro-asgi`), `gramlot-serverless` (the old repository; the current package `@gramlot/gramlot-serverless`
+lives in `gramlot-js-server`) and `gramlot-minimal` (retired on
 2026-09-28) are archived. Core owns shared runtime contracts; an integration
 depends on the core, never the reverse. Each integration repository states the
 core release it verifies. See constitution section 7 for the approved ownership.
@@ -149,6 +150,6 @@ records how the integration environments were reorganized up to 0.2.0. It does n
 define further PoC transfers.
 
 For learning, start with [Try Gramlot](public/025-try.md#gc-025-015).
-`dataRpc`, `remote` and `dataRemote` are documented in
-[Writing pages](public/095-writing-pages.md#gc-095-100). The endpoint-backed
+`dataRpc` is documented in [Calling the server](public/098-server-calls.md#gc-095-100),
+`remote` and `dataRemote` in [Remote content and lazy Data](public/099-remote-content.md#gc-095-105). The endpoint-backed
 resolver does not imply a record framework, database adapter or general widget API.

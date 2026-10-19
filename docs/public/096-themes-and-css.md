@@ -41,9 +41,9 @@ the code so its details stay readable. Images use the same desktop viewport and 
 click an image to inspect it at full size. They are static screenshots: run the
 Python page to try its controls yourself.
 
-This is a topic guide alongside the [release-by-release learning route](025-try.md).
-The first examples use HTML Source and CSS; the interactive example adds the
-Data bindings introduced in 0.2.0. Python pages run on a Python server. If you
+This is a topic guide alongside the [learning route](025-try.md).
+The first examples use HTML Source and CSS; the interactive example adds
+[Data bindings](097-data-binding.md). Python pages run on a Python server. If you
 have no project yet, follow [the quick route](018-quickstart.md).
 
 - <a href="#gc-096-010">Build your first styled page</a>.
@@ -318,11 +318,10 @@ Color mode is independent.
 | mimi | mimi.css | Titanium grays, dark navigation, blue actions, small corners | 12px / 18px |
 | joanna | joanna.css | Light gray/white surfaces, softer corners, blue actions | 13px / 20px |
 
-The Gramlot name `joanna` follows the requested name; the legacy file is
-spelled `joanna.css`. These profiles adapt the legacy light palettes and compact
+The profile `joanna` adapts the legacy file `joanna.css`. These profiles adapt the legacy light palettes and compact
 proportions. They do not port Dojo widgets or guarantee pixel-identical layouts.
-Dark palettes are new Gramlot adaptations. Legacy user color variants are not part
-of this increment; Base and Compact remain available.
+Dark palettes are Gramlot adaptations. Legacy user color variants are not
+provided; Base and Compact remain available.
 
 In an application, the server loads Base; load Compact and the profile after it:
 
@@ -544,7 +543,7 @@ Base chooses its palette on the document's `<html>` element:
 The `root` passed to `main` builds application Source inside the host document.
 It is not that document's `<html>`. Adding `data_theme="dark"` to a `div` does
 not activate Base's root selectors. Ordinary pages can simply follow the system.
-For the existing shell's selector, see [IndexPage](095-writing-pages.md)
+For the selector of the index shell, see [IndexPage](095-writing-pages.md#gc-095-110)
 and the application-shell section below. Do not add application DOM manipulation to switch modes.
 
 ### Customize a surface in both modes
@@ -803,7 +802,7 @@ Explicit CSS units make dimensions easier to read. Shortcuts include `font_size`
 shortcut removes its property from the composed inline style. SVG presentation
 attributes remain SVG attributes, not HTML style shortcuts. `width`/`height` on
 `img`, `canvas` and `embed`, and `width`/`border` on `table`, remain HTML attributes.
-The [binding reference](095-writing-pages.md) gives the full rules.
+The [binding reference](097-data-binding.md#gc-095-070) gives the full rules.
 
 ### Follow one style from Python to the browser
 
@@ -862,8 +861,8 @@ authoring choice you intended to change. To keep a change, edit the appropriate
 Python/JS declaration, stylesheet or application data through its normal persistence.
 Inspector Styles previews are temporary; **Download CSS** exports their theme overrides.
 
-Practice the same steps in the gallery's
-[b06 · Style and visibility](https://github.com/gramlot-org/gramlot-examples/blob/main/src/gramlot_examples/pages/binding/06_style_and_visibility.md).
+Practice the same steps in the gallery lesson *Style and visibility*, listed in the
+[examples manual](https://gramlot-examples.readthedocs.io/en/latest/).
 
 ### Let Data select a class and a width
 
@@ -980,8 +979,9 @@ Block ID: **GC-096-045**.
 
 `IndexPage` is the existing reusable application shell. Its base resource list
 loads Base and `gramlot-index/theme.css`; the shell's standard footer manages
-Base/Compact and Light/Dark choices. Its behaviour remembers these choices and
-sidebar width. Follow the complete [IndexPage setup](095-writing-pages.md),
+the theme (Base, Compact, mimi, joanna) and the Light/Dark choice. Its behaviour
+remembers these choices and the sidebar width. Follow the complete
+[IndexPage setup](095-writing-pages.md#gc-095-110),
 including its browser Logic module; importing a CSS file alone does not supply
 the shell's behaviour.
 

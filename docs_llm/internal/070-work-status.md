@@ -2758,7 +2758,7 @@ Owner, 2026-10-02: `@gramlot/gramlot-browser` → `@gramlot/gramlot-serverless` 
 
 Block ID: **GC-070-660**.
 
-Owner, 2026-10-03: inline stays everywhere, also serverless ("credo sia necessario accettare unsafe e fare il possibile per prevenire"); activation in one place, the reception of the Source, in the Gramlot Source classes; no new wire type. Approved during the work: test migration (A.3), refusal of `on*` and `javascript:`, `connect-src *` in the single file "until the CSP grammar arrives". Constitution 11.53. Core `feat/inline-code-activation`: `0cb54f1` activation in `Gramlot.prepareSource` (`GramlotBuilderBagNode.activateCode`; `InlineCompiler` compiles only the activated text), pointer in a code attribute refused at reception, `on*`/`javascript:` refused by the JS renderers, live-Source tests mount a separate Source (`js/tests/fixtures/mount.js`); `c9584ab` same attribute rule in the Python renderers, contract test of a Python Source with inline; `06637d9` documents and 11.53; `f2eb977` the pages of `verify_binding_browser.mjs` mount a received Source. Rules: [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035), [GC-095 §065](../public/095-writing-pages.md#gc-095-065). gramlot-js-server `feat/serverless-inline-code`: `312d4fc` single-file CSP with `'unsafe-eval'` and `connect-src *`, example `serverless/examples/inline-code`, `verify_inline_browser.mjs` in both CI jobs; `902c5e3` its guides. Verified 2026-10-03: Python 76 OK, JS 461/461, examples 31/31; runner on 8091 with the new core in both integrations (`c01`, `c02`, `c04`, `c06`, `c07`, `c09`), no errors; js-server with the new core in a temporary worktree: server 6/6, serverless 20/20, Chromium checks PASS; `verify_binding_browser.mjs` PASS in Chromium, strict CSP included.
+Owner, 2026-10-03: inline stays everywhere, also serverless ("credo sia necessario accettare unsafe e fare il possibile per prevenire"); activation in one place, the reception of the Source, in the Gramlot Source classes; no new wire type. Approved during the work: test migration (A.3), refusal of `on*` and `javascript:`, `connect-src *` in the single file "until the CSP grammar arrives". Constitution 11.53. Core `feat/inline-code-activation`: `0cb54f1` activation in `Gramlot.prepareSource` (`GramlotBuilderBagNode.activateCode`; `InlineCompiler` compiles only the activated text), pointer in a code attribute refused at reception, `on*`/`javascript:` refused by the JS renderers, live-Source tests mount a separate Source (`js/tests/fixtures/mount.js`); `c9584ab` same attribute rule in the Python renderers, contract test of a Python Source with inline; `06637d9` documents and 11.53; `f2eb977` the pages of `verify_binding_browser.mjs` mount a received Source. Rules: [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035), [GC-095 §065](../public/097-data-binding.md#gc-095-065). gramlot-js-server `feat/serverless-inline-code`: `312d4fc` single-file CSP with `'unsafe-eval'` and `connect-src *`, example `serverless/examples/inline-code`, `verify_inline_browser.mjs` in both CI jobs; `902c5e3` its guides. Verified 2026-10-03: Python 76 OK, JS 461/461, examples 31/31; runner on 8091 with the new core in both integrations (`c01`, `c02`, `c04`, `c06`, `c07`, `c09`), no errors; js-server with the new core in a temporary worktree: server 6/6, serverless 20/20, Chromium checks PASS; `verify_binding_browser.mjs` PASS in Chromium, strict CSP included.
 
 **Open:** the `serverless` directory export sets no CSP. Closed: `iframe` `srcdoc` from Data (665); released as 0.2.3 (gramlot-org/gramlot#9).
 
@@ -2767,7 +2767,7 @@ Owner, 2026-10-03: inline stays everywhere, also serverless ("credo sia necessar
 
 Block ID: **GC-070-665**.
 
-Owner, 2026-10-03 ("ok"): `iframe` `srcdoc` from Data → `sandbox=""` (all restrictions); author's `sandbox` kept; literal `srcdoc` none. Rejected: literal-only `srcdoc` (no preview), DOMPurify (runtime dependency, rules to maintain). Approved during the work ("vai"): declaration decides, not the value; live element writes `sandbox` first; pointer node value counts as Data (Builder applies its datum's `_wdg` over a literal `srcdoc`); examples 10 and 13 → `connect_onclick` (recorded in 11.54), their browser checks join the CI. Constitution 11.54. Core `feat/srcdoc-sandbox`: `f6876cc` `withDataSrcdocSandbox`/`with_data_srcdoc_sandbox` in both `_handleMeta`, `HtmlElement.update` writes `sandbox` first; `103ca15` tests (same Sources Python/JS, `SrcdocSandboxTests`, `js/tests/srcdoc-sandbox.test.js`, four iframes in `verify_binding_browser.mjs`); `ae04748` example 13 → `connect_onclick` (its `onclick` stopped the page since 0.2.3), `c4dbbfc` the same for example 10; `0b14e33` documents and 11.54; `f9cdb31` core CI: Playwright Chromium, `verify_binding_browser.mjs`, runner with Uvicorn, `verify_live_cards.mjs`, `verify_live_playground.mjs`. Rules: [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035), [GC-095 §065](../public/095-writing-pages.md#gc-095-065). Verified 2026-10-03: Python 81 OK, JS 466/466, examples 31/31; `verify_binding_browser.mjs` PASS in Chromium 153 and WebKit 26.6 (Data `srcdoc` script never runs, also after Data/Source changes; declared `allow-scripts` and literal run; fails without the rule); runner on 8093, both integrations (`e01`, `e06`, `e12`, `e13`, `b01`, `b05`, `c01`, `c04`, `c06`, `c07`, `c09`); `verify_live_cards.mjs` (`e10`) and `verify_live_playground.mjs` (`e13`) PASS on `/py` and `/js`, both failing before the fix. `5a554ea` 11.54 item 4 and this record; release 0.2.4: version in `pyproject.toml`, `js/package.json`, `jsr.json`, release notes v0.2.4.
+Owner, 2026-10-03 ("ok"): `iframe` `srcdoc` from Data → `sandbox=""` (all restrictions); author's `sandbox` kept; literal `srcdoc` none. Rejected: literal-only `srcdoc` (no preview), DOMPurify (runtime dependency, rules to maintain). Approved during the work ("vai"): declaration decides, not the value; live element writes `sandbox` first; pointer node value counts as Data (Builder applies its datum's `_wdg` over a literal `srcdoc`); examples 10 and 13 → `connect_onclick` (recorded in 11.54), their browser checks join the CI. Constitution 11.54. Core `feat/srcdoc-sandbox`: `f6876cc` `withDataSrcdocSandbox`/`with_data_srcdoc_sandbox` in both `_handleMeta`, `HtmlElement.update` writes `sandbox` first; `103ca15` tests (same Sources Python/JS, `SrcdocSandboxTests`, `js/tests/srcdoc-sandbox.test.js`, four iframes in `verify_binding_browser.mjs`); `ae04748` example 13 → `connect_onclick` (its `onclick` stopped the page since 0.2.3), `c4dbbfc` the same for example 10; `0b14e33` documents and 11.54; `f9cdb31` core CI: Playwright Chromium, `verify_binding_browser.mjs`, runner with Uvicorn, `verify_live_cards.mjs`, `verify_live_playground.mjs`. Rules: [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035), [GC-095 §065](../public/097-data-binding.md#gc-095-065). Verified 2026-10-03: Python 81 OK, JS 466/466, examples 31/31; `verify_binding_browser.mjs` PASS in Chromium 153 and WebKit 26.6 (Data `srcdoc` script never runs, also after Data/Source changes; declared `allow-scripts` and literal run; fails without the rule); runner on 8093, both integrations (`e01`, `e06`, `e12`, `e13`, `b01`, `b05`, `c01`, `c04`, `c06`, `c07`, `c09`); `verify_live_cards.mjs` (`e10`) and `verify_live_playground.mjs` (`e13`) PASS on `/py` and `/js`, both failing before the fix. `5a554ea` 11.54 item 4 and this record; release 0.2.4: version in `pyproject.toml`, `js/package.json`, `jsr.json`, release notes v0.2.4.
 
 **Open:** same `onclick` fix in gramlot-examples (own chat); new CI steps first run on the pull request.
 
@@ -2776,7 +2776,7 @@ Owner, 2026-10-03 ("ok"): `iframe` `srcdoc` from Data → `sandbox=""` (all rest
 
 Block ID: **GC-070-670**.
 
-Owner, 2026-10-03, brief 1 (`decisioni_gallery-scaffold`): JS page = one module exporting `Page` and `Logic`; beside a Python page the logic module is `foo.js`; `foo_aux.js` admitted; data functions in `gramlot.inout`. Approved during the work ("ok"): import map for `@gramlot/gramlot/page` (server bundle rejected: esbuild in a Python host, second core copy); both logic modules = error; core `examples/` and runner to the module form; runner serves example modules as JS; `inout` formats (`sendHttp` JSON object, email subject = page title); `gramlot.inout` = browser runtime for Python and JS pages (owner correction). Constitution 11.55. Core `feat/page-module-inout`: `3d207e0` JS `FileHost` takes the module's `Logic`, Python takes `foo.js` beside `foo.py`, else `foo_aux.js`, both = error; import map with the bootstrap nonce in `openPage`/`open_page`; runtime exports `Page`, `source`; fixture `avvio` in module form; inline CSP error names the page's class `Logic`. `a92b142` 33 core examples export `Page` and `Logic`, four `NN_name_aux.js` moved in; runner shows the module, stages a one-line `{route}_aux.js` re-exporting `Logic` from the example URL, serves example modules as JS. `c7656bf` `verify_page_module_browser.mjs` (both forms, Node and Python loopback hosts, strict CSP). `a561ff6` merge of develop (0.2.4, no conflict). `4fc0fab` `js/src/inout.js`, `js/tests/inout.test.js`. `d99de9d` `verify_inout_browser.mjs`. Rules: [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030), [GC-095 §060](../public/095-writing-pages.md#gc-095-060), [GC-095 §095](../public/095-writing-pages.md#gc-095-095). Verified 2026-10-03 (CI layout, gramlot-js-server `main`): Python 83 OK, JS 475/475, examples 31/31; Chromium 153 and WebKit 26.6: `verify_page_module_browser.mjs` PASS (fails without the import map), `verify_inout_browser.mjs` PASS (email text and 2000 limit, real POST and 500, `save`/`restore` with date and decimal via real download and file chooser, JSON/XML, inline and `Logic` calls); Chromium: `verify_page_browser.mjs`, `verify_binding_browser.mjs`, `verify_examples_browser.mjs` (64 pages, runner on 8197) PASS. Upstream: `Bag.toXml` (`@genrojs/bag` 0.10.1) writes dates with `Date.toString()`, genro-org/genro-bag-js#10; the XML check reads text and numbers only. This record, documents, 11.55; release 0.2.5: version in `pyproject.toml`, `js/package.json`, `jsr.json`, release notes v0.2.5.
+Owner, 2026-10-03, brief 1 (`decisioni_gallery-scaffold`): JS page = one module exporting `Page` and `Logic`; beside a Python page the logic module is `foo.js`; `foo_aux.js` admitted; data functions in `gramlot.inout`. Approved during the work ("ok"): import map for `@gramlot/gramlot/page` (server bundle rejected: esbuild in a Python host, second core copy); both logic modules = error; core `examples/` and runner to the module form; runner serves example modules as JS; `inout` formats (`sendHttp` JSON object, email subject = page title); `gramlot.inout` = browser runtime for Python and JS pages (owner correction). Constitution 11.55. Core `feat/page-module-inout`: `3d207e0` JS `FileHost` takes the module's `Logic`, Python takes `foo.js` beside `foo.py`, else `foo_aux.js`, both = error; import map with the bootstrap nonce in `openPage`/`open_page`; runtime exports `Page`, `source`; fixture `avvio` in module form; inline CSP error names the page's class `Logic`. `a92b142` 33 core examples export `Page` and `Logic`, four `NN_name_aux.js` moved in; runner shows the module, stages a one-line `{route}_aux.js` re-exporting `Logic` from the example URL, serves example modules as JS. `c7656bf` `verify_page_module_browser.mjs` (both forms, Node and Python loopback hosts, strict CSP). `a561ff6` merge of develop (0.2.4, no conflict). `4fc0fab` `js/src/inout.js`, `js/tests/inout.test.js`. `d99de9d` `verify_inout_browser.mjs`. Rules: [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030), [GC-095 §060](../public/097-data-binding.md#gc-095-060), [GC-095 §095](../public/095-writing-pages.md#gc-095-095). Verified 2026-10-03 (CI layout, gramlot-js-server `main`): Python 83 OK, JS 475/475, examples 31/31; Chromium 153 and WebKit 26.6: `verify_page_module_browser.mjs` PASS (fails without the import map), `verify_inout_browser.mjs` PASS (email text and 2000 limit, real POST and 500, `save`/`restore` with date and decimal via real download and file chooser, JSON/XML, inline and `Logic` calls); Chromium: `verify_page_browser.mjs`, `verify_binding_browser.mjs`, `verify_examples_browser.mjs` (64 pages, runner on 8197) PASS. Upstream: `Bag.toXml` (`@genrojs/bag` 0.10.1) writes dates with `Date.toString()`, genro-org/genro-bag-js#10; the XML check reads text and numbers only. This record, documents, 11.55; release 0.2.5: version in `pyproject.toml`, `js/package.json`, `jsr.json`, release notes v0.2.5.
 
 **Open:** gramlot-js-server and gramlot-py-server serve `.css` and `_aux.js` only; the module form with a server needs their `.js` rule (briefs 3, 4). gramlot-examples → module form in brief 2. XML date text waits for genro-org/genro-bag-js#10.
 
@@ -8974,3 +8974,67 @@ review branch; no release or deployment is authorized.
 Verification: 3,635 JavaScript tests pass (baseline 3,635); Python 204 tests and 365
 subtests pass with the existing expected failure (baseline 199; five new tests of the
 installer). Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass on a clean build.
+
+
+<a id="gc-070-1470"></a>
+## 1470. Public documentation of the current version, public server protocol, Writing pages split (review p8) — 2026-10-19
+
+Phase p8 of the review of the 0.3.5 releases (decisions d-course and d-float). Implemented
+on the review branch; no release or deployment is authorized.
+
+- Process material removed from the public pages and the README: release labels such as
+  "(0.2.0)" and "*0.2.x:*", "development increment", "current increment", owner quotes and
+  approvals, "This is not a release announcement", the README section "Gramlot 0.2.0" and
+  its "accepted by the owner", the scope notes about dated release notes. The public guides
+  describe the current version; GC-005 §010 records d-course and the extension to the
+  public guides, `docs/02-documentation.md` §1 the same rule.
+- New public page [GC-101 · Server protocol](../public/101-server-protocol.md), derived
+  from GC-230 for adapter authors: bootstrap and `nameSyntax`, content types and names,
+  envelopes, outcomes, `auth` and the identity of a call, capabilities, `serverAdapter`
+  and the transport contract with `callSync`, HTTP rules (prefix, runtime, page, rpc and
+  close requests, body decoding and BOM, status codes, owner, CSP, themes and companions),
+  the conformance list, the Worker and WebSocket realisations, manifest and devices.
+  Section numbers equal the GC-230 rule numbers that the conformance check prints. GC-230
+  stays the internal record. GC-090, GC-095, GC-030 and GC-100 link GC-101 instead of
+  GC-230 and GC-215.
+- Writing pages split: [GC-097 · Data binding and controllers](../public/097-data-binding.md)
+  (blocks GC-095-040 to GC-095-090 and GC-095-130), [GC-098 · Calling the server](../public/098-server-calls.md)
+  (GC-095-100) and [GC-099 · Remote content and lazy Data](../public/099-remote-content.md)
+  (GC-095-105). The blocks keep their IDs and anchors (GC-005 §010 item 4); GC-095 keeps
+  005–035, 095 and 110–125. In-repo links (constitution, `docs/01-overview.md`, GC-070, the documentation maps)
+  name the new files. Cross-page anchor links are verified by `check_public_docs.py`;
+  `docs/conf.py` suppresses `myst.xref_missing`, which MyST raises for raw HTML anchors.
+- GC-097 §085 lists the exclusions of the code (`EXCLUDED_ATTRIBUTES`: `serverpath`,
+  `dbenv`, `shared_id`; the prefix `formsubscribe_`; the `PUBLISH` macro); the sentence
+  "Components ... are planned for 0.3.0" is removed. §070 points `radioButtonText` to
+  GC-105; §075 describes `button` as the `gramlot-button` component with R3 on it.
+- d-float: the number text of static rendering (Python `1.0`, JavaScript `1`; `format` in
+  the live page, `mask` only wraps) is stated in GC-095 §125 "Static rendering", and the
+  GC-090 §015 row of the Python renderers points to it.
+- GC-090 §024 (new) documents every entry point of `@gramlot/gramlot`, among them
+  `./index-page-runtime` (`IndexLogic`, `mountIndexPage`, `THEME_READY`, `THEME_SET`,
+  `THEMES`, `APPEARANCES`), `./tools/inspector` (`gramlot-tools-inspector`,
+  `InspectorConnection`, `attachInspectorAgent`) and `./tools/inspector-agent`. §023 lists
+  the packaged themes and `app-icon.png`; §022, §025 and §030 lose the release history.
+- README: `GramlotWorkerServer` instead of `WorkerHost`; the constitution is no longer
+  linked as "the ownership contract"; `gramlot-serverless` in the archived list is the old
+  repository, the package is current; a "What a page contains" summary replaces the 0.2.0
+  section; "Start here" lists the new pages.
+- GC-025 §015 "Learn by topic" replaces the release sequence; the historical archive
+  instructions are removed; §025 describes the standalone export. Example ranges such as
+  `c01–c17` and lesson keys are removed from the public pages: lessons are named by their
+  catalogue title, and the pages link the examples manual and the hosted galleries.
+- GC-105: §076 placed after §075, headings "110 ·" and "115 ·", title "Components", process
+  sentences and "native HTML" removed; the stale "alternate tab positions are not included"
+  is removed (§115 documents `tabPosition`). GC-100 lists the component definitions as an
+  extension point. GC-020 lists components and containers as available.
+- GC-175: the broken links to `js/src/adapters/page.js`, `src/gramlot/server/host.py` and
+  `js/src/adapters/host.js` point to the current files.
+- Cross-repo links to update: gramlot-js-server and gramlot-py-server docs link
+  `095-writing-pages.md#gc-095-100` (now `098-server-calls.md`) and, js-server
+  `docs/005-introduction.md:62`, `#gc-095-105` (now `099-remote-content.md`); gramlot-examples
+  lessons link `095-writing-pages.md` as their authoring reference and use lesson keys.
+
+Verification: 3,635 JavaScript tests pass (baseline 3,635); Python 204 tests and 365
+subtests pass with the existing expected failure (baseline 204). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).

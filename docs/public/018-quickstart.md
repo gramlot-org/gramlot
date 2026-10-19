@@ -39,9 +39,9 @@ Block ID: **GC-018-010**.
    displayed values change. **Data** holds the values; a **binding** connects a
    control or text to a Data path.
 
-Each section says which part of Gramlot it uses. Continue in section order:
-[the learning route](025-try.md) follows the releases and revisits
-examples as new features simplify them.
+Each section says which part of Gramlot it uses. Continue with
+[the learning route](025-try.md), which pairs each topic of the gallery with its
+guide.
 
 The gallery shows the result, explanation and source together. Python environments
 show Python; JavaScript environments show JavaScript. A separate **Logic** tab,
@@ -60,7 +60,7 @@ Use the CLI to create a project, then follow the commands it prints:
   The generated project explains how to run it on Node.js or export it without a server.
 
 Change a heading in the page file and reload, restart or rebuild as the chosen
-guide explains. Then try a bound field using [Writing pages](095-writing-pages.md).
+guide explains. Then try a bound field using [Data binding and controllers](097-data-binding.md).
 
 <a id="gc-018-020"></a>
 

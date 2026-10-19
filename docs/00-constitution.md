@@ -1358,7 +1358,7 @@ open until the CSP grammar arrives.
    The asymmetry has a technical reason: Python does not run JavaScript.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
-[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §660.
+[GC-095 §065](public/097-data-binding.md#gc-095-065). Record: GC-070 §660.
 
 ### Amendment 11.54 — An iframe srcdoc from Data is sandboxed — 2026-10-03
 
@@ -1386,7 +1386,7 @@ runs, and the `on*`/`javascript:` refusal does not reach them.
    `verify_live_playground.mjs`) on the runner.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
-[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §665.
+[GC-095 §065](public/097-data-binding.md#gc-095-065). Record: GC-070 §665.
 
 ### Amendment 11.55 — One page module with Page and Logic; gramlot.inout — 2026-10-03
 
@@ -1442,7 +1442,7 @@ companion `foo_aux.js` as the only page logic of `FileHost`) and the layout note
 (`NN_name_aux.js` where needed).
 
 Rules: [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
-[GC-095 §060](public/095-writing-pages.md#gc-095-060),
+[GC-095 §060](public/097-data-binding.md#gc-095-060),
 [GC-095 §095](public/095-writing-pages.md#gc-095-095). Record: GC-070 §670.
 
 ### Amendment 11.56 — The examples and their runner leave the core — 2026-10-04
@@ -1588,7 +1588,7 @@ contract is one and logical, realised separately per kind of server.
 Amendment of 11.53 item 1, by addition only: a `GramlotBuilderBag` inside a `data`
 value is a value and activates nothing (GC-230 §015). The rest of 11.53 is unchanged.
 
-Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
+Rules: [GC-095 §100](public/098-server-calls.md#gc-095-100),
 [GC-090 §020](public/090-classes-and-hosts.md#gc-090-020). Contract: GC-230,
 `docs/internal/230-server-protocol.md`.
 
@@ -1605,7 +1605,7 @@ contract of 11.58 is unchanged. Out of 0.2.16: `lazy` loading by visibility,
 `_waitingMessage`, the `tbody` merge, `_resolved`, `_fired` and the legacy alias
 `data(path, remote=…)`.
 
-Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).
+Rules: [GC-095 §105](public/099-remote-content.md#gc-095-105).
 
 ### Amendment 11.60 — Fixed method name for declarative `remote` — 2026-10-13
 
@@ -1627,7 +1627,7 @@ The old Q1 about clearing a reactive remote name is outside the current contract
 no clearing/cancellation semantics are newly approved. Other APIs and the open Q2
 about live Source declaration edits are outside this clarification.
 
-Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).
+Rules: [GC-095 §105](public/099-remote-content.md#gc-095-105).
 Decision and remaining implementation work: GC-070 §755.
 
 ### Amendment 11.61 — A dedicated optional inspector Web Component — 2026-10-14
@@ -2903,8 +2903,8 @@ The names `Exposed` and `node.requests` were chosen by the implementation and
 confirmed by the owner on 2026-10-19 (GC-225 §010). No release or deployment is
 authorized by these decisions.
 
-Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
-[GC-095 §105](public/095-writing-pages.md#gc-095-105). Contract: GC-230 §015.
+Rules: [GC-095 §100](public/098-server-calls.md#gc-095-100),
+[GC-095 §105](public/099-remote-content.md#gc-095-105). Contract: GC-230 §015.
 Status: GC-070 §1440.
 
 
@@ -2928,7 +2928,7 @@ naming the file".
 
 No release or deployment is authorized by this decision.
 
-Rules: [GC-095 §060](public/095-writing-pages.md#gc-095-060),
+Rules: [GC-095 §060](public/097-data-binding.md#gc-095-060),
 [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030). Status: GC-070 §1450.
 
 
@@ -3000,5 +3000,5 @@ Rules: GC-230 §010, §015, §030, §045, §120, §125, §135, §145, §150;
 [GC-090 §017](public/090-classes-and-hosts.md#gc-090-017),
 [GC-090 §020](public/090-classes-and-hosts.md#gc-090-020),
 [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
-[GC-095 §105](public/095-writing-pages.md#gc-095-105),
+[GC-095 §105](public/099-remote-content.md#gc-095-105),
 [GC-096 §005](public/096-themes-and-css.md#gc-096-005). Status: GC-070 §1455.

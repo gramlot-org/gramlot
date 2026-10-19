@@ -52,7 +52,9 @@ Block ID: **GC-005-010**.
    stable IDs alone do not redirect old URLs. Explicit exception, owner decision of
    2026-10-05: GC-055, retired on 2026-09-25, is kept by the public guide The Gramlot
    family (`docs/public/055-family.md`), which received it on 2026-10-01. No other
-   retired ID is reused.
+   retired ID is reused. Split of Writing pages, 2026-10-19 (review phase p8): the blocks
+   GC-095-040 to GC-095-090 and GC-095-130 moved to GC-097, GC-095-100 to GC-098 and
+   GC-095-105 to GC-099 with their block IDs and anchors; their links name the new files.
 5. Run the owning repository's documentation checks and verify paired coverage,
    links and anchors. A concise view must never strengthen an implementation claim.
 
@@ -73,6 +75,16 @@ same. Topic indexes are supplementary, not a replacement for this progression.
 Maintained examples use supported APIs; historical snippets must be labelled and
 do not require pinned or downgraded dependencies. This is product learning history,
 not a migration-work log. Owner's words and delivery scope: GC-070 §745.
+
+Owner decision, 2026-10-19 (review of the 0.3.5 releases, decision d-course, chosen
+by Giovanni Porcari over "keep the chronological order": "Tutta la galleria adeguata
+alla versione attuale, con un percorso didattico e non storico"): the gallery follows a
+teaching path for the current version. Lesson numbers follow the menu order; lessons
+carry no version labels, release history or process text; prerequisites point only
+backwards; one lesson teaches one concept; links from the core, the adapters and the
+site are updated in the same round. The approved review plan applies the same rule to
+the public guides of the core (phase p8): they describe the current version. This
+supersedes the chronological sequence of the 2026-10-13 clarification above.
 
 <a id="gc-005-015"></a>
 
@@ -105,7 +117,7 @@ public manual pages. This does not make files in a public repository private.
 
 Core now uses Sphinx with the classic Read the Docs theme. The staging script's
 explicit page and asset allowlists define the site boundary, including search
-and downloadable sources. The public guides GC-018, GC-020, GC-025, GC-030, GC-055, GC-090, GC-095, GC-096 and GC-100 have paired
+and downloadable sources. The public guides GC-018, GC-020, GC-025, GC-030, GC-055, GC-090, GC-095, GC-096, GC-097, GC-098, GC-099, GC-100, GC-101 and GC-105 have paired
 paths and stable block anchors. Existing legacy migration gaps remain unchanged.
 
 Present Gramlot as one framework: this repository contains the typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the core implementation or its operating plan. Keep

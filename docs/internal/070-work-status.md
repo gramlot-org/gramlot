@@ -3168,7 +3168,7 @@ amendment 11.53.
   `06637d9` documents and amendment 11.53. `f2eb977` the pages of
   `scripts/verify_binding_browser.mjs` mount a received Source.
   Rules: [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035),
-  [GC-095 §065](../public/095-writing-pages.md#gc-095-065).
+  [GC-095 §065](../public/097-data-binding.md#gc-095-065).
 - gramlot-js-server `feat/serverless-inline-code`: `312d4fc` single-file CSP with
   `'unsafe-eval'` and `connect-src *`, example `serverless/examples/inline-code` and
   `verify_inline_browser.mjs` in both CI jobs; `902c5e3` its guides.
@@ -3208,7 +3208,7 @@ Constitution amendment 11.54.
   and runs `verify_binding_browser.mjs`, then the runner with the Uvicorn integration
   and `verify_live_cards.mjs`, `verify_live_playground.mjs`. Rules:
   [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035),
-  [GC-095 §065](../public/095-writing-pages.md#gc-095-065).
+  [GC-095 §065](../public/097-data-binding.md#gc-095-065).
 - Verified on 2026-10-03: Python 81 OK, JavaScript 466/466, examples 31/31;
   `verify_binding_browser.mjs` PASS in Chromium 153 and WebKit 26.6: the script of a
   `srcdoc` from Data does not run, also after a Data change and after a Source change
@@ -3252,7 +3252,7 @@ JavaScript pages (owner correction). Constitution amendment 11.55.
   no conflict). `4fc0fab` `js/src/inout.js` (`InOut`, `gramlot.inout`) and
   `js/tests/inout.test.js`. `d99de9d` `scripts/verify_inout_browser.mjs`. Rules:
   [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030),
-  [GC-095 §060](../public/095-writing-pages.md#gc-095-060),
+  [GC-095 §060](../public/097-data-binding.md#gc-095-060),
   [GC-095 §095](../public/095-writing-pages.md#gc-095-095).
 - Verified on 2026-10-03, in a copy with the CI layout (gramlot-js-server `main`):
   Python 83 OK, JavaScript 475/475, examples 31/31. In Chromium 153 and WebKit 26.6:
@@ -10042,3 +10042,67 @@ review branch; no release or deployment is authorized.
 Verification: 3,635 JavaScript tests pass (baseline 3,635); Python 204 tests and 365
 subtests pass with the existing expected failure (baseline 199; five new tests of the
 installer). Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass on a clean build.
+
+
+<a id="gc-070-1470"></a>
+## 1470. Public documentation of the current version, public server protocol, Writing pages split (review p8) — 2026-10-19
+
+Phase p8 of the review of the 0.3.5 releases (decisions d-course and d-float). Implemented
+on the review branch; no release or deployment is authorized.
+
+- Process material removed from the public pages and the README: release labels such as
+  "(0.2.0)" and "*0.2.x:*", "development increment", "current increment", owner quotes and
+  approvals, "This is not a release announcement", the README section "Gramlot 0.2.0" and
+  its "accepted by the owner", the scope notes about dated release notes. The public guides
+  describe the current version; GC-005 §010 records d-course and the extension to the
+  public guides, `docs/02-documentation.md` §1 the same rule.
+- New public page [GC-101 · Server protocol](../public/101-server-protocol.md), derived
+  from GC-230 for adapter authors: bootstrap and `nameSyntax`, content types and names,
+  envelopes, outcomes, `auth` and the identity of a call, capabilities, `serverAdapter`
+  and the transport contract with `callSync`, HTTP rules (prefix, runtime, page, rpc and
+  close requests, body decoding and BOM, status codes, owner, CSP, themes and companions),
+  the conformance list, the Worker and WebSocket realisations, manifest and devices.
+  Section numbers equal the GC-230 rule numbers that the conformance check prints. GC-230
+  stays the internal record. GC-090, GC-095, GC-030 and GC-100 link GC-101 instead of
+  GC-230 and GC-215.
+- Writing pages split: [GC-097 · Data binding and controllers](../public/097-data-binding.md)
+  (blocks GC-095-040 to GC-095-090 and GC-095-130), [GC-098 · Calling the server](../public/098-server-calls.md)
+  (GC-095-100) and [GC-099 · Remote content and lazy Data](../public/099-remote-content.md)
+  (GC-095-105). The blocks keep their IDs and anchors (GC-005 §010 item 4); GC-095 keeps
+  005–035, 095 and 110–125. In-repo links (constitution, `docs/01-overview.md`, GC-070, the documentation maps)
+  name the new files. Cross-page anchor links are verified by `check_public_docs.py`;
+  `docs/conf.py` suppresses `myst.xref_missing`, which MyST raises for raw HTML anchors.
+- GC-097 §085 lists the exclusions of the code (`EXCLUDED_ATTRIBUTES`: `serverpath`,
+  `dbenv`, `shared_id`; the prefix `formsubscribe_`; the `PUBLISH` macro); the sentence
+  "Components ... are planned for 0.3.0" is removed. §070 points `radioButtonText` to
+  GC-105; §075 describes `button` as the `gramlot-button` component with R3 on it.
+- d-float: the number text of static rendering (Python `1.0`, JavaScript `1`; `format` in
+  the live page, `mask` only wraps) is stated in GC-095 §125 "Static rendering", and the
+  GC-090 §015 row of the Python renderers points to it.
+- GC-090 §024 (new) documents every entry point of `@gramlot/gramlot`, among them
+  `./index-page-runtime` (`IndexLogic`, `mountIndexPage`, `THEME_READY`, `THEME_SET`,
+  `THEMES`, `APPEARANCES`), `./tools/inspector` (`gramlot-tools-inspector`,
+  `InspectorConnection`, `attachInspectorAgent`) and `./tools/inspector-agent`. §023 lists
+  the packaged themes and `app-icon.png`; §022, §025 and §030 lose the release history.
+- README: `GramlotWorkerServer` instead of `WorkerHost`; the constitution is no longer
+  linked as "the ownership contract"; `gramlot-serverless` in the archived list is the old
+  repository, the package is current; a "What a page contains" summary replaces the 0.2.0
+  section; "Start here" lists the new pages.
+- GC-025 §015 "Learn by topic" replaces the release sequence; the historical archive
+  instructions are removed; §025 describes the standalone export. Example ranges such as
+  `c01–c17` and lesson keys are removed from the public pages: lessons are named by their
+  catalogue title, and the pages link the examples manual and the hosted galleries.
+- GC-105: §076 placed after §075, headings "110 ·" and "115 ·", title "Components", process
+  sentences and "native HTML" removed; the stale "alternate tab positions are not included"
+  is removed (§115 documents `tabPosition`). GC-100 lists the component definitions as an
+  extension point. GC-020 lists components and containers as available.
+- GC-175: the broken links to `js/src/adapters/page.js`, `src/gramlot/server/host.py` and
+  `js/src/adapters/host.js` point to the current files.
+- Cross-repo links to update: gramlot-js-server and gramlot-py-server docs link
+  `095-writing-pages.md#gc-095-100` (now `098-server-calls.md`) and, js-server
+  `docs/005-introduction.md:62`, `#gc-095-105` (now `099-remote-content.md`); gramlot-examples
+  lessons link `095-writing-pages.md` as their authoring reference and use lesson keys.
+
+Verification: 3,635 JavaScript tests pass (baseline 3,635); Python 204 tests and 365
+subtests pass with the existing expected failure (baseline 204). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).

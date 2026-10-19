@@ -13,7 +13,7 @@ under the code. The guide content cap is 1440px; images never enlarge beyond
 their 1080px source width. Full-size image inspection remains available. Complete Python pages
 remain available; moved CSS declarations are not duplicated. Public rendering
 omits reference metadata and numeric heading prefixes; source IDs and anchors stay. Python requires a
-Python server. Interactive styling uses the 0.2.0 Data-binding surface.
+Python server. Interactive styling uses [Data bindings](097-data-binding.md).
 
 <a id="gc-096-005"></a>
 
@@ -82,11 +82,10 @@ Color mode is independent.
 | mimi | mimi.css | Titanium grays, dark navigation, blue actions, small corners | 12px / 18px |
 | joanna | joanna.css | Light gray/white surfaces, softer corners, blue actions | 13px / 20px |
 
-The Gramlot name `joanna` follows the requested name; the legacy file is
-spelled `joanna.css`. These profiles adapt the legacy light palettes and compact
+The profile `joanna` adapts the legacy file `joanna.css`. These profiles adapt the legacy light palettes and compact
 proportions. They do not port Dojo widgets or guarantee pixel-identical layouts.
-Dark palettes are new Gramlot adaptations. Legacy user color variants are not part
-of this increment; Base and Compact remain available.
+Dark palettes are Gramlot adaptations. Legacy user color variants are not
+provided; Base and Compact remain available.
 
 In an application, the server loads Base; load Compact and the profile after it:
 
@@ -223,7 +222,7 @@ pointer. Shortcut precedence composes inline CSS before the browser cascade;
 style property. Reverse-direction table distinguishes Data edits, literal Source
 edits, DevTools DOM edits and theme-variable previews. DOM/CSS edits do not write
 Source/Data or source files; later projection can overwrite them. Inspector theme
-previews can be exported with Download CSS. Links to gallery b06 for practice.
+previews can be exported with Download CSS. Practice in the gallery lesson *Style and visibility* ([examples manual](https://gramlot-examples.readthedocs.io/en/latest/)).
 The full `style_state.py` example uses `datapath="appearance"` for relative paths,
 setters, two bound selects, a bound class,
 bound width with max-width 100%, a checkbox and bound visibility. No JS file is

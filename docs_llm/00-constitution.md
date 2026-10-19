@@ -1254,7 +1254,7 @@ connections open until the CSP grammar arrives.
    on reception (technical reason: Python does not run JS).
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
-[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §660.
+[GC-095 §065](public/097-data-binding.md#gc-095-065). Record: GC-070 §660.
 
 ### Amendment 11.54 — An iframe srcdoc from Data is sandboxed — 2026-10-03
 
@@ -1278,7 +1278,7 @@ preview), DOMPurify (runtime dependency, rules to maintain). Extends 11.53 item 
    `verify_live_cards.mjs` and `verify_live_playground.mjs` on the runner.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
-[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §665.
+[GC-095 §065](public/097-data-binding.md#gc-095-065). Record: GC-070 §665.
 
 ### Amendment 11.55 — One page module with Page and Logic; gramlot.inout — 2026-10-03
 
@@ -1319,7 +1319,7 @@ Explicit supersession (text kept as history): 11.48 item 3 (`foo_aux.js` as the 
 `FileHost` page logic), 11.22 layout note (`NN_name_aux.js`).
 
 Rules: [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
-[GC-095 §060](public/095-writing-pages.md#gc-095-060),
+[GC-095 §060](public/097-data-binding.md#gc-095-060),
 [GC-095 §095](public/095-writing-pages.md#gc-095-095). Record: GC-070 §670.
 
 ### Amendment 11.56 — The examples and their runner leave the core — 2026-10-04
@@ -1455,7 +1455,7 @@ contract is one and logical, realised separately per kind of server.
 Amendment of 11.53 item 1, by addition only: a `GramlotBuilderBag` inside a `data`
 value is a value and activates nothing (GC-230 §015). The rest of 11.53 is unchanged.
 
-Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
+Rules: [GC-095 §100](public/098-server-calls.md#gc-095-100),
 [GC-090 §020](public/090-classes-and-hosts.md#gc-090-020). Contract: GC-230,
 `docs/internal/230-server-protocol.md`.
 
@@ -1472,7 +1472,7 @@ contract of 11.58 is unchanged. Out of 0.2.16: `lazy` loading by visibility,
 `_waitingMessage`, the `tbody` merge, `_resolved`, `_fired` and the legacy alias
 `data(path, remote=…)`.
 
-Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).
+Rules: [GC-095 §105](public/099-remote-content.md#gc-095-105).
 
 ### Amendment 11.60 — Fixed method name for declarative `remote` — 2026-10-13
 
@@ -1494,7 +1494,7 @@ The old Q1 about clearing a reactive remote name is outside the current contract
 no clearing/cancellation semantics are newly approved. Other APIs and the open Q2
 about live Source declaration edits are outside this clarification.
 
-Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).
+Rules: [GC-095 §105](public/099-remote-content.md#gc-095-105).
 Decision and remaining implementation work: GC-070 §755.
 
 ### Amendment 11.61 — A dedicated optional inspector Web Component — 2026-10-14
@@ -2750,8 +2750,8 @@ cancellation of `remote`/`dataRemote` requests.
 
 Names `Exposed` and `node.requests`: chosen by the implementation, confirmed by the
 owner on 2026-10-19 (GC-225 §010). No release or deployment authorized.
-Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
-[GC-095 §105](public/095-writing-pages.md#gc-095-105); GC-230 §015; GC-070 §1440.
+Rules: [GC-095 §100](public/098-server-calls.md#gc-095-100),
+[GC-095 §105](public/099-remote-content.md#gc-095-105); GC-230 §015; GC-070 §1440.
 
 
 ### Amendment 11.86 — `Logic` is optional in a logic module — 2026-10-19
@@ -2769,7 +2769,7 @@ a Python page it exports `Logic`: the browser rejects a module without it".
    `GramlotFileServer` sends the page module only when it exports `Logic`.
 
 No release or deployment authorized.
-Rules: [GC-095 §060](public/095-writing-pages.md#gc-095-060),
+Rules: [GC-095 §060](public/097-data-binding.md#gc-095-060),
 [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030); GC-070 §1450.
 
 

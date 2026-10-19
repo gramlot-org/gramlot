@@ -2,10 +2,6 @@
 
 Document ID: **GC-100**.
 
-> **Scope.** This is the maintained authoring guide. The repository README states
-> the current release. Dated release notes below describe when behavior entered;
-> they are not a list of current exclusions. Development-only differences are marked.
-
 <a id="gc-100-005"></a>
 
 ## 005 · Choose the owning layer
@@ -13,35 +9,35 @@ Document ID: **GC-100**.
 | Need | Owner / entry point |
 | --- | --- |
 | Page content/metadata | Application `Page` subclass |
-| Routing, identity, HTTP | Python `GramlotServer`; JS `GramlotServer`/`GramlotFileServer` adapter |
-| Reusable Source macros | Deferred; no active recipe API |
+| Routing, identity, HTTP | Python `GramlotServer`; JS `GramlotServer`/`GramlotFileServer` adapter; rules: [Server protocol](101-server-protocol.md) |
+| Server-dependent browser behaviour | `ServerAdapter` subclass named in the bootstrap ([Server protocol](101-server-protocol.md#gc-101-045)) |
+| Reusable Source macros | Not provided; no recipe API |
 | Static HTML text | Generic HtmlBuilder + HtmlRenderer |
-| Historical 0.1.2: reactive DOM | GramlotRenderer (extends RendererBase) + HtmlElement |
-| *0.2.0:* reactive DOM | GramlotRenderer (extends GramlotHtmlRenderer, which extends HtmlRenderer), GramlotSvgRenderer (extends SvgRenderer) + HtmlElement |
+| Reactive DOM | GramlotRenderer (extends GramlotHtmlRenderer, which extends HtmlRenderer), GramlotSvgRenderer (extends SvgRenderer) + HtmlElement |
 | Types, serialization, notifications | Bag/TYTX contracts |
 | Source grammar/association | Generic SourceBag, BuilderBase, RendererBase |
-| Named behavior (0.2.0), page module (0.2.5) | Application `Logic` export of the page module `foo.js`, else `foo_aux.js`, or `js_requires` resource |
+| Components and collections | `defineComponent`, `defineCollection`, bases and mixins of `@gramlot/gramlot/components` ([Components](105-components.md#gc-105-025)) |
+| Named behavior | Application `Logic` export of the page module `foo.js`, else `foo_aux.js`, or `js_requires` resource |
 
 These extension points exist but compatibility is not frozen. Keep HTTP server technology
 out of core; implement missing shared behavior in its owning library, not locally.
 
 <a id="gc-100-010"></a>
 
-## 010 · Recipes deferred
+## 010 · Recipes
 
-Recipes are outside the active scope. There is no recipe declaration, registry or
-expansion stage in the current main/remote pipeline. Their contract will be
-specified separately before implementation.
+Recipes are not provided: no recipe declaration, registry or expansion stage in the
+main/remote pipeline.
 
 <a id="gc-100-015"></a>
 
 ## 015 · Extension contracts still to define
 
-Open outlines: component/mixin parameters and cleanup; third-party collection
-naming/registration/discovery/collisions; Python authoring from JS descriptions;
-controller/resolver lifecycle and Data ownership (*0.2.0:* `dataFormula`,
-`dataController` and named logic defined, [GC-095 055](095-writing-pages.md);
-dataRpc/remote/dataRemote in GC-095 100–105, broader resolver extensions open); shared versus technology-specific
+Not defined yet: third-party collection naming/registration/discovery/collisions;
+lifecycle and Data ownership of third-party controllers and resolvers (`dataFormula`,
+`dataController`, named logic: [Data binding and controllers](097-data-binding.md); `dataRpc`:
+[Calling the server](098-server-calls.md); `remote`/`dataRemote`:
+[Remote content and lazy Data](099-remote-content.md)); shared versus technology-specific
 database operations. These headings define no plugin loader, package convention or
 final hierarchy. Each capability needs a bounded contract, owner and behavior tests
 before examples rely on it.
@@ -55,9 +51,7 @@ or Gramlot's per-instance collections. Executable behavior remains in implementa
 methods; there is no separate JS element/abstract declaration helper API.
 
 Builder JS bundles the HTML5 grammar and static HtmlBuilder/HtmlRenderer, producing
-HTML text with Python-compatible CSS keyword/macro conventions. In 0.1.2 Gramlot live
-rendering did not reuse the dialect's `adaptAttrs`; the move changed neither
-Source/typed grammar authoring nor the absence of labels and bindings. *0.2.0:* live
+HTML text with Python-compatible CSS keyword/macro conventions. The live
 `GramlotRenderer` extends `GramlotHtmlRenderer` → Builder `HtmlRenderer`, so the live
 DOM reuses its attribute/style adaptation.
 
@@ -85,11 +79,11 @@ and `page/_collection.py`, under the approved Python authoring boundary. Both
 paths validate declared parameters and structural constraints and isolate instances.
 A later collection replaces whole every element or abstract it names and keeps the
 others; `grammar` metadata merges key by key and a null value keeps the earlier one
-(the genro-builders rule, applied by the Python loader too since 2026-09-30).
+(the genro-builders rule, which the Python loader applies too).
 Mixed wildcard/cardinality rules remain unsupported. Defaults are descriptive, not automatically inserted attributes. Browser
 `Gramlot` accepts the same `collections` option.
 This is explicit loading, not automatic discovery or custom-element registration.
-*0.2.0:* Gramlot redefines `dataSetter`/`dataFormula`/`dataController` in its own
+Gramlot redefines `dataSetter`/`dataFormula`/`dataController` in its own
 `binding.json` collection, loaded after HTML5 in Python and JS; its binding attributes never reach the DOM.
 The HTML5 collection's open parameter signatures do not become a manual attribute whitelist.
 Custom children must satisfy their parent's declared content model; this API does
@@ -144,7 +138,7 @@ removes that marker. This is not a new live-renderer capability.
 
 ## 095 · An explicitly loaded Web Component
 
-Introduced in core 0.2.17. Declare a custom element
+Declare a custom element
 without a dedicated Python builder:
 
 ```python
@@ -159,6 +153,6 @@ component module explicitly before use; this declaration does not import it.
 
 Object properties, such as a tree's Bag, are not HTML attributes. The provisional
 inspector assigns `storeBag` in its JavaScript implementation. Generic declarative
-Bag properties are not provided by this addition. The temporary tree is used by
+Bag properties are not provided. The temporary tree is used by
 the optional inspector; it remains a provisional tool component, not a general
 application widget API.

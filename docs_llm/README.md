@@ -3,11 +3,14 @@
 ## For application developers
 
 Start with [Classes and server adapters](public/090-classes-and-hosts.md), then
-[Writing pages](public/095-writing-pages.md), [Themes and CSS](public/096-themes-and-css.md)
-and [Extending Gramlot](public/100-extensions.md).
-These chapters describe the released core and explicitly mark gaps. They describe
-release **0.2.0 (HTML/SVG data binding)**, released on 2026-09-30; each chapter marks
-0.2.0 behavior. The repository README states the current release.
+[Writing pages](public/095-writing-pages.md),
+[Data binding and controllers](public/097-data-binding.md),
+[Calling the server](public/098-server-calls.md),
+[Remote content and lazy Data](public/099-remote-content.md),
+[Themes and CSS](public/096-themes-and-css.md), [Components](public/105-components.md)
+and [Extending Gramlot](public/100-extensions.md). Adapter authors read
+[Server protocol](public/101-server-protocol.md). These chapters describe the current
+release, which the repository README states, and name what is not provided.
 [Evaluate](public/020-evaluate.md), [Try](public/025-try.md) and
 [Quality](public/030-quality.md) distinguish the core from the experimental PoC.
 
