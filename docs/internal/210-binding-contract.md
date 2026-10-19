@@ -193,7 +193,7 @@ settle previously unapproved proposals, not older approved behavior.
 | P21 | Each resource exports class Logic; per-page resource groups, companion root, specific methods override generic. Supersedes static-method holder/page mixin proposal. *Revision 8:* groups from `js_requires` need a Host with a resource system (kajenn or a test Host); with the minimal FileHost only the companion root group exists | S07 → groups, collision, constructor and isolation checks |
 | P22 | Numeric _onStart in ms; true and 0 immediate; negative/nonfinite error; independent of other-trigger _delay | S08 → virtual clock |
 | P23 | Same snake_case requires fields in Python and JS, no aliases | S06/S14 → authoring and all hosts |
-| P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins | S03 → rebuild, removal, late response, frozen living target |
+| P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins (superseded by constitution 11.85, 2026-10-19: one request in flight per node, always applied; the first later call waits) | S03 → rebuild, removal, late response, frozen living target |
 | P25 | Authoring dict/plain JS object becomes Bag(value) with default recursive population: nested dictionaries, lists and dictionaries inside lists become Bags, preserving order and scalar leaf values. A list supplied directly as a setter value remains a list; a JSON string remains a string. Owner clarification 2026-10-14, constitution 11.64; no custom converter | S02 → TYTX cross-language payload identity/types |
 
 *Historical (revision 6):* the open questions below were still open on 2026-09-25.
@@ -422,7 +422,8 @@ clears pending events and propagates. Track currently building nodes during buil
 
 remoteSource uses semantic binding for eligibility, current-response check and
 cancellation registration, including targets rebuilt or living under freeze.
-Latest request still wins. `setValue(prepared, true, {_text: null}, true)` emits
+One request is in flight per node; the next waits for its answer (constitution
+11.85, superseding latest-wins). `setValue(prepared, true, {_text: null}, true)` emits
 upd_value_attr; the installer is entered through the FIFO, not separately from
 mountMainSource or remoteSource. Removal under freeze closes semantic ownership
 immediately; old DOM waits until thaw. Thaw builds current Source once, without

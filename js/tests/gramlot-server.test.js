@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {mkdtemp, writeFile, symlink, rm} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {tmpdir} from 'node:os';
-import {GramlotServer, Page, GramlotBuilder, PageExpired, ServerCapacity, PageNotFound, SourceNotFound, EndpointNotFound,
+import {GramlotServer, Exposed, Page, GramlotBuilder, PageExpired, ServerCapacity, PageNotFound, SourceNotFound, EndpointNotFound,
     InvalidRequest, NotAuthenticated, NotAuthorized} from '../src/server/index.js';
 import {GramlotFileServer} from '../src/server/gramlot-file-server.js';
 import {InvalidResourceName} from '../src/server/resources.js';
@@ -475,4 +475,75 @@ test('configured URLs, root id and capabilities reach the bootstrap', async () =
 
 test('pagesDir is the absolute pages folder', () => {
     assert.equal(new GramlotFileServer('pages').pagesDir, resolve('pages'));
+});
+
+// Constitution 11.85: a method name is a method of the page or a path of public attributes from the page.
+test('a dotted name reaches a method of an Exposed object read from the page; its marker gives the only auth', async () => {
+    const reads = [];
+    class Orders extends Exposed {
+        constructor(prefix) { super(); this.prefix = prefix; this.archive = new Archive(); }
+        list(root, {id}) { root.p(`${this.prefix}:${id}`); }
+        total({items}) { return `${this.prefix}:${items}`; }
+        guarded() { return 'secret'; }
+        plain() { return 'plain'; }
+    }
+    Orders.registerSource('list');
+    Orders.registerEndpoint('total');
+    Orders.registerEndpoint('guarded', {auth: 'admin'});
+    class Archive extends Exposed {
+        size() { return 3; }
+    }
+    Archive.registerEndpoint('size');
+    class PathPage extends EmptyPage {
+        loose = {total: Orders.prototype.total};
+        get orders() { reads.push('orders'); return new Orders('o'); }
+        get _hidden() { reads.push('_hidden'); return new Orders('h'); }
+    }
+    const server = memoryServer(PathPage);
+    const {pageId} = await server.openPage('/');
+    assert.equal((await call(server, pageId, 'source', 'orders.list', {id: 7})).value.getNodes()[0].value, 'o:7');
+    assert.equal((await call(server, pageId, 'data', 'orders.total', {items: 2})).value, 'o:2');
+    assert.equal((await call(server, pageId, 'data', 'orders.archive.size')).value, 3);
+    assert.equal(await code(call(server, pageId, 'data', 'orders.guarded')), 'not_authenticated');
+    assert.deepEqual(reads, ['orders', 'orders', 'orders', 'orders']);
+    for (const [contentType, name] of [['data', 'orders.plain'], ['data', 'orders.list'], ['source', 'orders.total'],
+        ['data', 'orders.missing'], ['data', 'missing.total'], ['data', '_hidden.total'], ['data', 'orders._total'],
+        ['data', 'loose.total'], ['data', 'orders.prefix.length'], ['data', 'orders..total'], ['data', 'orders.'],
+        ['data', '.orders'], ['data', ''], ['data', 'orders.tot\u00e0l']]) {
+        assert.equal(await code(call(server, pageId, contentType, name)), 'not_found', name);
+    }
+    assert.deepEqual(reads, ['orders', 'orders', 'orders', 'orders', 'orders', 'orders', 'orders', 'orders', 'orders']);
+});
+
+test('an inherited member such as constructor never leads to a callable method', async () => {
+    class Parent extends EmptyPage {
+        shared(root) { root.p('shared'); }
+        value() { return 'value'; }
+    }
+    Parent.registerSource('shared');
+    Parent.registerEndpoint('value');
+    class Child extends Parent {}
+    const server = memoryServer(Child);
+    const {pageId} = await server.openPage('/');
+    assert.equal((await call(server, pageId, 'data', 'value')).value, 'value');
+    for (const [contentType, name] of [['data', 'constructor'], ['data', 'constructor.prototype.value'],
+        ['source', 'constructor.prototype.shared'], ['data', 'constructor.registerEndpoint'], ['data', 'toString'],
+        ['data', 'hasOwnProperty'], ['data', 'valueOf'], ['data', 'value.call'], ['data', 'constructor.name.length'],
+        ['source', 'constructor.prototype.constructor.prototype.shared']]) {
+        assert.deepEqual((await call(server, pageId, contentType, name)).error.code, 'not_found', name);
+    }
+});
+
+test('Page extends Exposed; the markers belong to Exposed and refuse main', () => {
+    assert.ok(Page.prototype instanceof Exposed);
+    assert.equal(Page.registerSource, Exposed.registerSource);
+    assert.equal(Page.registerEndpoint, Exposed.registerEndpoint);
+    class Orders extends Exposed {
+        main() {}
+        list() {}
+    }
+    assert.throws(() => Orders.registerSource('main'), {name: 'TypeError', message: 'registerSource cannot declare main'});
+    assert.throws(() => Orders.registerEndpoint('missing'), {name: 'TypeError', message: 'registerEndpoint requires an own method of Orders: missing'});
+    Orders.registerEndpoint('list');
+    assert.throws(() => Orders.registerSource('list'), {name: 'TypeError', message: 'list is declared both as Source method and endpoint'});
 });

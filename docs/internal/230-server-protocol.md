@@ -80,11 +80,19 @@ Block ID: **GC-230-015**.
 - Inline code runs only when it arrives inside a fragment (constitution 11.53); a
   `GramlotBuilderBag` inside a `data` value is a value and activates nothing.
 - Names: `main` is reserved to the whole page; `main` is refused as a declared
-  fragment or endpoint name (`base.py:17-18`, `page.js:34`). A fragment or endpoint
-  name matches `^[A-Za-z][\w]*$` with ASCII word characters in both languages
-  (`page.js:16`, `base.py:10`, `:61`); any other name is not declared and answers
-  `not_found`. The same name may not be both a fragment and an endpoint
-  (`base.py:64-65`, `page.js:42-43`).
+  fragment or endpoint name (`base.py` `_mark`, `page-base.js` `declare`). A declared
+  method name matches `^[A-Za-z][A-Za-z0-9_]*$` in both languages (`DECLARED_NAME`).
+  The `name` of a request is a declared method of the page or a path
+  `a.b.c.method` read from the page (constitution 11.85; `REMOTE_NAME`,
+  `resolve_declared`/`resolveDeclared`): every segment before the last is a public
+  attribute (a getter runs), the last a method declared with the `contentType`'s
+  marker on the class of the object before it, whose `auth` is the only
+  authorization. In JS every object on the path is an `Exposed` instance, so an
+  inherited member such as `constructor` never leads to a method. Any other name is
+  not declared and answers `not_found`. The same name may not be both a fragment and
+  an endpoint (`base.py` `_declared`, `page-base.js` `declare`). The name syntax
+  becomes the server's declaration in a later phase (review plan p4); the core
+  default is `REMOTE_NAME`.
 - Arguments: Python methods receive `params` as keyword arguments
   (`gramlot_server.py:233`, `:230`), JS methods as one object
   (`gramlot-server.js:199`, `:194`).
@@ -107,8 +115,9 @@ close:    {pageId}
 ```
 
 - `id`: a string the client generates; the response carries it back. Over a
-  transport with free order (WebSocket) it pairs the two; on the same client node
-  the latest request wins (constitution, `remoteSource`).
+  transport with free order (WebSocket) it pairs the two. A client Source node has
+  one request in flight; the next waits for its answer (constitution 11.85,
+  `node.requests`).
 - `pageId`: the page of §010.
 - `contentType`: `source` or `data` (§015). The response repeats it.
 - `name`: the fragment or endpoint name. `main` is the whole page.
@@ -449,7 +458,9 @@ Standard library (`urllib`, `fetch`) plus genro-tytx / `@genrojs/tytx` for the e
     `page_expired`.
 12. GC-230-025: `main` of an unknown `pageId` answers `page_expired`; an unknown
     fragment name and an unknown endpoint name answer `not_found`;
-    `{contentType: 'data', name: 'main'}` answers `not_found`.
+    `{contentType: 'data', name: 'main'}` answers `not_found`; `constructor`,
+    `constructor.prototype.check_endpoint` and (`source`)
+    `constructor.prototype.check_fragment` answer `not_found`.
 13. GC-230-015: `source`/`check_fragment` with `params` answers a fragment
     document; `data`/`check_endpoint` with `params` answers the value the fixture
     computes from them: `3`, `"x"` and a date, which comes back as the same typed

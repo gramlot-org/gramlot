@@ -2708,3 +2708,45 @@ is not introduced. No publication or deployment is authorized by this request.
 
 
 Release authorization — owner, 2026-10-18: “bene, pubblica anche questa correzione e aggiorna entrambe le gallery e lo zip serverless, poi verifica online che lo slider corregga i decimali dello splitter”. Authorizes the bounded slider quantization correction release, both hosted galleries and the regenerated serverless ZIP, followed by live browser verification.
+
+
+### Amendment 11.85 — Method name resolved from the page; one request in flight per Source node — 2026-10-19
+
+Owner decisions of 2026-10-19 (coordinating chat, review of the 0.3.5 releases).
+Supersedes 11.60 and the literal-method contract kept by 11.66; the latest-wins
+rule of `dataRpc` (11.58 item 5) and of `remoteSource` (GC-210 P24); the 0.2.17
+cancellation of `remote`/`dataRemote` requests.
+
+1. Method of `remote`, `dataRpc`, `dataRemote`, `remoteSource`: a string,
+   `"method"` or `"a.b.c.method"`, resolved from the page; never an object. `^`/`=`
+   pointer accepted on the three constructs (documented readability warning). Empty,
+   `null` or outside the syntax → error when sent; "no method yet" → `_if`. Core
+   syntax `REMOTE_NAME` (portable, Python = JS); the server will declare it in a
+   later phase (owner: the syntax belongs to the server).
+2. Segments before the last: public attributes (no leading `_`), no marker; a getter
+   runs (accepted). Last member: `@source`/`@endpoint` (JS
+   `registerSource`/`registerEndpoint`), whose `auth` is the only authorization. JS:
+   objects on the path extend `Exposed` (only the two markers; `Page` extends it).
+   Python: ordinary objects (accepted asymmetry). `constructor` and other inherited
+   members never lead to a method; both conformance checks verify it.
+3. One request in flight per Source node; always finished and applied; the first
+   change during the flight waits with its parameters of that moment; later ones do
+   nothing while one waits; the waiting one is sent at the answer. Abort only on node
+   removal, page close, `dataRpc` `timeout`. Content may lag behind Data (accepted).
+4. `_onCalling` on `dataRpc`, `remote`, `dataRemote`; `false` → no call. `this.requests`:
+   `inflight` (`method`, `params`, `sentAt`, `cancel()`), `pending` (`method`,
+   `params`), null when empty; `cancel()` ignores the answer. Provisional
+   (coordinator, owner delegation): after a cancel in `_onCalling` the new call is
+   sent at once; `dataRemote` `_onCalling` before each load; no debounce on
+   `remoteSource`.
+5. `_if` = readiness: false → no request, nothing cancelled, content unchanged;
+   `_else` inline.
+6. `_delay`, `_timing`, `_userChanges`, `_onCalling` on `remote`; `_delay` cancels only
+   the scheduled call; no default delay.
+7. Legacy callback/cache names per construct (`_onResult`/`_onError`,
+   `_onRemote`/`_cachedRemote`, `cacheTime`).
+
+Names `Exposed` and `node.requests`: chosen by the implementation, confirmed by the
+owner on 2026-10-19 (GC-225 §010). No release or deployment authorized.
+Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
+[GC-095 §105](public/095-writing-pages.md#gc-095-105); GC-230 §015; GC-070 §1440.

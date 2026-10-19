@@ -1,6 +1,6 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-18**.
+Document ID: **GC-070**. Updated: **2026-10-19**.
 
 **Release preparation:** JavaScript gallery aligned with Python, packaged Python/Node/offline qualification and inspector CI prepared; publication remains pending. See [§1395](#gc-070-1395).
 
@@ -8750,3 +8750,33 @@ Evidence: gramlot-examples/deploy/galleries/reports/2026-10-18-slider-quantizati
 Owner-authorized publication and public verification are complete. No new mobile
 or performance qualification is claimed; shared slider constraints must remain
 compatible. Concurrent database work and the unpublished c23 lesson were excluded.
+
+
+<a id="gc-070-1440"></a>
+## 1440. Method paths and one request in flight per node (review p1) — 2026-10-19
+
+Owner decisions of 2026-10-19 in the review of the 0.3.5 releases (d-pointer and
+the decisions it needs), recorded as constitution amendment 11.85. Implemented on
+the review branch; no release or deployment is authorized.
+
+- Method name of `remote`, `dataRpc`, `dataRemote` and `remoteSource`: `"method"` or
+  `"a.b.c.method"` resolved from the page (`REMOTE_NAME`, portable, in
+  `page/source.py` and `builder/source.js`); `^`/`=` pointers accepted by the
+  `remote` helper in both languages; an empty, `null` or malformed name rejects the
+  call when it is sent.
+- Server: `resolve_declared`/`resolveDeclared` read every segment as a public
+  attribute and require the final marker; JS objects on the path extend the new
+  base `Exposed` (holds `registerSource`/`registerEndpoint`; `Page` extends it).
+  `constructor` paths answer `not_found`, also in both conformance checks.
+- Requests: `node.requests` (`NodeRequests`) applies one rule to the four
+  constructs: one request in flight, its answer always applied, the first change
+  waiting with its parameters, no abort except node removal, page close and the
+  `dataRpc` timeout. `_onCalling` on the three constructs (`false` blocks);
+  `inflight.cancel()`; `_if` is a readiness condition; `_delay`, `_timing`,
+  `_userChanges` on `remote`. A fragment mounted by `remoteSource` from code now
+  replaces the record of `_cachedRemote`.
+- Names `Exposed` and `node.requests` confirmed by the owner on 2026-10-19 (GC-225).
+
+Verification: 3,585 JavaScript tests pass (baseline 3,563); Python 170 tests and
+305 subtests pass with the existing expected failure (baseline 168 and 266). Docs:
+`prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.

@@ -39,6 +39,8 @@ Block ID: **GC-225-010**.
 | Files | A file is named after the class it holds: `gramlot-server.js`/`gramlot_server.py`, `gramlot-file-server.js`/`gramlot_file_server.py`, as `gramlot-builder.js` | owner decision 2026-10-08 |
 | Example pages | A generic `div` is held in `pane`; `html_main` is held in `main_content`; an element is never named `page` | GC-210 row S14bis (`210-binding-contract.md:755`) |
 | Commands | Environment, then verb: `gramlot <environment> new\|gallery`, `gramlot node\|bun gallery`, `gramlot-serverless build\|gallery`, `npm create @gramlot page\|site` | owner decisions 2026-10-02 and 2026-10-05; GC-055 |
+| Base of the JS markers | `Exposed` (`js/src/server/page-base.js`) is the base of every JS class whose methods a request names: `Page` and the classes of the objects reached from the page by a method path (`orders.list`, constitution 11.85). It holds only `registerSource` and `registerEndpoint`; `Page` extends it, so `Page.registerSource` is the inherited marker. No convention covered the name: it reuses the word "exposed" that already names `@source`/`@endpoint` methods (`page/base.py` docstring, GC-090 table "Exposed Source method"). Python has no counterpart: `@source` and `@endpoint` are functions and the objects on a path are ordinary objects (accepted asymmetry) | owner decision 2026-10-19 (review plan d-pointer-js: common base with the markers only, `Page` extends it); name chosen in p1, confirmed by the owner on 2026-10-19 |
+| Proxies of the Source node | A proxy of the Source node, reached from `this` in inline code, has a free name, clear and not ambiguous; its class states its theme in its docline. `node.requests` (class `NodeRequests`, `js/src/builder/source.js`) holds the request in flight (`inflight`: `method`, `params`, `sentAt`, `cancel()`) and the waiting call (`pending`: `method`, `params`) of `remote`, `dataRpc`, `dataRemote` and `remoteSource`. Browser-only, as `PUT` and `FIRE`: no Python counterpart | owner decision 2026-10-19 (review plan d-oncalling: "i proxy del Source node hanno nomi liberi purché chiari e non ambigui"); name chosen in p1 (d-oncalling-open), confirmed by the owner on 2026-10-19 |
 
 
 Widget-name exception (owner, 2026-10-16; constitution 11.84): widget authoring
@@ -167,6 +169,12 @@ client/server contract in 0.2.14).
 - `Page.registerSource` replaces the free function `source` in JS; Python keeps
   `@source`. Endpoints are declared with `@endpoint` (Python) and
   `Page.registerEndpoint` (JS), both with an optional `auth` rule.
+- `Exposed` is the JS base of `Page` and of the classes reached by a method path; it
+  holds `registerSource` and `registerEndpoint`. `resolve_declared`/`resolveDeclared`
+  (`page/base.py`, `page-base.js`) resolve a request name, `method` or
+  `a.b.c.method`, from the page (constitution 11.85).
+- `node.requests` (`NodeRequests`) is the one proxy of the Source node: the request
+  rule of `remote`, `dataRpc`, `dataRemote` and `remoteSource` (constitution 11.85).
 - The protocol of every adapter is GC-230 (contract and realisations), with the
   conformance check `check_protocol`/`checkProtocol`.
 

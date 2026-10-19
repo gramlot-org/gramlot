@@ -113,21 +113,70 @@ test('_userChanges: only the node level calls', async () => {
     app.dispose();
 });
 
-test('latest wins: the first answer arriving after the second is dropped, and the first call is aborted', async () => {
-    const answers = [deferred(), deferred()];
+test('one call in flight: its answer is written; the first change waits with its arguments, later ones do nothing', async () => {
+    const answers = [deferred(), deferred(), deferred()];
     let index = 0;
     const {app, data, requests} = page(() => answers[index++].promise);
-    app.src.builder.root.dataRpc({method: 'echo', result_path: 'r', value: '^v'});
+    mount(app, root => root.dataRpc({method: 'echo', result_path: 'r', value: '^v',
+        _onResult: 'this.SET("results", [this.GET("results"), result].filter(Boolean).join())'}));
     data.setItem('v', 1);
     data.setItem('v', 2);
+    data.setItem('v', 3);
     await settle();
-    assert.equal(requests.length, 2);
-    assert.equal(requests[0].signal.aborted, true);
-    answers[1].resolve('second');
-    await settle();
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].signal.aborted, false);
     answers[0].resolve('first');
     await settle();
+    assert.equal(data.getItem('r'), 'first');
+    assert.equal(requests.length, 2);
+    assert.deepEqual(requests[1].params, {value: 2});
+    answers[1].resolve('second');
+    await settle();
     assert.equal(data.getItem('r'), 'second');
+    assert.equal(data.getItem('results'), 'first,second');
+    assert.equal(requests.length, 2);
+    app.dispose();
+});
+
+test('_onCalling false makes no call; cancel() in _onCalling ignores the answer in flight and calls at once', async () => {
+    const answers = [deferred(), deferred(), deferred()];
+    let index = 0;
+    const {app, data, requests} = page(() => answers[index++].promise);
+    mount(app, root => root.dataRpc({method: 'echo', result_path: 'r', value: '^v',
+        _onCalling: 'if (value === 0) return false; if (value === 3) this.requests.inflight.cancel()'}));
+    data.setItem('v', 0);
+    await settle();
+    assert.equal(requests.length, 0);
+    data.setItem('v', 1);
+    data.setItem('v', 2);
+    data.setItem('v', 3);
+    await settle();
+    assert.deepEqual(requests.map(request => request.params.value), [1, 3]);
+    assert.equal(requests[0].signal.aborted, false);
+    answers[1].resolve('third');
+    await settle();
+    assert.equal(data.getItem('r'), 'third');
+    answers[0].resolve('first');
+    await settle();
+    assert.equal(data.getItem('r'), 'third');
+    assert.equal(requests.length, 2);
+    app.dispose();
+});
+
+test('an empty or malformed method, read from Data, rejects the call; a dotted path is sent as it is', async () => {
+    const {app, data, requests} = page(() => 'ok');
+    data.setItem('m', '');
+    const node = sourceTarget(app.src.builder.root.dataRpc({method: '=m', result_path: 'r'}));
+    const provider = app.src.binding.bindingFor(node).providers[0];
+    for (const method of ['', null, 'a b', 'a..b', '_private', 'a._b']) {
+        data.setItem('m', method);
+        await assert.rejects(provider.invoke({kind: 'init', change: null}),
+            error => error instanceof TypeError && /Method name must match/.test(error.message));
+    }
+    data.setItem('m', 'orders.total');
+    await provider.invoke({kind: 'init', change: null});
+    assert.deepEqual(requests.map(request => request.name), ['orders.total']);
+    assert.equal(data.getItem('r'), 'ok');
     app.dispose();
 });
 
@@ -211,10 +260,16 @@ test('authoring: dataRpc builds in JS, rpc callbacks are refused elsewhere', () 
     assert.equal(node.nodeTag, 'dataRpc');
     assert.deepEqual([node.getAttr('method'), node.getAttr('result_path'), node.getAttr('timeout')], ['m', 'x', 500]);
     assert.throws(() => builder.root.dataRpc({method: 'm', result_path: 'x?a'}), /dataRpc: 'result_path' does not accept '\?attr'/);
-    for (const name of ['_onCalling', '_onResult', '_onError']) {
+    for (const [name, owners] of [['_onCalling', 'dataRpc, dataRemote and remote'], ['_onResult', 'dataRpc'], ['_onError', 'dataRpc']]) {
         const {app} = page();
         assert.throws(() => mount(app, root => root.dataController({[name]: 'x'})),
-            new RegExp(`dataController '.*': '${name}' is allowed only on dataRpc`));
+            new RegExp(`dataController '.*': '${name}' is allowed only on ${owners}$`));
+        app.dispose();
+    }
+    for (const name of ['_onResult', '_onError']) {
+        const {app} = page();
+        assert.throws(() => mount(app, root => root.div({remote: 'details', [name]: 'x'})),
+            new RegExp(`div '.*': '${name}' is allowed only on dataRpc$`));
         app.dispose();
     }
 });

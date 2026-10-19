@@ -1,5 +1,7 @@
 // Phase 2 of 0.2.16: the `remote` attribute requests the content of its element from a `@source`
-// fragment at start and on every change of a `^` parameter (RemoteBinding).
+// fragment at start and on every change of a `^` parameter (RemoteBinding). Since constitution 11.85 the
+// name may be variable and the requests follow `node.requests`: one in flight, its fragment always
+// mounted, the first change during the flight waiting with its parameters.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
@@ -40,8 +42,9 @@ function recorder() {
     return {calls, source};
 }
 
-/** Let the pending requests and their mounts settle. */
-async function settle() {
+/** Let the pending requests and their mounts settle, after `ms` milliseconds. */
+async function settle(ms = 0) {
+    if (ms) await new Promise(resolve => setTimeout(resolve, ms));
     for (let i = 0; i < 5; i++) await new Promise(resolve => setTimeout(resolve, 0));
 }
 
@@ -131,7 +134,7 @@ test('_cachedRemote: equal parameters do not request again', async () => {
     app.dispose();
 });
 
-test('_cachedRemote: returning to mounted parameters cancels a different pending request', async t => {
+test('_cachedRemote: returning to the mounted parameters during a flight waits and mounts them after it', async t => {
     const calls = [];
     let answer;
     let signal;
@@ -146,7 +149,7 @@ test('_cachedRemote: returning to mounted parameters cancels a different pending
     const {app, document} = page({source, main: async () => wire(root => {
         root.dataSetter({destination_path: 'id', value: 'A'});
         root.div({id: 'slot', remote: 'details', remote_id: '^id', _cachedRemote: true,
-            _onRemote: "this.setRelativeData('mounted', id)"});
+            _onRemote: "this.SET('mounted', [this.GET('mounted'), id].filter(Boolean).join())"});
     })});
     t.after(() => app.dispose());
     await app.start();
@@ -154,15 +157,21 @@ test('_cachedRemote: returning to mounted parameters cancels a different pending
     assert.equal(slot(document), 'A');
     app.data.setItem('id', 'B');
     await settle();
+    // B is in flight: the cache compares with it, so A is not a hit and waits.
     app.data.setItem('id', 'A');
     await settle();
-    // The transport deliberately answers after cancellation: latest wins must hold at the mount.
+    const target = app.src.source.getItem('main').getNodes().find(node => node.getAttr('remote'));
+    assert.deepEqual(target.requests.pending.params, {id: 'A'});
     answer();
     await settle();
+    assert.equal(signal.aborted, false);
     assert.equal(slot(document), 'A');
-    assert.equal(signal.aborted, true);
-    assert.equal(app.data.getItem('mounted'), 'A');
-    assert.deepEqual(calls, ['A', 'B']);
+    assert.equal(app.data.getItem('mounted'), 'A,B,A');
+    assert.deepEqual(calls, ['A', 'B', 'A']);
+    // Equal to the fragment mounted last, with nothing in flight: a cache hit.
+    app.data.setItem('id', 'A', {flag: true});
+    await settle();
+    assert.deepEqual(calls, ['A', 'B', 'A']);
 });
 
 test('_cachedRemote: a changed reactive fragment name is not a cache hit', async t => {
@@ -310,9 +319,11 @@ test('_onRemote runs after the fragment is mounted, with the parameters', async 
     app.dispose();
 });
 
-test('two quick changes: only the latest fragment is mounted', async () => {
+test('two quick changes: the answer in flight is mounted, then the first change; the second does nothing', async () => {
     const pending = [];
-    const source = (method, params) => new Promise(resolve => {
+    const signals = [];
+    const source = (method, params, signal) => new Promise(resolve => {
+        signals.push(signal);
         pending.push(() => resolve(wire(root => root.span(`${method}:${params.id}`))));
     });
     const {app, document} = page({source, main: async () => wire(root => {
@@ -324,13 +335,23 @@ test('two quick changes: only the latest fragment is mounted', async () => {
     app.data.setItem('id', 2);
     app.data.setItem('id', 3);
     await settle();
-    assert.equal(pending.length, 3);
-    pending[2]();
-    await settle();
-    pending[1]();
+    assert.equal(pending.length, 1);
     pending[0]();
     await settle();
-    assert.equal(slot(document), 'details:3');
+    assert.equal(slot(document), 'details:1');
+    // The waiting call is sent with the parameters of the first change.
+    assert.equal(pending.length, 2);
+    pending[1]();
+    await settle();
+    assert.equal(slot(document), 'details:2');
+    assert.deepEqual(signals.map(signal => signal.aborted), [false, false]);
+    // Accepted: the content stays behind the Data until the next change.
+    assert.equal(app.data.getItem('id'), 3);
+    app.data.setItem('id', 4);
+    await settle();
+    pending[2]();
+    await settle();
+    assert.equal(slot(document), 'details:4');
     app.dispose();
 });
 
@@ -397,7 +418,7 @@ test('a node without remote has no RemoteBinding; a remote node activates _if, _
     app.dispose();
 });
 
-test('_if false while a request is in flight cancels it: its fragment is not mounted after _else', async () => {
+test('_if false while a request is in flight is a readiness condition: no abort, the fragment is mounted', async () => {
     const signals = [];
     const answers = [];
     const source = (method, params, signal) => new Promise(done => {
@@ -412,11 +433,13 @@ test('_if false while a request is in flight cancels it: its fragment is not mou
     await app.start();
     await settle();
     app.data.setItem('id', 0);
-    assert.equal(signals[0].aborted, true);
+    assert.equal(signals[0].aborted, false);
     assert.equal(app.data.getItem('skipped'), 0);
     answers[0]();
     await settle();
-    assert.equal(slot(document), 'old');
+    assert.equal(slot(document), 'details:1');
+    // No request while false; the content stays as it is.
+    assert.equal(answers.length, 1);
     app.dispose();
 });
 
@@ -464,4 +487,291 @@ test('a change of the Data context of an ancestor requests the fragment for the 
     assert.deepEqual(calls, [['details', {id: 1}], ['details', {id: 2}]]);
     assert.equal(slot(document), 'details:2');
     app.dispose();
+});
+
+/** The `remote` node of `app` and its RemoteBinding. */
+function remoteOf(app) {
+    const target = app.src.source.getItem('main').getNodes().find(node => node.getAttr('remote'));
+    return {target, remote: app.src.binding.bindingFor(target).remote};
+}
+
+test('a variable name: ^ and = pointers, and a dotted path from the page, are sent as they are', async t => {
+    const {calls, source} = recorder();
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'name', value: 'orders.details'});
+        root.dataSetter({destination_path: 'read', value: 'summary'});
+        root.div({id: 'slot', remote: '^name', remote_id: 1});
+        root.div({id: 'other', remote: '=read', remote_id: 2});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    assert.deepEqual(calls.map(([method]) => method).sort(), ['orders.details', 'summary']);
+    assert.equal(slot(document), 'orders.details:1');
+    // A `=` name is read when a call starts and does not trigger one.
+    app.data.setItem('read', 'other');
+    await settle();
+    assert.equal(calls.length, 2);
+});
+
+test('an empty, null or malformed name rejects the call naming the node, like a name outside the syntax', async t => {
+    const {calls, source} = recorder();
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'name', value: 'details'});
+        root.div('old', {id: 'slot', remote: '=name', remote_id: 1});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    const {target, remote} = remoteOf(app);
+    for (const name of ['', null, 'a-b', 'a..b', '.a', 'a.', 'a._b', 'caffè', 'a.b\n']) {
+        app.data.setItem('name', name);
+        await assert.rejects(remote.update(), error => error.message.startsWith(`div '${target.label}': remote '${name}' failed: `)
+            && error.cause instanceof TypeError && /Method name must match/.test(error.cause.message));
+    }
+    assert.equal(calls.length, 1);
+    assert.equal(slot(document), 'details:1');
+    assert.equal(target.requests.inflight, null);
+});
+
+test('a waiting call with an empty name rejects when its turn comes; the request in flight is mounted', async t => {
+    const answers = [];
+    const source = (method, params) => new Promise(done => answers.push(() => done(wire(root => root.span(`${method}:${params.id}`)))));
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'name', value: 'details'});
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.div('old', {id: 'slot', remote: '=name', remote_id: '=id'});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    const {target, remote} = remoteOf(app);
+    app.data.setItem('name', '');
+    const waiting = remote.update();
+    assert.deepEqual([target.requests.pending.method, target.requests.inflight.method], ['', 'details']);
+    answers[0]();
+    await assert.rejects(waiting, error => /remote '' failed: Method name must match/.test(error.message));
+    assert.equal(slot(document), 'details:1');
+    assert.equal(answers.length, 1);
+});
+
+test('node.requests: both fields empty when idle; in flight the method, the parameters sent and the send time', async t => {
+    const answers = [];
+    const source = (method, params) => new Promise(done => answers.push(() => done(wire(root => root.span(String(params.id))))));
+    const {app} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.div({id: 'slot', remote: 'details', remote_id: '^id'});
+    })});
+    t.after(() => app.dispose());
+    const before = Date.now();
+    await app.start();
+    await settle();
+    const {target} = remoteOf(app);
+    const {inflight} = target.requests;
+    assert.deepEqual([inflight.method, inflight.params], ['details', {id: 1}]);
+    assert.ok(inflight.sentAt >= before && inflight.sentAt <= Date.now());
+    assert.ok(Object.isFrozen(inflight));
+    assert.equal(target.requests.pending, null);
+    app.data.setItem('id', 2);
+    assert.deepEqual([target.requests.pending.method, target.requests.pending.params], ['details', {id: 2}]);
+    // The saved parameters are a copy: a later change of the Data does not alter them.
+    app.data.setItem('id', 3);
+    assert.deepEqual(target.requests.pending.params, {id: 2});
+    answers[0]();
+    await settle();
+    assert.deepEqual(target.requests.inflight.params, {id: 2});
+    assert.equal(target.requests.pending, null);
+    answers[1]();
+    await settle();
+    assert.deepEqual([target.requests.inflight, target.requests.pending], [null, null]);
+});
+
+test('_onCalling runs before each call with the parameters; false makes no call', async t => {
+    const {calls, source} = recorder();
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.div('old', {id: 'slot', remote: 'details', remote_id: '^id',
+            _onCalling: "this.SET('calling', id); return id !== 2"});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    app.data.setItem('id', 2);
+    await settle();
+    assert.equal(app.data.getItem('calling'), 2);
+    assert.deepEqual(calls.map(([, params]) => params.id), [1]);
+    assert.equal(slot(document), 'details:1');
+    app.data.setItem('id', 3);
+    await settle();
+    assert.deepEqual(calls.map(([, params]) => params.id), [1, 3]);
+});
+
+test('cancel() in _onCalling ignores the answer in flight and sends the new call at once, in place of the waiting one', async t => {
+    const answers = [];
+    const signals = [];
+    const source = (method, params, signal) => new Promise(done => {
+        signals.push(signal);
+        answers.push(() => done(wire(root => root.span(`${method}:${params.id}`))));
+    });
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.div('old', {id: 'slot', remote: 'details', remote_id: '^id',
+            _onCalling: 'if (id === 3 && this.requests.inflight) this.requests.inflight.cancel()'});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    const {target} = remoteOf(app);
+    app.data.setItem('id', 2);
+    assert.deepEqual(target.requests.pending.params, {id: 2});
+    app.data.setItem('id', 3);
+    await settle();
+    assert.equal(answers.length, 2);
+    assert.equal(target.requests.pending, null);
+    assert.deepEqual(target.requests.inflight.params, {id: 3});
+    // The cancelled request is not aborted: the server may finish it, the node ignores its answer.
+    assert.equal(signals[0].aborted, false);
+    answers[1]();
+    await settle();
+    assert.equal(slot(document), 'details:3');
+    answers[0]();
+    await settle();
+    assert.equal(slot(document), 'details:3');
+    assert.equal(answers.length, 2);
+});
+
+test('cancel() outside _onCalling ignores the answer in flight and sends the waiting call', async t => {
+    const answers = [];
+    const source = (method, params) => new Promise(done => answers.push(() => done(wire(root => root.span(`${method}:${params.id}`)))));
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.div('old', {id: 'slot', remote: 'details', remote_id: '^id'});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    const {target} = remoteOf(app);
+    app.data.setItem('id', 2);
+    target.requests.inflight.cancel();
+    assert.deepEqual(target.requests.inflight.params, {id: 2});
+    assert.equal(target.requests.pending, null);
+    answers[0]();
+    answers[1]();
+    await settle();
+    assert.equal(slot(document), 'details:2');
+});
+
+test('_delay debounces the changes, never the request in flight; _userChanges calls only for the level node', async t => {
+    const answers = [];
+    const signals = [];
+    const ids = [];
+    const source = (method, params, signal) => new Promise(done => {
+        ids.push(params.id);
+        signals.push(signal);
+        answers.push(() => done(wire(root => root.span(`${method}:${params.id}`))));
+    });
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.dataSetter({destination_path: 'c.id', value: 1});
+        root.div('old', {id: 'slot', remote: 'details', remote_id: '^id', _delay: 20});
+        root.div('old', {id: 'user', remote: 'user', remote_id: '^c.id', _userChanges: true});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    assert.deepEqual(ids, [1, 1]);
+    app.data.setItem('id', 2);
+    app.data.setItem('id', 3);
+    await settle(40);
+    assert.deepEqual(ids, [1, 1]);
+    assert.deepEqual(signals.map(signal => signal.aborted), [false, false]);
+    answers[0]();
+    answers[1]();
+    await settle();
+    assert.deepEqual(ids, [1, 1, 3]);
+    // A change of a branch above the parameter is not of level node.
+    app.data.setItem('c', new Bag({id: 2}));
+    await settle();
+    assert.equal(ids.length, 3);
+    app.data.setItem('c.id', 4);
+    await settle();
+    assert.deepEqual(ids, [1, 1, 3, 4]);
+    answers[2]();
+    await settle();
+    assert.equal(slot(document), 'details:3');
+});
+
+test('_timing requests the fragment again every period; a pointer change restarts it, 0 stops it', async t => {
+    const {calls, source} = recorder();
+    const {app} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'period', value: 0.02});
+        root.div({id: 'slot', remote: 'details', remote_id: 1, _timing: '^period'});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle(70);
+    const counted = calls.length;
+    assert.ok(counted >= 3, `${counted} calls`);
+    app.data.setItem('period', 0);
+    await settle();
+    const stopped = calls.length;
+    await settle(60);
+    assert.equal(calls.length, stopped);
+});
+
+test('a fragment requested from code replaces the record of _cachedRemote: no false cache hit afterwards', async t => {
+    const {calls, source} = recorder();
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.div({id: 'slot', remote: 'details', remote_id: '^id', _cachedRemote: true});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    const {target, remote} = remoteOf(app);
+    assert.equal(await app.src.remoteSource(target, 'other', {id: 9}), true);
+    assert.equal(slot(document), 'other:9');
+    await remote.update();
+    assert.deepEqual(calls.map(([method, params]) => `${method}:${params.id}`), ['details:1', 'other:9', 'details:1']);
+    assert.equal(slot(document), 'details:1');
+    await remote.update();
+    assert.equal(calls.length, 3);
+});
+
+test('removing the node aborts the request in flight and sends no waiting call', async t => {
+    const signals = [];
+    const source = (_method, _params, signal) => new Promise(() => { signals.push(signal); });
+    const {app} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.div('old', {id: 'slot', remote: 'details', remote_id: '^id'});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    const {target} = remoteOf(app);
+    app.data.setItem('id', 2);
+    assert.ok(target.requests.pending);
+    app.src.source.getItem('main').popNode(target.label);
+    await settle();
+    assert.deepEqual(signals.map(signal => signal.aborted), [true]);
+    assert.deepEqual([target.requests.inflight, target.requests.pending], [null, null]);
+});
+
+test('_else="this.setValue(null)" clears the content when _if turns false; true again mounts the fragment again', async t => {
+    const {calls, source} = recorder();
+    const {app, document} = page({source, main: async () => wire(root => {
+        root.dataSetter({destination_path: 'id', value: 1});
+        root.div('old', {id: 'slot', remote: 'details', remote_id: '^id', _if: 'id > 0', _else: 'this.setValue(null)'});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    assert.equal(slot(document), 'details:1');
+    app.data.setItem('id', 0);
+    await settle();
+    assert.equal(slot(document), '');
+    app.data.setItem('id', 2);
+    await settle();
+    assert.equal(slot(document), 'details:2');
+    assert.deepEqual(calls.map(([, params]) => params.id), [1, 2]);
 });

@@ -344,6 +344,8 @@ export class NodeBinding {
     #remote = null;
     // The registrations of `remote` and of the `remote_<k>` parameters: their changes request the fragment again.
     #remoteRegistrations = new Set();
+    // The registrations of the `_timing` of a `remote` node: their changes restart its timer.
+    #remoteTimingRegistrations = new Set();
     // The clicks of a button, counted for its whole semantic life: a rebuild keeps them (P9, S12).
     #clickCount = 0;
     // The registration of the node's own variable datapath, read in the parent's context.
@@ -387,7 +389,8 @@ export class NodeBinding {
      * pointer on a null path (Q7) is not registered. The `datapath` pointer is resolved in the
      * parent's context. A `dataSetter` registers nothing; a `dataFormula` or `dataController`
      * registers its `datapath` here and the rest through its Provider, created once (§5.1 step 4).
-     * A node whose `remote` is a string gets its RemoteBinding, created once.
+     * A node whose `remote` is a string gets its RemoteBinding, created once, whose `_timing` starts
+     * again from its current value.
      */
     registerPointers() {
         // Data elements have semantic lifetime but no rendered item to register their reference.
@@ -400,6 +403,7 @@ export class NodeBinding {
         if (dataElement && !PROVIDERS[node.nodeTag]) return;
         if (!dataElement && typeof node.getAttr('remote') === 'string') this.#remote ??= new RemoteBinding(this);
         const remoteDependencies = new Set();
+        const timingDependencies = this.remote ? pointerDependencies(node, node.getAttr('_timing')) : new Set();
         if (this.remote) for (const [name, raw] of Object.entries(node.getAttr())) {
             if (name.startsWith('remote_')) for (const dependency of pointerDependencies(node, raw)) remoteDependencies.add(dependency);
         }
@@ -413,9 +417,11 @@ export class NodeBinding {
             this.#registrations.push(registration);
             if (name === 'datapath') this.#datapathRegistrations.add(registration);
             if (this.remote && (name === 'remote' || name.startsWith('remote_') || remoteDependencies.has(name))) this.#remoteRegistrations.add(registration);
+            if (this.remote && (name === '_timing' || timingDependencies.has(name))) this.#remoteTimingRegistrations.add(registration);
         }
         if (!dataElement) {
             this.#registerTopics();
+            this.remote?.register();
             return;
         }
         this.#provider ??= new PROVIDERS[node.nodeTag](this);
@@ -456,14 +462,16 @@ export class NodeBinding {
 
     /**
      * Router recipient: the node's datapath rebinds its branch; any other registration projects the node,
-     * after a registration of `remote` or of a `remote_<k>` parameter requested the fragment again.
+     * after a registration of `remote` or of a `remote_<k>` parameter reached the RemoteBinding, and a
+     * registration of its `_timing` restarted the timer.
      */
     receive(change) {
         if (this.#datapathRegistrations.has(change.registration)) {
             this.runtime.rebindBranch(this.node);
             return;
         }
-        if (this.#remoteRegistrations.has(change.registration)) this.remote.update();
+        if (this.#remoteRegistrations.has(change.registration)) this.remote.receive(change);
+        if (this.#remoteTimingRegistrations.has(change.registration)) this.remote.register();
         this.runtime.renderer.project(this.node, change);
     }
 
@@ -494,5 +502,6 @@ export class NodeBinding {
         for (const registration of this.#registrations.splice(0)) registration.close();
         this.#datapathRegistrations.clear();
         this.#remoteRegistrations.clear();
+        this.#remoteTimingRegistrations.clear();
     }
 }

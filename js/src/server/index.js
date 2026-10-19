@@ -6,7 +6,7 @@
  * @module
  */
 // Server entry point: deliberately not re-exported by the browser entry point.
-export {Page} from './page.js';
+export {Exposed, Page} from './page.js';
 export {GramlotServer, EndpointNotFound, InvalidRequest, NotAuthenticated, NotAuthorized, PageExpired, PageNotFound,
     SourceNotFound, ServerCapacity} from './gramlot-server.js';
 export {GramlotBuilder} from '../builder/gramlot-builder.js';

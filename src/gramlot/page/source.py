@@ -1,8 +1,9 @@
 """Gramlot Source classes, symmetric with ``js/src/builder/source.js``.
 
 Python keeps authoring checks and authorization filtering. Builder owns pointer
-classification and static suffix resolution; browser-only Source methods such as
-PUT, FIRE, FIRE_AFTER and variable datapath remain in the JavaScript classes.
+classification and static suffix resolution; browser-only Source members such as
+PUT, FIRE, FIRE_AFTER, variable datapath and ``requests`` (NodeRequests) remain in
+the JavaScript classes.
 Python's ``__getattr__`` uses ``GramlotBuilder.schema_tag`` for authoring dispatch;
 JavaScript uses Builder's Source proxy and ``GramlotBuilder.schemaTag``.
 """
@@ -17,9 +18,12 @@ from . import builder as builder_module
 from genro_builders.builder.pointers import pointer_transform
 
 # The control attributes of ``remote``, written on the node as they are; every other parameter becomes ``remote_<k>``.
-REMOTE_CONTROLS = ("_cachedRemote", "_if", "_else", "_onRemote")
-# ASCII and matched whole, as the JavaScript `/^[A-Za-z]\w*$/`.
-REMOTE_NAME = re.compile(r"^[A-Za-z]\w*$", re.ASCII)
+REMOTE_CONTROLS = ("_cachedRemote", "_if", "_else", "_onRemote", "_onCalling", "_delay", "_timing", "_userChanges")
+# The core syntax of a method name of ``remote``, ``dataRpc``, ``dataRemote`` and ``remoteSource``: the method
+# of the page, or a path of public attributes from the page ending in the method, ``a.b.c.method``. Each
+# segment is an ASCII letter followed by ASCII letters, digits and ``_``. Portable: the same pattern as the
+# JavaScript ``REMOTE_NAME``, without ``\w``; matched whole.
+REMOTE_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*$")
 
 
 class GramlotBuilderBagNode(SourceBagNode):
@@ -37,12 +41,14 @@ class GramlotBuilderBagNode(SourceBagNode):
         """Declare the content of this element as the fragment ``name`` of a ``@source`` method.
 
         Writes ``remote = name`` and one ``remote_<k> = v`` per call parameter on this node;
-        the control attributes ``_cachedRemote``, ``_if``, ``_else`` and ``_onRemote`` are written
-        as they are. Returns this node. A bad name or another ``_`` parameter is a ``ValueError``.
+        the control attributes ``_cachedRemote``, ``_if``, ``_else``, ``_onRemote``, ``_onCalling``,
+        ``_delay``, ``_timing`` and ``_userChanges`` are written as they are. Returns this node.
+        ``name`` is a method name (``REMOTE_NAME``) or a ``^``/``=`` pointer to it; any other name, or
+        another ``_`` parameter, is a ``ValueError``.
         """
-        if not isinstance(name, str) or not REMOTE_NAME.fullmatch(name):
-            raise ValueError(f"{self.node_tag} '{self.label}': remote name must match {REMOTE_NAME.pattern}, "
-                             f"not {name!r}")
+        if not isinstance(name, str) or not (self.pointer_type(name) or REMOTE_NAME.fullmatch(name)):
+            raise ValueError(f"{self.node_tag} '{self.label}': remote name must be a pointer or match "
+                             f"{REMOTE_NAME.pattern}, not {name!r}")
         invalid = next((key for key in params if key.startswith("_") and key not in REMOTE_CONTROLS), None)
         if invalid is not None:
             raise ValueError(f"{self.node_tag} '{self.label}': remote parameter '{invalid}' is not accepted; "

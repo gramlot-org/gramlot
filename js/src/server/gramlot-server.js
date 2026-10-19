@@ -7,7 +7,7 @@
 import {fromTytx, toTytx} from '@genrojs/tytx';
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
 import {gramlotDev} from './assets.js';
-import {ENDPOINT_METHOD, Page, SOURCE_METHOD, endpointMethod, sourceMethod} from './page.js';
+import {ENDPOINT_METHOD, Page, SOURCE_METHOD, resolveDeclared} from './page.js';
 import {loadOrder} from './resources.js';
 
 export class PageExpired extends Error { name = 'PageExpired'; }
@@ -194,7 +194,11 @@ export class GramlotServer {
         return toTytx(response);
     }
 
-    /** Run the fragment or endpoint of a checked request: the value of the response. */
+    /**
+     * Run the fragment or endpoint of a checked request: the value of the response. `name` is `main`, a
+     * method of the page or a path `a.b.c.method` read from the page (`resolveDeclared`); the `auth` of the
+     * method's marker is its only authorization.
+     */
     async #run({pageId, contentType, name, params}, owner) {
         this.prune();
         const record = this.pages.get(pageId);
@@ -202,26 +206,29 @@ export class GramlotServer {
         const page = new record.PageClass();
         page.pageId = pageId;
         const source = contentType === 'source';
+        let instance = page;
         let callable = page.main;
         let rule = null;
         if (!source || name !== 'main') {
-            callable = (source ? sourceMethod : endpointMethod)(page, name);
-            if (!callable) {
+            const marker = source ? SOURCE_METHOD : ENDPOINT_METHOD;
+            const declared = resolveDeclared(page, name, marker);
+            if (!declared) {
                 throw source ? new SourceNotFound(`Unknown Source method: ${name}`)
                     : new EndpointNotFound(`Unknown endpoint: ${name}`);
             }
-            rule = callable[source ? SOURCE_METHOD : ENDPOINT_METHOD].auth;
+            ({instance, method: callable} = declared);
+            rule = callable[marker].auth;
         }
         const refused = this.#authOutcome(rule, owner);
         if (refused !== null) {
             const Refusal = [NotAuthenticated, NotAuthorized].find(ErrorClass => OUTCOME_CODES.get(ErrorClass) === refused);
             throw new Refusal(`Access refused: ${name}`);
         }
-        if (!source) return callable.call(page, params);
+        if (!source) return callable.call(instance, params);
         const builder = new record.PageClass.sourceBuilder(name,
             {auth: elementRule => this.#authOutcome(elementRule, owner)});
         for (const collection of this.collections) builder.loadCollection(collection.grammar);
-        const result = await callable.call(page, builder.root, params);
+        const result = await callable.call(instance, builder.root, params);
         if (result !== undefined && result !== null) throw new TypeError('Source methods populate root and return no value');
         return builder.toTytx();
     }

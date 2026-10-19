@@ -1,6 +1,8 @@
 // The `dataRemote` data-element (0.2.16): a RemoteProvider installs an RpcResolver on its Data node,
 // which calls the endpoint when the node is read and its `cacheTime` has expired. A read never waits:
 // the loaded value reaches the `^` consumers through the Data event, except with `cacheTime: 0`.
+// Since constitution 11.85 the loads of the node follow `node.requests`: one in flight, its value always
+// written, the first change during the flight waiting.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM, VirtualConsole} from 'jsdom';
@@ -148,7 +150,7 @@ test('a ^ param changed installs a new resolver that loads at once; the consumer
     app.dispose();
 });
 
-test('a change during the load aborts it and loads with the new value; the late answer is dropped', async () => {
+test('a change during the load waits: the answer in flight is written, then the new load is sent', async () => {
     const answer = deferred();
     const {app, data, requests, byId} = page(request => request.params.table === 'a' ? answer.promise : 'b');
     data.setItem('table', 'a');
@@ -156,16 +158,67 @@ test('a change during the load aborts it and loads with the new value; the late 
         root.dataRemote({destination_path: 'menu', method: 'loadMenu', table: '^table'});
         root.span('^menu', {id: 'menu'});
     });
-    const pending = data.getResolver('menu').loading;
+    const first = data.getResolver('menu').loading;
     data.setItem('table', 'b');
-    assert.equal(requests[0].signal.aborted, true);
-    await assert.rejects(pending, error => error.name === 'AbortError');
-    await settle();
-    assert.equal(byId('menu').textContent, 'b');
+    assert.equal(requests[0].signal.aborted, false);
+    assert.equal(requests.length, 1);
+    const second = data.getResolver('menu').loading;
+    assert.notEqual(second, null);
     answer.resolve('a');
+    assert.equal(await first, 'a');
+    assert.equal(await second, 'b');
     await settle();
     assert.equal(byId('menu').textContent, 'b');
-    assert.equal(requests.length, 2);
+    assert.deepEqual(requests.map(request => request.params.table), ['a', 'b']);
+    app.dispose();
+});
+
+test('_if false during the load does not abort it: its value is written and the resolver is removed', async () => {
+    const answer = deferred();
+    const {app, data, requests} = page(() => answer.promise);
+    data.setItem('table', 'a');
+    mount(app, root => root.dataRemote({destination_path: 'menu', method: 'loadMenu', table: '^table', _if: 'table'}));
+    data.getItem('menu');
+    const loading = data.getResolver('menu').loading;
+    data.setItem('table', '');
+    assert.equal(data.getResolver('menu'), null);
+    assert.equal(requests[0].signal.aborted, false);
+    answer.resolve('a');
+    assert.equal(await loading, 'a');
+    assert.equal(data.getItem('menu'), 'a');
+    assert.equal(requests.length, 1);
+    app.dispose();
+});
+
+test('_onCalling runs before each load with the arguments; false makes no load', async () => {
+    const {app, data, requests} = page();
+    data.setItem('allow', false);
+    mount(app, root => root.dataRemote({destination_path: 'menu', method: 'loadMenu', cacheTime: 0, table: 'x',
+        _onCalling: 'this.SET("calls", (this.GET("calls") || 0) + 1); return this.GET("allow")'}));
+    assert.equal(data.getItem('menu'), null);
+    assert.equal(data.getResolver('menu').loading, null);
+    assert.deepEqual([data.getItem('calls'), requests.length], [1, 0]);
+    data.setItem('allow', true);
+    data.getItem('menu');
+    assert.equal(await data.getResolver('menu').loading, 'x');
+    data.getItem('menu');
+    await data.getResolver('menu').loading;
+    assert.deepEqual([data.getItem('calls'), requests.length], [3, 2]);
+    app.dispose();
+});
+
+test('an empty method rejects the load; the provider names the node', async () => {
+    const {app, data, requests} = page();
+    data.setItem('m', '');
+    mount(app, root => root.dataRemote({destination_path: 'menu', method: '=m'}));
+    const resolver = data.getResolver('menu');
+    const failures = [];
+    resolver.onError = error => failures.push(error);
+    data.getItem('menu');
+    await assert.rejects(resolver.loading, error => error instanceof TypeError && /Method name must match/.test(error.message));
+    await settle();
+    assert.equal(failures.length, 1);
+    assert.equal(requests.length, 0);
     app.dispose();
 });
 
@@ -261,15 +314,16 @@ test('authoring: the lifecycle attributes are refused on dataRemote; _delay, _ti
 test('the provider throws a failed load again naming the node; an abort is not a failure', async () => {
     const answer = deferred();
     const {app, data} = page(() => answer.promise);
-    mount(app, root => root.dataRemote({destination_path: 'menu', method: 'loadMenu'}));
+    const node = sourceTarget(app.src.builder.root.dataRemote({destination_path: 'menu', method: 'loadMenu'}));
     const resolver = data.getResolver('menu');
     assert.throws(() => resolver.onError(new Error('no menu')),
-        error => error.message === "dataRemote 'dataRemote_0': dataRemote 'loadMenu' failed: no menu" && error.cause.message === 'no menu');
+        error => error.message === `dataRemote '${node.label}': dataRemote 'loadMenu' failed: no menu` && error.cause.message === 'no menu');
     const failures = [];
     resolver.onError = error => failures.push(error);
     data.getItem('menu');
-    resolver.abort();
-    await assert.rejects(resolver.loading, error => error.name === 'AbortError');
+    const loading = resolver.loading;
+    node.parentBag.popNode(node.label);
+    await assert.rejects(loading, error => error.name === 'AbortError');
     await settle();
     assert.deepEqual(failures, []);
     app.dispose();
@@ -277,15 +331,34 @@ test('the provider throws a failed load again naming the node; an abort is not a
 
 test('an aborted load writes nothing, even when its answer had already arrived', async () => {
     const {app, data} = page();
+    app.rpc.call = () => Promise.resolve('late');
+    const node = sourceTarget(app.src.builder.root.dataRemote({destination_path: 'menu', method: 'loadMenu'}));
+    const resolver = data.getResolver('menu');
     const failures = [];
-    const resolver = new RpcResolver({gramlot: {rpc: {call: () => Promise.resolve('late')}}, method: 'loadMenu', params: {},
-        cacheTime: -1, onError: error => failures.push(error)});
-    data.setResolver('menu', resolver);
+    resolver.onError = error => failures.push(error);
     const loading = resolver.refresh();
-    resolver.abort();
+    node.parentBag.popNode(node.label);
     await assert.rejects(loading, error => error.name === 'AbortError');
     assert.notEqual(data.getItem('menu', null, true), 'late');
     assert.equal(resolver.loaded, false);
     assert.deepEqual(failures, []);
+    app.dispose();
+});
+
+test('a load ignored by cancel() writes nothing; the next read loads again', async () => {
+    const answers = [deferred(), deferred()];
+    let index = 0;
+    const {app, data, requests} = page(() => answers[index++].promise);
+    const node = sourceTarget(app.src.builder.root.dataRemote({destination_path: 'menu', method: 'loadMenu'}));
+    data.getItem('menu');
+    const loading = data.getResolver('menu').loading;
+    node.requests.inflight.cancel();
+    answers[0].resolve('ignored');
+    assert.equal(await loading, undefined);
+    assert.equal(data.getItem('menu', null, true), null);
+    data.getItem('menu');
+    answers[1].resolve('fresh');
+    assert.equal(await data.getResolver('menu').loading, 'fresh');
+    assert.equal(requests.length, 2);
     app.dispose();
 });

@@ -185,6 +185,12 @@ def check_protocol(base_url, page_path):
     outcome("GC-230-025", envelope("source", "gramlot_conformance_missing"), "not_found", "an unknown fragment")
     outcome("GC-230-025", envelope("data", "gramlot_conformance_missing"), "not_found", "an unknown endpoint")
     outcome("GC-230-025", envelope("data", "main"), "not_found", "data main")
+    # A method path never reaches a declared method through an inherited member.
+    outcome("GC-230-025", envelope("data", "constructor"), "not_found", "data constructor")
+    outcome("GC-230-025", envelope("data", "constructor.prototype.check_endpoint"), "not_found",
+            "data constructor.prototype.check_endpoint")
+    outcome("GC-230-025", envelope("source", "constructor.prototype.check_fragment"), "not_found",
+            "source constructor.prototype.check_fragment")
 
     status, _, body, _ = call(envelope("source", "check_fragment", {"text": "gramlot-conformance"}))
     try:

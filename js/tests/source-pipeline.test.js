@@ -102,7 +102,7 @@ test('remote blocks replace children; failure preserves mounted identities', asy
     app.dispose();
 });
 
-test('latest remote request wins and disposal blocks late completion', async () => {
+test('remote requests of a node run one at a time and disposal blocks late completion', async () => {
     const responses = [];
     const app = appWith({main: async () => wire(root => root.div('old')),
         source: () => new Promise(resolve => responses.push(resolve))});
@@ -110,10 +110,15 @@ test('latest remote request wins and disposal blocks late completion', async () 
     const target = app.src.source.getItem('main').getNodes()[0];
     const a = app.src.remoteSource(target, 'details');
     const b = app.src.remoteSource(target, 'details');
+    // A third call while one waits does nothing.
+    assert.equal(await app.src.remoteSource(target, 'details'), false);
+    assert.equal(responses.length, 1);
+    responses[0](wire(root => root.span('first')));
+    assert.equal(await a, true);
+    assert.equal(app.src.renderer.destination.textContent, 'first');
+    await new Promise(resolve => setTimeout(resolve, 0));
     responses[1](wire(root => root.span('new')));
-    await b;
-    responses[0](wire(root => root.span('stale')));
-    assert.equal(await a, false);
+    assert.equal(await b, true);
     assert.equal(app.src.renderer.destination.textContent, 'new');
     const pending = app.src.remoteSource(target, 'details');
     app.dispose();

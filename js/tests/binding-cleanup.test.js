@@ -34,7 +34,7 @@ function paneOf(host, label) {
     return host.value.getNode(label).value.getNodes()[0];
 }
 
-test('an expired remoteSource applies nothing: target removed, request superseded, page disposed', async t => {
+test('an expired remoteSource applies nothing: target removed, page disposed; a second call waits for the first', async t => {
     const {answers, transport} = pendingTransport();
     const ctx = page(t, {transport});
     const {app, trace} = ctx;
@@ -50,17 +50,22 @@ test('an expired remoteSource applies nothing: target removed, request supersede
     assert.equal(await removed, false);
     assert.deepEqual(trace, []);
     assert.deepEqual(delta(counters(ctx), base), {});
-    // A newer request supersedes the older one: the older answer, arriving last, is dropped.
+    // A second call waits for the first: the first answer is applied, then the second is sent and applied.
     insertBranch(app, host, 'b2', fullBranch(2));
     const target = paneOf(host, 'b2');
     const older = app.src.remoteSource(target, 'details');
     const newer = app.src.remoteSource(target, 'details');
+    assert.equal(answers.length, 2);
+    assert.equal(app.rpc.remoteRequests.size, 1);
     trace.length = 0;
+    answers[1].resolve(wire(root => root.dataSetter({destination_path: 'first', value: 1})));
+    assert.equal(await older, true);
+    assert.equal(ctx.data.getItem('first'), 1);
+    // The page runs on a virtual clock: the waiting call is sent within a few microtasks.
+    for (let i = 0; i < 20; i++) await null;
+    assert.equal(answers.length, 3);
     answers[2].resolve(wire(root => root.span('new', {id: 'new'})));
     assert.equal(await newer, true);
-    answers[1].resolve(wire(root => root.dataSetter({destination_path: 'stale', value: 1})));
-    assert.equal(await older, false);
-    assert.equal(ctx.data.getItem('stale'), null);
     assert.ok(ctx.byId('new'));
     assert.equal(app.rpc.remoteRequests.size, 0);
     // Disposed while waiting.

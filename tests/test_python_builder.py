@@ -70,12 +70,19 @@ class BuilderTests(unittest.TestCase):
         self.assertEqual(div.node_tag, "div")
         self.assertEqual({k: v for k, v in div.attr.items() if k != "_meta"},
                          {"remote": "details", "remote_record_id": "^.record_id", "_cachedRemote": True, "_if": "record_id"})
-        for name in (3, "1x", "a-b", "abc\n", "a\u00e8"):
-            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "remote name must match"):
+        for name in (3, None, "", "1x", "a-b", "abc\n", "a\u00e8", "a..b", ".a", "a.", "a._b", "a.1b", "==x"):
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "remote name must be a pointer or match"):
                 builder.root.div().remote(name)
-        with self.assertRaisesRegex(ValueError, "remote parameter '_delay' is not accepted; "
-                                    "the control attributes are _cachedRemote, _if, _else, _onRemote$"):
-            builder.root.div().remote("details", _delay=5)
+        for name in ("details", "orders.details", "a.b.c.details", "a_1.b2", "^.name", "=name", "^name:{}"):
+            with self.subTest(name=name):
+                self.assertEqual(builder.root.div().remote(name).attr["remote"], name)
+        controls = builder.root.div().remote("details", _onCalling="true", _delay=5, _timing=1, _userChanges=True)
+        self.assertEqual([controls.attr[name] for name in ("_onCalling", "_delay", "_timing", "_userChanges")],
+                         ["true", 5, 1, True])
+        with self.assertRaisesRegex(ValueError, "remote parameter '_onResult' is not accepted; "
+                                    "the control attributes are _cachedRemote, _if, _else, _onRemote, _onCalling, "
+                                    "_delay, _timing, _userChanges$"):
+            builder.root.div().remote("details", _onResult="x")
         named = builder.root.div().remote("details", name="^.name")
         self.assertEqual(named.attr["remote_name"], "^.name")
 

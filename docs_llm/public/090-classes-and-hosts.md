@@ -79,6 +79,7 @@ for each call; module loading is a separate lifecycle.
 | `params` not an object (`null` included) | `InvalidRequest` from `call` | `InvalidRequest` from `call` |
 | Exposed Source method | `@source` | `registerSource('details')` on the `Page` subclass |
 | Endpoint | `@endpoint`, `@endpoint(auth=...)` | `registerEndpoint('total', {auth})` on the `Page` subclass |
+| Object reached by a method path (`orders.total`, GC-095 §105) | Any object; `@source`/`@endpoint` | Instance of a class extending `Exposed`, `registerSource`/`registerEndpoint` |
 | Unknown endpoint | `EndpointNotFound` | `EndpointNotFound` |
 | Unknown or unexposed Source method | `SourceNotFound` | `SourceNotFound` |
 | Base `Page` class as a page | Rejected | Rejected |

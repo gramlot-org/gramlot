@@ -160,7 +160,7 @@ test('subscription rebind does not duplicate callbacks and branch disposal cance
     app.dispose();
 });
 
-test('topic-triggered RPC retains latest-wins, excludes trigger context and aborts on removal', async () => {
+test('topic-triggered RPC runs one call at a time, excludes trigger context and aborts on removal', async () => {
     const {fromTytx, toTytx} = await import('@genrojs/tytx');
     const {app} = page();
     const pending = [];
@@ -171,10 +171,14 @@ test('topic-triggered RPC retains latest-wins, excludes trigger context and abor
     authored(app, root => root.dataRpc({method: 'echo', result_path: 'result', subscribe_run: true, fixed: 'declared'}));
     app.publish('run', {value: 1, fixed: 'payload'});
     app.publish('run', {value: 2});
-    assert.equal(pending.length, 2);
+    assert.equal(pending.length, 1);
     assert.deepEqual(pending[0].request.params, {value: 1, fixed: 'declared'});
-    assert.equal(pending[0].signal.aborted, true);
-    pending[1].resolve('latest'); pending[0].resolve('old');
+    assert.equal(pending[0].signal.aborted, false);
+    pending[0].resolve('first');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(app.data.getItem('result'), 'first');
+    assert.deepEqual(pending[1].request.params, {value: 2, fixed: 'declared'});
+    pending[1].resolve('latest');
     await new Promise(resolve => setTimeout(resolve, 0));
     assert.equal(app.data.getItem('result'), 'latest');
     app.publish('run', {value: 3});

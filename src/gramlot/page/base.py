@@ -4,10 +4,12 @@ import re
 from inspect import isfunction
 
 from .builder import GramlotBuilder
+from .source import REMOTE_NAME
 
 MARKERS = {"__gramlot_source__": "@source", "__gramlot_endpoint__": "@endpoint"}
-# The name of a declared method, as in JS page.js: an ASCII letter, then ASCII word characters.
-DECLARED_NAME = re.compile(r"^[A-Za-z]\w*$", re.ASCII)
+# The name of a declared method, one segment of REMOTE_NAME, as in JS page-base.js: an ASCII letter, then
+# ASCII letters, digits and ``_``.
+DECLARED_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
 
 def _mark(function, marker, auth):
@@ -93,3 +95,25 @@ def source_methods(page_class):
 
 def endpoint_methods(page_class):
     return _declared(page_class, "__gramlot_endpoint__")
+
+
+def resolve_declared(page, name, marker):
+    """The method a request names, ``(instance, function)``, or ``None``; ``function`` runs bound to ``instance``.
+
+    ``name`` is a method of ``page`` or a path ``a.b.c.method`` (``REMOTE_NAME``) read from ``page``:
+    every segment is a public attribute (a property getter runs), and the last one is a method declared
+    with ``marker`` (``"__gramlot_source__"`` or ``"__gramlot_endpoint__"``) on the class of the object
+    before it. The objects on the path are ordinary objects: ``@source`` and ``@endpoint`` need no base
+    class (the JavaScript classes extend ``Exposed``). Any other name gives ``None``.
+    """
+    if not isinstance(name, str) or not REMOTE_NAME.fullmatch(name):
+        return None
+    *path, method_name = name.split(".")
+    instance = page
+    for segment in path:
+        try:
+            instance = getattr(instance, segment)
+        except AttributeError:
+            return None
+    function = _declared(type(instance), marker).get(method_name)
+    return None if function is None else (instance, function)

@@ -7,27 +7,33 @@ import {BagResolver} from '@genrojs/bag';
  * after that many seconds.
  *
  * A read never waits: it returns the node's current value (null before the first load) and, when the
- * cache has expired, starts the load. A read made while a load is in flight starts no other load. The
- * loaded value is written on the node with its Data event, so every `^` consumer of the path is
+ * cache has expired, starts the load. A read made while a load is in flight or waiting starts no other load.
+ * The loaded value is written on the node with its Data event, so every `^` consumer of the path is
  * projected again; with `cacheTime: 0` it is written without the event, as legacy: a value per
  * explicit read, never a source for `^` consumers, whose projection would read and load again.
- * A failed load writes nothing: `loading` rejects with its error and `onError` receives it; an aborted
- * load writes nothing, even when its answer had already arrived. `abort()` cancels the pending load.
+ *
+ * A load is a call of the `dataRemote` node and follows the rule of `node.requests` (NodeRequests): one
+ * request in flight for the node, its answer always written, even when this resolver was replaced or removed
+ * meanwhile; the first load asked during the flight waits and is sent at the answer. `onCalling` (the
+ * `_onCalling` of the node) runs before each load and a result `false` makes no load. A failed load writes
+ * nothing: `loading` rejects with its error and `onError` receives it. A load aborted by the removal of the
+ * node writes nothing, even when its answer had already arrived; a load ignored by `cancel()` writes nothing.
  */
 export class RpcResolver extends BagResolver {
     static classKwargs = {...BagResolver.classKwargs, asBag: false};
-    static internalParams = new Set([...BagResolver.internalParams, 'gramlot', 'method', 'params', 'onError']);
+    static internalParams = new Set([...BagResolver.internalParams, 'binding', 'method', 'params', 'onCalling', 'onError']);
 
-    constructor({gramlot, method, params, cacheTime, onError}) {
+    constructor({binding, method, params, cacheTime, onCalling = null, onError}) {
         // null: resolve once, as a negative cacheTime.
         super({cacheTime: cacheTime ?? -1});
-        this.gramlot = gramlot;
+        // The NodeBinding of the `dataRemote` node.
+        this.binding = binding;
         this.method = method;
         this.params = params;
+        this.onCalling = onCalling;
         // Receives the error of a failed load, never an abort.
         this.onError = onError;
-        // The AbortController and the promise of the pending load, or null.
-        this.controller = null;
+        // The promise of the load in flight or waiting, or null.
         this.loading = null;
         // A load has written its value; the loaded value is being written.
         this.loaded = false;
@@ -40,19 +46,43 @@ export class RpcResolver extends BagResolver {
         return this.cachedValue;
     }
 
-    /** Start a load and write its value on the node, with the Data event unless `cacheTime` is 0; returns `loading`. */
+    /**
+     * Start a load and write its value on the node, with the Data event unless `cacheTime` is 0; returns
+     * `loading`, which settles with the written value, or undefined when nothing was written. A false
+     * `_onCalling` starts no load and returns null.
+     */
     refresh() {
+        const requests = this.binding.node.requests;
+        if (!requests.calling(this.onCalling)) return null;
+        const loading = requests.submit(this.method, this.params, request => this.#load(request));
         const settle = () => {
-            if (this.loading !== loading) return;
-            this.controller = null;
-            this.loading = null;
+            if (this.loading === loading) this.loading = null;
         };
-        const load = this.load();
-        const {signal} = this.controller;
-        const loading = load.then(value => {
-            settle();
-            // Aborted after the answer arrived: the answer belongs to a removed or replaced resolver.
-            if (signal.aborted) throw signal.reason;
+        loading.then(settle, settle);
+        this.loading = loading;
+        // A load nobody awaits: its failure reaches `onError`, an abort is not a failure.
+        loading.catch(error => {
+            if (error?.name !== 'AbortError') this.onError(error);
+        });
+        return loading;
+    }
+
+    /** The call of the endpoint with the params given at construction; the read kwargs are not sent. */
+    async #load(request) {
+        const binding = this.binding;
+        // A waiting load of a node that left the Source sends nothing.
+        if (binding.closed) return undefined;
+        const {controller} = request;
+        const release = binding.track(() => controller.abort());
+        try {
+            const aborted = new Promise((_, reject) => {
+                controller.signal.addEventListener('abort', () => reject(controller.signal.reason), {once: true});
+            });
+            const call = binding.runtime.gramlot.rpc.call('data', request.method, request.params, {signal: controller.signal});
+            const value = await Promise.race([call, aborted]);
+            // Aborted after the answer arrived: the node left the Source.
+            if (controller.signal.aborted) throw controller.signal.reason;
+            if (request.ignored) return undefined;
             this._lastUpdate = Date.now();
             this.loaded = true;
             this.writing = true;
@@ -63,31 +93,8 @@ export class RpcResolver extends BagResolver {
                 this.writing = false;
             }
             return value;
-        }, error => {
-            settle();
-            throw error;
-        });
-        this.loading = loading;
-        // A load nobody awaits: its failure reaches `onError`, an abort is not a failure.
-        loading.catch(error => {
-            if (error?.name !== 'AbortError') this.onError(error);
-        });
-        return loading;
-    }
-
-    /** The call of the endpoint with the params given at construction; the read kwargs are not sent. */
-    load() {
-        const controller = new AbortController();
-        const aborted = new Promise((_, reject) => {
-            controller.signal.addEventListener('abort', () => reject(controller.signal.reason), {once: true});
-        });
-        const call = this.gramlot.rpc.call('data', this.method, this.params, {signal: controller.signal});
-        this.controller = controller;
-        return Promise.race([call, aborted]);
-    }
-
-    /** Cancel the pending load, if any. */
-    abort() {
-        this.controller?.abort();
+        } finally {
+            release();
+        }
     }
 }

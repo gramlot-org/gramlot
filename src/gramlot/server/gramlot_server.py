@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from uuid import uuid4
 from genro_tytx import from_tytx, to_tytx
 
-from ..page.base import Page, endpoint_methods, source_methods
+from ..page.base import Page, resolve_declared
 from ..page.builder import GramlotBuilder
 from .assets import gramlot_dev
 from .resources import load_order
@@ -228,6 +228,9 @@ class GramlotServer:
         return to_tytx(response)
 
     async def _run(self, request, owner):
+        """Run the fragment or endpoint of a checked request: the value of the response. ``name`` is
+        ``main``, a method of the page or a path ``a.b.c.method`` read from the page
+        (``resolve_declared``); the ``auth`` of the method's marker is its only authorization."""
         self._prune()
         record = self._pages.get(request["pageId"])
         if record is None or record[2] != owner:
@@ -239,13 +242,14 @@ class GramlotServer:
         if source and name == "main":
             function, rule = page.main, None
         else:
-            declared = (source_methods if source else endpoint_methods)(type(page))
-            if name not in declared:
+            marker = "__gramlot_source__" if source else "__gramlot_endpoint__"
+            declared = resolve_declared(page, name, marker)
+            if declared is None:
                 raise SourceNotFound(f"Unknown Source method: {name}") if source else EndpointNotFound(
                     f"Unknown endpoint: {name}")
-            method = declared[name]
-            function = method.__get__(page, type(page))
-            rule = (method.__gramlot_source__ if source else method.__gramlot_endpoint__)["auth"]
+            instance, method = declared
+            function = method.__get__(instance, type(instance))
+            rule = getattr(method, marker)["auth"]
         refused = self._auth_outcome(rule, owner)
         if refused is not None:
             raise {OUTCOME_CODES[cls]: cls for cls in (NotAuthenticated, NotAuthorized)}[refused](

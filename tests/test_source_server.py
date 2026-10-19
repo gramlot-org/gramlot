@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 from genro_tytx import from_tytx, to_tytx
-from gramlot import GramlotBuilder, Page, source
+from gramlot import GramlotBuilder, Page, endpoint, source
 from gramlot.server import GramlotFileServer, GramlotServer
 
 PAGES = Path(__file__).parent / "fixtures/pages"
@@ -208,6 +208,96 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
 
     def test_pages_dir_is_the_folder_as_passed(self):
         self.assertEqual(GramlotFileServer("pages").pages_dir, Path("pages"))
+
+
+class Archive:
+    @endpoint
+    def size(self):
+        return 3
+
+
+class Orders:
+    """An ordinary class: ``@source`` and ``@endpoint`` need no base in Python."""
+
+    def __init__(self, prefix):
+        self.prefix = prefix
+        self.archive = Archive()
+
+    @source
+    def list(self, root, id=None):
+        root.p(f"{self.prefix}:{id}")
+
+    @endpoint
+    def total(self, items=None):
+        return f"{self.prefix}:{items}"
+
+    @endpoint(auth="admin")
+    def guarded(self):
+        return "secret"
+
+    def plain(self):
+        return "plain"
+
+
+class MethodPathTests(unittest.IsolatedAsyncioTestCase):
+    """Constitution 11.85: a method name is a method of the page or a path of public attributes from the
+    page (js/tests/gramlot-server.test.js)."""
+
+    async def test_a_dotted_name_reaches_a_declared_method_read_from_the_page(self):
+        reads = []
+
+        class PathPage(EmptyPage):
+            orders_class = Orders
+            loose = {"total": Orders.total}
+
+            @property
+            def orders(self):
+                reads.append("orders")
+                return Orders("o")
+
+            @property
+            def _hidden(self):
+                reads.append("_hidden")
+                return Orders("h")
+
+        server = MemoryServer(PathPage)
+        page_id = (await server.open_page("/")).page_id
+        self.assertEqual((await call(server, page_id, "source", "orders.list", {"id": 7}))["value"].nodes[0].value, "o:7")
+        self.assertEqual((await call(server, page_id, "data", "orders.total", {"items": 2}))["value"], "o:2")
+        self.assertEqual((await call(server, page_id, "data", "orders.archive.size"))["value"], 3)
+        self.assertEqual((await call(server, page_id, "data", "orders.guarded"))["error"]["code"], "not_authenticated")
+        self.assertEqual(reads, ["orders"] * 4)
+        for content_type, name in (("data", "orders.plain"), ("data", "orders.list"), ("source", "orders.total"),
+                                   ("data", "orders.missing"), ("data", "missing.total"), ("data", "_hidden.total"),
+                                   ("data", "orders._total"), ("data", "loose.total"), ("data", "orders.prefix.upper"),
+                                   ("data", "orders_class.total"), ("data", "orders..total"), ("data", "orders."),
+                                   ("data", ".orders"), ("data", ""), ("data", "orders.tot\u00e0l"),
+                                   ("data", "__class__.total"), ("data", "orders.total\n")):
+            with self.subTest(name=name):
+                self.assertEqual((await call(server, page_id, content_type, name))["error"]["code"], "not_found")
+        self.assertEqual(reads, ["orders"] * 9)
+
+    async def test_an_inherited_member_never_leads_to_a_callable_method(self):
+        class Parent(EmptyPage):
+            @source
+            def shared(self, root):
+                root.p("shared")
+
+            @endpoint
+            def value(self):
+                return "value"
+
+        class Child(Parent):
+            pass
+
+        server = MemoryServer(Child)
+        page_id = (await server.open_page("/")).page_id
+        self.assertEqual((await call(server, page_id, "data", "value"))["value"], "value")
+        for content_type, name in (("data", "constructor"), ("data", "constructor.prototype.value"),
+                                   ("source", "constructor.prototype.shared"), ("data", "main.value"),
+                                   ("data", "value.value"), ("data", "source_builder.value"), ("data", "manifest")):
+            with self.subTest(name=name):
+                self.assertEqual((await call(server, page_id, content_type, name))["error"]["code"], "not_found")
 
 
 if __name__ == "__main__":

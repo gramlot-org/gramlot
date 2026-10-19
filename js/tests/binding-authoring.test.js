@@ -9,6 +9,7 @@ import {JSDOM} from 'jsdom';
 import {sourceBagFromTytx, sourceTarget} from '@genrojs/builders';
 import {Gramlot} from '../src/gramlot.js';
 import {GramlotBuilder} from '../src/builder/gramlot-builder.js';
+import {REMOTE_NAME} from '../src/builder/source.js';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
 const DATA_FORBIDDEN = /data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element/;
@@ -90,10 +91,15 @@ test('remote writes its attributes on the node and returns it', () => {
     assert.equal(div.nodeTag, 'div');
     const {_meta, ...attrs} = div.getAttr();
     assert.deepEqual(attrs, {remote: 'details', remote_record_id: '^.record_id', _cachedRemote: true, _if: 'record_id'});
-    for (const name of [3, '1x', 'a-b', 'abc\n', 'a\u00e8']) {
-        assert.throws(() => builder.root.div().remote(name), {name: 'TypeError', message: /remote name must match/});
+    for (const name of [3, null, '', '1x', 'a-b', 'abc\n', 'a\u00e8', 'a..b', '.a', 'a.', 'a._b', 'a.1b', '==x']) {
+        assert.throws(() => builder.root.div().remote(name), {name: 'TypeError', message: /remote name must be a pointer or match/});
     }
-    assert.throws(() => builder.root.div().remote('details', {_delay: 5}), {name: 'TypeError', message: /remote parameter '_delay' is not accepted; the control attributes are _cachedRemote, _if, _else, _onRemote$/});
+    for (const name of ['details', 'orders.details', 'a.b.c.details', 'a_1.b2', '^.name', '=name', '^name:{}']) {
+        assert.equal(sourceTarget(builder.root.div().remote(name)).getAttr('remote'), name);
+    }
+    const controls = sourceTarget(builder.root.div().remote('details', {_onCalling: 'true', _delay: 5, _timing: 1, _userChanges: true}));
+    assert.deepEqual(['_onCalling', '_delay', '_timing', '_userChanges'].map(name => controls.getAttr(name)), ['true', 5, 1, true]);
+    assert.throws(() => builder.root.div().remote('details', {_onResult: 'x'}), {name: 'TypeError', message: /remote parameter '_onResult' is not accepted; the control attributes are _cachedRemote, _if, _else, _onRemote, _onCalling, _delay, _timing, _userChanges$/});
     const named = sourceTarget(builder.root.div().remote('details', {name: '^.name'}));
     assert.equal(named.getAttr('remote_name'), '^.name');
     assert.equal(sourceTarget(builder.root.div().remote('details').span('x')).nodeTag, 'span');
@@ -168,7 +174,8 @@ test('binding attributes never reach the DOM', () => {
 
 test('the attributes of remote never reach the DOM', () => {
     const {builder, document, mount} = mounted();
-    builder.root.div('ph', {id: 'slot'}).remote('details', {id: 3, _cachedRemote: true, _onRemote: 'null', _if: 'false'});
+    builder.root.div('ph', {id: 'slot'}).remote('details', {id: 3, _cachedRemote: true, _onRemote: 'null', _if: 'false',
+        _onCalling: 'null', _delay: 5, _timing: 0, _userChanges: true});
     const renderer = mount();
     assert.deepEqual(document.getElementById('slot').getAttributeNames(), ['id']);
     renderer.dispose();
@@ -419,4 +426,33 @@ print(to_tytx(builder.source))
     assert.deepEqual(fromJs.texts, values);
     assert.equal(fromPython.html, fromJs.html);
     assert.match(fromJs.html, /^<!--source-fragment--><p id="p0">true<span>child<\/span><\/p><p id="p1">false<span>child<\/span><\/p><p id="p2">1\.5<span>/);
+});
+
+// Constitution 11.85: the same method names are accepted by the `remote` helper and by the server
+// resolution in Python and JavaScript, with the same portable pattern.
+const REMOTE_NAME_CASES = ['details', 'orders.details', 'a.b.c.details', 'a_1.b2', 'A9', '^.name', '=name', '^name:{}',
+    '', '1x', 'a-b', 'abc\n', 'aè', 'a..b', '.a', 'a.', 'a._b', 'a.1b', '_a', '==x', 'a b', 'a.b\n'];
+
+test('remote names: Python and JavaScript accept and refuse the same strings with the same pattern', () => {
+    const builder = new GramlotBuilder();
+    const js = REMOTE_NAME_CASES.map(name => {
+        try { builder.root.div().remote(name); return 'ok'; } catch (error) { return error.name; }
+    });
+    const py = JSON.parse(execFileSync(python, ['-c', `
+import json, sys
+from gramlot import GramlotBuilder
+from gramlot.page.source import REMOTE_NAME
+builder = GramlotBuilder()
+outcomes = []
+for name in json.loads(sys.argv[1]):
+    try:
+        builder.root.div().remote(name)
+        outcomes.append("ok")
+    except ValueError:
+        outcomes.append("error")
+print(json.dumps({"outcomes": outcomes, "pattern": REMOTE_NAME.pattern}))
+`, JSON.stringify(REMOTE_NAME_CASES)], {encoding: 'utf8'}));
+    assert.deepEqual(py.outcomes, js.map(outcome => outcome === 'ok' ? 'ok' : 'error'));
+    assert.deepEqual(js.map(outcome => outcome === 'ok'), REMOTE_NAME_CASES.map((_, index) => index < 8));
+    assert.equal(py.pattern, REMOTE_NAME.source);
 });

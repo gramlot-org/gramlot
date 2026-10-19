@@ -174,11 +174,13 @@ export function requireInstallable(branch) {
 
 // Provider attributes (§4.8): only a `dataFormula`, a `dataController`, a `dataRpc` or a `dataRemote`
 // carries them; the lifecycle attributes not a `dataRemote`, whose resolver loads when its Data is read;
-// the callbacks of the call only a `dataRpc`. `_delay` also belongs to Gramlot buttons
-// and rendered ancestors that supply their inherited click delay.
+// `_onResult` and `_onError` only a `dataRpc`, `_onCalling` a `dataRpc`, a `dataRemote` or a node whose
+// `remote` is a string. `_delay` also belongs to Gramlot buttons and rendered ancestors that supply their
+// inherited click delay; `_delay`, `_timing` and `_userChanges` also to a node whose `remote` is a string.
 const PROVIDER_ATTRIBUTES = ['_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges'];
 const PROVIDER_TAGS = new Set(['dataFormula', 'dataController', 'dataRpc', 'dataRemote']);
 const RPC_ATTRIBUTES = ['_onCalling', '_onResult', '_onError'];
+const REMOTE_TRIGGER_ATTRIBUTES = ['_delay', '_timing', '_userChanges'];
 // The lifecycle attributes: true, false, null or a number (a delay in ms, P22); a pointer is not read.
 const LIFECYCLE_ATTRIBUTES = ['_init', '_onBuilt', '_onStart'];
 
@@ -190,9 +192,15 @@ const LIFECYCLE_ATTRIBUTES = ['_init', '_onBuilt', '_onStart'];
  */
 function requireProviderAttributes(node) {
     const isSet = name => node.getAttr(name) !== null && node.getAttr(name) !== undefined;
+    // A rendered node with a string `remote` has a RemoteBinding (NodeBinding.registerPointers).
+    const remote = !node._getMeta('data_element') && typeof node.getAttr('remote') === 'string';
     if (node.nodeTag !== 'dataRpc') {
-        const callback = RPC_ATTRIBUTES.find(isSet);
-        if (callback) throw new Error(`${node.nodeTag ?? 'fragment'} '${node.label}': '${callback}' is allowed only on dataRpc`);
+        const callback = RPC_ATTRIBUTES.find(name => isSet(name)
+            && !(name === '_onCalling' && (node.nodeTag === 'dataRemote' || remote)));
+        if (callback) {
+            const owners = callback === '_onCalling' ? 'dataRpc, dataRemote and remote' : 'dataRpc';
+            throw new Error(`${node.nodeTag ?? 'fragment'} '${node.label}': '${callback}' is allowed only on ${owners}`);
+        }
     }
     if (PROVIDER_TAGS.has(node.nodeTag)) {
         const expression = Object.entries(node.getAttr()).find(([, value]) => isExpression(value));
@@ -213,7 +221,8 @@ function requireProviderAttributes(node) {
         return;
     }
     const name = PROVIDER_ATTRIBUTES.find(name => isSet(name)
-        && !(name === '_delay' && !node._getMeta('data_element') && node.nodeTag !== 'html_button'));
+        && !(name === '_delay' && !node._getMeta('data_element') && node.nodeTag !== 'html_button')
+        && !(remote && REMOTE_TRIGGER_ATTRIBUTES.includes(name)));
     if (!name) return;
     const tags = LIFECYCLE_ATTRIBUTES.includes(name) ? 'dataFormula, dataController and dataRpc'
         : 'dataFormula, dataController, dataRpc and dataRemote';

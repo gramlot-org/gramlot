@@ -47,7 +47,7 @@ export class RpcError extends Error {
 export class RpcHandler extends Handler {
     /** The server transport, or null. */
     transport: RpcTransport | null;
-    /** The remote Source requests in progress, by target node. */
+    /** The remote Source requests in flight, by target node: at most one per node (`node.requests`). */
     remoteRequests: Map<SourceBagNode, {controller: AbortController}>;
     /** Create the transport of `gramlot`: the given one, none for `false`, else an `HttpTransport` on the URLs. */
     constructor(gramlot: Gramlot, options: {rpcUrl: string; closeUrl: string; document: DomDocument;

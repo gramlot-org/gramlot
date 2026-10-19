@@ -582,15 +582,17 @@ strict CSP → call from `Logic`. `sendHttp` reaches what `connect-src` allows.
 
 `dataRpc(method, result_path=None, timeout=None, **params)` calls an endpoint of the
 page and writes the value at `result_path` (absent → not written; no `?attr`).
-`method` = endpoint name or `^`/`=` pointer. `timeout` in ms → abort, error `name`
+`method` = endpoint name, path from the page (`orders.total`, §105) or `^`/`=` pointer
+(§105 warning). `timeout` in ms → abort, error `name`
 `TimeoutError`. Other kwargs = endpoint arguments (`^` triggers, `=` read only);
 control attributes of §055 apply (`_init`, `_onBuilt`, `_onStart`, `_delay`, `_timing`,
 `_userChanges`, `_if`; false `_if` → no call, `_else` runs as inline code). Inline
-callbacks: `_onCalling` (arguments), `_onResult` (arguments + `result`, after the
+callbacks: `_onCalling` (arguments; `false` → no call), `_onResult` (arguments + `result`, after the
 write), `_onError` (arguments + `error`: `RpcError` with `code`/`remoteName`/`message`,
 transport error or `TimeoutError`); without `_onError` the failure is an unhandled
-rejection. Latest call wins (a new trigger aborts the one in flight; removal aborts
-too). Nested in `button` = click mechanism (§075).
+rejection. Request rule of §105: one call in flight, answer always written, the first
+trigger during the flight waits with its arguments, later ones do nothing; removal
+aborts. Nested in `button` = click mechanism (§075).
 Declaration: Python `@endpoint` / `@endpoint(auth="rule")`; JS
 `Page.registerEndpoint(name, {auth})` after the class. Arguments by name (Python) or
 one object (JS); returns a scalar, a Bag or null (data, never code). `dataRpc` sends
@@ -605,8 +607,8 @@ capability → `not_authenticated`, method not run. **0.2.15 addition:** `auth="
 `main` or of a `@source` fragment: the server drops the element and its children when
 it refuses the rule; the element never reaches the client and an accepted one is sent without `auth` (a server without the `auth`
 capability refuses every rule). Non-string rule → `application_error`; a page built in
-the browser does not evaluate `auth`. Names `[A-Za-z][\w]*`, `main`
-reserved, not both endpoint and `@source`. Unknown endpoint → `not_found`; raised
+the browser does not evaluate `auth`. Declared names `[A-Za-z][A-Za-z0-9_]*`, `main`
+reserved, not both endpoint and `@source`; a request names them directly or by a path (§105). Unknown endpoint → `not_found`; raised
 exception → `application_error` with `name`/`message`; both reach `_onError`. A string
 argument with a TYTX suffix (`"x::D"`) is decoded by TYTX, not passed as text
 (genro-tytx decodes only text it encoded): endpoints do not rely on it. Wire:
@@ -616,42 +618,63 @@ one envelope on `POST /gramlot/rpc` ([GC-090](090-classes-and-hosts.md)).
 
 ## 105 · Remote content and lazy Data: `remote` and `dataRemote` (0.2.16)
 
-> **Release history:** core 0.2.17 corrects the last-successful-result cache and
-> cancellation behavior described below. Update older installations before
-> trying these cases; see the repository README for the current release.
-
 `remote`: the content of an element is the fragment of a `@source` method (JS
-`Page.registerSource(name)`). Node method `remote(name, **params)` (JS
+`registerSource(name)`). Node method `remote(name, **params)` (JS
 `remote(name, params)`) writes `remote = name` and `remote_<k>` per parameter; returns
-the node. **Fixed method:** `name` is a literal identifier, never a Data pointer
-or a method varied through Data. `"^method"` is rejected by the `remote(...)` helper during Source construction
-in both languages. Direct or edited Source is not yet checked consistently;
-dynamic names are still outside the supported contract. A future variable method requires an explicit owner decision.
-Requested at the element's start (§080) and on every change of a `^`
-pointer of a `remote_<k>` parameter (`=` read only), through
-`gramlot.src.remoteSource` (latest wins, removal cancels). The fragment replaces the
-content; authored children stay until it arrives. Controls: `_cachedRemote` (name
-and parameters equal the last successfully mounted request → no request; cancel
-any pending request so its late response cannot replace the fragment; compare
-TYTX parameters captured before sending, so mutations cannot change the cache;
-different object-key order may request again), `_if` (inline, parameters as locals; false → no request, the request in
-flight cancelled, `_else` runs), `_onRemote` (inline after the mount). Name `[A-Za-z][\w]*`; another
-`_` parameter → error; a failed request → unhandled rejection naming the element.
-Nested `remote` inside a fragment works. Example:
-`root.div().remote("details", record_id="^.record_id", _cachedRemote=True)` with
-`@source def details(self, root, record_id=None, **kwargs)`; JS
-`root.div().remote('details', {record_id: '^.record_id'})`, method
-`details(root, {record_id})` and `Page.registerSource('details')`.
+the node. Requested at the element's start (§080) and on every change of a `^`
+pointer of `remote` or of a `remote_<k>` parameter (`=` read only), through
+`gramlot.src.remoteSource` (request rule below; removal cancels). The fragment replaces
+the content; authored children stay until it arrives. Controls: `_cachedRemote` (name
+and parameters equal the request in flight, or with none in flight the fragment
+mounted last → no request; a fragment mounted by `remoteSource` from code replaces the
+record; TYTX parameters captured when the request is made; different object-key order
+may request again), `_if` (inline, parameters as locals; readiness condition: false →
+no request, nothing cancelled, content unchanged, `_else` runs; `_else="this.setValue(null)"`
+clears the content, true again mounts the fragment again), `_onCalling` (inline
+at each request, before the request rule; `false` → no request), `_onRemote` (inline after the mount),
+`_delay`/`_timing`/`_userChanges` as `dataRpc` (`_delay` never cancels the request in
+flight; no default delay). Another `_` parameter → error; a failed request → unhandled
+rejection naming the element. Nested `remote` inside a fragment works.
+**Method name** (`remote`, `dataRpc`, `dataRemote`, `remoteSource`): a string,
+`"details"` (method of the page) or `"a.b.c.details"` (path from the page). Segments
+before the last are public attributes (no leading `_`; a getter runs); the last is a
+method declared with `@source`/`@endpoint` (JS `registerSource`/`registerEndpoint`) on
+the class of the object before it; its `auth` is the only authorization. Segment
+syntax `[A-Za-z][A-Za-z0-9_]*`; any other name → `not_found`. JS: every object on the
+path extends `Exposed` (base of `Page`, holds the two markers); an inherited member
+such as `constructor` never leads to a method. Python: ordinary objects. A `^`/`=`
+pointer name is read from Data: use with care, the Source no longer shows the method.
+Empty or `null` name → error, as a name outside the syntax; "no method yet" is written
+with `_if`. For an object with state a cached property is the recommended form.
+**Request rule** (`remote`, `dataRpc`, `dataRemote`, `remoteSource`): one request in
+flight per Source node; it always finishes and its answer is applied (fragment
+mounted, value written, `_onRemote`/`_onResult` run); the first change during the
+flight waits with its method and parameters of that moment; later changes do nothing
+while one waits; at the answer the waiting request is sent. The content can stay
+behind the Data until the next change. Only removal and page close abort (`dataRpc`
+`timeout` too). `this.requests` (this = Source node): `inflight` =
+`{method, params, sentAt, cancel()}` or `null` (`sentAt` = `Date.now()` at send);
+`pending` = `{method, params}` or `null`; `inflight.cancel()` → the answer is
+ignored (the server may still compute it); inside `_onCalling` the new request is
+sent at once in place of the waiting one, elsewhere the waiting one is sent.
+Example: `root.div().remote("details", record_id="^.record_id", _cachedRemote=True)`
+and `root.div().remote("orders.details", record_id="^.record_id")` with
+`@source def details(self, root, record_id=None, **kwargs)` on the page and on
+`Orders` (property `orders`); JS `class Orders extends Exposed`,
+`Orders.registerSource('details')`, `get orders()` on the page,
+`Page.registerSource('details')`.
 `dataRemote(destination_path, method, cacheTime=None, **params)` installs at
-`destination_path` (no `?attr`) a resolver that calls the endpoint `method` (name or
-`^`/`=` pointer) when the path is read. `cacheTime` in seconds: negative/`None` → once,
+`destination_path` (no `?attr`) a resolver that calls the endpoint `method` (name, path
+or `^`/`=` pointer, as `remote`) when the path is read. `cacheTime` in seconds: negative/`None` → once,
 `0` → every read, positive → again on the first read after it. A read never waits:
 it returns the current value (`None` before the first call) and starts the call when
 expired; a read during a call starts no other. The answer is written at the path and
 projects every `^` consumer; with `cacheTime=0` it is written without notifying them
 (legacy: a value per explicit read). `^` argument change → new resolver, which calls at
-once when the previous one had called. False `_if` → resolver removed, last value kept,
-`_else` runs; true again → the new resolver calls at once if the removed one had
+once when the previous one had called; request rule: a call in flight is not aborted and
+writes its value, the new call waits. `_onCalling` before each call (`false` → no call,
+a later read tries again). False `_if` → resolver removed, last value kept (a call in
+flight still writes), `_else` runs; true again → the new resolver calls at once if the removed one had
 called; `_delay`/`_timing`/`_userChanges` as `dataRpc`; `_init`/`_onBuilt`/`_onStart`
 → error. Removal removes the resolver and aborts the call (an aborted call writes
 nothing); endpoint failure → value unchanged, unhandled rejection naming the

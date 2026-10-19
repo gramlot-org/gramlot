@@ -169,6 +169,12 @@ export async function checkProtocol(baseUrl, pagePath) {
     await outcome('GC-230-025', envelope('source', 'gramlot_conformance_missing'), 'not_found', 'an unknown fragment');
     await outcome('GC-230-025', envelope('data', 'gramlot_conformance_missing'), 'not_found', 'an unknown endpoint');
     await outcome('GC-230-025', envelope('data', 'main'), 'not_found', 'data main');
+    // A method path never reaches a declared method through an inherited member.
+    await outcome('GC-230-025', envelope('data', 'constructor'), 'not_found', 'data constructor');
+    await outcome('GC-230-025', envelope('data', 'constructor.prototype.check_endpoint'), 'not_found',
+        'data constructor.prototype.check_endpoint');
+    await outcome('GC-230-025', envelope('source', 'constructor.prototype.check_fragment'), 'not_found',
+        'source constructor.prototype.check_fragment');
 
     response = await call(envelope('source', 'check_fragment', {text: 'gramlot-conformance'}));
     const fragment = parse(response.body, JSON.parse)?.value;

@@ -46,7 +46,8 @@ class StyleShortcutTests(unittest.TestCase):
 
     def test_the_attributes_of_remote_are_not_written(self):
         builder = GramlotBuilder()
-        builder.root.div("ph").remote("details", id=3, _cachedRemote=True, _onRemote="null", _if="id > 0")
+        builder.root.div("ph").remote("details", id=3, _cachedRemote=True, _onRemote="null", _if="id > 0",
+                                      _onCalling="null", _delay=5, _timing=0, _userChanges=True)
         self.assertIn("<div>ph</div>", builder.render())
 
     def test_null_values_are_not_written(self):

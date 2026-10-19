@@ -1,6 +1,6 @@
 import {BagCbResolver} from '@genrojs/bag';
 import {SourceBag, SourceBagNode, sourceAttributeItems, wrapSource} from '@genrojs/builders';
-import {getSubtypeDict, setSubtypeDict} from '@genrojs/tytx';
+import {fromTytx, getSubtypeDict, setSubtypeDict, toTytx} from '@genrojs/tytx';
 import {pointerTransform, pointerDependencies} from '@genrojs/builders';
 import {resolvePointerAttribute} from '../binding/pointer.js';
 
@@ -9,14 +9,146 @@ const CODE_ATTRIBUTES = {
     dataFormula: ['formula', '_if', '_else', '_ask_if', '_ask_onCancel'],
     dataController: ['script', '_if', '_else', '_ask_if', '_ask_onCancel'],
     dataRpc: ['_ask_if', '_ask_onCancel', '_if', '_else', '_onCalling', '_onResult', '_onError'],
-    dataRemote: ['_if', '_else'],
+    dataRemote: ['_if', '_else', '_onCalling'],
 };
 
 // The control attributes of `remote`, written on the node as they are; every other parameter becomes `remote_<k>`.
-const REMOTE_CONTROLS = ['_cachedRemote', '_if', '_else', '_onRemote'];
+const REMOTE_CONTROLS = ['_cachedRemote', '_if', '_else', '_onRemote', '_onCalling', '_delay', '_timing', '_userChanges'];
 // The inline code attributes of any node whose `remote` is a string.
-const REMOTE_CODE_ATTRIBUTES = ['_if', '_else', '_onRemote'];
-const REMOTE_NAME = /^[A-Za-z]\w*$/;
+const REMOTE_CODE_ATTRIBUTES = ['_if', '_else', '_onRemote', '_onCalling'];
+/**
+ * The core syntax of a method name of `remote`, `dataRpc`, `dataRemote` and `remoteSource`: the method of the
+ * page, or a path of public attributes from the page ending in the method, `a.b.c.method`. Each segment is an
+ * ASCII letter followed by ASCII letters, digits and `_`. Portable: the same pattern in Python, without `\w`.
+ */
+export const REMOTE_NAME = /^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*$/;
+
+/**
+ * The requests of one Source node, read as `node.requests`: the one rule of `remote`, `dataRpc`, `dataRemote`
+ * and `gramlot.src.remoteSource` (GC-095 §105).
+ *
+ * - One request is in flight. It always finishes and its answer is applied; only the removal of the node, the
+ *   close of the page or the `timeout` of a `dataRpc` aborts it.
+ * - The first call made while a request is in flight waits, with its method and its parameters of that moment
+ *   (`pending`). The calls after it do nothing. When the answer arrives, the waiting call is sent.
+ * - `inflight.cancel()` makes the node ignore the answer of the request in flight and frees it at once. The call
+ *   whose `_onCalling` runs the cancel is then sent, in place of a waiting call; a cancel made elsewhere sends
+ *   the waiting call.
+ * - A method name that is null, empty or outside `REMOTE_NAME` rejects the call when it is sent.
+ *
+ * `inflight` is `{method, params, sentAt, cancel()}` and `pending` is `{method, params}`, each null when empty;
+ * `params` is a copy of the parameters as sent or saved, `sentAt` the send time in ms (`Date.now()`).
+ */
+export class NodeRequests {
+    #inflight = null;
+    #pending = null;
+    // True while the `_onCalling` of a new call runs: a cancel then frees the request for that call.
+    #calling = false;
+
+    /** The request in flight, `{method, params, sentAt, cancel()}`, or null. */
+    get inflight() {
+        return this.#inflight?.view ?? null;
+    }
+
+    /** The call waiting for the answer of the request in flight, `{method, params}`, or null. */
+    get pending() {
+        const pending = this.#pending;
+        if (!pending) return null;
+        return Object.freeze({method: pending.method, get params() { return fromTytx(pending.text); }});
+    }
+
+    /**
+     * Run `onCalling`, the `_onCalling` of a call, before the call: a result `false` blocks it. Without
+     * `onCalling` the call is allowed. A refused or failed `onCalling` that cancelled the request in flight
+     * sends the waiting call.
+     */
+    calling(onCalling) {
+        if (!onCalling) return true;
+        let allowed = false;
+        const outer = this.#calling;
+        this.#calling = true;
+        try {
+            allowed = onCalling() !== false;
+        } finally {
+            this.#calling = outer;
+            if (!allowed && !this.#inflight) this.#next();
+        }
+        return allowed;
+    }
+
+    /**
+     * Send the call of `method` with `params` now, keep it waiting, or drop it, by the rule of the class.
+     * `perform(request)` sends it and applies the answer; `request` has `method`, `params`, `text` (the TYTX of
+     * the parameters), `controller` (its AbortController, aborted by the removal of the node, the close of the
+     * page or a `timeout`) and `ignored` (true after `cancel()`). Returns the promise of `perform`, settled when the call has
+     * run; a dropped call, or a waiting call never sent, gives undefined.
+     */
+    submit(method, params, perform) {
+        try {
+            const text = toTytx(params);
+            if (this.#inflight) {
+                if (this.#pending) return Promise.resolve(undefined);
+                return new Promise((resolve, reject) => {
+                    this.#pending = {method, text, perform, resolve, reject};
+                });
+            }
+            // A call sent while another waits follows a cancel made by its `_onCalling`: it is newer, the waiting one is dropped.
+            this.#pending?.resolve(undefined);
+            this.#pending = null;
+            return this.#start(method, params, text, perform);
+        } catch (error) {
+            return Promise.reject(error);
+        }
+    }
+
+    /** Send the waiting call, if any, with its saved method and parameters. */
+    #next() {
+        const pending = this.#pending;
+        if (!pending) return;
+        this.#pending = null;
+        let result;
+        try {
+            result = this.#start(pending.method, fromTytx(pending.text), pending.text, pending.perform);
+        } catch (error) {
+            result = Promise.reject(error);
+        }
+        result.then(pending.resolve, pending.reject);
+    }
+
+    #start(method, params, text, perform) {
+        if (typeof method !== 'string' || !REMOTE_NAME.test(method)) {
+            return Promise.reject(new TypeError(`Method name must match ${REMOTE_NAME.source}, not ${JSON.stringify(method)}`));
+        }
+        const controller = new AbortController();
+        const record = {method, params, text, controller, ignored: false};
+        record.view = Object.freeze({method, get params() { return fromTytx(text); }, sentAt: Date.now(),
+            cancel: () => this.#cancel(record)});
+        this.#inflight = record;
+        // An abort ends the request at once: the waiting call does not wait for an answer that is not applied.
+        controller.signal.addEventListener('abort', () => this.#finish(record), {once: true});
+        let result;
+        try {
+            result = Promise.resolve(perform(record));
+        } catch (error) {
+            result = Promise.reject(error);
+        }
+        result.then(() => this.#finish(record), () => this.#finish(record));
+        return result;
+    }
+
+    #finish(record) {
+        if (this.#inflight !== record) return;
+        this.#inflight = null;
+        this.#next();
+    }
+
+    #cancel(record) {
+        if (this.#inflight !== record) return;
+        record.ignored = true;
+        this.#inflight = null;
+        if (!this.#calling) this.#next();
+    }
+}
 
 /** Whether `value` is a `==` expression (Q11.2). */
 function isExpression(value) {
@@ -35,12 +167,18 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     #reportedPathPointers = new Set();
     // The texts of the inline code received with the Source, by the name InlineCompiler uses; null before activation.
     #activatedCode = null;
+    #requests = null;
+
+    /** The requests of this node (NodeRequests): the request in flight and the waiting call of remote, dataRpc and dataRemote. */
+    get requests() {
+        return this.#requests ??= new NodeRequests();
+    }
 
     /**
      * The inline code attributes of this node as `[name, text]`, under the names InlineCompiler uses:
-     * `formula` of a dataFormula, `script` of a dataController, `_if`/`_else` of the three providers and the
-     * `_onCalling`/`_onResult`/`_onError` of a dataRpc, `action` of a
-     * button, `_if`/`_else`/`_onRemote` of a node whose `remote` is a string, every `connect_on<event>`,
+     * `formula` of a dataFormula, `script` of a dataController, `_if`/`_else` of the four providers, the
+     * `_onCalling`/`_onResult`/`_onError` of a dataRpc and the `_onCalling` of a dataRemote, `action` of a
+     * button, `_if`/`_else`/`_onRemote`/`_onCalling` of a node whose `remote` is a string, every `connect_on<event>`,
      * every `==` attribute (canonical name) and a `==` node value (`''`).
      */
     codeAttributes() {
@@ -96,12 +234,14 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     /**
      * Declare the content of this element as the fragment `name` of a `@source` method: writes
      * `remote = name` and one `remote_<k> = v` per entry of `params` on this node; the control attributes
-     * `_cachedRemote`, `_if`, `_else` and `_onRemote` are written as they are. Returns this node. A bad
-     * name or another `_` parameter is a TypeError.
+     * `_cachedRemote`, `_if`, `_else`, `_onRemote`, `_onCalling`, `_delay`, `_timing` and `_userChanges` are
+     * written as they are. Returns this node. `name` is a method name (`REMOTE_NAME`) or a `^`/`=` pointer
+     * to it; any other name, or another `_` parameter, is a TypeError.
      */
     remote(name, params = {}) {
-        if (typeof name !== 'string' || !REMOTE_NAME.test(name)) {
-            throw new TypeError(`${this.nodeTag} '${this.label}': remote name must match ${REMOTE_NAME.source}, not ${JSON.stringify(name)}`);
+        if (typeof name !== 'string' || !(this.pointerType(name) || REMOTE_NAME.test(name))) {
+            throw new TypeError(`${this.nodeTag} '${this.label}': remote name must be a pointer or match `
+                + `${REMOTE_NAME.source}, not ${JSON.stringify(name)}`);
         }
         const invalid = Object.keys(params).find(key => key.startsWith('_') && !REMOTE_CONTROLS.includes(key));
         if (invalid) {

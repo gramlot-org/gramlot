@@ -116,6 +116,7 @@ separate lifecycle.
 | `params` not an object (`null` included) | `InvalidRequest` from `call` | `InvalidRequest` from `call` |
 | Exposed Source method | `@source` decorator | `registerSource('details')` on the `Page` subclass |
 | Endpoint | `@endpoint`, `@endpoint(auth=...)` | `registerEndpoint('total', {auth})` on the `Page` subclass |
+| Object reached by a method path (`orders.total`, GC-095 §105) | Any object; `@source`/`@endpoint` on its methods | An instance of a class that extends `Exposed`, with `registerSource`/`registerEndpoint` |
 | Unknown endpoint | `EndpointNotFound` | `EndpointNotFound` |
 | Unknown or unexposed Source method | `SourceNotFound` | `SourceNotFound` |
 | The base `Page` class as a page | Rejected | Rejected |

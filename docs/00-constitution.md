@@ -2840,3 +2840,66 @@ is not introduced. No publication or deployment is authorized by this request.
 
 
 Release authorization — owner, 2026-10-18: “bene, pubblica anche questa correzione e aggiorna entrambe le gallery e lo zip serverless, poi verifica online che lo slider corregga i decimali dello splitter”. Authorizes the bounded slider quantization correction release, both hosted galleries and the regenerated serverless ZIP, followed by live browser verification.
+
+
+### Amendment 11.85 — Method name resolved from the page; one request in flight per Source node — 2026-10-19
+
+Owner decisions of 2026-10-19, taken in the coordinating chat of the review of the
+0.3.5 releases. Changed principle: the method of `remote`, `dataRpc` and `dataRemote`
+and the handling of their requests. Superseded: 11.60 (fixed literal method of
+`remote`) and the literal-method contract kept by 11.66; the rule "the latest call
+of a node wins" of 11.58 item 5 for `dataRpc`; the latest-wins rule of
+`remoteSource` (GC-210 P24) and the cancellation of `remote` and `dataRemote`
+requests of 0.2.17.
+
+1. Method name. `remote`, `dataRpc`, `dataRemote` and `gramlot.src.remoteSource`
+   name the method with a string, `"method"` or `"a.b.c.method"`, always resolved
+   from the page; never an object reference. A `^`/`=` pointer is accepted on the
+   three constructs, and the documentation warns that a reader of the Source no
+   longer sees the method. An empty or `null` name, or a name outside the syntax,
+   is an error when the request is sent; "no method yet" is written with `_if`.
+   The core syntax is `REMOTE_NAME`: segments of an ASCII letter followed by ASCII
+   letters, digits and `_`, separated by `.`, the same portable pattern in Python
+   and JavaScript. The owner decided that the syntax belongs to the server; its
+   declaration by the server is a later phase of the same review.
+2. Resolution. Every segment before the last is a public attribute (its name does
+   not start with `_`), with no marker for now; a property getter runs when a
+   request names it (accepted effect). The last member is declared with `@source`
+   or `@endpoint` (JavaScript `registerSource` or `registerEndpoint`), whose `auth`
+   rule is the only authorization of the request. In JavaScript every object on the
+   path is an instance of `Exposed`, a base class holding only the two markers,
+   which `Page` extends; in Python the objects are ordinary (accepted asymmetry:
+   the decorators are functions). A member inherited from `Object`, such as
+   `constructor`, never leads to a method; both conformance checks verify it.
+3. Requests. One request is in flight for each Source node. It always finishes and
+   its answer is applied (fragment mounted, value written, `_onRemote` or
+   `_onResult` run). The first change during the flight waits with its method and
+   parameters of that moment; later changes do nothing while one waits; at the
+   answer the waiting request is sent. Only the removal of the node, the close of
+   the page and the `timeout` of `dataRpc` abort a request. Accepted effect: the
+   content can stay behind the Data until the next change.
+4. `_onCalling` applies to `dataRpc`, `remote` and `dataRemote`; a result `false`
+   makes no call, as in the legacy. The state of the requests is reached from
+   `this` (the Source node) through one object, `node.requests`: `inflight`
+   (`method`, `params`, `sentAt`, `cancel()`) and `pending` (`method`, `params`),
+   null when empty; `cancel()` makes the node ignore the answer. Provisional, decided
+   by the coordinator on the owner's delegation of the same day and to be reviewed
+   after this implementation: after a cancel inside `_onCalling` the new call is
+   sent at once; the `_onCalling` of `dataRemote` runs before each load;
+   `remoteSource` has no debounce.
+5. `_if` is a readiness condition, as in the legacy: false makes no request,
+   cancels nothing and leaves the content unchanged; `_else` stays inline code.
+6. `_delay`, `_timing`, `_userChanges` and `_onCalling` are control attributes of
+   `remote`. `_delay` is a debounce that cancels only the scheduled call, never the
+   request in flight. No default delay; the documentation suggests `_delay`.
+7. The callback and cache names stay those of the legacy, per construct:
+   `_onResult` and `_onError` on `dataRpc`, `_onRemote` and `_cachedRemote` on
+   `remote`, `cacheTime` on `dataRemote`.
+
+The names `Exposed` and `node.requests` were chosen by the implementation and
+confirmed by the owner on 2026-10-19 (GC-225 §010). No release or deployment is
+authorized by these decisions.
+
+Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
+[GC-095 §105](public/095-writing-pages.md#gc-095-105). Contract: GC-230 §015.
+Status: GC-070 §1440.

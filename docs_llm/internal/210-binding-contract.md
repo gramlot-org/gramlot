@@ -216,7 +216,7 @@ settle previously unapproved proposals, not older approved behavior.
 | P21 | Each resource exports class Logic; per-page resource groups, companion root, specific methods override generic. Supersedes static-method holder/page mixin proposal. *Revision 8:* requires groups need a resource Host; minimal FileHost has only the companion root | S07 → groups, collision, constructor and isolation checks |
 | P22 | Numeric _onStart in ms; true and 0 immediate; negative/nonfinite error; independent of other-trigger _delay | S08 → virtual clock |
 | P23 | Same snake_case requires fields in Python and JS, no aliases | S06/S14 → authoring and all hosts |
-| P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins | S03 → rebuild, removal, late response, frozen living target |
+| P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins (superseded by constitution 11.85, 2026-10-19: one request in flight per node, always applied; the first later call waits) | S03 → rebuild, removal, late response, frozen living target |
 | P25 | Authoring dict/plain JS object becomes Bag(value) with default recursive population: nested dictionaries, lists and dictionaries inside lists become Bags, preserving order and scalar leaf values. A list supplied directly as a setter value remains a list; a JSON string remains a string. Owner clarification 2026-10-14, constitution 11.64; no custom converter | S02 → TYTX cross-language payload identity/types |
 
 *Historical (revision 6), open on 2026-09-25:*
@@ -369,7 +369,7 @@ children and installs new SourceBag (scalar/null only closes). upd_attrs rebinds
 node; datapath/_anchor/node_id/form/formId changes rebind subtree. upd_value_attr:
 close old branch → rebind attributes → install new branch. Cleanup uses old context,
 registration new context. remoteSource eligibility/current/cancellation use semantic
-binding, latest request wins; mount/remote do not invoke installer outside FIFO.
+binding; one request in flight per node, the next waits (11.85, superseding latest-wins); mount/remote do not invoke installer outside FIFO.
 Frozen removal closes semantics immediately, old DOM at thaw; thaw builds current
 Source once without reinstall/init/start. Test reentrant Source mutations throughout.
 

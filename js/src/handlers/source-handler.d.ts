@@ -38,7 +38,12 @@ export class SourceHandler extends Handler {
     prepareSource(wire: SourceBag | string, builder?: GramlotBuilder): SourceBag;
     /**
      * Replace the children of one Source node with a remote Source, only after the incoming Source
-     * validates. Resolves with true when applied, false when superseded or cancelled.
+     * validates. Resolves with true when mounted, false otherwise: the target left the Source, the page
+     * closed, the answer was ignored by `cancel()`, or the call was dropped because another call waits.
+     *
+     * One request is in flight for the target, its fragment always mounted; a call made during the flight
+     * waits with `method` and `params` of that moment and is sent at the answer (`target.requests`).
+     * `method` is a method of the page or a path `a.b.c.method` from the page; another name rejects.
      *
      * A declared fragment is requested from code with `gramlot.src.remoteSource` (GC-230 §035); the
      * `remote` attribute requests it declaratively (GC-095 §105).
