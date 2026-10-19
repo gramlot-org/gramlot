@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+from decimal import Decimal
 import json
 from pathlib import Path
 import tempfile
@@ -7,6 +8,7 @@ import unittest
 from types import SimpleNamespace
 from unittest import mock
 
+from genro_bag import Bag
 from genro_tytx import from_tytx, to_tytx
 from gramlot import GramlotBuilder, Page, endpoint, source
 from gramlot.server import NAME_SYNTAX, GramlotFileServer, GramlotServer, InvalidRequest, gramlot_server
@@ -32,6 +34,25 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(node.attr["__ref"], reference["$gramlotRef"])
         self.assertEqual(node.attr["class_"], "family")
         self.assertEqual(node.value.nodes[0].value, "bart")
+
+    def test_typed_literals_have_the_wire_types_of_the_javascript_page(self):
+        # The twin of js/tests/fixtures/page-literals/typed-literals.js (js/tests/page-literals.test.js): the same
+        # literals give the same type suffixes; Python imports Decimal, datetime and Bag from their packages.
+        builder = GramlotBuilder()
+        root = builder.root
+        prices = Bag()
+        prices["net"] = Decimal("12.75")
+        root.dataSetter("price", Decimal("12.75"))
+        root.dataSetter("day", datetime.date(2026, 10, 17))
+        root.dataSetter("moment", datetime.datetime(2026, 10, 17, 9, 30, tzinfo=datetime.timezone.utc))
+        root.dataSetter("time", datetime.time(9, 30))
+        root.dataSetter("prices", prices)
+        rows = json.loads(builder.to_tytx().removesuffix("::JS::X"))["rows"]
+        values = {attr["destination_path"]: attr["value"] for *_, attr in rows}
+        bag = values.pop("prices")
+        self.assertEqual(values, {"price": "12.75::N", "day": "2026-10-17::D",
+                                  "moment": "2026-10-17T09:30:00.000Z::DHZ", "time": "09:30:00.000::H"})
+        self.assertEqual(json.loads(bag.removesuffix("::JS::X")), {"rows": [[[], "net", None, "12.75::N", {}]]})
 
     def test_scope_is_explicit(self):
         builder = GramlotBuilder()

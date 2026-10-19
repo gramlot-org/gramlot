@@ -193,7 +193,8 @@ fallback, written by shell resize behaviour; it is not a general design token.
 Block ID: **GC-096-035**.
 
 Base styles semantic HTML/forms/tables/details/dialogs/progress/meter. Classes:
-`example-page`, `stack`, `grid`, `card`, `muted`, `surface-subtle`, `button`,
+`example-page`, `stack`, `grid`, `card`, `muted`, `actions` (wrapping flex row of actions, gap
+`--gramlot-space-2`), `eyebrow` (small bold uppercase label above a heading), `surface-subtle`, `button`,
 `button--secondary`, `button--quiet`, `status` plus `status--success/warning/error`,
 `sr-only`, `example-art`, `gramlot-icon`, `gramlot-icon--stroke`. Also recognizes
 `button.secondary/quiet`. Card is a query container; narrow nested grids collapse

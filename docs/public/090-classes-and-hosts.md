@@ -347,8 +347,8 @@ The rest of the identity kit is not packaged.
 
 | Entry point | What it is for | Public surface |
 | --- | --- | --- |
-| `@gramlot/gramlot` | The browser runtime and JavaScript authoring as ES modules | `Gramlot` and its proxies (`SourceHandler`, `RpcHandler`, `DomHandler`, `UtilitiesHandler`, base `Handler`), `PageBootstrap`, `Page`, `Exposed`, `GramlotBuilder`, `GramlotRenderer`, `GramlotHtmlRenderer`, `GramlotSvgRenderer`, `Bag`, `BagNode`, `References`, `HttpTransport`, `ServerAdapter`, `RpcError`, `InOut`, `IndexPage`, `IndexLogic`, `mountIndexPage`, `parseDateExpression` |
-| `@gramlot/gramlot/page` | Page modules, on the server and in the browser | `Page`, `Exposed`, `IndexPage`, `IndexLogic`, `mountIndexPage`, `ServerAdapter`; the bootstrap import map points this name at the runtime already loaded |
+| `@gramlot/gramlot` | The browser runtime and JavaScript authoring as ES modules | `Gramlot` and its proxies (`SourceHandler`, `RpcHandler`, `DomHandler`, `UtilitiesHandler`, base `Handler`), `PageBootstrap`, `Page`, `Exposed`, `GramlotBuilder`, `GramlotRenderer`, `GramlotHtmlRenderer`, `GramlotSvgRenderer`, `Bag`, `BagNode`, `createDecimal`, `References`, `HttpTransport`, `ServerAdapter`, `RpcError`, `InOut`, `IndexPage`, `IndexLogic`, `mountIndexPage`, `parseDateExpression` |
+| `@gramlot/gramlot/page` | Page modules, on the server and in the browser | `Page`, `Exposed`, `IndexPage`, `IndexLogic`, `mountIndexPage`, `ServerAdapter`, and the typed literals `Bag`, `BagNode` and `createDecimal`; the bootstrap import map points this name at the runtime already loaded, which exports the same names |
 | `@gramlot/gramlot/server` | Servers and adapters; not part of the browser runtime | `GramlotServer`, `GramlotFileServer`, `GramlotBuilder`, `Page`, `Exposed`, the error classes (section 020), `gramlotDev`, `runtimeAsset`, `checkProtocol`, `InvalidResourceName`, `parseRequires`, `NAME_SYNTAX`, `NameSyntax` |
 | `@gramlot/gramlot/gramlot-server` | `GramlotServer` without file access, for a server that runs in the browser, such as the serverless Worker (section 025) | `GramlotServer` and its error classes |
 | `@gramlot/gramlot/runtime` | The bundled browser runtime, the file a server serves at its runtime URL (section 020) | One ES module with the exports of `@gramlot/gramlot` |
@@ -357,6 +357,15 @@ The rest of the identity kit is not packaged.
 | `@gramlot/gramlot/index-page-runtime` | The browser behavior of `IndexPage` alone ([Writing pages](095-writing-pages.md#gc-095-110)) | `IndexLogic` (export it as the `Logic` of the index page module); `mountIndexPage(renderer, root, onSelection, prepareEntry, options)`, which returns `{dispose()}`; `THEME_READY` and `THEME_SET`, the types of the theme messages between the index and its iframes; `THEMES` (`light`, `dark`) and `APPEARANCES` (`base`, `compact`, `mimi`, `joanna`) |
 | `@gramlot/gramlot/tools/inspector` | The optional inspector of a live page: a palette with the Data and Source trees, styles, a property editor and path breakpoints | Importing it defines the custom element `gramlot-tools-inspector` (class `GramlotToolsInspector`); also `InspectorConnection` and `attachInspectorAgent` |
 | `@gramlot/gramlot/tools/inspector-agent` | The page side of an inspector connection, without the runtime or the palette | `attachInspectorAgent(gramlot, port)`, which returns `{dispose()}` |
+
+**Typed literals.** A page module is imported by the server, which runs its `main`, and by
+the browser, for its `Logic`. In the browser the import map resolves only
+`@gramlot/gramlot/page`, so that name exports what a module needs to author typed
+values: `Bag` and `BagNode`, and `createDecimal` for an exact Decimal. A date or a
+time is a `Date`, which needs no import. The server entry point of the same name and
+the runtime export the same names, so one page module loads in both. A Python page
+imports `decimal.Decimal`, `datetime` and `genro_bag.Bag` from their packages
+([Data binding](097-data-binding.md#gc-095-045)).
 
 The runtime never imports the inspector. To inspect a page from the same window,
 map `@gramlot/gramlot` to the runtime URL the page already uses (the inspector
@@ -558,8 +567,9 @@ are not served by this rule.
 `<script type="importmap">`, with the bootstrap nonce, that maps
 `@gramlot/gramlot/page` to the runtime URL with the mount prefix. The runtime exports
 `Page`, so a page module imported for its `Logic` loads the runtime
-already in the page: one runtime instance. A strict CSP needs no new source: the
-import map carries the nonce.
+already in the page: one runtime instance. It also exports the typed literals of
+section 024, so a page module that imports them loads in the browser. A strict CSP
+needs no new source: the import map carries the nonce.
 
 **Bootstrap.** The bootstrap script (section 020) runs `PageBootstrap` in the
 browser:

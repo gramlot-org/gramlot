@@ -752,6 +752,8 @@ An ordinary anchor with `.button` remains a link; keep its `href` meaningful.
 | `grid` | Responsive columns, normally at least 18rem when space permits. | `root.div(class_="grid")` |
 | `card` | Bordered surface, padding, rounded corners and a query container. | `root.section(class_="card")` |
 | `muted` | Supporting text colour. | `root.p("Optional", class_="muted")` |
+| `actions` | A row of actions or buttons: flex, wrapping onto the next line, spaced by `--gramlot-space-2`. | `root.div(class_="actions")` |
+| `eyebrow` | A small label above a heading: no margin, supporting colour, 0.75rem, bold, uppercase, letter-spaced. | `root.p("Field notes", class_="eyebrow")` |
 | `surface-subtle` | Quieter background. | `root.div(class_="surface-subtle")` |
 | `button` | Button appearance for a suitable element, such as a link. | `root.a("Notes", href="#notes", class_="button")` |
 | `button--secondary` | Outlined/surface action variant. | `root.button("Preview", class_="button--secondary")` |

@@ -224,8 +224,8 @@ npm and JSR (`./themes/*`, `./assets/branding/*` npm only; JSR carries the files
 
 | Entry point | For | Public surface |
 | --- | --- | --- |
-| `@gramlot/gramlot` | Browser runtime and JS authoring | `Gramlot` and proxies (`SourceHandler`, `RpcHandler`, `DomHandler`, `UtilitiesHandler`, `Handler`), `PageBootstrap`, `Page`, `Exposed`, `GramlotBuilder`, `GramlotRenderer`, `GramlotHtmlRenderer`, `GramlotSvgRenderer`, `Bag`, `BagNode`, `References`, `HttpTransport`, `ServerAdapter`, `RpcError`, `InOut`, `IndexPage`, `IndexLogic`, `mountIndexPage`, `parseDateExpression` |
-| `/page` | Page modules, server and browser | `Page`, `Exposed`, `IndexPage`, `IndexLogic`, `mountIndexPage`, `ServerAdapter`; the import map points it at the loaded runtime |
+| `@gramlot/gramlot` | Browser runtime and JS authoring | `Gramlot` and proxies (`SourceHandler`, `RpcHandler`, `DomHandler`, `UtilitiesHandler`, `Handler`), `PageBootstrap`, `Page`, `Exposed`, `GramlotBuilder`, `GramlotRenderer`, `GramlotHtmlRenderer`, `GramlotSvgRenderer`, `Bag`, `BagNode`, `createDecimal`, `References`, `HttpTransport`, `ServerAdapter`, `RpcError`, `InOut`, `IndexPage`, `IndexLogic`, `mountIndexPage`, `parseDateExpression` |
+| `/page` | Page modules, server and browser | `Page`, `Exposed`, `IndexPage`, `IndexLogic`, `mountIndexPage`, `ServerAdapter`, typed literals `Bag`, `BagNode`, `createDecimal`; the import map points it at the loaded runtime, which exports the same names |
 | `/server` | Servers and adapters, not the browser | `GramlotServer`, `GramlotFileServer`, `GramlotBuilder`, `Page`, `Exposed`, error classes, `gramlotDev`, `runtimeAsset`, `checkProtocol`, `InvalidResourceName`, `parseRequires`, `NAME_SYNTAX`, `NameSyntax` |
 | `/gramlot-server` | `GramlotServer` without file access (serverless Worker) | `GramlotServer`, error classes |
 | `/runtime` | Bundled runtime served at the runtime URL | One ES module, exports of `@gramlot/gramlot` |
@@ -234,6 +234,12 @@ npm and JSR (`./themes/*`, `./assets/branding/*` npm only; JSR carries the files
 | `/index-page-runtime` | `IndexPage` browser behavior alone ([Writing pages](095-writing-pages.md#gc-095-110)) | `IndexLogic` (export as `Logic`), `mountIndexPage(renderer, root, onSelection, prepareEntry, options)` → `{dispose()}`, `THEME_READY`/`THEME_SET` (theme message types index ↔ iframes), `THEMES` (`light`, `dark`), `APPEARANCES` (`base`, `compact`, `mimi`, `joanna`) |
 | `/tools/inspector` | Optional inspector palette: Data/Source trees, styles, property editor, path breakpoints | Defines `gramlot-tools-inspector` (`GramlotToolsInspector`); `InspectorConnection`, `attachInspectorAgent` |
 | `/tools/inspector-agent` | Page side of an inspector connection, no runtime or palette | `attachInspectorAgent(gramlot, port)` → `{dispose()}` |
+
+Typed literals: the server runs `main` of a page module and the browser imports it for its `Logic`; the import
+map there resolves only `@gramlot/gramlot/page`, so that name exports what a module needs to author typed
+values: `Bag`, `BagNode`, `createDecimal` (exact Decimal). A date or time is a `Date` (no import). Server entry
+and runtime export the same names: one page module loads in both. A Python page imports `decimal.Decimal`,
+`datetime`, `genro_bag.Bag` ([Data binding](097-data-binding.md#gc-095-045)).
 
 The runtime never imports the inspector. Same window: map `@gramlot/gramlot` to the page's runtime URL,
 `import '@gramlot/gramlot/tools/inspector'`, declare `<gramlot-tools-inspector id="inspector">`, set
@@ -334,7 +340,7 @@ methods 405. `Page.css` URLs outside the pages folder stay application assets.
 
 Import map: before the bootstrap script, `<script type="importmap">` with the
 bootstrap nonce maps `@gramlot/gramlot/page` → runtime URL (mount prefix); the runtime
-exports `Page`; one runtime instance; no new CSP source.
+exports `Page` and the typed literals of section 024; one runtime instance; no new CSP source.
 
 Bootstrap (`PageBootstrap`, in the browser): 0 import the server adapter module of
 `resources.serverAdapter`, if any (else the HTTP `ServerAdapter`); 1 write the CSS links in load order;

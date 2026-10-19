@@ -111,6 +111,26 @@ def main(self, root):
 - A list passed directly as `value` remains a literal list. A JSON string passed
   directly remains a string: `dataSetter` does not parse JSON.
 
+**Typed values.** A `value` keeps its type: a Decimal, a date, a time and a Bag
+travel in the Source with their TYTX type and arrive in the Data as the same
+typed value. Both languages write the same Source:
+
+| Type | Python | JavaScript |
+| --- | --- | --- |
+| Decimal (`N`) | `Decimal("12.75")` | `createDecimal('12.75')` |
+| Date (`D`) | `date(2026, 10, 17)` | `new Date(Date.UTC(2026, 9, 17))` |
+| Time (`H`) | `time(9, 30)` | `new Date('1970-01-01T09:30:00Z')` |
+| Date and time (`DHZ`) | `datetime(2026, 10, 17, 9, 30, tzinfo=timezone.utc)` | `new Date(Date.UTC(2026, 9, 17, 9, 30))` |
+| Bag | `Bag()` from `genro_bag` | `new Bag()` |
+
+A JavaScript `Date` is typed by its content: midnight UTC is a date, a time on
+1970-01-01 is a time, any other instant is a date and time. A JavaScript page
+imports `Bag` and `createDecimal` from `@gramlot/gramlot/page`. The server runs
+`main` of that module and the browser imports it for its `Logic`; in the browser
+the import map resolves only this name, and the runtime exports the same names as
+the server entry point, so the module loads in both
+([Classes and hosts](090-classes-and-hosts.md#gc-090-024)).
+
 **Installation order.** For the initial Source, and for every branch inserted
 later, all `dataSetter` declarations of the branch are installed before its DOM
 is built. They run in document order, including a `dataSetter` nested after a

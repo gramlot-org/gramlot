@@ -255,6 +255,8 @@
   .example-art { display: block; inline-size: 100%; block-size: auto; }
   .example-art { display: block; inline-size: 100%; block-size: auto; }
   .muted { color: var(--gramlot-text-secondary); }
+  .actions { display: flex; flex-wrap: wrap; gap: var(--gramlot-space-2); }
+  .eyebrow { margin: 0; color: var(--gramlot-text-secondary); font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
   .surface-subtle { background: var(--gramlot-surface-subtle); }
   .status { display: inline-flex; align-items: center; gap: 0.4em; border-radius: 999px; padding: 0.25em 0.65em; font-size: 0.75rem; font-weight: 650; }
   .status--success { background: var(--gramlot-success-background); color: var(--gramlot-success); }

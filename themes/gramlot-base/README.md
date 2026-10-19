@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="/themes/gramlot-base/theme.css">
 ```
 
-The adapters of `gramlot-py-server` and `gramlot-js-server` serve the themes packaged with the core at `/themes/…`, below the mount prefix, and `@gramlot/gramlot-serverless` copies or inlines them in its export. Another host must serve this file at that path. The theme styles semantic HTML, forms, tables, dialogs, details, code, focus states, and a few optional layout classes: `.example-page`, `.stack`, `.grid`, `.card`, `.muted`, and fluid SVG `.example-art`. Secondary button variants are `.button--secondary` and `.button--quiet`; status chips use `.status` with a semantic modifier. SVG icons can use `.gramlot-icon` (fill) or `.gramlot-icon--stroke` (stroke) and inherit `currentColor`. Supply an accessible name or mark decorative icons `aria-hidden="true"` in the application.
+The adapters of `gramlot-py-server` and `gramlot-js-server` serve the themes packaged with the core at `/themes/…`, below the mount prefix, and `@gramlot/gramlot-serverless` copies or inlines them in its export. Another host must serve this file at that path. The theme styles semantic HTML, forms, tables, dialogs, details, code, focus states, and a few optional layout classes: `.example-page`, `.stack`, `.grid`, `.card`, `.muted`, `.actions` (a wrapping row of buttons), `.eyebrow` (a small uppercase label above a heading), and fluid SVG `.example-art`. Secondary button variants are `.button--secondary` and `.button--quiet`; status chips use `.status` with a semantic modifier. SVG icons can use `.gramlot-icon` (fill) or `.gramlot-icon--stroke` (stroke) and inherit `currentColor`. Supply an accessible name or mark decorative icons `aria-hidden="true"` in the application.
 
 ## Available themes
 

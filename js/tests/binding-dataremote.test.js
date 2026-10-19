@@ -464,6 +464,31 @@ test('sync: a method outside the name syntax throws to the reader and sends noth
     app.dispose();
 });
 
+test('sync: the asynchronous load of a changed ^ param records the parameters: the first explicit read makes no call', async () => {
+    const {app, data, requests, byId} = syncPage();
+    data.setItem('table', 'a');
+    mount(app, root => {
+        root.dataRemote({destination_path: 'menu', method: 'loadMenu', cacheTime: 5, table: '^table'});
+        root.span('^menu', {id: 'menu'});
+    });
+    assert.equal(byId('menu').textContent, 'a');
+    assert.deepEqual([requests.sync.length, requests.async.length], [1, 0]);
+    // The new resolver loads at once, asynchronously, and its consumer receives the value.
+    data.setItem('table', 'b');
+    await settle();
+    assert.equal(byId('menu').textContent, 'b');
+    assert.deepEqual([requests.sync.length, requests.async.length], [1, 1]);
+    // The explicit read finds the cache of the load, not a resolver that never recorded its parameters.
+    assert.equal(data.getItem('menu'), 'b');
+    assert.deepEqual([requests.sync.length, requests.async.length], [1, 1]);
+    // A change of the parameter after the load is still a new call, not a cached value.
+    data.setItem('table', 'c');
+    await settle();
+    assert.equal(data.getItem('menu'), 'c');
+    assert.deepEqual([requests.sync.length, requests.async.length], [1, 2]);
+    app.dispose();
+});
+
 test('sync false, or a transport without synchronous calls, keeps the asynchronous read', async () => {
     const {app, data, requests} = syncPage();
     app.src.builder.root.dataRemote({destination_path: 'menu', method: 'loadMenu', table: 'x', sync: false});

@@ -54,6 +54,16 @@ Sequence order and scalar leaf values are preserved; empty nested containers
 become empty Bags. A list passed directly as `value` remains a literal list;
 a JSON string passed directly remains a string and is not implicitly parsed.
 
+Typed values keep their TYTX type from Source to Data. Python → JavaScript: Decimal `N`
+`Decimal("12.75")` → `createDecimal('12.75')`; date `D` `date(2026, 10, 17)` →
+`new Date(Date.UTC(2026, 9, 17))`; time `H` `time(9, 30)` → `new Date('1970-01-01T09:30:00Z')`;
+date and time `DHZ` `datetime(..., tzinfo=timezone.utc)` → `new Date(Date.UTC(2026, 9, 17, 9, 30))`;
+`Bag()` (`genro_bag`) → `new Bag()`. A `Date` is typed by content: midnight UTC is a date, a time on
+1970-01-01 is a time, else date and time. A JS page imports `Bag` and `createDecimal` from
+`@gramlot/gramlot/page`: the server runs `main` of the module and the browser imports it for its `Logic`;
+the import map resolves only that name there and the runtime exports the same names as the server
+entry point, so the module loads in both ([Classes and hosts](090-classes-and-hosts.md#gc-090-024)).
+
 All `dataSetter` of a branch (initial Source or inserted branch) install before its
 DOM, in document order including ones nested after visual siblings; earlier
 elements see final values at first render. Same path: later wins; no duplicate

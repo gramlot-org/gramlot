@@ -76,7 +76,9 @@ expired; a read during a call starts no other. The answer is written at the path
 projects every `^` consumer; with `cacheTime=0` it is written without notifying them
 (legacy: a value per explicit read). `^` argument change → new resolver, which calls at
 once (asynchronously, also with `sync`) when the previous one had called; request rule: a call in flight is not aborted and
-writes its value, the new call waits. `_onCalling` before each call (`false` → no call,
+writes its value, the new call waits. A synchronous and an asynchronous call fill the same cache: the first read after the
+asynchronous call of a new resolver returns the stored value while the cache is valid and sends no call.
+`_onCalling` before each call (`false` → no call,
 a later read tries again). False `_if` → resolver removed, last value kept (a call in
 flight still writes), `_else` runs; true again → the new resolver calls at once if the removed one had
 called; `_delay`/`_timing`/`_userChanges` as `dataRpc`; `_init`/`_onBuilt`/`_onStart`

@@ -18,6 +18,10 @@ import {BagResolver} from '@genrojs/bag';
  * projected again; with `cacheTime: 0` it is written without the event, as legacy: a value per
  * explicit read, never a source for `^` consumers, whose projection would read and load again.
  *
+ * Both paths record what BagResolver `resolve` records: the cache time and the fingerprint of the parameters. A
+ * `sync` read that follows a load, however it was made, finds the cache of that load while the parameters are the
+ * same and the cache has not expired, and sends no call.
+ *
  * A load is a call of the `dataRemote` node and follows the rule of `node.requests` (NodeRequests): one
  * request in flight for the node, its answer always written, even when this resolver was replaced or removed
  * meanwhile; the first load asked during the flight waits and is sent at the answer. `onCalling` (the
@@ -98,16 +102,33 @@ export class RpcResolver extends BagResolver {
         return loading;
     }
 
+    /**
+     * The fingerprint of the parameters of a read without call kwargs, as `BagResolver.resolve` computes it:
+     * the kwargs of the resolver and the attributes of its node that are not internal.
+     */
+    #fingerprint() {
+        const kwargs = {...this._kw};
+        for (const [name, value] of Object.entries(this.node?.attr ?? {})) {
+            if (!this.constructor.internalParams.has(name)) kwargs[name] = value;
+        }
+        return this._computeEffectiveFingerprint(kwargs);
+    }
+
     /** The asynchronous call of the endpoint with the params given at construction; the read kwargs are not sent. */
     async #load(request) {
         const binding = this.binding;
         // A waiting load of a node that left the Source sends nothing.
         if (binding.closed) return undefined;
+        // The parameters of this load, as `resolve` takes them before a load: the value answers these.
+        const fingerprint = this.#fingerprint();
         const value = await binding.call('data', request);
         if (binding.closed || request.ignored) return undefined;
-        // The cache time of BagResolver: no public member records a load made outside `resolve`. A `sync` read
-        // loads through `resolve` and does not write it; this asynchronous load is a debt of the async-resolvers plan.
+        // The cache time and the fingerprint of the parameters of BagResolver: no public member records a load made
+        // outside `resolve`. A `sync` read loads through `resolve`, which records both and does not write them here;
+        // this asynchronous load is a debt of the async-resolvers plan. Without the fingerprint, the first explicit
+        // read after this load finds another one, loads again and sends a call the cache should have answered.
         this._lastUpdate = Date.now();
+        this._lastEffectiveFingerprint = fingerprint;
         this.loaded = true;
         this.writing = true;
         try {

@@ -71,3 +71,7 @@ export class Page extends Exposed {
 export {IndexPage} from "./index-page.js";
 export {IndexLogic, mountIndexPage} from "../index-page-runtime.js";
 export {ServerAdapter} from "../server-adapter.js";
+/** The typed literals a page authors, the same names as in the browser entry point: a Bag, and an exact Decimal
+ * made with `createDecimal('12.50')`. A date or a time is a `Date`; TYTX types it from its content. */
+export {Bag, BagNode} from "@genrojs/bag";
+export {createDecimal} from "@genrojs/tytx";

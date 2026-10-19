@@ -2,7 +2,7 @@
  * Usage: node scripts/verify_page_module_browser.mjs PYTHON PLAYWRIGHT_ENTRY [ENGINE …]
  * Build the runtime first (npm --prefix js run build). Both loopback hosts serve the
  * runtime, the .js and .css files below their pages folder and the page protocol, with
- * a strict CSP. Forms: the module that exports Page and Logic, and foo_aux.js.
+ * a strict CSP. Forms: the module that exports Page and Logic, and foo_aux.js. The page authors a Decimal literal.
  */
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
@@ -21,19 +21,24 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const RUNTIME = join(root, 'js/dist/gramlot.js');
 const CSP = "default-src 'self'; script-src 'self' 'nonce-{nonce}'";
 
-const jsPage = `import {Page as BasePage} from '@gramlot/gramlot/page';
+// The page also authors a Decimal literal: module.js is imported by the browser for its Logic, where the import
+// map resolves only @gramlot/gramlot/page, so the runtime must export createDecimal for the module to load.
+const jsPage = `import {Page as BasePage, createDecimal} from '@gramlot/gramlot/page';
 
 export class Page extends BasePage {
     static title = 'Logic form';
 
     main(root) {
         root.div('^out', {id: 'out'});
+        root.div('^price', {id: 'price'});
+        root.dataSetter({destination_path: 'price', value: createDecimal('12.75')});
         root.dataFormula({result_path: 'out', func: 'double', value: '^value', _init: true});
         root.dataSetter({destination_path: 'value', value: 21});
     }
 }
 `;
-const pyPage = `from gramlot import Page as Base
+const pyPage = `from decimal import Decimal
+from gramlot import Page as Base
 
 
 class Page(Base):
@@ -41,6 +46,8 @@ class Page(Base):
 
     def main(self, root):
         root.div("^out", id="out")
+        root.div("^price", id="price")
+        root.dataSetter("price", Decimal("12.75"))
         root.dataFormula("out", func="double", value="^value", _init=True)
         root.dataSetter("value", 21)
 `;
@@ -179,6 +186,7 @@ try {
                 await page.waitForFunction(() => window.gramlot?.state === 'started');
                 const label = `${engineName} ${language} ${path}`;
                 assert.equal(await page.locator('#out').textContent(), '42', label);
+                assert.equal(await page.locator('#price').textContent(), '12.75', `${label}: Decimal literal`);
                 assert.equal(requests.filter(item => item === '/assets/gramlot.js').length, 1, `${label}: one runtime`);
                 assert.ok(requests.includes(logicUrl), `${label}: ${logicUrl} imported`);
                 assert.deepEqual(errors, [], label);

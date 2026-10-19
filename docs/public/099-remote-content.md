@@ -199,6 +199,9 @@ dataRemote(destination_path, method, cacheTime=None, sync=True, **params)
   the new value.
 - The calls follow the request rule above: a call in flight is not aborted by a
   new resolver and writes its value; the call of the new resolver waits for it.
+- A synchronous and an asynchronous call fill the same cache. The first read after
+  the asynchronous call of a new resolver returns the stored value while the cache is
+  valid and sends no call.
 - `_onCalling` runs as inline code before each call, with the arguments of the
   declaration; a result `false` makes no call, and a later read tries again.
 - A false `_if` removes the resolver: the path keeps its last value, and a call in

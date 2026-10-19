@@ -10192,3 +10192,57 @@ Implemented on the review branch; no release or deployment is authorized.
 Verification: 3,646 JavaScript tests pass (baseline 3,643); Python 214 tests and 382
 subtests pass with the existing expected failure (baseline 212 and 369). Docs: `prepare_docs`,
 Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1481"></a>
+## 1481. Typed literals in JavaScript page modules, `dataRemote` cache, theme classes `actions` and `eyebrow` (review p4e) — 2026-10-19
+
+Phase p4e of the review of the 0.3.5 releases (defects found by the examples phase).
+Implemented on the review branch; no release or deployment is authorized.
+
+- Typed literals (GC-090 §024, GC-097 §045). The server runs `main` of a JavaScript page
+  module and the browser imports the same module for its `Logic`. In the browser the import
+  map resolves only `@gramlot/gramlot/page`. The runtime, which that name meant in the browser,
+  exported `Bag` and `BagNode` but not `createDecimal`; `src/server/page.js`, which it meant on
+  the server, exported none of the three. A module that imported them did not load in one context
+  or the other, and the examples w10 and w20 had dropped the literals their Python twins keep.
+  `src/server/page.js` and the runtime
+  (`src/index.js`) now export `Bag`, `BagNode` and `createDecimal`, with the names of the Bag and
+  TYTX libraries and no alias. A date or a time is a `Date`, typed by TYTX from its content
+  (midnight UTC `D`, the epoch day `H`, any other instant `DHZ`): it needs no export.
+  `isDecimal` is not exported: it is not an authoring need. Python needs no change: its pages
+  import `Decimal`, `datetime` and `Bag` from their packages. GC-225 gets the row "Typed literals
+  of the page entry" (to be confirmed by the owner).
+- Tests. `js/tests/page-literals.test.js` (4 tests) and the fixture `js/tests/fixtures/page-literals/`:
+  the page entry of the server and the runtime export the same page surface; one page module
+  builds a Decimal, a date, a date and time, a time and a Bag, once with the name resolved by
+  Node to `src/server/page.js` and once, in a child process, with a resolve hook that maps it to
+  `dist/gramlot.js` as the import map does; both give the same TYTX text. The Python twin is
+  `test_typed_literals_have_the_wire_types_of_the_javascript_page` in `tests/test_source_server.py`.
+  `scripts/verify_page_module_browser.mjs` now authors a Decimal literal in the page (JavaScript and
+  Python) and passes on Chromium for the four page forms. The JavaScript Decimal travels as `12.5::N`
+  for `createDecimal('12.50')`: the Decimal library of the JavaScript TYTX does not keep the trailing
+  zero that Python writes (`12.50::N`); the value is the same.
+- `dataRemote` cache (`js/src/binding/rpc-resolver.js`). The asynchronous load recorded the cache
+  time but not the fingerprint of the parameters that `BagResolver.resolve` records, so the first
+  explicit read after a changed `^` argument, which installs a new resolver that loads at once, found
+  another fingerprint and made one more synchronous call (3 requests instead of 2 in the example c14).
+  `#load` now takes the fingerprint at the start of the load, as `resolve` does before its load, and
+  records it with the cache time when the answer is written; a load that is ignored, aborted or
+  of a closed node records nothing. The test `sync: the asynchronous load of a changed ^ param
+  records the parameters: the first explicit read makes no call` counts 1 synchronous and 1 asynchronous
+  request. GC-099 §105 states it.
+- Theme (GC-096 §035). `gramlot-base` had no class for a row of actions or for the small label
+  above a heading; five lesson stylesheets of `gramlot-examples` copied `.actions` and four copied
+  `.eyebrow`. The layer `gramlot.utilities` now has `.actions` (`display: flex`, wrapping, gap
+  `--gramlot-space-2`, 0.5rem as the lessons wrote it) and `.eyebrow` (no margin, `--gramlot-text-secondary`,
+  0.75rem, 700, `letter-spacing: .08em`, uppercase). The `.actions` class of the GroupBox component
+  is in its shadow root and does not meet the theme class. The class names are public theme CSS and are
+  to be confirmed by the owner; GC-225 gets the row "Utility classes of the base theme". The lesson
+  stylesheets keep their copies until `gramlot-examples` removes them; they are unlayered and win.
+- Docs: GC-090 §024 and §020 (import map), GC-097 §045, GC-099 §105, GC-096 §035, GC-225 and
+  `themes/gramlot-base/README.md`, with their docs_llm mirrors.
+
+Verification: 3,651 JavaScript tests pass (baseline 3,646); Python 215 tests and 382
+subtests pass with the existing expected failure (baseline 214 and 382). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
