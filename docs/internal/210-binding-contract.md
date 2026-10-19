@@ -672,7 +672,10 @@ Block ID: **GC-210-050**.
 
 ControlAdapter.for(binding,record) returns matching subclass or null; constructor
 owns binding/element/live getters, project(value,change), read(), commit(event),
-attach(), detach(). commit uses node.setRelativeData(valuePath,read()). Subclasses:
+attach(), detach(). commit writes read() through HtmlElement.writeParameter, the DOM → Data
+rule shared with component parameters (review 0.3.5 p2): only a plain `^` pointer, without
+suffix, writes; a value equal (`Object.is`) to the Data is not written, as legacy
+`setAttributeInDatasource` with `lazySet`. Subclasses:
 TextControl (text/textarea), NumberControl, RangeControl, SelectControl (single/multiple),
 TemporalControl, ColorControl, then CheckboxControl and RadioControl. ControlAdapter
 consumes value; HtmlElement no longer independently writes control.value. DOM record
@@ -1178,3 +1181,5 @@ using the shared current inputs; Source retains its authored pointers.
 
 
 Builder ownership update — 2026-10-17: see the constitution's Builder alignment amendment. The historical Q6 automatic `${name}` contract is superseded. Python delegates static suffix resolution and dtype/signature decoding to genro-builders 0.29.0; JavaScript delegates ordinary projection to Builder 0.6.0 and connects `evaluatePointerExpression` to InlineCompiler, including HTML/SVG subbuilders. Structural attributes retain Gramlot's parent-context reads. Static `==` attributes resolve to null; the live renderer evaluates activated Source declarations. No global `_F` or upstream source patch is introduced.
+
+Review 0.3.5 p2 — 2026-10-19: `==` has one compile path, `InlineCompiler.compileExpression`: the other non-`==` attributes and `_F` are its arguments (§010 Q11.2) and its body is `return <text>`, the text without surrounding whitespace, as legacy `funcCreate('return ' + text)`; a text starting with a newline returns its value and a final `;` is accepted. The structural reader (`binding/pointer.js`) no longer compiles `==`: a `{name}` slot naming a `==` attribute reads null there too, as in `Builder.runtimeValues` and in Python.

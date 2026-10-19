@@ -550,7 +550,10 @@ the companions, and the bootstrap writes the CSS links in the browser
 ([GC-090](090-classes-and-hosts.md)); standalone and ASGI integrations moved from the
 retired `gramlot-minimal` to `@gramlot/gramlot-serverless` (gramlot-js-server) and the `uvicorn` adapter of `gramlot-py-server`; Python and JS
 static renderers share the attribute/style rules (`style_*`, `color`, … compose `style`
-in both). Check migrated pages for `data(` calls.
+in both); the node text of a number differs: Python `str(1.0)` is `1.0`, JS `String(1.0)`
+is `1`. The live page writes text in JS, where `format` gives one precise text; static
+output ignores `format` and `mask` only wraps: pass an exact static number text as a
+string. Check migrated pages for `data(` calls.
 
 <a id="gc-095-095"></a>
 

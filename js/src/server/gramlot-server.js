@@ -27,6 +27,18 @@ const OUTCOME_CODES = new Map([[PageExpired, 'page_expired'], [SourceNotFound, '
 
 const isMapping = value => value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
 
+/** Whether `value` is JSON written unchanged by `JSON.stringify`: null, a boolean, a string, a finite number,
+ * or an array or plain object of such values, without cycles. The check of Python `json.dumps(allow_nan=False)`. */
+function isJson(value, ancestors = new Set()) {
+    if (value === null || typeof value === 'boolean' || typeof value === 'string') return true;
+    if (typeof value === 'number') return Number.isFinite(value);
+    if ((!Array.isArray(value) && !isMapping(value)) || ancestors.has(value)) return false;
+    ancestors.add(value);
+    const result = Object.values(value).every(item => isJson(item, ancestors));
+    ancestors.delete(value);
+    return result;
+}
+
 /** Decode and check the request envelope {id, pageId, contentType, name, params}. */
 function parseRequest(text) {
     let request;
@@ -112,7 +124,7 @@ export class GramlotServer {
         const PageClass = await this.resolvePage('/');
         if (PageClass.installable !== true) throw new PageNotFound('The root page is not installable');
         const result = await new PageClass().manifest({baseUrl: prefix + '/'});
-        if (!isMapping(result)) throw new TypeError('Page.manifest must return a JSON object');
+        if (!isMapping(result) || !isJson(result)) throw new TypeError('Page.manifest must return a JSON object');
         return result;
     }
 

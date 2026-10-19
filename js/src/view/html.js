@@ -110,7 +110,13 @@ export class HtmlElement {
             && record.element.namespaceURI === namespace;
     }
 
-    /** Write a component interaction through a plain reactive Source pointer. */
+    /**
+     * Write `value`, produced in the DOM, through the attribute `name` of `node`: the one DOM → Data
+     * rule, used by component parameters and by ControlAdapter.commit. Only a plain reactive `^`
+     * pointer writes; a literal, a `=` pointer and a pointer with a suffix write nothing (no inverse
+     * conversion, 11.81). A value equal (`Object.is`) to the Data value is not written, as the legacy
+     * `setAttributeInDatasource` with `lazySet`: a null value on a missing path creates no Data node.
+     */
     writeParameter(node, name, value) {
         const pointer = node.getAttr(name);
         if (node.pointerType(pointer) === '^' && !pointerTransform(pointer)

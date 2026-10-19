@@ -885,7 +885,12 @@ Migration from 0.1.x:
   `gramlot-js-server`, and to the `uvicorn` adapter of `gramlot-py-server`;
 - the Python and JavaScript renderers of the static HTML now share the attribute
   and style rules, so `style_*`, `color` and the other shortcuts compose a
-  `style` attribute in both.
+  `style` attribute in both. The node text of a number differs: Python writes
+  `str(value)`, so `1.0` stays `1.0`, while JavaScript writes `String(value)`,
+  which gives `1`. The live page always writes the text in JavaScript; there
+  `format` gives the same precise text from either authoring language. Static
+  output does not apply `format`, and `mask` only wraps the text: a static page
+  that needs an exact number text passes it as a string.
 
 Check migrated pages for remaining `data(` calls.
 

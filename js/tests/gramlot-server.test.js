@@ -473,6 +473,54 @@ test('configured URLs, root id and capabilities reach the bootstrap', async () =
     assert.equal(new GramlotServer().rpcUrl, '/gramlot/rpc');
 });
 
+// The same tables as AlignmentTests in tests/test_source_server.py.
+test('configuration outside the contract is a TypeError, a ValueError in Python', () => {
+    for (const pageTtl of [Infinity, NaN, '30', 0, -1, true]) {
+        assert.throws(() => new GramlotServer({pageTtl}), TypeError, String(pageTtl));
+    }
+    for (const maxPages of [Infinity, 1.5, '2', 0, -1, true]) {
+        assert.throws(() => new GramlotServer({maxPages}), TypeError, String(maxPages));
+    }
+    for (const [pageTtl, maxPages] of [[1800, 1000], [0.5, 1]]) {
+        const server = new GramlotServer({pageTtl, maxPages});
+        assert.deepEqual([server.pageTtl, server.maxPages], [pageTtl, maxPages]);
+    }
+});
+
+test('a manifest that is not JSON is a TypeError, as in Python', async () => {
+    const installable = value => class extends EmptyPage {
+        static installable = true;
+        manifest() { return value; }
+    };
+    const cycle = {};
+    cycle.self = cycle;
+    for (const manifest of [{n: NaN}, {n: Infinity}, {when: new Date(2026, 9, 19)}, {item: new (class Item {})()},
+        cycle, ['name']]) {
+        await assert.rejects(memoryServer(installable(manifest)).pageManifest(),
+            {name: 'TypeError', message: 'Page.manifest must return a JSON object'});
+    }
+    const valid = {name: 'x', n: 1.5, items: [1, 'a', null, true]};
+    assert.deepEqual(await memoryServer(installable(valid)).pageManifest(), valid);
+});
+
+test('the page is registered before the bootstrap is written, as in Python', async () => {
+    class CountingServer extends GramlotServer {
+        failing = false;
+        async resolvePage() { return EmptyPage; }
+        async resolveResources() { return {css: [], js: []}; }
+        get capabilities() {
+            if (this.failing) throw new Error('no capabilities');
+            return [`pages:${this.pages.size}`];
+        }
+    }
+    const server = new CountingServer();
+    const opened = await server.openPage('/');
+    assert.ok(opened.html.includes('"capabilities":["pages:1"]'));
+    server.failing = true;
+    await assert.rejects(server.openPage('/'), {message: 'no capabilities'});
+    assert.deepEqual([...server.pages.keys()], [opened.pageId]);
+});
+
 test('pagesDir is the absolute pages folder', () => {
     assert.equal(new GramlotFileServer('pages').pagesDir, resolve('pages'));
 });

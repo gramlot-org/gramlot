@@ -160,7 +160,10 @@ class GramlotServer:
             result = await result
         if not isinstance(result, dict):
             raise TypeError("Page.manifest must return a JSON object")
-        json.dumps(result, allow_nan=False)
+        try:
+            json.dumps(result, allow_nan=False)
+        except (TypeError, ValueError) as error:
+            raise TypeError("Page.manifest must return a JSON object") from error
         return result
 
     async def open_page(self, path, *, owner=None, prefix=""):
@@ -176,38 +179,44 @@ class GramlotServer:
         if len(self._pages) >= self.max_pages:
             raise ServerCapacity("Page registry capacity reached")
         page_id = uuid4().hex
-        nonce = secrets.token_urlsafe(16)
-        # The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9);
-        # the compact JSON gives the same text as the JavaScript server.
-        bootstrap = _script_json({
-            "config": {"pageId": page_id, "rpcUrl": _prefixed(prefix, self.rpc_url),
-                       "closeUrl": _prefixed(prefix, self.close_url), "rootId": self.root_id,
-                       "capabilities": self.capabilities,
-                       **({"devices": list(cls.devices)} if cls.devices else {}),
-                       **({"locale": cls.locale} if cls.locale is not None else {}),
-                       **({"timeZone": cls.time_zone} if cls.time_zone is not None else {})},
-            "resources": {**({"collections": [_prefixed(prefix, item["module"]) for item in self.collections]}
-                             if self.collections else {}), "css": [_prefixed(prefix, url) for url in resources["css"]],
-                          "js": [{"url": _prefixed(prefix, entry["url"]), "group": entry["group"]}
-                                 for entry in resources["js"]]}})
-        runtime = _script_json(_prefixed(prefix, self.runtime_url))
-        document = GramlotBuilder()
-        root = document.source.html()
-        head = root.head()
-        head.meta(charset="utf-8")
-        head.meta(name="viewport", content="width=device-width,initial-scale=1")
-        head.title(cls.title)
-        if path.strip("/") in ("", "index") and cls.installable is True:
-            head.link(rel="manifest", href=prefix + "/app.webmanifest")
-        # A page module served for its Logic imports the core from the runtime already loaded.
-        head.script(_script_json({"imports": {"@gramlot/gramlot/page": _prefixed(prefix, self.runtime_url)}}),
-                    type="importmap", nonce=nonce)
-        body = root.body()
-        body.div(id=self.root_id)
-        body.script(f'import {{PageBootstrap}} from {runtime};'
-                    f'await new PageBootstrap({bootstrap}).run();', type="module", nonce=nonce)
-        markup = document.render(doctype=True)
+        # Registered before the bootstrap is written, and removed if writing it fails, as in JavaScript.
         self._pages[page_id] = (time.monotonic() + self.page_ttl, cls, owner)
+        try:
+            nonce = secrets.token_urlsafe(16)
+            # The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9);
+            # the compact JSON gives the same text as the JavaScript server.
+            bootstrap = _script_json({
+                "config": {"pageId": page_id, "rpcUrl": _prefixed(prefix, self.rpc_url),
+                           "closeUrl": _prefixed(prefix, self.close_url), "rootId": self.root_id,
+                           "capabilities": self.capabilities,
+                           **({"devices": list(cls.devices)} if cls.devices else {}),
+                           **({"locale": cls.locale} if cls.locale is not None else {}),
+                           **({"timeZone": cls.time_zone} if cls.time_zone is not None else {})},
+                "resources": {**({"collections": [_prefixed(prefix, item["module"]) for item in self.collections]}
+                                 if self.collections else {}),
+                              "css": [_prefixed(prefix, url) for url in resources["css"]],
+                              "js": [{"url": _prefixed(prefix, entry["url"]), "group": entry["group"]}
+                                     for entry in resources["js"]]}})
+            runtime = _script_json(_prefixed(prefix, self.runtime_url))
+            document = GramlotBuilder()
+            root = document.source.html()
+            head = root.head()
+            head.meta(charset="utf-8")
+            head.meta(name="viewport", content="width=device-width,initial-scale=1")
+            head.title(cls.title)
+            if path.strip("/") in ("", "index") and cls.installable is True:
+                head.link(rel="manifest", href=prefix + "/app.webmanifest")
+            # A page module served for its Logic imports the core from the runtime already loaded.
+            head.script(_script_json({"imports": {"@gramlot/gramlot/page": _prefixed(prefix, self.runtime_url)}}),
+                        type="importmap", nonce=nonce)
+            body = root.body()
+            body.div(id=self.root_id)
+            body.script(f'import {{PageBootstrap}} from {runtime};'
+                        f'await new PageBootstrap({bootstrap}).run();', type="module", nonce=nonce)
+            markup = document.render(doctype=True)
+        except BaseException:
+            self.close_page(page_id, owner=owner)
+            raise
         return Bootstrap(page_id, markup, nonce)
 
     async def call(self, text, *, owner=None):

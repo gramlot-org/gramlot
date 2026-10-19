@@ -538,8 +538,9 @@ Block ID: **GC-210-050**.
 
 ControlAdapter.for(binding,record) selects Text/Number/Range/Select/Temporal/Color,
 then Checkbox/Radio controls or null. Adapter owns project/read/commit/attach/detach;
-commit uses node.setRelativeData, value consumed once (HtmlElement stops independent
-control value write). DOM records own listener detach including composition.
+commit writes through HtmlElement.writeParameter, the rule of component parameters too (plain
+`^` without suffix; equal `Object.is` value not written, legacy `lazySet`), value consumed
+once (HtmlElement stops independent control value write). DOM records own listener detach including composition.
 
 RadioGroups(renderer), created by the renderer in the view layer, join/leave/peers
 generates instance-scoped name; selection synchronously
@@ -998,3 +999,5 @@ using the shared current inputs; Source retains its authored pointers.
 
 
 Builder ownership update — 2026-10-17: see the constitution's Builder alignment amendment. The historical Q6 automatic `${name}` contract is superseded. Python delegates static suffix resolution and dtype/signature decoding to genro-builders 0.29.0; JavaScript delegates ordinary projection to Builder 0.6.0 and connects `evaluatePointerExpression` to InlineCompiler, including HTML/SVG subbuilders. Structural attributes retain Gramlot's parent-context reads. Static `==` attributes resolve to null; the live renderer evaluates activated Source declarations. No global `_F` or upstream source patch is introduced.
+
+Review 0.3.5 p2 — 2026-10-19: `==` has one compile path, `InlineCompiler.compileExpression`: the other non-`==` attributes and `_F` are its arguments (§010 Q11.2) and its body is `return <text>`, the text without surrounding whitespace, as legacy `funcCreate('return ' + text)`; a text starting with a newline returns its value and a final `;` is accepted. The structural reader (`binding/pointer.js`) no longer compiles `==`: a `{name}` slot naming a `==` attribute reads null there too, as in `Builder.runtimeValues` and in Python.

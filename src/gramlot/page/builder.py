@@ -31,9 +31,7 @@ DATA_INLINE_ATTRIBUTES = {"dataFormula": "formula", "dataController": "script"}
 
 def data_element_error(tag, attrs):
     """The P18 violation of a data-element's attributes, or None."""
-    value = attrs.get("value")
-    if (tag in ("input", "textarea", "select", "webcomponent") and isinstance(value, str)
-            and value.startswith(("^", "=")) and not value.startswith("==") and ":" in value):
+    if tag in ("input", "textarea", "select", "webcomponent") and pointer_transform(attrs.get("value")):
         return "'value' does not accept pointer suffixes; use an ordinary value pointer"
     if tag == "html_button" and any(
             name in ("action", "ask", "_delay", "fire") or name.startswith("fire_") for name in attrs):
@@ -168,8 +166,7 @@ class GramlotBuilder(HtmlBuilder):
     def _validate_call_args(self, info, node_value, attr, node_tag=""):
         """Enforce required parameters declared by Gramlot's loaded grammar and the excluded attributes."""
         if (info.get("_meta", {}) or {}).get("gramlot_component"):
-            value = attr.get("value")
-            if isinstance(value, str) and pointer_transform(value):
+            if pointer_transform(attr.get("value")):
                 raise ValueError("'value' does not accept pointer suffixes")
         if node_tag == "webcomponent":
             webcomponent_code(attr)

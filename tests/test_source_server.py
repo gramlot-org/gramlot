@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import json
 from pathlib import Path
 import tempfile
@@ -205,6 +206,57 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("sourceUrl", opened.html)
         self.assertEqual(GramlotServer().capabilities, [])
         self.assertEqual(GramlotServer().rpc_url, "/gramlot/rpc")
+
+    def test_configuration_outside_the_contract_is_a_value_error(self):
+        """The table of the JS test, where the configuration error is a TypeError (GC-225 §010)."""
+        for page_ttl in (float("inf"), float("nan"), "30", 0, -1, True):
+            with self.subTest(page_ttl=page_ttl), self.assertRaises(ValueError):
+                GramlotServer(page_ttl=page_ttl)
+        for max_pages in (float("inf"), 1.5, "2", 0, -1, True):
+            with self.subTest(max_pages=max_pages), self.assertRaises(ValueError):
+                GramlotServer(max_pages=max_pages)
+        for page_ttl, max_pages in ((1800, 1000), (0.5, 1)):
+            server = GramlotServer(page_ttl=page_ttl, max_pages=max_pages)
+            self.assertEqual((server.page_ttl, server.max_pages), (page_ttl, max_pages))
+
+    async def test_a_manifest_that_is_not_json_is_a_type_error(self):
+        """The table of the JS test: NaN, infinity, a date, an object, a cycle and a list are refused."""
+        def installable(value):
+            class Root(EmptyPage):
+                installable = True
+
+                def manifest(self, *, base_url="./"):
+                    return value
+            return Root
+
+        cycle = {}
+        cycle["self"] = cycle
+        for manifest in ({"n": float("nan")}, {"n": float("inf")}, {"when": datetime.date(2026, 10, 19)},
+                         {"item": object()}, cycle, ["name"]):
+            with self.subTest(manifest=manifest), self.assertRaisesRegex(
+                    TypeError, r"^Page\.manifest must return a JSON object$"):
+                await MemoryServer(installable(manifest)).page_manifest()
+        valid = {"name": "x", "n": 1.5, "items": [1, "a", None, True]}
+        self.assertEqual(await MemoryServer(installable(valid)).page_manifest(), valid)
+
+    async def test_the_page_is_registered_before_the_bootstrap_is_written(self):
+        """As in JS: the bootstrap sees the page registered; a failure while writing it removes the page."""
+        class CountingServer(MemoryServer):
+            failing = False
+
+            @property
+            def capabilities(self):
+                if self.failing:
+                    raise RuntimeError("no capabilities")
+                return [f"pages:{len(self._pages)}"]
+
+        server = CountingServer(EmptyPage)
+        opened = await server.open_page("/")
+        self.assertIn('"capabilities":["pages:1"]', opened.html)
+        server.failing = True
+        with self.assertRaisesRegex(RuntimeError, r"^no capabilities$"):
+            await server.open_page("/")
+        self.assertEqual(list(server._pages), [opened.page_id])
 
     def test_pages_dir_is_the_folder_as_passed(self):
         self.assertEqual(GramlotFileServer("pages").pages_dir, Path("pages"))

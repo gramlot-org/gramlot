@@ -121,6 +121,9 @@ separate lifecycle.
 | Unknown or unexposed Source method | `SourceNotFound` | `SourceNotFound` |
 | The base `Page` class as a page | Rejected | Rejected |
 | Empty the page registry | `close_all()` | `closeAll()` |
+| `page_ttl`/`pageTtl` not finite and positive, `max_pages`/`maxPages` not a positive integer | `ValueError` | `TypeError` |
+| Root manifest that is not a JSON object (NaN, infinity, a value JSON cannot write, a cycle) | `TypeError` from `page_manifest()` | `TypeError` from `pageManifest()` |
+| Page registration by `open_page`/`openPage` | Before the bootstrap is written; removed if writing it fails | Before the bootstrap is written; removed if writing it fails |
 | Page module loading without reload | Executes the module once per real path, then caches it | Imports the module once per real path, then uses the ESM import cache |
 | Page module loading with reload | Executes the module again at each opening | Imports the module again when its modification time changes |
 

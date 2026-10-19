@@ -84,6 +84,9 @@ for each call; module loading is a separate lifecycle.
 | Unknown or unexposed Source method | `SourceNotFound` | `SourceNotFound` |
 | Base `Page` class as a page | Rejected | Rejected |
 | Empty the page registry | `close_all()` | `closeAll()` |
+| `page_ttl`/`pageTtl` not finite positive, `max_pages`/`maxPages` not a positive integer | `ValueError` | `TypeError` |
+| Root manifest not a JSON object (NaN, infinity, non-JSON value, cycle) | `TypeError` | `TypeError` |
+| Page registration by `open_page`/`openPage` | Before the bootstrap; removed if it fails | Same |
 | Module loading, no reload | Executed once per real path, cached | Imported once per real path, ESM import cache |
 | Module loading, reload | Executed again at each opening | Imported again when its modification time changes |
 

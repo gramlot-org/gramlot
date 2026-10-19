@@ -8780,3 +8780,32 @@ the review branch; no release or deployment is authorized.
 Verification: 3,585 JavaScript tests pass (baseline 3,563); Python 170 tests and
 305 subtests pass with the existing expected failure (baseline 168 and 266). Docs:
 `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.
+
+
+<a id="gc-070-1445"></a>
+## 1445. Python/JavaScript parity in the core (review p2) — 2026-10-19
+
+Phase p2 of the review of the 0.3.5 releases. Implemented on the review branch; no
+release or deployment is authorized.
+
+- `==`: one compile path, `InlineCompiler.compileExpression`, body `return <text>`
+  with the text trimmed (legacy `funcCreate`): a text starting with a newline returns
+  its value, a final `;` is accepted. `binding/pointer.js` no longer compiles `==`:
+  a `{name}` slot naming a `==` attribute reads null in structural attributes too,
+  as in `Builder.runtimeValues` and in Python (GC-210 §095).
+- DOM → Data: `ControlAdapter.commit` writes through `HtmlElement.writeParameter`,
+  the rule of component parameters: plain `^` without suffix, equal (`Object.is`)
+  value not written, as legacy `setAttributeInDatasource` with `lazySet` (GC-210 §050).
+- Server: the configuration error stays `ValueError` in Python and `TypeError` in
+  JavaScript (GC-225 §010), now in the GC-090 §017 table; `pageManifest` refuses a
+  manifest that is not JSON with the `TypeError` of Python `page_manifest`; Python
+  `open_page` registers the page before writing the bootstrap and removes it on
+  failure, as JavaScript.
+- Python builder: `pointer_transform` finds the suffixes of `value`, as JavaScript
+  `pointerTransform`.
+- Decision d-float: the static number text keeps the difference (Python `1.0`,
+  JavaScript `1`), documented in GC-095 §090.
+
+Verification: 3,593 JavaScript tests pass (baseline 3,585); Python 184 tests and 323
+subtests pass with the existing expected failure (baseline 170 and 305). Chromium
+binding check passes. Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.

@@ -116,6 +116,14 @@ class TextTests(unittest.TestCase):
                          "<div></div><div></div><div>Ciao 0</div><div>Ciao false</div><div>Ciao a%sb</div>"
                          "<div>1234.5</div>")
 
+    def test_static_number_text_follows_python_str(self):
+        """Decision d-float: Python ``str(1.0)`` is ``1.0``, JavaScript gives ``1`` (GC-095 §090)."""
+        def authoring(root, data):
+            root.p(1.0)
+            root.p("1.00")
+            root.p(2.5)
+        self.assertEqual(rendered(authoring), "<p>1.0</p><p>1.00</p><p>2.5</p>")
+
 
 class DataElementTests(unittest.TestCase):
     def test_literal_setters_are_excluded_before_runtime_values(self):
