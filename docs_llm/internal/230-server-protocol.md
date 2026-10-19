@@ -42,10 +42,10 @@ Block ID: **GC-230-005**.
   `data` for a value. Every message is an **envelope** (§020) that describes itself:
   the same message goes over HTTP, `postMessage` and WebSocket.
 - The core gives every adapter, whatever its transport, the operations of this
-  contract: `GramlotServer.decode_body`, `call`, `close`, `open_page` and `close_all`
-  (JS `decodeBody`, `call`, `close`, `openPage` or `registerPage`, `closeAll`) and,
-  on a pages folder, `GramlotFileServer.companion_file` and `theme_file` (JS
-  `companionFile`, `themeFile`). The adapter keeps only what its transport adds:
+  contract: `GramlotServer.decode_body`, `call`, `close`, `open_page`, `close_all` and
+  `theme_file` (JS `decodeBody`, `call`, `close`, `openPage` or `registerPage`,
+  `closeAll`, `themeFile`) and, on a pages folder, `GramlotFileServer.companion_file`
+  (JS `companionFile`). The adapter keeps only what its transport adds:
   routes, methods, status codes, headers, cookies, media types (review decision
   d-adapter-api, owner 2026-10-19).
 - The **server adapter** is the object of the browser page that holds the
@@ -500,8 +500,13 @@ Block ID: **GC-230-145**.
 
 - `GET`/`HEAD` of `/themes/<path>` answer the file of the core themes whose real
   path is inside their folder, with the media type of its extension. The file is
-  `GramlotFileServer.theme_file(path)` (JS `themeFile`), `None`/`null` when the
-  core has none; the adapter adds methods, media types and headers.
+  `GramlotServer.theme_file(path)` (JS `themeFile`), `None`/`null` when the
+  core has none; the adapter adds methods, media types and headers. It is on
+  `GramlotServer`, not on `GramlotFileServer`: it does not read the pages folder and
+  the bootstrap lists the theme of the page (§010), so a server that resolves its pages another way
+  serves the themes too. JS `themeFile` loads the Node.js file lookup
+  (`js/src/server/files.js`) on its first call, so the neutral `gramlot-server.js` has no
+  Node.js import and the Worker bundle builds; a Worker never calls it (review p4d).
 - `GET`/`HEAD` of a `.css` or `.js` URL answer the file whose real path is below
   the pages folder: page modules, companions `foo.css`, `foo_aux.js` and `Page.css`
   files placed there; any other file of the folder is not served. The file is

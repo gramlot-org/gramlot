@@ -14,6 +14,7 @@ from ..page.base import Page, resolve_declared
 from ..page.builder import GramlotBuilder
 from ..page.name_syntax import NAME_SYNTAX
 from .assets import gramlot_dev
+from .files import THEMES, file_below
 from .resources import SEGMENT, InvalidResourceName, load_order
 
 
@@ -110,7 +111,7 @@ class GramlotServer:
     (``/themes/<name>/theme.css``), or ``False`` for no base theme; a page replaces it with
     ``Page.css_theme``. The methods shared by every adapter, whatever its transport, are
     ``decode_body`` (the request body), ``call`` (the request envelope), ``close`` (the close
-    message), ``open_page`` and ``close_all``.
+    message), ``open_page``, ``close_all`` and ``theme_file`` (the file of a ``/themes/`` URL).
 
     A page expires ``page_ttl`` seconds after its last use: opening it and every call that names
     it for its owner move the expiry to now plus ``page_ttl`` (GC-230 §010).
@@ -215,6 +216,15 @@ class GramlotServer:
         if not _theme_name(theme):
             raise InvalidResourceName(f"Page.css_theme must be None, False or a theme name, not {theme!r}")
         return [f"/themes/{theme}/theme.css"]
+
+    def theme_file(self, path):
+        """The file of the URL path ``path`` (``/themes/<path>``, mount prefix removed,
+        percent-decoded) when its real path is a file inside the themes folder of the core
+        (``gramlot/resources/themes``), else ``None`` (GC-230 §145). The adapter adds the HTTP
+        part (methods, media types, headers)."""
+        if not path.startswith("/themes/"):
+            return None
+        return file_below(THEMES, path.removeprefix("/themes/"))
 
     async def open_page(self, path, *, owner=None, prefix=""):
         """Register the page and return its bootstrap. ``prefix`` is the mount prefix

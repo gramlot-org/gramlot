@@ -2785,8 +2785,8 @@ for every HTTP request.
 
 1. Core = what every server shares (Worker included): `decode_body`/`decodeBody`,
    `call(text, owner, identity)`, `close(text, owner)`, `open_page`/`openPage` (maps
-   `<path>/index.html`), `close_all`/`closeAll`, `companion_file`/`companionFile`,
-   `theme_file`/`themeFile`. HTTP-only matters (405 + `Allow`, `Cache-Control`, owner
+   `<path>/index.html`), `close_all`/`closeAll`, `theme_file`/`themeFile` (on `GramlotServer`
+   since review p4d), `companion_file`/`companionFile` (on `GramlotFileServer`). HTTP-only matters (405 + `Allow`, `Cache-Control`, owner
    cookie, media types, shutdown) belong to the adapter bases.
 2. A leading UTF-8 BOM is accepted everywhere (core decoding removes it); conformance checks it.
 3. Over HTTP each browser has its own owner; the Worker keeps the null owner.

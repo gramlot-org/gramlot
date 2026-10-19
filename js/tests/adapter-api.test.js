@@ -10,8 +10,9 @@ import {mkdtemp, mkdir, rm, symlink, writeFile} from 'node:fs/promises';
 import {realpathSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {pathToFileURL} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import {JSDOM} from 'jsdom';
+import {build} from 'esbuild';
 import {fromTytx, toTytx} from '@genrojs/tytx';
 import {Gramlot, GramlotBuilder, HttpTransport, PageBootstrap, ServerAdapter} from '../src/index.js';
 import {NAME_SYNTAX, NameSyntax, GramlotFileServer, GramlotServer, InvalidRequest, InvalidResourceName, Page,
@@ -122,17 +123,39 @@ test('companionFile is a .css or .js file below the pages folder', () => folder(
     } finally { await rm(outside, {recursive: true, force: true}); }
 }));
 
-test('themeFile is a file of the core themes', () => folder(async root => {
-    const server = new GramlotFileServer(root);
-    const theme = await server.themeFile('/themes/gramlot-base/theme.css');
-    assert.deepEqual(theme.split('/').slice(-3), ['themes', 'gramlot-base', 'theme.css']);
-    for (const path of ['/themes/missing.css', '/themes/../gramlot.js', '/themes/gramlot-base', '/theme/x.css',
-        '/themes/a\0.css']) {
-        assert.equal(await server.themeFile(path), null, path);
+class Home extends Page {
+    main(root) { root.div('ok'); }
+}
+
+test('themeFile is a file of the core themes of every server', () => folder(async root => {
+    assert.equal(GramlotFileServer.prototype.themeFile, GramlotServer.prototype.themeFile);
+    for (const [name, server] of [['GramlotServer', new GramlotServer()], ['custom', memoryServer(Home)],
+        ['GramlotFileServer', new GramlotFileServer(root)]]) {
+        const theme = await server.themeFile('/themes/gramlot-base/theme.css');
+        assert.deepEqual(theme.split('/').slice(-3), ['themes', 'gramlot-base', 'theme.css'], name);
+        for (const path of ['/themes/missing.css', '/themes/../gramlot.js', '/themes/gramlot-base', '/theme/x.css',
+            '/themes/a\0.css']) {
+            assert.equal(await server.themeFile(path), null, `${name} ${path}`);
+        }
     }
 }));
 
+// The neutral server runs in a Worker: a bundle for the browser holds no Node.js import, themeFile included.
+test('the neutral GramlotServer bundles for the browser without Node.js imports', async () => {
+    const entry = fileURLToPath(new URL('../src/server/gramlot-server.js', import.meta.url));
+    const {outputFiles} = await build({entryPoints: [entry], bundle: true, platform: 'browser', format: 'esm',
+        write: false, logLevel: 'silent'});
+    assert.doesNotMatch(outputFiles[0].text, /realpath|from "node:/);
+});
+
 const links = async (server, path = '/') => bootstrap((await server.openPage(path)).html).resources.css;
+
+test('the theme link of the bootstrap of a custom server is a file it serves', async () => {
+    const server = memoryServer(Home);
+    const css = await links(server);
+    assert.deepEqual(css, ['/themes/gramlot-base/theme.css']);
+    assert.ok(await server.themeFile(css[0]));
+});
 
 test('the base theme comes first and a listed base theme loads once', () => folder(async root => {
     await write(root, 'index.js', jsPage({css: ['/themes/gramlot-base/theme.css', '/local.css']}));

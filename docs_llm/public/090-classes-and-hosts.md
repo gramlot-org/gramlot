@@ -89,7 +89,8 @@ for each call; module loading is a separate lifecycle.
 | Base theme | `css_theme="gramlot-base"`, `False` none, else `ValueError` | `{cssTheme}`, `false` none, else `TypeError` |
 | Page theme | `css_theme`: `None` (base), a name, `False`; else `InvalidResourceName` | `static css_theme`: same |
 | `<path>/index.html` | `open_page` → `<path>/` | `openPage`/`registerPage` → `<path>/` |
-| [Server protocol §145](101-server-protocol.md#gc-101-145) files | `companion_file(path)`, `theme_file(path)` → path or `None` | `companionFile`, `themeFile` → path or `null` (npm themes) |
+| [Server protocol §145](101-server-protocol.md#gc-101-145) `/themes/` file | `GramlotServer.theme_file(path)` → path or `None` | `themeFile` → path or `null` (npm themes); Node.js/Bun only |
+| §145 `.css`/`.js` file below the pages folder | `GramlotFileServer.companion_file(path)` → path or `None` | `companionFile` → path or `null` |
 | `page_ttl`/`pageTtl` not finite positive, `max_pages`/`maxPages` not a positive integer | `ValueError` | `TypeError` |
 | Root manifest not a JSON object (NaN, infinity, non-JSON value, cycle) | `TypeError` | `TypeError` |
 | Page registration by `open_page`/`openPage` | Before the bootstrap; removed if it fails | Same |
@@ -134,7 +135,7 @@ registry is process-local and IDs are not credentials. A concrete server impleme
 `resolve_page(path)`/`resolvePage(path)` → Page class and
 `resolve_resources(path, cls)`/`resolveResources(path, PageClass)` →
 `{css: [url], js: [{url, group}]}` in load order, without prefix; the neutral `GramlotServer`
-raises `PageNotFound` for both. Each module exports `Page`. Every call creates a fresh
+raises `PageNotFound` for both and searches no application file (only the core themes, `theme_file`). Each module exports `Page`. Every call creates a fresh
 page (and builder for a fragment).
 Reference `GramlotFileServer(pages_dir)`/`new GramlotFileServer(pagesDir)`, Python and JS,
 the pages folder plus optional `reload` (017): `/` → `index.py`/`index.js`; `a/b` → file page

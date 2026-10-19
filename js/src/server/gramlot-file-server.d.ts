@@ -34,8 +34,6 @@ export class GramlotFileServer extends GramlotServer {
     resolveResources(path: string, PageClass: typeof Page): Promise<Resources>;
     /** The file of a `.css` or `.js` URL path whose real path is a file below the pages folder, or null. */
     companionFile(path: string): Promise<string | null>;
-    /** The file of a `/themes/<path>` URL path whose real path is a file of the core themes, or null. */
-    themeFile(path: string): Promise<string | null>;
     /** Root-relative URL of a file below the pages folder; a file that leaves the folder raises. */
     url(filename: string): Promise<string>;
 }

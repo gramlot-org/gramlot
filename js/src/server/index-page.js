@@ -7,7 +7,7 @@ export class IndexPage extends GramlotPage {
     static logoUrl = '';
     static shellId = 'index';
     static navigation = [];
-    static css = ['/themes/gramlot-base/theme.css', '/themes/gramlot-index/theme.css'];
+    static css = ['/themes/gramlot-index/theme.css'];
 
     main(root) {
         const families = this.constructor.navigation;

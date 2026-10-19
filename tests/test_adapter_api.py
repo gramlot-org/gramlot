@@ -117,15 +117,18 @@ class FileTests(Folder):
             with self.subTest(path=path):
                 self.assertIsNone(server.companion_file(path))
 
-    def test_theme_file_is_a_file_of_the_core_themes(self):
-        server = GramlotFileServer(self.root)
-        theme = server.theme_file("/themes/gramlot-base/theme.css")
-        self.assertEqual(theme.parts[-3:], ("themes", "gramlot-base", "theme.css"))
-        self.assertTrue(theme.is_file())
-        for path in ("/themes/missing.css", "/themes/../gramlot.js", "/themes/gramlot-base", "/theme/x.css",
-                     "/themes/a\x00.css"):
-            with self.subTest(path=path):
-                self.assertIsNone(server.theme_file(path))
+    def test_theme_file_is_a_file_of_the_core_themes_of_every_server(self):
+        self.assertIs(GramlotFileServer.theme_file, GramlotServer.theme_file)
+        for name, server in (("GramlotServer", GramlotServer()), ("custom", memory_server(Home)),
+                             ("GramlotFileServer", GramlotFileServer(self.root))):
+            with self.subTest(server=name):
+                theme = server.theme_file("/themes/gramlot-base/theme.css")
+                self.assertEqual(theme.parts[-3:], ("themes", "gramlot-base", "theme.css"))
+                self.assertTrue(theme.is_file())
+                for path in ("/themes/missing.css", "/themes/../gramlot.js", "/themes/gramlot-base", "/theme/x.css",
+                             "/themes/a\x00.css"):
+                    with self.subTest(server=name, path=path):
+                        self.assertIsNone(server.theme_file(path))
 
 
 class ThemeTests(Folder):
@@ -146,6 +149,12 @@ class ThemeTests(Folder):
         self.assertEqual(self.links(server, "/mimi"), ["/themes/mimi/theme.css"])
         self.assertEqual(self.links(server, "/none"), ["/local.css"])
         self.assertEqual(self.links(GramlotFileServer(self.root, css_theme="joanna"), "/none"), ["/local.css"])
+
+    def test_the_theme_link_of_the_bootstrap_of_a_custom_server_is_a_file_it_serves(self):
+        server = memory_server(Home)
+        links = self.links(server)
+        self.assertEqual(links, ["/themes/gramlot-base/theme.css"])
+        self.assertTrue(server.theme_file(links[0]).is_file())
 
     def test_the_server_option_chooses_the_base_theme(self):
         self.page("index.py")
@@ -231,6 +240,11 @@ class NameSyntaxTests(unittest.TestCase):
         self.assertEqual(call(server, opened.page_id, "data", "orders.total")["error"]["code"], "not_found")
         core = memory_server(Segments)
         self.assertEqual(call(core, asyncio.run(core.open_page("/")).page_id, "data", "orders.total")["value"], 3)
+
+
+class Home(Page):
+    def main(self, root):
+        root.div("ok")
 
 
 def memory_server(page_class):

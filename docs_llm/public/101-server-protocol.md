@@ -22,9 +22,9 @@ URLs, bodies, status codes, cookies, headers, Worker messages. Page = server `Pa
 opening answers the bootstrap (§010). Fragment = Source built on the server (`main` = whole page, in the root;
 others below a browser Source node). Endpoint = server method called for a value. Every call names a content
 type (`source`/`data`, §015); every message is an envelope (§020), the same over HTTP, `postMessage`, WebSocket.
-Core operations for every adapter: `decode_body`, `call`, `close`, `open_page`, `close_all` (JS `decodeBody`,
-`call`, `close`, `openPage`/`registerPage`, `closeAll`), `GramlotFileServer.companion_file`/`theme_file` (JS
-`companionFile`/`themeFile`). Server adapter = `gramlot.serverAdapter` (`ServerAdapter`, §045), chosen by the
+Core operations for every adapter: `GramlotServer.decode_body`, `call`, `close`, `open_page`, `close_all`,
+`theme_file` (JS `decodeBody`, `call`, `close`, `openPage`/`registerPage`, `closeAll`, `themeFile`),
+`GramlotFileServer.companion_file` (JS `companionFile`). Server adapter = `gramlot.serverAdapter` (`ServerAdapter`, §045), chosen by the
 server in the bootstrap, consulted by the core, never by page authors.
 
 <a id="gc-101-010"></a>
@@ -258,8 +258,9 @@ each page response with `{nonce}` replaced by the bootstrap nonce. Profiles:
 
 Block ID: **GC-101-145**.
 
-`GET`/`HEAD` `/themes/<path>` → core theme file (`theme_file`/`themeFile`, `None`/`null` outside the themes
-folder), media type by extension; `GET`/`HEAD` `.css`/`.js` → file whose real path is inside the pages folder
+`GET`/`HEAD` `/themes/<path>` → core theme file (`GramlotServer.theme_file`/`themeFile`, every server, not only
+`GramlotFileServer`; `None`/`null` outside the themes folder; JS needs Node.js or Bun, a Worker has no files),
+media type by extension; `GET`/`HEAD` `.css`/`.js` → file whose real path is inside the pages folder
 (page modules, `foo.css`, `foo_aux.js`, `Page.css` files there; `companion_file`/`companionFile`; NUL in the
 path names no file); nothing else from the folder. A JS page module holding `Logic` is served (source readable,
 `auth` rules included; `main` still runs on the server); `foo_aux.js` pages and Python modules are not.

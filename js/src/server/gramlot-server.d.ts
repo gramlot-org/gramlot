@@ -130,6 +130,8 @@ export class GramlotServer {
     prune(): void;
     /** The CSS URL of the theme of a page class, in an array, or an empty array. */
     themeCss(PageClass: typeof Page): string[];
+    /** The file of a `/themes/<path>` URL path whose real path is a file of the core themes, or null. Node.js and Bun only. */
+    themeFile(path: string): Promise<string | null>;
     /** Register a page independently of its HTTP or Worker transport; `<path>/index.html` registers `<path>/`. */
     registerPage(path: string, options?: {owner?: unknown}): Promise<RegisteredPage>;
     /** Register the page and return its bootstrap; `prefix` is the mount prefix added to root-relative URLs. */

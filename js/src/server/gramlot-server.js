@@ -62,6 +62,10 @@ function parseRequest(text) {
     return request;
 }
 
+// The Node.js file lookup, loaded by themeFile on its first call. The specifier is a constant, not a literal of
+// `import()`, so a bundler for the browser (the Worker) does not follow it into the Node.js imports of files.js.
+const NODE_FILES = './files.js';
+
 const scriptJson = value => JSON.stringify(value).replaceAll('<', '\\u003c');
 
 /** 16 random bytes in URL-safe base64 without padding, as Python secrets.token_urlsafe(16). */
@@ -74,14 +78,15 @@ function createNonce() {
  * absolute URLs stay as written. */
 const prefixed = (prefix, url) => url.startsWith('/') && !url.startsWith('//') ? prefix + url : url;
 
-/** Neutral server: no Node/Bun imports or server startup side effects. The core never
- * searches files: override resolvePage and resolveResources in concrete integrations;
+/** Neutral server: no static Node/Bun imports and no server startup side effects; only themeFile loads
+ * Node.js modules, on its first call, and a Worker never calls it. The core never searches the
+ * application's files: override resolvePage and resolveResources in concrete integrations;
  * GramlotFileServer implements them on one pages folder. Adapters supply request ownership.
  * `cssTheme` is the base theme of every page, the name of a folder of the core themes
  * (`/themes/<name>/theme.css`), or false for no base theme; a page replaces it with
  * `Page.css_theme`. The methods shared by every adapter, whatever its transport, are
  * decodeBody (the request body), call (the request envelope), close (the close message),
- * openPage or registerPage, and closeAll.
+ * openPage or registerPage, closeAll and themeFile (the file of a /themes/ URL).
  *
  * A page expires `pageTtl` seconds after its last use: opening it and every call that names it for its
  * owner move the expiry to now plus `pageTtl` (GC-230 §010).
@@ -175,6 +180,16 @@ export class GramlotServer {
             throw new InvalidResourceName(`Page.css_theme must be null, false or a theme name, not ${JSON.stringify(theme)}`);
         }
         return [`/themes/${theme}/theme.css`];
+    }
+
+    /** The file of the URL path `path` (`/themes/<path>`, mount prefix removed, percent-decoded) when
+     * its real path is a file inside the themes folder of the installed core (the `themes` folder of
+     * the npm package), else null (GC-230 §145). The adapter adds the HTTP part (methods, media types,
+     * headers). Node.js and Bun only: a Worker has no files and does not call it. */
+    async themeFile(path) {
+        if (!path.startsWith('/themes/')) return null;
+        const {THEMES, fileBelow} = await import(NODE_FILES);
+        return fileBelow(THEMES, path.slice('/themes/'.length));
     }
 
     /** Register a page independently of its HTTP or Worker transport. As on a static host,

@@ -9087,3 +9087,40 @@ branch; no release or deployment is authorized.
 Verification: 3,643 JavaScript tests pass (baseline 3,635); Python 212 tests and 369
 subtests pass with the existing expected failure (baseline 204 and 365). Docs: `prepare_docs`,
 Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1480"></a>
+## 1480. Theme serving on GramlotServer; IndexPage without the base theme (review p4d) — 2026-10-19
+
+Phase p4d of the review of the 0.3.5 releases (two follow-ups found by the js-server phase).
+Implemented on the review branch; no release or deployment is authorized.
+
+- `theme_file`/`themeFile` (GC-230 §145, GC-101 §145) moves from `GramlotFileServer` to
+  `GramlotServer`, Python and JavaScript; `GramlotFileServer` inherits it and the public names
+  do not change. The method does not read the pages folder, and the bootstrap of every page lists
+  the base theme, so a `GramlotServer` that resolves its pages another way listed a theme it did
+  not serve. `theme_css`/`themeCss` was already on `GramlotServer`.
+- The file lookup is in a new module, `files.py`/`files.js` (`file_below`/`fileBelow`, `THEMES`;
+  JavaScript also `inside` and `realFile`); `companion_file`/`companionFile` uses it too. GC-225
+  gets the row "Helper modules" (the name `files`, to be confirmed by the owner).
+- JavaScript: `gramlot-server.js` is the neutral module that the serverless Worker bundles for the
+  browser, so it cannot import Node.js: esbuild stops at `node:fs/promises`, a literal
+  `import()` included. `themeFile` loads `files.js` on its first call with `import(NODE_FILES)`,
+  a constant specifier that the bundler leaves alone. A Worker has no files and never calls it.
+  A test builds `gramlot-server.js` for the browser and fails on a Node.js import. A JSR
+  publication may report the dynamic import as not analysable (a warning to check at the next
+  publication).
+- `IndexPage.css` (Python and JavaScript) is `/themes/gramlot-index/theme.css`; the base theme
+  comes from the server (`css_theme`/`cssTheme`, GC-230 §010). A server with `css_theme=False`
+  no longer loads Base for the index shell. Nothing in the core reads `css[0]`.
+- Adapters: js-server `server/src/fetch.mjs` serves themes only when
+  `server instanceof GramlotFileServer`; the condition applies to the companion files alone.
+  py-server `base.py` already calls `server.theme_file`; its `server_class` stays
+  `GramlotFileServer` while the base takes a pages folder.
+- Docs: GC-101 §005 and §145, GC-230 §005 and §145, GC-090 §017 and §020, GC-096 §045,
+  GC-225 §010 and item 1 of the constitution amendment of the review, with their docs_llm
+  mirrors.
+
+Verification: 3,646 JavaScript tests pass (baseline 3,643); Python 214 tests and 382
+subtests pass with the existing expected failure (baseline 212 and 369). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).

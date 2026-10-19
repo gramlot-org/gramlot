@@ -237,7 +237,7 @@ layout space. Neither is authorization. Real statuses also need meaningful text.
 
 Block ID: **GC-096-045**.
 
-IndexPage loads Base/index CSS and needs its documented Logic module. Standard
+IndexPage lists `gramlot-index/theme.css` in `css` (Base comes from the server) and needs its documented Logic module. Standard
 footer manages/persists appearance, mode and sidebar width. Iframes each load
 their CSS; arbitrary children get no automatic receiver. Gallery receiver is not
 a general application API. Prefer application overlay, common tokens with mode

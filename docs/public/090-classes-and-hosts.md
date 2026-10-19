@@ -127,7 +127,8 @@ separate lifecycle.
 | Base theme | `css_theme="gramlot-base"`; `False` for none; another value `ValueError` | `{cssTheme: 'gramlot-base'}`; `false` for none; another value `TypeError` |
 | Theme of a page | `Page.css_theme`: `None` (the base theme), a theme name, `False`; another value `InvalidResourceName` | `static css_theme`: `null`, a theme name, `false`; same rule |
 | `<path>/index.html` | `open_page` opens `<path>/` | `openPage`/`registerPage` open `<path>/` |
-| Files of the URLs of [Server protocol §145](101-server-protocol.md#gc-101-145) | `GramlotFileServer.companion_file(path)`, `theme_file(path)`: a path or `None` | `companionFile(path)`, `themeFile(path)`: a path or `null` (themes of the npm package) |
+| File of a `/themes/` URL ([Server protocol §145](101-server-protocol.md#gc-101-145)) | `GramlotServer.theme_file(path)`: a path or `None` | `themeFile(path)`: a path or `null` (themes of the npm package); Node.js and Bun, not in a Worker |
+| File of a `.css` or `.js` URL below the pages folder (§145) | `GramlotFileServer.companion_file(path)`: a path or `None` | `companionFile(path)`: a path or `null` |
 | `page_ttl`/`pageTtl` not finite and positive, `max_pages`/`maxPages` not a positive integer | `ValueError` | `TypeError` |
 | Root manifest that is not a JSON object (NaN, infinity, a value JSON cannot write, a cycle) | `TypeError` from `page_manifest()` | `TypeError` from `pageManifest()` |
 | Page registration by `open_page`/`openPage` | Before the bootstrap is written; removed if writing it fails | Before the bootstrap is written; removed if writing it fails |
@@ -189,7 +190,8 @@ responses. The neutral JS `GramlotServer` has no `fetch` or request callback. `G
 the same page methods through messages, without HTTP handling. Every adapter
 calls `close_all()`/`closeAll()` on shutdown.
 
-The neutral `GramlotServer` does not start an HTTP server and does not search files. Its registry
+The neutral `GramlotServer` does not start an HTTP server and does not search the application's
+files; it finds only the files of the core themes (`theme_file`/`themeFile`). Its registry
 is process-local, bounded and expiring; page IDs are not login credentials. A
 concrete server implements two methods: `resolve_page(path)`/`resolvePage(path)`
 returns the `Page` class, and `resolve_resources(path, cls)`/`resolveResources(path,

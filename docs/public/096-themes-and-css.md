@@ -977,10 +977,10 @@ should also describe the actual state in words.
 
 Block ID: **GC-096-045**.
 
-`IndexPage` is the existing reusable application shell. Its base resource list
-loads Base and `gramlot-index/theme.css`; the shell's standard footer manages
-the theme (Base, Compact, mimi, joanna) and the Light/Dark choice. Its behaviour
-remembers these choices and the sidebar width. Follow the complete
+`IndexPage` is the existing reusable application shell. Its `css` lists
+`gramlot-index/theme.css`; Base comes from the server, as for every page. The
+shell's standard footer manages the theme (Base, Compact, mimi, joanna) and the
+Light/Dark choice. Its behaviour remembers these choices and the sidebar width. Follow the complete
 [IndexPage setup](095-writing-pages.md#gc-095-110),
 including its browser Logic module; importing a CSS file alone does not supply
 the shell's behaviour.

@@ -39,10 +39,10 @@ Block ID: **GC-101-005**.
   (§015). Every message is an **envelope** (§020). The same envelope travels over
   HTTP, `postMessage` and WebSocket.
 - The core gives every adapter the operations of this contract:
-  `GramlotServer.decode_body`, `call`, `close`, `open_page` and `close_all` (JavaScript
-  `decodeBody`, `call`, `close`, `openPage` or `registerPage`, `closeAll`) and, for a
-  pages folder, `GramlotFileServer.companion_file` and `theme_file` (JavaScript
-  `companionFile`, `themeFile`).
+  `GramlotServer.decode_body`, `call`, `close`, `open_page`, `close_all` and
+  `theme_file` (JavaScript `decodeBody`, `call`, `close`, `openPage` or
+  `registerPage`, `closeAll`, `themeFile`) and, for a pages folder,
+  `GramlotFileServer.companion_file` (JavaScript `companionFile`).
 - The **server adapter** of a page is the browser object that holds the
   server-dependent behaviour, `gramlot.serverAdapter`, an instance of `ServerAdapter`
   (§045). The server chooses its class in the bootstrap (§010). The core consults it;
@@ -452,9 +452,12 @@ bootstrap scripts (§115). The profiles are described in
 Block ID: **GC-101-145**.
 
 - `GET` and `HEAD` of `/themes/<path>` answer the file of the core themes, with the
-  media type of its extension. The file is `GramlotFileServer.theme_file(path)`
+  media type of its extension. The file is `GramlotServer.theme_file(path)`
   (JavaScript `themeFile`), `None`/`null` when the core has no such file inside its
-  themes folder. The adapter adds methods, media types and headers.
+  themes folder. Every `GramlotServer` has it, a subclass that does not read a pages
+  folder included, because the bootstrap lists the theme of the page (§010). In
+  JavaScript it needs Node.js or Bun: a Worker has no files. The adapter adds methods,
+  media types and headers.
 - `GET` and `HEAD` of a `.css` or `.js` URL answer the file whose real path is inside
   the pages folder: page modules, companions such as `foo.css` and `foo_aux.js`, and
   `Page.css` files placed there. Any other file of the folder is not served. The file

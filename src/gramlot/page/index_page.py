@@ -11,7 +11,7 @@ class IndexPage(GramlotPage):
     title = "Application"
     logo_url = ""
     shell_id = "index"
-    css = ("/themes/gramlot-base/theme.css", "/themes/gramlot-index/theme.css")
+    css = ("/themes/gramlot-index/theme.css",)
     navigation = ()
 
     def main(self, root):

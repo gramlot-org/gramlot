@@ -2952,10 +2952,12 @@ for every HTTP request.
    serverless Worker included: `GramlotServer.decode_body`/`decodeBody` (the request
    body as UTF-8), `call(text, owner=…, identity=…)`, `close(text, owner=…)` (the close
    message), `open_page`/`openPage` (which maps `<path>/index.html` to `<path>/`),
-   `close_all`/`closeAll`, and `GramlotFileServer.companion_file`/`companionFile` and
-   `theme_file`/`themeFile`. Everything only HTTP adds (methods and 405 with `Allow`,
-   `Cache-Control`, the owner cookie, media types, shutdown) belongs to the bases of the
-   adapters in gramlot-py-server and gramlot-js-server.
+   `close_all`/`closeAll`, `theme_file`/`themeFile` (the file of a `/themes/` URL; on
+   `GramlotServer` since review p4d, because it does not read the pages folder) and
+   `GramlotFileServer.companion_file`/`companionFile`. Everything only HTTP adds
+   (methods and 405 with `Allow`, `Cache-Control`, the owner cookie, media types,
+   shutdown) belongs to the bases of the adapters in gramlot-py-server and
+   gramlot-js-server.
 2. Byte order mark (d-bom). A request body that starts with the UTF-8 byte order mark
    is accepted everywhere: the core decoding removes it. The conformance checks it.
 3. Owner (d-owner). Over HTTP each browser has its own owner; a null owner for every

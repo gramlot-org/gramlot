@@ -6,12 +6,12 @@ each opening executes the module again; without it the module runs once per
 real path.
 """
 import importlib.util
-from importlib.resources import files
 from pathlib import Path
 from urllib.parse import quote
 from uuid import uuid4
 
 from .assets import gramlot_dev
+from .files import file_below
 from .gramlot_server import GramlotServer, PageNotFound
 from .resources import SEGMENT, InvalidResourceName, parse_requires
 
@@ -37,8 +37,9 @@ class GramlotFileServer(GramlotServer):
     ``reload=None`` takes the value from ``GRAMLOT_DEV`` (true for ``YES`` and
     ``DEBUG``, false when unset); an explicit boolean wins.
 
-    ``companion_file`` and ``theme_file`` are the files an adapter serves at the URLs of
-    GC-230 §145; the adapter adds the HTTP part (methods, media types, headers).
+    ``companion_file`` is the file an adapter serves at the ``.css`` and ``.js`` URLs of GC-230 §145
+    (``theme_file``, the file of the ``/themes/`` URLs, is the one of ``GramlotServer``); the adapter
+    adds the HTTP part (methods, media types, headers).
     """
 
     def __init__(self, pages_dir, reload=None, **options):
@@ -103,16 +104,7 @@ class GramlotFileServer(GramlotServer):
         Any other file of the folder is never served (GC-230 §145)."""
         if not path.endswith(COMPANION_SUFFIXES):
             return None
-        return _file_below(self.pages_dir, path)
-
-    def theme_file(self, path):
-        """The file of the URL path ``path`` (``/themes/<path>``, mount prefix removed,
-        percent-decoded) when its real path is a file inside the themes folder of the core
-        (``gramlot/resources/themes``), else ``None`` (GC-230 §145)."""
-        if not path.startswith("/themes/"):
-            return None
-        return _file_below(Path(str(files("gramlot").joinpath("resources", "themes"))),
-                           path.removeprefix("/themes/"))
+        return file_below(self.pages_dir, path)
 
     def url(self, filename):
         """Return the root-relative URL of a file below the pages folder, one encoded
@@ -122,13 +114,3 @@ class GramlotFileServer(GramlotServer):
         if not Path(filename).resolve().is_relative_to(root):
             raise ValueError(f"Resource leaves the pages folder: {relative.as_posix()}")
         return "/" + "/".join(quote(part, safe="") for part in relative.parts)
-
-
-def _file_below(folder, path):
-    """The real path of the ``/``-separated ``path`` below ``folder`` when it is a file whose real path stays
-    inside the real ``folder``, else ``None``; a path with a NUL character names no file."""
-    if "\x00" in path:
-        return None
-    root = Path(folder).resolve()
-    real = root.joinpath(*path.strip("/").split("/")).resolve()
-    return real if real.is_relative_to(root) and real.is_file() else None
