@@ -25,8 +25,8 @@ const ownerOf = request => (request.headers.cookie ?? '').split(';').map(part =>
     .find(part => part.startsWith(`${OWNER_COOKIE}=`))?.slice(OWNER_COOKIE.length + 1) ?? null;
 
 /** The Node counterpart of tests/http_server.py on the same protocol. */
-async function nodeHost(pages, {prefix = '', csp = null} = {}) {
-    const server = new GramlotFileServer(pages);
+async function nodeHost(pages, {prefix = '', csp = null, pageTtl} = {}) {
+    const server = new GramlotFileServer(pages, {pageTtl});
     const trimmed = prefix.replace(/^\/+|\/+$/g, '');
     const mount = trimmed ? `/${trimmed}` : '';
 
@@ -92,8 +92,9 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
     }};
 }
 
-function pythonHost(pages, {prefix = '', csp = null} = {}) {
-    const options = ['--prefix', prefix, ...(csp === null ? [] : ['--csp', csp])];
+function pythonHost(pages, {prefix = '', csp = null, pageTtl} = {}) {
+    const options = ['--prefix', prefix, ...(csp === null ? [] : ['--csp', csp]),
+        ...(pageTtl === undefined ? [] : ['--page-ttl', String(pageTtl)])];
     const child = spawn(process.env.GRAMLOT_TEST_PYTHON ?? 'python3', [join(root, 'tests/http_server.py'), pages, ...options], {
         env: {...process.env, PYTHONPATH: join(root, 'src')}, stdio: ['ignore', 'pipe', 'inherit'],
     });
@@ -109,7 +110,7 @@ function pythonHost(pages, {prefix = '', csp = null} = {}) {
 
 /** Start both servers on `pages`, one folder or `{py, js}` (a folder per server):
  * `[['py', {url, close}], ['js', {url, close}]]`; `url` carries the mount prefix. Options: `prefix`
- * (mount prefix), `csp` (policy with `{nonce}`). */
+ * (mount prefix), `csp` (policy with `{nonce}`), `pageTtl` (seconds, the default of the core when absent). */
 export async function startServers(pages, options = {}) {
     const {py, js} = typeof pages === 'string' ? {py: pages, js: pages} : pages;
     return [['py', await pythonHost(py, options)], ['js', await nodeHost(js, options)]];

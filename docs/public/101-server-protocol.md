@@ -87,9 +87,17 @@ Block ID: **GC-101-010**.
   unknown or expired page, answers the outcome `page_expired` (§025). Page IDs are
   not login credentials.
 - A page is closed by the close message (§020) or by `close_all()`/`closeAll()` when
-  the adapter shuts down. A page expires `page_ttl` seconds (JavaScript `pageTtl`,
-  default 1800) after it was opened; calls do not extend it, and a call after the
-  expiry answers `page_expired`.
+  the adapter shuts down.
+- A page expires `page_ttl` seconds (JavaScript `pageTtl`, default 1800) after its last
+  use. Opening the page sets its expiry to now plus `page_ttl`. Every call that names a
+  page of its owner that has not expired moves the expiry to now plus `page_ttl` again,
+  whatever the outcome of the method (`not_found`, `not_authenticated`, `not_authorized`
+  and `application_error` included), because the page is in use. Nothing else renews a
+  page: a call of another owner, of an unknown or of an expired page answers
+  `page_expired` and changes nothing, and a request the server cannot decode, the close
+  message and the requests that name no page renew nothing. A page that no call names
+  for `page_ttl` seconds is removed, and its next call answers `page_expired`. The
+  renewal is made by `GramlotServer.call`; an adapter does nothing for it.
 - `GramlotServer` creates a new `Page` instance for every call. The contract keeps
   no state between calls; a server may keep it as a capability (§040).
 
@@ -174,7 +182,7 @@ Block ID: **GC-101-025**.
 | `code` | Cause | Core class |
 |---|---|---|
 | `not_found` | the page declares no fragment or endpoint of that `contentType` and `name` | `SourceNotFound`, `EndpointNotFound` |
-| `page_expired` | unknown, expired, closed or unowned `pageId` | `PageExpired` |
+| `page_expired` | unknown, expired (no call for `page_ttl` seconds, §010), closed or unowned `pageId` | `PageExpired` |
 | `not_authenticated` | the target has an `auth` rule and the server knows no identity for the caller | `NotAuthenticated` |
 | `not_authorized` | the target has an `auth` rule the caller's identity does not satisfy | `NotAuthorized` |
 | `application_error` | the method raised; `name` and `message` are the exception's | any other exception, including a value TYTX cannot serialise |
@@ -418,6 +426,10 @@ Block ID: **GC-101-135**.
   on the page response with `Path=<prefix or />; HttpOnly; SameSite=Lax`, reuses the
   value the browser already sends and passes it as `owner` to every call. The value
   is random, for example 24 random bytes in URL-safe base64.
+- The cookie has no lifetime: the attributes above include no `Max-Age` and no
+  `Expires`, so it is a session cookie. Nothing renews it. The expiry of a page (§010)
+  does not depend on it: a call whose cookie is gone has another owner and answers
+  `page_expired`.
 - An adapter may take the owner from its own identity system instead, with the same
   isolation between browsers.
 
@@ -470,7 +482,10 @@ endpoints `check_endpoint`, `check_endpoint_auth` (with an `auth` rule) and
 `check_endpoint_raise`, as the conformance fixture pages of the core do. The first
 failure raises `AssertionError` (Python) or rejects with the `AssertionError` of
 `node:assert` (JavaScript). Its message starts with the identifier of the rule; the
-last number of the identifier is the section of this page.
+last number of the identifier is the section of this page. The optional argument
+`page_ttl` (JavaScript option `pageTtl`) is the `page_ttl` in seconds of the server of
+the adapter, a short one so that the check is fast; with it the check also runs item
+18, which takes about 2.5 times `page_ttl`, and without it item 18 is left out.
 
 1. §105: with a prefix, `GET <prefix>` answers 301 to `<prefix>/`.
 2. §115: `GET <page>` answers 200 `text/html` with the bootstrap module script; the
@@ -516,6 +531,10 @@ last number of the identifier is the section of this page.
     exception `name`.
 17. §125: `close` answers 200 `{"ok": true}`; `main` of the closed page then answers
     `page_expired`.
+18. §010, only with `page_ttl`: a page opened now answers a call at 0.5 `page_ttl`,
+    answers another one at 1.2 `page_ttl` after its opening (0.7 `page_ttl` after the
+    previous call, so the previous call renewed it), and answers `page_expired` to a call
+    1.3 `page_ttl` after the previous one.
 
 Not checked: the 503 of a full registry, `HEAD` of the runtime and of the files, and
 the 413 of a server that chooses a size. Run the check against every adapter, with

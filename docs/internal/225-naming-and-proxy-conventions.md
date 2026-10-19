@@ -184,7 +184,9 @@ client/server contract in 0.2.14).
   registry. `registerPage` exists only in JS: only the
   serverless Worker uses it.
   The run of a request and its parsing are private in both languages: `_run`/`#run`,
-  `_parse_request`/`parseRequest` (a module function not exported).
+  `_parse_request`/`parseRequest` (a module function not exported). The expiry of a
+  page used now (opening and each accepted call, GC-230 §010) is `_expiry`/`#expiry`,
+  private as the run, so there is one place that adds `page_ttl`/`pageTtl` to the clock.
 - `Page.registerSource` replaces the free function `source` in JS; Python keeps
   `@source`. Endpoints are declared with `@endpoint` (Python) and
   `Page.registerEndpoint` (JS), both with an optional `auth` rule.

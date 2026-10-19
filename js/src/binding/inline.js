@@ -56,7 +56,7 @@ export class InlineCompiler {
      */
     preprocess(node, attr, source) {
         const text = source.trim();
-        if (PUBLISH.test(text)) throw new Error(`${declaration(node, attr)}: the PUBLISH macro is excluded from Gramlot 0.2.0`);
+        if (PUBLISH.test(text)) throw new Error(`${declaration(node, attr)}: the PUBLISH macro is excluded from Gramlot`);
         let result = text.replace(/\$(\d+)/g, (_token, n) => `arguments[${parseInt(n, 10) - 1}]`);
         for (const [separator, macro, target] of MACROS) {
             if (separator) result = result.replace(separator, `; ${separator.source.slice(1)}`);

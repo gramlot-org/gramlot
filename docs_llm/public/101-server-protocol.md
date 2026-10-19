@@ -45,8 +45,12 @@ position. `serverAdapter` = URL of a module whose default export is the page's `
 (`server_adapter`/`serverAdapter`, none by default), importing the core from `@gramlot/gramlot/page`; without
 it the runtime's HTTP `ServerAdapter`. `<path>/index.html` → `<path>/`. Missing page `PageNotFound`, full
 registry `ServerCapacity`. Calls of another owner, unknown or expired pages → `page_expired`; page IDs are not
-login. Close by the close message or `close_all()`/`closeAll()` on shutdown; a page expires `page_ttl`
-(`pageTtl`, default 1800 s) after opening, calls do not extend it (later calls → `page_expired`). A new `Page` per call; no state between calls unless a capability (§040).
+login. Close by the close message or `close_all()`/`closeAll()` on shutdown. A page expires `page_ttl`
+(`pageTtl`, default 1800 s) after its last use: opening sets the expiry to now + `page_ttl`, and every call that
+names a non-expired page of its owner moves it to now + `page_ttl` again, whatever the outcome of the method.
+Calls of another owner, of unknown or expired pages, undecodable requests and the close message renew nothing;
+a page no call names for `page_ttl` is removed (next call → `page_expired`). `GramlotServer.call` renews; the
+adapter does nothing. A new `Page` per call; no state between calls unless a capability (§040).
 
 <a id="gc-101-015"></a>
 
@@ -89,7 +93,7 @@ Close: `{pageId}` alone, not awaited; over HTTP a beacon on `pagehide` (§125).
 
 Block ID: **GC-101-025**.
 
-`not_found` (`SourceNotFound`, `EndpointNotFound`), `page_expired` (`PageExpired`: unknown, expired, closed,
+`not_found` (`SourceNotFound`, `EndpointNotFound`), `page_expired` (`PageExpired`: unknown, expired (no call for `page_ttl`), closed,
 unowned), `not_authenticated` (`NotAuthenticated`: `auth` rule, no identity), `not_authorized`
 (`NotAuthorized`: identity fails the rule), `application_error` (any other exception, including a value TYTX
 cannot serialise). Outcomes travel in a normal response (HTTP 200); status codes only for transport (§130).
@@ -234,8 +238,9 @@ Pages are registered with an owner; calls of another owner → `page_expired`, i
 the core takes the owner with `open_page`, `call`, `close`; recognising it is the adapter's job. Over HTTP each
 browser must have its own owner (null for every request not allowed); the Worker keeps the null owner. Cookie
 adapters use `gramlot_owner`, set on the page response with `Path=<prefix or />; HttpOnly; SameSite=Lax`, reuse
-the browser's value and pass it as `owner` (random value, e.g. 24 random bytes URL-safe base64). Own identity
-systems may supply the owner with the same isolation.
+the browser's value and pass it as `owner` (random value, e.g. 24 random bytes URL-safe base64). The cookie has
+no lifetime (no `Max-Age`, no `Expires`): a session cookie that nothing renews; page expiry does not depend on
+it. Own identity systems may supply the owner with the same isolation.
 
 <a id="gc-101-140"></a>
 
@@ -266,7 +271,7 @@ Root-relative bootstrap resources → 200 `text/css`/`text/javascript`.
 
 Block ID: **GC-101-150**.
 
-`check_protocol(base_url, page_path)` (Python `gramlot.server`) / `checkProtocol(baseUrl, pagePath)` (JS
+`check_protocol(base_url, page_path, *, page_ttl=None)` (Python `gramlot.server`) / `checkProtocol(baseUrl, pagePath, {pageTtl})` (JS
 `@gramlot/gramlot/server`), over HTTP, in order; `base_url` includes the prefix; `page_path` declares
 `check_fragment`, `check_fragment_auth`, `check_endpoint`, `check_endpoint_auth`, `check_endpoint_raise` (as
 the core conformance fixtures). First failure: `AssertionError` (JS: `node:assert`), message starting with the
@@ -279,7 +284,8 @@ invalid closes leave the page usable; 10 §020 `source`/`main` envelope; 11 §13
 foreign close leaves the page; 12 §025 `page_expired`, `not_found` (unknown names, `data` `main`,
 `constructor` paths); 13 §015 fragment and typed endpoint values (`3`, `"x"`, a date); 14 §030
 `check_endpoint_auth`; 15 §030 `check_fragment_auth` without the refused element; 16 §025
-`application_error`; 17 §125 close then `page_expired`. Not checked: 503, `HEAD` of runtime and files, 413.
+`application_error`; 17 §125 close then `page_expired`; 18 §010, only with `page_ttl` (the adapter's short `page_ttl` in seconds, check takes about 2.5 times it): a new page answers a call at 0.5
+`page_ttl` and another at 1.2 `page_ttl` after opening (renewed by the first), then `page_expired` 1.3 `page_ttl` after the previous call. Not checked: 503, `HEAD` of runtime and files, 413.
 Run on every adapter with and without prefix and CSP.
 
 ## Part C · Worker

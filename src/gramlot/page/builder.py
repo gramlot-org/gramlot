@@ -19,7 +19,7 @@ from .source import GramlotBuilderBag
 
 # P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 DATA_FORBIDDEN = "data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element"
-# Declarations outside Gramlot 0.2.0 that fail explicitly (source plan, section 2).
+# Declarations that Gramlot does not accept and that fail explicitly (source plan, section 2).
 EXCLUDED_ELEMENTS = frozenset()
 EXCLUDED_ATTRIBUTES = frozenset({"serverpath", "dbenv", "shared_id"})
 EXCLUDED_ATTRIBUTE_PREFIXES = ("formsubscribe_",)
@@ -100,7 +100,7 @@ class GramlotBuilder(HtmlBuilder):
             raise ValueError(f"{name}: the tag prefix '{GramlotBuilder._name}_' is not accepted; "
                              f"use the prefix '{self.dialect_prefixes[0]}'")
         if lookup in EXCLUDED_ELEMENTS:
-            raise ValueError(f"{name}: excluded from Gramlot 0.2.0")
+            raise ValueError(f"{name}: excluded from Gramlot")
         tag = self._schema_tag_names.get(lookup)
         if tag is not None:
             return tag
@@ -183,7 +183,7 @@ class GramlotBuilder(HtmlBuilder):
         excluded = next((name for name in attr if name in EXCLUDED_ATTRIBUTES
                          or name.startswith(EXCLUDED_ATTRIBUTE_PREFIXES)), None)
         if excluded is not None:
-            raise ValueError(f"{node_tag}: attribute '{excluded}' is excluded from Gramlot 0.2.0")
+            raise ValueError(f"{node_tag}: attribute '{excluded}' is excluded from Gramlot")
         error = data_element_error(node_tag, attr)
         if error is not None:
             raise ValueError(f"{node_tag}: {error}")

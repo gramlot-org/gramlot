@@ -1,8 +1,8 @@
 """Loopback-only reference adapter of the server protocol GC-230, for the core tests
 and the browser checks. Not a production server or application demo.
 
-``python tests/http_server.py PAGES [--prefix /mount] [--csp POLICY]`` prints its
-base URL (mount prefix included) and serves until stopped. The runtime and the
+``python tests/http_server.py PAGES [--prefix /mount] [--csp POLICY] [--page-ttl SECONDS]`` prints
+its base URL (mount prefix included) and serves until stopped. The runtime and the
 themes come from the ``gramlot`` package on the path: build the runtime first.
 The adapter keeps only the HTTP part: the rules shared by every server are calls of
 the core API (``theme_file``, ``companion_file``, ``decode_body``, ``call``, ``close``,
@@ -103,9 +103,10 @@ def main():
     parser.add_argument("pages")
     parser.add_argument("--prefix", default="")
     parser.add_argument("--csp")
+    parser.add_argument("--page-ttl", type=float)
     args = parser.parse_args()
     http_server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    http_server.gramlot = GramlotFileServer(args.pages)
+    http_server.gramlot = GramlotFileServer(args.pages, **({} if args.page_ttl is None else {"page_ttl": args.page_ttl}))
     http_server.prefix = "/" + args.prefix.strip("/") if args.prefix.strip("/") else ""
     http_server.csp = args.csp
     print(f"http://127.0.0.1:{http_server.server_port}{http_server.prefix}", flush=True)

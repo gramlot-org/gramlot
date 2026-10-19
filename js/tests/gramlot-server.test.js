@@ -602,3 +602,90 @@ test('Page extends Exposed; the markers belong to Exposed and refuse main', () =
     Orders.registerEndpoint('list');
     assert.throws(() => Orders.registerSource('list'), {name: 'TypeError', message: 'list is declared both as Source method and endpoint'});
 });
+
+/** The clock of the server, `performance.now()`, replaced by one the test moves, so no test waits. The Python
+ * counterpart is `PageExpiryTests` in tests/test_source_server.py, with the same inputs and outcomes. */
+function pageExpiryServer(t) {
+    const clock = {now: 5000};
+    t.mock.method(performance, 'now', () => clock.now);
+    class UsedPage extends EmptyPage {
+        fails() { throw new Error('fails'); }
+        closed() { return 'closed'; }
+    }
+    UsedPage.registerEndpoint('fails');
+    UsedPage.registerEndpoint('closed', {auth: 'admin'});
+    const TTL = 100;
+    return {clock, TTL, server: memoryServer(UsedPage, {pageTtl: TTL}),
+        open: async (server, owner = 'one') => (await server.openPage('/', {owner})).pageId};
+}
+const expired = response => response.error?.code === 'page_expired';
+
+test('page expiry: a call after half the TTL renews the page', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    for (let i = 0; i < 4; i++) {
+        clock.now += TTL * 1000 / 2;
+        assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+    }
+    // Twice the TTL after the opening, half a TTL after the last call.
+    assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+});
+
+test('page expiry: a page idle for longer than the TTL answers page_expired', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    clock.now += TTL * 1000 / 2;
+    assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+    clock.now += (TTL - 1) * 1000;
+    assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+    clock.now += (TTL + 1) * 1000;
+    assert.ok(expired(await main(server, pageId, {owner: 'one'})));
+    assert.equal(server.pages.size, 0);
+});
+
+test('page expiry: a page that is never called expires TTL seconds after it was opened', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    clock.now += (TTL - 1) * 1000;
+    assert.deepEqual([...server.pages.keys()], [pageId]);
+    clock.now += 2000;
+    assert.ok(expired(await main(server, pageId, {owner: 'one'})));
+});
+
+test('page expiry: every outcome of a call to a page of its owner renews it', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    for (const [contentType, name, outcome] of [['source', 'main', undefined], ['source', 'missing', 'not_found'],
+        ['data', 'fails', 'application_error'], ['data', 'closed', 'not_authenticated']]) {
+        clock.now += (TTL - 1) * 1000;
+        const response = await call(server, pageId, contentType, name, {}, {owner: 'one'});
+        assert.equal(response.error?.code, outcome, name);
+    }
+    clock.now += (TTL - 1) * 1000;
+    assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+});
+
+test('page expiry: a call that is not accepted renews nothing', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    clock.now += (TTL - 1) * 1000;
+    assert.ok(expired(await main(server, pageId, {owner: 'two'})));
+    assert.ok(expired(await main(server, pageId)));
+    assert.ok(expired(await main(server, 'unknown', {owner: 'one'})));
+    await assert.rejects(server.call(toTytx({id: 'r1', pageId, contentType: 'other', name: 'main', params: {}}), {owner: 'one'}),
+        InvalidRequest);
+    server.close(JSON.stringify({pageId}), {owner: 'two'});
+    clock.now += 2000;
+    assert.ok(expired(await main(server, pageId, {owner: 'one'})));
+});
+
+test('page expiry: a call renews only the page it names', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const first = await open(server);
+    const second = await open(server);
+    clock.now += (TTL - 1) * 1000;
+    assert.equal((await main(server, first, {owner: 'one'})).error, undefined);
+    clock.now += 2000;
+    assert.equal((await main(server, first, {owner: 'one'})).error, undefined);
+    assert.ok(expired(await main(server, second, {owner: 'one'})));
+});

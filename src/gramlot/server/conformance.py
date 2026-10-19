@@ -6,6 +6,7 @@ list of GC-230 §150 in the same order.
 import datetime
 import json
 import re
+import time
 from uuid import uuid4
 from http.cookies import SimpleCookie
 from urllib.error import HTTPError
@@ -30,10 +31,13 @@ def _expect(rule, condition, message):
         raise AssertionError(f"{rule}: {message}")
 
 
-def check_protocol(base_url, page_path):
+def check_protocol(base_url, page_path, *, page_ttl=None):
     """Run the checks of GC-230 §150 against the adapter at ``base_url`` (mount
     prefix included) with the page ``page_path``; raise ``AssertionError`` naming
-    the rule of the first failure."""
+    the rule of the first failure. ``page_ttl`` is the ``page_ttl`` in seconds of the
+    server of the adapter, short for the check to be fast; with it the check also
+    waits for the renewal and the expiry of a page (GC-230 §010), about 2.5 times
+    ``page_ttl``, and without it that check is left out."""
     opener = build_opener(_NoRedirect)
     split = urlsplit(base_url)
     origin = f"{split.scheme}://{split.netloc}"
@@ -274,3 +278,23 @@ def check_protocol(base_url, page_path):
     _expect("GC-230-125", status == 200 and headers.get_content_type() == "application/json"
             and closed == {"ok": True}, f"close answers {status} {body!r}, not 200 {{\"ok\": true}}")
     outcome("GC-230-125", envelope("source", "main"), "page_expired", "main after close")
+
+    if page_ttl is not None:
+        # A page opened now, used at 0.5 page_ttl and again at 1.2 page_ttl after its opening (0.7 after the first use,
+        # which only the renewal by the first use lets succeed), then left idle for 1.3 page_ttl (GC-230 §010).
+        status, _, body = request("GET", page_url)
+        match = BOOTSTRAP.search(body.decode())
+        _expect("GC-230-115", status == 200 and match is not None, f"GET {page_url} answers {status} without a bootstrap")
+        timed = envelope("data", "check_endpoint", {"value": "used"}) | {"pageId": json.loads(match[3])["config"]["pageId"]}
+
+        def timed_call(label):
+            status, _, body, received = call(timed | {"id": uuid4().hex})
+            _expect("GC-230-010", status == 200 and isinstance(received, dict) and received.get("value") == "used",
+                    f"{label}, check_endpoint answers {status} {body[:200]!r}, not the endpoint value")
+
+        time.sleep(page_ttl * 0.5)
+        timed_call("a call at 0.5 page_ttl after the opening")
+        time.sleep(page_ttl * 0.7)
+        timed_call("a call at 1.2 page_ttl after the opening, 0.7 page_ttl after the previous call")
+        time.sleep(page_ttl * 1.3)
+        outcome("GC-230-010", timed, "page_expired", "a call 1.3 page_ttl after the previous call")

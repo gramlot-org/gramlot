@@ -241,8 +241,9 @@ sends the close message (`close`) and is released (`dispose`). Over HTTP explici
 disposal sends a best-effort close request; non-persisted `pagehide` disposes the
 page with a JSON beacon. A page retained in the browser's back/forward cache stays
 registered. The adapter supplies the owner of the request, and `GramlotServer`
-deletes only a page owned by it; the page TTL removes a page whose close message
-never arrives. The Worker standalone host has a separate local lifecycle.
+deletes only a page owned by it; a page that no call has used for `page_ttl`
+seconds expires, which removes a page whose close message never arrives. The Worker
+standalone host has a separate local lifecycle.
 
 Next: [Writing pages](095-writing-pages.md).
 

@@ -55,7 +55,7 @@ export interface GramlotServerOptions {
     closeUrl?: string;
     /** Id of the root element of the page. */
     rootId?: string;
-    /** Seconds a registered page lives. */
+    /** Seconds a page lives after its last use: opening it and each call that names it for its owner renew it. */
     pageTtl?: number;
     /** Maximum number of registered pages. */
     maxPages?: number;
@@ -103,7 +103,7 @@ export class GramlotServer {
     closeUrl: string;
     /** Id of the root element of the page. */
     rootId: string;
-    /** Seconds a registered page lives. */
+    /** Seconds a page lives after its last use: opening it and each call that names it for its owner renew it. */
     pageTtl: number;
     /** Maximum number of registered pages. */
     maxPages: number;

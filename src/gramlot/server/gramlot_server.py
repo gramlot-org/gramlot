@@ -111,6 +111,9 @@ class GramlotServer:
     ``Page.css_theme``. The methods shared by every adapter, whatever its transport, are
     ``decode_body`` (the request body), ``call`` (the request envelope), ``close`` (the close
     message), ``open_page`` and ``close_all``.
+
+    A page expires ``page_ttl`` seconds after its last use: opening it and every call that names
+    it for its owner move the expiry to now plus ``page_ttl`` (GC-230 §010).
     """
 
     def __init__(self, *, runtime_url="/assets/gramlot.js",
@@ -177,6 +180,10 @@ class GramlotServer:
             raise TypeError("evaluate_auth must return None, 'not_authenticated' or 'not_authorized'")
         return refused
 
+    def _expiry(self):
+        """The expiry of a page used now: ``page_ttl`` seconds from now."""
+        return time.monotonic() + self.page_ttl
+
     def _prune(self):
         now = time.monotonic()
         self._pages = {key: record for key, record in self._pages.items() if record[0] > now}
@@ -229,7 +236,7 @@ class GramlotServer:
             raise ServerCapacity("Page registry capacity reached")
         page_id = uuid4().hex
         # Registered before the bootstrap is written, and removed if writing it fails, as in JavaScript.
-        self._pages[page_id] = (time.monotonic() + self.page_ttl, cls, owner)
+        self._pages[page_id] = (self._expiry(), cls, owner)
         try:
             nonce = secrets.token_urlsafe(16)
             # The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9);
@@ -301,11 +308,13 @@ class GramlotServer:
         """Run the fragment or endpoint of a checked request: the value of the response. ``name`` is
         ``main``, a method of the page or a path ``a.b.c.method`` read from the page
         (``resolve_declared``) that ``name_syntax`` matches; the ``auth`` of the method's marker is
-        its only authorization."""
+        its only authorization. A call that names a page of its owner that has not expired renews the
+        page, whatever the outcome of the method; any other call renews nothing (GC-230 §010)."""
         self._prune()
         record = self._pages.get(request["pageId"])
         if record is None or record[2] != owner:
             raise PageExpired("Unknown, expired or unowned page")
+        self._pages[request["pageId"]] = (self._expiry(), *record[1:])
         page = record[1]()
         page.page_id = request["pageId"]
         name, params = request["name"], request["params"]

@@ -55,6 +55,10 @@ Block ID: **GC-005-010**.
    retired ID is reused. Split of Writing pages, 2026-10-19 (review phase p8): the blocks
    GC-095-040 to GC-095-090 and GC-095-130 moved to GC-097, GC-095-100 to GC-098 and
    GC-095-105 to GC-099 with their block IDs and anchors; their links name the new files.
+   Duplicate ID, 2026-10-19 (review phase p4c): the internal register of Python and JavaScript
+   Builder differences carried GC-105 like the public guide Components. The register is
+   renumbered GC-106 (`docs/internal/106-builder-python-js-differences.md`, anchors `gc-106-NNN`);
+   the public guide keeps GC-105. 106 was never used; every document ID is unique.
 5. Run the owning repository's documentation checks and verify paired coverage,
    links and anchors. A concise view must never strengthen an implementation claim.
 

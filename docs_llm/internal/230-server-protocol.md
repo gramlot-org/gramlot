@@ -3,7 +3,8 @@
 Document ID: **GC-230**. Started: **2026-10-08** (0.2.12). Rewritten: **2026-10-09**
 for 0.2.14. Revised: **2026-10-19**, review of the 0.3.5 releases, phase p4 (the
 operations shared by every adapter, the name syntax declared by the server, the
-server adapter of the page, the base theme). Part A states the contract between the
+server adapter of the page, the base theme) and phase p4c (the page expiry renewed
+by use, the owner cookie without lifetime). Part A states the contract between the
 browser runtime and any Gramlot server, independent of the transport. Parts B, C and
 D state its realisation over HTTP, inside a Worker and over WebSocket. The internal
 technique of a server is free; what it exposes is this. Rules already in the code
@@ -91,6 +92,19 @@ Block ID: **GC-230-010**.
   expired page is the outcome `page_expired` (§025). Page IDs are not login.
 - A page is closed by the close message (§020, `close`) or by
   `close_all()`/`closeAll()` on shutdown.
+- A page expires `page_ttl` seconds after its last use (JS `pageTtl`, default 1800;
+  owner decision 2026-10-19, review phase p4c). Opening the page sets its expiry to
+  now plus `page_ttl`. Every call that names a page of its owner that has not expired
+  moves the expiry to now plus `page_ttl` again, whatever the outcome of the method
+  (`not_found`, `not_authenticated`, `not_authorized` and `application_error`
+  included), because the page is in use (`GramlotServer._run`, JS `#run`). Nothing
+  else renews a page: a call of another owner, of an unknown or of an expired page
+  answers `page_expired` and changes nothing; a request the server cannot decode
+  (`InvalidRequest`), the close message and the requests that name no page renew
+  nothing. A page that no call names for `page_ttl` seconds is removed: its next call
+  answers `page_expired`. The clock is monotonic (Python `time.monotonic`, JS
+  `performance.now`). The renewal is in the core, in `call`: an adapter does nothing
+  for it, and the cookie of §135 has no lifetime to renew.
 - `GramlotServer` creates a new `Page` instance for every call. The contract promises
   no state between calls; a server MAY keep it (§040).
 
@@ -188,7 +202,7 @@ Block ID: **GC-230-025**. The codes are spelled once, in `OUTCOME_CODES`
 | `code` | Cause | Core class |
 |---|---|---|
 | `not_found` | the page declares no fragment or endpoint of that `contentType` and `name` | `SourceNotFound`, `EndpointNotFound` (`gramlot_server.py:222-224`, `gramlot-server.js:188-191`) |
-| `page_expired` | unknown, expired, closed or unowned `pageId` | `PageExpired` (`gramlot_server.py:212-213`, `gramlot-server.js:180`) |
+| `page_expired` | unknown, expired (no call for `page_ttl` seconds, §010), closed or unowned `pageId` | `PageExpired` (`gramlot_server.py:212-213`, `gramlot-server.js:180`) |
 | `not_authenticated` | the target carries an `auth` rule and the server knows no identity for the caller | `NotAuthenticated` (`gramlot_server.py:228-231`, `gramlot-server.js:194-198`) |
 | `not_authorized` | the target carries an `auth` rule the caller's identity does not satisfy | `NotAuthorized` (same lines) |
 | `application_error` | the method raised; `name` and `message` are the exception's | any other exception, a value TYTX cannot serialise and an `evaluate_auth`/`evaluateAuth` result outside the three outcomes included (`gramlot_server.py:198-204`, `:221-222`, `gramlot-server.js:164-170`, `:185-187`) |
@@ -458,6 +472,11 @@ Block ID: **GC-230-135**.
   on the page response with `Path=<prefix or />; HttpOnly; SameSite=Lax`, reuses
   the value the browser already sends, and passes it as `owner` to every call. The
   value is 24 random bytes in URL-safe base64 in the reference adapters.
+- The cookie has no lifetime (review phase p4c, owner 2026-10-19): the attributes
+  above include no `Max-Age` and no `Expires`, as in the reference adapters, so it is
+  a session cookie. Nothing renews it and the core gives an adapter no value to
+  re-issue it. The expiry of a page (§010) does not depend on it: a call whose cookie
+  is gone has another owner and answers `page_expired`.
 - An adapter may take the owner from its own identity system instead, with the same
   isolation between browsers.
 
@@ -502,8 +521,8 @@ Block ID: **GC-230-145**.
 
 Block ID: **GC-230-150**.
 
-`check_protocol(base_url, page_path)` (Python, `gramlot.server`,
-`src/gramlot/server/conformance.py`) and `checkProtocol(baseUrl, pagePath)` (JS,
+`check_protocol(base_url, page_path, *, page_ttl=None)` (Python, `gramlot.server`,
+`src/gramlot/server/conformance.py`) and `checkProtocol(baseUrl, pagePath, {pageTtl})` (JS,
 `@gramlot/gramlot/server`, `js/src/server/conformance.js`) run the list below, in
 this order, over HTTP against a running adapter. `base_url` includes the mount
 prefix; `page_path` names a page of the adapter that declares the fragment
@@ -513,6 +532,9 @@ rule) and the endpoints `check_endpoint`, `check_endpoint_auth`
 (`tests/fixtures/pages/index.py`, `js/tests/fixtures/pages/index.js`). The first failure raises `AssertionError` (Python) or rejects with
 `AssertionError` from `node:assert` (JS), its message starting with the rule ID.
 Standard library (`urllib`, `fetch`) plus genro-tytx / `@genrojs/tytx` for the envelope.
+`page_ttl` (JS `pageTtl`) is the `page_ttl` in seconds of the server of the adapter, a
+short one so that the check is fast; with it the check also runs item 18, which takes
+about 2.5 times `page_ttl`; without it item 18 is left out.
 
 1. GC-230-105: with a prefix, `GET <prefix>` answers 301 to `<prefix>/`.
 2. GC-230-115: `GET <page>` answers 200 `text/html` with the bootstrap module
@@ -560,10 +582,22 @@ Standard library (`urllib`, `fetch`) plus genro-tytx / `@genrojs/tytx` for the e
     exception `name`.
 17. GC-230-125: `close` answers 200 `{"ok": true}`; `main` of the closed page
     answers `page_expired`.
+18. GC-230-010, only with `page_ttl` (review phase p4c): a page opened now answers a
+    call at 0.5 `page_ttl`, answers another one at 1.2 `page_ttl` after its opening
+    (0.7 `page_ttl` after the previous call, so the previous call renewed it), and
+    answers `page_expired` to a call 1.3 `page_ttl` after the previous one.
 
 Not checked: the 503 of a full registry (filling it takes `max_pages` page
 requests), `HEAD` of the runtime and of the files, and the 413 of a server that
-chooses a size. The checks of `HEAD` and of the other methods on the page path, of
+chooses a size. Item 18 needs an adapter whose server has a short `page_ttl`, because
+the default is 1800 seconds: the reference adapters take one
+(`tests/http_server.py --page-ttl`, `pageTtl` of `startServers` in
+`scripts/fixture_servers.mjs`) and the core tests give it to both checks
+(`tests/test_conformance.py`, `js/tests/conformance.test.js`, which also run the check
+against an adapter whose TTL is not the one given). The renewal is in
+`GramlotServer.call`, which every adapter uses; the unit tests move a clock instead of
+waiting (`PageExpiryTests` in `tests/test_source_server.py`, the `page expiry` tests of
+`js/tests/gramlot-server.test.js`). The checks of `HEAD` and of the other methods on the page path, of
 the owner isolation and of the byte order mark were added in review phase p4. Run on
 2026-10-19 with this core against the released adapters: Flask and Django of
 gramlot-py-server 0.2.10 answer 200 to `HEAD`; Django, Kajenn and gramlot-js-server

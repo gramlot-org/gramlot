@@ -55,13 +55,13 @@ test('data(...) is an error naming dataSetter and html_data, on a Source Bag and
 test('excluded declarations are errors naming the tag, and the node for a received Source', () => {
     const builder = new GramlotBuilder();
     for (const name of ['serverpath', 'dbenv', 'shared_id', 'formsubscribe_x']) {
-        assert.throws(() => builder.root.div({[name]: 'v'}), new RegExp(`div: attribute '${name}' is excluded from Gramlot 0\\.2\\.0`));
+        assert.throws(() => builder.root.div({[name]: 'v'}), new RegExp(`div: attribute '${name}' is excluded from Gramlot$`));
     }
     const received = new GramlotBuilder();
     const div = sourceTarget(received.root.div({id: 'x'}));
     div.attr.serverpath = 'y';
     const {mount} = mounted(received);
-    assert.throws(mount, /div 'div_0': attribute 'serverpath' is excluded from Gramlot 0\.2\.0/);
+    assert.throws(mount, /div 'div_0': attribute 'serverpath' is excluded from Gramlot$/);
 });
 
 test('dataRemote and the remote attribute build', () => {

@@ -9038,3 +9038,52 @@ on the review branch; no release or deployment is authorized.
 Verification: 3,635 JavaScript tests pass (baseline 3,635); Python 204 tests and 365
 subtests pass with the existing expected failure (baseline 204). Docs: `prepare_docs`,
 Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1475"></a>
+## 1475. Page expiry renewed by use; version-free exclusion messages; unique document ID (review p4c) — 2026-10-19
+
+Phase p4c of the review of the 0.3.5 releases (owner decision 2026-10-19: a page expires
+`page_ttl` seconds after its last use, not after it was opened). Implemented on the review
+branch; no release or deployment is authorized.
+
+- Page expiry, Python and JavaScript (GC-230 §010, GC-101 §010): `GramlotServer` sets the
+  expiry of a page to now plus `page_ttl`/`pageTtl` when the page is opened and again for
+  every call that names a page of its owner that has not expired, whatever the outcome of
+  the method (`not_found`, `not_authenticated`, `not_authorized` and `application_error`
+  included). One private method computes it (`_expiry`, JS `#expiry`; GC-225 §025). Until
+  now a page expired 1800 seconds after it was opened even while in use. A call of another
+  owner, of an unknown or of an expired page, a request that cannot be decoded and the close
+  message renew nothing. The renewal is in `GramlotServer.call`: adapters do nothing for it
+  and must not read the registry (`_pages`, `pages`).
+- Owner cookie (GC-230 §135, GC-101 §135): it has no lifetime today (`Path`, `HttpOnly`,
+  `SameSite=Lax`, no `Max-Age`, no `Expires`). It is a session cookie that nothing renews, so
+  the core API gives no value to re-issue; documented, and kept without lifetime. The expiry
+  of a page does not depend on it.
+- Tests with a clock the test moves, no waiting: Python `PageExpiryTests`
+  (`tests/test_source_server.py`) replaces `time` in the server module; JavaScript `page expiry`
+  tests (`js/tests/gramlot-server.test.js`) replace `performance.now`. They cover the call
+  after half the TTL, the page idle for longer than the TTL, the page never called, every
+  outcome of an accepted call, the calls that are not accepted and the page a call does not
+  name.
+- Conformance (GC-230 §150 item 18), Python and JavaScript: `check_protocol(..., page_ttl=)`
+  and `checkProtocol(..., {pageTtl})` take the short TTL of the adapter's server and check
+  a call at 0.5 TTL, a call at 1.2 TTL after the opening (renewed by the first) and
+  `page_expired` 1.3 TTL after the last call, about 2.5 TTL in all; without the argument
+  the item is left out, so released adapters are not affected. The reference adapters take
+  the TTL (`tests/http_server.py --page-ttl`, `pageTtl` of `startServers`); the core tests
+  run both checks against the reference adapters at 0.8 seconds, and against an adapter whose TTL
+  is not the one given.
+- Messages "excluded from Gramlot 0.2.0" are "excluded from Gramlot": `builder.py`,
+  `gramlot-builder.js` and the `PUBLISH` macro of `inline.js`; their tests match the end of
+  the message.
+- Document ID GC-105 was used twice. The internal register of Python and JavaScript Builder
+  differences is GC-106 (`docs/internal/106-builder-python-js-differences.md`, anchors
+  `gc-106-NNN`); GC-005 §010 item 4 records it and the links of the READMEs, GC-125 and
+  PORT-0004 name the new file. The public guide Components keeps GC-105.
+- Docs: GC-230 §010, §025, §135, §150, GC-101 §010, §025, §135 and the conformance list,
+  GC-090 §020, GC-225 §025, GC-005, with their docs_llm mirrors.
+
+Verification: 3,643 JavaScript tests pass (baseline 3,635); Python 212 tests and 369
+subtests pass with the existing expected failure (baseline 204 and 365). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).

@@ -82,6 +82,9 @@ const prefixed = (prefix, url) => url.startsWith('/') && !url.startsWith('//') ?
  * `Page.css_theme`. The methods shared by every adapter, whatever its transport, are
  * decodeBody (the request body), call (the request envelope), close (the close message),
  * openPage or registerPage, and closeAll.
+ *
+ * A page expires `pageTtl` seconds after its last use: opening it and every call that names it for its
+ * owner move the expiry to now plus `pageTtl` (GC-230 §010).
  */
 export class GramlotServer {
     constructor({runtimeUrl = '/assets/gramlot.js', rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close',
@@ -143,6 +146,11 @@ export class GramlotServer {
         return refused;
     }
 
+    /** The expiry of a page used now: `pageTtl` seconds from now, on the clock of `performance.now()`. */
+    #expiry() {
+        return performance.now() + this.pageTtl * 1000;
+    }
+
     prune() {
         const now = performance.now();
         for (const [id, record] of this.pages) if (record.expires <= now) this.pages.delete(id);
@@ -186,7 +194,7 @@ export class GramlotServer {
         this.prune();
         if (this.pages.size >= this.maxPages) throw new ServerCapacity('Page registry capacity reached');
         const pageId = crypto.randomUUID().replaceAll('-', '');
-        this.pages.set(pageId, {PageClass, owner, expires: performance.now() + this.pageTtl * 1000});
+        this.pages.set(pageId, {PageClass, owner, expires: this.#expiry()});
         return {pageId, title: PageClass.title, resources, nameSyntax: this.nameSyntax.toJSON(),
             ...(PageClass.devices.length ? {devices: [...PageClass.devices]} : {}),
             ...(PageClass.locale == null ? {} : {locale: PageClass.locale}),
@@ -268,12 +276,15 @@ export class GramlotServer {
     /**
      * Run the fragment or endpoint of a checked request: the value of the response. `name` is `main`, a
      * method of the page or a path `a.b.c.method` read from the page (`resolveDeclared`) that `nameSyntax`
-     * matches; the `auth` of the method's marker is its only authorization.
+     * matches; the `auth` of the method's marker is its only authorization. A call that names a page of its
+     * owner that has not expired renews the page, whatever the outcome of the method; any other call renews
+     * nothing (GC-230 §010).
      */
     async #run({pageId, contentType, name, params}, owner, identity) {
         this.prune();
         const record = this.pages.get(pageId);
         if (!record || record.owner !== owner) throw new PageExpired('Unknown, expired or unowned page');
+        record.expires = this.#expiry();
         const page = new record.PageClass();
         page.pageId = pageId;
         const source = contentType === 'source';

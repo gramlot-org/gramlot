@@ -24,7 +24,7 @@ import {pointerTransform} from '@genrojs/builders';
 
 // P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 const DATA_FORBIDDEN = 'data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element';
-// Declarations outside Gramlot 0.2.0 that fail explicitly (source plan, section 2).
+// Declarations that Gramlot does not accept and that fail explicitly (source plan, section 2).
 const EXCLUDED_ELEMENTS = new Set();
 const EXCLUDED_ATTRIBUTES = new Set(['serverpath', 'dbenv', 'shared_id']);
 const EXCLUDED_ATTRIBUTE_PREFIXES = ['formsubscribe_'];
@@ -143,7 +143,7 @@ export class GramlotBuilder extends HtmlBuilder {
         if (lookup.startsWith(`${GramlotBuilder._name}_`)) {
             throw new Error(`${name}: the tag prefix '${GramlotBuilder._name}_' is not accepted; use the prefix '${prefixes[0]}'`);
         }
-        if (EXCLUDED_ELEMENTS.has(lookup)) throw new Error(`${name}: excluded from Gramlot 0.2.0`);
+        if (EXCLUDED_ELEMENTS.has(lookup)) throw new Error(`${name}: excluded from Gramlot`);
         const tag = this.schemaTagNames[lookup];
         if (tag) return tag;
         for (const prefix of prefixes) {
@@ -169,7 +169,7 @@ export class GramlotBuilder extends HtmlBuilder {
         }
         if (tag === 'webcomponent') webcomponentCode(attrs);
         const excluded = excludedAttribute(attrs);
-        if (excluded) throw new Error(`${tag}: attribute '${excluded}' is excluded from Gramlot 0.2.0`);
+        if (excluded) throw new Error(`${tag}: attribute '${excluded}' is excluded from Gramlot`);
         const error = dataElementError(tag, attrs);
         if (error) throw new Error(`${tag}: ${error}`);
         return super.validateNodeValues(tag, value, attrs);
@@ -182,7 +182,7 @@ export class GramlotBuilder extends HtmlBuilder {
         }
         if (node.nodeTag === 'webcomponent') webcomponentCode(options.attrs ?? node.getAttr());
         const excluded = excludedAttribute(options.attrs ?? node.getAttr());
-        if (excluded) throw new Error(`${node.nodeTag} '${node.label}': attribute '${excluded}' is excluded from Gramlot 0.2.0`);
+        if (excluded) throw new Error(`${node.nodeTag} '${node.label}': attribute '${excluded}' is excluded from Gramlot`);
         const error = dataElementError(node.nodeTag, options.attrs ?? node.getAttr());
         if (error) throw new Error(`${node.nodeTag} '${node.label}': ${error}`);
         return super.validateNode(node, options);

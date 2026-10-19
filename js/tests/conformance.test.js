@@ -18,8 +18,10 @@ const PAGES = {py: join(root, 'tests/fixtures/pages'), js: join(root, 'js/tests/
 const PAGE = '/';
 
 /** The Python check_protocol on url, run by the interpreter of the tests. */
-const pythonCheck = (url, page) => promisify(execFile)(process.env.GRAMLOT_TEST_PYTHON ?? 'python3',
-    ['-c', 'import sys\nfrom gramlot.server import check_protocol\ncheck_protocol(sys.argv[1], sys.argv[2])', url, page],
+const pythonCheck = (url, page, pageTtl = null) => promisify(execFile)(process.env.GRAMLOT_TEST_PYTHON ?? 'python3',
+    ['-c', 'import sys\nfrom gramlot.server import check_protocol\n'
+        + 'check_protocol(sys.argv[1], sys.argv[2], page_ttl=None if sys.argv[3] == "" else float(sys.argv[3]))',
+        url, page, pageTtl === null ? '' : String(pageTtl)],
     {env: {...process.env, PYTHONPATH: join(root, 'src')}});
 
 async function withServers(options, run) {
@@ -44,6 +46,30 @@ test('both reference adapters pass both checks below a mount prefix with a polic
         await checkProtocol(url, PAGE);
         await pythonCheck(url, PAGE);
     });
+});
+
+test('both reference adapters renew a page by use and expire it when left idle, in both checks', async () => {
+    const servers = await startServers(PAGES, {pageTtl: 0.8});
+    try {
+        await Promise.all(servers.flatMap(([, server]) => [checkProtocol(server.url, PAGE, {pageTtl: 0.8}),
+            pythonCheck(server.url, PAGE, 0.8)]));
+    } finally {
+        for (const [, server] of servers) server.close();
+    }
+});
+
+test('the expiry check fails when the adapter TTL is not the one given', async () => {
+    const servers = await startServers(PAGES, {pageTtl: 0.8});
+    try {
+        await Promise.all(servers.flatMap(([, server]) => [
+            // A TTL given three times as long: the adapter expires the page before the first call.
+            assert.rejects(checkProtocol(server.url, PAGE, {pageTtl: 2.4}), {message: /^GC-230-010: a call at 0\.5 pageTtl/}),
+            // A TTL given half as long: the idle page is still usable.
+            assert.rejects(checkProtocol(server.url, PAGE, {pageTtl: 0.4}),
+                {message: /^GC-230-010: a call 1\.3 pageTtl after the previous call/})]));
+    } finally {
+        for (const [, server] of servers) server.close();
+    }
 });
 
 test('a failure names its GC-230 rule in both languages', async () => {

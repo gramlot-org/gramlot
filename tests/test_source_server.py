@@ -4,10 +4,12 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
 from genro_tytx import from_tytx, to_tytx
 from gramlot import GramlotBuilder, Page, endpoint, source
-from gramlot.server import NAME_SYNTAX, GramlotFileServer, GramlotServer
+from gramlot.server import NAME_SYNTAX, GramlotFileServer, GramlotServer, InvalidRequest, gramlot_server
 
 PAGES = Path(__file__).parent / "fixtures/pages"
 
@@ -351,6 +353,91 @@ class MethodPathTests(unittest.IsolatedAsyncioTestCase):
                                    ("data", "value.value"), ("data", "source_builder.value"), ("data", "manifest")):
             with self.subTest(name=name):
                 self.assertEqual((await call(server, page_id, content_type, name))["error"]["code"], "not_found")
+
+
+class PageExpiryTests(unittest.IsolatedAsyncioTestCase):
+    """GC-230 §010: a page expires ``page_ttl`` seconds after its last use. The clock of the server module is
+    replaced by one the test moves, so no test waits. The JavaScript counterpart is in
+    ``js/tests/gramlot-server.test.js`` with the same inputs and outcomes."""
+
+    TTL = 100
+
+    class UsedPage(EmptyPage):
+        @endpoint
+        def fails(self):
+            raise RuntimeError("fails")
+
+        @endpoint(auth="admin")
+        def closed(self):
+            return "closed"
+
+    def setUp(self):
+        self.now = 5000.0
+        clock = mock.patch.object(gramlot_server, "time", SimpleNamespace(monotonic=lambda: self.now))
+        clock.start()
+        self.addCleanup(clock.stop)
+        self.server = MemoryServer(self.UsedPage, page_ttl=self.TTL)
+
+    async def opened(self, owner="one"):
+        return (await self.server.open_page("/", owner=owner)).page_id
+
+    async def test_a_call_after_half_the_ttl_renews_the_page(self):
+        page_id = await self.opened()
+        for _ in range(4):
+            self.now += self.TTL / 2
+            self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+        # Twice the TTL after the opening, half a TTL after the last call.
+        self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+
+    async def test_a_page_idle_for_longer_than_the_ttl_answers_page_expired(self):
+        page_id = await self.opened()
+        self.now += self.TTL / 2
+        self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+        self.now += self.TTL - 1
+        self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+        self.now += self.TTL + 1
+        self.assertEqual((await call(self.server, page_id, owner="one"))["error"]["code"], "page_expired")
+        self.assertEqual(self.server._pages, {})
+
+    async def test_a_page_that_is_never_called_expires_ttl_seconds_after_it_was_opened(self):
+        page_id = await self.opened()
+        self.now += self.TTL - 1
+        self.assertEqual(list(self.server._pages), [page_id])
+        self.now += 2
+        self.assertEqual((await call(self.server, page_id, owner="one"))["error"]["code"], "page_expired")
+
+    async def test_every_outcome_of_a_call_to_a_page_of_its_owner_renews_it(self):
+        page_id = await self.opened()
+        for content_type, name, code in (("source", "main", None), ("source", "missing", "not_found"),
+                                         ("data", "fails", "application_error"),
+                                         ("data", "closed", "not_authenticated")):
+            with self.subTest(name=name):
+                self.now += self.TTL - 1
+                response = await call(self.server, page_id, content_type, name, owner="one")
+                self.assertEqual(response.get("error", {}).get("code"), code)
+        self.now += self.TTL - 1
+        self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+
+    async def test_a_call_that_is_not_accepted_renews_nothing(self):
+        page_id = await self.opened()
+        self.now += self.TTL - 1
+        self.assertEqual((await call(self.server, page_id, owner="two"))["error"]["code"], "page_expired")
+        self.assertEqual((await call(self.server, page_id))["error"]["code"], "page_expired")
+        self.assertEqual((await call(self.server, "unknown", owner="one"))["error"]["code"], "page_expired")
+        with self.assertRaises(InvalidRequest):
+            await self.server.call(to_tytx({"id": "r1", "pageId": page_id, "contentType": "other", "name": "main",
+                                            "params": {}}), owner="one")
+        self.server.close(json.dumps({"pageId": page_id}), owner="two")
+        self.now += 2
+        self.assertEqual((await call(self.server, page_id, owner="one"))["error"]["code"], "page_expired")
+
+    async def test_a_call_renews_only_the_page_it_names(self):
+        first, second = await self.opened(), await self.opened()
+        self.now += self.TTL - 1
+        self.assertNotIn("error", await call(self.server, first, owner="one"))
+        self.now += 2
+        self.assertNotIn("error", await call(self.server, first, owner="one"))
+        self.assertEqual((await call(self.server, second, owner="one"))["error"]["code"], "page_expired")
 
 
 if __name__ == "__main__":

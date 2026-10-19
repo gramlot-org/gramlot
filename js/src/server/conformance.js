@@ -18,10 +18,15 @@ const expect = (rule, condition, message) => {
 
 const mediaType = headers => (headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
 
+const sleep = seconds => new Promise(done => setTimeout(done, seconds * 1000));
+
 /** Run the checks of GC-230 §150 against the adapter at baseUrl (mount prefix included) with
- * the page pagePath; throw an AssertionError naming the rule of the first failure. The Python
- * counterpart is src/gramlot/server/conformance.py: both run the same list in the same order. */
-export async function checkProtocol(baseUrl, pagePath) {
+ * the page pagePath; throw an AssertionError naming the rule of the first failure. pageTtl is the
+ * `pageTtl` in seconds of the server of the adapter, short for the check to be fast; with it the check
+ * also waits for the renewal and the expiry of a page (GC-230 §010), about 2.5 times pageTtl, and without
+ * it that check is left out. The Python counterpart is src/gramlot/server/conformance.py: both run the
+ * same list in the same order. */
+export async function checkProtocol(baseUrl, pagePath, {pageTtl = null} = {}) {
     const base = new URL(baseUrl);
     const prefix = base.pathname.replace(/\/+$/, '');
     let owner = null;
@@ -248,4 +253,25 @@ export async function checkProtocol(baseUrl, pagePath) {
     expect('GC-230-125', response.status === 200 && mediaType(response.headers) === 'application/json' && isDeepStrictEqual(closed, {ok: true}),
         `close answers ${response.status} ${response.body}, not 200 {"ok": true}`);
     await outcome('GC-230-125', envelope('source', 'main'), 'page_expired', 'main after close');
+
+    if (pageTtl !== null) {
+        // A page opened now, used at 0.5 pageTtl and again at 1.2 pageTtl after its opening (0.7 after the first use,
+        // which only the renewal by the first use lets succeed), then left idle for 1.3 pageTtl (GC-230 §010).
+        response = await request('GET', pageUrl);
+        const opened = BOOTSTRAP.exec(response.body);
+        expect('GC-230-115', response.status === 200 && opened !== null,
+            `GET ${pageUrl} answers ${response.status} without a bootstrap`);
+        const timed = envelope('data', 'check_endpoint', {value: 'used'}, {pageId: JSON.parse(opened[3]).config.pageId});
+        const timedCall = async label => {
+            response = await call({...timed, id: crypto.randomUUID()});
+            expect('GC-230-010', response.status === 200 && response.received?.value === 'used',
+                `${label}, check_endpoint answers ${response.status} ${response.body.slice(0, 200)}, not the endpoint value`);
+        };
+        await sleep(pageTtl * 0.5);
+        await timedCall('a call at 0.5 pageTtl after the opening');
+        await sleep(pageTtl * 0.7);
+        await timedCall('a call at 1.2 pageTtl after the opening, 0.7 pageTtl after the previous call');
+        await sleep(pageTtl * 1.3);
+        await outcome('GC-230-010', timed, 'page_expired', 'a call 1.3 pageTtl after the previous call');
+    }
 }

@@ -226,7 +226,7 @@ test('every legacy macro is translated as in gnrlang.js, targeting the node meth
     warnings(() => {
         for (const [source, expected] of cases) assert.equal(compiler.preprocess(node, 'script', source), expected, source);
     });
-    assert.throws(() => compiler.preprocess(node, 'script', 'PUBLISH topic = 1'), /the PUBLISH macro is excluded from Gramlot 0\.2\.0/);
+    assert.throws(() => compiler.preprocess(node, 'script', 'PUBLISH topic = 1'), /the PUBLISH macro is excluded from Gramlot$/);
     app.dispose();
 });
 

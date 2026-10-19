@@ -163,7 +163,7 @@ The five adapters of `gramlot-py-server` and the packages of `gramlot-js-server`
 A page with a transport closes its server page at dispose (`close`, then `dispose` of
 the transport); over HTTP explicit disposal sends a best-effort close request,
 non-persisted `pagehide` disposes with a JSON beacon, back/forward-cache pages stay active. Adapters supply
-the owner, `GramlotServer` checks it, and the page TTL removes a page whose close never arrives. Worker disposal
+the owner, `GramlotServer` checks it, and a page no call has used for `page_ttl` seconds expires, which removes a page whose close never arrives. Worker disposal
 remains local.
 
 Next: [Writing pages](095-writing-pages.md).
