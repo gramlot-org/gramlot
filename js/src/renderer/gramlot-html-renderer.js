@@ -4,7 +4,7 @@
  *
  * @module
  */
-import {HtmlBuilder, HtmlRenderer, SvgBuilder, sourceAttributeItems} from '@genrojs/builders';
+import {HtmlBuilder, HtmlRenderer, SourceBag, SvgBuilder, sourceAttributeItems} from '@genrojs/builders';
 import {GramlotSvgRenderer} from './gramlot-svg-renderer.js';
 import {webcomponentCode} from '../webcomponent.js';
 import {
@@ -31,20 +31,27 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
     /** HTML nodes (GramlotBuilder, HtmlBuilder) → this renderer; SVG nodes → one GramlotSvgRenderer owned by it. */
     getRender(builder) {
         if (!this.renders.has(builder)) {
-            // HTML/SVG subbuilders share the page's expression hook and compiler. Builder creates a subbuilder
-            // from its dialect registry (getSubbuilder) and calls the subbuilder's own hook: no Gramlot subclass
-            // can take its place.
-            builder.evaluatePointerExpression = this.builder.evaluatePointerExpression.bind(this.builder);
             if (builder instanceof HtmlBuilder) this.addRender(builder, this);
             else if (builder instanceof SvgBuilder) this.addRender(builder, new GramlotSvgRenderer(builder, this));
         }
         return super.getRender(builder);
     }
 
-    /** A data-element renders nothing: recognized before runtimeValues (R08, revision 10). */
+    /**
+     * Builder's walk of one node (RendererBase.render), with its values resolved by the root builder of the
+     * Source: the page's GramlotBuilder, whose `evaluatePointerExpression` compiles the `:=` expressions.
+     * The library builder of a sub-builder node (SVG, HTML inside SVG) shares the Data but has no page
+     * hook: its `runtimeValues` computes no expression. The node's own builder still validates its
+     * dialect values and its own renderer writes its attributes. A data-element renders nothing: recognized
+     * before runtimeValues (R08, revision 10); Gramlot grammars declare no Builder `@component`.
+     */
     render(node, opts = {}) {
         if (node._getMeta('data_element')) return null;
-        return super.render(node, opts);
+        const [item, runtimeAttrs] = node.rootBuilder.runtimeValues(node);
+        const renderer = this.getRender(node.builder);
+        let [tag, attrs] = renderer._handleMeta(node, runtimeAttrs);
+        if (!node._getMeta('subbuilder')) attrs = renderer.adaptAttrs(attrs);
+        return renderer.renderedItem(node, node.value instanceof SourceBag ? this.renderChildren(node.value, opts) : item, attrs, {tag, ...opts});
     }
 
     /**

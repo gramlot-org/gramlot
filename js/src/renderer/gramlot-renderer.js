@@ -479,7 +479,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         if (!record?.element) return;
         const renderer = this.getRender(node.builder);
         const previousDefaults = this.#presentationDefaults.get(node);
-        const [value, runtimeAttrs] = node.builder.runtimeValues(node);
+        const [value, runtimeAttrs] = node.rootBuilder.runtimeValues(node);
         const [, resolvedAttrs] = renderer._handleMeta(node, runtimeAttrs);
         const resolved = this.#resolvedAttributes.get(node);
         if (record.shape !== ControlAdapter.shape(record.element, resolved)) {

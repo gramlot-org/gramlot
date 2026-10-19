@@ -57,7 +57,7 @@ export class RemoteBinding {
     async update() {
         if (this.closed || !this.binding.hasStamp('start')) return;
         const node = this.node;
-        const [, attrs] = node.builder.runtimeValues(node);
+        const [, attrs] = node.rootBuilder.runtimeValues(node);
         const name = attrs.remote;
         const params = {};
         for (const [key, value] of Object.entries(attrs)) {
@@ -101,7 +101,7 @@ export class RemoteBinding {
 
     /** The current value of a control attribute: a pointer is read from Data. */
     #control(name) {
-        const [, attrs] = this.node.builder.runtimeValues(this.node);
+        const [, attrs] = this.node.rootBuilder.runtimeValues(this.node);
         return attrs[name] ?? null;
     }
 

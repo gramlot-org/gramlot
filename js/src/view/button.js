@@ -106,7 +106,7 @@ export class ButtonBinding {
         // Legacy reads inherited _delay. An explicit zero overrides an ancestor's delay.
         let owner = this.node;
         while (owner && owner.getAttr('_delay') == null) owner = owner.parentNode;
-        const delay = owner ? owner.builder.runtimeValues(owner)[1]._delay : 0;
+        const delay = owner ? owner.rootBuilder.runtimeValues(owner)[1]._delay : 0;
         if (delay > 0) {
             const count = this.#pendingCount + 1;
             this.#cancelDelay?.();
@@ -142,7 +142,7 @@ export class ButtonBinding {
             provider?.invoke({kind: 'click', event, counter});
         } else if (mechanism === 'action') {
             const read = () => {
-                const [, attrs] = node.builder.runtimeValues(node);
+                const [, attrs] = node.rootBuilder.runtimeValues(node);
                 const authored = Object.fromEntries(Object.entries(attrs).filter(([name]) => name !== 'ask'));
                 return {...this.binding.runtime.renderer.references.resolveArguments(authored), event, _counter: counter, modifiers};
             };

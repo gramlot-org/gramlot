@@ -125,6 +125,26 @@ class TextTests(unittest.TestCase):
         self.assertEqual(rendered(authoring), "<p>1.0</p><p>1.00</p><p>2.5</p>")
 
 
+class SubBuilderExpressionTests(unittest.TestCase):
+    """A string renderer has no page runtime: the ``==`` and ``:=`` of the nodes of the SVG and HTML-in-SVG
+    sub-builders write nothing, as those of an HTML node; the expected string is the one of
+    ``js/tests/subbuilder-expressions.test.js``."""
+
+    def test_svg_and_html_in_svg_nodes_write_no_expression(self):
+        def authoring(root, data):
+            data.set_item("n", 3)
+            svg = root.svg(id="drawing", width=100, height=100)
+            svg.rect(id="bar", width="^n:={} * 2", height="==size * 3", size="^n")
+            svg.text("==size + 1", id="label", size="^n")
+            svg.html(width=50, height=20).div("==size * 10", id="inner", size="^n", title="^n:={} + 1",
+                                              data_twice="==size * 2")
+        self.assertEqual(rendered(authoring),
+                         '<svg id="drawing" width="100" height="100"><rect id="bar" size="3" />'
+                         '<text id="label" size="3"></text>'
+                         f'<foreignObject width="50" height="20" xmlns="{SVG}"><div xmlns="{HTML}" '
+                         'id="inner" size="3"></div></foreignObject></svg>')
+
+
 class DataElementTests(unittest.TestCase):
     def test_literal_setters_are_excluded_before_runtime_values(self):
         def authoring(root, data):

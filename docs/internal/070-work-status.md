@@ -9965,3 +9965,36 @@ subtests pass with the existing expected failure (baseline 184 and 323). Chromiu
 checks pass: page (with a synchronous call and a `sync` `dataRemote` read), binding,
 runtime, page module, inout, messaging, border, slider, live cards and playground.
 Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.
+
+<a id="gc-070-1460"></a>
+## 1460. Sub-builder expressions through the root builder; TYTX `getDateType` (review p4b) — 2026-10-19
+
+Phase p4b of the review of the 0.3.5 releases (constitution 11.87). Implemented on the
+review branch; no release or deployment is authorized.
+
+- The nodes created by library sub-builders (SVG, HTML inside SVG) have their `:=`
+  expressions computed by the page's GramlotBuilder. `GramlotHtmlRenderer.render` and
+  the binding (`gramlot-renderer.js` `project`, `remote.js`, `providers.js`,
+  `runtime.js`, `view/button.js`) resolve values with `node.rootBuilder.runtimeValues(node)`:
+  the library method needs only the Data, shared by the sub-builders, the node's own
+  builder for `validateCustomTypes`, and the hook of the builder it runs on. The
+  assignment of `evaluatePointerExpression` on the sub-builder instances in
+  `GramlotHtmlRenderer.getRender` is removed; no method is assigned to a library
+  instance. The `==` of these nodes already came from the renderer's own
+  `evaluateExpressions`. genro-org/genro-builders-js#23 is not needed.
+- Tests: `js/tests/subbuilder-expressions.test.js` (live page: SVG node with `==`,
+  `:=` and a `==` node text, HTML inside SVG with the same, first render and update;
+  subscription handler and `remote` read `:=` arguments of sub-builder nodes; the
+  library instances carry no replaced method; no source file asks `node.builder` for
+  `runtimeValues`; static rendering writes no expression) and
+  `tests/test_renderers.py` `SubBuilderExpressionTests` (the same static string).
+- Gramlot components (`button`, `input`) exist in the GramlotBuilder dialect only: inside
+  an SVG `foreignObject` the library HTML builder creates plain elements, as before.
+- TYTX: `getDateType` is imported from `@genrojs/tytx` (0.16.3 exports it,
+  genro-org/genro-tytx#62); the copy in `js/src/format.js` is removed. The minimum is
+  raised to `>=0.16.3` in `js/package.json` and `^0.16.3` in `jsr.json`. JSR
+  `@genro/tytx` has 0.16.2 as latest: the JSR publication of the core needs
+  `@genro/tytx` 0.16.3 on JSR first.
+
+Verification: 3,635 JavaScript tests pass (baseline 3,629); Python 199 tests and 365
+subtests pass with the existing expected failure (baseline 198).

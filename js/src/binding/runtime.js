@@ -448,7 +448,7 @@ export class NodeBinding {
                     const {group, method} = this.runtime.logicRegistry.resolve(handler, node);
                     return method.call(group, node, payload);
                 }
-                const [, attrs] = node.builder.runtimeValues(node);
+                const [, attrs] = node.rootBuilder.runtimeValues(node);
                 const authored = Object.fromEntries(Object.entries(attrs).filter(([key]) =>
                     !key.startsWith('subscribe_') && !key.startsWith('selfsubscribe_')));
                 const values = {...this.runtime.renderer.references.resolveArguments(authored), p_0: payload};

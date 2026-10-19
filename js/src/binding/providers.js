@@ -228,7 +228,7 @@ export class Provider {
      */
     readArguments(trigger) {
         const node = this.node;
-        const [, attrs] = node.builder.runtimeValues(node);
+        const [, attrs] = node.rootBuilder.runtimeValues(node);
         const authored = Object.fromEntries(Object.entries(attrs).filter(([name]) =>
             !CONTROL_ATTRIBUTES.has(name) && !name.startsWith('subscribe_') && !name.startsWith('selfsubscribe_')));
         const kwargs = {...(trigger.kind === 'subscription' ? trigger.payload : {}),
