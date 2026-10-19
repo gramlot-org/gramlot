@@ -252,7 +252,8 @@ test('file server: a repeated URL loads once, in its last position', () => folde
     await write(root, 'index.js', jsPage({css: ['/index.css', '/themes/a.css', '/themes/b.css', '/themes/a.css']}));
     await write(root, 'index.css');
     const {html} = await new GramlotFileServer(root).openPage('/');
-    assert.deepEqual(links(html), ['/themes/b.css', '/themes/a.css', '/index.css']);
+    // The base theme of the server comes first.
+    assert.deepEqual(links(html), ['/themes/gramlot-base/theme.css', '/themes/b.css', '/themes/a.css', '/index.css']);
 }));
 
 test('bootstrap: the mount prefix is added once, only to root-relative URLs', () => folder(async root => {
@@ -260,14 +261,15 @@ test('bootstrap: the mount prefix is added once, only to root-relative URLs', ()
     await write(root, 'index.css');
     const server = new GramlotFileServer(root);
     const mounted = await server.openPage('/', {prefix: '/js'});
-    assert.deepEqual(links(mounted.html), ['/js/themes/x.css', ...URL_FORMS.slice(1), '/js/index.css']);
+    assert.deepEqual(links(mounted.html), ['/js/themes/gramlot-base/theme.css', '/js/themes/x.css', ...URL_FORMS.slice(1),
+        '/js/index.css']);
     assert.ok(mounted.html.includes('import {PageBootstrap} from "/js/assets/gramlot.js"'));
     for (const [key, url] of [['rpcUrl', '/gramlot/rpc'], ['closeUrl', '/gramlot/close']]) {
         assert.ok(mounted.html.includes(`"${key}":"/js${url}"`), key);
     }
     assert.ok(!mounted.html.includes('/js/js'));
     const plain = await server.openPage('/');
-    assert.deepEqual(links(plain.html), [...URL_FORMS, '/index.css']);
+    assert.deepEqual(links(plain.html), ['/themes/gramlot-base/theme.css', ...URL_FORMS, '/index.css']);
     assert.ok(plain.html.includes('import {PageBootstrap} from "/assets/gramlot.js"'));
     await assert.rejects(server.openPage('/', {prefix: null}), /Mount prefix must be a string/);
 }));
@@ -280,7 +282,7 @@ test('bootstrap: C02 and D8, the JS module URLs take the mount prefix only when 
     assert.deepEqual(mounted.resources.js, [{...js[0], url: '/js/a.js'}, ...js.slice(1)]);
     assert.deepEqual(bootstrapArguments((await server.openPage('/')).html).resources.js, js);
     assert.deepEqual(Object.keys(mounted), ['config', 'resources']);
-    assert.deepEqual(Object.keys(mounted.config), ['pageId', 'rpcUrl', 'closeUrl', 'rootId', 'capabilities']);
+    assert.deepEqual(Object.keys(mounted.config), ['pageId', 'rpcUrl', 'closeUrl', 'rootId', 'capabilities', 'nameSyntax']);
 });
 
 test('bootstrap: the nonce is new at each opening and distinct from the page ID', async () => {
@@ -370,7 +372,8 @@ print(json.dumps({
     assert.deepEqual(javascript, python);
     assert.deepEqual(javascript.descriptors[0], {css: ['/themes/base.css', 'theme.css', '/themes/base.css',
         '/area/invoices.css'], js: [{url: '/area/invoices.js', group: null}]});
-    assert.deepEqual(javascript.links[0], ['theme.css', '/app/themes/base.css', '/app/area/invoices.css']);
+    assert.deepEqual(javascript.links[0], ['/app/themes/gramlot-base/theme.css', 'theme.css', '/app/themes/base.css',
+        '/app/area/invoices.css']);
     assert.deepEqual(javascript.descriptors[2], ['InvalidResourceName', 'requires need a GramlotServer with a resource system']);
 }));
 

@@ -643,8 +643,11 @@ rejection naming the element. Nested `remote` inside a fragment works.
 `"details"` (method of the page) or `"a.b.c.details"` (path from the page). Segments
 before the last are public attributes (no leading `_`; a getter runs); the last is a
 method declared with `@source`/`@endpoint` (JS `registerSource`/`registerEndpoint`) on
-the class of the object before it; its `auth` is the only authorization. Segment
-syntax `[A-Za-z][A-Za-z0-9_]*`; any other name → `not_found`. JS: every object on the
+the class of the object before it; its `auth` is the only authorization. The name
+syntax belongs to the server (`GramlotServer.name_syntax`/`nameSyntax`, portable
+regex carried by the bootstrap; the browser checks `remote(…)` and names read from
+Data with it); core segment syntax `[A-Za-z][A-Za-z0-9_]*`; any other name →
+`not_found`. JS: every object on the
 path extends `Exposed` (base of `Page`, holds the two markers); an inherited member
 such as `constructor` never leads to a method. Python: ordinary objects. A `^`/`=`
 pointer name is read from Data: use with care, the Source no longer shows the method.
@@ -667,15 +670,22 @@ and `root.div().remote("orders.details", record_id="^.record_id")` with
 `Orders` (property `orders`); JS `class Orders extends Exposed`,
 `Orders.registerSource('details')`, `get orders()` on the page,
 `Page.registerSource('details')`.
-`dataRemote(destination_path, method, cacheTime=None, **params)` installs at
+`dataRemote(destination_path, method, cacheTime=None, sync=True, **params)` installs at
 `destination_path` (no `?attr`) a resolver that calls the endpoint `method` (name, path
 or `^`/`=` pointer, as `remote`) when the path is read. `cacheTime` in seconds: negative/`None` → once,
-`0` → every read, positive → again on the first read after it. A read never waits:
+`0` → every read, positive → again on the first read after it. `sync` (default true,
+legacy) on a transport with synchronous calls (HTTP): an expired read calls
+synchronously and returns the answer, stored without notifying the consumers (the
+reader receives it); a failure is raised to the reader naming the declaration; the
+next read calls again. Synchronous XHR is deprecated by browsers and blocks the page;
+a later step aims to avoid synchronous calls. `sync=False`, or a transport without
+synchronous calls (serverless Worker; there also `sync=True`, a debt of the
+async-resolvers plan): a read never waits:
 it returns the current value (`None` before the first call) and starts the call when
 expired; a read during a call starts no other. The answer is written at the path and
 projects every `^` consumer; with `cacheTime=0` it is written without notifying them
 (legacy: a value per explicit read). `^` argument change → new resolver, which calls at
-once when the previous one had called; request rule: a call in flight is not aborted and
+once (asynchronously, also with `sync`) when the previous one had called; request rule: a call in flight is not aborted and
 writes its value, the new call waits. `_onCalling` before each call (`false` → no call,
 a later read tries again). False `_if` → resolver removed, last value kept (a call in
 flight still writes), `_else` runs; true again → the new resolver calls at once if the removed one had

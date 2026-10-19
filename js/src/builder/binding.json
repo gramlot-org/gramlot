@@ -300,7 +300,7 @@
       }
     },
     "dataRemote": {
-      "doc": "Data node resolved by a server endpoint through gramlot.rpc, on first read and again when cacheTime expires.",
+      "doc": "Data node resolved by a server endpoint through gramlot.rpc, on first read and again when cacheTime expires; with sync (default) the read waits for the answer when the transport supports it.",
       "sub_tags": "",
       "parent_tags": null,
       "inherits_from": null,
@@ -355,6 +355,18 @@
             },
             "has_default": true,
             "default": null
+          },
+          {
+            "name": "sync",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "type",
+              "module": "builtins",
+              "name": "bool"
+            },
+            "has_default": true,
+            "default": true
           },
           {
             "name": "params",

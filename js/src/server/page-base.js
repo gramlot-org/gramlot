@@ -6,7 +6,7 @@
  * @module
  */
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
-import {REMOTE_NAME} from '../builder/source.js';
+import {NAME_SYNTAX} from '../builder/name-syntax.js';
 
 /** The marker of a Source method and of an endpoint: `{auth}` on the method, as the Python
  * `__gramlot_source__` and `__gramlot_endpoint__` attributes. */
@@ -14,7 +14,7 @@ export const SOURCE_METHOD = Symbol('gramlot.source');
 export const ENDPOINT_METHOD = Symbol('gramlot.endpoint');
 const MARKERS = new Map([[SOURCE_METHOD, 'registerSource'], [ENDPOINT_METHOD, 'registerEndpoint']]);
 
-// The name of a declared method, one segment of REMOTE_NAME: an ASCII letter, then ASCII letters, digits and `_`.
+// The name of a declared method, one segment of NAME_SYNTAX: an ASCII letter, then ASCII letters, digits and `_`.
 const DECLARED_NAME = /^[A-Za-z][A-Za-z0-9_]*$/;
 
 function declaredMethod(page, name, marker) {
@@ -36,13 +36,13 @@ export function endpointMethod(page, name) {
 
 /**
  * The method a request names, `{instance, method}`, or null; `method` runs with `this` = `instance`.
- * `name` is a method of `page` or a path `a.b.c.method` (REMOTE_NAME) read from `page`: every segment
+ * `name` is a method of `page` or a path `a.b.c.method` (NAME_SYNTAX) read from `page`: every segment
  * is a public attribute (a getter runs) whose value is an `Exposed` instance, and the last one is a
  * method declared with `marker` on the class of the object before it. Any other name, an inherited
  * member such as `constructor` included, gives null.
  */
 export function resolveDeclared(page, name, marker) {
-    if (typeof name !== 'string' || !REMOTE_NAME.test(name)) return null;
+    if (!NAME_SYNTAX.matches(name)) return null;
     const segments = name.split('.');
     const methodName = segments.pop();
     let instance = page;
@@ -113,6 +113,9 @@ export class Page extends Exposed {
     }
 
     static css = [];
+    /** The theme of the page: null takes the base theme of the server (GramlotServer cssTheme), a theme name
+     * replaces it, false loads no theme. `css` is the CSS added after the theme. */
+    static css_theme = null;
     static css_requires = '';
     static js_requires = '';
     static sourceBuilder = GramlotBuilder;

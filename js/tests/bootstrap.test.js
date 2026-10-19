@@ -105,8 +105,10 @@ test('D9: PageBootstrap writes each CSS link once, in received order; the server
     const {window} = browser(opened.html, pathToFileURL(`${root}/`).href);
     const app = await withFetch(await sourceText(server, opened.pageId), () =>
         new PageBootstrap({...bootstrapArguments(opened.html), document: window.document}).run());
-    assert.deepEqual(links(window.document), [`${root}/themes/b.css`, `${root}/themes/a.css`, 'theme.css', `${root}/index.css`]);
-    assert.equal(window.document.head.querySelectorAll('link').length, 4);
+    // The base theme of the server comes first.
+    assert.deepEqual(links(window.document), [`${root}/themes/gramlot-base/theme.css`, `${root}/themes/b.css`,
+        `${root}/themes/a.css`, 'theme.css', `${root}/index.css`]);
+    assert.equal(window.document.head.querySelectorAll('link').length, 5);
     assert.equal(app.state, 'started');
     assert.equal(window.gramlot, app);
     assert.equal(window.document.getElementById('ok').textContent, 'ok');

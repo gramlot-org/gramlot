@@ -9916,3 +9916,52 @@ Verification: 3,598 JavaScript tests pass (baseline 3,593); Python 184 tests and
 subtests pass with the existing expected failure. Chromium checks pass: binding,
 messaging, border, page module, components, runtime, component review. Docs:
 `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.
+
+<a id="gc-070-1455"></a>
+## 1455. Operations shared by the adapters, server-declared name syntax, server adapter, base theme, synchronous call (review p4) — 2026-10-19
+
+Phase p4 of the review of the 0.3.5 releases (constitution 11.87). Implemented on the
+review branch; no release or deployment is authorized.
+
+- Core API for every adapter (d-adapter-api), Python and JavaScript:
+  `GramlotServer.decode_body`/`decodeBody` (UTF-8, a leading byte order mark removed,
+  d-bom), `close(text)` (the close message), `call(text, owner, identity)` with
+  `evaluate_auth(rule, owner, identity)`, `<path>/index.html` mapped by
+  `open_page`/`registerPage`, `GramlotFileServer.companion_file`/`companionFile` and
+  `theme_file`/`themeFile`. The two reference adapters (`tests/http_server.py`,
+  `scripts/fixture_servers.mjs`) call them and keep only HTTP.
+- Name syntax declared by the server: `NameSyntax` (portable genro-builders regex,
+  `js/src/builder/name-syntax.js`, `src/gramlot/page/name_syntax.py`), core default
+  `NAME_SYNTAX` (replaces `REMOTE_NAME`); `GramlotServer.name_syntax`/`nameSyntax`
+  reaches the page builders and the bootstrap (`config.nameSyntax`); the browser
+  builder and `node.requests` check names with it.
+- `gramlot.serverAdapter`: `ServerAdapter` (`js/src/server-adapter.js`) creates the
+  transport (`createTransport`); the server names a subclass module in
+  `resources.serverAdapter` (`GramlotServer.server_adapter`/`serverAdapter`),
+  `PageBootstrap.loadServerAdapter` imports it. The transport contract `call`,
+  `close`, `dispose` is required; `instanceof HttpTransport` and
+  `transport?.dispose?.()` are gone; `HttpTransport.dispose` releases nothing.
+- Base theme (d-theme): `css_theme`/`cssTheme` option of `GramlotServer` (default
+  `gramlot-base`, `False` none), `Page.css_theme` replaces it (`False` none),
+  `theme_css`/`themeCss`; the theme comes first and a listed base theme loads once.
+  GC-090, GC-096 and the theme READMEs teach pages without the base theme in `css`.
+- Synchronous call (owner 2026-10-19): `gramlot.rpc.callSync`,
+  `HttpTransport.callSync` (synchronous `XMLHttpRequest`) with `supportsCallSync`;
+  `dataRemote` `sync` (default true) reads synchronously through the resolver's own
+  `resolve`; on a transport without it (Worker) the read stays asynchronous (debt for
+  the async-resolvers plan). `dataRpc` and `remote` stay asynchronous.
+- Conformance (GC-230 §150), Python and JS: `HEAD`, `PUT`, `DELETE`, `PATCH` of the page
+  path answer 405 with `Allow: GET`; owner isolation (no cookies, another owner, close
+  of another owner); a leading byte order mark on `rpc` and `close`; `config.nameSyntax`.
+  The core tests run both checks also behind a proxy with each defect. Run with this
+  core against the released adapters: Flask and Django (py-server 0.2.10) answer 200 to
+  `HEAD`; Django, Kajenn and js-server 0.2.13 answer 405 without `Allow`; the five
+  Python adapters refuse the byte order mark; js-server shares one owner.
+- Docs: GC-230 (revised sections), GC-090 §015/§017/§020/§030, GC-095 §105, GC-096,
+  GC-225 §010 (names to be confirmed), constitution 11.87, with their docs_llm mirrors.
+
+Verification: 3,629 JavaScript tests pass (baseline 3,598); Python 198 tests and 365
+subtests pass with the existing expected failure (baseline 184 and 323). Chromium
+checks pass: page (with a synchronous call and a `sync` `dataRemote` read), binding,
+runtime, page module, inout, messaging, border, slider, live cards and playground.
+Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.

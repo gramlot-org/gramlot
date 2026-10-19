@@ -52,8 +52,10 @@ export class Page extends Exposed {
     static installable: boolean;
     static appIcon: string | null;
     manifest(options?: {baseUrl?: string}): Record<string, unknown> | Promise<Record<string, unknown>>;
-    /** CSS URLs of the page. */
+    /** CSS URLs of the page, loaded after its theme. */
     static css: string[];
+    /** The theme of the page: null takes the base theme of the server, a theme name replaces it, false loads none. */
+    static css_theme: string | false | null;
     /** Comma-separated names of the CSS resources of the page. */
     static css_requires: string;
     /** Comma-separated names of the JS resources of the page. */
@@ -68,3 +70,4 @@ export class Page extends Exposed {
 
 export {IndexPage} from "./index-page.js";
 export {IndexLogic, mountIndexPage} from "../index-page-runtime.js";
+export {ServerAdapter} from "../server-adapter.js";

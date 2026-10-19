@@ -23,9 +23,13 @@ Block ID: **GC-096-005**.
 
 Themes style rendered HTML; tokens are CSS variables read with `var(...)`; classes
 select rules; bindings connect Source attributes to Data. CSS is presentation,
-not validation or persistence. Themes are opt-in through `Page.css`. No
-`Page.theme`/`root.css()` API. `css_requires` needs a resource host, unavailable
-in the current file servers.
+not validation or persistence. The server loads a theme on every page before its
+stylesheets: Base (`gramlot-base`) unless the server option `css_theme`/`cssTheme`
+chooses another or `False` none; a page replaces it with `css_theme = "<name>"` or
+loads none with `css_theme = False`. `Page.css` = stylesheets after the theme
+(overlays, application CSS); a listed Base loads once. Base is the one complete core
+theme; Compact, mimi, joanna are overlays loaded with `Page.css`. No `root.css()`
+API. `css_requires` needs a resource host, unavailable in the current file servers.
 
 <a id="gc-096-010"></a>
 
@@ -34,7 +38,7 @@ in the current file servers.
 Block ID: **GC-096-010**.
 
 The full guide supplies `appearance.py` and its discovered companion
-`appearance.css`: Base in `Page.css`, `html_main`, `.example-page`, `.stack`,
+`appearance.css`: Base from the server (no `css`), `html_main`, `.example-page`, `.stack`,
 `.card`, semantic status and a secondary link. CSS overrides page width/radius
 and adds a scoped accent. Expected result and a width-change exercise are stated.
 Before/after captures show the 72rem → 64rem width, blue leading border and
@@ -84,14 +88,13 @@ proportions. They do not port Dojo widgets or guarantee pixel-identical layouts.
 Dark palettes are new Gramlot adaptations. Legacy user color variants are not part
 of this increment; Base and Compact remain available.
 
-In an application, load the three stylesheets in order:
+In an application, the server loads Base; load Compact and the profile after it:
 
 ```python
 from gramlot import Page as BasePage
 
 class Page(BasePage):
     css = (
-        "/themes/gramlot-base/theme.css",
         "/themes/gramlot-compact/theme.css",
         "/themes/mimi/theme.css",
     )

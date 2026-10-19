@@ -12,7 +12,7 @@ import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 function wire(author) { const builder = new GramlotBuilder(); author(builder.root); return builder.toTytx(); }
 /** A fake server: `call` answers `main` and the remote Sources from the given functions, in the response envelope. */
 function envelope({main, source, ...rest}) {
-    return {...rest, async call(text, signal) {
+    return {close() {}, dispose() {}, ...rest, async call(text, signal) {
         const {id, contentType, name, params} = fromTytx(text);
         const value = name === 'main' ? await main() : await source(name, params, signal);
         return toTytx({id, contentType, value});

@@ -15,6 +15,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 from genro_tytx import from_tytx, to_tytx
 
 OWNER_COOKIE = "gramlot_owner"
+BOM = b"\xef\xbb\xbf"
 BOOTSTRAP = re.compile(r'<script type="module" nonce="([^"]+)">import \{PageBootstrap\} from ("[^"]*");'
                        r'await new PageBootstrap\((\{.*?\})\)\.run\(\);</script>')
 
@@ -39,10 +40,10 @@ def check_protocol(base_url, page_path):
     prefix = split.path.rstrip("/")
     owner = {}
 
-    def request(method, path, body=None, content_type="application/json", with_owner=True):
+    def request(method, path, body=None, content_type="application/json", with_owner=True, owner_value=None):
         headers = {"Content-Type": content_type} if body is not None else {}
         if with_owner and owner:
-            headers["Cookie"] = f"{OWNER_COOKIE}={owner['value']}"
+            headers["Cookie"] = f"{OWNER_COOKIE}={owner_value or owner['value']}"
         try:
             with opener.open(Request(origin + path, data=body, method=method, headers=headers)) as response:
                 return response.status, response.headers, response.read()
@@ -68,6 +69,10 @@ def check_protocol(base_url, page_path):
     _expect("GC-230-115", isinstance(config.get("rpcUrl"), str) and isinstance(config.get("closeUrl"), str)
             and isinstance(config.get("capabilities"), list),
             f"bootstrap config {config!r} lacks rpcUrl, closeUrl or a capabilities array")
+    syntax = config.get("nameSyntax")
+    _expect("GC-230-010", isinstance(syntax, dict) and syntax.get("kind") == "regex"
+            and isinstance(syntax.get("pattern"), str) and type(syntax.get("flags")) is int,
+            f"bootstrap config nameSyntax {syntax!r} is not {{kind: 'regex', pattern, flags}}")
     expected = {"runtime": (runtime_url, "/assets/gramlot.js"), "rpc": (config["rpcUrl"], "/gramlot/rpc"),
                 "close": (config["closeUrl"], "/gramlot/close")}
     for name, (url, path) in expected.items():
@@ -101,8 +106,11 @@ def check_protocol(base_url, page_path):
 
     status, _, _ = request("GET", prefix + "/gramlot-conformance-missing-page")
     _expect("GC-230-115", status == 404, f"an unknown page answers {status}, not 404")
-    status, _, _ = request("POST", page_url, b"{}")
-    _expect("GC-230-115", status == 405, f"POST {page_url} answers {status}, not 405")
+    for method in ("POST", "HEAD", "PUT", "DELETE", "PATCH"):
+        status, headers, _ = request(method, page_url, None if method == "HEAD" else b"{}")
+        allowed = [item.strip() for item in (headers["Allow"] or "").split(",")]
+        _expect("GC-230-115", status == 405 and "GET" in allowed and method not in allowed,
+                f"{method} {page_url} answers {status} with Allow {headers['Allow']!r}, not 405 with Allow: GET")
     if page_path.endswith("/"):
         status, headers, _ = request("GET", page_url + "index.html")
         _expect("GC-230-115", status == 200 and headers.get_content_type() == "text/html",
@@ -156,6 +164,21 @@ def check_protocol(base_url, page_path):
             closed = None
         _expect("GC-230-125", status == 200 and closed == {"ok": True},
                 f"close as {content_type} answers {status} {body[:200]!r}, not 200 {{\"ok\": true}}")
+    # A leading byte order mark is removed by the decoding of the body (GC-230 §120).
+    status, _, body = request("POST", rpc, BOM + to_tytx(envelope("data", "check_endpoint", {"value": "bom"})).encode())
+    try:
+        received = from_tytx(body.decode())
+    except ValueError:
+        received = None
+    _expect("GC-230-120", status == 200 and isinstance(received, dict) and received.get("value") == "bom",
+            f"rpc with a leading byte order mark answers {status} {body[:200]!r}, not the endpoint value")
+    status, _, body = request("POST", config["closeUrl"], BOM + json.dumps({"pageId": "0" * 32}).encode())
+    try:
+        closed = json.loads(body)
+    except ValueError:
+        closed = None
+    _expect("GC-230-125", status == 200 and closed == {"ok": True},
+            f"close with a leading byte order mark answers {status} {body[:200]!r}, not 200 {{\"ok\": true}}")
     status, _, _ = request("POST", rpc, b"{")
     _expect("GC-230-120", status == 400, f"rpc with invalid JSON answers {status}, not 400")
     invalid = {"without pageId": {key: value for key, value in envelope("source", "main").items() if key != "pageId"},
@@ -177,9 +200,19 @@ def check_protocol(base_url, page_path):
             and received.get("contentType") == "source" and isinstance(received.get("value"), str),
             f"main answers {status} {headers['Content-Type']} {body[:200]!r}, not 200 application/json with an "
             "envelope echoing id and contentType and carrying the fragment document as a string")
+    # The page belongs to the browser that opened it: a request without its cookies, or with another owner,
+    # reaches it only as page_expired, and its close message leaves the page open.
+    outcome("GC-230-135", envelope("source", "main"), "page_expired", "main without the cookies of the page",
+            with_owner=False)
     if owner:
-        outcome("GC-230-135", envelope("source", "main"), "page_expired", "main without the owner cookie",
-                with_owner=False)
+        outcome("GC-230-135", envelope("source", "main"), "page_expired", "main with another owner cookie",
+                owner_value=owner["value"] + "x")
+    status, _, _ = request("POST", config["closeUrl"], json.dumps({"pageId": page_id}).encode(), with_owner=False)
+    _expect("GC-230-135", status == 200, f"close without the cookies of the page answers {status}, not 200")
+    status, _, body, received = call(envelope("data", "check_endpoint", {"value": "owned"}))
+    _expect("GC-230-135", status == 200 and isinstance(received, dict) and received.get("value") == "owned",
+            f"after a close without the cookies of the page, check_endpoint answers {status} {body[:200]!r}: "
+            "the close of another owner closed the page")
 
     outcome("GC-230-025", envelope("source", "main") | {"pageId": "0" * 32}, "page_expired", "main of an unknown page")
     outcome("GC-230-025", envelope("source", "gramlot_conformance_missing"), "not_found", "an unknown fragment")

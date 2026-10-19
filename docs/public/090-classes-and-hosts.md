@@ -81,7 +81,9 @@ Their methods are part of the contract. Plain Bags are valid for Data, not Sourc
 | Historical 0.1.2: JS `GramlotRenderer` | Extends generic `RendererBase`; owns live DOM and application references | Framework runtime |
 | *0.2.0:* JS `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Extend Builder `HtmlRenderer` and `SvgRenderer`, inheriting their attribute and style adaptation; render to strings. `GramlotRenderer` extends `GramlotHtmlRenderer` and keeps the live DOM and application references | Framework runtime |
 | *0.2.0:* Python `GramlotHtmlRenderer`, `GramlotSvgRenderer` | Render a Gramlot Source to static HTML/SVG with the same attribute and style rules as JS | Static pages, pre-rendering |
-| JS `HttpTransport` | Sends the envelope to `rpcUrl` and the close message to `closeUrl` | Runtime transport of `gramlot.rpc` |
+| JS `HttpTransport` | Sends the envelope to `rpcUrl` and the close message to `closeUrl`; `dispose` releases nothing; `supportsCallSync` is true and `callSync` sends a synchronous `XMLHttpRequest` | Runtime transport of `gramlot.rpc` |
+| JS `ServerAdapter` | The server-dependent behaviour of a page, `gramlot.serverAdapter`: `createTransport({rpcUrl, closeUrl, document})` returns the transport of `gramlot.rpc`. The core class realises HTTP; a server names a subclass module in the bootstrap (`resources.serverAdapter`). Not a proxy: the core consults it | Chosen by the server, read by the core |
+| `NameSyntax` in Python/JS | The syntax of a method name a server declares (`GramlotServer.name_syntax`/`nameSyntax`): a portable genro-builders regex, `{kind: "regex", pattern, flags}`, matched whole by `matches(name)`; the core default is `NAME_SYNTAX` | Declared by a server subclass; checked by the builders and the browser |
 | JS `GramlotServer`, `Page`, `GramlotFileServer` | Same execution role; language-specific contracts below | Node/Bun adapter implementations |
 
 `SourceBag`, typed serialization and generic grammar/rendering belong to dependency
@@ -121,6 +123,15 @@ separate lifecycle.
 | Unknown or unexposed Source method | `SourceNotFound` | `SourceNotFound` |
 | The base `Page` class as a page | Rejected | Rejected |
 | Empty the page registry | `close_all()` | `closeAll()` |
+| Request body to text (UTF-8, a leading byte order mark removed) | `decode_body(data)`; other bytes raise `InvalidRequest` | `decodeBody(data)`; other bytes throw `InvalidRequest` |
+| Close message `{"pageId"}` | `close(text, *, owner=None)`; a text that is not that object raises `InvalidRequest` | `close(text, {owner})`; same rule |
+| Identity of one call | `call(text, *, owner=None, identity=None)`; read by `evaluate_auth(rule, *, owner, identity)` | `call(text, {owner, identity})`; read by `evaluateAuth(rule, {owner, identity})` |
+| Name syntax | `name_syntax` property, `NAME_SYNTAX` by default; given to the page builder | `nameSyntax` getter, `NAME_SYNTAX` by default; given to the page builder |
+| Server adapter module of the browser | `server_adapter` property, `None` by default | `serverAdapter` getter, `null` by default |
+| Base theme | `css_theme="gramlot-base"`; `False` for none; another value `ValueError` | `{cssTheme: 'gramlot-base'}`; `false` for none; another value `TypeError` |
+| Theme of a page | `Page.css_theme`: `None` (the base theme), a theme name, `False`; another value `InvalidResourceName` | `static css_theme`: `null`, a theme name, `false`; same rule |
+| `<path>/index.html` | `open_page` opens `<path>/` | `openPage`/`registerPage` open `<path>/` |
+| Files of the URLs of GC-230 §145 | `GramlotFileServer.companion_file(path)`, `theme_file(path)`: a path or `None` | `companionFile(path)`, `themeFile(path)`: a path or `null` (themes of the npm package) |
 | `page_ttl`/`pageTtl` not finite and positive, `max_pages`/`maxPages` not a positive integer | `ValueError` | `TypeError` |
 | Root manifest that is not a JSON object (NaN, infinity, a value JSON cannot write, a cycle) | `TypeError` from `page_manifest()` | `TypeError` from `pageManifest()` |
 | Page registration by `open_page`/`openPage` | Before the bootstrap is written; removed if writing it fails | Before the bootstrap is written; removed if writing it fails |
@@ -146,14 +157,18 @@ the filesystem comparison above does not describe the bundled Worker loader of
 
 ## 020 · What a server adapter connects
 
-The Python adapter calls `await server.open_page(path, owner=identity)` and returns
-its `.html`. It routes `POST` of `rpc_url` (`/gramlot/rpc`) to
-`await server.call(body, owner=identity)` and answers 200 with the returned text, or
-400 when `call` raises `InvalidRequest`. It routes `POST` of `close_url`
-(`/gramlot/close`) to `server.close_page(page_id, owner=identity)`. It serves the JS
-bundle at `runtime_url` and connects authentication to `owner`.
+The Python adapter calls `await server.open_page(path, owner=owner)` and returns
+its `.html`; `open_page` maps `<path>/index.html` to `<path>/`. It routes `POST` of
+`rpc_url` (`/gramlot/rpc`) to `await server.call(server.decode_body(body),
+owner=owner, identity=identity)` and answers 200 with the returned text, or 400 when
+`decode_body` or `call` raises `InvalidRequest`. It routes `POST` of `close_url`
+(`/gramlot/close`) to `server.close(server.decode_body(body), owner=owner)`. It serves
+the JS bundle at `runtime_url`, the files of `theme_file` and `companion_file`, and
+gives each browser its own owner (GC-230 §135). The core holds every rule shared by
+the adapters; the adapter adds only HTTP: routes, methods, status codes, headers,
+cookies and media types (*review p4, 2026-10-19*).
 
-*0.2.14:* `call(text, *, owner=None)`/`call(text, {owner})` takes the request
+*0.2.14:* `call(text, *, owner=None, identity=None)`/`call(text, {owner, identity})` takes the request
 envelope `{id, pageId, contentType, name, params}` as TYTX text and returns the
 response envelope as TYTX text. `contentType` `source` builds a fragment (`main`
 is the whole page), `data` runs an endpoint. Every failure other than
@@ -162,14 +177,16 @@ is the whole page), `data` runs an endpoint. Every failure other than
 status codes are for transport failures only. `PageExpired` covers expired,
 unknown or unowned page IDs. `capabilities` lists the optional features the server
 offers and reaches the browser in the bootstrap; the base server offers none.
-`evaluate_auth(rule, *, owner)`/`evaluateAuth(rule, {owner})` decides the `auth`
-rule of a fragment or endpoint: it returns null to allow, or `not_authenticated`/
-`not_authorized`. The base server knows no identity and answers
-`not_authenticated` to any rule; a server with an identity system overrides it and
-announces the `auth` capability.
+`evaluate_auth(rule, *, owner, identity)`/`evaluateAuth(rule, {owner, identity})`
+decides the `auth` rule of a fragment or endpoint: it returns null to allow, or
+`not_authenticated`/`not_authorized`. `identity` is the identity the adapter passed
+with that call (the avatar of a login, for example); the server keeps nothing of it
+between calls. The base server knows no identity and answers `not_authenticated` to
+any rule; a server with an identity system overrides it and announces the `auth`
+capability.
 
 JavaScript follows the same division: the shared Node/Bun adapter translates HTTP
-requests into `server.openPage`, `server.call` and `server.closePage`, extracts request identity
+requests into `server.openPage`, `server.decodeBody`, `server.call` and `server.close`, extracts request identity
 through its `ownerForRequest(request)` option, and maps errors to HTTP responses.
 The neutral JS `GramlotServer` has no `fetch` or request-identity callback. GramlotWorkerServer invokes
 the same page methods through messages, without HTTP handling. Every adapter
@@ -199,13 +216,14 @@ opening and distinct from the page ID; the bootstrap script carries it.
 
 *0.2.0:* the returned HTML holds one module script:
 `import {PageBootstrap} from <runtime>; await new PageBootstrap({config, resources}).run();`.
-`config` is `{pageId, rpcUrl, closeUrl, rootId, capabilities}` (0.2.14; it
-replaces `mainUrl` and `sourceUrl`); `resources` is
-`{css: [url], js: [{url, group}]}`. The Python and JavaScript `GramlotServer` classes write the same
-compact JSON. The HTML has no `<link>`: `PageBootstrap` writes the stylesheet links
+`config` is `{pageId, rpcUrl, closeUrl, rootId, capabilities, nameSyntax}`
+(0.2.14; it replaces `mainUrl` and `sourceUrl`; `nameSyntax` since review p4);
+`resources` is `{css: [url], js: [{url, group}]}`, with `collections` and
+`serverAdapter` when the server has them. The Python and JavaScript `GramlotServer`
+classes write the same compact JSON. The HTML has no `<link>`: `PageBootstrap` writes the stylesheet links
 in the browser (section 030).
 
-The JS `GramlotServer` provides `openPage`, `call`, `closePage` and `closeAll`; HTTP
+The JS `GramlotServer` provides `openPage`, `decodeBody`, `call`, `close`, `closePage` and `closeAll`; HTTP
 `Request`/`Response` translation belongs to the adapter. `GramlotFileServer` resolves JS page modules and their same-name files. Reusable Node and Bun bridges now live in `@gramlot/gramlot-js-server/node` and
 `@gramlot/gramlot-js-server/bun`. The Python adapters live in `gramlot-py-server`:
 generic ASGI (Uvicorn or any ASGI server), Django, Flask, FastAPI and Kajenn are
@@ -224,9 +242,11 @@ passes the mount prefix to `open_page` and serves the companions (section 030). 
 two server adapters send the Content Security Policy header they are configured
 with (section 035); the standalone export writes a hash policy (section 025).
 
-For HTTP pages, explicit browser disposal sends a best-effort close request;
-non-persisted `pagehide` sends a JSON beacon. A page retained in the browser's
-back/forward cache stays registered. The adapter supplies request identity and
+A page with a transport closes its server page when it is disposed: the transport
+sends the close message (`close`) and is released (`dispose`). Over HTTP explicit
+disposal sends a best-effort close request; non-persisted `pagehide` disposes the
+page with a JSON beacon. A page retained in the browser's back/forward cache stays
+registered. The adapter supplies request identity and
 the neutral `GramlotServer` deletes only a page owned by it; TTL remains the fallback when
 delivery fails. The Worker standalone host has a separate local lifecycle.
 
@@ -433,6 +453,15 @@ stays in the core for every server. A root-relative URL (`/themes/base.css`)
 receives the mount prefix once; a relative URL (`theme.css`) and an absolute URL
 (`https://…`, `//…`) stay as written.
 
+**Theme (review p4).** Every page loads a theme before its `Page.css`: the base
+theme of the server (`GramlotServer(css_theme="gramlot-base")`, JS
+`new GramlotServer({cssTheme: 'gramlot-base'})`; `False`/`false` for none), unless
+the page replaces it with `css_theme` (a theme name) or loads none with
+`css_theme = False` (JS `static css_theme = false`). The URL is
+`/themes/<name>/theme.css`. `Page.css` holds the additional CSS: an overlay such as
+`/themes/gramlot-compact/theme.css`, application stylesheets. A page that still
+lists the base theme in `Page.css` loads it once.
+
 **Page files.** `GramlotFileServer` serves one pages folder. For the page path `orders` it
 takes the file page `orders.py` (`orders.js` for a JavaScript page) first, then the
 folder page `orders/orders.py`. When both exist the file wins, without error.
@@ -466,8 +495,8 @@ The `_aux` suffix is reserved: `orders_aux.js` is never a page, and no page is
 called `*_aux`. Python and JavaScript pages may share one folder: `orders.js` is
 the JavaScript page and the logic of `orders.py`.
 
-**Load order.** The `Page.css` URLs as written, then `orders.css` and the page
-logic. The same URL repeated loads once, in its last position. The same
+**Load order.** The theme of the page, the `Page.css` URLs as written, then
+`orders.css` and the page logic. The same URL repeated loads once, in its last position. The same
 JavaScript URL declared with two different groups is an error.
 
 **Resource fields.** Python pages declare `css_requires = ""` and
@@ -491,8 +520,8 @@ parses both fields with the same rules in both languages:
 public. Server-only logic, such as queries, keys and data access, belongs in
 separate modules that the page logic does not import.
 
-**Companion rule of the adapters.** An adapter serves the companions with the
-`GramlotFileServer.url` rule: GET and HEAD answer only `.css` and `.js` files whose real
+**Companion rule of the adapters.** An adapter serves the companions with
+`GramlotFileServer.companion_file(path)`/`companionFile(path)`: GET and HEAD answer only `.css` and `.js` files whose real
 path is inside the pages folder, so a page module and its relative imports reach
 the browser (until 0.2.4: `.css` and `_aux.js`). Any other file answers 404 and any other method
 405. `Page.css` URLs that point outside the pages folder stay application assets and
@@ -508,13 +537,16 @@ import map carries the nonce.
 **Bootstrap.** The bootstrap script (section 020) runs `PageBootstrap` in the
 browser:
 
+0. when the server names a server adapter module (`resources.serverAdapter`), it
+   imports it and creates the adapter; otherwise it uses the HTTP `ServerAdapter`;
 1. it writes the CSS links in load order;
 2. it imports all JavaScript modules, relative URLs resolved against the document;
 3. it checks every `Logic` class (an explicit constructor, an accessor, a symbol
    key, a class that extends another, the group names `page` and `constructor`
    are errors) before creating anything;
-4. it creates the `Gramlot` instance, registers each module's `Logic` class in the
-   received order and sets `window.gramlot`;
+4. it creates the `Gramlot` instance with the server adapter and the `nameSyntax` of
+   the config, registers each module's `Logic` class in the received order and
+   sets `window.gramlot`;
 5. it starts the page.
 
 If an import or a `Logic` check fails, the error names the resource, the CSS links

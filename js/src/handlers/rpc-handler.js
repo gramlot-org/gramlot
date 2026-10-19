@@ -6,7 +6,6 @@
  */
 import {fromTytx, toTytx} from '@genrojs/tytx';
 import {Handler} from './handler.js';
-import {HttpTransport} from '../http-transport.js';
 import {assertTransportData} from '../references.js';
 import {randomId} from '../random-id.js';
 
@@ -25,8 +24,9 @@ export class RpcError extends Error {
 export class RpcHandler extends Handler {
     constructor(gramlot, {rpcUrl, closeUrl, document, transport}) {
         super(gramlot);
+        // The transport given in the options of the page, none for `false`, else the one of the server adapter.
         this.transport = transport === false ? null : transport ??
-            new HttpTransport(rpcUrl, {closeUrl, navigator: document.defaultView.navigator});
+            gramlot.serverAdapter.createTransport({rpcUrl, closeUrl, document});
         // The AbortController of each call in flight, by envelope id; written only by `call`.
         this.remoteRequests = new Map();
     }
@@ -36,6 +36,29 @@ export class RpcHandler extends Handler {
      * (`gramlot.abort`) abort the call, which then rejects at once with the abort reason, also when the
      * transport does not stop on the signal it receives; a call aborted before it starts is not sent.
      */
+    /** Whether the transport sends a synchronous call: its `supportsCallSync` is true. A transport that does not
+     * declare it, or a page without transport, has none. */
+    get supportsCallSync() {
+        return this.transport?.supportsCallSync === true;
+    }
+
+    /**
+     * Send one envelope of `contentType` to `name` with `params` and wait for the answer, blocking the page, as
+     * the legacy `genro.serverCall` without callback; returns the value or throws an RpcError. Only a transport
+     * with `supportsCallSync` sends it (HTTP, with a synchronous XMLHttpRequest, deprecated by the browsers);
+     * any other throws. A disposed page throws the abort reason.
+     */
+    callSync(contentType, name, params = {}) {
+        if (!this.supportsCallSync) throw new Error(`rpc '${name}': the transport of this page has no synchronous call`);
+        assertTransportData(params);
+        if (this.gramlot.abort.signal.aborted) throw this.gramlot.abort.signal.reason;
+        const id = randomId();
+        const response = fromTytx(this.transport.callSync(toTytx({id, pageId: this.gramlot.pageId, contentType, name, params})));
+        if (response.id !== id) throw new Error('rpc response id mismatch');
+        if (response.error) throw new RpcError(response.error);
+        return response.value;
+    }
+
     async call(contentType, name, params = {}, {signal = null} = {}) {
         if (!this.transport?.call) throw new Error(`rpc '${name}' is unavailable without a server transport`);
         assertTransportData(params);

@@ -16,12 +16,6 @@ const CODE_ATTRIBUTES = {
 const REMOTE_CONTROLS = ['_cachedRemote', '_if', '_else', '_onRemote', '_onCalling', '_delay', '_timing', '_userChanges'];
 // The inline code attributes of any node whose `remote` is a string.
 const REMOTE_CODE_ATTRIBUTES = ['_if', '_else', '_onRemote', '_onCalling'];
-/**
- * The core syntax of a method name of `remote`, `dataRpc`, `dataRemote` and `remoteSource`: the method of the
- * page, or a path of public attributes from the page ending in the method, `a.b.c.method`. Each segment is an
- * ASCII letter followed by ASCII letters, digits and `_`. Portable: the same pattern in Python, without `\w`.
- */
-export const REMOTE_NAME = /^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*$/;
 
 /**
  * The requests of one Source node, read as `node.requests`: the one rule of `remote`, `dataRpc`, `dataRemote`
@@ -34,16 +28,23 @@ export const REMOTE_NAME = /^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*$/
  * - `inflight.cancel()` makes the node ignore the answer of the request in flight and frees it at once. The call
  *   whose `_onCalling` runs the cancel is then sent, in place of a waiting call; a cancel made elsewhere sends
  *   the waiting call.
- * - A method name that is null, empty or outside `REMOTE_NAME` rejects the call when it is sent.
+ * - A method name that is null, empty or outside the name syntax of the page builder (`nameSyntax` of the
+ *   `rootBuilder` of the node) rejects the call when it is sent.
  *
  * `inflight` is `{method, params, sentAt, cancel()}` and `pending` is `{method, params}`, each null when empty;
  * `params` is a copy of the parameters as sent or saved, `sentAt` the send time in ms (`Date.now()`).
  */
 export class NodeRequests {
+    #nameSyntax;
     #inflight = null;
     #pending = null;
     // True while the `_onCalling` of a new call runs: a cancel then frees the request for that call.
     #calling = false;
+
+    /** The requests of a node whose method names follow `nameSyntax` (a NameSyntax). */
+    constructor(nameSyntax) {
+        this.#nameSyntax = nameSyntax;
+    }
 
     /** The request in flight, `{method, params, sentAt, cancel()}`, or null. */
     get inflight() {
@@ -101,6 +102,19 @@ export class NodeRequests {
         }
     }
 
+    /**
+     * Run the synchronous call of `method` now: `perform()` sends it and returns its value, which this method
+     * returns. It is never in flight for another call: nothing else runs while it waits. A request of the node
+     * in flight, or a method outside the name syntax, is an error.
+     */
+    submitSync(method, perform) {
+        if (this.#inflight) throw new Error('A synchronous call cannot start while a request of the node is in flight');
+        if (!this.#nameSyntax.matches(method)) {
+            throw new TypeError(`Method name must match ${this.#nameSyntax.pattern}, not ${JSON.stringify(method)}`);
+        }
+        return perform();
+    }
+
     /** Send the waiting call, if any, with its saved method and parameters. */
     #next() {
         const pending = this.#pending;
@@ -116,8 +130,8 @@ export class NodeRequests {
     }
 
     #start(method, params, text, perform) {
-        if (typeof method !== 'string' || !REMOTE_NAME.test(method)) {
-            return Promise.reject(new TypeError(`Method name must match ${REMOTE_NAME.source}, not ${JSON.stringify(method)}`));
+        if (!this.#nameSyntax.matches(method)) {
+            return Promise.reject(new TypeError(`Method name must match ${this.#nameSyntax.pattern}, not ${JSON.stringify(method)}`));
         }
         const controller = new AbortController();
         const record = {method, params, text, controller, ignored: false};
@@ -171,7 +185,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /** The requests of this node (NodeRequests): the request in flight and the waiting call of remote, dataRpc and dataRemote. */
     get requests() {
-        return this.#requests ??= new NodeRequests();
+        return this.#requests ??= new NodeRequests(this.rootBuilder.nameSyntax);
     }
 
     /**
@@ -235,13 +249,15 @@ export class GramlotBuilderBagNode extends SourceBagNode {
      * Declare the content of this element as the fragment `name` of a `@source` method: writes
      * `remote = name` and one `remote_<k> = v` per entry of `params` on this node; the control attributes
      * `_cachedRemote`, `_if`, `_else`, `_onRemote`, `_onCalling`, `_delay`, `_timing` and `_userChanges` are
-     * written as they are. Returns this node. `name` is a method name (`REMOTE_NAME`) or a `^`/`=` pointer
-     * to it; any other name, or another `_` parameter, is a TypeError.
+     * written as they are. Returns this node. `name` is a method name, matched by the name syntax of the
+     * page builder (`nameSyntax` of `rootBuilder`), or a `^`/`=` pointer to it; any other name, or another
+     * `_` parameter, is a TypeError.
      */
     remote(name, params = {}) {
-        if (typeof name !== 'string' || !(this.pointerType(name) || REMOTE_NAME.test(name))) {
+        const syntax = this.rootBuilder.nameSyntax;
+        if (typeof name !== 'string' || !(this.pointerType(name) || syntax.matches(name))) {
             throw new TypeError(`${this.nodeTag} '${this.label}': remote name must be a pointer or match `
-                + `${REMOTE_NAME.source}, not ${JSON.stringify(name)}`);
+                + `${syntax.pattern}, not ${JSON.stringify(name)}`);
         }
         const invalid = Object.keys(params).find(key => key.startsWith('_') && !REMOTE_CONTROLS.includes(key));
         if (invalid) {

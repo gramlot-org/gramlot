@@ -18,12 +18,12 @@ import {LogicRegistry} from '../binding/logic.js';
  * before the renderer observes the Source.
  */
 export class SourceHandler extends Handler {
-    constructor(gramlot, {collections, destination, subscriptions}) {
+    constructor(gramlot, {collections, destination, subscriptions, nameSyntax}) {
         super(gramlot);
         // The BindingRuntime reaches the builder through gramlot.src while it attaches.
         gramlot.src = this;
         this.logicRegistry = new LogicRegistry(gramlot);
-        this.builder = new GramlotBuilder(null, {collections});
+        this.builder = new GramlotBuilder(null, {collections, nameSyntax});
         this.binding = new BindingRuntime(gramlot, {subscriptions});
         this.builder.binding = this.binding;
         this.binding.attach();
@@ -84,8 +84,8 @@ export class SourceHandler extends Handler {
      * with `method` and `params` of that moment, and is sent at the answer; a further call does nothing while
      * one waits. No debounce: the caller chooses the moment. The request lives as long as the target's
      * NodeBinding (P24): a DOM rebuild or a freeze keeps it, the removal of the target cancels it. A method
-     * name outside the syntax (`REMOTE_NAME`) rejects. The mounted fragment becomes the one the `remote` of
-     * the target compares with `_cachedRemote`.
+     * name outside the name syntax of the page (`nameSyntax`) rejects. The mounted fragment becomes the one
+     * the `remote` of the target compares with `_cachedRemote`.
      *
      * `@source` / `registerSource` declare the fragments this method requests (GC-230 §035); the
      * `remote` attribute requests them declaratively (GC-095 §105).

@@ -24,6 +24,9 @@ export type DomWindow = any;
 // deno-lint-ignore no-explicit-any
 /** A browser `Event`. */
 export type DomEvent = any;
+// deno-lint-ignore no-explicit-any
+/** The `XMLHttpRequest` class of a browser window. */
+export type DomXMLHttpRequestClass = any;
 /** The part of a browser `Navigator` that sends the close beacon. */
 export interface BeaconNavigator {
     /** Queue `data` for delivery to `url`; returns false when the browser refuses it. */

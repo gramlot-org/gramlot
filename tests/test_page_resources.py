@@ -260,7 +260,9 @@ class FileHostResourceTests(unittest.IsolatedAsyncioTestCase):
             write(root, "index.py", page(css=["/index.css", "/themes/a.css", "/themes/b.css", "/themes/a.css"]))
             write(root, "index.css")
             opened = await GramlotFileServer(root).open_page("/")
-            self.assertEqual(links(opened.html), ["/themes/b.css", "/themes/a.css", "/index.css"])
+            # The base theme of the server comes first.
+            self.assertEqual(links(opened.html), ["/themes/gramlot-base/theme.css", "/themes/b.css", "/themes/a.css",
+                                                  "/index.css"])
 
 
 class BootstrapTests(unittest.IsolatedAsyncioTestCase):
@@ -270,13 +272,14 @@ class BootstrapTests(unittest.IsolatedAsyncioTestCase):
             write(root, "index.css")
             server = GramlotFileServer(root)
             mounted = await server.open_page("/", prefix="/py")
-            self.assertEqual(links(mounted.html), ["/py/themes/x.css", *URL_FORMS[1:], "/py/index.css"])
+            self.assertEqual(links(mounted.html), ["/py/themes/gramlot-base/theme.css", "/py/themes/x.css", *URL_FORMS[1:],
+                                                   "/py/index.css"])
             self.assertIn('import {PageBootstrap} from "/py/assets/gramlot.js"', mounted.html)
             for key, url in (("rpcUrl", "/gramlot/rpc"), ("closeUrl", "/gramlot/close")):
                 self.assertIn(f'"{key}":"/py{url}"', mounted.html)
             self.assertNotIn("/py/py", mounted.html)
             plain = await server.open_page("/")
-            self.assertEqual(links(plain.html), [*URL_FORMS, "/index.css"])
+            self.assertEqual(links(plain.html), ["/themes/gramlot-base/theme.css", *URL_FORMS, "/index.css"])
             self.assertIn('import {PageBootstrap} from "/assets/gramlot.js"', plain.html)
             with self.assertRaisesRegex(TypeError, "Mount prefix must be a string"):
                 await server.open_page("/", prefix=None)
@@ -290,7 +293,7 @@ class BootstrapTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(mounted["resources"]["js"], [{**js[0], "url": "/py/a.js"}, *js[1:]])
         self.assertEqual(bootstrap_arguments((await server.open_page("/")).html)["resources"]["js"], js)
         self.assertEqual(sorted(mounted), ["config", "resources"])
-        self.assertEqual(list(mounted["config"]), ["pageId", "rpcUrl", "closeUrl", "rootId", "capabilities"])
+        self.assertEqual(list(mounted["config"]), ["pageId", "rpcUrl", "closeUrl", "rootId", "capabilities", "nameSyntax"])
 
     async def test_nonce_is_new_at_each_opening_and_distinct_from_the_page_id(self):
         with tempfile.TemporaryDirectory() as root:

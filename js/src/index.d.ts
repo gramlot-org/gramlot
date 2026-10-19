@@ -23,6 +23,7 @@ export {Bag, BagNode} from '@genrojs/bag';
 export {References} from './references.js';
 export type {SourceReference} from './references.js';
 export {HttpTransport} from './http-transport.js';
+export {ServerAdapter} from './server-adapter.js';
 export type {Fetcher} from './http-transport.js';
 export {RpcError} from './handlers/rpc-handler.js';
 export type {RpcErrorOutcome, RpcTransport} from './handlers/rpc-handler.js';

@@ -6,7 +6,7 @@
  */
 import {realpath, stat} from 'node:fs/promises';
 import {basename, dirname, extname, isAbsolute, join, relative, resolve, sep} from 'node:path';
-import {pathToFileURL} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import {gramlotDev} from './assets.js';
 import {GramlotServer, PageNotFound} from './gramlot-server.js';
 import {InvalidResourceName, SEGMENT, parseRequires} from './resources.js';
@@ -19,6 +19,18 @@ const inside = (filename, folder) => {
 // RFC 3986 unreserved characters stay literal, as with Python urllib.parse.quote(safe='').
 const encodeSegment = segment => encodeURIComponent(segment)
     .replace(/[!'()*]/g, character => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
+
+// The URL suffixes of the files below the pages folder that reach the browser (GC-230 §145).
+const COMPANION_SUFFIXES = ['.css', '.js'];
+
+/** The real path of the `/`-separated `path` below `folder` when it is a file whose real path stays inside the
+ * real `folder`, else null; a path with a NUL character names no file. */
+async function fileBelow(folder, path) {
+    if (path.includes('\0')) return null;
+    const root = await realpath(folder);
+    const real = await realFile(join(root, ...path.split('/').filter(Boolean)));
+    return real && inside(real, root) ? real : null;
+}
 
 /** Real path of filename, or null when it does not exist. */
 async function realFile(filename) {
@@ -45,7 +57,9 @@ async function realFile(filename) {
  * the runtime module cache applies, keyed by the real path
  * of the page module; with reload the page module is imported again
  * when its modification time changes. reload null takes the value from GRAMLOT_DEV
- * (true for YES and DEBUG, false when unset); an explicit boolean wins.
+ * (true for YES and DEBUG, false when unset); an explicit boolean wins. companionFile and
+ * themeFile are the files an adapter serves at the URLs of GC-230 §145; the adapter adds the
+ * HTTP part (methods, media types, headers).
  */
 export class GramlotFileServer extends GramlotServer {
     constructor(pagesDir, {reload = null, ...options} = {}) {
@@ -106,6 +120,23 @@ export class GramlotFileServer extends GramlotServer {
         if (logic.length === 2) throw new Error(`Two logic modules for one page: ${logic.join(' and ')}`);
         if (logic.length) js.push({url: logic[0], group: null});
         return {css, js};
+    }
+
+    /** The file of the URL path `path` (mount prefix removed, percent-decoded) when it ends in .css or
+     * .js and its real path is a file below the pages folder: page modules, companions (foo.css,
+     * foo_aux.js) and Page.css files placed there; else null. Any other file of the folder is never
+     * served (GC-230 §145). */
+    async companionFile(path) {
+        if (!COMPANION_SUFFIXES.some(suffix => path.endsWith(suffix))) return null;
+        return fileBelow(this.pagesDir, path);
+    }
+
+    /** The file of the URL path `path` (`/themes/<path>`, mount prefix removed, percent-decoded) when
+     * its real path is a file inside the themes folder of the installed core (the `themes` folder of
+     * the npm package), else null (GC-230 §145). */
+    async themeFile(path) {
+        if (!path.startsWith('/themes/')) return null;
+        return fileBelow(fileURLToPath(new URL('../../themes/', import.meta.url)), path.slice('/themes/'.length));
     }
 
     /** Root-relative URL of a file below the pages folder, one encoded segment per

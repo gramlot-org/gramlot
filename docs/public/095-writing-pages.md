@@ -1093,8 +1093,11 @@ string:
   a method declared with `@source` or `@endpoint` (Python), or with
   `registerSource` or `registerEndpoint` (JavaScript), on the class of the object
   before it. Its `auth` rule is the only authorization of the request.
-- Each segment is an ASCII letter followed by ASCII letters, digits and `_`. Any
-  other name answers `not_found`.
+- The syntax of the name belongs to the server: `GramlotServer.name_syntax` (JS
+  `nameSyntax`) declares it as a portable regex, and the bootstrap carries it to
+  the browser, where the `remote(…)` helper and a name read from Data are checked
+  with it. With the core server each segment is an ASCII letter followed by ASCII
+  letters, digits and `_`. Any other name answers `not_found`.
 - In JavaScript, every object on the path is an instance of a class that extends
   `Exposed`, the base of `Page` that holds `registerSource` and `registerEndpoint`.
   A member inherited from `Object`, such as `constructor`, never leads to a method.
@@ -1190,7 +1193,7 @@ endpoint (section 100). The endpoint is called when the path is read, not when t
 declaration is installed.
 
 ```python
-dataRemote(destination_path, method, cacheTime=None, **params)
+dataRemote(destination_path, method, cacheTime=None, sync=True, **params)
 ```
 
 - `destination_path` is the Data path of the value; it does not accept `?attr`.
@@ -1199,16 +1202,27 @@ dataRemote(destination_path, method, cacheTime=None, **params)
 - `cacheTime` is in seconds: a negative value or `None` calls once; `0` calls at
   every read; a positive value calls again on the first read after that many
   seconds.
-- A read never waits. It returns the current value, `None` before the first call,
-  and starts the call when the cache has expired. A read during a call starts no
-  other call.
-- When the call answers, the value is written at the path and every `^` consumer
-  of the path is projected with it. With `cacheTime=0` the value is written
-  without notifying the consumers, as in the legacy: it is a value per explicit
-  read, and a `^` consumer would call again at each projection.
+- `sync`, true by default as in the legacy, makes the read wait when the transport
+  of the page sends synchronous calls (HTTP, GC-090 §015): a read whose cache has
+  expired calls the endpoint synchronously and returns the answer; the value is
+  stored at the path without notifying the consumers, because the reader receives
+  it. A failed call raises the error, naming the declaration, to the reader; the
+  next read calls again. The browsers deprecate the synchronous request on the main
+  thread, and the page is blocked until the answer arrives: a later step aims to
+  avoid synchronous calls.
+- With `sync=False`, and on a transport without synchronous calls (the serverless
+  Worker), a read never waits. It returns the current value, `None` before the
+  first call, and starts the call when the cache has expired. A read during a call
+  starts no other call. On the Worker this also holds for `sync=True`: a debt that
+  the plan of the asynchronous resolvers resolves.
+- When an asynchronous call answers, the value is written at the path and every `^`
+  consumer of the path is projected with it. With `cacheTime=0` the value is
+  written without notifying the consumers, as in the legacy: it is a value per
+  explicit read, and a `^` consumer would call again at each projection.
 - The other keyword arguments are the endpoint arguments. A change of a `^`
   argument installs a new resolver. When the previous resolver had called, the
-  new one calls at once, and the consumers receive the new value.
+  new one calls at once, asynchronously also with `sync`, and the consumers receive
+  the new value.
 - The calls follow the request rule above: a call in flight is not aborted by a
   new resolver and writes its value; the call of the new resolver waits for it.
 - `_onCalling` runs as inline code before each call, with the arguments of the

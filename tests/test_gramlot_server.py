@@ -11,16 +11,16 @@ from genro_builders.builder import SourceBag
 from genro_tytx import from_tytx, to_tytx
 from gramlot import Page, endpoint, source
 from gramlot.page.base import endpoint_methods, source_methods
-from gramlot.server import GramlotFileServer, GramlotServer, InvalidRequest
+from gramlot.server import NAME_SYNTAX, GramlotFileServer, GramlotServer, InvalidRequest
 
 PAGES = Path(__file__).parent / "fixtures/pages"
 
 
-def call(server, page_id, content_type, name, params=None, owner=None):
+def call(server, page_id, content_type, name, params=None, owner=None, identity=None):
     """The decoded response envelope of one ``call``."""
     text = to_tytx({"id": "r1", "pageId": page_id, "contentType": content_type, "name": name,
                     "params": params or {}})
-    return from_tytx(asyncio.run(server.call(text, owner=owner)))
+    return from_tytx(asyncio.run(server.call(text, owner=owner, identity=identity)))
 
 
 def open_page(server, owner=None):
@@ -58,7 +58,8 @@ class CallTests(unittest.TestCase):
     def test_bootstrap_config_carries_rpc_url_close_url_and_capabilities(self):
         opened = asyncio.run(GramlotFileServer(PAGES).open_page("/"))
         self.assertIn(f'"config":{{"pageId":"{opened.page_id}","rpcUrl":"/gramlot/rpc",'
-                      '"closeUrl":"/gramlot/close","rootId":"gramlot-root","capabilities":[]}', opened.html)
+                      '"closeUrl":"/gramlot/close","rootId":"gramlot-root","capabilities":[],'
+                      f'"nameSyntax":{json.dumps(NAME_SYNTAX.to_dict(), separators=(",", ":"))}}}', opened.html)
         self.assertIn('name="viewport" content="width=device-width,initial-scale=1"', opened.html)
         self.assertNotIn("mainUrl", opened.html)
         self.assertNotIn("sourceUrl", opened.html)
@@ -116,22 +117,26 @@ class CallTests(unittest.TestCase):
             rules = []
 
             class Custom(GramlotFileServer):
-                def evaluate_auth(self, rule, *, owner):
-                    rules.append((rule, owner))
+                def evaluate_auth(self, rule, *, owner, identity):
+                    rules.append((rule, owner, identity))
                     return outcome
 
             custom = Custom(PAGES)
-            response = call(custom, open_page(custom, owner="one"), "data", "check_endpoint_auth", owner="one")
+            response = call(custom, open_page(custom, owner="one"), "data", "check_endpoint_auth", owner="one",
+                            identity="avatar")
             with self.subTest(outcome=outcome):
                 if outcome is None:
                     self.assertEqual(response["value"], "allowed")
                 else:
                     self.assertEqual(response["error"]["code"], "not_authorized")
-                self.assertEqual(rules, [("admin", "one")])
+                self.assertEqual(rules, [("admin", "one", "avatar")])
+                # A call without identity passes None: the server keeps nothing of an earlier call.
+                call(custom, open_page(custom, owner="one"), "data", "check_endpoint_auth", owner="one")
+                self.assertEqual(rules[-1], ("admin", "one", None))
 
     def test_evaluate_auth_outside_its_three_outcomes_is_application_error(self):
         class Unsure(GramlotFileServer):
-            def evaluate_auth(self, rule, *, owner):
+            def evaluate_auth(self, rule, *, owner, identity):
                 return "maybe"
 
         server = Unsure(PAGES)
@@ -156,7 +161,7 @@ class CallTests(unittest.TestCase):
             def resolve_resources(self, path, cls):
                 return {"css": [], "js": []}
 
-            def evaluate_auth(self, rule, *, owner):
+            def evaluate_auth(self, rule, *, owner, identity):
                 rules.append((rule, owner))
                 return None
 

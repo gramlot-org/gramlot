@@ -7,6 +7,7 @@ import type {SourceBag, SourceBagNode} from '@genrojs/builders';
 import type {DomElement} from '../dom.d.ts';
 import type {Gramlot} from '../gramlot.js';
 import type {GramlotBuilder} from '../builder/gramlot-builder.js';
+import type {NameSyntax} from '../builder/name-syntax.js';
 import type {GramlotRenderer} from '../renderer/gramlot-renderer.js';
 import {Handler} from './handler.js';
 
@@ -29,7 +30,8 @@ export class SourceHandler extends Handler {
      * Create the builder, the binding runtime and the renderer of `gramlot`, in the order of the source plan;
      * `subscriptions` is the private topic service of `gramlot`, given to the binding runtime.
      */
-    constructor(gramlot: Gramlot, options: {collections: unknown[]; destination: DomElement | null; subscriptions: unknown});
+    constructor(gramlot: Gramlot, options: {collections: unknown[]; destination: DomElement | null; subscriptions: unknown;
+        nameSyntax: NameSyntax});
     /** Start from an embedded typed Source, with the same observed insertion as `main`. */
     startSource(wire: SourceBag | string): Gramlot;
     /** Validate and insert `main` in the Source. */

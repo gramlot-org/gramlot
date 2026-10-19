@@ -184,7 +184,7 @@ test('topic-triggered RPC runs one call at a time, excludes trigger context and 
     const {fromTytx, toTytx} = await import('@genrojs/tytx');
     const {app} = page();
     const pending = [];
-    app.rpc.transport = {call(wire, signal) {
+    app.rpc.transport = {close() {}, dispose() {}, call(wire, signal) {
         const request = fromTytx(wire);
         return new Promise(resolve => pending.push({request, signal, resolve: value => resolve(toTytx({id: request.id, value}))}));
     }};

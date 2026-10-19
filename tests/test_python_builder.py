@@ -63,6 +63,11 @@ class BuilderTests(unittest.TestCase):
             builder.root.dataRemote(".menu?a", "loadMenu")
         with self.assertRaisesRegex(ValueError, r"dataRemote: missing required attributes \['method'\]"):
             builder.root.dataRemote(destination_path=".menu")
+        # sync, default true as in the legacy, is a control attribute written on the node.
+        builder.root.dataRemote(".later", "loadMenu", sync=False)
+        self.assertIs(builder.source.nodes[-1].attr["sync"], False)
+        with self.assertRaises(ValueError):
+            builder.root.dataRemote(".later", "loadMenu", sync="no")
 
     def test_remote_writes_its_attributes_on_the_node(self):
         builder = GramlotBuilder()

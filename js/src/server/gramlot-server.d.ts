@@ -5,6 +5,7 @@
  */
 import type {Page} from './page.js';
 import type {Resources} from './resources.js';
+import type {NameSyntax, NameSyntaxDescriptor} from '../builder/name-syntax.js';
 
 export type {Resources};
 
@@ -60,6 +61,8 @@ export interface GramlotServerOptions {
     maxPages?: number;
     /** Application collections: generated Builder grammar and root-relative browser module URL. */
     collections?: {grammar: Record<string, unknown>; module: string}[];
+    /** The base theme of every page, a folder of the core themes, or false for none; default `gramlot-base`. */
+    cssTheme?: string | false;
 }
 
 /** The result of `registerPage`. */
@@ -73,6 +76,8 @@ export interface RegisteredPage {
     title: string;
     /** The resources of the page, in load order. */
     resources: Resources;
+    /** The name syntax of the server, as the bootstrap carries it. */
+    nameSyntax: NameSyntaxDescriptor;
 }
 
 /** The result of `openPage`. */
@@ -102,6 +107,8 @@ export class GramlotServer {
     pageTtl: number;
     /** Maximum number of registered pages. */
     maxPages: number;
+    /** The base theme of every page, or false for none. */
+    cssTheme: string | false;
     /** The registered pages by id. */
     pages: Map<string, {PageClass: typeof Page; owner: unknown; expires: number}>;
     /** Create a server. */
@@ -113,16 +120,26 @@ export class GramlotServer {
     resolveResources(path: string, PageClass: typeof Page): Promise<Resources>;
     /** The capabilities announced in the bootstrap; none in the base server. */
     get capabilities(): string[];
-    /** null when a target with `rule` may run for `owner`; the base server refuses any rule. */
-    evaluateAuth(rule: string | null, options?: {owner?: unknown}): AuthOutcome;
+    /** The syntax of the method names a request may carry, announced in the bootstrap; the core default `NAME_SYNTAX`. */
+    get nameSyntax(): NameSyntax;
+    /** The URL of the module of the browser ServerAdapter class, or null for the HTTP ServerAdapter of the core. */
+    get serverAdapter(): string | null;
+    /** null when a target with `rule` may run for `owner` with the `identity` of the call; the base server refuses any rule. */
+    evaluateAuth(rule: string | null, options?: {owner?: unknown; identity?: unknown}): AuthOutcome;
     /** Drop the expired pages. */
     prune(): void;
-    /** Register a page independently of its HTTP or Worker transport. */
+    /** The CSS URL of the theme of a page class, in an array, or an empty array. */
+    themeCss(PageClass: typeof Page): string[];
+    /** Register a page independently of its HTTP or Worker transport; `<path>/index.html` registers `<path>/`. */
     registerPage(path: string, options?: {owner?: unknown}): Promise<RegisteredPage>;
     /** Register the page and return its bootstrap; `prefix` is the mount prefix added to root-relative URLs. */
     openPage(path: string, options?: {owner?: unknown; prefix?: string}): Promise<OpenedPage>;
-    /** Answer the request envelope `text` (TYTX) with the response envelope (TYTX); throws only `InvalidRequest`. */
-    call(text: string, options?: {owner?: unknown}): Promise<string>;
+    /** The text of a request body: UTF-8, a leading byte order mark removed; other bytes throw `InvalidRequest`. */
+    decodeBody(data: ArrayBuffer | ArrayBufferView): string;
+    /** Answer the request envelope `text` (TYTX) with the response envelope (TYTX); throws only `InvalidRequest`. `identity` is the identity of this call, read only by `evaluateAuth`. */
+    call(text: string, options?: {owner?: unknown; identity?: unknown}): Promise<string>;
+    /** Close the page named by the close message `text` (`{"pageId": string}` as JSON) when `owner` owns it; throws `InvalidRequest`. */
+    close(text: string, options?: {owner?: unknown}): void;
     /** Forget a registered page when `owner` owns it. */
     closePage(pageId: string, options?: {owner?: unknown}): void;
     /** Forget every registered page; adapters call it on shutdown. */

@@ -6,12 +6,11 @@ implemented for current HTML and Gramlot components, without Dojo dependencies.
 Dark mode is a new coordinated adaptation. It is not a pixel-identical port of
 legacy layout widgets. Legacy user color variants are outside this increment.
 
-Load Base, Compact and this profile in order:
+The server loads Base (its base theme, GC-090 §030); load Compact and this profile after it:
 
 ```python
 class Page(BasePage):
-    css = ("/themes/gramlot-base/theme.css",
-           "/themes/gramlot-compact/theme.css",
+    css = ("/themes/gramlot-compact/theme.css",
            "/themes/mimi/theme.css")
 ```
 

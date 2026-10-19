@@ -4,10 +4,10 @@ import re
 from inspect import isfunction
 
 from .builder import GramlotBuilder
-from .source import REMOTE_NAME
+from .name_syntax import NAME_SYNTAX
 
 MARKERS = {"__gramlot_source__": "@source", "__gramlot_endpoint__": "@endpoint"}
-# The name of a declared method, one segment of REMOTE_NAME, as in JS page-base.js: an ASCII letter, then
+# The name of a declared method, one segment of NAME_SYNTAX, as in JS page-base.js: an ASCII letter, then
 # ASCII letters, digits and ``_``.
 DECLARED_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
@@ -61,6 +61,9 @@ class Page:
                            "sizes": "512x512", "type": "image/png"}]}
 
     css = ()
+    # The theme of the page: None takes the base theme of the server (GramlotServer css_theme), a theme name
+    # replaces it, False loads no theme. ``css`` is the CSS added after the theme.
+    css_theme = None
     css_requires = ""
     js_requires = ""
     source_builder = GramlotBuilder
@@ -100,13 +103,13 @@ def endpoint_methods(page_class):
 def resolve_declared(page, name, marker):
     """The method a request names, ``(instance, function)``, or ``None``; ``function`` runs bound to ``instance``.
 
-    ``name`` is a method of ``page`` or a path ``a.b.c.method`` (``REMOTE_NAME``) read from ``page``:
+    ``name`` is a method of ``page`` or a path ``a.b.c.method`` (``NAME_SYNTAX``) read from ``page``:
     every segment is a public attribute (a property getter runs), and the last one is a method declared
     with ``marker`` (``"__gramlot_source__"`` or ``"__gramlot_endpoint__"``) on the class of the object
     before it. The objects on the path are ordinary objects: ``@source`` and ``@endpoint`` need no base
     class (the JavaScript classes extend ``Exposed``). Any other name gives ``None``.
     """
-    if not isinstance(name, str) or not REMOTE_NAME.fullmatch(name):
+    if not NAME_SYNTAX.matches(name):
         return None
     *path, method_name = name.split(".")
     instance = page

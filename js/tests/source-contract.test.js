@@ -28,6 +28,8 @@ test('Python authoring -> TYTX -> first subscriber insert; roots precede main', 
     const document = new JSDOM('<main id="custom"></main>').window.document;
     let calls = 0, app;
     app = new Gramlot({pageId: 'test', element: document.querySelector('main'), transport: {
+        close() {},
+        dispose() {},
         async call(text) {
             calls++;
             const request = fromTytx(text);
@@ -192,7 +194,7 @@ test('the page builder has no auth evaluator: an element with auth is kept and r
 test('main failure is visible and retryable; disposal prevents late insertion', async () => {
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     let attempts = 0;
-    const app = new Gramlot({document, transport: {async call(text) {
+    const app = new Gramlot({document, transport: {close() {}, dispose() {}, async call(text) {
         if (!attempts++) throw new Error('offline');
         return answer(text, new GramlotBuilder().toTytx());
     }}});
@@ -203,7 +205,7 @@ test('main failure is visible and retryable; disposal prevents late insertion', 
     app.dispose();
     await assert.rejects(app.start(), /disposed/);
     let release;
-    const late = new Gramlot({document, transport: {call: text => new Promise(r => { release = () => r(text); })}});
+    const late = new Gramlot({document, transport: {close() {}, dispose() {}, call: text => new Promise(r => { release = () => r(text); })}});
     const loading = late.start();
     late.dispose();
     release();
@@ -215,7 +217,7 @@ test('gramlot.rpc.call is the one cancellation: its signal and the dispose rejec
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     const sent = [];
     // A transport that never answers and ignores the signal it receives.
-    const app = new Gramlot({document, pageId: 'page', transport: {call(text, signal) {
+    const app = new Gramlot({document, pageId: 'page', transport: {close() {}, dispose() {}, call(text, signal) {
         sent.push({request: fromTytx(text), signal});
         return new Promise(() => {});
     }}});
@@ -261,7 +263,7 @@ test('gramlot.rpc.call sends one envelope and answers its value or an RpcError',
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     const sent = [];
     let reply = (request) => ({id: request.id, contentType: request.contentType, value: request.params.value});
-    const app = new Gramlot({document, pageId: 'page', transport: {async call(text) {
+    const app = new Gramlot({document, pageId: 'page', transport: {close() {}, dispose() {}, async call(text) {
         const request = fromTytx(text);
         sent.push(request);
         return toTytx(reply(request));

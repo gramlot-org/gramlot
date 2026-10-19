@@ -2771,3 +2771,39 @@ a Python page it exports `Logic`: the browser rejects a module without it".
 No release or deployment authorized.
 Rules: [GC-095 §060](public/095-writing-pages.md#gc-095-060),
 [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030); GC-070 §1450.
+
+
+### Amendment 11.87 — Operations shared by the adapters, server-declared name syntax, server adapter, base theme, synchronous call — 2026-10-19
+
+Owner decisions of 2026-10-19 (coordinating chat, review of the 0.3.5 releases:
+d-adapter-api, d-bom, d-owner, d-theme, d-pointer-separator; synchronous call and
+`dataRemote` `sync` sent by the coordinator the same day). Supersedes: 11.58 items 2
+(config without `nameSyntax`), 3 (evaluator with owner only), 4 (`HttpTransport` or an
+injected transport); 11.48 item 3 load order; 11.85 item 1 (`REMOTE_NAME`, declaration
+deferred); 11.59/11.85 item 3 "a `dataRemote` read never waits"; GC-230 §135 null owner
+for every HTTP request.
+
+1. Core = what every server shares (Worker included): `decode_body`/`decodeBody`,
+   `call(text, owner, identity)`, `close(text, owner)`, `open_page`/`openPage` (maps
+   `<path>/index.html`), `close_all`/`closeAll`, `companion_file`/`companionFile`,
+   `theme_file`/`themeFile`. HTTP-only matters (405 + `Allow`, `Cache-Control`, owner
+   cookie, media types, shutdown) belong to the adapter bases.
+2. A leading UTF-8 BOM is accepted everywhere (core decoding removes it); conformance checks it.
+3. Over HTTP each browser has its own owner; the Worker keeps the null owner.
+4. Identity travels with the call to `evaluate_auth(rule, owner, identity)`; nothing kept.
+5. Name syntax declared by the server (`name_syntax`/`nameSyntax`, `NameSyntax`, portable
+   genro-builders regex), carried by the bootstrap; default `NAME_SYNTAX` (11.85 item 1).
+6. `gramlot.serverAdapter` (consulted by the core): module named in
+   `resources.serverAdapter`, imported through the import map; core `ServerAdapter` = HTTP;
+   creates the transport (`call`, `close`, `dispose` required).
+7. Theme: base theme of the server (`css_theme`/`cssTheme`, default `gramlot-base`,
+   `False` none) unless the page sets `css_theme`; `Page.css` after it; load order theme,
+   `Page.css`, companions; each URL once.
+8. `gramlot.rpc.callSync` on a transport with `supportsCallSync` (HTTP, synchronous XHR),
+   else throws; `dataRemote` `sync` (default true) reads synchronously through the
+   resolver's `resolve`; on the Worker it stays asynchronous (async-resolvers debt);
+   `dataRpc`, `remote` asynchronous. Synchronous XHR is deprecated and blocks the page; a
+   later step aims to avoid it.
+
+Implementation names (GC-225 §010) await owner confirmation. No release or deployment
+authorized. Rules: GC-230; GC-090 §017, §020, §030; GC-095 §105; GC-096 §005; GC-070 §1455.

@@ -71,9 +71,17 @@ rendered HTML. CSS controls presentation; Data, bindings and controllers control
 application state and behaviour. A stylesheet does not create a controller,
 validate a form or save its values.
 
-The theme is opt-in: declare its URL in `Page.css`. There is no `Page.theme`
-property or `root.css()` API. `css_requires` names resources in a resource host;
-it is not a replacement for stylesheet URLs in the current file servers.
+The server loads a theme on every page, before the page's stylesheets: Gramlot
+Base (`gramlot-base`) unless the server chooses another with its `css_theme`
+option (`cssTheme` in JavaScript) or none with `False`. A page replaces it with
+`css_theme = "<name>"`, or loads none with `css_theme = False`. `Page.css` lists
+the stylesheets loaded after the theme: overlays such as Compact and application
+CSS. A page that still lists Base in `Page.css` loads it once. There is no
+`root.css()` API. `css_requires` names resources in a resource host; it is not a
+replacement for stylesheet URLs in the current file servers.
+
+The core ships one complete theme, Base. Compact, mimi and joanna are overlays:
+load them with `Page.css`, after Base.
 
 <a id="gc-096-010"></a>
 
@@ -97,7 +105,6 @@ from gramlot import Page as BasePage
 
 class Page(BasePage):
     title = "Appearance"
-    css = ("/themes/gramlot-base/theme.css",)
 
     def main(self, root):
         main_content = root.html_main(class_="example-page stack")
@@ -119,11 +126,8 @@ class Page(BasePage):
 
 **Base alone**
 
-Use this declaration in the complete Python page above. Leave out the companion stylesheet.
-
-```python
-css = ("/themes/gramlot-base/theme.css",)
-```
+The complete Python page above declares no stylesheet: the server loads Base.
+Leave out the companion stylesheet.
 
 :::
 
@@ -178,7 +182,7 @@ centred content area with a heading and a rounded card, a green Ready badge and 
 secondary button. The link moves to the notes; there is no JavaScript to write.
 The colours follow the operating system's light/dark preference.
 
-**Why it works:** `Page.css` loads Base. The file server discovers the same-name
+**Why it works:** the server loads Base. The file server discovers the same-name
 `appearance.css` and loads it afterwards. `.card` supplies the surface and border;
 `.stack` spaces its children; `.workspace` adds only the page-specific accent.
 Change `64rem` to `48rem`, reload, and the page becomes narrower on wide screens.
@@ -194,7 +198,8 @@ resource, not a filesystem path in `Page.css`.
 Block ID: **GC-096-015**.
 
 Base is the complete stylesheet. Compact is an overlay: it keeps Base's colours
-and changes density. Compare the first example with these two `css` declarations:
+and changes density. Compare the first example, which declares no `css`, with one
+`css` declaration that adds Compact:
 
 Load Base first, Compact second. Both can be light or dark: **density** and
 **colour mode** are separate choices.
@@ -205,11 +210,8 @@ Load Base first, Compact second. Both can be light or dark: **density** and
 
 **Base**
 
-Keep the first example's Python content and companion CSS.
-
-```python
-css = ("/themes/gramlot-base/theme.css",)
-```
+Keep the first example's Python content and companion CSS, with no `css`
+declaration: the server loads Base.
 
 :::
 
@@ -229,13 +231,10 @@ for this comparison.
 
 **Base + Compact**
 
-Replace only the Page.css declaration; keep the companion CSS.
+Add one Page.css declaration; keep the companion CSS.
 
 ```python
-css = (
-    "/themes/gramlot-base/theme.css",
-    "/themes/gramlot-compact/theme.css",
-)
+css = ("/themes/gramlot-compact/theme.css",)
 ```
 
 :::
@@ -271,7 +270,6 @@ from gramlot import Page as BasePage
 
 class ApplicationPage(BasePage):
     css = (
-        "/themes/gramlot-base/theme.css",
         "/themes/gramlot-compact/theme.css",
         "/application.css",
     )
@@ -326,14 +324,13 @@ proportions. They do not port Dojo widgets or guarantee pixel-identical layouts.
 Dark palettes are new Gramlot adaptations. Legacy user color variants are not part
 of this increment; Base and Compact remain available.
 
-In an application, load the three stylesheets in order:
+In an application, the server loads Base; load Compact and the profile after it:
 
 ```python
 from gramlot import Page as BasePage
 
 class Page(BasePage):
     css = (
-        "/themes/gramlot-base/theme.css",
         "/themes/gramlot-compact/theme.css",
         "/themes/mimi/theme.css",
     )
@@ -870,16 +867,14 @@ Practice the same steps in the gallery's
 
 ### Let Data select a class and a width
 
-Save this complete page as `pages/style_state.py`. It needs only Base, so no
-companion CSS or JavaScript file is required:
+Save this complete page as `pages/style_state.py`. It needs only Base, which the
+server loads, so no `css`, companion CSS or JavaScript file is required:
 
 ```python
 from gramlot import Page as BasePage
 
 
 class Page(BasePage):
-    css = ("/themes/gramlot-base/theme.css",)
-
     def main(self, root):
         main_content = root.html_main(class_="example-page stack", datapath="appearance")
         main_content.dataSetter(".status_class", "status status--success")
@@ -990,7 +985,8 @@ sidebar width. Follow the complete [IndexPage setup](095-writing-pages.md),
 including its browser Logic module; importing a CSS file alone does not supply
 the shell's behaviour.
 
-Each iframe is a separate document. Give each child page its own `Page.css`.
+Each iframe is a separate document: each child page loads its own theme and its
+own `Page.css`.
 Parent styles do not cross the frame boundary, and the shell does not automatically
 install a colour-mode receiver in arbitrary children. The gallery has its own
 frame-side integration. Do not copy its internal messaging into an application
@@ -1065,7 +1061,7 @@ Block ID: **GC-096-055**.
 
 | Symptom | Check | What to do |
 | --- | --- | --- |
-| Everything looks unstyled | Network response for the Base URL; rendered stylesheet links. | Declare Base in `Page.css` and ensure the host serves the packaged theme. |
+| Everything looks unstyled | Network response for the Base URL; rendered stylesheet links. | Check `css_theme` of the server and of the page, and that the host serves the packaged themes at `/themes/`. |
 | Compact is incomplete | Whether Base loads first. | Load both files in the documented order. |
 | Companion CSS is missing | Page and CSS names, folder and response status. | Put `appearance.css` beside `appearance.py`; reload/restart as your server requires. |
 | A nested page cannot find shared CSS | Whether a relative URL resolves under the nested route. | Use the intended root-relative URL and let the host apply its mount prefix. |

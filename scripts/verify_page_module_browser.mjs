@@ -55,7 +55,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from gramlot.server import GramlotFileServer, PageNotFound
 pages, runtime, csp = Path(sys.argv[1]), Path(sys.argv[2]).read_bytes(), sys.argv[3]
-server = GramlotFileServer(pages)
+# These hosts serve no /themes/: the pages load no base theme.
+server = GramlotFileServer(pages, css_theme=False)
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args): pass
     def reply(self, status, body, kind, headers={}):
@@ -94,7 +95,8 @@ http_server.serve_forever()
 
 /** The Node counterpart of PYTHON_HOST on the same protocol. */
 async function nodeHost(pages, runtime) {
-    const server = new GramlotFileServer(pages);
+    // These hosts serve no /themes/: the pages load no base theme.
+    const server = new GramlotFileServer(pages, {cssTheme: false});
     const httpServer = createServer(async (request, response) => {
         const reply = (status, body, kind, headers = {}) => {
             response.writeHead(status, {'Content-Type': kind, ...headers});

@@ -8,6 +8,8 @@ import type {Bag} from '@genrojs/bag';
 import type {createDecimal} from '@genrojs/tytx';
 import type {SourceBagNode} from '@genrojs/builders';
 import type {RpcTransport} from './handlers/rpc-handler.js';
+import type {ServerAdapter} from './server-adapter.js';
+import type {NameSyntaxDescriptor} from './builder/name-syntax.js';
 import type {SourceHandler} from './handlers/source-handler.js';
 import type {RpcHandler} from './handlers/rpc-handler.js';
 import type {DomHandler} from './handlers/dom-handler.js';
@@ -35,10 +37,14 @@ export interface GramlotOptions {
     element?: DomElement | null;
     /** The document of the page. */
     document?: DomDocument;
-    /** A transport, or `false` for an instance with no server transport. */
+    /** A transport, or `false` for an instance with no server transport; null takes the one of `serverAdapter`. */
     transport?: RpcTransport | false | null;
     /** Grammar collections loaded into the builder. */
     collections?: unknown[];
+    /** The server-dependent behaviour the core consults; the HTTP `ServerAdapter` of the core by default. */
+    serverAdapter?: ServerAdapter;
+    /** The name syntax the server declared in the bootstrap; null for the core default `NAME_SYNTAX`. */
+    nameSyntax?: NameSyntaxDescriptor | null;
 }
 
 /** The lifecycle state of a `Gramlot` instance. */
@@ -73,6 +79,8 @@ export class Gramlot {
     pageId: string | undefined;
     /** The capabilities announced by the server in the bootstrap, frozen. */
     capabilities: readonly string[];
+    /** The server-dependent behaviour the core consults (the transport); not a proxy, page authors do not call it. */
+    serverAdapter: ServerAdapter;
     /** The root group of the named logic of the page. */
     logic: unknown;
     /** The Source and every change of it. */
@@ -91,9 +99,9 @@ export class Gramlot {
     abort: AbortController;
     /** The pending `start` promise, while loading. */
     loading?: Promise<Gramlot> | null;
-    /** The window whose `pagehide` disposes the page; set only with the default `HttpTransport`. */
+    /** The window whose `pagehide` disposes the page; set when the page has a transport. */
     window?: DomWindow;
-    /** The `pagehide` listener that disposes the page with a beacon; set only with the default `HttpTransport`. */
+    /** The `pagehide` listener that disposes the page with a beacon; set when the page has a transport. */
     pagehide?: (event: DomEvent) => void;
     /** Create the page instance; the construction order is the one of the source plan. */
     constructor(options?: GramlotOptions);

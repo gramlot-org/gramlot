@@ -7,7 +7,7 @@ import unittest
 
 from genro_tytx import from_tytx, to_tytx
 from gramlot import GramlotBuilder, Page, endpoint, source
-from gramlot.server import GramlotFileServer, GramlotServer
+from gramlot.server import NAME_SYNTAX, GramlotFileServer, GramlotServer
 
 PAGES = Path(__file__).parent / "fixtures/pages"
 
@@ -200,7 +200,8 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
         server = MemoryServer(EmptyPage, rpc_url="/r", close_url="/c", root_id="here")
         opened = await server.open_page("/", prefix="/app")
         self.assertIn(f'"config":{{"pageId":"{opened.page_id}","rpcUrl":"/app/r","closeUrl":"/app/c",'
-                      '"rootId":"here","capabilities":[]}', opened.html)
+                      f'"rootId":"here","capabilities":[],"nameSyntax":{json.dumps(NAME_SYNTAX.to_dict(), separators=(",", ":"))}}}',
+                      opened.html)
         self.assertIn('<div id="here">', opened.html)
         self.assertNotIn("mainUrl", opened.html)
         self.assertNotIn("sourceUrl", opened.html)

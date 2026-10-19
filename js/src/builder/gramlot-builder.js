@@ -12,6 +12,7 @@ import {toTytx} from '@genrojs/tytx';
 // Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 // dictionary of X, so every GramlotBuilder user can encode and decode it.
 import {GramlotBuilderBag} from './source.js';
+import {NAME_SYNTAX, NameSyntax} from './name-syntax.js';
 import {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 // Byte copy of src/gramlot/collections/binding.json: the JS package ships js/ only.
 import BINDING from './binding.json' with {type: 'json'};
@@ -86,16 +87,23 @@ export class GramlotBuilder extends HtmlBuilder {
         return prefixes;
     }
 
-    constructor(name = null, {collections = [], auth = null} = {}) {
+    constructor(name = null, {collections = [], auth = null, nameSyntax = NAME_SYNTAX} = {}) {
+        if (!(nameSyntax instanceof NameSyntax)) throw new TypeError(`nameSyntax must be a NameSyntax, not ${nameSyntax}`);
         super(name);
         this._binding = null;
         this._auth = auth;
+        this._nameSyntax = nameSyntax;
         for (const collection of collections) this.loadCollection(collection);
     }
 
     /** The `auth` evaluator, `rule => null | 'not_authenticated' | 'not_authorized'`, or null:
      * without it every element is serialised. */
     get auth() { return this._auth; }
+
+    /** The NameSyntax of the method names of `remote`: the one of the server that built this builder
+     * (`GramlotServer.nameSyntax`) or of the page (`Gramlot` option `nameSyntax`), the core default
+     * `NAME_SYNTAX` otherwise. */
+    get nameSyntax() { return this._nameSyntax; }
 
     /** The BindingRuntime of the Gramlot page that owns this builder, or null for authoring alone. */
     get binding() { return this._binding; }

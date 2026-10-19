@@ -507,6 +507,16 @@ export class NodeBinding {
         }
     }
 
+    /**
+     * Send the synchronous call of `method` with `params` as `contentType` through `gramlot.rpc.callSync` and
+     * return its value: the page waits. It follows the rule of the node's requests (`submitSync`): no request of
+     * the node in flight, a method within the name syntax. Used by a `dataRemote` with `sync`.
+     */
+    callSync(contentType, method, params) {
+        return this.node.requests.submitSync(method,
+            () => this.runtime.gramlot.rpc.callSync(contentType, method, params));
+    }
+
     /** Close the registrations, then run the disposers in reverse order and collect their errors. */
     close() {
         if (this.closed) return;

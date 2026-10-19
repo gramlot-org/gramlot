@@ -9,7 +9,7 @@ import {JSDOM} from 'jsdom';
 import {sourceBagFromTytx, sourceTarget} from '@genrojs/builders';
 import {Gramlot} from '../src/gramlot.js';
 import {GramlotBuilder} from '../src/builder/gramlot-builder.js';
-import {REMOTE_NAME} from '../src/builder/source.js';
+import {NAME_SYNTAX} from '../src/builder/name-syntax.js';
 
 const python = process.env.GRAMLOT_TEST_PYTHON ?? 'python3';
 const DATA_FORBIDDEN = /data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element/;
@@ -83,6 +83,10 @@ test('dataRemote builds with its attributes and its destination_path refuses ?at
         ['.menu', 'loadMenu', 5, 'x']);
     assert.throws(() => builder.root.dataRemote({destination_path: '.menu?a', method: 'loadMenu'}), /dataRemote: 'destination_path' does not accept '\?attr'/);
     assert.throws(() => builder.root.dataRemote({destination_path: '.menu'}), /dataRemote: missing required attribute 'method'/);
+    // sync, default true as in the legacy, is a control attribute written on the node.
+    builder.root.dataRemote({destination_path: '.later', method: 'loadMenu', sync: false});
+    assert.equal(builder.source.getNodes().at(-1).getAttr('sync'), false);
+    assert.throws(() => builder.root.dataRemote({destination_path: '.later', method: 'loadMenu', sync: 'no'}));
 });
 
 test('remote writes its attributes on the node and returns it', () => {
@@ -429,19 +433,19 @@ print(to_tytx(builder.source))
 });
 
 // Constitution 11.85: the same method names are accepted by the `remote` helper and by the server
-// resolution in Python and JavaScript, with the same portable pattern.
-const REMOTE_NAME_CASES = ['details', 'orders.details', 'a.b.c.details', 'a_1.b2', 'A9', '^.name', '=name', '^name:{}',
+// resolution in Python and JavaScript, with the same portable pattern (the core default NAME_SYNTAX).
+const NAME_CASES = ['details', 'orders.details', 'a.b.c.details', 'a_1.b2', 'A9', '^.name', '=name', '^name:{}',
     '', '1x', 'a-b', 'abc\n', 'aè', 'a..b', '.a', 'a.', 'a._b', 'a.1b', '_a', '==x', 'a b', 'a.b\n'];
 
 test('remote names: Python and JavaScript accept and refuse the same strings with the same pattern', () => {
     const builder = new GramlotBuilder();
-    const js = REMOTE_NAME_CASES.map(name => {
+    const js = NAME_CASES.map(name => {
         try { builder.root.div().remote(name); return 'ok'; } catch (error) { return error.name; }
     });
     const py = JSON.parse(execFileSync(python, ['-c', `
 import json, sys
 from gramlot import GramlotBuilder
-from gramlot.page.source import REMOTE_NAME
+from gramlot.page.name_syntax import NAME_SYNTAX
 builder = GramlotBuilder()
 outcomes = []
 for name in json.loads(sys.argv[1]):
@@ -450,9 +454,9 @@ for name in json.loads(sys.argv[1]):
         outcomes.append("ok")
     except ValueError:
         outcomes.append("error")
-print(json.dumps({"outcomes": outcomes, "pattern": REMOTE_NAME.pattern}))
-`, JSON.stringify(REMOTE_NAME_CASES)], {encoding: 'utf8'}));
+print(json.dumps({"outcomes": outcomes, "syntax": NAME_SYNTAX.to_dict()}))
+`, JSON.stringify(NAME_CASES)], {encoding: 'utf8'}));
     assert.deepEqual(py.outcomes, js.map(outcome => outcome === 'ok' ? 'ok' : 'error'));
-    assert.deepEqual(js.map(outcome => outcome === 'ok'), REMOTE_NAME_CASES.map((_, index) => index < 8));
-    assert.equal(py.pattern, REMOTE_NAME.source);
+    assert.deepEqual(js.map(outcome => outcome === 'ok'), NAME_CASES.map((_, index) => index < 8));
+    assert.deepEqual(py.syntax, NAME_SYNTAX.toJSON());
 });

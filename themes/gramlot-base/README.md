@@ -12,9 +12,10 @@ The adapters of `gramlot-py-server` and `gramlot-js-server` serve the themes pac
 
 Base is the original theme. [Compact](../gramlot-compact/README.md) is its denser
 alternative, with smaller headings, gaps, card padding and form controls. Both
-support light and dark mode. Load Base alone for the original appearance, or Base
-followed by `/themes/gramlot-compact/theme.css` for Compact. The existing `Page.css`
-list can be declared once on a shared application Page base class.
+support light and dark mode. A Gramlot server loads Base on every page as its base
+theme (option `css_theme`, GC-090 §030); a page adds `/themes/gramlot-compact/theme.css`
+with `Page.css` for Compact. The `Page.css` list can be declared once on a shared
+application Page base class.
 
 ## Tokens and extension
 

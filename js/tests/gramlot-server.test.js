@@ -6,7 +6,7 @@ import {mkdtemp, writeFile, symlink, rm} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {GramlotServer, Exposed, Page, GramlotBuilder, PageExpired, ServerCapacity, PageNotFound, SourceNotFound, EndpointNotFound,
-    InvalidRequest, NotAuthenticated, NotAuthorized} from '../src/server/index.js';
+    InvalidRequest, NotAuthenticated, NotAuthorized, NAME_SYNTAX, NameSyntax} from '../src/server/index.js';
 import {GramlotFileServer} from '../src/server/gramlot-file-server.js';
 import {InvalidResourceName} from '../src/server/resources.js';
 import {fromTytx, toTytx} from '@genrojs/tytx';
@@ -98,7 +98,7 @@ test('page isolation, expiration, capacity and bootstrap escaping', async () => 
     assert.ok(html.includes('&lt;/title&gt;'));
     // The CSS URLs are JSON inside the module script (S07, D9): no attribute to break out of.
     assert.ok(!html.includes('<link'));
-    assert.ok(html.includes('"css":["/x\\" onload=\\"bad"]'));
+    assert.ok(html.includes('"css":["/themes/gramlot-base/theme.css","/x\\" onload=\\"bad"]'));
     await assert.rejects(server.openPage('/'), ServerCapacity);
     server.pages.get(pageId).expires = 0;
     assert.equal(await code(main(server, pageId)), 'page_expired');
@@ -176,13 +176,18 @@ test('call: auth is closed by default and evaluateAuth decides', async () => {
     for (const [outcome, expected] of [[null, {value: 'allowed'}], ['not_authorized', 'not_authorized']]) {
         const rules = [];
         const custom = new (class extends GramlotFileServer {
-            evaluateAuth(rule, {owner}) { rules.push([rule, owner]); return outcome; }
+            evaluateAuth(rule, {owner, identity}) { rules.push([rule, owner, identity]); return outcome; }
         })(pages);
         const opened = await custom.openPage('/', {owner: 'one'});
-        const response = await call(custom, opened.pageId, 'data', 'check_endpoint_auth', {}, {owner: 'one'});
+        const response = await call(custom, opened.pageId, 'data', 'check_endpoint_auth', {},
+            {owner: 'one', identity: 'avatar'});
         if (outcome === null) assert.equal(response.value, 'allowed');
         else assert.equal(response.error.code, expected);
-        assert.deepEqual(rules, [['admin', 'one']]);
+        assert.deepEqual(rules, [['admin', 'one', 'avatar']]);
+        // A call without identity passes null: the server keeps nothing of an earlier call.
+        await call(custom, (await custom.openPage('/', {owner: 'one'})).pageId, 'data', 'check_endpoint_auth', {},
+            {owner: 'one'});
+        assert.deepEqual(rules.at(-1), ['admin', 'one', null]);
     }
 });
 
@@ -450,10 +455,11 @@ test('registerPage registers a page without writing its HTML', async () => {
     }
     const server = memoryServer(TitledPage);
     const registered = await server.registerPage('/', {owner: 'one'});
-    assert.deepEqual(Object.keys(registered).sort(), ['pageId', 'resources', 'title']);
+    assert.deepEqual(Object.keys(registered).sort(), ['nameSyntax', 'pageId', 'resources', 'title']);
     assert.match(registered.pageId, /^[0-9a-f]{32}$/);
     assert.equal(registered.title, 'Titled');
-    assert.deepEqual(registered.resources, {css: [], js: []});
+    assert.deepEqual(registered.resources, {css: ['/themes/gramlot-base/theme.css'], js: []});
+    assert.deepEqual(registered.nameSyntax, NAME_SYNTAX.toJSON());
     assert.equal(server.pages.get(registered.pageId).owner, 'one');
     assert.equal((await main(server, registered.pageId, {owner: 'one'})).value.getNodes().length, 0);
 });
@@ -467,7 +473,8 @@ test('no page is registered when the bootstrap fails', async () => {
 test('configured URLs, root id and capabilities reach the bootstrap', async () => {
     const server = memoryServer(EmptyPage, {rpcUrl: '/r', closeUrl: '/c', rootId: 'here'});
     const {pageId, html} = await server.openPage('/', {prefix: '/app'});
-    assert.ok(html.includes(`"config":{"pageId":"${pageId}","rpcUrl":"/app/r","closeUrl":"/app/c","rootId":"here","capabilities":[]}`));
+    assert.ok(html.includes(`"config":{"pageId":"${pageId}","rpcUrl":"/app/r","closeUrl":"/app/c","rootId":"here","capabilities":[],`
+        + `"nameSyntax":${JSON.stringify(NAME_SYNTAX)}}`));
     assert.ok(html.includes('<div id="here">'));
     assert.deepEqual(new GramlotServer().capabilities, []);
     assert.equal(new GramlotServer().rpcUrl, '/gramlot/rpc');

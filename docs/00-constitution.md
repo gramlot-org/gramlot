@@ -2930,3 +2930,75 @@ No release or deployment is authorized by this decision.
 
 Rules: [GC-095 §060](public/095-writing-pages.md#gc-095-060),
 [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030). Status: GC-070 §1450.
+
+
+### Amendment 11.87 — Operations shared by the adapters, server-declared name syntax, server adapter, base theme, synchronous call — 2026-10-19
+
+Owner decisions of 2026-10-19, taken in the coordinating chat of the review of the
+0.3.5 releases (review plan decisions d-adapter-api, d-bom, d-owner, d-theme and
+d-pointer-separator; the synchronous call and the `sync` attribute of `dataRemote`,
+sent by the coordinator on the same day). Changed principles: the division of the
+server code between the core and the adapters, the name syntax, the client transport,
+the theme of a page and the read of `dataRemote`. Superseded: 11.58 item 2 (the
+bootstrap config `{pageId, rpcUrl, closeUrl, rootId, capabilities}`), item 3 (an
+evaluator that knows only the owner) and item 4 (the client sends through
+`HttpTransport` or an injected transport); 11.48 item 3 (load order "`Page.css` URLs
+as written, then the companions"); 11.85 item 1 (the core syntax `REMOTE_NAME`, the
+server's declaration left to a later phase); 11.59 and 11.85 item 3 for `dataRemote`
+where they say a read never waits; the GC-230 §135 sentence that allows a null owner
+for every HTTP request.
+
+1. Two levels (d-adapter-api). The core holds what every server shares, the
+   serverless Worker included: `GramlotServer.decode_body`/`decodeBody` (the request
+   body as UTF-8), `call(text, owner=…, identity=…)`, `close(text, owner=…)` (the close
+   message), `open_page`/`openPage` (which maps `<path>/index.html` to `<path>/`),
+   `close_all`/`closeAll`, and `GramlotFileServer.companion_file`/`companionFile` and
+   `theme_file`/`themeFile`. Everything only HTTP adds (methods and 405 with `Allow`,
+   `Cache-Control`, the owner cookie, media types, shutdown) belongs to the bases of the
+   adapters in gramlot-py-server and gramlot-js-server.
+2. Byte order mark (d-bom). A request body that starts with the UTF-8 byte order mark
+   is accepted everywhere: the core decoding removes it. The conformance checks it.
+3. Owner (d-owner). Over HTTP each browser has its own owner; a null owner for every
+   request is not allowed. The Worker keeps the null owner.
+4. Identity. The identity of a request (the avatar of a login) travels with the call:
+   `call(text, owner=…, identity=…)` gives it to `evaluate_auth(rule, owner=…,
+   identity=…)`; the server keeps nothing of it, so an adapter never stores it on the
+   shared server.
+5. Name syntax (d-pointer-separator). The syntax of a method name belongs to the
+   server: `GramlotServer.name_syntax`/`nameSyntax`, a `NameSyntax`, is a portable
+   regex in the format of genro-builders, carried by the bootstrap (`nameSyntax`) to
+   the browser, where the `remote` helper and the names read from Data are checked
+   with it. The core default `NAME_SYNTAX` is the syntax of 11.85 item 1.
+6. Server adapter (d-pointer-separator). `gramlot.serverAdapter` holds the
+   server-dependent behaviour of a page; the core consults it, page authors do not.
+   The server names the module of its class in the bootstrap
+   (`resources.serverAdapter`), imported through the import map; the core
+   `ServerAdapter` realises HTTP. It creates the transport of `gramlot.rpc`, whose
+   contract is `call`, `close` and `dispose`, all required.
+7. Theme (d-theme). Every page loads a theme before its CSS: the base theme of the
+   server (`css_theme`/`cssTheme`, default `gramlot-base`, `False` for none), unless the
+   page sets `css_theme` (a theme name, or `False` for none). `Page.css` is the CSS
+   added after the theme. Load order: the theme, `Page.css`, the companions; each URL
+   once in its last position.
+8. Synchronous call. `gramlot.rpc.callSync` waits for the answer, as the legacy
+   `genro.serverCall` without callback, on a transport that declares
+   `supportsCallSync` (HTTP, with a synchronous `XMLHttpRequest`); any other transport
+   throws. `dataRemote` gets the legacy attribute `sync`, default true: on such a
+   transport an expired read calls synchronously and returns the value through the
+   resolver's own `resolve`. On a transport without it (the Worker) the read stays
+   asynchronous: a debt for the plan of the asynchronous resolvers. `dataRpc` and
+   `remote` stay asynchronous. Browsers deprecate the synchronous request and it blocks
+   the page; a later step aims to avoid synchronous calls.
+
+The names chosen by the implementation (GC-225 §010: `ServerAdapter`,
+`createTransport`, `NameSyntax`, `callSync`, `supportsCallSync`, `decode_body`,
+`close`, `companion_file`, `theme_file`, `theme_css`, the "no theme" value `False`)
+await the owner's confirmation. No release or deployment is authorized by these
+decisions.
+
+Rules: GC-230 §010, §015, §030, §045, §120, §125, §135, §145, §150;
+[GC-090 §017](public/090-classes-and-hosts.md#gc-090-017),
+[GC-090 §020](public/090-classes-and-hosts.md#gc-090-020),
+[GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
+[GC-095 §105](public/095-writing-pages.md#gc-095-105),
+[GC-096 §005](public/096-themes-and-css.md#gc-096-005). Status: GC-070 §1455.

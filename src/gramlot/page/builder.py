@@ -14,6 +14,7 @@ from genro_builders.builder.pointers import pointer_transform
 
 # Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 # dictionary of X, so every GramlotBuilder user can encode and decode it.
+from .name_syntax import NAME_SYNTAX, NameSyntax
 from .source import GramlotBuilderBag
 
 # P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
@@ -62,10 +63,13 @@ class GramlotBuilder(HtmlBuilder):
     # Builder applies it on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
     _grammar_documents = ("../collections/binding.json", "../collections/webcomponent.json", "../collections/buttons.json")
 
-    def __init__(self, name=None, *, collections=(), auth=None):
+    def __init__(self, name=None, *, collections=(), auth=None, name_syntax=NAME_SYNTAX):
+        if not isinstance(name_syntax, NameSyntax):
+            raise TypeError(f"name_syntax must be a NameSyntax, not {name_syntax!r}")
         super().__init__(name)
         self._collection = None
         self._auth = auth
+        self._name_syntax = name_syntax
         for collection in collections:
             self.load_collection(collection)
 
@@ -133,6 +137,12 @@ class GramlotBuilder(HtmlBuilder):
         """The ``auth`` evaluator, ``rule -> None | "not_authenticated" | "not_authorized"``,
         or None: without it every element is serialised."""
         return self._auth
+
+    @property
+    def name_syntax(self):
+        """The ``NameSyntax`` of the method names of ``remote``: the one of the server that built this
+        builder (``GramlotServer.name_syntax``), the core default ``NAME_SYNTAX`` otherwise."""
+        return self._name_syntax
 
     def to_tytx(self):
         """The Source encoded as TYTX text, as the JS ``toTytx``. With an ``auth``

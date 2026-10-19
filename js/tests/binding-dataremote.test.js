@@ -21,6 +21,8 @@ function page(answer = request => request.params.table ?? null) {
     const document = window.document;
     const requests = [];
     const transport = {
+        close() {},
+        dispose() {},
         async call(text, signal) {
             const request = fromTytx(text);
             requests.push({...request, signal});
@@ -361,4 +363,119 @@ test('a load ignored by cancel() writes nothing; the next read loads again', asy
     assert.equal(await data.getResolver('menu').loading, 'fresh');
     assert.equal(requests.length, 2);
     app.dispose();
+});
+
+// `sync` (owner 2026-10-19, review p4): with a transport that supports synchronous calls, a `dataRemote` read
+// waits for the answer, as in the legacy; `sync: false` keeps the asynchronous read.
+
+/**
+ * A page whose transport supports synchronous calls: `callSync` answers with `answer(request)` at once and
+ * records the request in `sync`; `call` records it in `async`.
+ */
+function syncPage(answer = request => request.params.table ?? null) {
+    const window = new JSDOM('<main></main>', {virtualConsole: new VirtualConsole()}).window;
+    const document = window.document;
+    const requests = {sync: [], async: []};
+    const reply = (request, outcome) => toTytx({id: request.id, contentType: request.contentType,
+        ...(outcome?.error ? {error: outcome.error} : {value: outcome})});
+    const transport = {
+        supportsCallSync: true,
+        close() {},
+        dispose() {},
+        callSync(text) {
+            const request = fromTytx(text);
+            requests.sync.push(request);
+            return reply(request, answer(request));
+        },
+        async call(text) {
+            const request = fromTytx(text);
+            requests.async.push(request);
+            return reply(request, await answer(request));
+        },
+    };
+    const app = new Gramlot({document, pageId: 'p1', element: document.querySelector('main'), transport});
+    return {app, data: app.data, requests, byId: id => document.getElementById(id)};
+}
+
+test('sync: a read waits for the answer and returns it; the resolver records the cache time itself', () => {
+    const {app, data, requests} = syncPage();
+    app.src.builder.root.dataRemote({destination_path: 'menu', method: 'loadMenu', table: 'x'});
+    const resolver = data.getResolver('menu');
+    assert.equal(resolver.sync, true);
+    assert.equal(resolver.expired, true);
+    assert.equal(data.getItem('menu'), 'x');
+    assert.deepEqual(requests.sync.map(request => [request.contentType, request.name, request.params]),
+        [['data', 'loadMenu', {table: 'x'}]]);
+    assert.equal(resolver.expired, false);
+    // cacheTime null: resolved once.
+    assert.equal(data.getItem('menu'), 'x');
+    assert.equal(requests.sync.length, 1);
+    assert.equal(requests.async.length, 0);
+    app.dispose();
+});
+
+test('sync: a ^ consumer reads the value at its first projection', () => {
+    const {app, requests, byId} = syncPage();
+    mount(app, root => {
+        const pane = root.div({datapath: 'page'});
+        pane.dataRemote({destination_path: '.menu', method: 'loadMenu', table: 'x'});
+        pane.span('^.menu', {id: 'menu'});
+    });
+    assert.equal(byId('menu').textContent, 'x');
+    assert.equal(requests.sync.length, 1);
+    app.dispose();
+});
+
+test('sync: cacheTime 0 calls at every read; _onCalling false makes no call', () => {
+    let count = 0;
+    const {app, data, requests} = syncPage(() => ++count);
+    data.setItem('allow', true);
+    mount(app, root => {
+        root.dataRemote({destination_path: 'counter', method: 'count', cacheTime: 0});
+        root.dataRemote({destination_path: 'guarded', method: 'count', cacheTime: 0, _onCalling: 'return this.GET("allow")'});
+    });
+    assert.deepEqual([data.getItem('counter'), data.getItem('counter')], [1, 2]);
+    assert.equal(data.getItem('guarded'), 3);
+    data.setItem('allow', false);
+    assert.equal(data.getItem('guarded'), 3);
+    assert.equal(requests.sync.length, 3);
+    app.dispose();
+});
+
+test('sync: a failed call throws to the reader naming the node; the next read calls again', () => {
+    let fail = true;
+    const {app, data, requests} = syncPage(() => fail ? {error: {code: 'application_error', name: 'ValueError',
+        message: 'boom'}} : 'ok');
+    app.src.builder.root.dataRemote({destination_path: 'menu', method: 'loadMenu'});
+    assert.throws(() => data.getItem('menu'), error => /dataRemote 'loadMenu' failed: boom/.test(error.message)
+        && error.cause instanceof RpcError);
+    fail = false;
+    assert.equal(data.getItem('menu'), 'ok');
+    assert.equal(requests.sync.length, 2);
+    app.dispose();
+});
+
+test('sync: a method outside the name syntax throws to the reader and sends nothing', () => {
+    const {app, data, requests} = syncPage();
+    data.setItem('m', 'a/b');
+    mount(app, root => root.dataRemote({destination_path: 'menu', method: '=m'}));
+    assert.throws(() => data.getItem('menu'), /dataRemote 'a\/b' failed: Method name must match/);
+    assert.equal(requests.sync.length, 0);
+    app.dispose();
+});
+
+test('sync false, or a transport without synchronous calls, keeps the asynchronous read', async () => {
+    const {app, data, requests} = syncPage();
+    app.src.builder.root.dataRemote({destination_path: 'menu', method: 'loadMenu', table: 'x', sync: false});
+    assert.equal(data.getResolver('menu').sync, false);
+    assert.equal(data.getItem('menu'), null);
+    await settle();
+    assert.equal(data.getItem('menu'), 'x');
+    assert.deepEqual([requests.sync.length, requests.async.length], [0, 1]);
+    app.dispose();
+    // The transport of `page` declares no synchronous call: the default sync reads asynchronously.
+    const other = page();
+    other.app.src.builder.root.dataRemote({destination_path: 'menu', method: 'loadMenu'});
+    assert.equal(other.data.getResolver('menu').sync, false);
+    other.app.dispose();
 });

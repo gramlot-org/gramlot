@@ -9,6 +9,7 @@ import {isDeepStrictEqual} from 'node:util';
 import {fromTytx, toTytx} from '@genrojs/tytx';
 
 const OWNER_COOKIE = 'gramlot_owner';
+const BOM = Buffer.from([0xef, 0xbb, 0xbf]);
 const BOOTSTRAP = /<script type="module" nonce="([^"]+)">import \{PageBootstrap\} from ("[^"]*");await new PageBootstrap\((\{.*?\})\)\.run\(\);<\/script>/;
 
 const expect = (rule, condition, message) => {
@@ -25,9 +26,10 @@ export async function checkProtocol(baseUrl, pagePath) {
     const prefix = base.pathname.replace(/\/+$/, '');
     let owner = null;
 
-    const request = async (method, path, {body = null, contentType = 'application/json', withOwner = true} = {}) => {
+    const request = async (method, path, {body = null, contentType = 'application/json', withOwner = true,
+                                          ownerValue = null} = {}) => {
         const headers = body === null ? {} : {'Content-Type': contentType};
-        if (withOwner && owner !== null) headers.Cookie = `${OWNER_COOKIE}=${owner}`;
+        if (withOwner && owner !== null) headers.Cookie = `${OWNER_COOKIE}=${ownerValue ?? owner}`;
         const response = await fetch(base.origin + path, {method, body, headers, redirect: 'manual'});
         return {status: response.status, headers: response.headers, body: await response.text()};
     };
@@ -52,6 +54,9 @@ export async function checkProtocol(baseUrl, pagePath) {
     expect('GC-230-115', typeof config.rpcUrl === 'string' && typeof config.closeUrl === 'string'
         && Array.isArray(config.capabilities),
         `bootstrap config ${JSON.stringify(config)} lacks rpcUrl, closeUrl or a capabilities array`);
+    const syntax = config.nameSyntax;
+    expect('GC-230-010', syntax?.kind === 'regex' && typeof syntax.pattern === 'string' && Number.isInteger(syntax.flags),
+        `bootstrap config nameSyntax ${JSON.stringify(syntax)} is not {kind: 'regex', pattern, flags}`);
     const expected = {runtime: [runtimeUrl, '/assets/gramlot.js'], rpc: [config.rpcUrl, '/gramlot/rpc'],
         close: [config.closeUrl, '/gramlot/close']};
     for (const [name, [url, path]] of Object.entries(expected)) {
@@ -91,8 +96,13 @@ export async function checkProtocol(baseUrl, pagePath) {
 
     response = await request('GET', `${prefix}/gramlot-conformance-missing-page`);
     expect('GC-230-115', response.status === 404, `an unknown page answers ${response.status}, not 404`);
-    response = await request('POST', pageUrl, {body: '{}'});
-    expect('GC-230-115', response.status === 405, `POST ${pageUrl} answers ${response.status}, not 405`);
+    for (const method of ['POST', 'HEAD', 'PUT', 'DELETE', 'PATCH']) {
+        response = await request(method, pageUrl, {body: method === 'HEAD' ? null : '{}'});
+        const allow = response.headers.get('allow');
+        const allowed = (allow ?? '').split(',').map(item => item.trim());
+        expect('GC-230-115', response.status === 405 && allowed.includes('GET') && !allowed.includes(method),
+            `${method} ${pageUrl} answers ${response.status} with Allow ${JSON.stringify(allow)}, not 405 with Allow: GET`);
+    }
     if (pagePath.endsWith('/')) {
         response = await request('GET', `${pageUrl}index.html`);
         expect('GC-230-115', response.status === 200 && mediaType(response.headers) === 'text/html',
@@ -142,6 +152,15 @@ export async function checkProtocol(baseUrl, pagePath) {
         expect('GC-230-125', response.status === 200 && isDeepStrictEqual(parse(response.body, JSON.parse), {ok: true}),
             `close as ${contentType} answers ${response.status} ${response.body.slice(0, 200)}, not 200 {"ok": true}`);
     }
+    // A leading byte order mark is removed by the decoding of the body (GC-230 §120).
+    response = await request('POST', rpc, {body: Buffer.concat([BOM,
+        Buffer.from(toTytx(envelope('data', 'check_endpoint', {value: 'bom'})))])});
+    expect('GC-230-120', response.status === 200 && parse(response.body, fromTytx)?.value === 'bom',
+        `rpc with a leading byte order mark answers ${response.status} ${response.body.slice(0, 200)}, not the endpoint value`);
+    response = await request('POST', config.closeUrl, {body: Buffer.concat([BOM,
+        Buffer.from(JSON.stringify({pageId: '0'.repeat(32)}))])});
+    expect('GC-230-125', response.status === 200 && isDeepStrictEqual(parse(response.body, JSON.parse), {ok: true}),
+        `close with a leading byte order mark answers ${response.status} ${response.body.slice(0, 200)}, not 200 {"ok": true}`);
     response = await request('POST', rpc, {body: '{'});
     expect('GC-230-120', response.status === 400, `rpc with invalid JSON answers ${response.status}, not 400`);
     const {pageId: omitted, ...withoutPageId} = envelope('source', 'main');
@@ -159,10 +178,20 @@ export async function checkProtocol(baseUrl, pagePath) {
         && received?.id === sent.id && received?.contentType === 'source' && typeof received?.value === 'string',
         `main answers ${response.status} ${response.headers.get('content-type')} ${response.body.slice(0, 200)}, not 200 `
         + 'application/json with an envelope echoing id and contentType and carrying the fragment document as a string');
+    // The page belongs to the browser that opened it: a request without its cookies, or with another owner,
+    // reaches it only as page_expired, and its close message leaves the page open.
+    await outcome('GC-230-135', envelope('source', 'main'), 'page_expired', 'main without the cookies of the page',
+        {withOwner: false});
     if (owner !== null) {
-        await outcome('GC-230-135', envelope('source', 'main'), 'page_expired', 'main without the owner cookie',
-            {withOwner: false});
+        await outcome('GC-230-135', envelope('source', 'main'), 'page_expired', 'main with another owner cookie',
+            {ownerValue: `${owner}x`});
     }
+    response = await request('POST', config.closeUrl, {body: JSON.stringify({pageId}), withOwner: false});
+    expect('GC-230-135', response.status === 200, `close without the cookies of the page answers ${response.status}, not 200`);
+    response = await call(envelope('data', 'check_endpoint', {value: 'owned'}));
+    expect('GC-230-135', response.status === 200 && response.received?.value === 'owned',
+        `after a close without the cookies of the page, check_endpoint answers ${response.status} `
+        + `${response.body.slice(0, 200)}: the close of another owner closed the page`);
 
     await outcome('GC-230-025', envelope('source', 'main', {}, {pageId: '0'.repeat(32)}), 'page_expired',
         'main of an unknown page');

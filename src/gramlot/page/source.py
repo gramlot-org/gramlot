@@ -8,7 +8,6 @@ Python's ``__getattr__`` uses ``GramlotBuilder.schema_tag`` for authoring dispat
 JavaScript uses Builder's Source proxy and ``GramlotBuilder.schemaTag``.
 """
 
-import re
 from typing import Any
 
 from genro_builders.builder import SourceBag, SourceBagNode
@@ -19,11 +18,6 @@ from genro_builders.builder.pointers import pointer_transform
 
 # The control attributes of ``remote``, written on the node as they are; every other parameter becomes ``remote_<k>``.
 REMOTE_CONTROLS = ("_cachedRemote", "_if", "_else", "_onRemote", "_onCalling", "_delay", "_timing", "_userChanges")
-# The core syntax of a method name of ``remote``, ``dataRpc``, ``dataRemote`` and ``remoteSource``: the method
-# of the page, or a path of public attributes from the page ending in the method, ``a.b.c.method``. Each
-# segment is an ASCII letter followed by ASCII letters, digits and ``_``. Portable: the same pattern as the
-# JavaScript ``REMOTE_NAME``, without ``\w``; matched whole.
-REMOTE_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*$")
 
 
 class GramlotBuilderBagNode(SourceBagNode):
@@ -43,12 +37,14 @@ class GramlotBuilderBagNode(SourceBagNode):
         Writes ``remote = name`` and one ``remote_<k> = v`` per call parameter on this node;
         the control attributes ``_cachedRemote``, ``_if``, ``_else``, ``_onRemote``, ``_onCalling``,
         ``_delay``, ``_timing`` and ``_userChanges`` are written as they are. Returns this node.
-        ``name`` is a method name (``REMOTE_NAME``) or a ``^``/``=`` pointer to it; any other name, or
-        another ``_`` parameter, is a ``ValueError``.
+        ``name`` is a method name, matched by the name syntax of the page builder (``name_syntax`` of
+        ``root_builder``), or a ``^``/``=`` pointer to it; any other name, or another ``_`` parameter, is a
+        ``ValueError``.
         """
-        if not isinstance(name, str) or not (self.pointer_type(name) or REMOTE_NAME.fullmatch(name)):
+        syntax = self.root_builder.name_syntax
+        if not isinstance(name, str) or not (self.pointer_type(name) or syntax.matches(name)):
             raise ValueError(f"{self.node_tag} '{self.label}': remote name must be a pointer or match "
-                             f"{REMOTE_NAME.pattern}, not {name!r}")
+                             f"{syntax.pattern}, not {name!r}")
         invalid = next((key for key in params if key.startswith("_") and key not in REMOTE_CONTROLS), None)
         if invalid is not None:
             raise ValueError(f"{self.node_tag} '{self.label}': remote parameter '{invalid}' is not accepted; "

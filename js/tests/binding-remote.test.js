@@ -12,7 +12,7 @@ import {fromTytx, toTytx} from '@genrojs/tytx';
 
 /** A fake server: `main` and the remote Sources answered by the given functions, in the response envelope. */
 function envelope({main, source}) {
-    return {async call(text, signal) {
+    return {close() {}, dispose() {}, async call(text, signal) {
         const {id, contentType, name, params} = fromTytx(text);
         const value = name === 'main' ? await main() : await source(name, params, signal);
         return toTytx({id, contentType, value});

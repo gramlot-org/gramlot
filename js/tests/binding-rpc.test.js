@@ -17,6 +17,8 @@ function page(answer = request => request.params.value ?? null) {
     const document = window.document;
     const requests = [];
     const transport = {
+        close() {},
+        dispose() {},
         async call(text, signal) {
             const request = fromTytx(text);
             requests.push({...request, signal});

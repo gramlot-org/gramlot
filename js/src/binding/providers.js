@@ -20,7 +20,7 @@ const CONTROL_ATTRIBUTES = new Set([
     'destination_path', 'result_path', 'func', 'formula', 'script', 'if', 'else',
     '_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges',
     '_ask', '_ask_if', '_ask_title', '_ask_onCancel',
-    'method', 'timeout', '_onCalling', '_onResult', '_onError', 'cacheTime',
+    'method', 'timeout', '_onCalling', '_onResult', '_onError', 'cacheTime', 'sync',
 ]);
 
 /**
@@ -339,6 +339,8 @@ export class Provider {
         const resolver = new RpcResolver({
             binding: this.binding, method: this.#resolved('method'),
             params: authorArguments(kwargs), cacheTime: this.#resolved('cacheTime'),
+            // `sync`, default true as in the legacy, waits only on a transport with synchronous calls.
+            sync: this.#resolved('sync') !== false && this.binding.runtime.gramlot.rpc.supportsCallSync,
             onCalling: onCalling ? () => this.#inline('_onCalling', onCalling, onCalling, kwargs, true) : null,
             onError: error => {
                 throw new Error(`${node.nodeTag} '${node.label}': dataRemote '${resolver.method}' failed: ${error.message}`,
