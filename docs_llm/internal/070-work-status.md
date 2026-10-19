@@ -8930,3 +8930,47 @@ review branch; no release or deployment is authorized.
 
 Verification: 3,635 JavaScript tests pass (baseline 3,629); Python 199 tests and 365
 subtests pass with the existing expected failure (baseline 198).
+
+
+<a id="gc-070-1465"></a>
+## 1465. Python package built by hatchling; JS archive installer accepts `@genrojs/*` (review p5) — 2026-10-19
+
+Phase p5 of the review of the 0.3.5 releases (constitution 11.87). Implemented on the
+review branch; no release or deployment is authorized.
+
+- Build backend: `pyproject.toml` uses `hatchling>=1.27` with the `src/` layout instead
+  of setuptools. `setup.py` and `MANIFEST.in` are removed. `[tool.hatch.build]` lists the
+  same package files as the former `[tool.setuptools.package-data]` (Python modules,
+  `collections/*.json`, `resources/*.js|json`, `resources/themes/*/*`, the branding SVG
+  and PNG files) plus `py.typed`; `artifacts` ships the git-ignored files that
+  `npm --prefix js run build` generates. The sdist adds `tests/test_*.py`, as before.
+- `hatch_build.py` reproduces the check of the former `setup.py`: without
+  `gramlot.js`, `gramlot.min.js` or `runtime-notices.json` in `src/gramlot/resources`,
+  the build stops with "Missing browser assets: ... Run npm --prefix js run build before
+  building Gramlot." The hook runs for the wheel, the sdist and the editable install
+  (the former check ran for the wheel only).
+- Metadata: `license = "Apache-2.0"` and `license-files = ["LICENSE", "NOTICE"]`
+  (PEP 639; `License-Expression` in the METADATA, both files in `dist-info/licenses/`).
+  `src/gramlot/py.typed` is new, so type checkers read the inline annotations.
+- Wheel and sdist contents compared before and after: the wheel differs by `+gramlot/py.typed`
+  and `-dist-info/top_level.txt` (a setuptools file); the sdist differs by `+src/gramlot/py.typed`,
+  `+hatch_build.py` and `+.gitignore` (hatchling, needed to build the wheel from the sdist)
+  and `-MANIFEST.in`, `-setup.py`, `-setup.cfg`, `-src/gramlot.egg-info/*`. `python -m build`,
+  `uv build`, `pip install .[test]`, `pip install -e .` and the installed wheel (import,
+  `py.typed`, runtime assets, metadata) pass; `twine check` passes.
+- `.github/workflows/publish.yml` needs no change for hatchling (`python -m build`
+  installs the backend in an isolated environment); the wheel check of the packaged
+  runtime now also requires `gramlot/py.typed`. `tests.yml` installs with
+  `pip install '.[test]'` after the runtime build, which satisfies the hook.
+- `scripts/install_js_artifacts.py` accepted only names starting with `genro-`, so every
+  archive of the declared `@genrojs/*` dependencies was refused with "Not a declared Genro
+  dependency". It now accepts the declared `@genrojs/*` names. `tests/test_install_js_artifacts.py`
+  covers the accepted archives (with a stand-in `npm`), the restored manifest and the
+  refusals (undeclared `@genrojs/*`, declared non-`@genrojs` name, `genro-*` name). A run with the real npm
+  and the `@genrojs/bag`, `builders` and `tytx` archives installs all three and restores `js/package.json`.
+- Documentation: CONTRIBUTING (Python package), GC-085 §020, GC-086 and this entry, with
+  their `docs_llm` mirrors.
+
+Verification: 3,635 JavaScript tests pass (baseline 3,635); Python 204 tests and 365
+subtests pass with the existing expected failure (baseline 199; five new tests of the
+installer). Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass on a clean build.

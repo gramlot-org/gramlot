@@ -1,3 +1,0 @@
-include src/gramlot/resources/*.json
-include src/gramlot/resources/*.js
-include src/gramlot/collections/*.json

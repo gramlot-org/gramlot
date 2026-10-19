@@ -3,11 +3,14 @@
 ## Setup
 
 ```sh
-python3 -m venv .venv && .venv/bin/pip install -e '.[test]'
 npm --prefix js install
 npm --prefix js run build
+python3 -m venv .venv && .venv/bin/pip install -e '.[test]'
 .venv/bin/pip install -r requirements-docs.txt   # documentation only
 ```
+
+The runtime build comes first: installing the Python package, also in editable
+mode, fails without the browser assets (see Python package below).
 
 ## Checks before a commit
 
@@ -33,6 +36,23 @@ Documentation comes in pairs: every file in `docs/` has its counterpart in
 - No AI, LLM or assistant references in commits, pull requests, code, comments
   or documents; no assistant `Co-Authored-By` trailers; no `Generated with …`
   lines.
+
+## Python package
+
+The build backend is hatchling with the `src/` layout (`pyproject.toml`); the
+package ships `py.typed`. The browser runtime in `src/gramlot/resources` is
+generated and git-ignored: the build hook `hatch_build.py` refuses to build a
+wheel or an sdist without `gramlot.js`, `gramlot.min.js` and `runtime-notices.json`.
+Build the runtime first, then the distributions:
+
+```sh
+npm --prefix js run build
+.venv/bin/python -m pip install build && .venv/bin/python -m build --outdir dist
+```
+
+`scripts/install_js_artifacts.py <archive>...` installs local archives of the
+declared `@genrojs/*` dependencies into `js/` for verification and restores
+`js/package.json` afterwards.
 
 ## Releases
 
