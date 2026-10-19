@@ -2,14 +2,12 @@
  * Data routing of one Gramlot page (source plan §4.5).
  *
  * The router receives every event of Builder's Data wrapper through the one
- * subscription of BindingRuntime, strips the first segment `_root_` and
+ * subscription of BindingRuntime, strips the first segment `_root_` (Builder's `DATA_ROOT`) and
  * delivers the event to the registrations its path reaches, through a trie
  * by segment: the work of one event does not depend on the unconnected
  * branches.
  */
-
-// Builder's content node under the Data wrapper (`_dataroot` → `_root_`).
-const DATA_ROOT = '_root_';
+import {DATA_ROOT} from '@genrojs/builders';
 
 /** One trie level: the registrations of one path and the next segments. */
 class RouteNode {

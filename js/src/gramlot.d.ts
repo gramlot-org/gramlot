@@ -87,7 +87,7 @@ export class Gramlot {
     utl: UtilitiesHandler;
     /** The lifecycle state. */
     state: GramlotState;
-    /** The controller aborted on dispose. */
+    /** The controller aborted on dispose; its abort aborts every call of `rpc` in flight. */
     abort: AbortController;
     /** The pending `start` promise, while loading. */
     loading?: Promise<Gramlot> | null;

@@ -295,8 +295,8 @@ arrangement. The `business` resource-group example requires genro-kajenn
 resources. For the common FileServer gallery and a first editable page, use the
 root-group method `func="add"` as in c03; `js_requires` is not available there.
 
-Primary path. Each logic file exports `class Logic`; its methods are copied into a
-per-instance group. Companion methods live in `page.logic`; each `js_requires` name
+Primary path. A logic file with logic methods exports `class Logic`; its methods are
+copied into a per-instance group; a module without `Logic` has none. Companion methods live in `page.logic`; each `js_requires` name
 is a group (`page.logic.business`); `/` makes nested groups. Source:
 `func='business.discount'` or `func='add'` (page logic). Formula: `method(kwargs)`
 returns the value; controller: `method(node, kwargs)`. `kwargs` = resolved author
@@ -307,8 +307,9 @@ attributes plus `_node`, `_triggerpars`, `_reason` and, for buttons, `_evt` and
 = the page module's `Logic` export: `orders.js` (JS page), `orders.js` beside `orders.py`
 (Python page; its `Page` unused); `orders_aux.js` stays admitted; both = error. The
 browser imports the page module, so its imports must resolve there: a `Page` with
-server-only imports keeps `orders_aux.js`. Beside a Python page `orders.js` exports
-`Logic` (else the browser rejects it, naming the file). The same
+server-only imports keeps `orders_aux.js`. A page module without `Logic`, also beside
+a Python page, gives no methods: write `Logic` only when needed; a misspelt export
+(`logic`) shows when a `func` looks for its method. The same
 resource at several levels fills one group from generic to specific; specific wins.
 Errors: explicit `Logic` constructor; method named `page` or like a child group;
 missing name (never an inline fallback). State lives on group or page. Works

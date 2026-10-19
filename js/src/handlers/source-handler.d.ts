@@ -25,8 +25,11 @@ export class SourceHandler extends Handler {
     source: SourceBag;
     /** The live renderer of the page. */
     renderer: GramlotRenderer;
-    /** Create the builder, the binding runtime and the renderer of `gramlot`, in the order of the source plan. */
-    constructor(gramlot: Gramlot, options: {collections: unknown[]; destination: DomElement | null});
+    /**
+     * Create the builder, the binding runtime and the renderer of `gramlot`, in the order of the source plan;
+     * `subscriptions` is the private topic service of `gramlot`, given to the binding runtime.
+     */
+    constructor(gramlot: Gramlot, options: {collections: unknown[]; destination: DomElement | null; subscriptions: unknown});
     /** Start from an embedded typed Source, with the same observed insertion as `main`. */
     startSource(wire: SourceBag | string): Gramlot;
     /** Validate and insert `main` in the Source. */

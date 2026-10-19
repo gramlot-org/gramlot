@@ -3,7 +3,6 @@
  * target selection; this binding owns execution, ask, delay and disposal.
  */
 
-import {AskDialog} from '../binding/ask-dialog.js';
 
 export class ButtonBinding {
     #binding;
@@ -154,8 +153,9 @@ export class ButtonBinding {
                 this.binding.runtime.inlineCompiler.compile(node, 'action', node.getAttr('action'), Object.keys(values))(values);
             };
             const ask = node.getAttr('ask');
-            if (ask && AskDialog.required(this.binding, ask, read(), 'ask')) {
-                return AskDialog.show(this.binding, ask, read()).then(execute);
+            const askDialog = this.binding.runtime.askDialog;
+            if (ask && askDialog.required(this.binding, ask, read(), 'ask')) {
+                return askDialog.show(this.binding, ask, read()).then(execute);
             }
             execute(undefined);
         } else {

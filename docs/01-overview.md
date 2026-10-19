@@ -68,8 +68,8 @@ controllers, resolvers and shared components. Small local JavaScript expressions
 can complement these declarations. Reusable browser behavior belongs in the
 framework's JavaScript services and components.
 
-*0.2.0:* named logic is the primary path for page behavior: each logic file
-exports `class Logic`, and declarations call its methods by name. Inline code is
+*0.2.0:* named logic is the primary path for page behavior: a logic file with
+logic methods exports `class Logic`, and declarations call its methods by name. Inline code is
 allowed but discouraged, and runs only in the browser page runtime
 ([GC-095](public/095-writing-pages.md#gc-095-060)).
 

@@ -15,6 +15,7 @@ export function applyMask(text, mask) {
 
 function inferredType(value) {
     if (value instanceof Date) {
+        // A copy of TYTX getDateType, not exported by the package entry: genro-org/genro-tytx#62.
         // Match TYTX's documented inference; dtype can override this ambiguity.
         const epochDay = value.getUTCFullYear() === 1970 && value.getUTCMonth() === 0 && value.getUTCDate() === 1;
         const midnight = value.getUTCHours() === 0 && value.getUTCMinutes() === 0 &&

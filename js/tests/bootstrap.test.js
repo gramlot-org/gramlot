@@ -137,13 +137,14 @@ test('Q12.2: a Logic that breaks §4.9 fails check 2bis: no Gramlot, no mount, C
     await write(root, 'group.js', logic('gui() {}'));
     await write(root, 'gui.js', logic('scroll() {}'));
     await write(root, 'nologic.js', 'export const value = 1;\n');
+    await write(root, 'notclass.js', 'export function Logic() {}\n');
     await write(root, 'broken.js', 'export class Logic { oops( }\n');
     const cases = [
         [[{url: 'ok.js', group: null}, {url: 'constructor.js', group: 'calcoli'}], /constructor\.js: class Logic cannot declare a constructor/],
         [[{url: 'page.js', group: null}], /page\.js: a logic method cannot be named 'page'/],
         [[{url: 'group.js', group: null}, {url: 'gui.js', group: 'gui'}], /group\.js: the logic method 'gui' has the name of a child group/],
         [[{url: 'ok.js', group: 'page'}], /ok\.js: a logic group cannot be named 'page'/],
-        [[{url: 'nologic.js', group: null}], /nologic\.js: the module exports no class Logic/],
+        [[{url: 'nologic.js', group: null}, {url: 'notclass.js', group: 'gui'}], /notclass\.js: the module exports no class Logic/],
         [[{url: 'ok.js', group: null}, {url: 'missing.js', group: 'gui'}], /Error: missing\.js: import failed/],
         [[{url: 'broken.js', group: null}], /Error: broken\.js: import failed/],
     ];
@@ -163,6 +164,20 @@ test('Q12.2: a Logic that breaks §4.9 fails check 2bis: no Gramlot, no mount, C
         window.dispatchEvent(new window.Event('pagehide'));
         assert.equal(beacons.length, 1, 'the bootstrap listener is removed');
     }
+}));
+
+test('d-logic: a logic module without the Logic export starts the page and adds no logic method', () => folder(async root => {
+    await write(root, 'index.js', 'export const value = 1;\n');
+    await write(root, 'tools.js', 'export const other = 2;\n');
+    const {window} = browser(EMPTY_PAGE, pathToFileURL(`${root}/index`).href);
+    const resources = {css: [], js: [{url: 'index.js', group: null}, {url: 'tools.js', group: 'tools'}]};
+    const app = await withFetch(emptyWire(), () => new PageBootstrap({config: CONFIG, resources, document: window.document}).run());
+    assert.equal(app.state, 'started');
+    assert.deepEqual(Object.keys(app.logic), ['tools']);
+    assert.deepEqual(Object.keys(app.logic.tools), []);
+    assert.throws(() => app.src.logicRegistry.resolve('save', {nodeTag: 'div', label: 'probe'}),
+        /named logic 'save' not found: the page logic has no method 'save' \(resources: .*index\.js\)/);
+    app.dispose();
 }));
 
 test('the last received URL wins in the same group, whatever order the imports finish in', () => folder(async root => {

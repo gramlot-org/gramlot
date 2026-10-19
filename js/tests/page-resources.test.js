@@ -322,7 +322,8 @@ test('Python and JavaScript give the same parser outcomes, descriptors, links an
     for (const [path, declaration] of Object.entries(pages)) {
         const name = path.split('/').at(-1);
         const base = path === 'orders' ? `orders/${name}` : path;
-        // Beside a Python page, foo.js gives the logic (Python cannot read its exports): it exports Logic.
+        // Python lists foo.js beside a Python page without reading its exports; the JS server lists a page
+        // module only when it exports Logic: it exports Logic, so both lists are equal.
         await write(root, `${base}.js`, jsPage({...declaration, logic: true}));
         await write(root, `${base}.py`, pyPage(declaration));
     }

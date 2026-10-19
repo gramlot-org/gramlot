@@ -3,7 +3,6 @@
  *
  * @module
  */
-import type {SourceBagNode} from '@genrojs/builders';
 import type {DomDocument} from '../dom.d.ts';
 import type {Gramlot} from '../gramlot.js';
 import type {HttpTransport} from '../http-transport.js';
@@ -47,12 +46,16 @@ export class RpcError extends Error {
 export class RpcHandler extends Handler {
     /** The server transport, or null. */
     transport: RpcTransport | null;
-    /** The remote Source requests in flight, by target node: at most one per node (`node.requests`). */
-    remoteRequests: Map<SourceBagNode, {controller: AbortController}>;
+    /** The calls in flight, by envelope id, with the AbortController of each; written only by `call`. */
+    remoteRequests: Map<string, AbortController>;
     /** Create the transport of `gramlot`: the given one, none for `false`, else an `HttpTransport` on the URLs. */
     constructor(gramlot: Gramlot, options: {rpcUrl: string; closeUrl: string; document: DomDocument;
         transport?: RpcTransport | HttpTransport | false | null});
-    /** Send one envelope of `contentType` to `name` with `params`; resolves with the value or rejects with an `RpcError`. */
+    /**
+     * Send one envelope of `contentType` to `name` with `params`; resolves with the value or rejects with an
+     * `RpcError`. `signal` and the dispose of the page (`gramlot.abort`) abort the call, which then rejects at
+     * once with the abort reason; a call aborted before it starts is not sent.
+     */
     call(contentType: 'source' | 'data', name: string, params?: Record<string, unknown>,
         options?: {signal?: AbortSignal}): Promise<unknown>;
 }

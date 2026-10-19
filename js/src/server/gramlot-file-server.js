@@ -36,7 +36,8 @@ async function realFile(filename) {
  * file page foo.js first, then the folder page foo/foo.js; the file wins when both
  * exist. Beside the page file: foo.css (CSS) and foo.md (README). The page logic
  * (group null) is the Logic export of the page module itself, else foo_aux.js
- * (JS module exporting Logic); both at once raise an Error. The page module then
+ * (a JS module whose Logic export, when present, holds the methods); both at once
+ * raise an Error. The page module then
  * reaches the browser, so its imports must resolve there too. The _aux suffix is
  * reserved. There are
  * no resource levels: a name in css_requires/js_requires raises

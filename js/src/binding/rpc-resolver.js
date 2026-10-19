@@ -72,29 +72,18 @@ export class RpcResolver extends BagResolver {
         const binding = this.binding;
         // A waiting load of a node that left the Source sends nothing.
         if (binding.closed) return undefined;
-        const {controller} = request;
-        const release = binding.track(() => controller.abort());
+        const value = await binding.call('data', request);
+        if (binding.closed || request.ignored) return undefined;
+        // The cache time of BagResolver: no public member records a load made outside `resolve`.
+        this._lastUpdate = Date.now();
+        this.loaded = true;
+        this.writing = true;
         try {
-            const aborted = new Promise((_, reject) => {
-                controller.signal.addEventListener('abort', () => reject(controller.signal.reason), {once: true});
-            });
-            const call = binding.runtime.gramlot.rpc.call('data', request.method, request.params, {signal: controller.signal});
-            const value = await Promise.race([call, aborted]);
-            // Aborted after the answer arrived: the node left the Source.
-            if (controller.signal.aborted) throw controller.signal.reason;
-            if (request.ignored) return undefined;
-            this._lastUpdate = Date.now();
-            this.loaded = true;
-            this.writing = true;
-            try {
-                if (this._node) this._node.setValue(value, this.cacheTime !== 0);
-                else this.cachedValue = value;
-            } finally {
-                this.writing = false;
-            }
-            return value;
+            if (this.node) this.node.setValue(value, this.cacheTime !== 0);
+            else this.cachedValue = value;
         } finally {
-            release();
+            this.writing = false;
         }
+        return value;
     }
 }

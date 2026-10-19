@@ -22,20 +22,19 @@ export class HttpTransport {
         if (response.status !== 200) throw new Error(`rpc failed: HTTP ${response.status}`);
         return response.text();
     }
+    /**
+     * Send the close message `{pageId}` without waiting for the answer: a beacon on page hide, else a
+     * `keepalive` POST. A failed delivery leaves the page to the server TTL; local disposal does not wait.
+     */
     close(pageId, {beacon = false} = {}) {
         const body = JSON.stringify({pageId});
         if (beacon) {
-            try {
-                this.navigator.sendBeacon(this.closeUrl, new Blob([body], {type: 'application/json'}));
-            } catch { /* TTL handles delivery failure. */ }
+            this.navigator.sendBeacon(this.closeUrl, new Blob([body], {type: 'application/json'}));
         } else {
-            // Server cleanup is best effort; local disposal must complete offline.
-            try {
-                Promise.resolve(this.fetcher(this.closeUrl, {
-                    method: 'POST', credentials: 'same-origin', keepalive: true,
-                    headers: {'Content-Type': 'application/json'}, body,
-                })).catch(() => {});
-            } catch { /* TTL handles delivery failure. */ }
+            this.fetcher(this.closeUrl, {
+                method: 'POST', credentials: 'same-origin', keepalive: true,
+                headers: {'Content-Type': 'application/json'}, body,
+            });
         }
     }
 }

@@ -23,8 +23,9 @@ class GramlotFileServer(GramlotServer):
     ``foo.css`` (CSS), ``foo.md`` (README) and the page logic (group null):
     ``foo.js``, whose ``Logic`` export is the logic (a ``Page`` export, the JS
     version of the same page, stays unused), else ``foo_aux.js``; both at once
-    raise ``ValueError``. Python cannot read the exports of ``foo.js``: beside a
-    Python page it must export ``Logic``, and the browser rejects it otherwise.
+    raise ``ValueError``. Python cannot read the exports of ``foo.js``: it is the
+    logic module beside a Python page, and without ``Logic`` it gives no logic
+    methods in the browser.
     The ``_aux`` suffix is reserved. There are no
     resource levels: a name in ``css_requires``/``js_requires`` raises
     ``InvalidResourceName``.

@@ -17,6 +17,7 @@ import {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 import BINDING from './binding.json' with {type: 'json'};
 import WEBCOMPONENT from './webcomponent.json' with {type: 'json'};
 import {webcomponentCode} from '../webcomponent.js';
+import {randomId} from '../random-id.js';
 import {pointerTransform} from '@genrojs/builders';
 
 
@@ -231,8 +232,7 @@ export class GramlotBuilder extends HtmlBuilder {
         }
         let id = node.getAttr('__ref');
         if (id === null || id === undefined) {
-            id = Array.from(crypto.getRandomValues(new Uint8Array(16)),
-                byte => byte.toString(16).padStart(2, '0')).join('');
+            id = randomId();
             node.setAttr({__ref: id});
         }
         return {$gramlotRef: id, kind};

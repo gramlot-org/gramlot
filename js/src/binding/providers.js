@@ -1,4 +1,3 @@
-import {AskDialog} from './ask-dialog.js';
 import {Bag} from '@genrojs/bag';
 import {RpcResolver} from './rpc-resolver.js';
 import {pointerTransform, pointerDependencies} from '@genrojs/builders';
@@ -126,22 +125,14 @@ export class Provider {
             this.#registrations.push(registration);
             if (name === '_timing' || timingDependencies.has(name)) this.#timingRegistrations.add(registration);
         }
-        const subscriptions = this.binding.runtime.gramlot._subscriptions;
-        for (const name of Object.keys(node.getAttr())) {
-            const prefix = name.startsWith('selfsubscribe_') ? 'selfsubscribe_' : name.startsWith('subscribe_') ? 'subscribe_' : null;
-            if (!prefix) continue;
-            const topic = prefix === 'selfsubscribe_'
-                ? subscriptions.topicFor(node, name.slice(prefix.length)) : name.slice(prefix.length);
-            // Legacy provider declarations subscribe by presence, including a false value.
-            const handle = subscriptions.subscribe(topic, payload => {
-                const trigger = {kind: 'subscription', topic, payload};
-                if (this.#resolved('_userChanges') && topic !== 'node') return;
-                const delay = this.#resolved('_delay');
-                if (delay > 0) this.#timers.debounce(delay, () => this.invoke(trigger));
-                else this.invoke(trigger);
-            });
-            this.#registrations.push({close: () => subscriptions.unsubscribe(handle)});
-        }
+        // Legacy provider declarations subscribe by presence, including a false value.
+        this.#registrations.push(...this.binding.runtime.subscriptions.subscribeNode(node, (name, value, topic) => payload => {
+            const trigger = {kind: 'subscription', topic, payload};
+            if (this.#resolved('_userChanges') && topic !== 'node') return;
+            const delay = this.#resolved('_delay');
+            if (delay > 0) this.#timers.debounce(delay, () => this.invoke(trigger));
+            else this.invoke(trigger);
+        }));
         this.#startTiming();
         if (this.kind === 'remote') this.invoke({kind: 'install', change: null});
     }
@@ -188,8 +179,9 @@ export class Provider {
             kwargs._askResult = trigger.askResult;
         }
         const ask = node.getAttr('_ask');
-        if (ask && !trigger.askDone && AskDialog.required(this.binding, ask, kwargs, '_ask')) {
-            return AskDialog.show(this.binding, ask, kwargs, node.getAttr('_ask_title') ?? 'Warning').then(result => {
+        const askDialog = this.binding.runtime.askDialog;
+        if (ask && !trigger.askDone && askDialog.required(this.binding, ask, kwargs, '_ask')) {
+            return askDialog.show(this.binding, ask, kwargs, node.getAttr('_ask_title') ?? 'Warning').then(result => {
                 if (this.binding.closed) return;
                 if (result === null) {
                     const cancel = node.getAttr('_ask_onCancel');
@@ -303,27 +295,19 @@ export class Provider {
     async #send(request, kwargs, onResult, onError) {
         if (this.binding.closed) return;
         const node = this.node;
-        const {controller} = request;
-        const release = this.binding.track(() => controller.abort());
         const timeout = this.#resolved('timeout');
         const timer = timeout > 0 ? setTimeout(() => {
             const error = new Error(`${node.nodeTag} '${node.label}': no answer within ${timeout} ms`);
             error.name = 'TimeoutError';
-            controller.abort(error);
+            request.controller.abort(error);
         }, timeout) : null;
-        const aborted = new Promise((resolve, reject) => {
-            controller.signal.addEventListener('abort', () => reject(controller.signal.reason), {once: true});
-        });
         let outcome;
         try {
-            const call = this.binding.runtime.gramlot.rpc.call('data', request.method, request.params,
-                {signal: controller.signal});
-            outcome = {result: await Promise.race([call, aborted])};
+            outcome = {result: await this.binding.call('data', request)};
         } catch (error) {
             outcome = {error};
         }
         clearTimeout(timer);
-        release();
         // The node closed, or the developer cancelled the request: the answer is ignored.
         if (this.binding.closed || request.ignored) return;
         if ('error' in outcome) {

@@ -18,13 +18,13 @@ import {LogicRegistry} from '../binding/logic.js';
  * before the renderer observes the Source.
  */
 export class SourceHandler extends Handler {
-    constructor(gramlot, {collections, destination}) {
+    constructor(gramlot, {collections, destination, subscriptions}) {
         super(gramlot);
         // The BindingRuntime reaches the builder through gramlot.src while it attaches.
         gramlot.src = this;
         this.logicRegistry = new LogicRegistry(gramlot);
         this.builder = new GramlotBuilder(null, {collections});
-        this.binding = new BindingRuntime(gramlot);
+        this.binding = new BindingRuntime(gramlot, {subscriptions});
         this.builder.binding = this.binding;
         this.binding.attach();
         this.source = this.builder.source;
@@ -55,7 +55,7 @@ export class SourceHandler extends Handler {
         }
         this.gramlot.state = 'started';
         this.binding.pageStarted();
-        this.gramlot._subscriptions.ready();
+        this.binding.subscriptions.ready();
         return this.gramlot;
     }
     /**
@@ -101,21 +101,15 @@ export class SourceHandler extends Handler {
     /** Send the request of `remoteSource` and mount its fragment; a request of a closed target sends nothing. */
     async #mountRemote(target, binding, request) {
         if (binding.closed || this.gramlot.state === 'disposed') return false;
-        const rpc = this.gramlot.rpc;
-        const {controller} = request;
-        rpc.remoteRequests.set(target, request);
-        const unregister = binding.track(() => controller.abort());
         let applying = false;
-        const current = () => this.gramlot.state !== 'disposed' && !controller.signal.aborted && !request.ignored
-            && !binding.closed;
+        const current = () => this.gramlot.state !== 'disposed' && !request.ignored && !binding.closed;
         try {
-            const wire = await rpc.call('source', request.method, request.params, {signal: controller.signal});
+            const wire = await binding.call('source', request);
             if (!current()) return false;
             const prepared = this.prepareSource(wire, target.builder);
             if (!current()) return false;
             this.renderer.validateCandidate(prepared, {replacingNode: target});
             applying = true;
-            unregister();
             // The target's own prefix text belongs to the old body as well.
             target.setValue(prepared, true, {_text: null}, true);
             binding.remote?.fragmentMounted(request.method, request.text);
@@ -123,9 +117,6 @@ export class SourceHandler extends Handler {
         } catch (error) {
             if (!applying && !current()) return false;
             throw error;
-        } finally {
-            unregister();
-            if (rpc.remoteRequests.get(target) === request) rpc.remoteRequests.delete(target);
         }
     }
 }

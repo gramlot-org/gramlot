@@ -114,7 +114,6 @@ test('the §4.9 rules: constructor, page, child group names, accessors, symbols,
         [class Logic { [Symbol.iterator]() {} }, null, /symbol keys/],
         [class Logic extends Object {}, null, /cannot extend another class/],
         [function Logic() {}, null, /exports no class Logic/],
-        [undefined, null, /exports no class Logic/],
         [class Logic { run() {} }, 'page', /cannot be named 'page'/],
         [class Logic { run() {} }, 'a/constructor', /cannot be named 'constructor'/],
     ];
@@ -127,6 +126,21 @@ test('the §4.9 rules: constructor, page, child group names, accessors, symbols,
     }
     class Plain { run() { return this.constructor; } helper() { return 'constructor ('; } }
     assert.doesNotThrow(() => LogicRegistry.check([{logicClass: Plain, group: null, resource: '/ok.js'}]));
+});
+
+test('d-logic: a module without the Logic export registers no method; its group exists with its resource', () => {
+    const app = page();
+    assert.doesNotThrow(() => LogicRegistry.check([{logicClass: undefined, group: null, resource: '/index.js'},
+        {logicClass: undefined, group: 'gui', resource: '/gui.js'}]));
+    app.src.logicRegistry.register(undefined, {group: null, resource: '/index.js'});
+    app.src.logicRegistry.register(undefined, {group: 'gui', resource: '/gui.js'});
+    assert.deepEqual(Object.keys(app.logic), ['gui']);
+    const node = {nodeTag: 'button', label: 'save'};
+    assert.throws(() => app.src.logicRegistry.resolve('save', node),
+        /the page logic has no method 'save' \(resources: \/index\.js\)/);
+    assert.throws(() => app.src.logicRegistry.resolve('gui.scroll', node),
+        /the group 'gui' has no method 'scroll' \(resources: \/gui\.js\)/);
+    app.dispose();
 });
 
 test('a method named like a child group is an error, in either registration order and in check', () => {

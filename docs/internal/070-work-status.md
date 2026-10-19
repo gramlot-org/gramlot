@@ -9877,3 +9877,42 @@ release or deployment is authorized.
 Verification: 3,593 JavaScript tests pass (baseline 3,585); Python 184 tests and 323
 subtests pass with the existing expected failure (baseline 170 and 305). Chromium
 binding check passes. Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.
+
+<a id="gc-070-1450"></a>
+## 1450. One request race, shared ids and topics, instance state; `Logic` optional (review p3) — 2026-10-19
+
+Phase p3 of the review of the 0.3.5 releases. Implemented on the review branch; no
+release or deployment is authorized.
+
+- Requests: `RpcHandler.call` is the one cancellation of a call. Its `signal` and the
+  dispose of the page (`gramlot.abort`) abort it; it then rejects at once with the
+  abort reason, also when the transport does not stop on its signal; a call aborted
+  before it starts is not sent. `remoteRequests` holds the AbortController of each
+  call in flight by envelope id and is written only by `call`. `NodeBinding.call`
+  sends the request of a node (`node.requests`) through it and the close of the node
+  aborts it: used by `dataRpc`, `dataRemote` and `remoteSource`. A dispose during
+  `main` rejects `start()` at once with "Gramlot was disposed during main".
+- One random id helper, `randomId()` (`js/src/random-id.js`), for the RPC envelope,
+  the frame session, the renderer instance, the Data subscription, the `__ref`
+  reference and the ask dialogs.
+- One topic loop, `SubscriptionsHandler.subscribeNode`, for providers (presence rule)
+  and rendered nodes (handler required), both documented in GC-095 §115; every
+  callback is asked before any subscription is made.
+- `DATA_ROOT` is imported from `@genrojs/builders`. The TYTX `getDateType` copy in
+  `format.js` stays, pointing to genro-org/genro-tytx#62.
+- Instance state: `AskDialog` is one instance per page (`BindingRuntime.askDialog`);
+  the panel and region configurations of the selection and border containers are
+  static private fields of the component classes made per window by
+  `ComponentCollection.register`. `window.gramlot` stays: GC-090 documents it.
+- `_subscriptions` is read only by `Gramlot`; the binding runtime receives it at
+  construction (`BindingRuntime.subscriptions`). `RpcResolver` writes through the
+  public `node` of BagResolver; `_lastUpdate` stays, BagResolver has no public member
+  for a load made outside `resolve`.
+- `HttpTransport.close` keeps no empty `try/catch` and no `.catch(() => {})`.
+- Decision d-logic (constitution 11.86): `Logic` is optional in a logic module; a
+  module without it has no logic methods (GC-095 §060, GC-090 §030).
+
+Verification: 3,598 JavaScript tests pass (baseline 3,593); Python 184 tests and 323
+subtests pass with the existing expected failure. Chromium checks pass: binding,
+messaging, border, page module, components, runtime, component review. Docs:
+`prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.

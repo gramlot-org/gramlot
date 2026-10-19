@@ -258,7 +258,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /** Publish to this node's selfsubscribe topics, as in the legacy Source API. */
     publish(topic, payload = {}) {
-        return this.builder.binding.gramlot._subscriptions.publishNode(this, topic, payload);
+        return this.builder.binding.subscriptions.publishNode(this, topic, payload);
     }
 
     /** Builder's `^` pointers, except the attributes ending in `_path`, which hold a bare path. */

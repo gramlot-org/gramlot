@@ -1390,6 +1390,9 @@ Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
 
 ### Amendment 11.55 — One page module with Page and Logic; gramlot.inout — 2026-10-03
 
+**Superseded in part by 11.86:** `Logic` is optional; a logic module without it has no
+logic methods, and the browser no longer rejects it (item 1).
+
 Owner decisions of 2026-10-03, in the coordinating chat and in the execution of brief 1:
 a JavaScript page is one module that exports `Page` and `Logic` ("io farei lo skeleton con
 2 classi nella new"); beside a Python page the logic module is `foo.js`, not `foo_aux.js`
@@ -2903,3 +2906,27 @@ authorized by these decisions.
 Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
 [GC-095 §105](public/095-writing-pages.md#gc-095-105). Contract: GC-230 §015.
 Status: GC-070 §1440.
+
+
+### Amendment 11.86 — `Logic` is optional in a logic module — 2026-10-19
+
+Owner decision of 2026-10-19, taken in the coordinating chat of the review of the
+0.3.5 releases: "Facoltativa: si scrive solo se serve". Changed principle: the
+`Logic` export of a JavaScript logic module. Superseded: the sentence of 11.55 item 1
+"beside a Python page it exports `Logic`: the browser rejects a module without it,
+naming the file".
+
+1. A logic module (the page module `foo.js`, `foo_aux.js`, a `js_requires` resource)
+   exports `class Logic` only when the page has logic methods. A module without the
+   `Logic` export has no logic methods; its group, when it names one, exists with no
+   method. A `Logic` export that is not a class stays an error naming the file.
+2. A misspelt export (`logic`) is not an error at load: it shows when a `func="..."`
+   names a method, and the error names the method and the resources of the group.
+3. The servers do not change: Python sends `foo.js` beside `foo.py` without reading
+   its exports; the JavaScript `GramlotFileServer` sends the page module only when it
+   exports `Logic`, else `foo_aux.js`.
+
+No release or deployment is authorized by this decision.
+
+Rules: [GC-095 §060](public/095-writing-pages.md#gc-095-060),
+[GC-090 §030](public/090-classes-and-hosts.md#gc-090-030). Status: GC-070 §1450.

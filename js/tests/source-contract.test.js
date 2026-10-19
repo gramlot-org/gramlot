@@ -211,6 +211,36 @@ test('main failure is visible and retryable; disposal prevents late insertion', 
     assert.equal(late.src.source.getNodes().length, 0);
 });
 
+test('gramlot.rpc.call is the one cancellation: its signal and the dispose reject at once, aborted calls are not sent', async () => {
+    const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
+    const sent = [];
+    // A transport that never answers and ignores the signal it receives.
+    const app = new Gramlot({document, pageId: 'page', transport: {call(text, signal) {
+        sent.push({request: fromTytx(text), signal});
+        return new Promise(() => {});
+    }}});
+    const controller = new AbortController();
+    const reason = new Error('stopped by the caller');
+    const stopped = app.rpc.call('data', 'slow', {}, {signal: controller.signal});
+    assert.equal(sent.length, 1);
+    assert.deepEqual([...app.rpc.remoteRequests.keys()], [sent[0].request.id]);
+    controller.abort(reason);
+    // The transport receives the signal of the call, aborted with the reason of the caller.
+    assert.equal(sent[0].signal.aborted, true);
+    assert.equal(sent[0].signal.reason, reason);
+    assert.equal(app.rpc.remoteRequests.size, 0);
+    await assert.rejects(stopped, error => error === reason);
+    await assert.rejects(app.rpc.call('data', 'never', {}, {signal: controller.signal}), error => error === reason);
+    assert.equal(sent.length, 1, 'a call aborted before it starts is not sent');
+    const direct = app.rpc.call('data', 'slow');
+    assert.equal(app.rpc.remoteRequests.size, 1);
+    app.dispose();
+    assert.equal(app.rpc.remoteRequests.size, 0);
+    await assert.rejects(direct, {name: 'AbortError'});
+    await assert.rejects(app.rpc.call('data', 'late'), {name: 'AbortError'});
+    assert.equal(sent.length, 2);
+});
+
 test('transport passes the envelope text, cancellation and failures through the host contract', async () => {
     const signal = new AbortController().signal;
     const transport = new HttpTransport('/rpc', {fetcher: async (url, options) => {

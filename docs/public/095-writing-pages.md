@@ -417,8 +417,9 @@ arrangement. The `business` resource-group example requires genro-kajenn
 resources. For the common FileServer gallery and a first editable page, use the
 root-group method `func="add"` as in c03; `js_requires` is not available there.
 
-Named logic is the primary way to attach behavior. Each logic file exports a
-class called `Logic`. Its methods are copied into a group of the page instance.
+Named logic is the primary way to attach behavior. A logic file that has logic
+methods exports a class called `Logic`. Its methods are copied into a group of the
+page instance. A module without `Logic` has no logic methods.
 
 ```python
 class Page(BasePage):
@@ -458,8 +459,11 @@ export class Logic {
   `Page` export stays unused. A separate companion `orders_aux.js` that exports
   `Logic` stays admitted; a page with both raises an error. Use the companion when
   the JavaScript `Page` imports server-only modules: the page module is imported by
-  the browser too, so all its imports must resolve there. Beside a Python page,
-  `orders.js` exports `Logic`; the browser rejects it otherwise, naming the file.
+  the browser too, so all its imports must resolve there. A page module without
+  `Logic`, also beside a Python page, gives no logic methods: write `Logic` only when
+  the page has methods. A misspelt export (`logic`) is not an error at load; it shows
+  when a `func="..."` looks for its method and the error names the method and the
+  resources of the group.
 - The page logic's methods live in `page.logic`. Each name in `js_requires`
   becomes a group: `page.logic.business`. A name with `/` becomes a nested group.
 - `func='business.discount'` calls a group method; `func='add'` calls a

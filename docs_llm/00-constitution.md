@@ -1282,6 +1282,8 @@ Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
 
 ### Amendment 11.55 — One page module with Page and Logic; gramlot.inout — 2026-10-03
 
+**Superseded in part by 11.86:** `Logic` optional; no browser rejection (item 1).
+
 Owner, 2026-10-03: a JS page is one module exporting `Page` and `Logic` ("io farei lo
 skeleton con 2 classi nella new"); beside a Python page the logic module is `foo.js`
 ("non index_aux.js ma solo index.js in python perché non c'è ambiguità"); `foo_aux.js`
@@ -2750,3 +2752,22 @@ Names `Exposed` and `node.requests`: chosen by the implementation, confirmed by 
 owner on 2026-10-19 (GC-225 §010). No release or deployment authorized.
 Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
 [GC-095 §105](public/095-writing-pages.md#gc-095-105); GC-230 §015; GC-070 §1440.
+
+
+### Amendment 11.86 — `Logic` is optional in a logic module — 2026-10-19
+
+Owner decision of 2026-10-19 (coordinating chat, review of the 0.3.5 releases):
+"Facoltativa: si scrive solo se serve". Supersedes the 11.55 item 1 sentence "beside
+a Python page it exports `Logic`: the browser rejects a module without it".
+
+1. A logic module (`foo.js`, `foo_aux.js`, a `js_requires` resource) exports `class
+   Logic` only when the page has methods; without it, no methods (its group exists
+   empty); a non-class `Logic` export stays an error naming the file.
+2. A misspelt export (`logic`) shows when a `func` names a method; the error names
+   the method and the group's resources.
+3. Servers unchanged: Python sends `foo.js` beside `foo.py` unread; JS
+   `GramlotFileServer` sends the page module only when it exports `Logic`.
+
+No release or deployment authorized.
+Rules: [GC-095 §060](public/095-writing-pages.md#gc-095-060),
+[GC-090 §030](public/090-classes-and-hosts.md#gc-090-030); GC-070 §1450.

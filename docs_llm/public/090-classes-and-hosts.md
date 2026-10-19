@@ -328,8 +328,9 @@ and the logic of `orders.py`.
 
 Page logic (0.2.5), group null: JS page → the page module's `Logic` export, else
 `orders_aux.js`; Python page → `orders.js` beside `orders.py` (its `Logic`; its `Page`
-unused), else `orders_aux.js`. Python cannot read JS exports: beside a Python page
-`orders.js` exports `Logic`, else the browser rejects it naming the file. Both modules
+unused), else `orders_aux.js`. Python cannot read JS exports: it sends `orders.js`;
+without `Logic` it gives no methods. `Logic` only when the page has methods; a missing
+method is reported by the `func` that names it. Both modules
 → error (`Error`/`ValueError`) before registration. The browser imports the page
 module, so its imports must resolve there; a JS `Page` with server-only imports keeps
 `orders_aux.js`.

@@ -31,7 +31,9 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
     /** HTML nodes (GramlotBuilder, HtmlBuilder) → this renderer; SVG nodes → one GramlotSvgRenderer owned by it. */
     getRender(builder) {
         if (!this.renders.has(builder)) {
-            // HTML/SVG subbuilders share the page's expression hook and compiler.
+            // HTML/SVG subbuilders share the page's expression hook and compiler. Builder creates a subbuilder
+            // from its dialect registry (getSubbuilder) and calls the subbuilder's own hook: no Gramlot subclass
+            // can take its place.
             builder.evaluatePointerExpression = this.builder.evaluatePointerExpression.bind(this.builder);
             if (builder instanceof HtmlBuilder) this.addRender(builder, this);
             else if (builder instanceof SvgBuilder) this.addRender(builder, new GramlotSvgRenderer(builder, this));

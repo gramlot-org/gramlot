@@ -152,6 +152,15 @@ client/server contract in 0.2.14).
   {signal})`, which sends the GC-230 envelope and resolves with the value or rejects
   with `RpcError`. It holds the transport: `HttpTransport` (`js/src/http-transport.js`,
   formerly `MainTransport` in `transport.js`) or one injected with the same `call`.
+  `call` is the one cancellation: `signal` and `gramlot.abort` abort it, it rejects at
+  once; `remoteRequests` = AbortController per call in flight by envelope id, written
+  only by `call`.
+- Review 0.3.5 p3 names (internal, browser): `NodeBinding.call(contentType, request)`
+  (as `RpcHandler.call`; node close aborts); `SubscriptionsHandler.subscribeNode(node,
+  callbackFor)` (as `publishNode`); `BindingRuntime.askDialog` (as `inlineCompiler`);
+  `BindingRuntime.subscriptions` = private `_subscriptions` given at construction.
+  No convention covers a shared module function: `randomId()` in `js/src/random-id.js`
+  is chosen by the implementation, not yet confirmed by the owner.
 - `GramlotServer` (`src/gramlot/server/gramlot_server.py`,
   `js/src/server/gramlot-server.js`) and `GramlotFileServer` assure the same
   functionality in both languages: `close_all`/`closeAll` empties the registry,

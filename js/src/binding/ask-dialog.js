@@ -1,12 +1,29 @@
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
+import {randomId} from '../random-id.js';
 
-const pages = new WeakMap();
 const SPEC_KEYS = new Set(['title', 'msg', 'fields', '_if', 'askIf']);
 const FIELD_KEYS = new Set(['name', 'lbl', 'tag', 'type', 'default_value', 'required', 'min', 'max', 'step', 'placeholder']);
 
-/** A bounded native dialog authored through Source/Data and named Logic. */
+/**
+ * A bounded native dialog authored through Source/Data and named Logic. One instance per page, owned by
+ * its BindingRuntime (`runtime.askDialog`): the `ask_<id>` Logic group, registered at the first dialog, and
+ * the dialogs open.
+ */
 export class AskDialog {
-    static required(binding, specification, parameters, attribute) {
+    #runtime;
+    // The name of the Logic group of the dialogs, null before the first one.
+    #group = null;
+    // The open dialogs by id: `{finish(confirmed)}`.
+    #requests = new Map();
+
+    constructor(runtime) {
+        this.#runtime = runtime;
+    }
+
+    get runtime() { return this.#runtime; }
+
+    /** Whether the ask `specification` of `binding` asks now, with `parameters` for its conditions. */
+    required(binding, specification, parameters, attribute) {
         const evaluate = (name, code) => typeof code === 'boolean' ? code
             : binding.runtime.inlineCompiler.compile(binding.node, name, code,
                 Object.keys(parameters), `return (${code});`)(parameters);
@@ -19,7 +36,8 @@ export class AskDialog {
         return !specification?._if || Boolean(evaluate(`${attribute}._if`, specification._if));
     }
 
-    static show(binding, specification, parameters, title = 'Parameters') {
+    /** Show the dialog of `specification`; resolves with the values of its fields, or null when cancelled. */
+    show(binding, specification, parameters, title = 'Parameters') {
         const spec = typeof specification === 'string' ? {msg: specification, title} : specification;
         if (!spec || typeof spec !== 'object' || Array.isArray(spec)) throw new TypeError('ask requires text or a parameter description');
         for (const key of Object.keys(spec)) {
@@ -39,21 +57,11 @@ export class AskDialog {
                 throw new Error(`Unsupported ask input type: ${field.type}`);
             }
         }
-        const app = binding.runtime.gramlot;
-        let page = pages.get(app);
-        if (!page) {
-            const group = `ask_${Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('')}`;
-            const requests = new Map();
-            class Logic {
-                confirm(node, event) { event.preventDefault(); requests.get(node.getAttr('request'))?.finish(true); }
-                cancel(node, event) { event.preventDefault(); requests.get(node.getAttr('request'))?.finish(false); }
-            }
-            app.src.logicRegistry.register(Logic, {group, resource: 'gramlot:ask'});
-            page = {group, requests};
-            pages.set(app, page);
-        }
+        const app = this.runtime.gramlot;
+        const group = this.#logicGroup();
+        const requests = this.#requests;
         return new Promise((resolve, reject) => {
-            const id = `ask_${Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('')}`;
+            const id = `ask_${randomId()}`;
             let finished = false;
             let release = () => {};
             const finish = (confirmed, failure = null) => {
@@ -61,7 +69,7 @@ export class AskDialog {
                 finished = true;
                 const result = confirmed ? Object.fromEntries(fields.map(field =>
                     [field.name, app.data.getItem(`${id}.${field.name}`)])) : null;
-                page.requests.delete(id);
+                requests.delete(id);
                 release();
                 try {
                     app.src.source.popNode(id);
@@ -70,17 +78,17 @@ export class AskDialog {
                     else resolve(result);
                 } catch (error) { reject(error); }
             };
-            page.requests.set(id, {finish});
+            requests.set(id, {finish});
             release = binding.track(() => finish(false));
             try {
                 const builder = new GramlotBuilder();
                 const dialog = builder.root.dialog({node_id: id, datapath: id, request: id,
-                    connect_oncancel: `${page.group}.cancel`, connect_onclose: `${page.group}.cancel`,
+                    connect_oncancel: `${group}.cancel`, connect_onclose: `${group}.cancel`,
                     class: 'gramlot-ask', 'aria-labelledby': `${id}_title`,
                     style: 'border:1px solid #aab4c2;border-radius:8px;padding:16px;max-width:32rem;width:calc(100% - 48px);font:inherit;'});
                 dialog.h2(spec.title ?? title, {id: `${id}_title`, style: 'font-size:1.1em;margin:0 0 12px;'});
                 if (spec.msg) dialog.p(spec.msg);
-                const form = dialog.form({request: id, connect_onsubmit: `${page.group}.confirm`});
+                const form = dialog.form({request: id, connect_onsubmit: `${group}.confirm`});
                 for (const field of fields) {
                     form.dataSetter({destination_path: `.${field.name}`,
                         value: Object.hasOwn(parameters, field.name) ? parameters[field.name]
@@ -95,7 +103,7 @@ export class AskDialog {
                     else row.input({...attrs, type: field.type ?? 'text'});
                 }
                 const buttons = form.div({style: 'display:flex;justify-content:flex-end;gap:8px;margin-top:16px;'});
-                buttons.html_button('Cancel', {type: 'button', request: id, connect_onclick: `${page.group}.cancel`});
+                buttons.html_button('Cancel', {type: 'button', request: id, connect_onclick: `${group}.cancel`});
                 buttons.html_button('Confirm', {type: 'submit', autofocus: fields.length === 0});
                 app.src.source.setItem(id, app.src.prepareSource(builder.source));
                 const node = app.src.binding.nodeIds.get(id);
@@ -104,5 +112,20 @@ export class AskDialog {
                 finish(false, error);
             }
         });
+    }
+
+    /** The name of the Logic group whose `confirm` and `cancel` close the dialogs, registered once. */
+    #logicGroup() {
+        if (this.#group === null) {
+            const group = `ask_${randomId()}`;
+            const requests = this.#requests;
+            class Logic {
+                confirm(node, event) { event.preventDefault(); requests.get(node.getAttr('request'))?.finish(true); }
+                cancel(node, event) { event.preventDefault(); requests.get(node.getAttr('request'))?.finish(false); }
+            }
+            this.runtime.logicRegistry.register(Logic, {group, resource: 'gramlot:ask'});
+            this.#group = group;
+        }
+        return this.#group;
     }
 }

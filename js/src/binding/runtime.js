@@ -4,6 +4,8 @@ import {DataInstaller} from './installation.js';
 import {ControllerProvider, FormulaProvider, RemoteProvider, RpcProvider} from './providers.js';
 import {InlineCompiler} from './inline.js';
 import {RemoteBinding} from './remote.js';
+import {AskDialog} from './ask-dialog.js';
+import {randomId} from '../random-id.js';
 import {pointerDependencies} from '@genrojs/builders';
 
 
@@ -32,18 +34,23 @@ export class BindingRuntime {
     #router;
     #installer;
     #inlineCompiler;
-    #subscription = `gramlot-data-${Array.from(crypto.getRandomValues(new Uint8Array(16)),
-        byte => byte.toString(16).padStart(2, '0')).join('')}`;
+    #askDialog;
+    #subscriptions;
+    #subscription = `gramlot-data-${randomId()}`;
     #disposed = false;
 
-    constructor(gramlot) {
+    constructor(gramlot, {subscriptions}) {
         this.#gramlot = gramlot;
+        this.#subscriptions = subscriptions;
         this.#router = new DataRouter(this);
         this.#installer = new DataInstaller(this);
         this.#inlineCompiler = new InlineCompiler(this);
+        this.#askDialog = new AskDialog(this);
     }
 
     get gramlot() { return this.#gramlot; }
+    /** The page topics and Source self-topics: the private `_subscriptions` of the Gramlot instance, given at construction. */
+    get subscriptions() { return this.#subscriptions; }
     get builder() { return this.gramlot.src.builder; }
     get renderer() { return this.gramlot.src.renderer; }
     get logicRegistry() { return this.gramlot.src.logicRegistry; }
@@ -58,6 +65,8 @@ export class BindingRuntime {
     get installer() { return this.#installer; }
     /** The compiler of the page's inline code (§4.10). */
     get inlineCompiler() { return this.#inlineCompiler; }
+    /** The ask dialogs of the page (`_ask` of a provider, `ask` of a button). */
+    get askDialog() { return this.#askDialog; }
     /** `node_id → node` of the Source nodes with an open NodeBinding (R06). */
     get nodeIds() { return this.#nodeIds; }
 
@@ -431,14 +440,9 @@ export class NodeBinding {
     /** Rendered node topic handlers share semantic lifetime, not DOM lifetime. */
     #registerTopics() {
         const node = this.node;
-        const subscriptions = this.runtime.gramlot._subscriptions;
-        for (const [name, handler] of Object.entries(node.getAttr())) {
-            const prefix = name.startsWith('selfsubscribe_') ? 'selfsubscribe_' : name.startsWith('subscribe_') ? 'subscribe_' : null;
-            if (!prefix) continue;
+        this.#registrations.push(...this.runtime.subscriptions.subscribeNode(node, (name, handler) => {
             if (typeof handler !== 'string' || !handler) throw new TypeError(`${name} requires a handler`);
-            const topic = prefix === 'selfsubscribe_'
-                ? subscriptions.topicFor(node, name.slice(prefix.length)) : name.slice(prefix.length);
-            const handle = subscriptions.subscribe(topic, payload => {
+            return payload => {
                 if (this.closed) return;
                 if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/.test(handler)) {
                     const {group, method} = this.runtime.logicRegistry.resolve(handler, node);
@@ -449,9 +453,8 @@ export class NodeBinding {
                     !key.startsWith('subscribe_') && !key.startsWith('selfsubscribe_')));
                 const values = {...this.runtime.renderer.references.resolveArguments(authored), p_0: payload};
                 return this.runtime.inlineCompiler.compile(node, name, handler, Object.keys(values))(values);
-            });
-            this.#registrations.push({close: () => subscriptions.unsubscribe(handle)});
-        }
+            };
+        }));
     }
 
     /** Close the registrations and make them again from the current pointers, the provider's included (D1). */
@@ -483,6 +486,25 @@ export class NodeBinding {
             const index = this.#disposers.indexOf(disposer);
             if (index !== -1) this.#disposers.splice(index, 1);
         };
+    }
+
+    /**
+     * Send `request`, the request of this node in flight (NodeRequests), through `gramlot.rpc.call` as
+     * `contentType`; resolves with the value. The close of the node aborts it until the answer arrives, also
+     * when the answer arrived and was not yet received here: the call then rejects with the abort reason.
+     * Used by `dataRpc`, `dataRemote` and `remoteSource`.
+     */
+    async call(contentType, request) {
+        const {controller} = request;
+        const release = this.track(() => controller.abort());
+        try {
+            const value = await this.runtime.gramlot.rpc.call(contentType, request.method, request.params,
+                {signal: controller.signal});
+            if (controller.signal.aborted) throw controller.signal.reason;
+            return value;
+        } finally {
+            release();
+        }
     }
 
     /** Close the registrations, then run the disposers in reverse order and collect their errors. */

@@ -190,7 +190,7 @@ settle previously unapproved proposals, not older approved behavior.
 | P18 | Canonical signatures in §010, no legacy dispatch; optional setter value | S02 → valid/invalid signatures in both languages |
 | P19 | *Historical:* reject legacy data-element calls with migration message only if distinguishable from HTML5 data without content heuristics; otherwise documentation migration. No alias. *Decided 2026-09-28:* `data` is forbidden; every `data(...)` call errors naming `dataSetter` and `html_data` (§010) | S01/S02 → observed legacy call and legitimate HTML5 data |
 | P20 | Formula: method(kwargs) returns result; controller: method(node, kwargs); this=group. Resolved author attributes plus _node, _triggerpars, _reason, and button _evt/button_*; exclude control attributes listed in §040 | S07/S08 → argument/receiver contract |
-| P21 | Each resource exports class Logic; per-page resource groups, companion root, specific methods override generic. Supersedes static-method holder/page mixin proposal. *Revision 8:* groups from `js_requires` need a Host with a resource system (kajenn or a test Host); with the minimal FileHost only the companion root group exists | S07 → groups, collision, constructor and isolation checks |
+| P21 | Each resource exports class Logic; per-page resource groups, companion root, specific methods override generic. Supersedes static-method holder/page mixin proposal. *Revision 8:* groups from `js_requires` need a Host with a resource system (kajenn or a test Host); with the minimal FileHost only the companion root group exists. *Constitution 11.86 (2026-10-19):* `Logic` is optional; a module without it has no logic methods. | S07 → groups, collision, constructor and isolation checks |
 | P22 | Numeric _onStart in ms; true and 0 immediate; negative/nonfinite error; independent of other-trigger _delay | S08 → virtual clock |
 | P23 | Same snake_case requires fields in Python and JS, no aliases | S06/S14 → authoring and all hosts |
 | P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins (superseded by constitution 11.85, 2026-10-19: one request in flight per node, always applied; the first later call waits) | S03 → rebuild, removal, late response, frozen living target |
@@ -567,8 +567,8 @@ Block ID: **GC-210-045**.
 LogicRegistry(gramlot) exposes gramlot, register(logicClass,{group,resource}),
 resolve(name,node) returning {group,method} or resource/node error. LogicGroup has
 only page as its own framework member. Companion methods live in gramlot.logic;
-requires names become groups, slash names nested groups. Each resource exports
-class Logic. Copy Logic.prototype methods except constructor, in load order;
+requires names become groups, slash names nested groups. A resource with logic
+methods exports class Logic; one without it has none (constitution 11.86). Copy Logic.prototype methods except constructor, in load order;
 explicit constructors are errors and never run. Methods initialize group/page state.
 Method/child-group or method/page collisions are errors; missing names error.
 `this` is group, `this.page` the Gramlot instance. Named formulas take kwargs,

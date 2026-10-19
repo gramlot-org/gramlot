@@ -450,9 +450,12 @@ page or in its folder:
   `orders_aux.js`;
 - Python page: `orders.js` beside `orders.py`, else `orders_aux.js`. Its `Logic`
   export is the logic; its `Page` export, the JavaScript version of the same page,
-  stays unused. Python cannot read the exports of a JavaScript file: `orders.js`
-  beside a Python page exports `Logic`, and the browser rejects it otherwise,
-  naming the file.
+  stays unused. Python cannot read the exports of a JavaScript file: the server
+  sends `orders.js` as the logic module, and an `orders.js` without `Logic` gives
+  no logic methods.
+
+`Logic` is written only when the page has logic methods: a logic module without it
+has none, and a `func="..."` that names a method reports the missing method.
 
 Both modules for one page raise an error (`Error` in JavaScript, `ValueError` in
 Python), before the page is registered. The page module is imported by the browser

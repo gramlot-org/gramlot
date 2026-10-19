@@ -34,7 +34,8 @@ export class Gramlot {
         this.timeZone = timeZone ?? browserContext.timeZone;
         Object.defineProperty(this, '_subscriptions', {value: new SubscriptionsHandler(this)});
         this.capabilities = Object.freeze([...capabilities]);
-        this.src = new SourceHandler(this, {collections, destination: element ?? document.getElementById(rootId)});
+        this.src = new SourceHandler(this, {collections, destination: element ?? document.getElementById(rootId),
+            subscriptions: this._subscriptions});
         this.data = this.src.builder.data;
         this.rpc = new RpcHandler(this, {rpcUrl, closeUrl, document, transport});
         this.dom = new DomHandler(this);
@@ -63,9 +64,17 @@ export class Gramlot {
         return this.loading;
     }
     async loadMain() {
+        let wire;
         try {
-            const wire = await this.rpc.call('source', 'main', {}, {signal: this.abort.signal});
-            if (this.state === 'disposed') throw new Error('Gramlot was disposed during main');
+            wire = await this.rpc.call('source', 'main');
+        } catch (error) {
+            // The dispose aborts the call at once (RpcHandler.call): the start rejects naming the dispose.
+            if (this.state === 'disposed') throw new Error('Gramlot was disposed during main', {cause: error});
+            this.state = 'failed';
+            throw error;
+        }
+        if (this.state === 'disposed') throw new Error('Gramlot was disposed during main');
+        try {
             return this.src.mountMainSource(wire);
         } catch (error) {
             if (this.state !== 'disposed') this.state = 'failed';
@@ -77,9 +86,8 @@ export class Gramlot {
         this.state = 'disposed';
         this._subscriptions.dispose();
         if (this.pagehide) this.window.removeEventListener('pagehide', this.pagehide);
+        // Every call in flight is aborted: RpcHandler.call follows this signal.
         this.abort.abort();
-        for (const request of this.rpc.remoteRequests.values()) request.controller.abort();
-        this.rpc.remoteRequests.clear();
         try {
             try { this.src.binding.dispose(); }
             finally { this.src.renderer.dispose(); }
