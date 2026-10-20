@@ -4,6 +4,7 @@ name: Publish release
 # PyPI, npm (@gramlot/gramlot) and JSR (@gramlot/gramlot) use trusted publishing from
 # gramlot-org/gramlot, publish.yml; PyPI and npm also require the environment release.
 # The npm and JSR jobs skip a version that is already on their registry.
+# JSR is optional: its job may fail or time out without failing the release.
 
 on:
   workflow_dispatch:
@@ -165,8 +166,11 @@ jobs:
           fi
 
   jsr:
+    # Optional registry (owner, 2026-10-20): a JSR failure or timeout does not fail the release.
     needs: github-release
     runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 20
     permissions:
       contents: read
       id-token: write
