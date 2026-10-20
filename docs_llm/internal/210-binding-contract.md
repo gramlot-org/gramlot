@@ -1,5 +1,8 @@
 # 210 · Gramlot 0.2.0 binding contract and execution plan
 
+> **Historical naming:** dated `node_id` references below are superseded by
+> `nodeId` in both languages (constitution 11.88; GC-225 §080).
+
 Document ID: **GC-210**. Recorded: **2026-09-25**. Updated: **2026-09-30** (review corrections, §090; plan revision 10, §005).
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](../005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.

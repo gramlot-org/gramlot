@@ -19,7 +19,7 @@ transport=None if sys.argv[1]=='json' else sys.argv[1]
 if sys.argv[2]=='encode':
     source=SourceBag(); children=SourceBag()
     children.set_item('leaf','Hello',node_tag='span')
-    source.set_item('section',children,node_tag='section')
+    source.set_item('section',children,node_tag='section',nodeId='section-source')
     wire=to_tytx(source,transport)
     print(base64.b64encode(wire.encode() if isinstance(wire,str) else wire).decode())
 else:
@@ -28,6 +28,7 @@ else:
     assert isinstance(source,SourceBag)
     node=source.get_node('section')
     assert isinstance(node,SourceBagNode) and node.node_tag=='section'
+    assert node.attr['nodeId']=='section-source' and 'node_id' not in node.attr
     assert isinstance(node.value,SourceBag)
     leaf=source.get_node('section.leaf')
     assert isinstance(leaf,SourceBagNode) and leaf.node_tag=='span' and leaf.value=='Hello'
@@ -41,6 +42,8 @@ else:
         assert.ok(section instanceof SourceBagNode);
         assert.ok(section.value instanceof SourceBag);
         assert.equal(section.nodeTag, 'section');
+        assert.equal(section.getAttr('nodeId'), 'section-source');
+        assert.equal(Object.hasOwn(section.attr, 'node_id'), false);
         assert.equal(section.value.getNodes()[0].nodeTag, 'span');
         assert.equal(section.value.getNodes()[0].value, 'Hello');
         const wire = sourceBagToTytx(source, {transport});

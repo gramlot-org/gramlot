@@ -54,7 +54,7 @@ export class SubscriptionsHandler extends Handler {
         const forward = topic.parent || topic.iframe !== undefined ? this.#frames.prepare(topic, payload) : null;
         if (Object.hasOwn(topic, 'nodeId')) {
             const node = this.gramlot.src.binding.nodeIds.get(topic.nodeId);
-            if (!node) throw new Error(`node_id not found: ${topic.nodeId}`);
+            if (!node) throw new Error(`nodeId not found: ${topic.nodeId}`);
             return this.publishNode(node, topic.topic, payload);
         }
         this.#deliver(topic.topic, payload);
@@ -66,7 +66,7 @@ export class SubscriptionsHandler extends Handler {
         node = sourceTarget(node);
         const binding = this.gramlot.src.binding.bindingFor(node);
         if (!binding || binding.closed) throw new Error('Topic target is not an active Source node of this page');
-        let id = node.getAttr('node_id');
+        let id = node.getAttr('nodeId');
         if (id == null) {
             if (!this.#nodeIds.has(node)) this.#nodeIds.set(node, `gramlot-self-${++this.#sequence}`);
             id = this.#nodeIds.get(node);

@@ -369,7 +369,7 @@ Removed references fail explicitly, including after an ask wait.
 `target.publish` addresses its `selfsubscribe_refresh` handler. Rendered-node inline
 handlers receive the single payload as `p_0`; dotted named Logic handlers receive
 `(node, payload)`. Providers use their usual argument signatures. A node with
-`node_id="editor"` can also receive
+`nodeId="editor"` can also receive
 `gramlot.publish({topic: 'refresh', nodeId: 'editor'}, {text: 'Updated'})`.
 Source `subscribe`/`unsubscribe` keep their Bag-observation meaning;
 they are not topic APIs. Node self-topics retain legacy qualified topic naming.

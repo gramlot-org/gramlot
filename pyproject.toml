@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gramlot"
-version = "0.3.6"
+version = "0.3.7"
 description = "Declarative HTML/SVG interfaces with live data binding, authored in JavaScript or Python."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.11"
-dependencies = ["genro-bag>=0.28.0", "genro-builders>=0.29.0", "genro-tytx>=0.16.3"]
+dependencies = ["genro-bag>=0.28.0", "genro-builders>=0.30.0", "genro-tytx>=0.16.3"]
 
 [project.urls]
 Homepage = "https://github.com/gramlot-org/gramlot"

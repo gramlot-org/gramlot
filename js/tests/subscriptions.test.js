@@ -94,7 +94,7 @@ test('legacy false subscription declarations still register and formula messages
 
 test('subscribeNode asks every callback before subscribing: a refused declaration subscribes none', () => {
     const {app} = page();
-    authored(app, root => root.div({node_id: 'pane', subscribe_first: "this.SET('first', p_0.n);",
+    authored(app, root => root.div({nodeId: 'pane', subscribe_first: "this.SET('first', p_0.n);",
         selfsubscribe_second: "this.SET('second', p_0.n);"}));
     app.publish('first', {n: 1});
     assert.equal(app.data.getItem('first'), 1);
@@ -112,12 +112,12 @@ test('subscribeNode asks every callback before subscribing: a refused declaratio
     app.dispose();
 });
 
-test('Source self topics isolate nodes and nodeId descriptors address the declared node_id', () => {
+test('Source self topics isolate nodes and nodeId descriptors address the declared nodeId', () => {
     const {app} = page();
     authored(app, root => {
-        root.div({node_id: 'first', selfsubscribe_refresh: "this.SET('first', p_0.id);"});
-        root.div({node_id: 'second', selfsubscribe_refresh: "this.SET('second', p_0.id);"});
-        root.dataController({node_id: 'controller', selfsubscribe_run: true, script: "this.SET('result', id);"});
+        root.div({nodeId: 'first', selfsubscribe_refresh: "this.SET('first', p_0.id);"});
+        root.div({nodeId: 'second', selfsubscribe_refresh: "this.SET('second', p_0.id);"});
+        root.dataController({nodeId: 'controller', selfsubscribe_run: true, script: "this.SET('result', id);"});
     });
     app.publish('refresh', {id: 1});
     assert.equal(app.data.getItem('first'), null);
@@ -165,7 +165,7 @@ print(b.to_tytx())
 
 test('subscription rebind does not duplicate callbacks and branch disposal cancels message delay', async () => {
     const {app} = page();
-    authored(app, root => root.dataController({node_id: 'work', subscribe_run: true,
+    authored(app, root => root.dataController({nodeId: 'work', subscribe_run: true,
         script: "this.SET('answer', id);", _delay: 20}));
     const node = sourceTarget(app.src.builder.nodeById('work'));
     app.src.binding.bindingFor(node).rebind();

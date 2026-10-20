@@ -216,7 +216,7 @@ test('replacement may reuse a removed descendant reference without leaking metad
 test('native attributes share Source keyword rules and never publish structural metadata', () => {
     const {document, builder, source, renderer} = setup();
     const authored = sourceTarget(builder.root.div('typed', {
-        id:'typed', _class:'before', foo_:'literal', datapath:'customer', node_id:'typed-ref',
+        id:'typed', _class:'before', foo_:'literal', datapath:'customer', nodeId:'typed-ref',
     }));
     const typed = document.getElementById('typed');
     assert.equal(typed.className, 'before');
@@ -227,10 +227,10 @@ test('native attributes share Source keyword rules and never publish structural 
     assert.equal(typed.className, 'after');
     assert.equal(typed.getAttribute('foo_'), 'changed');
     assert.equal(typed.hasAttribute('datapath'), false);
-    assert.equal(typed.hasAttribute('node_id'), false);
+    assert.equal(typed.hasAttribute('nodeId'), false);
 
     const block = sourceBlock(builder, root => root.div('wire', {
-        id:'wire', _class:'wire-before', datapath:'record', node_id:'wire-ref', updateOn:'blur',
+        id:'wire', _class:'wire-before', datapath:'record', nodeId:'wire-ref', updateOn:'blur',
     }));
     const legacy = block.getNodes()[0];
     source.setItem('wireBlock', block);
@@ -238,7 +238,7 @@ test('native attributes share Source keyword rules and never publish structural 
     assert.equal(wire.className, 'wire-before');
     legacy.setAttr({_class:'wire-after', datapath:'updated'});
     assert.equal(wire.className, 'wire-after');
-    for (const name of ['datapath', 'node_id', 'updateOn', '_class']) {
+    for (const name of ['datapath', 'nodeId', 'updateOn', '_class']) {
         assert.equal(wire.hasAttribute(name), false, name);
     }
     renderer.dispose();

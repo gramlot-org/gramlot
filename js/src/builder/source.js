@@ -447,7 +447,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         return path === null ? null : super._finalizeAbsPath(path, attr);
     }
 
-    /** Builder's symbolic resolution; `#<node_id>` reads the node_id map of the page runtime when there is one (R06). */
+    /** Builder's symbolic resolution; `#<nodeId>` reads the nodeId map of the page runtime when there is one (R06). */
     _resolveSymbolicDatapath(path, raw) {
         const symbol = path.slice(1).split('.', 1)[0];
         if (symbol === 'FORM' || symbol === 'ANCHOR') return super._resolveSymbolicDatapath(path, raw);

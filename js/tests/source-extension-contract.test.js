@@ -121,7 +121,7 @@ test('a relative variable datapath is read in the parent context and counts as w
 
 for (const symbol of ['FORM', 'ANCHOR', 'target']) {
     test(`symbolic #${symbol} keeps ?attr through GramlotBuilderBagNode.absDatapath and GET`, () => {
-        const {builder, branch} = mountedBranch({datapath: 'main.form', form: true, _anchor: true, node_id: 'target'});
+        const {builder, branch} = mountedBranch({datapath: 'main.form', form: true, _anchor: true, nodeId: 'target'});
         const node = branch.setItem('reader', null);
         builder.data.setItem('main.form.x', 'value', {caption: 'Caption'});
         assert.equal(node.absDatapath(`#${symbol}.x?caption`), 'main.form.x?caption');
@@ -137,7 +137,7 @@ test('Python Source decoded in the browser keeps node identity as a Map key afte
 from gramlot import GramlotBuilder
 import json
 builder = GramlotBuilder()
-panel = builder.root.div("before", id="panel")
+panel = builder.root.div("before", id="panel", nodeId="source-panel")
 from genro_tytx import to_tytx
 child = panel.span("after")
 ref = builder.reference(child)
@@ -151,6 +151,11 @@ print(json.dumps({"wire": to_tytx(builder.source), "ref": ref}))
     const child = panel.value.getNodes()[0];
     const identity = new Map([[panel, 'panel'], [child, 'child']]);
     app.src.startSource(prepared);
+    assert.equal(app.src.binding.nodeIds.get('source-panel'), panel);
+    assert.equal(sourceTarget(app.src.builder.nodeById('source-panel')), panel);
+    assert.equal(panel.getAttr('nodeId'), 'source-panel');
+    assert.equal(Object.hasOwn(panel.attr, 'node_id'), false);
+    assert.equal(document.getElementById('panel').hasAttribute('nodeId'), false);
     const mounted = app.src.source.getItem('main');
     assert.equal(identity.get(mounted.getNodes()[0]), 'panel');
     assert.equal(identity.get(mounted.getNodes()[0].value.getNodes()[0]), 'child');

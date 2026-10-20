@@ -98,14 +98,14 @@ test('container index creates Source on demand, deduplicates pending requests an
     const shell = builder.root.div({id: 'index'});
     shell.html_button('Navigation', {id: 'index-navigation-toggle'});
     shell.html_button('Code', {id: 'index-code-toggle'});
-    const regions = shell.borderContainer({data_index_regions: true, node_id: 'regions'});
-    const sidebar = regions.contentPane({region: 'left', id: 'index-sidebar', class: 'index-sidebar', node_id: 'nav'});
+    const regions = shell.borderContainer({data_index_regions: true, nodeId: 'regions'});
+    const sidebar = regions.contentPane({region: 'left', id: 'index-sidebar', class: 'index-sidebar', nodeId: 'nav'});
     const links = sidebar.details({open: true});
     for (const key of ['one', 'two']) links.a(key, {id: `open-${key}`, href: key});
     shell.dataSetter({destination_path: 'indexState.active', value: 'intro'});
     const pages = regions.contentPane({region: 'center'}).tabContainer({id: 'index-pages', selectedPage: '^indexState.active'});
     pages.contentPane({id: 'panel-intro', title: 'Intro', pageName: 'intro'}).p('Welcome');
-    regions.contentPane({region: 'right', id: 'index-code', node_id: 'code'}).div('Code');
+    regions.contentPane({region: 'right', id: 'index-code', nodeId: 'code'}).div('Code');
     const app = new Gramlot({document, transport: false, collections: [layout]}).src.startSource(builder.source);
     t.after(() => {app.dispose(); document.defaultView.close();});
     const renderer = app.src.renderer;

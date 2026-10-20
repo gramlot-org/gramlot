@@ -2,7 +2,9 @@
 
 Document ID: **GC-070**. Updated: **2026-10-20**.
 
-**Current release:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
+**Historical record — published checkpoint before the naming migration:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
+
+**Naming release in progress:** the owner-approved Source identity migration is locally verified and publication is proceeding in dependency order; see [§1490](#gc-070-1490).
 
 **Earlier checkpoint:** the 0.3 component release is published and verified from the public registries: seventeen inputs, labelbox, formlet/groupBox, command buttons, themes/touch and the complete field-validation engine. Final cross-host qualification and publication receipts are in [§1175](#gc-070-1175) and [§1185](#gc-070-1185).
 
@@ -10404,3 +10406,30 @@ External review of the published releases, three points, all confirmed and corre
 3. This document: the opening states the current release; the earlier checkpoints stay as records.
 
 Outside the releases, owner review pending: the database selectors (GC-315 §050) and the c23 stay-estimate lesson.
+
+
+<a id="gc-070-1490"></a>
+
+## 1490. Coordinated Source identity release — 2026-10-20
+
+Owner authorized releases with the settled naming (“peer ora va bene cosi :
+sistema cosi e facciamo le release con questi nomi”). Constitution 11.88/11.89
+and GC-225 §080/§085/§090 record the naming contract and release scope. Earlier
+unpublished local records used amendment numbers 11.85/11.86; those numbers are
+already occupied on public main, so this consolidation uses 11.88/11.89.
+
+Prepared on current public baselines: Builder Python 0.30.0, Builder JS 0.7.0,
+Gramlot 0.3.7, examples 0.3.10. The migration changes only Source identity
+`node_id` → `nodeId` and matching dependency minima, tests and documentation.
+System callbacks and namespaced parameters retain their approved spellings.
+Examples and gallery are migrated in both languages. Local unrelated work is
+not part of this release. Publication proceeds Builder Python/JS, then core,
+then examples; verification and registry outcomes are recorded below.
+
+Local qualification: Builder Python 651 tests and Ruff; Builder JS 176 tests;
+core Python 216 passed, one existing expected failure and 382 subtests; core
+JavaScript 3,651 passed. The public manual builds with warnings treated as
+errors and passes page, source, search, local-link and mirrored-anchor checks.
+Python/JavaScript transport checks assert `nodeId` and exclude the old key.
+Builder Python is published on PyPI; Builder JS is published on npm, with JSR
+publication still running. Core release CI and package publication are next.

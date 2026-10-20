@@ -644,7 +644,7 @@ enter the FIFO and run after the current event.
 | `upd_value`, old value `SourceBag` | `closeBranch` of the children of `event.oldvalue` |
 | `upd_value`, new value `SourceBag` | `installer.install(new value)` |
 | `upd_value`, new scalar or null | only closure of the old branch, if any |
-| `upd_attrs` | `rebind()` of the node; `rebindBranch(node)` if `attrs_diff` touches `datapath`, `_anchor`, `node_id`, `form` or `formId` |
+| `upd_attrs` | `rebind()` of the node; `rebindBranch(node)` if `attrs_diff` touches `datapath`, `_anchor`, `nodeId`, `form` or `formId` |
 | `upd_value_attr` | old branch closure, then `upd_attrs`, then new branch installation |
 
 **Data write.** A write reaches the document Bag; the event propagates to Builder's
@@ -663,7 +663,7 @@ freeze. Thaw builds the current Source once, with no reinstallation and no repea
 **Planned authoring semantics used by the runtime:**
 
 - Symbolic paths already resolved by Builder: `#parent`, `#FORM` (first ancestor with
-  `formId` or `form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<node_id>`.
+  `formId` or `form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<nodeId>`.
   `GramlotBuilderBagNode.absDatapath` keeps `?attr` on them.
   Legacy `#WORKSPACE`, `#ROW`, `#DATA` are out of 0.2.0.
 - Button click mechanisms, one per button (P10): nested `dataController` (primary);

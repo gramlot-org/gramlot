@@ -8,7 +8,7 @@ for (const symbol of ['FORM', 'ANCHOR', 'target']) {
         const builder = new BuilderBase();
         const scope = new GramlotBuilderBag(null, builder);
         builder.source.setItem('scope', scope, {
-            datapath: 'main.form', form: true, _anchor: true, node_id: 'target',
+            datapath: 'main.form', form: true, _anchor: true, nodeId: 'target',
         });
         const node = scope.setItem('reader', null);
         builder.data.setItem('main.form.x', 'value', {caption: 'Caption'});

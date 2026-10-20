@@ -88,7 +88,7 @@ test('ask._if skips field collection and runs with existing arguments; legacy as
 });
 
 test('button action gets collected arguments, while closing its owner cancels any later action', async () => {
-    const {app, document, window} = page(root => root.button('Go', {id: 'go', node_id: 'go',
+    const {app, document, window} = page(root => root.button('Go', {id: 'go', nodeId: 'go',
         action: "this.SET('answer', count);", count: 2,
         ask: {fields: [{name: 'count', type: 'number', lbl: 'Count'}]}}));
     document.getElementById('go').click();
@@ -105,7 +105,7 @@ test('button action gets collected arguments, while closing its owner cancels an
 });
 
 test('unsupported legacy widgets fail explicitly without leaving a dialog or temporary Data', async () => {
-    const {app, document} = page(root => root.dataController({node_id: 'work', script: "this.SET('bad', true);",
+    const {app, document} = page(root => root.dataController({nodeId: 'work', script: "this.SET('bad', true);",
         _ask: {fields: [{name: 'x', tag: 'dbSelect'}]}}));
     const node = sourceTarget(app.src.builder.nodeById('work'));
     assert.throws(() => app.src.binding.bindingFor(node).providers[0].invoke({kind: 'subscription', topic: 'run', payload: {}}), /Unsupported ask widget/);
@@ -116,8 +116,8 @@ test('unsupported legacy widgets fail explicitly without leaving a dialog or tem
 
 test('pending ask rereads authored references and rejects a removed target without executing', async () => {
     const {app, document, window} = page(root => {
-        const target = root.div({node_id: 'target'});
-        root.dataController({node_id: 'work', target, script: "this.SET('executed', true);", _ask: 'Proceed?'});
+        const target = root.div({nodeId: 'target'});
+        root.dataController({nodeId: 'work', target, script: "this.SET('executed', true);", _ask: 'Proceed?'});
     });
     const node = sourceTarget(app.src.builder.nodeById('work'));
     const pending = app.src.binding.bindingFor(node).providers[0].invoke({kind: 'subscription', topic: 'run', payload: {}});

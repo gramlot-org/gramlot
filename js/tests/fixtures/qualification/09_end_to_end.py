@@ -11,7 +11,7 @@ class Page(BasePage):
         pane = root.div(class_="example-page stack", datapath="story")
         pane.h1("^.settings.caption", id="caption")
 
-        form = pane.form(class_="card stack", node_id="form")
+        form = pane.form(class_="card stack", nodeId="form")
         form.html_label("Caption", for_="caption-field")
         form.input(value="^.settings.caption", live="^.live", id="caption-field")
         row = form.div()
@@ -42,16 +42,16 @@ class Page(BasePage):
         pane.dataFormula(".radius", "Math.min(20 + total * 4, 90)", total="^.total", _init=True)
         pane.dataController(func="paint", total="^.total", _init=True)
 
-        later = pane.section(class_="card stack", node_id="later")
+        later = pane.section(class_="card stack", nodeId="later")
         later.h2("A later branch")
-        notes = later.ul(node_id="notes", id="notes")
+        notes = later.ul(nodeId="notes", id="notes")
         for text in ("Setters live here too", "This note can be removed under freeze"):
             notes.li(text)
         actions = later.div(class_="actions")
         for label, method in (("Load extras", "loadExtras"), ("Freeze", "freeze"),
                               ("Remove a note", "removeNote"), ("Thaw", "thaw")):
             actions.button(label, id=method).dataController(func=method)
-        later.section(node_id="extras", id="extras").p("No extras yet.", class_="muted")
+        later.section(nodeId="extras", id="extras").p("No extras yet.", class_="muted")
         later.dataSetter(".settings.caption", "The story of a page")
         later.dataSetter(".size", {"small": True, "large": False})
         later.dataSetter(".gift", False)
