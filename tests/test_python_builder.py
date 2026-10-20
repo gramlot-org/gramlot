@@ -280,7 +280,7 @@ class LegacyTransportProbeTests(unittest.TestCase):
         bag["x"] = 1
         bag.get_node("x").attr.update({"keep": 1, "gone": None})
         wire = to_tytx(bag)
-        self.assertIn('"gone": null', wire)
+        self.assertIn('"gone":null', wire)
         self.assertEqual(dict(from_tytx(wire).get_node("x").attr), {"keep": 1, "gone": None})
 
 
