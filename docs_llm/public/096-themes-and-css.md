@@ -211,8 +211,12 @@ Block ID: **GC-096-040**.
 
 `class_`/`_class` writes class; classes and style accept strings/null, not
 dicts/Bags/lists. Shortcuts compose inline style and win over the same property
-in `style`; null removes a shortcut property. SVG stays SVG; width/height on
-img/canvas/embed and width/border on table remain HTML attributes.
+in `style`; null removes a shortcut property. The value of a shortcut is written with its CSS unit, as in
+legacy (`width="12rem"`, `margin_top="4px"`) and copied unchanged: `width=20` gives `width: 20`, invalid CSS
+that the browser ignores. `rounded` is the exception: a number is pixels (`rounded=4` → `border-*-radius: 4px`,
+also `rounded_top` and the other side/corner forms). Plain-number properties (`opacity`, `z_index`) take a
+number. SVG stays SVG (`svg(width=100)` valid); width/height on
+img/canvas/embed and width/border on table remain HTML attributes with plain numbers.
 The full guide adds a three-column Python → Source → DOM comparison: literal
 color/font_size, duplicate style/shortcut precedence, and a pointer before/after a
 Data update. Source snapshots are attribute excerpts, not a serialized Bag. DOM

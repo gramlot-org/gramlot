@@ -1,6 +1,6 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-19**.
+Document ID: **GC-070**. Updated: **2026-10-20**.
 
 **Release preparation:** JavaScript gallery aligned with Python, packaged Python/Node/offline qualification and inspector CI prepared; publication remains pending. See [§1395](#gc-070-1395).
 
@@ -10245,4 +10245,35 @@ Implemented on the review branch; no release or deployment is authorized.
 
 Verification: 3,651 JavaScript tests pass (baseline 3,646); Python 215 tests and 382
 subtests pass with the existing expected failure (baseline 214 and 382). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1482"></a>
+## 1482. Style shortcuts take their CSS unit; `rounded` is the exception (review p13a) — 2026-10-20
+
+Phase p13a of the review of the 0.3.5 releases (documentation fix, owner decision of 2026-10-19).
+Implemented on the review branch; no release or deployment is authorized.
+
+- Rule (GC-096 §040). The value of a style shortcut is written with its CSS unit, as in legacy
+  GenroPy (`genro_dom.js` `getStyleDict` copies the value unchanged): `width="20px"`,
+  `margin_top="4px"`. A number without a unit is not valid CSS: `width=20` is written as
+  `width: 20` and the browser ignores the declaration (verified in the Python renderer). `rounded`
+  is the exception, as `css3style_rounded` in legacy: a number is pixels, `rounded=4` gives
+  `border-*-radius: 4px`, also for `rounded_top` and the other side and corner forms. Properties
+  whose CSS value is a plain number (`opacity`, `z_index`, `line_height`) take a number. SVG
+  presentation attributes are not style shortcuts: `svg(width=100)` stays valid.
+- Examples and sentences corrected: GC-095 §005 (`margin_top=4` is now `margin_top='4px'`, with a
+  pointer to the rule) and GC-097 §070, block GC-095-070 (the sentence that numeric shortcuts such as `width=10` are
+  accepted now says the value is not checked for a unit and points to the rule). The other public
+  examples already carry units (`width="12rem"`, `width="^width:{}px"`). The regional dimensions of
+  `borderContainer` (GC-105 §100) are a component contract, not a style shortcut, and keep their
+  pixel numbers.
+- Finding, not documented: besides `rounded`, the renderer also reads a number as pixels in the
+  sub-keywords `transform_translate_x`, `transform_translate_y` and `filter_blur`
+  (`px()` of `gramlot.js`). No public document mentions them. The owner decides whether they
+  are listed with `rounded`.
+- Docs: GC-095 §005, GC-096 §040, GC-097 §070 with their docs_llm mirrors.
+
+Verification: 3,651 JavaScript tests pass (baseline 3,651); Python 215 tests and 382
+subtests pass with the existing expected failure (baseline 215 and 382). Docs: `prepare_docs`,
 Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).

@@ -459,9 +459,11 @@ the attributes are composed, also on resolved pointers and on live `==` results;
 the static renderers leave `==` expressions to the browser. A rejected live value
 leaves the displayed attribute unchanged and does not undo the Data or Source write;
 correct the value to resume the projection. The same check applies to SVG and to
-literal `html_style`/`html_class` attributes. Numeric style shortcuts such as
-`width=10` are accepted. `style` as a Bag or dictionary and `root.css()` are not
-supported; themes are described in [Themes and CSS](096-themes-and-css.md).
+literal `html_style`/`html_class` attributes. The value of a style shortcut is not
+checked for a unit: `width=10` is written as `width: 10` and the browser ignores it, so
+write `width="10px"`; the rule and its `rounded` exception are in
+[Themes and CSS](096-themes-and-css.md#gc-096-040). `style` as a Bag or dictionary and
+`root.css()` are not supported; themes are described in [Themes and CSS](096-themes-and-css.md).
 
 ### Attribute templates and text masks
 

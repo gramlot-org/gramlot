@@ -218,7 +218,8 @@ other HTML attributes: written as is, null removes. `style`/`class` other than s
 Python and JS static renderers and the live renderer, before composition, also for resolved pointers and live
 `==` results (static renderers leave `==` to the browser); a rejected live value leaves the displayed
 attribute and the Data/Source write as they are; same check on SVG and literal `html_style`/`html_class`;
-numeric shortcuts such as `width=10` accepted. Not supported: style as Bag/dict, `root.css()`; themes:
+a shortcut value is not checked for a unit (`width=10` gives `width: 10`, ignored by the browser; write
+`width="10px"`; rule and `rounded` exception in [GC-096 040](096-themes-and-css.md#gc-096-040)). Not supported: style as Bag/dict, `root.css()`; themes:
 [Themes and CSS](096-themes-and-css.md).
 
 ### Attribute templates and text masks

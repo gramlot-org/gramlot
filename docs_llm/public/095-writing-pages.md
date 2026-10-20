@@ -38,7 +38,8 @@ Python calls return real SourceBagNode objects; JS uses the generic builder hand
 parsed HTML. HTML attributes work; `class_` escapes the keyword; the exported HTML5 collection's open
 signatures accept any HTML attribute. Legacy style shortcuts (`color=`, `font_size=`, `margin_top=`,
 `style_*`, `rounded=`) compose one `style` with `style='…'`, as static Builder `HtmlRenderer`; `_class` is
-`class`; all react to Data ([GC-095 070](097-data-binding.md#gc-095-070)).
+`class`; all react to Data ([GC-095 070](097-data-binding.md#gc-095-070)). A length carries its CSS unit
+(`margin_top='4px'`), except in `rounded`; rule in [GC-096 040](096-themes-and-css.md#gc-096-040).
 
 <a id="gc-095-010"></a>
 

@@ -799,11 +799,21 @@ Inside `main`, these declarations illustrate a one-off style and shortcuts:
 ```
 
 The last element is blue: a shortcut wins over the same property in `style`.
-Explicit CSS units make dimensions easier to read. Shortcuts include `font_size`,
-`margin_top`, `padding_*`, `border_*` and the general `style_*` form. A null
-shortcut removes its property from the composed inline style. SVG presentation
-attributes remain SVG attributes, not HTML style shortcuts. `width`/`height` on
-`img`, `canvas` and `embed`, and `width`/`border` on `table`, remain HTML attributes.
+Shortcuts include `font_size`, `margin_top`, `padding_*`, `border_*` and the general
+`style_*` form. A null shortcut removes its property from the composed inline style.
+
+The value of a style shortcut is written with its CSS unit, as in legacy GenroPy:
+`width="12rem"`, `margin_top="4px"`. Gramlot writes the value into the composed
+`style` unchanged. A length without a unit, such as `width=20`, is written as
+`width: 20`. That is not valid CSS, and the browser ignores the declaration.
+`rounded` is the exception: a number is read as pixels, so `rounded=4` gives
+`border-*-radius: 4px`, and so do its side and corner forms such as `rounded_top`.
+A property whose CSS value is a plain number, such as `opacity` or `z_index`, takes
+a number.
+
+SVG presentation attributes remain SVG attributes, not HTML style shortcuts, so
+`svg(width=100)` is valid. `width`/`height` on `img`, `canvas` and `embed`, and
+`width`/`border` on `table`, remain HTML attributes and take plain numbers.
 The [binding reference](097-data-binding.md#gc-095-070) gives the full rules.
 
 ### Follow one style from Python to the browser

@@ -49,10 +49,12 @@ supported; `class_` escapes the Python keyword. The exported HTML5 collection
 defines the vocabulary; its open signatures accept any HTML attribute.
 
 The legacy style shortcuts become CSS styling in the browser: `color='red'`,
-`font_size='12px'`, `margin_top=4`, `style_aspect_ratio='16/9'`, `rounded=8`. They
+`font_size='12px'`, `margin_top='4px'`, `style_aspect_ratio='16/9'`, `rounded=8`. They
 compose one `style` attribute with `style='…'`, as the static Builder
 `HtmlRenderer` does. `_class` is `class`. They react to Data like any attribute
-([Data binding and controllers](097-data-binding.md#gc-095-070)).
+([Data binding and controllers](097-data-binding.md#gc-095-070)). A length is written
+with its CSS unit, except in `rounded`; the rule is in
+[Themes and CSS](096-themes-and-css.md#gc-096-040).
 
 <a id="gc-095-010"></a>
 
