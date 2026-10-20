@@ -4,7 +4,7 @@ Document ID: **GC-070**. Updated: **2026-10-20**.
 
 **Historical record — published checkpoint before the naming migration:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
 
-**Naming release in progress:** the owner-approved Source identity migration is locally verified and publication is proceeding in dependency order; see [§1490](#gc-070-1490).
+**Source identity release:** the owner-approved naming is implemented, verified and published on PyPI/npm. JSR is waiting for the accepted Builder upload to leave its queue; see the [release receipts and remaining publication step (§1495)](#gc-070-1495).
 
 **Earlier checkpoint:** the 0.3 component release is published and verified from the public registries: seventeen inputs, labelbox, formlet/groupBox, command buttons, themes/touch and the complete field-validation engine. Final cross-host qualification and publication receipts are in [§1175](#gc-070-1175) and [§1185](#gc-070-1185).
 
@@ -10410,7 +10410,7 @@ Outside the releases, owner review pending: the database selectors (GC-315 §050
 
 <a id="gc-070-1490"></a>
 
-## 1490. Coordinated Source identity release — 2026-10-20
+## 1490. Historical record — coordinated Source identity release preparation — 2026-10-20
 
 Owner authorized releases with the settled naming (“peer ora va bene cosi :
 sistema cosi e facciamo le release con questi nomi”). Constitution 11.88/11.89
@@ -10433,3 +10433,56 @@ errors and passes page, source, search, local-link and mirrored-anchor checks.
 Python/JavaScript transport checks assert `nodeId` and exclude the old key.
 Builder Python is published on PyPI; Builder JS is published on npm, with JSR
 publication still running. Core release CI and package publication are next.
+
+
+<a id="gc-070-1495"></a>
+
+## 1495. Historical record — Source identity release receipts — 2026-10-20
+
+Owner-approved spelling is released: `nodeId` is shared by Python and JavaScript;
+`_onCalling`, `_onResult`, `_onError`, `node_label`, `node_position` and `target_id`
+retain their names. No other naming proposals were implemented. Constitution
+11.88/11.89 and GC-225 §§080–090 are the consolidated decision record.
+
+Published packages and source consolidation:
+
+| Package | Release | Registry | Review |
+| --- | --- | --- | --- |
+| genro-builders | [0.30.0](https://github.com/genro-org/genro-builders/releases/tag/v0.30.0) | PyPI | [#62](https://github.com/genro-org/genro-builders/pull/62) |
+| @genrojs/builders | [0.7.0](https://github.com/genro-org/genro-builders-js/releases/tag/v0.7.0) | npm | [#24](https://github.com/genro-org/genro-builders-js/pull/24) |
+| gramlot / @gramlot/gramlot | [0.3.7](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.7) | PyPI and npm | [#57](https://github.com/gramlot-org/gramlot/pull/57) |
+| gramlot-examples / @gramlot/gramlot-examples | [0.3.10](https://github.com/gramlot-org/gramlot-examples/releases/tag/v0.3.10) | PyPI and npm | [#25](https://github.com/gramlot-org/gramlot-examples/pull/25) |
+
+Release runs: [Builder Python](https://github.com/genro-org/genro-builders/actions/runs/39427215795),
+[core](https://github.com/gramlot-org/gramlot/actions/runs/39428170606),
+[examples](https://github.com/gramlot-org/gramlot-examples/actions/runs/39430175336).
+PyPI and npm availability was checked directly. Clean installs of the published
+core and Builders pass Source lookup, transport spelling and Python HTML metadata
+exclusion checks. The core release validates identical freshly built runtime
+content in the wheel and npm archive; the examples release does the same for the
+gallery bundle.
+
+Qualification: Builders 651 Python / 176 JavaScript tests and Ruff; core 216
+Python tests, 382 subtests, one pre-existing expected failure, and 3,651 JavaScript
+tests; examples 19 Python / 187 JavaScript tests including Source parity. CI also
+passes Python 3.11/3.12/3.13 where configured, Node, Bun, Chromium/WebKit core
+checks, inspector checks and every example page through both servers. Both public
+manuals compile with warnings treated as errors and pass local-link/anchor checks;
+the examples manual includes 79 lessons. A transient PyPI catalogue propagation
+failure in the examples Node job and a Fulcio HTTP 502 during publication were
+resolved by rerunning only the affected jobs, without changing source or gates.
+
+**Outstanding external publication:** JSR accepted the Builder upload but its
+[publishing receipt](https://jsr.io/api/publish_status/2f209817-383a-47d1-9945-c702b750d95f)
+remains `pending`, with no reported package error. The initial job stalled; a
+[retry](https://github.com/genro-org/genro-builders-js/actions/runs/39427196917)
+confirmed the existing upload and then lost its status connection. Builder 0.7.0
+is not yet available on JSR, so the optional core JSR job cannot resolve that
+required version. Resume only that core job once the Builder version is available.
+PyPI/npm releases are complete; JSR publication is not claimed. No dependency
+fallback, older-version substitution or unsigned publication was introduced.
+
+Migration requirement: update declarations and direct attribute access, regenerate
+saved Source using `node_id`, and upgrade producers and consumers together. No
+compatibility alias is provided. Unrelated local work was excluded from these
+releases.
