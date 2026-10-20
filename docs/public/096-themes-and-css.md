@@ -806,10 +806,24 @@ The value of a style shortcut is written with its CSS unit, as in legacy GenroPy
 `width="12rem"`, `margin_top="4px"`. Gramlot writes the value into the composed
 `style` unchanged. A length without a unit, such as `width=20`, is written as
 `width: 20`. That is not valid CSS, and the browser ignores the declaration.
-`rounded` is the exception: a number is read as pixels, so `rounded=4` gives
-`border-*-radius: 4px`, and so do its side and corner forms such as `rounded_top`.
 A property whose CSS value is a plain number, such as `opacity` or `z_index`, takes
 a number.
+
+A number becomes pixels only in these sub-keys, in Python and in JavaScript alike:
+
+- `rounded` and its side and corner forms (`rounded_top`, `rounded_bottom`,
+  `rounded_left`, `rounded_right`, `rounded_top_left`, `rounded_top_right`,
+  `rounded_bottom_left`, `rounded_bottom_right`). `rounded=4` gives
+  `border-*-radius: 4px`.
+- `transform_translate_x` and `transform_translate_y`. `transform_translate_x=10`
+  gives `transform: translateX(10px)`.
+- `filter_blur`. `filter_blur=2` gives `filter: blur(2px)`.
+
+The first two groups are legacy GenroPy behaviour. Legacy has no `blur` in `filter`;
+`filter_blur` follows the same rule. Only a number is converted. `rounded="4"` is
+written as `4`, and `rounded="1rem"` as `1rem`. Every other shortcut writes its value
+unchanged, including `shadow`, which takes a complete `box-shadow` value such as
+`shadow="0 2px 6px gray"`.
 
 SVG presentation attributes remain SVG attributes, not HTML style shortcuts, so
 `svg(width=100)` is valid. `width`/`height` on `img`, `canvas` and `embed`, and

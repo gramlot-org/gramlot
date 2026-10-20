@@ -2805,5 +2805,5 @@ for every HTTP request.
    `dataRpc`, `remote` asynchronous. Synchronous XHR is deprecated and blocks the page; a
    later step aims to avoid it.
 
-Implementation names (GC-225 §010) await owner confirmation. No release or deployment
-authorized. Rules: GC-230; GC-090 §017, §020, §030; GC-095 §105; GC-096 §005; GC-070 §1455.
+Implementation names (GC-225 §010) confirmed by the owner on 2026-10-19, except the "no
+theme" value `False`, which awaits confirmation. No release or deployment authorized. Rules: GC-230; GC-090 §017, §020, §030; GC-095 §105; GC-096 §005; GC-070 §1455.

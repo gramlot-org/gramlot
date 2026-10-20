@@ -2994,9 +2994,9 @@ for every HTTP request.
 
 The names chosen by the implementation (GC-225 §010: `ServerAdapter`,
 `createTransport`, `NameSyntax`, `callSync`, `supportsCallSync`, `decode_body`,
-`close`, `companion_file`, `theme_file`, `theme_css`, the "no theme" value `False`)
-await the owner's confirmation. No release or deployment is authorized by these
-decisions.
+`close`, `companion_file`, `theme_file`, `theme_css`) were confirmed by the owner on
+2026-10-19. The "no theme" value `False` still awaits the owner's confirmation. No
+release or deployment is authorized by these decisions.
 
 Rules: GC-230 §010, §015, §030, §045, §120, §125, §135, §145, §150;
 [GC-090 §017](public/090-classes-and-hosts.md#gc-090-017),

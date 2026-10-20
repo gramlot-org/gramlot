@@ -461,7 +461,7 @@ leaves the displayed attribute unchanged and does not undo the Data or Source wr
 correct the value to resume the projection. The same check applies to SVG and to
 literal `html_style`/`html_class` attributes. The value of a style shortcut is not
 checked for a unit: `width=10` is written as `width: 10` and the browser ignores it, so
-write `width="10px"`; the rule and its `rounded` exception are in
+write `width="10px"`; the rule and its exceptions (`rounded` and a few other sub-keys) are in
 [Themes and CSS](096-themes-and-css.md#gc-096-040). `style` as a Bag or dictionary and
 `root.css()` are not supported; themes are described in [Themes and CSS](096-themes-and-css.md).
 

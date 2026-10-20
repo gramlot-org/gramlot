@@ -8890,7 +8890,7 @@ review branch; no release or deployment is authorized.
   `HEAD`; Django, Kajenn and js-server 0.2.13 answer 405 without `Allow`; the five
   Python adapters refuse the byte order mark; js-server shares one owner.
 - Docs: GC-230 (revised sections), GC-090 §015/§017/§020/§030, GC-095 §105, GC-096,
-  GC-225 §010 (names to be confirmed), constitution 11.87, with their docs_llm mirrors.
+  GC-225 §010 (names confirmed by the owner on 2026-10-19, see §1483), constitution 11.87, with their docs_llm mirrors.
 
 Verification: 3,629 JavaScript tests pass (baseline 3,598); Python 198 tests and 365
 subtests pass with the existing expected failure (baseline 184 and 323). Chromium
@@ -9102,7 +9102,8 @@ Implemented on the review branch; no release or deployment is authorized.
   not serve. `theme_css`/`themeCss` was already on `GramlotServer`.
 - The file lookup is in a new module, `files.py`/`files.js` (`file_below`/`fileBelow`, `THEMES`;
   JavaScript also `inside` and `realFile`); `companion_file`/`companionFile` uses it too. GC-225
-  gets the row "Helper modules" (the name `files`, to be confirmed by the owner).
+  gets the row "Helper modules" (the module `files` is a provisional implementation, not an
+  accepted name or design; see §1483).
 - JavaScript: `gramlot-server.js` is the neutral module that the serverless Worker bundles for the
   browser, so it cannot import Node.js: esbuild stops at `node:fs/promises`, a literal
   `import()` included. `themeFile` loads `files.js` on its first call with `import(NODE_FILES)`,
@@ -9144,7 +9145,7 @@ Implemented on the review branch; no release or deployment is authorized.
   (midnight UTC `D`, the epoch day `H`, any other instant `DHZ`): it needs no export.
   `isDecimal` is not exported: it is not an authoring need. Python needs no change: its pages
   import `Decimal`, `datetime` and `Bag` from their packages. GC-225 gets the row "Typed literals
-  of the page entry" (to be confirmed by the owner).
+  of the page entry" (confirmed by the owner on 2026-10-20).
 - Tests. `js/tests/page-literals.test.js` (4 tests) and the fixture `js/tests/fixtures/page-literals/`:
   the page entry of the server and the runtime export the same page surface; one page module
   builds a Decimal, a date, a date and time, a time and a Bag, once with the name resolved by
@@ -9169,8 +9170,8 @@ Implemented on the review branch; no release or deployment is authorized.
   `.eyebrow`. The layer `gramlot.utilities` now has `.actions` (`display: flex`, wrapping, gap
   `--gramlot-space-2`, 0.5rem as the lessons wrote it) and `.eyebrow` (no margin, `--gramlot-text-secondary`,
   0.75rem, 700, `letter-spacing: .08em`, uppercase). The `.actions` class of the GroupBox component
-  is in its shadow root and does not meet the theme class. The class names are public theme CSS and are
-  to be confirmed by the owner; GC-225 gets the row "Utility classes of the base theme". The lesson
+  is in its shadow root and does not meet the theme class. The class names are public theme CSS and were
+  confirmed by the owner on 2026-10-20; GC-225 gets the row "Utility classes of the base theme". The lesson
   stylesheets keep their copies until `gramlot-examples` removes them; they are unlayered and win.
 - Docs: GC-090 §024 and §020 (import map), GC-097 §045, GC-099 §105, GC-096 §035, GC-225 and
   `themes/gramlot-base/README.md`, with their docs_llm mirrors.
@@ -9181,31 +9182,85 @@ Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
 
 
 <a id="gc-070-1482"></a>
-## 1482. Style shortcuts take their CSS unit; `rounded` is the exception (review p13a) — 2026-10-20
+## 1482. Style shortcuts take their CSS unit; a few legacy sub-keys read a number as pixels (review p13a, p13c) — 2026-10-20
 
-Phase p13a of the review of the 0.3.5 releases (documentation fix, owner decision of 2026-10-19).
+Phases p13a and p13c of the review of the 0.3.5 releases (documentation fix, owner decisions of
+2026-10-19 and 2026-10-20).
 Implemented on the review branch; no release or deployment is authorized.
 
 - Rule (GC-096 §040). The value of a style shortcut is written with its CSS unit, as in legacy
   GenroPy (`genro_dom.js` `getStyleDict` copies the value unchanged): `width="20px"`,
   `margin_top="4px"`. A number without a unit is not valid CSS: `width=20` is written as
-  `width: 20` and the browser ignores the declaration (verified in the Python renderer). `rounded`
-  is the exception, as `css3style_rounded` in legacy: a number is pixels, `rounded=4` gives
-  `border-*-radius: 4px`, also for `rounded_top` and the other side and corner forms. Properties
+  `width: 20` and the browser ignores the declaration (verified in the Python renderer). Properties
   whose CSS value is a plain number (`opacity`, `z_index`, `line_height`) take a number. SVG
-  presentation attributes are not style shortcuts: `svg(width=100)` stays valid.
+  presentation attributes are not style shortcuts: `svg(width=100)` stays valid. The sub-keys that
+  read a number as pixels are in the last bullet of this entry (p13c).
 - Examples and sentences corrected: GC-095 §005 (`margin_top=4` is now `margin_top='4px'`, with a
   pointer to the rule) and GC-097 §070, block GC-095-070 (the sentence that numeric shortcuts such as `width=10` are
   accepted now says the value is not checked for a unit and points to the rule). The other public
   examples already carry units (`width="12rem"`, `width="^width:{}px"`). The regional dimensions of
   `borderContainer` (GC-105 §100) are a component contract, not a style shortcut, and keep their
   pixel numbers.
-- Finding, not documented: besides `rounded`, the renderer also reads a number as pixels in the
-  sub-keywords `transform_translate_x`, `transform_translate_y` and `filter_blur`
-  (`px()` of `gramlot.js`). No public document mentions them. The owner decides whether they
-  are listed with `rounded`.
+- Decided (owner, 2026-10-20, p13c). The finding of p13a is closed: a number becomes pixels only in
+  the sub-keys inherited from the legacy, and GC-096 §040 lists them. The keys were verified in the
+  source of the Builder renderers, not only in the bundle: `px()` of `@genrojs/builders`
+  (`src/renderer/html.js`, `_macro_rounded`, `_macro_transform`, `_macro_filter`) and `_px()` of
+  `genro_builders` (`contrib/html/html_renderer.py`, the same three methods). Both convert the
+  same keys, checked by rendering each key in Python and in JavaScript with identical output:
+  - `rounded` and its forms `rounded_top`, `rounded_bottom`, `rounded_left`, `rounded_right`,
+    `rounded_top_left`, `rounded_top_right`, `rounded_bottom_left`, `rounded_bottom_right`
+    (legacy `css3style_rounded`, `v+'px'`);
+  - `transform_translate_x` and `transform_translate_y` (legacy `css3style_transform`, lines 535-536
+    of `genro_dom.js`);
+  - `filter_blur`: the Builder renderers convert it, legacy `css3style_filter` has no `blur`
+    (it reads `rotate`, `invert` and `contrast`).
+  Only a number converts; a string is written as given (`rounded="4"` gives `4`). Gramlot has no
+  code of its own for this: `GramlotHtmlRenderer.adaptAttrs`/`adapt_attrs` call the Builder renderer.
+- Difference from legacy, not changed: legacy `css3style_shadow` adds `px` to `x`, `y` and `blur`
+  and builds `box-shadow`. The Builder renderers write the parts of `shadow` as
+  `box-shadow-<part>: <value>` (`shadow_x=2` gives `box-shadow-x: 2`, not a CSS property) and pass a
+  full `shadow="…"` value through. GC-096 §040 says that `shadow` takes a complete `box-shadow` value.
+  Python and JavaScript do not differ from each other. Correcting the renderers would be an issue in
+  `genro-builders` and `genro-builders-js`.
 - Docs: GC-095 §005, GC-096 §040, GC-097 §070 with their docs_llm mirrors.
 
 Verification: 3,651 JavaScript tests pass (baseline 3,651); Python 215 tests and 382
 subtests pass with the existing expected failure (baseline 215 and 382). Docs: `prepare_docs`,
 Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1483"></a>
+## 1483. Names confirmed by the owner; module `files` provisional (review p13c) — 2026-10-20
+
+Phase p13c of the review of the 0.3.5 releases (documentation only; no code changed).
+Implemented on the review branch; no release or deployment is authorized.
+
+- Confirmed by the owner on 2026-10-20 (GC-225 §010): `Bag`, `BagNode` and `createDecimal` exported by
+  the page entry and the runtime; the theme classes `actions` and `eyebrow`.
+- Confirmed by the owner on 2026-10-19 (GC-225 §010 and the item "Names of the review of 0.3.5, phase p3"):
+  - p3: `NodeBinding.call`, `subscribeNode`, `askDialog`, `BindingRuntime.subscriptions`,
+    `randomId` and `random-id.js`.
+  - p4: `ServerAdapter`, `createTransport`, `PageBootstrap.loadServerAdapter`, `resources.serverAdapter`,
+    `server_adapter`/`serverAdapter`, `NameSyntax`, `NAME_SYNTAX`, `name_syntax`/`nameSyntax`, `matches`,
+    `to_dict`/`from_dict`/`toJSON`/`fromJSON`, `decode_body`/`decodeBody`, `close`,
+    `companion_file`/`companionFile`, `theme_file`/`themeFile`, `theme_css`/`themeCss`, `identity`,
+    `css_theme`/`cssTheme`, `callSync`, `supportsCallSync`, `submitSync`.
+  - The marks "to be confirmed" are replaced in GC-225 (rows "Server adapter of the page", "Name syntax",
+    "Synchronous call", "Operations shared by the adapters", "Theme of a page", "Utility classes of the
+    base theme", "Typed literals of the page entry" and the p3 item), in constitution 11.87 and in the
+    entries 1455, 1480 and 1481 of this document.
+- Still awaiting the owner: the "no theme" value of `css_theme`, `False` in Python and `false` in
+  JavaScript (GC-225 row "Theme of a page", constitution 11.87). It was not in the list of confirmed names.
+- Not accepted (owner, 2026-10-20): the module `files` (`files.py`/`files.js`, `file_below`/`fileBelow`,
+  `THEMES`). It is a provisional implementation, not an accepted name or design. The owner places it in
+  the topic of pages and resources, which a dedicated study of the next cycle reorganizes; the module
+  was not adequately motivated and will be replaced by that organization. The code is not renamed.
+  GC-225 row "Helper modules" says so; GC-230 §145 only names the file `js/src/server/files.js` where
+  it describes `themeFile`.
+- Style shortcut units: see §1482.
+- Docs: GC-096 §040, GC-095 §005, GC-097 §070, GC-225, constitution 11.87, GC-070 §1482, with their
+  docs_llm mirrors.
+
+Verification: 3,651 JavaScript tests pass (baseline 3,651); Python 215 tests and 382 subtests pass
+with the existing expected failure (baseline 215 and 382). Docs: `prepare_docs`, Sphinx `-W` and
+`check_public_docs.py` pass on a clean build (15 pages).

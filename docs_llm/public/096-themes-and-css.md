@@ -213,9 +213,13 @@ Block ID: **GC-096-040**.
 dicts/Bags/lists. Shortcuts compose inline style and win over the same property
 in `style`; null removes a shortcut property. The value of a shortcut is written with its CSS unit, as in
 legacy (`width="12rem"`, `margin_top="4px"`) and copied unchanged: `width=20` gives `width: 20`, invalid CSS
-that the browser ignores. `rounded` is the exception: a number is pixels (`rounded=4` → `border-*-radius: 4px`,
-also `rounded_top` and the other side/corner forms). Plain-number properties (`opacity`, `z_index`) take a
-number. SVG stays SVG (`svg(width=100)` valid); width/height on
+that the browser ignores. Plain-number properties (`opacity`, `z_index`) take a number. A number becomes px only
+in these sub-keys, Python and JS alike: `rounded` and its side/corner forms (`rounded_top`, `_bottom`, `_left`,
+`_right`, `_top_left`, `_top_right`, `_bottom_left`, `_bottom_right`; `rounded=4` → `border-*-radius: 4px`),
+`transform_translate_x`/`transform_translate_y` (`translateX(10px)`), `filter_blur` (`blur(2px)`). The first two
+are legacy behaviour; legacy `filter` has no blur. Only a number converts: `rounded="4"` stays `4`,
+`rounded="1rem"` stays `1rem`. Every other shortcut is unchanged, `shadow` included (a full `box-shadow` value).
+SVG stays SVG (`svg(width=100)` valid); width/height on
 img/canvas/embed and width/border on table remain HTML attributes with plain numbers.
 The full guide adds a three-column Python → Source → DOM comparison: literal
 color/font_size, duplicate style/shortcut precedence, and a pointer before/after a

@@ -53,7 +53,7 @@ The legacy style shortcuts become CSS styling in the browser: `color='red'`,
 compose one `style` attribute with `style='…'`, as the static Builder
 `HtmlRenderer` does. `_class` is `class`. They react to Data like any attribute
 ([Data binding and controllers](097-data-binding.md#gc-095-070)). A length is written
-with its CSS unit, except in `rounded`; the rule is in
+with its CSS unit, except in a few legacy sub-keys such as `rounded`; the rule is in
 [Themes and CSS](096-themes-and-css.md#gc-096-040).
 
 <a id="gc-095-010"></a>
