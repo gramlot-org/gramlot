@@ -70,15 +70,17 @@ jobs:
           python -m coverage xml -o coverage-python.xml
       - name: Test JavaScript including quiet-write and symbolic-attribute contracts, with coverage of every js/src file
         run: js/node_modules/.bin/c8 --all --src js/src --include 'js/src/**' --reporter=lcov --reporter=text-summary --report-dir coverage-js npm --prefix js test
-      - name: Install Playwright Chromium for the browser checks
+      - name: Install Playwright Chromium and WebKit for the browser checks
         run: |
           npm install --prefix "$RUNNER_TEMP/playwright" --no-fund --no-audit playwright
-          "$RUNNER_TEMP/playwright/node_modules/.bin/playwright" install --with-deps chromium
+          "$RUNNER_TEMP/playwright/node_modules/.bin/playwright" install --with-deps chromium webkit
           entry="$RUNNER_TEMP/playwright/node_modules/playwright/index.mjs"
           echo "PLAYWRIGHT_ENTRY=$entry" >> "$GITHUB_ENV"
           echo "CHROMIUM=$(node --input-type=module -e "const {chromium} = await import('$entry'); console.log(chromium.executablePath())")" >> "$GITHUB_ENV"
       - name: Browser check of binding, strict CSP and iframe srcdoc in Chromium
         run: node scripts/verify_binding_browser.mjs "$PLAYWRIGHT_ENTRY" chromium
+      - name: Browser check of binding, strict CSP and iframe srcdoc in WebKit
+        run: node scripts/verify_binding_browser.mjs "$PLAYWRIGHT_ENTRY" webkit
       - name: Browser check of shipped runtimes on localhost and ordinary HTTP in Chromium
         run: node scripts/verify_runtime_browser.mjs "$PLAYWRIGHT_ENTRY"
       - name: Browser check of both page logic forms on the JS and Python servers in Chromium

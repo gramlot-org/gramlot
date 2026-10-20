@@ -307,10 +307,20 @@ try {
         return page.evaluate(() => window.seen.splice(0));
     };
     const r3 = {};
+    // #bctrl and #bonly are button components: the keys go to their inner <button>, which must hold the focus.
+    const focusButton = async id => {
+        await page.focus(`#${id} button`);
+        assert.ok(await page.evaluate(id => {
+            const host = document.getElementById(id);
+            let active = document.activeElement;
+            while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+            return active?.tagName === 'BUTTON' && active !== host && (host.contains(active) || host.shadowRoot?.contains(active));
+        }, id), `the inner button of #${id} has the focus`);
+    };
     r3['click native button in form'] = await observe(() => page.click('#bnative'));
     r3['click controller button text'] = await observe(() => page.click('#bctrl-text'));
     r3['click controller button icon'] = await observe(() => page.click('#bctrl-dot', {force: true}));
-    await page.focus('#bctrl');
+    await focusButton('bctrl');
     r3['Enter on controller button'] = await observe(() => page.keyboard.press('Enter'));
     r3['Space on controller button'] = await observe(() => page.keyboard.press('Space'));
     r3['command type=submit with fire does not submit'] = await observe(() => page.click('#btyped'));
@@ -318,7 +328,7 @@ try {
     r3['Enter in form1 field (native button first)'] = await observe(() => page.keyboard.press('Enter'));
     await page.focus('#field2');
     r3['Enter in form2 field (only a mechanism button)'] = await observe(() => page.keyboard.press('Enter'));
-    await page.focus('#bonly');
+    await focusButton('bonly');
     r3['Space on form2 mechanism button'] = await observe(() => page.keyboard.press('Space'));
     r3['click input type=button with connect_onclick'] = await observe(() => page.click('#ibutton'));
     r3.types = await page.evaluate(() => ['bnative', 'bctrl', 'btyped', 'bonly'].map(id => id + '=' + document.getElementById(id).getAttribute('type')).join(' '));
