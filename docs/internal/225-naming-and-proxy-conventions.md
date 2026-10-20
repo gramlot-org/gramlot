@@ -756,3 +756,37 @@ reuse descriptor sourceContext and setSourceContext/writeParameter. The existing
 rangeEditor owns projection; private #sourceContext and #correcting hold only the
 callback boundary and a synchronous reentrancy guard, not a parallel value. Native
 range min/max/step remain the canonical parameter names and numeric semantics.
+
+
+<a id="gc-225-080"></a>
+
+## 080 · Shared Source identity
+
+Block ID: **GC-225-080**. Owner: “Sì, nodeId in entrambi”, 2026-10-20;
+constitution 11.88. Use `nodeId` in Python and JavaScript declarations and
+transported Source. Migrate both Builders and Gramlot consumers together.
+`node_by_id` / `nodeById`, symbolic `#editor` paths and independent DOM `id`
+retain their meaning. No `node_id` alias. Regenerate previously serialized
+Source. Earlier dated references below/above retain historical spellings.
+
+<a id="gc-225-085"></a>
+
+## 085 · Language words and system parameters
+
+Block ID: **GC-225-085**. Constitution 11.89. CamelCase is shared by language
+words in both authoring languages. Ordinary host-language methods/local variables
+retain their conventions. Owner confirmed “si” to retaining `_onCalling`,
+`_onResult`, `_onError`: the leading underscore marks system parameters. Their
+existing behavior and per-construct availability are unchanged.
+
+<a id="gc-225-090"></a>
+
+## 090 · Namespace separators
+
+Block ID: **GC-225-090**. Owner confirmed `node_label`, `node_position`,
+`target_id` stay unchanged: the underscore separates namespace and member.
+Do not flatten a namespace separator to camelCase. `nodeId` has its own explicit
+decision. Other proposed names (`destination_path`, `result_path`,
+`col_min_width`, `order_by`, `validate__onResult`, `closable_change`,
+`splitter_resize`) remain unchanged: owner deferred further review and
+authorized releases with the settled names on 2026-10-20.

@@ -117,11 +117,11 @@ export class GramlotBuilder extends HtmlBuilder {
             : null;
     }
 
-    /** Builder's nodeById; inside a Gramlot page it reads the node_id map of the BindingRuntime (R06). */
+    /** Builder's nodeById; inside a Gramlot page it reads the nodeId map of the BindingRuntime (R06). */
     nodeById(nodeId) {
         if (!this.binding) return super.nodeById(nodeId);
         const node = this.binding.nodeIds.get(nodeId);
-        if (!node) throw new Error(`node_id not found: ${nodeId}`);
+        if (!node) throw new Error(`nodeId not found: ${nodeId}`);
         return node.builder.wrapSource(node);
     }
     loadCollection(document) {

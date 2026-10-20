@@ -249,7 +249,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
                 const source = node(pane);
                 const savedWidth = preferences[widthProperty];
                 if (typeof savedWidth === 'number' && Number.isFinite(savedWidth) && savedWidth > 0) set(pane, {width: `${savedWidth}px`});
-                const handle = gramlot.subscribe(`${source.getAttr('node_id')}_closable_change`, ({open}) => {
+                const handle = gramlot.subscribe(`${source.getAttr('nodeId')}_closable_change`, ({open}) => {
                     if (source.getAttr('hidden') === true || source.getAttr('drawer') === false) return;
                     state.setItem(property, open);
                     set(pane, {drawer: open ? true : 'close'});
@@ -260,7 +260,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
                 releases.push(() => gramlot.unsubscribe(handle));
             }
             const border = shell.querySelector('[data-index-regions]');
-            const handle = gramlot.subscribe(`${node(border).getAttr('node_id')}_splitter_resize`, ({region, size}) => {
+            const handle = gramlot.subscribe(`${node(border).getAttr('nodeId')}_splitter_resize`, ({region, size}) => {
                 set(region === 'left' ? sidebar : codeSidebar, {width: size});
                 state.setItem(region === 'left' ? 'preferredSidebarWidth' : 'preferredCodeWidth', Number.parseFloat(size));
                 savePreferences();

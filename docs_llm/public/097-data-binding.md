@@ -20,7 +20,7 @@ call time without triggering; `==expr` is an inline JS expression compiled only 
 the page runtime and evaluated at each projection; `^path?attr` points to a Data node attribute. `.path` is relative
 to the branch `datapath`; Source or context changes register pointers again.
 Symbolic origins (Builder): `#FORM` (first ancestor with
-`formId`/`form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<node_id>`;
+`formId`/`form=True`), `#ANCHOR` (first ancestor with `_anchor`), `#<nodeId>`;
 e.g. `value='^#FORM.customer.name'`. `#WORKSPACE`, `#ROW`, `#DATA` and aliases are
 not available. `#parent` is a Data-path cancellation segment: in `contexts.child`,
 `^.#parent.name` resolves to `contexts.name`; bare `^#parent.name` is not a symbolic
@@ -446,3 +446,21 @@ literals, comments and regular-expression literals. An empty object or a shortha
 object such as `{name}` conflicts with the placeholder syntax: write explicit object
 members when an object is intended. Template braces must form supported slots;
 there is no escape for a literal brace.
+
+
+<a id="gc-095-155"></a>
+
+## 155 · Source identity spelling
+
+Source identity is `nodeId` in both authoring languages:
+`pane.div(nodeId="editor", id="editor-dom")` in Python and
+`pane.div({nodeId: 'editor', id: 'editor-dom'})` in JavaScript.
+Lookup remains `builder.node_by_id("editor")` / `builder.nodeById('editor')`.
+Symbolic pointers such as `^#editor.value` address Source identity; DOM `id`
+is separate and does not establish a Source identity.
+
+When migrating from `node_id`, update declarations, direct attribute reads/writes
+and named metadata templates to `nodeId`. Regenerate saved Source: no alias or
+automatic conversion is supplied. Update Builder Python, Builder JavaScript,
+Gramlot and its examples together. System callbacks `_onCalling`, `_onResult`,
+`_onError` and namespaced `node_label`, `node_position`, `target_id` are unchanged.

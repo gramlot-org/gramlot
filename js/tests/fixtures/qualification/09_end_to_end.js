@@ -9,7 +9,7 @@ export class Page extends BasePage {
         const pane = root.div({class: 'example-page stack', datapath: 'story'});
         pane.h1('^.settings.caption', {id: 'caption'});
 
-        const form = pane.form({class: 'card stack', node_id: 'form'});
+        const form = pane.form({class: 'card stack', nodeId: 'form'});
         form.html_label('Caption', {for: 'caption-field'});
         form.input({value: '^.settings.caption', live: '^.live', id: 'caption-field'});
         const row = form.div();
@@ -41,16 +41,16 @@ export class Page extends BasePage {
         pane.dataFormula({result_path: '.radius', formula: 'Math.min(20 + total * 4, 90)', total: '^.total', _init: true});
         pane.dataController({func: 'paint', total: '^.total', _init: true});
 
-        const later = pane.section({class: 'card stack', node_id: 'later'});
+        const later = pane.section({class: 'card stack', nodeId: 'later'});
         later.h2('A later branch');
-        const notes = later.ul({node_id: 'notes', id: 'notes'});
+        const notes = later.ul({nodeId: 'notes', id: 'notes'});
         for (const text of ['Setters live here too', 'This note can be removed under freeze']) notes.li(text);
         const actions = later.div({class: 'actions'});
         for (const [label, method] of [['Load extras', 'loadExtras'], ['Freeze', 'freeze'],
             ['Remove a note', 'removeNote'], ['Thaw', 'thaw']]) {
             actions.button(label, {id: method}).dataController({func: method});
         }
-        later.section({node_id: 'extras', id: 'extras'}).p('No extras yet.', {class: 'muted'});
+        later.section({nodeId: 'extras', id: 'extras'}).p('No extras yet.', {class: 'muted'});
         later.dataSetter({destination_path: '.settings.caption', value: 'The story of a page'});
         later.dataSetter({destination_path: '.size', value: {small: true, large: false}});
         later.dataSetter({destination_path: '.gift', value: false});
@@ -70,7 +70,7 @@ Page.registerSource('extras');
 /** Logic of 09_end_to_end.py and 09_end_to_end.js: the named logic of the story. */
 export class Logic {
     sourceNode(nodeId) {
-        return this.page.src.source.getNodeByAttr('node_id', nodeId);
+        return this.page.src.source.getNodeByAttr('nodeId', nodeId);
     }
 
     /** Controller of the total: the circle turns red above 10. */

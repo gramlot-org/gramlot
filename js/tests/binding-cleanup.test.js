@@ -110,14 +110,14 @@ test('a validation error has no effect: no Data write, no NodeBinding, no DOM; t
     app.dispose();
 });
 
-test('an installation error before any write closes the new NodeBindings and restores the node_id map', t => {
+test('an installation error before any write closes the new NodeBindings and restores the nodeId map', t => {
     const ctx = page(t);
     const {app, trace} = ctx;
     const host = startHost(app);
     const base = counters(ctx);
     trace.length = 0;
     assert.throws(() => insertBranch(app, host, 'b1', root => {
-        root.div({node_id: 'kept', id: 'kept'}).dataSetter({destination_path: 'x', value: 1});
+        root.div({nodeId: 'kept', id: 'kept'}).dataSetter({destination_path: 'x', value: 1});
         root.div({_init: true});
     }), /'_init' is allowed only on dataFormula, dataController and dataRpc/);
     assert.deepEqual(trace, []);
@@ -125,7 +125,7 @@ test('an installation error before any write closes the new NodeBindings and res
     // The node stays in the Source without NodeBinding or DOM; its removal leaves the baseline.
     host.value.popNode('b1');
     assert.deepEqual(delta(counters(ctx), base), {});
-    insertBranch(app, host, 'b2', root => root.div({node_id: 'kept', id: 'kept'}));
+    insertBranch(app, host, 'b2', root => root.div({nodeId: 'kept', id: 'kept'}));
     assert.ok(ctx.byId('kept'));
     app.dispose();
 });

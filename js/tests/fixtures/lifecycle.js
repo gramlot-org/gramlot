@@ -54,12 +54,12 @@ export function insertBranch(app, host, label, author) {
 /**
  * The branch used by the traces and by the cycles: a pane with a Data context, a `dataSetter`, a
  * text input with a default and `live`, two radios of one group, a button with a nested controller,
- * a `connect_onclick`, a `==` expression, a `node_id`, a `__ref`, and a controller with every
+ * a `connect_onclick`, a `==` expression, a `nodeId`, a `__ref`, and a controller with every
  * lifecycle trigger, a `_timing` of one second and a `_delay` of 50 ms.
  */
 export function fullBranch(n) {
     return root => {
-        const pane = root.div({id: `pane${n}`, datapath: `p${n}`, node_id: `pane${n}`, __ref: `ref${n}`});
+        const pane = root.div({id: `pane${n}`, datapath: `p${n}`, nodeId: `pane${n}`, __ref: `ref${n}`});
         pane.dataSetter({destination_path: '.greeting', value: 'hello'});
         pane.input({id: `name${n}`, value: '^.name', default_value: 'anon', live: true});
         pane.input({id: `ra${n}`, type: 'radio', group: `g${n}`, value: '^.ra'});

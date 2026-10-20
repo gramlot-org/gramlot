@@ -16,14 +16,14 @@ const PROVIDERS = {
 };
 
 // Attributes whose change moves the Data context of a whole branch (§4.4, upd_attrs row).
-const CONTEXT_ATTRIBUTES = ['datapath', '_anchor', 'node_id', 'form', 'formId'];
+const CONTEXT_ATTRIBUTES = ['datapath', '_anchor', 'nodeId', 'form', 'formId'];
 
 /**
  * Semantic lifetime of one Gramlot page (source plan §4.4).
  *
  * The runtime owns the one Data subscription of the page, on Builder's Data
  * wrapper (`_dataroot` → `_root_` → `builder.data`), the DataRouter it feeds,
- * the `node_id → node` map of the Source (R06) and one NodeBinding per Source
+ * the `nodeId → node` map of the Source (R06) and one NodeBinding per Source
  * node, created once per node identity. The DOM lifetime stays in the
  * renderer records.
  */
@@ -67,7 +67,7 @@ export class BindingRuntime {
     get inlineCompiler() { return this.#inlineCompiler; }
     /** The ask dialogs of the page (`_ask` of a provider, `ask` of a button). */
     get askDialog() { return this.#askDialog; }
-    /** `node_id → node` of the Source nodes with an open NodeBinding (R06). */
+    /** `nodeId → node` of the Source nodes with an open NodeBinding (R06). */
     get nodeIds() { return this.#nodeIds; }
 
     /** Subscribe once on Builder's Data wrapper; nothing is created. */
@@ -107,7 +107,7 @@ export class BindingRuntime {
         const binding = this.bindingFor(node);
         if (binding) {
             this.#bindings.delete(node);
-            const nodeId = node.getAttr('node_id');
+            const nodeId = node.getAttr('nodeId');
             if (this.nodeIds.get(nodeId) === node) this.nodeIds.delete(nodeId);
             try { binding.close(); } catch (error) { errors.push(error); }
         }
@@ -131,7 +131,7 @@ export class BindingRuntime {
      * Semantic work of one Source event, called inside the renderer FIFO (§5.2).
      *
      * The rows of the event matrix: opening and closing of the NodeBindings,
-     * the `node_id` map, the rebinding, and the installation of the `ins` and
+     * the `nodeId` map, the rebinding, and the installation of the `ins` and
      * new-branch rows (§5.1 steps 2-5).
      *
      * A failing disposer does not block the rest of the event: the errors of the
@@ -200,7 +200,7 @@ export class BindingRuntime {
         }
     }
 
-    /** Close every NodeBinding, the `node_id` map and the Data subscription; a second call does nothing. */
+    /** Close every NodeBinding, the `nodeId` map and the Data subscription; a second call does nothing. */
     dispose() {
         if (this.disposed) return;
         this.#disposed = true;
@@ -215,8 +215,8 @@ export class BindingRuntime {
     }
 
     /**
-     * Steps 2-4 of §5.1 on `branch` (a SourceBagNode or a new SourceBag value). The `node_id` map is
-     * complete, and a duplicate refused, before the first write or registration, so a `#<node_id>`
+     * Steps 2-4 of §5.1 on `branch` (a SourceBagNode or a new SourceBag value). The `nodeId` map is
+     * complete, and a duplicate refused, before the first write or registration, so a `#<nodeId>`
      * of the branch translates; then the installation (`dataSetter`s and defaults), then one
      * NodeBinding per node and the registrations, providers included. On an error the NodeBindings
      * opened here are closed and the map entries they brought are removed; the Data is not rolled
@@ -231,10 +231,10 @@ export class BindingRuntime {
         const known = new Set(nodes.filter(node => this.bindingFor(node)));
         const entering = new Map();
         for (const node of nodes) {
-            const nodeId = node.getAttr('node_id');
+            const nodeId = node.getAttr('nodeId');
             if (nodeId == null) continue;
             if (entering.has(nodeId) || (this.nodeIds.has(nodeId) && this.nodeIds.get(nodeId) !== node)) {
-                throw new Error(`Duplicate node_id '${nodeId}'`);
+                throw new Error(`Duplicate nodeId '${nodeId}'`);
             }
             entering.set(nodeId, node);
         }
@@ -246,7 +246,7 @@ export class BindingRuntime {
         } catch (error) {
             const errors = [error];
             for (const node of nodes.filter(node => !known.has(node)).reverse()) {
-                const nodeId = node.getAttr('node_id');
+                const nodeId = node.getAttr('nodeId');
                 if (entering.get(nodeId) === node && this.nodeIds.get(nodeId) === node) this.nodeIds.delete(nodeId);
                 const binding = this.bindingFor(node);
                 if (!binding) continue;
@@ -295,16 +295,16 @@ export class BindingRuntime {
 
     /**
      * An attribute change: the NodeBinding of the node is required first (GC-210 §090), then the inline
-     * declarations of the changed attributes are released (S09), then the `node_id` map, then the
+     * declarations of the changed attributes are released (S09), then the `nodeId` map, then the
      * rebinding of the node, or of its branch for a context attribute.
      */
     #attributesChanged(node, diff) {
         const binding = this.#installedBinding(node);
         this.inlineCompiler.release(node, Object.keys(diff));
-        if (Object.hasOwn(diff, 'node_id')) {
-            const {old: previous, new: current} = diff.node_id;
+        if (Object.hasOwn(diff, 'nodeId')) {
+            const {old: previous, new: current} = diff.nodeId;
             if (current != null && this.nodeIds.has(current) && this.nodeIds.get(current) !== node) {
-                throw new Error(`Duplicate node_id '${current}'`);
+                throw new Error(`Duplicate nodeId '${current}'`);
             }
             if (this.nodeIds.get(previous) === node) this.nodeIds.delete(previous);
             if (current != null) this.nodeIds.set(current, node);

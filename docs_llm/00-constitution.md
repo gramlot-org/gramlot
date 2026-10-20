@@ -2807,3 +2807,40 @@ for every HTTP request.
 
 Implementation names (GC-225 §010) confirmed by the owner on 2026-10-19, except the "no
 theme" value `False`, which awaits confirmation. No release or deployment authorized. Rules: GC-230; GC-090 §017, §020, §030; GC-095 §105; GC-096 §005; GC-070 §1455.
+
+
+### Amendment 11.88 — Shared Source identity and coordinated release — 2026-10-20
+
+Owner: “facciamo un lavoro coordnato con builders python e js”; to using
+`nodeId` as the sole Source identity attribute in both languages, including
+Python `pane.div(nodeId="…")`, the owner answered “Sì, nodeId in entrambi”.
+The canonical Source identity attribute is `nodeId`. This supersedes the
+`node_id` spelling in earlier Source/binding contracts. DOM `id` stays separate,
+symbolic paths such as `#editor` keep their meaning, and ordinary methods retain
+`node_by_id` in Python / `nodeById` in JavaScript. No old-name alias or automatic
+serialized-Source conversion is approved.
+
+For this migration §14 permits source changes in genro-builders and
+genro-builders-js, then Gramlot and the connected gramlot-examples consumers.
+Bag source remains outside scope. Owner release authorization: “peer ora va bene
+cosi : sistema cosi e facciamo le release con questi nomi”. This authorizes the
+coordinated source push, consolidation and package releases with these names,
+including the necessary gallery/example migration and normal release workflows.
+Other proposed renames are deferred. Historical records retain dated spelling.
+
+### Amendment 11.89 — Language words, system parameters and namespaces — 2026-10-20
+
+Owner: “in linea di massiam le cose che potremmo considerare parile del
+linguiaggio nostro sono camel”. Shared camelCase is the default for Gramlot
+language words in Python and JavaScript; ordinary Python APIs/local variables
+keep their language conventions. This supersedes applying language-specific
+snake_case/camelCase conversion indiscriminately to declarative vocabulary.
+
+Owner confirmed “si” to retaining `_onCalling`, `_onResult`, `_onError`: the
+leading underscore distinguishes framework system parameters from application
+arguments. Owner then specified “node_label resta snake è un nome con ul name
+space node: la label del ode” and “anche node_position e target_id seguono lo
+stesso criterio del namespace, quindi restano così”. Those three names retain
+their underscore namespace separator and current semantics. The separately
+confirmed `nodeId` spelling is unchanged. No additional names or prefix families
+are renamed in this release. This defines naming, not a new namespace/object API.

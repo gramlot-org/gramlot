@@ -1,5 +1,5 @@
 // Phase S04: registration from pointers(), rebinding, projection of Data on the built DOM,
-// variable and symbolic datapaths, the null path (Q7), `visible`, `mask`, the `node_id` map (R06)
+// variable and symbolic datapaths, the null path (Q7), `visible`, `mask`, the `nodeId` map (R06)
 // and the Source node / DOM node lookups (source plan §2, §3.3, §4.4, §4.5, §4.11bis).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -183,7 +183,7 @@ test('relative variable datapath: read in the parent context; relative, absolute
     data.setItem('altro.n', 'absolute');
     data.setItem('scheda.n', 'symbolic');
     data.setItem('ordini.foo', '.x1');
-    builder.root.div({datapath: 'scheda', node_id: 'box'});
+    builder.root.div({datapath: 'scheda', nodeId: 'box'});
     builder.root.div({datapath: 'ordini'}).div({datapath: '^.foo'}).p('^.n', {id: 'p'});
     assert.equal(byId('p').textContent, 'relative');
     data.setItem('ordini.foo', 'altro');
@@ -195,7 +195,7 @@ test('relative variable datapath: read in the parent context; relative, absolute
 test('a static symbolic datapath resolves as a symbolic path', () => {
     const {builder, data, byId} = page();
     data.setItem('scheda.sub.n', 'value');
-    builder.root.div({datapath: 'scheda', node_id: 'box'});
+    builder.root.div({datapath: 'scheda', nodeId: 'box'});
     builder.root.div({datapath: '#box.sub'}).p('^.n', {id: 'p'});
     assert.equal(byId('p').textContent, 'value');
     data.setItem('scheda.sub.n', 'changed');
@@ -442,16 +442,16 @@ test('getDomNode and getBaseSourceNode give null for a node removed under freeze
     assert.equal(app.dom.getBaseSourceNode(element), null);
 });
 
-test('R06: #<node_id> is translated by the map; insertion, removal and in-place node_id change', () => {
+test('R06: #<nodeId> is translated by the map; insertion, removal and in-place nodeId change', () => {
     const {app, builder, data, byId} = page();
     data.setItem('t.x', 'target x');
-    const target = sourceTarget(builder.root.div({datapath: 't', node_id: 'target'}));
+    const target = sourceTarget(builder.root.div({datapath: 't', nodeId: 'target'}));
     const sibling = builder.root.p('^#target.x', {id: 'p'});
     assert.equal(app.src.binding.nodeIds.get('target'), target);
     assert.deepEqual(registered(app, sibling), ['t.x']);
     assert.equal(byId('p').textContent, 'target x');
     assert.equal(sourceTarget(builder.nodeById('target')), target);
-    target.setAttr({node_id: 'renamed'});
+    target.setAttr({nodeId: 'renamed'});
     assert.equal(app.src.binding.nodeIds.has('target'), false);
     assert.equal(app.src.binding.nodeIds.get('renamed'), target);
     assert.deepEqual(registered(app, sibling), ['t.x']);
@@ -461,22 +461,22 @@ test('R06: #<node_id> is translated by the map; insertion, removal and in-place 
     assert.equal(byId('p').textContent, 'target x');
     assert.deepEqual(registered(app, sibling), ['t.x']);
     assert.throws(() => builder.root.span('^#target.x'), /#<id>: cannot resolve \^#target\.x/);
-    assert.throws(() => builder.nodeById('target'), /node_id not found: target/);
+    assert.throws(() => builder.nodeById('target'), /nodeId not found: target/);
     app.src.source.popNode(target.label);
     assert.equal(app.src.binding.nodeIds.has('renamed'), false);
 });
 
-test('R06: a duplicate node_id in a received Source is an explicit error when it enters the map', () => {
+test('R06: a duplicate nodeId in a received Source is an explicit error when it enters the map', () => {
     const {app, builder} = page();
-    builder.root.div({node_id: 'dup'});
+    builder.root.div({nodeId: 'dup'});
     const other = new GramlotBuilder();
-    other.root.div({node_id: 'dup'});
+    other.root.div({nodeId: 'dup'});
     const received = app.src.prepareSource(other.toTytx());
-    assert.throws(() => app.src.source.setItem('received', received), /Duplicate node_id 'dup'/);
+    assert.throws(() => app.src.source.setItem('received', received), /Duplicate nodeId 'dup'/);
     const twice = new GramlotBuilderBag(null, builder);
-    twice.setItem('a', null, {node_id: 'x'});
-    twice.setItem('b', null, {node_id: 'x'});
-    assert.throws(() => app.src.source.setItem('twice', twice), /Duplicate node_id 'x'/);
+    twice.setItem('a', null, {nodeId: 'x'});
+    twice.setItem('b', null, {nodeId: 'x'});
+    assert.throws(() => app.src.source.setItem('twice', twice), /Duplicate nodeId 'x'/);
 });
 
 test('a data change reaches only its own registrations: an unrelated write does not project', () => {

@@ -18,6 +18,18 @@ CONTROLS = json.loads(
 
 
 class BuilderTests(unittest.TestCase):
+    def test_node_identity_uses_shared_spelling_and_stays_out_of_html(self):
+        builder = GramlotBuilder()
+        panel = builder.root.div("text", nodeId="source-panel", id="dom-panel")
+        self.assertIs(builder.node_by_id("source-panel"), panel)
+        wire = from_tytx(builder.to_tytx())
+        self.assertEqual(wire.nodes[0].attr["nodeId"], "source-panel")
+        self.assertNotIn("node_id", wire.nodes[0].attr)
+        html = builder.render()
+        self.assertIn('id="dom-panel"', html)
+        self.assertNotIn("nodeId", html)
+        self.assertNotIn("source-panel", html)
+
     def test_generic_builder_backing_and_typed_wire(self):
         builder = GramlotBuilder("test")
         self.assertIsInstance(builder, BuilderBase)

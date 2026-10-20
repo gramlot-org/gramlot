@@ -60,7 +60,7 @@ test('one current Source attribute set supplies references and projection, never
         for (const [path, value] of Object.entries({height: 5, factor: 2, other: 'current'})) {
             root.dataSetter({destination_path: path, value});
         }
-        root.div({node_id: 'box', id: 'box', height: "^height:=({} * {factor}) + 'px'",
+        root.div({nodeId: 'box', id: 'box', height: "^height:=({} * {factor}) + 'px'",
             title: '^height:{factor}', factor: '^factor', 'data-other': '^other'});
     });
     const box = document.querySelector('#box');
@@ -168,7 +168,7 @@ test('missing references and cyclic dependencies produce explicit node errors', 
 test('relative paths, symbolic paths and Bag attribute selectors keep their addressing', t => {
     const {app, document} = mount(t, root => {
         root.dataSetter({destination_path: 'settings.w', value: 38, unit: 'px'});
-        const pane = root.div({datapath: 'settings', node_id: 'settings'});
+        const pane = root.div({datapath: 'settings', nodeId: 'settings'});
         pane.div({id: 'relative', title: '^.w:{}px'});
         root.div({id: 'symbolic', title: '^#settings.w:{}px'});
         root.div({id: 'attribute', title: '^settings.w?unit:Unit: {}'});
@@ -220,7 +220,7 @@ test('SVG attributes and existing == expressions can use typed transforms and th
 });
 
 test('new expression source cannot be activated by an ordinary Source attribute edit', t => {
-    const {app} = mount(t, root => root.div({node_id: 'box', title: '^n:={} + 1'}));
+    const {app} = mount(t, root => root.div({nodeId: 'box', title: '^n:={} + 1'}));
     const node = sourceTarget(app.src.builder.nodeById('box'));
     assert.throws(() => node.setAttr({title: '^n:={} + 2'}), /inline code runs only as received/);
 });
@@ -295,7 +295,7 @@ test('a == text starting with a newline returns its value; a final ; is accepted
 test('a {name} slot naming a == attribute reads null in projected and structural attributes', t => {
     const {document, app} = mount(t, root => {
         root.dataSetter({destination_path: 'w', value: 3});
-        root.div({node_id: 'box', id: 'box', w: '^w', label: '==w + 1', title: '^w:{} {label}', target_path: '^w:{} {label}'});
+        root.div({nodeId: 'box', id: 'box', w: '^w', label: '==w + 1', title: '^w:{} {label}', target_path: '^w:{} {label}'});
     });
     const box = document.querySelector('#box');
     const node = sourceTarget(app.src.builder.nodeById('box'));

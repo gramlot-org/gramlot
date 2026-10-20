@@ -121,7 +121,7 @@ test('drawer captions minimize by default; explicit and bound false keep them vi
 test('numeric regional bindings keep sliders synchronized during drag and keyboard resize', async()=>{
     const {app,window,element}=await fixture((root,app)=>{
         const pane=root.div({datapath:'layout'});
-        const bc=pane.borderContainer({id:'border',node_id:'workspace',height:'500px'});
+        const bc=pane.borderContainer({id:'border',nodeId:'workspace',height:'500px'});
         for(const side of ['left','right','top','bottom']) {
             app.data.setItem(`layout.${side}`,100);
             pane.horizontalSlider({id:`slider-${side}`,value:`^.${side}`,min:90,max:110,live:true});

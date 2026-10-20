@@ -35,9 +35,9 @@ function page({transport = false} = {}) {
 function drawing(root) {
     root.dataSetter({destination_path: 'n', value: 3});
     const svg = root.svg({id: 'drawing', width: 100, height: 100});
-    svg.rect({node_id: 'bar', id: 'bar', width: '^n:={} * 2', height: '==size * 3', size: '^n'});
-    svg.text('==size + 1', {node_id: 'label', id: 'label', size: '^n'});
-    svg.html({width: 50, height: 20}).div('==size * 10', {node_id: 'inner', id: 'inner', size: '^n',
+    svg.rect({nodeId: 'bar', id: 'bar', width: '^n:={} * 2', height: '==size * 3', size: '^n'});
+    svg.text('==size + 1', {nodeId: 'label', id: 'label', size: '^n'});
+    svg.html({width: 50, height: 20}).div('==size * 10', {nodeId: 'inner', id: 'inner', size: '^n',
         title: '^n:={} + 1', 'data-twice': '==size * 2'});
 }
 
@@ -93,7 +93,7 @@ test('a subscription handler of an SVG node reads its `:=` arguments through the
     const {app, data} = page();
     mount(app, root => {
         root.dataSetter({destination_path: 'n', value: 3});
-        root.svg({width: 10, height: 10}).rect({node_id: 'bar', double: '^n:={} * 2',
+        root.svg({width: 10, height: 10}).rect({nodeId: 'bar', double: '^n:={} * 2',
             subscribe_pick: "this.SET('picked', double + p_0.extra);"});
     });
     app.publish('pick', {extra: 100});

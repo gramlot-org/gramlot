@@ -40,7 +40,7 @@ A change of the Source or of the context registers the affected pointers again.
 
 - `#FORM` is the first ancestor with `formId` or `form=True`;
 - `#ANCHOR` is the first ancestor with `_anchor`;
-- `#<node_id>` is the node with that `node_id`.
+- `#<nodeId>` is the node with that `nodeId`.
 
 Example: `value='^#FORM.customer.name'`. The legacy origins `#WORKSPACE`, `#ROW`
 and `#DATA` and their aliases are not available.
@@ -778,3 +778,21 @@ literals, comments and regular-expression literals. An empty object or a shortha
 object such as `{name}` conflicts with the placeholder syntax: write explicit object
 members when an object is intended. Template braces must form supported slots;
 there is no escape for a literal brace.
+
+
+<a id="gc-095-155"></a>
+
+## 155 · Source identity spelling
+
+Source identity is `nodeId` in both authoring languages:
+`pane.div(nodeId="editor", id="editor-dom")` in Python and
+`pane.div({nodeId: 'editor', id: 'editor-dom'})` in JavaScript.
+Lookup remains `builder.node_by_id("editor")` / `builder.nodeById('editor')`.
+Symbolic pointers such as `^#editor.value` address Source identity; DOM `id`
+is separate and does not establish a Source identity.
+
+When migrating from `node_id`, update declarations, direct attribute reads/writes
+and named metadata templates to `nodeId`. Regenerate saved Source: no alias or
+automatic conversion is supplied. Update Builder Python, Builder JavaScript,
+Gramlot and its examples together. System callbacks `_onCalling`, `_onResult`,
+`_onError` and namespaced `node_label`, `node_position`, `target_id` are unchanged.

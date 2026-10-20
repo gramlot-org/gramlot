@@ -15,7 +15,7 @@ async function fixture(tag='tabContainer', attrs={}) {
     const b=new GramlotBuilder(null,{collections:[layout,inputs]});
     app.data.setItem('page','a');app.data.setItem('index',0);app.data.setItem('name','Ada');app.data.setItem('locked',true);
     app.data.setItem('mode','tabs');app.data.setItem('position','top');app.data.setItem('align','start');
-    const container=b.root[tag]({id:'pages',node_id:'pages',node_label:'pages',selectedPage:'^page',selected:'^index',...attrs});
+    const container=b.root[tag]({id:'pages',nodeId:'pages',node_label:'pages',selectedPage:'^page',selected:'^index',...attrs});
     container.contentPane({id:'a',pageName:'a',title:'Alpha',node_label:'a'}).textbox({id:'field',value:'^name',validate_len:'2:20',live:true});
     container.contentPane({id:'b',pageName:'b',title:'Beta',node_label:'b',closable:true,onClose:'return !this.GET("locked")'}).p('Second');
     container.borderContainer({id:'c',pageName:'c',title:'Gamma',node_label:'c',closable:true}).contentPane({region:'center'}).p('Nested');

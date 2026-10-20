@@ -1136,15 +1136,15 @@ defaults and minimized captions without custom classes or CSS dimensions.
 | closable_change | The drawer's region/pane | open (boolean), region (top/bottom/left/right) |
 | splitter_resize | The borderContainer | region, size, previousSize (CSS pixel strings) |
 
-Give the emitter a node_id to subscribe by its stable qualified topic: filters_closable_change or workspace_splitter_resize. selfsubscribe on a controller addresses that controller, not its containing pane.
+Give the emitter a nodeId to subscribe by its stable qualified topic: filters_closable_change or workspace_splitter_resize. selfsubscribe on a controller addresses that controller, not its containing pane.
 
 closable_change fires after the region's effective visibility and handle state have changed. It covers handle activation, reopening through dragging, and reactive drawer/hidden changes. Initial mounting, unchanged visibility and teardown emit nothing. drawer_onclick remains the separately authored interaction callback. The notifications themselves do not write application Data. Numeric regional bindings are updated by the splitter during resizing, before the completed-resize notification.
 
 splitter_resize fires once after a pointer gesture ends (including cancellation/lost capture when the live size is retained), or after an effective arrow-key resize. Payload sizes are the measured before/after pixel extents; unchanged size emits nothing. It does not fire for every pointermove, an authored width/height change or window resize. Pointer capture and the drag cover are released before subscribers execute. Numeric dimension writeback happens during resizing through the declared width/height binding; it does not introduce a separate regions Bag.
 
 ```python
-border = pane.borderContainer(node_id="workspace", height="360px")
-border.contentPane(node_id="filters", region="left", width="160px",
+border = pane.borderContainer(nodeId="workspace", height="360px")
+border.contentPane(nodeId="filters", region="left", width="160px",
                    splitter=True, drawer=True, drawer_label="Filters")
 border.contentPane(region="center")
 pane.dataController("this.SET('.filtersOpen', open)",
@@ -1162,7 +1162,7 @@ Payload fields are normal controller arguments; _reason is the qualified topic a
 
 Use `selectedPage="^.page"` with a child's unique `pageName`, or `selected="^.index"` with a zero-based index. Both may be bound and are updated together without duplicate notifications. A changed named request takes precedence if both inputs change in the same turn; otherwise the changed index is honored. Omitted selection starts at the first available panel. Unknown requests leave the current available selection unchanged. Parent-owned child metadata is pageName, title, closable (default false), onClose, hidden and disabled. Hidden/disabled panels cannot be chosen; an unavailable or removed current panel selects the next available child, otherwise the previous. Empty selection writes null to both bound selection attributes. `^` writes back; literal/`=` selection is read-only from the application's perspective. The component keeps its current user selection until a declared selection input changes.
 
-For A → B, container-local publications use the existing node_id prefix:
+For A → B, container-local publications use the existing nodeId prefix:
 
 | Topic | Timing | Payload |
 | --- | --- | --- |
@@ -1179,7 +1179,7 @@ If allowed, the container publishes closing {pageName, index, wasSelected}, remo
 
 ```python
 pane.dataSetter(".page", "customer")
-tabs = pane.tabContainer(node_id="editor", selectedPage="^.page", height="360px")
+tabs = pane.tabContainer(nodeId="editor", selectedPage="^.page", height="360px")
 tabs.contentPane(pageName="customer", title="Customer").textbox(
     value="^.customer.name", lbl="Name")
 tabs.contentPane(pageName="notes", title="Notes", closable=True,

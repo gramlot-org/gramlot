@@ -148,7 +148,7 @@ test('gate decision 1: a value replaces the attributes when the setter declares 
 
 test('gate decision 5: metadata, binding attributes and keys starting with _ never reach the Data node', () => {
     const {app, data} = page();
-    app.src.startSource(authored(root => root.div({datapath: 'ctx', node_id: 'box'}).dataSetter({
+    app.src.startSource(authored(root => root.div({datapath: 'ctx', nodeId: 'box'}).dataSetter({
         destination_path: '.x', value: 1, colore: 'rosso', _private: 'p', default: 3, attr_dtype: 'N',
         live: true, updateOn: 'input',
     })));
@@ -369,7 +369,7 @@ test('gate decision 6: an installation error closes the new NodeBindings; Data i
     const before = app.src.binding.size;
     const branch = new GramlotBuilderBag(null, app.src.builder);
     const wrapped = app.src.builder.wrapSource(branch);
-    wrapped.span('^missing', {id: 'kept', node_id: 'kept'});
+    wrapped.span('^missing', {id: 'kept', nodeId: 'kept'});
     wrapped.dataSetter({destination_path: 'written', value: 1});
     wrapped.dataSetter({destination_path: '#nowhere.x', value: 2});
     assert.throws(() => box.setValue(branch), /#<id>: cannot resolve/);
@@ -459,8 +459,8 @@ test('Fable R1: an update of a later branch whose installation failed is an erro
     assert.throws(() => failed.setAttr({script: 'y'}),
         {message: `dataController '${failed.label}': the node has no NodeBinding (its installation failed); remove it from the Source and insert it again`});
     assert.throws(() => failed.setValue('text'), /dataController '.*': the node has no NodeBinding/);
-    // Gate check: a context attribute raises the same error, before the node_id map changes.
-    for (const attrs of [{datapath: 'ctx'}, {_anchor: true}, {node_id: 'lost'}, {form: true}, {formId: 'f'}]) {
+    // Gate check: a context attribute raises the same error, before the nodeId map changes.
+    for (const attrs of [{datapath: 'ctx'}, {_anchor: true}, {nodeId: 'lost'}, {form: true}, {formId: 'f'}]) {
         assert.throws(() => failed.setAttr(attrs), /dataController '.*': the node has no NodeBinding/, Object.keys(attrs)[0]);
     }
     assert.equal(app.src.binding.nodeIds.has('lost'), false);
