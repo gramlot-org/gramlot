@@ -27,7 +27,7 @@
       "js/src/**",
       "js/dist/**",
       "js/package.json",
-      "themes/**",
+      "js/themes/**",
       "assets/branding/gramlot-logo.svg",
       "assets/branding/gramlot-logo-dark.svg",
       "assets/branding/gramlot-mark.png",
@@ -43,7 +43,9 @@
       "!js/dist",
       "!js/dist/**",
       "!js/tools",
-      "!js/tools/**"
+      "!js/tools/**",
+      "!js/themes",
+      "!js/themes/**"
     ]
   },
   "lock": false,

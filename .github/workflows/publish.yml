@@ -183,6 +183,8 @@ jobs:
         run: |
           npm --prefix js install --ignore-scripts --package-lock=false
           npm --prefix js run build
+      - name: Check the JSR package (themes below js/themes, as in the npm package)
+        run: node scripts/check_jsr_package.mjs
       - name: Publish @gramlot/gramlot
         run: |
           VERSION=$(node -p "require('./jsr.json').version")
