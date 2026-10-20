@@ -2,9 +2,9 @@
 
 Document ID: **GC-070**. Updated: **2026-10-20**.
 
-**Release preparation:** JavaScript gallery aligned with Python, packaged Python/Node/offline qualification and inspector CI prepared; publication remains pending. See [§1395](#gc-070-1395).
+**Current release:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
 
-**Current checkpoint:** the 0.3 component release is published and verified from the public registries: seventeen inputs, labelbox, formlet/groupBox, command buttons, themes/touch and the complete field-validation engine. Final cross-host qualification and publication receipts are in [§1175](#gc-070-1175) and [§1185](#gc-070-1185).
+**Earlier checkpoint:** the 0.3 component release is published and verified from the public registries: seventeen inputs, labelbox, formlet/groupBox, command buttons, themes/touch and the complete field-validation engine. Final cross-host qualification and publication receipts are in [§1175](#gc-070-1175) and [§1185](#gc-070-1185).
 
 **Website expansion:** 30-page welcome site and six-chapter guided tour implemented and locally verified; owner review/publication pending. Optional presenter-video storyboard drafted; see [§1300](#gc-070-1300).
 
@@ -20,7 +20,7 @@ Document ID: **GC-070**. Updated: **2026-10-20**.
 
 **Mobile gallery:** published and verified on both public galleries and the downloaded serverless ZIP in Chromium and WebKit. See [§1205](#gc-070-1205), [§1210](#gc-070-1210) and the English-label correction in [§1215](#gc-070-1215).
 
-**Next workstream:** container analysis for 0.4 is complete, including legacy Dojo and Genro patches; the proposed contract awaits owner review. See [§1230](#gc-070-1230). No new container runtime has been implemented.
+**Containers:** borderContainer, tabContainer, stackContainer and contentPane are implemented and published since 0.3.2 ([§1405](#gc-070-1405)); the container analysis is in [§1230](#gc-070-1230).
 
 **Deferred website design:** editorial HTML companions and two interactive-region modes for gramlot.org, asqueel.org and kajenn.org are recorded for later discussion (§850); no implementation started.
 
@@ -10368,3 +10368,39 @@ failure (`python -m pytest -q` with `PYTHONPATH` set to the worktree `src`). Doc
 `-W --keep-going -n` and `check_public_docs.py` pass on a fresh build (15 pages).
 
 Publication and public verification remain pending; existing production is unchanged.
+
+<a id="gc-070-1485"></a>
+## 1485. Releases 0.3.6 published; JSR optional; external review — 2026-10-20
+
+Owner, 2026-10-20: “ok procedi con tutto” for the release; “jsr in questi giorni ha problemi: per ora completa i push e usa npm”;
+“consideriamo jsr opzionale. e ci basiamo su npm”.
+
+Published, each through a PR to `develop`, a PR from `develop` to `main`, an annotated tag and the Publish release workflow:
+
+- core 0.3.6 (#50, #51, tag `v0.3.6`): PyPI, npm and the GitHub release. On the release branch the CI added one commit:
+  `genro-tytx>=0.16.3`, whose `to_tytx` writes compact JSON with or without orjson (genro-org/genro-tytx#60); the
+  null-attribute probe asserts that output.
+- gramlot-py-server 0.2.11 (PyPI), gramlot-js-server, gramlot-serverless and create 0.2.14 (npm), gramlot-examples 0.3.9
+  (PyPI and npm).
+- JSR. The `jsr` job of the core ran for about 1.5 hours and was cancelled; JSR nevertheless lists 0.3.6. The `jsr`
+  job now has `continue-on-error: true` and `timeout-minutes: 20` (#52, #53). The gallery updater ignores the `jsr`
+  job of a completed publication run and keeps the npm and PyPI gates (gramlot-examples #23, #24, installed on the
+  gallery server).
+- Hosted galleries: generation `20261020T090845Z` with core 0.3.6, examples 0.3.9, js-server 0.2.14 and
+  py-server 0.2.11; the updater verified both galleries and the offline ZIP.
+
+External review of the published releases, three points, all confirmed and corrected on `develop`:
+
+1. JSR package. `js/src/server/files.js` finds the themes at `../../themes/`, which is `js/themes/` in the npm
+   package. `jsr.json` published `themes/**` at the package root, so the server of the JSR package found no theme.
+   `jsr.json` now publishes `js/themes/**`, the copy made by the build, as npm does. `scripts/check_jsr_package.mjs`
+   rebuilds the package from a `jsr publish --dry-run` file list and calls `GramlotServer.themeFile` on it: base and
+   compact themes found, a missing file and paths outside the folder refused. The `jsr` job runs it before
+   publishing. The published JSR 0.3.6 keeps the defect until the next core release.
+2. WebKit binding check. `scripts/verify_binding_browser.mjs` focused the host of the button components `#bctrl` and
+   `#bonly`; in WebKit the focus stayed on `BODY`. The script now focuses their inner `<button>` and asserts that it
+   holds the focus before pressing Enter and Space. It passes in Chromium and WebKit, and the CI runs it in both.
+   Programmatic focus does not prove keyboard access through Tab.
+3. This document: the opening states the current release; the earlier checkpoints stay as records.
+
+Outside the releases, owner review pending: the database selectors (GC-315 §050) and the c23 stay-estimate lesson.
