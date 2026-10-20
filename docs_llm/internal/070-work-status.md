@@ -9264,3 +9264,39 @@ Implemented on the review branch; no release or deployment is authorized.
 Verification: 3,651 JavaScript tests pass (baseline 3,651); Python 215 tests and 382 subtests pass
 with the existing expected failure (baseline 215 and 382). Docs: `prepare_docs`, Sphinx `-W` and
 `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1484"></a>
+## 1484. Release 0.3.6 prepared: the review of the 0.3.5 releases — 2026-10-20
+
+Release preparation of the core, after the entries 1440 to 1483. Committed on the review branch
+`wf/review-0-3-5`; not pushed, not tagged, not published.
+
+Owner, 2026-10-20: the versions approved with “si” to the proposal core 0.3.6, gramlot-py-server 0.2.11,
+gramlot-js-server 0.2.14, gramlot-examples 0.3.9 (minimum `gramlot>=0.3.6`). The preparation approved with
+“ok” to updating the versions in the review worktrees and committing without push.
+
+- Versions. `pyproject.toml`, `js/package.json` and `jsr.json` change from 0.3.5 to 0.3.6. The README badge,
+  the release status and the GitHub release link name 0.3.6. `js/package-lock.json` is git-ignored: its two
+  root version fields were set to 0.3.6 in the worktree and are not part of the commit.
+  `.github/workflows/publish.yml` holds no version (its release title is generic since 0.3.3) and is unchanged.
+- Release notes: `.github/release-notes/v0.3.6.md`. They state what changed for page authors, what changed
+  for adapter authors and the packaging, from the code and the public guides of the branch.
+- Contents. The 12 commits over origin/develop (cc85aa4), recorded in the entries 1440 (method paths, one
+  request in flight per node), 1445 (Python/JavaScript parity), 1450 (one request race, shared ids, `Logic`
+  optional), 1455 (operations shared by the adapters, name syntax, server adapter, base theme, synchronous
+  call), 1460 (sub-builder expressions), 1465 (hatchling), 1470 (public documentation, server protocol),
+  1475 (page expiry renewed by use), 1480 (theme serving), 1481 (typed literals, `dataRemote` cache, theme
+  classes), 1482 (style shortcut units) and 1483 (names confirmed by the owner).
+- TYTX. Version 0.16.3 is on JSR and npm. `jsr.json` requires `jsr:@genro/tytx@^0.16.3` and `js/package.json`
+  `@genrojs/tytx` `>=0.16.3`, for `getDateType` (`js/src/format.js`). `pyproject.toml` keeps
+  `genro-tytx>=0.16.2`: no Python module uses `getDateType`.
+- Companion releases to follow the core, each prepared in its own review worktree: gramlot-py-server 0.2.11,
+  gramlot-js-server 0.2.14, gramlot-examples 0.3.9.
+
+Qualification: 3,651 JavaScript tests pass (`npm run build`, then `npm test` with `PYTHONPATH` set to the
+worktree `src` and `GRAMLOT_TEST_PYTHON`); Python 215 tests and 382 subtests pass with the existing expected
+failure (`python -m pytest -q` with `PYTHONPATH` set to the worktree `src`). Docs: `prepare_docs`, Sphinx
+`-W --keep-going -n` and `check_public_docs.py` pass on a fresh build (15 pages).
+
+Publication and public verification remain pending; existing production is unchanged.
