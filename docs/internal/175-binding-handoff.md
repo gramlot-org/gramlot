@@ -119,8 +119,8 @@ future namespace design. GC-155's proposed one-page root is not a settled contra
 | [GramlotRenderer](../../js/src/renderer/gramlot-renderer.js) | Subscribes to Source events; owns records, synchronous FIFO, freeze/thaw and cleanup. Calls inherited `runtimeValues(node)` on relevant Source updates |
 | [HtmlElement](../../js/src/view/html.js) | Projects resolved text/attrs, skips equal native value writes, preserves selection; `renderAttributes` retain their overriding precedence |
 | [Python Builder](../../src/gramlot/page/builder.py) | Python authoring, owned grammar adaptation and typed Source |
-| [Python Page](../../src/gramlot/page/base.py) / [JS Page](../../js/src/adapters/page.js) | Page.main plus explicitly marked remote Source methods; neither establishes Page.setup |
-| [Python Host](../../src/gramlot/server/host.py) / [JS Host](../../js/src/adapters/host.js) | `_source` / `buildSource` constructs Page and Builder, invokes the Page method directly and returns TYTX(Source); does not call Builder.create or deliver builder.data |
+| [Python Page](../../src/gramlot/page/base.py) / [JS Page](../../js/src/server/page-base.js) | Page.main plus explicitly marked remote Source methods; neither establishes Page.setup |
+| [Python GramlotServer](../../src/gramlot/server/gramlot_server.py) / [JS GramlotServer](../../js/src/server/gramlot-server.js), named Host at that date | `_source` / `buildSource` constructs Page and Builder, invokes the Page method directly and returns TYTX(Source); does not call Builder.create or deliver builder.data |
 | [Collection](../../src/gramlot/page/_collection.py) / [grammar loader](../../src/gramlot/page/_grammar_load.py) | Collection validates format/envelope; loader compiles/validates declarations atomically. Recent audit cleanup removed duplicate checks, not binding behavior |
 
 The develop-only runtime prerequisite consists of:

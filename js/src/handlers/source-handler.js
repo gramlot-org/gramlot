@@ -18,13 +18,13 @@ import {LogicRegistry} from '../binding/logic.js';
  * before the renderer observes the Source.
  */
 export class SourceHandler extends Handler {
-    constructor(gramlot, {collections, destination}) {
+    constructor(gramlot, {collections, destination, subscriptions, nameSyntax}) {
         super(gramlot);
         // The BindingRuntime reaches the builder through gramlot.src while it attaches.
         gramlot.src = this;
         this.logicRegistry = new LogicRegistry(gramlot);
-        this.builder = new GramlotBuilder(null, {collections});
-        this.binding = new BindingRuntime(gramlot);
+        this.builder = new GramlotBuilder(null, {collections, nameSyntax});
+        this.binding = new BindingRuntime(gramlot, {subscriptions});
         this.builder.binding = this.binding;
         this.binding.attach();
         this.source = this.builder.source;
@@ -55,7 +55,7 @@ export class SourceHandler extends Handler {
         }
         this.gramlot.state = 'started';
         this.binding.pageStarted();
-        this.gramlot._subscriptions.ready();
+        this.binding.subscriptions.ready();
         return this.gramlot;
     }
     /**
@@ -76,9 +76,16 @@ export class SourceHandler extends Handler {
     }
 
     /**
-     * Replace one Source node's children only after incoming Source validation.
-     * The request lives as long as the target's NodeBinding (P24): a DOM rebuild
-     * or a freeze keeps it, the removal of the target cancels it.
+     * Replace one Source node's children only after incoming Source validation. Resolves true when the
+     * fragment was mounted, false otherwise.
+     *
+     * The request follows the rule of `target.requests` (NodeRequests), shared with the `remote` attribute:
+     * one request in flight for the node, its fragment always mounted; a call made during the flight waits,
+     * with `method` and `params` of that moment, and is sent at the answer; a further call does nothing while
+     * one waits. No debounce: the caller chooses the moment. The request lives as long as the target's
+     * NodeBinding (P24): a DOM rebuild or a freeze keeps it, the removal of the target cancels it. A method
+     * name outside the name syntax of the page (`nameSyntax`) rejects. The mounted fragment becomes the one
+     * the `remote` of the target compares with `_cachedRemote`.
      *
      * `@source` / `registerSource` declare the fragments this method requests (GC-230 §035); the
      * `remote` attribute requests them declaratively (GC-095 §105).
@@ -88,30 +95,28 @@ export class SourceHandler extends Handler {
         if (!rpc.transport?.call) throw new Error('Remote Source is unavailable without a server transport');
         const binding = this.binding.bindingFor(target);
         if (this.gramlot.state !== 'started' || !binding) throw new Error('Remote Source target is not mounted');
-        rpc.remoteRequests.get(target)?.controller.abort();
-        const request = {controller: new AbortController()};
-        rpc.remoteRequests.set(target, request);
-        const unregister = binding.track(() => request.controller.abort());
+        return (await target.requests.submit(method, params, request => this.#mountRemote(target, binding, request))) ?? false;
+    }
+
+    /** Send the request of `remoteSource` and mount its fragment; a request of a closed target sends nothing. */
+    async #mountRemote(target, binding, request) {
+        if (binding.closed || this.gramlot.state === 'disposed') return false;
         let applying = false;
-        const current = () => this.gramlot.state !== 'disposed' && !request.controller.signal.aborted &&
-            rpc.remoteRequests.get(target) === request && !binding.closed;
+        const current = () => this.gramlot.state !== 'disposed' && !request.ignored && !binding.closed;
         try {
-            const wire = await rpc.call('source', method, params, {signal: request.controller.signal});
+            const wire = await binding.call('source', request);
             if (!current()) return false;
             const prepared = this.prepareSource(wire, target.builder);
             if (!current()) return false;
             this.renderer.validateCandidate(prepared, {replacingNode: target});
             applying = true;
-            unregister();
             // The target's own prefix text belongs to the old body as well.
             target.setValue(prepared, true, {_text: null}, true);
+            binding.remote?.fragmentMounted(request.method, request.text);
             return true;
         } catch (error) {
             if (!applying && !current()) return false;
             throw error;
-        } finally {
-            unregister();
-            if (rpc.remoteRequests.get(target) === request) rpc.remoteRequests.delete(target);
         }
     }
 }

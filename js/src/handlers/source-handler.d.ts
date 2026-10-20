@@ -7,6 +7,7 @@ import type {SourceBag, SourceBagNode} from '@genrojs/builders';
 import type {DomElement} from '../dom.d.ts';
 import type {Gramlot} from '../gramlot.js';
 import type {GramlotBuilder} from '../builder/gramlot-builder.js';
+import type {NameSyntax} from '../builder/name-syntax.js';
 import type {GramlotRenderer} from '../renderer/gramlot-renderer.js';
 import {Handler} from './handler.js';
 
@@ -25,8 +26,12 @@ export class SourceHandler extends Handler {
     source: SourceBag;
     /** The live renderer of the page. */
     renderer: GramlotRenderer;
-    /** Create the builder, the binding runtime and the renderer of `gramlot`, in the order of the source plan. */
-    constructor(gramlot: Gramlot, options: {collections: unknown[]; destination: DomElement | null});
+    /**
+     * Create the builder, the binding runtime and the renderer of `gramlot`, in the order of the source plan;
+     * `subscriptions` is the private topic service of `gramlot`, given to the binding runtime.
+     */
+    constructor(gramlot: Gramlot, options: {collections: unknown[]; destination: DomElement | null; subscriptions: unknown;
+        nameSyntax: NameSyntax});
     /** Start from an embedded typed Source, with the same observed insertion as `main`. */
     startSource(wire: SourceBag | string): Gramlot;
     /** Validate and insert `main` in the Source. */
@@ -38,7 +43,12 @@ export class SourceHandler extends Handler {
     prepareSource(wire: SourceBag | string, builder?: GramlotBuilder): SourceBag;
     /**
      * Replace the children of one Source node with a remote Source, only after the incoming Source
-     * validates. Resolves with true when applied, false when superseded or cancelled.
+     * validates. Resolves with true when mounted, false otherwise: the target left the Source, the page
+     * closed, the answer was ignored by `cancel()`, or the call was dropped because another call waits.
+     *
+     * One request is in flight for the target, its fragment always mounted; a call made during the flight
+     * waits with `method` and `params` of that moment and is sent at the answer (`target.requests`).
+     * `method` is a method of the page or a path `a.b.c.method` from the page; another name rejects.
      *
      * A declared fragment is requested from code with `gramlot.src.remoteSource` (GC-230 §035); the
      * `remote` attribute requests it declaratively (GC-095 §105).

@@ -1,10 +1,11 @@
 /**
  * Named logic of one Gramlot page (source plan §4.9, decision P21).
  *
- * Every logic file exports `class Logic`; its prototype methods are copied into a
- * `LogicGroup`: the root group for the page logic (group null), a child group
- * for each name of `js_requires` (`a/b` is the group `b` inside the group `a`).
- * The constructor of `Logic` never runs.
+ * A logic file exports `class Logic` when it has logic methods; its prototype methods
+ * are copied into a `LogicGroup`: the root group for the page logic (group null), a
+ * child group for each name of `js_requires` (`a/b` is the group `b` inside the group
+ * `a`). A module without the `Logic` export has no logic methods. The constructor of
+ * `Logic` never runs.
  */
 
 /** Names that are never a group: `page` is the group's own member, `constructor` the prototype's. */
@@ -93,8 +94,12 @@ function declaresConstructor(source) {
     return /(?<![\w$.#])(?<!\bstatic\s+)constructor\s*\(/.test(members);
 }
 
-/** The `[name, function]` pairs of a Logic class, after the §4.9 rules; errors name the resource. */
+/**
+ * The `[name, function]` pairs of a Logic class, after the §4.9 rules; errors name the resource. A module
+ * without the `Logic` export (undefined) has none; a `Logic` export that is not a class is an error.
+ */
 function logicMethods(logicClass, resource) {
+    if (logicClass === undefined) return [];
     if (typeof logicClass !== 'function' || !/^class\b/.test(Function.prototype.toString.call(logicClass))) {
         throw new Error(`${resource}: the module exports no class Logic`);
     }

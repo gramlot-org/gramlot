@@ -4,14 +4,17 @@
 
 ## 1. Audience and sources
 
-Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Chapters cover classes, server adapters, page authoring, themes/CSS and extension gaps. Public guides follow the release sequence, including later RPC/remote additions;
-historical notes and development-only corrections are marked. Only the README
-states the current release version. `prepare_docs.py` stages README, nine explicit `PUBLIC_PAGES`
+Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Chapters cover classes, server adapters and their protocol, page authoring, data binding, server calls, remote Source and lazy Data, components, themes/CSS and extension gaps. Public guides describe the current version, without release history or process material (review plan of the 0.3.5 releases, d-course and p8, 2026-10-19). Only the README
+states the current release version. `prepare_docs.py` stages README, fourteen explicit `PUBLIC_PAGES`
 guides and explicit logo/theme-guide image assets. New files are not automatically public. Constitution,
 architecture, ports and docs_llm are excluded from pages, source downloads and
 search, but remain readable in the public Git repository. Pair guides and preserve
 IDs; public guides do not link internal mirrors.
 
+
+Cross-page anchor links (`page.md#gc-…`) are raw HTML ids MyST cannot resolve: `docs/conf.py`
+suppresses `myst.xref_missing`; `check_public_docs.py` verifies every local link and anchor in the
+built HTML.
 
 HTML omits standalone document/block identity paragraphs and three-digit heading
 prefixes, before table-of-contents collection; source metadata and section/explicit

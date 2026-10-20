@@ -14,11 +14,12 @@ from genro_builders.builder.pointers import pointer_transform
 
 # Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 # dictionary of X, so every GramlotBuilder user can encode and decode it.
+from .name_syntax import NAME_SYNTAX, NameSyntax
 from .source import GramlotBuilderBag
 
 # P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 DATA_FORBIDDEN = "data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element"
-# Declarations outside Gramlot 0.2.0 that fail explicitly (source plan, section 2).
+# Declarations that Gramlot does not accept and that fail explicitly (source plan, section 2).
 EXCLUDED_ELEMENTS = frozenset()
 EXCLUDED_ATTRIBUTES = frozenset({"serverpath", "dbenv", "shared_id"})
 EXCLUDED_ATTRIBUTE_PREFIXES = ("formsubscribe_",)
@@ -31,9 +32,7 @@ DATA_INLINE_ATTRIBUTES = {"dataFormula": "formula", "dataController": "script"}
 
 def data_element_error(tag, attrs):
     """The P18 violation of a data-element's attributes, or None."""
-    value = attrs.get("value")
-    if (tag in ("input", "textarea", "select", "webcomponent") and isinstance(value, str)
-            and value.startswith(("^", "=")) and not value.startswith("==") and ":" in value):
+    if tag in ("input", "textarea", "select", "webcomponent") and pointer_transform(attrs.get("value")):
         return "'value' does not accept pointer suffixes; use an ordinary value pointer"
     if tag == "html_button" and any(
             name in ("action", "ask", "_delay", "fire") or name.startswith("fire_") for name in attrs):
@@ -64,10 +63,13 @@ class GramlotBuilder(HtmlBuilder):
     # Builder applies it on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
     _grammar_documents = ("../collections/binding.json", "../collections/webcomponent.json", "../collections/buttons.json")
 
-    def __init__(self, name=None, *, collections=(), auth=None):
+    def __init__(self, name=None, *, collections=(), auth=None, name_syntax=NAME_SYNTAX):
+        if not isinstance(name_syntax, NameSyntax):
+            raise TypeError(f"name_syntax must be a NameSyntax, not {name_syntax!r}")
         super().__init__(name)
         self._collection = None
         self._auth = auth
+        self._name_syntax = name_syntax
         for collection in collections:
             self.load_collection(collection)
 
@@ -98,7 +100,7 @@ class GramlotBuilder(HtmlBuilder):
             raise ValueError(f"{name}: the tag prefix '{GramlotBuilder._name}_' is not accepted; "
                              f"use the prefix '{self.dialect_prefixes[0]}'")
         if lookup in EXCLUDED_ELEMENTS:
-            raise ValueError(f"{name}: excluded from Gramlot 0.2.0")
+            raise ValueError(f"{name}: excluded from Gramlot")
         tag = self._schema_tag_names.get(lookup)
         if tag is not None:
             return tag
@@ -136,6 +138,12 @@ class GramlotBuilder(HtmlBuilder):
         or None: without it every element is serialised."""
         return self._auth
 
+    @property
+    def name_syntax(self):
+        """The ``NameSyntax`` of the method names of ``remote``: the one of the server that built this
+        builder (``GramlotServer.name_syntax``), the core default ``NAME_SYNTAX`` otherwise."""
+        return self._name_syntax
+
     def to_tytx(self):
         """The Source encoded as TYTX text, as the JS ``toTytx``. With an ``auth``
         evaluator, the elements whose ``auth`` rule it refuses are left out
@@ -168,15 +176,14 @@ class GramlotBuilder(HtmlBuilder):
     def _validate_call_args(self, info, node_value, attr, node_tag=""):
         """Enforce required parameters declared by Gramlot's loaded grammar and the excluded attributes."""
         if (info.get("_meta", {}) or {}).get("gramlot_component"):
-            value = attr.get("value")
-            if isinstance(value, str) and pointer_transform(value):
+            if pointer_transform(attr.get("value")):
                 raise ValueError("'value' does not accept pointer suffixes")
         if node_tag == "webcomponent":
             webcomponent_code(attr)
         excluded = next((name for name in attr if name in EXCLUDED_ATTRIBUTES
                          or name.startswith(EXCLUDED_ATTRIBUTE_PREFIXES)), None)
         if excluded is not None:
-            raise ValueError(f"{node_tag}: attribute '{excluded}' is excluded from Gramlot 0.2.0")
+            raise ValueError(f"{node_tag}: attribute '{excluded}' is excluded from Gramlot")
         error = data_element_error(node_tag, attr)
         if error is not None:
             raise ValueError(f"{node_tag}: {error}")

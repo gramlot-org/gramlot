@@ -13,7 +13,7 @@ under the code. The guide content cap is 1440px; images never enlarge beyond
 their 1080px source width. Full-size image inspection remains available. Complete Python pages
 remain available; moved CSS declarations are not duplicated. Public rendering
 omits reference metadata and numeric heading prefixes; source IDs and anchors stay. Python requires a
-Python server. Interactive styling uses the 0.2.0 Data-binding surface.
+Python server. Interactive styling uses [Data bindings](097-data-binding.md).
 
 <a id="gc-096-005"></a>
 
@@ -23,9 +23,13 @@ Block ID: **GC-096-005**.
 
 Themes style rendered HTML; tokens are CSS variables read with `var(...)`; classes
 select rules; bindings connect Source attributes to Data. CSS is presentation,
-not validation or persistence. Themes are opt-in through `Page.css`. No
-`Page.theme`/`root.css()` API. `css_requires` needs a resource host, unavailable
-in the current file servers.
+not validation or persistence. The server loads a theme on every page before its
+stylesheets: Base (`gramlot-base`) unless the server option `css_theme`/`cssTheme`
+chooses another or `False` none; a page replaces it with `css_theme = "<name>"` or
+loads none with `css_theme = False`. `Page.css` = stylesheets after the theme
+(overlays, application CSS); a listed Base loads once. Base is the one complete core
+theme; Compact, mimi, joanna are overlays loaded with `Page.css`. No `root.css()`
+API. `css_requires` needs a resource host, unavailable in the current file servers.
 
 <a id="gc-096-010"></a>
 
@@ -34,7 +38,7 @@ in the current file servers.
 Block ID: **GC-096-010**.
 
 The full guide supplies `appearance.py` and its discovered companion
-`appearance.css`: Base in `Page.css`, `html_main`, `.example-page`, `.stack`,
+`appearance.css`: Base from the server (no `css`), `html_main`, `.example-page`, `.stack`,
 `.card`, semantic status and a secondary link. CSS overrides page width/radius
 and adds a scoped accent. Expected result and a width-change exercise are stated.
 Before/after captures show the 72rem → 64rem width, blue leading border and
@@ -78,20 +82,18 @@ Color mode is independent.
 | mimi | mimi.css | Titanium grays, dark navigation, blue actions, small corners | 12px / 18px |
 | joanna | joanna.css | Light gray/white surfaces, softer corners, blue actions | 13px / 20px |
 
-The Gramlot name `joanna` follows the requested name; the legacy file is
-spelled `joanna.css`. These profiles adapt the legacy light palettes and compact
+The profile `joanna` adapts the legacy file `joanna.css`. These profiles adapt the legacy light palettes and compact
 proportions. They do not port Dojo widgets or guarantee pixel-identical layouts.
-Dark palettes are new Gramlot adaptations. Legacy user color variants are not part
-of this increment; Base and Compact remain available.
+Dark palettes are Gramlot adaptations. Legacy user color variants are not
+provided; Base and Compact remain available.
 
-In an application, load the three stylesheets in order:
+In an application, the server loads Base; load Compact and the profile after it:
 
 ```python
 from gramlot import Page as BasePage
 
 class Page(BasePage):
     css = (
-        "/themes/gramlot-base/theme.css",
         "/themes/gramlot-compact/theme.css",
         "/themes/mimi/theme.css",
     )
@@ -191,7 +193,8 @@ fallback, written by shell resize behaviour; it is not a general design token.
 Block ID: **GC-096-035**.
 
 Base styles semantic HTML/forms/tables/details/dialogs/progress/meter. Classes:
-`example-page`, `stack`, `grid`, `card`, `muted`, `surface-subtle`, `button`,
+`example-page`, `stack`, `grid`, `card`, `muted`, `actions` (wrapping flex row of actions, gap
+`--gramlot-space-2`), `eyebrow` (small bold uppercase label above a heading), `surface-subtle`, `button`,
 `button--secondary`, `button--quiet`, `status` plus `status--success/warning/error`,
 `sr-only`, `example-art`, `gramlot-icon`, `gramlot-icon--stroke`. Also recognizes
 `button.secondary/quiet`. Card is a query container; narrow nested grids collapse
@@ -208,8 +211,16 @@ Block ID: **GC-096-040**.
 
 `class_`/`_class` writes class; classes and style accept strings/null, not
 dicts/Bags/lists. Shortcuts compose inline style and win over the same property
-in `style`; null removes a shortcut property. SVG stays SVG; width/height on
-img/canvas/embed and width/border on table remain HTML attributes.
+in `style`; null removes a shortcut property. The value of a shortcut is written with its CSS unit, as in
+legacy (`width="12rem"`, `margin_top="4px"`) and copied unchanged: `width=20` gives `width: 20`, invalid CSS
+that the browser ignores. Plain-number properties (`opacity`, `z_index`) take a number. A number becomes px only
+in these sub-keys, Python and JS alike: `rounded` and its side/corner forms (`rounded_top`, `_bottom`, `_left`,
+`_right`, `_top_left`, `_top_right`, `_bottom_left`, `_bottom_right`; `rounded=4` → `border-*-radius: 4px`),
+`transform_translate_x`/`transform_translate_y` (`translateX(10px)`), `filter_blur` (`blur(2px)`). The first two
+are legacy behaviour; legacy `filter` has no blur. Only a number converts: `rounded="4"` stays `4`,
+`rounded="1rem"` stays `1rem`. Every other shortcut is unchanged, `shadow` included (a full `box-shadow` value).
+SVG stays SVG (`svg(width=100)` valid); width/height on
+img/canvas/embed and width/border on table remain HTML attributes with plain numbers.
 The full guide adds a three-column Python → Source → DOM comparison: literal
 color/font_size, duplicate style/shortcut precedence, and a pointer before/after a
 Data update. Source snapshots are attribute excerpts, not a serialized Bag. DOM
@@ -220,7 +231,7 @@ pointer. Shortcut precedence composes inline CSS before the browser cascade;
 style property. Reverse-direction table distinguishes Data edits, literal Source
 edits, DevTools DOM edits and theme-variable previews. DOM/CSS edits do not write
 Source/Data or source files; later projection can overwrite them. Inspector theme
-previews can be exported with Download CSS. Links to gallery b06 for practice.
+previews can be exported with Download CSS. Practice in the gallery lesson *Style and visibility* ([examples manual](https://gramlot-examples.readthedocs.io/en/latest/)).
 The full `style_state.py` example uses `datapath="appearance"` for relative paths,
 setters, two bound selects, a bound class,
 bound width with max-width 100%, a checkbox and bound visibility. No JS file is
@@ -235,7 +246,7 @@ layout space. Neither is authorization. Real statuses also need meaningful text.
 
 Block ID: **GC-096-045**.
 
-IndexPage loads Base/index CSS and needs its documented Logic module. Standard
+IndexPage lists `gramlot-index/theme.css` in `css` (Base comes from the server) and needs its documented Logic module. Standard
 footer manages/persists appearance, mode and sidebar width. Iframes each load
 their CSS; arbitrary children get no automatic receiver. Gallery receiver is not
 a general application API. Prefer application overlay, common tokens with mode

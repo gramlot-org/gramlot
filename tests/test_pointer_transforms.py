@@ -80,3 +80,30 @@ def test_literal_colons_and_plain_value_pointers_are_unchanged():
     _, attrs = builder.runtime_values(node)
     assert attrs["value"] == "Ada"
     assert attrs["title"] == "Name: Ada"
+
+
+def test_named_slot_on_an_expression_attribute_is_null():
+    """The same Source as the JavaScript test of a {name} slot naming a == attribute."""
+    builder = GramlotBuilder()
+    builder.data.set_item("w", 3)
+    node = builder.root.div(w="^w", label="==w + 1", title="^w:{} {label}", target_path="^w:{} {label}")
+    _, attrs = builder.runtime_values(node)
+    assert attrs["title"] is None
+    assert attrs["target_path"] is None
+
+
+# The same table as 'pointer suffixes on value are found by pointerTransform' in js/tests/pointer-transforms.test.js.
+@pytest.mark.parametrize("value,rejected", [
+    ("^name:{}", True), ("=name:={}", True), ("^name:={name}", True), ("^name", False), ("=name", False),
+    ("==a ? 'x:y' : 'z'", False), ("Name: Ada", False), (3, False), (None, False),
+])
+def test_value_suffixes_are_found_by_pointer_transform(value, rejected):
+    for tag in ("input", "textarea", "select", "webcomponent"):
+        builder = GramlotBuilder()
+        create = getattr(builder.root, tag)
+        kwargs = {"code": "test-input"} if tag == "webcomponent" else {}
+        if rejected:
+            with pytest.raises(ValueError, match="value.*does not accept pointer suffixes"):
+                create(value=value, **kwargs)
+        else:
+            create(value=value, **kwargs)

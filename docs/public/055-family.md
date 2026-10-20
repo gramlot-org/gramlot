@@ -2,11 +2,6 @@
 
 Document ID: **GC-055**.
 
-> **Scope.** This is the maintained introduction. The binding example belongs
-> to the 0.2.0 learning stage; the Page/Logic module arrangement arrived in 0.2.5.
-> Follow [Try Gramlot](025-try.md) for the chronological release sequence.
-> The README states the current release.
-
 <a id="gc-055-005"></a>
 
 ## 005 · What Gramlot is
@@ -16,12 +11,12 @@ JavaScript, and keeps it bound to the application state in the browser.
 
 - **Page.** A class with a `main(root)` method. It builds the interface by calling
   element methods on `root`: `root.div(...)`, `pane.input(...)`, `pane.svg(...)`.
-- **Source.** The tree the Page builds: native HTML5 and SVG elements with their
-  attributes, held in a Bag. The browser renders the DOM from it, and a change to
+- **Source.** The tree the Page builds: HTML5 and SVG elements and components with
+  their attributes, held in a Bag. The browser renders the DOM from it, and a change to
   the Source changes only the affected DOM.
 - **Data.** A second Bag with the values of the page. Attributes point into it:
   `value='^.name'` follows `name`, `'=.name'` reads it once, `'==...'` computes an
-  expression. Native controls write back into the Data when the user edits them.
+  expression. Form controls write back into the Data when the user edits them.
 - **Logic.** `dataFormula` computes a value, `dataController` runs code when the Data
   changes, buttons and `connect_on<event>` react to the user. The code is a method of
   the `Logic` class exported by the page module `foo.js` (beside `foo.py` for a Python
@@ -54,13 +49,12 @@ The page shows a field with `Ada` and the text `Hello, Ada`; typing `Grace` in t
 field changes the text to `Hello, Grace` at every keystroke. The same page in
 JavaScript calls the same methods; data-elements take an object
 (`pane.dataSetter({destination_path: '.name', value: 'Ada'})`).
-[Writing pages](095-writing-pages.md) explains the declarations and their limits.
+[Data binding and controllers](097-data-binding.md) explains the declarations and their limits.
 
 This compact example uses an inline formula: it requires the permissive CSP
 profile explained in [Classes and server adapters](090-classes-and-hosts.md).
-For a project using strict CSP, follow the named-Logic form in
-[Writing pages](095-writing-pages.md), section 060, and c03. The gallery teaches
-supported slices with explicit limits; it does not yet cover every option.
+For a project using strict CSP, follow the [named-Logic form](097-data-binding.md#gc-095-060)
+and the gallery lesson *Named logic*. The gallery does not cover every option.
 
 <a id="gc-055-010"></a>
 
@@ -76,12 +70,14 @@ supported slices with explicit limits; it does not yet cover every option.
 | [gramlot-poc](https://github.com/gramlot-org/gramlot-poc) | The earlier experimental runtime, with a different scope. | Research only. | Experimental |
 
 The earlier adapter repositories `gramlot-uvicorn`, `gramlot-django`,
-`gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn` and `gramlot-serverless` are
-archived: their adapters are now in `gramlot-py-server` and `gramlot-js-server`.
+`gramlot-fastapi`, `gramlot-flask` and `gramlot-kajenn`, and the repository
+`gramlot-serverless`, are archived: their adapters are in `gramlot-py-server` and
+`gramlot-js-server`, which also holds the current package `@gramlot/gramlot-serverless`.
 
-Every adapter implements the same contract: the core's
-[classes and server adapters](090-classes-and-hosts.md) guide describes it, with the
-mount prefix, the page companions and the Content Security Policy profiles. Each
+Every adapter implements the same [server protocol](101-server-protocol.md); the
+core's [classes and server adapters](090-classes-and-hosts.md) guide describes the
+classes, the mount prefix, the page companions and the Content Security Policy
+profiles. Each
 adapter repository documents its installation, configuration and deployment.
 
 <a id="gc-055-015"></a>
@@ -96,4 +92,4 @@ adapter repository documents its installation, configuration and deployment.
   its source; see [Try Gramlot](025-try.md).
 
 The [examples manual](https://gramlot-examples.readthedocs.io/en/latest/)
-presents all shared lessons in release order, with Python and JavaScript source.
+presents the shared lessons by topic, with Python and JavaScript source.

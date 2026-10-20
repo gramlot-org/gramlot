@@ -139,17 +139,16 @@ export class ControlAdapter {
     }
 
     /**
-     * Write `read()` at the `value` pointer (`^`, `?attr` included). A literal or `=` value accepts
-     * input and writes nothing (gate decision 5); a null path raises from the listener (Q7). A closed
-     * NodeBinding writes nothing (R12).
+     * Write `read()` at the `value` pointer (`^`, `?attr` included) with HtmlElement.writeParameter,
+     * the DOM → Data rule of component parameters too. A literal or `=` value accepts input and writes
+     * nothing (gate decision 5); a value equal to the Data value is not written; a null path raises
+     * from the listener (Q7). A closed NodeBinding writes nothing (R12).
      */
     commit(event, value = this.read()) {
         if (this.binding.closed) return;
-        const pointer = this.node.getAttr('value');
-        if (this.node.pointerType(pointer) !== '^') return;
         this.#committing = true;
         try {
-            this.node.setRelativeData(pointer.slice(1), value);
+            this.binding.runtime.renderer.html.writeParameter(this.node, 'value', value);
         } finally {
             this.#committing = false;
         }

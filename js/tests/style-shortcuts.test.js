@@ -428,3 +428,18 @@ test('SVG, sub-builder boundaries and render_attributes cannot bypass style/clas
         } finally { app.dispose(); }
     }
 });
+
+// Decision d-float (review 0.3.5): the static number text differs and is documented in GC-095 §090.
+// The same Source as test_static_number_text_follows_python_str in tests/test_renderers.py.
+test('static number text: Python str(1.0) gives 1.0, JavaScript String(1.0) gives 1; a string is the same', () => {
+    const py = execFileSync(python, ['-c', `
+from gramlot import GramlotBuilder
+builder = GramlotBuilder()
+builder.root.p(1.0)
+builder.root.p("1.00")
+builder.root.p(2.5)
+print(builder.render(), end="")
+`], {encoding: 'utf8'});
+    assert.equal(py, '<p>1.0</p><p>1.00</p><p>2.5</p>');
+    assert.equal(rendered(root => { root.p(1.0); root.p('1.00'); root.p(2.5); }), '<p>1</p><p>1.00</p><p>2.5</p>');
+});

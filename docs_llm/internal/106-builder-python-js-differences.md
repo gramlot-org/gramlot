@@ -1,8 +1,11 @@
-# 105 · Python and JavaScript Builder differences
+# 106 · Python and JavaScript Builder differences
 
-Document ID: **GC-105**. Updated: **2026-09-21**.
+Document ID: **GC-106**. Updated: **2026-09-21**. Renumbered: **2026-10-19**
+(review of the 0.3.5 releases, phase p4c): it carried the ID GC-105 of the public guide
+[Components](../public/105-components.md), which keeps it; the anchors `gc-105-NNN` of this
+register are now `gc-106-NNN`.
 
-<a id="gc-105-005"></a>
+<a id="gc-106-005"></a>
 
 ## 005 · Scope and decisions
 
@@ -20,7 +23,7 @@ Owner decisions:
 An open gap is not automatically an approved permanent exception. Update this
 register when a difference is fixed, accepted, or better characterized.
 
-<a id="gc-105-010"></a>
+<a id="gc-106-010"></a>
 
 ## 010 · Declaration and calling conventions
 
@@ -31,7 +34,7 @@ register when a difference is fixed, accepted, or better characterized.
 | SYN-03 | Decorated component/container methods. | Methods named in static components/containers lists. | Existing implementation choice; not a JavaScript language requirement. Recipes are outside this consolidation. |
 | SYN-04 | Data functions receive named arguments. | Data functions receive an argument object. | Language adaptation, not permission to change results. |
 
-<a id="gc-105-015"></a>
+<a id="gc-106-015"></a>
 
 ## 015 · Presentation: deliberate divergence
 
@@ -69,7 +72,7 @@ Do not assume byte-identical output outside the checked cases.
 
 This static port does not mean live Gramlot formatting and bindings are implemented.
 
-<a id="gc-105-020"></a>
+<a id="gc-106-020"></a>
 
 ## 020 · Output destinations
 
@@ -84,7 +87,7 @@ only the explicit base class is absent. No class addition is currently required.
 string paths; writable objects and functions are supported. Filesystem integration
 and its ownership remain to be decided; no browser filesystem shim is implied.
 
-<a id="gc-105-025"></a>
+<a id="gc-106-025"></a>
 
 ## 025 · Other known gaps
 
@@ -95,7 +98,7 @@ and its ownership remain to be decided; no browser filesystem shim is implied.
 | VAL-02 | JS rejects some Python regex constructs/flags, including IGNORECASE and selected character classes. | Explicit implementation restriction; not full regex equivalence. |
 | DIA-01 | Python includes YAML rendering and further tools/dialects such as CSS, XSD, XSLT, configuration and DataBuilder. JS currently includes HTML/SVG and generic XML rendering. | Scope gap; adding every dialect is not authorized by this register. |
 
-<a id="gc-105-030"></a>
+<a id="gc-106-030"></a>
 
 ## 030 · Corrected differences and verification
 
@@ -118,7 +121,7 @@ commit is implied. These checks cover their cases, not exhaustive Python parity.
 [Work status](070-work-status.md) · [Consolidation plan](094-design-consolidation-plan.md)
 
 
-<a id="gc-105-035"></a>
+<a id="gc-106-035"></a>
 
 ## 035 · Local 0.1.1 review
 
@@ -135,7 +138,7 @@ whole-Source replacement retains deferred root/identity semantics. These are not
 newly approved compatibility paths. Recipe consolidation remains excluded.
 
 
-<a id="gc-105-040"></a>
+<a id="gc-106-040"></a>
 
 ## 040 · Superseding Python-port correction
 
@@ -153,7 +156,7 @@ The inherited-declaration collision is also reproducible with Python HtmlBuilder
 no unilateral JS-only collection policy was added.
 
 
-<a id="gc-105-045"></a>
+<a id="gc-106-045"></a>
 
 ## 045 · Agreed collection replacement
 
@@ -172,7 +175,7 @@ confirmed. Bag JS is unaffected. Consumer alignment remains pending.
 
 
 
-<a id="gc-105-050"></a>
+<a id="gc-106-050"></a>
 
 ## 050 · Shared Collection implementation
 

@@ -1358,7 +1358,7 @@ open until the CSP grammar arrives.
    The asymmetry has a technical reason: Python does not run JavaScript.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
-[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §660.
+[GC-095 §065](public/097-data-binding.md#gc-095-065). Record: GC-070 §660.
 
 ### Amendment 11.54 — An iframe srcdoc from Data is sandboxed — 2026-10-03
 
@@ -1386,9 +1386,12 @@ runs, and the `on*`/`javascript:` refusal does not reach them.
    `verify_live_playground.mjs`) on the runner.
 
 Rules: [GC-090 §035](public/090-classes-and-hosts.md#gc-090-035),
-[GC-095 §065](public/095-writing-pages.md#gc-095-065). Record: GC-070 §665.
+[GC-095 §065](public/097-data-binding.md#gc-095-065). Record: GC-070 §665.
 
 ### Amendment 11.55 — One page module with Page and Logic; gramlot.inout — 2026-10-03
+
+**Superseded in part by 11.86:** `Logic` is optional; a logic module without it has no
+logic methods, and the browser no longer rejects it (item 1).
 
 Owner decisions of 2026-10-03, in the coordinating chat and in the execution of brief 1:
 a JavaScript page is one module that exports `Page` and `Logic` ("io farei lo skeleton con
@@ -1439,7 +1442,7 @@ companion `foo_aux.js` as the only page logic of `FileHost`) and the layout note
 (`NN_name_aux.js` where needed).
 
 Rules: [GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
-[GC-095 §060](public/095-writing-pages.md#gc-095-060),
+[GC-095 §060](public/097-data-binding.md#gc-095-060),
 [GC-095 §095](public/095-writing-pages.md#gc-095-095). Record: GC-070 §670.
 
 ### Amendment 11.56 — The examples and their runner leave the core — 2026-10-04
@@ -1585,7 +1588,7 @@ contract is one and logical, realised separately per kind of server.
 Amendment of 11.53 item 1, by addition only: a `GramlotBuilderBag` inside a `data`
 value is a value and activates nothing (GC-230 §015). The rest of 11.53 is unchanged.
 
-Rules: [GC-095 §100](public/095-writing-pages.md#gc-095-100),
+Rules: [GC-095 §100](public/098-server-calls.md#gc-095-100),
 [GC-090 §020](public/090-classes-and-hosts.md#gc-090-020). Contract: GC-230,
 `docs/internal/230-server-protocol.md`.
 
@@ -1602,7 +1605,7 @@ contract of 11.58 is unchanged. Out of 0.2.16: `lazy` loading by visibility,
 `_waitingMessage`, the `tbody` merge, `_resolved`, `_fired` and the legacy alias
 `data(path, remote=…)`.
 
-Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).
+Rules: [GC-095 §105](public/099-remote-content.md#gc-095-105).
 
 ### Amendment 11.60 — Fixed method name for declarative `remote` — 2026-10-13
 
@@ -1624,7 +1627,7 @@ The old Q1 about clearing a reactive remote name is outside the current contract
 no clearing/cancellation semantics are newly approved. Other APIs and the open Q2
 about live Source declaration edits are outside this clarification.
 
-Rules: [GC-095 §105](public/095-writing-pages.md#gc-095-105).
+Rules: [GC-095 §105](public/099-remote-content.md#gc-095-105).
 Decision and remaining implementation work: GC-070 §755.
 
 ### Amendment 11.61 — A dedicated optional inspector Web Component — 2026-10-14
@@ -2840,3 +2843,164 @@ is not introduced. No publication or deployment is authorized by this request.
 
 
 Release authorization — owner, 2026-10-18: “bene, pubblica anche questa correzione e aggiorna entrambe le gallery e lo zip serverless, poi verifica online che lo slider corregga i decimali dello splitter”. Authorizes the bounded slider quantization correction release, both hosted galleries and the regenerated serverless ZIP, followed by live browser verification.
+
+
+### Amendment 11.85 — Method name resolved from the page; one request in flight per Source node — 2026-10-19
+
+Owner decisions of 2026-10-19, taken in the coordinating chat of the review of the
+0.3.5 releases. Changed principle: the method of `remote`, `dataRpc` and `dataRemote`
+and the handling of their requests. Superseded: 11.60 (fixed literal method of
+`remote`) and the literal-method contract kept by 11.66; the rule "the latest call
+of a node wins" of 11.58 item 5 for `dataRpc`; the latest-wins rule of
+`remoteSource` (GC-210 P24) and the cancellation of `remote` and `dataRemote`
+requests of 0.2.17.
+
+1. Method name. `remote`, `dataRpc`, `dataRemote` and `gramlot.src.remoteSource`
+   name the method with a string, `"method"` or `"a.b.c.method"`, always resolved
+   from the page; never an object reference. A `^`/`=` pointer is accepted on the
+   three constructs, and the documentation warns that a reader of the Source no
+   longer sees the method. An empty or `null` name, or a name outside the syntax,
+   is an error when the request is sent; "no method yet" is written with `_if`.
+   The core syntax is `REMOTE_NAME`: segments of an ASCII letter followed by ASCII
+   letters, digits and `_`, separated by `.`, the same portable pattern in Python
+   and JavaScript. The owner decided that the syntax belongs to the server; its
+   declaration by the server is a later phase of the same review.
+2. Resolution. Every segment before the last is a public attribute (its name does
+   not start with `_`), with no marker for now; a property getter runs when a
+   request names it (accepted effect). The last member is declared with `@source`
+   or `@endpoint` (JavaScript `registerSource` or `registerEndpoint`), whose `auth`
+   rule is the only authorization of the request. In JavaScript every object on the
+   path is an instance of `Exposed`, a base class holding only the two markers,
+   which `Page` extends; in Python the objects are ordinary (accepted asymmetry:
+   the decorators are functions). A member inherited from `Object`, such as
+   `constructor`, never leads to a method; both conformance checks verify it.
+3. Requests. One request is in flight for each Source node. It always finishes and
+   its answer is applied (fragment mounted, value written, `_onRemote` or
+   `_onResult` run). The first change during the flight waits with its method and
+   parameters of that moment; later changes do nothing while one waits; at the
+   answer the waiting request is sent. Only the removal of the node, the close of
+   the page and the `timeout` of `dataRpc` abort a request. Accepted effect: the
+   content can stay behind the Data until the next change.
+4. `_onCalling` applies to `dataRpc`, `remote` and `dataRemote`; a result `false`
+   makes no call, as in the legacy. The state of the requests is reached from
+   `this` (the Source node) through one object, `node.requests`: `inflight`
+   (`method`, `params`, `sentAt`, `cancel()`) and `pending` (`method`, `params`),
+   null when empty; `cancel()` makes the node ignore the answer. Provisional, decided
+   by the coordinator on the owner's delegation of the same day and to be reviewed
+   after this implementation: after a cancel inside `_onCalling` the new call is
+   sent at once; the `_onCalling` of `dataRemote` runs before each load;
+   `remoteSource` has no debounce.
+5. `_if` is a readiness condition, as in the legacy: false makes no request,
+   cancels nothing and leaves the content unchanged; `_else` stays inline code.
+6. `_delay`, `_timing`, `_userChanges` and `_onCalling` are control attributes of
+   `remote`. `_delay` is a debounce that cancels only the scheduled call, never the
+   request in flight. No default delay; the documentation suggests `_delay`.
+7. The callback and cache names stay those of the legacy, per construct:
+   `_onResult` and `_onError` on `dataRpc`, `_onRemote` and `_cachedRemote` on
+   `remote`, `cacheTime` on `dataRemote`.
+
+The names `Exposed` and `node.requests` were chosen by the implementation and
+confirmed by the owner on 2026-10-19 (GC-225 §010). No release or deployment is
+authorized by these decisions.
+
+Rules: [GC-095 §100](public/098-server-calls.md#gc-095-100),
+[GC-095 §105](public/099-remote-content.md#gc-095-105). Contract: GC-230 §015.
+Status: GC-070 §1440.
+
+
+### Amendment 11.86 — `Logic` is optional in a logic module — 2026-10-19
+
+Owner decision of 2026-10-19, taken in the coordinating chat of the review of the
+0.3.5 releases: "Facoltativa: si scrive solo se serve". Changed principle: the
+`Logic` export of a JavaScript logic module. Superseded: the sentence of 11.55 item 1
+"beside a Python page it exports `Logic`: the browser rejects a module without it,
+naming the file".
+
+1. A logic module (the page module `foo.js`, `foo_aux.js`, a `js_requires` resource)
+   exports `class Logic` only when the page has logic methods. A module without the
+   `Logic` export has no logic methods; its group, when it names one, exists with no
+   method. A `Logic` export that is not a class stays an error naming the file.
+2. A misspelt export (`logic`) is not an error at load: it shows when a `func="..."`
+   names a method, and the error names the method and the resources of the group.
+3. The servers do not change: Python sends `foo.js` beside `foo.py` without reading
+   its exports; the JavaScript `GramlotFileServer` sends the page module only when it
+   exports `Logic`, else `foo_aux.js`.
+
+No release or deployment is authorized by this decision.
+
+Rules: [GC-095 §060](public/097-data-binding.md#gc-095-060),
+[GC-090 §030](public/090-classes-and-hosts.md#gc-090-030). Status: GC-070 §1450.
+
+
+### Amendment 11.87 — Operations shared by the adapters, server-declared name syntax, server adapter, base theme, synchronous call — 2026-10-19
+
+Owner decisions of 2026-10-19, taken in the coordinating chat of the review of the
+0.3.5 releases (review plan decisions d-adapter-api, d-bom, d-owner, d-theme and
+d-pointer-separator; the synchronous call and the `sync` attribute of `dataRemote`,
+sent by the coordinator on the same day). Changed principles: the division of the
+server code between the core and the adapters, the name syntax, the client transport,
+the theme of a page and the read of `dataRemote`. Superseded: 11.58 item 2 (the
+bootstrap config `{pageId, rpcUrl, closeUrl, rootId, capabilities}`), item 3 (an
+evaluator that knows only the owner) and item 4 (the client sends through
+`HttpTransport` or an injected transport); 11.48 item 3 (load order "`Page.css` URLs
+as written, then the companions"); 11.85 item 1 (the core syntax `REMOTE_NAME`, the
+server's declaration left to a later phase); 11.59 and 11.85 item 3 for `dataRemote`
+where they say a read never waits; the GC-230 §135 sentence that allows a null owner
+for every HTTP request.
+
+1. Two levels (d-adapter-api). The core holds what every server shares, the
+   serverless Worker included: `GramlotServer.decode_body`/`decodeBody` (the request
+   body as UTF-8), `call(text, owner=…, identity=…)`, `close(text, owner=…)` (the close
+   message), `open_page`/`openPage` (which maps `<path>/index.html` to `<path>/`),
+   `close_all`/`closeAll`, `theme_file`/`themeFile` (the file of a `/themes/` URL; on
+   `GramlotServer` since review p4d, because it does not read the pages folder) and
+   `GramlotFileServer.companion_file`/`companionFile`. Everything only HTTP adds
+   (methods and 405 with `Allow`, `Cache-Control`, the owner cookie, media types,
+   shutdown) belongs to the bases of the adapters in gramlot-py-server and
+   gramlot-js-server.
+2. Byte order mark (d-bom). A request body that starts with the UTF-8 byte order mark
+   is accepted everywhere: the core decoding removes it. The conformance checks it.
+3. Owner (d-owner). Over HTTP each browser has its own owner; a null owner for every
+   request is not allowed. The Worker keeps the null owner.
+4. Identity. The identity of a request (the avatar of a login) travels with the call:
+   `call(text, owner=…, identity=…)` gives it to `evaluate_auth(rule, owner=…,
+   identity=…)`; the server keeps nothing of it, so an adapter never stores it on the
+   shared server.
+5. Name syntax (d-pointer-separator). The syntax of a method name belongs to the
+   server: `GramlotServer.name_syntax`/`nameSyntax`, a `NameSyntax`, is a portable
+   regex in the format of genro-builders, carried by the bootstrap (`nameSyntax`) to
+   the browser, where the `remote` helper and the names read from Data are checked
+   with it. The core default `NAME_SYNTAX` is the syntax of 11.85 item 1.
+6. Server adapter (d-pointer-separator). `gramlot.serverAdapter` holds the
+   server-dependent behaviour of a page; the core consults it, page authors do not.
+   The server names the module of its class in the bootstrap
+   (`resources.serverAdapter`), imported through the import map; the core
+   `ServerAdapter` realises HTTP. It creates the transport of `gramlot.rpc`, whose
+   contract is `call`, `close` and `dispose`, all required.
+7. Theme (d-theme). Every page loads a theme before its CSS: the base theme of the
+   server (`css_theme`/`cssTheme`, default `gramlot-base`, `False` for none), unless the
+   page sets `css_theme` (a theme name, or `False` for none). `Page.css` is the CSS
+   added after the theme. Load order: the theme, `Page.css`, the companions; each URL
+   once in its last position.
+8. Synchronous call. `gramlot.rpc.callSync` waits for the answer, as the legacy
+   `genro.serverCall` without callback, on a transport that declares
+   `supportsCallSync` (HTTP, with a synchronous `XMLHttpRequest`); any other transport
+   throws. `dataRemote` gets the legacy attribute `sync`, default true: on such a
+   transport an expired read calls synchronously and returns the value through the
+   resolver's own `resolve`. On a transport without it (the Worker) the read stays
+   asynchronous: a debt for the plan of the asynchronous resolvers. `dataRpc` and
+   `remote` stay asynchronous. Browsers deprecate the synchronous request and it blocks
+   the page; a later step aims to avoid synchronous calls.
+
+The names chosen by the implementation (GC-225 §010: `ServerAdapter`,
+`createTransport`, `NameSyntax`, `callSync`, `supportsCallSync`, `decode_body`,
+`close`, `companion_file`, `theme_file`, `theme_css`) were confirmed by the owner on
+2026-10-19. The "no theme" value `False` still awaits the owner's confirmation. No
+release or deployment is authorized by these decisions.
+
+Rules: GC-230 §010, §015, §030, §045, §120, §125, §135, §145, §150;
+[GC-090 §017](public/090-classes-and-hosts.md#gc-090-017),
+[GC-090 §020](public/090-classes-and-hosts.md#gc-090-020),
+[GC-090 §030](public/090-classes-and-hosts.md#gc-090-030),
+[GC-095 §105](public/099-remote-content.md#gc-095-105),
+[GC-096 §005](public/096-themes-and-css.md#gc-096-005). Status: GC-070 §1455.

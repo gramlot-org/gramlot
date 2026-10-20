@@ -11,9 +11,13 @@ PUBLIC_PAGES = (
     "docs/public/030-quality.md",
     "docs/public/090-classes-and-hosts.md",
     "docs/public/095-writing-pages.md",
+    "docs/public/097-data-binding.md",
+    "docs/public/098-server-calls.md",
+    "docs/public/099-remote-content.md",
     "docs/public/096-themes-and-css.md",
-    "docs/public/100-extensions.md",
     "docs/public/105-components.md",
+    "docs/public/100-extensions.md",
+    "docs/public/101-server-protocol.md",
 )
 PUBLIC_ASSETS = (
     "assets/branding/gramlot-logo.svg",

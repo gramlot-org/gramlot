@@ -1,4 +1,3 @@
-import {AskDialog} from './ask-dialog.js';
 import {Bag} from '@genrojs/bag';
 import {RpcResolver} from './rpc-resolver.js';
 import {pointerTransform, pointerDependencies} from '@genrojs/builders';
@@ -21,17 +20,67 @@ const CONTROL_ATTRIBUTES = new Set([
     'destination_path', 'result_path', 'func', 'formula', 'script', 'if', 'else',
     '_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges',
     '_ask', '_ask_if', '_ask_title', '_ask_onCancel',
-    'method', 'timeout', '_onCalling', '_onResult', '_onError', 'cacheTime',
+    'method', 'timeout', '_onCalling', '_onResult', '_onError', 'cacheTime', 'sync',
 ]);
+
+/**
+ * The `_delay` and `_timing` timers of one Source node: the debounce of its Data triggers and its periodic
+ * trigger. Each timer is tracked on the node's NodeBinding, so the close of the node cancels it. Shared by
+ * the Provider of a data-element and the RemoteBinding of a `remote` node.
+ */
+export class TriggerTimers {
+    #binding;
+    #stopTiming = null;
+    #cancelDelay = null;
+
+    constructor(binding) {
+        this.#binding = binding;
+    }
+
+    get binding() { return this.#binding; }
+
+    /** Run `run` after `delay` ms; a new call cancels the scheduled one, never a request in flight (the last call wins). */
+    debounce(delay, run) {
+        this.#cancelDelay?.();
+        let release = null;
+        const timer = setTimeout(() => {
+            release();
+            this.#cancelDelay = null;
+            run();
+        }, delay);
+        release = this.binding.track(() => clearTimeout(timer));
+        this.#cancelDelay = () => {
+            clearTimeout(timer);
+            release();
+            this.#cancelDelay = null;
+        };
+    }
+
+    /** `_timing` in seconds: `run` in a `setInterval` while `seconds` is above 0; null or 0 stops it. A new call restarts it. */
+    startTiming(seconds, run) {
+        this.#stopTiming?.();
+        if (!(seconds > 0)) return;
+        const timer = setInterval(run, seconds * 1000);
+        const release = this.binding.track(() => clearInterval(timer));
+        this.#stopTiming = () => {
+            clearInterval(timer);
+            release();
+            this.#stopTiming = null;
+        };
+    }
+
+    /** Cancel the scheduled `_delay` call and stop `_timing`. */
+    cancel() {
+        this.#cancelDelay?.();
+        this.#stopTiming?.();
+    }
+}
 
 export class Provider {
     #binding;
     #registrations = [];
     #timingRegistrations = new Set();
-    #stopTiming = null;
-    #cancelDelay = null;
-    // The AbortController of the in-flight call of a `dataRpc`: a new call aborts it (latest wins).
-    #rpcCall = null;
+    #timers;
     // The RpcResolver a `dataRemote` installed and its absolute Data path.
     #installed = null;
     // The resolver removed last had loaded or was loading: the next one loads at once.
@@ -39,6 +88,7 @@ export class Provider {
 
     constructor(binding) {
         this.#binding = binding;
+        this.#timers = new TriggerTimers(binding);
         binding.track(() => {
             this.cancel();
             this.#closeRegistrations();
@@ -75,22 +125,14 @@ export class Provider {
             this.#registrations.push(registration);
             if (name === '_timing' || timingDependencies.has(name)) this.#timingRegistrations.add(registration);
         }
-        const subscriptions = this.binding.runtime.gramlot._subscriptions;
-        for (const name of Object.keys(node.getAttr())) {
-            const prefix = name.startsWith('selfsubscribe_') ? 'selfsubscribe_' : name.startsWith('subscribe_') ? 'subscribe_' : null;
-            if (!prefix) continue;
-            const topic = prefix === 'selfsubscribe_'
-                ? subscriptions.topicFor(node, name.slice(prefix.length)) : name.slice(prefix.length);
-            // Legacy provider declarations subscribe by presence, including a false value.
-            const handle = subscriptions.subscribe(topic, payload => {
-                const trigger = {kind: 'subscription', topic, payload};
-                if (this.#resolved('_userChanges') && topic !== 'node') return;
-                const delay = this.#resolved('_delay');
-                if (delay > 0) this.#debounce(trigger, delay);
-                else this.invoke(trigger);
-            });
-            this.#registrations.push({close: () => subscriptions.unsubscribe(handle)});
-        }
+        // Legacy provider declarations subscribe by presence, including a false value.
+        this.#registrations.push(...this.binding.runtime.subscriptions.subscribeNode(node, (name, value, topic) => payload => {
+            const trigger = {kind: 'subscription', topic, payload};
+            if (this.#resolved('_userChanges') && topic !== 'node') return;
+            const delay = this.#resolved('_delay');
+            if (delay > 0) this.#timers.debounce(delay, () => this.invoke(trigger));
+            else this.invoke(trigger);
+        }));
         this.#startTiming();
         if (this.kind === 'remote') this.invoke({kind: 'install', change: null});
     }
@@ -108,7 +150,7 @@ export class Provider {
         if (this.#resolved('_userChanges') && change.level !== 'node') return;
         const trigger = {kind: 'data', change};
         const delay = this.#resolved('_delay');
-        if (delay > 0) this.#debounce(trigger, delay);
+        if (delay > 0) this.#timers.debounce(delay, () => this.invoke(trigger));
         else this.invoke(trigger);
     }
 
@@ -122,7 +164,8 @@ export class Provider {
      * error propagates to the caller (P12). A closed node runs nothing. The body of a `dataRpc` is the
      * call: `invoke` returns its promise, and a false `_if` runs `_else` as inline code without calling.
      * The body of a `dataRemote` is the installation of its resolver; a false `_if` removes it, the
-     * Data node keeping its last value, and runs `_else` as inline code.
+     * Data node keeping its last value, and runs `_else` as inline code. A false `_if` never aborts a
+     * request in flight: it is a readiness condition.
      */
     invoke(trigger) {
         if (this.binding.closed) return;
@@ -136,8 +179,9 @@ export class Provider {
             kwargs._askResult = trigger.askResult;
         }
         const ask = node.getAttr('_ask');
-        if (ask && !trigger.askDone && AskDialog.required(this.binding, ask, kwargs, '_ask')) {
-            return AskDialog.show(this.binding, ask, kwargs, node.getAttr('_ask_title') ?? 'Warning').then(result => {
+        const askDialog = this.binding.runtime.askDialog;
+        if (ask && !trigger.askDone && askDialog.required(this.binding, ask, kwargs, '_ask')) {
+            return askDialog.show(this.binding, ask, kwargs, node.getAttr('_ask_title') ?? 'Warning').then(result => {
                 if (this.binding.closed) return;
                 if (result === null) {
                     const cancel = node.getAttr('_ask_onCancel');
@@ -184,7 +228,7 @@ export class Provider {
      */
     readArguments(trigger) {
         const node = this.node;
-        const [, attrs] = node.builder.runtimeValues(node);
+        const [, attrs] = node.rootBuilder.runtimeValues(node);
         const authored = Object.fromEntries(Object.entries(attrs).filter(([name]) =>
             !CONTROL_ATTRIBUTES.has(name) && !name.startsWith('subscribe_') && !name.startsWith('selfsubscribe_')));
         const kwargs = {...(trigger.kind === 'subscription' ? trigger.payload : {}),
@@ -201,38 +245,12 @@ export class Provider {
 
     /** Cancel the pending `_delay` call and stop `_timing`. */
     cancel() {
-        this.#cancelDelay?.();
-        this.#stopTiming?.();
+        this.#timers.cancel();
     }
 
     /** `_timing` in seconds: a `setInterval` while the value is above 0; null or 0 stops it. */
     #startTiming() {
-        this.#stopTiming?.();
-        const seconds = this.#resolved('_timing');
-        if (!(seconds > 0)) return;
-        const timer = setInterval(() => this.invoke({kind: 'timing', change: null}), seconds * 1000);
-        const release = this.binding.track(() => clearInterval(timer));
-        this.#stopTiming = () => {
-            clearInterval(timer);
-            release();
-            this.#stopTiming = null;
-        };
-    }
-
-    #debounce(trigger, delay) {
-        this.#cancelDelay?.();
-        let release = null;
-        const timer = setTimeout(() => {
-            release();
-            this.#cancelDelay = null;
-            this.invoke(trigger);
-        }, delay);
-        release = this.binding.track(() => clearTimeout(timer));
-        this.#cancelDelay = () => {
-            clearTimeout(timer);
-            release();
-            this.#cancelDelay = null;
-        };
+        this.#timers.startTiming(this.#resolved('_timing'), () => this.invoke({kind: 'timing', change: null}));
     }
 
     /** The current value of a control attribute: a pointer is read from Data. */
@@ -256,43 +274,42 @@ export class Provider {
     }
 
     /**
-     * The call of a `dataRpc`: `_onCalling`, then `gramlot.rpc.call('data', method, …)` with the author
-     * arguments, then the value written at `result_path` when present and `_onResult`. The previous
-     * call of the node is aborted and its answer dropped (latest wins); the close of the node aborts
-     * the call too. `timeout` > 0 ms aborts it with a `TimeoutError`. A failure goes to `_onError`, or
-     * rejects the returned promise when the node declares none.
+     * The call of a `dataRpc`: `_onCalling` (a result `false` makes no call), then
+     * `gramlot.rpc.call('data', method, …)` with the author arguments, then the value written at
+     * `result_path` when present and `_onResult`. The call follows the rule of `node.requests`
+     * (NodeRequests): one request in flight, its answer always applied; the first call during the flight
+     * waits with its arguments and is sent at the answer. The close of the node aborts the call;
+     * `timeout` > 0 ms aborts it with a `TimeoutError`. A failure goes to `_onError`, or rejects the
+     * returned promise when the node declares none; a method name outside the syntax rejects it too.
      */
     async #call(kwargs) {
         const node = this.node;
         const [onCalling, onResult, onError] = ['_onCalling', '_onResult', '_onError'].map(name => node.getAttr(name));
-        if (onCalling) this.#inline('_onCalling', onCalling, onCalling, kwargs, true);
-        this.#rpcCall?.abort();
-        const controller = new AbortController();
-        this.#rpcCall = controller;
-        const release = this.binding.track(() => controller.abort());
+        const requests = node.requests;
+        if (!requests.calling(onCalling ? () => this.#inline('_onCalling', onCalling, onCalling, kwargs, true) : null)) return;
+        return requests.submit(this.#resolved('method'), authorArguments(kwargs),
+            request => this.#send(request, kwargs, onResult, onError));
+    }
+
+    /** Send the call `request` of a `dataRpc` and apply its outcome; a call of a closed node sends nothing. */
+    async #send(request, kwargs, onResult, onError) {
+        if (this.binding.closed) return;
+        const node = this.node;
         const timeout = this.#resolved('timeout');
         const timer = timeout > 0 ? setTimeout(() => {
             const error = new Error(`${node.nodeTag} '${node.label}': no answer within ${timeout} ms`);
             error.name = 'TimeoutError';
-            controller.abort(error);
+            request.controller.abort(error);
         }, timeout) : null;
-        const aborted = new Promise((resolve, reject) => {
-            controller.signal.addEventListener('abort', () => reject(controller.signal.reason), {once: true});
-        });
         let outcome;
         try {
-            const call = this.binding.runtime.gramlot.rpc.call('data', this.#resolved('method'), authorArguments(kwargs),
-                {signal: controller.signal});
-            outcome = {result: await Promise.race([call, aborted])};
+            outcome = {result: await this.binding.call('data', request)};
         } catch (error) {
             outcome = {error};
         }
         clearTimeout(timer);
-        release();
-        // Superseded by a newer call, or the node closed: the answer is dropped.
-        const current = this.#rpcCall === controller && !this.binding.closed;
-        if (this.#rpcCall === controller) this.#rpcCall = null;
-        if (!current) return;
+        // The node closed, or the developer cancelled the request: the answer is ignored.
+        if (this.binding.closed || request.ignored) return;
         if ('error' in outcome) {
             if (!onError) throw outcome.error;
             this.#inline('_onError', onError, onError, {...kwargs, error: outcome.error}, true);
@@ -308,8 +325,8 @@ export class Provider {
      * author arguments as params, in place of the previous one, so the next read loads again. When the
      * resolver removed last, by this call or by a false `_if`, had loaded or was loading, the new one
      * loads at once: its consumers receive the new value through the Data event without reading again.
-     * A failed load is thrown again naming the node, as an unhandled rejection. A null path (Q7)
-     * installs nothing.
+     * `_onCalling` runs, with the arguments of the installation, before each load. A failed load is thrown
+     * again naming the node, as an unhandled rejection. A null path (Q7) installs nothing.
      */
     #install(kwargs) {
         this.#uninstall();
@@ -318,9 +335,13 @@ export class Provider {
         const node = this.node;
         const path = node.absDatapath(node.pathAttribute('destination_path'));
         if (path === null) return;
+        const onCalling = node.getAttr('_onCalling');
         const resolver = new RpcResolver({
-            gramlot: this.binding.runtime.gramlot, method: this.#resolved('method'),
+            binding: this.binding, method: this.#resolved('method'),
             params: authorArguments(kwargs), cacheTime: this.#resolved('cacheTime'),
+            // `sync`, default true as in the legacy, waits only on a transport with synchronous calls.
+            sync: this.#resolved('sync') !== false && this.binding.runtime.gramlot.rpc.supportsCallSync,
+            onCalling: onCalling ? () => this.#inline('_onCalling', onCalling, onCalling, kwargs, true) : null,
             onError: error => {
                 throw new Error(`${node.nodeTag} '${node.label}': dataRemote '${resolver.method}' failed: ${error.message}`,
                     {cause: error});
@@ -331,13 +352,15 @@ export class Provider {
         if (reload) resolver.refresh();
     }
 
-    /** Remove the resolver this `dataRemote` installed, when it is still on its Data node, and abort its load. */
+    /**
+     * Remove the resolver this `dataRemote` installed, when it is still on its Data node. Its load in flight
+     * is not aborted: it finishes and writes its value (`node.requests`); the removal of the node aborts it.
+     */
     #uninstall() {
         if (!this.#installed) return;
         const {path, resolver} = this.#installed;
         this.#installed = null;
         this.#reload = resolver.loaded || resolver.loading !== null;
-        resolver.abort();
         const dataNode = this.binding.runtime.data.getNode(path);
         if (dataNode?.resolver === resolver) dataNode.resolver = null;
     }

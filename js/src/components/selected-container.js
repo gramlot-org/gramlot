@@ -2,24 +2,25 @@
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 
-const selectionPanels = new WeakMap();
-let panelSequence = 0;
-
-function projectSelectionChild(element, attrs, actions) {
-    const {pageName = null, title = '', icon = '', badge = null, badge_color = '', closable = false, onClose, hidden = false, disabled = false, ...rest} = attrs;
-    if (pageName !== null && typeof pageName !== 'string') throw new TypeError('pageName must be a string');
-    if (typeof closable !== 'boolean') throw new TypeError('closable must be a boolean');
-    const slot = selectionPanels.get(element)?.slot ?? `panel-${++panelSequence}`;
-    selectionPanels.set(element, {pageName, title, icon, badge, badge_color, closable, hidden, disabled, slot,
-        remove: actions.remove, allowClose: () => onClose == null ? true : actions.invoke('onClose', onClose, {})});
-    rest.slot = slot;
-    if (element.parentElement) element.parentElement.scheduleSelection();
-    return rest;
-}
-
 function SelectedContainer(HTMLElement) {
-    return class extends Container(HTMLElement) {
-        static projectChild(element, attrs, actions) { return projectSelectionChild(element, attrs, actions); }
+    // Named as its factory: inside the body `SelectedContainer` is this class, owner of the static state.
+    return class SelectedContainer extends Container(HTMLElement) {
+        // The panel configuration of each child element and the count of the panel slots made, for this class
+        // in this window (ComponentCollection.register).
+        static #selectionPanels = new WeakMap();
+        static #panelSequence = 0;
+        static projectChild(element, attrs, actions) {
+            const {pageName = null, title = '', icon = '', badge = null, badge_color = '', closable = false, onClose, hidden = false, disabled = false, ...rest} = attrs;
+            if (pageName !== null && typeof pageName !== 'string') throw new TypeError('pageName must be a string');
+            if (typeof closable !== 'boolean') throw new TypeError('closable must be a boolean');
+            const panels = SelectedContainer.#selectionPanels;
+            const slot = panels.get(element)?.slot ?? `panel-${++SelectedContainer.#panelSequence}`;
+            panels.set(element, {pageName, title, icon, badge, badge_color, closable, hidden, disabled, slot,
+                remove: actions.remove, allowClose: () => onClose == null ? true : actions.invoke('onClose', onClose, {})});
+            rest.slot = slot;
+            if (element.parentElement) element.parentElement.scheduleSelection();
+            return rest;
+        }
         #panels = new Map();
         #selected = null;
         #initialized = false;
@@ -61,7 +62,7 @@ function SelectedContainer(HTMLElement) {
         #sync() {
             const records = [], names = new Set();
             for (const child of this.children) {
-                const config = selectionPanels.get(child);
+                const config = SelectedContainer.#selectionPanels.get(child);
                 if (!config) continue;
                 if (config.pageName != null && names.has(config.pageName)) throw new Error(`Duplicate pageName: ${config.pageName}`);
                 names.add(config.pageName);

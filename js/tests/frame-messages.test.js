@@ -81,7 +81,7 @@ test('live Source/DOM values are local only, including nested transport fields a
     const bag = new Bag(); bag.setItem('one', 1, {target: node});
     assert.throws(() => app.publish({topic: 'remote', iframe: 'child'}, {bag}), /Live Source\/DOM/);
     let calls = 0;
-    app.rpc.transport = {call() {calls++;}};
+    app.rpc.transport = {call() {calls++;}, close() {}, dispose() {}};
     await assert.rejects(app.rpc.call('data', 'save', {nested: [node]}), /Live Source\/DOM/);
     assert.equal(calls, 0);
     app.dispose(); window.close();

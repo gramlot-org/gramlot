@@ -10,6 +10,7 @@ import {ControlAdapter, RadioGroups, SelectControl} from '../view/controls.js';
 import {ButtonBinding} from '../view/button.js';
 import {NativeEventBinding} from '../view/events.js';
 import {References} from '../references.js';
+import {randomId} from '../random-id.js';
 import {GramlotBuilderBag, GramlotBuilderBagNode} from '../builder/source.js';
 import {BindingRuntime} from '../binding/runtime.js';
 import {requireInstallable} from '../binding/installation.js';
@@ -52,8 +53,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.disposed = false;
         this.elements = new WeakMap();
         // The instance id scopes the generated radio names to this page (P11, S11).
-        this.instanceId = Array.from(crypto.getRandomValues(new Uint8Array(16)),
-            byte => byte.toString(16).padStart(2, '0')).join('');
+        this.instanceId = randomId();
         this.radioGroups = new RadioGroups(this);
         this.subscription = `html-source-renderer-${this.instanceId}`;
         source.subscribe(this.subscription, {any: event => this.receive(event)});
@@ -479,7 +479,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         if (!record?.element) return;
         const renderer = this.getRender(node.builder);
         const previousDefaults = this.#presentationDefaults.get(node);
-        const [value, runtimeAttrs] = node.builder.runtimeValues(node);
+        const [value, runtimeAttrs] = node.rootBuilder.runtimeValues(node);
         const [, resolvedAttrs] = renderer._handleMeta(node, runtimeAttrs);
         const resolved = this.#resolvedAttributes.get(node);
         if (record.shape !== ControlAdapter.shape(record.element, resolved)) {

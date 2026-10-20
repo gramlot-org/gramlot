@@ -10,13 +10,14 @@ function page() {
     return new Gramlot({document: window.document, transport: false});
 }
 
-test('a Gramlot instance has lifecycle, Data, formatting context and the four proxies as own members', () => {
+test('a Gramlot instance has lifecycle, Data, formatting context, the server adapter and the four proxies as own members', () => {
     const app = page();
     assert.equal(Object.getOwnPropertyDescriptor(app, '_subscriptions').enumerable, false);
     for (const name of ['publish', 'subscribe', 'unsubscribe']) assert.equal(typeof app[name], 'function');
     assert.equal(app.subscriptions, undefined);
     assert.deepEqual(Object.keys(app).sort(),
-        ['abort', 'capabilities', 'data', 'devices', 'dom', 'locale', 'logic', 'pageId', 'rpc', 'src', 'state', 'timeZone', 'utl']);
+        ['abort', 'capabilities', 'data', 'devices', 'dom', 'locale', 'logic', 'pageId', 'rpc', 'serverAdapter', 'src', 'state',
+            'timeZone', 'utl']);
 });
 
 test('each proxy is an instance of its handler and of Handler, pointing back to the page', () => {

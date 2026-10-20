@@ -1,16 +1,18 @@
 """Loopback-only reference adapter of the server protocol GC-230, for the core tests
 and the browser checks. Not a production server or application demo.
 
-``python tests/http_server.py PAGES [--prefix /mount] [--csp POLICY]`` prints its
-base URL (mount prefix included) and serves until stopped. The runtime and the
+``python tests/http_server.py PAGES [--prefix /mount] [--csp POLICY] [--page-ttl SECONDS]`` prints
+its base URL (mount prefix included) and serves until stopped. The runtime and the
 themes come from the ``gramlot`` package on the path: build the runtime first.
+The adapter keeps only the HTTP part: the rules shared by every server are calls of
+the core API (``theme_file``, ``companion_file``, ``decode_body``, ``call``, ``close``,
+``open_page``, ``close_all``).
 """
 import argparse
 import asyncio
 import json
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from importlib.resources import files
 from pathlib import Path
 from secrets import token_urlsafe
 from urllib.parse import unquote, urlsplit
@@ -20,7 +22,6 @@ from gramlot.server import GramlotFileServer, InvalidRequest, PageNotFound, Serv
 OWNER_COOKIE = "gramlot_owner"
 JSON_MEDIA_TYPE = "application/json"
 MEDIA_TYPES = {".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8"}
-THEMES = Path(str(files("gramlot").joinpath("resources", "themes")))
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -43,14 +44,6 @@ class Handler(BaseHTTPRequestHandler):
         morsel = SimpleCookie(self.headers.get("Cookie", "")).get(OWNER_COOKIE)
         return morsel.value if morsel else None
 
-    def static_file(self, path):
-        """The file of ``path`` below the themes or the pages folder, or ``None``."""
-        folder, relative = ((THEMES, path.removeprefix("/themes/")) if path.startswith("/themes/")
-                            else (self.server.gramlot.pages_dir, path))
-        root = Path(folder).resolve()
-        real = root.joinpath(*relative.strip("/").split("/")).resolve()
-        return real if real.is_relative_to(root) and real.is_file() else None
-
     def dispatch(self):
         url = urlsplit(self.path)
         path, prefix, gramlot = unquote(url.path), self.server.prefix, self.server.gramlot
@@ -66,7 +59,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(405, "Method not allowed", headers=[("Allow", "GET, HEAD")])
             if path == gramlot.runtime_url:
                 return self.reply(200, runtime_asset().read_bytes(), MEDIA_TYPES[".js"])
-            filename = self.static_file(path)
+            filename = gramlot.theme_file(path) or gramlot.companion_file(path)
             if filename is None:
                 return self.reply(404, "Not found")
             return self.reply(200, filename.read_bytes(), MEDIA_TYPES.get(suffix, "application/octet-stream"))
@@ -76,9 +69,6 @@ class Handler(BaseHTTPRequestHandler):
             return self.operation(path)
         if self.command != "GET":
             return self.reply(405, "Method not allowed", headers=[("Allow", "GET")])
-        # As on a static host, <path>/index.html is the page <path> and /index.html the index.
-        if path.endswith("/index.html"):
-            path = path.removesuffix("index.html")
         owner = self.owner() or token_urlsafe(24)
         try:
             opened = asyncio.run(gramlot.open_page(path, owner=owner, prefix=prefix))
@@ -95,27 +85,17 @@ class Handler(BaseHTTPRequestHandler):
         gramlot = self.server.gramlot
         if self.headers.get("Content-Type", "").split(";")[0].strip().lower() != JSON_MEDIA_TYPE:
             return self.reply(415, "Expected application/json")
-        try:
-            body = self.rfile.read(int(self.headers.get("Content-Length") or 0)).decode()
-        except UnicodeDecodeError:
-            return self.reply(400, "Request body is not UTF-8")
         owner = self.owner()
-        if path == gramlot.rpc_url:
-            try:
-                result = asyncio.run(gramlot.call(body, owner=owner))
-            except InvalidRequest:
-                return self.reply(400, "Invalid envelope")
-            return self.reply(200, result, JSON_MEDIA_TYPE)
         try:
-            payload = json.loads(body)
-            if not isinstance(payload, dict) or not isinstance(payload.get("pageId"), str):
-                raise ValueError("Missing pageId")
-        except ValueError:
-            return self.reply(400, "Invalid JSON request")
-        gramlot.close_page(payload["pageId"], owner=owner)
+            text = gramlot.decode_body(self.rfile.read(int(self.headers.get("Content-Length") or 0)))
+            if path == gramlot.rpc_url:
+                return self.reply(200, asyncio.run(gramlot.call(text, owner=owner)), JSON_MEDIA_TYPE)
+            gramlot.close(text, owner=owner)
+        except InvalidRequest as error:
+            return self.reply(400, str(error))
         self.reply(200, json.dumps({"ok": True}), JSON_MEDIA_TYPE)
 
-    do_GET = do_HEAD = do_POST = do_PUT = do_DELETE = dispatch
+    do_GET = do_HEAD = do_POST = do_PUT = do_DELETE = do_PATCH = dispatch
 
 
 def main():
@@ -123,9 +103,10 @@ def main():
     parser.add_argument("pages")
     parser.add_argument("--prefix", default="")
     parser.add_argument("--csp")
+    parser.add_argument("--page-ttl", type=float)
     args = parser.parse_args()
     http_server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    http_server.gramlot = GramlotFileServer(args.pages)
+    http_server.gramlot = GramlotFileServer(args.pages, **({} if args.page_ttl is None else {"page_ttl": args.page_ttl}))
     http_server.prefix = "/" + args.prefix.strip("/") if args.prefix.strip("/") else ""
     http_server.csp = args.csp
     print(f"http://127.0.0.1:{http_server.server_port}{http_server.prefix}", flush=True)

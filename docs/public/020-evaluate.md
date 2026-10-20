@@ -2,10 +2,6 @@
 
 Document ID: **GC-020**.
 
-> **Scope.** This is the maintained authoring guide. The repository README states
-> the current release. Dated release notes below describe when behavior entered;
-> they are not a list of current exclusions. Development-only differences are marked.
-
 <a id="gc-020-005"></a>
 
 ## 005 · Who it is for
@@ -13,8 +9,8 @@ Document ID: **GC-020**.
 Gramlot is for developers who describe an interface as a Page and keep its state
 in Data Bags. Python is the first authoring path; JavaScript implements behavior
 in the browser and is also available for Page authoring. You can build HTML/SVG
-interfaces with native controls, reactive values, formulas, controllers, endpoint
-calls and remote content. Start with [Try Gramlot](025-try.md).
+interfaces with form controls and components, reactive values, formulas,
+controllers, endpoint calls and remote content. Start with [Try Gramlot](025-try.md).
 
 The [Gramlot family](055-family.md) separates the core, examples and hosting
 adapters. The experimental gramlot-poc is evidence for research, not the manual
@@ -37,21 +33,23 @@ Learn this distinction before adding a server call.
 
 Use `dataRpc` to receive a value, `remote` to replace an element's content with
 Source, and `dataRemote` to load a Data value on demand when read. These mechanisms
-have different trigger and cache rules; [Writing pages](095-writing-pages.md)
-explains them. Choosing an HTTP framework does not choose a database or ORM.
+have different trigger and cache rules; [Calling the server](098-server-calls.md)
+and [Remote content and lazy Data](099-remote-content.md) explain them. Choosing an HTTP framework does not choose a database or ORM.
 
 <a id="gc-020-015"></a>
 
 ## 015 · What is available
 
 Available: Python/JavaScript Pages, typed Source, live HTML/SVG, Data bindings,
-formulas/controllers and named Logic, native input handling, `dataRpc`, declared
-Source fragments, `remote` and the endpoint-backed `dataRemote` resolver.
+formulas/controllers and named Logic, bound form controls, input components with
+validation, command buttons, border, tab and stack containers, `dataRpc`, declared
+Source fragments, `remote`, the endpoint-backed `dataRemote` resolver, messages and
+the application index.
 
-Shared widgets, recipes, a record/form framework and database services are still
-outside this authoring surface. A native HTML form is not a record framework;
-the presence of `dataRemote` does not imply every legacy resolver is available.
-See [explicit limits](095-writing-pages.md).
+Recipes, a record/form framework, database-backed controls and database services
+are not provided. An HTML form is not a record framework; the presence of
+`dataRemote` does not imply every legacy resolver is available. See
+[excluded declarations](097-data-binding.md#gc-095-085).
 
 The examples teach supported slices, not every option or failure case. Read their
 prerequisites and limits and check the selected environment. The reference starts

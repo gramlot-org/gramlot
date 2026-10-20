@@ -46,7 +46,8 @@ class StyleShortcutTests(unittest.TestCase):
 
     def test_the_attributes_of_remote_are_not_written(self):
         builder = GramlotBuilder()
-        builder.root.div("ph").remote("details", id=3, _cachedRemote=True, _onRemote="null", _if="id > 0")
+        builder.root.div("ph").remote("details", id=3, _cachedRemote=True, _onRemote="null", _if="id > 0",
+                                      _onCalling="null", _delay=5, _timing=0, _userChanges=True)
         self.assertIn("<div>ph</div>", builder.render())
 
     def test_null_values_are_not_written(self):
@@ -114,6 +115,34 @@ class TextTests(unittest.TestCase):
         self.assertEqual(rendered(authoring),
                          "<div></div><div></div><div>Ciao 0</div><div>Ciao false</div><div>Ciao a%sb</div>"
                          "<div>1234.5</div>")
+
+    def test_static_number_text_follows_python_str(self):
+        """Decision d-float: Python ``str(1.0)`` is ``1.0``, JavaScript gives ``1`` (GC-095 §090)."""
+        def authoring(root, data):
+            root.p(1.0)
+            root.p("1.00")
+            root.p(2.5)
+        self.assertEqual(rendered(authoring), "<p>1.0</p><p>1.00</p><p>2.5</p>")
+
+
+class SubBuilderExpressionTests(unittest.TestCase):
+    """A string renderer has no page runtime: the ``==`` and ``:=`` of the nodes of the SVG and HTML-in-SVG
+    sub-builders write nothing, as those of an HTML node; the expected string is the one of
+    ``js/tests/subbuilder-expressions.test.js``."""
+
+    def test_svg_and_html_in_svg_nodes_write_no_expression(self):
+        def authoring(root, data):
+            data.set_item("n", 3)
+            svg = root.svg(id="drawing", width=100, height=100)
+            svg.rect(id="bar", width="^n:={} * 2", height="==size * 3", size="^n")
+            svg.text("==size + 1", id="label", size="^n")
+            svg.html(width=50, height=20).div("==size * 10", id="inner", size="^n", title="^n:={} + 1",
+                                              data_twice="==size * 2")
+        self.assertEqual(rendered(authoring),
+                         '<svg id="drawing" width="100" height="100"><rect id="bar" size="3" />'
+                         '<text id="label" size="3"></text>'
+                         f'<foreignObject width="50" height="20" xmlns="{SVG}"><div xmlns="{HTML}" '
+                         'id="inner" size="3"></div></foreignObject></svg>')
 
 
 class DataElementTests(unittest.TestCase):

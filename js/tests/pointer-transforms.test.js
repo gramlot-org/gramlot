@@ -275,3 +275,47 @@ test('suffixes follow a variable context through null and back without reading t
     assert.equal(box.title, '38px');
     assert.equal(box.getAttribute('data-empty'), 'false');
 });
+
+// Review 0.3.5 p2: `==` has one compile path, InlineCompiler.compileExpression.
+test('a == text starting with a newline returns its value; a final ; is accepted', t => {
+    const {app, document} = mount(t, root => {
+        root.dataSetter({destination_path: 'w', value: 3});
+        root.div('==\n  w * 2', {id: 'box', w: '^w', title: '==\nw + 1', 'data-end': '==w * 10;'});
+    });
+    const box = document.querySelector('#box');
+    assert.equal(box.textContent, '6');
+    assert.equal(box.title, '4');
+    assert.equal(box.getAttribute('data-end'), '30');
+    app.data.setItem('w', 4);
+    assert.equal(box.textContent, '8');
+    assert.equal(box.title, '5');
+});
+
+// The same Source as test_named_slot_on_an_expression_attribute_is_null in tests/test_pointer_transforms.py.
+test('a {name} slot naming a == attribute reads null in projected and structural attributes', t => {
+    const {document, app} = mount(t, root => {
+        root.dataSetter({destination_path: 'w', value: 3});
+        root.div({node_id: 'box', id: 'box', w: '^w', label: '==w + 1', title: '^w:{} {label}', target_path: '^w:{} {label}'});
+    });
+    const box = document.querySelector('#box');
+    const node = sourceTarget(app.src.builder.nodeById('box'));
+    assert.equal(box.getAttribute('label'), '4');
+    assert.equal(box.hasAttribute('title'), false);
+    assert.equal(node.pathAttribute('target_path'), null);
+    const [, attrs] = node.builder.runtimeValues(node);
+    assert.equal(attrs.title, null);
+    assert.equal(attrs.target_path, null);
+});
+
+// The same table as test_value_suffixes_are_found_by_pointer_transform in tests/test_pointer_transforms.py.
+test('pointer suffixes on value are found by pointerTransform', () => {
+    const table = [['^name:{}', true], ['=name:={}', true], ['^name:={name}', true], ['^name', false], ['=name', false],
+        ["==a ? 'x:y' : 'z'", false], ['Name: Ada', false], [3, false], [null, false]];
+    for (const tag of ['input', 'textarea', 'select', 'webcomponent']) {
+        for (const [value, rejected] of table) {
+            const create = () => new GramlotBuilder().root[tag]({value, ...(tag === 'webcomponent' ? {code: 'test-input'} : {})});
+            if (rejected) assert.throws(create, /value.*does not accept pointer suffixes/, `${tag} ${value}`);
+            else assert.doesNotThrow(create, `${tag} ${value}`);
+        }
+    }
+});

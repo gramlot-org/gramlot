@@ -11,7 +11,7 @@ export const SVG_NS = 'http://www.w3.org/2000/svg';
 const BINDING_ATTRIBUTES = new Set([
     'default', 'default_value', 'live', 'group', 'visible', 'action', 'fire', 'ask', '_ask', '_ask_if', '_ask_title', '_ask_onCancel',
     'if', 'else', '_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges',
-    'remote', '_cachedRemote', '_onRemote', 'onClose',
+    'remote', '_cachedRemote', '_onRemote', '_onCalling', 'onClose',
 ]);
 const BINDING_ATTRIBUTE_PREFIXES = ['default_', 'attr_', 'fire_', 'connect_on', 'subscribe_', 'selfsubscribe_', 'formsubscribe_', 'remote_'];
 

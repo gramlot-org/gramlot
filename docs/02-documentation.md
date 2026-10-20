@@ -6,14 +6,16 @@
 
 The public manual helps a developer assess the current Gramlot core and
 distinguish richer experimental examples. It uses Sphinx, MyST Markdown and the
-classic Read the Docs theme. Its chapters describe classes, server adapters,
-page authoring, themes/CSS and extension gaps. The public guides follow the release sequence through the maintained authoring
-surface, including RPC, remote Source and lazy Data; historical release notes and development-only
-corrections are marked. The README states the current release version.
+classic Read the Docs theme. Its chapters describe classes, server adapters and
+their protocol, page authoring, data binding, server calls, remote Source and lazy
+Data, components, themes/CSS and extension gaps. The public guides describe the
+current version, without release history or process material (review plan of the
+0.3.5 releases, decision d-course and phase p8, 2026-10-19). The README states the
+current release version.
 
 `scripts/prepare_docs.py` stages the README as the home page, an explicit
-`PUBLIC_PAGES` allowlist and explicit logo/theme-guide image assets in `build/docs-source/`. Only the
-nine guides under `docs/public/` are currently selected. Add a page explicitly
+`PUBLIC_PAGES` allowlist and explicit logo/theme-guide image assets in `build/docs-source/`. The
+fourteen guides under `docs/public/` are selected. Add a page explicitly
 when it is suitable for users; merely adding a file under `docs/` does not publish it.
 
 Architecture decisions, constitution, port records, working documents and
@@ -23,6 +25,11 @@ access control: files in the public Git repository remain publicly readable.
 All guides still require paired documents and stable IDs. Public pages do not
 link their internal concise counterparts.
 
+
+A link to the explicit anchor of another public page (`098-server-calls.md#gc-095-100`)
+is a raw HTML id that MyST cannot resolve: `docs/conf.py` suppresses that MyST warning
+(`myst.xref_missing`), and `scripts/check_public_docs.py` verifies every local link and
+anchor in the built HTML instead.
 
 The HTML presentation omits standalone `Document ID`/`Block ID` paragraphs and
 three-digit heading prefixes. `docs/conf.py` applies this after parsing and before

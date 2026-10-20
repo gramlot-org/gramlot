@@ -92,6 +92,26 @@ test('legacy false subscription declarations still register and formula messages
     app.dispose();
 });
 
+test('subscribeNode asks every callback before subscribing: a refused declaration subscribes none', () => {
+    const {app} = page();
+    authored(app, root => root.div({node_id: 'pane', subscribe_first: "this.SET('first', p_0.n);",
+        selfsubscribe_second: "this.SET('second', p_0.n);"}));
+    app.publish('first', {n: 1});
+    assert.equal(app.data.getItem('first'), 1);
+    const node = sourceTarget(app.src.builder.nodeById('pane'));
+    const asked = [], delivered = [];
+    assert.throws(() => app.src.binding.subscriptions.subscribeNode(node, (name, value, topic) => {
+        asked.push([name, topic]);
+        if (name === 'selfsubscribe_second') throw new TypeError(`${name} refused`);
+        return payload => delivered.push(payload);
+    }), /selfsubscribe_second refused/);
+    assert.deepEqual(asked, [['subscribe_first', 'first'], ['selfsubscribe_second', 'pane_second']]);
+    app.publish('first', {n: 2});
+    assert.equal(app.data.getItem('first'), 2);
+    assert.deepEqual(delivered, []);
+    app.dispose();
+});
+
 test('Source self topics isolate nodes and nodeId descriptors address the declared node_id', () => {
     const {app} = page();
     authored(app, root => {
@@ -160,21 +180,25 @@ test('subscription rebind does not duplicate callbacks and branch disposal cance
     app.dispose();
 });
 
-test('topic-triggered RPC retains latest-wins, excludes trigger context and aborts on removal', async () => {
+test('topic-triggered RPC runs one call at a time, excludes trigger context and aborts on removal', async () => {
     const {fromTytx, toTytx} = await import('@genrojs/tytx');
     const {app} = page();
     const pending = [];
-    app.rpc.transport = {call(wire, signal) {
+    app.rpc.transport = {close() {}, dispose() {}, call(wire, signal) {
         const request = fromTytx(wire);
         return new Promise(resolve => pending.push({request, signal, resolve: value => resolve(toTytx({id: request.id, value}))}));
     }};
     authored(app, root => root.dataRpc({method: 'echo', result_path: 'result', subscribe_run: true, fixed: 'declared'}));
     app.publish('run', {value: 1, fixed: 'payload'});
     app.publish('run', {value: 2});
-    assert.equal(pending.length, 2);
+    assert.equal(pending.length, 1);
     assert.deepEqual(pending[0].request.params, {value: 1, fixed: 'declared'});
-    assert.equal(pending[0].signal.aborted, true);
-    pending[1].resolve('latest'); pending[0].resolve('old');
+    assert.equal(pending[0].signal.aborted, false);
+    pending[0].resolve('first');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(app.data.getItem('result'), 'first');
+    assert.deepEqual(pending[1].request.params, {value: 2, fixed: 'declared'});
+    pending[1].resolve('latest');
     await new Promise(resolve => setTimeout(resolve, 0));
     assert.equal(app.data.getItem('result'), 'latest');
     app.publish('run', {value: 3});

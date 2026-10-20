@@ -1,4 +1,4 @@
-import {isDecimal} from '@genrojs/tytx';
+import {getDateType, isDecimal} from '@genrojs/tytx';
 /** Bounded numeric patterns and temporal styles for Gramlot's formatting contract. */
 
 export function validateMask(mask) {
@@ -14,15 +14,8 @@ export function applyMask(text, mask) {
 }
 
 function inferredType(value) {
-    if (value instanceof Date) {
-        // Match TYTX's documented inference; dtype can override this ambiguity.
-        const epochDay = value.getUTCFullYear() === 1970 && value.getUTCMonth() === 0 && value.getUTCDate() === 1;
-        const midnight = value.getUTCHours() === 0 && value.getUTCMinutes() === 0 &&
-            value.getUTCSeconds() === 0 && value.getUTCMilliseconds() === 0;
-        if (epochDay && !midnight) return 'H';
-        if (midnight && !epochDay) return 'D';
-        return 'DHZ';
-    }
+    // TYTX's documented inference; dtype can override this ambiguity.
+    if (value instanceof Date) return getDateType(value);
     if (isDecimal(value)) return 'N';
     if (typeof value === 'number') return Number.isInteger(value) ? 'L' : 'R';
     throw new TypeError('Formatting requires finite JavaScript numbers, TYTX Decimal values or valid Date objects');

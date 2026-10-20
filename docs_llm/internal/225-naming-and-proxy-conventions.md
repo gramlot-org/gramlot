@@ -37,9 +37,18 @@ Block ID: **GC-225-010**.
 | Python and JS servers | `GramlotServer` in Python and JS assure the same functionality; they are not identical member by member. Accepted idioms: `params` as keywords or as an object, `ValueError`/`TypeError` on configuration, page logic in `foo.js` or as the `Logic` export. Owner, 2026-10-08: "più che uguale deve assicurare le stesse funzionalità" | owner decision 2026-10-08 |
 | Attribute holding the server | An attribute, property or variable holding a `GramlotServer` is named `server`. Where `server` is already taken by the server of the framework or platform (Kajenn `BaseApplication.server`, the `http.Server`/`Bun.Server` returned by `startServer`, the HTTP server of a script), it is named after the class: `gramlot_server` in Python, `gramlotServer` in JS. Owner, 2026-10-08: "ok" | owner decision 2026-10-08 |
 | Files | A file is named after the class it holds: `gramlot-server.js`/`gramlot_server.py`, `gramlot-file-server.js`/`gramlot_file_server.py`, as `gramlot-builder.js` | owner decision 2026-10-08 |
+| Helper modules | A module of functions without a class is named after what it holds, in both languages: `assets`, `resources`, `conformance` and, provisionally, `files` (`files.js`/`files.py`: `file_below`/`fileBelow`, `THEMES`; see the Source column). Not covered by the row "Files" | existing modules `assets`, `resources`, `conformance`; `files`, `file_below`/`fileBelow` and `THEMES` are a provisional implementation of review p4d, not an accepted name or design: the owner (2026-10-20) places them in the topic of pages and resources, which a dedicated study of the next cycle reorganizes, and the module will be replaced by that organization |
 | Example pages | A generic `div` is held in `pane`; `html_main` is held in `main_content`; an element is never named `page` | GC-210 row S14bis (`210-binding-contract.md:755`) |
 | Commands | Environment, then verb: `gramlot <environment> new\|gallery`, `gramlot node\|bun gallery`, `gramlot-serverless build\|gallery`, `npm create @gramlot page\|site` | owner decisions 2026-10-02 and 2026-10-05; GC-055 |
-
+| Base of the JS markers | `Exposed` (`js/src/server/page-base.js`) is the base of every JS class whose methods a request names: `Page` and the classes of the objects reached from the page by a method path (`orders.list`, constitution 11.85). It holds only `registerSource` and `registerEndpoint`; `Page` extends it, so `Page.registerSource` is the inherited marker. No convention covered the name: it reuses the word "exposed" that already names `@source`/`@endpoint` methods (`page/base.py` docstring, GC-090 table "Exposed Source method"). Python has no counterpart: `@source` and `@endpoint` are functions and the objects on a path are ordinary objects (accepted asymmetry) | owner decision 2026-10-19 (review plan d-pointer-js: common base with the markers only, `Page` extends it); name chosen in p1, confirmed by the owner on 2026-10-19 |
+| Proxies of the Source node | A proxy of the Source node, reached from `this` in inline code, has a free name, clear and not ambiguous; its class states its theme in its docline. `node.requests` (class `NodeRequests`, `js/src/builder/source.js`) holds the request in flight (`inflight`: `method`, `params`, `sentAt`, `cancel()`) and the waiting call (`pending`: `method`, `params`) of `remote`, `dataRpc`, `dataRemote` and `remoteSource`. Browser-only, as `PUT` and `FIRE`: no Python counterpart | owner decision 2026-10-19 (review plan d-oncalling: "i proxy del Source node hanno nomi liberi purché chiari e non ambigui"); name chosen in p1 (d-oncalling-open), confirmed by the owner on 2026-10-19 |
+| Server adapter of the page | `gramlot.serverAdapter` is the object of the browser page that holds the server-dependent behaviour; the core consults it, it is not a proxy (owner decision 2026-10-19, review plan d-pointer-separator). Its class is `ServerAdapter`; a subclass names its kind of server before the word, as the transports do (`HttpTransport`, `WorkerTransport`): planned `WorkerServerAdapter`, `KajennServerAdapter`. The row "Server object" rejects `ServerAdapter` as the name of the server object (`GramlotServer`); this class is a different object, on the browser side. Its factory method is `createTransport`, after the `create<Thing>` functions of the code (`createNonce`, `createDispatch`). The module the server names in the bootstrap is `resources.serverAdapter`, read by `PageBootstrap.loadServerAdapter`; the server property is `server_adapter`/`serverAdapter` | `serverAdapter` decided by the owner on 2026-10-19; the class name, `createTransport`, `loadServerAdapter`, `resources.serverAdapter` and the server property chosen in review p4, confirmed by the owner on 2026-10-19 |
+| Name syntax | `NameSyntax` holds the syntax of a method name a server declares; `NAME_SYNTAX` is the core default; the server property, the builder property and the bootstrap field are `name_syntax`/`nameSyntax`; `matches(name)` tests a name. No convention covered the name: it uses the words of the decision ("la sintassi del nome"). Its serialisation follows genro-builders `CustomTypes`: `to_dict`/`from_dict` in Python, `toJSON`/`fromJSON` in JavaScript, an exception to the mechanical camelCase translation, as in the library it extends. `NameSyntax` extends the genro-builders `Regex` in Python | chosen in review p4, confirmed by the owner on 2026-10-19 |
+| Synchronous call | The synchronous variant of a call takes the suffix `Sync`, as in the JavaScript platform (`readFileSync`, `execFileSync`): `gramlot.rpc.callSync`, the transport `callSync`, `NodeBinding.callSync`, `NodeRequests.submitSync`. The capability of a transport is `supportsCallSync`. Browser only: no Python counterpart. The `dataRemote` attribute is `sync`, the legacy name | owner decision 2026-10-19 (synchronous call and `dataRemote` `sync`); `callSync`, `supportsCallSync` and `submitSync` chosen in review p4, confirmed by the owner on 2026-10-19 |
+| Operations shared by the adapters | `GramlotServer.decode_body`/`decodeBody` (request body to text), `close(text)` (the close message, beside `call(text)` for the request envelope, both named after the action of their URL), `theme_css`/`themeCss` (the theme URL of a page class) and `theme_file`/`themeFile` (the file of a `/themes/` URL: it does not read the pages folder, so it is on `GramlotServer`, review p4d); `GramlotFileServer.companion_file`/`companionFile` (the file of a `.css` or `.js` URL below the pages folder; the files of GC-230 §145, the words of §145). `call` takes `identity` beside `owner`, and `evaluate_auth`/`evaluateAuth` receives it | chosen in review p4 (decision d-adapter-api), confirmed by the owner on 2026-10-19 |
+| Theme of a page | The page attribute keeps the legacy name in both languages, as `css_requires` and `js_requires`: `css_theme` (`static css_theme` in JavaScript); `False`/`false` loads no theme. The `GramlotServer` option follows the camelCase translation: `css_theme` in Python, `cssTheme` in JavaScript | owner decision 2026-10-19 (d-theme: base theme as a server option, `css_theme` on the page); `css_theme`/`cssTheme` confirmed by the owner on 2026-10-19; the "no theme" value chosen in review p4, to be confirmed by the owner |
+| Utility classes of the base theme | A utility class of `gramlot-base` is one lowercase word that names what the element is or does (`stack`, `grid`, `card`, `muted`, `actions`, `eyebrow`); a variant adds `--` (`button--quiet`, `status--success`); an icon class has the prefix `gramlot-icon`. `actions` is a row of actions or buttons; `eyebrow` is the small label above a heading. Both words were already the class names of the lesson stylesheets of `gramlot-examples`, which each copied the rules | the names of the lessons; written and added to the base theme in review p4e, confirmed by the owner on 2026-10-20 (they are public theme CSS) |
+| Typed literals of the page entry | `Bag`, `BagNode` and `createDecimal` are exported by `@gramlot/gramlot/page` and by the runtime under the names of their libraries (Bag, TYTX), without alias; a date or a time is a `Date`. Python has no counterpart: its pages import `Decimal`, `datetime` and `Bag` from their packages | review p4e (typed literals in JS page modules), confirmed by the owner on 2026-10-20 |
 
 Widget-name exception (owner, 2026-10-16; constitution 11.84): widget authoring
 names are identical in Python and JavaScript. Do not translate a compound widget
@@ -150,6 +159,15 @@ client/server contract in 0.2.14).
   {signal})`, which sends the GC-230 envelope and resolves with the value or rejects
   with `RpcError`. It holds the transport: `HttpTransport` (`js/src/http-transport.js`,
   formerly `MainTransport` in `transport.js`) or one injected with the same `call`.
+  `call` is the one cancellation: `signal` and `gramlot.abort` abort it, it rejects at
+  once; `remoteRequests` = AbortController per call in flight by envelope id, written
+  only by `call`.
+- Review 0.3.5 p3 names (internal, browser): `NodeBinding.call(contentType, request)`
+  (as `RpcHandler.call`; node close aborts); `SubscriptionsHandler.subscribeNode(node,
+  callbackFor)` (as `publishNode`); `BindingRuntime.askDialog` (as `inlineCompiler`);
+  `BindingRuntime.subscriptions` = private `_subscriptions` given at construction.
+  No convention covers a shared module function: `randomId()` in `js/src/random-id.js`
+  is chosen by the implementation. The owner confirmed all the names of this item on 2026-10-19.
 - `GramlotServer` (`src/gramlot/server/gramlot_server.py`,
   `js/src/server/gramlot-server.js`) and `GramlotFileServer` assure the same
   functionality in both languages: `close_all`/`closeAll` empties the registry,
@@ -163,10 +181,18 @@ client/server contract in 0.2.14).
   registry. `registerPage` exists only in JS: only the
   serverless Worker uses it.
   The run of a request and its parsing are private in both languages: `_run`/`#run`,
-  `_parse_request`/`parseRequest` (a module function not exported).
+  `_parse_request`/`parseRequest` (a module function not exported). The expiry of a
+  page used now (opening and each accepted call, GC-230 §010) is `_expiry`/`#expiry`,
+  private as the run, so there is one place that adds `page_ttl`/`pageTtl` to the clock.
 - `Page.registerSource` replaces the free function `source` in JS; Python keeps
   `@source`. Endpoints are declared with `@endpoint` (Python) and
   `Page.registerEndpoint` (JS), both with an optional `auth` rule.
+- `Exposed` is the JS base of `Page` and of the classes reached by a method path; it
+  holds `registerSource` and `registerEndpoint`. `resolve_declared`/`resolveDeclared`
+  (`page/base.py`, `page-base.js`) resolve a request name, `method` or
+  `a.b.c.method`, from the page (constitution 11.85).
+- `node.requests` (`NodeRequests`) is the one proxy of the Source node: the request
+  rule of `remote`, `dataRpc`, `dataRemote` and `remoteSource` (constitution 11.85).
 - The protocol of every adapter is GC-230 (contract and realisations), with the
   conformance check `check_protocol`/`checkProtocol`.
 

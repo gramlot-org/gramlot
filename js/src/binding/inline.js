@@ -56,7 +56,7 @@ export class InlineCompiler {
      */
     preprocess(node, attr, source) {
         const text = source.trim();
-        if (PUBLISH.test(text)) throw new Error(`${declaration(node, attr)}: the PUBLISH macro is excluded from Gramlot 0.2.0`);
+        if (PUBLISH.test(text)) throw new Error(`${declaration(node, attr)}: the PUBLISH macro is excluded from Gramlot`);
         let result = text.replace(/\$(\d+)/g, (_token, n) => `arguments[${parseInt(n, 10) - 1}]`);
         for (const [separator, macro, target] of MACROS) {
             if (separator) result = result.replace(separator, `; ${separator.source.slice(1)}`);
@@ -109,12 +109,14 @@ export class InlineCompiler {
     /**
      * The function of the `==` expression `code` of the attribute `attr` of `node` (`''` for the node
      * value), as written in the Source: `run(resolved)` evaluates it on the attributes resolved by
-     * runtimeValues. Its arguments are the
-     * other attributes of the node, except the other `==` (Q11.2). Named pointer slots retain
-     * those attributes in the resolved projection; ordinary ${name} strings remain literal.
+     * runtimeValues. The only compile path of `==`: its arguments are the other attributes of the
+     * node, except the other `==` (Q11.2), and `_F`; its body is `return <text>`, the text without
+     * surrounding whitespace, as legacy `funcCreate('return ' + text)`, so a text starting with a
+     * newline returns its value and a final `;` is accepted. Named pointer slots retain those
+     * attributes in the resolved projection; ordinary ${name} strings remain literal.
      */
     compileExpression(node, attr, code) {
-        const expr = code.slice(2);
+        const expr = code.slice(2).trim();
         const items = sourceAttributeItems(node.getAttr()).filter(([, raw]) => !isExpression(raw));
         const run = this.compile(node, attr, code, [...items.map(([name]) => name).filter(name => name !== '_F'), '_F'], `return ${expr}`);
         return resolved => {

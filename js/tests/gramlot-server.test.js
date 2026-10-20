@@ -5,8 +5,8 @@ import {fileURLToPath} from 'node:url';
 import {mkdtemp, writeFile, symlink, rm} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {tmpdir} from 'node:os';
-import {GramlotServer, Page, GramlotBuilder, PageExpired, ServerCapacity, PageNotFound, SourceNotFound, EndpointNotFound,
-    InvalidRequest, NotAuthenticated, NotAuthorized} from '../src/server/index.js';
+import {GramlotServer, Exposed, Page, GramlotBuilder, PageExpired, ServerCapacity, PageNotFound, SourceNotFound, EndpointNotFound,
+    InvalidRequest, NotAuthenticated, NotAuthorized, NAME_SYNTAX, NameSyntax} from '../src/server/index.js';
 import {GramlotFileServer} from '../src/server/gramlot-file-server.js';
 import {InvalidResourceName} from '../src/server/resources.js';
 import {fromTytx, toTytx} from '@genrojs/tytx';
@@ -98,7 +98,7 @@ test('page isolation, expiration, capacity and bootstrap escaping', async () => 
     assert.ok(html.includes('&lt;/title&gt;'));
     // The CSS URLs are JSON inside the module script (S07, D9): no attribute to break out of.
     assert.ok(!html.includes('<link'));
-    assert.ok(html.includes('"css":["/x\\" onload=\\"bad"]'));
+    assert.ok(html.includes('"css":["/themes/gramlot-base/theme.css","/x\\" onload=\\"bad"]'));
     await assert.rejects(server.openPage('/'), ServerCapacity);
     server.pages.get(pageId).expires = 0;
     assert.equal(await code(main(server, pageId)), 'page_expired');
@@ -176,13 +176,18 @@ test('call: auth is closed by default and evaluateAuth decides', async () => {
     for (const [outcome, expected] of [[null, {value: 'allowed'}], ['not_authorized', 'not_authorized']]) {
         const rules = [];
         const custom = new (class extends GramlotFileServer {
-            evaluateAuth(rule, {owner}) { rules.push([rule, owner]); return outcome; }
+            evaluateAuth(rule, {owner, identity}) { rules.push([rule, owner, identity]); return outcome; }
         })(pages);
         const opened = await custom.openPage('/', {owner: 'one'});
-        const response = await call(custom, opened.pageId, 'data', 'check_endpoint_auth', {}, {owner: 'one'});
+        const response = await call(custom, opened.pageId, 'data', 'check_endpoint_auth', {},
+            {owner: 'one', identity: 'avatar'});
         if (outcome === null) assert.equal(response.value, 'allowed');
         else assert.equal(response.error.code, expected);
-        assert.deepEqual(rules, [['admin', 'one']]);
+        assert.deepEqual(rules, [['admin', 'one', 'avatar']]);
+        // A call without identity passes null: the server keeps nothing of an earlier call.
+        await call(custom, (await custom.openPage('/', {owner: 'one'})).pageId, 'data', 'check_endpoint_auth', {},
+            {owner: 'one'});
+        assert.deepEqual(rules.at(-1), ['admin', 'one', null]);
     }
 });
 
@@ -450,10 +455,11 @@ test('registerPage registers a page without writing its HTML', async () => {
     }
     const server = memoryServer(TitledPage);
     const registered = await server.registerPage('/', {owner: 'one'});
-    assert.deepEqual(Object.keys(registered).sort(), ['pageId', 'resources', 'title']);
+    assert.deepEqual(Object.keys(registered).sort(), ['nameSyntax', 'pageId', 'resources', 'title']);
     assert.match(registered.pageId, /^[0-9a-f]{32}$/);
     assert.equal(registered.title, 'Titled');
-    assert.deepEqual(registered.resources, {css: [], js: []});
+    assert.deepEqual(registered.resources, {css: ['/themes/gramlot-base/theme.css'], js: []});
+    assert.deepEqual(registered.nameSyntax, NAME_SYNTAX.toJSON());
     assert.equal(server.pages.get(registered.pageId).owner, 'one');
     assert.equal((await main(server, registered.pageId, {owner: 'one'})).value.getNodes().length, 0);
 });
@@ -467,12 +473,219 @@ test('no page is registered when the bootstrap fails', async () => {
 test('configured URLs, root id and capabilities reach the bootstrap', async () => {
     const server = memoryServer(EmptyPage, {rpcUrl: '/r', closeUrl: '/c', rootId: 'here'});
     const {pageId, html} = await server.openPage('/', {prefix: '/app'});
-    assert.ok(html.includes(`"config":{"pageId":"${pageId}","rpcUrl":"/app/r","closeUrl":"/app/c","rootId":"here","capabilities":[]}`));
+    assert.ok(html.includes(`"config":{"pageId":"${pageId}","rpcUrl":"/app/r","closeUrl":"/app/c","rootId":"here","capabilities":[],`
+        + `"nameSyntax":${JSON.stringify(NAME_SYNTAX)}}`));
     assert.ok(html.includes('<div id="here">'));
     assert.deepEqual(new GramlotServer().capabilities, []);
     assert.equal(new GramlotServer().rpcUrl, '/gramlot/rpc');
 });
 
+// The same tables as AlignmentTests in tests/test_source_server.py.
+test('configuration outside the contract is a TypeError, a ValueError in Python', () => {
+    for (const pageTtl of [Infinity, NaN, '30', 0, -1, true]) {
+        assert.throws(() => new GramlotServer({pageTtl}), TypeError, String(pageTtl));
+    }
+    for (const maxPages of [Infinity, 1.5, '2', 0, -1, true]) {
+        assert.throws(() => new GramlotServer({maxPages}), TypeError, String(maxPages));
+    }
+    for (const [pageTtl, maxPages] of [[1800, 1000], [0.5, 1]]) {
+        const server = new GramlotServer({pageTtl, maxPages});
+        assert.deepEqual([server.pageTtl, server.maxPages], [pageTtl, maxPages]);
+    }
+});
+
+test('a manifest that is not JSON is a TypeError, as in Python', async () => {
+    const installable = value => class extends EmptyPage {
+        static installable = true;
+        manifest() { return value; }
+    };
+    const cycle = {};
+    cycle.self = cycle;
+    for (const manifest of [{n: NaN}, {n: Infinity}, {when: new Date(2026, 9, 19)}, {item: new (class Item {})()},
+        cycle, ['name']]) {
+        await assert.rejects(memoryServer(installable(manifest)).pageManifest(),
+            {name: 'TypeError', message: 'Page.manifest must return a JSON object'});
+    }
+    const valid = {name: 'x', n: 1.5, items: [1, 'a', null, true]};
+    assert.deepEqual(await memoryServer(installable(valid)).pageManifest(), valid);
+});
+
+test('the page is registered before the bootstrap is written, as in Python', async () => {
+    class CountingServer extends GramlotServer {
+        failing = false;
+        async resolvePage() { return EmptyPage; }
+        async resolveResources() { return {css: [], js: []}; }
+        get capabilities() {
+            if (this.failing) throw new Error('no capabilities');
+            return [`pages:${this.pages.size}`];
+        }
+    }
+    const server = new CountingServer();
+    const opened = await server.openPage('/');
+    assert.ok(opened.html.includes('"capabilities":["pages:1"]'));
+    server.failing = true;
+    await assert.rejects(server.openPage('/'), {message: 'no capabilities'});
+    assert.deepEqual([...server.pages.keys()], [opened.pageId]);
+});
+
 test('pagesDir is the absolute pages folder', () => {
     assert.equal(new GramlotFileServer('pages').pagesDir, resolve('pages'));
+});
+
+// Constitution 11.85: a method name is a method of the page or a path of public attributes from the page.
+test('a dotted name reaches a method of an Exposed object read from the page; its marker gives the only auth', async () => {
+    const reads = [];
+    class Orders extends Exposed {
+        constructor(prefix) { super(); this.prefix = prefix; this.archive = new Archive(); }
+        list(root, {id}) { root.p(`${this.prefix}:${id}`); }
+        total({items}) { return `${this.prefix}:${items}`; }
+        guarded() { return 'secret'; }
+        plain() { return 'plain'; }
+    }
+    Orders.registerSource('list');
+    Orders.registerEndpoint('total');
+    Orders.registerEndpoint('guarded', {auth: 'admin'});
+    class Archive extends Exposed {
+        size() { return 3; }
+    }
+    Archive.registerEndpoint('size');
+    class PathPage extends EmptyPage {
+        loose = {total: Orders.prototype.total};
+        get orders() { reads.push('orders'); return new Orders('o'); }
+        get _hidden() { reads.push('_hidden'); return new Orders('h'); }
+    }
+    const server = memoryServer(PathPage);
+    const {pageId} = await server.openPage('/');
+    assert.equal((await call(server, pageId, 'source', 'orders.list', {id: 7})).value.getNodes()[0].value, 'o:7');
+    assert.equal((await call(server, pageId, 'data', 'orders.total', {items: 2})).value, 'o:2');
+    assert.equal((await call(server, pageId, 'data', 'orders.archive.size')).value, 3);
+    assert.equal(await code(call(server, pageId, 'data', 'orders.guarded')), 'not_authenticated');
+    assert.deepEqual(reads, ['orders', 'orders', 'orders', 'orders']);
+    for (const [contentType, name] of [['data', 'orders.plain'], ['data', 'orders.list'], ['source', 'orders.total'],
+        ['data', 'orders.missing'], ['data', 'missing.total'], ['data', '_hidden.total'], ['data', 'orders._total'],
+        ['data', 'loose.total'], ['data', 'orders.prefix.length'], ['data', 'orders..total'], ['data', 'orders.'],
+        ['data', '.orders'], ['data', ''], ['data', 'orders.tot\u00e0l']]) {
+        assert.equal(await code(call(server, pageId, contentType, name)), 'not_found', name);
+    }
+    assert.deepEqual(reads, ['orders', 'orders', 'orders', 'orders', 'orders', 'orders', 'orders', 'orders', 'orders']);
+});
+
+test('an inherited member such as constructor never leads to a callable method', async () => {
+    class Parent extends EmptyPage {
+        shared(root) { root.p('shared'); }
+        value() { return 'value'; }
+    }
+    Parent.registerSource('shared');
+    Parent.registerEndpoint('value');
+    class Child extends Parent {}
+    const server = memoryServer(Child);
+    const {pageId} = await server.openPage('/');
+    assert.equal((await call(server, pageId, 'data', 'value')).value, 'value');
+    for (const [contentType, name] of [['data', 'constructor'], ['data', 'constructor.prototype.value'],
+        ['source', 'constructor.prototype.shared'], ['data', 'constructor.registerEndpoint'], ['data', 'toString'],
+        ['data', 'hasOwnProperty'], ['data', 'valueOf'], ['data', 'value.call'], ['data', 'constructor.name.length'],
+        ['source', 'constructor.prototype.constructor.prototype.shared']]) {
+        assert.deepEqual((await call(server, pageId, contentType, name)).error.code, 'not_found', name);
+    }
+});
+
+test('Page extends Exposed; the markers belong to Exposed and refuse main', () => {
+    assert.ok(Page.prototype instanceof Exposed);
+    assert.equal(Page.registerSource, Exposed.registerSource);
+    assert.equal(Page.registerEndpoint, Exposed.registerEndpoint);
+    class Orders extends Exposed {
+        main() {}
+        list() {}
+    }
+    assert.throws(() => Orders.registerSource('main'), {name: 'TypeError', message: 'registerSource cannot declare main'});
+    assert.throws(() => Orders.registerEndpoint('missing'), {name: 'TypeError', message: 'registerEndpoint requires an own method of Orders: missing'});
+    Orders.registerEndpoint('list');
+    assert.throws(() => Orders.registerSource('list'), {name: 'TypeError', message: 'list is declared both as Source method and endpoint'});
+});
+
+/** The clock of the server, `performance.now()`, replaced by one the test moves, so no test waits. The Python
+ * counterpart is `PageExpiryTests` in tests/test_source_server.py, with the same inputs and outcomes. */
+function pageExpiryServer(t) {
+    const clock = {now: 5000};
+    t.mock.method(performance, 'now', () => clock.now);
+    class UsedPage extends EmptyPage {
+        fails() { throw new Error('fails'); }
+        closed() { return 'closed'; }
+    }
+    UsedPage.registerEndpoint('fails');
+    UsedPage.registerEndpoint('closed', {auth: 'admin'});
+    const TTL = 100;
+    return {clock, TTL, server: memoryServer(UsedPage, {pageTtl: TTL}),
+        open: async (server, owner = 'one') => (await server.openPage('/', {owner})).pageId};
+}
+const expired = response => response.error?.code === 'page_expired';
+
+test('page expiry: a call after half the TTL renews the page', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    for (let i = 0; i < 4; i++) {
+        clock.now += TTL * 1000 / 2;
+        assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+    }
+    // Twice the TTL after the opening, half a TTL after the last call.
+    assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+});
+
+test('page expiry: a page idle for longer than the TTL answers page_expired', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    clock.now += TTL * 1000 / 2;
+    assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+    clock.now += (TTL - 1) * 1000;
+    assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+    clock.now += (TTL + 1) * 1000;
+    assert.ok(expired(await main(server, pageId, {owner: 'one'})));
+    assert.equal(server.pages.size, 0);
+});
+
+test('page expiry: a page that is never called expires TTL seconds after it was opened', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    clock.now += (TTL - 1) * 1000;
+    assert.deepEqual([...server.pages.keys()], [pageId]);
+    clock.now += 2000;
+    assert.ok(expired(await main(server, pageId, {owner: 'one'})));
+});
+
+test('page expiry: every outcome of a call to a page of its owner renews it', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    for (const [contentType, name, outcome] of [['source', 'main', undefined], ['source', 'missing', 'not_found'],
+        ['data', 'fails', 'application_error'], ['data', 'closed', 'not_authenticated']]) {
+        clock.now += (TTL - 1) * 1000;
+        const response = await call(server, pageId, contentType, name, {}, {owner: 'one'});
+        assert.equal(response.error?.code, outcome, name);
+    }
+    clock.now += (TTL - 1) * 1000;
+    assert.equal((await main(server, pageId, {owner: 'one'})).error, undefined);
+});
+
+test('page expiry: a call that is not accepted renews nothing', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const pageId = await open(server);
+    clock.now += (TTL - 1) * 1000;
+    assert.ok(expired(await main(server, pageId, {owner: 'two'})));
+    assert.ok(expired(await main(server, pageId)));
+    assert.ok(expired(await main(server, 'unknown', {owner: 'one'})));
+    await assert.rejects(server.call(toTytx({id: 'r1', pageId, contentType: 'other', name: 'main', params: {}}), {owner: 'one'}),
+        InvalidRequest);
+    server.close(JSON.stringify({pageId}), {owner: 'two'});
+    clock.now += 2000;
+    assert.ok(expired(await main(server, pageId, {owner: 'one'})));
+});
+
+test('page expiry: a call renews only the page it names', async t => {
+    const {clock, TTL, server, open} = pageExpiryServer(t);
+    const first = await open(server);
+    const second = await open(server);
+    clock.now += (TTL - 1) * 1000;
+    assert.equal((await main(server, first, {owner: 'one'})).error, undefined);
+    clock.now += 2000;
+    assert.equal((await main(server, first, {owner: 'one'})).error, undefined);
+    assert.ok(expired(await main(server, second, {owner: 'one'})));
 });

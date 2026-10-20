@@ -29,6 +29,18 @@ class ConformanceTests(unittest.TestCase):
     def test_reference_adapter_conforms_below_a_mount_prefix_with_a_policy(self):
         check_protocol(self.serve("--prefix", "/mount", "--csp", "script-src 'nonce-{nonce}'"), "/")
 
+    def test_a_page_is_renewed_by_use_and_expires_when_left_idle(self):
+        check_protocol(self.serve("--page-ttl", "0.8"), "/", page_ttl=0.8)
+
+    def test_the_expiry_check_fails_when_the_adapter_ttl_is_not_the_one_given(self):
+        base = self.serve("--page-ttl", "0.8")
+        # A TTL given three times as long: the adapter expires the page before the first call.
+        with self.assertRaisesRegex(AssertionError, r"^GC-230-010: a call at 0\.5 page_ttl"):
+            check_protocol(base, "/", page_ttl=2.4)
+        # A TTL given half as long: the idle page is still usable.
+        with self.assertRaisesRegex(AssertionError, r"^GC-230-010: a call 1\.3 page_ttl after the previous call"):
+            check_protocol(base, "/", page_ttl=0.4)
+
     def test_a_body_that_is_not_utf8_answers_400(self):
         base = self.serve()
         for path in ("/gramlot/rpc", "/gramlot/close"):

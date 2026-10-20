@@ -26,6 +26,8 @@ export interface Resources {
     collections?: string[];
     /** JS module URLs with their Logic group. */
     js: {url: string; group: string | null}[];
+    /** The module of the ServerAdapter class of the browser, added by GramlotServer when it declares one. */
+    serverAdapter?: string;
 }
 
 /** The resources with each URL once, in its last position; one JS URL with two groups raises. */

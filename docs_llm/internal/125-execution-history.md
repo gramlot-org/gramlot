@@ -710,7 +710,7 @@ attachSource and implements prepareItem. Remove the deferred recipe path and
 align the live renderer with the Python-equivalent base before refreshing and
 validating the consumer. Do not restore removed generic APIs to make tests pass.
 The inherited-collection collision was reproduced in Python too; its contract
-remains undecided. Full parity gaps in GC-105 remain; this audit does not claim
+remains undecided. Full parity gaps in GC-106 remain; this audit does not claim
 identical behavior for every input. The older 56/7 Gramlot diagnostic below is
 historical, not validation of the corrected dependency.
 
@@ -763,7 +763,7 @@ or prior commit. The owner clarified 'bup' means bump only; earlier local-only
 restriction remains. This closes the bounded review, not all Python parity gaps.
 
 **Difference register — 2026-09-21.**
-Created [GC-105](105-builder-python-js-differences.md), the paired internal register
+Created [GC-106](106-builder-python-js-differences.md), the paired internal register
 of Python/JS Builder differences. Owner temporarily accepts the absence of the JS
 TargetWrapper base class: renderOpts/full delivery already exists. Formatting is an
 approved divergence; Python backport is separate. Other gaps stay explicitly open;
