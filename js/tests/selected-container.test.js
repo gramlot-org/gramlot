@@ -21,7 +21,7 @@ async function fixture(tag='tabContainer', attrs={}) {
     container.borderContainer({id:'c',pageName:'c',title:'Gamma',node_label:'c',closable:true}).contentPane({region:'center'}).p('Nested');
     app.src.startSource(b.toTytx());
     const events=[];
-    for (const topic of ['hiding','showing','selected','closing','closed']) app._subscriptions.subscribe(`pages_${topic}`, payload=>events.push({topic,...payload,dataPage:app.data.getItem('page')}));
+    for (const topic of ['hiding','showing','selected','closing','closed']) app.subscribe(`pages_${topic}`, payload=>events.push({topic,...payload,dataPage:app.data.getItem('page')}));
     await settle();
     const element=window.document.getElementById('pages');
     return {app,window,element,events,source:app.src.source.getNode('main.pages'),

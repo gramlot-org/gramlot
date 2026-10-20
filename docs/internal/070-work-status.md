@@ -1,6 +1,6 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-18**.
+Document ID: **GC-070**. Updated: **2026-10-20**.
 
 **Release preparation:** JavaScript gallery aligned with Python, packaged Python/Node/offline qualification and inspector CI prepared; publication remains pending. See [§1395](#gc-070-1395).
 
@@ -3168,7 +3168,7 @@ amendment 11.53.
   `06637d9` documents and amendment 11.53. `f2eb977` the pages of
   `scripts/verify_binding_browser.mjs` mount a received Source.
   Rules: [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035),
-  [GC-095 §065](../public/095-writing-pages.md#gc-095-065).
+  [GC-095 §065](../public/097-data-binding.md#gc-095-065).
 - gramlot-js-server `feat/serverless-inline-code`: `312d4fc` single-file CSP with
   `'unsafe-eval'` and `connect-src *`, example `serverless/examples/inline-code` and
   `verify_inline_browser.mjs` in both CI jobs; `902c5e3` its guides.
@@ -3208,7 +3208,7 @@ Constitution amendment 11.54.
   and runs `verify_binding_browser.mjs`, then the runner with the Uvicorn integration
   and `verify_live_cards.mjs`, `verify_live_playground.mjs`. Rules:
   [GC-090 §035](../public/090-classes-and-hosts.md#gc-090-035),
-  [GC-095 §065](../public/095-writing-pages.md#gc-095-065).
+  [GC-095 §065](../public/097-data-binding.md#gc-095-065).
 - Verified on 2026-10-03: Python 81 OK, JavaScript 466/466, examples 31/31;
   `verify_binding_browser.mjs` PASS in Chromium 153 and WebKit 26.6: the script of a
   `srcdoc` from Data does not run, also after a Data change and after a Source change
@@ -3252,7 +3252,7 @@ JavaScript pages (owner correction). Constitution amendment 11.55.
   no conflict). `4fc0fab` `js/src/inout.js` (`InOut`, `gramlot.inout`) and
   `js/tests/inout.test.js`. `d99de9d` `scripts/verify_inout_browser.mjs`. Rules:
   [GC-090 §030](../public/090-classes-and-hosts.md#gc-090-030),
-  [GC-095 §060](../public/095-writing-pages.md#gc-095-060),
+  [GC-095 §060](../public/097-data-binding.md#gc-095-060),
   [GC-095 §095](../public/095-writing-pages.md#gc-095-095).
 - Verified on 2026-10-03, in a copy with the CI layout (gramlot-js-server `main`):
   Python 83 OK, JavaScript 475/475, examples 31/31. In Chromium 153 and WebKit 26.6:
@@ -9818,3 +9818,553 @@ Evidence: gramlot-examples/deploy/galleries/reports/2026-10-18-slider-quantizati
 Owner-authorized publication and public verification are complete. No new mobile
 or performance qualification is claimed; shared slider constraints must remain
 compatible. Concurrent database work and the unpublished c23 lesson were excluded.
+
+
+<a id="gc-070-1440"></a>
+## 1440. Method paths and one request in flight per node (review p1) — 2026-10-19
+
+Owner decisions of 2026-10-19 in the review of the 0.3.5 releases (d-pointer and
+the decisions it needs), recorded as constitution amendment 11.85. Implemented on
+the review branch; no release or deployment is authorized.
+
+- Method name of `remote`, `dataRpc`, `dataRemote` and `remoteSource`: `"method"` or
+  `"a.b.c.method"` resolved from the page (`REMOTE_NAME`, portable, in
+  `page/source.py` and `builder/source.js`); `^`/`=` pointers accepted by the
+  `remote` helper in both languages; an empty, `null` or malformed name rejects the
+  call when it is sent.
+- Server: `resolve_declared`/`resolveDeclared` read every segment as a public
+  attribute and require the final marker; JS objects on the path extend the new
+  base `Exposed` (holds `registerSource`/`registerEndpoint`; `Page` extends it).
+  `constructor` paths answer `not_found`, also in both conformance checks.
+- Requests: `node.requests` (`NodeRequests`) applies one rule to the four
+  constructs: one request in flight, its answer always applied, the first change
+  waiting with its parameters, no abort except node removal, page close and the
+  `dataRpc` timeout. `_onCalling` on the three constructs (`false` blocks);
+  `inflight.cancel()`; `_if` is a readiness condition; `_delay`, `_timing`,
+  `_userChanges` on `remote`. A fragment mounted by `remoteSource` from code now
+  replaces the record of `_cachedRemote`.
+- Names `Exposed` and `node.requests` confirmed by the owner on 2026-10-19 (GC-225).
+
+Verification: 3,585 JavaScript tests pass (baseline 3,563); Python 170 tests and
+305 subtests pass with the existing expected failure (baseline 168 and 266). Docs:
+`prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.
+
+
+<a id="gc-070-1445"></a>
+## 1445. Python/JavaScript parity in the core (review p2) — 2026-10-19
+
+Phase p2 of the review of the 0.3.5 releases. Implemented on the review branch; no
+release or deployment is authorized.
+
+- `==`: one compile path, `InlineCompiler.compileExpression`, body `return <text>`
+  with the text trimmed (legacy `funcCreate`): a text starting with a newline returns
+  its value, a final `;` is accepted. `binding/pointer.js` no longer compiles `==`:
+  a `{name}` slot naming a `==` attribute reads null in structural attributes too,
+  as in `Builder.runtimeValues` and in Python (GC-210 §095).
+- DOM → Data: `ControlAdapter.commit` writes through `HtmlElement.writeParameter`,
+  the rule of component parameters: plain `^` without suffix, equal (`Object.is`)
+  value not written, as legacy `setAttributeInDatasource` with `lazySet` (GC-210 §050).
+- Server: the configuration error stays `ValueError` in Python and `TypeError` in
+  JavaScript (GC-225 §010), now in the GC-090 §017 table; `pageManifest` refuses a
+  manifest that is not JSON with the `TypeError` of Python `page_manifest`; Python
+  `open_page` registers the page before writing the bootstrap and removes it on
+  failure, as JavaScript.
+- Python builder: `pointer_transform` finds the suffixes of `value`, as JavaScript
+  `pointerTransform`.
+- Decision d-float: the static number text keeps the difference (Python `1.0`,
+  JavaScript `1`), documented in GC-095 §090.
+
+Verification: 3,593 JavaScript tests pass (baseline 3,585); Python 184 tests and 323
+subtests pass with the existing expected failure (baseline 170 and 305). Chromium
+binding check passes. Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.
+
+<a id="gc-070-1450"></a>
+## 1450. One request race, shared ids and topics, instance state; `Logic` optional (review p3) — 2026-10-19
+
+Phase p3 of the review of the 0.3.5 releases. Implemented on the review branch; no
+release or deployment is authorized.
+
+- Requests: `RpcHandler.call` is the one cancellation of a call. Its `signal` and the
+  dispose of the page (`gramlot.abort`) abort it; it then rejects at once with the
+  abort reason, also when the transport does not stop on its signal; a call aborted
+  before it starts is not sent. `remoteRequests` holds the AbortController of each
+  call in flight by envelope id and is written only by `call`. `NodeBinding.call`
+  sends the request of a node (`node.requests`) through it and the close of the node
+  aborts it: used by `dataRpc`, `dataRemote` and `remoteSource`. A dispose during
+  `main` rejects `start()` at once with "Gramlot was disposed during main".
+- One random id helper, `randomId()` (`js/src/random-id.js`), for the RPC envelope,
+  the frame session, the renderer instance, the Data subscription, the `__ref`
+  reference and the ask dialogs.
+- One topic loop, `SubscriptionsHandler.subscribeNode`, for providers (presence rule)
+  and rendered nodes (handler required), both documented in GC-095 §115; every
+  callback is asked before any subscription is made.
+- `DATA_ROOT` is imported from `@genrojs/builders`. The TYTX `getDateType` copy in
+  `format.js` stays, pointing to genro-org/genro-tytx#62.
+- Instance state: `AskDialog` is one instance per page (`BindingRuntime.askDialog`);
+  the panel and region configurations of the selection and border containers are
+  static private fields of the component classes made per window by
+  `ComponentCollection.register`. `window.gramlot` stays: GC-090 documents it.
+- `_subscriptions` is read only by `Gramlot`; the binding runtime receives it at
+  construction (`BindingRuntime.subscriptions`). `RpcResolver` writes through the
+  public `node` of BagResolver; `_lastUpdate` stays, BagResolver has no public member
+  for a load made outside `resolve`.
+- `HttpTransport.close` keeps no empty `try/catch` and no `.catch(() => {})`.
+- Decision d-logic (constitution 11.86): `Logic` is optional in a logic module; a
+  module without it has no logic methods (GC-095 §060, GC-090 §030).
+
+Verification: 3,598 JavaScript tests pass (baseline 3,593); Python 184 tests and 323
+subtests pass with the existing expected failure. Chromium checks pass: binding,
+messaging, border, page module, components, runtime, component review. Docs:
+`prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.
+
+<a id="gc-070-1455"></a>
+## 1455. Operations shared by the adapters, server-declared name syntax, server adapter, base theme, synchronous call (review p4) — 2026-10-19
+
+Phase p4 of the review of the 0.3.5 releases (constitution 11.87). Implemented on the
+review branch; no release or deployment is authorized.
+
+- Core API for every adapter (d-adapter-api), Python and JavaScript:
+  `GramlotServer.decode_body`/`decodeBody` (UTF-8, a leading byte order mark removed,
+  d-bom), `close(text)` (the close message), `call(text, owner, identity)` with
+  `evaluate_auth(rule, owner, identity)`, `<path>/index.html` mapped by
+  `open_page`/`registerPage`, `GramlotFileServer.companion_file`/`companionFile` and
+  `theme_file`/`themeFile`. The two reference adapters (`tests/http_server.py`,
+  `scripts/fixture_servers.mjs`) call them and keep only HTTP.
+- Name syntax declared by the server: `NameSyntax` (portable genro-builders regex,
+  `js/src/builder/name-syntax.js`, `src/gramlot/page/name_syntax.py`), core default
+  `NAME_SYNTAX` (replaces `REMOTE_NAME`); `GramlotServer.name_syntax`/`nameSyntax`
+  reaches the page builders and the bootstrap (`config.nameSyntax`); the browser
+  builder and `node.requests` check names with it.
+- `gramlot.serverAdapter`: `ServerAdapter` (`js/src/server-adapter.js`) creates the
+  transport (`createTransport`); the server names a subclass module in
+  `resources.serverAdapter` (`GramlotServer.server_adapter`/`serverAdapter`),
+  `PageBootstrap.loadServerAdapter` imports it. The transport contract `call`,
+  `close`, `dispose` is required; `instanceof HttpTransport` and
+  `transport?.dispose?.()` are gone; `HttpTransport.dispose` releases nothing.
+- Base theme (d-theme): `css_theme`/`cssTheme` option of `GramlotServer` (default
+  `gramlot-base`, `False` none), `Page.css_theme` replaces it (`False` none),
+  `theme_css`/`themeCss`; the theme comes first and a listed base theme loads once.
+  GC-090, GC-096 and the theme READMEs teach pages without the base theme in `css`.
+- Synchronous call (owner 2026-10-19): `gramlot.rpc.callSync`,
+  `HttpTransport.callSync` (synchronous `XMLHttpRequest`) with `supportsCallSync`;
+  `dataRemote` `sync` (default true) reads synchronously through the resolver's own
+  `resolve`; on a transport without it (Worker) the read stays asynchronous (debt for
+  the async-resolvers plan). `dataRpc` and `remote` stay asynchronous.
+- Conformance (GC-230 §150), Python and JS: `HEAD`, `PUT`, `DELETE`, `PATCH` of the page
+  path answer 405 with `Allow: GET`; owner isolation (no cookies, another owner, close
+  of another owner); a leading byte order mark on `rpc` and `close`; `config.nameSyntax`.
+  The core tests run both checks also behind a proxy with each defect. Run with this
+  core against the released adapters: Flask and Django (py-server 0.2.10) answer 200 to
+  `HEAD`; Django, Kajenn and js-server 0.2.13 answer 405 without `Allow`; the five
+  Python adapters refuse the byte order mark; js-server shares one owner.
+- Docs: GC-230 (revised sections), GC-090 §015/§017/§020/§030, GC-095 §105, GC-096,
+  GC-225 §010 (names confirmed by the owner on 2026-10-19, see §1483), constitution 11.87, with their docs_llm mirrors.
+
+Verification: 3,629 JavaScript tests pass (baseline 3,598); Python 198 tests and 365
+subtests pass with the existing expected failure (baseline 184 and 323). Chromium
+checks pass: page (with a synchronous call and a `sync` `dataRemote` read), binding,
+runtime, page module, inout, messaging, border, slider, live cards and playground.
+Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass.
+
+<a id="gc-070-1460"></a>
+## 1460. Sub-builder expressions through the root builder; TYTX `getDateType` (review p4b) — 2026-10-19
+
+Phase p4b of the review of the 0.3.5 releases (constitution 11.87). Implemented on the
+review branch; no release or deployment is authorized.
+
+- The nodes created by library sub-builders (SVG, HTML inside SVG) have their `:=`
+  expressions computed by the page's GramlotBuilder. `GramlotHtmlRenderer.render` and
+  the binding (`gramlot-renderer.js` `project`, `remote.js`, `providers.js`,
+  `runtime.js`, `view/button.js`) resolve values with `node.rootBuilder.runtimeValues(node)`:
+  the library method needs only the Data, shared by the sub-builders, the node's own
+  builder for `validateCustomTypes`, and the hook of the builder it runs on. The
+  assignment of `evaluatePointerExpression` on the sub-builder instances in
+  `GramlotHtmlRenderer.getRender` is removed; no method is assigned to a library
+  instance. The `==` of these nodes already came from the renderer's own
+  `evaluateExpressions`. genro-org/genro-builders-js#23 is not needed.
+- Tests: `js/tests/subbuilder-expressions.test.js` (live page: SVG node with `==`,
+  `:=` and a `==` node text, HTML inside SVG with the same, first render and update;
+  subscription handler and `remote` read `:=` arguments of sub-builder nodes; the
+  library instances carry no replaced method; no source file asks `node.builder` for
+  `runtimeValues`; static rendering writes no expression) and
+  `tests/test_renderers.py` `SubBuilderExpressionTests` (the same static string).
+- Gramlot components (`button`, `input`) exist in the GramlotBuilder dialect only: inside
+  an SVG `foreignObject` the library HTML builder creates plain elements, as before.
+- TYTX: `getDateType` is imported from `@genrojs/tytx` (0.16.3 exports it,
+  genro-org/genro-tytx#62); the copy in `js/src/format.js` is removed. The minimum is
+  raised to `>=0.16.3` in `js/package.json` and `^0.16.3` in `jsr.json`. JSR
+  `@genro/tytx` has 0.16.2 as latest: the JSR publication of the core needs
+  `@genro/tytx` 0.16.3 on JSR first.
+
+Verification: 3,635 JavaScript tests pass (baseline 3,629); Python 199 tests and 365
+subtests pass with the existing expected failure (baseline 198).
+
+
+<a id="gc-070-1465"></a>
+## 1465. Python package built by hatchling; JS archive installer accepts `@genrojs/*` (review p5) — 2026-10-19
+
+Phase p5 of the review of the 0.3.5 releases (constitution 11.87). Implemented on the
+review branch; no release or deployment is authorized.
+
+- Build backend: `pyproject.toml` uses `hatchling>=1.27` with the `src/` layout instead
+  of setuptools. `setup.py` and `MANIFEST.in` are removed. `[tool.hatch.build]` lists the
+  same package files as the former `[tool.setuptools.package-data]` (Python modules,
+  `collections/*.json`, `resources/*.js|json`, `resources/themes/*/*`, the branding SVG
+  and PNG files) plus `py.typed`; `artifacts` ships the git-ignored files that
+  `npm --prefix js run build` generates. The sdist adds `tests/test_*.py`, as before.
+- `hatch_build.py` reproduces the check of the former `setup.py`: without
+  `gramlot.js`, `gramlot.min.js` or `runtime-notices.json` in `src/gramlot/resources`,
+  the build stops with "Missing browser assets: ... Run npm --prefix js run build before
+  building Gramlot." The hook runs for the wheel, the sdist and the editable install
+  (the former check ran for the wheel only).
+- Metadata: `license = "Apache-2.0"` and `license-files = ["LICENSE", "NOTICE"]`
+  (PEP 639; `License-Expression` in the METADATA, both files in `dist-info/licenses/`).
+  `src/gramlot/py.typed` is new, so type checkers read the inline annotations.
+- Wheel and sdist contents compared before and after: the wheel differs by `+gramlot/py.typed`
+  and `-dist-info/top_level.txt` (a setuptools file); the sdist differs by `+src/gramlot/py.typed`,
+  `+hatch_build.py` and `+.gitignore` (hatchling, needed to build the wheel from the sdist)
+  and `-MANIFEST.in`, `-setup.py`, `-setup.cfg`, `-src/gramlot.egg-info/*`. `python -m build`,
+  `uv build`, `pip install .[test]`, `pip install -e .` and the installed wheel (import,
+  `py.typed`, runtime assets, metadata) pass; `twine check` passes.
+- `.github/workflows/publish.yml` needs no change for hatchling (`python -m build`
+  installs the backend in an isolated environment); the wheel check of the packaged
+  runtime now also requires `gramlot/py.typed`. `tests.yml` installs with
+  `pip install '.[test]'` after the runtime build, which satisfies the hook.
+- `scripts/install_js_artifacts.py` accepted only names starting with `genro-`, so every
+  archive of the declared `@genrojs/*` dependencies was refused with "Not a declared Genro
+  dependency". It now accepts the declared `@genrojs/*` names. `tests/test_install_js_artifacts.py`
+  covers the accepted archives (with a stand-in `npm`), the restored manifest and the
+  refusals (undeclared `@genrojs/*`, declared non-`@genrojs` name, `genro-*` name). A run with the real npm
+  and the `@genrojs/bag`, `builders` and `tytx` archives installs all three and restores `js/package.json`.
+- Documentation: CONTRIBUTING (Python package), GC-085 §020, GC-086 and this entry, with
+  their `docs_llm` mirrors.
+
+Verification: 3,635 JavaScript tests pass (baseline 3,635); Python 204 tests and 365
+subtests pass with the existing expected failure (baseline 199; five new tests of the
+installer). Docs: `prepare_docs`, Sphinx `-W` and `check_public_docs.py` pass on a clean build.
+
+
+<a id="gc-070-1470"></a>
+## 1470. Public documentation of the current version, public server protocol, Writing pages split (review p8) — 2026-10-19
+
+Phase p8 of the review of the 0.3.5 releases (decisions d-course and d-float). Implemented
+on the review branch; no release or deployment is authorized.
+
+- Process material removed from the public pages and the README: release labels such as
+  "(0.2.0)" and "*0.2.x:*", "development increment", "current increment", owner quotes and
+  approvals, "This is not a release announcement", the README section "Gramlot 0.2.0" and
+  its "accepted by the owner", the scope notes about dated release notes. The public guides
+  describe the current version; GC-005 §010 records d-course and the extension to the
+  public guides, `docs/02-documentation.md` §1 the same rule.
+- New public page [GC-101 · Server protocol](../public/101-server-protocol.md), derived
+  from GC-230 for adapter authors: bootstrap and `nameSyntax`, content types and names,
+  envelopes, outcomes, `auth` and the identity of a call, capabilities, `serverAdapter`
+  and the transport contract with `callSync`, HTTP rules (prefix, runtime, page, rpc and
+  close requests, body decoding and BOM, status codes, owner, CSP, themes and companions),
+  the conformance list, the Worker and WebSocket realisations, manifest and devices.
+  Section numbers equal the GC-230 rule numbers that the conformance check prints. GC-230
+  stays the internal record. GC-090, GC-095, GC-030 and GC-100 link GC-101 instead of
+  GC-230 and GC-215.
+- Writing pages split: [GC-097 · Data binding and controllers](../public/097-data-binding.md)
+  (blocks GC-095-040 to GC-095-090 and GC-095-130), [GC-098 · Calling the server](../public/098-server-calls.md)
+  (GC-095-100) and [GC-099 · Remote content and lazy Data](../public/099-remote-content.md)
+  (GC-095-105). The blocks keep their IDs and anchors (GC-005 §010 item 4); GC-095 keeps
+  005–035, 095 and 110–125. In-repo links (constitution, `docs/01-overview.md`, GC-070, the documentation maps)
+  name the new files. Cross-page anchor links are verified by `check_public_docs.py`;
+  `docs/conf.py` suppresses `myst.xref_missing`, which MyST raises for raw HTML anchors.
+- GC-097 §085 lists the exclusions of the code (`EXCLUDED_ATTRIBUTES`: `serverpath`,
+  `dbenv`, `shared_id`; the prefix `formsubscribe_`; the `PUBLISH` macro); the sentence
+  "Components ... are planned for 0.3.0" is removed. §070 points `radioButtonText` to
+  GC-105; §075 describes `button` as the `gramlot-button` component with R3 on it.
+- d-float: the number text of static rendering (Python `1.0`, JavaScript `1`; `format` in
+  the live page, `mask` only wraps) is stated in GC-095 §125 "Static rendering", and the
+  GC-090 §015 row of the Python renderers points to it.
+- GC-090 §024 (new) documents every entry point of `@gramlot/gramlot`, among them
+  `./index-page-runtime` (`IndexLogic`, `mountIndexPage`, `THEME_READY`, `THEME_SET`,
+  `THEMES`, `APPEARANCES`), `./tools/inspector` (`gramlot-tools-inspector`,
+  `InspectorConnection`, `attachInspectorAgent`) and `./tools/inspector-agent`. §023 lists
+  the packaged themes and `app-icon.png`; §022, §025 and §030 lose the release history.
+- README: `GramlotWorkerServer` instead of `WorkerHost`; the constitution is no longer
+  linked as "the ownership contract"; `gramlot-serverless` in the archived list is the old
+  repository, the package is current; a "What a page contains" summary replaces the 0.2.0
+  section; "Start here" lists the new pages.
+- GC-025 §015 "Learn by topic" replaces the release sequence; the historical archive
+  instructions are removed; §025 describes the standalone export. Example ranges such as
+  `c01–c17` and lesson keys are removed from the public pages: lessons are named by their
+  catalogue title, and the pages link the examples manual and the hosted galleries.
+- GC-105: §076 placed after §075, headings "110 ·" and "115 ·", title "Components", process
+  sentences and "native HTML" removed; the stale "alternate tab positions are not included"
+  is removed (§115 documents `tabPosition`). GC-100 lists the component definitions as an
+  extension point. GC-020 lists components and containers as available.
+- GC-175: the broken links to `js/src/adapters/page.js`, `src/gramlot/server/host.py` and
+  `js/src/adapters/host.js` point to the current files.
+- Cross-repo links to update: gramlot-js-server and gramlot-py-server docs link
+  `095-writing-pages.md#gc-095-100` (now `098-server-calls.md`) and, js-server
+  `docs/005-introduction.md:62`, `#gc-095-105` (now `099-remote-content.md`); gramlot-examples
+  lessons link `095-writing-pages.md` as their authoring reference and use lesson keys.
+
+Verification: 3,635 JavaScript tests pass (baseline 3,635); Python 204 tests and 365
+subtests pass with the existing expected failure (baseline 204). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1475"></a>
+## 1475. Page expiry renewed by use; version-free exclusion messages; unique document ID (review p4c) — 2026-10-19
+
+Phase p4c of the review of the 0.3.5 releases (owner decision 2026-10-19: a page expires
+`page_ttl` seconds after its last use, not after it was opened). Implemented on the review
+branch; no release or deployment is authorized.
+
+- Page expiry, Python and JavaScript (GC-230 §010, GC-101 §010): `GramlotServer` sets the
+  expiry of a page to now plus `page_ttl`/`pageTtl` when the page is opened and again for
+  every call that names a page of its owner that has not expired, whatever the outcome of
+  the method (`not_found`, `not_authenticated`, `not_authorized` and `application_error`
+  included). One private method computes it (`_expiry`, JS `#expiry`; GC-225 §025). Until
+  now a page expired 1800 seconds after it was opened even while in use. A call of another
+  owner, of an unknown or of an expired page, a request that cannot be decoded and the close
+  message renew nothing. The renewal is in `GramlotServer.call`: adapters do nothing for it
+  and must not read the registry (`_pages`, `pages`).
+- Owner cookie (GC-230 §135, GC-101 §135): it has no lifetime today (`Path`, `HttpOnly`,
+  `SameSite=Lax`, no `Max-Age`, no `Expires`). It is a session cookie that nothing renews, so
+  the core API gives no value to re-issue; documented, and kept without lifetime. The expiry
+  of a page does not depend on it.
+- Tests with a clock the test moves, no waiting: Python `PageExpiryTests`
+  (`tests/test_source_server.py`) replaces `time` in the server module; JavaScript `page expiry`
+  tests (`js/tests/gramlot-server.test.js`) replace `performance.now`. They cover the call
+  after half the TTL, the page idle for longer than the TTL, the page never called, every
+  outcome of an accepted call, the calls that are not accepted and the page a call does not
+  name.
+- Conformance (GC-230 §150 item 18), Python and JavaScript: `check_protocol(..., page_ttl=)`
+  and `checkProtocol(..., {pageTtl})` take the short TTL of the adapter's server and check
+  a call at 0.5 TTL, a call at 1.2 TTL after the opening (renewed by the first) and
+  `page_expired` 1.3 TTL after the last call, about 2.5 TTL in all; without the argument
+  the item is left out, so released adapters are not affected. The reference adapters take
+  the TTL (`tests/http_server.py --page-ttl`, `pageTtl` of `startServers`); the core tests
+  run both checks against the reference adapters at 0.8 seconds, and against an adapter whose TTL
+  is not the one given.
+- Messages "excluded from Gramlot 0.2.0" are "excluded from Gramlot": `builder.py`,
+  `gramlot-builder.js` and the `PUBLISH` macro of `inline.js`; their tests match the end of
+  the message.
+- Document ID GC-105 was used twice. The internal register of Python and JavaScript Builder
+  differences is GC-106 (`docs/internal/106-builder-python-js-differences.md`, anchors
+  `gc-106-NNN`); GC-005 §010 item 4 records it and the links of the READMEs, GC-125 and
+  PORT-0004 name the new file. The public guide Components keeps GC-105.
+- Docs: GC-230 §010, §025, §135, §150, GC-101 §010, §025, §135 and the conformance list,
+  GC-090 §020, GC-225 §025, GC-005, with their docs_llm mirrors.
+
+Verification: 3,643 JavaScript tests pass (baseline 3,635); Python 212 tests and 369
+subtests pass with the existing expected failure (baseline 204 and 365). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1480"></a>
+## 1480. Theme serving on GramlotServer; IndexPage without the base theme (review p4d) — 2026-10-19
+
+Phase p4d of the review of the 0.3.5 releases (two follow-ups found by the js-server phase).
+Implemented on the review branch; no release or deployment is authorized.
+
+- `theme_file`/`themeFile` (GC-230 §145, GC-101 §145) moves from `GramlotFileServer` to
+  `GramlotServer`, Python and JavaScript; `GramlotFileServer` inherits it and the public names
+  do not change. The method does not read the pages folder, and the bootstrap of every page lists
+  the base theme, so a `GramlotServer` that resolves its pages another way listed a theme it did
+  not serve. `theme_css`/`themeCss` was already on `GramlotServer`.
+- The file lookup is in a new module, `files.py`/`files.js` (`file_below`/`fileBelow`, `THEMES`;
+  JavaScript also `inside` and `realFile`); `companion_file`/`companionFile` uses it too. GC-225
+  gets the row "Helper modules" (the module `files` is a provisional implementation, not an
+  accepted name or design; see §1483).
+- JavaScript: `gramlot-server.js` is the neutral module that the serverless Worker bundles for the
+  browser, so it cannot import Node.js: esbuild stops at `node:fs/promises`, a literal
+  `import()` included. `themeFile` loads `files.js` on its first call with `import(NODE_FILES)`,
+  a constant specifier that the bundler leaves alone. A Worker has no files and never calls it.
+  A test builds `gramlot-server.js` for the browser and fails on a Node.js import. A JSR
+  publication may report the dynamic import as not analysable (a warning to check at the next
+  publication).
+- `IndexPage.css` (Python and JavaScript) is `/themes/gramlot-index/theme.css`; the base theme
+  comes from the server (`css_theme`/`cssTheme`, GC-230 §010). A server with `css_theme=False`
+  no longer loads Base for the index shell. Nothing in the core reads `css[0]`.
+- Adapters: js-server `server/src/fetch.mjs` serves themes only when
+  `server instanceof GramlotFileServer`; the condition applies to the companion files alone.
+  py-server `base.py` already calls `server.theme_file`; its `server_class` stays
+  `GramlotFileServer` while the base takes a pages folder.
+- Docs: GC-101 §005 and §145, GC-230 §005 and §145, GC-090 §017 and §020, GC-096 §045,
+  GC-225 §010 and item 1 of the constitution amendment of the review, with their docs_llm
+  mirrors.
+
+Verification: 3,646 JavaScript tests pass (baseline 3,643); Python 214 tests and 382
+subtests pass with the existing expected failure (baseline 212 and 369). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1481"></a>
+## 1481. Typed literals in JavaScript page modules, `dataRemote` cache, theme classes `actions` and `eyebrow` (review p4e) — 2026-10-19
+
+Phase p4e of the review of the 0.3.5 releases (defects found by the examples phase).
+Implemented on the review branch; no release or deployment is authorized.
+
+- Typed literals (GC-090 §024, GC-097 §045). The server runs `main` of a JavaScript page
+  module and the browser imports the same module for its `Logic`. In the browser the import
+  map resolves only `@gramlot/gramlot/page`. The runtime, which that name meant in the browser,
+  exported `Bag` and `BagNode` but not `createDecimal`; `src/server/page.js`, which it meant on
+  the server, exported none of the three. A module that imported them did not load in one context
+  or the other, and the examples w10 and w20 had dropped the literals their Python twins keep.
+  `src/server/page.js` and the runtime
+  (`src/index.js`) now export `Bag`, `BagNode` and `createDecimal`, with the names of the Bag and
+  TYTX libraries and no alias. A date or a time is a `Date`, typed by TYTX from its content
+  (midnight UTC `D`, the epoch day `H`, any other instant `DHZ`): it needs no export.
+  `isDecimal` is not exported: it is not an authoring need. Python needs no change: its pages
+  import `Decimal`, `datetime` and `Bag` from their packages. GC-225 gets the row "Typed literals
+  of the page entry" (confirmed by the owner on 2026-10-20).
+- Tests. `js/tests/page-literals.test.js` (4 tests) and the fixture `js/tests/fixtures/page-literals/`:
+  the page entry of the server and the runtime export the same page surface; one page module
+  builds a Decimal, a date, a date and time, a time and a Bag, once with the name resolved by
+  Node to `src/server/page.js` and once, in a child process, with a resolve hook that maps it to
+  `dist/gramlot.js` as the import map does; both give the same TYTX text. The Python twin is
+  `test_typed_literals_have_the_wire_types_of_the_javascript_page` in `tests/test_source_server.py`.
+  `scripts/verify_page_module_browser.mjs` now authors a Decimal literal in the page (JavaScript and
+  Python) and passes on Chromium for the four page forms. The JavaScript Decimal travels as `12.5::N`
+  for `createDecimal('12.50')`: the Decimal library of the JavaScript TYTX does not keep the trailing
+  zero that Python writes (`12.50::N`); the value is the same.
+- `dataRemote` cache (`js/src/binding/rpc-resolver.js`). The asynchronous load recorded the cache
+  time but not the fingerprint of the parameters that `BagResolver.resolve` records, so the first
+  explicit read after a changed `^` argument, which installs a new resolver that loads at once, found
+  another fingerprint and made one more synchronous call (3 requests instead of 2 in the example c14).
+  `#load` now takes the fingerprint at the start of the load, as `resolve` does before its load, and
+  records it with the cache time when the answer is written; a load that is ignored, aborted or
+  of a closed node records nothing. The test `sync: the asynchronous load of a changed ^ param
+  records the parameters: the first explicit read makes no call` counts 1 synchronous and 1 asynchronous
+  request. GC-099 §105 states it.
+- Theme (GC-096 §035). `gramlot-base` had no class for a row of actions or for the small label
+  above a heading; five lesson stylesheets of `gramlot-examples` copied `.actions` and four copied
+  `.eyebrow`. The layer `gramlot.utilities` now has `.actions` (`display: flex`, wrapping, gap
+  `--gramlot-space-2`, 0.5rem as the lessons wrote it) and `.eyebrow` (no margin, `--gramlot-text-secondary`,
+  0.75rem, 700, `letter-spacing: .08em`, uppercase). The `.actions` class of the GroupBox component
+  is in its shadow root and does not meet the theme class. The class names are public theme CSS and were
+  confirmed by the owner on 2026-10-20; GC-225 gets the row "Utility classes of the base theme". The lesson
+  stylesheets keep their copies until `gramlot-examples` removes them; they are unlayered and win.
+- Docs: GC-090 §024 and §020 (import map), GC-097 §045, GC-099 §105, GC-096 §035, GC-225 and
+  `themes/gramlot-base/README.md`, with their docs_llm mirrors.
+
+Verification: 3,651 JavaScript tests pass (baseline 3,646); Python 215 tests and 382
+subtests pass with the existing expected failure (baseline 214 and 382). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1482"></a>
+## 1482. Style shortcuts take their CSS unit; a few legacy sub-keys read a number as pixels (review p13a, p13c) — 2026-10-20
+
+Phases p13a and p13c of the review of the 0.3.5 releases (documentation fix, owner decisions of
+2026-10-19 and 2026-10-20).
+Implemented on the review branch; no release or deployment is authorized.
+
+- Rule (GC-096 §040). The value of a style shortcut is written with its CSS unit, as in legacy
+  GenroPy (`genro_dom.js` `getStyleDict` copies the value unchanged): `width="20px"`,
+  `margin_top="4px"`. A number without a unit is not valid CSS: `width=20` is written as
+  `width: 20` and the browser ignores the declaration (verified in the Python renderer). Properties
+  whose CSS value is a plain number (`opacity`, `z_index`, `line_height`) take a number. SVG
+  presentation attributes are not style shortcuts: `svg(width=100)` stays valid. The sub-keys that
+  read a number as pixels are in the last bullet of this entry (p13c).
+- Examples and sentences corrected: GC-095 §005 (`margin_top=4` is now `margin_top='4px'`, with a
+  pointer to the rule) and GC-097 §070, block GC-095-070 (the sentence that numeric shortcuts such as `width=10` are
+  accepted now says the value is not checked for a unit and points to the rule). The other public
+  examples already carry units (`width="12rem"`, `width="^width:{}px"`). The regional dimensions of
+  `borderContainer` (GC-105 §100) are a component contract, not a style shortcut, and keep their
+  pixel numbers.
+- Decided (owner, 2026-10-20, p13c). The finding of p13a is closed: a number becomes pixels only in
+  the sub-keys inherited from the legacy, and GC-096 §040 lists them. The keys were verified in the
+  source of the Builder renderers, not only in the bundle: `px()` of `@genrojs/builders`
+  (`src/renderer/html.js`, `_macro_rounded`, `_macro_transform`, `_macro_filter`) and `_px()` of
+  `genro_builders` (`contrib/html/html_renderer.py`, the same three methods). Both convert the
+  same keys, checked by rendering each key in Python and in JavaScript with identical output:
+  - `rounded` and its forms `rounded_top`, `rounded_bottom`, `rounded_left`, `rounded_right`,
+    `rounded_top_left`, `rounded_top_right`, `rounded_bottom_left`, `rounded_bottom_right`
+    (legacy `css3style_rounded`, `v+'px'`);
+  - `transform_translate_x` and `transform_translate_y` (legacy `css3style_transform`, lines 535-536
+    of `genro_dom.js`);
+  - `filter_blur`: the Builder renderers convert it, legacy `css3style_filter` has no `blur`
+    (it reads `rotate`, `invert` and `contrast`).
+  Only a number converts; a string is written as given (`rounded="4"` gives `4`). Gramlot has no
+  code of its own for this: `GramlotHtmlRenderer.adaptAttrs`/`adapt_attrs` call the Builder renderer.
+- Difference from legacy, not changed: legacy `css3style_shadow` adds `px` to `x`, `y` and `blur`
+  and builds `box-shadow`. The Builder renderers write the parts of `shadow` as
+  `box-shadow-<part>: <value>` (`shadow_x=2` gives `box-shadow-x: 2`, not a CSS property) and pass a
+  full `shadow="…"` value through. GC-096 §040 says that `shadow` takes a complete `box-shadow` value.
+  Python and JavaScript do not differ from each other. Correcting the renderers would be an issue in
+  `genro-builders` and `genro-builders-js`.
+- Docs: GC-095 §005, GC-096 §040, GC-097 §070 with their docs_llm mirrors.
+
+Verification: 3,651 JavaScript tests pass (baseline 3,651); Python 215 tests and 382
+subtests pass with the existing expected failure (baseline 215 and 382). Docs: `prepare_docs`,
+Sphinx `-W` and `check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1483"></a>
+## 1483. Names confirmed by the owner; module `files` provisional (review p13c) — 2026-10-20
+
+Phase p13c of the review of the 0.3.5 releases (documentation only; no code changed).
+Implemented on the review branch; no release or deployment is authorized.
+
+- Confirmed by the owner on 2026-10-20 (GC-225 §010): `Bag`, `BagNode` and `createDecimal` exported by
+  the page entry and the runtime; the theme classes `actions` and `eyebrow`.
+- Confirmed by the owner on 2026-10-19 (GC-225 §010 and the item "Names of the review of 0.3.5, phase p3"):
+  - p3: `NodeBinding.call`, `subscribeNode`, `askDialog`, `BindingRuntime.subscriptions`,
+    `randomId` and `random-id.js`.
+  - p4: `ServerAdapter`, `createTransport`, `PageBootstrap.loadServerAdapter`, `resources.serverAdapter`,
+    `server_adapter`/`serverAdapter`, `NameSyntax`, `NAME_SYNTAX`, `name_syntax`/`nameSyntax`, `matches`,
+    `to_dict`/`from_dict`/`toJSON`/`fromJSON`, `decode_body`/`decodeBody`, `close`,
+    `companion_file`/`companionFile`, `theme_file`/`themeFile`, `theme_css`/`themeCss`, `identity`,
+    `css_theme`/`cssTheme`, `callSync`, `supportsCallSync`, `submitSync`.
+  - The marks "to be confirmed" are replaced in GC-225 (rows "Server adapter of the page", "Name syntax",
+    "Synchronous call", "Operations shared by the adapters", "Theme of a page", "Utility classes of the
+    base theme", "Typed literals of the page entry" and the p3 item), in constitution 11.87 and in the
+    entries 1455, 1480 and 1481 of this document.
+- Still awaiting the owner: the "no theme" value of `css_theme`, `False` in Python and `false` in
+  JavaScript (GC-225 row "Theme of a page", constitution 11.87). It was not in the list of confirmed names.
+- Not accepted (owner, 2026-10-20): the module `files` (`files.py`/`files.js`, `file_below`/`fileBelow`,
+  `THEMES`). It is a provisional implementation, not an accepted name or design. The owner places it in
+  the topic of pages and resources, which a dedicated study of the next cycle reorganizes; the module
+  was not adequately motivated and will be replaced by that organization. The code is not renamed.
+  GC-225 row "Helper modules" says so; GC-230 §145 only names the file `js/src/server/files.js` where
+  it describes `themeFile`.
+- Style shortcut units: see §1482.
+- Docs: GC-096 §040, GC-095 §005, GC-097 §070, GC-225, constitution 11.87, GC-070 §1482, with their
+  docs_llm mirrors.
+
+Verification: 3,651 JavaScript tests pass (baseline 3,651); Python 215 tests and 382 subtests pass
+with the existing expected failure (baseline 215 and 382). Docs: `prepare_docs`, Sphinx `-W` and
+`check_public_docs.py` pass on a clean build (15 pages).
+
+
+<a id="gc-070-1484"></a>
+## 1484. Release 0.3.6 prepared: the review of the 0.3.5 releases — 2026-10-20
+
+Release preparation of the core, after the entries 1440 to 1483. Committed on the review branch
+`wf/review-0-3-5`; not pushed, not tagged, not published.
+
+Owner, 2026-10-20: the versions approved with “si” to the proposal core 0.3.6, gramlot-py-server 0.2.11,
+gramlot-js-server 0.2.14, gramlot-examples 0.3.9 (minimum `gramlot>=0.3.6`). The preparation approved with
+“ok” to updating the versions in the review worktrees and committing without push.
+
+- Versions. `pyproject.toml`, `js/package.json` and `jsr.json` change from 0.3.5 to 0.3.6. The README badge,
+  the release status and the GitHub release link name 0.3.6. `js/package-lock.json` is git-ignored: its two
+  root version fields were set to 0.3.6 in the worktree and are not part of the commit.
+  `.github/workflows/publish.yml` holds no version (its release title is generic since 0.3.3) and is unchanged.
+- Release notes: `.github/release-notes/v0.3.6.md`. They state what changed for page authors, what changed
+  for adapter authors and the packaging, from the code and the public guides of the branch.
+- Contents. The 12 commits over origin/develop (cc85aa4), recorded in the entries 1440 (method paths, one
+  request in flight per node), 1445 (Python/JavaScript parity), 1450 (one request race, shared ids, `Logic`
+  optional), 1455 (operations shared by the adapters, name syntax, server adapter, base theme, synchronous
+  call), 1460 (sub-builder expressions), 1465 (hatchling), 1470 (public documentation, server protocol),
+  1475 (page expiry renewed by use), 1480 (theme serving), 1481 (typed literals, `dataRemote` cache, theme
+  classes), 1482 (style shortcut units) and 1483 (names confirmed by the owner).
+- TYTX. Version 0.16.3 is on JSR and npm. `jsr.json` requires `jsr:@genro/tytx@^0.16.3` and `js/package.json`
+  `@genrojs/tytx` `>=0.16.3`, for `getDateType` (`js/src/format.js`). `pyproject.toml` keeps
+  `genro-tytx>=0.16.2`: no Python module uses `getDateType`.
+- Companion releases to follow the core, each prepared in its own review worktree: gramlot-py-server 0.2.11,
+  gramlot-js-server 0.2.14, gramlot-examples 0.3.9.
+
+Qualification: 3,651 JavaScript tests pass (`npm run build`, then `npm test` with `PYTHONPATH` set to the
+worktree `src` and `GRAMLOT_TEST_PYTHON`); Python 215 tests and 382 subtests pass with the existing expected
+failure (`python -m pytest -q` with `PYTHONPATH` set to the worktree `src`). Docs: `prepare_docs`, Sphinx
+`-W --keep-going -n` and `check_public_docs.py` pass on a fresh build (15 pages).
+
+Publication and public verification remain pending; existing production is unchanged.

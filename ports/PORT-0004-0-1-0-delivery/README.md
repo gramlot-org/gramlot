@@ -218,7 +218,7 @@ attachSource and implements prepareItem. Remove the deferred recipe path and
 align the live renderer with the Python-equivalent base before refreshing and
 validating the consumer. Do not restore removed generic APIs to make tests pass.
 The inherited-collection collision was reproduced in Python too; its contract
-remains undecided. Full parity gaps in GC-105 remain; this audit does not claim
+remains undecided. Full parity gaps in GC-106 remain; this audit does not claim
 identical behavior for every input. The older 56/7 Gramlot diagnostic below is
 historical, not validation of the corrected dependency.
 
@@ -849,7 +849,7 @@ no publication or commit. Other parity gaps and deferred decisions remain open.
 
 2026-09-21: GC-105 now records Builder Python/JS differences. Owner accepts the
 missing JS TargetWrapper base class temporarily; no class added. Other gaps retain
-their status. See [register](../../docs/internal/105-builder-python-js-differences.md).
+their status. See [register](../../docs/internal/106-builder-python-js-differences.md).
 
 **Builder JS final local review and patch bump — 2026-09-21.**
 Prepared genro-builders-js **0.1.1** from local 0.1.0; no commit, push or release.

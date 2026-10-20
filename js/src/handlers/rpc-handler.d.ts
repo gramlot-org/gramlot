@@ -3,20 +3,25 @@
  *
  * @module
  */
-import type {SourceBagNode} from '@genrojs/builders';
 import type {DomDocument} from '../dom.d.ts';
 import type {Gramlot} from '../gramlot.js';
-import type {HttpTransport} from '../http-transport.js';
 import {Handler} from './handler.js';
 
-/** The transport contract of `RpcHandler`: one envelope text in, one envelope text out. */
+/**
+ * The transport contract of `RpcHandler`: one envelope text in, one envelope text out. Every member is required:
+ * the page closes the server page with `close` and releases the transport with `dispose` when it is disposed.
+ */
 export interface RpcTransport {
     /** Send the request envelope text; resolves with the response envelope text. */
     call(text: string, signal?: AbortSignal): Promise<string>;
-    /** Ask the server to close the page. */
-    close?(pageId: string, options?: {beacon?: boolean}): void;
-    /** Release the transport on dispose. */
-    dispose?(): void;
+    /** Send the close message of the page `pageId` without waiting; `beacon` on page hide. */
+    close(pageId: string, options?: {beacon?: boolean}): void;
+    /** Release the transport; called once, after `close`, when the page is disposed. */
+    dispose(): void;
+    /** True when the transport sends a synchronous call with `callSync`; a transport without it has none. */
+    readonly supportsCallSync?: boolean;
+    /** Send the request envelope text and return the response envelope text synchronously; required when `supportsCallSync` is true. */
+    callSync?(text: string): string;
 }
 
 /** The error outcome of a response envelope. */
@@ -47,12 +52,20 @@ export class RpcError extends Error {
 export class RpcHandler extends Handler {
     /** The server transport, or null. */
     transport: RpcTransport | null;
-    /** The remote Source requests in progress, by target node. */
-    remoteRequests: Map<SourceBagNode, {controller: AbortController}>;
-    /** Create the transport of `gramlot`: the given one, none for `false`, else an `HttpTransport` on the URLs. */
+    /** The calls in flight, by envelope id, with the AbortController of each; written only by `call`. */
+    remoteRequests: Map<string, AbortController>;
+    /** Create the transport of `gramlot`: the given one, none for `false`, else the one of `gramlot.serverAdapter`. */
     constructor(gramlot: Gramlot, options: {rpcUrl: string; closeUrl: string; document: DomDocument;
-        transport?: RpcTransport | HttpTransport | false | null});
-    /** Send one envelope of `contentType` to `name` with `params`; resolves with the value or rejects with an `RpcError`. */
+        transport?: RpcTransport | false | null});
+    /**
+     * Send one envelope of `contentType` to `name` with `params`; resolves with the value or rejects with an
+     * `RpcError`. `signal` and the dispose of the page (`gramlot.abort`) abort the call, which then rejects at
+     * once with the abort reason; a call aborted before it starts is not sent.
+     */
     call(contentType: 'source' | 'data', name: string, params?: Record<string, unknown>,
         options?: {signal?: AbortSignal}): Promise<unknown>;
+    /** Whether the transport sends a synchronous call (`supportsCallSync`). */
+    readonly supportsCallSync: boolean;
+    /** Send one envelope and wait for the answer, blocking the page; only with a transport that supports it, else throws. */
+    callSync(contentType: 'source' | 'data', name: string, params?: Record<string, unknown>): unknown;
 }

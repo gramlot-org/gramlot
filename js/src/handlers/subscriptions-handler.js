@@ -78,6 +78,30 @@ export class SubscriptionsHandler extends Handler {
         return this.publish(this.topicFor(node, topic), payload);
     }
 
+    /**
+     * Subscribe the topic declarations of the Source node `node`: `subscribe_<topic>`, and
+     * `selfsubscribe_<topic>` on the topic of the node (`topicFor`). `callbackFor(name, value, topic)` gives
+     * the callback of each declaration, or throws for one it refuses, before any subscription is made.
+     * Returns the registrations, each with `close()`. The rule of the value belongs to the caller: a
+     * provider subscribes by presence, a rendered node requires a handler (GC-095 §115).
+     */
+    subscribeNode(node, callbackFor) {
+        const declarations = [];
+        for (const [name, value] of Object.entries(node.getAttr())) {
+            const prefix = name.startsWith('selfsubscribe_') ? 'selfsubscribe_' : name.startsWith('subscribe_') ? 'subscribe_' : null;
+            if (!prefix) continue;
+            const topic = prefix === 'selfsubscribe_'
+                ? this.topicFor(node, name.slice(prefix.length)) : name.slice(prefix.length);
+            this.#requireTopic(topic);
+            declarations.push([topic, callbackFor(name, value, topic)]);
+        }
+        this.#requireOpen();
+        return declarations.map(([topic, callback]) => {
+            const handle = this.subscribe(topic, callback);
+            return {close: () => this.unsubscribe(handle)};
+        });
+    }
+
     dispose() {
         this.#closed = true;
         this.#frames.dispose();

@@ -5,6 +5,7 @@
  */
 import type {DomDocument} from './dom.d.ts';
 import type {Gramlot, GramlotOptions} from './gramlot.js';
+import type {ServerAdapter} from './server-adapter.js';
 
 /** The JavaScript modules and CSS links of a page, in load order and with the mount prefix. */
 export interface PageResources {
@@ -14,6 +15,8 @@ export interface PageResources {
     collections?: string[];
     /** JavaScript module URLs, each with its Logic group (null for the page logic). */
     js: {url: string; group: string | null}[];
+    /** The module whose default export is the ServerAdapter class of the page, when the server names one. */
+    serverAdapter?: string;
 }
 
 /** The configuration written by the server into the bootstrap HTML. */
@@ -37,6 +40,8 @@ export class PageBootstrap {
     resources: PageResources;
     /** The document of the page. */
     document: DomDocument;
+    /** The server adapter of the page: the HTTP `ServerAdapter` of the core, replaced by `run` when the server names another. */
+    serverAdapter: ServerAdapter;
     /** Create the bootstrap of one page. */
     constructor(options: PageBootstrapOptions);
     /**
@@ -45,6 +50,8 @@ export class PageBootstrap {
      * page closed during the imports.
      */
     run(): Promise<Gramlot | null>;
-    /** Send the close request of a page that never got its `Gramlot` instance. */
+    /** An instance of the default export of the module `url`, the ServerAdapter the server names in `resources.serverAdapter`. */
+    loadServerAdapter(url: string): Promise<ServerAdapter>;
+    /** Send the close request of a page that never got its `Gramlot` instance, through the server adapter. */
     closePage(): void;
 }

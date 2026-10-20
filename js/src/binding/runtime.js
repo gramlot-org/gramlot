@@ -4,6 +4,8 @@ import {DataInstaller} from './installation.js';
 import {ControllerProvider, FormulaProvider, RemoteProvider, RpcProvider} from './providers.js';
 import {InlineCompiler} from './inline.js';
 import {RemoteBinding} from './remote.js';
+import {AskDialog} from './ask-dialog.js';
+import {randomId} from '../random-id.js';
 import {pointerDependencies} from '@genrojs/builders';
 
 
@@ -32,18 +34,23 @@ export class BindingRuntime {
     #router;
     #installer;
     #inlineCompiler;
-    #subscription = `gramlot-data-${Array.from(crypto.getRandomValues(new Uint8Array(16)),
-        byte => byte.toString(16).padStart(2, '0')).join('')}`;
+    #askDialog;
+    #subscriptions;
+    #subscription = `gramlot-data-${randomId()}`;
     #disposed = false;
 
-    constructor(gramlot) {
+    constructor(gramlot, {subscriptions}) {
         this.#gramlot = gramlot;
+        this.#subscriptions = subscriptions;
         this.#router = new DataRouter(this);
         this.#installer = new DataInstaller(this);
         this.#inlineCompiler = new InlineCompiler(this);
+        this.#askDialog = new AskDialog(this);
     }
 
     get gramlot() { return this.#gramlot; }
+    /** The page topics and Source self-topics: the private `_subscriptions` of the Gramlot instance, given at construction. */
+    get subscriptions() { return this.#subscriptions; }
     get builder() { return this.gramlot.src.builder; }
     get renderer() { return this.gramlot.src.renderer; }
     get logicRegistry() { return this.gramlot.src.logicRegistry; }
@@ -58,6 +65,8 @@ export class BindingRuntime {
     get installer() { return this.#installer; }
     /** The compiler of the page's inline code (§4.10). */
     get inlineCompiler() { return this.#inlineCompiler; }
+    /** The ask dialogs of the page (`_ask` of a provider, `ask` of a button). */
+    get askDialog() { return this.#askDialog; }
     /** `node_id → node` of the Source nodes with an open NodeBinding (R06). */
     get nodeIds() { return this.#nodeIds; }
 
@@ -344,6 +353,8 @@ export class NodeBinding {
     #remote = null;
     // The registrations of `remote` and of the `remote_<k>` parameters: their changes request the fragment again.
     #remoteRegistrations = new Set();
+    // The registrations of the `_timing` of a `remote` node: their changes restart its timer.
+    #remoteTimingRegistrations = new Set();
     // The clicks of a button, counted for its whole semantic life: a rebuild keeps them (P9, S12).
     #clickCount = 0;
     // The registration of the node's own variable datapath, read in the parent's context.
@@ -387,7 +398,8 @@ export class NodeBinding {
      * pointer on a null path (Q7) is not registered. The `datapath` pointer is resolved in the
      * parent's context. A `dataSetter` registers nothing; a `dataFormula` or `dataController`
      * registers its `datapath` here and the rest through its Provider, created once (§5.1 step 4).
-     * A node whose `remote` is a string gets its RemoteBinding, created once.
+     * A node whose `remote` is a string gets its RemoteBinding, created once, whose `_timing` starts
+     * again from its current value.
      */
     registerPointers() {
         // Data elements have semantic lifetime but no rendered item to register their reference.
@@ -400,6 +412,7 @@ export class NodeBinding {
         if (dataElement && !PROVIDERS[node.nodeTag]) return;
         if (!dataElement && typeof node.getAttr('remote') === 'string') this.#remote ??= new RemoteBinding(this);
         const remoteDependencies = new Set();
+        const timingDependencies = this.remote ? pointerDependencies(node, node.getAttr('_timing')) : new Set();
         if (this.remote) for (const [name, raw] of Object.entries(node.getAttr())) {
             if (name.startsWith('remote_')) for (const dependency of pointerDependencies(node, raw)) remoteDependencies.add(dependency);
         }
@@ -413,9 +426,11 @@ export class NodeBinding {
             this.#registrations.push(registration);
             if (name === 'datapath') this.#datapathRegistrations.add(registration);
             if (this.remote && (name === 'remote' || name.startsWith('remote_') || remoteDependencies.has(name))) this.#remoteRegistrations.add(registration);
+            if (this.remote && (name === '_timing' || timingDependencies.has(name))) this.#remoteTimingRegistrations.add(registration);
         }
         if (!dataElement) {
             this.#registerTopics();
+            this.remote?.register();
             return;
         }
         this.#provider ??= new PROVIDERS[node.nodeTag](this);
@@ -425,27 +440,21 @@ export class NodeBinding {
     /** Rendered node topic handlers share semantic lifetime, not DOM lifetime. */
     #registerTopics() {
         const node = this.node;
-        const subscriptions = this.runtime.gramlot._subscriptions;
-        for (const [name, handler] of Object.entries(node.getAttr())) {
-            const prefix = name.startsWith('selfsubscribe_') ? 'selfsubscribe_' : name.startsWith('subscribe_') ? 'subscribe_' : null;
-            if (!prefix) continue;
+        this.#registrations.push(...this.runtime.subscriptions.subscribeNode(node, (name, handler) => {
             if (typeof handler !== 'string' || !handler) throw new TypeError(`${name} requires a handler`);
-            const topic = prefix === 'selfsubscribe_'
-                ? subscriptions.topicFor(node, name.slice(prefix.length)) : name.slice(prefix.length);
-            const handle = subscriptions.subscribe(topic, payload => {
+            return payload => {
                 if (this.closed) return;
                 if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/.test(handler)) {
                     const {group, method} = this.runtime.logicRegistry.resolve(handler, node);
                     return method.call(group, node, payload);
                 }
-                const [, attrs] = node.builder.runtimeValues(node);
+                const [, attrs] = node.rootBuilder.runtimeValues(node);
                 const authored = Object.fromEntries(Object.entries(attrs).filter(([key]) =>
                     !key.startsWith('subscribe_') && !key.startsWith('selfsubscribe_')));
                 const values = {...this.runtime.renderer.references.resolveArguments(authored), p_0: payload};
                 return this.runtime.inlineCompiler.compile(node, name, handler, Object.keys(values))(values);
-            });
-            this.#registrations.push({close: () => subscriptions.unsubscribe(handle)});
-        }
+            };
+        }));
     }
 
     /** Close the registrations and make them again from the current pointers, the provider's included (D1). */
@@ -456,14 +465,16 @@ export class NodeBinding {
 
     /**
      * Router recipient: the node's datapath rebinds its branch; any other registration projects the node,
-     * after a registration of `remote` or of a `remote_<k>` parameter requested the fragment again.
+     * after a registration of `remote` or of a `remote_<k>` parameter reached the RemoteBinding, and a
+     * registration of its `_timing` restarted the timer.
      */
     receive(change) {
         if (this.#datapathRegistrations.has(change.registration)) {
             this.runtime.rebindBranch(this.node);
             return;
         }
-        if (this.#remoteRegistrations.has(change.registration)) this.remote.update();
+        if (this.#remoteRegistrations.has(change.registration)) this.remote.receive(change);
+        if (this.#remoteTimingRegistrations.has(change.registration)) this.remote.register();
         this.runtime.renderer.project(this.node, change);
     }
 
@@ -475,6 +486,35 @@ export class NodeBinding {
             const index = this.#disposers.indexOf(disposer);
             if (index !== -1) this.#disposers.splice(index, 1);
         };
+    }
+
+    /**
+     * Send `request`, the request of this node in flight (NodeRequests), through `gramlot.rpc.call` as
+     * `contentType`; resolves with the value. The close of the node aborts it until the answer arrives, also
+     * when the answer arrived and was not yet received here: the call then rejects with the abort reason.
+     * Used by `dataRpc`, `dataRemote` and `remoteSource`.
+     */
+    async call(contentType, request) {
+        const {controller} = request;
+        const release = this.track(() => controller.abort());
+        try {
+            const value = await this.runtime.gramlot.rpc.call(contentType, request.method, request.params,
+                {signal: controller.signal});
+            if (controller.signal.aborted) throw controller.signal.reason;
+            return value;
+        } finally {
+            release();
+        }
+    }
+
+    /**
+     * Send the synchronous call of `method` with `params` as `contentType` through `gramlot.rpc.callSync` and
+     * return its value: the page waits. It follows the rule of the node's requests (`submitSync`): no request of
+     * the node in flight, a method within the name syntax. Used by a `dataRemote` with `sync`.
+     */
+    callSync(contentType, method, params) {
+        return this.node.requests.submitSync(method,
+            () => this.runtime.gramlot.rpc.callSync(contentType, method, params));
     }
 
     /** Close the registrations, then run the disposers in reverse order and collect their errors. */
@@ -494,5 +534,6 @@ export class NodeBinding {
         for (const registration of this.#registrations.splice(0)) registration.close();
         this.#datapathRegistrations.clear();
         this.#remoteRegistrations.clear();
+        this.#remoteTimingRegistrations.clear();
     }
 }

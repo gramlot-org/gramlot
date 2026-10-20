@@ -49,7 +49,7 @@ class ForbiddenDeclarationTests(unittest.TestCase):
         for name in ("serverpath", "dbenv", "shared_id",
                      "formsubscribe_x"):
             with self.subTest(name=name), self.assertRaisesRegex(
-                    ValueError, rf"div: attribute '{name}' is excluded from Gramlot 0\.2\.0"):
+                    ValueError, rf"div: attribute '{name}' is excluded from Gramlot$"):
                 builder.root.div(**{name: "v"})
 
     def test_dataremote_and_remote_build(self):

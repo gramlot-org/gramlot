@@ -4,35 +4,28 @@ Compact is the denser alternative to Gramlot Base. It reduces typography, spacin
 headings, card padding, table cells and form controls. It shares Base's palette,
 light/dark modes, focus indicators and semantic HTML rules.
 
-Load both stylesheets, in this order. Compact contains only the size and spacing
+Load Compact after Base. The server loads Base as its base theme (GC-090 §030);
+the page adds Compact with `Page.css`. Compact contains only the size and spacing
 rules that differ; it does not duplicate the Base stylesheet or import another URL.
-The same resource list works with Python servers, JavaScript servers and standalone
-exports using the existing `Page.css` mechanism.
 
 ```python
 from gramlot import Page as BasePage
 
 class Page(BasePage):
-    css = (
-        "/themes/gramlot-base/theme.css",
-        "/themes/gramlot-compact/theme.css",
-    )
+    css = ("/themes/gramlot-compact/theme.css",)
 ```
 
 ```javascript
 import {Page as BasePage} from '@gramlot/gramlot/page';
 
 export class Page extends BasePage {
-    static css = [
-        '/themes/gramlot-base/theme.css',
-        '/themes/gramlot-compact/theme.css',
-    ];
+    static css = ['/themes/gramlot-compact/theme.css'];
 }
 ```
 
 Declare this list on a shared application Page base class to reuse it across pages.
 Keep the usual native elements and classes in `main`; there is no theme-specific
-builder syntax. Load only Base to use the original theme.
+builder syntax. Declare no `css` to use the original theme, Base alone.
 
 | Setting | Base | Compact |
 | --- | --- | --- |

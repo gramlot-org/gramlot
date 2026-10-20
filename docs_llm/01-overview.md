@@ -19,7 +19,7 @@
 - **2.3** Bound input: Python declares a Data path; runtime manages rendering,
   user edits and external updates through the binding contract.
   *0.2.0:* `root.input(value='^.name')`; `live=False` (default) writes on `change`,
-  `live=True` on `input` ([GC-095](public/095-writing-pages.md#gc-095-070)).
+  `live=True` on `input` ([GC-095 §070](public/097-data-binding.md#gc-095-070)).
 
 ## 3. Building blocks
 
@@ -39,7 +39,7 @@
   operations belong inside framework implementation.
 - **4.3** *0.2.0:* named logic (`class Logic` files, called by name) is primary;
   inline code is allowed, discouraged, browser page runtime only
-  ([GC-095](public/095-writing-pages.md#gc-095-060)).
+  ([GC-095 §060](public/097-data-binding.md#gc-095-060)).
 
 The provisional example runner had a bounded owner-approved exception (constitution
 11.44): its local JavaScript attached behavior through ordinary HTML IDs and used
@@ -77,7 +77,8 @@ configure and try Gramlot:
 The example pages and their gallery are in `gramlot-examples`; each environment
 serves them with its gallery command. The earlier repositories `gramlot-uvicorn`,
 `gramlot-django`, `gramlot-fastapi`, `gramlot-flask`, `gramlot-kajenn` (formerly
-`gramlot-genro-asgi`), `gramlot-serverless` and `gramlot-minimal` (retired on
+`gramlot-genro-asgi`), `gramlot-serverless` (the old repository; the current package `@gramlot/gramlot-serverless`
+lives in `gramlot-js-server`) and `gramlot-minimal` (retired on
 2026-09-28) are archived. Core owns shared runtime contracts; an integration
 depends on the core, never the reverse. Each integration repository states the
 core release it verifies. See constitution section 7 for the approved ownership.
@@ -87,6 +88,6 @@ records how the integration environments were reorganized up to 0.2.0. It does n
 define further PoC transfers.
 
 For learning, start with [Try Gramlot](public/025-try.md#gc-025-015).
-`dataRpc`, `remote` and `dataRemote` are documented in
-[Writing pages](public/095-writing-pages.md#gc-095-100). The endpoint-backed
+`dataRpc` is documented in [Calling the server](public/098-server-calls.md#gc-095-100),
+`remote` and `dataRemote` in [Remote content and lazy Data](public/099-remote-content.md#gc-095-105). The endpoint-backed
 resolver does not imply a record framework, database adapter or general widget API.

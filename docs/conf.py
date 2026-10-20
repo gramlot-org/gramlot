@@ -12,6 +12,10 @@ source_suffix = {".md": "markdown"}
 root_doc = "index"
 exclude_patterns = []
 nitpicky = True
+# Links to the explicit block anchors of another page (`page.md#gc-095-100`) are raw HTML
+# ids that MyST cannot resolve; scripts/check_public_docs.py verifies every local link and
+# anchor in the built HTML instead.
+suppress_warnings = ["myst.xref_missing"]
 html_theme = "sphinx_rtd_theme"
 html_logo = "assets/branding/gramlot-logo.svg"
 html_title = "Gramlot — developer guide"

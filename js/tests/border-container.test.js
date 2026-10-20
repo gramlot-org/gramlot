@@ -131,7 +131,7 @@ test('numeric regional bindings keep sliders synchronized during drag and keyboa
     });
     const border=element('border');geometry(border);
     const draft=element('draft'), events=[];
-    app._subscriptions.subscribe('workspace_splitter_resize', payload=>events.push({...payload, data:app.data.getItem('layout.'+payload.region)}));
+    app.subscribe('workspace_splitter_resize', payload=>events.push({...payload, data:app.data.getItem('layout.'+payload.region)}));
     for(const side of ['left','right','top','bottom']) {
         const sep=separator(border,side), vertical=['top','bottom'].includes(side);
         assert.equal(border.control.style.getPropertyValue(`--${side}`),'100px');

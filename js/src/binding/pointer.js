@@ -1,12 +1,14 @@
 import {BagResolver} from '@genrojs/bag';
 import {sourceAttributeItems, pointerTransform, pointerTemplate, pointerExpression} from '@genrojs/builders';
+import {isExpression} from '../renderer/attributes.js';
 
 /** Structural attributes (not projected by Builder) may use a parent context, notably
- * variable datapath. Reuse Builder's grammar; only the contextual reads and runtime
- * compilation belong here. Visual attributes go through Builder.runtimeValues. */
+ * variable datapath. Reuse Builder's grammar; only the contextual reads and the `:=`
+ * compilation belong here. Visual attributes go through Builder.runtimeValues. A `==`
+ * attribute is a null input, as in Builder.runtimeValues: `==` is computed after the
+ * suffixes, by the renderer, with InlineCompiler.compileExpression (constitution 11.48 item 11). */
 function attributeReader(node, items, context = node) {
     const values = new Map(), active = new Set();
-    const compiler = node.rootBuilder.binding?.inlineCompiler;
     // Resolve the complete Source attribute set before applying any suffix. Projection
     // and named references share these typed values; the DOM is never an input.
     const current = new Map();
@@ -14,7 +16,7 @@ function attributeReader(node, items, context = node) {
         if (typeof name !== 'string') continue;
         const pointer = pointerTransform(raw)?.pointer ?? raw;
         current.set(name, pointer instanceof BagResolver ? pointer.resolve()
-            : node.pointerType(pointer) ? context.getRelativeData(pointer) : pointer);
+            : node.pointerType(pointer) ? context.getRelativeData(pointer) : isExpression(pointer) ? null : pointer);
     }
     const resolve = name => {
         if (values.has(name)) return values.get(name);
@@ -40,12 +42,6 @@ function attributeReader(node, items, context = node) {
                     // A null leading pointer blocks even a constant template.
                     if (leading == null) result = null;
                 }
-            } else if (typeof raw === 'string' && raw.startsWith('==')) {
-                const names = pointerExpression(raw.slice(2)).identifiers;
-                const args = {};
-                for (const key of names) if (key !== name && key !== '_F' && items.has(key)) args[key] = resolve(key);
-                result = compiler ? compiler.compile(node, name, raw, [...Object.keys(args), '_F'],
-                    `return (${raw.slice(2)}\n)` )({...args, _F: (value, options) => node.rootBuilder.binding.gramlot.format(value, options)}) : null;
             } else {
                 result = current.get(name);
             }

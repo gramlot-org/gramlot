@@ -28,7 +28,7 @@ def main():
         with tarfile.open(archive, "r:gz") as contents:
             metadata = json.load(contents.extractfile("package/package.json"))
         name = metadata["name"]
-        if name not in manifest["dependencies"] or not name.startswith("genro-"):
+        if name not in manifest["dependencies"] or not name.startswith("@genrojs/"):
             raise ValueError(f"Not a declared Genro dependency: {name}")
         if name in archives:
             raise ValueError(f"Duplicate dependency archive: {name}")

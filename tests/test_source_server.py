@@ -1,12 +1,17 @@
 import asyncio
+import datetime
+from decimal import Decimal
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
+from genro_bag import Bag
 from genro_tytx import from_tytx, to_tytx
-from gramlot import GramlotBuilder, Page, source
-from gramlot.server import GramlotFileServer, GramlotServer
+from gramlot import GramlotBuilder, Page, endpoint, source
+from gramlot.server import NAME_SYNTAX, GramlotFileServer, GramlotServer, InvalidRequest, gramlot_server
 
 PAGES = Path(__file__).parent / "fixtures/pages"
 
@@ -29,6 +34,25 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(node.attr["__ref"], reference["$gramlotRef"])
         self.assertEqual(node.attr["class_"], "family")
         self.assertEqual(node.value.nodes[0].value, "bart")
+
+    def test_typed_literals_have_the_wire_types_of_the_javascript_page(self):
+        # The twin of js/tests/fixtures/page-literals/typed-literals.js (js/tests/page-literals.test.js): the same
+        # literals give the same type suffixes; Python imports Decimal, datetime and Bag from their packages.
+        builder = GramlotBuilder()
+        root = builder.root
+        prices = Bag()
+        prices["net"] = Decimal("12.75")
+        root.dataSetter("price", Decimal("12.75"))
+        root.dataSetter("day", datetime.date(2026, 10, 17))
+        root.dataSetter("moment", datetime.datetime(2026, 10, 17, 9, 30, tzinfo=datetime.timezone.utc))
+        root.dataSetter("time", datetime.time(9, 30))
+        root.dataSetter("prices", prices)
+        rows = json.loads(builder.to_tytx().removesuffix("::JS::X"))["rows"]
+        values = {attr["destination_path"]: attr["value"] for *_, attr in rows}
+        bag = values.pop("prices")
+        self.assertEqual(values, {"price": "12.75::N", "day": "2026-10-17::D",
+                                  "moment": "2026-10-17T09:30:00.000Z::DHZ", "time": "09:30:00.000::H"})
+        self.assertEqual(json.loads(bag.removesuffix("::JS::X")), {"rows": [[[], "net", None, "12.75::N", {}]]})
 
     def test_scope_is_explicit(self):
         builder = GramlotBuilder()
@@ -199,15 +223,242 @@ class AlignmentTests(unittest.IsolatedAsyncioTestCase):
         server = MemoryServer(EmptyPage, rpc_url="/r", close_url="/c", root_id="here")
         opened = await server.open_page("/", prefix="/app")
         self.assertIn(f'"config":{{"pageId":"{opened.page_id}","rpcUrl":"/app/r","closeUrl":"/app/c",'
-                      '"rootId":"here","capabilities":[]}', opened.html)
+                      f'"rootId":"here","capabilities":[],"nameSyntax":{json.dumps(NAME_SYNTAX.to_dict(), separators=(",", ":"))}}}',
+                      opened.html)
         self.assertIn('<div id="here">', opened.html)
         self.assertNotIn("mainUrl", opened.html)
         self.assertNotIn("sourceUrl", opened.html)
         self.assertEqual(GramlotServer().capabilities, [])
         self.assertEqual(GramlotServer().rpc_url, "/gramlot/rpc")
 
+    def test_configuration_outside_the_contract_is_a_value_error(self):
+        """The table of the JS test, where the configuration error is a TypeError (GC-225 §010)."""
+        for page_ttl in (float("inf"), float("nan"), "30", 0, -1, True):
+            with self.subTest(page_ttl=page_ttl), self.assertRaises(ValueError):
+                GramlotServer(page_ttl=page_ttl)
+        for max_pages in (float("inf"), 1.5, "2", 0, -1, True):
+            with self.subTest(max_pages=max_pages), self.assertRaises(ValueError):
+                GramlotServer(max_pages=max_pages)
+        for page_ttl, max_pages in ((1800, 1000), (0.5, 1)):
+            server = GramlotServer(page_ttl=page_ttl, max_pages=max_pages)
+            self.assertEqual((server.page_ttl, server.max_pages), (page_ttl, max_pages))
+
+    async def test_a_manifest_that_is_not_json_is_a_type_error(self):
+        """The table of the JS test: NaN, infinity, a date, an object, a cycle and a list are refused."""
+        def installable(value):
+            class Root(EmptyPage):
+                installable = True
+
+                def manifest(self, *, base_url="./"):
+                    return value
+            return Root
+
+        cycle = {}
+        cycle["self"] = cycle
+        for manifest in ({"n": float("nan")}, {"n": float("inf")}, {"when": datetime.date(2026, 10, 19)},
+                         {"item": object()}, cycle, ["name"]):
+            with self.subTest(manifest=manifest), self.assertRaisesRegex(
+                    TypeError, r"^Page\.manifest must return a JSON object$"):
+                await MemoryServer(installable(manifest)).page_manifest()
+        valid = {"name": "x", "n": 1.5, "items": [1, "a", None, True]}
+        self.assertEqual(await MemoryServer(installable(valid)).page_manifest(), valid)
+
+    async def test_the_page_is_registered_before_the_bootstrap_is_written(self):
+        """As in JS: the bootstrap sees the page registered; a failure while writing it removes the page."""
+        class CountingServer(MemoryServer):
+            failing = False
+
+            @property
+            def capabilities(self):
+                if self.failing:
+                    raise RuntimeError("no capabilities")
+                return [f"pages:{len(self._pages)}"]
+
+        server = CountingServer(EmptyPage)
+        opened = await server.open_page("/")
+        self.assertIn('"capabilities":["pages:1"]', opened.html)
+        server.failing = True
+        with self.assertRaisesRegex(RuntimeError, r"^no capabilities$"):
+            await server.open_page("/")
+        self.assertEqual(list(server._pages), [opened.page_id])
+
     def test_pages_dir_is_the_folder_as_passed(self):
         self.assertEqual(GramlotFileServer("pages").pages_dir, Path("pages"))
+
+
+class Archive:
+    @endpoint
+    def size(self):
+        return 3
+
+
+class Orders:
+    """An ordinary class: ``@source`` and ``@endpoint`` need no base in Python."""
+
+    def __init__(self, prefix):
+        self.prefix = prefix
+        self.archive = Archive()
+
+    @source
+    def list(self, root, id=None):
+        root.p(f"{self.prefix}:{id}")
+
+    @endpoint
+    def total(self, items=None):
+        return f"{self.prefix}:{items}"
+
+    @endpoint(auth="admin")
+    def guarded(self):
+        return "secret"
+
+    def plain(self):
+        return "plain"
+
+
+class MethodPathTests(unittest.IsolatedAsyncioTestCase):
+    """Constitution 11.85: a method name is a method of the page or a path of public attributes from the
+    page (js/tests/gramlot-server.test.js)."""
+
+    async def test_a_dotted_name_reaches_a_declared_method_read_from_the_page(self):
+        reads = []
+
+        class PathPage(EmptyPage):
+            orders_class = Orders
+            loose = {"total": Orders.total}
+
+            @property
+            def orders(self):
+                reads.append("orders")
+                return Orders("o")
+
+            @property
+            def _hidden(self):
+                reads.append("_hidden")
+                return Orders("h")
+
+        server = MemoryServer(PathPage)
+        page_id = (await server.open_page("/")).page_id
+        self.assertEqual((await call(server, page_id, "source", "orders.list", {"id": 7}))["value"].nodes[0].value, "o:7")
+        self.assertEqual((await call(server, page_id, "data", "orders.total", {"items": 2}))["value"], "o:2")
+        self.assertEqual((await call(server, page_id, "data", "orders.archive.size"))["value"], 3)
+        self.assertEqual((await call(server, page_id, "data", "orders.guarded"))["error"]["code"], "not_authenticated")
+        self.assertEqual(reads, ["orders"] * 4)
+        for content_type, name in (("data", "orders.plain"), ("data", "orders.list"), ("source", "orders.total"),
+                                   ("data", "orders.missing"), ("data", "missing.total"), ("data", "_hidden.total"),
+                                   ("data", "orders._total"), ("data", "loose.total"), ("data", "orders.prefix.upper"),
+                                   ("data", "orders_class.total"), ("data", "orders..total"), ("data", "orders."),
+                                   ("data", ".orders"), ("data", ""), ("data", "orders.tot\u00e0l"),
+                                   ("data", "__class__.total"), ("data", "orders.total\n")):
+            with self.subTest(name=name):
+                self.assertEqual((await call(server, page_id, content_type, name))["error"]["code"], "not_found")
+        self.assertEqual(reads, ["orders"] * 9)
+
+    async def test_an_inherited_member_never_leads_to_a_callable_method(self):
+        class Parent(EmptyPage):
+            @source
+            def shared(self, root):
+                root.p("shared")
+
+            @endpoint
+            def value(self):
+                return "value"
+
+        class Child(Parent):
+            pass
+
+        server = MemoryServer(Child)
+        page_id = (await server.open_page("/")).page_id
+        self.assertEqual((await call(server, page_id, "data", "value"))["value"], "value")
+        for content_type, name in (("data", "constructor"), ("data", "constructor.prototype.value"),
+                                   ("source", "constructor.prototype.shared"), ("data", "main.value"),
+                                   ("data", "value.value"), ("data", "source_builder.value"), ("data", "manifest")):
+            with self.subTest(name=name):
+                self.assertEqual((await call(server, page_id, content_type, name))["error"]["code"], "not_found")
+
+
+class PageExpiryTests(unittest.IsolatedAsyncioTestCase):
+    """GC-230 §010: a page expires ``page_ttl`` seconds after its last use. The clock of the server module is
+    replaced by one the test moves, so no test waits. The JavaScript counterpart is in
+    ``js/tests/gramlot-server.test.js`` with the same inputs and outcomes."""
+
+    TTL = 100
+
+    class UsedPage(EmptyPage):
+        @endpoint
+        def fails(self):
+            raise RuntimeError("fails")
+
+        @endpoint(auth="admin")
+        def closed(self):
+            return "closed"
+
+    def setUp(self):
+        self.now = 5000.0
+        clock = mock.patch.object(gramlot_server, "time", SimpleNamespace(monotonic=lambda: self.now))
+        clock.start()
+        self.addCleanup(clock.stop)
+        self.server = MemoryServer(self.UsedPage, page_ttl=self.TTL)
+
+    async def opened(self, owner="one"):
+        return (await self.server.open_page("/", owner=owner)).page_id
+
+    async def test_a_call_after_half_the_ttl_renews_the_page(self):
+        page_id = await self.opened()
+        for _ in range(4):
+            self.now += self.TTL / 2
+            self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+        # Twice the TTL after the opening, half a TTL after the last call.
+        self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+
+    async def test_a_page_idle_for_longer_than_the_ttl_answers_page_expired(self):
+        page_id = await self.opened()
+        self.now += self.TTL / 2
+        self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+        self.now += self.TTL - 1
+        self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+        self.now += self.TTL + 1
+        self.assertEqual((await call(self.server, page_id, owner="one"))["error"]["code"], "page_expired")
+        self.assertEqual(self.server._pages, {})
+
+    async def test_a_page_that_is_never_called_expires_ttl_seconds_after_it_was_opened(self):
+        page_id = await self.opened()
+        self.now += self.TTL - 1
+        self.assertEqual(list(self.server._pages), [page_id])
+        self.now += 2
+        self.assertEqual((await call(self.server, page_id, owner="one"))["error"]["code"], "page_expired")
+
+    async def test_every_outcome_of_a_call_to_a_page_of_its_owner_renews_it(self):
+        page_id = await self.opened()
+        for content_type, name, code in (("source", "main", None), ("source", "missing", "not_found"),
+                                         ("data", "fails", "application_error"),
+                                         ("data", "closed", "not_authenticated")):
+            with self.subTest(name=name):
+                self.now += self.TTL - 1
+                response = await call(self.server, page_id, content_type, name, owner="one")
+                self.assertEqual(response.get("error", {}).get("code"), code)
+        self.now += self.TTL - 1
+        self.assertNotIn("error", await call(self.server, page_id, owner="one"))
+
+    async def test_a_call_that_is_not_accepted_renews_nothing(self):
+        page_id = await self.opened()
+        self.now += self.TTL - 1
+        self.assertEqual((await call(self.server, page_id, owner="two"))["error"]["code"], "page_expired")
+        self.assertEqual((await call(self.server, page_id))["error"]["code"], "page_expired")
+        self.assertEqual((await call(self.server, "unknown", owner="one"))["error"]["code"], "page_expired")
+        with self.assertRaises(InvalidRequest):
+            await self.server.call(to_tytx({"id": "r1", "pageId": page_id, "contentType": "other", "name": "main",
+                                            "params": {}}), owner="one")
+        self.server.close(json.dumps({"pageId": page_id}), owner="two")
+        self.now += 2
+        self.assertEqual((await call(self.server, page_id, owner="one"))["error"]["code"], "page_expired")
+
+    async def test_a_call_renews_only_the_page_it_names(self):
+        first, second = await self.opened(), await self.opened()
+        self.now += self.TTL - 1
+        self.assertNotIn("error", await call(self.server, first, owner="one"))
+        self.now += 2
+        self.assertNotIn("error", await call(self.server, first, owner="one"))
+        self.assertEqual((await call(self.server, second, owner="one"))["error"]["code"], "page_expired")
 
 
 if __name__ == "__main__":

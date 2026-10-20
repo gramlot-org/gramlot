@@ -63,6 +63,11 @@ class BuilderTests(unittest.TestCase):
             builder.root.dataRemote(".menu?a", "loadMenu")
         with self.assertRaisesRegex(ValueError, r"dataRemote: missing required attributes \['method'\]"):
             builder.root.dataRemote(destination_path=".menu")
+        # sync, default true as in the legacy, is a control attribute written on the node.
+        builder.root.dataRemote(".later", "loadMenu", sync=False)
+        self.assertIs(builder.source.nodes[-1].attr["sync"], False)
+        with self.assertRaises(ValueError):
+            builder.root.dataRemote(".later", "loadMenu", sync="no")
 
     def test_remote_writes_its_attributes_on_the_node(self):
         builder = GramlotBuilder()
@@ -70,12 +75,19 @@ class BuilderTests(unittest.TestCase):
         self.assertEqual(div.node_tag, "div")
         self.assertEqual({k: v for k, v in div.attr.items() if k != "_meta"},
                          {"remote": "details", "remote_record_id": "^.record_id", "_cachedRemote": True, "_if": "record_id"})
-        for name in (3, "1x", "a-b", "abc\n", "a\u00e8"):
-            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "remote name must match"):
+        for name in (3, None, "", "1x", "a-b", "abc\n", "a\u00e8", "a..b", ".a", "a.", "a._b", "a.1b", "==x"):
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "remote name must be a pointer or match"):
                 builder.root.div().remote(name)
-        with self.assertRaisesRegex(ValueError, "remote parameter '_delay' is not accepted; "
-                                    "the control attributes are _cachedRemote, _if, _else, _onRemote$"):
-            builder.root.div().remote("details", _delay=5)
+        for name in ("details", "orders.details", "a.b.c.details", "a_1.b2", "^.name", "=name", "^name:{}"):
+            with self.subTest(name=name):
+                self.assertEqual(builder.root.div().remote(name).attr["remote"], name)
+        controls = builder.root.div().remote("details", _onCalling="true", _delay=5, _timing=1, _userChanges=True)
+        self.assertEqual([controls.attr[name] for name in ("_onCalling", "_delay", "_timing", "_userChanges")],
+                         ["true", 5, 1, True])
+        with self.assertRaisesRegex(ValueError, "remote parameter '_onResult' is not accepted; "
+                                    "the control attributes are _cachedRemote, _if, _else, _onRemote, _onCalling, "
+                                    "_delay, _timing, _userChanges$"):
+            builder.root.div().remote("details", _onResult="x")
         named = builder.root.div().remote("details", name="^.name")
         self.assertEqual(named.attr["remote_name"], "^.name")
 
@@ -268,7 +280,7 @@ class LegacyTransportProbeTests(unittest.TestCase):
         bag["x"] = 1
         bag.get_node("x").attr.update({"keep": 1, "gone": None})
         wire = to_tytx(bag)
-        self.assertIn('"gone": null', wire)
+        self.assertIn('"gone":null', wire)
         self.assertEqual(dict(from_tytx(wire).get_node("x").attr), {"keep": 1, "gone": None})
 
 

@@ -7,6 +7,7 @@ import {HtmlBuilder} from '@genrojs/builders';
 import type {SourceAttributes, SourceBag, SourceBagNode, ValidateNodeOptions} from '@genrojs/builders';
 import type {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 import type {SourceReference} from '../references.js';
+import type {NameSyntax} from './name-syntax.js';
 
 /** Gramlot vocabulary and inert authoring on the shared builder grammar. */
 export class GramlotBuilder extends HtmlBuilder {
@@ -14,11 +15,13 @@ export class GramlotBuilder extends HtmlBuilder {
     static _name: string;
     /** Tag prefixes of the parent dialects, from the names of the classes above `GramlotBuilder`. */
     static get dialectPrefixes(): string[];
-    /** Create a builder; `collections` are grammar documents loaded into it; `auth` evaluates the `auth` rules of the elements when the Source is serialised. */
+    /** Create a builder; `collections` are grammar documents loaded into it; `auth` evaluates the `auth` rules of the elements when the Source is serialised; `nameSyntax` checks the method names of `remote` (default `NAME_SYNTAX`). */
     constructor(name?: string | null, options?: {collections?: unknown[];
-        auth?: ((rule: string) => null | 'not_authenticated' | 'not_authorized') | null});
+        auth?: ((rule: string) => null | 'not_authenticated' | 'not_authorized') | null; nameSyntax?: NameSyntax});
     /** The `auth` evaluator, or null: without it every element is serialised. */
     readonly auth: ((rule: string) => null | 'not_authenticated' | 'not_authorized') | null;
+    /** The NameSyntax of the method names of `remote`: the server's, the page's, or the core default `NAME_SYNTAX`. */
+    readonly nameSyntax: NameSyntax;
     /** The binding runtime of the Gramlot page that owns this builder, or null for authoring alone; set by `Gramlot` right after creating the builder. */
     binding: unknown;
     /** The node with `nodeId`; inside a Gramlot page it reads the node ids of the binding runtime. */

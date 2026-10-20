@@ -2,10 +2,6 @@
 
 Document ID: **GC-030**.
 
-> **Scope.** This is the maintained authoring guide. The repository README states
-> the current release. Dated release notes below describe when behavior entered;
-> they are not a list of current exclusions. Development-only differences are marked.
-
 <a id="gc-030-005"></a>
 
 ## 005 · Read badges in context
@@ -20,17 +16,14 @@ badge reports the documentation build. The two coverage badges report Codecov, o
 per runtime (section 010). The PyPI and JSR badges show the published versions.
 The status badge shows the current release; the license badge is a label.
 
-The unit suites do not verify adapter behavior in a server, standalone exports or
-real browsers. That evidence is the 0.2.0 qualification (GC-215 in
-`docs/internal/`): complete suites in clean environments; Chromium, WebKit and
-Firefox; the end-to-end story through the real Page, `GramlotServer`, TYTX and PageBootstrap
-path; the served runtime checked against a fresh build; and the acceptance pages on
-`gramlot-uvicorn`, `gramlot-js-server` (Node.js and Bun) and `gramlot-serverless`,
-the repositories of that date. Today the adapters are tested in their own
-repositories: `gramlot-py-server` runs its five adapters (Uvicorn, Django, Flask,
-FastAPI, Kajenn) in its CI, and `gramlot-js-server` runs Node.js, Bun and
-`@gramlot/gramlot-serverless` in its CI. The experimental runtime is tested in
-`gramlot-poc`.
+The unit suites of the core do not verify adapter behavior in a server, standalone
+exports or real browsers. The adapters are tested in their own repositories:
+`gramlot-py-server` runs its five adapters (Uvicorn, Django, Flask, FastAPI, Kajenn)
+in its CI, and `gramlot-js-server` runs Node.js, Bun and
+`@gramlot/gramlot-serverless` in its CI. Each adapter runs the conformance check of
+the [server protocol](101-server-protocol.md#gc-101-150) against itself. The pages
+of the gallery are checked in `gramlot-examples`. The experimental runtime is tested
+in `gramlot-poc`.
 
 <a id="gc-030-010"></a>
 
@@ -46,9 +39,7 @@ separately with coverage.py, on the source tree.
 Codecov receives two reports with the flags `javascript` and `python`
 (`codecov.yml`); they are never merged into one figure, because a combined total
 or a high Python percentage can hide untested rendering, binding, controller or
-cleanup paths. On 2026-10-01 a local run of the suites measured JavaScript at 99.2%
-of lines, 95.6% of branches and 99.0% of functions, and Python at 90% of
-statements.
+cleanup paths. The two coverage badges of the README show the current figures.
 
 <a id="gc-030-015"></a>
 
@@ -64,8 +55,6 @@ The example catalogue and a passing load check are not proof that every feature
 is taught. Record the installed catalogue, actions and environments checked. A
 count of mounted fragments cannot prove that no transport request occurred.
 
-Teaching follows release milestones. Verify each repeated example's earlier and
-later stages, the code replaced by the new feature and the stated result. Preserve
-historical context, but label unsupported historical syntax instead of presenting
-it as runnable current code. Prerequisites, expected results and explained exercises
-are part of the review. Coverage is not a production-readiness guarantee.
+When you review a lesson, check its prerequisites, its expected result and its
+exercises against the running page, in Python and JavaScript. Coverage is not a
+production-readiness guarantee.

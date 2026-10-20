@@ -1,4 +1,6 @@
 import asyncio
+import json
+import re
 from gramlot import Page, IndexPage, GramlotBuilder
 from gramlot.server import GramlotServer, PageNotFound
 import pytest
@@ -11,6 +13,17 @@ class Root(IndexPage):
 class Server(GramlotServer):
     def resolve_page(self,path): return Root
     def resolve_resources(self,path,cls): return {'css':[], 'js':[]}
+
+def css_links(server):
+    return json.loads(re.search(r'"css":(\[.*?\])', asyncio.run(server.open_page('/')).html).group(1))
+
+def test_the_index_lists_its_own_theme_and_the_base_theme_comes_from_the_server():
+    class Listing(Server):
+        def resolve_resources(self,path,cls): return {'css':list(cls.css), 'js':[]}
+    assert IndexPage.css == ('/themes/gramlot-index/theme.css',)
+    assert css_links(Listing()) == ['/themes/gramlot-base/theme.css', '/themes/gramlot-index/theme.css']
+    assert css_links(Listing(css_theme='mimi')) == ['/themes/mimi/theme.css', '/themes/gramlot-index/theme.css']
+    assert css_links(Listing(css_theme=False)) == ['/themes/gramlot-index/theme.css']
 
 def test_manifest_mount_and_root_only():
     server=Server()

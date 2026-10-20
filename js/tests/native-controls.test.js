@@ -577,3 +577,36 @@ test('ASTRA-02: live written with = is read at every projection of the node', ()
     type(byId('ro'), 'xyzw');
     assert.equal(data.getItem('l.ro'), 'xyz');
 });
+
+// Review 0.3.5 p2: control values and component parameters share HtmlElement.writeParameter.
+test('control values and component parameters share one write rule: plain ^ only, equal values not written', t => {
+    const {app, builder, data, byId} = page();
+    const field = sourceTarget(builder.root.input({id: 'n', type: 'number', value: '^n'}));
+    const box = sourceTarget(builder.root.div({id: 'box', plain: '^p', fixed: '=p', suffixed: '^p:{}px', literal: 'x'}));
+    const html = app.src.renderer.html;
+    // A null value on a missing path creates no Data node, as the legacy setAttributeInDatasource.
+    byId('n').value = '';
+    change(byId('n'));
+    assert.equal(data.getNode('n') ?? null, null);
+    html.writeParameter(box, 'plain', null);
+    assert.equal(data.getNode('p') ?? null, null);
+    // A literal, a `=` pointer and a pointer with a suffix write nothing.
+    for (const name of ['fixed', 'suffixed', 'literal']) html.writeParameter(box, name, 7);
+    assert.equal(data.getNode('p') ?? null, null);
+    byId('n').value = '5';
+    change(byId('n'));
+    html.writeParameter(box, 'plain', 7);
+    assert.equal(data.getItem('n'), 5);
+    assert.equal(data.getItem('p'), 7);
+    // An equal value is not written again.
+    const fieldWrites = t.mock.method(field, 'setRelativeData');
+    const boxWrites = t.mock.method(box, 'setRelativeData');
+    change(byId('n'));
+    html.writeParameter(box, 'plain', 7);
+    assert.equal(fieldWrites.mock.callCount(), 0);
+    assert.equal(boxWrites.mock.callCount(), 0);
+    byId('n').value = '6';
+    change(byId('n'));
+    assert.equal(fieldWrites.mock.callCount(), 1);
+    assert.equal(data.getItem('n'), 6);
+});

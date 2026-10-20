@@ -28,6 +28,8 @@ test('Python authoring -> TYTX -> first subscriber insert; roots precede main', 
     const document = new JSDOM('<main id="custom"></main>').window.document;
     let calls = 0, app;
     app = new Gramlot({pageId: 'test', element: document.querySelector('main'), transport: {
+        close() {},
+        dispose() {},
         async call(text) {
             calls++;
             const request = fromTytx(text);
@@ -192,7 +194,7 @@ test('the page builder has no auth evaluator: an element with auth is kept and r
 test('main failure is visible and retryable; disposal prevents late insertion', async () => {
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     let attempts = 0;
-    const app = new Gramlot({document, transport: {async call(text) {
+    const app = new Gramlot({document, transport: {close() {}, dispose() {}, async call(text) {
         if (!attempts++) throw new Error('offline');
         return answer(text, new GramlotBuilder().toTytx());
     }}});
@@ -203,12 +205,42 @@ test('main failure is visible and retryable; disposal prevents late insertion', 
     app.dispose();
     await assert.rejects(app.start(), /disposed/);
     let release;
-    const late = new Gramlot({document, transport: {call: text => new Promise(r => { release = () => r(text); })}});
+    const late = new Gramlot({document, transport: {close() {}, dispose() {}, call: text => new Promise(r => { release = () => r(text); })}});
     const loading = late.start();
     late.dispose();
     release();
     await assert.rejects(loading, /disposed/);
     assert.equal(late.src.source.getNodes().length, 0);
+});
+
+test('gramlot.rpc.call is the one cancellation: its signal and the dispose reject at once, aborted calls are not sent', async () => {
+    const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
+    const sent = [];
+    // A transport that never answers and ignores the signal it receives.
+    const app = new Gramlot({document, pageId: 'page', transport: {close() {}, dispose() {}, call(text, signal) {
+        sent.push({request: fromTytx(text), signal});
+        return new Promise(() => {});
+    }}});
+    const controller = new AbortController();
+    const reason = new Error('stopped by the caller');
+    const stopped = app.rpc.call('data', 'slow', {}, {signal: controller.signal});
+    assert.equal(sent.length, 1);
+    assert.deepEqual([...app.rpc.remoteRequests.keys()], [sent[0].request.id]);
+    controller.abort(reason);
+    // The transport receives the signal of the call, aborted with the reason of the caller.
+    assert.equal(sent[0].signal.aborted, true);
+    assert.equal(sent[0].signal.reason, reason);
+    assert.equal(app.rpc.remoteRequests.size, 0);
+    await assert.rejects(stopped, error => error === reason);
+    await assert.rejects(app.rpc.call('data', 'never', {}, {signal: controller.signal}), error => error === reason);
+    assert.equal(sent.length, 1, 'a call aborted before it starts is not sent');
+    const direct = app.rpc.call('data', 'slow');
+    assert.equal(app.rpc.remoteRequests.size, 1);
+    app.dispose();
+    assert.equal(app.rpc.remoteRequests.size, 0);
+    await assert.rejects(direct, {name: 'AbortError'});
+    await assert.rejects(app.rpc.call('data', 'late'), {name: 'AbortError'});
+    assert.equal(sent.length, 2);
 });
 
 test('transport passes the envelope text, cancellation and failures through the host contract', async () => {
@@ -231,7 +263,7 @@ test('gramlot.rpc.call sends one envelope and answers its value or an RpcError',
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     const sent = [];
     let reply = (request) => ({id: request.id, contentType: request.contentType, value: request.params.value});
-    const app = new Gramlot({document, pageId: 'page', transport: {async call(text) {
+    const app = new Gramlot({document, pageId: 'page', transport: {close() {}, dispose() {}, async call(text) {
         const request = fromTytx(text);
         sent.push(request);
         return toTytx(reply(request));

@@ -4,7 +4,7 @@
  *
  * @module
  */
-export {Page} from './page.js';
+export {Exposed, Page} from './page.js';
 export {GramlotServer, EndpointNotFound, InvalidRequest, NotAuthenticated, NotAuthorized, PageExpired, PageNotFound,
     SourceNotFound, ServerCapacity} from './gramlot-server.js';
 export type {GramlotServerOptions, OpenedPage, RegisteredPage} from './gramlot-server.js';
@@ -15,3 +15,5 @@ export {gramlotDev, runtimeAsset} from './assets.js';
 export {checkProtocol} from './conformance.js';
 export {InvalidResourceName, parseRequires} from './resources.js';
 export type {Resources} from './resources.js';
+export {NAME_SYNTAX, NameSyntax} from '../builder/name-syntax.js';
+export type {NameSyntaxDescriptor} from '../builder/name-syntax.js';

@@ -35,6 +35,26 @@ test('controller ask gathers fields through native Data binding, then executes o
     app.dispose();
 });
 
+test('each page owns its AskDialog: one ask_<id> Logic group per page, registered at its first dialog', async () => {
+    const author = root => root.dataController({subscribe_run: true, script: "this.SET('answer', 1);", _ask: 'Proceed?'});
+    const first = page(author), second = page(author);
+    assert.notEqual(first.app.src.binding.askDialog, second.app.src.binding.askDialog);
+    const groups = app => Object.keys(app.logic).filter(name => /^ask_[0-9a-f]{32}$/.test(name));
+    assert.deepEqual(groups(first.app), []);
+    for (const {app, document, window} of [first, second, first]) {
+        app.publish('run', {});
+        confirm(document, window);
+        await settle();
+        assert.equal(app.data.getItem('answer'), 1);
+        app.data.setItem('answer', null);
+    }
+    assert.equal(groups(first.app).length, 1);
+    assert.equal(groups(second.app).length, 1);
+    assert.notEqual(groups(first.app)[0], groups(second.app)[0]);
+    first.app.dispose();
+    second.app.dispose();
+});
+
 test('string confirmation obeys _ask_if; cancel does not execute and runs _ask_onCancel', async () => {
     const {app, document} = page(root => root.dataController({subscribe_run: true,
         script: "this.SET('answer', id);", _ask: 'Proceed?', _ask_if: 'confirmNeeded',

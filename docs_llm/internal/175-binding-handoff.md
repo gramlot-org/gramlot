@@ -89,8 +89,8 @@ existing browser `main` Bag and GC-155's proposed shared root are not design app
 - `js/src/view/html.js`: resolved text/attrs and unchanged-value suppression,
   while restoring canonical values if DOM diverges. renderAttributes precedence
   remains unchanged; its rename was a maintenance cleanup.
-- Python Page: `src/gramlot/page/base.py`; JS Page: `js/src/adapters/page.js`.
-  Neither defines Page.setup. Python Host `_source` / JS Host `buildSource` invokes
+- Python Page: `src/gramlot/page/base.py`; JS Page: `js/src/server/page-base.js`.
+  Neither defines Page.setup. Python Host `_source` / JS Host `buildSource` (Host is now `GramlotServer`) invokes
   Page directly and sends only TYTX(Source), not author-side builder.data.
 - Collection validates envelope/format; loader validates/compiles declarations.
 

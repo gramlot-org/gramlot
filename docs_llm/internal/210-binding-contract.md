@@ -213,10 +213,10 @@ settle previously unapproved proposals, not older approved behavior.
 | P18 | Canonical signatures in §010, no legacy dispatch; optional setter value | S02 → valid/invalid signatures in both languages |
 | P19 | *Historical; decided 2026-09-28: `data` forbidden (§010).* Reject legacy data-element calls with migration message only if distinguishable from HTML5 data without content heuristics; otherwise documentation migration. No alias | S01/S02 → observed legacy call and legitimate HTML5 data |
 | P20 | Formula: method(kwargs) returns result; controller: method(node, kwargs); this=group. Resolved author attributes plus _node, _triggerpars, _reason, and button _evt/button_*; exclude control attributes listed in §040 | S07/S08 → argument/receiver contract |
-| P21 | Each resource exports class Logic; per-page resource groups, companion root, specific methods override generic. Supersedes static-method holder/page mixin proposal. *Revision 8:* requires groups need a resource Host; minimal FileHost has only the companion root | S07 → groups, collision, constructor and isolation checks |
+| P21 | Each resource exports class Logic; per-page resource groups, companion root, specific methods override generic. Supersedes static-method holder/page mixin proposal. *Revision 8:* requires groups need a resource Host; minimal FileHost has only the companion root. *Constitution 11.86 (2026-10-19):* `Logic` is optional; a module without it has no logic methods. | S07 → groups, collision, constructor and isolation checks |
 | P22 | Numeric _onStart in ms; true and 0 immediate; negative/nonfinite error; independent of other-trigger _delay | S08 → virtual clock |
 | P23 | Same snake_case requires fields in Python and JS, no aliases | S06/S14 → authoring and all hosts |
-| P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins | S03 → rebuild, removal, late response, frozen living target |
+| P24 | remoteSource admissibility, response validity and cancellation use semantic lifetime; latest request wins (superseded by constitution 11.85, 2026-10-19: one request in flight per node, always applied; the first later call waits) | S03 → rebuild, removal, late response, frozen living target |
 | P25 | Authoring dict/plain JS object becomes Bag(value) with default recursive population: nested dictionaries, lists and dictionaries inside lists become Bags, preserving order and scalar leaf values. A list supplied directly as a setter value remains a list; a JSON string remains a string. Owner clarification 2026-10-14, constitution 11.64; no custom converter | S02 → TYTX cross-language payload identity/types |
 
 *Historical (revision 6), open on 2026-09-25:*
@@ -369,7 +369,7 @@ children and installs new SourceBag (scalar/null only closes). upd_attrs rebinds
 node; datapath/_anchor/node_id/form/formId changes rebind subtree. upd_value_attr:
 close old branch → rebind attributes → install new branch. Cleanup uses old context,
 registration new context. remoteSource eligibility/current/cancellation use semantic
-binding, latest request wins; mount/remote do not invoke installer outside FIFO.
+binding; one request in flight per node, the next waits (11.85, superseding latest-wins); mount/remote do not invoke installer outside FIFO.
 Frozen removal closes semantics immediately, old DOM at thaw; thaw builds current
 Source once without reinstall/init/start. Test reentrant Source mutations throughout.
 
@@ -538,8 +538,9 @@ Block ID: **GC-210-050**.
 
 ControlAdapter.for(binding,record) selects Text/Number/Range/Select/Temporal/Color,
 then Checkbox/Radio controls or null. Adapter owns project/read/commit/attach/detach;
-commit uses node.setRelativeData, value consumed once (HtmlElement stops independent
-control value write). DOM records own listener detach including composition.
+commit writes through HtmlElement.writeParameter, the rule of component parameters too (plain
+`^` without suffix; equal `Object.is` value not written, legacy `lazySet`), value consumed
+once (HtmlElement stops independent control value write). DOM records own listener detach including composition.
 
 RadioGroups(renderer), created by the renderer in the view layer, join/leave/peers
 generates instance-scoped name; selection synchronously
@@ -998,3 +999,7 @@ using the shared current inputs; Source retains its authored pointers.
 
 
 Builder ownership update — 2026-10-17: see the constitution's Builder alignment amendment. The historical Q6 automatic `${name}` contract is superseded. Python delegates static suffix resolution and dtype/signature decoding to genro-builders 0.29.0; JavaScript delegates ordinary projection to Builder 0.6.0 and connects `evaluatePointerExpression` to InlineCompiler, including HTML/SVG subbuilders. Structural attributes retain Gramlot's parent-context reads. Static `==` attributes resolve to null; the live renderer evaluates activated Source declarations. No global `_F` or upstream source patch is introduced.
+
+Review 0.3.5 p2 — 2026-10-19: `==` has one compile path, `InlineCompiler.compileExpression`: the other non-`==` attributes and `_F` are its arguments (§010 Q11.2) and its body is `return <text>`, the text without surrounding whitespace, as legacy `funcCreate('return ' + text)`; a text starting with a newline returns its value and a final `;` is accepted. The structural reader (`binding/pointer.js`) no longer compiles `==`: a `{name}` slot naming a `==` attribute reads null there too, as in `Builder.runtimeValues` and in Python.
+
+Review 0.3.5 p4b — 2026-10-19: the walk of a node and every consumer of its values (the renderer's projection, subscription handlers, `remote`) resolve them with `node.rootBuilder.runtimeValues(node)`. The root builder is the page's GramlotBuilder: its `evaluatePointerExpression` compiles the `:=` expressions with the page's InlineCompiler, and it shares the Data with its sub-builders. The library builder of a node created by a sub-builder (SVG, HTML inside SVG) has no page hook and computes no expression; the node's own builder still validates its dialect values (`validateCustomTypes`) and its own renderer writes its attributes. No method is assigned to a library instance: this replaces the mechanism, not the result, of the sentence above on HTML/SVG sub-builders. `GramlotHtmlRenderer.render` is Builder's `RendererBase.render` with this one change; Gramlot grammars declare no Builder `@component`. A string renderer has no page runtime: its SVG and HTML-in-SVG nodes write no `==` and no `:=`, in Python and in JavaScript.

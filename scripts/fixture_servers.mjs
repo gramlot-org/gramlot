@@ -4,42 +4,29 @@
  * runtime, the core themes under /themes/, the .js and .css files below the pages folder, the pages,
  * and rpc and close as POST. No Content-Security-Policy unless `csp` is given: the pages put
  * inline code in their Source. The Python server runs `GRAMLOT_TEST_PYTHON` (default python3) on the
- * src/ tree of this checkout.
+ * src/ tree of this checkout. Each adapter keeps only the HTTP part: the rules shared by every server
+ * are calls of the core API (themeFile, companionFile, decodeBody, call, close, openPage, closeAll).
  */
 import {spawn} from 'node:child_process';
 import {randomBytes} from 'node:crypto';
 import {createServer} from 'node:http';
-import {readFile, realpath, stat} from 'node:fs/promises';
-import {extname, isAbsolute, join, relative, sep} from 'node:path';
+import {readFile} from 'node:fs/promises';
+import {extname, join} from 'node:path';
 import {createInterface} from 'node:readline';
 import {fileURLToPath} from 'node:url';
 import {GramlotFileServer, InvalidRequest, PageNotFound, ServerCapacity, runtimeAsset} from '../js/src/server/index.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const THEMES = join(root, 'themes');
 const OWNER_COOKIE = 'gramlot_owner';
 const JSON_MEDIA_TYPE = 'application/json';
 const MEDIA_TYPES = {'.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8'};
-
-/** The real path of path below folder when it is a file there, else null. */
-async function staticFile(folder, path) {
-    try {
-        const base = await realpath(folder);
-        const real = await realpath(join(base, ...path.split('/').filter(Boolean)));
-        const rel = relative(base, real);
-        return !(rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) && (await stat(real)).isFile() ? real : null;
-    } catch (error) {
-        if (['ENOENT', 'ENOTDIR'].includes(error.code)) return null;
-        throw error;
-    }
-}
 
 const ownerOf = request => (request.headers.cookie ?? '').split(';').map(part => part.trim())
     .find(part => part.startsWith(`${OWNER_COOKIE}=`))?.slice(OWNER_COOKIE.length + 1) ?? null;
 
 /** The Node counterpart of tests/http_server.py on the same protocol. */
-async function nodeHost(pages, {prefix = '', csp = null} = {}) {
-    const server = new GramlotFileServer(pages);
+async function nodeHost(pages, {prefix = '', csp = null, pageTtl} = {}) {
+    const server = new GramlotFileServer(pages, {pageTtl});
     const trimmed = prefix.replace(/^\/+|\/+$/g, '');
     const mount = trimmed ? `/${trimmed}` : '';
 
@@ -49,22 +36,15 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
         }
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
-        let body;
-        try { body = new TextDecoder('utf-8', {fatal: true}).decode(Buffer.concat(chunks)); }
-        catch { return reply(400, 'Request body is not UTF-8'); }
         const owner = ownerOf(request);
-        if (path === server.rpcUrl) {
-            let result;
-            try { result = await server.call(body, {owner}); } catch (error) {
-                if (error instanceof InvalidRequest) return reply(400, 'Invalid envelope');
-                throw error;
-            }
-            return reply(200, result, JSON_MEDIA_TYPE);
+        try {
+            const text = server.decodeBody(Buffer.concat(chunks));
+            if (path === server.rpcUrl) return reply(200, await server.call(text, {owner}), JSON_MEDIA_TYPE);
+            server.close(text, {owner});
+        } catch (error) {
+            if (error instanceof InvalidRequest) return reply(400, error.message);
+            throw error;
         }
-        let payload;
-        try { payload = JSON.parse(body); } catch { return reply(400, 'Invalid JSON request'); }
-        if (typeof payload?.pageId !== 'string') return reply(400, 'Invalid JSON request');
-        server.closePage(payload.pageId, {owner});
         return reply(200, JSON.stringify({ok: true}), JSON_MEDIA_TYPE);
     };
 
@@ -85,8 +65,7 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
             if (path === server.runtimeUrl || path.startsWith('/themes/') || kind) {
                 if (!['GET', 'HEAD'].includes(request.method)) return reply(405, 'Method not allowed', undefined, {Allow: 'GET, HEAD'});
                 if (path === server.runtimeUrl) return reply(200, await readFile(runtimeAsset()), MEDIA_TYPES['.js']);
-                const filename = path.startsWith('/themes/')
-                    ? await staticFile(THEMES, path.slice('/themes/'.length)) : await staticFile(pages, path);
+                const filename = await server.themeFile(path) ?? await server.companionFile(path);
                 if (!filename) return reply(404, 'Not found');
                 return reply(200, await readFile(filename), kind ?? 'application/octet-stream');
             }
@@ -95,8 +74,6 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
                 return await operation(request, path, reply);
             }
             if (request.method !== 'GET') return reply(405, 'Method not allowed', undefined, {Allow: 'GET'});
-            // As on a static host, <path>/index.html is the page <path> and /index.html the index.
-            if (path.endsWith('/index.html')) path = path.slice(0, -'index.html'.length);
             const owner = ownerOf(request) ?? randomBytes(24).toString('base64url');
             const {html, nonce} = await server.openPage(path, {owner, prefix: mount});
             const headers = {'Set-Cookie': `${OWNER_COOKIE}=${owner}; Path=${mount || '/'}; HttpOnly; SameSite=Lax`};
@@ -115,8 +92,9 @@ async function nodeHost(pages, {prefix = '', csp = null} = {}) {
     }};
 }
 
-function pythonHost(pages, {prefix = '', csp = null} = {}) {
-    const options = ['--prefix', prefix, ...(csp === null ? [] : ['--csp', csp])];
+function pythonHost(pages, {prefix = '', csp = null, pageTtl} = {}) {
+    const options = ['--prefix', prefix, ...(csp === null ? [] : ['--csp', csp]),
+        ...(pageTtl === undefined ? [] : ['--page-ttl', String(pageTtl)])];
     const child = spawn(process.env.GRAMLOT_TEST_PYTHON ?? 'python3', [join(root, 'tests/http_server.py'), pages, ...options], {
         env: {...process.env, PYTHONPATH: join(root, 'src')}, stdio: ['ignore', 'pipe', 'inherit'],
     });
@@ -132,7 +110,7 @@ function pythonHost(pages, {prefix = '', csp = null} = {}) {
 
 /** Start both servers on `pages`, one folder or `{py, js}` (a folder per server):
  * `[['py', {url, close}], ['js', {url, close}]]`; `url` carries the mount prefix. Options: `prefix`
- * (mount prefix), `csp` (policy with `{nonce}`). */
+ * (mount prefix), `csp` (policy with `{nonce}`), `pageTtl` (seconds, the default of the core when absent). */
 export async function startServers(pages, options = {}) {
     const {py, js} = typeof pages === 'string' ? {py: pages, js: pages} : pages;
     return [['py', await pythonHost(py, options)], ['js', await nodeHost(js, options)]];

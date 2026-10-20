@@ -1,6 +1,7 @@
 import {toTytx, fromTytx} from '@genrojs/tytx';
 import {SourceBagNode, sourceTarget} from '@genrojs/builders';
 import {assertTransportData} from './references.js';
+import {randomId} from './random-id.js';
 
 const TYPE = 'gramlot:publish';
 
@@ -9,7 +10,7 @@ export class FrameMessages {
     #app;
     #window;
     #document;
-    #session = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
+    #session = randomId();
     #peers = new Map();
     #closed = false;
     #listener;

@@ -12,6 +12,14 @@ class Server extends GramlotServer {
     async resolvePage() { return App; }
     async resolveResources() { return {css:[],js:[]}; }
 }
+test('the index lists its own theme; the base theme comes from the server', async () => {
+    class Listing extends Server { async resolveResources(path, PageClass) { return {css:[...PageClass.css],js:[]}; } }
+    const links = async server => JSON.parse(/"css":(\[.*?\])/.exec((await server.openPage('/')).html)[1]);
+    assert.deepEqual(IndexPage.css, ['/themes/gramlot-index/theme.css']);
+    assert.deepEqual(await links(new Listing()), ['/themes/gramlot-base/theme.css', '/themes/gramlot-index/theme.css']);
+    assert.deepEqual(await links(new Listing({cssTheme:'mimi'})), ['/themes/mimi/theme.css', '/themes/gramlot-index/theme.css']);
+    assert.deepEqual(await links(new Listing({cssTheme:false})), ['/themes/gramlot-index/theme.css']);
+});
 test('root manifest has mount-scoped URLs, no session; child does not advertise it', async () => {
     const server = new Server();
     const manifest = await server.pageManifest({prefix:'/demo'});

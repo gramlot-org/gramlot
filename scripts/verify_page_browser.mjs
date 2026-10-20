@@ -68,17 +68,22 @@ try {
         const afterUnfreeze = document.querySelector('#panel').textContent;
         child.setValue('live again');
         const afterResume = document.querySelector('#panel').textContent;
+        // The synchronous call of HTTP (a synchronous XMLHttpRequest) and a dataRemote read that waits for it.
+        const syncCall = app.rpc.callSync('data', 'check_endpoint', {value: 'sync'});
+        app.src.builder.root.dataRemote({destination_path: 'synced', method: 'check_endpoint', value: 'remote sync'});
+        const syncRead = app.data.getItem('synced');
         app.dispose();
         return {invalidSourceRejected, afterInsert, afterDelete, afterReplace, remoteApplied, afterRemote, whileFrozen, afterUnfreeze, afterResume, remaining: app.src.renderer.records.size,
-                children: document.querySelector('#gramlot-root').childNodes.length};
+                children: document.querySelector('#gramlot-root').childNodes.length, syncCall, syncRead};
     });
     assert.deepEqual(result, {invalidSourceRejected: true, afterInsert: 'updatedbart lisa', afterDelete: 'updated',
         afterReplace: 'updated maggie', remoteApplied: true, afterRemote: 'remote homer', whileFrozen: 'remote homer',
-        afterUnfreeze: 'frozen final tail', afterResume: 'live again tail', remaining: 0, children: 0});
+        afterUnfreeze: 'frozen final tail', afterResume: 'live again tail', remaining: 0, children: 0,
+        syncCall: 'sync', syncRead: 'remote sync'});
     assert.deepEqual(errors, []);
-    // One envelope for `main`, one for the remote Source.
-    assert.equal(requests.filter(([method, path]) => method === 'POST' && path === '/gramlot/rpc').length, 2);
-    console.log('Browser PASS: bootstrap, main, reported rendering error, nested updates, remote Source, branch freeze/unfreeze, disposal; no JS errors.');
+    // One envelope for `main`, one for the remote Source, two synchronous ones (callSync and the dataRemote read).
+    assert.equal(requests.filter(([method, path]) => method === 'POST' && path === '/gramlot/rpc').length, 4);
+    console.log('Browser PASS: bootstrap, main, reported rendering error, nested updates, remote Source, branch freeze/unfreeze, synchronous call and dataRemote read, disposal; no JS errors.');
 } finally {
     await browser?.close();
     server?.kill();

@@ -1,4 +1,4 @@
-# 105 · Input components and labelbox
+# Components
 
 Document ID: **GC-105**.
 
@@ -21,7 +21,7 @@ The collection contains `textbox`, `checkbox`, `radioButtonText`, `textBoxArea`,
 `comboBox`, `checkBoxText` and `dateCalendar`.
 It demonstrates a single native control and a composite group using the same
 labelbox and binding contract. Localization is prepared through `intl_str`
-metadata; this increment does not translate text.
+metadata; text is not translated.
 
 <a id="gc-105-010"></a>
 ## 010 · Author the controls in Python
@@ -65,8 +65,8 @@ wire = to_tytx(builder.source)
 `lbl` labels the entire field. For a checkbox, `label` is the caption beside the
 box. A radio group stores one option code (`express`), not a list of booleans.
 The bounded `values` syntax is `code:Caption,code:Caption`; duplicate codes fail.
-Codes without a colon use the code as their caption. Bag options and escaping
-commas/colons are outside this first increment.
+Codes without a colon use the code as their caption. Options from a Bag and
+escaping of commas and colons are not supported.
 
 Textbox uses `change` by default and `input` with `live=True`, including the
 existing IME composition handling. Empty input writes `""`; displaying a Data
@@ -184,12 +184,12 @@ document against the JS definitions to detect drift.
 <a id="gc-105-030"></a>
 ## 030 · Current limits and verification
 
-The current increment covers the seventeen controls listed above, existing Data
-binding, reactive labelbox, styling prefixes, typed editing, constrained choices,
-keyboard behavior and cleanup. Validation is described in §076;
-other input families, native HTML form submission/reset through ElementInternals,
-automatic collection discovery, theme-specific component skins and translated
-messages remain subsequent work. The component value does not accept `:` or `:=`
+The inputs collection covers the seventeen controls listed above, Data binding,
+reactive labelbox, styling prefixes, typed editing, constrained choices, keyboard
+behavior and cleanup. Validation is described in §076. Other input families, form
+submission and reset of a component through ElementInternals, automatic collection
+discovery, theme-specific component skins and translated messages are not
+provided. The component value does not accept `:` or `:=`
 transforms; those remain available on presentation attributes.
 
 A known upstream Python Builders limitation affects a literal-type-or-pointer
@@ -243,10 +243,10 @@ The serverless directory exporter embeds the same JS module and passes the JSON
 grammar to the Worker server, so opening the export with `file://` needs no remote
 collection fetch. There is no automatic discovery or name-based fallback.
 
-Try **Input components** in the gallery: `w01` (textbox), `w02`
-(checkbox), `w03` (radioButtonText), and `w04`–`w09` (the simple input variants
-below). Label positions and layout are reactive, while
-all value writes use the existing Data binding engine. The examples use the shared component collection.
+Try the Input components family of the gallery: its first lessons show
+`textbox`, `checkbox`, `radioButtonText` and the simple input variants below. Label
+positions and layout are reactive, while all value writes use the Data binding
+engine. The examples use the shared component collection.
 
 
 <a id="gc-105-040"></a>
@@ -254,7 +254,7 @@ all value writes use the existing Data binding engine. The examples use the shar
 
 These controls reuse NativeControl, Labelbox, FieldState and the existing Data
 binding engine. They have the same names and parameters in Python and JavaScript.
-Native HTML `textarea`, `input` and `html_button` declarations keep their meaning.
+The HTML elements `textarea`, `input` and `html_button` keep their meaning.
 
 | Component | Native control | Data value | Specific parameters |
 | --- | --- | --- | --- |
@@ -451,12 +451,13 @@ invalid draft; the existing Data value stays intact. Escape cancels the draft.
 An empty committed field writes null. A new external Data value resolves its
 caption. The popup uses the browser Popover API and stays in the top layer.
 
-The gallery's w13 and w14 progress from local pairs to 100 records generated once
-in a Data Bag. w14's Python page declares the component and a startup controller;
+The gallery lessons *Filtering select* and *Callback select* progress from local
+pairs to 100 records generated once in a Data Bag. The Python page of *Callback
+select* declares the component and a startup controller;
 shared browser Logic creates and searches the random records. There is no server
 request and repeated searches preserve the records. Cards and fields have bounded
 widths. Free-text comboBox and multiple selections follow in §§060–065.
-Store/DB providers and regeneration remain outside this development increment.
+Store and database providers are not provided.
 
 
 <a id="gc-105-060"></a>
@@ -477,7 +478,7 @@ does; an untouched null remains null. Change/blur or Enter commits by default;
 `live=True` writes each edit through the existing binding and IME handling.
 Enter with an open suggestion list chooses the highlighted item; Escape cancels
 an uncommitted draft. Shared readonly, disabled and labelbox rules still apply.
-See gallery w15 for two fields bound to the same city text.
+See the gallery lesson *Combo box* for two fields bound to the same city text.
 
 
 <a id="gc-105-065"></a>
@@ -491,8 +492,8 @@ pane.checkBoxText(value="^channels", values="email:Email,sms:SMS,push:Push",
                   lbl="Notifications", cols=2, readonly="^locked")
 ```
 
-The owner-confirmed PoC value contract is a comma-separated string of codes, such
-as `email,push`, or null when no choice is selected. Captions are presentation;
+The value is a comma-separated string of codes, such as `email,push`, or null when
+no choice is selected. Captions are presentation;
 they are not written into Data. Existing selected codes keep their order, new
 selections are appended, and deselection removes that code. Two groups bound to
 the same Data path synchronize through the existing binding adapter.
@@ -507,10 +508,9 @@ and `box_c_` routing.
 
 The value remains dtype T with independent nullability and two-way binding,
 identical in Python and JS. There is no list representation or separate Data
-writer. Gallery w16 shows two bound groups, reactive columns, label positions
-and a readonly switch in compact cards. This increment implements the inline
-group; PoC popup mode, Bag/store-backed options are outside
-its scope. Store/DB controls remain a later workstream.
+writer. The gallery lesson *Checkbox group* shows two bound groups, reactive
+columns, label positions and a readonly switch in compact cards. The group is
+inline: a popup mode and options from a Bag or a store are not provided.
 
 
 <a id="gc-105-070"></a>
@@ -535,7 +535,7 @@ used by Today and as the initial view when value is null; omitted, it uses the
 browser's local today. The calendar preserves the current civil-date convention:
 JavaScript carries it at UTC midnight; timezone changes do not shift the day.
 
-Weeks start on Monday, matching the PoC. Month and weekday captions use Intl;
+Weeks start on Monday. Month and weekday captions use Intl;
 Today/Clear/tool captions are English until the localization service is introduced.
 Previous/next browse months without changing Data. Arrow keys navigate days/weeks,
 Home/End move to Monday/Sunday and PageUp/PageDown browse months (clamping the day
@@ -549,10 +549,10 @@ without disabling text or natural-language editing. Readonly/disabled close and
 lock the popup. Removing the Source node closes it and releases window listeners.
 The implementation uses the browser Popover API for top-layer placement.
 
-Try gallery **w17 · Date calendar**: inline calendar, popup editor and text-only
-editor share one pointer. **w11 · Date editing** also compares the default popup
-with `calendar=False`. Range selection, min/max date constraints, time popups and
-form-save orchestration are not part of this increment.
+Try the gallery lesson *Date calendar*: inline calendar, popup editor and text-only
+editor share one pointer. *Date editing* also compares the default popup with
+`calendar=False`. Range selection, min/max date constraints, time popups and
+form-save orchestration are not provided.
 
 
 <a id="gc-105-075"></a>
@@ -575,7 +575,7 @@ are present values: this rule is not a checkbox consent requirement and does not
 trim text. `validate_len="2:40"` gives an inclusive minimum/maximum; `"2:"` only
 a minimum, `":40"` only a maximum, `"4"` an exact length. Empty optional values
 pass the length rule. Length requires a string and uses JavaScript string length
-(UTF-16 units, matching the PoC), not grapheme counting. For choice components it
+(UTF-16 units), not grapheme counting. For choice components it
 checks the stored code/string, not the displayed caption or the number of choices.
 
 A failed edit remains in the control with an associated message. It does not
@@ -591,7 +591,7 @@ composition completes before validation. Readonly/disabled controls do not commi
 Changing labels or projecting the unchanged Data preserves the rejected draft;
 a different external Data value replaces it and clears the rule error. Direct
 application writes are not filtered or silently corrected. Current rules are used
-on the next edit; this increment does not run form-wide or startup validation.
+on the next edit; there is no form-wide or startup validation.
 
 Invalid controls have an error-colored background; text editors also show their text in red. The normal focus indicator is preserved.
 The message is a floating tooltip in the browser top layer, never a row in the
@@ -605,9 +605,9 @@ One shared message drives aria-invalid, aria-describedby and native custom valid
 for input/textarea controls. Native required is configured on compatible text
 controls; it is not applied to a checkbox because false is a present boolean.
 Native maxlength is not imposed: users must be able to see and correct a rejected
-long draft. Native HTML controls outside the inputs collection keep their behavior.
+long draft. HTML controls outside the inputs collection keep their behavior.
 
-Try **w18 · Required values and length** for the basics. The complete field engine is described in §076; form/save handling remains separate.
+Try the gallery lesson *Required values and length* for the basics. The complete field engine is described in §076; form and save handling is not provided.
 
 Component shadow roots inherit semantic theme variables for fields, labelbox,
 choices, calendar and errors. Base, Compact, mimi and joanna are
@@ -616,10 +616,127 @@ available in light/dark mode; see [theme profiles](096-themes-and-css.md).
 Text editors request `autocomplete="off"`, `autocorrect="off"`, `autocapitalize="off"` and `spellcheck="false"` on the actual internal input/textarea. These hints reduce unrelated browser/OS suggestions; they cannot force external password managers or OS services to comply. Filtering/callback selection keeps its own accessible list suggestions.
 
 
+<a id="gc-105-076"></a>
+## 076 · Validation engine: transformations, warnings and callbacks
+
+The shared engine runs after the component parses its draft and before its single
+ControlAdapter writes Data. Constrained selectors check the selected item before
+this pipeline: `validate_select` does not turn a filteringSelect into free text.
+HTML controls outside the inputs collection do not use this engine.
+
+Rules run in this order: selection integrity, notnull, empty, case, len, min, max,
+email, regex, call, remote. Each rule sees the preceding rule's transformed value.
+The first error stops evaluation; warnings accumulate and permit acceptance.
+A required empty value fails before `validate_empty`, matching the legacy order.
+
+| Declaration | Meaning |
+| --- | --- |
+| `validate_empty="Guest"` | Replace null/empty text; false and zero are valid replacement values |
+| `validate_case="upper"` | `upper`, `lower`, `title`, `capitalize`; legacy `u/l/t/c` also supported |
+| `validate_min=0`, `validate_max=100` | Inclusive typed numeric or temporal limits; exact Decimal comparisons |
+| `validate_email=True` | Email-shape warning by default, not proof that an address exists |
+| `validate_regex="(?:^[A-Z]+$)"` | JavaScript Unicode regular expression; initial `!` negates the match |
+| `validate_call="checkCode"` | Named Logic method, or an activated inline body; may return a Promise |
+| `validate_remote="check_code"` | Existing typed data RPC to a Page endpoint, also in a serverless Worker |
+
+Optional null/empty values skip case/len/min/max/email/regex; remote skips null.
+`validate_call` receives empty/null candidates too. Numeric/date comparisons do not
+parse strings or turn Decimals into floating-point numbers. Date/time bounds are
+actual typed values, not date strings. `validate_case` uses Unicode letter words
+for title case and consistently normalizes capitalization; unlike legacy it does
+not preserve manual capitalization by comparing against the previous Data value.
+The email check is a pragmatic shape check, not Dojo's retired regular expression
+or a complete RFC mailbox parser.
+
+Every rule supports `validate_<rule>_if` (an activated expression, or boolean),
+`validate_<rule>_error`, `_warning`, and `_iswarning`. A supplied warning message
+without an error message makes the rule advisory; explicit `_iswarning` wins,
+including `False` to make the email check blocking. Messages carry intl_str
+metadata; messages are not translated. Messages can use the
+`{value}`/`{name}` template grammar. Missing required message values are configuration
+errors, never silently successful validation.
+
+```python
+pane.textbox(value="^.code", validate_case="upper",
+             validate_regex="(?:^[A-Z]{2,6}$)",
+             validate_regex_error="Use 2–6 letters.")
+pane.textbox(value="^.email", validate_email=True,
+             validate_email_iswarning="^.advisory")
+pane.textbox(value="^.name", validate_len="4:",
+             validate_len_if="enabled", validate_enabled="^.strict")
+pane.textbox(value="^.nickname", validate_call="checkNickname",
+             validate_onAccept="accepted", validate_onReject="rejected")
+```
+
+Named callbacks use the existing Logic registry and `(node, kwargs)` convention:
+
+```javascript
+export class Logic {
+    checkNickname(node, {value, signal}) {
+        return value === 'admin'
+            ? {errorcode:'reserved', message:'Choose another nickname.'}
+            : true;
+    }
+    accepted(node, {value, result}) {
+        // Data already contains the accepted value here.
+        node.SET('status', result.warnings.length ? 'Accepted with warning' : 'Accepted');
+    }
+}
+```
+
+Validation parameters are resolved from Source, never read from DOM. Their
+`validate_` prefix is removed in callback/condition arguments: `validate_enabled`
+becomes `enabled`. Reserved arguments are `value`, `result`, `validations`,
+`userChange` and the cancellation `signal` for validators. `validations` is the
+resolved rule dictionary without the prefix. Inline bodies have `this = Source
+node`; they and rule conditions must have arrived with activated Source. Named
+Logic avoids dynamic compilation. No global evaluator is installed.
+
+A validator returns true/null for success, false for failure, a string error code,
+or an object/Bag containing `value`, `errorcode`, `message`, `iswarning`, `required`
+and/or `data`. A returned `value` transforms the candidate; typed editors check the
+result type before accepting it. A constrained selector cannot replace its stored
+code through normalization: change its Data explicitly instead. An optional `data`
+patch must be a Bag and the field must resolve a Bag datapath; patches apply only
+on acceptance, after the primary value write. Rejected or stale replies never
+apply patches. This intentionally corrects legacy remote side effects on rejected
+values. It is not a transactional form-save service.
+
+Error-code-specific messages (`validate_call_reserved`, for example) override the
+rule's severity message, then the returned message, then the opposite severity's
+message, then the code itself. Custom message fields are ordinary validation
+parameters; the standard error/warning fields are explicitly typed in the shared
+grammar. `result` contains `value`, `modified`, `error`, `warnings`, `issues` and
+`datachanges`; each issue records rule, code, severity and message.
+
+`validate_remote_<name>` supplies resolved endpoint arguments; `value` is the
+candidate. The suffixes `if/error/warning/iswarning` are rule controls, not endpoint
+arguments. A remote endpoint has exactly the same return contract as a local
+callback. The legacy `validate__onResult` hook (double underscore) observes a current
+remote result before evaluation, through the same named/activated callback path.
+`validate_onAccept` runs after the primary Data write and patches; `validate_onReject`
+runs with unchanged Data. These are notifications, not additional validators.
+
+Asynchronous work sets `aria-busy`. Further input/composition, changed rules,
+readonly/disabled state, an external Data value, rebinding or disposal invalidates
+the old result. RPC uses AbortSignal; custom callbacks receive it too. An optional
+positive `validate_timeout` is measured in milliseconds. Rejection, timeout and
+transport failure retain the draft and last accepted Data. Errors are blocking;
+warning tooltips use a distinct severity without aria-invalid or native custom
+validity. Both use the existing floating, fading message presentation.
+
+The engine does not validate initial values or filter application Data writes,
+and does not introduce a form-wide save API. `validate_nodup`, `validate_exist`
+and `validate_gridnodup` are explicit unsupported-configuration errors: they need
+database and grid integrations, which are not provided. Try the gallery lessons
+*Validation rules and callbacks* and *Required values and length*.
+
+A literal regular expression starting with `^` must be enclosed, for example `(?:^[A-Z]+$)`, because a leading `^` is a Data pointer in Source. This is ordinary regex grouping, not another validation syntax; `validate_regex="^.pattern"` deliberately reads a pattern from Data.
+
 <a id="gc-105-080"></a>
 ## 080 · Touch interaction and device suitability
 
-Block ID: **GC-105-080**. Development feature.
+Block ID: **GC-105-080**.
 
 Declare the devices for which a page is designed, independently of its theme:
 
@@ -633,7 +750,8 @@ The default empty declaration means **unspecified**, not unsupported. The server
 passes it to the browser as `gramlot.devices`, a frozen array. This metadata is
 informational: it does not redirect users, restrict access or make an arbitrary
 layout responsive. The author still checks content, navigation and overflow.
-The gallery's w01, w17 and w18 demonstrate the declaration.
+The gallery lessons *Textbox and labelbox*, *Date calendar* and *Required values
+and length* declare it.
 
 With Base loaded, a primary coarse pointer automatically activates touch sizing.
 Applications can explicitly choose through the existing DOM proxy:
@@ -819,135 +937,17 @@ menu.menuline("Unavailable", code="later", disabled=True)
 
 `dropDownButton` has separate main and arrow surfaces. Main click executes the current command and never opens the menu. Normal menu selection executes only; Shift+selection executes and also installs the selected command and its caption as the default. The same Shift rule applies to keyboard activation. Arrow keys, Home/End, Escape and native popover light-dismiss manage the menu. On touch, ordinary selection executes; changing the default currently requires Shift.
 
-`persist=True` requires an explicit stable id. Browser storage remembers only the unique menu-item code, scoped to this page URL and id. A saved code absent from the menu uses the authored default. Storage denial leaves the current in-memory selection functional. Each actionable menuline requires code; `menuline("-")` is a separator. The first menu is flat and local; nested menus and button bars are deferred.
+`persist=True` requires an explicit stable id. Browser storage remembers only the unique menu-item code, scoped to this page URL and id. A saved code absent from the menu uses the authored default. Storage denial leaves the current in-memory selection functional. Each actionable menuline requires code; `menuline("-")` is a separator. The menu is flat and local; nested menus and button bars are not provided.
 
 **Migration:** `html_button` remains a real HTML button, including type=submit/reset and explicit connect_on events. Use it for native form actions. Gramlot command components do not implicitly submit forms. Native CSS selectors targeting button no longer select the component host; theme tokens style its internal button.
 
-The gallery lessons w22, w23 and w24 demonstrate commands/ask/delay, shared toggle Data, and dropdown selection/persistence respectively.
+The gallery lessons *Button commands*, *Toggle button with LED* and *Dropdown commands and persistence* demonstrate commands/ask/delay, shared toggle Data, and dropdown selection/persistence respectively.
 
-
-<a id="gc-105-076"></a>
-## 076 · Validation engine: transformations, warnings and callbacks
-
-The shared engine runs after the component parses its draft and before its single
-ControlAdapter writes Data. Constrained selectors check the selected item before
-this pipeline: `validate_select` does not turn a filteringSelect into free text.
-Native HTML controls remain outside this component capability.
-
-Rules run in this order: selection integrity, notnull, empty, case, len, min, max,
-email, regex, call, remote. Each rule sees the preceding rule's transformed value.
-The first error stops evaluation; warnings accumulate and permit acceptance.
-A required empty value fails before `validate_empty`, matching the legacy order.
-
-| Declaration | Meaning |
-| --- | --- |
-| `validate_empty="Guest"` | Replace null/empty text; false and zero are valid replacement values |
-| `validate_case="upper"` | `upper`, `lower`, `title`, `capitalize`; legacy `u/l/t/c` also supported |
-| `validate_min=0`, `validate_max=100` | Inclusive typed numeric or temporal limits; exact Decimal comparisons |
-| `validate_email=True` | Email-shape warning by default, not proof that an address exists |
-| `validate_regex="(?:^[A-Z]+$)"` | JavaScript Unicode regular expression; initial `!` negates the match |
-| `validate_call="checkCode"` | Named Logic method, or an activated inline body; may return a Promise |
-| `validate_remote="check_code"` | Existing typed data RPC to a Page endpoint, also in a serverless Worker |
-
-Optional null/empty values skip case/len/min/max/email/regex; remote skips null.
-`validate_call` receives empty/null candidates too. Numeric/date comparisons do not
-parse strings or turn Decimals into floating-point numbers. Date/time bounds are
-actual typed values, not date strings. `validate_case` uses Unicode letter words
-for title case and consistently normalizes capitalization; unlike legacy it does
-not preserve manual capitalization by comparing against the previous Data value.
-The email check is a pragmatic shape check, not Dojo's retired regular expression
-or a complete RFC mailbox parser.
-
-Every rule supports `validate_<rule>_if` (an activated expression, or boolean),
-`validate_<rule>_error`, `_warning`, and `_iswarning`. A supplied warning message
-without an error message makes the rule advisory; explicit `_iswarning` wins,
-including `False` to make the email check blocking. Messages carry intl_str
-metadata; translation remains a future service. Messages can use the existing
-`{value}`/`{name}` template grammar. Missing required message values are configuration
-errors, never silently successful validation.
-
-```python
-pane.textbox(value="^.code", validate_case="upper",
-             validate_regex="(?:^[A-Z]{2,6}$)",
-             validate_regex_error="Use 2–6 letters.")
-pane.textbox(value="^.email", validate_email=True,
-             validate_email_iswarning="^.advisory")
-pane.textbox(value="^.name", validate_len="4:",
-             validate_len_if="enabled", validate_enabled="^.strict")
-pane.textbox(value="^.nickname", validate_call="checkNickname",
-             validate_onAccept="accepted", validate_onReject="rejected")
-```
-
-Named callbacks use the existing Logic registry and `(node, kwargs)` convention:
-
-```javascript
-export class Logic {
-    checkNickname(node, {value, signal}) {
-        return value === 'admin'
-            ? {errorcode:'reserved', message:'Choose another nickname.'}
-            : true;
-    }
-    accepted(node, {value, result}) {
-        // Data already contains the accepted value here.
-        node.SET('status', result.warnings.length ? 'Accepted with warning' : 'Accepted');
-    }
-}
-```
-
-Validation parameters are resolved from Source, never read from DOM. Their
-`validate_` prefix is removed in callback/condition arguments: `validate_enabled`
-becomes `enabled`. Reserved arguments are `value`, `result`, `validations`,
-`userChange` and the cancellation `signal` for validators. `validations` is the
-resolved rule dictionary without the prefix. Inline bodies have `this = Source
-node`; they and rule conditions must have arrived with activated Source. Named
-Logic avoids dynamic compilation. No global evaluator is installed.
-
-A validator returns true/null for success, false for failure, a string error code,
-or an object/Bag containing `value`, `errorcode`, `message`, `iswarning`, `required`
-and/or `data`. A returned `value` transforms the candidate; typed editors check the
-result type before accepting it. A constrained selector cannot replace its stored
-code through normalization: change its Data explicitly instead. An optional `data`
-patch must be a Bag and the field must resolve a Bag datapath; patches apply only
-on acceptance, after the primary value write. Rejected or stale replies never
-apply patches. This intentionally corrects legacy remote side effects on rejected
-values. It is not a transactional form-save service.
-
-Error-code-specific messages (`validate_call_reserved`, for example) override the
-rule's severity message, then the returned message, then the opposite severity's
-message, then the code itself. Custom message fields are ordinary validation
-parameters; the standard error/warning fields are explicitly typed in the shared
-grammar. `result` contains `value`, `modified`, `error`, `warnings`, `issues` and
-`datachanges`; each issue records rule, code, severity and message.
-
-`validate_remote_<name>` supplies resolved endpoint arguments; `value` is the
-candidate. The suffixes `if/error/warning/iswarning` are rule controls, not endpoint
-arguments. A remote endpoint has exactly the same return contract as a local
-callback. The legacy `validate__onResult` hook (double underscore) observes a current
-remote result before evaluation, through the same named/activated callback path.
-`validate_onAccept` runs after the primary Data write and patches; `validate_onReject`
-runs with unchanged Data. These are notifications, not additional validators.
-
-Asynchronous work sets `aria-busy`. Further input/composition, changed rules,
-readonly/disabled state, an external Data value, rebinding or disposal invalidates
-the old result. RPC uses AbortSignal; custom callbacks receive it too. An optional
-positive `validate_timeout` is measured in milliseconds. Rejection, timeout and
-transport failure retain the draft and last accepted Data. Errors are blocking;
-warning tooltips use a distinct severity without aria-invalid or native custom
-validity. Both use the existing floating, fading message presentation.
-
-The engine does not validate initial values or filter application Data writes,
-and does not introduce a form-wide save API. `validate_nodup`, `validate_exist`
-and `validate_gridnodup` are explicit unsupported-configuration errors until their
-DB/grid integrations arrive. Try **w25 · Validation rules and callbacks** alongside
-**w18 · Required values and length**.
-
-A literal regular expression starting with `^` must be enclosed, for example `(?:^[A-Z]+$)`, because a leading `^` is a Data pointer in Source. This is ordinary regex grouping, not another validation syntax; `validate_regex="^.pattern"` deliberately reads a pattern from Data.
 
 <a id="gc-105-100"></a>
 ## 100 · Border regions, live splitters and drawers
 
-Development increment targeting 0.3.2, in the `layout` collection. The same
-collection declaration activates `borderContainer` and `contentPane` in Python
+These containers are in the `layout` collection. The same collection declaration activates `borderContainer` and `contentPane` in Python
 and JavaScript. Give the container a bounded height, or place it in a bounded
 parent region. Each direct visual child has one `region`: `top`, `bottom`, `left`,
 `right` or `center`, with at most one child per region.
@@ -1025,11 +1025,11 @@ policy is imposed. Themes can set `--gramlot-splitter-size`,
 `--gramlot-splitter-background`, `--gramlot-splitter-hover`,
 `--gramlot-drawer-color` and `--gramlot-drawer-background`.
 
-Try gallery **l01 · Border regions and drawers** and **l02 · Nested borders and
-layout designs**. Tab/stack selection is described in §110 below; framePane and application-level region
-state orchestration remain separate increments.
+Try the gallery lessons *Border regions and splitters* and *Nested borders and
+layout designs*. Tab/stack selection is described in §110 below; framePane and
+application-level region state orchestration are not provided.
 
-Gallery **l03 · Rounded borders and popups** binds the existing `rounded="^rounded"` style macro
+The gallery lesson *Rounded borders and popups* binds the existing `rounded="^rounded"` style macro
 on both outer and nested borders to one live slider. Numeric values are pixels;
 zero removes rounding. The shared value changes both outlines without replacing
 their DOM or Data. This is explicit binding, not implicit inheritance of a parent
@@ -1054,8 +1054,8 @@ button appearance.
 
 Choice editors and native selects use a neutral inset focus indicator instead
 of an outer blue ring. Gramlot choice popups are inset by 2px on each side of
-their field; themes can set `--gramlot-choice-popup-inset`. The native HTML
-select's operating-system popup is not restyled by this setting. Gallery border
+their field; themes can set `--gramlot-choice-popup-inset`. The operating-system
+popup of an HTML `select` is not restyled by this setting. Gallery border
 examples use filteringSelect for consistent choice popup rendering.
 
 A drawer handle also drags its splitter when `splitter=True`. Pulling a closed
@@ -1122,14 +1122,14 @@ or in drawer_style customize the theme; explicit drawer dimensions still overrid
 Zoom and expansion are independent. Setting
 `drawer_style="--gramlot-drawer-label-hover-scale:1;"` disables zoom but still lets
 a minimized handle expand to reveal its text. Reduced-motion disables transitions.
-The Python gallery **l04 · Drawer icons and labels** demonstrates defaults and
-minimized captions without custom classes or CSS dimensions.
+The gallery lesson *Drawers: handles, content and retained Data* demonstrates
+defaults and minimized captions without custom classes or CSS dimensions.
 
 
 <a id="gc-105-105"></a>
 ## 105 · Border notifications
 
-Owner confirmed on 2026-10-18: closable_change applies to drawers and splitter_resize reports completed resizing. These use the existing Source-local publish/subscribe service, not a new DOM or global event bus.
+`closable_change` applies to drawers and `splitter_resize` reports completed resizing. These use the Source-local publish/subscribe service, not a DOM or global event bus.
 
 | Topic suffix | Publishing Source | Payload |
 | --- | --- | --- |
@@ -1153,12 +1153,10 @@ pane.dataController("this.SET('.lastRegion', region); this.SET('.lastSize', size
                     subscribe_workspace_splitter_resize=True)
 ```
 
-Payload fields are normal controller arguments; _reason is the qualified topic and _subscription_kwargs is the original payload. The current synchronous publish delivery and exception rules apply. Subscribers should not unconditionally toggle the same region back, which would create an application feedback loop. Geometry, drafts and mounted content keep their existing lifecycle.
+Payload fields are normal controller arguments; _reason is the qualified topic and _subscription_kwargs is the original payload. The synchronous delivery and exception rules of publish apply. Subscribers should not unconditionally toggle the same region back, which would create an application feedback loop. Geometry, drafts and mounted content keep their existing lifecycle.
 
 <a id="gc-105-110"></a>
-## 110. Stack and tab selection and closing
-
-Owner approved the reviewed contract and implementation on 2026-10-18, explicitly confirming that closable removes the panel from Source while preserving Data. This is a development increment; publication is separate.
+## 110 · Stack and tab selection and closing
 
 `stackContainer` and `tabContainer` share selection. Tab adds a scrollable, touch-aware tab strip (presentation and orientation: §115); stack creates no strip. A panel can be contentPane or a nested component/container. Selection changes only shadow viewport visibility; light DOM, Source, widget instances, invalid drafts and iframe contexts remain mounted in place.
 
@@ -1193,13 +1191,13 @@ pane.dataController("this.SET('.lastClosed', pageName)",
                     subscribe_editor_closed=True)
 ```
 
-Substitute stackContainer to retain the same selection and notification contract without tabs. Controllers receive named payload variables and the complete _subscription_kwargs object. FramePane, incoming switchPage commands, asynchronous close guards and alternate tab positions are not included in this increment. Examples are authored and qualified in the Python gallery first; final release alignment remains separate.
+Substitute stackContainer to retain the same selection and notification contract without tabs. Controllers receive named payload variables and the complete _subscription_kwargs object. Closing a `closable` panel removes it from the Source and keeps its Data. FramePane, incoming switchPage commands and asynchronous close guards are not provided.
 
 
 <a id="gc-105-115"></a>
-## 115. Tab presentation, icons and badges
+## 115 · Tab presentation, icons and badges
 
-Owner approved on 2026-10-18. `tabMode="tabs"` (default) displays compact tab shapes; `tabMode="underline"` displays text with a selection indicator, without tab outlines. `tabPosition="top"` (default), `"bottom"`, `"left"` or `"right"` places the strip. `tabAlign="start"` (default), `"center"` or `"end"` aligns the entries along that strip: left/center/right horizontally, top/center/bottom vertically. All three parameters accept Data pointers. If the entries overflow, alignment falls back to the start so no tab becomes unreachable. Left/right strips stack horizontally written labels vertically; their width is bounded and long captions ellipsize with a title tooltip. The strip scrolls on its own axis. ArrowLeft/Right navigate horizontal strips; ArrowUp/Down navigate vertical strips. Home/End and Delete retain their existing semantics.
+`tabMode="tabs"` (default) displays compact tab shapes; `tabMode="underline"` displays text with a selection indicator, without tab outlines. `tabPosition="top"` (default), `"bottom"`, `"left"` or `"right"` places the strip. `tabAlign="start"` (default), `"center"` or `"end"` aligns the entries along that strip: left/center/right horizontally, top/center/bottom vertically. All three parameters accept Data pointers. If the entries overflow, alignment falls back to the start so no tab becomes unreachable. Left/right strips stack horizontally written labels vertically; their width is bounded and long captions ellipsize with a title tooltip. The strip scrolls on its own axis. ArrowLeft/Right navigate horizontal strips; ArrowUp/Down navigate vertical strips. Home/End and Delete retain their existing semantics.
 
 Direct panels accept `icon` (text/emoji, matching button icons), `badge` (number or short text) and `badge_color` (CSS background color). These are parent-owned presentation metadata, including when the child is another container. Null/empty badges disappear; zero remains visible. A badge stays reactive while its panel is unselected; `hidden=True` hides the entire tab. Icon/caption/badge are rendered as text, never injected HTML. Icons are decorative; the tab accessible name includes its caption and badge. Badge foreground defaults to the theme's contrasting text token; authors choosing a custom fill must keep that contrast suitable.
 
@@ -1211,4 +1209,4 @@ tabs.contentPane(pageName="messages", title="Messages", icon="✉",
                  badge="^.unread", badge_color="crimson")
 ```
 
-Changing mode, position, alignment, icons or badge values never rebuilds panels or emits selection notifications. CSS owns layout and theme presentation. Existing --gramlot-tab-* tokens cover density, shape, palette and indicator/badge styling; mimi and joanna use their own compact defaults. Touch retains larger interaction targets and scrollable strips. This is a development increment; JS/serverless gallery qualification and publication remain separate.
+Changing mode, position, alignment, icons or badge values never rebuilds panels or emits selection notifications. CSS owns layout and theme presentation. Existing --gramlot-tab-* tokens cover density, shape, palette and indicator/badge styling; mimi and joanna use their own compact defaults. Touch retains larger interaction targets and scrollable strips.

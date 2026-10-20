@@ -41,9 +41,9 @@ the code so its details stay readable. Images use the same desktop viewport and 
 click an image to inspect it at full size. They are static screenshots: run the
 Python page to try its controls yourself.
 
-This is a topic guide alongside the [release-by-release learning route](025-try.md).
-The first examples use HTML Source and CSS; the interactive example adds the
-Data bindings introduced in 0.2.0. Python pages run on a Python server. If you
+This is a topic guide alongside the [learning route](025-try.md).
+The first examples use HTML Source and CSS; the interactive example adds
+[Data bindings](097-data-binding.md). Python pages run on a Python server. If you
 have no project yet, follow [the quick route](018-quickstart.md).
 
 - <a href="#gc-096-010">Build your first styled page</a>.
@@ -71,9 +71,17 @@ rendered HTML. CSS controls presentation; Data, bindings and controllers control
 application state and behaviour. A stylesheet does not create a controller,
 validate a form or save its values.
 
-The theme is opt-in: declare its URL in `Page.css`. There is no `Page.theme`
-property or `root.css()` API. `css_requires` names resources in a resource host;
-it is not a replacement for stylesheet URLs in the current file servers.
+The server loads a theme on every page, before the page's stylesheets: Gramlot
+Base (`gramlot-base`) unless the server chooses another with its `css_theme`
+option (`cssTheme` in JavaScript) or none with `False`. A page replaces it with
+`css_theme = "<name>"`, or loads none with `css_theme = False`. `Page.css` lists
+the stylesheets loaded after the theme: overlays such as Compact and application
+CSS. A page that still lists Base in `Page.css` loads it once. There is no
+`root.css()` API. `css_requires` names resources in a resource host; it is not a
+replacement for stylesheet URLs in the current file servers.
+
+The core ships one complete theme, Base. Compact, mimi and joanna are overlays:
+load them with `Page.css`, after Base.
 
 <a id="gc-096-010"></a>
 
@@ -97,7 +105,6 @@ from gramlot import Page as BasePage
 
 class Page(BasePage):
     title = "Appearance"
-    css = ("/themes/gramlot-base/theme.css",)
 
     def main(self, root):
         main_content = root.html_main(class_="example-page stack")
@@ -119,11 +126,8 @@ class Page(BasePage):
 
 **Base alone**
 
-Use this declaration in the complete Python page above. Leave out the companion stylesheet.
-
-```python
-css = ("/themes/gramlot-base/theme.css",)
-```
+The complete Python page above declares no stylesheet: the server loads Base.
+Leave out the companion stylesheet.
 
 :::
 
@@ -178,7 +182,7 @@ centred content area with a heading and a rounded card, a green Ready badge and 
 secondary button. The link moves to the notes; there is no JavaScript to write.
 The colours follow the operating system's light/dark preference.
 
-**Why it works:** `Page.css` loads Base. The file server discovers the same-name
+**Why it works:** the server loads Base. The file server discovers the same-name
 `appearance.css` and loads it afterwards. `.card` supplies the surface and border;
 `.stack` spaces its children; `.workspace` adds only the page-specific accent.
 Change `64rem` to `48rem`, reload, and the page becomes narrower on wide screens.
@@ -194,7 +198,8 @@ resource, not a filesystem path in `Page.css`.
 Block ID: **GC-096-015**.
 
 Base is the complete stylesheet. Compact is an overlay: it keeps Base's colours
-and changes density. Compare the first example with these two `css` declarations:
+and changes density. Compare the first example, which declares no `css`, with one
+`css` declaration that adds Compact:
 
 Load Base first, Compact second. Both can be light or dark: **density** and
 **colour mode** are separate choices.
@@ -205,11 +210,8 @@ Load Base first, Compact second. Both can be light or dark: **density** and
 
 **Base**
 
-Keep the first example's Python content and companion CSS.
-
-```python
-css = ("/themes/gramlot-base/theme.css",)
-```
+Keep the first example's Python content and companion CSS, with no `css`
+declaration: the server loads Base.
 
 :::
 
@@ -229,13 +231,10 @@ for this comparison.
 
 **Base + Compact**
 
-Replace only the Page.css declaration; keep the companion CSS.
+Add one Page.css declaration; keep the companion CSS.
 
 ```python
-css = (
-    "/themes/gramlot-base/theme.css",
-    "/themes/gramlot-compact/theme.css",
-)
+css = ("/themes/gramlot-compact/theme.css",)
 ```
 
 :::
@@ -271,7 +270,6 @@ from gramlot import Page as BasePage
 
 class ApplicationPage(BasePage):
     css = (
-        "/themes/gramlot-base/theme.css",
         "/themes/gramlot-compact/theme.css",
         "/application.css",
     )
@@ -320,20 +318,18 @@ Color mode is independent.
 | mimi | mimi.css | Titanium grays, dark navigation, blue actions, small corners | 12px / 18px |
 | joanna | joanna.css | Light gray/white surfaces, softer corners, blue actions | 13px / 20px |
 
-The Gramlot name `joanna` follows the requested name; the legacy file is
-spelled `joanna.css`. These profiles adapt the legacy light palettes and compact
+The profile `joanna` adapts the legacy file `joanna.css`. These profiles adapt the legacy light palettes and compact
 proportions. They do not port Dojo widgets or guarantee pixel-identical layouts.
-Dark palettes are new Gramlot adaptations. Legacy user color variants are not part
-of this increment; Base and Compact remain available.
+Dark palettes are Gramlot adaptations. Legacy user color variants are not
+provided; Base and Compact remain available.
 
-In an application, load the three stylesheets in order:
+In an application, the server loads Base; load Compact and the profile after it:
 
 ```python
 from gramlot import Page as BasePage
 
 class Page(BasePage):
     css = (
-        "/themes/gramlot-base/theme.css",
         "/themes/gramlot-compact/theme.css",
         "/themes/mimi/theme.css",
     )
@@ -547,7 +543,7 @@ Base chooses its palette on the document's `<html>` element:
 The `root` passed to `main` builds application Source inside the host document.
 It is not that document's `<html>`. Adding `data_theme="dark"` to a `div` does
 not activate Base's root selectors. Ordinary pages can simply follow the system.
-For the existing shell's selector, see [IndexPage](095-writing-pages.md)
+For the selector of the index shell, see [IndexPage](095-writing-pages.md#gc-095-110)
 and the application-shell section below. Do not add application DOM manipulation to switch modes.
 
 ### Customize a surface in both modes
@@ -756,6 +752,8 @@ An ordinary anchor with `.button` remains a link; keep its `href` meaningful.
 | `grid` | Responsive columns, normally at least 18rem when space permits. | `root.div(class_="grid")` |
 | `card` | Bordered surface, padding, rounded corners and a query container. | `root.section(class_="card")` |
 | `muted` | Supporting text colour. | `root.p("Optional", class_="muted")` |
+| `actions` | A row of actions or buttons: flex, wrapping onto the next line, spaced by `--gramlot-space-2`. | `root.div(class_="actions")` |
+| `eyebrow` | A small label above a heading: no margin, supporting colour, 0.75rem, bold, uppercase, letter-spaced. | `root.p("Field notes", class_="eyebrow")` |
 | `surface-subtle` | Quieter background. | `root.div(class_="surface-subtle")` |
 | `button` | Button appearance for a suitable element, such as a link. | `root.a("Notes", href="#notes", class_="button")` |
 | `button--secondary` | Outlined/surface action variant. | `root.button("Preview", class_="button--secondary")` |
@@ -801,12 +799,36 @@ Inside `main`, these declarations illustrate a one-off style and shortcuts:
 ```
 
 The last element is blue: a shortcut wins over the same property in `style`.
-Explicit CSS units make dimensions easier to read. Shortcuts include `font_size`,
-`margin_top`, `padding_*`, `border_*` and the general `style_*` form. A null
-shortcut removes its property from the composed inline style. SVG presentation
-attributes remain SVG attributes, not HTML style shortcuts. `width`/`height` on
-`img`, `canvas` and `embed`, and `width`/`border` on `table`, remain HTML attributes.
-The [binding reference](095-writing-pages.md) gives the full rules.
+Shortcuts include `font_size`, `margin_top`, `padding_*`, `border_*` and the general
+`style_*` form. A null shortcut removes its property from the composed inline style.
+
+The value of a style shortcut is written with its CSS unit, as in legacy GenroPy:
+`width="12rem"`, `margin_top="4px"`. Gramlot writes the value into the composed
+`style` unchanged. A length without a unit, such as `width=20`, is written as
+`width: 20`. That is not valid CSS, and the browser ignores the declaration.
+A property whose CSS value is a plain number, such as `opacity` or `z_index`, takes
+a number.
+
+A number becomes pixels only in these sub-keys, in Python and in JavaScript alike:
+
+- `rounded` and its side and corner forms (`rounded_top`, `rounded_bottom`,
+  `rounded_left`, `rounded_right`, `rounded_top_left`, `rounded_top_right`,
+  `rounded_bottom_left`, `rounded_bottom_right`). `rounded=4` gives
+  `border-*-radius: 4px`.
+- `transform_translate_x` and `transform_translate_y`. `transform_translate_x=10`
+  gives `transform: translateX(10px)`.
+- `filter_blur`. `filter_blur=2` gives `filter: blur(2px)`.
+
+The first two groups are legacy GenroPy behaviour. Legacy has no `blur` in `filter`;
+`filter_blur` follows the same rule. Only a number is converted. `rounded="4"` is
+written as `4`, and `rounded="1rem"` as `1rem`. Every other shortcut writes its value
+unchanged, including `shadow`, which takes a complete `box-shadow` value such as
+`shadow="0 2px 6px gray"`.
+
+SVG presentation attributes remain SVG attributes, not HTML style shortcuts, so
+`svg(width=100)` is valid. `width`/`height` on `img`, `canvas` and `embed`, and
+`width`/`border` on `table`, remain HTML attributes and take plain numbers.
+The [binding reference](097-data-binding.md#gc-095-070) gives the full rules.
 
 ### Follow one style from Python to the browser
 
@@ -865,21 +887,19 @@ authoring choice you intended to change. To keep a change, edit the appropriate
 Python/JS declaration, stylesheet or application data through its normal persistence.
 Inspector Styles previews are temporary; **Download CSS** exports their theme overrides.
 
-Practice the same steps in the gallery's
-[b06 · Style and visibility](https://github.com/gramlot-org/gramlot-examples/blob/main/src/gramlot_examples/pages/binding/06_style_and_visibility.md).
+Practice the same steps in the gallery lesson *Style and visibility*, listed in the
+[examples manual](https://gramlot-examples.readthedocs.io/en/latest/).
 
 ### Let Data select a class and a width
 
-Save this complete page as `pages/style_state.py`. It needs only Base, so no
-companion CSS or JavaScript file is required:
+Save this complete page as `pages/style_state.py`. It needs only Base, which the
+server loads, so no `css`, companion CSS or JavaScript file is required:
 
 ```python
 from gramlot import Page as BasePage
 
 
 class Page(BasePage):
-    css = ("/themes/gramlot-base/theme.css",)
-
     def main(self, root):
         main_content = root.html_main(class_="example-page stack", datapath="appearance")
         main_content.dataSetter(".status_class", "status status--success")
@@ -983,14 +1003,16 @@ should also describe the actual state in words.
 
 Block ID: **GC-096-045**.
 
-`IndexPage` is the existing reusable application shell. Its base resource list
-loads Base and `gramlot-index/theme.css`; the shell's standard footer manages
-Base/Compact and Light/Dark choices. Its behaviour remembers these choices and
-sidebar width. Follow the complete [IndexPage setup](095-writing-pages.md),
+`IndexPage` is the existing reusable application shell. Its `css` lists
+`gramlot-index/theme.css`; Base comes from the server, as for every page. The
+shell's standard footer manages the theme (Base, Compact, mimi, joanna) and the
+Light/Dark choice. Its behaviour remembers these choices and the sidebar width. Follow the complete
+[IndexPage setup](095-writing-pages.md#gc-095-110),
 including its browser Logic module; importing a CSS file alone does not supply
 the shell's behaviour.
 
-Each iframe is a separate document. Give each child page its own `Page.css`.
+Each iframe is a separate document: each child page loads its own theme and its
+own `Page.css`.
 Parent styles do not cross the frame boundary, and the shell does not automatically
 install a colour-mode receiver in arbitrary children. The gallery has its own
 frame-side integration. Do not copy its internal messaging into an application
@@ -1065,7 +1087,7 @@ Block ID: **GC-096-055**.
 
 | Symptom | Check | What to do |
 | --- | --- | --- |
-| Everything looks unstyled | Network response for the Base URL; rendered stylesheet links. | Declare Base in `Page.css` and ensure the host serves the packaged theme. |
+| Everything looks unstyled | Network response for the Base URL; rendered stylesheet links. | Check `css_theme` of the server and of the page, and that the host serves the packaged themes at `/themes/`. |
 | Compact is incomplete | Whether Base loads first. | Load both files in the documented order. |
 | Companion CSS is missing | Page and CSS names, folder and response status. | Put `appearance.css` beside `appearance.py`; reload/restart as your server requires. |
 | A nested page cannot find shared CSS | Whether a relative URL resolves under the nested route. | Use the intended root-relative URL and let the host apply its mount prefix. |

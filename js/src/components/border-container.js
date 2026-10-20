@@ -4,10 +4,12 @@ import {Container} from './container.js';
 
 const SIDES = ['top', 'bottom', 'left', 'right'];
 const REGIONS = [...SIDES, 'center'];
-const borderRegions = new WeakMap();
 const horizontal = side => side === 'top' || side === 'bottom';
 
-/** Resolved Source attributes, not DOM scraping, supply the parent's region contract. */
+/**
+ * Resolved Source attributes, not DOM scraping, supply the parent's region contract: returns the attributes
+ * left to the child element and the region configuration the parent reads.
+ */
 function projectBorderChild(element, attrs, {adapt, invoke, publish, publishParent, writeParameter}) {
     const rest = {...attrs}, splitter = {}, drawer = {};
     for (const [name, value] of Object.entries(rest)) {
@@ -43,18 +45,17 @@ function projectBorderChild(element, attrs, {adapt, invoke, publish, publishPare
     const background = drawerProbe.style.backgroundColor;
     if (background) drawerProbe.style.setProperty('--gramlot-drawer-background', background);
     if (drawerAttrs.style != null) drawerAttrs.style = drawerProbe.style.cssText;
-    borderRegions.set(element, {region, size, min, max, splitter: rest.splitter === true,
+    const config = {region, size, min, max, splitter: rest.splitter === true,
         drawer: rest.drawer, hidden: rest.hidden === true,
         splitterAttrs: adapt(splitter), drawerAttrs, label, icon, minimize,
         writeParameter: size => { if (numeric) writeParameter(dimension, size); }, notifications: {
             closableChange: payload => publish('closable_change', payload),
             splitterResize: payload => publishParent('splitter_resize', payload),
         },
-        onToggle: onclick ? (evt, show) => invoke('drawer_onclick', onclick, {evt, show}) : null});
+        onToggle: onclick ? (evt, show) => invoke('drawer_onclick', onclick, {evt, show}) : null};
     for (const key of ['region', 'splitter', 'drawer', 'minSize', 'maxSize']) delete rest[key];
     rest.slot = region;
-    if (element.parentElement?.constructor.gramlotComponent?.name === 'borderContainer') element.parentElement.projectRegion(element);
-    return rest;
+    return {rest, config};
 }
 
 function applyAttributes(element, attrs, previous) {
@@ -84,9 +85,15 @@ export const BorderContainer = defineComponent({
         design: {dtype: 'T', default: 'headline', binding: 'read', enum: ['headline', 'sidebar']},
         persist: {dtype: 'B', default: false, binding: 'read'},
     },
-    implementation: Base => class extends Base {
+    // Named as the component: inside the body `BorderContainer` is this class, owner of the static state.
+    implementation: Base => class BorderContainer extends Base {
+        // The region configuration of each child element, for this class in this window (ComponentCollection.register).
+        static #borderRegions = new WeakMap();
         static projectChild(element, attrs, context) {
-            return projectBorderChild(element, attrs, context);
+            const {rest, config} = projectBorderChild(element, attrs, context);
+            BorderContainer.#borderRegions.set(element, config);
+            if (element.parentElement?.constructor.gramlotComponent?.name === 'borderContainer') element.parentElement.projectRegion(element);
+            return rest;
         }
         #regions = new Map();
         #observer;
@@ -257,7 +264,7 @@ export const BorderContainer = defineComponent({
         #sync() {
             const children = new Map();
             for (const child of this.children) {
-                const config = borderRegions.get(child);
+                const config = BorderContainer.#borderRegions.get(child);
                 if (!config) continue;
                 if (children.has(config.region)) throw new Error(`Duplicate border region: ${config.region}`);
                 children.set(config.region, child);
@@ -273,7 +280,7 @@ export const BorderContainer = defineComponent({
             }
         }
         projectRegion(child) {
-            const config = borderRegions.get(child), side = config.region, state = this.#regions.get(side);
+            const config = BorderContainer.#borderRegions.get(child), side = config.region, state = this.#regions.get(side);
             if (state.child !== child) { this.#sync(); return; }
             const before = state.config;
             if (!before || before.size !== config.size) {

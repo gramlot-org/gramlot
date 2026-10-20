@@ -73,7 +73,8 @@ gramlot/
 ├── scripts/                            Documentation · verification tools
 ├── assets/                             Branding
 ├── .github/workflows/                  CI
-├── pyproject.toml                      Python packaging · dependencies
+├── pyproject.toml                      Python packaging (hatchling) · dependencies
+├── hatch_build.py                      Build hook · runtime assets check
 ├── js/package.json                     JS packaging · dependencies
 └── build/                              Generated bundles · documentation
 

@@ -12,17 +12,19 @@ import {toTytx} from '@genrojs/tytx';
 // Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 // dictionary of X, so every GramlotBuilder user can encode and decode it.
 import {GramlotBuilderBag} from './source.js';
+import {NAME_SYNTAX, NameSyntax} from './name-syntax.js';
 import {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 // Byte copy of src/gramlot/collections/binding.json: the JS package ships js/ only.
 import BINDING from './binding.json' with {type: 'json'};
 import WEBCOMPONENT from './webcomponent.json' with {type: 'json'};
 import {webcomponentCode} from '../webcomponent.js';
+import {randomId} from '../random-id.js';
 import {pointerTransform} from '@genrojs/builders';
 
 
 // P19: `data` is ambiguous between the legacy data-element and the HTML5 element.
 const DATA_FORBIDDEN = 'data is forbidden: write dataSetter for a Data value or html_data for the HTML5 <data> element';
-// Declarations outside Gramlot 0.2.0 that fail explicitly (source plan, section 2).
+// Declarations that Gramlot does not accept and that fail explicitly (source plan, section 2).
 const EXCLUDED_ELEMENTS = new Set();
 const EXCLUDED_ATTRIBUTES = new Set(['serverpath', 'dbenv', 'shared_id']);
 const EXCLUDED_ATTRIBUTE_PREFIXES = ['formsubscribe_'];
@@ -85,16 +87,23 @@ export class GramlotBuilder extends HtmlBuilder {
         return prefixes;
     }
 
-    constructor(name = null, {collections = [], auth = null} = {}) {
+    constructor(name = null, {collections = [], auth = null, nameSyntax = NAME_SYNTAX} = {}) {
+        if (!(nameSyntax instanceof NameSyntax)) throw new TypeError(`nameSyntax must be a NameSyntax, not ${nameSyntax}`);
         super(name);
         this._binding = null;
         this._auth = auth;
+        this._nameSyntax = nameSyntax;
         for (const collection of collections) this.loadCollection(collection);
     }
 
     /** The `auth` evaluator, `rule => null | 'not_authenticated' | 'not_authorized'`, or null:
      * without it every element is serialised. */
     get auth() { return this._auth; }
+
+    /** The NameSyntax of the method names of `remote`: the one of the server that built this builder
+     * (`GramlotServer.nameSyntax`) or of the page (`Gramlot` option `nameSyntax`), the core default
+     * `NAME_SYNTAX` otherwise. */
+    get nameSyntax() { return this._nameSyntax; }
 
     /** The BindingRuntime of the Gramlot page that owns this builder, or null for authoring alone. */
     get binding() { return this._binding; }
@@ -134,7 +143,7 @@ export class GramlotBuilder extends HtmlBuilder {
         if (lookup.startsWith(`${GramlotBuilder._name}_`)) {
             throw new Error(`${name}: the tag prefix '${GramlotBuilder._name}_' is not accepted; use the prefix '${prefixes[0]}'`);
         }
-        if (EXCLUDED_ELEMENTS.has(lookup)) throw new Error(`${name}: excluded from Gramlot 0.2.0`);
+        if (EXCLUDED_ELEMENTS.has(lookup)) throw new Error(`${name}: excluded from Gramlot`);
         const tag = this.schemaTagNames[lookup];
         if (tag) return tag;
         for (const prefix of prefixes) {
@@ -160,7 +169,7 @@ export class GramlotBuilder extends HtmlBuilder {
         }
         if (tag === 'webcomponent') webcomponentCode(attrs);
         const excluded = excludedAttribute(attrs);
-        if (excluded) throw new Error(`${tag}: attribute '${excluded}' is excluded from Gramlot 0.2.0`);
+        if (excluded) throw new Error(`${tag}: attribute '${excluded}' is excluded from Gramlot`);
         const error = dataElementError(tag, attrs);
         if (error) throw new Error(`${tag}: ${error}`);
         return super.validateNodeValues(tag, value, attrs);
@@ -173,7 +182,7 @@ export class GramlotBuilder extends HtmlBuilder {
         }
         if (node.nodeTag === 'webcomponent') webcomponentCode(options.attrs ?? node.getAttr());
         const excluded = excludedAttribute(options.attrs ?? node.getAttr());
-        if (excluded) throw new Error(`${node.nodeTag} '${node.label}': attribute '${excluded}' is excluded from Gramlot 0.2.0`);
+        if (excluded) throw new Error(`${node.nodeTag} '${node.label}': attribute '${excluded}' is excluded from Gramlot`);
         const error = dataElementError(node.nodeTag, options.attrs ?? node.getAttr());
         if (error) throw new Error(`${node.nodeTag} '${node.label}': ${error}`);
         return super.validateNode(node, options);
@@ -231,8 +240,7 @@ export class GramlotBuilder extends HtmlBuilder {
         }
         let id = node.getAttr('__ref');
         if (id === null || id === undefined) {
-            id = Array.from(crypto.getRandomValues(new Uint8Array(16)),
-                byte => byte.toString(16).padStart(2, '0')).join('');
+            id = randomId();
             node.setAttr({__ref: id});
         }
         return {$gramlotRef: id, kind};

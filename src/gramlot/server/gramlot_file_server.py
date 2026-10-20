@@ -11,8 +11,12 @@ from urllib.parse import quote
 from uuid import uuid4
 
 from .assets import gramlot_dev
+from .files import file_below
 from .gramlot_server import GramlotServer, PageNotFound
 from .resources import SEGMENT, InvalidResourceName, parse_requires
+
+# The URL suffixes of the files below the pages folder that reach the browser (GC-230 §145).
+COMPANION_SUFFIXES = (".css", ".js")
 
 
 class GramlotFileServer(GramlotServer):
@@ -23,14 +27,19 @@ class GramlotFileServer(GramlotServer):
     ``foo.css`` (CSS), ``foo.md`` (README) and the page logic (group null):
     ``foo.js``, whose ``Logic`` export is the logic (a ``Page`` export, the JS
     version of the same page, stays unused), else ``foo_aux.js``; both at once
-    raise ``ValueError``. Python cannot read the exports of ``foo.js``: beside a
-    Python page it must export ``Logic``, and the browser rejects it otherwise.
+    raise ``ValueError``. Python cannot read the exports of ``foo.js``: it is the
+    logic module beside a Python page, and without ``Logic`` it gives no logic
+    methods in the browser.
     The ``_aux`` suffix is reserved. There are no
     resource levels: a name in ``css_requires``/``js_requires`` raises
     ``InvalidResourceName``.
 
     ``reload=None`` takes the value from ``GRAMLOT_DEV`` (true for ``YES`` and
     ``DEBUG``, false when unset); an explicit boolean wins.
+
+    ``companion_file`` is the file an adapter serves at the ``.css`` and ``.js`` URLs of GC-230 §145
+    (``theme_file``, the file of the ``/themes/`` URLs, is the one of ``GramlotServer``); the adapter
+    adds the HTTP part (methods, media types, headers).
     """
 
     def __init__(self, pages_dir, reload=None, **options):
@@ -87,6 +96,15 @@ class GramlotFileServer(GramlotServer):
         if logic:
             js.append({"url": logic[0], "group": None})
         return {"css": css, "js": js}
+
+    def companion_file(self, path):
+        """The file of the URL path ``path`` (mount prefix removed, percent-decoded) when it ends in
+        ``.css`` or ``.js`` and its real path is a file below the pages folder: page modules,
+        companions (``foo.css``, ``foo_aux.js``) and ``Page.css`` files placed there; else ``None``.
+        Any other file of the folder is never served (GC-230 §145)."""
+        if not path.endswith(COMPANION_SUFFIXES):
+            return None
+        return file_below(self.pages_dir, path)
 
     def url(self, filename):
         """Return the root-relative URL of a file below the pages folder, one encoded
