@@ -13,3 +13,10 @@ await writeFile(new URL('../../src/gramlot/collections/inputs.json', import.meta
 import buttons from '../src/components/buttons.js';
 await writeFile(new URL('../../src/gramlot/collections/buttons.json', import.meta.url),
     JSON.stringify(buttons.toDocument(), null, 2) + '\n');
+
+import editors from '../src/components/editors.js';
+await writeFile(new URL('../../src/gramlot/collections/editors.json', import.meta.url),
+    JSON.stringify(editors.toDocument(), null, 2) + '\n');
+
+import typst from '../src/components/typst.js';
+await writeFile(new URL('../../src/gramlot/collections/typst.json', import.meta.url), JSON.stringify(typst.toDocument(), null, 2) + '\n');

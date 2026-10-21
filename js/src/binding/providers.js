@@ -1,3 +1,4 @@
+import {invokeHook} from './hooks.js';
 import {Bag} from '@genrojs/bag';
 import {RpcResolver} from './rpc-resolver.js';
 import {pointerTransform, pointerDependencies} from '@genrojs/builders';
@@ -270,6 +271,9 @@ export class Provider {
     #inline(attr, code, source, kwargs, body) {
         const names = [...(body ? ['_kwargs'] : []), ...TRIGGER_FIELDS, ...CLICK_FIELDS,
             ...Object.keys(authorArguments(kwargs))];
+        if (['_onCalling', '_onResult', '_onError', '_ask_onCancel'].includes(attr)) {
+            return invokeHook(this.binding.runtime, this.node, attr, code, {...kwargs, _kwargs:kwargs}, names);
+        }
         return this.binding.runtime.inlineCompiler.compile(this.node, attr, code, names, source)({...kwargs, _kwargs: kwargs});
     }
 

@@ -77,3 +77,8 @@ export {ServerAdapter} from "../server-adapter.js";
  * made with `createDecimal('12.50')`. A date or a time is a `Date`; TYTX types it from its content. */
 export {Bag, BagNode} from "@genrojs/bag";
 export {createDecimal} from "@genrojs/tytx";
+
+export {codeMirrorWithOptions} from '../components/editor-options.js';
+
+export {fileSystemTree, FileSystemLogic, FileSystemController, DirectoryResolver} from "../filesystem.js";
+export {IdeLogic} from "../ide-runtime.js";

@@ -26,6 +26,9 @@ function Command(HTMLElement) {
                     min-height:max(var(--gramlot-field-height,28px),var(--gramlot-touch-target,0px));
                     padding:var(--gramlot-button-padding,.25em .65em);cursor:pointer}
                 button:hover:not(:disabled){background:var(--gramlot-button-hover,var(--gramlot-field-readonly-background,#eee))}
+                :host(.button--quiet) button{background:transparent;color:var(--gramlot-action,CanvasText);border-color:transparent}
+                :host(.button--quiet) button:hover:not(:disabled){background:var(--gramlot-selected,Highlight);color:var(--gramlot-action-hover,CanvasText);border-color:transparent}
+                button:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:2px}
                 button:disabled{opacity:.55;cursor:not-allowed} .icon:empty{display:none}
                 .led{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--gramlot-button-led-off,#888)}
                 [aria-pressed=true] .led{background:var(--gramlot-button-led-on,#2b9a46)}

@@ -185,7 +185,7 @@ export const TimeTextBox = defineComponent({
 });
 export const FilteringSelect = defineComponent({
     name: 'filteringSelect', tag: 'gramlot-filtering-select', base: ChoiceEditor, mixins: [Labelbox, FieldState],
-    parameters: {values: {dtype: 'T', default: '', binding: 'read'}}, implementation: localChoices
+    parameters: {values: {dtype: 'T', default: '', binding: 'read'}, separator: {dtype: 'T', default: ',', binding: 'read'}}, implementation: localChoices
 });
 export const CallbackSelect = defineComponent({
     name: 'callbackSelect', tag: 'gramlot-callback-select', base: ChoiceEditor, mixins: [Labelbox, FieldState],
@@ -193,7 +193,7 @@ export const CallbackSelect = defineComponent({
 });
 export const ComboBox = defineComponent({
     name: 'comboBox', tag: 'gramlot-combo-box', base: ChoiceEditor, mixins: [Labelbox, FieldState],
-    parameters: {values: {dtype: 'T', default: '', binding: 'read'}},
+    parameters: {values: {dtype: 'T', default: '', binding: 'read'}, separator: {dtype: 'T', default: ',', binding: 'read'}, store: {dtype: 'X', nullable: true, default: null, binding: 'read'}},
     implementation: Base => class extends localChoices(Base) {
         get constrained() { return false; }
     }

@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
@@ -14,7 +14,9 @@
     "./components": "./js/src/components/index.js",
     "./components/inputs": "./js/src/components/inputs.js",
     "./components/layout": "./js/src/components/layout.js",
-    "./components/tree": "./js/src/components/tree.js"
+    "./components/tree": "./js/src/components/tree.js",
+    "./components/editors": "./js/src/components/editors.js",
+    "./components/typst": "./js/src/components/typst.js"
   },
   "imports": {
     "@genrojs/bag": "jsr:@genro/bag@^0.11.0",
@@ -22,7 +24,36 @@
     "@genrojs/tytx": "jsr:@genro/tytx@^0.16.3",
     "@gramlot/gramlot/page": "./js/src/server/page.js",
     "@gramlot/gramlot": "./js/src/index.js",
-    "dompurify": "npm:dompurify@3.4.16"
+    "dompurify": "npm:dompurify@3.4.16",
+    "@codemirror/autocomplete": "npm:@codemirror/autocomplete@^6.20.4",
+    "@codemirror/commands": "npm:@codemirror/commands@^6.11.1",
+    "@codemirror/lang-css": "npm:@codemirror/lang-css@^6.3.1",
+    "@codemirror/lang-html": "npm:@codemirror/lang-html@^6.4.12",
+    "@codemirror/lang-javascript": "npm:@codemirror/lang-javascript@^6.2.5",
+    "@codemirror/lang-json": "npm:@codemirror/lang-json@^6.0.2",
+    "@codemirror/lang-markdown": "npm:@codemirror/lang-markdown@^6.5.2",
+    "@codemirror/lang-python": "npm:@codemirror/lang-python@^6.2.1",
+    "@codemirror/lang-sql": "npm:@codemirror/lang-sql@^6.10.0",
+    "@codemirror/lang-xml": "npm:@codemirror/lang-xml@^6.1.0",
+    "@codemirror/language": "npm:@codemirror/language@^6.13.1",
+    "@codemirror/lint": "npm:@codemirror/lint@^6.9.7",
+    "@codemirror/search": "npm:@codemirror/search@^6.7.2",
+    "@codemirror/state": "npm:@codemirror/state@^6.7.6",
+    "@codemirror/view": "npm:@codemirror/view@^6.43.15",
+    "@lezer/highlight": "npm:@lezer/highlight@^1.2.5",
+    "@myriaddreamin/typst-ts-renderer": "npm:@myriaddreamin/typst-ts-renderer@0.7.0",
+    "@myriaddreamin/typst-ts-web-compiler": "npm:@myriaddreamin/typst-ts-web-compiler@0.7.0",
+    "@myriaddreamin/typst.ts": "npm:@myriaddreamin/typst.ts@0.7.0",
+    "codemirror-lang-typst": "npm:codemirror-lang-typst@0.6.0",
+    "jodit": "npm:jodit@4.13.9",
+    "markdown-it": "npm:markdown-it@14.3.3",
+    "prosemirror-commands": "npm:prosemirror-commands@1.6.2",
+    "prosemirror-history": "npm:prosemirror-history@1.4.1",
+    "prosemirror-keymap": "npm:prosemirror-keymap@1.2.2",
+    "prosemirror-markdown": "npm:prosemirror-markdown@1.13.1",
+    "prosemirror-model": "npm:prosemirror-model@1.25.12",
+    "prosemirror-state": "npm:prosemirror-state@1.4.3",
+    "prosemirror-view": "npm:prosemirror-view@1.42.6"
   },
   "publish": {
     "include": [

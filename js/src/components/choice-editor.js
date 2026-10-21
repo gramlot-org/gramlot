@@ -1,3 +1,4 @@
+import {Bag} from '@genrojs/bag';
 import {NativeControl} from './bases.js';
 import {parseChoices} from './choices.js';
 import {positionPopup} from './popup.js';
@@ -13,6 +14,7 @@ export function ChoiceEditor(HTMLElement) {
         #dirty = false;
         #picked = null;
         #source;
+        #separator;
         #cleanup;
         constructor() {
             super();
@@ -74,8 +76,9 @@ export function ChoiceEditor(HTMLElement) {
         get active() { return this.isConnected && this.pageContext?.isActive(); }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
-            const source = this.parameters.callback ?? this.parameters.values;
-            const changed = source !== this.#source;
+            const source = this.parameters.store ?? this.parameters.callback ?? this.parameters.values;
+            const changed = source !== this.#source || this.parameters.separator !== this.#separator;
+            this.#separator = this.parameters.separator;
             this.#source = source;
             this.toggle.disabled = this.locked;
             if (changed || this.locked) this.closeChoices();
@@ -199,7 +202,18 @@ ChoiceEditor.parameters = {...NativeControl.parameters,
 export function localChoices(Base) {
     return class extends Base {
         loadChoices(keywords) {
-            const rows = parseChoices(this.parameters.values ?? '');
+            let rows;
+            if (this.parameters.store != null) {
+                if (!(this.parameters.store instanceof Bag)) throw new TypeError('store must be a Bag');
+                if (this.parameters.values) throw new TypeError('store and values are mutually exclusive');
+                const ids = new Set();
+                rows = this.parameters.store.getNodes().map(node => {
+                    const id = node.staticValue, caption = node.attr.caption;
+                    if (typeof id !== 'string' || !id || typeof caption !== 'string' || ids.has(id)) throw new TypeError('Invalid or duplicate store choice');
+                    ids.add(id);
+                    return {id, caption};
+                });
+            } else rows = parseChoices(this.parameters.values ?? '', this.parameters.separator);
             return rows.filter(row => Object.hasOwn(keywords, '_id') ? row.id === keywords._id
                 : row.caption.toLocaleLowerCase().includes(keywords._querystring.toLocaleLowerCase()));
         }

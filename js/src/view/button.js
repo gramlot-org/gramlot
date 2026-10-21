@@ -3,6 +3,7 @@
  * target selection; this binding owns execution, ask, delay and disposal.
  */
 
+import {invokeHook} from '../binding/hooks.js';
 
 export class ButtonBinding {
     #binding;
@@ -150,7 +151,7 @@ export class ButtonBinding {
                 if (this.binding.closed || this.element.disabled || result === null) return;
                 const values = {...read(), ...result};
                 if (result) values._askResult = result;
-                this.binding.runtime.inlineCompiler.compile(node, 'action', node.getAttr('action'), Object.keys(values))(values);
+                invokeHook(this.binding.runtime, node, 'action', node.getAttr('action'), values);
             };
             const ask = node.getAttr('ask');
             const askDialog = this.binding.runtime.askDialog;

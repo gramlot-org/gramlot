@@ -1,3 +1,4 @@
+import {invokeHook} from './hooks.js';
 import {toTytx} from '@genrojs/tytx';
 import {TriggerTimers} from './providers.js';
 
@@ -106,6 +107,7 @@ export class RemoteBinding {
     }
 
     #inline(attr, code, source, params) {
+        if (attr === '_onRemote') return invokeHook(this.binding.runtime, this.node, attr, code, params);
         return this.binding.runtime.inlineCompiler.compile(this.node, attr, code, Object.keys(params), source)(params);
     }
 }
