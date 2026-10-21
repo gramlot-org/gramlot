@@ -11194,3 +11194,14 @@ policy remains the owner-authorized CI policy recorded in constitution 11.84.
 
 
 Release qualification follow-up — 2026-10-21. The corrected drawer regression passes; all other 3,707 JS checks already passed in the complete run. Node and Bun mounted galleries pass all 84 lessons; the serverless gallery passes 85 lessons from disk without network requests. The offline exporter now bundles collection imports against the same window runtime as Logic. Core wheel/sdist build and the JSR package dry-run pass (161 files, including packaged themes). The core public documentation passes its 15-page boundary/link/anchor check. Publication is the next step; subsequent integration receipts remain separate.
+
+
+<a id="gc-070-1590"></a>
+
+## 1590. Intermediate core release receipt — 2026-10-21
+
+The owner-authorized tree, page, gallery and guide scope is consolidated in core v0.3.8. All required pull-request and release checks pass; npm, PyPI and JSR publication completed successfully in [the release workflow](https://github.com/gramlot-org/gramlot/actions/runs/39570890407). The published implementation includes Bag trees, text/structured sanitized HTML labels, icons and classes, hideValues, internal drag/drop, FramePage/IndexPage, lazy cancellable navigation and operator-only drawer transitions. GC-095 §110 contains the Python-first site-authoring recipe in the repository and its paired view.
+
+Qualification includes the complete core CI suites, Chromium/WebKit tree and layout checks, retained iframe navigation, native internal drop, and warning-free public documentation. Connected qualification covers 84 Python and JavaScript lessons, 85 offline pages, all five Python environments and Node/Bun. Examples v0.3.11 passed all publication checks. JavaScript integrations v0.2.15 passed all publication checks. Each connected repository maintains its own release receipt; hosted-gallery promotion is gated separately by registry availability and browser checks.
+
+The intermediate release excludes database selectors, Genropy experiments and editor ports. Same-application cross-window drag/drop, advanced typed callbacks and external drops remain outside this implementation; the existing upstream expected failure is unchanged. Original development checkouts and their excluded work are preserved. This receipt supersedes the no-publication statements of the earlier qualification checkpoints for the explicitly approved scope, without claiming new owner acceptance of deferred features.
