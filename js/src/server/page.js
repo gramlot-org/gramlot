@@ -1,4 +1,5 @@
 export * from './page-base.js';
+export {FramePage} from './frame-page.js';
 export {IndexPage} from './index-page.js';
 export {IndexLogic, mountIndexPage} from '../index-page-runtime.js';
 // The typed literals a page module authors in main(). In the browser the import map resolves only this name, so a

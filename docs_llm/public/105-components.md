@@ -1002,7 +1002,8 @@ thickness, `splitter_height` a horizontal separator's thickness;
 the shared style projection. Explicit individual styles override the style string.
 The `splitter_*` namespace is a Gramlot addition, not a claimed legacy API.
 
-`drawer=True` starts open; `drawer="close"` starts closed. A drawer also works
+`drawer=True` starts open; `drawer="close"` starts closed. Initial configuration and later Source/Data visibility changes are immediate.
+Only activation of the drawer handle starts the open/close transition; native keyboard activation follows the same path. A drawer also works
 with `splitter=False`: its handle toggles a fixed-size region. `drawer_label`
 provides the handle's HTML label; `drawer_top`, `drawer_left`, `drawer_width`,
 `drawer_height`, margins, `drawer_style` and `drawer_class` customize it. Keep the
@@ -1210,3 +1211,41 @@ tabs.contentPane(pageName="messages", title="Messages", icon="✉",
 ```
 
 Changing mode, position, alignment, icons or badge values never rebuilds panels or emits selection notifications. CSS owns layout and theme presentation. Existing --gramlot-tab-* tokens cover density, shape, palette and indicator/badge styling; mimi and joanna use their own compact defaults. Touch retains larger interaction targets and scrollable strips.
+
+
+<a id="gc-105-120"></a>
+
+## 120. Bag tree presentation
+
+Block ID: **GC-105-120**. Development increment.
+
+Load the `tree` collection and give `tree` a Data Bag through `storepath`. The component reads loaded values without evaluating resolvers during rendering; opening a branch evaluates its node resolver. `selectedPath` is a two-way path relative to the store. `autoCollapse=True` closes sibling branches when a branch opens.
+
+```python
+pane.tree(storepath=".items", hideValues=False,
+          selectedPath="^.selection", labelAttribute="caption",
+          selectedLabelClass="chosen-caption")
+```
+
+`hideValues` defaults to **False**: scalar values appear as children when their owning row is expanded. `True` hides them; use it explicitly for navigation. Zero, false and null are retained. A scalar child is only a visual row: selection reports its owning BagNode path, without creating another store node.
+
+Caption precedence is `getLabel`, then `labelAttribute`, then `labelCb`, then the BagNode label. A configured labelAttribute falls back to the node label when that attribute is absent. Attribute labels are always text.
+
+`labelCb`, `getLabel`, `getLabelClass` and `getIconClass` name synchronous browser Logic methods. Each receives `(sourceNode, {item, path, opened, selected})`; item is the real BagNode. Label callbacks return exactly one of `{text: string}` and `{html: string}`. HTML is sanitized with DOMPurify; scripts, event handlers, unsafe URLs, styles and form controls cannot supply application behavior. Use Gramlot commands for actions. There is no `innerHTML:` string sentinel.
+
+```javascript
+export class Logic {
+    caption(sourceNode, {item, opened}) {
+        return {text: `${item.label}${opened ? ' (open)' : ''}`};
+    }
+    richCaption(sourceNode, {selected}) {
+        return {html: selected ? '<strong>Selected</strong>' : '<em>Choose me</em>'};
+    }
+}
+```
+
+Class callbacks return a CSS class string. `getLabelClass` replaces the node's label classes; otherwise `labelClassOpened` or `labelClassClosed` overrides `labelClass`. `selectedLabelClass` is additive. `node_class` styles the node container. `getIconClass` replaces the default folder/file icon classes; an empty result hides the icon. Custom classes are also CSS parts, allowing external styles such as `gramlot-tree::part(chosen-caption) {font-weight: bold}` to reach the shadow tree.
+
+Structural parts include tree, group, node, branch, leaf, row, caption, icon, expander, spacer, value-node, value-row and value. Default icon parts distinguish branch-icon, leaf-icon, opened-icon and closed-icon. Named callbacks and live Bag attribute changes refresh the presentation. Callback results must satisfy their contract; asynchronous results and legacy string label callbacks are unsupported.
+
+Gallery: Input components → tree → Bag tree, Tree labels and classes, Tree callbacks, HTML and icons. Checkboxes for tree selection, filtering, badges, row actions, expansion commands and drag/drop remain subsequent increments; the example's hideValues checkbox is an ordinary bound control.

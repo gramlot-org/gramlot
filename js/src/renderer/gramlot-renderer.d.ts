@@ -32,6 +32,24 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     get binding(): unknown;
     /** The inline compiler of the page: the live renderer evaluates the `==` expressions. */
     get inlineCompiler(): unknown;
+    /** Local drag preparation only; null means disabled, unavailable or vetoed. Does not start a gesture. */
+    prepareDrag(node: SourceBagNode, event: {composedPath(): unknown[]}): {
+        dragValues: Record<string, unknown>; item: unknown; path: string | undefined;
+    } | null;
+    /** Dynamic target check only; declarative type/tag/effect checks are still required. */
+    checkDropTarget(node: SourceBagNode, context: {
+        dropValues: Record<string, unknown>; item: unknown; path: string | undefined;
+        source: Record<string, unknown>; selfdrop: boolean;
+        dropEffect: 'copy' | 'move' | 'link'; dataAvailable: boolean;
+    }): boolean;
+    /** Invoke the general onDrop action on already accepted data not consumed by typed actions. */
+    invokeDrop(node: SourceBagNode, context: {
+        dropValues: Record<string, unknown>; item: unknown; path: string | undefined;
+        source: Record<string, unknown>; selfdrop: boolean;
+        dropEffect: 'copy' | 'move' | 'link'; dataAvailable: boolean;
+    }): Promise<void>;
+    /** Origin callback, followed by local endDrag publication even if the callback fails. */
+    endDrag(node: SourceBagNode, context: {source: Record<string, unknown>; dropEffect: string}, topic: string): Promise<void>;
     /** The resolved projection of a node: runtime values, then the `==` expressions. */
     evaluateExpressions(node: SourceBagNode, runtimeAttrs: Record<string, unknown>): Record<string, unknown>;
     /** Render a node, or a structural Source fragment, to DOM; a data-element renders nothing. */

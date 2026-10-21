@@ -154,6 +154,12 @@ export class GramlotToolsInspector extends HTMLElement {
                 this.editChanged(node);
                 inspector.#applyEdit();
             }
+            booleanChanged(node) {
+                const row = ui.data.getItem(`editor.rows.${node.getAttr('data-row')}`);
+                if (row.getItem('type') !== 'boolean') return;
+                this.editChanged(node);
+                inspector.#applyEdit();
+            }
             typeChanged(node) {
                 const row = ui.data.getItem(`editor.rows.${node.getAttr('data-row')}`);
                 row.setItem('inputType', inspector.#inputType(row.getItem('type')));
@@ -680,8 +686,8 @@ export class GramlotToolsInspector extends HTMLElement {
                 for (const choice of choices) select.option(choice, {value: choice});
             } else cell.input({value: '^.text', type: '^.inputType', live: true, step: data.getItem('type') === 'integer' ? '1' : 'any', disabled: locked,
                 'aria-label': primary ? 'Value' : `${name || 'New attribute'} value`, 'data-row': row.label,
-                title: data.getItem('isNull') ? 'Null value. Backspace on an empty cell sets null.' : 'Enter to save; Escape to revert; Backspace on an empty cell sets null.',
-                connect_oninput: 'inspector.editChanged', connect_onkeydown: 'inspector.editKey'});
+                title: data.getItem('isNull') ? 'Null value. Backspace on an empty cell sets null.' : 'Checkboxes save immediately; Enter saves other values; Escape reloads; Backspace on an empty cell sets null.',
+                connect_oninput: 'inspector.editChanged', connect_onchange: 'inspector.booleanChanged', connect_onkeydown: 'inspector.editKey'});
             if (fresh) {
                 const type = cell.select({value: '^.type', 'aria-label': 'New attribute type', 'data-row': row.label, connect_onchange: 'inspector.typeChanged'});
                 for (const value of editorTypes) type.option(value, {value});

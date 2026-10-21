@@ -221,12 +221,12 @@ test('file server: the Logic export of the page module is the page logic, else t
     assert.deepEqual(bootstrapArguments(opened.html).resources.js, [{url: '/app/single.js', group: null}]);
 }));
 
-test('bootstrap: the import map points @gramlot/gramlot/page to the runtime, with the mount prefix and the nonce', async () => {
+test('bootstrap: the import map shares one runtime for page and component imports, with the mount prefix and the nonce', async () => {
     const server = new MemoryServer({css: [], js: []}, {runtimeUrl: '/static/gramlot.js'});
     for (const [prefix, runtime] of [['', '/static/gramlot.js'], ['/app', '/app/static/gramlot.js']]) {
         const opened = await server.openPage('/', {prefix});
         const map = `<script type="importmap" nonce="${opened.nonce}">` +
-            `{"imports":{"@gramlot/gramlot/page":"${runtime}"}}</script></head>`;
+            `{"imports":{"@gramlot/gramlot/page":"${runtime}","@gramlot/gramlot":"${runtime}"}}</script></head>`;
         assert.ok(opened.html.includes(map), prefix);
         assert.ok(opened.html.indexOf('type="importmap"') < opened.html.indexOf('type="module"'));
     }

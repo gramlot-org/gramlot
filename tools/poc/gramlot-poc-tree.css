@@ -1,6 +1,6 @@
 /* Copyright 2025-2026 Softwell S.r.l. - SPDX-License-Identifier: Apache-2.0
  * Inspector subset of the DevTools storeTree stylesheet and inspector.css variables. */
-:host { display:block; font:var(--tree-font-size,11px)/var(--tree-row-height,18px) -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:#38414b; }
+:host { display:block; font:var(--tree-font-size,11px)/var(--tree-row-height,18px) -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:var(--gramlot-ink, #38414b); }
 :host([hidden]) { display:none; }
 ul { list-style:none; margin:0; padding-left:17px; }
 .tree-root { padding-left:calc(var(--tree-action-size,14px) + 2px); }
@@ -9,28 +9,28 @@ summary, .leaf { position:relative; }
 li { line-height:var(--tree-row-height,18px); }
 summary { display:flex; align-items:center; gap:7px; padding:0 5px; cursor:pointer; user-select:none; list-style:none; }
 summary::-webkit-details-marker { display:none; }
-summary::before { content:''; width:5px; height:5px; border-right:1.5px solid #78818a; border-bottom:1.5px solid #78818a; transform:rotate(-45deg); flex:none; margin:0 3px; }
+summary::before { content:''; width:5px; height:5px; border-right:1.5px solid var(--gramlot-text-secondary, #78818a); border-bottom:1.5px solid var(--gramlot-text-secondary, #78818a); transform:rotate(-45deg); flex:none; margin:0 3px; }
 details[open] > summary::before { transform:rotate(45deg); }
 .leaf { display:flex; align-items:center; gap:7px; padding:0 5px 0 23px; cursor:pointer; }
-summary:hover,.leaf:hover { background:#f0f3f6; }
-.selected,.selected:hover { background:transparent; color:#315dbd; font-weight:700; border-radius:2px; }
+summary:hover,.leaf:hover { background:var(--gramlot-surface-subtle, #f0f3f6); }
+.selected,.selected:hover { background:transparent; color:var(--gramlot-action, #315dbd); font-weight:700; border-radius:2px; }
 .caption { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* Reserve a left gutter; showing an action must not shift the node label. */
 .actions { position:absolute; left:calc(-1 * var(--tree-action-size,14px)); top:0; display:inline-flex; opacity:0; pointer-events:none; }
 summary:hover > .actions,.leaf:hover > .actions,summary:focus-visible > .actions,.leaf:focus-visible > .actions,
 .actions:has(button:focus-visible),.actions:has(button.active) { opacity:1; pointer-events:auto; }
-.actions button { border:0; background:transparent; color:#80868b; font:inherit; font-size:11px; line-height:var(--tree-row-height,18px); width:var(--tree-action-size,14px); height:var(--tree-row-height,18px); padding:0; cursor:pointer; border-radius:3px; }
-.actions button:hover { background:#e1e5ed; }
+.actions button { border:0; background:transparent; color:var(--gramlot-text-secondary, #80868b); font:inherit; font-size:11px; line-height:var(--tree-row-height,18px); width:var(--tree-action-size,14px); height:var(--tree-row-height,18px); padding:0; cursor:pointer; border-radius:3px; }
+.actions button:hover { background:var(--gramlot-selected, #e1e5ed); }
 .actions button[data-action=breakpoint] { font-size:0; }
 .actions button[data-action=breakpoint]::before { content:''; display:inline-block; box-sizing:border-box; width:8px; height:8px; border:1.5px solid currentColor; border-radius:50%; vertical-align:middle; }
-.actions button.active { color:#b3261e; }
-.actions button.active.conditional { color:#f9ab00; }
+.actions button.active { color:var(--gramlot-error, #b3261e); }
+.actions button.active.conditional { color:var(--gramlot-warning, #f9ab00); }
 .actions button.active[data-action=breakpoint]::before { background:currentColor; }
-.actions button:focus-visible,summary:focus-visible,.leaf:focus-visible { outline:2px solid #356f9f; outline-offset:-2px; }
+.actions button:focus-visible,summary:focus-visible,.leaf:focus-visible { outline:2px solid var(--gramlot-focus-ring, #356f9f); outline-offset:-2px; }
 
 @media (hover: none) { .actions { opacity:1; pointer-events:auto; } }
 
 .actions-end { position:static; margin-left:auto; flex:none; }
-[data-drop=inside] { outline:2px solid #356f9f; outline-offset:-2px; background:#e7f0fc; }
-[data-drop=before] { box-shadow:inset 0 2px #356f9f; }
-[data-drop=after] { box-shadow:inset 0 -2px #356f9f; }
+[data-drop=inside] { outline:2px solid var(--gramlot-focus-ring, #356f9f); outline-offset:-2px; background:var(--gramlot-selected, #e7f0fc); }
+[data-drop=before] { box-shadow:inset 0 2px var(--gramlot-focus-ring, #356f9f); }
+[data-drop=after] { box-shadow:inset 0 -2px var(--gramlot-focus-ring, #356f9f); }

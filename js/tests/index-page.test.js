@@ -1,24 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {Gramlot, GramlotBuilder, IndexPage, IndexLogic} from '../src/index.js';
+import {Gramlot, GramlotBuilder, IndexPage, IndexLogic, Bag} from '../src/index.js';
 import {GramlotServer, PageNotFound} from '../src/server/gramlot-server.js';
 class App extends IndexPage {
     static installable = true;
     static appIcon = '/icon.png';
-    static navigation = [{key:'work',title:'Work',children:[{key:'one',title:'One',url:'one'},{key:'two',title:'Two',url:'two'}]}];
+    static navigation = new Bag();
 }
 class Server extends GramlotServer {
     async resolvePage() { return App; }
     async resolveResources() { return {css:[],js:[]}; }
 }
-test('the index lists its own theme; the base theme comes from the server', async () => {
+test('the frame inherits the host theme without a hardcoded index theme', async () => {
     class Listing extends Server { async resolveResources(path, PageClass) { return {css:[...PageClass.css],js:[]}; } }
     const links = async server => JSON.parse(/"css":(\[.*?\])/.exec((await server.openPage('/')).html)[1]);
-    assert.deepEqual(IndexPage.css, ['/themes/gramlot-index/theme.css']);
-    assert.deepEqual(await links(new Listing()), ['/themes/gramlot-base/theme.css', '/themes/gramlot-index/theme.css']);
-    assert.deepEqual(await links(new Listing({cssTheme:'mimi'})), ['/themes/mimi/theme.css', '/themes/gramlot-index/theme.css']);
-    assert.deepEqual(await links(new Listing({cssTheme:false})), ['/themes/gramlot-index/theme.css']);
+    assert.deepEqual(IndexPage.css, []);
+    assert.deepEqual(await links(new Listing()), ['/themes/gramlot-base/theme.css']);
+    assert.deepEqual(await links(new Listing({cssTheme:'mimi'})), ['/themes/mimi/theme.css']);
+    assert.deepEqual(await links(new Listing({cssTheme:false})), []);
 });
 test('root manifest has mount-scoped URLs, no session; child does not advertise it', async () => {
     const server = new Server();
@@ -31,106 +31,53 @@ test('root manifest has mount-scoped URLs, no session; child does not advertise 
     const old=App.installable; App.installable=false;
     await assert.rejects(server.pageManifest(), PageNotFound); App.installable=old;
 });
-function fixture(custom=false, prepare=()=>{}) {
-    const document=new JSDOM('<main id="gramlot-root"></main>',{url:'https://example.test/app/'}).window.document;
-    prepare(document.defaultView);
-    class TestPage extends App { footer(pane) { if(custom) pane.p('Custom footer'); else super.footer(pane); } }
-    const builder=new GramlotBuilder(); new TestPage().main(builder.root);
-    const app=new Gramlot({document,transport:false});
-    app.src.logicRegistry.register(IndexLogic,{resource:'fixture'});
-    app.src.startSource(builder.source);
-    return {app,document,get:id=>document.getElementById(id)};
-}
-test('index opens pages lazily, reuses iframe and keeps Source selection',()=>{
-    const f=fixture();
-    assert.equal(f.document.querySelectorAll('iframe[src]').length,0);
-    f.get('open-one').click(); const frame=f.get('frame-one');
-    assert.equal(frame.getAttribute('src'),'one');
-    f.get('open-two').click(); f.get('open-one').click();
-    assert.equal(f.get('frame-one'),frame);
-    assert.equal(f.get('panel-one').hidden,false);
-    assert.equal(f.get('panel-two').hidden,true);
-    f.app.dispose();
-});
-test('custom footer can replace every standard control',()=>{const f=fixture(true);f.get('open-one').click();assert.equal(f.get('panel-one').hidden,false);f.app.dispose();});
-test('GenroPy appearances replace the current CSS and survive remount independently of color mode',()=>{
-    const f=fixture(),win=f.document.defaultView;
-    const select=(id,value)=>{f.get(id).value=value;f.get(id).dispatchEvent(new win.Event('change'));};
-    select('index-appearance','mimi');select('index-theme','dark');
-    const css=()=>[...f.document.querySelectorAll('style')].map(el=>el.textContent).join('\n');
-    assert.match(css(),/--gramlot-field-height: 18px/);
-    select('index-appearance','joanna');
-    assert.match(css(),/--gramlot-field-height: 20px/);
-    assert.doesNotMatch(css(),/--gramlot-field-height: 18px/);
-    const saved=win.localStorage.getItem('gramlot.index.preferences:/app/');f.app.dispose();
-    const g=fixture(false,w=>w.localStorage.setItem('gramlot.index.preferences:/app/',saved));
-    assert.equal(g.get('index-appearance').value,'joanna');
-    assert.equal(g.get('index-theme').value,'dark');g.app.dispose();
-});
-test('sidebar and theme preferences survive remount; disposed listeners stop',()=>{
-    const f=fixture();f.get('index-theme').value='dark';f.get('index-theme').dispatchEvent(new f.document.defaultView.Event('change'));
-    f.get('index-sidebar-divider').dispatchEvent(new f.document.defaultView.KeyboardEvent('keydown',{key:'ArrowRight'}));
-    const saved=f.document.defaultView.localStorage.getItem('gramlot.index.preferences:/app/');
-    f.app.dispose();const g=fixture(false,w=>w.localStorage.setItem('gramlot.index.preferences:/app/',saved));
-    assert.equal(g.get('index-theme').value,'dark');assert.equal(g.get('index-sidebar-divider').getAttribute('aria-valuenow'),'250');g.app.dispose();
-});
 
-test('install action uses a browser-provided prompt once, and reports dismissal',async()=>{
-    const f=fixture();let calls=0;
-    const event=new f.document.defaultView.Event('beforeinstallprompt',{cancelable:true});
-    event.prompt=async()=>{calls++;};event.userChoice=Promise.resolve({outcome:'dismissed'});
-    f.document.defaultView.dispatchEvent(event);
-    assert.equal(event.defaultPrevented,true);assert.equal(f.get('index-install-button').hidden,false);
-    f.get('index-install-button').click();await new Promise(r=>setTimeout(r,0));
-    assert.equal(calls,1);assert.match(f.get('index-install-status').textContent,/cancelled/);
-    f.app.dispose();
-    const later=new f.document.defaultView.Event('beforeinstallprompt',{cancelable:true});
-    f.document.defaultView.dispatchEvent(later);assert.equal(later.defaultPrevented,false);
+test('index panel hook receives a BagNode snapshot and authors an iframe', () => {
+    const b = new GramlotBuilder(); const selection = new Bag();
+    selection.setItem('one', null, {title:'One', url:'/one'});
+    new App().index_panel(b.root, {selection});
+    const iframe = b.source.getNodes()[0];
+    assert.equal(iframe.nodeTag, 'iframe');
+    assert.equal(iframe.getAttr('src'), '/one');
+    assert.equal(iframe.getAttr('title'), 'One');
 });
 
 test('container index creates Source on demand, deduplicates pending requests and retains loaded panels', async t => {
     const {default: layout} = await import('../src/components/layout.js');
+    const {default: tree} = await import('../src/components/tree.js');
     const {mountIndexPage} = await import('../src/index-page-runtime.js');
     const document = new JSDOM('<main id="gramlot-root"></main>', {url: 'https://index.test/'}).window.document;
     document.defaultView.ResizeObserver = class {observe() {} unobserve() {} disconnect() {}};
     document.defaultView.HTMLElement.prototype.scrollIntoView = function () {};
-    const builder = new GramlotBuilder(null, {collections: [layout.toDocument()]});
-    const shell = builder.root.div({id: 'index'});
-    shell.html_button('Navigation', {id: 'index-navigation-toggle'});
-    shell.html_button('Code', {id: 'index-code-toggle'});
-    const regions = shell.borderContainer({data_index_regions: true, nodeId: 'regions'});
-    const sidebar = regions.contentPane({region: 'left', id: 'index-sidebar', class: 'index-sidebar', nodeId: 'nav'});
-    const links = sidebar.details({open: true});
-    for (const key of ['one', 'two']) links.a(key, {id: `open-${key}`, href: key});
-    shell.dataSetter({destination_path: 'indexState.active', value: 'intro'});
-    const pages = regions.contentPane({region: 'center'}).tabContainer({id: 'index-pages', selectedPage: '^indexState.active'});
-    pages.contentPane({id: 'panel-intro', title: 'Intro', pageName: 'intro'}).p('Welcome');
-    regions.contentPane({region: 'right', id: 'index-code', nodeId: 'code'}).div('Code');
-    const app = new Gramlot({document, transport: false, collections: [layout]}).src.startSource(builder.source);
+    const navigation = new Bag();
+    for (const key of ['one', 'two']) navigation.setItem(key, null, {title:key, url:'/'+key});
+    class Listing extends IndexPage {static navigation = navigation; behavior() {}}
+    const builder = new GramlotBuilder(null, {collections: [layout, tree]});
+    new Listing().main(builder.root);
+    const app = new Gramlot({document, transport:false, collections:[layout, tree]}).src.startSource(builder.source);
     t.after(() => {app.dispose(); document.defaultView.close();});
     const renderer = app.src.renderer;
-    const node = id => renderer.elements.get(document.getElementById(id)).node;
+    const root = renderer.elements.get(document.getElementById('index')).node;
     const calls = [], gates = new Map();
-    const state = app.data.getItem('indexState');
-    mountIndexPage(renderer, node('index'), () => {}, () => {}, {containerLayout: true, state,
-        async createEntry({key}) {
-            calls.push(key);
-            await new Promise(resolve => gates.set(key, resolve));
-            app.src.builder.wrapSource(node('index-pages')).contentPane({id: `panel-${key}`, pageName: key, title: key, hidden: true})
-                .iframe({id: `frame-${key}`});
+    const state = app.data.getItem('index');
+    mountIndexPage(renderer, root, () => {}, () => {}, {state,
+        async createEntry({url, pane}) {
+            calls.push(url);
+            await new Promise(resolve => gates.set(url, resolve));
+            app.src.builder.wrapSource(pane).iframe({id: 'frame-'+url.slice(1)});
         },
     });
     const settle = () => new Promise(resolve => setTimeout(resolve, 0));
-    document.getElementById('open-one').click(); document.getElementById('open-one').click();
-    document.getElementById('open-two').click(); await settle();
-    assert.deepEqual(calls, ['one', 'two']);
-    gates.get('two')(); await settle();
-    assert.equal(state.getItem('active'), 'two');
-    gates.get('one')(); await settle();
-    assert.equal(state.getItem('active'), 'two');
+    state.setItem('navigationSelection', 'one'); state.setItem('navigationSelection', 'one');
+    state.setItem('navigationSelection', 'two'); await settle();
+    assert.deepEqual(calls, ['/one', '/two']);
+    gates.get('/two')(); await settle();
+    assert.equal(state.getItem('active'), '/two');
+    gates.get('/one')(); await settle();
+    assert.equal(state.getItem('active'), '/two');
     const frame = document.getElementById('frame-one');
-    document.getElementById('open-one').click(); await settle();
-    assert.equal(state.getItem('active'), 'one');
+    state.setItem('navigationSelection','one'); await settle();
+    assert.equal(state.getItem('active'), '/one');
     assert.equal(document.getElementById('frame-one'), frame);
-    assert.deepEqual(calls, ['one', 'two']);
+    assert.deepEqual(calls, ['/one', '/two']);
 });

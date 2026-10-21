@@ -1,12 +1,11 @@
+import type {Bag, BagNode} from '@genrojs/bag';
+export interface IndexEntry {url: string; path: string; node: BagNode; pane: any; title: string; loading: boolean;}
 export function mountIndexPage(renderer: any, root: any,
-    onSelection?: (entries: Map<string, any>, active: string) => void,
-    prepareEntry?: (entry: any, context: any) => void,
-    options?: {containerLayout?: boolean; state?: any; createEntry?: (entry: any) => Promise<void>;
-        onLoad?: (key: string, status: string, error?: Error) => void}): {dispose(): void};
-/** Re-export as Logic, or delegate indexMount from an application's Logic. */
-export class IndexLogic {
-    indexMount(node: any, args: {shell_id: string}): void;
-}
+    onSelection?: (entries: Map<string, IndexEntry>, active: string | null) => void,
+    prepareEntry?: (entry: IndexEntry) => void,
+    options?: {state?: Bag; createEntry?: (entry: IndexEntry) => Promise<void>;
+        onLoad?: (url: string, status: string, error?: Error) => void}): {entries: Map<string, IndexEntry>; dispose(): void};
+export class IndexLogic {indexMount(node: any, args: {shell_id: string}): void;}
 export const THEME_READY: string;
 export const THEME_SET: string;
 export const THEMES: Set<string>;

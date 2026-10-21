@@ -43,6 +43,10 @@ selection, connections and live updates remain. The gallery uses this for its
 separate mobile Inspector view. This differs from `embedded`, which chooses the
 initial DevTools structure when the component connects.
 
+The inspector inherits the hosting document’s `--gramlot-*` theme colors and
+`color-scheme`, including live light/dark changes. Its internal shadow panels,
+tree, property editors and dialogs share those colors.
+
 A bundler or import map must resolve the optional package entry.
 Assign the instance explicitly once it exists; the component does not discover
 frames or read a global automatically. Assign `null` to detach the target. Close
@@ -53,7 +57,8 @@ Use the right −/+ button beside Close to collapse/expand the palette. Its size
 breakpoints are retained, and live updates continue while collapsed.
 The lower-right corner resizes it. Use the disclosure arrows to collapse branches
 and click a node to edit its value and attributes in the panel below the tree.
-The Properties grid saves when you leave a row or press Enter; Escape reloads
+Boolean checkboxes and enumerated choices in Properties save immediately on change.
+Other editable cells save when you leave a row or press Enter; Escape reloads
 the selected node. The + button adds an attribute and the row’s trash icon removes
 it. Existing property names and types stay fixed. Drag the divider to resize the
 tree and properties areas, or focus it and use the arrow keys.

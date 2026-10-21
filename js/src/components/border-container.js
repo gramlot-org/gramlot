@@ -116,6 +116,7 @@ export const BorderContainer = defineComponent({
                     grid-template-columns:var(--left,0px) minmax(0,1fr) var(--right,0px);
                     grid-template-rows:var(--top,0px) minmax(0,1fr) var(--bottom,0px);
                     grid-template-areas:'top top top' 'left center right' 'bottom bottom bottom'}
+                .control-box[data-drawer-motion]{transition:grid-template-columns var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),grid-template-rows var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out)}
                 .control-box[data-design=sidebar]{grid-template-areas:'left top right' 'left center right' 'left bottom right'}
                 .region{position:relative;min-width:0;min-height:0;overflow:visible}
                 .viewport{height:100%;min-width:0;min-height:0;overflow:auto}
@@ -123,7 +124,10 @@ export const BorderContainer = defineComponent({
                 .region[data-side=right]>.viewport{padding-left:var(--region-splitter,0px)}
                 .region[data-side=top]>.viewport{padding-bottom:var(--region-splitter,0px)}
                 .region[data-side=bottom]>.viewport{padding-top:var(--region-splitter,0px)}
-                .viewport[hidden]{display:none}::slotted(*){min-height:0}
+                .viewport[hidden]{display:none}
+                .control-box[data-drawer-motion] .viewport{transition:opacity var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out);opacity:1;visibility:visible}
+                .control-box[data-drawer-motion] .viewport[hidden]{display:block;opacity:0;visibility:hidden;
+                    transition:opacity var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),visibility 0s var(--gramlot-drawer-duration,.24s)}::slotted(*){min-height:0}
                 .separator{position:absolute;z-index:2;touch-action:none;user-select:none;background:var(--gramlot-splitter-background,var(--gramlot-border-control,#aaa))}
                 .separator[data-axis=x]{top:0;bottom:0;width:var(--gramlot-splitter-size,1px);cursor:col-resize}
                 .separator[data-axis=y]{left:0;right:0;height:var(--gramlot-splitter-size,1px);cursor:row-resize}
@@ -140,19 +144,19 @@ export const BorderContainer = defineComponent({
                 .separator:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:1px}
                 .drawer{position:absolute;z-index:3;cursor:pointer;appearance:none;font:inherit;
                     font-size:var(--gramlot-drawer-font-size,11px);line-height:1.2;white-space:nowrap;
-                    --drawer-background:var(--gramlot-drawer-background,#777);
+                    --drawer-background:var(--gramlot-drawer-background,var(--gramlot-text-secondary,#777));
                     color:var(--gramlot-drawer-color,hsl(from var(--drawer-background) 0 0 clamp(20,calc((60 - l) * 1000),100)));
                     background:var(--drawer-background);outline:none;
                     border:0;border-radius:0;box-shadow:none;
                     min-width:0;min-height:0;padding:0;
-                    opacity:var(--gramlot-drawer-opacity,.45);
-                    transition:opacity var(--gramlot-drawer-duration,.16s) var(--gramlot-drawer-easing,ease-out),
-                        transform var(--gramlot-drawer-duration,.16s) var(--gramlot-drawer-easing,ease-out),
-                        width var(--gramlot-drawer-duration,.16s) var(--gramlot-drawer-easing,ease-out),
-                        height var(--gramlot-drawer-duration,.16s) var(--gramlot-drawer-easing,ease-out),
-                        max-width var(--gramlot-drawer-duration,.16s) var(--gramlot-drawer-easing,ease-out),
-                        max-height var(--gramlot-drawer-duration,.16s) var(--gramlot-drawer-easing,ease-out),
-                        margin var(--gramlot-drawer-duration,.16s) var(--gramlot-drawer-easing,ease-out)}
+                    opacity:var(--gramlot-drawer-opacity,.20);
+                    transition:opacity var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),
+                        transform var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),
+                        width var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),
+                        height var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),
+                        max-width var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),
+                        max-height var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),
+                        margin var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out)}
                 .drawer:hover,.drawer:focus-visible{opacity:var(--gramlot-drawer-active-opacity,1)}
                 [data-axis=x]>.drawer[data-resizable]{cursor:col-resize}
                 [data-axis=y]>.drawer[data-resizable]{cursor:row-resize}
@@ -162,18 +166,18 @@ export const BorderContainer = defineComponent({
                     .separator>.drawer:is([data-labelled],[data-icon]):hover{transform:scale(var(--gramlot-drawer-label-hover-scale,1.04))}
                 }
                 
-                [data-axis=x]>.drawer{--drawer-closed-width:var(--gramlot-drawer-thickness,4px);--drawer-closed-height:var(--gramlot-drawer-length,28px);
-                    top:50%;margin-top:calc(var(--gramlot-drawer-length,28px) / -2);width:var(--drawer-closed-width);height:var(--drawer-closed-height)}
-                [data-axis=y]>.drawer{--drawer-closed-width:var(--gramlot-drawer-length,28px);--drawer-closed-height:var(--gramlot-drawer-thickness,4px);
-                    left:50%;margin-left:calc(var(--gramlot-drawer-length,28px) / -2);width:var(--drawer-closed-width);height:var(--drawer-closed-height)}
+                [data-axis=x]>.drawer{--drawer-closed-width:var(--gramlot-drawer-thickness,6px);--drawer-closed-height:var(--gramlot-drawer-length,40px);
+                    top:50%;margin-top:calc(var(--gramlot-drawer-length,40px) / -2);width:var(--drawer-closed-width);height:var(--drawer-closed-height)}
+                [data-axis=y]>.drawer{--drawer-closed-width:var(--gramlot-drawer-length,40px);--drawer-closed-height:var(--gramlot-drawer-thickness,6px);
+                    left:50%;margin-left:calc(var(--gramlot-drawer-length,40px) / -2);width:var(--drawer-closed-width);height:var(--drawer-closed-height)}
                 .drawer::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
                     width:max(100%,var(--gramlot-touch-target,var(--gramlot-drawer-hit-target,12px)));height:max(100%,var(--gramlot-touch-target,var(--gramlot-drawer-hit-target,12px)))}
                 .drawer{--drawer-reveal-width:var(--gramlot-drawer-reveal-width,var(--drawer-content-width,0px));--drawer-reveal-height:var(--gramlot-drawer-reveal-height,var(--drawer-content-height,0px))}
                 .drawer[data-labelled]{opacity:var(--gramlot-drawer-active-opacity,1)}
-                [data-side=left]>.drawer{transform-origin:left center;left:100%;border-left:0;border-radius:0 var(--gramlot-radius-sm,4px) var(--gramlot-radius-sm,4px) 0}
-                [data-side=right]>.drawer{transform-origin:right center;right:100%;border-right:0;border-radius:var(--gramlot-radius-sm,4px) 0 0 var(--gramlot-radius-sm,4px)}
-                [data-side=top]>.drawer{transform-origin:center top;top:100%;border-top:0;border-radius:0 0 var(--gramlot-radius-sm,4px) var(--gramlot-radius-sm,4px)}
-                [data-side=bottom]>.drawer{transform-origin:center bottom;bottom:100%;border-bottom:0;border-radius:var(--gramlot-radius-sm,4px) var(--gramlot-radius-sm,4px) 0 0}
+                [data-side=left]>.drawer{transform-origin:left center;left:100%;border-left:0;border-radius:0 calc(var(--gramlot-radius-sm,4px) * 2) calc(var(--gramlot-radius-sm,4px) * 2) 0}
+                [data-side=right]>.drawer{transform-origin:right center;right:100%;border-right:0;border-radius:calc(var(--gramlot-radius-sm,4px) * 2) 0 0 calc(var(--gramlot-radius-sm,4px) * 2)}
+                [data-side=top]>.drawer{transform-origin:center top;top:100%;border-top:0;border-radius:0 0 calc(var(--gramlot-radius-sm,4px) * 2) calc(var(--gramlot-radius-sm,4px) * 2)}
+                [data-side=bottom]>.drawer{transform-origin:center bottom;bottom:100%;border-bottom:0;border-radius:calc(var(--gramlot-radius-sm,4px) * 2) calc(var(--gramlot-radius-sm,4px) * 2) 0 0}
                 .drawer:is([data-labelled],[data-icon]){width:max-content;height:max-content;padding:0}
                 .drawer-viewport{display:block;overflow:hidden;min-width:0;min-height:0;max-width:inherit;max-height:inherit}
                 .drawer-content{display:flex;width:max-content;height:max-content;align-items:center;gap:var(--gramlot-drawer-content-gap,4px);box-sizing:border-box;
@@ -187,7 +191,7 @@ export const BorderContainer = defineComponent({
                 .separator[data-axis=x]>.drawer.drawer-rotated{margin-top:0;translate:0 -50%}
                 /* Icon and caption reveal as one unit; the resting grip stays thin. */
                 .separator>.drawer.drawer-reveal:is([data-labelled],[data-icon]){--drawer-open:var(--gramlot-drawer-reveal,0);
-                    opacity:calc(var(--gramlot-drawer-opacity,.45) + (var(--gramlot-drawer-active-opacity,1) - var(--gramlot-drawer-opacity,.45)) * var(--drawer-open));
+                    opacity:calc(var(--gramlot-drawer-opacity,.20) + (var(--gramlot-drawer-active-opacity,1) - var(--gramlot-drawer-opacity,.20)) * var(--drawer-open));
                     display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);
                     min-width:0;min-height:0;
                     max-width:calc(var(--drawer-closed-width) + (var(--drawer-reveal-width) - var(--drawer-closed-width)) * var(--drawer-open));
@@ -195,12 +199,12 @@ export const BorderContainer = defineComponent({
                 .separator[data-axis=x]>.drawer.drawer-reveal{margin-top:0;translate:0 -50%}
                 [data-axis=y]>.drawer:is([data-labelled],[data-icon]){margin-left:0;translate:-50% 0}
                 .drawer-reveal .drawer-content{opacity:var(--drawer-open);
-                    transition:opacity var(--gramlot-drawer-duration,.16s) var(--gramlot-drawer-easing,ease-out)}
+                    transition:opacity var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out)}
                 @media (hover:none),(pointer:coarse){.separator>.drawer.drawer-reveal:is([data-labelled],[data-icon]){--drawer-open:1}}
                 @media (hover:hover){.separator>.drawer.drawer-reveal:is([data-labelled],[data-icon]):hover{--drawer-open:1;transform:scale(var(--gramlot-drawer-label-hover-scale,1.04))}}
                 .separator>.drawer:is([data-labelled],[data-icon]):is(:active,[data-active]){transform:scale(var(--gramlot-drawer-label-hover-scale,1.04))}
                 .separator>.drawer.drawer-reveal:is([data-labelled],[data-icon]):is(:focus-visible,:active,[data-active]){--drawer-open:1;transform:scale(var(--gramlot-drawer-label-hover-scale,1.04))}
-                @media (prefers-reduced-motion:reduce){.drawer,.drawer-reveal .drawer-content{transition:none}}
+                @media (prefers-reduced-motion:reduce){.drawer,.drawer-reveal .drawer-content,.control-box[data-drawer-motion],.control-box[data-drawer-motion] .viewport{transition:none!important}}
                 .drawer[hidden],.separator[hidden]{display:none}
                 .drag-cover{position:absolute;inset:0;z-index:4;display:none}
                 :host{position:relative}.drag-cover[data-active]{display:block}`;
@@ -236,7 +240,7 @@ export const BorderContainer = defineComponent({
                     drawer.addEventListener('click', evt => {
                         evt.stopPropagation();
                         if (state.suppressDrawerClick && evt.detail !== 0) { state.suppressDrawerClick = false; return; }
-                        state.closed = !state.closed; this.#render(side);
+                        state.closed = !state.closed; this.#render(side, true);
                         state.config.onToggle?.(evt, !state.closed);
                     });
                 }
@@ -245,6 +249,13 @@ export const BorderContainer = defineComponent({
             }
             this.cover = doc.createElement('div'); this.cover.className = 'drag-cover';
             this.shadowRoot.append(style, this.cover);
+            this.control.addEventListener('transitionend', event => {
+                if (event.target !== this.control) return;
+                this.control.removeAttribute('data-drawer-motion');
+                for (const [side, state] of this.#regions) {
+                    state.separator?.setAttribute('aria-valuenow', String(Math.round(this.#extent(side))));
+                }
+            });
             this.#observer = new doc.defaultView.MutationObserver(() => this.#sync());
         }
         connectedCallback() {
@@ -306,11 +317,22 @@ export const BorderContainer = defineComponent({
             }
             this.#render(side);
         }
-        #render(side) {
+        #render(side, animate = false) {
             const state = this.#regions.get(side), c = state.config;
             const visible = !!c && !c.hidden && !state.closed;
             const previous = state.visibility;
             state.visibility = c ? {open: visible, drawer: !!c.drawer} : null;
+            // Retain the viewport through the closing transition, but disable interaction immediately.
+            state.viewport.inert = !visible;
+            if (previous && previous.open !== visible) {
+                this.control.toggleAttribute('data-drawer-motion', !!c?.drawer && animate && !this.#drag);
+                if (this.control.hasAttribute('data-drawer-motion')) {
+                    const durations = this.ownerDocument.defaultView.getComputedStyle(this.control).transitionDuration;
+                    if (durations.split(',').every(duration => Number.parseFloat(duration) === 0)) {
+                        this.control.removeAttribute('data-drawer-motion');
+                    }
+                }
+            }
             state.viewport.hidden = !visible;
             if (side === 'center') return;
             this.control.style.setProperty(`--${side}`, visible ? state.size : '0px');
@@ -335,6 +357,7 @@ export const BorderContainer = defineComponent({
         }
         #extent(side) { const box = this.#regions.get(side).cell.getBoundingClientRect(); return horizontal(side) ? box.height : box.width; }
         #resize(side, desired) {
+            this.control.removeAttribute('data-drawer-motion');
             const state = this.#regions.get(side), c = state.config;
             const opposite = {left:'right',right:'left',top:'bottom',bottom:'top'}[side];
             const box = this.control.getBoundingClientRect();

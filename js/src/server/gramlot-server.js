@@ -244,7 +244,8 @@ export class GramlotServer {
                 head.link({rel: 'manifest', href: prefix + '/app.webmanifest'});
             }
             // A page module served for its Logic imports the core from the runtime already loaded.
-            head.script(scriptJson({imports: {'@gramlot/gramlot/page': prefixed(prefix, this.runtimeUrl)}}),
+            head.script(scriptJson({imports: {'@gramlot/gramlot/page': prefixed(prefix, this.runtimeUrl),
+                '@gramlot/gramlot': prefixed(prefix, this.runtimeUrl)}}),
                 {type: 'importmap', nonce});
             const body = root.body();
             body.div({id: this.rootId});

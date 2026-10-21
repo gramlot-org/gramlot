@@ -1,15 +1,11 @@
-import {Page} from './page.js';
-export interface IndexItem { key: string; title: string; url: string; }
-export interface IndexGroup { key: string; title: string; children: IndexItem[]; }
-/** One index shell per document. Override footer to replace or extend standard controls. */
-export class IndexPage extends Page {
-    static logoUrl: string;
-    static shellId: string;
-    static navigation: IndexGroup[];
-    introduction(pane: any): void;
-    groupPanel(pane: any, group: IndexGroup): void;
-    panel(pane: any, item: IndexItem): void;
-    header(shell: any): void;
-    footer(pane: any): void;
-    behavior(pane: any): void;
+import {FramePage} from './frame-page.js';
+import type {Bag, BagNode} from '@genrojs/bag';
+/** Tree navigation on a Bag and URL-identified retained tab panels. */
+export class IndexPage extends FramePage {
+    static navigation: Bag;
+    static datapath: string;
+    left(pane: any): void;
+    center(pane: any): void;
+    panel(pane: any, node: BagNode): void;
+    index_panel(pane: any, params: {selection: Bag}): void;
 }

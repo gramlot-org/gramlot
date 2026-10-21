@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "license": "Apache-2.0",
   "exports": {
     ".": "./js/src/index.js",
@@ -13,14 +13,16 @@
     "./tools/inspector-agent": "./js/tools/inspector-agent.js",
     "./components": "./js/src/components/index.js",
     "./components/inputs": "./js/src/components/inputs.js",
-    "./components/layout": "./js/src/components/layout.js"
+    "./components/layout": "./js/src/components/layout.js",
+    "./components/tree": "./js/src/components/tree.js"
   },
   "imports": {
     "@genrojs/bag": "jsr:@genro/bag@^0.11.0",
     "@genrojs/builders": "jsr:@genro/builders@^0.7.0",
     "@genrojs/tytx": "jsr:@genro/tytx@^0.16.3",
     "@gramlot/gramlot/page": "./js/src/server/page.js",
-    "@gramlot/gramlot": "./js/src/index.js"
+    "@gramlot/gramlot": "./js/src/index.js",
+    "dompurify": "npm:dompurify@3.4.16"
   },
   "publish": {
     "include": [

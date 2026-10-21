@@ -3041,3 +3041,16 @@ stesso criterio del namespace, quindi restano così”. Those three names retain
 their underscore namespace separator and current semantics. The separately
 confirmed `nodeId` spelling is unchanged. No additional names or prefix families
 are renamed in this release. This defines naming, not a new namespace/object API.
+
+
+### Amendment 11.90 — reusable frame and filesystem index verification (2026-10-20)
+
+Owner instruction: “bene procediamo con questa struttura e usiamo la gallery per verificarla”, following the explicit region, panel, URL and index-filename confirmations recorded in GC-070 §1535. Implement and verify `FramePage` → `IndexPage` → gallery in Python and JS. FramePage declares center and the optional top/bottom/left/right hooks; each defined hook configures and populates its contentPane. IndexPage adds a Bag-backed tree and retained tabContainer panels. `panel(pane, node)` builds the first panel for a selected URL; subsequent selections reuse it. The default panel is an iframe. Directory children may be lazy resolvers and a directory may independently have its own index.py/index.js page.
+
+This supersedes the former IndexPage-specific header/footer presentation: the gallery owns its title and Inspector above, Code to the right and Settings below. Navigation/Code labels belong to the shared drawers. The bottom Settings drawer supersedes the native popover decision in 11.84. Core owns the reusable frame/navigation coordinator; gramlot-examples owns filesystem catalogue discovery and gallery presentation; integration repositories stage the corresponding page routes and Logic. No direct filesystem access enters core, no Builder/Bag changes are authorized, and no tab limit, LRU eviction, publication or deployment is included. Verification does not imply final owner acceptance.
+
+
+Drawer presentation follow-up — owner, 2026-10-20: “le linguette dovrebbero essere minimizzate … 3 pixel o 4 … opacity bassa … lo zoom deve essere con transizione … apertura dei drawer … transizione”. Approves thin translucent resting gallery grips and shared animated reveal/open/close, using existing drawer theme tokens. Gallery captions are minimized, superseding the always-visible gallery caption choice in the initial FramePage verification. Retain touch readability, reduced-motion support, live resizing and the existing Source/Data lifecycle. No new authoring API or publication.
+
+
+Intermediate release scope — owner, 2026-10-21: “prima di farlo facciamo release internmedia di quanto c'è fin ora. la quida deve essere nel repo”, narrowed to “Solo tree, pagine, gallery e guida”. This authorizes the bounded coordinated release and its necessary Python/JavaScript integration updates; database selectors, Genropy experiments and editor ports are excluded. Owner additionally confirms “Sì, adegua il contratto prima della release” for NavigationResolver alignment with the published resolver lifecycle, retaining lazy directory loads, cache and cancellation. This supersedes the no-publication limitation of the earlier implementation checkpoints only for that bounded scope.
