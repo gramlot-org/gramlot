@@ -3054,3 +3054,6 @@ Drawer presentation follow-up — owner, 2026-10-20: “le linguette dovrebbero 
 
 
 Intermediate release scope — owner, 2026-10-21: “prima di farlo facciamo release internmedia di quanto c'è fin ora. la quida deve essere nel repo”, narrowed to “Solo tree, pagine, gallery e guida”. This authorizes the bounded coordinated release and its necessary Python/JavaScript integration updates; database selectors, Genropy experiments and editor ports are excluded. Owner additionally confirms “Sì, adegua il contratto prima della release” for NavigationResolver alignment with the published resolver lifecycle, retaining lazy directory loads, cache and cancellation. This supersedes the no-publication limitation of the earlier implementation checkpoints only for that bounded scope.
+
+
+Editor release authorization — 2026-10-21: owner asks “possiamo fare una release a questo punto ?” after the accepted remote-edit gallery trial. Authorizes coordinated release of the implemented editor/IDE/gallery scope and required integrations, preserving prior exclusions of database selectors and legacy experiments. Existing release-triggered gallery deployment gates remain unchanged. This is publication authorization for the agreed implementation, not an architecture amendment or authorization to publish genro-typst.

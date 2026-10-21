@@ -1249,3 +1249,218 @@ Class callbacks return a CSS class string. `getLabelClass` replaces the node's l
 Structural parts include tree, group, node, branch, leaf, row, caption, icon, expander, spacer, value-node, value-row and value. Default icon parts distinguish branch-icon, leaf-icon, opened-icon and closed-icon. Named callbacks and live Bag attribute changes refresh the presentation. Callback results must satisfy their contract; asynchronous results and legacy string label callbacks are unsupported.
 
 Gallery: Input components → tree → Bag tree, Tree labels and classes, Tree callbacks, HTML and icons. Checkboxes for tree selection, filtering, badges, row actions, expansion commands and drag/drop remain subsequent increments; the example's hideValues checkbox is an ordinary bound control.
+
+<a id="gc-105-125"></a>
+
+## 125. CodeMirror and its options composition
+
+Block ID: **GC-105-125**.
+
+Activate the `editors` collection for `codeMirror`. The optional browser collection owns the locally bundled CodeMirror 6 engine; it does not fetch a CDN or create a textarea substitute. The value is a string and `value="^document.source"` uses the shared control binding. User changes write live by default. `live=False` commits on leaving the editor. External document replacement is silent and resets the undo baseline; equal values and configuration changes preserve the editor, selection and undo history.
+
+```python
+pane.codeMirror(value="^document.source", language="python", height="340px")
+```
+
+Languages: `text` (default), `python`, `javascript`, `typescript`, `json`, `html`, `css`, `xml`, `markdown`, `sql`, `typst`. Unknown languages fail explicitly. Defaults are four spaces (`indentUnit`, range 1–16), monospace 14px (`fontFamily`, `fontSize`, range 8–48), with `lineNumbers`, `lineWrapping`, `folding`, `bracketMatching`, `autoCloseBrackets`, `autoIndent`, `autocompletion`, `highlightActiveLine` and `highlightSelectionMatches` enabled. These parameters accept read bindings. Existing text is never reformatted by configuration. Completion uses local language support, without an LSP or remote project service. Theme colors use Gramlot CSS variables and update with the surrounding theme.
+
+`readonly` prevents changes while preserving selection, copy and search. `disabled` also prevents focus. Incoming Data changes still project in either state. Tab indents, Shift+Tab outdents; Escape followed by Tab leaves the editor. Ctrl/Cmd+F opens search/replace with case and regex controls. Replacement is unavailable in read-only mode. Ctrl/Cmd+S publishes the editor's local `save` topic with `{value}`; the consuming application owns persistence and error handling. The gallery examples use a Data snapshot, not filesystem saving.
+
+For an editor with its own right options drawer, activate `inputs`, `layout` and `editors`, and use the reusable Source composition:
+
+```python
+from gramlot.page import code_mirror_with_options
+
+pane.dataSetter("document.source", "print('Hello')")
+code_mirror_with_options(pane, datapath="document", value="^.source",
+                         language="python", height="420px")
+```
+
+JavaScript exports `codeMirrorWithOptions(parent, {datapath, value, language, height, ...attributes})` from `@gramlot/gramlot/page`. Python accepts the corresponding keyword arguments. The required `datapath` scopes the composition; relative editor pointers resolve there. Settings live under `.settings` and belong to that instance. The returned Source pane is the shared `borderContainer`; the drawer uses shared inputs and the center uses the same `codeMirror` control. Read-only and disabled remain caller-owned attributes, outside the configuration drawer. No global preference store is created.
+
+The DOM component's `ready` promise resolves after the optional engine is created. Once ready, `setDiagnostics([{from, to, severity, message}])` replaces diagnostics; an empty array clears them. `revealPosition(offset)` selects and reveals a document offset. `undo()` and `redo()` execute the corresponding editor history command, returning whether it ran; read-only and disabled editors reject them. The local `historyChanged` publication carries `{canUndo, canRedo}` when availability changes, including initial readiness and external replacement. Removing the component cancels pending creation and destroys its engine. Syntax diagnostics supplied by a host are separate from language highlighting; Python server validation, remote file save/reload, Markdown preview and the IDE are subsequent work.
+
+Gallery: **Input components → Code editors → CodeMirror / CodeMirror with options**.
+
+
+<a id="gc-105-130"></a>
+
+## 130 · Filesystem tree and document IDE
+
+Block ID: **GC-105-130**.
+
+`file_system_tree` / `fileSystemTree` is a reusable Source composition over `tree`, with a scoped Data Bag. Load the `tree` collection and expose the integration's filesystem endpoints. The page Logic uses `FileSystemLogic`, exported by the browser runtime.
+
+```python
+from gramlot.page import file_system_tree
+
+file_system_tree(pane, datapath=".files")
+pane.button("Open").dataController(
+    "this.SET('.files.requestedRoot', directory)", directory="^.directory")
+```
+
+The component Data contains `requestedRoot`, the successfully opened `root`, `store`, `selectedPath` and `status`. The host returns one directory level as a Bag. Directory nodes receive `DirectoryResolver` instances; expansion loads children once per opened workspace. The row attributes include `path` (relative to root), `caption`, `is_directory`, `size` and `modified`. Selection uses the normal tree Bag path; read the selected node's `path` to identify its filesystem entry. Icons and keyboard interaction belong to the shared tree. Replacing a workspace aborts the previous tree's resolvers; disposal cancels owned pending requests.
+
+`IdePage` composes FramePage, this filesystem tree, an editable workspace combo and CodeMirror document tabs. Its companion module exports `IdeLogic as Logic` from `@gramlot/gramlot`. The first implementation is Python-authored and served with the Python integration's `stage_ide`; all filesystem access stays in that integration. Optional inputs/layout/tree/editors browser bundles ship separately under core resources/components.
+
+The workspace combo remembers six successfully opened directories in sessionStorage, most recent first, without duplicates. It suggests the most recent directory after a reload; opening remains explicit. The values are server paths. Session storage does not persist drafts, grant file permissions, or promise sharing across browser tabs. Switching directories retains document tabs and drafts; documents with the same relative path in different roots remain distinct.
+
+Save and Ctrl/Cmd+S submit the draft with its loaded revision. Conflicts retain the draft. Python syntax is checked before writing, without executing the file. The document's saved baseline becomes the submitted snapshot, so typing during a save remains dirty. Each document has Save, Revert, Undo and Redo icons in its own toolbar. Save and Revert are disabled without changes or while saving; Save is also disabled for read-only documents. Revert restores the last loaded or successfully saved baseline without closing the tab or writing the file, and clears editor history. Undo and Redo use the editor’s independent history and are disabled when unavailable. Closing a dirty or pending document is vetoed: save or revert before closing. The workspace combo opens a nonempty changed directory on focus-out after committing its value; no Open button is required. Executable Python preview, file creation/rename/delete and filesystem watches remain outside this increment. HTML, Markdown and Typst views are described below.
+
+### Local-choice sources
+
+For `comboBox`, `store="^.recent"` accepts a Bag of string-valued nodes with a string `caption` attribute. Values must be unique. `store` and nonempty `values` are mutually exclusive. The combo keeps its existing free-text/caption selection semantics; filesystem choices use the same exact path for value and caption.
+
+Both comboBox and filteringSelect accept `separator`, default comma, for their local `values` text. For example:
+
+```python
+pane.comboBox(value="^.choice", values="First, with comma\nSecond", separator="\n")
+```
+
+The separator must be nonempty; code/caption pairs still use the first colon. Structured stores keep arbitrary directory punctuation out of this text grammar.
+
+
+
+
+IDE new documents (2026-10-21): select a document type and use **New document**. Each empty draft has independent history and the matching preview before a file exists. The first **Save** opens Directory / File name fields inside that tab; **Cancel** keeps the draft. **Create file** calls the host's `document_create(root, path, content)`. The directory must already exist and be allowed by the host; an occupied destination is rejected, never overwritten. The host validates Python syntax and enforces `remote_edit` for creation just as for updates. Empty files are supported. Creation retains the tab identity and any edits made while the request is pending; reopening its path selects the same tab. Later saves use the ordinary revision-checked update. Refreshing the browser does not persist drafts.
+
+
+<a id="gc-105-135"></a>
+## HTML editor and preview
+
+The optional `editors` collection provides `htmlEditor` (Jodit Community 4.13.9)
+and `htmlPreview`. They share an HTML string through ordinary Data bindings:
+
+```python
+pane.htmlEditor(value="^.content", height="400px", readonly="^.readonly")
+pane.htmlPreview(value="^.content", height="400px")
+```
+
+`htmlEditor` writes live by default; `live=False` commits on blur. It accepts the
+standard `readonly` and `disabled` parameters. Its `undo()`/`redo()` methods and
+`historyChanged` publication follow CodeMirror's control contract. Ctrl/Cmd+S
+publishes `save`; the application owns persistence. Dependencies and styles are
+bundled locally in the optional collection, without a CDN.
+
+Jodit edits the body while retaining the original head, doctype and document
+attributes. Scripts, styles, embedded content, SVG/MathML and comments appear as
+protected placeholders. Active attributes are kept outside the editable DOM.
+Removing or duplicating protected content rejects the edit with a visible message;
+change that content in Code instead. Visual edits serialize the DOM and can
+normalize whitespace, quoting and markup. Undo to the initial rich snapshot restores
+the original source string exactly. External replacement resets editor history.
+
+The preview is an iframe with an empty sandbox: page scripts do not execute.
+The rich editor uses its own iframe without script permission and a restrictive
+content policy. Original head styles apply to its editing canvas; the toolbar uses
+Gramlot theme tokens. These are HTML document views, not Python execution previews.
+
+The IDE opens HTML documents with Code, Preview and Rich text tabs over the same
+Data document. Save/Revert affect that document; Undo/Redo follow the active editor
+and are disabled in Preview. Filesystem permissions and remote-edit remain the
+integration's responsibility. Gallery: Input components → Code editors → HTML:
+code, preview and Jodit; the opt-in Document IDE also supports HTML files.
+
+
+<a id="gc-105-140"></a>
+## Markdown editor and preview
+
+The optional `editors` collection includes `markdownEditor` and `markdownPreview`:
+
+```python
+pane.markdownEditor(value="^.content", height="400px", readonly="^.readonly")
+pane.markdownPreview(value="^.content", height="400px")
+```
+
+The stored value is always a Markdown string. The editor uses ProseMirror with
+Bold, Italic, Code, Undo and Redo controls, standard editing keys, Ctrl/Cmd+B/I,
+Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Ctrl/Cmd+S publishes `save`; persistence remains
+application-owned. `historyChanged`, `undo()` and `redo()` follow the other editors.
+Edits write live by default; `live=False` commits on blur. `readonly` and `disabled`
+prevent edits, while external Data updates continue to render and reset history.
+Disabled editing also leaves the keyboard tab order. Removing the control releases
+its engine and prevents late history publications.
+
+Headings, paragraphs, lists, quotes, fenced code, inline links/images and basic
+emphasis use the rich schema. Tables, embedded HTML, strikethrough and task lists
+are preserved source blocks: edit their internals in Code. They can be selected or
+deleted as whole blocks. Frontmatter or reference definitions preserve the whole
+document as one source block. This is the bounded PoC dialect, not a claim of full
+GitHub-flavored Markdown visual editing. Supported Markdown syntax is normalized
+after rich editing; Undo back to the initial document restores its original string.
+
+Preview uses markdown-it in a sandboxed iframe. `allowHtml=False` is the default:
+embedded HTML appears as text. Set `allowHtml=True` (or bind it to Data) to render
+embedded HTML, sanitized with DOMPurify before insertion. Scripts, event handlers,
+unsafe link targets, embedded frames and form controls are removed. External image
+requests remain blocked by the preview content policy. The original Markdown is
+never sanitized or rewritten: HTML source blocks remain preserved by the rich
+editor, with markup editable in Code. Switching allowHtml leaves undo history intact.
+For example: `pane.markdownPreview(value="^.content", allowHtml="^.allowHtml")`.
+The IDE Preview tab and gallery Markdown lesson expose an **Allow embedded HTML**
+checkbox, initially off and scoped to that document. The rich toolbar and canvas use Gramlot theme tokens; preview
+retains a paper-style document canvas.
+
+Markdown IDE documents have Code, Preview and Rich text views sharing a Data draft,
+Save/Revert and active-editor history, like HTML documents. The Python gallery
+example is Input components → Code editors → Markdown: code, preview and rich text.
+The opt-in Document IDE can open `.md` and `.markdown` files through the existing
+host filesystem provider. The components require no Markdown-specific server API.
+
+
+<a id="gc-105-145"></a>
+
+## 145 · Typst editor, SVG preview and client PDF
+
+Block ID: **GC-105-145**.
+
+Use CodeMirror from the `editors` collection and `typstPreview` from the optional
+`typst` collection. Both consume the same Data string:
+
+```python
+pane.codeMirror(value="^.content", language="typst", height="400px")
+pane.typstPreview(value="^.content", filename="report.pdf", height="500px")
+```
+
+The preview includes a Download PDF link and compiler diagnostics. It compiles
+after a short typing pause in a shared browser Worker; SVG and PDF are produced
+from the same draft. A change immediately hides the stale preview and disables
+the preceding download. Late results cannot replace a newer draft. Removing the
+last preview terminates the Worker; Blob URLs are revoked on change or disposal.
+The rendered SVG is displayed as an image, with renderer JavaScript disabled.
+The toolbar follows Gramlot theme tokens; the document retains a white paper canvas.
+
+The module embeds the compiler, renderer and five fonts, without CDN or runtime
+network access. Self-contained documents work offline. Includes, custom assets and
+external packages are not supplied by this initial component; missing resources
+produce a diagnostic. The browser compiler is Typst 0.14.2 from typst.ts 0.7.0; it
+is not claimed equivalent to the native 0.15.0 compiler in genro-typst. CodeMirror
+uses the experimental codemirror-lang-typst 0.6.0 Lezer grammar for Typst 0.15:
+highlighting a newer construct does not guarantee that it compiles.
+
+IDE `.typ` documents have Code and Preview views. Save/Revert and undo/redo retain
+their existing source-document behavior; PDF download does not save the source.
+The Python filesystem provider retains its remote-edit gate. No server compile
+endpoint is required.
+
+The gallery example is Input components → Code editors → Typst: editor, preview
+and PDF. Its Python and JavaScript pages author equivalent Source. Serverless
+directory export includes the collection modules as shared local assets, so the
+compiler is not duplicated per route. The current single-HTML export command
+does not accept optional collections. The optional Typst module is about 41 MiB
+uncompressed; compiler initialization is lazy, but enabling the collection still
+loads its module. Hosts that do not need Typst should omit that collection.
+
+
+Python Typst recipes use the compound extension `.typ.py` and export `class Recipe(TypstBuilder)`. In the IDE choose **Typst Python recipe** for a new draft, or open an existing `.typ.py`. The Code tab remains Python. **Generate preview** sends the current draft to the host, which calls `Recipe().create()` and `render()`. **Generated Typst** is read-only; **Preview** renders that output to SVG/PDF in the browser. Editing Python immediately hides the old preview and clears generated source; generation is explicit, independent of saving.
+
+```python
+from genro_typst import TypstBuilder
+
+class Recipe(TypstBuilder):
+    def main(self, root):
+        doc = root.document(paper="a5")
+        doc.paragraph(content="Hello from a Python recipe")
+```
+
+The Python host requires `genro-typst` and `remote_edit=True`. Recipes run as server Python code in a short-lived process, with a 15-second timeout; this is not a sandbox. Opening and saving a `.typ.py` only read/validate text and never execute it. The first slice uses self-contained generated Typst and the existing bundled browser fonts. Serverless can compile the generated `.typ` source but does not execute `.typ.py`.

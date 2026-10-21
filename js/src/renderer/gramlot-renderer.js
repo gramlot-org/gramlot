@@ -1,3 +1,4 @@
+import {callLogic, invokeHook} from '../binding/hooks.js';
 /* @ts-self-types="./gramlot-renderer.d.ts" */
 /**
  * The live renderer of a Gramlot page.
@@ -50,8 +51,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
                 const {group, method} = binding.gramlot.src.logicRegistry.resolve(name, node);
                 return method.call(group, node, keywords);
             },
-            invokeScript: (node, name, code, keywords) => this.inlineCompiler.compile(
-                node, name, code, node.parentNode._getMeta('gramlot_component').childParameters[name].inline)(keywords)});
+            invokeScript: (node, name, code, keywords) => invokeHook(binding, node, name, code, keywords,
+                node.parentNode._getMeta('gramlot_component').childParameters[name].inline)});
         this.records = new Map();
         this.references = new References(source);
         this.pending = [];

@@ -9,3 +9,7 @@ export {Bag, BagNode} from '@genrojs/bag';
 export {createDecimal} from '@genrojs/tytx';
 // A ServerAdapter module chosen by a server imports its base class from @gramlot/gramlot/page.
 export {ServerAdapter} from '../server-adapter.js';
+export {codeMirrorWithOptions} from '../components/editor-options.js';
+
+export {fileSystemTree, FileSystemLogic, FileSystemController, DirectoryResolver} from "../filesystem.js";
+export {IdeLogic} from "../ide-runtime.js";

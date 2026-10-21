@@ -33,6 +33,7 @@ export function controlElement(HTMLElement) {
         }
         setPageContext(context) { this.pageContext = context; }
         releaseControl() {}
+        get liveWrites() { return this.control.localName === 'textarea' || ['text', 'password', 'range', 'color'].includes(this.control.type); }
         validateCandidate(value, accept) {
             accept(value);
             return {ok:true, value, isCurrent:() => this.pageContext.isActive()};

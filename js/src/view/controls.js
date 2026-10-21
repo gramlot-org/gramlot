@@ -8,6 +8,7 @@
 import {createDecimal, isDecimal, getDecimalLibrary} from '@genrojs/tytx';
 import {Bag} from '@genrojs/bag';
 import {XHTML_NS} from '../renderer/attributes.js';
+import {callLogic, invokeHook} from '../binding/hooks.js';
 
 // The elements whose `type`, `multiple` and `group` have no setter: a change rebuilds (C04.1, D7).
 const CONTROL_TAGS = new Set(['input', 'select', 'textarea']);
@@ -214,8 +215,8 @@ class ComponentControl extends ControlAdapter {
     }
     get writeEvent() {
         if (this.element.commitOnChange) return 'change';
-        const control = this.element.control;
-        return this.live && (control.localName === 'textarea' || ['text', 'password', 'range', 'color'].includes(control.type)) ? 'input' : 'change';
+        const live = this.resolved.live ?? this.element.parameters.live;
+        return live && this.element.liveWrites ? 'input' : 'change';
     }
     read() { return this.element.readControlValue(); }
     write(value) { this.element.writeControlValue(value); }
@@ -569,20 +570,15 @@ const INPUT_CONTROLS = {
 function componentContext(adapter) {
     const {binding, node} = adapter, app = binding.runtime.gramlot;
     const invoke = (attribute, code, keywords, expression = false) => {
-        if (!expression && /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/.test(code)) {
-            const {group, method} = app.src.logicRegistry.resolve(code, node);
-            return method.call(group, node, keywords);
-        }
+        if (!expression) return invokeHook(binding.runtime, node, attribute, code, keywords);
         return binding.runtime.inlineCompiler.compile(node, attribute, code, Object.keys(keywords),
-            expression ? `return (${code});` : code)(keywords);
+            `return (${code});`)(keywords);
     };
     return {
         locale:app.locale, timeZone:app.timeZone, createDecimal, isDecimal, getDecimalLibrary,
+        publish:(topic, payload) => node.publish(topic, payload),
         isActive:() => !binding.closed,
-        callLogic:(name, keywords) => {
-            const {group, method} = app.src.logicRegistry.resolve(name, node);
-            return method.call(group, node, keywords);
-        },
+        callLogic:(name, keywords) => callLogic(binding.runtime, node, name, keywords),
         format:(value, options) => app.format(value, options), invoke,
         remote:(method, keywords, signal) => app.rpc.call('data', method, keywords, {signal}),
         validationCurrent:() => {

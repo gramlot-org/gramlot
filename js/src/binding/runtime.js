@@ -3,6 +3,7 @@ import {DataRouter} from './router.js';
 import {DataInstaller} from './installation.js';
 import {ControllerProvider, FormulaProvider, RemoteProvider, RpcProvider} from './providers.js';
 import {InlineCompiler} from './inline.js';
+import {isLogicMethod, callLogic} from './hooks.js';
 import {RemoteBinding} from './remote.js';
 import {AskDialog} from './ask-dialog.js';
 import {randomId} from '../random-id.js';
@@ -452,10 +453,7 @@ export class NodeBinding {
             if (typeof handler !== 'string' || !handler) throw new TypeError(`${name} requires a handler`);
             return payload => {
                 if (this.closed) return;
-                if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/.test(handler)) {
-                    const {group, method} = this.runtime.logicRegistry.resolve(handler, node);
-                    return method.call(group, node, payload);
-                }
+                if (isLogicMethod(handler)) return callLogic(this.runtime, node, handler, payload);
                 const [, attrs] = node.rootBuilder.runtimeValues(node);
                 const authored = Object.fromEntries(Object.entries(attrs).filter(([key]) =>
                     !key.startsWith('subscribe_') && !key.startsWith('selfsubscribe_')));

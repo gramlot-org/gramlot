@@ -14,7 +14,7 @@ export {UtilitiesHandler} from './handlers/utilities-handler.js';
 export type {GramlotOptions, GramlotState, Publication, SubscriptionHandle, FormatOptions} from './gramlot.js';
 export {PageBootstrap} from './bootstrap.js';
 export type {PageBootstrapOptions, PageResources} from './bootstrap.js';
-export {Exposed, Page} from './server/page.js';
+export {Exposed, Page, codeMirrorWithOptions} from './server/page.js';
 export {GramlotBuilder} from './builder/gramlot-builder.js';
 export {GramlotRenderer} from './renderer/gramlot-renderer.js';
 export {GramlotHtmlRenderer} from './renderer/gramlot-html-renderer.js';
@@ -39,3 +39,6 @@ export type {DateExpressionOptions, DateExpressionResult, DateExpressionErrorCod
 
 export {FramePage} from "./server/frame-page.js";
 export {NavigationResolver} from "./navigation-resolver.js";
+
+export {fileSystemTree, FileSystemLogic, FileSystemController, DirectoryResolver} from "./filesystem.js";
+export {IdeLogic} from "./ide-runtime.js";

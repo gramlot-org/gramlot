@@ -1,8 +1,9 @@
 /** Local choices share the same code:caption grammar in editors and groups. */
-export function parseChoices(values) {
+export function parseChoices(values, separator = ',') {
+    if (typeof separator !== 'string' || !separator) throw new TypeError('separator must be a nonempty string');
     if (values === '') return [];
     const ids = new Set();
-    return values.split(',').map(item => {
+    return values.split(separator).map(item => {
         const colon = item.indexOf(':');
         const id = colon < 0 ? item : item.slice(0, colon);
         const caption = colon < 0 ? item : item.slice(colon + 1);

@@ -28624,6 +28624,17 @@
             "default": ""
           },
           {
+            "name": "separator",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ","
+          },
+          {
             "name": "attr",
             "kind": "var_keyword",
             "role": "attribute",
@@ -29066,6 +29077,11 @@
             "values": {
               "dtype": "T",
               "default": "",
+              "binding": "read"
+            },
+            "separator": {
+              "dtype": "T",
+              "default": ",",
               "binding": "read"
             }
           },
@@ -33016,6 +33032,51 @@
             "default": ""
           },
           {
+            "name": "separator",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ","
+          },
+          {
+            "name": "store",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "attr",
             "kind": "var_keyword",
             "role": "attribute",
@@ -33458,6 +33519,17 @@
             "values": {
               "dtype": "T",
               "default": "",
+              "binding": "read"
+            },
+            "separator": {
+              "dtype": "T",
+              "default": ",",
+              "binding": "read"
+            },
+            "store": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
               "binding": "read"
             }
           },

@@ -13,7 +13,7 @@
 [![Python coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=python)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=python)
 [![PyPI](https://img.shields.io/pypi/v/gramlot)](https://pypi.org/project/gramlot/)
 [![JSR](https://jsr.io/badges/@gramlot/gramlot)](https://jsr.io/@gramlot/gramlot)
-[![Status: 0.3.8 released](https://img.shields.io/badge/status-0.3.8%20released-green)](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.8)
+[![Status: 0.3.9 released](https://img.shields.io/badge/status-0.3.9%20released-green)](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.9)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
 **Describe application interfaces in Python; let a JavaScript runtime handle
@@ -25,10 +25,10 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a web server; the core is
 independent of server and database technology.
 
-> **Release status.** The current release is **0.3.8**, published on
+> **Release status.** The current release is **0.3.9**, published on
 > [PyPI](https://pypi.org/project/gramlot/) (`gramlot`), on
 > [npm](https://www.npmjs.com/package/@gramlot/gramlot) (`@gramlot/gramlot`) and as the
-> [GitHub release v0.3.8](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.8).
+> [GitHub release v0.3.9](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.9).
 > [JSR](https://jsr.io/@gramlot/gramlot) publication is optional; check its version list for availability.
 
 ## What a page contains
@@ -163,3 +163,8 @@ adapter repositories `gramlot-uvicorn`, `gramlot-django`, `gramlot-fastapi`,
 `gramlot-serverless` are archived; the package `@gramlot/gramlot-serverless` is
 current and lives in gramlot-js-server. The published 0.1.0 archives keep their
 original names.
+
+
+## Editors release
+
+Adds the optional editors collection: CodeMirror with configurable options, HTML/Jodit and Markdown rich editing, and sandboxed document previews. The optional Typst collection supplies syntax editing, SVG preview and PDF generation in the browser, including bundled compiler/fonts for offline exports.

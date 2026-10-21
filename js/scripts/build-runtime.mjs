@@ -1,5 +1,6 @@
 /** Build installed browser entry points and preserve their dependency notices. */
 import './export-components.mjs';
+import {typstInputs} from './build-typst.mjs';
 import {build} from 'esbuild';
 import {mkdir, copyFile, cp, readFile, readdir, writeFile, rm} from 'node:fs/promises';
 import {dirname, resolve} from 'node:path';
@@ -35,12 +36,21 @@ await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/gramlot-to
     outfile: path('tools/gramlot-tools-inspector.js'), bundle: true, format: 'esm',
     target: 'es2022', external: ['@gramlot/gramlot'], loader: {'.css': 'text'}});
 const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist/gramlot.js')});
+// Optional collections remain separate browser modules for host applications.
+for (const name of ['inputs', 'layout', 'tree', 'editors', 'typst']) {
+    const collection = await build({entryPoints:[path(`src/components/${name}.js`)],
+        outfile:path(`dist/components/${name}.js`), bundle:true, format:'esm', platform:'browser',
+        target:'es2022', legalComments:'inline', metafile:true, external:['@gramlot/gramlot'],loader:{'.css':'text'}});
+    Object.assign(hosted.metafile.inputs, collection.metafile.inputs);
+}
+await cp(path('dist/components'), path('../src/gramlot/resources/components'), {recursive:true});
 // The minified runtime is served in deploy and in development without GRAMLOT_DEV=DEBUG.
 await build({...runtimeOptions['gramlot.min.js'], outfile: path('dist/gramlot.min.js')});
 await writeFile(path('dist/gramlot.d.ts'), `${moduleDoc}\nexport * from '../src/index.d.ts';\n`);
 // Standalone startup and Worker integration now belong to gramlot-serverless.
 await rm(path('dist/standalone.js'), {force: true});
 await rm(path('../src/gramlot/resources/standalone.js'), {force: true});
+Object.assign(hosted.metafile.inputs, typstInputs);
 const packages = new Map();
 for (const input of new Set(Object.keys(hosted.metafile.inputs))) {
     let directory = dirname(resolve(runtimeOptions['gramlot.js'].absWorkingDir, input));

@@ -1,15 +1,15 @@
+import {isLogicMethod, callLogic} from '../binding/hooks.js';
 /**
  * `connect_on<event>` (source plan §2 Button, §4.11, S12): one DOM listener per attribute, bound to the
  * element of the node that declares it. The DOM event is the name after `connect_on`, lower-cased
- * (`connect_onclick` → `click`, `connect_onBlur` → `blur`). A value of dotted identifiers
- * (`group.method`) is named logic, resolved by LogicRegistry at every event (a missing name raises,
+ * (`connect_onclick` → `click`, `connect_onBlur` → `blur`). A simple or qualified identifier
+ * (`method` or `group.method`) is named logic, resolved by LogicRegistry at every event (a missing name raises,
  * no fallback to inline, S09); any other value is inline code with `this` = the node and the
  * parameter `event`. The handler runs with the declaring node, also when the event hits a
  * descendant (R11). A closed NodeBinding does nothing (R12); an error propagates from the listener.
  */
 
 const PREFIX = 'connect_on';
-const NAMED_LOGIC = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/;
 
 export class NativeEventBinding {
     #binding;
@@ -54,11 +54,7 @@ export class NativeEventBinding {
         if (this.binding.closed) return;
         const node = this.node;
         const runtime = this.binding.runtime;
-        if (NAMED_LOGIC.test(this.handler)) {
-            const {group, method} = runtime.logicRegistry.resolve(this.handler, node);
-            method.call(group, node, event);
-            return;
-        }
+        if (isLogicMethod(this.handler)) return callLogic(runtime, node, this.handler, event);
         runtime.inlineCompiler.compile(node, this.attribute, this.handler, ['event'])({event});
     }
 }

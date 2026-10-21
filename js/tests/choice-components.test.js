@@ -162,3 +162,17 @@ test('checkBoxText keeps focus during label/options changes and respects locks a
     assert.equal(first.disabled,true); f.app.data.setItem('disabled',false);
     f.app.dispose(); first.click(); assert.equal(f.app.data.getItem('channels'),'email');
 });
+
+test('combo Bag choices preserve comma/colon paths and accept newly typed directories',async t=>{
+    const {Bag}=await import('../src/index.js');const bag=new Bag();bag.setItem('first','/tmp/a,b:c',{caption:'/tmp/a,b:c'});
+    const f=fixture(t,(r,a)=>{a.data.setItem('recent',bag);r.comboBox({id:'root',value:'^root',store:'^recent'});});
+    await settle();f.host('root').control.focus();f.key('root','ArrowDown');await settle();assert.equal(f.host('root').choices.textContent,'/tmp/a,b:c');
+    f.key('root','Enter');assert.equal(f.app.data.getItem('root'),'/tmp/a,b:c');
+    f.type('root','/tmp/new folder');f.key('root','Enter');assert.equal(f.app.data.getItem('root'),'/tmp/new folder');
+});
+
+test('local choices accept a newline separator',async t=>{
+    const f=fixture(t,r=>r.comboBox({id:'choice',value:'^choice',values:'a,b\nc,d',separator:'\n'}));
+    await settle();f.host('choice').control.focus();f.key('choice','ArrowDown');await settle();assert.equal(f.host('choice').choices.children.length,2);
+    f.key('choice','Enter');assert.equal(f.app.data.getItem('choice'),'a,b');
+});
