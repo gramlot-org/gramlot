@@ -40,7 +40,7 @@ Block ID: **GC-225-010**.
 | Helper modules | A module of functions without a class is named after what it holds, in both languages: `assets`, `resources`, `conformance` and, provisionally, `files` (`files.js`/`files.py`: `file_below`/`fileBelow`, `THEMES`; see the Source column). Not covered by the row "Files" | existing modules `assets`, `resources`, `conformance`; `files`, `file_below`/`fileBelow` and `THEMES` are a provisional implementation of review p4d, not an accepted name or design: the owner (2026-10-20) places them in the topic of pages and resources, which a dedicated study of the next cycle reorganizes, and the module will be replaced by that organization |
 | Example pages | A generic `div` is held in `pane`; `html_main` is held in `main_content`; an element is never named `page` | GC-210 row S14bis (`210-binding-contract.md:755`) |
 | Commands | Environment, then verb: `gramlot <environment> new\|gallery`, `gramlot node\|bun gallery`, `gramlot-serverless build\|gallery`, `npm create @gramlot page\|site` | owner decisions 2026-10-02 and 2026-10-05; GC-055 |
-| Base of the JS markers | `Exposed` (`js/src/server/page-base.js`) is the base of every JS class whose methods a request names: `Page` and the classes of the objects reached from the page by a method path (`orders.list`, constitution 11.85). It holds only `registerSource` and `registerEndpoint`; `Page` extends it, so `Page.registerSource` is the inherited marker. No convention covered the name: it reuses the word "exposed" that already names `@source`/`@endpoint` methods (`page/base.py` docstring, GC-090 table "Exposed Source method"). Python has no counterpart: `@source` and `@endpoint` are functions and the objects on a path are ordinary objects (accepted asymmetry) | owner decision 2026-10-19 (review plan d-pointer-js: common base with the markers only, `Page` extends it); name chosen in p1, confirmed by the owner on 2026-10-19 |
+| Base of the JS markers | `Exposed` (`js/src/server/page-base.js`) is the base of every JS class whose methods a request names: `Page` and the classes of the objects reached from the page by a method path (`orders.list`, constitution 11.88). It holds only `registerSource` and `registerEndpoint`; `Page` extends it, so `Page.registerSource` is the inherited marker. No convention covered the name: it reuses the word "exposed" that already names `@source`/`@endpoint` methods (`page/base.py` docstring, GC-090 table "Exposed Source method"). Python has no counterpart: `@source` and `@endpoint` are functions and the objects on a path are ordinary objects (accepted asymmetry) | owner decision 2026-10-19 (review plan d-pointer-js: common base with the markers only, `Page` extends it); name chosen in p1, confirmed by the owner on 2026-10-19 |
 | Proxies of the Source node | A proxy of the Source node, reached from `this` in inline code, has a free name, clear and not ambiguous; its class states its theme in its docline. `node.requests` (class `NodeRequests`, `js/src/builder/source.js`) holds the request in flight (`inflight`: `method`, `params`, `sentAt`, `cancel()`) and the waiting call (`pending`: `method`, `params`) of `remote`, `dataRpc`, `dataRemote` and `remoteSource`. Browser-only, as `PUT` and `FIRE`: no Python counterpart | owner decision 2026-10-19 (review plan d-oncalling: "i proxy del Source node hanno nomi liberi purché chiari e non ambigui"); name chosen in p1 (d-oncalling-open), confirmed by the owner on 2026-10-19 |
 | Server adapter of the page | `gramlot.serverAdapter` is the object of the browser page that holds the server-dependent behaviour; the core consults it, it is not a proxy (owner decision 2026-10-19, review plan d-pointer-separator). Its class is `ServerAdapter`; a subclass names its kind of server before the word, as the transports do (`HttpTransport`, `WorkerTransport`): planned `WorkerServerAdapter`, `KajennServerAdapter`. The row "Server object" rejects `ServerAdapter` as the name of the server object (`GramlotServer`); this class is a different object, on the browser side. Its factory method is `createTransport`, after the `create<Thing>` functions of the code (`createNonce`, `createDispatch`). The module the server names in the bootstrap is `resources.serverAdapter`, read by `PageBootstrap.loadServerAdapter`; the server property is `server_adapter`/`serverAdapter` | `serverAdapter` decided by the owner on 2026-10-19; the class name, `createTransport`, `loadServerAdapter`, `resources.serverAdapter` and the server property chosen in review p4, confirmed by the owner on 2026-10-19 |
 | Name syntax | `NameSyntax` holds the syntax of a method name a server declares; `NAME_SYNTAX` is the core default; the server property, the builder property and the bootstrap field are `name_syntax`/`nameSyntax`; `matches(name)` tests a name. No convention covered the name: it uses the words of the decision ("la sintassi del nome"). Its serialisation follows genro-builders `CustomTypes`: `to_dict`/`from_dict` in Python, `toJSON`/`fromJSON` in JavaScript, an exception to the mechanical camelCase translation, as in the library it extends. `NameSyntax` extends the genro-builders `Regex` in Python | chosen in review p4, confirmed by the owner on 2026-10-19 |
@@ -190,9 +190,9 @@ client/server contract in 0.2.14).
 - `Exposed` is the JS base of `Page` and of the classes reached by a method path; it
   holds `registerSource` and `registerEndpoint`. `resolve_declared`/`resolveDeclared`
   (`page/base.py`, `page-base.js`) resolve a request name, `method` or
-  `a.b.c.method`, from the page (constitution 11.85).
+  `a.b.c.method`, from the page (constitution 11.88).
 - `node.requests` (`NodeRequests`) is the one proxy of the Source node: the request
-  rule of `remote`, `dataRpc`, `dataRemote` and `remoteSource` (constitution 11.85).
+  rule of `remote`, `dataRpc`, `dataRemote` and `remoteSource` (constitution 11.88).
 - The protocol of every adapter is GC-230 (contract and realisations), with the
   conformance check `check_protocol`/`checkProtocol`.
 
@@ -784,3 +784,155 @@ decision. Other proposed names (`destination_path`, `result_path`,
 `col_min_width`, `order_by`, `validate__onResult`, `closable_change`,
 `splitter_resize`) remain unchanged: owner deferred further review and
 authorized releases with the settled names on 2026-10-20.
+
+
+<a id="gc-225-070"></a>
+
+## 070 · Tree authoring names
+
+Block ID: **GC-225-070**.
+
+Gallery integration names, 2026-10-20: the index runtime's optional `navigation` Bag uses the existing IndexPage navigation name and existing key/title/url metadata; category/path describe its entry and store-relative path. `galleryIndex.navigationSelection` follows existing galleryIndex state ownership and binds the tree's approved selectedPath. `navigation_section` and `catalog_children` follow Python endpoint snake_case and JS registerEndpoint conventions. No aliases for storepath or tree-specific request APIs are added.
+
+
+2026-10-20 — owner requests appropriate tree classes and gallery navigation through the tree, with sections as resolvers. Structural names derive from existing component conventions (`row`, `caption`, `icon`, `group`, `node`, `expander`) and explicit state tokens (`branch`, `leaf`, `opened`, `closed`, `loading`, `error`). Matching CSS parts expose these across the shadow boundary; `branch-row`, `leaf-row`, `selected-row`, `branch-icon`, `leaf-icon`, `opened-icon`, `closed-icon` compose those same names. Tree CSS tokens retain the established --gramlot-tree- prefix. Gallery navigation stays a Bag; section values use existing dataRemote resolvers, not a second lazy-loader API.
+
+
+
+Implementation conventions for the minimum tree (2026-10-20, GC-197 §060):
+`bagStore` follows existing camel-case boolean component-capability metadata;
+`setStoreBag` follows component setter names. Internal router `subtree` names
+its descendant-event registration scope, not a new application pointer syntax.
+`--gramlot-tree-selected-background` and `--gramlot-tree-selected-color` derive
+from the existing `--gramlot-<component>-<presentation>` CSS-token convention.
+These are implementation names for the owner-requested first working increment,
+not additional approved legacy options.
+
+Owner confirmation, 2026-10-20: “si” to retaining the legacy `storepath` parameter
+with absolute or `datapath`-relative paths, without `store` as a synonym.
+For the first tree port, retain this existing legacy spelling as the sole store
+path parameter. The store itself is always a Bag, including resolver-backed nodes.
+See [GC-197 §055](197-legacy-tree.md#gc-197-055) for the exact proposal and scope.
+No other tree names or implementation are approved by this naming decision.
+
+Owner confirmation, 2026-10-20: “si” to the `labelAttribute` option and the label /
+chosen-attribute / absent-attribute behavior recorded in GC-197 §055. Retain the
+legacy camel-case spelling `labelAttribute` for this first-port parameter.
+No callback name, HTML-label contract or additional tree option is implied.
+
+Owner, 2026-10-20: “la hide values va prevista”. Retain the legacy spelling `hideValues` for the option included in the first tree port (GC-197 §055). This confirms the name/inclusion, not an additional `showValues` alias or label-callback API.
+
+Owner confirmation, 2026-10-20: “ok” to including `labelCb` in the first tree port. Retain the legacy spelling for the computed-caption callback; see GC-197 §055. This naming/inclusion decision does not approve `getLabel`, a callback signature or a new callback execution mechanism.
+
+
+Owner confirmation, 2026-10-20: “ok” to including `getLabel` after the Sourcerer usage review. Retain this legacy spelling for the caption override in the first tree port (GC-197 §055). This subsequent decision resolves the earlier pending inclusion; callback execution and HTML-label contracts remain open.
+
+
+Owner confirmation, 2026-10-20: “si” to including `getLabelClass`, the caption CSS-class callback based on node and open/closed state. Retain the legacy spelling for the first tree port (GC-197 §055). Other class options and callback execution details are not implied.
+
+
+Owner confirmation, 2026-10-20: “si” to including `getIconClass`, the icon CSS-class callback based on node and open/closed state. Retain the legacy spelling for the first tree port (GC-197 §055). Callback execution details and checkbox interaction remain open.
+
+
+Owner confirmation, 2026-10-20: “si” to including the Bag node attribute `labelClass` for caption CSS classes. Retain the legacy spelling for the first tree port (GC-197 §055); it is read by the default label-class calculation, which a custom `getLabelClass` replaces.
+
+
+Owner confirmation, 2026-10-20: “ok” to including the Bag node attribute `labelClassOpened`. Retain the legacy spelling for open-branch caption CSS classes, used by the default calculation in place of `labelClass` when populated (GC-197 §055).
+
+
+Owner confirmation, 2026-10-20: “ok” to including the Bag node attribute `labelClassClosed`. Retain the legacy spelling for closed-branch caption CSS classes, used by the default calculation in place of `labelClass` when populated (GC-197 §055).
+
+
+Owner confirmation, 2026-10-20: “ok” to including the tree parameter `selectedLabelClass`. Retain the legacy spelling for CSS classes added to the selected caption, including when its base classes come from `getLabelClass` (GC-197 §055).
+
+
+Owner confirmation, 2026-10-20: “ok” to including the Bag node attribute `node_class`. Retain this legacy spelling for CSS classes applied to the node container (GC-197 §055).
+
+
+Owner confirmation, 2026-10-20: “si” to including `openOnClick`, allowing branch expansion/collapse by clicking the label. Retain the legacy spelling for this first-port tree parameter (GC-197 §055). Default and selection interaction remain open.
+
+
+Owner confirmation, 2026-10-20: “ok” to including `autoCollapse`, automatically closing sibling branches on expansion. Retain the legacy spelling for this first-port tree parameter (GC-197 §055).
+
+
+Owner confirmation, 2026-10-20: “si” to including `selectedPath` for two-way selection binding using paths relative to the store Bag. Retain the legacy spelling for this first-port tree parameter (GC-197 §055).
+
+
+Owner confirmation, 2026-10-20: “si” to including `selectedLabel`, the output binding for the selected Bag node label. Retain the legacy spelling for this first-port tree parameter (GC-197 §055); it is not the computed display caption or an inbound selection command.
+
+
+Owner confirmation, 2026-10-20: “ok” to including `saveExpanded`, temporarily saving expanded-branch state in memory. Retain the legacy command spelling for the first tree port (GC-197 §055); node identity details remain open.
+
+
+Owner confirmation, 2026-10-20: “ok” to including `restoreExpanded`, reopening branches remembered by `saveExpanded`. Retain the legacy command spelling for the first tree port (GC-197 §055). Resolver reload behavior and identity details remain open.
+
+
+Owner confirmation, 2026-10-20: “si” to including `identifier`, with its supported identity modes to be examined individually. Retain the legacy parameter spelling for the first tree port (GC-197 §055); mode names and default remain pending.
+
+
+Owner confirmation, 2026-10-20: “ok” to `identifier="#id"` and to `#id` as the default when `identifier` is omitted. Retain the legacy mode spelling for BagNode internal identity (GC-197 §055).
+
+
+Owner confirmation, 2026-10-20: “si” to attribute-based identity, then “mettile tutte” for all remaining `identifier` modes. Retain the complete legacy mode syntax: `#id` (default), `#k`, `#i`, `#p`, `##`, `.child` and a named attribute such as `pkey`. See GC-197 §055 for meanings and unresolved edge cases. No additional identifier aliases or substitute identities are approved.
+
+
+**Pending tree row-action naming proposal — 2026-10-20, not approved.** The owner included hover actions and requested syntax. Proposed `rowActions` Source child derives from the provisional inspector rowActions name and the existing identical Python/JS camel-case component convention. Proposed position values start/end reuse the inspected descriptor spelling. Existing button/dropDownButton/menu/menuline, action/dataController and publish names remain unchanged. Proposed row context item/path/event requires explicit contract approval. This entry records a proposal only; it authorizes no new component or marker. See GC-197 §055.
+
+
+Owner trial acceptance, 2026-10-20: “proviamola” to the Source-composed rowActions example. The proposed authoring spelling `rowActions` and position='start'/'end' may be used for this bounded trial alongside existing command components. This supersedes the previous unapproved status of the syntax for trial purposes only. The public API is not implemented or finalized; row-context lifetime/placement details remain open (GC-197 §055).
+
+
+Minimum tree implementation, owner direction 2026-10-20: “per ora facciamo funzionare u tree mi imale e poi aggiungiamo pian paino tutto”. Apply existing component conventions: authoring tree, class Tree, tag gramlot-tree, module components/tree.js, collection tree. Existing storepath/labelAttribute/selectedPath spellings retain their confirmed contracts. Internal bagStore is a boolean component capability, following dataScope/sourceContext metadata conventions: NodeBinding routes the store path and the renderer supplies the Bag through setStoreBag. It is not a public store alias. Internal node identity uses the BagNode object itself, with no fabricated IDs or dependency changes. RowActions runtime work is deferred.
+
+
+
+
+
+Initial reusable-page naming direction — 2026-10-20: owner confirmed “si inizialmente si poi verifichiamo” to FramePage → IndexPage → gallery inheritance (GC-070 §1535). `FramePage` follows the existing Page/IndexPage PascalCase class convention in Python and JS; `IndexPage` retains its name. These are initial design names, pending contract verification. No new region-hook names, module/export paths, Data paths or browser runtime names are established here; decide those before implementation. Existing shipped IndexPage names remain descriptive of the current implementation, not automatic contracts for the proposed frame.
+
+
+Confirmed frame region hooks — 2026-10-20: owner “si” to `top(pane)`, `bottom(pane)`, `left(pane)`, `right(pane)`, `center(pane)` in both Python and JS (GC-070 §1535). Names reuse the existing borderContainer region values and the Page hook convention; `pane` denotes the region contentPane authoring object. Hooks configure and populate that pane. A defined outer-region hook, including an inherited one, causes that region to exist. These names supersede the region-hook naming gap in the initial FramePage direction above; no aliases, alternate spellings or module/export names are added.
+
+
+Confirmed IndexPage panel hook — 2026-10-20: owner “ok” to `panel(pane, node)` (GC-070 §1535). Retain the existing Page `panel` hook spelling in Python and JS; the agreed arguments denote the target tab contentPane and selected navigation BagNode. This is the proposed FramePage/IndexPage design's confirmed authoring contract, not a claim that the current shipped panel implementation already accepts those arguments. The invocation/transport mechanism remains unresolved; no new endpoint, wire format or alias is approved here.
+
+
+Confirmed directory index-page filenames — 2026-10-20: owner “si” to `index.py` / `index.js`, according to the Python/JS environment, as the own page of a directory in filesystem-derived IndexPage navigation (GC-070 §1535). This includes intermediate directories whose child Bag is resolver-backed. These are application page filenames, distinct from the reusable `IndexPage` class and its implementation module. No info/meta filename aliases or precedence between Python and JS files is established.
+
+
+Frame/index implementation names — owner implementation instruction, 2026-10-20: “bene procediamo con questa struttura e usiamo la gallery per verificarla”. Apply the existing Page module convention to FramePage: frame_page.py / frame-page.js; export it through the existing Page entries. Source labels frame, top, bottom, left, right, center and tabs identify the declared composition. The class property datapath reuses the existing Source datapath spelling to scope index Data. The existing indexMount / mountIndexPage names remain for the navigation-to-tab coordinator; gallery-specific controls and presentation stay in gramlot-examples. The Source wire method index_panel keeps the same endpoint spelling in Python and JS and invokes panel(pane, node) on a transported one-node selection Bag; this is a request snapshot, not an alternate store.
+
+
+Frame navigation implementation, 2026-10-20, under the owner instruction quoted above: `NavigationResolver` follows the existing `RpcResolver` class convention; `navigation-resolver.js` follows component-independent module naming. Its `directory` argument and node attribute carry the relative directory path, while `url` retains page identity and `title` supplies the label. They do not expose filesystem access in core. Gallery endpoint `navigation_section` retains its existing wire name. Gallery Logic methods `galleryInitialize` / `galleryMount` follow existing camelCase named-controller conventions. Source lifecycle `_onBuilt` installs directory resolvers before the first tree render; `_onStart` mounts the gallery presentation.
+
+
+Tree presentation increment — owner confirmations, 2026-10-20. Owner requests implementing labels, icons, classes and hideValues with gallery examples, and investigating legacy drag/drop eligibility and callbacks. On hideValues the owner chooses “Default False, come nel legacy”: false exposes a scalar value as a visual child; true hides scalar children. Gallery navigation explicitly uses true. Existing component Logic invocation supplies named synchronous callbacks as method(sourceNode, {item, path, opened, selected}); getLabel overrides normal label calculation, otherwise labelAttribute precedes labelCb. Owner adds “Voglio includere anche label HTML ora” and chooses “Preferisco un risultato strutturato testo/HTML” over the legacy string sentinel. Label callbacks return either {text: string} or {html: string}; raw labelAttribute remains text. HTML is sanitized with no scripts/event handlers; it does not execute application actions. Class callbacks return CSS class strings; default node labelClass/Opened/Closed and selectedLabelClass follow the already approved precedence. Custom classes are also exposed as CSS part tokens so application styles can reach the shadow-tree presentation. Scalar child rows are visual content only and select their owning BagNode/path, preserving the Bag as the sole store. Source-scoped callLogic reuses the existing LogicRegistry, without an alternate evaluator. No drag/drop API or implementation is approved by its investigation request.
+
+
+Internal drag/drop eligibility implementation — 2026-10-20. Owner: “cominciamo a implementare il drag interno e non quello esterno”. `DragDropPolicy` / `drag-drop-policy.js` apply the existing PascalCase class and class-derived kebab-case file conventions (§010). The class is an internal renderer collaborator, not a Gramlot proxy or an application API. Its `isTarget`, `acceptedTypes`, `acceptsTags`, `acceptsEffect` and `evaluate` methods apply the existing camelCase method convention to the approved eligibility rules in GC-197 options 5–11 and 19–20. Existing authoring names (`dropTarget`, `dropTargetCb`, `dropTypes`, `dropTags`, `effectAllowed`, `dropEffect`, `onDrop_`) retain the approved spelling. This records a convention application, not approval of the still-open callback argument schema, typed-handler encoding/order or cross-window root protocol.
+
+
+Drag preparation implementation — 2026-10-20. The owner confirms the named Logic onDrag signature method(sourceNode, {dragValues, item, path}). Internal DragPreparation / drag-preparation.js apply the existing PascalCase class and class-derived kebab-case file conventions. Renderer prepareDrag and component getDragContext follow camelCase internal collaborator methods. The explicit dragSource descriptor capability follows sourceContext/bagStore/command; a declaring component must implement getDragContext(event), with no method-existence fallback. Tree contributes its existing row/item/path correspondence and plain caption, without resolving nodes. These names do not add application proxies, a wire envelope or a cross-window protocol.
+
+
+General drop action implementation — 2026-10-20. Owner confirms the onDrop keyword envelope {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}. Internal renderer invokeDrop applies the existing camelCase invocation-method convention (invokeScript/callLogic); it invokes the named Logic action on an already accepted, filtered payload and adds no proxy or automatic Data operation. onDrop is shared Python/JS runtime metadata, following onDrag's consumed-attribute treatment. The source descriptor is passed through unchanged; no new wire/member spelling is introduced by this increment.
+
+
+General drop eligibility callback — 2026-10-20. The owner confirms sharing the onDrop context with dropTargetCb after an explanation of predicate versus action. Internal renderer checkDropTarget follows the camelCase collaborator method convention; it performs the dynamic check on a destination whose declarative policy is handled separately. dropTargetCb is consumed runtime metadata in both languages. No alternate callback representation, automatic Data action or new wire format is introduced.
+
+
+Native internal drag integration — 2026-10-20. Internal DragDrop / drag-drop.js applies the established class/file convention and is owned by one renderer, alongside DragPreparation and DragDropPolicy. Transient session state, preview and feedback are renderer lifecycle state, not a second Data model. Existing standard browser event/type/effect names are reused without a private wire marker. Tree getDragContext supplies an internal element reference for row feedback/preview; only the approved callback fields are exposed to Logic. Source context uses the proposed camelCase identity spellings pageId/sourcePath/itemPath as internal descriptor construction for the first local-only integration; cross-window identity/membership is still unimplemented and these members are not a cross-window authorization protocol. Existing approved draggedItem/canBeDropped/cannotBeDropped classes and parts retain their names. No Handler proxy, fallback serializer, new library or automatic Bag operation is introduced.
+
+
+Drag completion implementation — 2026-10-21. Internal endTopic captures the existing canonical Source-local endDrag topic via SubscriptionsHandler.topicFor; it is not a new subscription registry or naming scheme. The renderer endDrag method consumes the approved {source, dropEffect} context and guarantees callback-before-publication ordering even after callback failure.
+
+
+Numbered gallery filesystem convention — 2026-10-21. Owner rejects a separate Page.order field and directs ordering through module/folder names, with the concrete example “01-Html Elements”. Owner adds “index è sempre 00”, confirms that filesystem browsing must expose the order, and allows a Markdown-only directory description. The agreed index basename is 00-index: executable Python/JavaScript pages or a descriptive Markdown index. Directory selection opens that index; it is not listed among the directory's children. Executable page labels come from Page.title; for 00-index.md the first level-one Markdown heading supplies the title (owner “si” in reply to that exact proposal). Numeric sibling prefixes determine hierarchy order; no Page.order metadata or renamed hyphen-only substitute for spaces is approved. These decisions concern authoring/navigation; they do not by themselves confirm a new FileServer path-validation contract or a general Markdown-page renderer.
+
+
+Numbered navigation clarification — 2026-10-21. Owner clarifies “intendevo html elements -> html_elements”, requires the nested path to remain nested, and authorizes implementation with “proviamo”. Normalize authored module/folder names to lowercase with underscores instead of spaces, retaining sibling numeric prefixes and 00-index. Do not flatten paths or introduce route aliases as a substitute for nested paths. This supersedes the proposed space-preserving FileServer extension in GC-070 §1565; no core loader change is required. Page.title and the first Markdown H1 remain the agreed title sources. Gallery catalogue family folder uses the same existing folder member convention as lesson folder; key remains catalogue identity, distinct from physical path.
+
+Drawer transition trigger refinement (owner, 2026-10-21): “al caricamento della pagina il drawer di code dovrebbe aprirsisenza effettomsolo se lo fa loperatore deve esserci la transizione.” Automatic Source/Data visibility changes are immediate; drawer-button activation retains the existing transition, including keyboard activation. The private border #render argument animate defaults to false and is true only from the drawer click handler. Reuse data-drawer-motion; clear it after the grid transition. No authoring parameter, proxy or gallery-local animation state is added.
+
+
+Intermediate release resolver repair — owner, 2026-10-21: “Sì, adegua il contratto prima della release”, confirming preservation of lazy directories, cache and cancellation. Separate the shared asynchronous endpoint/cache lifecycle from the Source-specific dataRemote request policy. Internal RemoteResolver / binding/remote-resolver.js follows the existing class/file convention and owns asynchronous resolve/refresh, cache fingerprint and guarded Data writes. RpcResolver retains its real NodeBinding, sync behavior and NodeRequests policy; NavigationResolver retains its existing public gramlot/method/directory/onError constructor and independent per-directory requests. No fabricated Source/NodeBinding, previous RPC implementation, alternate wire format or dependency modification is introduced. Internal startLoad/loadAsync/prepareValue follow existing camelCase method conventions; the public navigation contract is unchanged.

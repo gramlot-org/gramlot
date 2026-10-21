@@ -27,19 +27,23 @@ export class DataRegistration {
     #recipient;
     #order;
     #active = true;
+    #subtree;
 
-    constructor(router, {path, attr, recipient, order}) {
+    constructor(router, {path, attr, recipient, order, subtree = false}) {
         this.#router = router;
         this.#path = path;
         this.#attr = attr;
         this.#recipient = recipient;
         this.#order = order;
+        this.#subtree = subtree;
     }
 
     get router() { return this.#router; }
     get path() { return this.#path; }
     get attr() { return this.#attr; }
     get recipient() { return this.#recipient; }
+    /** Store registration: structural, value and attribute events throughout the subtree. */
+    get subtree() { return this.#subtree; }
     get active() { return this.#active; }
     /** Registration order, which is also the delivery order of one event. */
     get order() { return this.#order; }
@@ -82,8 +86,10 @@ export class DataRouter {
     /** Active registrations. */
     get size() { return this.#size; }
 
-    /** Register `recipient` on the absolute Data `path` (without `_root_`), optionally on its attribute `attr`. */
-    register({path, attr = null, recipient}) {
+    /** Register on an absolute Data path, optionally on an attribute.
+     * `subtree` includes descendant attribute events for Bag-backed components.
+     */
+    register({path, attr = null, recipient, subtree = false}) {
         if (typeof path !== 'string' || path === '') throw new TypeError(`A Data registration requires a path: ${path}`);
         let route = this.#root;
         for (const segment of path.split('.')) {
@@ -95,7 +101,7 @@ export class DataRouter {
             route = next;
         }
         this.#order += 1;
-        const registration = new DataRegistration(this, {path, attr, recipient, order: this.#order});
+        const registration = new DataRegistration(this, {path, attr, recipient, order: this.#order, subtree});
         route.registrations.add(registration);
         this.#routes.set(registration, route);
         this.#size += 1;
@@ -176,6 +182,7 @@ export class DataRouter {
      */
     #accepts(registration, level, event) {
         const {evt} = event;
+        if (registration.subtree) return level !== 'container' || evt !== 'upd_attrs';
         if (registration.attr === null) {
             if (evt === 'upd_attrs') return false;
             return !(level === 'child' && event.fired);

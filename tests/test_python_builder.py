@@ -18,6 +18,23 @@ CONTROLS = json.loads(
 
 
 class BuilderTests(unittest.TestCase):
+    def test_named_drag_and_drop_callbacks_are_runtime_metadata_not_inline_html(self):
+        builder = GramlotBuilder()
+        builder.root.div("A record", draggable=True, onDrag="prepareRecord", onDrop="receiveRecord", dropTargetCb="canReceiveRecord", onDragEnd="finishDrag")
+        wire = from_tytx(builder.to_tytx())
+        self.assertEqual(wire.nodes[0].attr["onDrag"], "prepareRecord")
+        self.assertEqual(wire.nodes[0].attr["onDrop"], "receiveRecord")
+        self.assertEqual(wire.nodes[0].attr["dropTargetCb"], "canReceiveRecord")
+        self.assertEqual(wire.nodes[0].attr["onDragEnd"], "finishDrag")
+        self.assertNotIn("onDrag", builder.render())
+        self.assertNotIn("onDrop", builder.render())
+        self.assertNotIn("prepareRecord", builder.render())
+        self.assertNotIn("receiveRecord", builder.render())
+        self.assertNotIn("dropTargetCb", builder.render())
+        self.assertNotIn("canReceiveRecord", builder.render())
+        self.assertNotIn("onDragEnd", builder.render())
+        self.assertNotIn("finishDrag", builder.render())
+
     def test_node_identity_uses_shared_spelling_and_stays_out_of_html(self):
         builder = GramlotBuilder()
         panel = builder.root.div("text", nodeId="source-panel", id="dom-panel")

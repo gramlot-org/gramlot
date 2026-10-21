@@ -246,35 +246,42 @@ Gallery lesson: *Data exchange*.
 
 Block ID: **GC-095-110**.
 
-`IndexPage` supplies grouped navigation, a resizable sidebar and iframe tabs. A
-page opens on first selection; selecting it again reuses the same iframe and its
-state. The gallery extends this class with its explanations, source viewer and
-inspector. Your application does not need the gallery package.
+The current development contract separates three responsibilities: `FramePage`
+provides a five-region frame, `IndexPage` adds navigation and retained page tabs,
+and an application supplies its own region contents. The gallery is one such
+application; the core does not depend on it.
+
+`FramePage` always provides `center(pane)`. The optional `top(pane)`,
+`bottom(pane)`, `left(pane)` and `right(pane)` hooks create their region only
+when defined, including inherited implementations. Each hook receives a
+contentPane and sets its dimensions, splitter/drawer attributes and contents.
+An undefined outer region occupies no space and has no drawer.
 
 For a Python application, put this in `pages/index.py`:
 
 ```python
+from genro_bag import Bag
 from gramlot import IndexPage
 
 
 class Page(IndexPage):
     title = "My application"
-    logo_url = "/app-icon.png"
-    installable = True
-    app_icon = "/app-icon.png"
-    navigation = (
-        {"key": "work", "title": "Work", "children": [
-            {"key": "hello", "title": "Hello", "url": "hello"},
-        ]},
-    )
 
-    def introduction(self, pane):
-        pane.h2("Welcome")
-        pane.p("Choose Hello in the sidebar to open your first page.")
+    @property
+    def navigation(self):
+        navigation = Bag()
+        navigation.set_item("work", Bag(), title="Work")
+        navigation.set_item("work.hello", None, title="Hello", url="hello")
+        return navigation
 
-    def footer(self, pane):
-        super().footer(pane)
-        pane.span("My application")
+    def top(self, pane):
+        pane.set_attr({"height": "42px"})
+        pane.h1(self.title)
+
+    def right(self, pane):
+        pane.set_attr({"width": "280px", "splitter": True,
+                       "drawer": "close", "drawer_label": "Tools"})
+        pane.p("Application tools")
 ```
 
 Its companion `pages/index.js` connects the standard browser behavior:
@@ -283,76 +290,260 @@ Its companion `pages/index.js` connects the standard browser behavior:
 export {IndexLogic as Logic} from '@gramlot/gramlot/page';
 ```
 
-Finally, create `pages/hello.py`:
+Create `pages/hello.py` as an ordinary Page. The navigation URL is passed to its
+iframe unchanged. The same exact URL identifies the same tab, preserving its
+Source, Data and iframe state. No separate application key is required and URLs
+are not normalized. A node without a URL only groups children. A folder can
+have both a URL and resolver-backed children: selecting its label opens its own
+page; its expansion arrow loads its children.
+
+Override `panel(pane, node)` to construct a selected page differently. It runs
+on first opening; the default creates an iframe using `node.attr["url"]` and
+the `title` attribute, falling back to the BagNode label for the caption. The
+coordinator transports the selected node's attributes in a one-node Bag to
+`index_panel`, which invokes the hook. The original navigation remains a Bag.
+
+`IndexPage.left` declares the tree and `IndexPage.center` its tabContainer.
+Call the corresponding superclass hook when adding content to either region.
+`behavior(shell)` declares the standard startup controller. `datapath` defaults
+to `index`; its Data contains `navigation`, `navigationSelection`, `active` and
+`opened`. Active pages are identified by URL; opened records retain panel labels
+and navigation paths. `shell_id` (JS `shellId`) defaults to `index`. Use one index
+shell per document. There is no tab-count or eviction policy.
+
+The JavaScript equivalent uses `static navigation` (a Bag or a getter returning
+one), `static datapath` and the same five region hooks. It exports IndexLogic as
+Logic from its page module. Custom Logic delegates to the coordinator; Logic
+classes themselves cannot inherit under the existing Logic contract.
+
+The gallery builds one Bag level from the filesystem at each directory request.
+Each directory has a NavigationResolver; a numbered `00-index.py` / `00-index.js`
+gives it its own page URL. A descriptive `00-index.md` uses the gallery-owned
+Markdown panel, with its first H1 as the title. The reusable resolver uses the ordinary RPC service and owns nested
+resolver cancellation, without filesystem access in core. Discovery and URL
+staging belong to the gallery and its host. Gallery themes, code, Inspector,
+preferences and installation controls belong to its region hooks and browser
+presentation. Arbitrary iframe documents do not inherit their shell's theme.
+
+
+### Build a site with the gallery's structure
+
+Use `IndexPage` for a navigation tree plus retained iframe tabs. Use `FramePage`
+when the center is your own layout and you do not need that navigation/tab
+coordinator. Both are ordinary Page base classes; region hooks belong to your
+application and are the extension points.
+
+| Region hook | A typical application supplies | Keep from IndexPage |
+| --- | --- | --- |
+| `top(pane)` | Branding, title, toolbar | No prescribed contents |
+| `left(pane)` | Navigation width, logo, drawer presentation | Call `super().left(pane)` for the tree |
+| `center(pane)` | Tab presentation | Call `super().center(pane)` for the retained tabs |
+| `right(pane)` | Tools, details or a Code panel | No prescribed contents or automatic source viewer |
+| `bottom(pane)` | Settings drawer or status | No prescribed contents |
+
+Put the root Page above the pages it navigates to. A concrete numbered layout is:
+
+```text
+pages/
+    index.py
+    index.js
+    01-work/
+        00-index.py
+        01-hello.py
+```
+
+`pages/index.py` is the entry point served at `/` (or at the application's mount).
+`00-index.py` is the page describing a navigation directory; it is not a replacement
+for the host's root `index.py`. Numbering sorts siblings and remains in the URL.
+Use lowercase names with underscores inside names, such as `01-html_elements`.
+Keep each nested directory in its public path.
+
+In the root Page above, replace `navigation` with:
+
+```python
+    @property
+    def navigation(self):
+        navigation = Bag()
+        children = Bag()
+        children.set_item("hello", None, title="Hello", url="01-work/01-hello")
+        navigation.set_item("work", children, title="Work", url="01-work/00-index")
+        return navigation
+```
+
+The Bag label (`work`, `hello`) identifies a node within its parent. `title` is
+what the tree and tab show; `url` identifies the page and the retained tab.
+The folder has both children and a URL: its arrow expands the children, and its
+caption opens its description. Do not add `00-index` again as a child.
+For a small static menu, author this Bag directly. For generated navigation,
+populate `title` from the target module's `Page.title`; the core does not import
+page modules automatically to discover navigation captions.
+
+Create `pages/01-work/00-index.py`:
 
 ```python
 from gramlot import Page as BasePage
 
 
 class Page(BasePage):
+    title = "Work"
+    css = ("/themes/gramlot-base/theme.css",)
+
     def main(self, root):
-        root.h1("Hello")
-        root.p("This page keeps its own Data and Source inside its iframe.")
+        page = root.main(padding="24px")
+        page.h1(self.title)
+        page.p("Choose a work page in the navigation tree.")
 ```
 
-Serve a square **512×512 PNG** at `/app-icon.png` using the environment's asset
-map. The default manifest declares precisely that size and media type; it does
-not convert images. The same image can be the sidebar logo, or `logo_url` can
-point to a separate logo. A mounted application must use the mounted URL for
-`logo_url`; `app_icon` is an application-relative asset path, and the manifest
-method adds the mount prefix itself. Leading `/` on `app_icon` is accepted.
+Create `pages/01-work/01-hello.py`:
 
-Each navigation group has `key`, `title` and `children`; each child has `key`,
-`title` and `url`. Use unique keys across groups and children, and reserve `intro`
-for the introduction. URLs are those of the environment: for example `hello` on
-a Python server, or `hello/index.html` for a static directory route. Use one
-index shell per document. `shell_id` defaults to `index` and separates its saved
-preferences from other index shells at the same origin and path.
+```python
+from gramlot import Page as BasePage
 
-Override `introduction(pane)` and `group_panel(pane, group)` for introductory
-content. Override `footer(pane)` to replace the footer, or call `super()` to keep
-its theme, color mode, keyboard-navigation and installation controls. The
-standard footer remembers the theme (Base, Compact, mimi, joanna), Light/Dark and
-sidebar width in local storage; the keyboard checkbox is a per-page choice. A replacement footer need
-not contain the standard controls. The default `panel(parent, item)` creates an
-iframe; `behavior(shell)` activates `IndexLogic` through a named controller.
 
-The optional `header(shell)` hook declares an application toolbar before navigation
-and content. It is empty by default; the application supplies its Source and layout.
-The example gallery uses it for its title and Navigation/Code toggles. Its code
-viewer is a full-height right sidebar: both sidebars can be hidden and resized
-without reloading the selected example. Widths and visibility are saved alongside
-theme preferences when browser local storage is available. Introduction and category
-pages hide the code sidebar automatically; returning to an example restores its
-visibility preference and selected source tab.
+class Page(BasePage):
+    title = "Hello"
+    css = ("/themes/gramlot-base/theme.css",)
 
-The shell's theme does not automatically style arbitrary iframe documents.
-The gallery supplies the corresponding frame-side theme receiver for its examples.
-The browser behavior of the index, `IndexLogic` and `mountIndexPage`, is also
-exported alone as `@gramlot/gramlot/index-page-runtime`
-([Classes and server adapters](090-classes-and-hosts.md#gc-090-024)).
+    def main(self, root):
+        page = root.main(padding="24px")
+        page.dataSetter("name", "Ada")
+        page.h1(self.title)
+        page.input(value="^name", live=True)
+        page.p("^name", mask="Hello, {}")
+```
 
-The JavaScript equivalent exports both classes from the page module:
+Keep the root `index.js` re-export of `IndexLogic` shown above. The two child
+pages need no Logic companion because their behavior is entirely declarative.
+The center starts empty until a page is selected.
+Select Hello, edit its name, visit Work, then select Hello again: the same iframe
+is retained, so its Data and input stay unchanged. Reloading the browser document
+starts a new instance; retained tabs are not cross-reload persistence.
+
+### Configure navigation and drawers through Source
+
+Add these hooks to the root Page to refine its navigation and bottom drawer:
+
+```python
+    def left(self, pane):
+        super().left(pane)
+        pane.set_attr({"width": "260px", "drawer_label": "Navigation"})
+        pane.value.get_node("tree").set_attr({"autoCollapse": True})
+
+    def bottom(self, pane):
+        pane.set_attr({"height": "140px", "drawer": "close",
+                       "drawer_label": "Settings", "padding": "12px"})
+        pane.p("Put application settings here.")
+```
+
+Leave `center` inherited unless you need to customize it. If you override it,
+keep the superclass tabContainer at `frame.center.tabs`; the standard coordinator
+uses that Source structure. Region sizes, `splitter`, `drawer`, `drawer_label`,
+`drawer_icon` and `drawer_minimize` are described in
+[borderContainer, GC-105 §100](105-components.md).
+Automatic Source/Data visibility updates are immediate. Activating a drawer
+handle uses its transition (including native keyboard activation); splitter
+resizing remains live. Do not simulate an operator click to initialize a drawer.
+
+### Activate the collections and serve the pages
+
+The shell needs the **layout** and **tree** collections. Add **inputs** when your
+pages use widgets from it. Native HTML inputs in the example above need no inputs
+collection. Use the same selected collections for the root, child pages and remote
+Source requests, as described in [collection activation, GC-105 §035](105-components.md).
+A Python host's collection descriptors can be prepared as follows:
+
+```python
+import json
+from importlib.resources import files
+
+collections = [
+    {"grammar": json.loads(files("gramlot").joinpath(f"collections/{name}.json").read_text()),
+     "module": f"/assets/{name}.js"}
+    for name in ("layout", "tree")
+]
+```
+
+Supply these descriptors to your host and serve the corresponding browser ES
+modules at `/assets/layout.js` and `/assets/tree.js`. Bundle their entry points
+`@gramlot/gramlot/components/layout` and `@gramlot/gramlot/components/tree`, with
+`@gramlot/gramlot` external, so both share the bootstrap's runtime and Bag classes.
+The JSON grammar alone does not load browser controls. Host setup and public
+asset routing belong to the integration; see
+[page resources and file layout, GC-090 §030](090-classes-and-hosts.md).
+
+Navigation URLs are resolved by the iframe against the shell document URL. The
+relative paths in this example work at `/` and at a mounted root such as `/app/`.
+For another shell location, author the appropriate paths explicitly. `IndexPage`
+passes URLs unchanged: it does not prepend `pages/`, rewrite short catalogue
+keys or translate them to filesystem paths. The host must serve those exact
+routes and their `.css` / Logic companions. For a static export, use the actual
+nested `…/index.html` URLs produced by that exporter.
+
+### Grow the tree with directory resolvers
+
+A filesystem tree is application/host policy, not part of FramePage. To reproduce
+the gallery convention, the server reads one directory level, orders files and
+directories together by numeric filename, reads executable captions from
+`Page.title`, and omits `00-index` from the returned children. It must keep requests
+inside its configured pages root. Each returned node has `title` and, when
+selectable, `url`; directory nodes also have `directory` and an unresolved value.
+
+Expose that one-level reader through an `@endpoint` taking `directory` and
+returning a Bag. In the root's building phase (`_onBuilt`), attach a
+`NavigationResolver` to each root directory with `navigation.setResolver`:
 
 ```javascript
-import {IndexPage} from '@gramlot/gramlot/page';
-export {IndexLogic as Logic} from '@gramlot/gramlot/page';
-
-export class Page extends IndexPage {
-    static title = 'My application';
-    static logoUrl = '/app-icon.png';
-    static installable = true;
-    static appIcon = '/app-icon.png';
-    static navigation = [{key: 'work', title: 'Work', children: [
-        {key: 'hello', title: 'Hello', url: 'hello/index.html'},
-    ]}];
-
-    footer(pane) {
-        super.footer(pane);
-        pane.span('My application');
-    }
-}
+const resolver = new NavigationResolver({
+    gramlot: this.page.src.renderer.binding.gramlot,
+    method: 'navigation_section',
+    directory: node.attr.directory,
+    onError: error => state.setItem('navigationError', error.message),
+});
+navigation.setResolver(node.label, resolver);
 ```
+
+This is a fragment inside the application's Logic initialization: `navigation` is
+its navigation Bag, `state` is its index Data Bag and `node` is the directory node.
+Import `NavigationResolver` from `@gramlot/gramlot`. Register cleanup on the
+shell's disposal and call `resolver.abort()` for the installed roots. The resolver
+wraps nested directory nodes returned by the endpoint, caches loaded levels and
+aborts nested requests on cleanup. Expanding the arrow performs the request;
+selecting the label only opens its URL. Initialize the resolvers before starting
+the ordinary index coordinator. With custom Logic, delegate its `indexMount`
+method to `IndexLogic.prototype.indexMount.call(this, node, params)` rather than
+subclassing a Logic class.
+
+### Own the iframe contents and optional panels
+
+The inherited `panel(pane, node)` already creates the iframe. Override it only
+when your application needs a different Source composition; for example:
+
+```python
+    def panel(self, pane, node):
+        pane.iframe(src=node.attr["url"], title=node.attr["title"],
+                    width="100%", height="100%", border=0)
+```
+
+Each child page has its own Page lifecycle, Source, Data and browser context.
+Use <a href="#gc-095-115">frame publish</a> for explicit communication. A parent theme does
+not automatically style an iframe; the child loads its own theme, and synchronized
+appearance needs the application-owned message bridge demonstrated by the gallery.
+
+A right-hand Code viewer, Inspector, automatic hiding of unused regions and
+restoration of preferences are also gallery specializations. They are not added
+by naming a region "Code". Build their contents through Source and keep their
+state in Data; use the existing `mountIndexPage` selection/preparation callbacks
+when coordinating them with the selected page. Keep the standard coordinator
+as the owner of URL selection and retained tabs.
+
+A descriptive `00-index.md` is likewise a navigation convention: the gallery
+uses its first H1 for the title and renders it with its sanitized Markdown
+formatter inside the selected panel. The core FileServer does not execute
+Markdown as a Page. An application adopting this convention must explicitly
+supply that reader and Markdown panel; otherwise use `00-index.py` as above.
+See the gallery's
+[filesystem and staging contract](https://github.com/gramlot-org/gramlot-examples/blob/main/docs/010-gallery.md#ge-010-310)
+for the implemented reference. No dependency from core to the gallery is required.
 
 ### The manifest belongs to the root
 

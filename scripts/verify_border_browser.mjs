@@ -55,19 +55,19 @@ try{
             const vertical=['left','right'].includes(side), separator=sep(side), drawer=separator.locator('button');
             const line=await separator.boundingBox(), grip=await drawer.boundingBox();
             assert.equal(line[vertical?'width':'height'],1, `${engine} thin ${side} separator`);
-            assert.equal(grip[vertical?'width':'height'],4, `${engine} discreet ${side} drawer`);
-            assert.equal(grip[vertical?'height':'width'],28);
+            assert.equal(grip[vertical?'width':'height'],6, `${engine} discreet ${side} drawer`);
+            assert.equal(grip[vertical?'height':'width'],40);
             assert.equal(await drawer.getAttribute('title'),side);
             assert.equal(await drawer.textContent(),'');
             // Touch enlarges only the hit target, not the visible grip.
             await page.locator('#border').evaluate(el=>el.style.setProperty('--gramlot-touch-target','44px'));
-            assert.equal((await drawer.boundingBox())[vertical?'width':'height'],4);
+            assert.equal((await drawer.boundingBox())[vertical?'width':'height'],6);
             assert.equal(await drawer.evaluate(el=>getComputedStyle(el,'::after').width),'44px');
             if(side==='left') {
                 // Click outside the painted grip, inside its touch hit area.
                 await page.mouse.click(grip.x+12,grip.y+grip.height/2);
                 assert.equal(await drawer.getAttribute('aria-expanded'),'false');
-                await drawer.click();assert.equal(await drawer.getAttribute('aria-expanded'),'true');
+                await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));assert.equal(await drawer.getAttribute('aria-expanded'),'true');
             }
             await page.locator('#border').evaluate(el=>el.style.removeProperty('--gramlot-touch-target'));
         }
@@ -92,13 +92,13 @@ try{
             assert((await size(side))[axis]>before[axis]+12,`${engine} ${side} drawer drags its splitter live`);
             await page.mouse.up();
             assert.equal(await drawer.getAttribute('aria-expanded'),'true','drag must not toggle the drawer');
-            await drawer.click();assert.equal(await drawer.getAttribute('aria-expanded'),'false');
-            await drawer.focus();await page.keyboard.press('Enter');assert.equal(await drawer.getAttribute('aria-expanded'),'true');
+            await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));assert.equal(await drawer.getAttribute('aria-expanded'),'false');
+            await drawer.focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));assert.equal(await drawer.getAttribute('aria-expanded'),'true');
         }
         for(const side of ['left','right','top','bottom']) {
             const drawer=sep(side).locator('button'), vertical=['left','right'].includes(side), axis=vertical?'w':'h';
             const before=await size(side), sign=['left','top'].includes(side)?1:-1;
-            await drawer.click();assert.equal(await drawer.getAttribute('aria-expanded'),'false');
+            await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));assert.equal(await drawer.getAttribute('aria-expanded'),'false');
             const box=await drawer.boundingBox(),x=box.x+box.width/2,y=box.y+box.height/2;
             await page.mouse.move(x,y);await page.mouse.down();
             await page.mouse.move(x+(vertical?before[axis]*sign:0),y+(vertical?0:before[axis]*sign),{steps:5});
@@ -159,7 +159,7 @@ try{
         assert.equal(await page.evaluate(()=>gramlot.data.getItem('delivery')),'weekend');
         for(const side of ['top','bottom','left','right']) {
             const drawer=sep(side).locator('button');
-            await drawer.click(); await drawer.click();
+            await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion')); await drawer.click();await page.waitForFunction(()=>!document.querySelector('#border').shadowRoot.querySelector('.control-box').hasAttribute('data-drawer-motion'));
         }
         await page.locator('#draft input').focus();await page.mouse.move(0,0);
         await page.evaluate(()=>{gramlot.data.setItem('drawerLabel','Details');gramlot.data.setItem('drawerClass','drawer-rotated drawer-reveal');});

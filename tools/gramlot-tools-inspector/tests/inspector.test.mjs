@@ -391,3 +391,52 @@ test('docking keeps the inspector, selected path and unfinished editor value ali
     assert.equal(editor.value, 'Uncommitted');
     element.remove(); app.dispose();
 });
+
+for (const remote of [false, true]) for (const kind of ['value', 'data attribute', 'source attribute']) {
+    test(`boolean ${kind} commits on click without blur and supports undo (${remote ? 'bridge' : 'local'})`, async () => {
+        const app = target();
+        app.data.setItem('enabled', false, {active: false});
+        const source = kind === 'source attribute';
+        const node = source ? app.src.source.getNode('main.greeting') : app.data.getNode('enabled');
+        if (source) node.setAttr({hidden: false});
+        const name = source ? 'hidden' : 'active';
+        const read = () => kind === 'value' ? node.value : node.getAttr(name);
+        const label = kind === 'value' ? 'Value' : `${name} value`;
+        const channel = remote ? new MessageChannel() : null;
+        const agent = remote ? attachInspectorAgent(app, channel.port1) : null;
+        const connection = remote ? new InspectorConnection(channel.port2) : null;
+        const element = inspector(remote ? null : app);
+        const wait = async predicate => {
+            const end = Date.now() + 3000;
+            while (!predicate()) {
+                if (Date.now() > end) throw new Error('Inspector boolean update timeout');
+                await new Promise(resolve => setTimeout(resolve, 5));
+            }
+        };
+        try {
+            if (remote) {
+                element.targets = [{id: 'page', title: 'Page', connection}];
+                await wait(() => connection.state === 'started');
+            }
+            if (source) button(element, 'Source').click();
+            select(element, source ? 'main.greeting' : 'enabled');
+            assert.equal(field(element, label).type, 'checkbox');
+            field(element, label).focus();
+            field(element, label).click();
+            if (!remote) assert.equal(read(), true);
+            await wait(() => read() === true && !field(element, label).disabled);
+            assert.equal(status(element), '');
+            await wait(() => !button(element, '↶ Undo').disabled);
+            button(element, '↶ Undo').click();
+            await wait(() => read() === false && !field(element, label).disabled);
+            assert.equal(button(element, '↶ Undo').disabled, true);
+            button(element, '↷ Redo').click();
+            await wait(() => read() === true && !field(element, label).disabled);
+            field(element, label).click();
+            await wait(() => read() === false && !field(element, label).disabled);
+            assert.equal(field(element, label).checked, false);
+        } finally {
+            element.remove(); connection?.close(); agent?.dispose(); app.dispose();
+        }
+    });
+}

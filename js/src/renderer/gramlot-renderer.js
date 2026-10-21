@@ -16,6 +16,8 @@ import {BindingRuntime} from '../binding/runtime.js';
 import {requireInstallable} from '../binding/installation.js';
 import {GramlotHtmlRenderer} from './gramlot-html-renderer.js';
 import {displayItem} from './attributes.js';
+import {DragPreparation} from './drag-preparation.js';
+import {DragDrop} from './drag-drop.js';
 
 /**
  * Own the live DOM lifecycle driven by typed Source insert/update/delete events.
@@ -44,6 +46,10 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.source = source;
         this.destination = destination;
         this.html = new HtmlElement({metadataAttributes: ['__ref'],
+            callLogic: (node, name, keywords) => {
+                const {group, method} = binding.gramlot.src.logicRegistry.resolve(name, node);
+                return method.call(group, node, keywords);
+            },
             invokeScript: (node, name, code, keywords) => this.inlineCompiler.compile(
                 node, name, code, node.parentNode._getMeta('gramlot_component').childParameters[name].inline)(keywords)});
         this.records = new Map();
@@ -52,14 +58,45 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.building = false;
         this.disposed = false;
         this.elements = new WeakMap();
+        this.dragPreparation = new DragPreparation(this);
         // The instance id scopes the generated radio names to this page (P11, S11).
         this.instanceId = randomId();
         this.radioGroups = new RadioGroups(this);
+        this.dragDrop = new DragDrop(this);
         this.subscription = `html-source-renderer-${this.instanceId}`;
         source.subscribe(this.subscription, {any: event => this.receive(event)});
     }
 
     get binding() { return this._binding; }
+    /** Prepare a local payload snapshot: no DataTransfer writes or native gesture commit. */
+    prepareDrag(node, event) { return this.dragPreparation.prepare(node, event); }
+    /** Dynamic eligibility only; cannot replace the independent type/tag/effect policy. */
+    checkDropTarget(node, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}) {
+        const record = this.records.get(node);
+        if (!record) return false;
+        if (!record.resolved.dropTargetCb) return true;
+        const allowed = this.html.callLogic(node, record.resolved.dropTargetCb,
+            {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable});
+        if (typeof allowed !== 'boolean') throw new TypeError('dropTargetCb must return a boolean synchronously');
+        return allowed;
+    }
+    /** Invoke only the general action, after acceptance and removal of data handled by typed actions. */
+    async invokeDrop(node, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}) {
+        const record = this.records.get(node);
+        if (!record || !record.resolved.onDrop || Object.keys(dropValues).length === 0) return;
+        await this.html.callLogic(node, record.resolved.onDrop,
+            {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable});
+    }
+    /** Notify origin completion independently of application-operation success. */
+    async endDrag(node, {source, dropEffect}, topic) {
+        const context = {source, dropEffect}, errors = [];
+        const record = this.records.get(node);
+        try {
+            if (record && !record.binding.closed && record.resolved.onDragEnd) await this.html.callLogic(node, record.resolved.onDragEnd, context);
+        } catch (error) { errors.push(error); }
+        try { this.binding.gramlot.publish(topic, context); } catch (error) { errors.push(error); }
+        if (errors.length) throw new AggregateError(errors, 'Drag completion notification failed');
+    }
     /** The page's InlineCompiler: the live renderer evaluates the `==` expressions (S09). */
     get inlineCompiler() { return this.binding.inlineCompiler; }
 
@@ -677,6 +714,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     dispose() {
         if (this.disposed) return;
         this.disposed = true;
+        this.dragDrop.dispose();
         this.source.unsubscribe(this.subscription, {any: true});
         this.pending.length = 0;
         const errors = [];

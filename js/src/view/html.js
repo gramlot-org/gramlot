@@ -36,8 +36,9 @@ function domPropertyName(name) {
  * names and style arrive adapted by the renderers (GramlotHtmlRenderer, GramlotSvgRenderer).
  */
 export class HtmlElement {
-    constructor({metadataAttributes = [], invokeScript = null} = {}) {
+    constructor({metadataAttributes = [], invokeScript = null, callLogic = null} = {}) {
         this.invokeScript = invokeScript;
+        this.callLogic = callLogic;
         this.metadataAttributes = new Set([...META_ATTRS, '_text', ...metadataAttributes]);
     }
 
@@ -95,6 +96,7 @@ export class HtmlElement {
             element.setSourceContext({
                 publish: (topic, payload) => node.publish(topic, payload),
                 writeParameter: (name, value) => this.writeParameter(node, name, value),
+                callLogic: (name, keywords) => this.callLogic(node, name, keywords),
             });
         }
         const text = document.createTextNode(this.text(node));
@@ -159,6 +161,9 @@ export class HtmlElement {
             });
         }
         if (this.definition(node).meta.gramlot_component) {
+            if (this.definition(node).meta.gramlot_component.bagStore) {
+                element.setStoreBag(node.getRelativeData(node.getAttr('storepath')));
+            }
             attrs = element.projectAttributes(attrs, adapt);
         }
         attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...renderAttributes}));

@@ -10486,3 +10486,711 @@ Migration requirement: update declarations and direct attribute access, regenera
 saved Source using `node_id`, and upgrade producers and consumers together. No
 compatibility alias is provided. Unrelated local work was excluded from these
 releases.
+
+
+<a id="gc-070-1440"></a>
+## 1440. Tree and editor legacy comparison and proposed ports — 2026-10-20
+
+The owner requested a separate tree investigation/planning agent, using the PoC
+IDE tree as a concrete reference, and parallel editor investigation. The explicit
+follow-up requires a complete editor comparison against legacy options,
+distinguishing straightforward recovery from new work. This authorizes analysis
+and proposed plans; no implementation scope, library choice, API, format or port
+acceptance has been confirmed.
+
+[GC-197](197-legacy-tree.md) inventories the tree runtime, store, Dojo behavior,
+wrapper families and IDE consumers. Its Python census found 90 direct declarations
+in 1,649 files with no parse errors. A generic Bag tree is a bounded candidate;
+IDE-like lazy navigation additionally requires adapting to the current core
+resolver contract. PoC and core resolver reads differ. Checkbox propagation,
+search, drag/drop, tree grids, relation/database and storage services have separate
+proposed increments. A DOM-harness reproduction confirmed the PoC stale-selection
+highlight defect after a redraw.
+
+[GC-198](198-legacy-editors.md) compares CodeMirror, ProseMirror, Toast UI Markdown,
+CKEditor, TinyMCE and Dojo Editor, including parameter precedence, dynamic changes,
+callbacks, commands, compositions and GNRIde flows. Its Python census found 68
+direct declarations in the same 1,649-file corpus with no parse errors. Each
+capability distinguishes straightforward PoC recovery, adaptation, new port work
+and owner decisions. A bounded CodeMirror field is the smallest candidate, but
+requires explicit integration with current component binding/events/lifecycle.
+HTML/Markdown representation and fidelity, configurable toolbars, diagnostics,
+uploads, templates, PDF and IDE document services remain visible in the matrix.
+Inert declarations and counters that do not enforce limits are not reported as
+working capabilities. Open plugin/configuration families, dynamic declarations
+and external applications are explicit completeness limits.
+
+Verification: PoC tree targeted tests passed 20/20; the provisional inspector tree
+passed 6/6 against its existing built artifact, not a new build. The selection
+reproduction used a DOM harness. Editor findings are source analysis with inspected
+tests, not executed editor/browser qualification. The paired documents were reviewed
+for factual consistency and retain their proposal-only status. No runtime,
+dependency, release or deployment changes belong to this investigation.
+
+Next: owner review and selection of the first bounded component contract, one
+decision at a time. No implementation phase starts from these proposals alone.
+
+Owner clarification — 2026-10-20: “di fatto un tree ha sempre una bag come store”,
+following confirmation that any Bag with resolvers includes directory data.
+[GC-197 §005](197-legacy-tree.md#gc-197-005) records the single store contract:
+Bag, with resolvers on its nodes. Resolver support belongs to the general tree;
+the directory/IDE example is a consumer of that tree, not a separate store type.
+The proposed plan now includes resolver handling in its first general-tree
+increment. Remaining APIs, provider services, delivery sequence and implementation
+are not approved by this clarification. Paired analysis/status text was checked;
+no runtime changes or additional runtime tests.
+
+
+Tree option review — 2026-10-20: owner answered “si” to `storepath` as the sole
+store authoring parameter, with absolute or component-`datapath`-relative paths
+and no `store` synonym. The tree uses the actual Bag and follows its changes.
+Recorded in [GC-197 §055](197-legacy-tree.md#gc-197-055) and
+[GC-225 §070](225-naming-and-proxy-conventions.md#gc-225-070), with paired mirrors.
+Review continues one option at a time; implementation remains unstarted.
+
+Tree option review — 2026-10-20: owner confirmed `labelAttribute` for the first
+port. No parameter means node label; a named attribute supplies the caption;
+an absent attribute uses the node label. Recorded in GC-197 §055 and GC-225 §070
+with paired mirrors. Present empty/falsy values remain unspecified. Documentation
+consistency checked; no runtime changes or new runtime verification.
+
+Tree option review — 2026-10-20: owner requested inclusion of `hideValues` (“la hide values va prevista”); recorded in GC-197 §055 and GC-225 §070 with mirrors. The label-callback question is being addressed before reviewing further options. Legacy `labelCb`/`getLabel` exist; their first-port contract is not yet approved. Documentation checked; no runtime changes.
+
+Tree option review — 2026-10-20: owner confirmed `labelCb` inclusion with “ok”. The computed-caption option is recorded in GC-197 §055 and GC-225 §070 with mirrors. The separate legacy `getLabel` override and concrete callback contract remain open. Review continues one option at a time; no implementation or new runtime tests.
+
+
+Tree investigation — 2026-10-20: owner requested Sourcerer verification before deciding on `getLabel`. Nine distinct Python declaration sites were observed across Genropy, Genropynet and Erpy, covering multilingual titles, menu links/icons/badges and mailbox counters. Paginated `labelCb` results identify TreeGrid and tree/store plumbing. GC-197 §055 and its mirror record evidence and coverage limits. The earlier exclusion proposal is withdrawn; inclusion is proposed, pending owner confirmation. No runtime changes or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `getLabel` inclusion with “ok” after the Sourcerer usage review. GC-197 §055 and GC-225 §070 record the exact scope with paired mirrors. Callback contract and HTML-label handling remain open. Next option for discussion: `getLabelClass`. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `getLabelClass` inclusion with “si”. The caption CSS-class callback based on node and open/closed state is recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: `getIconClass`; its legacy callback and checkbox override were inspected. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `getIconClass` inclusion with “si”. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Callback execution and checkbox interaction remain open. Next option for discussion: the node attribute `labelClass`, used by the default label-class calculation. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `labelClass` inclusion with “si”, as a Bag node attribute read by the default label-class calculation; a custom `getLabelClass` replaces that calculation. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: `labelClassOpened`. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `labelClassOpened` inclusion with “ok”. In the default label-class calculation, populated open-state classes replace `labelClass`; otherwise `labelClass` is used. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: `labelClassClosed`. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `labelClassClosed` inclusion with “ok”. In the default label-class calculation, populated closed-state classes replace `labelClass`; otherwise `labelClass` is used. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: `selectedLabelClass`. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `selectedLabelClass` inclusion with “ok”, adding selected-caption classes to the existing classes, including custom `getLabelClass` results. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: the Bag node attribute `node_class`; its legacy application to the tree-node DOM container was inspected. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `node_class` inclusion with “ok”, as a Bag node attribute applying CSS classes to the node container. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: `tip`, the legacy node attribute used for the native title tooltip. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner directed that `tip`, if used, must be transversal to Gramlot (“tip se si usa dovrebbe essere trasversale a tutto gramlot”). GC-197 §055 and its mirror record shared ownership rather than a tree-specific feature approval. Generic tooltip adoption, naming and contract remain open; no runtime implementation. Next tree option for discussion: `openOnClick`.
+
+
+Tree option review — 2026-10-20: owner confirmed `openOnClick` inclusion with “si”. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Default and selection interaction remain open. Next option for discussion: `autoCollapse`; read-only legacy inspection confirms sibling collapse on expansion, bypassed during filtering. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `autoCollapse` inclusion with “ok”, including the described suspension during filtering if that capability is included. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Default and filtering inclusion remain open. Next option for discussion: `selectedPath`. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `selectedPath` inclusion with “si”: selection writes the store-relative node path; data changes select and reveal the corresponding node. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Edge cases for missing paths, clearing and resolver failures/cancellation remain open. Next option for discussion: `selectedLabel`; legacy inspection confirms it outputs the Bag node label. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `selectedLabel` inclusion with “si”, as an output binding for the Bag node label, independent of its computed display caption. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Selection clearing remains open. Next option for discussion: `selected_*` attribute outputs. No runtime implementation or new runtime tests.
+
+
+## 1445. Coordinated Source naming review — 2026-10-20
+
+Owner requested a complete naming review for compatibility, starting with
+`node_id` → `nodeId`, then explicitly coordinated work with Builder Python/JS
+and confirmed “Sì, nodeId in entrambi” for the shared Source attribute.
+Constitution 11.85 and GC-225 §080 record that bounded decision and dependency
+edit scope. Other renames are not approved.
+
+Inspection confirms that both Builders own identity uniqueness/lookup and
+framework-attribute filtering; Gramlot owns the live identity map, rebinding and
+Source-local topic routing. Legacy GenroPy uses `nodeId` in Source indexing.
+GitHub searches found no dedicated rename issue in gramlot-org/genro-org.
+
+**Implemented:** `nodeId` authoring/lookup/uniqueness and render-metadata
+filtering in both Builders; Gramlot identity map, mutation handling, topic routing,
+ask-dialog declarations, fixtures and maintained public documentation. Ordinary
+Python method/local-variable names remain snake_case. Negative signature checks
+confirm that `node_id` is no longer a framework keyword; no alias or persisted
+Source conversion was added. Public migration guidance requires producers and
+consumers to migrate together and persisted Source to be regenerated.
+
+**Verified:** Builder Python 651/651 tests; Builder JS 176/176; Gramlot JS
+3,570/3,570 after rebuilding the runtime; Gramlot Python 170 passed, one existing
+expected failure, and one failure reproducing open issue
+[gramlot#49](https://github.com/gramlot-org/gramlot/issues/49) (assertion on JSON
+spacing with current TYTX). The same failure was reproduced using the original
+Builder Python source, independently of this rename. Python conformance also
+passed 266 subtests. Tests cover Source lookup/duplicates, symbolic paths,
+in-place identity updates/removal, subscriptions, independent DOM IDs and
+Python ↔ JavaScript JSON/MessagePack transport. No browser visual acceptance is
+claimed. Public Sphinx build passed with warnings treated as errors; the 11-page
+link/search/source/mirrored-anchor checks passed. Builder Python ruff passed;
+its advisory mypy output has 23 diagnostics, byte-identical to the original
+Builder source under the same environment. No new typing diagnostics.
+
+Verification used isolated environments with current published Genro dependencies
+(Bag Python 0.28.0 / JS 0.11.0, TYTX Python/JS 0.16.3, Toolbox 0.18.0) and the
+local Builder sources. Their dependency minima were aligned to the verified
+TYTX 0.16.3 per the Genro repository instructions. Core's installed dependencies
+were not replaced. The integrated source/build snapshot is
+`/private/tmp/gramlot-nodeid-core`, Python environment
+`/private/tmp/gramlot-nodeid-venv`; detailed verification logs are
+`/private/tmp/gramlot-nodeid-*.log`.
+
+Builder changes are saved on their local `codex/source-node-id` branches:
+Python `4fae660` (`/private/tmp/gramlot-nodeid-builders-py`), JavaScript `8193cbb`
+(`/private/tmp/gramlot-nodeid-builders-js`). These commits belong to the owning
+repositories. No acceptance, push, release or deployment is claimed.
+
+**Remaining:** migrate and qualify the connected `gramlot-examples` consumers
+before release (46 occurrences across 21 tracked non-documentation files); the
+same scan found none in the two integration repositories. GC-225 §080 records
+remaining naming candidates, including `node_label`, `node_position`, `target_id`
+and destination/result fields, without approving any further rename. Next:
+owner confirmation of the examples/gallery follow-through, then the remaining
+naming decisions one at a time. The general naming review remains open.
+
+
+Tree option review — 2026-10-20: owner confirmed direct `selected_*` outputs and required understanding `_record` before any exclusion. Sourcerer/local inspection traced hierarchy-row producers and the exact lookup condition (null/undefined/empty string; zero/false preserved). Some apparent consumers use promoted direct attributes and do not prove fallback dependence. GC-197 §055 records evidence and limits; GC-225 records the confirmed parameter pattern, with paired mirrors. Preserving the explicit `_record` lookup is proposed, not approved; no runtime work or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed the precise `selected_*` lookup in `_record` with “ok”: read the direct node attribute first, then the field in `_record` when the direct value is absent/null/empty string; preserve zero/false. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. This resolves the pending lookup decision. Next option for discussion: `selectedItem`. No runtime implementation or new runtime tests.
+
+
+Naming review clarification — 2026-10-20: owner identified onError/onResult and
+stated shared camelCase as the general direction for words of the Gramlot
+language. Constitution 11.86 and GC-225 §085 distinguish that vocabulary from
+ordinary Python/JS methods. Inspection found that authored dataRpc callbacks
+currently retain `_onCalling`, `_onResult`, `_onError`; their leading underscore
+is a separate open decision. RpcResolver's internal onError and validation's
+explicitly approved prefixed callback names are distinct surfaces. No callback
+rename was implemented. Paired decision/status records checked; no new runtime
+tests were needed for this documentation-only clarification. Next: resolve the
+dataRpc callback underscore question before implementing that migration.
+
+
+Tree option review — 2026-10-20: owner confirmed `selectedItem` inclusion with “ok”, exposing the complete selected BagNode by reference. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Clearing and lifecycle behavior remain open. Next option for discussion: the `onSelected` notification. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `onSelected` and explicitly requested publish support (“si : e includi anche il fatto diu fare dei publish”). Recorded in GC-197 §055 and GC-225 §070 with paired mirrors, using the existing Gramlot messaging contracts. The visual-node payload representation remains open. Next option for discussion: `onSelectedFire`, the distinct fired Data event. No runtime implementation or new runtime tests.
+
+
+Naming review decision — 2026-10-20: owner answered “si” to retaining
+`_onCalling`, `_onResult`, `_onError` because their leading underscore
+distinguishes framework-reserved parameters from application arguments.
+Constitution 11.86 and GC-225 §085 now record camelCase language words plus the
+system-parameter underscore criterion. The callback-removal question is closed;
+these names already match the approved contract, so no runtime change or new
+runtime test is required. `nodeId` remains as separately approved. Paired
+decision records checked. Remaining naming candidates and the examples migration
+are unchanged; the next naming candidate for owner review is `node_label`.
+
+
+Tree option review — 2026-10-20: owner confirmed `onSelectedFire` inclusion with “ok”, using the existing FIRE contract on a Data path upon selection. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: the node attribute `_isSelectable`; legacy inspection confirms that boolean false vetoes selection. Its separate openOnClick/child_count selection guard remains unapproved. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `_isSelectable` inclusion with “ok”, retaining the legacy node attribute and boolean-false selection veto. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: `hasChildrenCb`. Legacy inspection shows a false-result expansion veto after value access; a never-loaded resolver instead uses child_count or assumes children, bypassing this callback. Resolver interaction requires explicit review. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `hasChildrenCb` inclusion with “si”, explicitly leaving the resolver interaction open. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Next option for discussion: `nodeFilter`; legacy inspection confirms it filters returned children and participates in the check for visible children. No runtime implementation or new runtime tests.
+
+
+Naming review decision — 2026-10-20: owner explicitly retains `node_label`,
+identifying `node_` as the namespace and `label` as the node property.
+Constitution 11.86 and GC-225 §090 record the namespace-separator distinction;
+GC-225 §080 now marks this candidate as settled. CamelCase language words do
+not erase namespace separators. `nodeId` retains its separate approved spelling.
+No source change is required; paired decision records were checked, with no
+new runtime tests. Remaining review covers placement/target naming and
+destination/result fields; the connected examples migration remains pending.
+
+
+Naming review decision — 2026-10-20: owner explicitly retained `node_position`
+and `target_id` as namespace-qualified names. Constitution 11.86 and GC-225
+§080/§090 now mark them settled alongside `node_label`. No runtime changes or
+new runtime tests; paired decision records checked. The remaining review list
+is narrowed to destination/result slots, compound members such as col_min_width,
+order_by, composed validation callback names and published event-topic names.
+Current spelling/ownership was checked in both Builder and Gramlot sources;
+no further rename is approved. Next decision: whether destination_ and result_
+are namespaces. The examples migration remains a separate pending step.
+
+
+Tree option review — 2026-10-20: owner confirmed `nodeFilter` inclusion with “si”, for display filtering and visible-child checks without removing Bag nodes. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Callback details, refresh triggers and unloaded-resolver interaction remain open. Next option for discussion: `child_count` as an unloaded-branch hint. No runtime implementation or new runtime tests.
+
+
+Tree option review — 2026-10-20: owner confirmed `child_count` inclusion with “ok”, using the proposed zero/positive/absent rules for an unloaded resolver. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Interactions with callbacks/filtering and the separate selection guard remain open. Next option for discussion: `collapseAll`; read-only legacy inspection confirms recursive closure of expanded branches. No runtime implementation or new runtime tests.
+
+
+Naming release execution — 2026-10-20: owner authorized the coordinated releases
+with the settled names. Current public baselines have advanced: core 0.3.6 and
+examples 0.3.9. Release work is isolated in `worktrees/source-nodeid-release`
+and `worktrees/source-nodeid-examples` from their respective origin/main,
+retaining unrelated local changes. Targets: Builder Python 0.30.0, Builder JS
+0.7.0, core 0.3.7, examples 0.3.10. Examples migration is now authorized and
+implemented in its release checkout. Verification/publication in progress.
+
+
+Tree option review — 2026-10-20: owner confirmed `collapseAll` inclusion with “si”, for the whole tree or a specified branch without loading unresolved children. Recorded in GC-197 §055 and GC-225 §070 with paired mirrors. Invocation and target representation remain open. Next option for discussion: `expandAll`, with resolver traversal scope to be explicitly decided. No runtime implementation or new runtime tests.
+
+
+### Source identity release qualification — 2026-10-20
+
+The isolated release work is consolidated on public main through
+[core PR #57](https://github.com/gramlot-org/gramlot/pull/57),
+[Builder Python PR #62](https://github.com/genro-org/genro-builders/pull/62) and
+[Builder JS PR #24](https://github.com/genro-org/genro-builders-js/pull/24).
+Builder Python 0.30.0 is published on PyPI; Builder JS 0.7.0 on npm. JSR is
+still processing. Core 0.3.7 publication has been dispatched after all PR
+checks passed, including Chromium/WebKit and inspector qualification.
+Local checks: Builders 651 Python / 176 JavaScript tests and Ruff; core 216
+Python tests plus 382 subtests, one existing expected failure, and 3,651 JS
+tests; examples 19 Python / 187 JavaScript tests. Both manuals compile and
+pass link/anchor checks (79 example lessons). Examples 0.3.10 is ready for
+publication after core. These changes remain isolated from unrelated local
+work. Public constitution amendments are 11.88/11.89, GC-225 §§080–090.
+
+
+
+
+<a id="gc-070-1515"></a>
+
+## 1515. Minimum Bag tree — 2026-10-20
+
+Block ID: **GC-070-1515**.
+
+Owner: “per ora facciamo funzionare u tree mi imale e poi aggiungiamo pian paino tutto”. This redirects the previously approved rowActions trial to the minimum working tree first. PORT-0017-bag-tree and GC-197 §060 record scope and evidence. Implemented: loaded Bag storepath, label/labelAttribute, manual disclosure, selectedPath binding, keyboard navigation, live nested Bag/attribute changes, store rebind and disposal. Shared DataRouter owns the store registration; no direct component Bag subscription or dependency-source modification. Resolver activation and the remaining reviewed options are subsequent increments. Owner's “prevediamo icona vero ?” recalls the already included getIconClass; the current minimal rendering has arrows/captions only, with icons next in the proposed sequence.
+
+Verified: nine tree tests; final focused run passes all 51 tests (tree, router, components/review, conformance and current runtime bundles). Python-first core fixture passes Chromium and WebKit, including live commands, selection round-trip, keyboard and disposal; desktop/mobile visual inspection completed. Reproduce with `node tools/gramlot-tools-inspector/tests/minimal-tree-browser.mjs --serve`. This serves a qualification fixture, not a core example gallery/runner. Build completed locally.
+
+Broader check: with the repository Python virtualenv, npm test ran 3,579 tests: 3,567 passed and 12 failed. Eight failures were local-server sandbox restrictions and stale runtime artifacts; after allowing localhost and rebuilding, all affected conformance/bundle tests pass in the focused run. Four remaining failures concern Source identity: nodeId reaches DOM in renderer/source-extension tests, and #target.x cannot resolve in source-extension/upstream-regression tests. They are not repaired by this tree increment, and the full repository suite is not claimed green. The earlier invocation without the virtualenv failed Python imports and was superseded. Logs: /tmp/gramlot-tree-full-tests-venv.log and /tmp/gramlot-tree-final-checks.log.
+
+Implemented and specifically verified; owner acceptance is pending. Next: review the minimum tree, then add the icon behavior and other recorded options incrementally. No release, publication or deployment.
+
+
+
+
+<a id="gc-070-1520"></a>
+
+## 1520. Tree navigation in the gallery — 2026-10-20
+
+Block ID: **GC-070-1520**.
+
+Owner explicitly requests appropriate tree classes, the example in the gallery, the same tree for gallery navigation, and sections implemented as resolvers. GC-197 §065 and PORT-0017-bag-tree record this connected scope. Implemented: base icons and CSS classes/parts; lazy branch expansion via BagNode.getValue; Python/JS gallery navigation Bag with one dataRemote(cacheTime=-1) per section; selectedPath/tab synchronization; retained deferred Source panels and retry/remount behavior; example w26 with a lazy Catalog and live updates. Grammar/collection assets include tree. Independent collections share the real runtime Bag class through the core import map. No dependency-source changes or second loader.
+
+Verified: 12 tree tests and all 66 focused core tests (tree, index runtime, resources, server); 22 gallery integration tests; six Python gallery tests and 22 Python resource tests. Both local Python and Node galleries pass the dedicated Chromium/WebKit sequence, including mobile, no initial section loads, cached reopen, lazy example, caption writes and retained selected tabs. Desktop/mobile screenshots inspected. Local Python gallery review: http://127.0.0.1:8876/ — Input components → Bag tree; Node counterpart: http://127.0.0.1:8877/. These are temporary local review servers, not deployments.
+
+Broader checks: core run 3,582 tests, 3,576 passing and six failures; the new SVG-constant and import-map expectations were corrected and pass in the focused run, leaving the four previously reported Source-identity failures (nodeId DOM leakage and #target resolution). Examples run: 115 tests, 114 passing; binding/01_pointers still fails on ^#settings.caption. The existing lazy-tabs browser regression passes its tree/retained-frame/inspector/mobile steps but times out on the separate guided-demo availability check. These failures are not represented as tree qualification or fixed by dependency workarounds. Full suites are not claimed green. Logs: /tmp/gramlot-tree-core-full.log, /tmp/gramlot-tree-core-focused-final.log, /tmp/gramlot-examples-tree-final.log, /tmp/gramlot-gallery-tree-browser.log, /tmp/gramlot-gallery-tree-node-browser.log.
+
+The requested gallery increment is implemented and specifically verified, awaiting owner review. getIconClass callbacks, badges, hover actions, hideValues and the other recorded tree options remain subsequent work; no new phase is started by this report. No release or publication.
+
+
+
+
+<a id="gc-070-1525"></a>
+
+## 1525. Gallery navigation autoCollapse — 2026-10-20
+
+Block ID: **GC-070-1525**.
+
+Owner: “fai nella navigaxione il tree auto collapse”. Implemented the shared tree's opt-in autoCollapse and enabled it on Python/JavaScript gallery navigation. Expansion closes sibling branches at the same depth; ancestor reveal from external selection follows the same rule. Descendant state, current selection and resolver cache survive collapse; late resolver completion does not reopen a closed branch. GC-197 §070 and PORT-0017-bag-tree record scope. Other trees preserve independent expansion when the parameter is omitted.
+
+Verified: 14 tree tests; all 21 focused tree/index-runtime tests, 22 gallery integration tests and six Python gallery tests. Local builds succeeded. Dedicated Chromium/WebKit tests pass on both Python (8876) and Node (8877) galleries, including sibling collapse, external tab reveal, cache reuse and mobile. In-app preview refreshed and observed. Existing broader failures remain as recorded in §1520; the full suites were not rerun for this increment. Implemented and specifically verified, pending owner visual acceptance. No publication or deployment; remaining tree options remain later increments.
+
+
+
+
+<a id="gc-070-1530"></a>
+
+## 1530. Gallery toolbar inspector and settings drawer — 2026-10-20
+
+Block ID: **GC-070-1530**.
+
+Owner requests Navigation and Code only as drawer labels, bottom configuration directly in a drawer, then “l'ispetor invece lo metti nella barra superiore come icona e picciola scritta tutta a destra”. Implemented in Python/JavaScript gallery: Inspector moved to the far right of the toolbar with icon and small label; the mobile Inspector control uses that same button. Settings now lives directly in a closed bottom contentPane drawer (180px), replacing the footer popover. Theme, appearance, label-position and installation controls remain available. No framework source change.
+
+Verified: 23 gallery integration tests and six Python gallery tests, local asset build; dedicated Chromium/WebKit checks on Python and Node for direct drawer opening, theme changes, Inspector open/close and mobile return. In-app preview updated. Test script: gramlot-examples/scripts/verify_gallery_drawers_browser.mjs. Implemented portions are verified, pending owner visual acceptance.
+
+Remaining request: remove duplicate Navigation/Code toolbar controls and use drawer labels exclusively. Inspection found mountIndexPage still dereferences the code toggle and the drawer-change toggle, while navigation restoration is gated on the navigation toggle. Removing the controls therefore needs a core correction. Per constitution §3, that correction is not implemented under the gallery-only assignment; an explicit owner decision was requested through the pending question. Existing toolbar controls remain until resolved. The proposed maximum-tab/LRU policy is also unconfirmed and unimplemented. No publication or deployment.
+
+
+
+
+<a id="gc-070-1535"></a>
+
+## 1535. FramePage / IndexPage inheritance — initial design direction, 2026-10-20
+
+Block ID: **GC-070-1535**.
+
+Owner proposed “potrtemmo avere un frame page con le 5 region eccetera e la index page avrebbe la navifgazioen e i pannelli del tab container”. After the explicit FramePage → IndexPage → gallery separation was restated, the owner confirmed “si inizialmente si poi verifichiamo”. This is an initial design direction to detail and verify, not final API acceptance or implementation authorization.
+
+FramePage is a reusable Python/JS Page base offering top, bottom, left, right and center regions, region-content hooks and configuration of dimensions, splitters and drawers. IndexPage inherits that frame and adds navigation, tabContainer panels and selection coordination. The gallery specializes IndexPage with its example catalogue, code on the right, configuration below and title/Inspector above. The base must not depend on gallery-specific controls, IDs or Code/Navigation toolbar buttons. Applications may subclass either level and override the declared hooks.
+
+Pending contract decisions: exact hook names/signatures, optional-region/default behavior, configuration and Data ownership, navigation/panel lifecycle and migration of existing IndexPage responsibilities. No new hook spelling, compatibility layer or framework implementation is approved by this record. The isolated optional-toolbar-button patch discussed in §1530 has not been approved; discussion now concerns the reusable page contract. Previously implemented toolbar Inspector and Settings drawer remain in place. Maximum-tab/LRU behavior remains unconfirmed. Next: detail the frame contract one decision at a time, then verify the agreed design. Documentation only; no runtime changes or tests in this step.
+
+
+Owner confirmation of the first frame rule, 2026-10-20: “si procediamo svelti” answers the proposal “centro disponibile, quattro regioni esterne facoltative; una regione non definita non occupa spazio e non mostra drawer”. The center is available; top/bottom/left/right are optional, with no allocated space or drawer for an undefined region. This confirms that rule only; hook signatures, region-detection mechanism and implementation remain to be settled. Continue with a concrete compact hook proposal; do not reinterpret the request for speed as approval of unspecified APIs.
+
+
+Owner confirmation of region hooks, 2026-10-20: “si” answers the concrete proposal `top(pane)`, `bottom(pane)`, `left(pane)`, `right(pane)`, `center(pane)`, with identical names in Python and JS. Each hook receives its region's contentPane, configures it and constructs its contents. An outer region is created only when its hook is defined, including an inherited implementation. IndexPage implements left for navigation and center for tabContainer; the gallery specializes right for code, bottom for Settings, top for title/Inspector. This settles hook spelling/signatures and the outer-region presence rule, superseding the corresponding open items above. Region configuration mechanics, Data ownership and navigation/panel lifecycle still need a concrete contract. No runtime changes in this step.
+
+
+Owner confirmation of IndexPage navigation, 2026-10-20: “ok” answers the proposal to use the shared tree with a Bag store, including resolvers, as standard navigation. Selecting a navigation entry opens its corresponding tabContainer panel or reactivates that panel if already open. The derived page supplies the navigation Bag and defines panel construction. This confirms the base behavior, not a new node-metadata schema, tab-identity algorithm, construction-hook signature, asynchronous loading/error policy or maximum-tab eviction rule. Those details remain to be settled; no implementation in this documentation step.
+
+
+Owner confirmation of panel construction, 2026-10-20: “ok” answers the proposal `panel(pane, node)`. The pane is the tab's content panel; node is the selected Bag navigation node. The derived page constructs Gramlot content there and may choose an iframe. The hook runs on first opening; selecting the same entry again reactivates its existing tab and preserves its state. This settles the conceptual hook contract and first-open reuse behavior, not the Python/server versus browser invocation mechanism or serialization of the selected node. Entry identity, navigable/category distinction, asynchronous failure/retry, disposal and tab-limit policy remain unresolved. No runtime implementation in this step.
+
+
+Owner confirmation and filesystem navigation direction, 2026-10-20: “si oppure se preferisci puoi mettere un hash” confirms the proposed initial behavior: a navigation entry's URL identifies a page loaded in an iframe; selecting the same URL reactivates the same tab. A hash is permitted as an internal representation, not a separate required application key. The previously proposed mandatory key attribute was not approved. Hash algorithm, URL equivalence/normalization and collision handling are not established by this confirmation.
+
+The owner continues: “potremmo costrire l'albero a partire dal filesistem” with nested folders, each folder a resolver, and an intermediate folder potentially having “una info o meta o index” as its own direct page. Record this as the requested filesystem-derived navigation direction to detail and verify: the tree still consumes a Bag; directory children are lazy resolver values, and a directory node may also identify its own page URL. Exact directory-page filename conventions, metadata schema, discovery/host ownership and implementation remain unresolved. Folder expansion and page navigation must be distinguished in the concrete contract; no filesystem access or new resolver implementation is claimed here. The previously confirmed panel(pane, node) hook remains a specialization point; the initial default is URL/iframe navigation, not arbitrary server execution of a browser BagNode.
+
+
+Owner confirmation of directory-page convention, 2026-10-20: “si” answers the proposal to use `index.py` or `index.js`, according to the environment, as the directory's own page. This applies to intermediate directories as well as other directory nodes. The directory's children remain supplied through its resolver; its own index page is independently addressable by URL for iframe/tab navigation. This settles the filename convention only. The earlier info/meta alternatives are not adopted as alternate page-discovery names. No metadata-file contract, cross-language precedence, filesystem resolver implementation or host integration is approved or claimed by this documentation step.
+
+
+**Implementation authorized and in verification — 2026-10-20.** Owner: “bene procediamo con questa struttura e usiamo la gallery per verificarla”. This supersedes the documentation-only/pending-implementation status above. FramePage now declares the five Source regions through the confirmed hooks; IndexPage uses a navigation Bag and one retained panel per URL. The gallery specializes its own regions, uses ordinary Page Logic, and installs recursive directory resolvers during build. Filesystem index pages and nested leaves have independently addressable URLs; expansion and page selection are separate operations. Shared drawers own Navigation, Code and Settings. The coordinator no longer requires gallery toolbar controls.
+
+Verified so far: seven focused core JS tests; the live Python and Node galleries pass the same Chromium and WebKit scenario for nested resolvers, folder index pages, retained tabs, code, settings, Inspector and mobile drawers. Gallery regression checks and documentation migration are still in progress. This is implemented and partly verified work, not final acceptance. Maximum tabs/LRU remains unapproved and unimplemented. No publication or deployment.
+
+
+**Verification completed for this increment — 2026-10-20.** Eight focused core JS tests pass, including the ordinary IndexLogic → Source RPC → panel hook path without gallery controls. Twenty-four gallery/navigation JS tests, 34 focused Python core/gallery/staging tests, four Node gallery tests, ten static directory/gallery tests and nine Python/JS layout parity checks pass. The full core JS run contains 3,585 tests: its three local-port sandbox failures pass when rerun with local-server permission; the remaining four failures are the previously recorded Source identity/structural metadata and symbolic #target defects. The broader examples suite retains the previously recorded binding/01_pointers failure; its outdated route-count expectation was updated and its nine Python-environment parity failures pass with the configured interpreter. These unrelated failures were not masked or repaired in dependencies.
+
+Public documentation builds and link/anchor checks pass for core and examples; both integration repositories' paired Sphinx guides pass. The local Python gallery at http://127.0.0.1:8876/ and Node gallery at http://127.0.0.1:8877/ remain available. Chromium and WebKit verified both hosts; the visible application browser demonstrates HTML / SVG → nested and its independently loaded child. The gallery browser scenario is retained in gramlot-examples/scripts/verify_gallery_frame_browser.mjs. Its presentation uses the shared runtime's actual classes, preserves URL-based selection while a panel is pending, and gives mobile presentation ownership of drawer state. Static export snapshots directory Bags through TYTX at build time and uses the same lazy protocol through the Worker.
+
+Implemented and verified: the agreed first FramePage/IndexPage/gallery structure. Final visual acceptance is still the owner's; advanced tree options and tab eviction are outside this increment. No packages, releases or deployments were published.
+
+
+Inspector theme follow-up — 2026-10-20. Owner: “il tema sark deve arrivare anche a inspector”. Implemented the requested dark-theme propagation using existing inherited `--gramlot-*` semantic colors and `color-scheme` in the inspector, its provisional palette/tree/tabs/splitter, property editors, Styles and dialogs. No separate theme state or gallery event bridge was added. Core and gallery assets rebuilt; all 39 inspector tests pass. Live Python gallery verified light → dark → light → dark with the same open inspector: surfaces, text, native controls and Styles follow the active theme. Owner visual acceptance remains pending.
+
+
+Drawer motion follow-up — 2026-10-20. Owner requests minimized 3–4 px low-opacity grips, animated hover zoom and drawer opening. Gallery Python/JS declarations now use minimized captions. Shared borderContainer keeps 4 px resting thickness, uses 0.28 resting opacity and 240 ms existing duration/easing tokens for grip reveal and grid opening/closing. Closing viewports fade while becoming inert immediately; nodes and Data remain retained. Drag/keyboard resizing disables layout motion; reduced-motion disables transitions. Live Python gallery confirms resting dimensions, opacity, open/closed layout and hidden content. All eight borderContainer tests pass, including inert-state assertions; core and gallery assets rebuilt. Visual acceptance remains with the owner.
+
+
+Drawer visibility refinement — 2026-10-20. Owner rejects the minimized grip as too inconspicuous and requests more rounded edges. Shared defaults now use the existing theme secondary-text color for the grip, 0.65 resting opacity, 40 px length and twice the small theme radius; thickness remains 4 px and motion remains 240 ms. This supersedes the 0.28 opacity/28 px length trial. Explicit drawer styling still takes precedence. Core/gallery assets rebuilt, all eight borderContainer tests pass, and the live gallery confirms the actual theme color, 4×40 px grips, 0.65 opacity and doubled radius. Visual acceptance remains pending.
+
+
+Drawer visual trial — 2026-10-20. Owner: “prova 6 px e opaciti 20”. Updated the shared resting grip to 6 px thickness and 0.20 opacity, superseding the preceding 4 px/0.65 trial. Keep 40 px length, theme color, rounded corners and 240 ms transitions. Core and gallery assets rebuilt for owner visual review.
+
+
+Inspector boolean commit repair — 2026-10-20. Owner reports that checkboxes in the inspector do not apply immediately. Confirmed: the inspector updated its draft on input but applied it only on row exit/Enter. Boolean editor change now calls the existing validated edit/history path immediately; other text editors retain draft/commit behavior. Six regression cases cover Data boolean values, Data attributes and Source attributes, each local and through InspectorConnection, with click-only updates, single-step undo, redo and unchecking. All 45 inspector tests pass. Core and gallery assets rebuilt; no component checkbox default or dependency changes.
+
+Live Python gallery verification: toggling `galleryIndex.keyboard` through the Inspector checkbox enables Undo immediately, clears draft status and keeps focus on Value, without blur or Enter. Undo restores the initial false value. Updated the editor hint to describe immediate checkbox commits.
+
+Inspector provenance review — 2026-10-20. Confirmed active bounded PoC-derived palette/tree/tabs/splitter under tools/poc; the gallery tree is the separate current shared component. Corrected three accidentally rewritten white-space declarations from the earlier theme-token update, restoring nowrap for palette titles, tree captions and Styles labels. No component migration was performed.
+
+
+Nested gallery container lessons — 2026-10-20. Owner asks for deeper navigation grouping related border pages below a general introduction. Implemented in gramlot-examples: `pages/layout/border/` holds the six existing lessons and a Python-first `index.py`/`index.js` five-region overview; Tabs and Demo carousel remain under Containers. One-level filesystem resolvers now match catalogue paths below a family, preserving l01–l06 routes, metadata, Code and Explanation. Source assets and documentation playground links retain nested relative paths. Initial verification: 34 JS gallery/build/navigation tests and 15 Python build/navigation tests pass. Python/JS Source parity, static export, documentation and live gallery checks are in progress. No core behavior change is required; the connected serverless route-list assertion is updated for the new folder index.
+
+
+Logical gallery groups — 2026-10-20. Owner: “fai gruppaggi logici allora”. Extended the approved nested border organization across gramlot-examples: 21 filesystem topic groups, each with a Python/JavaScript index introduction; all 81 lesson keys and lesson URLs remain stable. Group directories resolve one level lazily, while the label opens their own page. Catalogue asset paths and documentation playground links preserve nesting; no new core behavior or alternative navigation representation. Verification: examples Python 26 tests plus 120 subtests pass; JS 119/120 pass with the already existing b01 symbolic pointer failure (`cannot resolve ^#settings.caption`) outside this task. All 30 Source parity checks pass, including every group introduction. Python adapter nine checks and Node/static export seven checks pass. Sphinx builds and all 81 lessons, two paired guides, links and anchors validate. Live Python verifies grouped navigation, intro and Textbox rendering; live Node verifies nested Named logic source and price 120 → final 108. This completes the requested grouping implementation and verification; owner visual acceptance remains pending. No packages, releases or deployments published.
+
+
+Pointers example diagnosis — 2026-10-20. Owner: “vediamo l'errore nell'esempio dei puntatori e capiamo da dove arriva”. Reproduced b01 alone: `cannot resolve ^#settings.caption`. The current example twins still author `node_id="settings"`; Gramlot BindingRuntime registers only canonical `nodeId`, so its identity map lacks settings before pointer registration. Isolated runtime probes confirm old spelling yields an empty map/failure and nodeId yields settings/Found. A diagnostic in-memory copy of the full b01 page with only that attribute renamed passes all twelve existing behavior assertions (reactive, read-once, form, Data attribute, anchor and parent context). No example/dependency source was modified by this diagnosis. A second environment mismatch remains: installed JS Builder 0.6.0 and Python Builder 0.29.0 predate the coordinated identity migration. JS Builder standalone nodeById still finds node_id and rejects nodeId, opposite to current Gramlot registration. The recorded release qualification above documents migration in isolated release checkouts; the local examples origin/main reference already authors nodeId. Thus this local baseline failure is an incomplete local source/dependency alignment, not evidence that the grouped filesystem navigation or the pointer algorithm is defective. Follow-up: align the development checkout's examples and dependency installations with the already approved canonical identity contract, preserve ongoing gallery work, then rerun the identity/example checks. No new spelling/alias decision is needed.
+
+
+Local Source identity realignment completed — 2026-10-20. Owner: “ok riallinea esempi e dipendenze senza perdere il lavoro sulla gallery e verifica che i test passino”. Applied the existing nodeId contract to the remaining examples/gallery declarations, direct lookups and current lesson explanations. Preserved all 81 catalogue lessons and 21 topic groups; a source snapshot confirms no removals and only the 24 intended identity-related source/catalogue/lesson edits. Updated installed Builder JS to 0.7.0 and Builder Python to 0.30.0 in the core, examples and Python-gallery environments; TYTX 0.16.3 follows the new Builder requirement. Kept local core links, added the coordinated Builder minimums to core manifests and aligned examples' Gramlot minimum to >=0.3.7, with no first-party pins/caps or dependency-source edits. Adapted one Python transport assertion to accept JSON whitespace differences while retaining both explicit null presence and decoded-attribute checks.
+
+Verification: all 3,585 core JS tests pass, including the previously failing identity/symbolic-pointer cases; core Python 173 tests and 266 subtests pass, with one pre-existing expected failure. Examples 140 JS tests and 26 Python tests plus 120 subtests pass. Gallery adapters: nine Python and seven Node/static export tests pass. Inspector test file: 24 tests pass. Initial Python conformance failures were sandbox port restrictions and pass with local-server permission. Rebuilt core/gallery assets and restarted both local gallery servers. Live Python b01 selection through the grouped tree works; changing Caption updates the heading and symbolic read while the read-once value remains unchanged. Previous unresolved local nodeId/b01 failure reports above are superseded by this verification. Implemented and verified; no release or deployment.
+
+
+Remaining expected-failure diagnosis — 2026-10-20. Owner asks which expected failure remains and why. Confirmed `ComponentTests.test_upstream_annotated_regex_inside_union` in tests/test_components.py:50 on installed genro-builders 0.30.0. Focused component suite: six tests and nine subtests pass, one expected failure. In Builder Python `_split_annotated` extracts validators from a top-level Annotated or a single non-null Optional branch, but not from a bool-or-Annotated-string Union. `_check_type` visits Union branches, enforces custom-type/dtype metadata, then drops the remaining Annotated metadata; `_validate_call_args` receives no Regex validator for the Union. Public reproduction with the current shared checkbox grammar: Python and JS accept false/true and ^enabled/=enabled, and both reject numeric 42; Python incorrectly accepts the literal string arbitrary while JS rejects it. Thus this is an authoring-validation gap in Builder Python, independent of nodeId and gallery grouping. The earlier report already records upstream issue genro-org/genro-builders#59 and owner's non-blocking classification. No fresh remote issue-status claim, dependency edit or consumer workaround; the expected-failure marker remains justified.
+
+
+Tree implementation audit — 2026-10-20. Owner asks what is implemented versus the individually agreed options. Rechecked GC-197 §055 against js/src/components/tree.js and its fourteen integration tests; all fourteen pass with aligned dependencies. Current public tree-specific parameters are storepath, labelAttribute, autoCollapse and selectedPath. Includes Bag subtree reactivity, text captions, built-in stateful folder/file icons, CSS parts, keyboard navigation, manual lazy resolver expansion/retry and unloaded child_count hints. External selectedPath reveals loaded ancestors only. Configurable label/icon/class callbacks, hideValues, selection outputs/notifications/FIRE, selection veto, filter/hasChildren callback, expansion commands/snapshot, configurable identifiers, badges and Source rowActions remain unimplemented despite prior scope inclusion. Omitted expandAll level, positive resolver depth, -1 and temporary autoCollapse suspension retain the explicit decisions in GC-197; they are not current behavior. Checkbox/search remain deliberately deferred, and tip belongs to a separately reviewed shared Gramlot contract. Filesystem group/index navigation is implemented by the gallery/provider on the same Bag tree; it does not complete these generic option contracts. This is a read-only runtime audit, not authorization or implementation of the next increment.
+
+
+Tree presentation implementation and verification — 2026-10-20. Owner confirms hideValues default False, includes HTML labels now, and chooses a structured text/HTML result. Implemented labelCb/getLabel via synchronous named Logic, exact {text: string}/{html: string} results, DOMPurify sanitization, getLabelClass/getIconClass, node_class, labelClass/open/closed and selectedLabelClass, custom CSS parts, and scalar visual children selecting their owning path. SourceContext callLogic uses the existing LogicRegistry. Navigation explicitly hides values. Gallery w26–w28 now form the resolver-backed components/tree group; stable route keys remain. Catalogue: 83 lessons and 22 topic directories. GC-105 §120 documents usage, GC-197 §§075–080 the increment and legacy DND investigation, and PORT-0017 retains port feedback.
+
+Verified: full core JS 3,590/3,590, including 19 tree tests; full gallery JS 143/143; focused core plus examples Python 37 passed and 132 subtests, with the already diagnosed Builder Regex/Union expected failure; adapter gallery tests nine Python and seven Node/static export passed. Core/gallery assets rebuilt. Sphinx compiled and validated all 83 lesson playgrounds, paired guide anchors, search scope and local links. Initial documentation command used an environment without Sphinx; the existing core documentation environment succeeded. The old generated w26 HTML was removed after the authored lesson moved into the tree directory.
+
+Live browser qualification: Python gallery opened w28 through Input components/tree; expansion changed HTML caption state, selecting Favorite wrote starred, and the toggle changed HTML to text and back. Screenshot /tmp/tree-presentation-gallery.png reviewed. Python w26 exposed Ready as a scalar child selecting status, the hideValues checkbox removed scalar rows immediately, and Catalog resolved lazily to books/audio. Node w27 updated open and selected classes and renamed notes while preserving documents.notes selection. Implemented and verified; owner visual acceptance is pending. No release or deployment. DND is investigated and recorded as a shared-mechanism proposal with payload, type/tag acceptance, dynamic node veto, drop action and lifecycle responsibilities; no DND implementation or API acceptance is claimed. Next owner decision: shared Gramlot DND mechanism with tree-specific node/path context.
+
+
+Shared drag/drop ownership confirmed — 2026-10-20. Owner: “si, facciamolo comune a gramlot. vediamo le opzioni del drag and drop una alla volta come abbiamo fatto per il tree”. The common drag/drop mechanism belongs to Gramlot; tree contributes its node/path context. This confirms shared ownership, not the detailed API, defaults or implementation sequence proposed in GC-197 §080. Review each option separately and wait for the owner decision. First pending option: explicit draggable enablement, proposed false default with reactive binding; no runtime change.
+
+
+Drag/drop option 1 confirmed — 2026-10-20. Owner replies “ok” to the proposal: draggable defaults False, True enables the component as a drag source (its rows for a tree), and supports reactive binding such as draggable="^.canDrag". This confirms enablement only; individual-node veto, payload and remaining options are still pending. No runtime implementation in this contract-review step. Next option to review: per-drag dynamic eligibility/veto.
+
+
+Drag/drop option 2 confirmed — 2026-10-20. After clarification that legacy draggable enables dragging and onDrag prepares data and may veto it, the owner replies “si” to retaining the veto. With draggable enabled, the named Logic onDrag callback can cancel the drag by returning false; draggable=False still prevents dragging. Legacy evidence: genro_patch.js applies the tree Source draggable to BagNode rows; genro_components.js fieldsTree uses draggable:true and onDrag to reject folders when draggableFolders is disabled. This confirms veto behavior, not the still-pending payload representation, callback signature or typed-handler dispatch. No runtime implementation. Next option: typed drag payload and its preparation through onDrag.
+
+
+Drag/drop option 3 confirmed — 2026-10-20. Owner replies “si” to keeping dragValues as a dictionary of simultaneous typed payloads, mutable by onDrag. The callback can add or change plain text and structured application data; a destination can accept the types it knows. The example app/record key illustrates an application-defined type, not a built-in Gramlot type. Serialization and automatic tree payloads remain pending. No runtime implementation. Next option: the payload supplied automatically by tree before onDrag.
+
+
+Drag/drop option 4 confirmed — 2026-10-20. Owner replies “si” to the tree's automatic payload before onDrag: text/plain is the displayed caption as plain text, including when the caption is HTML; nodeattr carries the dragged BagNode attributes; treenode carries fullpath and relpath, with relpath relative to the store Bag. onDrag can change or remove these entries and add others. Preparing the payload must not resolve lazy nodes. Omit legacy text/xml, which duplicated the caption without producing XML. Serialization details remain pending. No runtime implementation. Next option to review: explicit destination enablement through dropTarget, independently of subsequent type and dynamic eligibility checks.
+
+
+Drag/drop option 5 legacy clarification — 2026-10-20. Owner conditionally answers “se è come illegacy si”. Read-only verification in genro_dom.js getDragDropInfo shows dropTarget is not an unconditional false gate: dropTarget OR dropTargetCb OR dropTargetCbExtra can establish a target; grid selfDragRows/selfDragColumns also contribute. canBeDropped separately requires a matching dropTypes/onDrop_* type and optional dropTags. Therefore the proposed unconditional dropTarget=False rejection is not confirmed by this conditional answer. Clarify with the owner before recording option 5 as approved. Proposed legacy-faithful ordinary behavior: dropTarget=True enables candidacy, false/omitted does not enable it alone, and declared target callbacks can establish candidacy; acceptance still requires type/tag/callback checks. Grid self-drag special cases and exact reactive semantics remain separate. No runtime change.
+
+
+Drag/drop option 5 confirmed after legacy clarification — 2026-10-20. Owner replies “ok” to preserving legacy target enablement: dropTarget=True establishes a potential destination; declared dropTargetCb or dropTargetCb_* callbacks can also establish it without dropTarget=True. dropTarget=False is consequently not an unconditional prohibition. Type eligibility and target callbacks still determine acceptance. This supersedes the earlier proposed unconditional False gate, which was never approved. Grid self-drag special cases and exact reactive semantics are not settled here. No runtime implementation. Next option: accepted payload types through dropTypes and typed onDrop_* handlers.
+
+
+Drag/drop option 6 confirmed — 2026-10-20. Owner replies “ok” to legacy type eligibility: dropTypes is a comma-separated list; at least one dragged type must match an accepted type; an onDrop_<type> handler implicitly contributes its type; without declared types or typed handlers a drop is rejected even with dropTarget=True. Pattern semantics remain a separate pending decision. No runtime implementation. Legacy pattern evidence: gnrlang.js arrayMatch replaces only the first asterisk with (.*), then uses item.match(matchString), giving regex and unanchored matching semantics. The next proposal is explicit whole-type wildcard matching, with * representing any sequence, rather than implicitly inheriting those regex/substring behaviors; this difference requires owner approval.
+
+
+Drag/drop option 7 confirmed — 2026-10-20. Owner replies “ok” to whole-type matching in dropTypes with * as the only wildcard, matching any sequence: text/plain is exact, text/* and app/* match their respective prefixes, and * accepts any type. No implicit regular expressions or substring matching. This is an explicitly approved departure from legacy arrayMatch, which used unanchored regex matching after replacing the first asterisk. No runtime implementation. Next option: source dragTags; target tag-expression rules will be reviewed separately.
+
+
+Drag/drop option 8 confirmed — 2026-10-20. Owner replies “ok” to legacy dragTags: comma-separated source tags, declared on the component or inherited; onDrag can add per-drag tags through dragValues['dragTags']; these are combined with declared tags. The reserved entry is treated as drag metadata, not a payload type. No runtime implementation. Next option: target dropTags filtering, including comma alternatives, AND conjunction and ! negation; absence of source tags with an active tag filter must follow the explicitly reviewed rule.
+
+
+Drag/drop option 9 confirmed — 2026-10-20. Owner replies “ok” to dropTags filtering: comma-separated alternatives (OR), uppercase AND conjunction and ! negation; tag names match source tags. Examples: documenti; documenti,immagini; documenti AND archivio; documenti AND !bloccato. Type eligibility and tag eligibility must both pass. Omitted dropTags imposes no tag filter; a configured filter rejects a source with no tags, even for a purely negative condition, matching legacy behavior. No parentheses, alternate NOT syntax or further expression grammar is approved here. No runtime implementation. Next option: dynamic target eligibility through dropTargetCb.
+
+
+Drag/drop option 10 confirmed — 2026-10-20. Owner replies “ok” to dropTargetCb as a synchronous named Logic method receiving source/destination context, including target item/path for tree. It returns true to allow or false to reject; it cannot override a dropTypes or dropTags rejection. Evaluate during drag-over for feedback and revalidate at drop. It only determines eligibility; onDrop owns the resulting action. The exact callback argument schema and availability of external payload data during hover remain to be specified; no runtime implementation. Next option: typed target callbacks dropTargetCb_<type>, their dispatch and combination with the general callback.
+
+
+Drag/drop option 11 confirmed — 2026-10-20. Owner replies “ok” to typed eligibility callbacks dropTargetCb_<type>, naming Logic methods (example dropTargetCb_nodeattr="canReceiveNode"). Each receives the relevant typed data and determines eligibility through true/false; these checks supplement dropTargetCb and any rejection vetoes the drop. They do not implicitly add accepted dropTypes. Invoke a typed eligibility callback only when its type is present in the drag. This explicitly differs from legacy getDragDropInfo, which invokes all declared typed checks even when their payload is absent. Exact argument schema and hover payload availability remain pending. No runtime implementation. Next option: the general onDrop action after successful validation; typed action dispatch and publish details will be reviewed separately.
+
+
+Drag/drop option 12 confirmed — 2026-10-20. Owner replies “ok” to general onDrop as a named Logic action receiving accepted data and source/destination context, invoked once after all eligibility checks when unhandled accepted data remains. Data already handled by an onDrop_<type> handler is excluded from the general callback; if none remains, onDrop is not called, following legacy onDrop_standard. Application Logic owns Bag changes, application operations and publishing; tree does not automatically copy or move nodes. Exact argument schema, async completion and declarative publishing remain pending. No runtime implementation. Next decision: when multiple present types have specific handlers, dispatch all matching handlers once per type, as legacy does, rather than selecting one preferred representation.
+
+
+Drag/drop option 13 confirmed — 2026-10-20. Owner replies “ok” to invoking every onDrop_<type> handler whose type is present, once per matching type with its own data, as in legacy onDrop_standard. No preferred representation is chosen automatically. An application needing one aggregate operation uses general onDrop without typed handlers. This does not settle handler ordering, async/error policy or MIME-to-handler-name encoding. No runtime implementation. Next option to review: selfdrop context identifying a drag within the same component, distinct from a drop onto the same tree item; application eligibility callbacks decide whether to permit it.
+
+
+Drag/drop option 14 confirmed — 2026-10-20. Owner replies “ok” to selfdrop in callback context: true when source and destination are the same component, false for another component. It does not mean the same tree item; source and target item/path distinguish that case. selfdrop does not automatically reject a drop; target eligibility callbacks decide whether to permit internal reordering, external transfers or reject invalid moves. No runtime implementation. Next option: publishing as a drop action through Gramlot's shared messaging contract.
+
+
+Drag/drop option 15 confirmed — 2026-10-20. Owner replies “ok” to an automatic Source-local onDrop notification on the destination through the existing Gramlot messaging system. Publish once per accepted drop, including when multiple typed handlers run; carry accepted data, source/destination context and selfdrop. Rejected drops emit no such notification. This reports acceptance, not completion of asynchronous application work. Explicit publish calls from application Logic remain available. Exact payload schema and ordering relative to action handlers remain to be specified; no runtime implementation. Next option: dragClass presentation of the drag preview.
+
+
+Drag/drop option 16 confirmed — 2026-10-20. Owner replies “ok” to dragClass for drag-preview presentation, retaining the legacy name and default draggedItem. Applications can supply a custom CSS class; default styling follows light/dark themes. The source appearance must not remain modified after preview preparation. For tree, the preview represents the dragged row. Fully custom preview content is a separate next decision. No runtime implementation.
+
+
+Drag/drop option 17 confirmed — 2026-10-20. Owner replies “ok” to custom drag previews authored in Gramlot Source. Default remains the dragged row with dragClass. An application can reference alternative Source content composed of ordinary components and bindings (icon, text, counter, etc.); framework owns temporary preview handling and cleanup. This requires adaptation from legacy grid dragImageNode, which builds DOM directly. Exact Source-reference syntax, preview context and rendering lifecycle remain pending; no new parameter spelling or runtime implementation is approved here. Next option: accepted/rejected destination feedback.
+
+
+Drag/drop option 18 confirmed — 2026-10-20. Owner replies “ok” to common destination feedback retaining canBeDropped and cannotBeDropped classes, with theme-aware shared styling and CSS parts for shadow components. Tree highlights the target row without changing selection. Feedback reflects the combined type, tag and callback eligibility result and is removed on leaving the destination, cancellation or drag completion. No runtime implementation. Next option: dropEffect semantics for copy, move or link; legacy genro_dom.js onDragEnter sets move for accepted drags and none for rejected ones, rather than exposing this choice in that path.
+
+
+Drag/drop option 19 confirmed — 2026-10-20. Owner replies “ok” to configurable dropEffect: move (default), copy or link. Report the chosen effect to the browser for cursor feedback and include it in callback and publish context. Application actions perform the actual operation; move never implies automatic Bag mutation. Rejection applies none. This is an approved extension beyond the reviewed legacy onDragEnter path, which sets move/none. Exact effect context field and per-node customization remain pending. No runtime implementation. Next option: source effectAllowed and its intersection with the destination's requested dropEffect.
+
+
+Drag/drop option 20 confirmed — 2026-10-20. Owner replies “ok” to source effectAllowed: all (default), copy, move, link, copyMove, copyLink, linkMove, or none. A drop is valid only when the destination's requested dropEffect is permitted by the source. No implicit substitution: a copy-only source is rejected by a destination requesting move. This is an approved explicit extension relative to the reviewed legacy path. Modifier-key effect negotiation remains unapproved. No runtime implementation. Next option: additional onDrag_* payload-preparation callbacks, as distinct from typed onDrop handlers.
+
+
+Drag/drop option 21 confirmed — 2026-10-20. Owner replies “ok” to additional synchronous named Logic onDrag_* callbacks: run general onDrag first, then additional callbacks sharing the same mutable dragValues. The suffix identifies a callback; it neither filters already-present payload types nor creates data automatically. Any callback returning false cancels the drag and stops the sequence. This explicitly fixes legacy behavior that ignores extra callbacks' return values and can bypass the general onDrag veto when extras exist. Relative ordering among additional callbacks and argument schema remain pending. No runtime implementation. Next option: end-of-drag lifecycle notification and cleanup, including cancellation/rejection.
+
+
+Drag/drop option 22 confirmed — 2026-10-20. Owner replies “ok” to end-of-drag lifecycle: optional named Logic onDragEnd on the source and one automatic Source-local endDrag publish per actually started drag, including cancellation or rejected drop. Context includes origin and the browser-reported final effect, not application-operation success. Framework guarantees preview/class/feedback cleanup even if a callback throws. An attempt vetoed by onDrag before actual start emits no endDrag. Exact argument schema, callback/publish ordering and async handling remain pending. No runtime implementation. Next option: external desktop file drops, distinct from automatic uploads or filesystem changes.
+
+
+Drag/drop option 23 confirmed — 2026-10-20. Owner replies “ok” to external desktop file drops through a dedicated legacy-style path. Example destination: dropTarget=True, dropTypes="Files", dropEffect="copy". General onDrop receives files (browser File objects) plus destination context. Tree dropTargetCb can restrict reception to folders. Application Logic owns reading, previewing or uploading; no automatic upload or filesystem mutation. This confirms the dedicated files argument, not serialization of File objects across transports. File-type matching interactions with generic patterns/typed handlers and external hover metadata remain to be specified. No runtime implementation. Next option: drop_ext file-extension filtering.
+
+
+Drag/drop option 24 confirmed — 2026-10-20. Owner replies “ok” to drop_ext with legacy file-extension filtering: comma-separated extensions without leading dots; case-insensitive comparison; omission permits all extensions. A mixed file drop discards disallowed files and supplies the remaining files to onDrop. When none remain, invoke neither onDrop nor an accepted-drop publish. Final filtering occurs at drop based on filenames. No content/MIME verification or extra file limits are implied. No runtime implementation. Next option: routing among nested eligible destination components.
+
+
+Drag/drop option 25 confirmed — 2026-10-20. Owner replies “ok” to nested-destination routing: the innermost enabled destination under the pointer owns the gesture. If its type/tag/callback checks reject the drop, do not fall through to an outer destination. An inner element that is not a destination does not prevent an enclosing destination from receiving the drop. Each drop has one destination action sequence and one automatic accepted-drop publish. This is an explicit Gramlot contract, not a claim of complete legacy nested-widget equivalence. No runtime implementation. Next option: legacy dragOverCb as a named Logic hover notification, distinct from acceptance checks.
+
+
+Drag/drop option 26 confirmed — 2026-10-20. Owner replies “ok” to optional synchronous named Logic dragOverCb. It receives drag context, destination and the current eligibility result; tree supplies the hovered row context. It can update interface information/state, but its return value does not determine acceptance (dropTargetCb retains that responsibility). It may run repeatedly during a gesture and is not the final copy/move action. This adapts the legacy raw-event callback to Gramlot Logic; exact argument schema remains pending. No runtime implementation. Next option: structured-payload serialization using the existing typed-data contract, separate from local callback object context and the dedicated File path.
+
+
+Drag/drop option 27 confirmed — 2026-10-20. Owner replies “ok” to payload serialization: text/* formats carry text; structured Gramlot payloads use the existing shared TYTX contract and preserve supported types. Payload is a snapshot after onDrag preparation, not a mutable reference to the original Bag. Live objects such as Source nodes remain local callback context. Files use the separately approved path. Unsupported nonserializable values cause explicit errors, without arbitrary conversion. Exact wire envelope and external-format handling remain pending; no new codec or dependency workaround is authorized. No runtime implementation. Next option: payload availability during hover, particularly for drags originating outside the current Gramlot instance.
+
+
+Drag/drop option 28 confirmed — 2026-10-20. Owner replies “ok” to hover data availability: within the same Gramlot instance, retain the prepared payload in per-drag memory so eligibility callbacks can inspect it during hover; clear it at gesture completion. For drags from other instances/tabs/applications, hover checks are preliminary and payload-dependent checks complete at drop. Callback context exposes dataAvailable, distinguishing unreadable-yet data from missing data. Typed data-receiving callbacks run only when the payload is available. This qualifies the previously approved hover checks for external drags. Browser evidence: MDN Working with the drag data store, Protected mode (https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_data_store#protected_mode). No persistent localStorage transfer cache is approved. Exact preliminary-feedback representation and external metadata envelope remain pending. No runtime implementation. Next option: asynchronous drop actions and sequencing.
+
+
+Drag/drop option 29 confirmed — 2026-10-20. Owner replies “ok” to asynchronous named Logic onDrop and onDrop_<type> actions. Capture payload data before any await. Execute multiple action handlers sequentially, awaiting each before the next; exact ordering among typed handlers remains pending. Automatic onDrop publish still reports acceptance without awaiting application-operation completion. Drag preparation and acceptance checks remain synchronous. Error handling is the next separate decision. No runtime implementation.
+
+
+Drag/drop design review requested — 2026-10-20. Before answering option 30 (error policy), the owner asks whether the legacy approach could be simpler/more natural and how drag/drop is normally designed. Option 30 remains unconfirmed; suspend the option-by-option sequence while answering. Options 1–29 remain recorded approvals, not implemented runtime behavior. Read-only comparison: browser HTML DND exposes dragstart/DataTransfer/dragover/drop/dragend; Atlassian Pragmatic DND separates source/target data, canDrop, effect and events; React Aria exposes getItems, acceptedDragTypes and collection intents such as onReorder/onMove, plus keyboard/touch/screen-reader support. These libraries are evidence, not a decision to add dependencies. Recommendation under discussion: reduce normal application authoring to payload preparation, acceptance and one drop action; keep gesture mechanics in common Gramlot, and give tree explicit target/position context. Multiple data formats can describe the same logical item, so dispatching all type handlers is a legacy-specific approved policy worth explicitly reconsidering, not a universal requirement. No approval is inferred to supersede existing decisions, add compatibility layers, adopt a library or implement a new API. Sources: https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API ; https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_data_store ; https://atlassian.design/components/pragmatic-drag-and-drop/core-package/drop-targets ; https://react-aria.adobe.com/dnd .
+
+
+Drag/drop comparison and data-first clarification — 2026-10-20. Owner emphasizes acting on data and letting rendering reflect the result, then asks which capabilities React Aria/Pragmatic DND have beyond the proposed Gramlot mechanism and vice versa. Data-first updates are not exclusive to Gramlot: React Aria's documented useListData/useTreeData examples mutate collection state and React renders it. Gramlot's distinct integration is Bag paths/attributes, existing bindings/Source, Python-first authoring, TYTX and Source-local messaging. Built-in declarative Bag move/copy actions remain a proposal, not an approved implementation contract.
+
+Documented gaps in the current Gramlot DND design: full keyboard/touch/screen-reader interaction (React Aria supplies it; Pragmatic's core instead requires accessible alternative controls to be composed), multiple selected drag items, explicit root/on/before/after collection destinations and reorder/move events, external directory traversal, modifier-key copy/move interaction; Pragmatic provides optional auto-scroll/hitbox/drop-indicator packages and core sticky-target behavior. These are absent or undecided in our contract, not claims that they cannot be added. Gramlot's planned tag-expression grammar, typed Logic dispatch and automatic Source publishes are framework conveniences rather than capabilities impossible to reproduce with other libraries' callbacks. Neither external library supplies Gramlot Bag/TYTX/Python/Source integration out of the box. No adoption decision, supersession of options 1–29 or runtime implementation. Option 30 remains unconfirmed.
+
+Sources: https://react-aria.adobe.com/dnd ; https://atlassian.design/components/pragmatic-drag-and-drop/optional-packages/ ; https://atlassian.design/components/pragmatic-drag-and-drop/accessibility-guidelines/ ; https://atlassian.design/components/pragmatic-drag-and-drop/core-package/drop-targets .
+
+
+
+
+<a id="gc-070-1540"></a>
+
+## 1540. Internal drag/drop first implementation — 2026-10-20
+
+Owner: “cominciamo a implementare il drag interno e non quello esterno. pero prevederei il drag tra finestre divrese della stessa radice forse”. Internal drag implementation is authorized; external desktop/application drag is excluded from this increment. The suggested cross-window extension remains under clarification: panels in one Gramlot instance, iframe pages and independent browser windows have different lifecycles. Existing FrameMessages supports direct parent/child publishing with peer sessions; it does not establish a shared root identity across browser windows. No new root protocol, global transfer cache or external acceptance is implemented.
+
+Implemented: the internal DragDropPolicy collaborator evaluates approved declarative destination eligibility: dropTarget/callback candidacy, whole-type * matching, exact typed-handler contributions, reserved dragTags exclusion, comma OR / AND / ! tag filtering, effect intersection and no implicit effect substitution. It is stateless, so it can be evaluated again using current attributes at drop. It does not invoke callbacks, decode handler names or decide action order. It is not yet connected to renderer events or tree rows, and does not make drag/drop available in the gallery.
+
+Verification: 28 tests pass (9 eligibility tests and 19 existing tree tests), zero failures/skips. Coverage includes callback-established candidacy with dropTarget=False, no type match, literal regex metacharacters, negative-only tag filters on untagged sources, all approved effect combinations, reserved metadata and changed destination rules. No browser DND or full-suite qualification is claimed for this increment.
+
+Remaining contract work: exact Logic callback arguments, typed-handler encoding/order, publish ordering/schema and the unconfirmed error policy (option 30). The pending root question does not approve cross-window behavior. No public callback schema has been invented to bypass these open decisions.
+
+Dependency evidence, read-only: installed @genrojs/tytx 0.16.3 serializes {record:{handler:()=>1}} as {"record":{}} and [()=>1] as [null], rather than raising the explicit error required by option 27. assertTransportData currently rejects live Source/DOM references and cycles, but does not reject function values. Strict unsupported-value rejection is therefore not yet guaranteed by the shared transport path. Resolve the serialization gap in its owning project before claiming the approved snapshot contract; no TYTX source or installed dependency was changed, and no local replacement codec or consumer workaround was added.
+
+Next: settle callback arguments and the meaning of shared root, then connect the shared gesture lifecycle and tree payload/row adapter, qualify data-only actions in gallery examples, and recheck snapshot behavior after the transport gap is resolved. This is implemented/tested foundational work, not a completed or owner-accepted drag/drop port.
+
+
+Cross-window scope clarified — 2026-10-20. In reply to the explicit scope question, the owner chooses “Schede/finestre browser della stessa applicazione”. The authorized internal-drag scope therefore includes separate browser tabs/windows belonging to the same application, beyond panels in one instance. This resolves the scope question in the first implementation checkpoint; it does not establish the application/root membership identifier or cross-window transport protocol. External desktop/application drags remain excluded. Payloads crossing window boundaries must follow the approved serialization contract; local live Source/DOM objects do not become transferable. Existing FrameMessages is evidence for direct parent/child lifecycle only. No cross-window runtime implementation or new test result is claimed by this clarification.
+
+Next callback decision, proposal only: the first onDrag preparation callback follows existing named Logic invocation as method(sourceNode, {dragValues, item, path}). sourceNode is the local declaring Source node; tree item is the local BagNode and path is relative to its store; dragValues is the mutable typed payload dictionary. This preserves approved preparation/veto behavior and keeps live context separate from transferable payload. Exact general/typed drop callback schemas remain pending. No callback signature is recorded as owner-approved yet.
+
+
+Drag preparation callback signature confirmed — 2026-10-20. Owner replies “ok” to prepareDrag(sourceNode, {dragValues, item, path}): a named synchronous Logic method, with a mutable typed payload dictionary, the local dragged tree BagNode and its store-relative path; false vetoes preparation. Live context remains local. This settles the general onDrag signature only; it does not settle onDrag_* ordering, drop/end callback schemas, cross-window membership or the outstanding serialization gap.
+
+
+
+
+<a id="gc-070-1545"></a>
+
+## 1545. General drag preparation implemented — 2026-10-20
+
+The approved general onDrag signature is implemented in local preparation. DragPreparation is shared by ordinary Source elements and components declaring the dragSource capability; GramlotRenderer.prepareDrag uses current resolved draggable attributes and the existing HtmlElement/LogicRegistry invocation. Disabled/unmounted sources and absent tree rows return no prepared result, false vetoes, and asynchronous callback results are rejected. onDrag is consumed as runtime metadata in both renderers rather than emitted as inline HTML.
+
+The tree exposes getDragContext for its current rendered rows. It supplies the real BagNode, store-relative path, displayed caption as text/plain (HTML reduced to visible text), a fresh top-level attributes dictionary and treenode fullpath/relpath. fullpath is the BagNode's actual fullpath, including the Data root label; it is not a rewritten path. Capturing context does not inspect resolver values, expand branches or change selection. Obsolete row mappings are discarded on rerender. Python's tree metadata is regenerated with draggable default False and reactive read binding.
+
+Boundary: this increment implements and tests preparation through the real renderer/Logic/component path. It does not install native drag event listeners, commit a browser gesture, serialize payload snapshots, dispatch drop/end callbacks, or enable cross-window drag. No gallery drag demonstration is claimed. A copied top-level nodeattr dictionary is not the serialized payload snapshot; that remains pending the transport gap recorded in GC-197 §085. Additional onDrag_* ordering is still open.
+
+Verification: runtime build passes; the 3,606 JavaScript tests are verified across the main run (3,603 passing, three localhost server tests blocked by sandbox permissions) and the permitted focused conformance rerun (all three passing). Builder Python: 26 tests pass, including onDrag wire/HTML separation. Component Python: seven tests, OK with the pre-existing expected upstream Regex/Union failure. No new expected failures or skipped tests were introduced. The earlier full-run invocation without the repository Python environment failed interoperability imports; the reported run uses the repository virtual environment. Preparation-specific checks cover dynamic enablement, real Logic invocation, payload edits/veto, HTML labels, nested paths, lazy resolvers, component isolation, stale/detached rows and asynchronous-result rejection.
+
+Next required decision: the general onDrop argument schema. Proposed only: method(sourceNode, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}). sourceNode/item/path describe the receiving Source and tree node; dropValues contains the accepted payload entries not already handled by typed callbacks. source is a serializable descriptor {pageId, sourcePath, itemPath}: originating page identity, Source node fullpath and tree store-relative path (null for an ordinary element). No live source object crosses windows. This proposal is not approved by the owner's onDrag confirmation. Cross-window application/root membership, typed handler ordering/encoding, publish/end schema/order and the broader error policy remain open.
+
+
+General onDrop signature confirmed — 2026-10-20. Owner replies “ok” to receiveDrop(sourceNode, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}). item/path identify the destination tree node; dropValues contains accepted data not already consumed by typed actions; source identifies the originating page/Source/item without transferring live objects across windows. This confirms the callback envelope, not the exact source-descriptor member names or the cross-window membership protocol. General onDrop invocation can be implemented independently; native routing, typed-handler dispatch/order, acceptance callbacks, automatic publish ordering and end-of-gesture schema are still separate open work.
+
+
+General dropTargetCb signature confirmed after explanation — 2026-10-20. The owner first answers “non so decidere” to the proposed common onDrop/dropTargetCb context. After the assistant recommends the same data/context for acceptance and action, explaining that dropTargetCb returns yes/no while onDrop changes Data, the owner replies “ok”. Adopt method(sourceNode, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}) for the synchronous general target check. dropValues contains available candidate data before typed actions; only a boolean result is valid. This does not settle typed callback signatures, cross-window source-descriptor fields or the broader error policy.
+
+
+
+
+<a id="gc-070-1550"></a>
+
+## 1550. General drop action and target check implemented — 2026-10-20
+
+Owner-approved general onDrop and dropTargetCb callback envelopes are implemented as separate renderer steps using existing named Logic invocation. invokeDrop receives {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}, skips empty residual data or an unavailable handler/destination, and awaits asynchronous application work. checkDropTarget receives the same envelope and requires a synchronous boolean. A missing dynamic callback adds no restriction; a detached destination rejects. Each call reads the current renderer record and application Data, rather than caching the eligibility result.
+
+Both attributes remain runtime metadata in Python/JavaScript and do not become inline DOM event attributes. The source descriptor is passed through, without inventing its cross-window identity fields. These helpers do not perform the full drop pipeline: declarative type/tag/effect eligibility, native routing, typed dispatch, accepted-drop publishes, snapshot serialization and cleanup remain separate responsibilities. In particular, a successful checkDropTarget alone is not complete acceptance, and invokeDrop assumes already accepted data with typed-handled entries removed. No automatic Bag move/copy or DOM reparenting is introduced.
+
+Verification: 57 focused JavaScript tests pass (tree, preparation, declarative policy, renderer and runtime bundle); 26 Python Builder tests pass. The runtime build succeeds. New checks verify the exact callback envelope and real destination Source, ordinary elements as well as tree, application Bag attribute writes reflected through normal tree rendering, awaited async actions, empty residual data, handler changes, detached destinations, propagated application errors, boolean-only target checks, dataAvailable propagation and reevaluation after destination Data changes. The earlier 3,606-test suite checkpoint is recorded in GC-197 §090; the whole suite was not rerun after this bounded increment. No browser gesture or gallery drag demonstration is claimed.
+
+Next decision requested: the broader gesture error policy (formerly option 30, still unconfirmed at this checkpoint): preparation errors cancel startup; eligibility errors reject; action errors stop subsequent actions; report errors and clean transient feedback/session state in every case; no automatic rollback of application Data writes already made. Propagating application exceptions from these standalone invocation helpers does not itself establish the complete pipeline policy. Other open contracts include typed callback/handler dispatch and ordering, source descriptor membership across windows, automatic publish/end ordering/schema and the TYTX strict-serialization gap. Native gesture and gallery integration remain unfinished.
+
+
+Gesture error policy confirmed — 2026-10-20. Owner answers “Sì, questo comportamento” to the explicit policy question: preparation errors cancel drag startup, eligibility errors reject the drop, and action errors stop subsequent actions. In every case report the error and clean transient feedback/session state; do not automatically roll back application Data writes already performed. This confirms the previously open option 30. It does not claim that native gesture routing or its cleanup lifecycle is implemented yet.
+
+
+Serialization boundary recheck after option 30 — 2026-10-20. Read-only inspection confirms that Gramlot assertTransportData owns rejection of live Source/DOM references and cycles; GC-225 describes that bounded responsibility. It does not validate the complete TYTX registered-type encoding contract. Installed TYTX JSON encoding recursively retains unsupported function values until JSON.stringify silently drops object fields or replaces array entries with null. The confirmed drag error policy requires an explicit preparation error rather than silently altered payloads. No alternate encoder, duplicated type registry or dependency patch has been added. Request a bounded owner authorization for work in genro-tytx to verify and correct unsupported-value loss, with regression coverage; constitution §§13–14 keep this dependency work outside the current Gramlot-only scope until authorized. Native gesture integration remains affected; the already implemented callback steps and their 57 JS / 26 Python verification remain intact.
+
+
+Unsupported-payload edge deferred by owner — 2026-10-20. In reply to the request to edit genro-tytx, the owner says “no cerchiamo di aspettare: se è un edge case lo valutiamo dopo”. Do not edit TYTX or its installed source. Defer strict unsupported-value rejection and continue the internal-drag primary path using the existing TYTX supported payload types. The known function/undefined loss remains an explicit limitation; this is not a claim that the codec is fixed or that arbitrary JavaScript values can be transported. Existing live Source/DOM and cycle guards remain in force. This supersedes treating that edge as a blocker for the first internal-drag increment, not the eventual strict contract of option 27.
+
+
+End-of-drag callback/publication confirmed — 2026-10-20. Owner answers “Sì, questo contratto” to onDragEnd(sourceNode, {source, dropEffect}), followed by the local endDrag publication carrying the same data even if the callback fails. dropEffect reports the browser gesture, not success of the application action. Cleanup is performed independently of these notifications. This closes the previously pending basic end-context/order choice; typed handlers, cross-window membership and custom preview authoring remain separate work.
+
+
+
+
+<a id="gc-070-1560"></a>
+
+## 1560. Native internal drag and gallery lesson — 2026-10-21
+
+Owner confirmation: “Sì, questo contratto” for onDragEnd(sourceNode, {source, dropEffect}), followed by Source-local endDrag even if the callback fails. The native pipeline now connects the previously approved preparation, policy, target check and general drop action in one renderer instance. Payloads are TYTX snapshots of supported values; tree rows supply BagNode context without resolving branches. The manager owns temporary preview, class/part feedback, release-time eligibility recheck, accepted onDrop publish, end notification and cleanup. Application Logic owns every Data write; no automatic move/copy or rollback is added. Startup veto/error emits no end notification. Removing Source, disposal, cancellation and late asynchronous errors cannot retain feedback or corrupt a later gesture. The transient document stylesheet exists only during a gesture.
+
+The Python-first gallery lesson w29, Input components → tree → Internal tree drag and drop, copies documents between two independent Bags and rejects locked folders. Its JavaScript twin includes the shared Logic. The catalogue now contains 84 lessons in 22 groups. A real renderer integration test delivers drag events between both example trees and checks the resulting Data, rendered child, refusal and completion text.
+
+Verification: the full core JS run contains 3,623 tests (3,620 passed in the sandbox; the three localhost conformance tests passed separately with network permission). Python Builder/components: 33 tests, with the one pre-existing Builder Regex/Union expected failure; the subsequently expanded Builder metadata check passes all 26 Builder tests. Examples: all 144 JavaScript and 19 Python tests pass, including the new two-tree gesture integration check. Runtime and gallery bundles build. The additional source-removal/disposal test passes within the 42-test tree suite. No dependency source was changed.
+
+Browser qualification remains incomplete: the local Python gallery opens w29 and renders both trees. Automated pointer drags ended with effect none; temporary diagnostics showed dragover on the origin tree only, without delivery to the destination. Diagnostics were removed. This is not evidence of a successful browser drop or sufficient evidence to attribute the failure to the runtime; manual gesture verification remains required. The integration test is not a substitute for browser geometry/preview qualification. Implemented, automated checks recorded, not yet visually accepted.
+
+Still pending: same-application cross-window membership/transport; additional and typed callbacks with their remaining ordering/name contracts; dragOverCb context; custom Source preview authoring. External drops remain deferred. Unsupported nested function/undefined TYTX values remain owner-deferred. The source descriptor is local gesture context, not a cross-window trust protocol. No release or deployment.
+
+
+
+
+<a id="gc-070-1565"></a>
+
+## 1565. Numbered filesystem navigation — confirmed direction and loader gap, 2026-10-21
+
+Owner directs numeric prefixes in module/folder names (example 01-Html Elements), reserves 00 for the directory index, permits a Markdown-only index and confirms its first H1 as the title. Page.title remains the title source for executable pages. Folder selection opens its own index, which is hidden from its children. The filesystem itself must show the logical order; the separate Page.order proposal was rejected. GC-225 records the confirmed naming convention.
+
+Read-only inspection identifies the current defects: navigation_directory/navigationDirectory sort directories alphabetically before files, derive folder captions from names or catalogue fields instead of Page.title, and insert a special root Introduction leaf. Nested index pages are already omitted, but the root remains special. The current gallery has 84 lessons; no examples have been renamed or removed in this checkpoint.
+
+Reproduction with actual temporary modules: both Python and JavaScript GramlotFileServer locate 00-index successfully and reject an existing 01-Html Elements module with PageNotFound: Invalid page path. Both use the shared resources SEGMENT validator, which permits only letters, digits, underscore and hyphen. This is a core gap for the requested names, not a reason to silently rename them or introduce a route-name normalizer in the gallery.
+
+Concrete bounded correction proposed for owner confirmation under constitution §3 / amendment 11.43: allow ASCII spaces in filesystem page path segments in both FileServers, preserving root-containment checks, rejection of dot/traversal segments and the reserved _aux suffix; encode URL path segments through the existing URL machinery. Keep css_requires/js_requires resource-name validation unchanged. Validate opening a real numbered page and its companion resources, plus the existing invalid-path/symlink boundary checks. No core implementation of this proposal is claimed. The approved filesystem migration, metadata-driven labels, Markdown index integration and gallery/browser verification remain pending this boundary decision and any separately identified capability gap.
+
+
+Numbered navigation clarification — 2026-10-21. Owner clarifies “intendevo html elements -> html_elements”, requires the nested path to remain nested, and authorizes implementation with “proviamo”. Normalize authored module/folder names to lowercase with underscores instead of spaces, retaining sibling numeric prefixes and 00-index. Do not flatten paths or introduce route aliases as a substitute for nested paths. This supersedes the proposed space-preserving FileServer extension in GC-070 §1565; no core loader change is required. Page.title and the first Markdown H1 remain the agreed title sources. Gallery catalogue family folder uses the same existing folder member convention as lesson folder; key remains catalogue identity, distinct from physical path.
+
+
+
+
+<a id="gc-070-1570"></a>
+
+## 1570. Numbered gallery navigation implemented and verified — 2026-10-21
+
+Owner confirms lowercase/underscore names with numeric filesystem prefixes, nested paths, hidden `00-index` pages, executable titles from `Page.title` and Markdown titles from the first H1. Connected integration scope is explicitly authorized by “Sì, adegua anche le integrazioni”, in reply to catalogue and gallery-preparation changes in gramlot-py-server and gramlot-js-server. This closes the implementation blocker in §1565; no core FileServer change is needed.
+
+The gallery now orders files and directories together by filename. All 84 lessons and their companions are retained in numbered family/topic directories; catalogue keys remain stable identities while `folder` and executable route `url` carry physical nested paths. Directory selection opens its own index without resolving children. Indexes are omitted at every level; the root introduction appears outside the navigation when no tab is selected. Markdown-only descriptions use the existing sanitized gallery formatter. Existing executable indexes were renamed losslessly, not deleted; a recovery archive was saved before migration. The dedicated Markdown index demonstrates prose-only authoring.
+
+Python, Node/Bun and offline staging preserve the route path and companions; carousel links and manual playground links use the correct hosted/file URLs. Static export accepts numeric segment starts while retaining rejection of traversal and empty segments. The core loader and dependency sources are unchanged. Paired GE-010 §310 and integration verification guides record the new contract and scope.
+
+Verification: 146 JavaScript gallery tests pass; Python passes 27 tests and 124 subtests. Python integration staging passes nine tests; Node gallery passes four; static gallery passes three, with seven directory-export tests also passing. The gallery bundle and all 84 documentation playgrounds build. Both integration documentation builds pass. Live browser checks on Python and Node confirm ordered sections, lazy expansion, hidden indexes, selection of executable and Markdown indexes, nested example URLs and the Python Code drawer, without console errors in those checks. Browser harness source paths were aligned; this checkpoint uses live in-app browser checks rather than claiming a full Chromium/WebKit harness rerun.
+
+Implemented and verified locally, pending owner visual acceptance. No package release, publication or deployment; prior drag-and-drop work and its separate remaining verification are unchanged.
+
+
+
+
+<a id="gc-070-1575"></a>
+
+## 1575. Operator-only drawer transitions and site-authoring recipe — 2026-10-21
+
+Owner: “al caricamento della pagina il drawer di code dovrebbe aprirsisenza effettomsolo se lo fa loperatore deve esserci la transizione.” The shared border component now enables the existing transition only for drawer-button activation. Automatic Source/Data visibility changes are immediate, including gallery Code appearing after page loading. Source feedback after an operator action does not cancel that action's transition; grid completion clears the transient marker. Hover behavior and live resizing remain unchanged. No authoring parameter or gallery-specific animation state is introduced.
+
+Verification: nine border tests pass, including automatic reveal, operator open/close, synchronous Source feedback and a programmatic change interrupting motion. Three gallery selection/drawer tests and six frame/index tests pass. Core and gallery bundles build; the layout bundle served at the user's localhost preview matches the rebuilt artifact. These are automated and served-artifact checks, not a new visual transition acceptance.
+
+Owner additionally requests instructions in Gramlot for sites like the gallery, navigation and iframe pages. GC-095 §110 now includes a Python-first recipe with five-region responsibilities, a numbered nested page layout, navigation Bag, folder index, retained iframe example, Source customization, collection activation, URL/mount behavior, resolver initialization and cleanup. It distinguishes framework contracts from gallery-owned Code/Inspector/theme/Markdown behavior. GC-105 states the refined drawer transition rule; paired views are updated. Executing the documented snippets verifies the root and both nested pages through GramlotFileServer, Source requests and the iframe panel hook. No external application or new framework API is added.
+
+Documentation qualification: warning-free Sphinx build; public boundary, search, downloadable sources, local links and paired anchors pass for all 11 public pages. Implementation and documentation are verified locally; visual acceptance remains with the owner.
+
+
+<a id="gc-070-1585"></a>
+
+## 1585. Intermediate tree/page/gallery release qualification — 2026-10-21
+
+Owner requested an intermediate release before editor ports and confirmed scope:
+“Solo tree, pagine, gallery e guida”. Database selectors and Genropy experiments
+remain outside the candidate. Owner subsequently confirmed: “Sì, adegua il
+contratto prima della release”, covering NavigationResolver alignment with the
+published dataRemote lifecycle while retaining lazy directories, cache and abort.
+
+The release candidates are isolated from concurrent local work and based on the
+current published main branches. RemoteResolver now owns the shared asynchronous
+cache only; RpcResolver keeps NodeBinding scheduling and NavigationResolver owns
+independent cancellable directory calls. Tests cover parallel directories, repeated
+reads, refresh, late answers and subtree cancellation. No Builder/Bag source edits.
+
+Verified locally: core JavaScript 3,708 tests (one JSDOM assertion required a
+shadow-style stub; the corrected nine-test drawer suite passes); Python 219 passed,
+382 subtests and the pre-existing upstream expected failure. Examples: 235 JS and
+19 Python tests. Python integrations: 126 tests. Node and Bun: 40 tests each;
+serverless: 43; project generator: 3. Chromium and WebKit pass live tree, drawer,
+ordered lazy navigation, folder index, retained iframe and native internal-drop
+checks. Node's mounted gallery passes all 84 pages. Integration paired docs build
+without warnings. Offline browser qualification and final distribution checks
+remain in progress at this checkpoint; no publication is claimed yet.
+
+The authoring recipe remains in GC-095 §110 and its paired view. Core, examples
+and integrations must be released in dependency order; versions in candidate
+manifests do not establish publication. The existing automatic gallery update
+policy remains the owner-authorized CI policy recorded in constitution 11.84.
+
+
+Release qualification follow-up — 2026-10-21. The corrected drawer regression passes; all other 3,707 JS checks already passed in the complete run. Node and Bun mounted galleries pass all 84 lessons; the serverless gallery passes 85 lessons from disk without network requests. The offline exporter now bundles collection imports against the same window runtime as Logic. Core wheel/sdist build and the JSR package dry-run pass (161 files, including packaged themes). The core public documentation passes its 15-page boundary/link/anchor check. Publication is the next step; subsequent integration receipts remain separate.

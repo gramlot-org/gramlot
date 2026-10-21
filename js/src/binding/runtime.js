@@ -412,6 +412,14 @@ export class NodeBinding {
         if (dataElement && !PROVIDERS[node.nodeTag]) return;
         if (!dataElement && typeof node.getAttr('remote') === 'string') this.#remote ??= new RemoteBinding(this);
         const remoteDependencies = new Set();
+        if (node._getMeta('gramlot_component')?.bagStore) {
+            const storepath = node.getAttr('storepath');
+            if (typeof storepath !== 'string' || !storepath || /^[\^=]/.test(storepath) || storepath.includes('?')) {
+                throw new TypeError('storepath requires a plain Bag data path');
+            }
+            const path = node.absDatapath(storepath);
+            this.#registrations.push(this.runtime.router.register({path, recipient: this, subtree: true}));
+        }
         const timingDependencies = this.remote ? pointerDependencies(node, node.getAttr('_timing')) : new Set();
         if (this.remote) for (const [name, raw] of Object.entries(node.getAttr())) {
             if (name.startsWith('remote_')) for (const dependency of pointerDependencies(node, raw)) remoteDependencies.add(dependency);

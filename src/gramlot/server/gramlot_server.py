@@ -275,7 +275,8 @@ class GramlotServer:
             if path.strip("/") in ("", "index") and cls.installable is True:
                 head.link(rel="manifest", href=prefix + "/app.webmanifest")
             # A page module served for its Logic imports the core from the runtime already loaded.
-            head.script(_script_json({"imports": {"@gramlot/gramlot/page": _prefixed(prefix, self.runtime_url)}}),
+            head.script(_script_json({"imports": {"@gramlot/gramlot/page": _prefixed(prefix, self.runtime_url),
+                                                "@gramlot/gramlot": _prefixed(prefix, self.runtime_url)}}),
                         type="importmap", nonce=nonce)
             body = root.body()
             body.div(id=self.root_id)

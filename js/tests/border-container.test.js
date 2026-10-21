@@ -19,6 +19,56 @@ async function fixture(author) {
 }
 const separator = (border,side) => border.shadowRoot.querySelector(`.separator[data-side=${side}]`);
 const viewport = (border,side) => border.shadowRoot.querySelector(`#region-${side}`);
+
+test('automatic drawer visibility is immediate; button activation animates despite Source feedback', async () => {
+    const {app, window, element} = await fixture((root, app) => {
+        app.data.setItem('codeHidden', true);
+        app.data.setItem('codeDrawer', true);
+        const border = root.borderContainer({id:'border', height:'400px'});
+        border.contentPane({region:'center'});
+        border.contentPane({id:'code', nodeId:'code', region:'right', width:'240px',
+            hidden:'^codeHidden', drawer:'^codeDrawer', drawer_label:'Code'});
+    });
+    const border = element('border'), view = viewport(border, 'right');
+    const button = separator(border, 'right').querySelector('button');
+    const animated = () => border.control.hasAttribute('data-drawer-motion');
+    const feedback = app.subscribe('code_closable_change', ({open}) => {
+        app.data.setItem('codeDrawer', open ? true : 'close');
+    });
+    try {
+        assert.equal(view.hidden, true);
+        assert.equal(animated(), false);
+        app.data.setItem('codeHidden', false);
+        assert.equal(view.hidden, false);
+        assert.equal(animated(), false);
+        button.click();
+        assert.equal(view.hidden, true);
+        assert.equal(animated(), true);
+        assert.equal(app.data.getItem('codeDrawer'), 'close');
+        button.click();
+        assert.equal(view.hidden, false);
+        assert.equal(animated(), true);
+        app.data.setItem('codeHidden', true);
+        assert.equal(view.hidden, true);
+        assert.equal(animated(), false);
+        app.data.setItem('codeDrawer', true);
+        app.data.setItem('codeHidden', false);
+        assert.equal(view.hidden, false);
+        assert.equal(animated(), false);
+        button.click();
+        assert.equal(animated(), true);
+        border.control.dispatchEvent(new window.Event('transitionend'));
+        assert.equal(animated(), false);
+        // JSDOM does not recompute shadow-root transition styles. Browser coverage uses reduced motion.
+        const computedStyle = window.getComputedStyle.bind(window);
+        window.getComputedStyle = element => element === border.control
+            ? {transitionDuration: '0s'} : computedStyle(element);
+        button.click();
+        assert.equal(view.hidden, false);
+        assert.equal(animated(), false, 'a disabled transition has no end event to wait for');
+    } finally { app.unsubscribe(feedback); app.dispose(); }
+});
+
 function geometry(border) {
     border.control.getBoundingClientRect=()=>({width:800,height:500});
     for (const cell of border.shadowRoot.querySelectorAll('.region')) cell.getBoundingClientRect=()=>({
@@ -38,7 +88,9 @@ test('region projection comes from Source; drawer preserves invalid draft, Data 
     const border=element('border'),field=element('field'),left=element('left');
     const handle=separator(border,'left').querySelector('button');
     assert.equal(left.slot,'left'); assert.equal(viewport(border,'left').hidden,true);
+    assert.equal(viewport(border,'left').inert,true);
     handle.click(); assert.equal(viewport(border,'left').hidden,false);
+    assert.equal(viewport(border,'left').inert,false);
     field.control.value='X';field.control.dispatchEvent(new window.Event('change',{bubbles:true}));
     assert.equal(app.data.getItem('name'),'Ada');
     handle.click();handle.click();

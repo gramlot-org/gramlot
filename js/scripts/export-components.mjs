@@ -2,6 +2,9 @@
 import {writeFile} from 'node:fs/promises';
 import inputs from '../src/components/inputs.js';
 import layout from '../src/components/layout.js';
+import tree from '../src/components/tree.js';
+await writeFile(new URL('../../src/gramlot/collections/tree.json', import.meta.url),
+    JSON.stringify(tree.toDocument(), null, 2) + '\n');
 await writeFile(new URL('../../src/gramlot/collections/layout.json', import.meta.url),
     JSON.stringify(layout.toDocument(), null, 2) + '\n');
 await writeFile(new URL('../../src/gramlot/collections/inputs.json', import.meta.url),

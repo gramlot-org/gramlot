@@ -1,0 +1,339 @@
+{
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "grammar": {
+    "name": "tree",
+    "version": null,
+    "title": "tree",
+    "description": null
+  },
+  "abstracts": {},
+  "elements": {
+    "tree": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "storepath",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "draggable",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "labelAttribute",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "hideValues",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "labelCb",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "getLabel",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "getLabelClass",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "getIconClass",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "selectedLabelClass",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
+            "name": "autoCollapse",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "selectedPath",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "render_tag": "gramlot-tree",
+        "gramlot_component": {
+          "parameters": {
+            "storepath": {
+              "dtype": "T"
+            },
+            "draggable": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "labelAttribute": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null,
+              "binding": "read"
+            },
+            "hideValues": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "labelCb": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null
+            },
+            "getLabel": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null
+            },
+            "getLabelClass": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null
+            },
+            "getIconClass": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null
+            },
+            "selectedLabelClass": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
+            "autoCollapse": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "selectedPath": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null,
+              "binding": "twoWay"
+            }
+          },
+          "presentationDefaults": [],
+          "dataScope": false,
+          "command": false,
+          "sourceContext": true,
+          "dragSource": true,
+          "bagStore": true
+        }
+      }
+    }
+  }
+}
