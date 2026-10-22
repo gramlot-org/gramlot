@@ -4,6 +4,8 @@
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
+> **Current JavaScript distribution (2026-10-22):** npm only; JSR publication is suspended. Earlier JSR decisions are historical for core distribution; see the [owner amendment](#gc-000-jsr-suspension).
+
 ## 1. Authority and amendments
 
 This constitution contains agreed product principles. Proposals, examples, PoC
@@ -3066,3 +3068,9 @@ Owner instruction: “Sì, procedi con la prima tranche e le correzioni di sicur
 Approved scope: shared runtime Bag identity for bundled stores and validator results; binding ownership before attr_* expression installation; remote declaration removal and its scheduled work; SVG node publication through the root builder; Python page module registration, reload and shutdown cleanup; sanitized HTML drawer labels; refusal of javascript: in native form action; and preventing Data from supplying script-element executable content. Regression tests and complete core qualification are included.
 
 This extends 11.53's browser-run checks to native form action (html_action) and script-element text/URLs. Script content must be literal Source; the live runtime activates it at Source reception and rejects subsequent replacement. Safe drawer HTML is preserved using the tree-caption DOMPurify policy, superseding unsanitized drawer HTML. The iframe srcdoc contract of 11.54 is unchanged. First-party source edits, parent-frame trust policy, additional embedding/SVG attack surfaces, Typst restructuring, general refactoring and publication are outside this correction.
+
+<a id="gc-000-jsr-suspension"></a>
+
+### JavaScript distribution through npm only — owner, 2026-10-22
+
+Owner confirms: “sospenderei e basta. teniamo solo npm. piu semplice”. Suspend JSR publication for Gramlot core and retain npm as its sole JavaScript distribution channel; Python distribution stays on PyPI. Remove the JSR publication job, release-version requirement and dedicated packaging/check configuration, and align maintained installation and contributor documentation. Existing registry versions and dated release records remain available. This supersedes earlier core JSR publication requirements, including the optional-channel decision of 2026-10-20; the historical JSR dependency-range exceptions do not apply to the current npm distribution. No changes to Bag, Builders, TYTX or integration repositories, no registry deletion and no release/publication are authorized by this change.

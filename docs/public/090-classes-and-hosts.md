@@ -8,7 +8,7 @@ Document ID: **GC-090**.
 
 This is the user-facing map of the Gramlot core: its folders, its classes, the
 server boundary and the packages. The core is published on PyPI (`gramlot`) and on
-npm and JSR (`@gramlot/gramlot`); the adapters are tested in their own
+npm (`@gramlot/gramlot`); the adapters are tested in their own
 repositories. Adapter authors find the protocol a server exposes in
 [Server protocol](101-server-protocol.md). Richer examples in gramlot-poc use an
 experimental runtime and do not establish features in this core.
@@ -257,14 +257,14 @@ same renderer; it does not execute a Page. Standalone Page execution uses the Wo
 host described below, not a build-time compiler.
 
 Servers obtain browser code from packaged assets (`runtime_asset()` in `gramlot.server`
-in Python; `runtimeAsset()` from `@gramlot/gramlot/server` and `@gramlot/gramlot/runtime`
-in JS, from npm, JSR or the repository's `js/`). See the
+in Python; `runtimeAsset()` from `@gramlot/gramlot/server`
+in JS, from npm or the repository's `js/`). See the
 installation contexts below; adapters serve the assets of their installed package.
 The build writes two runtime files, `gramlot.js` (readable) and `gramlot.min.js`
 (minified). The runtime URL, `/assets/gramlot.js` by default, serves `gramlot.js`
 when `GRAMLOT_DEV=DEBUG` and `gramlot.min.js` otherwise: `runtime_asset()`/`runtimeAsset()`
-returns the file to serve. `runtimeAsset()` returns a `URL`: a `file:` URL from npm, read
-with `fs.readFile`, an `https:` URL from JSR, read with `fetch`.
+returns the file to serve. `runtimeAsset()` returns a `file:` URL from npm, read
+with `fs.readFile`.
 
 `GRAMLOT_DEV` is read the same way in Python (`gramlot_dev()`) and JavaScript
 (`gramlotDev()`): unset means deploy; `YES` means development, with pages read
@@ -273,25 +273,23 @@ other value raises `ValueError` in Python and `TypeError` in JavaScript.
 
 `PageNotFound`, `SourceNotFound`, `PageExpired` and `ServerCapacity`, in Python and JS, distinguish
 framework failures from unexpected application exceptions. The dependencies are
-installed from the registries that each package declares (PyPI, npm, JSR).
+installed from the registries that each package declares (PyPI, npm).
 
 
 <a id="gc-090-022"></a>
 
 ## 022 · Published package name
 
-The core is published as `@gramlot/gramlot` on npm (`npm install @gramlot/gramlot`)
-and on JSR (`npx jsr add @gramlot/gramlot`). Application imports use that name:
+The core is published as `@gramlot/gramlot` on npm (`npm install @gramlot/gramlot`).
+JSR publication is suspended; existing JSR versions remain historical distributions.
+Application imports use the npm package name:
 
 ```javascript
 import {Page as BasePage} from '@gramlot/gramlot/page';
 ```
 
 The core test fixtures (`js/tests/fixtures`) import the same name, a package
-self-reference inside `js/`. `@genro/gramlot` on JSR is an earlier name of the
-package, archived: do not mix it with `@gramlot/gramlot` in one application.
-The [JSR installation documentation](https://jsr.io/docs/npm-compatibility)
-explains how its CLI installs the public import name through npm compatibility.
+self-reference inside `js/`.
 
 `@gramlot/gramlot-serverless`, in the `gramlot-js-server` repository, owns the
 standalone startup and the Worker integration (section 025). Use matching versions
@@ -302,7 +300,7 @@ of the core and of the serverless package.
 
 ## 023 · Theme and logo files in the packages
 
-The three core packages carry the same theme and logo files:
+The npm and PyPI packages carry the same theme and logo files:
 
 - the `themes/` folder: the complete theme `gramlot-base`, the overlays
   `gramlot-compact`, `mimi` and `joanna`, and `gramlot-index`, the theme of the
@@ -315,7 +313,6 @@ The three core packages carry the same theme and logo files:
 | --- | --- | --- |
 | npm `@gramlot/gramlot` | `@gramlot/gramlot/themes/gramlot-base/theme.css` | `@gramlot/gramlot/assets/branding/svg/gramlot-logo-primary.svg` |
 | PyPI `gramlot` | `gramlot/resources/themes/gramlot-base/theme.css` | `gramlot/resources/assets/branding/svg/gramlot-logo-primary.svg` |
-| JSR `@gramlot/gramlot` | `themes/gramlot-base/theme.css` | `assets/branding/svg/gramlot-logo-primary.svg` |
 
 The npm package exports `./themes/*` and `./assets/branding/*`, so the files
 resolve by name:
@@ -341,9 +338,8 @@ The rest of the identity kit is not packaged.
 
 ## 024 · Entry points of the JavaScript package
 
-`@gramlot/gramlot` has these entry points on npm and JSR. `./themes/*` and
-`./assets/branding/*` are entry points on npm only; JSR carries the same files
-(section 023).
+`@gramlot/gramlot` has these entry points on npm, including `./themes/*` and
+`./assets/branding/*` for the packaged files (section 023).
 
 | Entry point | What it is for | Public surface |
 | --- | --- | --- |

@@ -13,7 +13,7 @@ symbolic-attribute contracts) and the browser checks in Chromium on core fixture
 pages, on pushes to `main` and `develop`, pull requests and manual dispatch. It
 checks out no other repository: the example pages are tested in gramlot-examples. The documentation
 badge reports the documentation build. The two coverage badges report Codecov, one
-per runtime (section 010). The PyPI and JSR badges show the published versions.
+per runtime (section 010). The PyPI and npm badges show the published versions.
 The status badge shows the current release; the license badge is a label.
 
 The unit suites of the core do not verify adapter behavior in a server, standalone

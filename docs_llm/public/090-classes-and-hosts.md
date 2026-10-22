@@ -6,7 +6,7 @@ Document ID: **GC-090**.
 
 ## 005 · How to use this reference
 
-Map of the core: folders, classes, server boundary, packages. Published on PyPI (`gramlot`), npm and JSR
+Map of the core: folders, classes, server boundary, packages. Published on PyPI (`gramlot`), npm
 (`@gramlot/gramlot`); adapters are tested in their own repositories. Protocol for adapter authors:
 [Server protocol](101-server-protocol.md). Richer PoC behavior is not core evidence.
 
@@ -177,28 +177,26 @@ same renderer; it does not execute a Page. Standalone Page execution uses the Wo
 host described below, not a build-time compiler.
 
 Servers obtain browser code from packaged assets (`runtime_asset()` in `gramlot.server`;
-`runtimeAsset()` from `@gramlot/gramlot/server` and `@gramlot/gramlot/runtime` in JS, from npm, JSR or the repository's `js/`). See the
+`runtimeAsset()` from `@gramlot/gramlot/server` in JS, from npm or the repository's `js/`). See the
 installation contexts below; adapters serve the assets of their installed package.
 The build writes `gramlot.js` (readable) and `gramlot.min.js` (minified); the runtime URL
 (default `/assets/gramlot.js`) serves `gramlot.js` when `GRAMLOT_DEV=DEBUG`, `gramlot.min.js`
-otherwise (`runtime_asset()`/`runtimeAsset()` return the file; `runtimeAsset()` returns a `URL`: `file:` from npm, read with `fs.readFile`; `https:` from JSR, read with `fetch`).
+otherwise (`runtime_asset()`/`runtimeAsset()` return the file; `runtimeAsset()` returns a `URL`: `file:` from npm, read with `fs.readFile`).
 `GRAMLOT_DEV`, read by `gramlot_dev()`/`gramlotDev()`: unset = deploy; `YES` = development,
 pages read again (017); `DEBUG` = development with the readable runtime; any other value
 raises (`ValueError` Python, `TypeError` JS).
 `PageNotFound`, `SourceNotFound`, `PageExpired` and `ServerCapacity`, in Python and JS, distinguish
 framework failures from unexpected application exceptions. Dependencies install from the
-registries each package declares (PyPI, npm, JSR).
+registries each package declares (PyPI, npm).
 
 
 <a id="gc-090-022"></a>
 
 ## 022 · Published package name
 
-Core: `@gramlot/gramlot` on npm (`npm install @gramlot/gramlot`) and JSR (`npx jsr add @gramlot/gramlot`);
+Core: `@gramlot/gramlot` on npm (`npm install @gramlot/gramlot`); JSR publication is suspended and its existing versions remain historical distributions;
 imports use that name (`import {Page as BasePage} from '@gramlot/gramlot/page';`). Core test fixtures
-(`js/tests/fixtures`) use the same name (self-reference in `js/`). `@genro/gramlot` on JSR: earlier,
-archived name; never mix it with `@gramlot/gramlot` in one application. JSR CLI and npm compatibility:
-[JSR documentation](https://jsr.io/docs/npm-compatibility). `@gramlot/gramlot-serverless` (in
+(`js/tests/fixtures`) use the same name (self-reference in `js/`). `@gramlot/gramlot-serverless` (in
 `gramlot-js-server`) owns standalone startup and Worker integration (025); use matching versions.
 
 
@@ -206,12 +204,12 @@ archived name; never mix it with `@gramlot/gramlot` in one application. JSR CLI 
 
 ## 023 · Theme and logo files in the packages
 
-npm, PyPI and JSR carry the same files: `themes/` (complete `gramlot-base`; overlays `gramlot-compact`,
+npm and PyPI carry the same files: `themes/` (complete `gramlot-base`; overlays `gramlot-compact`,
 `mimi`, `joanna`; `gramlot-index` for the index page); of `assets/branding/`, `gramlot-logo.svg`,
 `gramlot-logo-dark.svg`, `gramlot-mark.png`, `gramlot-mark-dark.png`, `app-icon.png` and the 24 SVG of
 `svg/`. Paths: npm `@gramlot/gramlot/themes/…`, `@gramlot/gramlot/assets/branding/…` (exports `./themes/*`,
 `./assets/branding/*`, e.g. `import.meta.resolve(...)`); wheel `files("gramlot") / "resources" / "themes" / …`
-and `… / "resources" / "assets" / "branding" / …`; JSR `themes/…`, `assets/branding/…`. Sources at the
+and `… / "resources" / "assets" / "branding" / …`. Sources at the
 repository root; `js/scripts/build-runtime.mjs` copies them into the npm package and the wheel. The rest of
 the identity kit is not packaged.
 
@@ -220,7 +218,7 @@ the identity kit is not packaged.
 
 ## 024 · Entry points of the JavaScript package
 
-npm and JSR (`./themes/*`, `./assets/branding/*` npm only; JSR carries the files):
+npm, including `./themes/*` and `./assets/branding/*` for packaged files:
 
 | Entry point | For | Public surface |
 | --- | --- | --- |

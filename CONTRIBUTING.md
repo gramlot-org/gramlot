@@ -56,9 +56,10 @@ declared `@genrojs/*` dependencies into `js/` for verification and restores
 
 ## Releases
 
-Only with owner authorization. The version in `pyproject.toml`, `jsr.json` and
+Only with owner authorization. The version in `pyproject.toml` and
 `js/package.json` must match; release notes go in `.github/release-notes/v<version>.md`.
 Push a tag `v<version>` on `main`, then run the `Publish release` workflow on the tag:
 it runs the full CI, builds the distributions with the runtime provenance check,
-creates the GitHub release and publishes to PyPI, npm and JSR (`@gramlot/gramlot`)
-with trusted publishing; the npm and JSR jobs skip a version already published.
+creates the GitHub release and publishes to PyPI and npm (`@gramlot/gramlot`)
+with trusted publishing; both registry jobs skip versions already published.
+JSR publication is suspended; npm is the sole JavaScript distribution channel.
