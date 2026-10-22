@@ -19,6 +19,7 @@ import {TriggerTimers} from './providers.js';
 export class RemoteBinding {
     #binding;
     #timers;
+    #closed = false;
     // The name and TYTX parameters of the fragment mounted last on the node, whoever requested it.
     #lastName = null;
     #lastParams = null;
@@ -30,7 +31,13 @@ export class RemoteBinding {
 
     get binding() { return this.#binding; }
     get node() { return this.binding.node; }
-    get closed() { return this.binding.closed; }
+    get closed() { return this.#closed || this.binding.closed; }
+
+    /** Removing the declaration releases scheduled calls; an in-flight fragment keeps the node request contract. */
+    close() {
+        this.#closed = true;
+        this.#timers.cancel();
+    }
 
     /** Start `_timing` again from its current value: called at every registration of the node's pointers. */
     register() {
@@ -81,7 +88,7 @@ export class RemoteBinding {
             throw new Error(`${node.nodeTag} '${node.label}': remote '${name}' failed: ${error.message}`, {cause: error});
         }
         const onRemote = node.getAttr('_onRemote');
-        if (mounted && onRemote) this.#inline('_onRemote', onRemote, onRemote, params);
+        if (!this.closed && mounted && onRemote) this.#inline('_onRemote', onRemote, onRemote, params);
     }
 
     /**

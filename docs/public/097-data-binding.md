@@ -366,8 +366,13 @@ and the attribute ([Classes and server adapters](090-classes-and-hosts.md#gc-090
   code as parameters (`a='^.a'`), never as text;
 - an attribute with the form of an HTML event handler (`onclick='…'`): write
   `connect_onclick` instead;
-- a `javascript:` URL in `href`, `src`, `formaction` or `xlink:href`, written or
+- a `javascript:` URL in `href`, `src`, native form `action` (`html_action`), `formaction` or `xlink:href`, written or
   from Data.
+
+A `script` element's executable text and URL must be literal Source. Pointers,
+pointer transforms and `==` expressions cannot supply its text, `_text` or URL,
+including through a Data node's `_wdg`. In the browser, literal script content and
+URLs are activated when Source is received; replacing them later is refused.
 
 An `iframe` whose `srcdoc` comes from Data gets `sandbox=""`: the HTML is shown and
 runs nothing, no script, form, popup or access to the page. `srcdoc` comes from Data

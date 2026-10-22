@@ -139,6 +139,13 @@ export class HtmlElement {
      * control belongs to its ControlAdapter: neither the attribute nor the property is written here.
      */
     update(record, node, attrs = node.attr, textValue = DEFAULT_TEXT, visible = null) {
+        if (node.nodeTag === 'script') {
+            for (const [name, code] of node.codeAttributes()) {
+                if (node.activatedCode(name) !== code) {
+                    throw new Error(`script '${node.label}': '${name}' runs only as received with the Source`);
+                }
+            }
+        }
         const {element, text} = record;
         const isHtml = element.namespaceURI === XHTML_NS;
         const renderAttributes = this.definition(node).meta.render_attributes ?? {};

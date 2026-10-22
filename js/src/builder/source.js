@@ -193,7 +193,8 @@ export class GramlotBuilderBagNode extends SourceBagNode {
      * `formula` of a dataFormula, `script` of a dataController, `_if`/`_else` of the four providers, the
      * `_onCalling`/`_onResult`/`_onError` of a dataRpc and the `_onCalling` of a dataRemote, `action` of a
      * button, `_if`/`_else`/`_onRemote`/`_onCalling` of a node whose `remote` is a string, every `connect_on<event>`,
-     * every `==` attribute (canonical name) and a `==` node value (`''`).
+     * every `==` attribute (canonical name) and a `==` node value (`''`). Script elements also retain
+     * their literal executable text and URLs here for the live renderer's activation check.
      */
     codeAttributes() {
         const own = [...(CODE_ATTRIBUTES[this.nodeTag] ?? []),
@@ -214,8 +215,12 @@ export class GramlotBuilderBagNode extends SourceBagNode {
         }
         for (const [name, value] of sourceAttributeItems(this.getAttr())) {
             if (isExpression(value)) items.push([name, value]);
+            if (this.nodeTag === 'script' && typeof value === 'string') {
+                const prefix = this.builder.constructor.dialectPrefixes.find(prefix => name.startsWith(prefix)) ?? '';
+                if (['src', 'href', 'xlink:href', 'xlink_href', '_text'].includes(name.slice(prefix.length).toLowerCase())) items.push([name, value]);
+            }
         }
-        if (isExpression(this.staticValue)) items.push(['', this.staticValue]);
+        if (isExpression(this.staticValue) || this.nodeTag === 'script' && typeof this.staticValue === 'string') items.push(['', this.staticValue]);
         return items;
     }
 
@@ -274,7 +279,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
 
     /** Publish to this node's selfsubscribe topics, as in the legacy Source API. */
     publish(topic, payload = {}) {
-        return this.builder.binding.subscriptions.publishNode(this, topic, payload);
+        return this.rootBuilder.binding.subscriptions.publishNode(this, topic, payload);
     }
 
     /** Builder's `^` pointers, except the attributes ending in `_path`, which hold a bare path. */

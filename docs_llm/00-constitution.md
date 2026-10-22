@@ -2860,3 +2860,12 @@ Intermediate release scope — owner, 2026-10-21: “prima di farlo facciamo rel
 
 
 Editor release authorization — 2026-10-21: owner asks “possiamo fare una release a questo punto ?” after the accepted remote-edit gallery trial. Authorizes coordinated release of the implemented editor/IDE/gallery scope and required integrations, preserving prior exclusions of database selectors and legacy experiments. Existing release-triggered gallery deployment gates remain unchanged. This is publication authorization for the agreed implementation, not an architecture amendment or authorization to publish genro-typst.
+
+
+### Audit runtime and security correction — owner, 2026-10-22
+
+Owner instruction: “Sì, procedi con la prima tranche e le correzioni di sicurezza confermate, aggiungi i test di regressione e verifica tutto. Per drawer_label manteniamo HTML sanitizzato.”
+
+Approved scope: shared runtime Bag identity for bundled stores and validator results; binding ownership before attr_* expression installation; remote declaration removal and its scheduled work; SVG node publication through the root builder; Python page module registration, reload and shutdown cleanup; sanitized HTML drawer labels; refusal of javascript: in native form action; and preventing Data from supplying script-element executable content. Regression tests and complete core qualification are included.
+
+This extends 11.53's browser-run checks to native form action (html_action) and script-element text/URLs. Script content must be literal Source; the live runtime activates it at Source reception and rejects subsequent replacement. Safe drawer HTML is preserved using the tree-caption DOMPurify policy, superseding unsanitized drawer HTML. The iframe srcdoc contract of 11.54 is unchanged. First-party source edits, parent-frame trust policy, additional embedding/SVG attack surfaces, Typst restructuring, general refactoring and publication are outside this correction.

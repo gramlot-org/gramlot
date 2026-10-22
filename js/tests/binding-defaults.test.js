@@ -19,6 +19,22 @@ function authored(author) {
     return builder.source;
 }
 
+test('attr expressions own their compiler lifetime before defaults are installed', () => {
+    const {app, data} = page();
+    try {
+        data.setItem('amount', 3);
+        app.src.startSource(authored(root => {
+            root.input({nodeId: 'field', value: '^value', default: 'created', attr_caption: '^amount:={} * 2'});
+        }));
+        const node = app.src.binding.nodeIds.get('field');
+        assert.equal(data.getNode('value').getAttr('caption'), 6);
+        app.src.source.popNode('main');
+        assert.equal(app.src.binding.bindingFor(node), null);
+        app.src.mountMainSource(authored(root => root.input({value: '^value', attr_caption: '^amount:={} + 1'})));
+        assert.equal(data.getNode('value').getAttr('caption'), 4);
+    } finally { app.dispose(); }
+});
+
 test('D1a: a default fills an empty path at the first render', () => {
     const {app, data, byId} = page();
     app.src.startSource(authored(root => root.input({id: 'f', value: '^nome', default: 'Ada'})));

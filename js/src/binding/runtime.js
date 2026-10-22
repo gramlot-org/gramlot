@@ -218,8 +218,8 @@ export class BindingRuntime {
     /**
      * Steps 2-4 of §5.1 on `branch` (a SourceBagNode or a new SourceBag value). The `nodeId` map is
      * complete, and a duplicate refused, before the first write or registration, so a `#<nodeId>`
-     * of the branch translates; then the installation (`dataSetter`s and defaults), then one
-     * NodeBinding per node and the registrations, providers included. On an error the NodeBindings
+     * of the branch translates; one NodeBinding per node owns expression cleanup before installation
+     * (`dataSetter`s and defaults), followed by registrations, providers included. On an error the NodeBindings
      * opened here are closed and the map entries they brought are removed; the Data is not rolled
      * back. Then `_init` (step 5), once per node: its error propagates and the NodeBindings stay
      * open (P12, no rollback).
@@ -241,8 +241,8 @@ export class BindingRuntime {
         }
         for (const [nodeId, node] of entering) this.nodeIds.set(nodeId, node);
         try {
-            this.installer.install(branch);
             for (const node of nodes) this.openBinding(node);
+            this.installer.install(branch);
             for (const node of nodes) this.bindingFor(node).registerPointers();
         } catch (error) {
             const errors = [error];
@@ -412,6 +412,10 @@ export class NodeBinding {
         const dataElement = node._getMeta('data_element');
         if (dataElement && !PROVIDERS[node.nodeTag]) return;
         if (!dataElement && typeof node.getAttr('remote') === 'string') this.#remote ??= new RemoteBinding(this);
+        else if (this.#remote) {
+            this.#remote.close();
+            this.#remote = null;
+        }
         const remoteDependencies = new Set();
         if (node._getMeta('gramlot_component')?.bagStore) {
             const storepath = node.getAttr('storepath');
@@ -527,6 +531,7 @@ export class NodeBinding {
     close() {
         if (this.closed) return;
         this.#closed = true;
+        this.#remote?.close();
         if (this.node._getMeta('data_element')) this.runtime.renderer.references.remove(this.node);
         this.#closeRegistrations();
         const errors = [];

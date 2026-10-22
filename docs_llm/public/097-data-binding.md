@@ -168,7 +168,10 @@ a code attribute changed after the start or a node with inline code inserted in 
 Source (not run; use named logic); a code attribute holding a pointer
 (`formula='^.code'`), refused at reception (data reaches inline code as parameters,
 never as text); an attribute of the form `onclick` (write `connect_onclick`); a
-`javascript:` URL in `href`, `src`, `formaction`, `xlink:href`, written or from Data.
+`javascript:` URL in `href`, `src`, native form `action` (`html_action`), `formaction`, `xlink:href`, written or from Data.
+A `script` element requires literal Source text and URL: no pointers, pointer
+transforms, `==` or Data `_wdg` supplying executable content. Browser script text
+and URLs are activated at Source reception; later replacement is refused.
 An `iframe` `srcdoc` from Data (pointer, `==`, explicit pointer template, or a
 pointer node value whose datum carries `srcdoc` in `_wdg`) gets `sandbox=""`: HTML shown,
 nothing runs. Literal `srcdoc`: no `sandbox`. A `sandbox` written in the Source is kept

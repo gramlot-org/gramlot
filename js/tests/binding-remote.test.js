@@ -52,6 +52,46 @@ function slot(document) {
     return document.getElementById('slot').textContent;
 }
 
+test('removing remote cancels timing and delayed calls; readding gets a fresh lifecycle', async t => {
+    const {calls, source} = recorder();
+    const {app} = page({source, main: async () => wire(root => {
+        root.div({nodeId: 'slot', remote: 'details', remote_id: '^id', _timing: 0.02, _delay: 40});
+    })});
+    t.after(() => app.dispose());
+    await app.start();
+    await settle();
+    const node = app.src.binding.nodeIds.get('slot');
+    const binding = app.src.binding.bindingFor(node);
+    const old = binding.remote;
+    app.data.setItem('id', 2);
+    node.setAttr({remote: null});
+    const count = calls.length;
+    assert.equal(binding.remote, null);
+    assert.equal(old.closed, true);
+    await settle(75);
+    assert.equal(calls.length, count);
+    node.setAttr({remote: 'details', _timing: 0, _delay: 0});
+    assert.notEqual(binding.remote, old);
+    app.data.setItem('id', 3);
+    await settle();
+    assert.equal(calls.at(-1)[1].id, 3);
+});
+
+test('removing remote suppresses its completion hook but preserves the in-flight fragment contract', async t => {
+    let resolve;
+    const {app, document} = page({
+        main: async () => wire(root => root.div({id:'slot', nodeId:'slot', remote:'details', _onRemote:'this.SET("hook", true);'})),
+        source: () => new Promise(done => { resolve = done; }),
+    });
+    t.after(() => app.dispose());
+    await app.start(); await settle();
+    app.src.binding.nodeIds.get('slot').setAttr({remote:null});
+    resolve(wire(root => root.span('received')));
+    await settle();
+    assert.equal(slot(document), 'received');
+    assert.equal(app.data.getItem('hook'), null);
+});
+
 test('remote transforms parameters and refreshes when a referenced attribute changes', async t => {
     const {calls, source} = recorder();
     const {app, document} = page({source, main: async () => wire(root => {

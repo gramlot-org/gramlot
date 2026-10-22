@@ -32,8 +32,8 @@ NATIVE_ATTRIBUTES = {
 # Display directives of the node text: consumed by the renderer, never written as attributes.
 DISPLAY_ATTRIBUTES = ("format", "mask", "locale", "timeZone", "places", "dtype")
 
-# Output attributes whose ``javascript:`` value the browser runs as code (``action`` never reaches the output).
-URL_ATTRIBUTES = frozenset({"href", "src", "formaction", "xlink:href", "xlink_href"})
+# Output URL attributes, including the native form action authored as html_action.
+URL_ATTRIBUTES = frozenset({"href", "src", "action", "formaction", "xlink:href", "xlink_href"})
 
 # The form of a native event handler: ``on`` followed by at least one character.
 EVENT_HANDLER = re.compile(r"^on.", re.IGNORECASE)
@@ -68,6 +68,15 @@ def require_no_script_attributes(node, attrs, prefixes=()):
     Every such name is refused, not a list of events, so an event a browser adds is refused too. The
     names are read without the dialect ``prefixes`` (``html_``).
     """
+    if node.node_tag == "script":
+        executable = [("", node.value)]
+        for name, value in node.fixed_attr_items():
+            prefix = next((prefix for prefix in prefixes if name.startswith(prefix)), "")
+            if name[len(prefix):].lower() in {"src", "href", "xlink:href", "xlink_href", "_text"}:
+                executable.append((name, value))
+        for name, value in executable:
+            if node.pointer_type(value) or is_expression(value):
+                raise ValueError(f"script '{node.label}': '{name}' must be literal Source; script code and URLs cannot come from Data")
     if attrs.get("onClose") is not None and (node.parent_node is None or not (node.parent_node._get_meta("gramlot_component") or {}).get("childParameters", {}).get("onClose")):
         raise ValueError("onClose is only supported on a tab/stack panel")
     for name, value in without_null_values(without_binding_attributes(attrs)).items():

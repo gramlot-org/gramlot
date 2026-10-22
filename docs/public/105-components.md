@@ -1005,7 +1005,10 @@ The `splitter_*` namespace is a Gramlot addition, not a claimed legacy API.
 `drawer=True` starts open; `drawer="close"` starts closed. Initial configuration and later Source/Data visibility changes are immediate.
 Only activation of the drawer handle starts the open/close transition; native keyboard activation follows the same path. A drawer also works
 with `splitter=False`: its handle toggles a fixed-size region. `drawer_label`
-provides the handle's HTML label; `drawer_top`, `drawer_left`, `drawer_width`,
+provides the handle's sanitized HTML label, including when bound to Data. Safe
+markup is retained; scripts, event handlers, unsafe URLs, style elements and form
+controls are removed using the same DOMPurify HTML policy as tree captions.
+`drawer_top`, `drawer_left`, `drawer_width`,
 `drawer_height`, margins, `drawer_style` and `drawer_class` customize it. Keep the
 handle within the container's visible bounds. `drawer_onclick` is an activated
 Source script with `evt` and `show` (the new visible state), and the region's Source

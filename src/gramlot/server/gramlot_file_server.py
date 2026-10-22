@@ -6,6 +6,7 @@ each opening executes the module again; without it the module runs once per
 real path.
 """
 import importlib.util
+import sys
 from pathlib import Path
 from urllib.parse import quote
 from uuid import uuid4
@@ -68,16 +69,33 @@ class GramlotFileServer(GramlotServer):
     def resolve_page(self, path):
         filename = self.locate_page(path)
         real = filename.resolve()
-        module = None if self.reload else self._modules.get(real)
-        if module is None:
-            spec = importlib.util.spec_from_file_location(f"gramlot_page_{uuid4().hex}", filename)
+        previous = self._modules.get(real)
+        module = previous
+        if self.reload or module is None:
+            name = previous.__name__ if previous is not None else f"gramlot_page_{uuid4().hex}"
+            spec = importlib.util.spec_from_file_location(name, filename)
             module = importlib.util.module_from_spec(spec)
             # Compiled from the source, never from __pycache__: a .pyc is trusted on the source's size and
             # whole-second mtime, so an edit of the same size within one second would run the old code.
-            exec(compile(spec.loader.get_source(spec.name), str(filename), "exec"), module.__dict__)
-            if not self.reload:
-                self._modules[real] = module
+            sys.modules[name] = module
+            try:
+                exec(compile(spec.loader.get_source(spec.name), str(filename), "exec"), module.__dict__)
+            except BaseException:
+                if previous is None:
+                    del sys.modules[name]
+                else:
+                    sys.modules[name] = previous
+                raise
+            self._modules[real] = module
         return getattr(module, "Page", None)
+
+    def close_all(self):
+        """Release pages and their registered modules when the adapter shuts down."""
+        super().close_all()
+        for module in self._modules.values():
+            if sys.modules.get(module.__name__) is module:
+                del sys.modules[module.__name__]
+        self._modules.clear()
 
     def resolve_resources(self, path, cls):
         """``Page.css`` URLs as written, then the companion ``foo.css`` and the page logic."""

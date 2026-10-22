@@ -1,6 +1,7 @@
 /** Parent-owned regions. Layout changes never move or recreate slotted content. */
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
+import createDOMPurify from 'dompurify';
 
 const SIDES = ['top', 'bottom', 'left', 'right'];
 const REGIONS = [...SIDES, 'center'];
@@ -99,10 +100,12 @@ export const BorderContainer = defineComponent({
         #observer;
         #contentObserver;
         #drag;
+        #sanitizer;
         constructor() {
             super();
             this.control.replaceChildren();
             const doc = this.ownerDocument;
+            this.#sanitizer = createDOMPurify(doc.defaultView);
             this.#contentObserver = new doc.defaultView.ResizeObserver(entries => {
                 for (const {target} of entries) {
                     const region = target.closest('.region');
@@ -309,7 +312,10 @@ export const BorderContainer = defineComponent({
                 state.separator.classList.add('separator'); state.drawer.classList.add('drawer');
                 state.drawer.classList.toggle('drawer-reveal', config.minimize);
                 state.drawer.classList.toggle('drawer-rotated', !horizontal(side));
-                state.drawerLabel.innerHTML = config.label ?? '';
+                state.drawerLabel.replaceChildren(this.#sanitizer.sanitize(config.label ?? '', {
+                    USE_PROFILES: {html: true}, FORBID_TAGS: ['style', 'form', 'input', 'button', 'select', 'textarea'],
+                    RETURN_DOM_FRAGMENT: true,
+                }));
                 state.drawerIcon.textContent = config.icon ?? '';
                 state.drawerIcon.hidden = !config.icon;
                 state.drawer.toggleAttribute('data-icon', !!config.icon);
