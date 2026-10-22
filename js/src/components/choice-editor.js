@@ -1,4 +1,4 @@
-import {Bag} from '@genrojs/bag';
+import {Bag} from '@gramlot/gramlot';
 import {NativeControl} from './bases.js';
 import {parseChoices} from './choices.js';
 import {positionPopup} from './popup.js';

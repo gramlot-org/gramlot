@@ -7,6 +7,9 @@ import json
 import os
 from pathlib import Path
 import re
+import sys
+import pickle
+import typing
 import tempfile
 import unittest
 from unittest import mock
@@ -163,6 +166,60 @@ class FileHostPageTests(unittest.IsolatedAsyncioTestCase):
 
 
 class FileHostReloadTests(unittest.TestCase):
+    def test_page_modules_support_dataclasses_type_hints_and_pickle_and_shutdown_cleanup(self):
+        with tempfile.TemporaryDirectory() as root:
+            write(root, 'index.py', '''from __future__ import annotations
+from dataclasses import dataclass
+from gramlot import Page as BasePage
+@dataclass
+class Record:
+    value: str
+class Page(BasePage):
+    record: Record
+''')
+            server = GramlotFileServer(root, reload=False)
+            try:
+                cls = server.resolve_page('/')
+                module = sys.modules[cls.__module__]
+                self.assertIs(typing.get_type_hints(cls)['record'], module.Record)
+                record = module.Record('example')
+                self.assertEqual(pickle.loads(pickle.dumps(record)), record)
+                self.assertIs(server.resolve_page('/'), cls)
+            finally:
+                server.close_all()
+            self.assertNotIn(cls.__module__, sys.modules)
+
+    def test_reload_replaces_one_registered_module_and_restores_it_on_failure(self):
+        with tempfile.TemporaryDirectory() as root:
+            server = GramlotFileServer(root, reload=True)
+            try:
+                self.titled(root, 'old')
+                old = server.resolve_page('/')
+                name = old.__module__
+                self.titled(root, 'new')
+                new = server.resolve_page('/')
+                self.assertEqual(new.__module__, name)
+                self.assertIs(sys.modules[name].Page, new)
+                self.assertIsNot(new, old)
+                self.assertEqual(new.title, 'new')
+                write(root, 'index.py', 'raise RuntimeError("broken page")')
+                with self.assertRaisesRegex(RuntimeError, 'broken page'):
+                    server.resolve_page('/')
+                self.assertIs(sys.modules[name].Page, new)
+            finally:
+                server.close_all()
+            self.assertNotIn(name, sys.modules)
+
+    def test_failed_first_import_leaves_no_registered_module(self):
+        with tempfile.TemporaryDirectory() as root:
+            write(root, 'index.py', 'raise RuntimeError("broken page")')
+            server = GramlotFileServer(root)
+            before = set(sys.modules)
+            with self.assertRaisesRegex(RuntimeError, 'broken page'):
+                server.resolve_page('/')
+            self.assertFalse({name for name in set(sys.modules) - before if name.startswith('gramlot_page_')})
+            self.assertEqual(server._modules, {})
+
     def titled(self, root, title):
         write(root, "index.py", page() + f"    title = {title!r}\n")
 

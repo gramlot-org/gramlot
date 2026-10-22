@@ -19,7 +19,7 @@ and the gallery lesson *Named logic*. The gallery does not cover every option.
 
 ## 010 · The repositories
 
-- [gramlot](https://github.com/gramlot-org/gramlot): core (Page, Source, Data, binding, runtime, minimal `GramlotServer` contract, `GramlotFileServer`); PyPI `gramlot`, npm and JSR `@gramlot/gramlot`; always needed; published.
+- [gramlot](https://github.com/gramlot-org/gramlot): core (Page, Source, Data, binding, runtime, minimal `GramlotServer` contract, `GramlotFileServer`); PyPI `gramlot`, npm `@gramlot/gramlot`; always needed; published.
 - [gramlot-py-server](https://github.com/gramlot-org/gramlot-py-server): adapters for Python pages, one extra each (`uvicorn` for Uvicorn or any ASGI server, `django`, `flask`, `fastapi`, `kajenn`); PyPI `gramlot-py-server`, command `gramlot <environment> new|gallery`; published.
 - [gramlot-js-server](https://github.com/gramlot-org/gramlot-js-server): three packages for JavaScript pages, `@gramlot/gramlot-js-server` (HTTP adapter on Node.js 22 and Bun), `@gramlot/gramlot-serverless` (export to one HTML file or a static folder opened from disk, Page in a Web Worker) and `@gramlot/create` (new projects); published.
 - [gramlot-examples](https://github.com/gramlot-org/gramlot-examples): example pages in Python and JavaScript and the gallery; PyPI `gramlot-examples`, npm `@gramlot/gramlot-examples`; published.

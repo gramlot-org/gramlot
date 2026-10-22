@@ -20,6 +20,25 @@ async function fixture(author) {
 const separator = (border,side) => border.shadowRoot.querySelector(`.separator[data-side=${side}]`);
 const viewport = (border,side) => border.shadowRoot.querySelector(`#region-${side}`);
 
+test('drawer labels retain safe HTML and sanitize initial and reactive Data content', async () => {
+    const {app, window, element} = await fixture((root, app) => {
+        app.data.setItem('caption', '<b>Code</b><img src=x onerror="window.drawerAttack=1"><script>window.drawerAttack=1</script>');
+        const border = root.borderContainer({id:'border'});
+        border.contentPane({region:'center'});
+        border.contentPane({region:'right', drawer:true, drawer_label:'^caption'});
+    });
+    try {
+        const drawer = separator(element('border'), 'right').querySelector('button');
+        assert.equal(drawer.querySelector('b').textContent, 'Code');
+        assert.equal(drawer.querySelector('script, [onerror]'), null);
+        app.data.setItem('caption', '<em>Updated</em><a href="javascript:alert(1)">link</a><input autofocus>');
+        assert.equal(drawer.querySelector('em').textContent, 'Updated');
+        assert.equal(drawer.querySelector('a').hasAttribute('href'), false);
+        assert.equal(drawer.querySelector('input'), null);
+        assert.equal(window.drawerAttack, undefined);
+    } finally { app.dispose(); window.close(); }
+});
+
 test('automatic drawer visibility is immediate; button activation animates despite Source feedback', async () => {
     const {app, window, element} = await fixture((root, app) => {
         app.data.setItem('codeHidden', true);

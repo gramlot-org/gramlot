@@ -28,8 +28,8 @@ const NATIVE_ATTRIBUTES = {
 // Display directives of the node text: consumed by the renderer, never written as attributes.
 const DISPLAY_ATTRIBUTES = ['format', 'mask', 'locale', 'timeZone', 'places', 'dtype'];
 
-// Output attributes whose `javascript:` value the browser runs as code (`action` never reaches the output).
-const URL_ATTRIBUTES = new Set(['href', 'src', 'formaction', 'xlink:href', 'xlink_href']);
+// Output URL attributes, including the native form action authored as html_action.
+const URL_ATTRIBUTES = new Set(['href', 'src', 'action', 'formaction', 'xlink:href', 'xlink_href']);
 
 /** The attributes of `attrs` that are not binding attributes. */
 export function withoutBindingAttributes(attrs) {
@@ -56,6 +56,15 @@ export function requireStyleClassAttributes(node, attrs, prefixes = []) {
  * the dialect `prefixes` (`html_`).
  */
 export function requireNoScriptAttributes(node, attrs, prefixes = []) {
+    if (node.nodeTag === 'script') {
+        const executable = [['', node.staticValue], ...sourceAttributeItems(node.getAttr()).filter(([name]) =>
+            ['src', 'href', 'xlink:href', 'xlink_href', '_text'].includes(name.slice((prefixes.find(prefix => name.startsWith(prefix)) ?? '').length).toLowerCase()))];
+        for (const [name, value] of executable) {
+            if (node.pointerType(value) || isExpression(value)) {
+                throw new Error(`script '${node.label}': '${name}' must be literal Source; script code and URLs cannot come from Data`);
+            }
+        }
+    }
     if (attrs.onClose != null && !node.parentNode?._getMeta('gramlot_component')?.childParameters?.onClose) {
         throw new Error('onClose is only supported on a tab/stack panel');
     }

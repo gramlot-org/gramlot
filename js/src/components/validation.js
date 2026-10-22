@@ -1,4 +1,4 @@
-import {Bag} from '@genrojs/bag';
+import {Bag} from '@gramlot/gramlot';
 import {pointerTemplate} from '@genrojs/builders';
 
 /** Shared ordered rules. Context supplies activated callbacks/RPC; this module never writes Data. */

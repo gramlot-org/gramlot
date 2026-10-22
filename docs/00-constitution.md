@@ -4,6 +4,8 @@
 
 > **Naming (2026-10-02):** in the dated text of this document, "native" as the label of a release, profile, milestone, adapter, module, API or pages names the scope of the 0.1.0 milestone (no web components, no recipes). That label has no technical meaning; current documents do not use it ([GC-005 §030](005-documentation-policy.md#gc-005-030)). "native" for browser controls, DOM events, HTML attributes, DOM operations, Bag events or platform APIs keeps its technical meaning. Dated text is not rewritten.
 
+> **Current JavaScript distribution (2026-10-22):** npm only; JSR publication is suspended. Earlier JSR decisions are historical for core distribution; see the [owner amendment](#gc-000-jsr-suspension).
+
 ## 1. Authority and amendments
 
 This constitution contains agreed product principles. Proposals, examples, PoC
@@ -3057,3 +3059,25 @@ Intermediate release scope — owner, 2026-10-21: “prima di farlo facciamo rel
 
 
 Editor release authorization — 2026-10-21: owner asks “possiamo fare una release a questo punto ?” after the accepted remote-edit gallery trial. Authorizes coordinated release of the implemented editor/IDE/gallery scope and required integrations, preserving prior exclusions of database selectors and legacy experiments. Existing release-triggered gallery deployment gates remain unchanged. This is publication authorization for the agreed implementation, not an architecture amendment or authorization to publish genro-typst.
+
+
+### Audit runtime and security correction — owner, 2026-10-22
+
+Owner instruction: “Sì, procedi con la prima tranche e le correzioni di sicurezza confermate, aggiungi i test di regressione e verifica tutto. Per drawer_label manteniamo HTML sanitizzato.”
+
+Approved scope: shared runtime Bag identity for bundled stores and validator results; binding ownership before attr_* expression installation; remote declaration removal and its scheduled work; SVG node publication through the root builder; Python page module registration, reload and shutdown cleanup; sanitized HTML drawer labels; refusal of javascript: in native form action; and preventing Data from supplying script-element executable content. Regression tests and complete core qualification are included.
+
+This extends 11.53's browser-run checks to native form action (html_action) and script-element text/URLs. Script content must be literal Source; the live runtime activates it at Source reception and rejects subsequent replacement. Safe drawer HTML is preserved using the tree-caption DOMPurify policy, superseding unsanitized drawer HTML. The iframe srcdoc contract of 11.54 is unchanged. First-party source edits, parent-frame trust policy, additional embedding/SVG attack surfaces, Typst restructuring, general refactoring and publication are outside this correction.
+
+<a id="gc-000-jsr-suspension"></a>
+
+### JavaScript distribution through npm only — owner, 2026-10-22
+
+Owner confirms: “sospenderei e basta. teniamo solo npm. piu semplice”. Suspend JSR publication for Gramlot core and retain npm as its sole JavaScript distribution channel; Python distribution stays on PyPI. Remove the JSR publication job, release-version requirement and dedicated packaging/check configuration, and align maintained installation and contributor documentation. Existing registry versions and dated release records remain available. This supersedes earlier core JSR publication requirements, including the optional-channel decision of 2026-10-20; the historical JSR dependency-range exceptions do not apply to the current npm distribution. No changes to Bag, Builders, TYTX or integration repositories, no registry deletion and no release/publication are authorized by this change.
+
+
+### Bounded core correction release and follow-up priorities — owner, 2026-10-22
+
+Owner requests closing the current release as implemented while retaining the review debts: “ora vorrei chiudere la release attuale a come è ora anche se abbiamo debiti come rilevato dalla review”. Publication scope is core on PyPI and npm, clarified by “no anche npm ovviamente”; “gramlot-js server e serverless possono attendere” defers releases of those integration packages. Python use cases have priority, and connected environments may realign less frequently. Existing CI-triggered gallery update policy remains in force. This authorizes release of the consolidated runtime/security corrections and JSR suspension, not unrelated local experiments or closure of outstanding audit items. Full qualification precedes publication.
+
+The following work is Gramlot Catalog and the requested dialog, floating, labelgroup if absent, and copy button, with existing implementations checked before porting. Owner confirms the Catalog maturity meanings with “Sì, confermo”: Alpha means usable with essential review and declared limitations; Beta means a consolidated contract and broader functional verification; Stable means complete review and explicit acceptance; unassessed entries remain Unclassified. The requested Catalog includes the component/library tree, status, annotations, JavaScript implementation and parameters; visual-editor and Inspector insertion should offer a dedicated parameter form. Persistence and implementation design remain open; no component receives a maturity level from publication alone.

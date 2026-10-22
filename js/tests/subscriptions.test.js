@@ -16,6 +16,19 @@ function authored(app, author) {
     app.src.startSource(builder.toTytx());
 }
 
+test('SVG node publication uses the page subscriptions and releases them with the branch', () => {
+    const {app} = page();
+    try {
+        authored(app, root => root.svg().circle({nodeId: 'circle', selfsubscribe_refresh: "this.SET('answer', p_0.n);"}));
+        const node = app.src.binding.nodeIds.get('circle');
+        node.publish('refresh', {n: 42});
+        assert.equal(app.data.getItem('answer'), 42);
+        app.src.source.popNode('main');
+        assert.throws(() => node.publish('refresh', {n: 99}), /not an active Source node/);
+        assert.equal(app.data.getItem('answer'), 42);
+    } finally { app.dispose(); }
+});
+
 test('public topics: synchronous order, equal messages twice, instance isolation and unsubscribe', () => {
     const {app} = page();
     const other = page().app;

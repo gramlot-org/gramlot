@@ -17,7 +17,7 @@ for (const name of ['mimi', 'joanna']) {
 await writeFile(path('src/index-page-styles.js'), '// Generated from canonical themes; edit themes/, not this file.\nexport const appearanceStyles = ' + JSON.stringify(appearanceStyles) + ';\n');
 await mkdir(path('dist/'), {recursive: true});
 for (const name of ['LICENSE', 'NOTICE']) await copyFile(path(`../${name}`), path(name));
-// Theme and identity files ship in the npm package (js/) and in the wheel (resources/), as in jsr.json.
+// Theme and identity files ship in the npm package (js/) and in the wheel (resources/).
 const shipped = ['themes', 'assets/branding/gramlot-logo.svg', 'assets/branding/gramlot-logo-dark.svg',
     'assets/branding/app-icon.png', 'assets/branding/gramlot-mark.png', 'assets/branding/gramlot-mark-dark.png', 'assets/branding/svg'];
 for (const target of ['', '../src/gramlot/resources/']) {
