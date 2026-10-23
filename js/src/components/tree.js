@@ -46,7 +46,7 @@ export const Tree = defineComponent({
             style.textContent = `
                 .control-box{overflow:auto;padding:4px;min-height:32px}
                 ul{list-style:none;margin:0;padding:0} ul ul{padding-inline-start:20px}
-                .row{display:flex;align-items:center;min-height:var(--gramlot-tree-row-height,28px);gap:4px;border-radius:3px;cursor:default}
+                .row{display:flex;align-items:center;min-height:var(--gramlot-tree-row-height,28px);gap:2px;border-radius:3px;cursor:default}
                 .row:hover{background:var(--gramlot-tree-hover-background,var(--gramlot-field-readonly-background,#f2f4f7))}
                 .canBeDropped{outline:2px solid var(--gramlot-brand-blue,#3766b5);outline-offset:-2px}
                 .cannotBeDropped{outline:2px dashed currentColor;outline-offset:-2px}.draggedItem{opacity:.75}
@@ -54,8 +54,11 @@ export const Tree = defineComponent({
                     color:var(--gramlot-tree-selected-color,#214f91)}
                 [role=treeitem]:focus{outline:none}
                 [role=treeitem]:focus-visible>.row{outline:2px solid var(--gramlot-brand-blue,#3766b5);outline-offset:-2px}
-                button{border:0;background:transparent;color:inherit;width:24px;height:24px;padding:0;font:inherit;cursor:pointer}
-                .spacer{width:24px;flex:none}.caption{min-width:0;overflow-wrap:anywhere}
+                button{border:0;background:transparent;color:inherit;width:max(20px,var(--gramlot-touch-target,0px));height:24px;padding:0;font:inherit;cursor:pointer}
+                .expander{display:grid;place-items:center;flex:none}
+                .expander svg{display:block;width:14px;height:14px;pointer-events:none}
+                [aria-expanded=true]>.row>.expander svg{transform:rotate(90deg)}
+                .spacer{width:max(20px,var(--gramlot-touch-target,0px));flex:none}.caption{min-width:0;overflow-wrap:anywhere}
                 .icon{width:16px;height:16px;flex:none;background:currentColor;opacity:.7;mask:center/contain no-repeat;
                     mask-image:url("data:image/svg+xml,%3Csvg xmlns='${SVG_NS}' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='1.7' d='M5 3h9l5 5v13H5zM14 3v6h5M8 13h8M8 17h8'/%3E%3C/svg%3E")}
                 .branch-icon{mask-image:url("data:image/svg+xml,%3Csvg xmlns='${SVG_NS}' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='1.7' d='M3 7V4h7l3 3h8v13H3z'/%3E%3C/svg%3E")}
@@ -162,6 +165,14 @@ export const Tree = defineComponent({
                     if (branch) {
                         expander.className = 'expander';
                         expander.type = 'button'; expander.tabIndex = -1;
+                        const chevron = this.ownerDocument.createElementNS(SVG_NS, 'svg');
+                        chevron.setAttribute('viewBox', '0 0 24 24');
+                        chevron.setAttribute('aria-hidden', 'true'); chevron.setAttribute('focusable', 'false');
+                        const chevronPath = this.ownerDocument.createElementNS(SVG_NS, 'path');
+                        chevronPath.setAttribute('d', 'm9 5 7 7-7 7'); chevronPath.setAttribute('fill', 'none');
+                        chevronPath.setAttribute('stroke', 'currentColor'); chevronPath.setAttribute('stroke-width', '1.8');
+                        chevronPath.setAttribute('stroke-linecap', 'round'); chevronPath.setAttribute('stroke-linejoin', 'round');
+                        chevron.append(chevronPath); expander.append(chevron);
                         expander.addEventListener('click', event => {
                             event.stopPropagation(); toggle(); entry.focus();
                         });
@@ -238,7 +249,6 @@ export const Tree = defineComponent({
                         entry.classList.toggle('closed', !opened);
                         icon.classList.toggle('opened-icon', opened);
                         icon.setAttribute('part', `icon branch-icon ${opened ? 'opened-icon' : 'closed-icon'}`);
-                        expander.textContent = opened ? '▾' : '▸';
                         group.hidden = !opened;
                         present();
                     };

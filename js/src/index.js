@@ -37,3 +37,8 @@ export {parseDateExpression} from './date-parser/index.js';
 
 export {fileSystemTree, FileSystemLogic, FileSystemController, DirectoryResolver} from "./filesystem.js";
 export {IdeLogic} from "./ide-runtime.js";
+
+export {CommandRegistry} from './commands.js';
+export * from './components/index.js';
+
+export {collectionBuildId, verifyCollectionArtifact} from './collection-artifact.js';

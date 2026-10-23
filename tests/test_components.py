@@ -82,10 +82,11 @@ class ApplicationCollectionTests(unittest.TestCase):
             def resolve_resources(self, path, cls):
                 return {'css': [], 'js': []}
 
-        grammar = json.loads(files('gramlot').joinpath('collections/inputs.json').read_text())
-        server = Server(collections=[{'grammar': grammar, 'module': '/components/inputs.js'}])
+        from gramlot.collections.inputs import mygramlot
+        Server.collection_url = lambda self, collection, path: '/components/'+path
+        server = Server(collections=[mygramlot])
         opened = asyncio.run(server.open_page('/', prefix='/demo'))
-        self.assertIn('"collections":["/demo/components/inputs.js"]', opened.html)
+        self.assertIn('"name":"inputs","url":"/demo/components/assets/index.js","buildId":"'+mygramlot.build_id+'"', opened.html)
         for name, tag in [('main', 'gramlot-textbox'), ('more', 'gramlot-checkbox')]:
             reply = json.loads(asyncio.run(server.call(to_tytx({
                 'id':'1', 'pageId':opened.page_id, 'contentType':'source', 'name':name, 'params':{}}))))
@@ -105,7 +106,7 @@ class ButtonComponentTests(unittest.TestCase):
                 node = getattr(builder.root, name)('Caption', **attrs)
                 self.assertEqual(node.attr['_meta']['render_tag'], tag)
         menu = builder.root.dropDownButton('Export').menu()
-        menu.menuline('CSV', code='csv', action='1')
+        menu.menuline(caption='CSV', code='csv', action='1')
         menu.menuline('-')
         builder.root.html_button('Plain', type='submit')
         rendered = builder.render()

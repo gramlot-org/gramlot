@@ -10181,3 +10181,1750 @@ Owner authorizes closing the existing scope despite declared audit debts, publis
 Local release qualification passes 3,769 JavaScript tests, 234 Python tests/382 subtests with the existing upstream expected failure, and 45 Inspector tests. Nine Chromium core scripts and the WebKit binding/security check pass. Public documentation builds without warnings and passes the 15-page link/anchor check. Wheel, sdist and npm archives agree on the candidate version; all 25 Python modules match source, eight shipped browser artifacts match the fresh build byte-for-byte, and themes, branding and py.typed are present. Firefox on this macOS host fails before test execution because its profile folder cannot be opened, including with a canonical temporary path; the CI Linux Inspector matrix remains required. Publication is pending CI qualification at this checkpoint.
 
 Follow-up: Gramlot Catalog, then the requested dialog/floating/labelgroup-if-missing/copy-button scope. Catalog maturity meanings are explicitly confirmed and recorded in the constitution; persistence is undecided. Initial read-only inspection found effective component and child-parameter metadata in the existing registry/portable grammars and an Inspector catalog/insertion path. The PoC has a visual-builder catalog and typed parameter-editor tests; these are port evidence, not accepted core implementations. Core already contains groupBox with copy actions; that does not establish equivalence to the requested labelgroup or standalone copy button. No catalog/editor code or new component has been implemented in this release.
+
+CI qualification and integration — 2026-10-22. Both branch and PR checks passed: core, Inspector (including Firefox on Linux), documentation and Read the Docs. Local Inspector structure and theme checks also pass on Chromium and WebKit. PR [#63](https://github.com/gramlot-org/gramlot/pull/63) merged as bf85eb0cb544813565db1393dbc7fcfbeb0e3c85, with no content difference from the tested candidate. Tag v0.3.10 points to that revision. [Publish release](https://github.com/gramlot-org/gramlot/actions/runs/39759311492) completed successfully, including its core/Inspector qualification, archive build and both registry uploads.
+
+Publication receipt — 2026-10-22. [Gramlot 0.3.10](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.10) is published and verified as latest on [PyPI](https://pypi.org/project/gramlot/0.3.10/) and [npm](https://www.npmjs.com/package/@gramlot/gramlot/v/0.3.10). npm initially accepted the upload for processing before making it installable; availability was checked again after processing, without republishing. Downloaded wheel, sdist and npm tarball checksums match the GitHub release SHA256SUMS; eight browser artifacts, themes and branding agree between the published wheel and npm package. Clean Python and npm installations pass rendering and script/form rejection checks; Python also passes dataclass/type-hint/pickle, page-module cleanup and resource checks. The [automatic gallery update](https://github.com/gramlot-org/gramlot/actions/runs/39760629278) completed successfully under the existing deployment policy. No new gramlot-js-server or gramlot-serverless package was released. This receipt supersedes the pending-publication checkpoint above; the documented audit debts and future component/Catalog work remain open.
+
+<a id="gc-070-1615"></a>
+
+## 1615. Dialog, floating and clipboard assessment — 2026-10-22
+
+Owner requests checking existing implementations and bounded PoC transfers for
+dialog, floating, labelgroup and copy button, with Python authoring first. The
+owner subsequently confirms that "labelgroup" means the existing groupBox:
+"Sì, intendo groupBox". This assessment precedes implementation; no maturity
+classification, new component contract or package publication is claimed.
+
+Evidence: core revision afd5a78, based on published 0.3.10; PoC
+gramlot-org/gramlot-poc@10478b57ce3f22e6445eb6b72eba343520cbebac.
+
+| Requested surface | Destination evidence | PoC evidence and conclusion |
+| --- | --- | --- |
+| labelgroup | js/src/components/layout.js, GroupBox; portable layout grammar and GC-105 §085 | The owner identifies this with groupBox. Existing labeled container, nested content, Data scope and optional TYTX/JSON copy satisfy that identity; no duplicate component or alias is proposed. |
+| copy button | GroupBox has scoped Bag copy, but the buttons collection has no standalone copyButton | js/dom/src/collections/clipboard.js, components/clipboard.js and src/gramlot/pages/widgets/copybutton.py provide a bounded text-copy candidate. |
+| floating | tools/poc/gramlot-poc-palette.js is an Inspector-only provisional component, not a public Python layout declaration | js/dom/src/collections/palette.js and src/gramlot/pages/widgets/palette.py provide a non-modal palette: bound open state, retained children, movement, resizing, stacking and optional keyboard behavior. |
+| dialog | HTML dialog is available to Python; js/src/binding/ask-dialog.js supplies bounded confirmations/parameter prompts, not a general modal component | No reusable modal dialog component was found in the reviewed runtime/grammar sources. docs/context/open-work.md explicitly records the unimplemented customer dialog. This needs a new bounded component contract, not a direct port. |
+
+Proposed first implementation slice, pending contract confirmation: standalone
+copyButton with textual value (literal or Data binding), reactive disabled state,
+success only after clipboard completion, visible accessible failure, busy-click
+suppression and removal cleanup. Browser behavior uses the existing component
+descriptor/control/Labelbox conventions and portable Python grammar. It reads
+Data and never writes it. Copying a Bag with format selection remains groupBox's
+existing responsibility. No clipboard fallback, arbitrary coercion or PoC registry
+is proposed. The browser must expose and permit clipboard writing.
+
+Proposed subsequent slices: review the palette's public name and open-state
+contract, then implement the non-modal container against current Container and
+binding lifecycles; define the modal dialog separately, including opening,
+Escape/close writeback, focus, retained children and native-dialog naming.
+Do not import PoC Boolean-string normalization, WidgetLabel/renderer/registry,
+Inspector-specific docking or unrestricted z-index policy. Geometry changes must
+preserve descendant identity, drafts, focus and Data, following PORT-0011 feedback.
+Python declarations and Python-to-TYTX-to-browser fixtures take priority; real
+browser checks should target focus, pointer geometry and clipboard behavior.
+Examples belong in gramlot-examples. JavaScript server/serverless release alignment
+and Gramlot Catalog persistence remain deferred.
+
+Verification: Python schema inspection confirms dialog/groupBox and absence of
+labelgroup/floating/palette/copyButton in the tested core layout authoring surface.
+Native dialog and groupBox Python declaration/render smoke passes. Existing core
+layout/button tests pass 16/16, including Python-to-browser component construction,
+scoped typed copy and retained drafts. Python component tests pass 6 tests and
+9 subtests with the existing expected upstream failure. PoC palette/clipboard
+tests pass 3/3. These are focused unit/integration checks, not new real-browser
+qualification or acceptance of the proposed ports. The first JavaScript invocation
+lacked the configured Python executable; rerunning with GRAMLOT_TEST_PYTHON set
+passes. No dependency or runtime source changes were made.
+
+<a id="gc-070-1620"></a>
+
+## 1620. Legacy dialog and floating review — 2026-10-22
+
+Owner changes the next priority to dialog and floating, postponing copyButton.
+The explicit dialog requirement is movable and manually resizable while remaining
+modal (other page content cannot be used). This supersedes the proposed
+clipboard-first ordering of §1615. Python authoring remains the priority.
+
+Read-only evidence: GenroPy revision fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea,
+gnrjs/gnr_d11/js/genro_widgets.js (Dialog, lines 1603–1873; FloatingPane,
+lines 2813–2976), dojo_libs/dojo_11/dojo_src/dijit/Dialog.js,
+dojox/layout/FloatingPane.js and ResizeHandle.js; gnrjs/gnr_d11/js/genro_components.js
+(Palette), genro_dlg.js; gnrpy/gnr/web/gnrwebstruct/base.py (fullScreenDialog);
+projects/gnrcore/packages/test/webpages/dojo/dialog.py and layout/dialog.py;
+resources/common/foundation/dialogs.py. PoC palette evidence remains §1615.
+
+### Legacy capability inventory
+
+| Area | Observed behavior and qualification |
+| --- | --- |
+| Title and content | Reactive title; arbitrary nested layout/content; inherited ContentPane loading is separate from application-specific helpers. Legacy setTitle uses innerHTML, which must not be transferred as an unsanitized title policy. |
+| Movement | The inherited Dialog installs TimedMoveable on its title bar. Movement and modality already coexist. |
+| Manual resizing | No built-in user resize grip was found in the reviewed Dialog path. Its resize method and automatic adaptation are not evidence of manual resizing. FloatingPane explicitly supports resizable and ResizeHandle. |
+| Automatic dimensions | autoSize; viewport bounds with restoration of initial dimensions; windowRatio; parentRatio; fullScreen; descendant layout resizing. |
+| Position | Default centering; centerOn and xRatio/yRatio; stacked dialogs offset from their parent. A position attribute appears in examples but is consumed in creating without a clear implementation in this reviewed path; do not promise it from those examples alone. |
+| Closing | closable defaults false in the Gramlot-like Genro wrapper; true exposes ordinary cancellation, ask requests confirmation with close_msg/confirm/cancel/action, publish emits a close intent for application handling. show/hide retain the widget; higher-level quickDialog may destroy its temporary Source branch. |
+| Nested dialogs | dialogStack, parent/child resize propagation, underlay/z-index and parent modal reconnection. |
+| Keyboard and focus | Dojo provides focus capture, Tab boundaries, Escape and refocus. Genro's versionpatch_11__onKey deliberately replaces that keyboard handler with an empty implementation for CKEditor: upstream behavior must not be claimed as intact in the configured wrapper. |
+| Nonmodal option | noModal is consumed only to choose a lower starting z-index in the reviewed wrapper; no complete alternate nonmodal interaction path was established. Use the floating-container evidence for nonmodal behavior. |
+| Appearance and lifecycle | duration, animateResize appearance animation, onShowing/afterShow and window-resize connections. Legacy timing/global lifecycle mechanisms are evidence, not a destination implementation. |
+| Floating windows | FloatingPane movement, optional resizeAxis x/y/xy, resize handle, bringToTop, show/hide, close removes Source, maximize/restore, minimize/dock. ResizeHandle supports live or outlined resizing, animation and minimum dimensions. |
+| Geometry persistence | FloatingPane saves local geometry by page/nodeId, restores within parent bounds; persist=False and fixedPosition bypass restoration. Palette recipe defaults include resizable=True and docking/show controls. |
+| Higher-level compositions | simpleDialog/formDialog/iframeDialog/confirm; alert/ask/prompt/askParameters; quickDialog/remoteDialog; iframe/lightbox/editor/upload/data-editor compositions. These are separate recipes/services with additional ownership and dependencies, not mandatory features of the base container. |
+
+### Destination assessment and remaining decisions
+
+The owner's movable/resizable/modal requirement is accepted. Proposed browser
+foundation: native HTML dialog opened via showModal, with framework-owned title
+dragging and resize handles; geometry changes must not close/reopen the dialog
+or replace its children. The HTML standard defines document blocking and focus
+handling for modal dialogs:
+https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element .
+The modal scope is its document; blocking a containing page from inside an iframe
+would require a separate host-level contract, not automatic cross-frame access.
+
+Proposed base behavior for review: Python-declared title/content and geometry,
+bound visibility, explicit movement/resizing controls, viewport bounds, reliable
+focus and retained field drafts across close/reopen, plus nested modal qualification.
+Floating remains the nonmodal counterpart; the PoC palette supplies behavior evidence.
+Persistence, docking, maximize, fullscreen, proportional sizing, animation, lazy
+content and confirmation recipes remain separately selectable; no blanket port
+or omission is approved by this inventory.
+
+First open behavior decision: ordinary user closing through X/Escape versus
+an application-controlled close request that can refuse closure or ask confirmation.
+Further decisions include public names/native dialog coexistence, bound open-state
+name/defaults, retention and geometry persistence. New API names must be recorded
+in GC-225 after confirmation. Reuse current Source/Data/Container ownership and
+existing remote/ask services where their contracts apply; no Builder/Bag or legacy
+source changes and no parallel modal stack or renderer are authorized by this review.
+
+Verification is source inspection and cross-checking wrappers against inherited
+Dojo behavior and Python examples. No legacy/browser runtime test was run and no
+new dialog/floating implementation exists. Future focused browser regressions
+must cover mouse and keyboard blocking during drag/resize, viewport resize, nested
+dialog focus restoration, Escape/close policy, retained drafts, component removal,
+pointer cancellation and no surviving listeners. This review does not re-run
+release qualification or classify either future component as Alpha/Beta/Stable.
+
+<a id="gc-070-1625"></a>
+
+## 1625. FramePane and SlotBar inventory; dialog closing decision — 2026-10-22
+
+Owner answers "ok. poi vorrei che tu inventariassi anche frame pane e slotbar".
+The "ok" confirms the immediately preceding proposal: dialog X/Escape requests
+can be intercepted by the application to veto closing or request confirmation;
+without interception, closing proceeds normally. It does not settle callback
+names, asynchronous execution contracts or the rest of the dialog API.
+FramePane and SlotBar are added to the inventory; dialog/floating remain first.
+
+### Availability and provenance
+
+Neither framePane nor slotBar was found in the inspected core or PoC runtime,
+Python authoring or collection metadata. Core also lacks slotToolbar/slotFooter.
+Core has borderContainer/contentPane and the Python FramePage class. FramePage
+is a whole-page five-region composition using overridable hooks; it does not
+supply the legacy embeddable framePane API or named-slot bars.
+
+Legacy reference: GenroPy@fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea:
+gnrpy/gnr/web/gnrwebstruct/base.py (__getattr__, framepane);
+gnrpy/gnr/web/gnrwebstruct/dojo11.py (lines 677–783);
+gnrjs/gnr_d11/js/genro_components.js (FramePane at 811, SlotBar at 6155);
+projects/gnrcore/packages/test/webpages/layout/framepane.py.
+PoC checked at 10478b57ce3f22e6445eb6b72eba343520cbebac.
+
+### FramePane inventory
+
+- Python authoring: framePane(frameCode, centerCb, **kwargs), automatic unique
+  frameCode when omitted/templated, and lazy named top/bottom/left/right/center
+  authoring slots through the legacy structure's attribute lookup.
+- Rendering: composition into BorderContainer and ContentPane, headline/sidebar
+  region ordering, propagation of frameCode, region splitters and side parameters.
+- Center: explicit center content or a generated center pane configured through
+  center_*; ordinary content is directed to the center by the runtime composition.
+- Identity: registration as frameCode + "_frame", optional frameTarget identity,
+  region child names and legacy _frame children.
+- Presentation: redistribution of rounded-corner parameters to outer regions.
+- Related FrameForm/store/record behavior is a separate composition; it is not
+  intrinsic to FramePane and does not authorize database/form-service imports.
+
+Existing borderContainer already owns layout, splitters, drawers, sizing and
+retained children. A future framePane should reuse that responsibility rather
+than implement another layout engine. Legacy automatic region access and center
+routing require an explicit authoring contract; inspection does not establish
+equivalent Builder capabilities or authorize dependency changes.
+
+### SlotBar inventory
+
+- Ordered comma-separated slot names; named Python access such as
+  bar.save.button(...), with arbitrary Source children inside a slot.
+- Layout tokens: "*" elastic space, "|" separator, numeric fixed pixel space.
+  Horizontal and vertical implementations differ; vertical "*" only creates
+  an empty row in the reviewed code, so equal elastic behavior is not proven.
+- Orientation defaults from the containing region; explicit orientation supported.
+  Slot-level width/height/alignment and table_*, row_*, cell_*, lbl_* presentation.
+- Labels: horizontal label positions N/T/B/L/R and per-item label parameters;
+  vertical implementation does not provide equivalent label layout.
+- Python recipe lookup by frame/slotbar prefix, optional namespace and generic
+  slotbar_<name>; slot@parameter syntax and per-slot prefixed arguments.
+- slotbar_updateslotsattr rebuilds authored slots; slotbar_replaceslots supports
+  replacement/insertion with "#" referring to the prior list. These are Python
+  construction helpers, not evidence of general reactive browser reordering.
+- slotToolbar and slotFooter are presentation helpers over slotBar; slotButton
+  is a related icon/tooltip button surface, not the bar itself.
+- Built-in JavaScript slot builders: searchOn, pageBranchSelector, stackButtons,
+  parentStackButtons, fieldsTree, count, messageBox and dashboardSaver. They carry
+  additional search, page-shell, database, messaging or dashboard dependencies.
+- Frame integration includes side styling, slotbar identity and closable handles.
+
+Proposed bounded future scope: named slots, ordering, spacers/separators,
+orientation, ordinary Gramlot children and Python composition. Legacy method
+fallback chains, global frame lookup, table-based rendering, unsanitized innerHTML,
+and application-specific built-in slots are not automatically part of the port.
+This proposal and final API/implementation ownership remain unapproved. Keep
+availability distinct from Alpha/Beta/Stable maturity; no level is assigned here.
+
+Verification: read-only source comparison, Python schema smoke confirms the four
+missing declarations and existing borderContainer/contentPane; FramePage imports.
+No runtime implementation changed, no new browser behavior was tested, and no
+extended qualification was repeated. Next: continue the dialog/floating contract
+from §1620 with the now-confirmed interceptable closing requirement.
+
+Legacy slotButton routing clarification — 2026-10-22 (source inspection).
+genro_components.js:4500–4545 resolves an explicit/inherited target first;
+otherwise it finds a descendant marked frameTarget=True in the frame identified
+by inherited frameCode. The target is not automatically the center region.
+FramePane gives an unlabelled frameTarget node the identity frameCode+"_target".
+With publish and no explicit action, SlotButton constructs the topic
+targetPrefix+"_"+publish (or a bare topic without a prefix) and publishes a
+payload containing command, modifiers, opt, evt and _counter. selfsubscribe_*
+subscribes using the receiver nodeId/string identity prefix (genro_src.js:661).
+The target=False branch uses slotbarCode, but local false is processed through
+an || inherited-target expression; its override semantics must not be copied
+as a clean contract. Sender identity is not a mandatory explicit field in this
+generated payload; evt is included. A supplied action overrides publish generation.
+Source references: GenroPy revision recorded above. The earlier suggestion of a
+stable center receiver is a Gramlot proposal, not the legacy behavior or an
+owner-confirmed decision. No new routing contract or runtime implementation.
+
+Owner routing confirmation — 2026-10-22. The owner answers "ok" to retaining the
+legacy designated-content recipient within each frame and adding explicit sender
+identity. Recorded in the constitution's SlotButton follow-up and paired view.
+This supersedes the pending-center-recipient proposal above: the button publishes,
+the designated content handles the command, and the message identifies its button
+of origin. Exact API/payload names and implementation remain pending; no runtime
+change or new verification claim. Dialog/floating retain their agreed priority.
+
+Window-structure requirement — 2026-10-22. Owner specifies shared dialog/floating
+chrome (title, close, collapse, resize handle) around an internal framePane,
+whose regions may contain application slotBars and slotButtons. This establishes
+framePane as a dependency of the requested window composition, beyond its earlier
+inventory-only role. Window controls and application-command routing have separate
+responsibilities; the framePane top bar does not replace the window title bar.
+Constitution and mirror record the exact instruction. Maximize remains tentative.
+Open decision: interaction blocking while a modal dialog is collapsed. No code
+was changed and no tests are claimed for these newly specified behaviors.
+
+Collapsed-window modality confirmed — 2026-10-22. Owner explicitly confirms that
+a collapsed dialog remains modal and a floating window permits interaction with
+the rest of the page. This resolves the open collapse question above. Both views
+of the constitution record the decision. Future browser qualification must verify
+background mouse/keyboard blocking and reachable restore/close controls for a
+collapsed dialog, and continued background interaction for a collapsed floating
+window. This is a confirmed behavioral requirement, not implemented/tested code.
+
+Window interaction defaults confirmed — 2026-10-22. Owner clarifies "per il dialog
+per il floating ttto attivo": dialog collapse/resize/movement default off;
+floating collapse/resize/movement default on, with explicit configuration.
+Paired constitutional records refine the previous window-chrome inventory;
+controls and handles follow their enabled capabilities. Modal/nonmodal behavior
+and interceptable closing are unchanged. Maximize remains undecided. Future
+focused tests must cover default behavior and individual capability overrides.
+This is a recorded contract update; runtime implementation remains pending.
+
+Nested-slot legacy evidence — 2026-10-22. The owner recalls sub-slots. A concrete
+production example exists in GenroPy resources/common/th/th_form.py:338–345:
+a left slotBar declares htreeSearchbar and htreeSlot; htreeSearchbar contains a
+nested slotToolbar with its own named slots, spacers and search/sorting controls.
+This is recursive composition through ordinary slot content. No dedicated
+subSlot API or nested-string grammar was found in the inspected SlotBar Python/JS
+implementation. The multiline example in
+projects/gnrcore/packages/test15/webpages/gnrwdg/slotbar.py:75 instead creates two
+sibling toolbars in frame.top with distinct child names; it is a separate mechanism.
+Both should be represented in the inventory without claiming dynamic insertion
+or adopting a final Gramlot syntax. Source inspection only, no runtime change.
+
+<a id="gc-070-1630"></a>
+
+## 1630. Frame, bars and windows complete design proposal — 2026-10-22
+
+Owner explicitly confirms nested slotBars and multiple bars per frame region and
+requests the complete project with proposed Python syntax. Paired constitution
+records preserve the instruction. [GC-320](../future/320-frames-bars-and-windows.md)
+provides the full proposal and concise mirror: component boundaries, canonical
+Source, region/track access, legacy-style DSL, named slots, fixed/elastic spacers,
+dynamic 1/-1 insertion proposal, sender/recipient routing, window defaults,
+interceptable async closing, lifecycle and phased verification.
+
+The design recommends one-time expansion of compact authoring into explicit
+Source slot/spacer nodes; browser Web Components render that one tree. Python
+remains an inert authoring layer. Existing descriptor/portable grammar, border
+layout, Source publishing and command engine are reused. Named-slot access,
+native dialog/slot name coexistence and new authoring helper feasibility are
+explicit review points, not silently approved APIs. No dependency edits, runtime
+implementation, maturity promotion or publication. Dialog/floating remain the
+delivery objective; frame/bars are their agreed composition dependencies.
+
+Design document verification — 2026-10-22. All 15 Python snippets across the full
+and concise views parse successfully; 13 paired block anchors, relative links,
+code-fence balance and whitespace checks pass. Source review checks the proposal
+against current registry/grammar, Source authoring, Container/BorderContainer,
+ButtonBinding, SubscriptionsHandler and native dialog use. No proposed API was
+executed and no runtime behavior is claimed verified. Ready for owner review;
+first decision is canonical explicit Source with one-time compact authoring
+expansion, as opposed to retaining a second runtime layout string.
+
+Named-slot preset correction — 2026-10-22. Owner recalls ready-made named
+slots. Legacy inspection confirms Python prefixed struct-method resolution and
+separate JS built-ins. GC-320 §070 reopens this useful capability, correcting
+the draft's overly broad exclusion of recipe lookup; registration, syntax,
+parameters and a single canonical expansion rule remain proposals. No runtime
+implementation or owner approval of a new preset registry is inferred.
+
+<a id="gc-070-1635"></a>
+## 1635. How to extend Gramlot — design guide, 2026-10-22
+
+Owner requests [GC-325 · How to extend Gramlot](../future/325-how-to-extend-gramlot.md).
+Full and concise guides distinguish existing collection/grammar/bootstrap
+mechanisms from the selected extension contract: JS-owned declarations,
+importable mygramlot, Page.gramlots and implicit base. CLI packaging and group
+registration examples are explicitly non-executable design sketches.
+
+The selected slotBar authoring uses fixed slotButton/slotSpacer grammar with
+registered names as values. Compact strings/generated methods are superseded
+proposals; GC-320 now carries a prominent correction. Unknown-name behavior is
+explicitly deferred by the owner, and the separate free-content slot API remains
+proposed. Both constitutions preserve exact owner evidence and bounded scope.
+
+Verification passed: 21 Python and 2 JavaScript snippets parse across GC-320/325;
+17 local links, paired anchors, code fences and whitespace are valid. The owning
+public-documentation checker passes on the existing 15-page build (these future
+guides remain excluded); no public site rebuild was needed. Syntax checks do not
+execute the proposed APIs. No new runtime behavior,
+package release or dependency edit. Next design work is the extension
+object/packaging and activation contract, followed by registry metadata and the
+remaining slot/diagnostic decisions. This guide is not an implementation plan
+approval and does not reopen the released core.
+
+<a id="gc-070-1640"></a>
+## 1640. Legacy menus and shared-command proposal — 2026-10-22
+
+Owner requests legacy menu inspection and port discussion.
+[GC-330](../future/330-menus-and-commands.md) and
+[PORT-0023](../../ports/PORT-0023-menu-expansion/README.md) record the inventory,
+current support and bounded delivery proposal. Existing menu/menuline are
+coupled to dropDownButton. Expansion requires explicit popup ownership,
+per-opening context and nested focus/lifecycle, preserving the existing shared
+executor and split/Shift contract.
+
+Legacy menuFromBag converts data into Source, unlike direct tree rendering.
+Namespaced command reuse by bars/menus is recommended but not approved.
+Selection controls, checked/radio, Bag/resolver sources and rich popups remain
+separate items. Owner confirmed Source children/flex for slotBar; unnamed
+slotButton spacers and shared-registry naming remain proposals.
+GC-325/320/310 entry notices point to the latest analysis.
+
+Executed targeted baseline: 35 JS tests (button-components, button-controller)
+and one Python ButtonComponentTests test pass. JSDOM stubs popovers; no new
+runtime or fresh browser/legacy qualification. Documentation checks pass:
+25 Python snippets parse across the four affected guide pairs, 78 relative links
+and anchors resolve, paired anchors/fences/whitespace are valid. The owning public
+checker passes on the existing 15-page build; future guides remain excluded.
+Proposed API snippets were parsed, not executed.
+No release, dependency edits or runtime implementation. Next decision:
+whether slotButtons and menu entries consume the same JS command-definition
+registry; then settle ownership, invocation context and bounded first scope.
+
+<a id="gc-070-1645"></a>
+## 1645. Common menu system architectural proposal — 2026-10-22
+
+Owner asks for the full menu design retaining legacy power, then evaluation of
+slotBar as an open menu. [GC-335](../future/335-common-menu-system.md) supplies
+the paired proposal: canonical Source, command definitions, explicit checked/
+selection semantics, scoped invocation, Bag-to-Source branch ownership, resolver
+lifecycle, hooks/modifiers, context attachment, popup chains and rich content.
+
+Recommendation: slotBar is the persistent mixed-control presentation of the
+same family, not a popup kept open. Share definitions/state/execution and retain
+profile-specific focus/layout/dismissal. This relationship and exact APIs remain
+for owner review. Existing dropdown timing/Shift/persistence is preserved;
+pre-dispatch state commits are a proposed bounded extension, not an implicit
+behavior change. All legacy inventory rows are assigned a destination owner.
+
+Documentation-only work; no runtime changes or repeated component tests.
+GC-330's 35 JS + one Python pass remain the previously verified baseline.
+Document verification passed: four Python snippets parse; ten paired anchors,
+six relative links, fences and whitespace are valid. The existing public build
+passes its 15-page checker; the new future guide remains excluded. Proposed
+APIs were not executed. Next owner decision is the common Source/menu
+architecture and persistent-bar relationship, before implementation planning.
+
+Owner confirmation — 2026-10-22: "Sì, confermo. Ora vediamo la sintassi Python
+per dichiarare un menu e usarlo anche come slotbar." Common architecture and
+permanent-bar relationship accepted; earlier pending status superseded. Both
+constitutions record the scope. GC-335 §055 proposes menu/menuline with
+presentation="bar", normal Python composition and distinct Source instances.
+Exact syntax awaits confirmation; no runtime changes. Snippet syntax and paired
+anchors checked; no execution of the proposed APIs.
+
+Owner follow-up: menu/menuline vocabulary chosen; registered-key shorthand
+requested to avoid repeated captions/codes. Owner highlights resolver-generated
+content at opening as the predominant legacy usage. GC-335 §060 promotes lazy
+content/context/projection to the initial design slice, superseding the earlier
+late-phase recommendation. Registry defaults and content resolvers are distinct
+responsibilities. Exact identity, signature/migration, cache/refresh and permanent
+bar demand policies remain proposals; no runtime changes.
+
+Owner confirms popup submenus below a toolbar and requests the complete Python
+comparison. GC-335 §065 now shows one composition used by popup and persistent
+roots, separate scoped dataRemote declarations and a Python endpoint returning
+a Bag. Real foundations are distinguished from proposed menu/packaging/frame
+APIs; toolbar presentation is not inherited by submenus. Bound-argument resolver
+refresh and async response validity are explicit, not hidden by the example.
+Python syntax and paired anchors checked; no runtime execution claimed.
+
+Direct resolver follow-up — 2026-10-22: owner confirms menu-owned resolution
+without dataRemote/scopes. GC-335 §065 example replaced, §070 records inspection
+and feasibility. Reuse unattached RpcResolver owned by the menu NodeBinding;
+do not replace menu Source children with its raw returned Bag. Existing cache/
+NodeRequests/transport contracts suffice as foundations; projection, snapshot
+invalidation and opening lifecycle remain to implement. 30 existing resolver
+tests pass. Temporary real-resolver probe with simulated transport confirms lazy
+local caching, pending-read sharing, fresh parameter instances and intact Source.
+No runtime or dependency edits; proposed syntax remains clearly labelled.
+
+Owner confirms the direct-resolver Python syntax and requests the result schema.
+GC-335 §075 proposes ordered Bag records with node-label identity, explicit kind,
+registered command defaults, computed checked/disabled/hidden state, separators,
+nested Bags and directly declared lazy submenus. Checked indication is separated
+from state mutation to prevent double toggles. Structural validation and unknown
+registry-key behavior are distinct; the latter remains deferred. Schema approval
+is pending; no runtime changes. Verification passed: the real Bag example survives
+a TYTX round trip with nested content, booleans, command arguments and lazy submenu
+descriptors intact. Ten Python snippets parse, fifteen paired anchors match and
+whitespace checks pass. This verifies data representation, not menu consumption.
+
+Live state follow-up — 2026-10-22: owner accepts GC-335 §075 and explicitly
+requires checked/disabled Data bindings. The paired schema and example now
+preserve reactive pointers through projection, using the menu's normal Data
+context and existing binding runtime. Literal booleans remain valid; command
+handlers own mutation. No runtime changes: disabled read binding already exists,
+while checked rendering and resolver-result projection remain to implement.
+Verification: ten existing button-component tests pass; ten Python snippets
+parse; paired anchors match; a real Bag/TYTX round trip preserves checked and
+disabled pointers, nested content, arguments and the lazy submenu descriptor.
+This verifies existing foundations and representation, not the future menu.
+
+Hidden binding follow-up — 2026-10-22: owner explicitly extends the confirmed
+live state contract to hidden in popup menus and toolbars. GC-335 §075 and its
+example now include hidden="^document.hideSave", retaining literal booleans and
+normal Data context. Visibility updates independently of resolver cache/opening.
+No runtime edits. Existing native hidden projection test passes; Python snippets
+parse, paired anchors match, and real Bag/TYTX serialization preserves all three
+state pointers. Menu projection, layout and navigation integration remain pending.
+
+Command envelope follow-up — 2026-10-22: owner selects the shared registry name
+gramlot.commands.registerGroup; recorded in GC-225 and the constitution, with
+GC-325 registration examples updated. GC-335 §080 proposes sender/target Source
+references, the full registered command key, explicit argument snapshots and
+four activation-time modifier booleans. Subscription topic remains distinct from
+command identity. This message contract awaits owner confirmation; no runtime
+changes or new runtime verification. Paired anchors and whitespace checked.
+
+Command envelope accepted — 2026-10-22: owner explicitly confirms the five-field
+contract and requests project consolidation plus an implementation-readiness
+inventory. Constitution, GC-225 and GC-335 §080 now record acceptance; GC-320's
+six-field sketch is explicitly historical. GC-335 §085 separates settled
+contracts from registry activation, argument/override rules, invalid-reference
+handling, resolver lifecycle, interaction/concurrency and minimal frame-accessor
+decisions. Packaging, rich-bar syntax, broader legacy context/selection and window
+details remain visible; staging them separately is a proposal, not approved scope.
+The proposed first increment includes direct resolvers from the outset. No runtime
+implementation or publication. Verification: paired document anchors, Python
+example syntax, new cross-document links and whitespace checked. Next proposed
+design step: registry/collection activation contract, subject to owner confirmation.
+
+Collection loading design — 2026-10-22: owner requests the JS registration and
+Page.gramlots example. GC-325 §040 proposes registerCommands(gramlot) on the
+existing collection descriptor, invoked during preparation for catalogue export
+and before app.start() against the page registry. Python consumes generated
+grammar/command metadata; host integration maps packaged assets to bootstrap
+URLs. GC-225 records the hook as proposed, not approved. Source inspection
+confirms current collection/grammar/bootstrap foundations; new hook, descriptor,
+registry and packaging remain absent. Pending owner review of this lifecycle;
+identity, collisions, inheritance/dependencies and asset mapping remain open.
+Documentation syntax, paired anchors, links and whitespace checked; no runtime
+implementation or new runtime test claim.
+
+Collection lifecycle accepted — 2026-10-22: owner replies "ok" to the explicit
+shared registerCommands preparation/bootstrap proposal. GC-325 §040, GC-225,
+GC-335 readiness and the constitution now mark that lifecycle confirmed.
+Runtime implementation remains pending. Next decision: collection identity and
+duplicate handling; no collision/overwrite policy inferred from this acceptance.
+Paired anchors and whitespace checked; documentation-only update.
+
+Collection identity accepted — 2026-10-22: owner confirms name as identity,
+activation once for repeated inclusion of the same collection, and explicit
+error for different collections with the same name. Recorded in GC-325 §040,
+GC-225 and the constitution; GC-335 readiness updated. Artifact identity checking
+and command-group/key collisions remain open. No runtime changes; paired anchors
+and whitespace checked. Next proposed decision: duplicate full command keys.
+
+Command-key uniqueness accepted — 2026-10-22: owner confirms distinct
+namespaces may reuse a command name, while duplicate full keys raise an explicit
+error without overwrite. Repeated collection inclusion is already deduplicated.
+GC-325, GC-335, GC-225 and the constitution updated. Command-group ownership
+remains open. Documentation checks pass; no runtime implementation or tests added.
+
+Namespace ownership accepted — 2026-10-22: owner confirms one collection per
+command namespace. Other collections may consume its commands but cannot add
+their own to that group. GC-325, GC-335, GC-225 and the constitution updated.
+No collection-name/namespace equality rule is inferred. Inheritance, dependencies,
+same-owner repeated group registration and concrete packaging remain open.
+Paired anchors and whitespace checked; no runtime changes.
+
+Cumulative inheritance accepted — 2026-10-22: owner confirms the example of
+BasePage adding documenti and its subclass adding report: base Gramlot plus
+both collections, deduplicated. GC-325, GC-335 and the constitution updated.
+No inherited-collection removal API or new multiple-inheritance precedence is
+inferred. Dependency activation and concrete packaging remain open. Paired
+anchors and whitespace checked; documentation only, implementation pending.
+
+Automatic collection dependencies accepted — 2026-10-22: owner confirms
+automatic inclusion of required collections, loading before consumers, and
+explicit errors for missing/circular dependencies. Pages list direct selections;
+existing deduplication/collision rules apply. GC-325, GC-335 and the constitution
+updated. Dependency syntax/packaging representation remain open. Paired anchors
+and whitespace checked; no runtime implementation or runtime test claim.
+
+Dependency declaration accepted — 2026-10-22: owner confirms dependencies:
+[common] using imported collection objects. Preparation derives package
+dependency metadata; Python does not maintain a second dependency list.
+GC-325 example, GC-335 readiness, GC-225 and the constitution updated.
+Concrete generated package/descriptor and artifact checks remain open.
+Paired anchors, new JS example syntax and whitespace checked. No runtime changes.
+
+Generated package proposal — 2026-10-22: GC-325 §045 shows packaged grammar,
+command metadata, browser assets and a Python descriptor. Owner's intervening
+"ok" confirms the lightweight GramlotCollection name/role presented in commentary;
+fields, filenames and layout remain proposed. GC-225 and constitution record
+this scope. Existing grammar/resource APIs inspected; no runtime or host changes.
+Paired anchors, Python example syntax and whitespace checked. Next decision:
+review the concrete descriptor fields and package layout.
+
+Generated package accepted — 2026-10-22: owner confirms GC-325 §045 fields
+and package layout. GramlotCollection links generated grammar, command catalogue,
+browser module/CSS and dependency descriptors through package-relative resources;
+no duplicate manifest or separate publication is required. Constitution and
+GC-225 record the precise scope. Remaining: command-catalogue schema, JS/Python
+dependency mapping, asset delivery/build consistency and implementation.
+Paired anchors, Python example syntax and whitespace checked; no runtime edits.
+
+Command catalogue proposal — 2026-10-22: owner requests the commands.json
+example. GC-325 §050 proposes a versioned document with namespace groups and
+local command definitions, preserving reviewed metadata without duplicating
+descriptor resources. Dependencies retain separate catalogues; browser runs
+registerCommands only. GC-225 records schema naming as proposed. Base unqualified
+command representation and unknown-reference handling remain explicit open points.
+JSON structure/definition correspondence, paired anchors and whitespace checked;
+no runtime implementation. Await schema confirmation.
+
+Command catalogue accepted — 2026-10-22: owner confirms the reviewed
+namespaced-group commands.json schema. GC-325 §050, GC-225 and the constitution
+now record approval. Unqualified base-command representation remains the next
+decision; dependency mapping and build/asset consistency remain open. Paired
+anchors, JSON parsing and whitespace checked; no runtime implementation.
+
+Standard command group accepted — 2026-10-22: owner confirms group "" reserved
+to the base collection, producing unqualified keys such as save. Namespaced keys
+remain distinct and use exact lookup with no fallback. GC-325, GC-225 and the
+constitution updated. Same-owner group reopening, dependency mapping and
+build/asset consistency remain open. Paired anchors and whitespace checked;
+documentation only, no runtime implementation.
+
+Single group creation accepted — 2026-10-22: owner confirms registerGroup
+creates each namespace once per registry; repeated calls error even within the
+owning collection. Its modules may share the returned group to add commands.
+Preparation/page registries remain separate. GC-325, GC-335 and constitution
+updated. Next design work: JS dependency to Python package mapping and asset/
+build consistency. Paired anchors and whitespace checked; no runtime changes.
+
+Dependency-generation example — 2026-10-22: GC-325 §055 proposes
+gramlot.build.json mapping JS entry modules to Python package destinations.
+The documenti → common edge exists only in JS dependencies; the preparator
+derives Python imports and dependency tuples. Both collections in this example
+ship in one application distribution; external-extension mapping and emitted
+JS/asset links remain separate open contracts. GC-225 marks names as proposals.
+JSON/JS/Python syntax, paired anchors/links and whitespace checked; no generator
+implemented or runtime behavior claimed. Await mapping/configuration approval.
+
+Build destination mapping accepted — 2026-10-22: owner confirms the
+gramlot.build.json map from JS entries to generated Python packages, with
+dependency edges derived exclusively from JS declarations. Missing destination
+mappings fail explicitly. GC-325, GC-335, GC-225 and constitution updated.
+Separate extension packages, browser asset links and consistency checks remain
+open. Paired anchors, JSON parsing and whitespace checked; no runtime changes.
+
+External collection example — 2026-10-22: GC-325 §060 proposes externals
+mapping an imported JS collection to an installed Python descriptor through
+pythonImport (module:attribute). Only local collections are generated; external
+assets/metadata remain owned by their package. Dependency declarations remain
+solely in JS. GC-225 records field names as proposed. Browser import/URL linking
+and cross-language artifact checks remain open. JSON/JS/Python syntax, paired
+anchors and whitespace checked; no external install or runtime implementation.
+Await approval of this explicit external-reference mapping.
+
+External reference mapping accepted — 2026-10-22: owner confirms externals
+with entry and pythonImport, referencing existing GramlotCollection descriptors
+without regenerating external packages. GC-325, GC-335, GC-225 and constitution
+updated. Browser module-to-URL linking and JS/Python consistency remain open.
+Paired anchors, configuration JSON and whitespace checked; no runtime changes.
+
+Browser linking proposal — 2026-10-22: GC-325 §065 proposes generated
+@gramlot/collections/<name> dependency imports and a host-derived import map
+using the selected descriptor graph. Same resolved module URLs preserve identity;
+command hooks run once per page in dependency order. Existing core root/page
+import map and bootstrap imports inspected. Hosted shared components export,
+collection import linking and asset URLs remain implementation gaps. GC-225
+records naming as proposed. JSON/JS syntax, paired anchors and whitespace
+checked; no browser/runtime implementation or external package execution.
+Await linking-contract approval; artifact consistency remains open.
+
+Browser linking accepted — 2026-10-22: owner confirms generated collection
+specifiers and automatic host import maps. GC-325 §065, GC-225, GC-335 and
+constitution updated. Local/external modules use one resolved URL per selected
+artifact, preserving shared core/runtime and per-page command registration.
+Artifact correspondence, cache identity and host asset-delivery details remain
+open. Paired anchors, import-map JSON and whitespace checked; no runtime changes.
+
+Build correspondence accepted — 2026-10-22: owner confirms a common fingerprint
+in Python descriptor and browser module, checked at startup with an explicit
+blocking error on mismatch. GC-325 §070, GC-335 and constitution updated.
+Calculation/input coverage, field names, cache linkage and exact validation
+timing remain open; no algorithm or dependency pin inferred. Paired anchors
+and whitespace checked; documentation only, no runtime implementation.
+
+Fingerprint mechanics proposed — 2026-10-22: GC-325 §075 proposes SHA-256 over
+local generated metadata/resources, descriptor build_id/files and module buildId,
+with a fixed generated entry wrapper to avoid self-reference. Dependency names
+are covered but dependency fingerprints are not pinned; dependencies are checked
+independently. Host validates actual packaged bytes, bootstrap checks all module
+identities before activation, and resource base paths carry artifact identity.
+GC-225 records names as proposals; none of these details are approved yet.
+Temporary in-memory probe passes deterministic ordering, embedding consistency,
+changed-file/wrapper/path and wrong-digest rejection; paired anchors, wrapper
+syntax and whitespace pass. This is not a framework/browser test. No runtime
+implementation. Await calculation/verification-contract confirmation.
+
+Fingerprint scheme accepted — 2026-10-22: owner confirms SHA-256 over local
+generated metadata/resources, build_id/files and buildId, fixed wrapper handling,
+host byte validation, pre-activation browser checks and fingerprinted asset bases.
+Dependency artifacts are checked separately without pins. GC-325 §075, GC-335,
+GC-225 and constitution now record approval. Earlier probe remains mechanical
+evidence only; no framework/browser implementation. Paired anchors and whitespace
+checked. Generator CLI/output lifecycle and concrete host asset integration remain
+to design; menu interaction decisions tracked separately remain open.
+
+Preparation CLI proposal — 2026-10-22: source inspection confirms the existing
+gramlot launcher belongs to gramlot-py-server and dispatches environment/verb;
+core has no console entry. GC-325 §080 proposes independent gramlot-builder
+build/check with --config, complete staging/validation before output changes,
+verified generated-file ownership and a project-non-mutating freshness check.
+GC-225 records the bounded naming proposal; no competing console entry or core
+adapter dependency is authorized. CLI syntax/output lifecycle await approval.
+Paired anchors and whitespace checked; no CLI implementation or runtime tests.
+
+Preparation CLI approval — 2026-10-23: owner "ok" confirms gramlot-builder
+build/check, optional --config, default gramlot.build.json, staged validation,
+verified generated-file updates and a project-non-mutating freshness check.
+GC-325 §080, GC-225 and the constitution distinguish approved design from
+implementation. Toolchain distribution, concrete host asset integration, exact
+exit codes and I/O recovery mechanics remain open. Documentation-only update;
+no CLI implementation or runtime execution.
+Verification: whitespace checks pass and all four updated document pairs have
+matching anchor sets. GC-070 retains its existing different section ordering
+and duplicate gc-070-1440 anchor (also present at HEAD in both views).
+The other three pairs have unique, ordered matching anchors. This update adds
+no anchors; the pre-existing GC-070 duplication remains a documentation defect.
+
+Collection toolchain distribution approved — 2026-10-23: owner explicitly
+confirms the Python command in gramlot and a separate project-local npm generator
+for collection developers. GC-325 §085 records @gramlot/builder in the core
+repository, local development installation, missing-prerequisite diagnostics and
+no Node/generator requirement for prepared-collection consumers. Constitution and
+GC-225 record the decision and naming. Next design work: exact project discovery
+and launcher/generator protocol, followed by host asset integration. No code,
+dependency installation, runtime checks or publication performed.
+Verified: whitespace checks, paired anchor counts, unique new GC-325 §085 anchor
+and balanced code fences pass. The already recorded GC-070 duplicate is unchanged.
+
+Launcher/generator contract approved — 2026-10-23: explicit owner confirmation
+recorded in GC-325 §090 and the constitution. Configuration-relative nearest
+package.json discovery, project/workspace generator resolution, one Node process,
+versioned JSON stdin/stdout and stderr diagnostics are agreed. Python owns
+external descriptor loading, validation and final output update/comparison; JS
+owns graph resolution and temporary generation. Exact protocol fields and
+interrupted-write recovery remain open. Next: review collection assets in
+bootstrap, using existing PageBootstrap resource loading and host-owned URLs.
+Documentation-only work; no CLI or bootstrap implementation.
+Read-only bootstrap review: existing application-level collection modules and
+CSS/Logic resource loading are reusable integration points; current CSS links
+have no load/error gate. GC-325 §095 proposes page-graph-driven resources,
+theme → collection → page CSS order and startup blocked on stylesheet failure.
+These new policies await owner confirmation; previously approved graph/import
+mapping/fingerprint contracts remain unchanged.
+Verified: whitespace, paired anchor inventories and code fences pass; new §090
+and §095 anchors are unique. The known GC-070 duplicate remains unchanged.
+
+Bootstrap CSS policy approved — 2026-10-23: owner explicitly confirms theme →
+collections → page order, waiting for CSS before startup and blocking startup on
+load failure. GC-325 §095 and the constitution now record approval; GC-335
+readiness points to the settled contract. Required future tests include stable
+insertion order despite different load completion order, waiting for every
+declared stylesheet and no app.start() after stylesheet failure. This updates
+design only; current runtime still has no stylesheet load/error gate.
+Remaining design: exact bootstrap fields and concrete host resource integration,
+launcher protocol fields/exit codes and interrupted-output recovery. No new phase
+or runtime implementation started.
+Verification: whitespace, paired anchors, Markdown fences and removal of the
+superseded pending CSS-policy notices pass. The known GC-070 duplicate is
+unchanged; no runtime tests were run for this documentation-only update.
+
+Bootstrap fields/asset exposure proposal — 2026-10-23: owner asks to review exact
+fields and host integration. Source inspection confirms current resources.css
+strings, resources.js Logic records, optional serverAdapter and collection URL
+strings. GC-325 §100 proposes replacing extension strings with {name, url,
+buildId}, retaining current other channels and deriving the import map from the
+same graph. It proposes host lookup of verified descriptor browser assets only
+(inventory-listed assets/ files), preserving relative paths under a fingerprint
+base and rejecting unknown/non-exposed paths. Route example is illustrative;
+adapter method names remain open. GC-225 records naming derivation as pending.
+No owner approval, runtime implementation or connected adapter edit is claimed.
+Verified: proposal JSON parses, field sets and sample fingerprint/asset paths
+agree, mirrored examples and anchors match, Markdown/whitespace checks pass.
+Known GC-070 duplicate unchanged. These are documentation checks, not runtime tests.
+
+Bootstrap fields/asset exposure approved — 2026-10-23: owner "ok" confirms the
+preceding proposal. GC-325 §100, GC-225 and constitution record {name, url,
+buildId} collection records, retained CSS/Logic/serverAdapter channels and
+verified-descriptor exposure limited to inventory-listed browser assets.
+Module identity checks precede activation; unknown/non-exposed assets fail and
+old fingerprints never serve new bytes. Route spelling remains illustrative.
+Remaining design: concrete adapter APIs/routes, launcher protocol fields/exit
+codes and interrupted-output recovery. Caching/retention are not settled.
+Documentation-only progress; bootstrap/CLI/adapter implementation remains pending.
+Verified: whitespace, five paired anchor inventories, Markdown and the unchanged
+JSON example's record fields/fingerprint pass. Superseded pending approval notices
+are updated; the existing GC-070 duplicate is unchanged. No runtime checks run.
+
+Python adapter resource API proposal — 2026-10-23: owner requests concrete APIs.
+Read-only inspection of core and Python adapter asset paths supports a common
+integration-owned resource service; GC-325 §105 proposes
+GramlotCollectionResources.register/url/asset and the neutral
+GramlotServer.collection_url hook. GC-225 records proposed naming. HTTP behavior
+remains in adapters; core must not import the integration service. Approval is
+pending. An explicit unresolved lifecycle issue is recorded: lazy registration
+on first page open cannot alone support asset requests across different server
+processes. Determine registration from trusted declarations without duplicating
+the user's Page.gramlots list before implementation. No adapter/source edit.
+Verified: proposed Python signatures parse; mirrored anchors, code fences and
+whitespace checks pass. The existing GC-070 duplicate remains unchanged.
+These are documentation checks, not implementation verification.
+
+Python collection resource APIs approved — 2026-10-23: owner "Sì, confermo"
+confirms GC-325 §105. Constitution/GC-225 now record the integration-owned
+GramlotCollectionResources register/url/asset service and neutral core
+collection_url hook. No implementation starts. Owner asks to settle registry
+population in every process without duplicate Page.gramlots declarations.
+Read-only inspection found lazy file-page loading but no class catalogue hook.
+GC-325 §110 proposes iter_page_classes and a full resource registry initialized
+from trusted page declarations before each process accepts requests. Registry
+is fixed for process lifetime; collection/declaration changes require restart.
+Earlier module imports, readiness failures, dynamic-provider enumeration and
+deployment consistency are explicit constraints, not hidden fallbacks.
+Proposal awaits confirmation; no runtime or integration edit.
+Verified: paired anchors, Markdown, API example syntax and the distinction
+between approved §105 and pending §110 pass; whitespace checks pass.
+The pre-existing GC-070 duplicate is unchanged. No runtime tests performed.
+
+Registry initialization approved — 2026-10-23: owner confirms deriving the
+resource registry from pages at startup and keeping it fixed for process
+lifetime. GC-325 §110, GC-225 and the constitution record the decision.
+Earlier module imports, startup validation/readiness and independent per-process
+construction are settled; no duplicate Page.gramlots list or hot registry is
+introduced. Owner requests remaining implementation prerequisites; consolidated
+current decisions/gaps are recorded in GC-325 §115. No runtime work started.
+The remaining concrete specifications are page discovery, authored source-asset
+inputs, launcher/generator wire details and interrupted-output recovery. First
+adapter scope is not yet selected; Uvicorn is a recommendation. GC-335 now
+separates already settled registry/catalogue contracts from open menu behavior.
+Verification: whitespace, five paired anchor inventories, Markdown and approval
+scope checks pass. Known GC-070 duplicate unchanged; no runtime tests run.
+
+Python page discovery proposal — 2026-10-23: read-only inspection confirms
+GramlotFileServer path/loading rules and existing Page-subclass validation.
+GC-325 §120 proposes deterministic enumeration of route-eligible files, reuse of
+the loader and Page-export classification, with no new filename marker or
+handwritten list. Missing/base-only Page exports identify helpers; other invalid
+exports or import errors fail startup. Candidate helpers must also be imported,
+so their module-level side effects/cost are explicitly part of the proposal.
+Non-file providers enumerate their trusted page classes. Approval is pending;
+no framework, adapter or runtime-test changes.
+
+Python page discovery approved — 2026-10-23: owner explicitly confirms the
+classification criterion and importing candidate modules. GC-325 §120 and
+constitution record approval. This closes the page-discovery design prerequisite
+from §115; implementation/provider wiring remains pending. Owner next requests
+the authored CSS/asset declaration in JS collections. No runtime work started.
+GC-325 §125 now proposes css as ordered URL entries and assets as a named URL map
+in defineCollection. CSS references drive recursive local resource inclusion;
+named assets remain available on the generated JS collection without automatic
+loading. Python descriptor paths/inventories are generated. GC-225 records
+pending field naming. Local packaged files are the proposed initial scope;
+external resource policy is not silently inferred. No code or runtime tests.
+Verified: whitespace, paired anchors and Markdown pass; JS examples match and
+pass Node syntax checking. Discovery approval is separated from the pending
+asset contract. Known GC-070 duplicate unchanged; no runtime behavior verified.
+
+Authored collection resources approved — 2026-10-23: owner explicitly confirms
+css/assets in the JS definition. GC-325 §125, GC-225 and constitution record
+approval; §115 distinguishes settled declaration semantics from remaining
+toolchain engineering. The intervening local gallery launch did not approve
+or implement generator code. Owner now requests the generator protocol.
+GC-325 §130 proposes one version-1 JSON request/result, exact field shapes,
+verified external metadata, generated descriptor/inventory results and structured
+diagnostics. Node success/failure (0/2) is separate from Python CLI check freshness
+(0/1/2). Python validates candidates/template/fingerprint before update/comparison.
+GC-225 records naming as pending. No runtime implementation or protocol acceptance
+is implied; toolchain entry/support and output recovery remain open.
+Verified: paired anchors, Markdown/whitespace, JS example syntax and protocol
+JSON field sets/inventory consistency pass. Approved §125 remains distinct from
+pending §130. Known GC-070 duplicate unchanged; no runtime tests performed.
+
+Generator protocol approved; output recovery proposed — 2026-10-23:
+owner "Sì, confermo il protocollo e i codici di uscita" confirms GC-325 §130.
+Version-1 exact JSON schemas, diagnostic naming and Node 0/2 / CLI 0/1/2 exits
+are now accepted design; GC-225, constitution and readiness references align.
+GC-325 §135 separately proposes persistent recovery evidence, serialized writes,
+per-file replacement, whole-build rollback on error, conflict preservation and
+next-build recovery-only behavior with exit 2. check stays non-mutating; cleanup
+of a committed transaction cannot undo its output. Recovery approval is pending.
+Remaining: owner decision on §135, concrete toolchain entry/support and initial
+adapter implementation scope. No runtime implementation, tests or release action.
+Verified: whitespace checks passed; anchors and fenced blocks align across all
+five document pairs; protocol JSON examples parse and match the exact required
+fields in both views. Accepted §130 and pending §135 are explicitly distinct.
+The pre-existing GC-070 duplicate anchor remains unchanged. Documentation-only
+checks; no runtime or fault-injection tests have been run.
+
+Output recovery approved; collection implementation readiness updated — 2026-10-23:
+owner "Sì, confermo questa politica di recupero" accepts GC-325 §135. Persistent
+recovery copies/records, whole-build rollback, conflict preservation, next-build
+recovery-only exit 2 and non-mutating check are accepted design, not runtime.
+The readiness checklist now identifies two remaining preparation decisions:
+concrete generator entry/Node support/build tooling, and the bounded first
+implementation scope with its initial Python adapter. Uvicorn remains a proposal.
+Internal journal/locking/file layout and test construction need no extra product
+approval within the agreed contracts; actual storage guarantees must be verified.
+Menu/window interaction decisions and deferred retention/cleanup policies remain
+separate. No source implementation, connected repository edits or publication.
+Verified: whitespace check passed; paired anchors/fences match across five
+document pairs, with the known GC-070 duplicate unchanged. Both views explicitly
+record recovery acceptance; version-1 JSON examples still parse and match.
+No runtime or fault-injection test is claimed for this documentation-only update.
+
+Concrete generator approved; Uvicorn integration proposed — 2026-10-23:
+owner confirms entry, Node versions and esbuild. GC-325 §140 records the stable
+@gramlot/builder/cli export, supported 22/24/26 lines, ESM/es2022 and the split
+between esbuild processing and Gramlot linking/export. GC-225 records the approved
+entry name; constitution and readiness references align. Uvicorn is now selected
+for first-integration design. Read-only adapter inspection identifies lifespan,
+mount-path and HTTP dispatch extension points, not implemented collection hosting.
+GC-325 §145 proposes core/generator plus shared Python resource service/Uvicorn
+scope, fail-before-ready startup, a reserved fingerprinted resource route,
+Traversable GET/HEAD handling and end-to-end checks. Those new details and code
+execution remain pending approval. Other adapters/menu/windows/publication stay
+outside scope. Generator decisions need no further approval merely because code
+is absent. Verified: whitespace check and paired anchors/fences pass across five
+document pairs; the existing GC-070 duplicate is unchanged. The package export
+JSON parses identically in both views; approved §140 and proposed §145 remain
+explicitly distinct. No runtime/adapter tests were run for this documentation update.
+
+First Uvicorn integration scope approved — 2026-10-23:
+owner "ok" confirms the preceding concrete scope/behavior proposal (GC-325 §145).
+Core/generator plus the shared Python resource service/Uvicorn wiring, startup
+readiness, fixed per-process registry, fingerprinted resource route and planned
+integration verification are now accepted design. GC-225 route naming,
+constitution and readiness references align. No product decision remains open
+for this bounded increment; the next phase is implementation with targeted
+regression and end-to-end checks. No runtime code or connected repository source
+was changed in this turn; no implementation tests, publication or runtime
+acceptance are claimed. Separate menu/window work remains outside scope.
+Verified: whitespace check, mirrored anchors/fences, JSON examples and the
+Uvicorn approval record pass. The pre-existing GC-070 duplicate remains unchanged.
+These are documentation checks only.
+
+Collection implementation started — 2026-10-23: owner authorizes code, regression
+tests and full Uvicorn verification; also explicitly expands scope to migration
+of existing bootstrap consumers. Original working directories remain untouched;
+core work uses the attached design checkout and Python adapter work uses an
+isolated clone at /private/tmp/gramlot-collections-py-server. An isolated Python
+environment uses current unpinned first-party dependencies. Initial descriptor
+verification, dependency/inheritance resolution and command registry work exists;
+8 Python tests plus 8 subtests pass for new artifact and existing grammar coverage.
+JS checks, generator/recovery, bootstrap, adapters and consumer migration remain
+in progress, not verified or accepted. System Node 23 is outside the approved
+generator lines; isolated supported Node runtimes are being prepared for checks.
+
+Collection integration progress — 2026-10-23:
+Implemented prepared core collection packages, strict browser identity records,
+shared command registry, CSS readiness, generator/launcher, recovery journal,
+Python resource service and initial consumer migrations. Original local work
+remains isolated and preserved. Verified: core Python suite 246 passed,
+382 subtests passed, one pre-existing expected failure. New Uvicorn regressions
+cover readiness/startup rejection, resource privacy, mount prefix, GET/HEAD/405,
+and independently initialized registries. Real Uvicorn at localhost:8091 served
+a generated two-collection dependency graph and custom NativeControl; browser
+editing Ada to Grace updated the bound Python-authored output. Screenshot:
+/private/tmp/gramlot-collection-e2e.png. This is verification, not owner acceptance.
+Remaining: recovery/process-interruption qualification, external-package and
+supported-Node-line checks, full JS/connected regressions, installed wheel/resource
+verification, docs alignment and final review. Old test harnesses require explicit
+CSS-load simulation and ASGI lifespan; no lazy-start runtime fallback is added.
+Owner separately approves the verified derived bundle for existing file-origin
+serverless exports; HTTP resources retain original artifact bytes.
+
+
+<a id="gc-070-1650"></a>
+## 1650. Prepared collections implementation — 2026-10-23
+
+Block ID: **GC-070-1650**.
+
+Owner authorized implementation, complete Uvicorn verification, preservation of
+local work and migration of existing consumers. The owner also approved the
+verified derived file-origin bundle and the shared core JavaScript APIs
+collectionBuildId(metadata, files) and verifyCollectionArtifact(metadata, files).
+These approvals do not cover publication or the menu/window implementation.
+
+Implemented: JavaScript collection CSS/assets and page-local commands; prepared
+Python descriptors and Page.gramlots; dependency-first generation; the Python
+CLI and project-local npm generator; persistent replacement/recovery; exact
+bootstrap identities and CSS readiness; Python startup resource registries;
+existing gallery/host migration; original-artifact verification before serverless
+bundle derivation. JavaScript fingerprinting now has one core implementation.
+
+Verified so far: core Python 252 tests and 382 subtests (one expected failure),
+core JavaScript 3778 tests, gallery JavaScript 158 tests, serverless 39 tests.
+Python host resource regressions cover Uvicorn, Flask, FastAPI, Django and Kajenn,
+including package ZIP resources. Real Uvicorn/browser verification exercises a
+custom component, two-way binding, command registration, dependency CSS and assets.
+The generator has also run under Node 22, 24 and 26; process-interruption tests
+cover rollback and committed cleanup. Wheel installation was checked separately.
+
+Verification limits remain explicit: the complete Python integration suite
+cannot collect its pre-existing DatabaseSelectors tests against this worktree,
+where that unrelated core capability is absent. The Node host's pre-existing anonymous owner was corrected against the already
+approved GC-230 §135 session-cookie contract, preserving explicit ownerForRequest
+providers. Its complete HTTP suite now passes on both Node and Bun (34 tests each).
+No database substitute was added for the unrelated DatabaseSelectors gap.
+Implementation and verification are not owner acceptance or release authorization.
+Original local changes are preserved in their checkouts and included in isolated
+consumer test copies. No dependency source was changed and nothing was published.
+
+Final verification update: Node and Bun 34/34 each; serverless 39/39; core JS
+3778/3778; core Python 252 passed plus 382 subtests and one expected failure.
+Python integrations: 123 general tests passed, and the five manifest cases passed
+after their unreachable sibling import was replaced with a valid Page fixture;
+one unavailable optional Typst suite is skipped and DatabaseSelectors collection
+remains excluded for the unrelated missing core capability. Gallery: 158 JS tests,
+26 Python tests plus 130 subtests passed; the stale catalogue count was corrected
+and all nine catalogue tests then passed. The final wheel's five artifacts verify.
+Node 22/24/26 check the same generated artifact successfully. Real Uvicorn restart
+rejects the old artifact URL (404) and serves the new one (200), with command
+registration, stylesheet and binding verified in the browser after restart.
+New Python modules pass Ruff; existing test warnings are retained, not suppressed.
+
+Consumer source copies remain isolated from the running user gallery. Recoverable
+before/after archives and patches, including original-byte hashes, are saved under
+`temp/collection-consumer-migration` in this worktree. They require the matching
+new core; they were not installed over the user's released runtime. The original
+consumer checkouts were verified byte-for-byte unchanged against the initial local
+work snapshot. Installation/consolidation and owner acceptance remain separate.
+
+Closing checks: all 16 generator/recovery/protocol regression cases pass, including
+six additional malformed JSON/version/status/exit/schema cases after the full core
+run. Both JavaScript-host documentation views build with Sphinx in warnings-as-errors
+mode (22 paired guides, 136 stable identities). The complete unrelated database
+suite remains uncollected for the stated missing capability; no overall integration
+suite success is claimed. Generated packages and runtime were rebuilt and the final
+installed wheel's five collection fingerprints verified.
+
+
+<a id="gc-070-1655"></a>
+## 1655. Collection consolidation and preserved selector work — 2026-10-23
+
+Block ID: **GC-070-1655**.
+
+Owner confirms "si" to coordinated consolidation and verification of the local
+DatabaseSelectors work. Existing consumer changes were applied only after matching
+the recorded before hashes; unrelated local files and staged state are preserved.
+The core development worktree incorporates the bounded previously implemented
+PORT-0016 selector code and its tests/contracts. It retains the corrected central
+writeParameter path instead of copying the older local ControlAdapter.commit body.
+No unrelated local core work, dependency source, public release or deployment is
+included. Local before snapshots are retained under temp/collection-consolidation.
+Consolidation verification is complete. Core: 260 Python tests passed, one known
+xfail, 382 subtests; 3,785 JavaScript tests passed. The actual Python adapter checkout
+passes its complete suite including DatabaseSelectors: 143 passed, one optional
+Typst skip because genro-typst is unavailable in the test environment. Examples:
+27 Python tests plus 130 subtests and 158 JavaScript tests passed. Node and Bun:
+34 HTTP tests each; serverless: 39 tests passed. The JavaScript consumer checks use
+isolated dependency installations with matching consolidated source.
+
+The installed wheel verifies all five prepared collection fingerprints, includes
+DatabaseSelectors and exposes dbSelect/dbComboBox in the input grammar. Rebuilding
+core and gallery collections removes old generated inventories; a planted stale
+asset is removed and the resulting fingerprints verify. Real Uvicorn on a temporary
+SQLite fixture resolves the initial key 0, searches Grace Hopper and synchronizes
+both selectors, key 2, email and country. Evidence: temp/collection-consolidation/
+db-verification.png. This closes the DatabaseSelectors integration gap recorded in
+§1650; the optional Typst limitation remains explicit. Documentation and preservation
+checks are recorded with the consolidation evidence. Acceptance and publication are
+not inferred from verification.
+
+Final preservation check: 935 unrelated local paths match their saved contents,
+all four original indexes and HEADs are unchanged, and all 62 migrated/adjusted
+consumer paths match the isolated test copies. The original core checkout is
+untouched. Core public documentation passes its 15-page boundary/link/anchor check;
+both Python adapter documentation builds pass; examples documentation validates
+89 lessons and both paired guides. No runtime verification remains pending in this
+bounded consolidation; the optional Typst skip and separate owner acceptance remain.
+
+
+<a id="gc-070-1660"></a>
+## 1660. Menu resolver lifecycle decision — 2026-10-23
+
+Block ID: **GC-070-1660**.
+
+Owner replies "ok" to popup loading at opening, permanent-toolbar loading at
+mount, and resolver-argument changes invalidating content with immediate reload
+when visible or deferred loading at the next opening. GC-335 §090 records the
+bounded decision and retains existing RpcResolver caching. Collection infrastructure
+is complete per §1655; menu runtime remains unimplemented. Next decision: loading,
+empty and error/retry presentation. Paired documentation anchors were checked;
+this documentation-only step makes no new runtime verification claim.
+
+
+<a id="gc-070-1665"></a>
+## 1665. Menu resolver feedback decision — 2026-10-23
+
+Block ID: **GC-070-1665**.
+
+Owner replies "ok" to the shared popup/toolbar loading, empty and failure policy:
+discreet loading indicator, invalidated entries not actionable, non-selectable
+empty message, and error with explicit retry and no automatic retries. GC-335
+§095 records the decision. Next decision: unknown registered-command references.
+This is a documentation-only step; paired anchors and whitespace were checked.
+No menu runtime implementation or runtime verification is claimed.
+
+
+<a id="gc-070-1670"></a>
+## 1670. Unknown menu command decision — 2026-10-23
+
+Block ID: **GC-070-1670**.
+
+Owner replies "ok" to an unknown registered command rendering as a visible,
+disabled "???", with a console warning naming its full key and menu location,
+while other menu/toolbar entries remain operational. GC-335 §100 records this
+bounded policy; malformed Bag records and collection loading failures retain
+their separate contracts. Next decision: command parameter bindings and capture
+timing relative to confirmation/delay. Paired anchors and whitespace were checked;
+this documentation-only step adds no runtime implementation or verification.
+
+
+<a id="gc-070-1675"></a>
+## 1675. Menu parameter capture decision — 2026-10-23
+
+Block ID: **GC-070-1675**.
+
+Owner replies "ok" to command parameters accepting fixed values and Data bindings,
+with a detached snapshot captured at activation and retained across confirmation
+or delay. The reviewed example preserves document_id=42 despite later selection
+changes. GC-335 §105 records the decision without adding implicit argument merges
+or new binding syntax. Next decision: cancellation of pending activation when
+entry eligibility or the designated recipient changes. Paired anchors and
+whitespace were checked; menu runtime implementation remains pending.
+
+
+<a id="gc-070-1680"></a>
+## 1680. Pending menu activation cancellation — 2026-10-23
+
+Block ID: **GC-070-1680**.
+
+Owner replies "ok" to cancelling a pending confirmation/delayed command when the
+entry is removed, disabled or hidden through binding, or the recipient is destroyed
+or replaced. Normal popup closure after activation does not cancel it. Captured
+parameters remain unchanged and dispatch is never redirected to a replacement
+recipient. GC-335 §110 records the decision. Next decision: keyboard navigation
+and focus relocation. Paired anchors and whitespace were checked; no runtime
+implementation or runtime verification is claimed.
+
+
+<a id="gc-070-1685"></a>
+## 1685. Menu focus eligibility and relocation — 2026-10-23
+
+Block ID: **GC-070-1685**.
+
+Owner replies "ok" to skipping hidden/disabled entries, separators and spacers
+in navigation; relocating focus from an unavailable entry to the next usable
+entry, otherwise the previous one; and, when none remain, closing the popup with
+focus returned to its opening button or focusing the permanent toolbar container.
+GC-335 §115 records this bounded decision, separate from initial empty results.
+Next decision: keyboard mapping and submenu navigation. Paired documentation
+anchors and whitespace were checked; runtime implementation remains pending.
+
+
+<a id="gc-070-1690"></a>
+## 1690. Menu keyboard map — 2026-10-23
+
+Block ID: **GC-070-1690**.
+
+Owner replies "ok" to the keyboard map recorded in GC-335 §120: Up/Down for
+popup entries, orientation-dependent toolbar arrows, Home/End, Enter/Space,
+Right/Left submenu navigation, Escape for the current popup level, and
+Tab/Shift+Tab exit closing popups. Next decision: pointer opening and dismissal.
+Paired anchors and whitespace were checked; this records approved behavior only,
+not runtime implementation or browser verification.
+
+
+<a id="gc-070-1695"></a>
+## 1695. Provisional menu decisions and pointer policy — 2026-10-23
+
+Block ID: **GC-070-1695**.
+
+Owner confirms pointer interaction while clarifying that all menu/slotbar choices
+are provisional until evaluated through actual use. GC-335 §125 records the
+confirmation and this qualification: the selected baseline is not final usability
+acceptance or a stable API promise. The pointer baseline covers toolbar click
+toggling, popup submenu click/delayed hover, safe movement into submenus, outside
+click dismissal and command activation closing the popup chain. No implementation
+or release scope is expanded. Paired anchors and whitespace were checked; runtime
+implementation and hands-on owner evaluation remain pending.
+
+
+<a id="gc-070-1700"></a>
+## 1700. Provisional menu authoring syntax — 2026-10-23
+
+Block ID: **GC-070-1700**.
+
+Owner replies "ok" to positional registered-command references in menuline,
+caption for label overrides/submenu openers, the explicit "-" separator, and
+node_label for optional occurrence identity without mandatory repeated code.
+Repeated commands have distinct Source nodes/parameters. Existing positional
+captions must be migrated, without caption/key guessing. GC-335 §130 and GC-225
+record the selected provisional syntax. Remaining structural choices are bar
+composition and the minimum frame contract. Paired anchors and whitespace were
+checked; implementation and hands-on acceptance remain pending.
+
+
+<a id="gc-070-1705"></a>
+## 1705. Provisional bar composition — 2026-10-23
+
+Block ID: **GC-070-1705**.
+
+Owner explicitly accepts the proposed composition as provisional and requests
+the minimum frame contract before a first trial implementation. GC-335 §135
+records menu(presentation="bar", orientation=...), menuline commands,
+spacer(size=12)/spacer(flex=1), existing contentPane for free content and explicitly
+nested permanent menus, distinct from menuline-owned popup submenus. GC-225
+records these spellings. Paired anchors and whitespace were checked. Next:
+confirm the minimum frame contract and then implement the bounded trial version;
+no runtime or hands-on acceptance is claimed yet.
+
+
+<a id="gc-070-1710"></a>
+## 1710. Menu/frame trial implementation started — 2026-10-23
+
+Block ID: **GC-070-1710**.
+
+Owner confirms the minimum frame and first trial scope with "ok" (GC-335 §140).
+Core implementation, explicit existing-menu migration, regression tests and a
+Python gallery trial are in progress. Dialog/floating remain the next increment;
+no release or publication is included. Original core work remains preserved in
+its separate checkout; a pre-trial content backup is at
+/private/tmp/gramlot-menu-trial-before.zip. Implementation is not yet verified or
+accepted through use.
+
+
+<a id="gc-070-1715"></a>
+## 1715. Menu/frame provisional trial ready for use — 2026-10-23
+
+Block ID: **GC-070-1715**.
+
+The first trial authorized by owner "ok" (GC-335 §140) is implemented and verified;
+see GC-335 §145 for scope and evidence. Core JS: 3,800 pass. Core Python: 263 pass,
+382 subtests, one existing upstream regex xfail. Examples: 27 pass/130 subtests,
+plus the new trial bootstrap/endpoint regression. Python adapters: 143 pass,
+one optional dependency skip. Uvicorn/browser confirms shared popup/bar states,
+commands to central content, lazy submenu, keyboard, ask/delay and error/retry.
+
+The Python trial is served separately at http://127.0.0.1:8093/pages/menu/01_menu_trial;
+the original gallery is preserved. Source remains in the existing implementation
+checkout and examples repository; the original core local work is untouched.
+Prepared runtime and component metadata were rebuilt. No publication or release.
+
+Implemented and verified does not mean owner-accepted: choices remain provisional
+until hands-on use. Next: owner tries the page and supplies feedback; dialog and
+floating remain the following increment. Wider legacy menu features stay deferred
+as listed in GC-335 §145 and PORT-0023.
+
+Verification note: paired anchors and the new blocks are consistent; whitespace
+checks pass. GC-070 already contains the duplicate historical anchor gc-070-1440
+in both mirrors; it was detected and left outside this bounded implementation.
+
+
+<a id="gc-070-1720"></a>
+## 1720. Menu gallery chapter and bounded frame flex correction — 2026-10-23
+
+Block ID: **GC-070-1720**.
+
+Owner requests a gallery chapter on menu/toolbar and framePane. The existing
+Python extra catalogue now contains six lessons: popup; bar composition; reactive
+states; frame regions and nested recipients; resolver Bags; complete workspace.
+Every lesson includes Python, named Logic and an explanation. Existing menu-01
+identity is preserved. The chapter appears in the development gallery on port
+8093 as "Menus, toolbars and framePane". Original core work remains untouched.
+
+Browser verification exposed a core gap: flex styles on a contentPane host did
+not reach the internal slot container, leaving two side bars stacked. Owner
+explicitly authorized this scope extension: "Sì, correggi anche il core" in reply
+to the focused correction/regression request. The bounded correction forwards
+Source-authored flex container styles and gap into that inner container, clearing
+them when flex is removed. Children and binding identity are preserved; no
+application DOM workaround or new public API is introduced.
+
+Targeted checks: 11 Python chapter/catalogue tests and six page subtests pass;
+26 JS menu/border tests pass, including reactive flex direction and cleanup.
+Real Uvicorn/browser checks confirm nested frame recipient isolation and the
+second lazy submenu resolver. Full JS regression: 3,801 tests pass. Browser geometry confirms adjacent side
+bars and stacked top bars. The six-lesson chapter is implemented and verified. Provisional API status and deferred dialog/floating scope remain.
+
+
+Owner teaching feedback: "mettere qualche spiegaxione sopra noj è un delitto".
+The toolbar example now includes a reading guide and exercises above the demo,
+labels each top bar and explains the bottom-region whitespace, command parameters
+and embedded input. This is an examples-only explanatory revision; runtime and
+API behavior are unchanged. Focused page loading and browser presentation checked.
+
+
+<a id="gc-070-1725"></a>
+## 1725. Compact cascading menu revision (2026-10-23)
+
+Owner explicitly requested: "Questo è il concetto di menu che intendo: righe
+compatte, icone allineate, separatori, checked e sottomenu che si aprono di lato.
+Rifacciamo il menu partendo da questo esempio." The reference is the supplied
+macOS cascading-menu screenshot. Scope is the existing popup presentation,
+submenu geometry and the Python gallery example; command, resolver and Data
+contracts remain unchanged.
+
+Implemented: compact full-width rows with aligned check/icon/caption/arrow
+columns; selected/open row highlighting; visible separators; muted disabled
+entries; side-opening popup submenus with viewport-side selection and vertical
+clamping. Toolbar-owned popups still open below their opener. Hover opens a
+branch and moving to another usable row closes the previous branch. Separator
+recognition now reads only the occurrence's own text: a descendant separator
+must not disable its submenu opener.
+
+The popup lesson now starts with concise instructions and demonstrates checked,
+disabled, separators and Export → PDF/CSV in a bounded document frame. The
+existing toolbar reading guide was also visually checked. Verification: 41
+focused JS tests pass (menu, popup geometry, buttons and shared choice controls),
+plus two Python chapter tests and six page subtests. The runtime build succeeds.
+Uvicorn/browser confirms aligned compact rows, side-opening Export, command
+delivery and live Details checkmark/content updates after reopening.
+
+Implemented and verified against this request; owner usability acceptance is
+pending. This is still the provisional menu trial, not a release or stable API.
+
+
+<a id="gc-070-1730"></a>
+## 1730. Component and collection authoring guide (2026-10-23)
+
+Owner requested a complete explanation, clarified the focus as how components
+work, how collections are added and how overriding works, and selected "In
+inglese, nel repository". GC-340 is the resulting repository teaching guide with
+its concise mirror, linked from the existing documentation entry point `02-documentation.md`.
+It remains outside the public manual allowlist. No runtime API, publication or
+stable acceptance is introduced.
+
+The guide separates definition, Source occurrence and browser instance; explains
+Builder grammar/Data, metadata and class composition, JS component authoring,
+CSS/assets/commands, generated Python packages, Page selection, dependencies,
+external packages, MRO accumulation and lifecycle. It distinguishes occurrence
+parameters, specialization, whole-declaration grammar replacement and forbidden
+custom-element/command identity collisions. Complete examples keep one Python
+name while selecting a new custom-element tag. Older URL-only activation text is
+explicitly identified as superseded for this development path.
+
+Verification extracted the sample files from Markdown into an isolated temporary
+project: real build/check for base and dependent override packages, Python imports,
+artifact verification, dependency order, inherited Page selection and Python Source
+generation all passed. JSDOM mounted that Python Source and verified two-way Data,
+reactive display, component defaults, occurrence overrides, replacement tags,
+Builder isolation, duplicate errors and disposal. These are focused teaching-code
+checks, not new real-browser or wheel-distribution qualification. All 21 paired
+section anchors, local guide links and code fences pass validation. Existing
+runtime and local work are preserved. Documentation task complete; no next phase
+started.
+
+
+<a id="gc-070-1735"></a>
+## 1735. One hierarchical menu, four presentations (2026-10-23)
+
+Owner requested a single hierarchy as popup, horizontal bar, vertical bar and
+context menu, with explanations above each example. Owner confirmed the legacy
+opening syntax with "Sì, manteniamo questa sintassi": area.menu() is contextual,
+modifiers="*" selects ordinary click without keys, and modifiers="Shift" selects
+exact Shift+click. This supersedes the proposed context=True. See GC-335 §150 and
+the paired GC-225 naming record. The existing five-field message is unchanged.
+
+Implemented in the active development checkout and Python extra catalogue: direct
+parent attachment with disposal, pointer/keyboard positioning, exact modifiers,
+vertical side-opening submenus and a shared-hierarchy comparative page. Browser
+checks exposed and fixed the named-slot mismatch for area popups and the vertical
+layout being overwritten during Source style projection. The remaining chapter
+triggers use menu/menuline rather than split dropdown buttons. Explanations and
+observable actions are above every comparative example.
+
+Verification: 44 focused JS tests pass; two Python chapter tests and six page
+subtests pass. Real Uvicorn/browser checks cover all presentations, two submenu
+levels, checked/disabled synchronization, command target delivery, right-click,
+Shift+F10, dismissal, exact Shift acceptance and rejection of ordinary/extra-key
+clicks. The trial is available at http://127.0.0.1:8093/pages/menu/02_popup.
+No extended release suite, publication or deployment was performed. This bounded
+revision is complete and verified; owner usability evaluation remains pending.
+Broader legacy context extraction, validclass and external attachment are deferred.
+
+
+<a id="gc-070-1740"></a>
+## 1740. Toolbar overflow behavior confirmed (2026-10-23)
+
+Owner supplied toolbar references, requested slots anchored through spacers,
+ordinary controls in menus as well as toolbars, per-slot overflow eligibility and
+priority, and indivisible groups. Owner confirmed with "ok" the precise rule:
+lower priority moves first, ties start at the end, groups remain indivisible.
+GC-335 §155 records the provisional design and the later optional user visibility
+preferences in sessionStorage (owner: "solo alla fine"). No new grammar names or
+runtime implementation are introduced by this documentation update.
+
+Remaining design questions include insufficient space for always-visible units,
+focus during responsive relocation, and concrete grammar/lifecycle mechanics.
+No fallback behavior or customization-storage contract has been inferred as
+approved. The implementation and verification baseline is still §1735; this
+update records decisions only. Paired project/status records were checked;
+runtime tests were not rerun for this documentation-only update.
+
+
+<a id="gc-070-1745"></a>
+## 1745. Retained toolbar content scrolls when necessary (2026-10-23)
+
+Owner confirmed: "Sì, se gli slot sempre visibili non ci stanno, facciamo scorrere
+la toolbar senza spezzare i gruppi. comunque tutto vaverificato". GC-335 §155 now
+records axis scrolling when retained content cannot fit, without splitting groups
+or forcing retained units into overflow. This resolves the space-exhaustion question
+from §1740. All toolbar behavior remains provisional pending implementation,
+regression coverage and real-browser usability evaluation, including inputs and
+focus during resize. The optional sessionStorage customization stays deferred.
+
+Paired design/status records checked. Documentation only; no runtime change or
+new runtime verification is claimed. Concrete grammar and relocation/focus details
+remain to be settled before the implementation trial; §1735 remains its baseline.
+
+
+<a id="gc-070-1750"></a>
+## 1750. First responsive toolbar trial implemented (2026-10-23)
+
+Owner explicitly requested the first version in the gallery using menu/menuline,
+groups, spacers, priorities, overflow and scrolling. Implemented in the existing
+active development checkout; GC-335 §160 records scope and provisional status.
+There are no slot/toolbar aliases. menuline groups carry priority/overflowable
+metadata; the core distributes original nodes through slots and keeps the existing
+Source, Data and command message contract. The inner strip scrolls when retained
+units cannot fit; the overflow button remains reachable outside that strip.
+
+The Python gallery lesson now has four explained exercises with Data-bound width
+and height controls, retained and movable searches, grouped commands and vertical
+presentation. Future user visibility preferences/sessionStorage are deferred.
+
+Verification: 51 targeted JS tests pass, four core Python authoring tests pass,
+and two Python chapter tests/six page subtests pass. Uvicorn/browser checks include
+nested submenu delivery from overflow, input editing and shared value preservation,
+retained scrolling and vertical overflow/return. Browser review verified actual
+geometry, beyond JSDOM's controlled measurements. No extended release suite,
+publication, commit or deployment is claimed. The requested provisional trial is
+implemented and verified; the next step is owner hands-on evaluation, not stable
+acceptance. Complex embedded-control focus should receive further feedback in use.
+
+
+<a id="gc-070-1755"></a>
+## 1755. Toolbar icon/label modes implemented (2026-10-23)
+
+Owner explicitly approved beside, below and tooltip modes, gallery examples,
+mandatory icon-and-caption overflow rows, and larger classic toolbar buttons with
+subtle hover. GC-335 §165 and GC-225 record the bounded implementation and names.
+menu defaults and group/entry overrides use labelPosition/iconSize, with read
+bindings; there is no new component or command path. Full captions and accessible
+names survive toolbar text hiding. The Python lesson now opens with three
+comparative examples; old empty captions use the tooltip setting instead.
+
+Verified: 53 targeted JS tests, five core Python authoring tests, two chapter tests
+and six page subtests pass. Browser checks on Uvicorn confirm icon/caption sizing,
+hover background, command delivery and full caption restoration in overflow.
+A first gallery test read generated assets during the build and failed; rerunning
+only after generation completed passes. This was a verification sequencing issue,
+not an application compatibility path. The implementation is ready for the owner's
+trial; no stable acceptance, release or publication is implied. User customization
+and sessionStorage remain deferred.
+
+
+<a id="gc-070-1760"></a>
+## 1760. Vertical icon toolbar gallery trial (2026-10-23)
+
+Implemented the explicitly requested rail example and directional chevrons
+(GC-335 §170, GC-225). Python authors the example using existing menu/menuline,
+Data selection bindings, priorities and retained entries. The gallery explains
+how to resize and what to observe; the horizontal comparison shows the down cue.
+
+Verified: 53 targeted JS tests, five Python authoring tests, two gallery tests and
+seven page subtests. Uvicorn/browser checks cover selecting a section, side-opening
+Tools, reducing height to overflow, selecting an overflow entry and restoring it
+with its checked state. Console has no errors. Owner usability acceptance remains
+pending; no release, publication or sessionStorage customization is included.
+
+
+<a id="gc-070-1765"></a>
+## 1765. SVG toolbar and hierarchical menu trial (2026-10-23)
+
+Owner confirmation: “Sì, iconSrc per SVG” and “Per la voce, con icona configurabile a parte”.
+The requested toolbar selection uses background only, with reduced horizontal
+padding (5 px). The rail is narrower and uses actual SVG images. icon remains
+text/emoji; iconSrc is a read-bound image URL on command surfaces, registry
+metadata and resolver records. It uses img with empty alt, inside the decorative
+icon span, never inline SVG markup. Caption supplies the accessible control name.
+An explicit occurrence icon choice replaces the registered choice; within that
+choice iconSrc takes precedence. Clearing a bound source returns to the icon text.
+The icon image follows iconSize in toolbars and compact sizing in popup/overflow.
+SVG keeps its authored colors; entry color does not recolor the image document.
+
+Existing caption, class_, color, width and height describe the occurrence. The
+internal control inherits the occurrence color and fills its explicit dimensions.
+Classes remain on the Source host, respecting shadow boundaries. No label alias,
+icon registry or independent icon width/height contract was introduced.
+
+The gallery adds a classic File/Edit/View bar, nested File → Export → Image,
+checked View state, disabled entries and a styled 140 × 52 px example with a
+24 px emoji. The vertical rail demonstrates 32 px SVG images and background-only
+selection. Source, Data bindings and named Logic remain the authoring mechanisms.
+
+Verification: 57 focused JS tests, six Python authoring tests, one real collection
+generation/update/verification test, two gallery tests and eight page subtests
+pass. Uvicorn/browser confirms image loading, 32 px rail/14 px overflow icons,
+selection without a tick, popup checked toggling, nested command delivery,
+independent entry dimensions/color and no console errors. Owner usability review
+remains pending; no publication or user-customization storage is included.
+
+
+<a id="gc-070-1770"></a>
+## 1770. FramePane windows: first gallery increment (2026-10-23)
+
+Owner approved dialog / html_dialog / floatingPane names and first implementation.
+GC-320 §075 records the bounded delivered contract and GC-225 the naming. Native
+ask/Inspector call sites migrated; layout adds shared window chrome with Source
+frame, modal/nonmodal behavior, close guard, retained content, drag/resize, keyboard
+geometry and collapse. Gallery lesson 09_windows offers all three configurations.
+
+Verified: 87 JS tests (windows, menus, layout, ask, buttons, Inspector), seven core
+Python authoring tests, two gallery tests and nine page subtests pass. Uvicorn/browser
+confirms collapsed modality, nonmodal background edits, pointer and keyboard geometry,
+close refusal, focus return, internal popup commands and retained geometry/draft.
+Browser findings were corrected and the affected checks rerun; see GC-320 §075.
+Implemented and verified, not owner-accepted or stable. Next: owner tries the gallery;
+maximize and reload persistence remain outside this first version. No publication.
+
+
+<a id="gc-070-1775"></a>
+## 1775. Window maximize and restore (2026-10-23)
+
+Owner confirms maximizable/maximized and the maximize/collapse contract. Implemented
+on both window components with the normal rectangle retained independently from
+viewport presentation; dialog modality is unchanged. GC-320 §080 and GC-225 record
+the contract. Python gallery lesson 09 now explicitly enables maximize on the
+movable dialog and floating examples, with instructions above each example.
+
+Verified: 90 focused JS tests, seven core Python tests, two gallery tests plus nine
+page subtests pass. Uvicorn/browser verifies full viewport size, exact restore,
+collapse/expand, draft retention and modal/nonmodal distinction, including editing
+the background behind the collapsed maximized floating. Console errors: none.
+Implemented and verified, awaiting owner trial; next action is gallery usability
+review. Reload persistence and stable acceptance remain outside this increment.
+
+
+<a id="gc-070-1780"></a>
+## 1780. Complete dialog editor gallery example (2026-10-23)
+
+Owner requests a fuller example with dialog, framePane, top toolbar and bottom
+Save/Cancel. Added Python lesson menu/10_dialog_editor in gramlot-examples using
+existing components only. Saved and draft fields are distinct Data paths. Save
+validates the title and commits locally; Cancel and X/Escape discard; Reset restores
+the draft without closing. Details and a hierarchical menu share reactive state.
+The bottom actions remain one retained toolbar group aligned by an elastic spacer.
+
+Verified: chapter tests pass (two tests, ten page subtests). Uvicorn/browser confirms
+save/reopen, cancel without modifying the saved document, blank-title validation,
+reset, Details from toolbar and submenu, and Escape discard. Core runtime remains
+unchanged; this is an application composition example, not a framework release.
+Next: owner tries the complete editor; persistence to a server is not included.
+
+
+<a id="gc-070-1785"></a>
+## 1785. Editor SVG icons (2026-10-23)
+
+Owner rejects the text/emoji Reset and Save icons in the complete editor. The
+example now supplies coherent outline SVG images through existing iconSrc for
+Save, Reset, Cancel and Details, including submenu occurrences. Cancel uses a
+cross instead of the undo glyph. Command registration and behavior are unchanged.
+Verified visually in Uvicorn/browser; chapter checks pass (two tests, ten page
+subtests). The change is confined to example presentation; no core API change.
+
+
+<a id="gc-070-1790"></a>
+## 1790. Editor toolbar surfaces (2026-10-23)
+
+Owner requests a visible toolbar boundary/background. The complete editor's top
+and bottom menus now use the theme's surface-subtle background and a one-pixel
+border toward the central content. Existing Source styling parameters suffice;
+no runtime change. Browser visual verification is the check for this presentation
+adjustment. User appearance acceptance remains pending.
+
+
+<a id="gc-070-1795"></a>
+## 1795. Compact editor bars (2026-10-23)
+
+Owner requests less space above and below the toolbar items. In lesson
+10_dialog_editor, top/bottom vertical padding is now 2px (previously 6px/8px),
+retaining horizontal padding, theme surfaces and borders. Presentation-only;
+verification is the rendered gallery, with no new core contract or behavior.
+
+
+<a id="gc-070-1800"></a>
+## 1800. Window resize grip (2026-10-23)
+
+Owner rejects the resize handle appearance. Shared WindowShell now uses two fine
+SVG diagonal strokes instead of the solid text triangle. The 20px interaction area,
+accessible name and pointer/keyboard behavior remain; hover/focus increases contrast.
+Existing camelCase local names resizeIcon/resizePath follow GC-225. No public API
+change. Eleven window regression tests pass; Uvicorn/browser confirms the visual
+result and pointer resize (500px to 472px). Owner appearance acceptance is pending.
+
+
+<a id="gc-070-1805"></a>
+## 1805. Professional appearance and density review (2026-10-23)
+
+Owner requests an aesthetic review and two or three compact professional themes,
+prioritizing clarity, consistency and space efficiency. Reworked existing Joanna,
+Compact and Mimi profiles (32/28/24px controls, 14/13/12.5px text), each with light
+and dark palettes. Reused established theme IDs and semantic tokens; no new theme
+or Source API. GC-096 §060 describes scope and limits. Shared menu/toolbar/window
+chrome follows density tokens; text inputs fill their container and native readonly
+state matches components. The complete editor removes surplus initial height.
+
+Added three Python gallery specimens with identical content, plus documentation
+and historical banners on previous profile descriptions. Automated checks: 93 JS
+regressions (windows, menu, buttons, layout, native controls and validation), two
+chapter tests and thirteen page subtests pass. Palette calculations pass 4.5:1 for
+text/secondary/action/error pairs and 3:1 for field borders in both modes. The gallery
+was rebuilt against the active core checkout; the temporary dependency link was
+restored. Restarting refreshed its fixed collection registry after the rebuild.
+Browser review completed for all three palettes in light and dark. Native and
+component fields measure equal heights (24/28/32px) and widths; menus, disabled
+commands, checks, tabs/table and modal window chrome remain usable. Dense windows
+use a 200px initial height for the short specimen. Appearance acceptance remains
+with the owner.
+No release qualification or publication.
+
+
+<a id="gc-070-1810"></a>
+## 1810. Independent gallery color combinations (2026-10-23)
+
+Owner: “fai in modo che sia possibile anche scelgiere temi di colori o abbinamenti diversi”.
+Implemented a Colors selector alongside Theme and Color mode. Three color-only
+core stylesheets offer Blue & slate, Sage & green, and Warm gray & blue; Theme
+default removes the override. Gallery preferences persist and propagate to open
+and newly loaded frames using the existing gallery-owned bridge. Python and JS
+gallery declarations are aligned. No component behavior or adapter change.
+
+Core and gallery builds pass. Twenty-five gallery JS regressions pass, including
+independent preferences, frame synchronization, invalid palette rejection and
+color-only declarations. Browser computed styles confirm all eighteen combinations
+of the three density profiles, three palettes and two modes retain the correct
+font and field height. Two Python chapter tests and thirteen page subtests pass.
+Browser review confirms the frame, toolbar and form adopt the selected palette;
+the saved choice survives reopening the gallery, with no console errors. Visual
+acceptance remains with the owner. This is a local trial, not release qualification
+or publication.
+
+
+<a id="gc-070-1815"></a>
+## 1815. Complete floating editor in the gallery (2026-10-23)
+
+Owner: “Fammi vedere anche il floating con gli stessi temi, toolbar e campi, così
+confronto i due.” Added an examples-only Python lesson matching Complete dialog
+editor, using existing floatingPane/framePane/menu/menuline, bindings and local
+Logic. The same field layout, SVG icons, command surfaces and Save/Cancel cycle
+make the modal/nonmodal comparison direct; Background note exposes page interaction.
+Theme, palette and mode use the existing gallery preferences. No core runtime,
+host or public API change. The sequential chapter filename and Page/Logic names
+reuse existing example naming conventions.
+
+Verified: two Python chapter tests with fourteen page subtests; local Uvicorn and
+browser Save/reopen, Cancel preserving saved Data, collapse/expand and background
+live editing while the floating remains open. Current palette is Compact + Sage
+& green. The expanded floating is available in the gallery for owner review.
+No release qualification, publication or stable visual acceptance.
+
+
+<a id="gc-070-1820"></a>
+## 1820. Distinct toolbar overflow indicator (2026-10-23)
+
+Owner prefers “>> o un icona simile rivolta a destra” instead of the ambiguous
+single downward overflow arrow. ToolbarOverflow now renders a right-facing double
+chevron SVG with More commands tooltip and accessible name. Existing submenu
+buttons keep their small single orientation-dependent chevrons. Priority, grouping,
+scrolling and popup placement are unchanged. GC-225 records the visual refinement.
+
+Verified: 31 menu regressions pass; core and gallery builds pass. Local Uvicorn
+browser check resized the complete dialog until overflow appeared, then opened
+and closed its Document menu. The SVG is visible at the trailing toolbar edge;
+the dialog remains open for owner review. No publication or release qualification.
+
+
+<a id="gc-070-1825"></a>
+## 1825. Tree chevrons and compact row spacing (2026-10-23)
+
+Owner requests an unfilled tree disclosure chevron and less distance before the
+label. Tree now uses a currentColor SVG stroke instead of filled text triangles;
+existing aria-expanded controls its 90-degree rotation. Expander and matching leaf
+spacer are 20px instead of 24px, with touch-target minimums retained. Row gaps are
+2px instead of 4px. Existing folder/document icons remain: browser inspection
+confirmed they occupy real visible icon space, not an unused placeholder. Hidden
+custom icons continue to use the existing hidden behavior. Indentation is unchanged.
+
+Verified: 42 tree regressions pass; core and gallery builds pass. Local Uvicorn and
+browser checks confirm branch opening and rotation, and caption position moves
+from 58.49px to 50.48px (8px closer). The gallery navigation is left open for visual
+review. No API change, release qualification or publication.
+
+Owner follow-up (2026-10-23): requests tree rows 1–2px closer vertically. Gallery navigation row height is now 30px instead of 32px using its existing CSS token. Browser measurement confirms 30px and branch expansion remains usable. This is gallery presentation only; core density profiles are unchanged.
+
+
+<a id="gc-070-1830"></a>
+## 1830. Container proportions and drawer/tab review (2026-10-23)
+
+Owner requests a visual review of borderContainer and tabContainer variants,
+proportions, drawers and labels. Two example presentation corrections are applied
+in gramlot-examples, in both Python and JavaScript: the Search drawer's initial
+height derives from the existing field-height and label-gap tokens plus its label
+line and padding, instead of a fixed 64px that clipped the Base input; tab comparison
+cards are 200px instead of 240px to reduce unused space. No core behavior, API,
+minimum resize size or application layout policy is changed.
+
+Verified: 26 core container/layout regressions and eight container example checks
+pass. Browser review covers shaped/underline tabs on four sides and alignment
+geometry, Compact light, Mimi dark and Joanna light with the Sage palette; rounded
+border Headline/Sidebar layouts, the five-container nesting laboratory, and drawer
+keyboard close/reopen with revealed labels. Base Search now has an 84px content
+viewport with scrollHeight 84 (no clipping), inside its 85px region. These are focused
+desktop checks, not exhaustive theme/palette/device qualification or owner acceptance.
+Complex nested layouts retain their authored side-region sizes and need drawers
+closed or resized when little space remains. No publication or release qualification.
+
+
+<a id="gc-070-1835"></a>
+## 1835. Collapsible gallery guide (2026-10-23)
+
+Owner requests more space for testing border regions and drawers. The gallery's
+existing Guide drawer now starts closed and keeps its text handle visible
+(drawer_minimize=False), with a Show or hide guide tooltip. Python and JavaScript
+Source declarations are aligned. The existing close notification still pauses the
+guided tour; no new state, core API or alternate toggle mechanism is introduced.
+
+Verified: gallery build and five guided-tour regressions pass. Local Uvicorn
+browser verification opens and closes Guide from its handle; the example recovers
+the panel's space. The gallery is left on the drawer example with Guide closed.
+
+
+<a id="gc-070-1840"></a>
+## 1840. Developer manual and complete widget reference (2026-10-23)
+
+Owner requests an exhaustive Read the Docs renewal with widget parameters,
+examples, style guidance, screenshots and embedded Gramlot pages. The public
+manual now has a reader-oriented home and four navigation groups. GC-340 is
+promoted to public documentation, preserving its block IDs and leaving an
+internal move notice. GC-345 derives the 41 component declarations and their
+effective inherited parameters from the six core packaged grammars; its freshness
+is checked in documentation CI. GC-350 explains commands, menu presentations,
+resolver Bags, frames and windows. GC-355 indexes all 89 catalogue lessons and
+14 explicitly development-only Python trial chapters, with ten actual browser
+screenshots. Existing collection/bootstrap examples now use prepared Page.gramlots
+descriptors. Density, palettes and label guidance link to the current contracts.
+The classic Sphinx Read the Docs theme is retained; tables wrap and the sidebar
+logo is constrained. Paired documentation and public staging allowlists are updated.
+
+The examples manual's introduction now follows teaching prerequisites, explains
+its real embedded serverless playgrounds and distinguishes them from Python-host
+features. No runtime/adapter behavior is changed. Documentation build alignment
+used an isolated serverless package copy against this core checkout; temporary
+example dependency symlinks were restored. No host repository was modified.
+
+Verified: strict Sphinx builds succeed for both manuals; core checks cover 19
+pages, search scope, downloadable sources, all local links and mirrored anchors;
+examples checks cover 89 lessons, two paired guides and local links/anchors, with
+all 89 playgrounds exported successfully. Nine new Python blocks parse and the
+two standalone introductory pages bootstrap and build Source through FileServer.
+Browser review covers the manual home, widget tables, search results, visual tour
+and a real embedded drawer playground, including a bound input updating Data.
+The exporter still reports existing import.meta/IIFE warnings in shared server
+asset code; the verified embedded example runs. This is documentation verification,
+not exhaustive runtime/browser qualification of every lesson. Prepared for owner
+review; no publication, release or acceptance is claimed.
+
+
+<a id="gc-070-1845"></a>
+## 1845. Read the Docs publication preparation (2026-10-23)
+
+Owner authorizes the core and examples manuals, including executable playgrounds,
+and confirms consolidation of the required runtime/exporter source prerequisites
+without npm/PyPI releases. Work is staged in isolated publication checkouts; original
+working copies remain unchanged. Remote source updates are integrated rather than
+replaced with older local releases. The namespace regression exposed duplicate SVG
+URI declarations in window/overflow icons; both now use the shared SVG_NS. The
+runtime bundle regression now imports the prepared input artifact entry.
+
+Verification before remote publication: core JavaScript 3830/3830; Python 263
+passing plus one known expected failure, with the preparation suite's four initial
+environment failures resolved by selecting supported Node 24 (16/16 preparation
+checks pass). The examples exporter shares one directory runtime for ordinary
+lessons and keeps Typst separate: 89 lesson playgrounds plus their Source-authored
+index, approximately 301 MiB instead of 5.5 GiB. Remote build completion and live
+site verification remain pending; no package or hosted-gallery release is requested.

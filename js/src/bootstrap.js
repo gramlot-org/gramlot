@@ -34,52 +34,74 @@ export class PageBootstrap {
         const {config, resources, document} = this;
         const window = document.defaultView;
         if (resources.serverAdapter !== undefined) this.serverAdapter = await this.loadServerAdapter(resources.serverAdapter);
-        for (const url of resources.css) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = url;
-            document.head.append(link);
-        }
-        let closed = false;
+        let closed = false, resolveClosed, app;
+        const styleCleanup = [];
+        const closing = new Promise(resolve => { resolveClosed = resolve; });
         const pagehide = event => {
             if (event.persisted || closed) return;
             closed = true;
             this.closePage();
+            resolveClosed(null);
         };
         window.addEventListener('pagehide', pagehide);
-        let entries, collections;
         try {
-            // A relative module URL is resolved against the document, as in HTML (D8).
-            const settled = await Promise.allSettled(resources.js.map(({url}) => import(new URL(url, document.baseURI).href)));
-            if (closed) return null;
-            entries = resources.js.map(({url, group}, index) => {
-                const outcome = settled[index];
-                if (outcome.status === 'rejected') {
-                    throw new Error(`${url}: import failed: ${outcome.reason?.message ?? outcome.reason}`, {cause: outcome.reason});
-                }
-                return {logicClass: outcome.value.Logic, group, resource: url};
-            });
-            LogicRegistry.check(entries);
-            collections = await Promise.all((resources.collections ?? []).map(async url => {
-                try { return (await import(new URL(url, document.baseURI).href)).default; }
-                catch (error) { throw new Error(`${url}: collection import failed: ${error.message}`, {cause: error}); }
+            const styles = resources.css.map(url => new Promise((resolve, reject) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet'; link.href = url;
+                const cleanup = () => { link.removeEventListener('load', loaded); link.removeEventListener('error', failed); };
+                styleCleanup.push(cleanup);
+                const loaded = () => { cleanup(); resolve(); };
+                const failed = () => { cleanup(); reject(new Error(`${url}: stylesheet load failed`)); };
+                link.addEventListener('load', loaded); link.addEventListener('error', failed);
+                document.head.append(link);
             }));
+            const logic = resources.js.map(async ({url, group}) => {
+                try {
+                    const module = await import(new URL(url, document.baseURI).href);
+                    return {logicClass:module.Logic, group, resource:url};
+                } catch(error) { throw new Error(`${url}: import failed: ${error.message}`, {cause:error}); }
+            });
+            const names = new Set();
+            const collectionImports = (resources.collections ?? []).map(async record => {
+                if (!record || typeof record !== 'object' || Object.keys(record).sort().join(',') !== 'buildId,name,url' ||
+                        typeof record.name !== 'string' || typeof record.url !== 'string' ||
+                        typeof record.buildId !== 'string' || !/^sha256:[0-9a-f]{64}$/.test(record.buildId) || names.has(record.name)) {
+                    throw new TypeError('Invalid or duplicate collection bootstrap record');
+                }
+                names.add(record.name);
+                const {name,url,buildId} = record;
+                let module;
+                try { module = await import(new URL(url, document.baseURI).href); }
+                catch(error) { throw new Error(`${name}: collection import failed: ${error.message}`, {cause:error}); }
+                if (module.default?.name !== name || module.buildId !== buildId) {
+                    throw new Error(`${name}: collection identity mismatch; expected ${buildId}, received ${module.buildId}`);
+                }
+                return module.default;
+            });
+            const result = await Promise.race([Promise.all([
+                Promise.all(styles), Promise.all(logic), Promise.all(collectionImports)]), closing]);
             if (closed) return null;
+            const [,entries,collections] = result;
+            LogicRegistry.check(entries);
+            // Verify the complete graph before activating any component or command.
             for (const collection of collections) collection.register(window);
-        } catch (error) {
-            this.closePage();
+            app = new Gramlot({...config, document, serverAdapter:this.serverAdapter,
+                collections:[...(config.collections ?? []), ...collections.map(c=>c.toDocument())]});
+            window.removeEventListener('pagehide', pagehide);
+            for (const collection of collections) collection.registerCommands(app);
+            for (const {logicClass,group,resource} of entries) app.src.logicRegistry.register(logicClass,{group,resource});
+            window.gramlot = app;
+            await app.start();
+            return app;
+        } catch(error) {
+            if (app) app.dispose();
+            else if (!closed) this.closePage();
             throw error;
         } finally {
+            for (const cleanup of styleCleanup) cleanup();
             window.removeEventListener('pagehide', pagehide);
         }
-        const app = new Gramlot({...config, document, serverAdapter: this.serverAdapter,
-            collections: [...(config.collections ?? []), ...collections.map(collection => collection.toDocument())]});
-        for (const {logicClass, group, resource} of entries) app.src.logicRegistry.register(logicClass, {group, resource});
-        window.gramlot = app;
-        await app.start();
-        return app;
     }
-
     /**
      * The ServerAdapter the server names in `resources.serverAdapter`: an instance of the default export of the
      * module `url`, which imports the core through the import map and so shares the runtime already loaded. A

@@ -28,9 +28,9 @@ function fixture(author, storage) {
 function dropdown(root) {
     const drop = root.dropDownButton('Default', {id: 'export', persist: true, action: "this.SET('result', 'default')"});
     const menu = drop.menu();
-    menu.menuline('CSV', {id: 'csv', code: 'csv', action: "this.SET('result', 'csv')"});
+    menu.menuline({caption: 'CSV', id: 'csv', code: 'csv', action: "this.SET('result', 'csv')"});
     menu.menuline('-');
-    menu.menuline('PDF', {id: 'pdf', code: 'pdf', disabled: '^disabled', action: "this.SET('result', 'pdf')"});
+    menu.menuline({caption: 'PDF', id: 'pdf', code: 'pdf', disabled: '^disabled', action: "this.SET('result', 'pdf')"});
 }
 
 test('built-in command grammar is portable, case insensitive and keeps html_button native', () => {
@@ -65,7 +65,7 @@ test('toggle LED uses boolean Data, commits before action, obeys readonly and di
 test('dropdown main, normal menu selection and Shift selection share exactly one executor', () => {
     const {app, click, element} = fixture(dropdown);
     click('export'); assert.equal(app.data.getItem('result'), 'default');
-    assert.equal(element('export').shadowRoot.querySelector('.popup').matches(':popover-open'), false);
+    assert.equal(element('export').menu.matches(':popover-open'), false);
     click('csv'); assert.equal(app.data.getItem('result'), 'csv');
     assert.equal(element('export').commandTarget(), element('export'));
     click('export'); assert.equal(app.data.getItem('result'), 'default');
@@ -98,7 +98,7 @@ test('menu keyboard movement excludes disabled entries and Escape restores arrow
     assert.equal(element('csv').shadowRoot.activeElement, element('csv').control);
     element('csv').control.dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Escape', bubbles: true, composed: true}));
     assert.equal(drop.shadowRoot.activeElement, drop.shadowRoot.querySelector('.arrow'));
-    assert.equal(drop.shadowRoot.querySelector('.popup').matches(':popover-open'), false);
+    assert.equal(drop.menu.matches(':popover-open'), false);
     app.dispose();
 });
 test('a button disabled while ask is open cannot execute after confirmation', async () => {
@@ -115,7 +115,7 @@ test('popup padding and separators never execute the main action', () => {
     const {app, element, window} = fixture(dropdown);
     const drop = element('export');
     drop.openMenu();
-    for (const target of [drop.shadowRoot.querySelector('.popup'), drop.querySelector('[role=separator]')]) {
+    for (const target of [drop.menu, drop.querySelector('[role=separator]')]) {
         target.dispatchEvent(new window.MouseEvent('click', {bubbles: true, composed: true}));
         assert.equal(app.data.getItem('result'), null);
     }
@@ -124,7 +124,7 @@ test('popup padding and separators never execute the main action', () => {
 
 test('disabling a dropdown during a menu confirmation blocks the pending command', async () => {
     const {app, click, window} = fixture(root => root.dropDownButton('Run', {id: 'drop', disabled: '^locked'})
-        .menu().menuline('Confirm', {id: 'item', code: 'item', ask: 'Proceed?', action: "this.SET('executed',true)"}));
+        .menu().menuline({caption: 'Confirm', id: 'item', code: 'item', ask: 'Proceed?', action: "this.SET('executed',true)"}));
     click('item'); app.data.setItem('locked', true);
     window.document.querySelector('dialog form').dispatchEvent(new window.Event('submit', {bubbles: true, cancelable: true}));
     await new Promise(resolve => setTimeout(resolve, 0));
@@ -134,7 +134,7 @@ test('command code remains Source-authored for every family member', () => {
     for (const name of ['button', 'toggleButton', 'dropDownButton']) {
         assert.throws(() => fixture(root => root[name]('Unsafe', {action: '^code'})), /inline code.*cannot be the pointer/);
     }
-    assert.throws(() => fixture(root => root.dropDownButton('Run').menu().menuline('Unsafe', {code: 'x', action: '^code'})), /inline code.*cannot be the pointer/);
+    assert.throws(() => fixture(root => root.dropDownButton('Run').menu().menuline({caption: 'Unsafe', code: 'x', action: '^code'})), /inline code.*cannot be the pointer/);
 });
 test('storage failure does not prevent selecting and executing the in-memory default', () => {
     const {app, window, click, element} = fixture(dropdown);

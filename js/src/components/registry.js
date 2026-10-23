@@ -6,8 +6,9 @@ function freeze(value) {
     return Object.freeze(value);
 }
 function annotation(parameter) {
-    if (typeof parameter.dtype !== 'string' && !Array.isArray(parameter.dtype)) throw new TypeError('Component parameter requires dtype');
-    const alternatives = (Array.isArray(parameter.dtype) ? parameter.dtype : [parameter.dtype]).map(dtype => ({kind: 'dtype', dtype}));
+    if (!parameter.annotation && typeof parameter.dtype !== 'string' && !Array.isArray(parameter.dtype)) throw new TypeError('Component parameter requires dtype');
+    const alternatives = parameter.annotation ? [structuredClone(parameter.annotation)]
+        : (Array.isArray(parameter.dtype) ? parameter.dtype : [parameter.dtype]).map(dtype => ({kind: 'dtype', dtype}));
     if (parameter.nullable) alternatives.push({kind: 'dtype', dtype: 'NN'});
     if (parameter.binding && parameter.dtype !== 'T') alternatives.push({kind: 'annotated',
         base: {kind: 'dtype', dtype: 'T'},
@@ -34,7 +35,21 @@ export function defineComponent({name, tag, base, mixins = [], parameters = {}, 
 
 export class ComponentCollection {
     #classes = new WeakMap();
-    constructor({name, components}) {
+    constructor({name, components, dependencies = [], css = [], assets = {}, registerCommands = () => {}}) {
+        if (typeof name !== 'string' || !name) throw new TypeError('Collection name must be nonempty');
+        if (!Array.isArray(dependencies) || dependencies.some(item => !(item instanceof ComponentCollection))) {
+            throw new TypeError('Collection dependencies must be collection objects');
+        }
+        if (!Array.isArray(css) || css.some(url => !(url instanceof URL)) ||
+                !assets || typeof assets !== 'object' || Array.isArray(assets) ||
+                Object.values(assets).some(url => !(url instanceof URL))) {
+            throw new TypeError('Collection css/assets require URL objects');
+        }
+        if (typeof registerCommands !== 'function') throw new TypeError('registerCommands must be a function');
+        this.dependencies = Object.freeze([...dependencies]);
+        this.css = Object.freeze([...css]);
+        this.assets = Object.freeze({...assets});
+        this.registerCommands = registerCommands;
         this.name = name;
         this.components = Object.freeze([...components]);
         const names = new Set(), tags = new Set();

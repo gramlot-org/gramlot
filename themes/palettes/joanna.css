@@ -1,0 +1,86 @@
+/* Color-only override: load after the chosen appearance profile. */
+@layer gramlot.tokens {
+  :root {
+    color-scheme: light;
+    --gramlot-background: #f5f4f2;
+    --gramlot-surface: #ffffff;
+    --gramlot-surface-subtle: #eeece8;
+    --gramlot-ink: #292c31;
+    --gramlot-text-secondary: #5d636c;
+    --gramlot-border: #d5d2cc;
+    --gramlot-border-control: #858990;
+    --gramlot-action: #245fb4;
+    --gramlot-action-hover: #194880;
+    --gramlot-selected: #e6eef9;
+    --gramlot-field-background: #ffffff;
+    --gramlot-field-readonly-background: #eeece8;
+    --gramlot-label-color: #5d636c;
+    --gramlot-focus-ring: #245fb4;
+    --gramlot-brand-blue: #245fb4;
+    --gramlot-brand-yellow: #245fb4;
+    --gramlot-navigation: #292c31;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #aa2637;
+    --gramlot-error-background: #fff0f1;
+    --gramlot-success: #236747;
+    --gramlot-success-background: #e9f4ec;
+    --gramlot-warning: #735313;
+    --gramlot-warning-background: #fff5da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --gramlot-background: #1b1c20;
+    --gramlot-surface: #25272c;
+    --gramlot-surface-subtle: #303239;
+    --gramlot-ink: #f3f2ef;
+    --gramlot-text-secondary: #c4c3c0;
+    --gramlot-border: #454951;
+    --gramlot-border-control: #858c99;
+    --gramlot-action: #abcbff;
+    --gramlot-action-hover: #cedfff;
+    --gramlot-selected: #324765;
+    --gramlot-field-background: #25272c;
+    --gramlot-field-readonly-background: #303239;
+    --gramlot-label-color: #c4c3c0;
+    --gramlot-focus-ring: #abcbff;
+    --gramlot-brand-blue: #abcbff;
+    --gramlot-brand-yellow: #abcbff;
+    --gramlot-navigation: #1b1c20;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #ffb4b4;
+    --gramlot-error-background: #48292f;
+    --gramlot-success: #98dfbd;
+    --gramlot-success-background: #243f32;
+    --gramlot-warning: #f3d58c;
+    --gramlot-warning-background: #413820;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --gramlot-background: #1b1c20;
+    --gramlot-surface: #25272c;
+    --gramlot-surface-subtle: #303239;
+    --gramlot-ink: #f3f2ef;
+    --gramlot-text-secondary: #c4c3c0;
+    --gramlot-border: #454951;
+    --gramlot-border-control: #858c99;
+    --gramlot-action: #abcbff;
+    --gramlot-action-hover: #cedfff;
+    --gramlot-selected: #324765;
+    --gramlot-field-background: #25272c;
+    --gramlot-field-readonly-background: #303239;
+    --gramlot-label-color: #c4c3c0;
+    --gramlot-focus-ring: #abcbff;
+    --gramlot-brand-blue: #abcbff;
+    --gramlot-brand-yellow: #abcbff;
+    --gramlot-navigation: #1b1c20;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #ffb4b4;
+    --gramlot-error-background: #48292f;
+    --gramlot-success: #98dfbd;
+    --gramlot-success-background: #243f32;
+    --gramlot-warning: #f3d58c;
+    --gramlot-warning-background: #413820;
+  }
+}

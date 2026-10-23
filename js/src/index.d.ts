@@ -42,3 +42,8 @@ export {NavigationResolver} from "./navigation-resolver.js";
 
 export {fileSystemTree, FileSystemLogic, FileSystemController, DirectoryResolver} from "./filesystem.js";
 export {IdeLogic} from "./ide-runtime.js";
+
+export {CommandRegistry} from './commands.js';
+export type {CommandDefinition,CommandGroupMetadata} from './commands.js';
+
+export {collectionBuildId, verifyCollectionArtifact} from './collection-artifact.js';

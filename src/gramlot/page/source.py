@@ -57,6 +57,23 @@ class GramlotBuilderBagNode(SourceBagNode):
 
     def __getattr__(self, name: str) -> Any:
         """Builder's element dispatch; a GramlotBuilder resolves the name with ``schema_tag``."""
+        if self.node_tag in ("dialog", "floatingPane") and name == "frame":
+            children = list(self.static_value) if isinstance(self.static_value, SourceBag) else []
+            if children:
+                if len(children) != 1 or children[0].node_tag != "framePane":
+                    raise ValueError("A window requires exactly one framePane")
+                return children[0]
+            return self._resolve_builder().element_call(self, "framePane")(node_label="frame")
+        if self.node_tag == "framePane" and name in ("top", "bottom", "left", "right", "center"):
+            children = self.static_value
+            if isinstance(children, SourceBag):
+                existing = next((child for child in children if child.attr.get("region") == name), None)
+                if existing is not None:
+                    return existing
+            attrs = {"region": name, "node_label": name}
+            if name != "center":
+                attrs.update(display="flex", flex_direction="column" if name in ("top", "bottom") else "row")
+            return self._resolve_builder().element_call(self, "contentPane")(**attrs)
         if not name.startswith("_"):
             builder = self._resolve_builder()
             if isinstance(builder, builder_module.GramlotBuilder):

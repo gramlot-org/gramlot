@@ -203,8 +203,11 @@ export class GramlotServer {
             throw new TypeError('Page modules must export a subclass of Page');
         }
         const resolved = await this.resolveResources(path, PageClass);
-        const resources = loadOrder({...resolved, css: [...this.themeCss(PageClass), ...resolved.css]});
-        if (this.collections.length) resources.collections = this.collections.map(item => item.module);
+        const resources = loadOrder({...resolved, css: [...this.themeCss(PageClass), ...this.collections.flatMap(collection=>collection.css ?? []), ...resolved.css]});
+        resources.collections = this.collections.map(({name,module,buildId}) => {
+            if (typeof name!=='string' || !name || typeof module!=='string' || !/^sha256:[0-9a-f]{64}$/.test(buildId)) throw new TypeError('Invalid prepared collection identity');
+            return {name,url:module,buildId};
+        });
         if (this.serverAdapter !== null) resources.serverAdapter = this.serverAdapter;
         this.prune();
         if (this.pages.size >= this.maxPages) throw new ServerCapacity('Page registry capacity reached');
@@ -229,7 +232,7 @@ export class GramlotServer {
                     rootId: this.rootId, capabilities: this.capabilities, nameSyntax,
                     ...(devices === undefined ? {} : {devices}),
                     ...(locale === undefined ? {} : {locale}), ...(timeZone === undefined ? {} : {timeZone})},
-                resources: {...(resources.collections ? {collections: resources.collections.map(url => prefixed(prefix, url))} : {}),
+                resources: {...(resources.collections ? {collections: resources.collections.map(record => ({...record,url:prefixed(prefix,record.url)}))} : {}),
                     css: resources.css.map(url => prefixed(prefix, url)),
                     js: resources.js.map(({url, group}) => ({url: prefixed(prefix, url), group})),
                     ...(resources.serverAdapter ? {serverAdapter: prefixed(prefix, resources.serverAdapter)} : {})},
@@ -245,7 +248,9 @@ export class GramlotServer {
             }
             // A page module served for its Logic imports the core from the runtime already loaded.
             head.script(scriptJson({imports: {'@gramlot/gramlot/page': prefixed(prefix, this.runtimeUrl),
-                '@gramlot/gramlot': prefixed(prefix, this.runtimeUrl)}}),
+                '@gramlot/gramlot': prefixed(prefix, this.runtimeUrl),
+                '@gramlot/gramlot/components':prefixed(prefix,this.runtimeUrl),
+                ...Object.fromEntries((resources.collections ?? []).map(({name,url})=>[`@gramlot/collections/${encodeURIComponent(name)}`,prefixed(prefix,url)]))}}),
                 {type: 'importmap', nonce});
             const body = root.body();
             body.div({id: this.rootId});

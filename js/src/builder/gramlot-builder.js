@@ -154,12 +154,25 @@ export class GramlotBuilder extends HtmlBuilder {
 
     /** Builder's element call from the Proxy on a Source Bag. */
     bagCall(bag, tag, value, attrs) {
-        return super.bagCall(bag, this.#authoredTag(tag), value, attrs);
+        tag = this.#authoredTag(tag);
+        [value, attrs] = this.menuArguments(tag, value, attrs);
+        return super.bagCall(bag, tag, value, attrs);
     }
 
     /** Builder's element call from the Proxy on a Source node. */
     commandOnNode(node, tag, value, attrs) {
-        return super.commandOnNode(node, this.#authoredTag(tag), value, attrs);
+        tag = this.#authoredTag(tag);
+        [value, attrs] = this.menuArguments(tag, value, attrs);
+        return super.commandOnNode(node, tag, value, attrs);
+    }
+
+    menuArguments(tag, value, attrs = {}) {
+        if (tag === 'menu' && value == null) return [new GramlotBuilderBag(null, this), attrs];
+        if (tag === 'menuline' && value != null && value !== '-') {
+            if (Object.hasOwn(attrs, 'command')) throw new TypeError('menuline command must be declared once');
+            return [null, {...attrs, command: value}];
+        }
+        return [value, attrs];
     }
 
     /** Builder's value check, plus the excluded attributes (authoring names the tag). */
@@ -191,7 +204,7 @@ export class GramlotBuilder extends HtmlBuilder {
     /** Both button declarations occupy the native button slot in HTML content models. */
     _validateChildren(parentTag, info, tags, includeMinimum) {
         return super._validateChildren(parentTag, info,
-            tags.map(tag => tag === 'html_button' ? 'button' : tag), includeMinimum);
+            tags.map(tag => tag === 'html_button' ? 'button' : tag === 'html_dialog' ? 'dialog' : tag), includeMinimum);
     }
 
     /** Custom elements are outside the native HTML child catalogue, as components are. */

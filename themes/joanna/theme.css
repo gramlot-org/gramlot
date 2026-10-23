@@ -1,98 +1,154 @@
-/* Gramlot adaptation of legacy joanna; load after Base and Compact. */
+/* joanna: professional density profile; load after Base and Compact. */
 @layer gramlot.tokens {
   :root {
-    --gramlot-tab-height: 26px;
-    --gramlot-tab-padding: 3px 10px;
-    --gramlot-tab-radius: 6px;
-    --gramlot-tab-gap: 2px;
-    --gramlot-tab-strip-padding: 3px;
-    --gramlot-tab-background: var(--gramlot-background);
-    --gramlot-tab-selected-background: var(--gramlot-surface);
-    --gramlot-tab-selected-color: var(--gramlot-ink);
-    --gramlot-tab-border: var(--gramlot-border);
-    --gramlot-background: #F2F2F7;
-    --gramlot-surface: #FFFFFF;
-    --gramlot-surface-subtle: #F2F2F7;
-    --gramlot-ink: #3A3A3C;
-    --gramlot-text-secondary: #636366;
-    --gramlot-border: #D1D1D6;
-    --gramlot-border-control: #AEAEB2;
-    --gramlot-navigation: #3A3A3C;
-    --gramlot-navigation-text: #FFFFFF;
-    --gramlot-action: #007AFF;
-    --gramlot-action-hover: #0061CC;
-    --gramlot-brand-blue: #007AFF;
-    --gramlot-brand-yellow: #AEAEB2;
-    --gramlot-selected: #E0EFFF;
-    --gramlot-focus-ring: #007AFF;
-    --gramlot-field-background: #FFFFFF;
-    --gramlot-field-readonly-background: #F2F2F7;
-    --gramlot-error: #B3261E;
-    --gramlot-error-background: #FFF1F0;
-    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 6%);
+    color-scheme: light;
+    --gramlot-background: #f5f4f2;
+    --gramlot-surface: #ffffff;
+    --gramlot-surface-subtle: #eeece8;
+    --gramlot-ink: #292c31;
+    --gramlot-text-secondary: #5d636c;
+    --gramlot-border: #d5d2cc;
+    --gramlot-border-control: #858990;
+    --gramlot-action: #245fb4;
+    --gramlot-action-hover: #194880;
+    --gramlot-selected: #e6eef9;
+    --gramlot-field-background: #ffffff;
+    --gramlot-field-readonly-background: #eeece8;
+    --gramlot-label-color: #5d636c;
+    --gramlot-focus-ring: #245fb4;
+    --gramlot-brand-blue: #245fb4;
+    --gramlot-brand-yellow: #245fb4;
+    --gramlot-navigation: #292c31;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #aa2637;
+    --gramlot-error-background: #fff0f1;
+    --gramlot-success: #236747;
+    --gramlot-success-background: #e9f4ec;
+    --gramlot-warning: #735313;
+    --gramlot-warning-background: #fff5da;
+    --gramlot-field-height: 32px;
+    --gramlot-field-padding: 3px 9px;
+    --gramlot-field-line-height: 1.3;
+    --gramlot-field-font-size: 1rem;
+    --gramlot-button-padding: 3px 9px;
+    --gramlot-button-gap: 4px;
+    --gramlot-button-background: var(--gramlot-surface);
+    --gramlot-button-hover: var(--gramlot-selected);
+    --gramlot-label-size: 1em;
+    --gramlot-label-gap: 3px;
     --gramlot-radius-sm: 6px;
     --gramlot-radius: 6px;
-    --gramlot-radius-lg: 6px;
-    --gramlot-field-height: 20px;
-    --gramlot-field-padding: 1px 3px;
-    --gramlot-field-line-height: 1.15;
-    --gramlot-field-font-size: 1rem;
-    --gramlot-label-size: .8em;
-    --gramlot-label-gap: 2px;
-    --gramlot-label-color: var(--gramlot-text-secondary);
-    --gramlot-space-4: 6px;
-    --gramlot-font-ui: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --gramlot-radius-lg: 8px;
+    --gramlot-window-radius: 8px;
+    --gramlot-toolbar-gap: 2px;
+    --gramlot-tree-row-height: var(--gramlot-field-height);
+    --gramlot-space-1: 3px;
+    --gramlot-space-2: 5px;
+    --gramlot-space-3: 10px;
+    --gramlot-space-4: 10px;
+    --gramlot-space-6: 15px;
+    --gramlot-space-8: 20px;
+    --gramlot-space-12: 30px;
+    --gramlot-tab-height: 32px;
+    --gramlot-tab-padding: 3px 9px;
+    --gramlot-tab-radius: 6px;
+    --gramlot-tab-gap: 2px;
+    --gramlot-tab-strip-padding: 2px;
+    --gramlot-tab-background: var(--gramlot-surface-subtle);
+    --gramlot-tab-selected-background: var(--gramlot-surface);
+    --gramlot-tab-selected-color: var(--gramlot-action);
+    --gramlot-tab-border: var(--gramlot-border);
+    --gramlot-shadow: 0 2px 8px rgb(0 0 0 / 10%);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-    --gramlot-background: #1C1C1E;
-    --gramlot-surface: #2C2C2E;
-    --gramlot-surface-subtle: #3A3A3C;
-    --gramlot-ink: #F2F2F7;
-    --gramlot-text-secondary: #C7C7CC;
-    --gramlot-border: #636366;
-    --gramlot-border-control: #8E8E93;
-    --gramlot-navigation: #1C1C1E;
-    --gramlot-action: #78B7FF;
-    --gramlot-action-hover: #A6CFFF;
-    --gramlot-brand-blue: #3478CA;
-    --gramlot-selected: #254163;
-    --gramlot-focus-ring: #78B7FF;
-    --gramlot-field-background: #202124;
-    --gramlot-field-readonly-background: #3A3A3C;
-    --gramlot-error: #FFB4AB;
-    --gramlot-error-background: #482524;
-    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+    color-scheme: dark;
+    --gramlot-background: #1b1c20;
+    --gramlot-surface: #25272c;
+    --gramlot-surface-subtle: #303239;
+    --gramlot-ink: #f3f2ef;
+    --gramlot-text-secondary: #c4c3c0;
+    --gramlot-border: #454951;
+    --gramlot-border-control: #858c99;
+    --gramlot-action: #abcbff;
+    --gramlot-action-hover: #cedfff;
+    --gramlot-selected: #324765;
+    --gramlot-field-background: #25272c;
+    --gramlot-field-readonly-background: #303239;
+    --gramlot-label-color: #c4c3c0;
+    --gramlot-focus-ring: #abcbff;
+    --gramlot-brand-blue: #abcbff;
+    --gramlot-brand-yellow: #abcbff;
+    --gramlot-navigation: #1b1c20;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #ffb4b4;
+    --gramlot-error-background: #48292f;
+    --gramlot-success: #98dfbd;
+    --gramlot-success-background: #243f32;
+    --gramlot-warning: #f3d58c;
+    --gramlot-warning-background: #413820;
     }
   }
   :root[data-theme="dark"] {
-    --gramlot-background: #1C1C1E;
-    --gramlot-surface: #2C2C2E;
-    --gramlot-surface-subtle: #3A3A3C;
-    --gramlot-ink: #F2F2F7;
-    --gramlot-text-secondary: #C7C7CC;
-    --gramlot-border: #636366;
-    --gramlot-border-control: #8E8E93;
-    --gramlot-navigation: #1C1C1E;
-    --gramlot-action: #78B7FF;
-    --gramlot-action-hover: #A6CFFF;
-    --gramlot-brand-blue: #3478CA;
-    --gramlot-selected: #254163;
-    --gramlot-focus-ring: #78B7FF;
-    --gramlot-field-background: #202124;
-    --gramlot-field-readonly-background: #3A3A3C;
-    --gramlot-error: #FFB4AB;
-    --gramlot-error-background: #482524;
-    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+    color-scheme: dark;
+    --gramlot-background: #1b1c20;
+    --gramlot-surface: #25272c;
+    --gramlot-surface-subtle: #303239;
+    --gramlot-ink: #f3f2ef;
+    --gramlot-text-secondary: #c4c3c0;
+    --gramlot-border: #454951;
+    --gramlot-border-control: #858c99;
+    --gramlot-action: #abcbff;
+    --gramlot-action-hover: #cedfff;
+    --gramlot-selected: #324765;
+    --gramlot-field-background: #25272c;
+    --gramlot-field-readonly-background: #303239;
+    --gramlot-label-color: #c4c3c0;
+    --gramlot-focus-ring: #abcbff;
+    --gramlot-brand-blue: #abcbff;
+    --gramlot-brand-yellow: #abcbff;
+    --gramlot-navigation: #1b1c20;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #ffb4b4;
+    --gramlot-error-background: #48292f;
+    --gramlot-success: #98dfbd;
+    --gramlot-success-background: #243f32;
+    --gramlot-warning: #f3d58c;
+    --gramlot-warning-background: #413820;
   }
 }
 @layer gramlot.base {
-  html { font-size: 13px; }
+  html { font-size: 14px; }
+  body { line-height: 1.4; }
+  :where(h1,h2,h3,h4,h5,h6,p,ul,ol,dl,blockquote,pre,figure) { margin-block: 0 var(--gramlot-space-3); }
+  h1 { font-size: 1.4rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
+  :where(h1,h2,h3) { letter-spacing: -.015em; }
+  pre { padding: var(--gramlot-space-3); }
+  hr { margin-block: var(--gramlot-space-6); }
 }
 @layer gramlot.components {
-  :where(label) { font-size: var(--gramlot-label-size); font-weight: normal; color: var(--gramlot-label-color); margin-block-end: var(--gramlot-label-gap); }
-  :where(button, input[type="button"], input[type="submit"], input[type="reset"], .button) { min-block-size: 26px; padding: 2px 8px; font-weight: 500; }
+  :where(button,input[type="button"],input[type="submit"],input[type="reset"],.button) {
+    min-block-size: var(--gramlot-field-height); padding: var(--gramlot-button-padding);
+    font-size: 1rem; line-height: 1.3; font-weight: 500;
+    background: var(--gramlot-button-background); color: var(--gramlot-ink); border-color: var(--gramlot-border-control);
+  }
+  :where(button,input[type="button"],input[type="submit"],input[type="reset"],.button):hover:not(:disabled) {
+    background: var(--gramlot-selected); color: var(--gramlot-action-hover); border-color: var(--gramlot-action);
+  }
+  :where(label) { font-size: 1em; font-weight: 400; color: var(--gramlot-label-color); margin-block-end: var(--gramlot-label-gap); }
+  :where(input[readonly],textarea[readonly]) { background: var(--gramlot-field-readonly-background); }
+  :where(.button--quiet,button.quiet) { background: transparent; color: var(--gramlot-action); border-color: transparent; }
+  :where(.button--quiet,button.quiet):hover:not(:disabled) { background: var(--gramlot-selected); border-color: transparent; }
+  :where(textarea) { min-block-size: 4.5rem; }
+  :where(input[type="color"]) { min-block-size: var(--gramlot-field-height); }
+  :where(input[type="file"])::file-selector-button { padding: var(--gramlot-field-padding); }
+  :where(fieldset,details) { padding: var(--gramlot-space-3); margin-block-end: var(--gramlot-space-3); }
+  :where(table) { font-size: 1rem; }
+  :where(th,td) { padding: var(--gramlot-field-padding); height: var(--gramlot-field-height); vertical-align: middle; }
+  :where(details[open]>summary) { margin-block-end: var(--gramlot-space-3); }
+  :where(dialog) { padding: var(--gramlot-space-4); }
 }
 @layer gramlot.utilities {
-  .card { box-shadow: var(--gramlot-shadow); }
+  .example-page { inline-size: min(100% - 2 * var(--gramlot-space-4),var(--gramlot-page-width)); padding-block: var(--gramlot-space-4); }
+  .card { padding: var(--gramlot-space-4); box-shadow: none; }
 }

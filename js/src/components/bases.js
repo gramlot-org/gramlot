@@ -11,7 +11,7 @@ export function controlElement(HTMLElement) {
             style.textContent = `:host{display:inline-block;font:inherit} *,*::before,*::after{box-sizing:border-box}
                 input,textarea{font:inherit;max-width:100%} .control-box{min-width:0;color:var(--gramlot-ink,CanvasText)}
                 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),textarea{
-                    appearance:none;box-sizing:border-box;border:1px solid var(--gramlot-border-control,#7a8798);
+                    appearance:none;box-sizing:border-box;width:100%;border:1px solid var(--gramlot-border-control,#7a8798);
                     border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-field-background,Canvas);color:var(--gramlot-ink,CanvasText);
                     min-height:var(--gramlot-field-height,28px);padding:var(--gramlot-field-padding,.25em .5em);font-size:var(--gramlot-field-font-size,1em);line-height:var(--gramlot-field-line-height,inherit)}
                 input:read-only:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),textarea:read-only{

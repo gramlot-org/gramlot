@@ -91,6 +91,7 @@ export class GramlotHtmlRenderer extends HtmlRenderer {
         const evaluate = (attr, expr) => (compiler ? compiler.compileExpression(node, attr, expr)(runtimeAttrs) : null);
         const attrs = {...runtimeAttrs};
         for (const [name, raw] of sourceAttributeItems(node.getAttr())) {
+            if (node.nodeTag === 'menuline' && ['caption','icon','tooltip','command'].includes(name)) continue;
             if (isExpression(raw) && Object.hasOwn(attrs, name)) attrs[name] = evaluate(name, raw);
         }
         if (isExpression(node.value)) this.#expressionValues.set(node, evaluate('', node.value));

@@ -67,8 +67,8 @@ Block ID: **GC-101-010**.
   every request envelope and `closeUrl` the close message. `capabilities` lists the
   optional features the server offers (§040). `nameSyntax` is the syntax of a method
   name the server accepts (§015), written `{kind: "regex", pattern, flags}`.
-- `resources` is `{css: [url], js: [{url, group}]}`, plus `collections` (the browser
-  modules of the component collections) and `serverAdapter` when the server has them.
+- `resources` is `{css: [url], js: [{url, group}]}`, plus `collections` (ordered verified records
+  with `name`, `url`, and `buildId`) and `serverAdapter` when the server has them.
   `css` starts with the theme of the page: the base theme of the server (option
   `css_theme`, JavaScript `cssTheme`, default `gramlot-base`, `False`/`false` for
   none), unless the page sets its own `css_theme` (a theme name, or `False`/`false`
@@ -100,6 +100,14 @@ Block ID: **GC-101-010**.
   renewal is made by `GramlotServer.call`; an adapter does nothing for it.
 - `GramlotServer` creates a new `Page` instance for every call. The contract keeps
   no state between calls; a server may keep it as a capability (§040).
+
+Prepared collection resources are inventoried at host startup. Python pages select
+importable descriptors through `Page.gramlots`; the host includes dependencies
+before dependants and makes only inventoried browser assets available. A collection
+bootstrap entry is `{name, url, buildId}`, not a bare URL. Theme CSS precedes
+collection CSS, followed by page CSS. Startup waits for stylesheets and modules,
+and an identity/load failure prevents normal page startup. See the
+[complete collection lifecycle](340-components-and-collections-guide.md#gc-340-055).
 
 <a id="gc-101-015"></a>
 

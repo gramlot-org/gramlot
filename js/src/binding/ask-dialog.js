@@ -82,7 +82,7 @@ export class AskDialog {
             release = binding.track(() => finish(false));
             try {
                 const builder = new GramlotBuilder();
-                const dialog = builder.root.dialog({nodeId: id, datapath: id, request: id,
+                const dialog = builder.root.html_dialog({nodeId: id, datapath: id, request: id,
                     connect_oncancel: `${group}.cancel`, connect_onclose: `${group}.cancel`,
                     class: 'gramlot-ask', 'aria-labelledby': `${id}_title`,
                     style: 'border:1px solid #aab4c2;border-radius:8px;padding:16px;max-width:32rem;width:calc(100% - 48px);font:inherit;'});

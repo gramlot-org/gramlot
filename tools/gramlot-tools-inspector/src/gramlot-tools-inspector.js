@@ -359,7 +359,7 @@ export class GramlotToolsInspector extends HTMLElement {
         styles.div({node_label: 'rows', class: 'styles-rows'});
         const footer = palette.footer({class: 'path', hidden: '^stylesActive'});
         footer.span('Path: '); footer.em('^path');
-        const breakpoint = palette.dialog({node_label: 'breakpoint', 'aria-label': 'Breakpoint', class: 'breakpoint-dialog', connect_oncancel: 'inspector.closeBreakpoint'});
+        const breakpoint = palette.html_dialog({node_label: 'breakpoint', 'aria-label': 'Breakpoint', class: 'breakpoint-dialog', connect_oncancel: 'inspector.closeBreakpoint'});
         breakpoint.h2('^breakpointWhere');
         const mode = breakpoint.select({value: '^editor.mode', connect_onchange: 'inspector.breakpointChanged', 'aria-label': 'Breakpoint mode'});
         for (const [value, label] of [['', 'Off'], ['debugger', 'Debugger'], ['console', 'Console']]) mode.option(label, {value});
@@ -368,11 +368,11 @@ export class GramlotToolsInspector extends HTMLElement {
         const actions = breakpoint.div({class: 'dialog-actions'});
         actions.html_button('Cancel', {type: 'button', connect_onclick: 'inspector.closeBreakpoint'});
         actions.html_button('Save', {type: 'button', connect_onclick: 'inspector.setBreakpoint'});
-        const list = palette.dialog({node_label: 'breakpoints', 'aria-label': 'Active breakpoints', class: 'breakpoint-dialog'});
+        const list = palette.html_dialog({node_label: 'breakpoints', 'aria-label': 'Active breakpoints', class: 'breakpoint-dialog'});
         list.h2('Active breakpoints');
         list.div({node_label: 'entries'});
         list.div({class: 'dialog-actions'}).html_button('Close', {type: 'button', connect_onclick: 'inspector.closeBreakpoints'});
-        const insert = palette.dialog({node_label: 'insert', 'aria-label': 'Add Source element', class: 'breakpoint-dialog', connect_oncancel: 'inspector.closeInsert'});
+        const insert = palette.html_dialog({node_label: 'insert', 'aria-label': 'Add Source element', class: 'breakpoint-dialog', connect_oncancel: 'inspector.closeInsert'});
         insert.h2('Add a child element');
         const kind = insert.select({value: '^insert.kind', 'aria-label': 'Element kind', connect_onchange: 'inspector.insertKind'});
         kind.option('HTML tag', {value: 'html'}); kind.option('Widget or container', {value: 'component'});

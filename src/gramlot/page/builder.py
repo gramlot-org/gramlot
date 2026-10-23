@@ -198,7 +198,7 @@ class GramlotBuilder(HtmlBuilder):
     def _validate_children_tags(self, node_tag, sub_tags_compiled, children_tags):
         """Both button declarations occupy the native button slot in HTML content models."""
         return super()._validate_children_tags(node_tag, sub_tags_compiled,
-                                              ["button" if tag == "html_button" else tag for tag in children_tags])
+                                              ["button" if tag == "html_button" else "dialog" if tag == "html_dialog" else tag for tag in children_tags])
 
     def custom_require_sub_tag_validation(self, node):
         """Custom elements are outside the native HTML child catalogue, as components are."""
@@ -206,6 +206,13 @@ class GramlotBuilder(HtmlBuilder):
 
     def _add_element(self, build_where, node_value=None, node_label=None, node_tag="", **attr):
         """Builder's element insertion; a dict ``value`` of ``dataSetter`` becomes ``Bag(value)`` (P25)."""
+        if node_tag == "menu" and node_value is None:
+            node_value = GramlotBuilderBag(builder=self)
+        if node_tag == "menuline" and node_value is not None and node_value != "-":
+            if "command" in attr:
+                raise ValueError("menuline command must be declared once")
+            attr["command"] = node_value
+            node_value = None
         attr = {key: self.reference(value) if isinstance(value, SourceBagNode) else value
                 for key, value in attr.items()}
         if node_tag == "dataSetter" and isinstance(attr.get("value"), dict):

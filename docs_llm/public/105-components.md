@@ -2,6 +2,10 @@
 
 Document ID: **GC-105**.
 
+Use the [widget and parameter reference](345-widget-reference.md) to find a control,
+its collection, defaults and bindings. Read [menus, toolbars and windows](350-menus-toolbars-and-windows.md)
+for the shared command model and complete frame composition.
+
 > Input components require the selected `inputs` collection; importing a definition
 > alone does not activate it. The gallery uses the application configuration below.
 > The command family in §095 is built in; layout uses its separate collection.
@@ -15,10 +19,10 @@ need a handwritten Python class for each widget. Widget names are identical in
 both languages and lookup is case-insensitive: `radioButtonText` and
 `radiobuttontext` select the same declaration. Underscores are not case variants.
 
-The collection contains `textbox`, `checkbox`, `radioButtonText`, `textBoxArea`,
+The inputs collection contains `textbox`, `checkbox`, `radioButtonText`, `textBoxArea`,
 `passwordbox`, `radioButton`, `colorpicker`, `horizontalSlider`, `verticalSlider`,
 `numberTextBox`, `dateTextBox`, `timeTextBox`, `filteringSelect`, `callbackSelect`,
-`comboBox`, `checkBoxText` and `dateCalendar`.
+`comboBox`, `dbSelect`, `dbComboBox`, `checkBoxText` and `dateCalendar`.
 It demonstrates a single native control and a composite group using the same
 labelbox and binding contract. Localization is prepared through `intl_str`
 metadata; text is not translated.
@@ -91,8 +95,8 @@ app.src.startSource(wire); // TYTX produced by the Python authoring above
 ```
 
 Bundle this entry point as one module graph. The existing application/runtime
-bootstrap owns loading that entry point; automatic server discovery or a new
-Page configuration property is not supplied here. Each selected collection
+bootstrap owns loading that entry point; this is a low-level runtime example. For hosted Python pages, use
+`Page.gramlots` as shown in section 035. Each selected collection
 registers its custom-element classes in the destination document's realm before
 rendering. Reusing the same collection there is harmless. A conflicting tag
 registration raises an error. There is no per-widget `customElements.define`
@@ -184,12 +188,12 @@ document against the JS definitions to detect drift.
 <a id="gc-105-030"></a>
 ## 030 · Current limits and verification
 
-The inputs collection covers the seventeen controls listed above, Data binding,
+The inputs collection covers the nineteen controls listed above, Data binding,
 reactive labelbox, styling prefixes, typed editing, constrained choices, keyboard
 behavior and cleanup. Validation is described in §076. Other input families, form
 submission and reset of a component through ElementInternals, automatic collection
-discovery, theme-specific component skins and translated messages are not
-provided. The component value does not accept `:` or `:=`
+discovery and translated messages are not provided. The packaged density and color
+profiles style components through shared CSS tokens; see [Themes and CSS](096-themes-and-css.md). The component value does not accept `:` or `:=`
 transforms; those remain available on presentation attributes.
 
 A known upstream Python Builders limitation affects a literal-type-or-pointer
@@ -206,48 +210,36 @@ caret preservation, typing, checkbox clicks, radio arrow-key navigation and grou
 isolation. WebKit qualification is not a claim of testing the Safari application.
 
 <a id="gc-105-035"></a>
-## 035 · Activate a collection in an application
+## 035 · Activate collections in a Python page
 
-The application passes `collections` to its server. Each entry contains `grammar`
-(the generated JSON object) and `module` (the root-relative URL of its bundled
-browser ES module). The module exports the ComponentCollection as its default.
-The adapter serves that asset like other application assets.
+Select prepared collection descriptors through `Page.gramlots`. The import supplies
+both grammar metadata and verified browser resources; the host resolves dependencies
+and sends the matching descriptors in the bootstrap.
 
 ```python
-import json
-from importlib.resources import files
+from gramlot import Page as GramlotPage
+from gramlot.collections.inputs import mygramlot as inputs
+from gramlot.collections.layout import mygramlot as layout
 
-collections = [{
-    "grammar": json.loads(files("gramlot").joinpath("collections/inputs.json").read_text()),
-    "module": "/gallery/dist/inputs.js",
-}]
-# Pass collections=collections to the application/server constructor.
+class Page(GramlotPage):
+    gramlots = [inputs, layout]
+
+    def main(self, root):
+        root.dataSetter("customer", {"name": "Ada", "active": True})
+        form = root.formlet(datapath="customer", columns=1, max_width="28rem")
+        form.textbox(value="^.name", lbl="Name", live=True)
+        form.checkbox(value="^.active", label="Active", mode="switch")
 ```
 
-JavaScript can obtain the same grammar directly from the definition:
+The base grammar and command buttons remain available. Prepared descriptors are
+also provided for `gramlot.collections.tree`, `editors` and `typst`. Importing a
+package alone does not select it. Class-local `gramlots` selections accumulate
+through the Page inheritance hierarchy, with dependencies loaded first.
 
-```javascript
-import inputs from '@gramlot/gramlot/components/inputs';
-const collections = [{grammar: inputs.toDocument(), module: '/gallery/dist/inputs.js'}];
-```
-
-The server loads the grammar for every Source request, including remote fragments.
-It adds collection module URLs to the bootstrap with the application's mount prefix.
-PageBootstrap imports them, registers their custom elements and loads their grammar
-before requesting/mounting Source. The browser does not fetch the Python JSON:
-the JavaScript descriptor already contains that same metadata.
-
-The gallery declares `inputs` explicitly for Python, Node and serverless. Its build
-bundles a separate `inputs.js`; no second Gramlot runtime is bundled with it.
-The serverless directory exporter embeds the same JS module and passes the JSON
-grammar to the Worker server, so opening the export with `file://` needs no remote
-collection fetch. There is no automatic discovery or name-based fallback.
-
-Try the Input components family of the gallery: its first lessons show
-`textbox`, `checkbox`, `radioButtonText` and the simple input variants below. Label
-positions and layout are reactive, while all value writes use the Data binding
-engine. The examples use the shared component collection.
-
+Do not assemble `{grammar, module}` URL-only entries for this preparation path.
+See [How components and collections work](340-components-and-collections-guide.md)
+for package generation, dependencies, CSS/assets, integrity checks and deliberate
+overrides. Its development-status notice applies to the prepared collection tools.
 
 <a id="gc-105-040"></a>
 ## 040 · Simple native input variants
@@ -931,13 +923,13 @@ menu.menuline("-")
 menu.menuline("Unavailable", code="later", disabled=True)
 ```
 
-`button` renders `gramlot-button` with an internal native button. It retains the single command mechanism: action, one nested dataController/dataRpc, or fire/fire_*. Existing ask, references, modifiers, counters and inherited _delay use the same engine. `icon` is optional text or emoji. Theme tokens and touch sizing also apply inside the component. Its caption can contain Source children.
+`button` renders `gramlot-button` with an internal native button. It retains the single command mechanism: action, one nested dataController/dataRpc, or fire/fire_*. Existing ask, references, modifiers, counters and inherited _delay use the same engine. `icon` is optional text or emoji; `iconSrc` supplies an image URL, including SVG. Theme tokens and touch sizing also apply inside the component. Its caption can contain Source children.
 
 `toggleButton` adds a boolean value binding and a visible LED. Its internal button exposes aria-pressed. Clicking, Enter or Space updates Data before running the optional action. An action confirmation does not undo that state change. Readonly and disabled prevent user toggling; external Data changes still update the LED. No implicit exclusive group is introduced.
 
 `dropDownButton` has separate main and arrow surfaces. Main click executes the current command and never opens the menu. Normal menu selection executes only; Shift+selection executes and also installs the selected command and its caption as the default. The same Shift rule applies to keyboard activation. Arrow keys, Home/End, Escape and native popover light-dismiss manage the menu. On touch, ordinary selection executes; changing the default currently requires Shift.
 
-`persist=True` requires an explicit stable id. Browser storage remembers only the unique menu-item code, scoped to this page URL and id. A saved code absent from the menu uses the authored default. Storage denial leaves the current in-memory selection functional. Each actionable menuline requires code; `menuline("-")` is a separator. The menu is flat and local; nested menus and button bars are not provided.
+`persist=True` requires an explicit stable id. Browser storage remembers only the unique menu-item code, scoped to this page URL and id. A saved code absent from the menu uses the authored default. Storage denial leaves the current in-memory selection functional. Each actionable menuline requires code; `menuline("-")` is a separator. This split-button example is local. Hierarchical menus and permanent toolbars use the shared menu/menuline system described in [Menus, toolbars, frames and windows](350-menus-toolbars-and-windows.md).
 
 **Migration:** `html_button` remains a real HTML button, including type=submit/reset and explicit connect_on events. Use it for native form actions. Gramlot command components do not implicitly submit forms. Native CSS selectors targeting button no longer select the component host; theme tokens style its internal button.
 
@@ -1195,7 +1187,7 @@ pane.dataController("this.SET('.lastClosed', pageName)",
                     subscribe_editor_closed=True)
 ```
 
-Substitute stackContainer to retain the same selection and notification contract without tabs. Controllers receive named payload variables and the complete _subscription_kwargs object. Closing a `closable` panel removes it from the Source and keeps its Data. FramePane, incoming switchPage commands and asynchronous close guards are not provided.
+Substitute stackContainer to retain the same selection and notification contract without tabs. Controllers receive named payload variables and the complete _subscription_kwargs object. Closing a `closable` panel removes it from the Source and keeps its Data. For region composition use [framePane](350-menus-toolbars-and-windows.md#gc-350-035). Incoming switchPage commands and asynchronous tab-close guards are not provided.
 
 
 <a id="gc-105-115"></a>

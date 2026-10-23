@@ -9,6 +9,7 @@ import {BuilderBase, SourceBag, sourceTarget} from '@genrojs/builders';
 import {HtmlElement} from '../view/html.js';
 import {ControlAdapter, RadioGroups, SelectControl} from '../view/controls.js';
 import {ButtonBinding} from '../view/button.js';
+import {MenuBinding} from '../view/menu.js';
 import {NativeEventBinding} from '../view/events.js';
 import {References} from '../references.js';
 import {randomId} from '../random-id.js';
@@ -217,6 +218,11 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             record.button = button;
             button.attach();
             record.cleanup.push(() => button.detach());
+        }
+        if (node.nodeTag === 'menu') {
+            record.menu = new MenuBinding(record.binding, record.element);
+            record.menu.attach();
+            record.cleanup.push(() => record.menu.detach());
         }
         this.#connectEvents(record);
         this.references?.register(node, record.element);
@@ -541,6 +547,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.#projectControl(record, node, attrs, change);
         record.control?.refresh();
         record.button?.refresh();
+        record.menu?.refresh();
         this.#connectEvents(record);
         const defaults = this.#presentationDefaults.get(node);
         if (defaults) {

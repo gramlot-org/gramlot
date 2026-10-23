@@ -1,3 +1,22 @@
+# Mimi
+
+Professional desktop profile, revised at the owner's request on 2026-10-23.
+Dense data work, restrained green accent. Controls are 24px high; body and field text are 12.5px. Light and dark
+palettes use the same semantic roles. Existing touch targets remain larger.
+
+```python
+class Page(BasePage):
+    css = ("/themes/gramlot-compact/theme.css", "/themes/mimi/theme.css")
+```
+
+The server loads Base first. The gallery's existing appearance selector uses the
+same canonical stylesheet. Inputs, command buttons, menus, tabs and window chrome
+share existing field/button/spacing/radius tokens. Fixed Source dimensions still
+win; use semantic spacing variables when a page should follow profile density.
+These revised aesthetics are a development preview awaiting owner feedback.
+
+## Historical record — before the 2026-10-23 aesthetic revision
+
 # mimi
 
 A Gramlot interpretation of GenroPy's `mimi` theme. The light palette

@@ -65,6 +65,7 @@ export class HtmlElement {
         }
         for (const [key, value] of Object.entries(node.attr)) {
             if (key === 'value' && this.definition(node).meta.gramlot_component) continue;
+            if (node.nodeTag === 'menuline' && key === 'parameters') continue;
             if (this.metadataAttributes.has(key) || ['ask', '_ask'].includes(key) || (value && typeof value === 'object' && Object.hasOwn(value, '$gramlotRef'))) continue;
             if (value != null && !['string', 'number', 'boolean'].includes(typeof value)) {
                 throw new TypeError(`HTML attribute ${key} must be scalar`);

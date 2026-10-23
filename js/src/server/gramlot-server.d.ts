@@ -60,7 +60,7 @@ export interface GramlotServerOptions {
     /** Maximum number of registered pages. */
     maxPages?: number;
     /** Application collections: generated Builder grammar and root-relative browser module URL. */
-    collections?: {grammar: Record<string, unknown>; module: string}[];
+    collections?: {name:string; buildId:string; grammar: Record<string, unknown>; module: string; css?:string[]}[];
     /** The base theme of every page, a folder of the core themes, or false for none; default `gramlot-base`. */
     cssTheme?: string | false;
 }

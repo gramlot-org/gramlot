@@ -9,6 +9,173 @@ decision it comes from. Sections marked **Open** record a question, not a rule.
 
 Block ID: **GC-225-005**.
 
+Owner, 2026-10-22: "Direi di chiamarlo gramlot.commands.registerGroup, visto che
+vale sia per menu che per toolbar." The shared command registry entry point is
+gramlot.commands.registerGroup(namespace, metadata); group.register(name,
+definition) retains the reviewed shape. This supersedes the provisional
+gramlot.widgets.slotbutton.registerGroup spelling. Naming approval does not
+claim an implemented registry. Owner, 2026-10-22: "Sì, confermo il contratto
+a cinque campi." GC-335 §080 now fixes sender, target, command, parameters and
+modifiers; modifier members are shift, ctrl, alt and meta. command is the full
+registered key; publish remains the delivery topic. These names supersede the
+earlier frame-bearing payload proposal and do not add aliases.
+
+Collection hook confirmed — 2026-10-22: registerCommands(gramlot) on a
+defineCollection descriptor follows the existing camelCase method convention and
+describes the confirmed commands responsibility. Owner: "ok", answering the
+explicit proposal to use the same hook for preparation/catalogue export and
+bootstrap/page activation. See GC-325 §040. No Python descriptor class or CLI
+command spelling is chosen by this approval; implementation remains pending.
+
+Collection identity confirmed — owner, 2026-10-22: "ok" to name as collection
+identity, single activation for repeated inclusion of the same collection, and
+an explicit collision error for different collections sharing that name.
+Reuse the existing defineCollection name field; no new identity alias is added.
+
+Command-key collision rule — owner, 2026-10-22: "ok" confirms that uniqueness
+uses the full registered key. documenti:save and fatture:save are distinct;
+repeating documenti:save is an error without overwrite. Same-collection
+deduplication prevents repeated activation; group ownership is still open.
+
+Command namespace ownership confirmed — owner, 2026-10-22: "confermo" to one
+collection owning a namespace. Other collections may reference its commands,
+but their new commands use another namespace. Collection name and command
+namespace retain distinct roles; no equality convention is introduced.
+
+Collection dependency field confirmed — owner, 2026-10-22: "ok" to
+dependencies: [common] on defineCollection, where common is an imported
+collection object. Use dependencies as the single declaration field; generated
+Python/package metadata derives from it rather than a second authored list.
+
+Package descriptor name confirmed — 2026-10-22: GramlotCollection follows
+the existing Gramlot-prefixed Python public class convention; it describes a
+packaged extension, not the private grammar-only Collection helper. Confirmed
+fields name, package, grammar, commands, module, css and dependencies follow
+existing concept names and Python lowercase attributes. GC-325 §045 is the
+reviewable proposal. Owner replies "ok" to the lightweight descriptor and name
+presented in commentary, then "ok" to the complete fields/layout example:
+name, package, grammar, commands, module, css and dependencies. GC-325 §045
+records the accepted generated package structure; runtime remains pending.
+
+Command-catalogue schema confirmed — 2026-10-22: owner replies "ok" to GC-325 §050:
+document_format {name: "gramlot_commands", version: "1.0"}, reusing the portable
+document marker convention for a distinct data schema. groups and commands name
+the confirmed registry concepts; author/description/label/icon/tooltip/publish
+reuse reviewed registration metadata. Schema version is not release version.
+Full namespaced keys derive from group and local keys. Owner subsequently replies
+"ok" to group "" reserved to the base collection: local name save maps to save,
+while nonempty documenti maps it to documenti:save. The catalogue groups key is
+also "". No alias or fallback lookup. These are design names, not runtime claims.
+
+Build destination map confirmed — owner, 2026-10-22: "ok" to GC-325 §055:
+gramlot.build.json with output and collections entries containing entry and
+pythonPackage. pythonPackage follows the JS camelCase field convention; these
+fields describe build destinations, not dependency declarations. dependencies
+remains the already confirmed JS collection field. Configuration filename and
+field names are approved; no CLI spelling is selected.
+
+External collection map confirmed — owner, 2026-10-22: "ok" to GC-325 §060 externals
+entries with entry and pythonImport. entry reuses the build module identifier;
+pythonImport follows JS camelCase and holds an exact module:attribute reference
+to an installed GramlotCollection descriptor. No distribution name is inferred.
+Field names and exact descriptor reference form are approved; runtime is pending.
+
+Browser collection specifier confirmed — owner, 2026-10-22: "ok" to GC-325 §065's
+generated module key @gramlot/collections/<name>, derived from collection identity
+with injective escaping if needed. This is a bootstrap import-map convention,
+not a command namespace, npm dependency or alias fallback. It preserves existing
+core root/page specifiers and uses a shared hosted entry for the existing
+@gramlot/gramlot/components source export. The linking contract is approved;
+runtime implementation and host asset-delivery details remain pending.
+
+Build-fingerprint representation confirmed — owner, 2026-10-22: "ok" to GC-325 §075:
+Python build_id and JS/module/bootstrap buildId using the existing snake_case/
+camelCase convention, plus descriptor files for the generated artifact inventory.
+assets/index.js stays the entry; assets/collection.js is the generated payload.
+gramlot-build-v1 identifies the hash-input format, not a release.
+The SHA-256/wrapper/verification scheme is approved design; implementation is pending.
+
+Confirmed independent preparation CLI — owner, 2026-10-23: "ok" confirms
+gramlot-builder build|check with --config (GC-325 §080). The tool name derives from the
+existing GramlotBuilder/preparation responsibility; lowercase hyphen spelling
+matches existing tool executables. This is a new bounded tool convention,
+not an inferred use of the environment-first gramlot CLI. Read-only evidence:
+gramlot belongs to gramlot-py-server. Do not create competing entry points or
+adapter dependencies. This approves the name/verbs/option as design; implementation
+and toolchain distribution remain pending.
+
+Confirmed generator package — owner, 2026-10-23: explicit confirmation of the
+preceding toolchain proposal establishes @gramlot/builder as the separate npm
+development package in the core repository. The @gramlot scope follows the
+existing package convention; builder denotes the already named preparation
+responsibility. The Python gramlot package owns gramlot-builder; the npm package
+does not introduce a competing executable. GC-325 §085 records the distribution
+split, superseding the pending distribution note above. Internal export names,
+package discovery and launcher/generator protocol were left open at that point.
+Owner confirmation on 2026-10-23 settles discovery and process responsibilities
+in GC-325 §090. Exact protocol field names, version values and internal exports
+remain to specify; this confirmation introduces no new public API names.
+
+Confirmed bootstrap record shape — owner, 2026-10-23: "ok" confirms retaining
+resources.collections with entries {name, url, buildId}. name reuses collection
+identity, url the existing resource URL field, and buildId the approved JS
+fingerprint spelling (§075), following existing camelCase conventions.
+GC-325 §100 records the approved shape; no aliases, new adapter method names
+or universal route spelling are approved. Implementation remains pending.
+
+Confirmed Python collection resource APIs — owner, 2026-10-23: "Sì, confermo"
+approves GC-325 §105 and
+GramlotCollectionResources for the integration-owned resource service. This
+extends Gramlot-prefixed public type naming to a collection-resource service;
+the bounded class name is now approved. register/url/asset describe
+its three operations; base_url, build_id and collection_url follow Python
+snake_case (JS counterparts baseUrl, buildId and collectionUrl where applicable).
+GramlotServer.collection_url derives from the existing resource-resolution/
+theme-URL responsibility and denotes URL mapping only. No adapter route spelling,
+internal module path or additional registry lifecycle is approved yet.
+
+Confirmed page catalogue hook — owner, 2026-10-23: explicit confirmation of
+startup enumeration and a process-lifetime fixed registry approves GC-325 §110:
+GramlotServer.iter_page_classes / iterPageClasses. iter_ denotes an iterable
+result and page_classes names the returned classes, separate from resolve_page
+which selects one class for a path. Python snake_case and mechanical JS camelCase
+follow the existing convention. The enumeration responsibility and name are
+approved; no runtime method exists yet.
+
+Confirmed authored collection resources — owner, 2026-10-23: explicitly confirms
+defineCollection fields css and assets. css reuses the approved stylesheet
+concept in the descriptor/bootstrap; assets names the already agreed packaged
+browser resource responsibility. Asset map keys are local to their collection,
+not command namespaces. URL is the standard JS URL type, with href for string
+access; no new path alias or helper API is introduced. GC-325 §125 records
+approval of the declaration contract; implementation remains pending.
+
+Approved generator wire fields — owner, 2026-10-23: GC-325 §130 fixes protocolVersion,
+operation, configPath, projectRoot, stagingDirectory, config and externals in
+requests; status, collections and diagnostics in results. Multiword fields use
+the existing JS camelCase convention; config/externals/collections reuse the
+already named responsibilities. Collection records reuse name, pythonPackage,
+buildId, grammar, commands, module, css, dependencies and files; diagnostic
+level/code/message/collection/path describe outcome/context. Owner confirmation
+"Sì, confermo il protocollo e i codici di uscita" approves these fields, version 1,
+statuses ok/error and the uppercase underscore-separated diagnostic code
+convention (ASSET_NOT_FOUND). This is design approval, not implementation.
+GC-325 §135 separately records owner approval of recovery behavior, 2026-10-23
+("Sì, confermo questa politica di recupero"). It introduces no new public command
+or wire field; transaction storage layout remains an internal implementation detail.
+
+Approved generator entry — owner, 2026-10-23: "confermo punto d’ingresso,
+versioni Node ed esbuild" confirms @gramlot/builder/cli (GC-325 §140). The existing
+scoped npm package gains an explicit ./cli export for its process-protocol entry;
+cli follows the existing command-line module convention. Initial ./src/cli.js is
+internal mapping, not a Python hard-coded path or a second public user command.
+
+Approved Uvicorn resource route — owner, 2026-10-23: "ok" to the concrete scope
+and behavior proposal confirms /gramlot/collections (GC-325 §145), under the
+adapter namespace already used by /gramlot/rpc and /gramlot/close, followed by
+collection identity, SHA-256 hex and inventory-relative resource path. This
+spelling remains host-owned, not a new universal core route.
+
 - Every name (class, proxy, method, attribute, file, grammar entry, command) applies
   a convention written in this document or in the document it points to.
 - A name is never chosen because it is nice, descriptive or easy.
@@ -988,3 +1155,147 @@ Embedded HTML in Markdown — owner 2026-10-21: “ok” confirms optional allow
 
 
 Editable Python gallery — owner 2026-10-21: “si procediamo con la gallery editabile e la ricarica dell’anteprima python dopo il salvataggio”. Implements the previously confirmed original-source, revision-check, explicit-save and affected-iframe-only contracts (GC-198 §070). Apply existing gallery Logic naming to galleryCodeMount/Save/Revert, galleryIndex.sourceDocuments Data, and gallery-code-* presentation identities. Python source_document provides the original source snapshot; the integration endpoint gallery_source_save maps the catalogue key to its original Python file and reuses FileSystemPageMixin validation/atomic persistence. No client-supplied filesystem target is accepted. remote_edit remains the host gate; --remote-edit follows the CLI long-option spelling convention and applies to the existing gallery verb without redesigning the CLI. Host adapters forward the existing GramlotFileServer reload option; editable startup enables it. The iframe Source src gets a gallery_revision query value from the successful saved revision. Companions remain read-only; no general module hot reload or serverless write service is introduced.
+
+
+Shared collection artifact verification — owner, 2026-10-23: "Confermo API condivisa nel core". The public JavaScript functions `collectionBuildId(metadata, files)` and `verifyCollectionArtifact(metadata, files)` belong to core and are shared by the generator and hosts. They use asynchronous Web Crypto, accept a Map of relative paths to Uint8Array bytes and have no filesystem or server dependency. The first returns the framed SHA-256 buildId; the second resolves only after checking the exact inventory, wrapper and fingerprint. This replaces duplicated JavaScript fingerprint implementations, without changing the artifact format or the Python verification contract.
+
+
+Database selectors (owner implementation instruction, 2026-10-18; GC-315 §050):
+canonical widget names dbSelect/dbComboBox and tags gramlot-db-select/
+gramlot-db-combo-box follow the inputs collection conventions. The shared
+DatabaseSelectors Python mixin exposes endpoint dbSelect and delegates to its
+configured database object. SQLAlchemySelect is the provider in the Python
+server database area; no new browser proxy is introduced. Legacy method,
+dbtable, condition_*, selected_*, selectedCaption/Record/Cb, searchDelay,
+ignoreCase, hasDownArrow, emptyLabel and autoSelect retain their spelling.
+
+
+Provisional menu authoring syntax — owner, 2026-10-23: "ok" to GC-335 §130.
+Reuse menu/menuline and their existing component names. menuline's positional
+argument is the registered command key, with the explicit "-" separator exception.
+caption follows the approved result-Bag caption name and is the sole spelling
+for command-label overrides/submenu labels in this path. node_label reuses the
+existing Source occurrence-identity convention; no mandatory duplicated code or
+identity derived from the command key is introduced. Existing positional-caption
+uses require explicit migration; no caption/key inference or label alias is
+approved. These choices remain provisional for hands-on evaluation per GC-335 §125.
+
+
+Provisional permanent-bar composition — owner, 2026-10-23: "Ok, adottiamo questa
+composizione come base provvisoria" (GC-335 §135). menu retains the selected
+presentation="bar" and orientation="horizontal"/"vertical" parameters.
+spacer uses the ordinary lower-case component naming convention; its descriptor
+name is Spacer and browser tag gramlot-spacer. size denotes fixed pixel space
+and flex denotes flexible remaining space. contentPane and node_label retain
+their existing meanings for free-content groups. Explicit nested menu declarations
+select bar presentation; menuline-owned menu remains a popup. No slotBar,
+slotButton or slot alias is introduced. Names remain provisional per GC-335 §125.
+
+
+Provisional minimum frame — owner "ok", 2026-10-23 (GC-335 §140): framePane /
+FramePane / gramlot-frame-pane follow component conventions. top, bottom, left,
+right, center reuse border region names as framePane-only authoring accessors;
+regions are actual contentPane Source nodes. frameTarget marks the designated
+central content recipient. Reuse the existing border layout and Source identity,
+without a new topic bus or global fallback. The first trial is authorized.
+
+
+Popup presentation revision — owner, 2026-10-23: compact aligned rows and lateral
+submenus follow the supplied menu reference. Internal CSS names menu-row,
+menu-check, menu-caption and menu-arrow follow the existing descriptive CSS class
+convention; they are not Source attributes. The geometry helper positionPopup
+retains its name and gains the internal placement option (bottom/side), describing
+the approved anchor relationship, alongside existing align/matchWidth options.
+No public menu grammar or command field is added.
+
+
+Menu attachment — owner, 2026-10-23: "Sì, manteniamo questa sintassi" confirms
+area.menu() for contextual opening, modifiers="*" for ordinary click without
+modifiers and modifiers="Shift" for exact Shift+click. Existing submenu opening
+is retained. The public name modifiers follows the legacy menu convention and
+existing event terminology; it filters opening, separate from command-message
+modifiers. No context boolean is introduced. The internal popup geometry option
+point is a viewport {x,y} position; it is not a new Source attribute. Shift, Ctrl,
+Alt and Meta combinations match exactly (comma/space separated, case insensitive).
+Context-key/Shift+F10 access accompanies contextual opening. validclass, alternate
+attachment targets and automatic row/item context projection are not introduced
+by this bounded increment.
+
+
+Toolbar trial naming — 2026-10-23. Owner: "Esatto, procedi con la prima versione
+nella gallery: sempre menu e menuline, con gruppi, spacer, priorità, overflow e
+scorrimento. Poi la proviamo." Within this provisional implementation, reuse menu,
+menuline and spacer; do not introduce slot/toolbar aliases. Derive menuline
+parameters from the existing lowercase semantic parameter convention: group
+(boolean, default false) marks an indivisible content group; priority (finite
+number, default 0) orders overflow eligibility; overflowable (boolean, default
+true) states whether that occurrence/group may leave the bar. These parameters
+are presentation metadata and do not alter registered command identity. A group
+contains ordinary Source children, including menuline and inputs, and does not
+execute a command itself. Existing spacer(size/flex) remains unchanged.
+ToolbarOverflow is a private presentation collaborator of MenuContainer; it owns
+measurement, named-slot projection and popup/scroll cleanup, not Source, Data or
+command execution. data-menu-overflow is an internal rendering marker. The browser
+keeps the original light-DOM nodes and Source parents during projection. An input
+moved while focused remains focused and opens its overflow panel if necessary;
+this is trial behavior to verify with the owner, not stable-API acceptance.
+
+The internal named slots overflow/suppressed are projection slots, not new Source
+node types. Suppressed separators have no rendered target when they would be
+leading, trailing or duplicated; content nodes are never discarded.
+
+
+Toolbar labels and icon sizing — 2026-10-23. Owner: "Sì, procedi con queste tre
+modalità e aggiungi gli esempi nella gallery. Nel menu di overflow manteniamo
+sempre icona ed etichetta affiancate", followed by the request for larger toolbar
+icons and a subtle hover background. Derive labelPosition and iconSize from the
+existing camelCase component-parameter convention. menu defaults are
+labelPosition="beside" and iconSize=24 (positive CSS pixels); menuline may override
+either, with null meaning inherit from its enclosing group/menu. labelPosition
+has exactly beside, below and tooltip. Popup and overflow rows always show the
+caption beside the icon at normal menu scale; the toolbar setting never deletes
+the caption. Tooltip text uses authored/registered tooltip, otherwise the caption.
+Accessible button names retain the caption even in tooltip mode. Internal CSS
+classes toolbar-button, toolbar-below and toolbar-tooltip and the CSS variable
+--gramlot-toolbar-icon-size describe presentation only, not new Source elements.
+
+
+Vertical toolbar reference — 2026-10-23. Owner requests the gallery rail with
+large icons, tooltip, selected state, separators and overflow, with horizontal
+chevrons for a vertical bar and vertical chevrons for a horizontal bar. Reuse
+orientation and existing menu/menuline/checked parameters: no slotbar or selection
+API is introduced. Overflow and submenu triggers use › on vertical bars and ▾
+on horizontal bars; popup descendants retain lateral ›. This supersedes the
+trial's orientation-independent » overflow glyph. The example's selected section
+belongs to page Data and named Logic, not a new core radio-group contract.
+
+
+Owner confirmation, 2026-10-23: “Sì, iconSrc per SVG” and “Per la voce, con icona configurabile a parte”. iconSrc follows existing camelCase component parameters and is an image URL on command surfaces and registered definitions. icon remains text/emoji; iconSrc renders an image, never injected SVG markup. iconSize remains the toolbar icon size; caption, class_, color, width and height keep existing occurrence presentation names. Internal renderIcon and entryIcon/entryIconSrc centralize image/text rendering and occurrence-over-registry resolution. A supplied occurrence icon choice replaces the registered choice; within a choice iconSrc takes precedence over icon. Owner also requests reduced horizontal padding and background-only toolbar selection; popup checks remain visible.
+
+
+Window trial names — owner 2026-10-23 confirms dialog/html_dialog/floatingPane and instructs first implementation. Dialog/FloatingPane descriptors use gramlot-dialog/gramlot-floating-pane in layout. WindowShell shares chrome and native modal/nonmodal ownership; window.frame exposes one real Source framePane. Provisional GC-320 parameters title/open/closable/movable/resizable/collapsible/collapsed/beforeClose retain their proposed spelling. width/height/left/top and minWidth/minHeight are CSS lengths; open/collapsed and completed geometry changes use existing writeParameter. requestClose(reason) on window Source delegates to the mounted component; beforeClose calls named Logic with window node and {reason}, boolean/Promise<boolean>. Explicit open=False bypasses the guard. Internal setSourceContext follows selected containers. Window CSS tokens follow --gramlot-window-<role>.
+
+
+Window maximize names — 2026-10-23. Owner confirms the proposed contract with
+“ok”. maximizable (read boolean, default false) and maximized (twoWay boolean,
+default false) follow collapsible/collapsed and the component parameter convention.
+They apply identically to dialog and floatingPane. Internal data-maximized marks
+presentation only. The normal expanded rectangle remains separate from viewport
+presentation; neither maximize nor collapse rewrites bound geometry. Restore size
+and Expand window are distinct accessible button actions.
+
+
+Aesthetic revision (2026-10-23, owner asks for compact professional themes): retain
+existing IDs gramlot-compact, mimi and joanna and the established --gramlot-<role>
+tokens. Menu/window dimensions consume field-height, button-padding/button-gap,
+space and radius tokens rather than introducing parallel density names. Appearance
+choices remain provisional. PreviewPage is an examples-owned shared Page subclass.
+
+
+Independent gallery colors (2026-10-23). Owner: “fai in modo che sia possibile anche scelgiere temi di colori o abbinamenti diversi”. The gallery preference palette and control index-palette follow appearance/index-appearance; generated paletteStyles follows appearanceStyles. Values reuse compact, mimi and joanna for their color combinations; default means no color override. Color-only CSS lives at themes/palettes/<profile>.css and uses established semantic tokens. The gallery-owned parent/frame message carries palette alongside appearance and theme, validated against the generated paletteStyles keys. No new component parameter or core runtime API. The initial color combinations are provisional visual choices.
+
+
+Overflow indicator revision (2026-10-23). Owner prefers “>> o un icona simile rivolta a destra” at the end of the toolbar. Replace the overflow-only single orientation-dependent glyph with a right-facing double-chevron SVG and the existing More commands accessible name/tooltip. Submenu indicators retain their small orientation-dependent chevron. This supersedes the overflow glyph portion of the earlier vertical toolbar reference; no parameter or Source name changes. Local icon/path variables follow existing component SVG construction.
+
+
+Tree disclosure refinement (2026-10-23). Owner requests an unfilled chevron and tighter spacing before the label. Reuse the existing expander/spacer/icon/caption parts and aria-expanded state; internal chevron/chevronPath locals follow component SVG naming. The SVG rotates on expanded branches without a parallel state attribute. No public API or icon-selection change.

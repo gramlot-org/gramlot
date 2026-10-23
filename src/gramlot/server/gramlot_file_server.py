@@ -89,6 +89,33 @@ class GramlotFileServer(GramlotServer):
             self._modules[real] = module
         return getattr(module, "Page", None)
 
+    def iter_page_classes(self):
+        """Import route-eligible candidates deterministically and classify Page exports."""
+        from ..page import Page
+        root = self.pages_dir.resolve()
+        seen_files, seen_classes = set(), set()
+        for filename in sorted(root.rglob('*.py'), key=lambda p: p.relative_to(root).as_posix()):
+            logical = filename.relative_to(root).with_suffix('').as_posix()
+            try:
+                resolved = self.locate_page(logical).resolve()
+            except PageNotFound:
+                continue
+            if resolved in seen_files:
+                continue
+            seen_files.add(resolved)
+            try:
+                cls = self.resolve_page(logical)
+            except Exception as error:
+                raise ValueError(f'Page catalogue import failed: {filename}: {error}') from error
+            module = self._modules[resolved]
+            if 'Page' not in vars(module) or cls is Page:
+                continue
+            if not isinstance(cls, type) or not issubclass(cls, Page):
+                raise ValueError(f'Invalid Page export: {filename}')
+            if cls not in seen_classes:
+                seen_classes.add(cls)
+                yield cls
+
     def close_all(self):
         """Release pages and their registered modules when the adapter shuts down."""
         super().close_all()

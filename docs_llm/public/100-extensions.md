@@ -2,6 +2,10 @@
 
 Document ID: **GC-100**.
 
+For a complete component, collection build, Python import and override tutorial,
+start with [How components and collections work](340-components-and-collections-guide.md).
+This chapter covers the lower-level extension boundaries and grammar/markup APIs.
+
 <a id="gc-100-005"></a>
 
 ## 005 · Choose the owning layer
@@ -31,7 +35,7 @@ main/remote pipeline.
 
 <a id="gc-100-015"></a>
 
-## 015 · Extension contracts still to define
+## 015 · Explicit loading and remaining extension boundaries
 
 Not defined yet: third-party collection naming/registration/discovery/collisions;
 lifecycle and Data ownership of third-party controllers and resolvers (`dataFormula`,

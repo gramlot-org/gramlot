@@ -13,7 +13,7 @@ import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 const sha256 = text => createHash('sha256').update(text).digest('hex');
 
 test('hosted input bundle accepts runtime Bags and respects Bag validation errors', async () => {
-    const {default: inputs} = await import('../dist/components/inputs.js');
+    const {default: inputs} = await import('../dist/components/inputs/assets/index.js');
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     window.HTMLElement.prototype.showPopover = function() {};
     window.HTMLElement.prototype.hidePopover = function() {};

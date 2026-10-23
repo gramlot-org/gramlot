@@ -352,26 +352,22 @@ The shell needs the **layout** and **tree** collections. Add **inputs** when you
 pages use widgets from it. Native HTML inputs in the example above need no inputs
 collection. Use the same selected collections for the root, child pages and remote
 Source requests, as described in [collection activation, GC-105 §035](105-components.md).
-A Python host's collection descriptors can be prepared as follows:
+Select prepared descriptors on your IndexPage subclass:
 
 ```python
-import json
-from importlib.resources import files
+from gramlot.collections.layout import mygramlot as layout
+from gramlot.collections.tree import mygramlot as tree
 
-collections = [
-    {"grammar": json.loads(files("gramlot").joinpath(f"collections/{name}.json").read_text()),
-     "module": f"/assets/{name}.js"}
-    for name in ("layout", "tree")
-]
+class Page(IndexPage):
+    gramlots = [layout, tree]
 ```
 
-Supply these descriptors to your host and serve the corresponding browser ES
-modules at `/assets/layout.js` and `/assets/tree.js`. Bundle their entry points
-`@gramlot/gramlot/components/layout` and `@gramlot/gramlot/components/tree`, with
-`@gramlot/gramlot` external, so both share the bootstrap's runtime and Bag classes.
-The JSON grammar alone does not load browser controls. Host setup and public
-asset routing belong to the integration; see
-[page resources and file layout, GC-090 §030](090-classes-and-hosts.md).
+Here `IndexPage` is the shell base described above. Select the required descriptors
+on child Page classes too; an iframe is a separate page. The host resolves the
+prepared dependency graph and exposes verified collection files in its bootstrap.
+Do not create URL-only collection dictionaries or bundle unrelated runtime copies.
+See [collection loading and resource ownership](340-components-and-collections-guide.md#gc-340-055)
+for the preparation and bootstrap contract.
 
 Navigation URLs are resolved by the iframe against the shell document URL. The
 relative paths in this example work at `/` and at a mounted root such as `/app/`.
