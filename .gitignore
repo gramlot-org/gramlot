@@ -1,7 +1,7 @@
 .DS_Store
 .env
 .env.*
-.venv/
+.venv
 venv/
 temp/
 tmp/
@@ -45,3 +45,11 @@ assets/branding/references/
 
 # Secondary git worktrees
 worktrees/
+
+# Prepared optional collection packages (rebuilt with the browser runtime).
+src/gramlot/collections/inputs/
+src/gramlot/collections/layout/
+src/gramlot/collections/tree/
+src/gramlot/collections/editors/
+src/gramlot/collections/typst/
+src/gramlot/resources/components/

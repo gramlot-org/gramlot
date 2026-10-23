@@ -4,6 +4,7 @@
  *
  * @module
  */
+import {CommandRegistry} from './commands.js';
 import {ServerAdapter} from './server-adapter.js';
 import {NAME_SYNTAX, NameSyntax} from './builder/name-syntax.js';
 import {SourceHandler} from './handlers/source-handler.js';
@@ -29,6 +30,7 @@ export class Gramlot {
         for (const collection of collections) {
             if (collection instanceof ComponentCollection) collection.register(document.defaultView);
         }
+        this.commands = new CommandRegistry();
         this.pageId = pageId;
         const browserContext = locale == null || timeZone == null
             ? document.defaultView.Intl.DateTimeFormat().resolvedOptions() : null;

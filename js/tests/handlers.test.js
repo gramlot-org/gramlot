@@ -16,7 +16,7 @@ test('a Gramlot instance has lifecycle, Data, formatting context, the server ada
     for (const name of ['publish', 'subscribe', 'unsubscribe']) assert.equal(typeof app[name], 'function');
     assert.equal(app.subscriptions, undefined);
     assert.deepEqual(Object.keys(app).sort(),
-        ['abort', 'capabilities', 'data', 'devices', 'dom', 'locale', 'logic', 'pageId', 'rpc', 'serverAdapter', 'src', 'state',
+        ['abort', 'capabilities', 'commands', 'data', 'devices', 'dom', 'locale', 'logic', 'pageId', 'rpc', 'serverAdapter', 'src', 'state',
             'timeZone', 'utl']);
 });
 

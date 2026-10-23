@@ -76,6 +76,23 @@ export const ContentPane = defineComponent({
             style.textContent = ':host{min-height:0;overflow:auto}.control-box{height:100%;min-height:0}';
             this.shadowRoot.append(style);
         }
+        projectAttributes(attrs) {
+            const rest = super.projectAttributes(attrs);
+            // Source flex styles belong to the slot's layout container as well as
+            // the host; the shadow wrapper must not turn region children into blocks.
+            const authored = this.ownerDocument.createElement('div').style;
+            authored.cssText = rest.style ?? '';
+            const flex = authored.display === 'flex' || authored.display === 'inline-flex';
+            this.controlBox.style.display = flex ? 'flex' : '';
+            this.controlBox.style.flex = flex ? '1 1 auto' : '';
+            const properties = ['flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 'gap', 'row-gap', 'column-gap'];
+            for (const name of properties) this.controlBox.style.removeProperty(name);
+            if (flex) for (let index = 0; index < authored.length; index++) {
+                const name = authored.item(index);
+                if (properties.includes(name)) this.controlBox.style.setProperty(name, authored.getPropertyValue(name));
+            }
+            return rest;
+        }
     }
 });
 
@@ -93,7 +110,7 @@ export const BorderContainer = defineComponent({
         static projectChild(element, attrs, context) {
             const {rest, config} = projectBorderChild(element, attrs, context);
             BorderContainer.#borderRegions.set(element, config);
-            if (element.parentElement?.constructor.gramlotComponent?.name === 'borderContainer') element.parentElement.projectRegion(element);
+            if (['borderContainer', 'framePane'].includes(element.parentElement?.constructor.gramlotComponent?.name)) element.parentElement.projectRegion(element);
             return rest;
         }
         #regions = new Map();
@@ -441,4 +458,12 @@ export const BorderContainer = defineComponent({
             if (this.parameters.persist) this.ownerDocument.cookie = `${this.#cookie(side)}=${encodeURIComponent(this.#regions.get(side).size)}; Path=/; SameSite=Lax`;
         }
     }
+});
+
+
+/** Five-region command frame; the existing border engine owns layout. */
+export const FramePane = defineComponent({
+    name: 'framePane', tag: 'gramlot-frame-pane', base: BorderContainer.base,
+    parameters: BorderContainer.parameters, childParameters: BorderContainer.childParameters,
+    subTags: 'contentPane', implementation: BorderContainer.implementation
 });

@@ -1,7 +1,7 @@
 /** Verify the shipped runtimes on localhost and an ordinary HTTP origin in Chromium. */
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
-import {readFile} from 'node:fs/promises';
+import {readFile, readdir} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 
 const [playwrightPath, executablePath] = process.argv.slice(2);
@@ -15,9 +15,14 @@ for (const folder of ['js/dist', 'src/gramlot/resources']) {
         artifacts.set(`/${path}`, await readFile(new URL(`../${path}`, import.meta.url)));
         runtimes.push(`/${path}`);
     }
+    const collectionRoot = folder === 'js/dist' ? 'js/dist/components' : 'src/gramlot/collections';
     for (const name of ['inputs', 'layout']) {
-        const path = `${folder}/components/${name}.js`;
-        artifacts.set(`/${path}`, await readFile(new URL(`../${path}`, import.meta.url)));
+        const assets = `${collectionRoot}/${name}/assets`;
+        for (const file of await readdir(new URL(`../${assets}/`, import.meta.url), {recursive: true})) {
+            if (!file.endsWith('.js')) continue;
+            const path = `${assets}/${file}`;
+            artifacts.set(`/${path}`, await readFile(new URL(`../${path}`, import.meta.url)));
+        }
     }
 }
 const server = createServer((request, response) => {
@@ -48,12 +53,12 @@ try {
                 const result = await page.evaluate(async artifact => {
                     const map = document.createElement('script');
                     map.type = 'importmap';
-                    map.textContent = JSON.stringify({imports:{'@gramlot/gramlot':artifact}});
+                    map.textContent = JSON.stringify({imports:{'@gramlot/gramlot':artifact, '@gramlot/gramlot/components':artifact}});
                     document.head.append(map);
                     const {Gramlot, GramlotBuilder, Bag} = await import(artifact);
-                    const directory = artifact.slice(0, artifact.lastIndexOf('/'));
-                    const {default: inputs} = await import(`${directory}/components/inputs.js`);
-                    const {default: layout} = await import(`${directory}/components/layout.js`);
+                    const directory = artifact.startsWith('/js/') ? '/js/dist/components' : '/src/gramlot/collections';
+                    const {default: inputs} = await import(`${directory}/inputs/assets/index.js`);
+                    const {default: layout} = await import(`${directory}/layout/assets/index.js`);
                     inputs.register(window); layout.register(window);
                     const collections = [inputs.toDocument(), layout.toDocument()];
                     for (const author of [

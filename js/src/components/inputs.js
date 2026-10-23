@@ -5,6 +5,7 @@ import {TypedEditor, numberEditor, dateEditor, timeEditor} from './typed-editor.
 import {CalendarControl} from './date-calendar.js';
 import {FieldState} from './field-state.js';
 import {ChoiceEditor, localChoices, callbackChoices} from './choice-editor.js';
+import {databaseChoices, databaseParameters} from './database-choices.js';
 
 export const Textbox = defineComponent({
     name: 'textbox', tag: 'gramlot-textbox', base: NativeControl, mixins: [Labelbox, FieldState],
@@ -193,8 +194,20 @@ export const CallbackSelect = defineComponent({
 });
 export const ComboBox = defineComponent({
     name: 'comboBox', tag: 'gramlot-combo-box', base: ChoiceEditor, mixins: [Labelbox, FieldState],
-    parameters: {values: {dtype: 'T', default: '', binding: 'read'}, separator: {dtype: 'T', default: ',', binding: 'read'}, store: {dtype: 'X', nullable: true, default: null, binding: 'read'}},
+    parameters: {values: {dtype: 'T', default: '', binding: 'read'}, separator: {dtype: 'T', default: ',', binding: 'read'},
+        store: {dtype: 'X', nullable: true, default: null, binding: 'read'}},
     implementation: Base => class extends localChoices(Base) {
+        get constrained() { return false; }
+    }
+});
+export const DbSelect = defineComponent({
+    name:'dbSelect', tag:'gramlot-db-select', base:ChoiceEditor, mixins:[Labelbox, FieldState],
+    parameters:{...databaseParameters, value:{dtype:['T','L'], nullable:true, binding:'twoWay'},
+        autoSelect:{dtype:'B', default:false, binding:'read'}}, implementation:databaseChoices
+});
+export const DbComboBox = defineComponent({
+    name:'dbComboBox', tag:'gramlot-db-combo-box', base:ChoiceEditor, mixins:[Labelbox, FieldState],
+    parameters:databaseParameters, implementation:Base => class extends databaseChoices(Base) {
         get constrained() { return false; }
     }
 });
@@ -212,4 +225,4 @@ export const CheckBoxText = defineComponent({
 });
 export default defineCollection({name: 'inputs', components: [Textbox, Checkbox, RadioButtonText,
     TextBoxArea, Passwordbox, RadioButton, Colorpicker, HorizontalSlider, VerticalSlider,
-    NumberTextBox, DateTextBox, TimeTextBox, FilteringSelect, CallbackSelect, ComboBox, CheckBoxText, DateCalendar]});
+    NumberTextBox, DateTextBox, TimeTextBox, FilteringSelect, CallbackSelect, ComboBox, DbSelect, DbComboBox, CheckBoxText, DateCalendar]});

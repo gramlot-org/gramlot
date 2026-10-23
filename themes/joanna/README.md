@@ -1,3 +1,22 @@
+# Joanna
+
+Professional desktop profile, revised at the owner's request on 2026-10-23.
+Balanced density, warm neutral surfaces and blue accent. Controls are 32px high; body and field text are 14px. Light and dark
+palettes use the same semantic roles. Existing touch targets remain larger.
+
+```python
+class Page(BasePage):
+    css = ("/themes/gramlot-compact/theme.css", "/themes/joanna/theme.css")
+```
+
+The server loads Base first. The gallery's existing appearance selector uses the
+same canonical stylesheet. Inputs, command buttons, menus, tabs and window chrome
+share existing field/button/spacing/radius tokens. Fixed Source dimensions still
+win; use semantic spacing variables when a page should follow profile density.
+These revised aesthetics are a development preview awaiting owner feedback.
+
+## Historical record — before the 2026-10-23 aesthetic revision
+
 # joanna
 
 A Gramlot interpretation of GenroPy's `joanna` theme. The light palette

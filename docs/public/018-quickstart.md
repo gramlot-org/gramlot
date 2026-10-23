@@ -45,7 +45,7 @@ guide.
 
 The gallery shows the result, explanation and source together. Python environments
 show Python; JavaScript environments show JavaScript. A separate **Logic** tab,
-when present, contains browser behavior. The source viewer is not a file editor.
+when present, contains browser behavior. The ordinary source viewer is read-only. A Python gallery started with its explicit remote-edit option can also expose an editor; that host feature is separate from the viewer.
 
 <a id="gc-018-015"></a>
 

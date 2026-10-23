@@ -70,3 +70,13 @@ next-phase candidates. Separate cards record owner requirements, proposals,
 dependencies and opportunities for parallel work. GC-070 remains the current
 delivery checkpoint. This directory is excluded from the public manual; listing
 an item does not approve implementation or reopen a completed phase.
+
+
+## 6. Component and collection authoring guide
+
+[GC-340 · How components and collections work](public/340-components-and-collections-guide.md)
+explains definitions, Builder grammar, Source/Data, bases and mixins, complete JS
+and Python examples, prepared packages, resources, dependencies and explicit
+override rules. It describes the current development implementation, including
+provisional prepared-collection behavior. It is a repository guide, outside the
+public site's allowlist; adding it does not publish or promote a stable API.

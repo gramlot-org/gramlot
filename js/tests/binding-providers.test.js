@@ -502,6 +502,11 @@ function bootstrapArguments(html) {
 /** Run the real bootstrap of `html` in jsdom, `main` answering `wire`. */
 async function boot({html, wire}, name) {
     const {window} = new JSDOM(html, {url: pathToFileURL(`${LOGIC}/${name}`).href});
+    const appendStyle = window.document.head.append.bind(window.document.head);
+    window.document.head.append = (...nodes) => {
+        appendStyle(...nodes);
+        for(const node of nodes) if(node.tagName==='LINK') queueMicrotask(()=>node.dispatchEvent(new window.Event('load')));
+    };
     window.navigator.sendBeacon = () => true;
     const original = globalThis.fetch;
     globalThis.fetch = async (url, {body}) => {

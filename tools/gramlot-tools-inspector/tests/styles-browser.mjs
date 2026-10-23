@@ -114,7 +114,7 @@ if (process.argv.includes('--serve')) {
                     const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = '/compact.css'; link.onload = resolve; document.head.append(link);
                 }));
                 await tool.getByRole('button', {name: 'Refresh', exact: true}).click();
-                assert.equal(await field('--gramlot-space-4').inputValue(), '.6rem');
+                assert.equal(await field('--gramlot-space-4').inputValue(), '8px');
                 await field('--gramlot-space-4').fill('3rem'); await field('--gramlot-space-4').press('Enter');
                 await tool.getByRole('tab', {name: 'Data', exact: true}).click();
                 await tool.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]').click();
@@ -127,12 +127,12 @@ if (process.argv.includes('--serve')) {
                     const first = new InspectorStyles(document), second = new InspectorStyles(document);
                     first.set('--gramlot-action', '#111111'); second.set('--gramlot-action', '#222222'); first.dispose(); second.dispose();
                 });
-                assert.equal(await field('--gramlot-action').inputValue(), '#456bc4');
+                assert.equal(await field('--gramlot-action').inputValue(), '#235db2');
                 await tool.getByRole('button', {name: 'Close inspector', exact: true}).click();
-                assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--gramlot-space-4').trim()), '.6rem');
+                assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--gramlot-space-4').trim()), '8px');
                 await page.evaluate(() => document.body.append(inspector));
                 await tool.getByRole('tab', {name: 'Styles', exact: true}).click();
-                assert.equal(await field('--gramlot-space-4').inputValue(), '.6rem');
+                assert.equal(await field('--gramlot-space-4').inputValue(), '8px');
                 await page.evaluate(() => {document.querySelectorAll('head link').forEach(link => link.remove());});
                 await tool.getByRole('button', {name: 'Refresh', exact: true}).click();
                 assert.equal(await tool.locator('.styles-empty').isVisible(), true);

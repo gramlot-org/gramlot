@@ -18,10 +18,25 @@ PUBLIC_PAGES = (
     "docs/public/105-components.md",
     "docs/public/100-extensions.md",
     "docs/public/101-server-protocol.md",
+    "docs/public/340-components-and-collections-guide.md",
+    "docs/public/345-widget-reference.md",
+    "docs/public/350-menus-toolbars-and-windows.md",
+    "docs/public/355-examples-and-visual-tour.md",
 )
 PUBLIC_ASSETS = (
     "assets/branding/gramlot-logo.svg",
+    "docs/public/assets/showcase/drawers.png",
+    "docs/public/assets/showcase/tabs.png",
+    "docs/public/assets/showcase/menus.png",
+    "docs/public/assets/showcase/dialog.png",
+    "docs/public/assets/showcase/floating.png",
+    "docs/public/assets/showcase/compact.png",
+    "docs/public/assets/showcase/colors.png",
+    "docs/public/assets/showcase/validation.png",
+    "docs/public/assets/showcase/tree.png",
+    "docs/public/assets/showcase/markdown.png",
     "assets/branding/gramlot-logo-dark.svg",
+    "docs/_static/manual.css",
     "docs/public/assets/themes/appearance-after.jpg",
     "docs/public/assets/themes/appearance-before.jpg",
     "docs/public/assets/themes/compact.jpg",
@@ -44,17 +59,20 @@ def main():
     site = root / "build" / "docs-site"
     if site.exists():
         shutil.rmtree(site)
-    home = (root / "README.md").read_text()
-    start = home.index('<p align="center">')
-    end = home.index("</p>", start) + len("</p>")
-    home = (
-        home[:start]
-        + "```{image} assets/branding/gramlot-logo.svg\n:alt: Gramlot\n:width: 220px\n:align: center\n```"
-        + home[end:]
+    home = (root / "docs/public/index.md").read_text()
+    # The repository home lives beside the guides; the site home lives at its root.
+    for relative in PUBLIC_PAGES:
+        home = home.replace(f"]({Path(relative).name}", f"]({relative}")
+    groups = (
+        ("Start here", ("018-quickstart", "020-evaluate", "025-try", "030-quality", "055-family")),
+        ("Build applications", ("090-classes-and-hosts", "095-writing-pages", "097-data-binding", "098-server-calls", "099-remote-content")),
+        ("Widgets and presentation", ("345-widget-reference", "105-components", "350-menus-toolbars-and-windows", "096-themes-and-css", "355-examples-and-visual-tour")),
+        ("Extend and integrate", ("340-components-and-collections-guide", "100-extensions", "101-server-protocol")),
     )
-    home += "\n```{toctree}\n:maxdepth: 2\n:hidden:\n\n"
-    home += "\n".join(str(Path(page).with_suffix("")) for page in PUBLIC_PAGES)
-    home += "\n```\n"
+    for caption, pages in groups:
+        home += "\n```{toctree}\n:maxdepth: 1\n:hidden:\n:caption: " + caption + "\n\n"
+        home += "\n".join("docs/public/" + page for page in pages)
+        home += "\n```\n"
     (destination / "index.md").write_text(home)
     shutil.copy2(root / "docs/conf.py", destination / "conf.py")
     for relative in (*PUBLIC_PAGES, *PUBLIC_ASSETS):

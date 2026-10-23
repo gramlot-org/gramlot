@@ -1,3 +1,4 @@
+import type {CommandRegistry} from './commands.js';
 /**
  * One Gramlot page in the browser.
  *
@@ -72,6 +73,7 @@ export type Publication = string | {topic: string; nodeId: string} |
 
 /** One Gramlot page: lifecycle, Data and the four proxies `src`, `rpc`, `dom`, `utl`. */
 export class Gramlot {
+    readonly commands: CommandRegistry;
     readonly devices: readonly ('desktop' | 'tablet' | 'phone')[];
     locale: string;
     timeZone: string;

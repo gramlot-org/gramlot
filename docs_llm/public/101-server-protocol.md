@@ -52,6 +52,14 @@ Calls of another owner, of unknown or expired pages, undecodable requests and th
 a page no call names for `page_ttl` is removed (next call → `page_expired`). `GramlotServer.call` renews; the
 adapter does nothing. A new `Page` per call; no state between calls unless a capability (§040).
 
+Prepared collection resources are inventoried at host startup. Python pages select
+importable descriptors through `Page.gramlots`; the host includes dependencies
+before dependants and makes only inventoried browser assets available. A collection
+bootstrap entry is `{name, url, buildId}`, not a bare URL. Theme CSS precedes
+collection CSS, followed by page CSS. Startup waits for stylesheets and modules,
+and an identity/load failure prevents normal page startup. See the
+[complete collection lifecycle](340-components-and-collections-guide.md#gc-340-055).
+
 <a id="gc-101-015"></a>
 
 ### 015 · Content types and method names

@@ -1,5 +1,8 @@
 """Neutral server foundation: no HTTP framework, event loop or ASGI dependency."""
 
+from urllib.parse import quote
+from ..collection import collection_graph, page_collections
+
 import inspect
 import json
 import math
@@ -134,12 +137,23 @@ class GramlotServer:
         self.close_url, self.root_id = close_url, root_id
         self.page_ttl, self.max_pages = ttl, max_pages
         self._pages = {}
-        self.collections = tuple(collections)
+        self.collections = collection_graph(collections)
         self.css_theme = css_theme
 
     def resolve_page(self, path):
         """Return the ``Page`` class of ``path``, or raise ``PageNotFound``."""
         raise PageNotFound(f"Page not found: {path}")
+
+    def iter_page_classes(self):
+        """Enumerate trusted classes for process startup; providers must implement this."""
+        raise NotImplementedError('The host must enumerate its trusted page classes')
+
+    def collection_url(self, collection, path):
+        """Map a registered package resource to a root-relative host URL."""
+        raise NotImplementedError('The host must expose verified collection resources')
+
+    def page_collections(self, cls):
+        return collection_graph((*self.collections, *page_collections(cls)))
 
     def resolve_resources(self, path, cls):
         """Return ``{"css": [url], "js": [{"url": url, "group": str | None}]}``, in load
@@ -239,8 +253,14 @@ class GramlotServer:
         cls = self.resolve_page(path)
         if not isinstance(cls, type) or not issubclass(cls, Page) or cls is Page:
             raise TypeError("Page modules must expose a subclass of gramlot.Page")
+        selected = self.page_collections(cls)
+        for collection in selected:
+            collection.verify()
         resolved = self.resolve_resources(path, cls)
-        resources = load_order({**resolved, "css": [*self.theme_css(cls), *resolved["css"]]})
+        collection_css = [self.collection_url(c, path) for c in selected for path in c.css]
+        resources = load_order({**resolved, "css": [*self.theme_css(cls), *collection_css, *resolved["css"]]})
+        collection_records = [{"name": c.name, "url": _prefixed(prefix, self.collection_url(c, c.module)),
+                               "buildId": c.build_id} for c in selected]
         self._prune()
         if len(self._pages) >= self.max_pages:
             raise ServerCapacity("Page registry capacity reached")
@@ -258,8 +278,7 @@ class GramlotServer:
                            **({"devices": list(cls.devices)} if cls.devices else {}),
                            **({"locale": cls.locale} if cls.locale is not None else {}),
                            **({"timeZone": cls.time_zone} if cls.time_zone is not None else {})},
-                "resources": {**({"collections": [_prefixed(prefix, item["module"]) for item in self.collections]}
-                                 if self.collections else {}),
+                "resources": {"collections": collection_records,
                               "css": [_prefixed(prefix, url) for url in resources["css"]],
                               "js": [{"url": _prefixed(prefix, entry["url"]), "group": entry["group"]}
                                      for entry in resources["js"]],
@@ -276,7 +295,10 @@ class GramlotServer:
                 head.link(rel="manifest", href=prefix + "/app.webmanifest")
             # A page module served for its Logic imports the core from the runtime already loaded.
             head.script(_script_json({"imports": {"@gramlot/gramlot/page": _prefixed(prefix, self.runtime_url),
-                                                "@gramlot/gramlot": _prefixed(prefix, self.runtime_url)}}),
+                                                "@gramlot/gramlot": _prefixed(prefix, self.runtime_url),
+                                                "@gramlot/gramlot/components": _prefixed(prefix, self.runtime_url),
+                                                **{"@gramlot/collections/" + quote(item["name"], safe="-_.!~*'()"):
+                                                   item["url"] for item in collection_records}}}),
                         type="importmap", nonce=nonce)
             body = root.body()
             body.div(id=self.root_id)
@@ -350,8 +372,9 @@ class GramlotServer:
             return await result if inspect.isawaitable(result) else result
         builder = page.source_builder(name, auth=lambda element_rule: self._auth_outcome(element_rule, owner, identity),
                                       name_syntax=self.name_syntax)
-        for collection in self.collections:
-            builder.load_collection(collection["grammar"])
+        for collection in self.page_collections(type(page)):
+            content = collection.verify()
+            builder.load_collection(json.loads(content[collection.grammar]))
         result = function(builder.root, **params)
         if inspect.isawaitable(result):
             result = await result

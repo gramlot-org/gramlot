@@ -2,12 +2,14 @@
 import {defineComponent, defineCollection} from './registry.js';
 import {Labelbox} from './labelbox.js';
 import {Container} from './container.js';
-import {BorderContainer, ContentPane} from './border-container.js';
-export {BorderContainer, ContentPane};
+import {BorderContainer, ContentPane, FramePane} from './border-container.js';
+export {BorderContainer, ContentPane, FramePane};
 import {StackContainer, TabContainer} from './selected-container.js';
 export {StackContainer, TabContainer};
 import {positionPopup} from './popup.js';
 import {FormletLabels} from './formlet-labels.js';
+import {Dialog, FloatingPane} from './windows.js';
+export {Dialog, FloatingPane};
 
 const COPY_FEEDBACK_DURATION = 1600;
 
@@ -170,4 +172,4 @@ export const GroupBox = defineComponent({
         }
     }
 });
-export default defineCollection({name: 'layout', components: [Formlet, GroupBox, ContentPane, BorderContainer, StackContainer, TabContainer]});
+export default defineCollection({name: 'layout', components: [Dialog, FloatingPane, FramePane, Formlet, GroupBox, ContentPane, BorderContainer, StackContainer, TabContainer]});

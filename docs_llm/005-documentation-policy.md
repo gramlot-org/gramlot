@@ -102,7 +102,7 @@ public manual pages. This does not make files in a public repository private.
 
 Core now uses Sphinx with the classic Read the Docs theme. The staging script's
 explicit page and asset allowlists define the site boundary, including search
-and downloadable sources. The public guides GC-018, GC-020, GC-025, GC-030, GC-055, GC-090, GC-095, GC-096, GC-097, GC-098, GC-099, GC-100, GC-101 and GC-105 have paired
+and downloadable sources. The public guides GC-018, GC-020, GC-025, GC-030, GC-055, GC-090, GC-095, GC-096, GC-097, GC-098, GC-099, GC-100, GC-101, GC-105, GC-340, GC-345, GC-350 and GC-355 have paired
 paths and stable block anchors. Existing legacy migration gaps remain unchanged.
 
 Present Gramlot as one framework: this repository contains the typed Source development core. The richer `gramlot-poc` remains evidence and a laboratory, not the core implementation or its operating plan. Keep

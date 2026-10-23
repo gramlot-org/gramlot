@@ -581,6 +581,14 @@ function componentContext(adapter) {
         callLogic:(name, keywords) => callLogic(binding.runtime, node, name, keywords),
         format:(value, options) => app.format(value, options), invoke,
         remote:(method, keywords, signal) => app.rpc.call('data', method, keywords, {signal}),
+        selectionOutputs:({selectedCaption, selectedRecord, fields}, row) => {
+            if (binding.closed) return;
+            if (selectedCaption) node.setRelativeData(selectedCaption, row?.caption ?? null);
+            if (selectedRecord) node.setRelativeData(selectedRecord, row ? new Bag(row.record) : null);
+            for (const [name, path] of Object.entries(fields)) {
+                node.setRelativeData(path, row?.record[name.slice(9)] ?? null);
+            }
+        },
         validationCurrent:() => {
             const pointer = node.getAttr('value');
             const path = node.pointerType(pointer) ? node.absDatapath(pointer) : null;

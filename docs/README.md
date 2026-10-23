@@ -2,6 +2,11 @@
 
 ## For application developers
 
+[Manual home](public/index.md), [complete widget reference](public/345-widget-reference.md),
+[visual tour and example index](public/355-examples-and-visual-tour.md),
+[menus, frames and windows](public/350-menus-toolbars-and-windows.md), and
+[components, collections and overrides](public/340-components-and-collections-guide.md).
+
 Start with [Classes and server adapters](public/090-classes-and-hosts.md), then
 [Writing pages](public/095-writing-pages.md),
 [Data binding and controllers](public/097-data-binding.md),
@@ -51,3 +56,23 @@ mirrors are excluded from the public Sphinx manual.
 
 - [GC-145 · HTML/SVG examples, base theme and runner](internal/145-html-svg-examples.md) (historical; the examples live in gramlot-examples, constitution 11.56)
 - [GC-150 · Base theme and HTML/SVG example guide](internal/150-example-guide.md) (historical, constitution 11.56)
+
+## Maintain the public manual
+
+The public site starts at `docs/public/index.md`. Keep `scripts/prepare_docs.py`'s
+page/asset allowlists explicit; internal records and `docs_llm` are not published.
+The widget reference comes from the six packaged component grammars, including
+inherited parameters. After updating those grammars, run:
+
+```sh
+python scripts/generate_widget_reference.py
+python scripts/generate_widget_reference.py --check
+python scripts/prepare_docs.py
+python -m sphinx -W --keep-going -n -b html build/docs-source build/docs-site
+python scripts/check_public_docs.py
+```
+
+Install the documentation requirements first. The freshness check runs in the
+documentation CI. Keep human explanations, screenshots and example links aligned
+with runtime behavior; generated signatures alone do not explain semantics.
+The examples repository owns its playground exports and documentation build.

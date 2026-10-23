@@ -369,7 +369,7 @@ class BootstrapTests(unittest.IsolatedAsyncioTestCase):
             with self.subTest(prefix=prefix):
                 opened = await server.open_page("/", prefix=prefix)
                 self.assertIn(f'<script type="importmap" nonce="{opened.nonce}">'
-                              f'{{"imports":{{"@gramlot/gramlot/page":"{runtime}","@gramlot/gramlot":"{runtime}"}}}}</script></head>', opened.html)
+                              f'{{"imports":{{"@gramlot/gramlot/page":"{runtime}","@gramlot/gramlot":"{runtime}","@gramlot/gramlot/components":"{runtime}"}}}}</script></head>', opened.html)
                 self.assertLess(opened.html.index('type="importmap"'), opened.html.index('type="module"'))
 
     async def test_js_url_with_two_groups_fails_before_registration(self):

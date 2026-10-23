@@ -1,0 +1,4 @@
+/* Keep the classic RTD theme while leaving room for navigation and API tables. */
+.wy-side-nav-search > a img.logo { max-height: 112px; width: auto; }
+.wy-table-responsive td, .wy-table-responsive th { white-space: normal; }
+.wy-table-responsive td code { overflow-wrap: anywhere; }

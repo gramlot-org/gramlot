@@ -53,6 +53,32 @@ have no project yet, follow [the quick route](018-quickstart.md).
 - <a href="#gc-096-040">Connect appearance to Data</a>.
 - <a href="#gc-096-050">Apply good practices</a> or <a href="#gc-096-055">diagnose a problem</a>.
 
+
+Choose **density**, **color palette** and **light/dark mode** independently.
+Start with the current profiles in [§060](#gc-096-060), application palette CSS in
+[§065](#gc-096-065), and the [visual tour](355-examples-and-visual-tour.md).
+The defaults below are component minimums: authored icons, content and touch policy
+can require more space.
+
+| Profile | Field minimum | Body text | Use |
+| --- | --- | --- | --- |
+| Mimi | 24px | 12.5px | Dense desktop data tools |
+| Compact | 28px | 13px | Everyday compact interfaces |
+| Joanna | 32px | 14px | More relaxed desktop forms |
+
+For example, load Compact and then the Sage palette in a Python page:
+
+```python
+class Page(GramlotPage):
+    css = ("/themes/gramlot-compact/theme.css",
+           "/themes/palettes/mimi.css")
+```
+
+Here `GramlotPage` is imported from `gramlot.Page`. The host supplies Base first.
+For Mimi or Joanna density, put the corresponding profile after Compact. Palette
+CSS belongs after the density profile. Component attributes can still override
+local geometry; prefer shared tokens for application-wide consistency.
+
 <a id="gc-096-005"></a>
 
 ## 005 · Four ideas to know
@@ -301,6 +327,10 @@ declared styles for their JavaScript pages.
 <a id="gc-096-017"></a>
 
 ## 017 · GenroPy-inspired themes
+
+> **Historical record:** the measurements and former profile values below describe
+> the initial legacy-inspired implementation. The current professional profiles
+> supersede these values; see [§060](#gc-096-060).
 
 The compact proportions were checked against the live `test_invoice_pg` invoice:
 Mimi fields measured 17.5px with 12px text and 10.8px labels. Gramlot uses an 18px
@@ -1121,3 +1151,74 @@ Existing field and label tokens also flow into component shadow roots.
 Application inline sizing can still override ordinary CSS; declared phone
 suitability is not an automatic layout conversion. See
 [Touch interaction](105-components.md) for Page.devices and previews.
+
+
+<a id="gc-096-060"></a>
+## 060 · Professional density previews (2026-10-23)
+
+At the owner's request for two or three professional, space-efficient themes,
+the existing profiles have been revised. These are provisional visual choices,
+not new theme identifiers or a claim that every third-party component is covered.
+
+| Profile | Field height | Text | Character |
+| --- | --- | --- | --- |
+| Joanna | 32px | 14px | Balanced, warm neutrals and blue accent |
+| Compact | 28px | 13px | Compact, neutral blue-gray |
+| Mimi | 24px | 12.5px | Dense, restrained green accent |
+
+All three provide coordinated light/dark surfaces, selected/focus/error/read-only
+states, quiet borders and modest radii. Body and field text use the same scale;
+labels are not made tiny to save space. Text/secondary/action/error pairs exceed
+4.5:1 contrast and control borders exceed 3:1 against the field surface in both
+palettes. These measured pairs are not a blanket accessibility certification.
+Existing touch policy preserves larger targets.
+
+The review found hardcoded toolbar, popup and window dimensions that ignored
+density. Those now use existing field-height, button-padding, button-gap, radius
+and spacing tokens. Normal menu rows cap density height at 28px before touch
+policy. Authored large icons can still make a toolbar taller. Text controls fill
+their control container; read-only native fields use the same surface as components.
+Toolbar selection uses the theme's selected surface. No alternate Source API.
+
+Python gallery lessons 11_joanna, 12_compact and 13_mimi share one Source specimen
+in gramlot_examples.trials.menu.theme_preview. Compare native/component inputs,
+labels, validation, read-only and disabled state, hierarchical menu, tabs, table,
+dialog and floatingPane. The complete dialog editor also follows Compact, uses
+18px action icons and a 380px initial height rather than reserving unused space.
+
+Limits: explicit pixel dimensions in older examples and independent third-party
+editor surfaces are not automatically restyled. Original Base remains available;
+documentation sites retain the mandated Read the Docs appearance. No user theme
+preference is made permanent by this work. The profiles await visual acceptance.
+
+
+<a id="gc-096-065"></a>
+## 065. Choose colors independently of density
+
+In Gallery Settings, Theme selects the appearance and density, Colors selects the
+surface/text/accent combination, and Color mode selects Light or Dark. The gallery
+remembers these three choices independently and applies them to open and newly
+opened previews without reloading their content. Theme default removes the color
+override and restores the selected theme's own colors.
+
+| Colors | Packaged stylesheet | Combination |
+| --- | --- | --- |
+| Blue & slate | `/themes/palettes/compact.css` | Cool gray surfaces, blue accent |
+| Sage & green | `/themes/palettes/mimi.css` | Green-tinted neutrals, green accent |
+| Warm gray & blue | `/themes/palettes/joanna.css` | Warm gray surfaces, blue accent |
+
+The three color-only stylesheets contain no typography, dimensions, spacing or
+radii. Each includes light/dark colors, focus, selected, readonly and semantic
+status colors. They may also be loaded by an application after its chosen theme:
+
+```python
+class Page(GramlotPage):
+    css = ["/themes/gramlot-compact/theme.css", "/themes/palettes/mimi.css"]
+```
+
+This uses Compact sizing with Sage & green colors. The host still supplies Base.
+The host must serve the packaged theme files at the illustrated paths. Standalone
+pages use their declared CSS and system/explicit color mode; gallery preferences
+apply inside the gallery, not as an application-wide preferences service. The
+existing `data-theme="light"` / `data-theme="dark"` convention remains unchanged.
+The color combinations are provisional visual choices to try with real content.

@@ -104,6 +104,11 @@ async function runStory(t, server) {
     const opened = await server.open();
     const args = bootstrapArguments(opened.html);
     const {window} = new JSDOM(opened.html, {url: pathToFileURL(`${PAGES}${PATH}`).href});
+    const appendStyle = window.document.head.append.bind(window.document.head);
+    window.document.head.append = (...nodes) => {
+        appendStyle(...nodes);
+        for(const node of nodes) if(node.tagName==='LINK') queueMicrotask(()=>node.dispatchEvent(new window.Event('load')));
+    };
     const document = window.document;
     const timers = liveTimers(t);
     const listeners = liveListeners(window);
@@ -168,7 +173,7 @@ async function runStory(t, server) {
         assert.equal(app.state, 'started');
         assert.equal(window.gramlot, app);
         // Page.css then the same-name stylesheet, both with the mount prefix; the page module 09_end_to_end.js gives the Logic.
-        assert.deepEqual(args.resources, {css: [`${PAGES}/themes/gramlot-base/theme.css`, `${PAGES}/09_end_to_end.css`],
+        assert.deepEqual(args.resources, {collections:[],css: [`${PAGES}/themes/gramlot-base/theme.css`, `${PAGES}/09_end_to_end.css`],
             js: [{url: `${PAGES}/09_end_to_end.js`, group: null}]});
         assert.deepEqual([...document.head.querySelectorAll('link[rel="stylesheet"]')].map(link => link.getAttribute('href')),
             args.resources.css);

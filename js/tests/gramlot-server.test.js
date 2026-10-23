@@ -458,7 +458,7 @@ test('registerPage registers a page without writing its HTML', async () => {
     assert.deepEqual(Object.keys(registered).sort(), ['nameSyntax', 'pageId', 'resources', 'title']);
     assert.match(registered.pageId, /^[0-9a-f]{32}$/);
     assert.equal(registered.title, 'Titled');
-    assert.deepEqual(registered.resources, {css: ['/themes/gramlot-base/theme.css'], js: []});
+    assert.deepEqual(registered.resources, {collections:[],css: ['/themes/gramlot-base/theme.css'], js: []});
     assert.deepEqual(registered.nameSyntax, NAME_SYNTAX.toJSON());
     assert.equal(server.pages.get(registered.pageId).owner, 'one');
     assert.equal((await main(server, registered.pageId, {owner: 'one'})).value.getNodes().length, 0);

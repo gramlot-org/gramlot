@@ -68,6 +68,7 @@ jobs:
       - name: Build the browser runtime from js/src
         run: |
           npm --prefix js install --ignore-scripts --package-lock=false
+          npm --prefix tools/gramlot-builder install --ignore-scripts --package-lock=false
           npm --prefix js run build
       - name: Build the Python distributions and the npm package
         run: |

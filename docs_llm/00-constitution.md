@@ -2884,3 +2884,655 @@ Owner confirms: “sospenderei e basta. teniamo solo npm. piu semplice”. Suspe
 Owner requests closing the current release as implemented while retaining the review debts: “ora vorrei chiudere la release attuale a come è ora anche se abbiamo debiti come rilevato dalla review”. Publication scope is core on PyPI and npm, clarified by “no anche npm ovviamente”; “gramlot-js server e serverless possono attendere” defers releases of those integration packages. Python use cases have priority, and connected environments may realign less frequently. Existing CI-triggered gallery update policy remains in force. This authorizes release of the consolidated runtime/security corrections and JSR suspension, not unrelated local experiments or closure of outstanding audit items. Full qualification precedes publication.
 
 The following work is Gramlot Catalog and the requested dialog, floating, labelgroup if absent, and copy button, with existing implementations checked before porting. Owner confirms the Catalog maturity meanings with “Sì, confermo”: Alpha means usable with essential review and declared limitations; Beta means a consolidated contract and broader functional verification; Stable means complete review and explicit acceptance; unassessed entries remain Unclassified. The requested Catalog includes the component/library tree, status, annotations, JavaScript implementation and parameters; visual-editor and Inspector insertion should offer a dedicated parameter form. Persistence and implementation design remain open; no component receives a maturity level from publication alone.
+
+### Group container identification — owner, 2026-10-22
+
+For the requested dialog/floating/labelgroup/copy-button assessment, the owner
+confirms "Sì, intendo groupBox" when asked whether labelgroup means the existing
+labeled container grouping multiple fields. Treat this request as referring to
+groupBox; it does not approve a new labelgroup component or alias. The remaining
+component contracts require their bounded destination review.
+
+### Dialog and floating priority and modality — owner, 2026-10-22
+
+Owner clarifies: "si scusa intendevo prima vedomo dalog e floating. per dialog
+esamina legacy per vedere tutte le possibilita. tieni presente che vorrei poter
+fare muovibile per spostralo e resiszble . pero impedisce di usare altro".
+
+Prioritize the dialog/floating legacy assessment over the proposed copyButton
+slice. The dialog must support moving and manual resizing while retaining modal
+blocking of other page content. This establishes those requirements without
+approving all legacy options, the new API names/defaults or a blanket legacy port.
+Python authoring priority is unchanged. GC-070 §1620 records evidence and open
+contract choices; publication remains outside this assessment.
+
+### Dialog closing and additional inventory — owner, 2026-10-22
+
+Owner replies "ok. poi vorrei che tu inventariassi anche frame pane e slotbar"
+to the proposal that dialog X/Escape initiates an application-interceptable close
+request, permitting refusal or confirmation, with normal closure when no handler
+intercepts. This confirms that behavior; it does not choose callback names,
+asynchronous execution semantics or unrelated dialog defaults.
+
+Add framePane and slotBar to the legacy/PoC/core inventory. Dialog and floating
+retain priority; this inventory request does not approve wholesale legacy
+implementation or a FrameForm/database port. GC-070 §1625 records the comparison.
+
+### SlotButton frame recipient and sender identity — owner, 2026-10-22
+
+Owner replies "ok" to the concrete proposal: "possiamo conservare il concetto
+legacy di contenuto designato come destinatario del frame, aggiungendo
+un'identificazione chiara del mittente", following the legacy routing explanation.
+
+A frame's slotButton publishes a command to the content explicitly designated as
+that frame's recipient, preserving the legacy frameTarget concept. The message
+explicitly identifies the originating button. The button publishes the request;
+the recipient owns the operation. This supersedes the unconfirmed proposal that
+the center-region node must always be the stable recipient.
+
+This confirms responsibilities and routing semantics, not exact payload field
+names, registration syntax, legacy topic concatenation, fallback routing or a
+second messaging implementation. Those details must align with the existing
+publish/subscription contract and GC-225 before implementation. No publication.
+
+### Dialog and floating window structure — owner, 2026-10-22
+
+Owner specifies: "ora un dialog o un foating hanno sempremuna title bar col botone
+chiusura collasso e magari anche maximize, il resize handler e al cnetro un frame
+pane che volendo mi consente di mettere ad esempio una top bar con certi slotbutto
+e una botton bar con altri".
+
+Both dialog and floating have window chrome: a title bar with closing and collapse
+controls, a resize handle, and an internal framePane. The framePane allows the
+application to populate regions, including top and bottom bars with distinct
+slotButtons. Window controls operate on the containing window; application
+slotButtons retain the designated-frame-content recipient contract. The title
+bar is separate from the application's framePane top region.
+
+Maximize is an optional capability under consideration ("magari"), not a settled
+default or complete maximize/restore contract. Modal dialog collapse behavior
+requires clarification: the existing modal requirement must not silently become
+nonmodal on collapse. Public API names, geometry state and component composition
+details remain to be specified; no runtime implementation or publication claimed.
+
+### Collapsed dialog remains modal — owner, 2026-10-22
+
+Owner confirms: "Sì, il dialog resta modale anche quando è collassato; il floating
+invece lascia usare il resto della pagina."
+
+Collapsing a dialog to its title bar preserves modal blocking of other page
+content. Its visible window controls remain operable. A floating window remains
+nonmodal both expanded and collapsed. Collapse changes presentation, not the
+interaction-blocking policy. This resolves the modal-collapse question in the
+preceding window-structure decision; maximize and other pending API details are
+not implicitly approved.
+
+### Dialog and floating interaction defaults — owner, 2026-10-22
+
+Owner specifies that collapse, resizing and movement are disabled by default but
+can be enabled, then clarifies the scope: "per il dialog per il floating ttto attivo".
+
+Default capabilities are therefore:
+- Dialog: collapsible false, resizable false, movable false.
+- Floating: collapsible true, resizable true, movable true.
+
+These are configurable capabilities; the names above describe semantics and do
+not settle the final authoring parameter spelling. This refines the earlier
+window-chrome requirement: the title bar remains, but collapse controls and resize
+handles are available when their capabilities are enabled, and title dragging
+requires movement to be enabled. The earlier modal requirement is unchanged:
+a dialog remains modal when collapse is enabled and used; a floating window
+remains nonmodal. "All active" answers the three-capability clarification and
+does not approve maximize or resolve its pending default. Closing keeps its
+previously confirmed interceptable-request behavior.
+
+### Nested bars and complete window/frame design — owner, 2026-10-22
+
+Owner confirms: "Bene, manteniamo questa possibilità di annidare le slotbar e avere
+più barre nella stessa regione. Ora prepara il progetto completo con la sintassi
+Python proposta. troviamo il modo piu pulito di farlo ma la sintassie era molto
+potente. l'unico punto e che era un acrocchio come realizzazione parte python
+parte js. fatto in webcomponent dovrebbe venire meglio".
+
+Preserve slotBars nested within named slot content and multiple independent bars
+in the same frame region. Prepare the complete design with proposed Python
+syntax, clean declarative authoring and Web Component runtime responsibilities.
+This authorizes the design artifact, not automatic adoption of its syntax or
+implementation of every legacy feature. GC-320 distinguishes confirmed behavior,
+proposals, feasibility gates and remaining decisions. Runtime implementation and
+publication remain separate.
+
+### Extension packaging and fixed slotButton grammar — owner, 2026-10-22
+
+Owner states: "io la registrazione la farei solo js. python 'riceve' da js la
+grammatica, non la produce". Registration and component grammar originate in JS;
+Python consumes generated definitions. This supersedes the Python registry
+proposal in this discussion, not the existing JS-owned descriptor contract.
+
+Owner supplies `from xxx.yyy import mygramlot` and
+`class Page(GramlotPage): gramlots = [mygramlot]`, then specifies
+"di default c'è il gramlot base". Select importable extension objects through
+Page.gramlots; the base is implicit. The precise object, packaging, CLI syntax,
+resource serving and bootstrap integration remain to be designed/implemented.
+This does not amend 11.57's ownership of named css_requires/js_requires resources.
+
+Owner replaces compact strings/generated button methods with explicit
+`bar.slotButton("xxx:save")` and `bar.slotSpacer(size=12)` /
+`bar.slotSpacer(flex=1)`, clarifying "i nomi sono solo quelli della grammtica base".
+Use fixed grammar element names with registry keys as values, not generated
+per-button grammar names or a context-switching grammar. Namespaces/group
+registration are the reviewed direction; detailed registration lifecycle and
+metadata are still proposals. This supersedes GC-320's compact-authoring
+recommendation as the selected path; preserve it as historical proposal evidence.
+
+Unknown-name rendering/diagnostics are deferred: after discussing a ??? button
+and console warnings, owner says "decidiamo poi". No fallback or strict error
+policy is approved. Nested bars remain confirmed, but the exact free-content
+slot API is still proposed.
+
+Owner requests "ok quindi potremmo fare un doc 'how to extend gramlot ?".
+GC-325 records current foundations, selected contracts and remaining proposals.
+This authorizes documentation, not runtime implementation, dependency changes
+or publication. New API names must enter GC-225 before implementation.
+
+### Source-based bars and menu expansion study — owner, 2026-10-22
+
+Owner settles the bar/store comparison: "no va bene di fatto la slotbar diventa
+un flex e i simfolo nodi hanno il resto". Keep ordinary Source children with their
+own behavior/bindings; slotBar owns flex layout. A tree-style storepath renderer
+is not the selected bar path. This resolves that comparison without approving
+new parameter spellings or alternate runtime models.
+
+Owner then proposes a spacer represented by an unnamed slotButton and observes
+that slotBars resemble menus. These remain proposals: no approval is inferred
+for removing slotSpacer, renaming the registry or merging menu and bar interaction.
+
+Owner requests: "allora i vorrei che tu esaminassi i menu legacy e mettessimo
+anche in ballo come riportarli qui". This authorizes a read-only legacy/core
+inventory and a port proposal, recorded in GC-330 / PORT-0023. Core already
+has the bounded local menu/menuline of PORT-0012. Existing split-dropdown,
+Shift-selection and persistence contracts remain in force. General submenus,
+context menus, registry sharing and Bag/resolver menus require bounded decisions
+and implementation authorization. Dialog/floating priority is not superseded.
+
+### Common menu system design — owner, 2026-10-22
+
+Owner requests: "ok allora progettiamo un sistema comune per menu che mantenga
+tutta la potenza del legacy, ma con una realizzazione più pulita. poi a partire
+da quel vediamo se riusciamo a dire che una slotbar è di fatto un menu aperto".
+
+Design the complete menu family, retaining the legacy capability inventory, and
+evaluate the slotBar relationship from that foundation. This expands the design
+assignment beyond a registry/local-menu increment; it does not approve all
+proposed APIs, data projection or a menu/slotBar identity in advance. GC-335
+records the common Source/entry/invocation proposal and presentation profiles.
+Existing Source-based bars, single command execution, JS grammar ownership and
+dropdown behavior remain constraints. Implementation, new public names and
+publication require their explicit decisions.
+
+### Common menu architecture confirmed — owner, 2026-10-22
+
+Asked to confirm the common architecture with slotBar as the permanent
+presentation, owner answers: "Sì, confermo. Ora vediamo la sintassi Python per
+dichiarare un menu e usarlo anche come slotbar." The common Source family and
+persistent-bar relationship are accepted. This supersedes their pending status
+above and in GC-335. Exact syntax, registry metadata, projection details, state
+timing and unknown-name behavior remain open. Python syntax design is authorized;
+runtime implementation and publication are not.
+
+### Common menu vocabulary and resolver priority — owner, 2026-10-22
+
+Owner confirms "Sì, usiamo menu e menuline" and requests registered-key shorthand
+menu.menuline("documenti:save") instead of repeated label/code. The common
+vocabulary is chosen; identity defaults, exact signature and migration from the
+existing positional caption still require design (GC-335 §060).
+
+Owner adds "nel legacy la maggior parte delle volte il contenuto era un resolver
+calcolato all'apertura". Treat resolver-at-opening menus as a primary design use
+case, not a final optional increment. This supersedes the recommended ordering
+that postponed all resolver content until after the common model. It does not
+approve a cache policy, new resolver protocol, automatic remote calls or runtime
+implementation. Bag/Source ownership and dependency boundaries remain in force.
+
+Toolbar submenu clarification — owner, 2026-10-22: "tieni presente che i submenu
+su una toolbar diventano menu". Permanent presentation belongs to the root;
+descendant menus open as popups. Owner requests the paired Python example with
+a resolver-backed submenu. GC-335 §065 supplies a design sketch, not runtime
+implementation approval or acceptance of its remaining parameter/schema details.
+
+Direct menu resolver — owner, 2026-10-22: "Sì, colleghiamo il resolver direttamente
+al menu. Verifica come usare i resolver che abbiamo già e aggiornami l'esempio
+Python per popup e toolbar senza dataRemote e scope aggiuntivi." The menu owns
+its lazy resolver connection; authored dataRemote and extra scopes are not
+required. Reuse existing resolver/cache/request contracts. GC-335 §§065–070
+supersede the earlier scope-based example. Exact API fields and new menu runtime
+integration remain pending; this authorizes verification and design/example work.
+
+Direct-resolver syntax confirmation — owner, 2026-10-22: "Ok, confermo questa
+sintassi. Ora definiamo come deve essere fatta la Bag restituita dal resolver,
+con checked, disabled, separatori e altri sottomenu." Confirms the reviewed Python
+example: menu/menuline, registered-key shorthand, bar presentation, and direct
+menu resolver with resolver_* arguments, cacheTime and sync. GC-335 §065 is the
+retrievable example. The new returned-Bag schema in §075 remains a proposal;
+field defaults, identity rules and checked mutation are not implicitly approved.
+No runtime implementation or publication is authorized by this design step.
+
+Menu result schema and live state — owner, 2026-10-22: "Sì, lo schema va bene,
+però checked e disabled vorrei poterli legare ai dati con i binding, non solo
+calcolarli quando si apre il menu." Accepts GC-335 §075 with checked and disabled
+supporting normal reactive Data bindings as well as literal booleans. This
+supersedes its earlier literal-only restriction and pending-schema status.
+Projection preserves these pointers for the normal Source binding runtime;
+bound state updates independently of resolver cache/opening. No implicit
+checked writeback is introduced: the command handler owns Data changes.
+Menu projection and checked rendering remain implementation work; this design
+confirmation does not authorize publication.
+
+Menu hidden binding — owner, 2026-10-22: "Anche hidden dovrebbe poter usare un
+binding, così posso mostrare o nascondere una voce in base ai dati, sia nel menu
+che nella toolbar." Extends the confirmed GC-335 §075 live read-binding contract
+to hidden, alongside checked and disabled. Literal booleans remain supported;
+visibility follows Data without recalling the resolver, for popup and bar
+presentations. Supersedes the earlier literal-only hidden field. This is a
+design update; menu integration remains to implement.
+
+Shared command registry name — owner, 2026-10-22: "Direi di chiamarlo
+gramlot.commands.registerGroup, visto che vale sia per menu che per toolbar.
+Ora definiamo bene il messaggio con sender, target, command, parameters e
+modificatori." Confirms gramlot.commands.registerGroup as the shared registry
+entry point, superseding gramlot.widgets.slotbutton.registerGroup in the design.
+GC-225 records the convention. The request to define the message authorizes
+design work, not automatic approval of field types or delivery semantics;
+GC-335 §080 records the proposal. No runtime implementation is claimed.
+
+Five-field command contract — owner, 2026-10-22: "Sì, confermo il contratto
+a cinque campi. Aggiorna il progetto con queste decisioni e dimmi cosa resta
+ancora da definire prima di implementare." Confirms the reviewed GC-335 §080
+contract: sender and target are live SourceBagNode references; command is the
+full registry key; parameters is a detached explicit argument snapshot; modifiers
+contains shift/ctrl/alt/meta from activation. Delivery topic remains the registry
+publish value, distinct from command identity. The envelope is read-only by
+contract, Source references stay local, and handlers own Data mutations. Delivery
+rechecks live recipient and visible/enabled state, with no global fallback.
+Supersedes the earlier GC-320 payload proposal including frame. This instruction
+authorizes project updates and an open-decision inventory, not implementation.
+
+Collection loading lifecycle — owner, 2026-10-22: "ok", answering "Confermi
+questo ciclo: stessa dichiarazione registerCommands usata dal preparatore per
+esportare il catalogo e dal bootstrap per attivare i comandi della pagina?"
+Confirms GC-325 §040: defineCollection exposes registerCommands(gramlot), with
+static declarations collected in isolation during preparation and activated in
+the page registry before app.start(). Python consumes generated grammar/catalogue
+metadata through the selected gramlots descriptors; host integration supplies
+packaged asset URLs to bootstrap. Imports do not activate global registries.
+Concrete descriptor/manifest/CLI formats, identity and collision rules remain
+open. This confirms the design lifecycle, not runtime implementation or release.
+
+Collection identity and duplicates — owner, 2026-10-22: "ok", confirming
+the preceding proposal: name identifies the collection; repeated inclusion of
+the same collection activates it once; different collections with the same name
+raise an explicit error rather than overwrite each other. This applies to the
+selected page collection set, before command registration. GC-325 §040 records
+the contract. Artifact identity verification and command-group/key collision
+policies remain separate open details. No runtime implementation is authorized
+by this design confirmation.
+
+Duplicate command keys — owner, 2026-10-22: "ok", confirming the preceding
+proposal: documenti:save and fatture:save may coexist; registering the same full
+key twice is an explicit error, never an overwrite. Repeated inclusion of the
+same collection does not register twice because collection activation is
+deduplicated. Applies to the page command registry; command-group ownership
+remains a separate open decision. Design confirmation only; no implementation.
+
+Command namespace ownership — owner, 2026-10-22: "confermo", answering the
+proposal that one collection owns each namespace. The collection registering
+documenti defines its commands; other collections may use those commands but
+must register their own under another namespace. Cross-collection additions to
+an owned group are not allowed. This settles group ownership without imposing
+equality between collection name and namespace. Runtime implementation remains
+pending; publication is not authorized.
+
+Cumulative Page.gramlots inheritance — owner, 2026-10-22: "ok", confirming
+the example BasePage.gramlots = [documenti], Page(BasePage).gramlots = [report].
+Page selects implicit base Gramlot plus documenti plus report, deduplicated by
+the already confirmed collection rule. A subclass adds to inherited selections;
+its declaration does not replace them. This confirms cumulative inheritance,
+not a removal API or new multiple-inheritance precedence. Implementation pending.
+
+Automatic collection dependencies — owner, 2026-10-22: "ok", confirming
+that a collection can declare required collections, automatically included and
+loaded before the requiring collection. Missing or circular dependencies produce
+an explicit error. Pages declare only their direct collection choices; the
+existing deduplication/collision rules also apply to required collections.
+Dependency declaration syntax and generated packaging representation remain open.
+This is design approval, not implementation or publication authorization.
+
+Collection dependency syntax — owner, 2026-10-22: "ok", answering "Confermi
+dependencies: [common]?" Confirms defineCollection.dependencies as a list of
+imported collection objects, e.g. import common from "./common.js", followed by
+dependencies: [common]. Preparation derives the generated package dependency
+metadata from these references; no manually duplicated Python declaration.
+Concrete generated descriptor/manifest and asset packaging remain open.
+Design confirmation only; implementation and publication are not authorized.
+
+Python package descriptor name — owner, 2026-10-22: "ok", replying to the
+commentary proposing a lightweight Python descriptor named GramlotCollection
+that locates generated grammar, command catalogue and assets without redefining
+them. Confirms that name and role, retaining gramlots = [mygramlot].
+Constructor fields and file layout in GC-325 §045 were not yet presented in a
+user-facing example and remain proposals. No runtime implementation authorized.
+
+Python descriptor fields and package layout — owner, 2026-10-22: "ok",
+answering "Confermi questi campi e questa struttura del pacchetto?" Confirms
+GC-325 §045: generated mygramlot = GramlotCollection(name, package, grammar,
+commands, module, css, dependencies) with package-relative resource paths;
+grammar.json, commands.json, assets/index.js, assets/documenti.css and assets/icons/
+in the reviewed documenti/widgets package. The descriptor connects generated
+metadata/assets without a duplicate resource manifest; Python dependencies are
+generated references, not a second authored list. Page usage stays unchanged.
+Import is inert; the host maps package resources to bootstrap URLs. A collection
+may ship within its application distribution without separate publication.
+Exact command-catalogue schema, JS-to-Python dependency mapping and build/asset
+consistency mechanisms remain open. Design approval only; no implementation.
+
+Namespaced command catalogue — owner, 2026-10-22: "ok", answering "Confermi
+questo formato per i gruppi delle collezioni?" Confirms GC-325 §050 commands.json:
+document_format name gramlot_commands, schema version 1.0, groups keyed by
+namespace and commands keyed by local name. Full keys derive from those keys.
+Group author/description and command icon/tooltip are optional; label/publish
+are required. Only locally owned definitions are emitted; dependencies retain
+their catalogues. Entry state/bindings and per-instance arguments stay outside.
+Python consumes metadata; browser registration remains registerCommands, not a
+second registration from JSON. Unqualified base-command representation is still
+open. This records design acceptance, not runtime implementation or publication.
+
+Unqualified standard commands — owner, 2026-10-22: "ok", confirming the
+empty group name "" reserved to the base collection, registered with
+gramlot.commands.registerGroup("", metadata). Standard local name save has full
+key save; documenti's save has full key documenti:save. The catalogue uses the
+empty string as the corresponding groups key. No alias or cross-namespace
+fallback lookup is introduced. Runtime implementation remains pending.
+
+Single group creation — owner, 2026-10-22: "ok", confirming that registerGroup
+creates each namespace once within a registry. A second call for that namespace
+raises an explicit error, including from its owning collection. The returned
+group may be shared among modules of that collection to add commands, subject
+to the existing duplicate-command rule. Preparation and each page use separate
+registries, so this does not prevent the approved preparation/bootstrap cycle.
+This design approval does not authorize runtime implementation or publication.
+
+Build destination mapping — owner, 2026-10-22: "ok", answering "Confermi
+questa mappa di destinazioni, con le dipendenze ricavate esclusivamente dalle
+dichiarazioni JS?" Confirms GC-325 §055 gramlot.build.json: output plus collections
+entries with entry and pythonPackage. Each JS entry maps to a generated Python
+package; dependencies come solely from the JS collection declarations and
+generate Python descriptor imports/references. Missing destination mappings
+produce an explicit build error, never inferred package names. The reviewed
+example covers common and documenti in one application distribution.
+External-package mapping and emitted browser import/asset details remain open.
+Design confirmation only; no generator implementation or publication authorized.
+
+External collection mapping — owner, 2026-10-22: "ok", answering "Confermi
+externals con entry e pythonImport per questo collegamento?" Confirms GC-325
+§060: externals maps a JS collection module entry to an existing Python
+GramlotCollection descriptor through module:attribute. Only local collections
+are generated; external packages, metadata and assets are referenced, not
+regenerated or copied. Dependency edges remain solely in JS declarations.
+Missing dependencies fail; no automatic installation. Browser import-to-URL
+linking and JS/Python artifact correspondence remain open design work.
+This accepts the design, not implementation or publication.
+
+Browser collection linking — owner, 2026-10-22: "ok", answering "Confermi
+i riferimenti generati @gramlot/collections/<nome> con import map costruita
+automaticamente dall'host?" Confirms GC-325 §065: emitted collection imports use
+the collection name in a stable symbolic specifier; authored imports stay intact.
+The host derives an import map from selected descriptors/dependencies before
+module execution. Local and external collections use the same mechanism and
+the same resolved module URL in dependency imports and bootstrap. Command hooks
+run once per page in dependency order. Preserve existing core mappings and
+provide the shared @gramlot/gramlot/components browser entry. Artifact identity,
+cache/asset delivery details remain open. Design acceptance, not implementation.
+
+Build correspondence principle — owner, 2026-10-22: "ok", answering the
+proposal for a common build fingerprint in the Python descriptor and JS module,
+checked at startup with an explicit error blocking the page on mismatch.
+Confirms GC-325 §070: do not combine grammar/metadata and runtime from different
+builds. Fingerprint calculation, covered inputs, representation/field names,
+cache linkage and exact validation timing remain to define. No algorithm or
+dependency-version pin is implied. Design approval only; implementation pending.
+
+Fingerprint calculation and verification — owner, 2026-10-22: "ok", answering
+"Confermi questo schema di calcolo e verifica?" Confirms GC-325 §075: SHA-256
+over collection-owned generated metadata/resources, descriptor build_id and files,
+JS buildId, and a fixed generated entry wrapper hashed with a placeholder then
+emitted with the digest. Resource references and dependency names participate;
+timestamps, absolute paths, host URLs and dependency fingerprints do not.
+Dependencies are verified separately, without dependency-version locks.
+Preparation emits consistent artifacts; host recomputes installed-file identity;
+bootstrap checks every module before component/command activation. Missing or
+mismatched identity blocks startup with diagnostics. Asset base paths include
+the fingerprint to keep relative resources on the same build. Host route shape
+remains host-owned. This is design approval, not runtime implementation/release.
+
+Preparation CLI and generated output — owner, 2026-10-23: "ok", replying to
+the proposal for gramlot-builder build/check with optional --config and default
+gramlot.build.json. Confirms the independent command name and the GC-325 §080
+output policy: stage and validate before updating recognized generated files;
+preserve unchanged/manual files and parent package initializers; remove obsolete
+files only from verified prior generated output. check regenerates temporarily
+and compares against sources without updating project output. Building needs
+the JS toolchain; consuming prepared Python packages does not invoke the builder.
+The existing server-owned gramlot launcher remains separate. This supersedes the
+unapproved gramlot collection build spelling. Exact exit codes, toolchain
+distribution and output recovery mechanics remain open. Design approval only:
+no implementation, publication or release is authorized by this confirmation.
+
+Collection development toolchain — owner, 2026-10-23:
+"Sì, confermo: comando Python in gramlot e generatore npm separato, installato
+nel progetto solo per chi sviluppa le collezioni." Confirms the preceding
+proposal: gramlot provides the Python gramlot-builder launcher; the separate
+@gramlot/builder npm package, maintained in the same core repository, provides
+the JS generator and its build dependencies. Collection developers install it
+locally as a development dependency. The launcher uses Node and the generator
+installed in the selected configuration's project, with actionable errors for
+missing prerequisites and no automatic downloads. Consumers of prepared Python
+collections require neither Node nor the generator. This settles the distribution
+split left open in GC-325 §080; exact discovery and launcher/generator protocol
+remain to define. No runtime implementation or package publication is implied.
+
+Launcher/generator contract — owner, 2026-10-23: "Sì, confermo questo
+contratto. Aggiorna il progetto e poi vediamo come collegare le risorse al
+bootstrap." Confirms the preceding proposal: locate the JS project by ascending
+from the selected configuration to the first package.json; keep configured paths
+relative to the configuration file. Use environment Node and project-resolved
+@gramlot/builder, including ordinary npm workspace resolution, without a global
+generator fallback or downloads. Run one Node process per command, with a JSON
+request on stdin, a JSON result on stdout and diagnostics on stderr. Version the
+protocol independently of package releases and reject incompatible protocols.
+Python reads configuration/imports external Python descriptors, invokes JS,
+validates candidates and existing file ownership, then updates for build or
+compares for check. JS resolves the collection graph and generates candidates in
+temporary storage, returning inventory/diagnostics without modifying project
+outputs. GC-325 §090 records the approved design; implementation remains pending.
+
+Bootstrap CSS ordering and readiness — owner, 2026-10-23:
+"Sì, confermo: tema, collezioni e poi pagina. Aspettiamo i CSS prima dell’avvio
+e blocchiamo se un caricamento fallisce. Aggiorna il progetto."
+Confirms GC-325 §095: CSS order is theme, collections (dependencies first and
+descriptor order within each collection), then page resources. All declared
+stylesheets must load successfully before app.start(); stylesheet load failure
+blocks startup with explicit diagnostics. This supersedes the pending CSS-policy
+proposal, not an implemented runtime: current CSS loading does not yet await
+load/error. Existing graph/import-map/fingerprint decisions remain unchanged.
+Concrete host integration and exact bootstrap fields remain to define. Approval
+is for the design update, not implementation or publication.
+
+Bootstrap records and packaged assets — owner, 2026-10-23: "ok", answering
+"Confermi questi campi e questa modalità di esposizione degli asset?"
+Confirms GC-325 §100: retain config and the existing CSS, Logic and optional
+serverAdapter channels; resources.collections holds {name, url, buildId}
+records for extensions/dependencies, each once in dependency order. Base
+Gramlot remains supplied by the runtime. Compare imported collection name and
+module buildId before activation; use the same resolved entry URL in bootstrap
+and import map. Host exposure uses verified descriptors and inventory-listed
+assets/ files, preserving relative paths under a fingerprinted base. Unknown
+identities, fingerprints or non-exposed files return 404; old fingerprints never
+serve new build bytes. Do not expose Python paths/package metadata in bootstrap
+or run generation when serving assets. Route spelling remains illustrative;
+concrete adapter APIs, caching and retention policies are not decided here.
+This supersedes pending approval of the record/exposure proposal, not the
+architecture boundary: core owns shared contracts, integrations own serving.
+Design approval only; no implementation or publication is authorized.
+
+Python collection resource APIs — owner, 2026-10-23: "Sì, confermo. Ora vediamo
+come popolare il registro in tutti i processi del server senza dover ripetere
+le dichiarazioni di Page.gramlots." Confirms the preceding GC-325 §105 proposal:
+GramlotCollectionResources in gramlot-py-server with base_url and register,
+url, asset operations; GramlotServer.collection_url is the neutral mapping hook.
+The common service validates/registers descriptors and resolves inventory-listed
+packaged resources; adapters own HTTP responses and the core imports no concrete
+integration service. Package resources need not be ordinary filesystem paths.
+Registration lifecycle across processes remains to decide. This supersedes
+pending API/name approval only; no implementation or publication is authorized.
+
+Process-local collection catalogue initialization — owner, 2026-10-23:
+"Sì, confermo: ricaviamo il registro dalle pagine all’avvio e lo manteniamo fisso
+per la durata del processo. Aggiorna il progetto e dimmi cosa resta da definire
+prima di implementare." Confirms GC-325 §110 and the preceding proposal:
+GramlotServer.iter_page_classes supplies trusted page classes; every serving
+process resolves effective Page.gramlots and dependencies and validates/registers
+the full resource catalogue before accepting requests. No second handwritten
+collection declaration or first-page registration is required. Module-level
+page imports occur during initialization, without executing page methods.
+Invalid initialization prevents readiness; no partly populated catalogue is
+exposed. Resource availability is application-wide; activation stays page-local.
+The catalogue remains fixed for the process lifetime, and changed declarations
+or collection builds require restart/reinitialization. This assumes identical
+deployed inputs; cross-version rolling retention is not implicitly solved.
+Supersedes the pending lifecycle decision, not the core/integration boundary.
+Design approval only; page-file discovery details and implementation are pending.
+
+Python page discovery — owner, 2026-10-23: "Sì, confermo questo criterio,
+compresa l’importazione dei moduli candidati. Aggiorna il progetto e poi vediamo
+come dichiarare CSS e altri asset nella collezione JS." Confirms GC-325 §120:
+enumerate route-eligible Python candidates in the configured page directory
+deterministically using existing routing/loading rules; classify their Page
+exports. A proper gramlot.Page subclass is a page; no Page export or the base
+class alone identifies a support module. Other Page values and candidate import
+failures stop initialization with diagnostics. Import candidate support modules
+as well, without invoking page methods. Deduplicate file aliases/class objects;
+preserve containment and routing precedence. Non-file providers enumerate their
+trusted page classes. No second page/collection list or filename marker is added.
+This settles discovery, not implementation or publication.
+
+Authored collection CSS and assets — owner, 2026-10-23: "Bene, torniamo alle
+collezioni: confermo css e assets nella definizione JS. Aggiorna il progetto e
+poi vediamo il protocollo del generatore." Confirms the preceding GC-325 §125
+proposal: optional ordered css URL entries and named assets URL entries on the
+JS collection; resolve relative to the declaring module through import.meta.url.
+Declared CSS loads automatically in order; referenced local stylesheets, images
+and fonts are packaged without repeated declarations. Named assets remain
+available as generated JS URLs without automatic loading/execution. The builder
+rewrites references and derives Python paths, inventory and fingerprints.
+The initial source-input scope is packaged local files; CDN policy remains
+separate. This supersedes pending css/assets approval, not implementation or
+publication authorization.
+
+Generator process protocol and exit codes — owner, 2026-10-23: "Sì, confermo
+il protocollo e i codici di uscita. Aggiorna il progetto e poi vediamo come gestire
+un errore durante la sostituzione degli output." Confirms GC-325 §130: one JSON
+request/result with exact version-1 schemas, independent of package versions;
+structured diagnostics and stderr progress; verified staged descriptors/files
+without executing generated Python. Node exits 0/2 and must agree with its
+result. Python owns output validation/replacement and freshness; CLI exits 0
+for successful build/current check, 1 for stale/missing check output, 2 for
+errors. Reject malformed/incompatible/contradictory results; never salvage
+partial candidates. Supersedes pending protocol/exit-code approval in §080/090;
+output replacement recovery remains a separate proposal. No implementation,
+publication or new recovery command is authorized.
+
+Output replacement recovery — owner, 2026-10-23: "Sì, confermo questa politica
+di recupero. Aggiorna il progetto e dimmi cosa resta da definire prima di
+implementare." Confirms the preceding recovery policy recorded in GC-325 §135:
+prepare verified prior-file copies and persistent operation records before output
+mutation; attempt whole-build rollback on replacement failure. Preserve backup
+evidence and report unresolved paths when restoration fails or independent edits
+conflict. The next build recovers an interrupted update and stops with exit 2;
+a further explicit build starts fresh generation. check reports recovery required
+with exit 2 and makes no changes. Completed commits retain verified new output
+when only backup cleanup remains. Per-file replacement is not a globally atomic
+build switch; outputs must not be consumed during update/recovery. This settles
+the pending recovery policy without adding a recovery verb, clean/force path,
+live deployment guarantee or implementation/publication authorization.
+
+Concrete collection generator — owner, 2026-10-23: "Bene, torniamo al generatore:
+confermo punto d’ingresso, versioni Node ed esbuild. Aggiorna il progetto e poi
+definiamo la prima integrazione con Uvicorn." Confirms the preceding proposal
+recorded in GC-325 §140: stable @gramlot/builder/cli ESM export, resolved locally
+inside the one Node process; Node 22.x/24.x/26.x supported and verified on current
+patches, Node 24 recommended, future majors qualified before support. Use esbuild
+for browser ESM/es2022 and ordered CSS/resource processing; the Gramlot exporter
+owns collection linking, metadata, URL relocation, descriptors and fingerprints.
+Shared runtime imports stay external and all writes stay in staging before Python
+validation/replacement. Existing JSON protocol and recovery contracts are unchanged.
+This supersedes pending concrete toolchain approval. Uvicorn is selected as the
+first integration to design; the new §145 scope/lifecycle/route proposal remains
+pending. No runtime implementation, connected source edits or publication is
+implicitly authorized by this design confirmation.
+
+First Uvicorn collection integration — owner, 2026-10-23: "ok", answering
+"Confermi questo perimetro e il comportamento proposto?" after the concrete
+Uvicorn scope proposal. Confirms GC-325 §145: core and generator plus the shared
+resource service and Uvicorn wiring in gramlot-py-server; page-derived catalogue
+verification during ASGI lifespan startup before readiness, failure blocking
+startup and HTTP 503 before ready. Each process has a fixed catalogue, rebuilt
+on restart. Reserve /gramlot/collections for verified fingerprinted resources,
+serve Traversable GET/HEAD with MIME/404/405 semantics and apply the mount prefix
+once; bootstrap and import maps share final URLs. No second authored collection
+list. The approved verification scope covers a generated component/command/CSS/
+asset collection and dependencies through Python and Uvicorn. Supersedes pending
+§145 scope/behavior/route approval. Other adapters, gallery changes, menu/windows
+and publication remain outside this increment. This records design/scope approval;
+implementation and runtime acceptance are not claimed.
+
+Collection implementation and consumer migration — owner, 2026-10-23:
+"Sì, procedi con l’implementazione nel perimetro approvato, includendo i test di
+regressione e la verifica completa con Uvicorn. Preserva il lavoro locale già
+presente." Authorizes implementation and verification of GC-325 §§040–145.
+Following discovery that existing bootstrap consumers send collection URL strings,
+the owner explicitly answers "Includi la migrazione dei consumatori esistenti"
+to including existing gallery/host consumers and necessary connected-repository
+adjustments. This bounded migration supersedes §145's exclusions of gallery and
+other adapters only where required to move those consumers to verified collection
+descriptors and records. No old/new bootstrap compatibility branch is authorized.
+Preserve unrelated local work in every repository, use isolated checkouts and keep
+publication, deployment and unrelated feature work outside this authorization.
+Integration development tests may use the new core artifact in isolated environments;
+this does not change released integration dependency policy or authorize a release.
+
+Serverless derived collection bundles — owner, 2026-10-23:
+"Approvo il bundle derivato verificato", answering the concrete question about
+file-origin exports and relative imports from blob URLs. For that existing
+serverless export only, verify the original prepared artifact before producing
+a derived bundle; preserve its buildId as the original artifact reference.
+This bounded exception supersedes the unchanged-byte hosting constraint for
+file-origin derived bundles, not for HTTP resource hosts. It authorizes connected
+implementation and verification; publication remains separate.
+
+
+Shared collection artifact verification — owner, 2026-10-23: "Confermo API condivisa nel core". The public JavaScript functions `collectionBuildId(metadata, files)` and `verifyCollectionArtifact(metadata, files)` belong to core and are shared by the generator and hosts. They use asynchronous Web Crypto, accept a Map of relative paths to Uint8Array bytes and have no filesystem or server dependency. The first returns the framed SHA-256 buildId; the second resolves only after checking the exact inventory, wrapper and fingerprint. This replaces duplicated JavaScript fingerprint implementations, without changing the artifact format or the Python verification contract.
+
+
+Window first increment — owner 2026-10-23: “Sì, confermo dialog per il componente, html_dialog per il tag nativo e floatingPane per il floating. Procedi con gli adeguamenti interni e la prima versione da provare nella gallery.” Approves the bounded window implementation and native-dialog call-site migration. In the layout collection, dialog denotes the modal component and html_dialog explicitly denotes native HTML. FloatingPane remains nonmodal. Existing confirmed collapse/resize/movement defaults and collapsed modality apply. The provisional first version follows GC-320 window composition and retained-content design, using existing framePane/menu components; historical slot syntax is not revived. No maximize, persistence, publication or stable acceptance is included.
+
+
+Window maximize increment — owner 2026-10-23 requests maximize/restore for dialog
+and floating, then answers “ok” to the concrete contract: maximizable defaults
+false on both components; maximized is Data-bindable; maximize fills the viewport,
+restore recovers prior geometry; move/resize are suspended while maximized;
+collapse retains maximized state and dialog remains modal. This supersedes only
+the earlier first-increment exclusion of maximize. The scope includes core,
+regressions and Python gallery examples; no publication or stable acceptance.
+
+
+Documentation publication — owner 2026-10-23: “Bene, pubblica la documentazione aggiornata su Read the Docs, compresi gli esempi eseguibili.” The owner further confirms “Sì, consolida i prerequisiti necessari” in response to the explicit proposal to verify and consolidate on main the required runtime and serverless exporter prerequisites, without publishing npm/PyPI packages. This authorizes source consolidation and the two documentation deployments, including the verified collection protocol required by embedded examples. It does not authorize a package release, hosted-gallery deployment or unrelated local work. Existing provisional component interaction contracts remain provisional.
