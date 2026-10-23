@@ -11928,3 +11928,57 @@ checks pass). The examples exporter shares one directory runtime for ordinary
 lessons and keeps Typst separate: 89 lesson playgrounds plus their Source-authored
 index, approximately 301 MiB instead of 5.5 GiB. Remote build completion and live
 site verification remain pending; no package or hosted-gallery release is requested.
+
+
+Publication progress: core PR #64 is consolidated on main at
+`c700f91a6e7a4820980c724c8f895cdbe836402d`; Read the Docs build **35366692**
+finished successfully for `latest`. The live developer manual and all ten visual-tour
+screenshots were checked in the browser. Core CI passed its full suite, Inspector
+and documentation qualification. The eight shipped-runtime/origin browser checks
+also pass after using the prepared collection entries and shared authoring import.
+
+The examples qualification now covers every editor lesson in real Chromium rather
+than claiming CSS/WASM editor coverage from JSDOM. All **89 lessons passed with both Python and JavaScript** in Chromium, including
+behaviors, bindings, endpoints and fragments. The HTML demonstration
+intentionally contains a script: qualification asserts its sandbox refusal and that
+it never marks the preview body as executed. Examples CI has passing Python 3.11/3.12, Node, Bun, parity and full browser
+checks. File-based export qualification also passed all 90 routes (the 89 shared
+lessons plus the host fixture). The host CSP regression now asserts full disposal
+after refused inline execution; its Node browser run passes locally. Final host CI,
+source consolidation and examples `latest` publication remain pending. Source parity passes 90 checks; source editing and gallery behavior
+pass 28 targeted tests. Original development checkouts remain untouched.
+
+
+<a id="gc-070-1850"></a>
+## 1850. Read the Docs publication verified (2026-10-24)
+
+The owner-authorized publication is complete. Source prerequisites are consolidated
+through core PR **#64** (`c700f91a6e7a4820980c724c8f895cdbe836402d`), host PR **#24**
+(`a863279e518132e4456be3f35da705a450cc48a2`) and examples PR **#28**
+(`63e12046eb98997f8a2c87b52983cfbecb36b92b`). No npm/PyPI packages, release tags or
+hosted-gallery deployment were published. Original development checkouts remain
+untouched; the publication used isolated source copies and preserved upstream work.
+
+Read the Docs receipts: core `latest` build **35366692** and examples `latest` build
+**35367202** both finished successfully from main. Public destinations are
+[the developer manual](https://gramlot.readthedocs.io/en/latest/) and
+[the executable lessons](https://gramlot-examples.readthedocs.io/en/latest/).
+The manual contains 19 public guide pages, the generated 41-widget parameter
+reference, component/collection extension guidance and ten verified screenshots.
+The examples site contains 89 embedded playgrounds, their Python/JavaScript source,
+and the shared Source-authored playground index. Development features remain
+explicitly provisional; source publication is not a package release or stable
+component acceptance.
+
+Verification: required CI is green for all three consolidations, including core
+runtime/Inspector/documentation, Python 3.11/3.12, Node, Bun and the every-page
+Chromium suite. Locally, all 89 lessons passed with each language (178 browser
+page checks). The sandboxed HTML lesson explicitly verifies script refusal rather
+than ignoring browser errors. The CSP host regression verifies full disposal after
+startup rejection. The shipped runtime passed eight artifact/origin combinations.
+
+Live checks: all ten core screenshot images loaded; the final examples `latest`
+drawer playground changed delivery and note Data and opened its Inspector inside
+the documentation iframe. The public PR preview also compiled the Typst lesson to
+SVG/PDF. Live publication screenshots are retained in the task artifacts; no claim
+of a new hosted Python service or a package release is made.
