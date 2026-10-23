@@ -53,7 +53,7 @@ try {
                 const result = await page.evaluate(async artifact => {
                     const map = document.createElement('script');
                     map.type = 'importmap';
-                    map.textContent = JSON.stringify({imports:{'@gramlot/gramlot':artifact}});
+                    map.textContent = JSON.stringify({imports:{'@gramlot/gramlot':artifact, '@gramlot/gramlot/components':artifact}});
                     document.head.append(map);
                     const {Gramlot, GramlotBuilder, Bag} = await import(artifact);
                     const directory = artifact.startsWith('/js/') ? '/js/dist/components' : '/src/gramlot/collections';
