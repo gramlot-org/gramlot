@@ -12646,3 +12646,13 @@ Kajenn overwrites HEAD Content-Length in its response finalization; owner choice
 on documenting this upstream debt or correcting Kajenn is pending. No release
 is published at this checkpoint. CI, remaining browser/docs checks and final
 publication receipts remain required.
+
+
+<a id="gc-070-1970"></a>
+## 1970 · Release alignment and public gallery update (2026-10-24)
+
+Block ID: **GC-070-1970**.
+
+Owner corrected the coordinated release target to 0.3.15 for core and both integration repositories; examples remain 0.3.12. Owner requests publication as soon as possible to update gramlot.dev. Isolated release candidates preserve local work. The newly developed prepared-Python serverless feature is excluded from this release.
+
+Kajenn HEAD Content-Length debt is accepted by the owner (“Documenta il debito e procedi”) and tracked in https://github.com/kajenn-org/kajenn/issues/77. The official gallery reconciliation run 40114497421 succeeded but found generation 20261022T101051Z unchanged; newer gallery content awaits this publication.
