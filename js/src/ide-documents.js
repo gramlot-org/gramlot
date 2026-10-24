@@ -38,7 +38,7 @@ export class IdeDocuments {
     }
     async create(key) {
         const doc = this.documents.getItem(key);
-        if (!doc || !doc.getItem('isNew') || this.pending.has(key)) return false;
+        if (!doc || !doc.getItem('isNew') || !doc.getItem('writable') || this.pending.has(key)) return false;
         const root = doc.getItem('saveRoot'), path = doc.getItem('savePath');
         if (doc.getItem('path').endsWith('.typ.py') !== path.endsWith('.typ.py')) {
             throw new Error('The .typ.py extension is required for the Typst Python recipe document type.');

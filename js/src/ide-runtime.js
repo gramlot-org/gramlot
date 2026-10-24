@@ -71,7 +71,7 @@ export class IdeLogic {
             this.ideShowDocument(key);
             if (requested === this.ideRequested) {
                 this.ideState.setItem('active',key);
-                this.ideState.setItem('status',`${path}${this.ideDocuments.documents.getItem(key).getItem('writable') ? '' : ' (read only)'}`);
+                this.ideState.setItem('status',`${path}${this.ideDocuments.documents.getItem(key).getItem('writable') ? '' : ' (draft only — Remote Edit is disabled)'}`);
             }
         } catch (error) { if (!this.ideDisposed) this.ideState.setItem('status',error.message); }
     }
@@ -81,6 +81,7 @@ export class IdeLogic {
         const extensions = {typstRecipe:'.typ.py',typst:'.typ',markdown:'.md',html:'.html',python:'.py',javascript:'.js',
             typescript:'.ts',json:'.json',css:'.css',sql:'.sql',xml:'.xml',text:'.txt'};
         const key = this.ideDocuments.newDocument(language,extensions[type],this.ideState.getItem('workspace'));
+        this.ideDocuments.documents.getItem(key).setItem('writable',this.ideState.getItem('browser.writable') === true);
         ++this.ideRequested;
         this.ideShowDocument(key);
         this.ideState.setItem('active',key);
@@ -93,7 +94,7 @@ export class IdeLogic {
             const doc = this.ideDocuments.documents.getItem(key);
             const recipe = path.endsWith('.typ.py');
             if (recipe) this.ideDocuments.invalidateRecipe(key);
-            doc.setItem('readonly',!doc.getItem('writable'));
+            doc.setItem('readonly',false);
             this.ideDocumentState(key);
             doc.setItem('view','code');
             doc.setItem('createHidden',true);

@@ -1485,3 +1485,16 @@ Successful GET/HEAD responses for fingerprinted collection assets use
 `Cache-Control: public, max-age=31536000, immutable`. Changed builds have different
 URLs. Unknown fingerprints do not resolve to another build. Page bootstrap and
 RPC responses retain `no-store`; browser caching does not cache application Data.
+
+<a id="gc-105-955"></a>
+## 955 · IDE draft editing and host persistence
+
+Block ID: **GC-105-955**.
+
+An IDE document's `writable` flag describes permission to persist it on the host,
+not permission to edit its in-memory draft. A document with `writable=False` still
+supports typing, Undo, Redo and Revert. Save remains disabled, including keyboard
+save, and the host must independently reject writes. Ordinary editor `readonly`
+attributes are unchanged. New IDE documents inherit the opened workspace's write
+permission. The Python gallery demonstrates this contract on a bounded sample
+workspace; see GP-020 for its `--remote-edit` startup flag.
