@@ -15,7 +15,7 @@ const root = new URL('../', import.meta.url);
 const path = value => fileURLToPath(new URL(value, root));
 const compactStyle = await readFile(path('../themes/gramlot-compact/theme.css'), 'utf8');
 const appearanceStyles = {base:'', compact:compactStyle};
-for (const name of ['mimi', 'joanna']) {
+for (const name of ['mimi', 'joanna', 'mela']) {
     appearanceStyles[name] = compactStyle + '\n' + await readFile(path(`../themes/${name}/theme.css`), 'utf8');
 }
 await writeFile(path('src/index-page-styles.js'), '// Generated from canonical themes; edit themes/, not this file.\nexport const appearanceStyles = ' + JSON.stringify(appearanceStyles) + ';\n');

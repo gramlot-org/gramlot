@@ -37,7 +37,7 @@ test('mount: the dataSetter, the default, _init, the build, _onBuilt, _onStart; 
     assert.deepEqual(trace, ['data:ins:p1', 'data:ins:p1.greeting', 'data:ins:p1.name', 'ctl:init', 'ctl:built', 'ctl:start']);
     // 10 NodeBindings (fragment, pane, setter, input, 2 radios, button, its controller, span, controller);
     // 6 `^` pointers; the `_timing` interval; 4 listeners per text or radio input, the button, the span.
-    assert.deepEqual(delta(counters(ctx), base), {bindings: 10, registrations: 6, nodeIds: 1, inline: 1, records: 7,
+    assert.deepEqual(delta(counters(ctx), base), {bindings: 9, registrations: 6, nodeIds: 1, inline: 1, records: 7,
         references: 1, elements: 6, timers: 1, listeners: 14});
     assert.equal(ctx.byId('name1').value, 'anon');
     assert.equal(ctx.byId('span1').title, 't-hello');
@@ -46,7 +46,7 @@ test('mount: the dataSetter, the default, _init, the build, _onBuilt, _onStart; 
     ctx.byId('name1').value = 'bart';
     dispatch(ctx, ctx.byId('name1'), 'input');
     assert.deepEqual(trace, ['ctl:timing', 'data:upd_value:p1.name']);
-    assert.deepEqual(delta(counters(ctx), base), {bindings: 10, registrations: 6, nodeIds: 1, inline: 1, records: 7,
+    assert.deepEqual(delta(counters(ctx), base), {bindings: 9, registrations: 6, nodeIds: 1, inline: 1, records: 7,
         references: 1, elements: 6, timers: 2, listeners: 14});
     clock.tick(50);
     assert.deepEqual(trace.splice(0), ['ctl:timing', 'data:upd_value:p1.name', 'ctl:node']);
@@ -137,11 +137,11 @@ test('P3: insertion under freeze: steps 1-5 at once, the build and _onBuilt at t
     insertBranch(app, host, 'b1', fullBranch(1));
     assert.deepEqual(trace, ['data:ins:p1', 'data:ins:p1.greeting', 'data:ins:p1.name', 'ctl:init']);
     // The providers are registered and `_timing` runs; no element, no listener.
-    assert.deepEqual(delta(counters(ctx), base), {bindings: 10, registrations: 6, nodeIds: 1, timers: 1});
+    assert.deepEqual(delta(counters(ctx), base), {bindings: 9, registrations: 6, nodeIds: 1, timers: 1});
     trace.length = 0;
     app.src.renderer.unfreeze(host);
     assert.deepEqual(trace, ['ctl:built', 'ctl:start']);
-    assert.deepEqual(delta(counters(ctx), base), {bindings: 10, registrations: 6, nodeIds: 1, inline: 1, records: 7,
+    assert.deepEqual(delta(counters(ctx), base), {bindings: 9, registrations: 6, nodeIds: 1, inline: 1, records: 7,
         references: 1, elements: 6, timers: 1, listeners: 14});
     trace.length = 0;
     app.src.renderer.freeze(host);

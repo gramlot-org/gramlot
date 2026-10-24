@@ -336,7 +336,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
 
     /**
      * Source event intake (§5.2): an event on a node under construction is ignored
-     * on arrival; every other event is queued and processed in arrival order.
+     * on arrival, as is the deletion of a consumed dataSetter (already closed by the installer).
+     * Every other event is queued and processed in arrival order.
      * Semantic work runs for every event, also under freeze; structural work only
      * outside frozen branches. A failing disposer does not block the rest: the
      * closing errors of the semantic work and the cleanup errors of the removals
@@ -344,11 +345,13 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
      */
     receive(event) {
         if (this.disposed) return;
+        const ignored = node => this.#constructing.has(node)
+            || (event.evt === 'del' && node.nodeTag === 'dataSetter');
         if (Array.isArray(event.node)) {
-            const nodes = event.node.filter(node => !this.#constructing.has(node));
+            const nodes = event.node.filter(node => !ignored(node));
             if (!nodes.length) return;
             event = {...event, node: nodes};
-        } else if (this.#constructing.has(event.node)) return;
+        } else if (ignored(event.node)) return;
         this.pending.push(event);
         if (this.building) return;
         this.building = true;

@@ -59,7 +59,12 @@ export class RpcHandler extends Handler {
         return response.value;
     }
 
-    async call(contentType, name, params = {}, {signal = null} = {}) {
+    async call(contentType, name, params = {}, options = {}) {
+        return (await this.callEnvelope(contentType, name, params, options)).value;
+    }
+
+    /** Return the checked response envelope, including optional initial-main Data. */
+    async callEnvelope(contentType, name, params = {}, {signal = null} = {}) {
         if (!this.transport?.call) throw new Error(`rpc '${name}' is unavailable without a server transport`);
         assertTransportData(params);
         const id = randomId();
@@ -82,7 +87,7 @@ export class RpcHandler extends Handler {
             const response = fromTytx(await Promise.race([this.transport.call(text, controller.signal), aborted]));
             if (response.id !== id) throw new Error('rpc response id mismatch');
             if (response.error) throw new RpcError(response.error);
-            return response.value;
+            return response;
         } finally {
             this.remoteRequests.delete(id);
             for (const source of sources) source.removeEventListener('abort', forward);

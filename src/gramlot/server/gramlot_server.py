@@ -1,6 +1,7 @@
 """Neutral server foundation: no HTTP framework, event loop or ASGI dependency."""
 
 from urllib.parse import quote
+from copy import deepcopy
 from ..collection import collection_graph, page_collections
 
 import inspect
@@ -11,6 +12,7 @@ import time
 import traceback
 from dataclasses import dataclass
 from uuid import uuid4
+from genro_bag import Bag
 from genro_tytx import from_tytx, to_tytx
 
 from ..page.base import Page, resolve_declared
@@ -138,6 +140,8 @@ class GramlotServer:
         self.page_ttl, self.max_pages = ttl, max_pages
         self._pages = {}
         self.collections = collection_graph(collections)
+        self._collection_documents = {}
+        self._prepared_grammars = {}
         self.css_theme = css_theme
 
     def resolve_page(self, path):
@@ -155,10 +159,40 @@ class GramlotServer:
     def page_collections(self, cls):
         return collection_graph((*self.collections, *page_collections(cls)))
 
+    def _collection_document(self, collection):
+        """Verify an immutable descriptor once per server, retaining only its grammar."""
+        if collection not in self._collection_documents:
+            content = collection.verify()
+            self._collection_documents[collection] = json.loads(content[collection.grammar])
+        return self._collection_documents[collection]
+
+    def _load_collections(self, builder, collections):
+        """Reuse compilation, never the mutable schema or Source of another request."""
+        if not collections:
+            return
+        initial = builder._collection.to_document() if builder._collection is not None else None
+        key = (type(builder), collections, json.dumps(initial, allow_nan=False))
+        prepared = self._prepared_grammars.get(key)
+        if prepared is None:
+            for collection in collections:
+                builder.load_collection(self._collection_document(collection))
+            prepared = (builder._schema.deepcopy(), dict(builder._schema_tag_names),
+                        deepcopy(builder._collection))
+            self._prepared_grammars[key] = prepared
+        else:
+            schema, names, collection = prepared
+            builder._schema = schema.deepcopy()
+            builder._schema_tag_names = dict(names)
+            builder._collection = deepcopy(collection)
+
     def resolve_resources(self, path, cls):
         """Return ``{"css": [url], "js": [{"url": url, "group": str | None}]}``, in load
         order and without mount prefix, or raise ``PageNotFound``."""
         raise PageNotFound(f"Page resources not found: {path}")
+
+    def resolve_data(self, path):
+        """Optional initial Data Bag for this page path; absent in the neutral server."""
+        return None
 
     @property
     def capabilities(self):
@@ -255,7 +289,7 @@ class GramlotServer:
             raise TypeError("Page modules must expose a subclass of gramlot.Page")
         selected = self.page_collections(cls)
         for collection in selected:
-            collection.verify()
+            self._collection_document(collection)
         resolved = self.resolve_resources(path, cls)
         collection_css = [self.collection_url(c, path) for c in selected for path in c.css]
         resources = load_order({**resolved, "css": [*self.theme_css(cls), *collection_css, *resolved["css"]]})
@@ -266,7 +300,7 @@ class GramlotServer:
             raise ServerCapacity("Page registry capacity reached")
         page_id = uuid4().hex
         # Registered before the bootstrap is written, and removed if writing it fails, as in JavaScript.
-        self._pages[page_id] = (self._expiry(), cls, owner)
+        self._pages[page_id] = (self._expiry(), cls, owner, path)
         try:
             nonce = secrets.token_urlsafe(16)
             # The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9);
@@ -328,9 +362,16 @@ class GramlotServer:
         response = {"id": request["id"], "contentType": request["contentType"]}
         try:
             response["value"] = await self._run(request, owner, identity)
+            if request["contentType"] == "source" and request["name"] == "main":
+                data = self.resolve_data(self._pages[request["pageId"]][3])
+                if data is not None:
+                    if not isinstance(data, Bag):
+                        raise TypeError("Initial page data must be a Bag")
+                    response["data"] = data
             return to_tytx(response)
         except Exception as error:
             response.pop("value", None)
+            response.pop("data", None)
             response["error"] = {"code": OUTCOME_CODES.get(type(error), "application_error"),
                                  "name": type(error).__name__, "message": str(error)}
             if gramlot_dev() == "DEBUG":
@@ -372,9 +413,7 @@ class GramlotServer:
             return await result if inspect.isawaitable(result) else result
         builder = page.source_builder(name, auth=lambda element_rule: self._auth_outcome(element_rule, owner, identity),
                                       name_syntax=self.name_syntax)
-        for collection in self.page_collections(type(page)):
-            content = collection.verify()
-            builder.load_collection(json.loads(content[collection.grammar]))
+        self._load_collections(builder, self.page_collections(type(page)))
         result = function(builder.root, **params)
         if inspect.isawaitable(result):
             result = await result

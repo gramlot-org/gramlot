@@ -3536,3 +3536,48 @@ regressions and Python gallery examples; no publication or stable acceptance.
 
 
 Documentation publication — owner 2026-10-23: “Bene, pubblica la documentazione aggiornata su Read the Docs, compresi gli esempi eseguibili.” The owner further confirms “Sì, consolida i prerequisiti necessari” in response to the explicit proposal to verify and consolidate on main the required runtime and serverless exporter prerequisites, without publishing npm/PyPI packages. This authorizes source consolidation and the two documentation deployments, including the verified collection protocol required by embedded examples. It does not authorize a package release, hosted-gallery deployment or unrelated local work. Existing provisional component interaction contracts remain provisional.
+
+
+DataSetter consumption — owner, 2026-10-24: “no procedi in modo piu semplice : quando il builder li incontra e setta il valore in data li toglie contestualmente dal source. verifica che il trigger ignorori questa rimozione di un datasetter”. This supersedes the temporary-Bag/pre-insertion staging proposal: Gramlot's installer writes Data and immediately closes and removes each setter from Source; the renderer ignores that setter deletion. Ordinary Bag events remain available to other observers. Initial pages, remote fragments and local Source insertions use the same installation path, with regression tests and paired documentation. No Builder JS/Bag JS modification is authorized or required. Existing literal-value, ordering, null-path and no-rollback rules remain; consumed declarations do not retain bindings or nodeId registrations.
+
+Widget reference organization — owner, 2026-10-24: “nella doc raggruppa i widget per tipologie e spiega a patre le cose comuni come la validate_. non decvi metteral tutte le volte ma ogni widget deve modtrare solo i suoi tatributi specifici”. Group the reference by widget purpose, document shared parameter contracts once and link them from the applicable widget sections. Preserve stable document/block IDs and metadata differences in type, default and binding.
+
+
+<a id="gc-000-automatic-page-data"></a>
+
+Automatic page Data companion — owner, 2026-10-24: “implementa il caricamento automatico di foo_data.tytx e fammi provare un esempio Python e JS, anche nella documentazione, prima di migrare tutta la gallery”, clarified with “è un aggiunta. i datsettder restano e restanio tutti gli altri modi di mettere dei datil si aggiuunge solo un modo nuovo basato sulla convenzione del nome”. Add an optional same-name TYTX Data Bag, available before defaults and rendering, without page loader declarations. Existing dataSetter, defaults, endpoints and resolvers remain available. This explicitly extends the initial-Data mechanisms of 11.47 item 1; its prohibition of a second Data envelope does not exclude this companion. Source delivery remains in the existing response value; initial main may additionally carry data. Missing companions leave existing page behavior unchanged. The bounded implementation covers core, one Python/JS example, gallery staging and the documentation's Worker exporter; no mass migration or publication. The earlier proposed replacement main result {source, data} is not adopted.
+
+
+Gallery companion migration — owner, 2026-10-24: “ora migriamo gli esempi della gallery: dati di esempio nei file _data.tytx, default per lo stato dell’interfaccia e dataSetter solo dove serve davvero mostrarne l’uso”. This extends the preceding pilot scope to existing gallery lessons and their executable documentation. The owner also requests optional manual entry or block loading of sample data (“si puo iniziare in blocco oppunre provare io, carattere per caratterel dipende dalla complessita”). Start with a block-load demonstration using normal Data bindings; character-by-character playback is not required for this increment. Existing dynamic server mechanisms remain available. No publication or release is included.
+
+
+Paced Play and file carousel — owner, 2026-10-24: “per il play potremmo mettere un leggero ritardo tra un campo e l'altro ?” and “verifica e correggi il crash del carosello esportato da file”. Extend the gallery pilot with a brief delay between field updates and diagnose/fix the reproduced carousel export failure. Existing Source/Data/controller mechanisms remain the application path. This is bounded example and regression work; it does not authorize publication, dependency edits or a new playback API.
+
+
+Gallery framePane toolbar — owner, 2026-10-24: “Sì, procedi con una prima versione nella gallery: framePane con toolbar a sinistra, navigazione in alto e impostazioni in fondo. Su mobile spostiamo la toolbar sotto, poi la provo.” This authorizes the initial gallery composition using the existing framePane and menu/menuline contracts: navigation first, elastic spacer, settings last, one toolbar moved below the content on mobile. Existing pages and their state must survive the responsive transition. Generalizing the core IndexPage API is not part of this trial; no publication or release is authorized by this request.
+
+
+Gallery rail polish — owner, 2026-10-24: “l'inspector potrebbe stare sopra ingranaggio”, followed by the request to explain the blue top line and create continuity between the title area and left rail using a slightly darker theme color. Move the existing Inspector control into the rail above Settings, remove the decorative top border, and share a theme-derived surface between title and rail. This refines the authorized gallery trial only.
+
+
+Gallery settings floating and navigation rail — owner, 2026-10-24:
+“per i setting ora che abbiamo i floating potremmo usare un floating e mettere bene in widget in un formlet”,
+following the request for a dedicated Inspector SVG and removal of the navigation drawer label now that the toolbar opens it.
+Compose the existing floatingPane, framePane and formlet in the gallery; Settings is nonmodal and its gear reflects the bound open state.
+Replace the navigation drawer tab with the existing toolbar action while retaining its splitter, and use an example-owned Inspector SVG.
+This supersedes the gallery's bottom Settings drawer and navigation-tab presentation only. No core API, dependency, publication or release change is authorized.
+
+
+Mela theme — owner, 2026-10-24: “Sì, procedi con il tema Mela per desktop e mobile, chiaro e scuro. Aggiungilo alle impostazioni della gallery così lo provo con toolbar, menu, campi, dialog e floating.” Add the Apple-inspired Mela appearance using existing theme tokens, light/dark and responsive CSS, expose it in gallery settings and provide a Python-first/JS comparison lesson. Behavior, modality and component contracts remain unchanged. No publication or release is authorized.
+
+
+Floating visibility correction — owner, 2026-10-24: “i floating non dovrebbero essere trasparenti”. Correct the core floating layer so ordinary page splitters/drawer chrome cannot paint over its opaque surface, retaining nonmodality, peer raising and modal/popup top-layer behavior. This is a bounded defect correction, not a new window API.
+
+
+Page-loading performance — owner, 2026-10-24: “Sì, correggi la cache e carica solo le collezioni necessarie alla pagina. Evitiamo anche di ricostruire le grammatiche ogni volta, poi verifica quanto migliorano i tempi.” Authorizes bounded core, gallery and connected host changes: page-local activation, reuse of verified artifacts and prepared grammars, and immutable HTTP caching of build-ID resources. The process-fixed registry owns a verified byte snapshot; changed artifacts require restart with their new build ID. Source, Data, authorization and mutable builder schema remain request-local. No dependency edits or publication.
+
+
+JavaScript loading performance — owner, 2026-10-24: “Bene, applica le stesse ottimizzazioni anche al server JavaScript: cache, collezioni necessarie per pagina e riuso delle grammatiche. Poi verifica i tempi anche lì.” Extends the preceding Python scope to the JavaScript server and gallery. Reuse Page.gramlots for class-local declarations and dependency-first startup discovery; prepared byte snapshots and immutable build-ID HTTP caching; compilation reuse with request-local mutable builder state. No Builder/Bag source edits, release or publication.
+
+
+Gallery toolbar placement trial — owner, 2026-10-24: “Bene, ora torniamo allo switch mobile: consideriamo anche il rapporto larghezza altezza e fammi provare la toolbar sotto o di lato nella gallery.” Authorizes a gallery-only trial: automatic placement considers viewport proportions in addition to width, with explicit Left/Bottom choices for comparison. It reuses the existing Source-authored frame/menu, Data bindings and provisional runner presentation lifecycle. No framework device-classification change, dependency edits or publication. Concrete thresholds are provisional trial settings, not a frozen product contract.

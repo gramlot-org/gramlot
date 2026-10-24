@@ -69,8 +69,8 @@ The collection developer does need them.
 The grammar answers questions such as “does `searchbox` exist?”, “which parameters
 are declared?” and “which children are allowed?”. The Builder uses it while
 constructing Source. Source is a typed Bag tree, not a string of HTML and not the
-browser DOM. `dataSetter` and controllers are examples of Source nodes that
-provide behavior without creating a visible control.
+browser DOM. `dataSetter` and controllers create no visible control. A setter is consumed
+after writing Data and leaves Source; a controller remains to handle later events.
 
 Data is a separate Bag. A component's `value="^.query"` is a declaration that the
 runtime resolves against the node's Data context. The literal `"^.query"` is not

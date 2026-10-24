@@ -66,6 +66,11 @@ export class RpcHandler extends Handler {
         options?: {signal?: AbortSignal}): Promise<unknown>;
     /** Whether the transport sends a synchronous call (`supportsCallSync`). */
     readonly supportsCallSync: boolean;
-    /** Send one envelope and wait for the answer, blocking the page; only with a transport that supports it, else throws. */
+    /** Return the checked response envelope, including optional initial-main Data. */
+    callEnvelope(contentType: 'source' | 'data', name: string, params?: Record<string, unknown>,
+        options?: {signal?: AbortSignal | null}): Promise<{
+            id: string; contentType: string; value: unknown; data?: import('@genrojs/bag').Bag;
+        }>;
+    /** Send one envelope synchronously; only with a transport that supports it. */
     callSync(contentType: 'source' | 'data', name: string, params?: Record<string, unknown>): unknown;
 }

@@ -391,7 +391,7 @@ only in the page runtime. The runtime has no radio-group state (§050).
 attach subscribes once on Builder's wrapper (`root`, read through the public getter
 `builder.data.parent`; `root.getItem('_root_') === data`) and creates nothing.
 NodeBinding(runtime,node) exposes runtime/node/closed/registrations/providers/
-clickCount, hasStamp/stamp (`installed`, `init`, `built`, `start`), track(disposer),
+clickCount, hasStamp/stamp (`init`, `built`, `start`), track(disposer),
 registerPointers (step 4 of §035), evaluateFormulas (evaluates `==` attributes through
 InlineCompiler.compileExpression at each projection, S09), rebind, receive and close. track returns a removal function;
 close runs semantic disposers in reverse order and collects errors.
@@ -493,6 +493,8 @@ Block ID: **GC-210-035**.
 Eight ordered steps for every initial or inserted branch:
 1. Validate whole candidate without effects via renderer.validateCandidate.
 2. Apply all dataSetter nodes, parent-before-descendants in document order (A2).
+   After each write, close its NodeBinding and remove it from Source. The renderer
+   ignores setter deletions; surviving nodes alone register their pointers.
 3. Apply defaults to all visual nodes (D1a/P15).
 4. Open semantic bindings and register visual pointers/providers.
 5. Invoke _init once per node through BindingRuntime.
@@ -503,7 +505,8 @@ Eight ordered steps for every initial or inserted branch:
 
 Existing observers see synchronous setter writes; new providers wait through steps
 2–3. Under freeze steps 1–5 still execute. On error close newly created bindings,
-with no Data rollback. The installed stamp and semantic lifetime survive rebuild/thaw.
+with no Data rollback. Consumed setters have no installed stamp or lasting binding;
+remaining nodes keep their semantic lifetime across rebuild/thaw.
 Step 1 includes the installation rules, and a `main` whose installation failed leaves
 the Source (§090, 2026-09-30).
 
@@ -516,7 +519,8 @@ binding attributes. For non-null value, or absent target with null, use
 `data.getNode(path).setAttr(attrs,true)` preserving value. Bag payload transfers
 without copying. Silently remove Source value attribute with
 `node.setAttr({value:null},false)` so no second Bag owner or Source event remains.
-Stamp installed; no duplicate warnings. Defaults handle ^/= pointers only when
+Close the setter binding and remove the declaration after the write; ignore its
+deletion in renderer intake. No installed stamp and no duplicate warnings. Defaults handle ^/= pointers only when
 null/missing; attr_* reads before own control default; default_value beats default.
 
 <a id="gc-210-040"></a>

@@ -26,19 +26,18 @@ export class DataInstaller {
      * Steps 2-3 of §5.1 on `branch` (a SourceBagNode or a SourceBag): the installation rules of
      * `requireInstallable` are checked first (a candidate of `mountMainSource` or `remoteSource` was
      * already checked at step 1; a branch inserted by a Source event is checked here, before any
-     * write), then every `dataSetter` in document order, each with its NodeBinding opened and stamped
-     * `installed`, then the defaults of the visual nodes. A `dataSetter` whose NodeBinding is already
-     * stamped is not installed again.
+     * write), then every `dataSetter` in document order, then the defaults of the visual nodes.
+     * A processed setter is consumed: close its binding and remove it from Source immediately
+     * after the Data write. The renderer ignores this deletion.
      */
     install(branch) {
         const nodes = branchNodes(branch);
         const setters = this.setterNodes(branch);
         requireInstallable(branch);
         for (const node of setters) {
-            const binding = this.runtime.openBinding(node);
-            if (binding.hasStamp('installed')) continue;
             this.applySetter(node);
-            binding.stamp('installed');
+            this.runtime.closeBranch(node);
+            if (node.parentBag) node.parentBag.popNode(node.label);
         }
         this.applyDefaults(nodes.filter(node => node.nodeTag && !node._getMeta('data_element')));
     }

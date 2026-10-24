@@ -1611,9 +1611,9 @@ requires another authored list of that page's collections.
    names/digests/resources return 404 without falling through to page routes.
 5. GET returns the registered Traversable bytes and appropriate MIME type. HEAD
    verifies the same resource and returns corresponding headers without a body;
-   other methods return 405 with Allow: GET, HEAD. Preserve this adapter's current
-   no-store policy for the first increment; fingerprinting alone does not add a
-   cache-retention promise. Reserve the prefix against conflicting custom assets.
+   other methods return 405 with Allow: GET, HEAD. The initial no-store policy is superseded by the owner's 2026-10-24 performance
+   approval: verified build-ID assets use public, max-age=31536000, immutable;
+   the process retains its verified bytes until restart. Reserve the prefix against conflicting custom assets.
 6. Apply the existing mount_path once to emitted browser URLs. Route dispatch
    removes the mount prefix; collection_url delegates to the service. Bootstrap
    and import-map entries use the same final URL. Core still imports no adapter.

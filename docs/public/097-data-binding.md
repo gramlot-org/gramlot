@@ -150,9 +150,15 @@ run time are not affected by R1.
 `value` and the attributes are stored as written: `'^y'`, `'==a+b'` and
 `'a${b}'` stay strings. A computed value comes from `dataFormula`.
 
-Removing a `dataSetter` from the Source does not delete its Data. A rebuild or a
-thaw does not install it again. A `Bag` value moves into the Data without a copy;
-the Source node then no longer carries it. Gallery lesson: *Setters and defaults*.
+Each processed `dataSetter` is removed from Source immediately after its Data
+write. Its binding and nodeId registration are released before removal; the renderer
+ignores the setter's deletion event. Other Source observers can still see that event.
+The Data remains, including a Bag payload transferred without copying. A rebuild or
+thaw cannot reinstall a consumed declaration. This applies to initial pages, remote
+fragments and local insertions through the same installer. A null destination (Q7)
+is consumed without a write. A failed write propagates its error; existing Data
+writes are not rolled back. Controllers remain in Source and retain their lifecycle.
+Gallery lesson: *Setters and defaults*.
 
 <a id="gc-095-050"></a>
 

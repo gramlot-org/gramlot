@@ -1459,3 +1459,29 @@ class Recipe(TypstBuilder):
 ```
 
 The Python host requires `genro-typst` and `remote_edit=True`. Recipes run as server Python code in a short-lived process, with a 15-second timeout; this is not a sandbox. Opening and saving a `.typ.py` only read/validate text and never execute it. The first slice uses self-contained generated Typst and the existing bundled browser fonts. Serverless can compile the generated `.typ` source but does not execute `.typ.py`.
+
+
+<a id="gc-105-950"></a>
+
+## 950 · Page-local loading and cache lifetime
+
+Block ID: **GC-105-950**.
+
+On the Python and JavaScript hosts, declare only the prepared descriptors needed by that page in
+`Page.gramlots`, including components produced by its remote Source methods and
+authoring helpers. A textbox in a formlet needs inputs and layout, not editors or
+Typst. An iframe is a separate page and declares its own dependencies. The host's
+startup registry can contain all installed page collections without activating
+all of them in every browser page. Server-wide collections are additive defaults;
+do not put the whole gallery catalogue there.
+
+The servers retain verified grammar documents and prepared schemas per
+builder class and ordered collection composition. Each request gets its own
+mutable schema and fresh Source; Data, authentication and authorization are never
+cached by this mechanism. The resource host retains the verified artifact bytes
+for the lifetime of its process. Restart after changing a collection build.
+
+Successful GET/HEAD responses for fingerprinted collection assets use
+`Cache-Control: public, max-age=31536000, immutable`. Changed builds have different
+URLs. Unknown fingerprints do not resolve to another build. Page bootstrap and
+RPC responses retain `no-store`; browser caching does not cache application Data.

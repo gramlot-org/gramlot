@@ -448,8 +448,8 @@ resizing remains live. Do not simulate an operator click to initialize a drawer.
 
 The shell needs the **layout** and **tree** collections. Add **inputs** when your
 pages use widgets from it. Native HTML inputs in the example above need no inputs
-collection. Use the same selected collections for the root, child pages and remote
-Source requests, as described in [collection activation, GC-105 §035](105-components.md).
+collection. Select only the collections needed by each Page class; its remote Source methods
+use that same selection, as described in [collection activation, GC-105 §035](105-components.md).
 Select prepared descriptors on your IndexPage subclass:
 
 ```python
@@ -971,3 +971,18 @@ while JavaScript writes `String(value)`, which gives `1`. The live page always
 writes the text in JavaScript; there `format` gives the same exact text from either
 authoring language. `mask` only wraps the text: a static page that needs an exact
 number text passes it as a string.
+
+
+<a id="gc-095-155"></a>
+
+## 155 · Automatic initial Data
+
+Block ID: **GC-095-155**.
+
+Place `foo_data.tytx` beside `foo.py` and/or `foo.js` to supply an optional initial Data Bag. The page needs no dataRemote or dataSetter declaration for this file. Its contents must decode to a Bag, preserving typed values, nested Bags and node attributes; ordinary JSON objects are not accepted.
+
+The file is applied before Source installation, defaults and rendering. An explicit dataSetter can still write a value during installation; defaults fill missing values. Endpoints, dataRemote and later Data writes keep their existing behavior. No file means no automatic initialization. A malformed file fails startup rather than silently ignoring the dataset. Every page load gets a fresh Bag; client edits do not modify the file.
+
+This convention supplies initial example/application data; it is not a dynamic query or persistence mechanism. Use default for small interface-state values and endpoints/resolvers for server-driven data. The file host reads the companion inside its pages directory and does not expose it as a public companion URL. The serverless exporter embeds it for the Worker, including file-origin exports.
+
+The pilot is `02-binding/01-paths_and_updates/foo` in gramlot-examples (lesson b12), shared by Python, JavaScript and the executable documentation. Other lessons have not been migrated.

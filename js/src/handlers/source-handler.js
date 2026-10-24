@@ -4,6 +4,7 @@
  *
  * @module
  */
+import {Bag} from '@genrojs/bag';
 import {SourceBag, sourceBagFromTytx} from '@genrojs/builders';
 import {Handler} from './handler.js';
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
@@ -44,9 +45,17 @@ export class SourceHandler extends Handler {
      * new one; the Data is not rolled back. A later error (`_init`, DOM) keeps `main` and its
      * NodeBindings (P12, no rollback).
      */
-    mountMainSource(wire) {
+    mountMainSource(wire, initialData = null) {
         const source = this.prepareSource(wire);
         this.renderer.validateCandidate(source);
+        if (initialData !== null) {
+            if (!(initialData instanceof Bag) || initialData instanceof SourceBag) {
+                throw new TypeError('Initial page data must be a Data Bag');
+            }
+            for (const node of initialData.getNodes()) {
+                this.builder.data.setItem([node.label], node.getValue(), node.attr, '>', false, false);
+            }
+        }
         try {
             this.source.setItem('main', source);
         } catch (error) {

@@ -394,7 +394,7 @@ export class Page extends Base {
 }
 Page.registerSource('more');`);
     await write(root, 'inputs.js', `export {default} from ${JSON.stringify(moduleUrl)}; export const buildId=${JSON.stringify(buildId)};`);
-    const server = new GramlotFileServer(root, {collections:[{name:'inputs',grammar:inputs.toDocument(), module:'/inputs.js',buildId}]});
+    const server = new GramlotFileServer(root, {collections:[{name:'inputs',grammar:inputs.toDocument(), module:'/inputs.js',buildId,css:[],dependencies:[]}]});
     const opened = await server.openPage('/', {prefix:root});
     const args = bootstrapArguments(opened.html);
     assert.deepEqual(args.resources.collections,[{name:'inputs',url:root+'/inputs.js',buildId}]);

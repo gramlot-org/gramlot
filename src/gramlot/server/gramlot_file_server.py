@@ -11,6 +11,10 @@ from pathlib import Path
 from urllib.parse import quote
 from uuid import uuid4
 
+from genro_bag import Bag
+from genro_builders.builder import SourceBag
+from genro_tytx import from_tytx
+
 from .assets import gramlot_dev
 from .files import file_below
 from .gramlot_server import GramlotServer, PageNotFound
@@ -88,6 +92,21 @@ class GramlotFileServer(GramlotServer):
                 raise
             self._modules[real] = module
         return getattr(module, "Page", None)
+
+    def resolve_data(self, path):
+        """Read foo_data.tytx beside foo.py without exposing a public file URL."""
+        page_file = self.locate_page(path)
+        filename = page_file.with_name(f"{page_file.stem}_data.tytx")
+        try:
+            real = filename.resolve(strict=True)
+        except FileNotFoundError:
+            return None
+        if not real.is_relative_to(self.pages_dir.resolve()):
+            raise ValueError("Data companion leaves the pages folder")
+        data = from_tytx(real.read_text(encoding="utf-8"))
+        if not isinstance(data, Bag) or isinstance(data, SourceBag):
+            raise TypeError("Initial page data must be a Data Bag")
+        return data
 
     def iter_page_classes(self):
         """Import route-eligible candidates deterministically and classify Page exports."""

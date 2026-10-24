@@ -4,6 +4,7 @@
  *
  * @module
  */
+import type {PreparedCollection} from './gramlot-server.js';
 import type {GramlotBuilder} from '../builder/gramlot-builder.js';
 
 /** The marker of a Source method: `{auth}` on the method. */
@@ -46,6 +47,8 @@ export class Exposed {
 export class Page extends Exposed {
     /** The title of the page document. */
     static title: string;
+    /** Class-local prepared collections; inherited declarations accumulate. */
+    static gramlots: PreparedCollection[];
     static devices: Array<'desktop' | 'tablet' | 'phone'>;
     static locale: string | null;
     static timeZone: string | null;
