@@ -75,6 +75,69 @@ def type_name(spec):
     if isinstance(value, list): value = ' / '.join(value)
     return str(value) + (' or None' if spec.get('nullable') else '')
 
+FAMILIES = {
+    'Text fields': ('textbox', 'passwordbox', 'textBoxArea'),
+    'Choices and selectors': ('checkbox', 'radioButton', 'radioButtonText', 'checkBoxText',
+                              'colorpicker', 'filteringSelect', 'callbackSelect', 'comboBox', 'dbSelect', 'dbComboBox'),
+    'Numbers, dates and time': ('numberTextBox', 'horizontalSlider', 'verticalSlider',
+                              'dateTextBox', 'dateCalendar', 'timeTextBox'),
+    'Buttons, menus and toolbars': ('button', 'toggleButton', 'dropDownButton', 'menu', 'menuline', 'spacer'),
+    'Forms and containers': ('formlet', 'groupBox', 'contentPane', 'borderContainer', 'framePane', 'stackContainer', 'tabContainer'),
+    'Dialogs and floating windows': ('dialog', 'floatingPane'),
+    'Trees': ('tree',),
+    'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview'),
+}
+SHARED = {
+    'value': ('Values and bindings', 'The value type and writeback behavior depend on the control. '
+              'Use a Data pointer for binding; see [Data binding](097-data-binding.md).'),
+    'state': ('Disabled, readonly and live updates', 'Disabled prevents interaction; readonly preserves reading '
+              'without accepting edits. live controls when edits reach Data. See [Field behavior](105-components.md#gc-105-040).'),
+    'labels': ('Labels and field presentation', 'lbl supplies a field label; lbl_position places it. '
+               'The lbl_* and box_* style families are described in [Themes and CSS](096-themes-and-css.md).'),
+    'placeholder': ('Placeholders', 'Placeholder text is a hint, not a value or a replacement for a field label.'),
+    'validation': ('Validation', 'The validate_* family belongs to the shared validation contract, not to each widget. '
+                   'See [Validation rules, callbacks and messages](105-components.md#gc-105-076). '
+                   'Rule conditions and messages use the documented _if, _iswarning, _error and _warning suffixes. '
+                   'For example: root.textbox(value="^customer.email", lbl="Email", validate_email=True).'),
+    'icons': ('Icons and label presentation', 'icon holds text or an emoji; iconSrc loads an image such as SVG. '
+              'iconSize sizes the icon; labelPosition controls label presentation on menus and toolbars. '
+              'See [Menus and toolbars](350-menus-toolbars-and-windows.md).'),
+    'formatting': ('Locale and formatting', 'Data retains its typed value; locale and format affect presentation '
+                   'and parsing. workdate supplies date-editing context. See [Typed controls](105-components.md#gc-105-040).'),
+    'windows': ('Window behavior and geometry', 'Dialog and floatingPane share controls, geometry and state. '
+                'Their movement, resize and collapse defaults differ as shown below. Dialog remains modal, '
+                'including when collapsed or maximized. See [Windows](350-menus-toolbars-and-windows.md).'),
+    'regions': ('Border and frame regions', 'BorderContainer and framePane share region arrangement and persistence. '
+                'Child region parameters stay with each parent below. See [Containers](105-components.md#gc-105-085).'),
+    'selection': ('Panel selection', 'StackContainer and tabContainer select one child panel; selectedPage uses '
+                  'its page name and selected its index. See [Containers](105-components.md#gc-105-085).'),
+}
+
+
+def shared_group(widget, parameter):
+    if parameter.startswith('validate_'): return 'validation'
+    if parameter == 'value': return 'value'
+    if parameter in ('disabled', 'readonly', 'live'): return 'state'
+    if parameter in ('lbl', 'lbl_position'): return 'labels'
+    if parameter == 'placeholder': return 'placeholder'
+    if parameter in ('icon', 'iconSrc', 'iconSize', 'labelPosition'): return 'icons'
+    if parameter in ('locale', 'format', 'workdate'): return 'formatting'
+    if widget in ('dialog', 'floatingPane'): return 'windows'
+    if widget in ('borderContainer', 'framePane') and parameter in ('design', 'persist'): return 'regions'
+    if widget in ('stackContainer', 'tabContainer') and parameter in ('selectedPage', 'selected'): return 'selection'
+    return None
+
+
+def parameter_cells(parameter, spec):
+    default = literal(spec['default']) if 'default' in spec else '—'
+    allowed = ', '.join(literal(v) for v in spec.get('enum', [])) or '—'
+    return f'`{parameter}` | {cell(type_name(spec))} | {cell(default)} | {spec.get("binding", "—")} | {cell(allowed)}'
+
+
+def widget_links(widgets):
+    return ', '.join(f'[{key}](#gc-345-{key.lower()})' for key in widgets)
+
+
 def render():
     docs = [(name, json.loads((ROOT / f'src/gramlot/collections/{name}.json').read_text())) for name in COLLECTIONS]
     count = sum(len(doc['elements']) for _, doc in docs)
@@ -84,7 +147,8 @@ Document ID: **GC-345**.
 
 This reference covers all **{count} component declarations** in the six packaged
 component grammars in this checkout. It is regenerated from their effective
-metadata, including inherited parameters. It describes the development checkout;
+metadata. Widgets are grouped by purpose; inherited and shared parameters are
+documented once and linked from each applicable widget. It describes the development checkout;
 consult the installed package before relying on a feature in a released application.
 It does not assign a maturity level or imply that every component is production-ready.
 
@@ -135,40 +199,79 @@ connects these controls to runnable lessons and screenshots.
 
 | Collection | Components |
 | --- | --- |"""]
-    for name,doc in docs:
-        links=', '.join(f'[{key}](#gc-345-{key.lower()})' for key in doc['elements'])
-        out.append(f'| `{name}` | {links} |')
-    anchors=['gc-345-005','gc-345-010']
-    block=10
-    for name,doc in docs:
-        for key,element in doc['elements'].items():
-            block+=5
-            anchor=f'gc-345-{key.lower()}'; anchors.append(anchor)
-            stable=f'gc-345-{block:03d}'
-            meta=element['_meta']['gramlot_component']
-            guide,caption=DETAILS[name]
-            if key in ('dialog','floatingPane','framePane'):guide,caption='350-menus-toolbars-and-windows.md','Window and frame composition'
-            out += [f'\n<a id="{stable}"></a>\n<a id="{anchor}"></a>\n## `{key}`\n', DESCRIPTIONS[key],f'\nCollection: **{name}**. Browser element: `{element["_meta"]["render_tag"]}`.\n',f'[{caption}]({guide}).\n', '| Parameter | Type | Default | Binding | Allowed |','| --- | --- | --- | --- | --- |']
-            for param,spec in meta['parameters'].items():
-                default=literal(spec['default']) if 'default' in spec else '—'
-                allowed=', '.join(literal(v) for v in spec.get('enum',[])) or '—'
-                out.append(f'| `{param}` | {cell(type_name(spec))} | {cell(default)} | {spec.get("binding","—")} | {cell(allowed)} |')
-            if not meta['parameters']:out.append('| No component-specific parameters | — | — | — | — |')
-            children=element.get('sub_tags')
-            if children:out.append(f'\nChild grammar: `{cell(children)}`. This is a grammar expression, not a list of browser tags.')
+    entries = {key: (name, element) for name, doc in docs for key, element in doc['elements'].items()}
+    # Numeric block IDs were allocated in collection order before the purpose-based grouping.
+    stable = {key: f'gc-345-{15 + index * 5:03d}' for index, key in enumerate(entries)}
+    grouped = [key for widgets in FAMILIES.values() for key in widgets]
+    if len(grouped) != len(entries) or set(grouped) != set(entries):
+        raise ValueError('Every component must occur in exactly one purpose family')
+    for name, doc in docs:
+        out.append(f'| `{name}` | {widget_links(doc["elements"])} |')
+    brief = ['# Widget and parameter reference\n\nDocument ID: **GC-345**.\n\n'
+             'Grouped by purpose; shared parameters are documented once. The full counterpart\n'
+             'preserves types, defaults, bindings and child contracts from all six packaged grammars.\n'
+             'Development reference; no maturity or release acceptance is implied.\n',
+             '<a id="gc-345-005"></a>\n<a id="gc-345-010"></a>\n',
+             'Ordinary Source/CSS attributes remain in Writing pages and Themes and CSS.\n'
+             'Page.gramlots selects prepared collections; buttons are built in.\n']
+    out.append('\n## Shared parameter contracts\n\nEach widget below links only the shared contracts it supports. '
+               'A shared name can have different types, defaults or bindings; separate rows preserve those differences.\n')
+    for index, (group, (title, explanation)) in enumerate(SHARED.items()):
+        rows = {}
+        scope = []
+        for widget, (_, element) in entries.items():
+            for parameter, spec in element['_meta']['gramlot_component']['parameters'].items():
+                if shared_group(widget, parameter) != group: continue
+                if widget not in scope: scope.append(widget)
+                identity = (parameter, json.dumps(spec, sort_keys=True))
+                if identity not in rows: rows[identity] = (spec, [])
+                rows[identity][1].append(widget)
+        heading = f'\n<a id="gc-345-{220 + index * 5:03d}"></a>\n<a id="gc-345-shared-{group}"></a>\n## {title}\n'
+        out += [heading, explanation, '\nApplies to: ' + widget_links(scope) + '.\n',
+                '| Parameter | Type | Default | Binding | Allowed | Applies to |',
+                '| --- | --- | --- | --- | --- | --- |']
+        for (parameter, _), (spec, widgets) in rows.items():
+            applies = 'All listed above' if widgets == scope else widget_links(widgets)
+            out.append(f'| {parameter_cells(parameter, spec)} | {applies} |')
+        brief += [heading, explanation, '\nApplies to: ' + widget_links(scope) + '.\n']
+    for index, (family, widgets) in enumerate(FAMILIES.items()):
+        heading = f'\n<a id="gc-345-{300 + index * 5:03d}"></a>\n## {family}\n'
+        out.append(heading)
+        brief.append(heading)
+        for key in widgets:
+            name, element = entries[key]
+            meta = element['_meta']['gramlot_component']
+            guide, caption = DETAILS[name]
+            if key in ('dialog', 'floatingPane', 'framePane'):
+                guide, caption = '350-menus-toolbars-and-windows.md', 'Window and frame composition'
+            heading = f'\n<a id="{stable[key]}"></a>\n<a id="gc-345-{key.lower()}"></a>\n### `{key}`\n'
+            out += [heading, DESCRIPTIONS[key],
+                    f'\nCollection: **{name}**. Browser element: `{element["_meta"]["render_tag"]}`.\n',
+                    f'[{caption}]({guide}).\n']
+            brief += [heading, f'Collection: {name}. {DESCRIPTIONS[key]}\n']
+            groups = {shared_group(key, parameter) for parameter in meta['parameters']} - {None}
+            if groups:
+                links = ', '.join(f'[{title}](#gc-345-shared-{group})' for group, (title, _) in SHARED.items() if group in groups)
+                out.append('Shared contracts: ' + links + '.\n')
+                brief.append('Shared contracts: ' + links + '.\n')
+            specific = {parameter: spec for parameter, spec in meta['parameters'].items()
+                        if shared_group(key, parameter) is None}
+            if specific:
+                out += ['| Specific parameter | Type | Default | Binding | Allowed |', '| --- | --- | --- | --- | --- |']
+                out += [f'| {parameter_cells(parameter, spec)} |' for parameter, spec in specific.items()]
+                brief.append('Specific parameters: ' + ', '.join(f'`{parameter}`' for parameter in specific) + '.\n')
+            else:
+                out.append('No additional component-specific parameters. Use the shared contracts above '
+                           'and ordinary Source/CSS attributes.\n')
+                brief.append('No additional component-specific parameters.\n')
+            children = element.get('sub_tags')
+            if children:
+                out.append(f'\nChild grammar: `{cell(children)}`. This is a grammar expression, not a list of browser tags.')
             if meta.get('childParameters'):
-                out += ['\nParameters projected by this parent from its children:', '| Child parameter | Contract |','| --- | --- |']
-                for param,spec in meta['childParameters'].items():out.append(f'| `{param}` | {cell(json.dumps(spec,sort_keys=True)) if spec else "Declared by parent"} |')
-            if meta.get('presentationDefaults'):out.append('\nInherited presentation defaults: '+', '.join(f'`{v}`' for v in meta['presentationDefaults'])+'.')
-    brief=['# Widget and parameter reference\n\nDocument ID: **GC-345**.\n\nCompact index of the effective component metadata. The full counterpart contains\nevery declared parameter, type, default, binding and child contract. It covers this\ndevelopment checkout and does not assign maturity or release acceptance.\n']
-    for anchor in anchors[:2]:brief.append(f'<a id="{anchor}"></a>\n')
-    brief.append('Ordinary Source/CSS attributes and dynamic prefixes are separate from component\nmetadata. Page.gramlots selects prepared descriptors; buttons are built in.\n')
-    block=10
-    for name,doc in docs:
-        for key in doc['elements']:
-            block+=5
-            brief.append(f'\n<a id="gc-345-{block:03d}"></a>\n<a id="gc-345-{key.lower()}"></a>\n## {key}\n\nCollection: {name}. {DESCRIPTIONS[key]}\n')
-    return '\n'.join(out)+'\n','\n'.join(brief)+'\n'
+                out += ['\nParameters projected by this parent from its children:', '| Child parameter | Contract |', '| --- | --- |']
+                for parameter, spec in meta['childParameters'].items():
+                    out.append(f'| `{parameter}` | {cell(json.dumps(spec, sort_keys=True)) if spec else "Declared by parent"} |')
+    return '\n'.join(out) + '\n', '\n'.join(brief) + '\n'
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check',action='store_true');args=parser.parse_args()

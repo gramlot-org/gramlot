@@ -349,3 +349,16 @@ Block ID: **GC-101-315**.
 `Page.devices` (tuple/array of `desktop`, `tablet`, `phone`; empty = undeclared) → copy in `config.devices`
 (HTTP) or the `registerPage` result (Worker) → frozen `gramlot.devices`. Information only, not permission,
 redirect or layout; adapters do not interpret it.
+
+
+<a id="gc-101-320"></a>
+
+## 320 · Optional initial Data companion
+
+Block ID: **GC-101-320**.
+
+The successful `source/main` response retains `id`, `contentType` and `value` (the existing Source representation). If the page has a same-name `_data.tytx` companion, the envelope additionally carries `data`, a TYTX-encoded Bag. Missing companions omit that field. Errors carry neither value nor data. Remote Source responses and endpoint values are unchanged.
+
+`GramlotServer.resolveData(path)` / `resolve_data(path)` supplies this optional Bag; the neutral server returns null/None, the file server reads the companion, and the Worker reads its embedded serialized copy. The registered page path is used only after normal owner/expiry validation. `RpcHandler.call` keeps returning the value; `callEnvelope` exposes the checked envelope to startup. Startup validates Source and Data before installing the companion into the existing Builder-owned Data root, then installs main normally. A Data installation is not rolled back after a later Source installation error, consistent with existing startup rules.
+
+This adds an initial-Data mechanism without replacing dataSetter, defaults, endpoints or resolvers. The initial main result is not replaced by a {source, data} value.

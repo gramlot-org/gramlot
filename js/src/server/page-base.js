@@ -96,6 +96,7 @@ export class Exposed {
 
 /** Server-side page base; unrelated to browser view components. */
 export class Page extends Exposed {
+    static gramlots = [];
     static title = 'Gramlot';
     static devices = [];
     static locale = null;

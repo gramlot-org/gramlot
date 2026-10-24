@@ -1,6 +1,6 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-20**.
+Document ID: **GC-070**. Updated: **2026-10-24**.
 
 **Historical record — published checkpoint before the naming migration:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
 
@@ -11982,3 +11982,667 @@ drawer playground changed delivery and note Data and opened its Inspector inside
 the documentation iframe. The public PR preview also compiled the Typst lesson to
 SVG/PDF. Live publication screenshots are retained in the task artifacts; no claim
 of a new hosted Python service or a package release is made.
+
+
+<a id="gc-070-1855"></a>
+## 1855 · Consumed dataSetters and grouped widget reference — 2026-10-24
+
+Owner's latest instruction supersedes temporary-Bag staging: “quando il builder
+li incontra e setta il valore in data li toglie contestualmente dal source.
+verifica che il trigger ignorori questa rimozione di un datasetter”. Implemented
+in Gramlot's DataInstaller: apply a setter, close its NodeBinding/nodeId entry,
+then pop it from Source. Renderer intake discards the setter deletion, including
+its entries in batch deletions; other nodes still receive normal cleanup. Remaining
+attached nodes alone register pointers. Literal payloads, Bag identity/backrefs,
+R1/null-path rules, document order and failure/no-rollback semantics are retained.
+No upstream Builder or Bag edits, staging hook, compatibility path or public API.
+
+Regressions cover immediate consumption between writes, deletion intake, binding/
+reference cleanup and reusable nodeId, mixed batch deletion, scalar/Bag payloads,
+rebuild/thaw, and Python/JavaScript TYTX initial pages plus remote fragments under
+freeze with relative context. Old retained-node/count assertions were updated.
+
+Widget reference: all 41 widgets are grouped into eight purpose families, with
+ten shared parameter sections (including validate_*), per-widget applicability
+links and specific parameters only. Metadata variations and every existing stable
+anchor remain. Public binding and component guides and internal contracts match
+the consumed-setter lifecycle; historical verification receipts above retain their
+dated semantics.
+
+Verified: 3,835 JS tests covered. The initial full run passed 3,833/3,833; after
+adding two TYTX regressions and moving the isolated checkout, 3,832/3,835 passed,
+with only bundle reproducibility failing because build output embeds checkout paths.
+Rebuilding in the permanent location restored all six runtime-bundle checks
+(including the parent and two failed subtests). The complete 30-test setter suite
+passed. Python: 267 passed, 1 existing xfail, 382 subtests. Chromium binding/CSP/lifecycle
+checks and all eight shipped-runtime/origin combinations passed. Strict Sphinx
+build and all 19 public-page/search/source/link/mirrored-anchor checks passed;
+generated widget reference matches metadata and preserves all old anchors.
+
+Environment: Node 22.14.0, isolated Python 3.12 with current unconstrained published
+Genro dependencies. Initial sandbox socket failures and the unrelated local
+editable Builder spelling mismatch were resolved by using this clean test setup,
+without modifying dependency source or constraining versions.
+
+Work retained in the isolated `worktrees/datasetter-consumption` checkout.
+Implemented and verified; owner acceptance, consolidation and any publication
+remain separate. Local pre-existing work is preserved. No package released.
+
+
+<a id="gc-070-1860"></a>
+## 1860 · Shared example datasets through dataRemote — investigation, 2026-10-24
+
+Owner asks to verify foo.py/foo.js using one foo_data.tytx through dataRemote,
+including documentation playgrounds, and show a concrete example before changing
+the gallery. No gallery migration or new portable loading API is implemented.
+
+Verified in an isolated probe with the real Python and JavaScript GramlotFileServer:
+a declared load_customer endpoint reads the same TYTX file and returns a Bag;
+dataRemote(customer, load_customer, sync=False, cacheTime=-1) loads on the bound
+name/city read. One data endpoint call, identical values in both languages, reactive
+Data edits and default color initialization passed; no dataSetter declaration.
+Python uses pathlib + from_tytx; Node uses fs/promises + fromTytx.
+
+Documentation limitation confirmed: the docs builder uses the JavaScript Page
+inside a browser Worker. The ordinary endpoint and dataRemote contract works there,
+but Node filesystem imports cannot be bundled for that target (reproduced with
+esbuild platform=browser). Current docs asset selection does not discover the
+proposed same-name TYTX fixture, and Page has no shared dataset-file loader.
+A common dataset loader plus export-time inclusion is a proposal needing design
+approval, not an existing API. It should preserve endpoint-based resolution and
+typed Bags, including offline/file-origin exports, without page-level fetch or
+duplicated Python/JS data declarations.
+
+
+<a id="gc-070-1865"></a>
+## 1865 · dataSelection: TYTX/JSONL iterator reminder — 2026-10-24
+
+Reminder only, explicitly requested by the owner: “mettilo solo come promemoria”.
+The owner reports that TYTX now offers an iterator supporting JSONL for large
+datasets, primarily relevant to dataSelection (for example, 4,000 customers).
+When designing that workstream, inspect the upstream iterator API and assess
+progressive consumption without buffering the entire result. Consider grouped UI
+updates rather than one redraw per record; batching remains a design consideration,
+not an approved contract. This note does not claim existing Gramlot streaming
+support and authorizes no implementation or change to dataRemote.
+
+
+<a id="gc-070-1870"></a>
+## 1870 · Automatic foo_data.tytx pilot — preparation, 2026-10-24
+
+Owner explicitly requests automatic same-name dataset loading and one Python/JS
+pilot, including a documentation playground, before migrating the gallery.
+The convention requires no dataRemote or file-reading endpoint in the page.
+The TYTX file represents the initial Data Bag.
+
+Prepared in the isolated examples checkout `worktrees/automatic-example-data`:
+foo.py, foo.js and foo_data.tytx under pages/02-binding/01-paths_and_updates.
+The pages contain only bindings and an interface-color default; the shared Bag
+contains customer data, a Decimal and node attributes. TYTX round-trip passed.
+The pages are not yet registered as a working lesson; no gallery-wide migration
+or documentation publication occurred.
+
+Owner clarified on 2026-10-24 that this is an additive mechanism: dataSetter and
+all existing Data mechanisms remain. The replacement `{source, data}` value proposal
+is withdrawn. The implemented main response retains Source in value and adds optional
+Data in the envelope only when a companion exists. The paired constitution and
+GC-225 record this additive scope and naming.
+
+Implemented: Python/JS file discovery with containment checks, intact typed Bag
+transport, startup before defaults/rendering, gallery wrapper copies, Worker
+embedding and one lesson b12. No page loader declarations, no whole-gallery
+migration. Initial regressions pass: existing core server/setter/RPC 85 JS tests,
+42 Python tests plus 87 subtests; new 4 JS and 3 Python tests; 26 Worker/bundler
+checks; 11 Python gallery checks. Final browser/documentation evidence is recorded in §1875 below. The source work remains isolated and unpublished.
+
+
+<a id="gc-070-1875"></a>
+## 1875 · Automatic Data companion pilot verified — 2026-10-24
+
+Implemented and verified, not yet owner-accepted or published: optional foo_data.tytx
+supplements main's unchanged Source value with an initial Data Bag. Existing setters,
+defaults, remote fragments and endpoints remain supported. A setter can override a
+companion value; a default does not replace an existing value. Missing files leave
+behavior unchanged; invalid/non-Bag/null files and file-host path escapes fail.
+The Builder-owned Data root retains its identity, types and node attributes.
+
+Core: 3,839 JS cases exercised. The 8 HTTP conformance cases initially denied
+localhost passed when rerun with local-server access; the CSP bundle case passed
+from its required js working directory (16 bootstrap/companion tests passed).
+Python: 45 focused tests and 87 subtests passed; the complete suite's Node-version
+and localhost failures passed in the corrected environment (23 collection/HTTP
+checks, 2 subtests). The existing xfail remains. No product failure remains from
+those runs.
+
+Examples: the full JS run passed 244 cases, with 5 existing skips and 2 catalogue
+expectations needing the additional lesson/route field. After updating those
+expectations, all 9 catalogue tests passed; all 9 Python catalogue tests passed.
+Integrations: 26 Worker/bundler tests, 5 Node gallery tests and 11 Python staging
+tests passed. Final exporter import cleanup passed its 10 bundler tests.
+
+Browser verification in Chromium passed for the Python page, Node gallery and
+documentation playground over both HTTP and file origins: initial Ada/London,
+Decimal credit, caption attributes, accent default, live editing and reload.
+Python's isolated main-based adapter lacks the already-developed collection host;
+its standalone page passed. The full Python gallery also passed using the existing
+local Uvicorn collection host read-only together with the new isolated staging
+module. That existing host work must accompany later consolidation; it was not
+modified or replaced here.
+
+Documentation: strict Sphinx builds and local links/anchors passed for 19 core
+pages and 90 executable lessons; paired adapter documentation checks passed.
+Only lesson b12 uses the new convention; no gallery-wide migration occurred.
+Local previews: Python gallery http://127.0.0.1:8098/pages/02-binding/01-paths_and_updates/foo;
+Node gallery http://127.0.0.1:8096/pages/02-binding/01-paths_and_updates/foo;
+manual http://127.0.0.1:8097/lessons/binding/01-paths_and_updates/foo.html.
+Next: owner tries the pilot before authorizing a wider migration. No release,
+source consolidation or documentation deployment was performed.
+
+
+<a id="gc-070-1880"></a>
+
+### 1880. Gallery sample-data migration — in progress, 2026-10-24
+
+Owner authorizes the full gallery migration after the automatic-companion pilot: sample Bags in `_data.tytx`, interface-control defaults in Source, explicit setters retained for their own lesson. Python and JavaScript twins share one companion. The current pass covers 74 static lessons; the catalogue carousel's host-derived URLs need separate treatment, not frozen file data. Existing local work is preserved in the same isolated checkouts. Regression, source parity, Python hosting and executable-documentation checks are pending. Optional filling starts with block load or manual entry; no keyboard simulation contract is added.
+
+
+<a id="gc-070-1885"></a>
+
+### 1885. Gallery companion migration verified; block-fill example ready — 2026-10-24
+
+Implemented the owner-approved migration in gramlot-examples: 74 static lessons
+now separate sample data from Source. There are 67 shared `_data.tytx` companions
+including the existing pilot; UI-only lessons need none. 113 former initial values
+became control/attribute defaults. Removed obsolete Python/JS sample constructors
+and imports. Typed dates, times, Decimals, nested Bags, lists and node attributes
+remain in the companions. Scenario counters/traces without an editable control
+remain part of the initial scenario Bag.
+
+Explicit lesson setters remain only in b03 (ordered setters/defaults) and l08
+(host-generated catalogue/navigation metadata). The carousel installs its URL and
+title Bags once, instead of one setter per entry; opened frames are created on
+first selection. Host-dependent URLs are not frozen in files. Gallery-shell and
+guided-tour initialization are outside this lesson-fixture migration.
+
+b12 now includes a separate, initially empty draft: manual entry, Play to copy the
+customer Bag, Clear and retry. The copy preserves types/attributes and draft edits
+do not change the customer. This is ordinary Data loading and binding, not
+synthetic input events or validation playback; character-by-character playback
+remains optional future work. No new runtime API or dependency workaround was
+introduced. The owner has authorized implementation; interactive acceptance is
+still pending the owner's trial.
+
+Verification:
+
+- JavaScript suite: 254 cases, 248 passed initially, 5 existing browser-only skips,
+  one layout-parity helper unable to normalize nested Data Bags. The helper now
+  compares Bag labels/values/attributes; the affected l08 case passes. The separate
+  all-page Source parity suite also passes. No remaining product failure in this
+  suite (249 passed across the full run and focused rerun).
+- Python: 26 tests and 149 subtests passed, including each route's initial Data
+  envelope compared with its exact companion Bag.
+- Uvicorn gallery: all 90 lessons and index opened/rendered without errors in both
+  Chromium and WebKit (91/91 each), including all five editors. As in §1875 the
+  preview uses the existing local Uvicorn collection host read-only, together with
+  the isolated staging change; those host prerequisites remain necessary for later
+  consolidation.
+- Play/manual/copy/clear/reload passed in both browsers on Python, Node, HTTP docs
+  and file-origin docs (8 combinations). File-origin spot checks also passed for
+  text editing, Decimal, date, time, four trees and all five editors (13 lessons).
+- Strict Sphinx build succeeded: 90 executable lessons; paired-guide and local
+  link/anchor checks passed. Companion and source sections show the migrated files.
+- Browser check scripts now use `route.url` for hosted gallery pages. Their former
+  short-key URLs returned missing pages and caused test timeouts; they are not
+  compatibility routes added to the application.
+
+Known verification limit, kept separate from the migration: Chromium crashes
+while interacting with the full carousel in a file-origin documentation export.
+The isolated rerun reproduces it, as does a diagnostic build of the pre-migration
+carousel source opening the same exported children. This does not prove the cause
+or qualify the full file carousel. Python's carousel interaction/retained edits
+passed; the individual exported lessons above passed. Do not present this crash
+as fixed or all export interactions as qualified. Reproduce with
+`node scripts/verify_gallery_carousel_browser.mjs PLAYWRIGHT_ENTRY file:///.../build/docs-site/playgrounds/`
+in gramlot-examples. Diagnose separately before claiming full file-carousel
+qualification; no speculative framework change was made here.
+
+Local trial: Python http://127.0.0.1:8098/pages/02-binding/01-paths_and_updates/foo;
+Node http://127.0.0.1:8096/pages/02-binding/01-paths_and_updates/foo;
+manual http://127.0.0.1:8097/lessons/binding/01-paths_and_updates/foo.html.
+The Python pilot was visually inspected. Existing local work remains preserved;
+no source consolidation, package release or documentation publication was performed.
+
+
+<a id="gc-070-1890"></a>
+
+## 1890 · Paced sample loading and file carousel correction — 2026-10-24
+
+Owner requests a short delay between Play fields and correction of the carousel
+crash reported in §1885. Both are implemented in the existing isolated examples
+checkout; prior local work is preserved. No core runtime, dependency or exporter
+change is needed in this follow-up.
+
+- b12 copies the current customer into an independent Data snapshot. The name is
+  set immediately; city follows after 300 ms using a bound dataController. Clear
+  cancels the pending update and another Play restarts it with a new snapshot.
+  Typed values/attributes and manual entry remain intact. This does not simulate
+  keystrokes or an input validation pipeline.
+- Diagnosis: the uncorrected file carousel initiated 90 document navigation URLs
+  (the outer page plus 89 thumbnails), with 42 Workers already started after five
+  seconds. The corresponding HTTP probe observed only two navigation URLs. Native
+  iframe lazy loading did not constrain file startup. Both thumbnail and full-size
+  src now bind to the existing `.opened` Data entries, assigned after a settled
+  selection. Visited frames retain their Data. Rapid traversal starts no skipped
+  applications. The reproduced Chromium file crash no longer occurs in regression.
+- Five focused JS behavior/Source/layout parity checks passed. Play browser checks
+  passed Chromium/WebKit on Python, Node, HTTP documentation and file documentation
+  (8 combinations), including cancellation, restart and snapshot independence.
+  Carousel checks passed both engines on file, Python and Node (6 combinations),
+  including bounded initial loads, a rapid sweep, editor startup and retained edits.
+
+Executable documentation and paired example guidance are updated. This qualifies
+these reproduced interactions, not an unlimited number of simultaneously retained
+applications. Interactive owner acceptance remains pending. No release, publication
+or source consolidation was performed. Trials remain on Python port 8098 and Node
+8096; the local documentation preview is on 8097.
+
+Final checks: all 26 Python tests and 149 subtests passed; all three companion-data
+regressions passed. Strict Sphinx build and documentation checks passed for 90
+executable lessons, paired guides and local links/anchors. The previous §1885
+file-carousel limitation is resolved for the reproduced path by the loading
+correction and browser regressions above.
+
+
+<a id="gc-070-1895"></a>
+
+## 1895 · Gallery framePane and responsive icon toolbar — 2026-10-24
+
+Owner confirms the first gallery version with Navigation at the top of a left
+rail, Settings at its bottom and the same toolbar below the content on mobile.
+Implemented in the isolated examples checkout: a framePane surrounds the existing
+IndexPage; its rail contains a menu bar with two SVG menulines and a flex spacer.
+The existing mobile coordinator changes the same Source region and orientation.
+The core FramePage/IndexPage API, framework and dependencies are unchanged.
+
+Named Logic actions toggle the existing Source drawers. Checked state follows
+actual visibility, including changes through drawer handles; Settings visibility
+now participates in the existing drawer-state synchronization. The controls have
+tooltips and 44px targets. Tabs, mounted iframes, example Data, Code, Inspector,
+themes and splitters keep their existing behavior.
+
+Verification: seven Python gallery authoring tests and 26 JS gallery runtime tests
+pass, including a new retention/toolbar regression. Chromium and WebKit pass on
+Python port 8098 and Node port 8096 (four combinations): left/bottom geometry,
+Navigation/Settings actions, drawer-handle synchronization, theme switching and
+iframe identity with retained text edits across desktop/mobile transitions.
+Desktop and mobile screenshots were inspected. Paired guide GE-010 §325 records
+the composition. The existing Logic-excerpt census now includes the additional
+Play Logic introduced in §1890 (17 rather than 16 modules).
+
+Implemented and verified; owner trial/visual acceptance is pending. Try the gallery
+root at http://127.0.0.1:8098/. Prior local work is preserved. No core generalization,
+source consolidation, package release or documentation publication was performed.
+
+
+<a id="gc-070-1900"></a>
+
+## 1900 · Gallery Inspector placement and continuous shell surface — 2026-10-24
+
+Owner requests Inspector above Settings, removal of the unexplained blue top line
+and continuity between title and left rail. Implemented in both gallery pages:
+Inspector is a single SVG menuline before Settings, with checked state driven by
+its existing palette lifecycle. It follows the same toolbar to the mobile bottom
+region. The old header control and its obsolete CSS are removed.
+
+Header and rail use a shared gallery CSS color derived from the active theme's
+subtle surface and ink. The decorative top border and the adjoining rail border
+are removed. Global themes, framework and dependencies are unchanged.
+
+Verified: 26 JS gallery tests, seven Python authoring tests; Chromium and WebKit
+on Python and Node (four combinations) cover Inspector opening/closing/checked,
+mobile docking, drawer toggles, theme switching, continuous background without
+top border, and retained iframe identity/Data. Desktop light/dark and mobile
+screenshots were inspected. GE-010 §330 and its mirror describe the result.
+The local Python gallery at http://127.0.0.1:8098/ is running the changes; reload
+to try them. Implemented/verified; owner visual acceptance is pending. No source
+consolidation, package release or documentation publication.
+
+
+<a id="gc-070-1905"></a>
+
+## 1905 · Gallery floating Settings formlet — 2026-10-24
+
+Owner requests Settings in a floating with formlet widgets, a dedicated Inspector
+SVG and removal of the navigation drawer label. Both Python and JS gallery pages
+now compose existing floatingPane/framePane/formlet components. Bound required
+filteringSelect widgets and checkbox replace native settings controls; Data
+subscriptions retain preference persistence and forwarding. The gear and titlebar
+close share the open binding. The window remains nonmodal and fits mobile screens.
+Navigation has no drawer tab but retains its resizable separator and toolbar
+button. Inspector uses a lens/nodes SVG. Core runtime and dependencies unchanged.
+
+Verified: 29 JS gallery/editing tests, seven Python tests; Chromium and WebKit on
+Python and Node (four combinations) pass nonmodality, settings changes, gear/close
+state, navigation splitter, mobile bounds and retained iframe/Data checks.
+Desktop light/dark and mobile screenshots were inspected. Paired GE-010 §335
+records the current behavior. Implemented/verified; owner visual acceptance is
+pending. Python gallery remains at http://127.0.0.1:8098/. Existing local work is
+preserved. No consolidation, package release or documentation publication.
+
+
+<a id="gc-070-1910"></a>
+
+## 1910 · Neutral gallery rail buttons — 2026-10-24
+
+Owner: “il background non deve cambiare. magari solo sul click”, referring to
+the selected navigation tile. Gallery CSS now sets the existing selected-color
+token to transparent only on rail menulines, retaining checked semantics and
+adding a transient pressed surface. The standard hover is unchanged. Core
+runtime is unchanged. Chromium/WebKit verify transparent open/closed backgrounds
+and pressed feedback on the Python preview. Implemented/verified; visual
+acceptance pending. No publication or release.
+
+
+<a id="gc-070-1915"></a>
+
+## 1915 · Compact rail and title — 2026-10-24
+
+Owner requests a narrower toolbar, lower title bar and Navigation beside the
+panel rather than above it. Python/JS gallery composition now uses a 46px desktop
+rail (previously 52px), 38px desktop buttons and a 34px title region (previously
+42px). Desktop rail top padding aligns Navigation below the title line. Mobile
+retains 44px targets in its 56px bottom toolbar without the desktop top offset.
+Core and dependencies unchanged. Chromium/WebKit on Python/Node verify the rail
+geometry, panel controls and retained lesson Data across responsive transitions;
+desktop screenshot inspected. Implemented/verified; visual acceptance pending.
+No publication or release.
+
+
+<a id="gc-070-1920"></a>
+
+## 1920 · Mela desktop/mobile appearance — 2026-10-24
+
+Owner-approved Mela ships as themes/mela/theme.css, using existing tokens and
+the appearance protocol. Core/gallery build lists and settings include mela.
+System font, neutral surfaces, blue accent, light/dark colors, 28px desktop fields
+and 44px narrow/coarse-pointer fields are implemented. Core component behavior
+is unchanged. Gallery lesson l09 provides toolbar, hierarchical menu, fields,
+dialog and floating, with Python/JS sources and shared draft Data.
+
+Verified: core/runtime and gallery browser builds; 26 JS gallery and seven Python
+authoring tests; Chromium/WebKit on Python/Node test light/dark and desktop/mobile,
+menu/submenu, disabled entry, modal versus nonmodal windows, viewport bounds and
+retained fields. Desktop/mobile screenshots inspected. GC-096 and GE-010 §350
+document usage. Implemented/verified; visual acceptance pending. Preview remains
+at http://127.0.0.1:8098/. Local examples documentation builds successfully: 91 executable playgrounds, 100 staged pages, and all local links/anchors validated. No consolidation, publication or release.
+
+
+<a id="gc-070-1925"></a>
+
+## 1925 · Floating windows cover page splitters — 2026-10-24
+
+Owner reports “i floating non dovrebbero essere trasparenti”. The surface was
+already opaque: nonmodal window ranks started at 1, below borderContainer
+separators/drawers at 2–4, so layout chrome painted over the window. Floating
+peer ranks now start at 100, above ordinary page chrome. Raising a floating still
+reorders only its peers; native modal dialogs and menu popovers keep their top
+layer behavior. No theme opacity workaround or gallery-specific runtime branch.
+
+Twelve window component tests pass, including a regression comparing floating
+ranks to actual separator/drawer styles and checking peer raising and retained
+Data. Runtime and gallery assets rebuilt. Browser verification overlaps Settings
+with the Code splitter, checks opaque backgrounds and actual hit testing in light
+and dark, and confirms the nonmodal page remains usable after closure.
+
+The owner's calendar outline question was inspected separately: the outline is
+the existing focus-visible indicator. Chromium/WebKit mouse-only open/close did
+not leave a visible outline; no calendar behavior or focus styling was changed.
+Implemented/verified; owner visual acceptance pending. No publication or release.
+
+
+<a id="gc-070-1930"></a>
+
+## 1930 · Gallery page-loading diagnosis — 2026-10-24
+
+Owner asks to investigate slow page loading. Read-only runtime diagnosis on the
+Python gallery at localhost:8098, Chromium, fresh browser context: shell ready
+in 1.817 s; textbox first opening 4.614 s; Mela first opening 2.900 s; returning
+to the already-open textbox 41 ms with no requests. These are local observations,
+not release benchmarks; the first click overlapped the introduction iframe load.
+
+Confirmed causes:
+- Gallery supplies inputs, layout, tree, editors and typst as server-wide
+  collections. Every example iframe receives all five, including the 42,749,653
+  byte Typst JS bundle and 4,686,602 byte editor bundle.
+- The running Python adapter sends collection assets with Cache-Control: no-store.
+  New frames request the large bundles again; existing example tabs retain state.
+- Core open_page verifies selected artifacts; each Source request verifies them
+  again and calls load_collection separately. Gramlot's grammar composition
+  copies and reparses the accumulated grammar on each load. Profiling the textbox
+  Source call attributed about 93–95% of instrumented time to load_collection.
+  Uninstrumented five-run median: all five collections 887 ms; only inputs and
+  layout 176 ms, both producing 24,108-character Source responses. The attempted
+  inputs-only control failed correctly because formlet belongs to layout.
+- Adapter resource URL lookup and asset serving also call artifact verification.
+  Isolated median verification cost was about 48 ms across the five artifacts;
+  rebuilding gallery metadata about 31 ms. Neither alone explains the whole delay.
+  Source processing runs synchronously inside the ASGI request coroutine and can
+  delay other requests while composing the grammar.
+
+No runtime optimization or dependency edits made. Proposed next scope: declare
+only required page collections; prepare reusable verified grammar per collection
+composition without sharing mutable builder/Data state; apply an explicit cache
+policy to immutable build-ID asset URLs. Preserve artifact integrity checks and
+class/instance override semantics. Implementation and before/after browser
+verification remain pending owner confirmation. No publication or release.
+
+
+<a id="gc-070-1935"></a>
+
+## 1935 · Python gallery loading optimized — 2026-10-24
+
+Owner confirmed: “Sì, correggi la cache e carica solo le collezioni necessarie alla
+pagina. Evitiamo anche di ricostruire le grammatiche ogni volta, poi verifica
+quanto migliorano i tempi.” Implemented on the Python path, preserving the local
+work in datasetter-consumption and automatic-example-data. Connected adapter work
+is in performance-py, an isolated snapshot of the previously running adapter's
+current sources; the original checkout is untouched. It also retains the earlier
+companion Data staging and export-all Logic corrections. No release/publication.
+
+- Every common Python page explicitly selects its needed prepared descriptors;
+  no dynamic method-name inference runs in the application. Source methods and
+  helpers are included. All 118 common pages build with their own declarations.
+  The shell selects inputs/layout/tree/editors; a textbox selects inputs/layout;
+  the HTML introduction selects none; Typst is confined to its lesson.
+- The Python gallery runner no longer supplies all collections as global defaults.
+  The fixed startup registry is derived from page declarations. Environment IDE
+  and database example pages declare their dependencies too.
+- Core caches verified grammar documents by complete frozen descriptor and
+  compilation by builder class, ordered descriptors and initial grammar. Mutable
+  schema, collection state, Source and authorization remain request-local.
+- Python adapters retain verified artifact bytes at registration and serve
+  fingerprinted resources with public, max-age=31536000, immutable. Rebuilding
+  changes the URL; restarting rechecks integrity. Old identities never serve new
+  bytes. Unversioned assets and dynamic responses retain their existing policy.
+- JavaScript-host/serverless activation is unchanged in this Python increment.
+
+Validation: 53 core tests plus 95 subtests pass; nine gallery tests pass including
+all 118 page builds; 23 Uvicorn tests pass including mounted protocol conformance,
+then the added rebuild/old-byte regression passes with all seven cache tests.
+Paired adapter documentation validates and both Sphinx views build. Browser checks
+pass in Chromium and WebKit for remote Source, tree, CodeMirror editing, actual
+Typst preview, Mela menus, modal dialog, nonmodal floating, light/dark and desktop/
+mobile, including retained Data. Cache transfer assertions run in Chromium because
+WebKit does not reliably report decodedBodySize for cached resources.
+
+Performance observations (local machine; timings vary with load): original quick
+probe textbox 4.614 s / Mela 2.900 s / retained tab 41 ms; same quick probe after
+change 1.494 s / 1.171 s. A subsequent three-context Chromium comparison with the
+introduction fully ready gave medians 7.920 s / 7.899 s before and 1.165 s / 1.044 s
+after. Each basic iframe previously transferred about 49.96 MB of collections;
+afterwards both reuse the shell's cached inputs/layout, 0 transferred collection
+bytes, and request no editors or Typst. Python textbox Source: five-run median
+887 ms originally, 14 ms after compilation is warm (first preparation 206 ms).
+A separate three-context WebKit check passed with medians 917 ms / 960 ms and no
+page errors. Earlier multi-engine timing passes had intermittent browser timeouts;
+the focused rerun and functional checks passed, without changing application logic
+to accommodate the harness. These are observations, not performance guarantees.
+
+The corrected gallery is running at http://127.0.0.1:8098/ using the isolated
+performance-py adapter and the two existing core/examples worktrees. Owner visual
+acceptance pending. Required implementation and checks complete.
+
+
+<a id="gc-070-1940"></a>
+## 1940 · JavaScript page-loading performance (2026-10-24)
+
+Block ID: **GC-070-1940**.
+
+Owner scope: “applica le stesse ottimizzazioni anche al server JavaScript: cache,
+collezioni necessarie per pagina e riuso delle grammatiche. Poi verifica i tempi
+anche lì.” Implemented in the existing core, examples and JS-adapter worktrees.
+Page.gramlots selects class-inherited prepared records; startup file discovery
+imports candidate modules but does not construct or execute pages. Node/Bun
+verify and retain immutable artifact bytes once. Compiled schema metadata is
+copied into each builder, retaining compiled validators, with fresh Source, Data
+and authorization. Browser page Logic imports metadata-only gallery descriptors.
+Python serves those descriptors too; artifact bytes are not rewritten.
+
+Verified: 70 distinct core server/collection tests, including five focused cache/discovery regressions;
+41 adapter tests on Node and 41 on Bun; 49 serverless exporter tests. All JS pages
+build with their own declarations. Chromium/WebKit exercise remote data, tree,
+editors and actual Typst preview. Three-context Chromium medians before/after:
+shell 1599/793 ms, textbox 1363/344 ms, Mela 1372/307 ms; retained tab 38/37 ms.
+Basic iframe collection transfers fall from 49.96 MB to zero with a warm shell.
+WebKit after medians: shell 592 ms, textbox 462 ms, Mela 445 ms; no page errors.
+Measurements are local observations, not guarantees.
+
+Final checks: 79 example tests pass (five browser-only editor checks are covered
+by the real-browser run); 11 Python gallery/collection tests pass. The full Node
+gallery under /js passes all 91 catalogue examples in Chromium with no page or
+request errors. The protocol browser harness passes Node lifecycle, remote Source,
+mount prefix and strict/permissive CSP. Mela light/dark desktop/mobile, menus,
+dialog/floating and retained Data pass on both Python and Node in Chromium and
+WebKit. Regression harnesses were aligned with the existing Settings floating
+and the Mela lesson count/naming. Core public documentation builds and validates
+19 pages; both adapter documentation views build; examples documentation builds
+all 91 executable lessons and validates the paired guides and links.
+
+Implementation and required verification complete. Local previews: Python 8098,
+Node 8096. Visual acceptance remains with the owner. No package publication,
+release or deployment. Existing local work is preserved.
+
+Owner's aspect-ratio suggestion for mobile switching remains a design follow-up;
+no responsive breakpoint or device rule was changed in this performance work.
+
+
+<a id="gc-070-1945"></a>
+## 1945 · Gallery toolbar placement trial (2026-10-24)
+
+Block ID: **GC-070-1945**.
+
+Owner requests proportions-aware mobile switching and a trial of bottom/side
+placement. Implemented in the existing examples worktree, Python first with the
+JS twin: Settings > Toolbar exposes Automatic/Left/Bottom. Automatic uses Bottom
+below 1024 CSS pixels when height >= width, Left otherwise. Manual choices affect
+placement alone; the narrow panel layout still follows width. The same Source
+nodes are updated, retaining lesson frames/Data and active narrow panels.
+No core runtime or adapter changes. The preference is local to the open gallery
+and starts at Automatic after reload. Test thresholds remain provisional.
+
+Verified: 27 gallery JS tests and seven Python gallery tests, including
+proportions, manual overrides, same toolbar identity and listener disposal.
+The browser bundle is built and Python 8098 / Node 8096 are restarted. Chromium
+and WebKit pass both hosts at portrait, square, landscape, threshold and desktop
+sizes: geometry, manual choices, settings, navigation/inspector, theme and retained
+lesson iframe/Data. Screenshots of portrait Left, landscape Left and desktop
+Bottom were inspected. Documentation mirror anchors match. Implementation and
+verification complete; owner visual acceptance pending. No publication.
+
+
+<a id="gc-070-1950"></a>
+## 1950 · One central carousel stack (2026-10-24)
+
+Block ID: **GC-070-1950**.
+
+Owner: “metti un solo stack cntainer newl centro e sopra lo slider. cosi ce ne sta
+una versione sola”. The examples-only l08 change removes the thumbnail drawer
+and duplicate stack/iframe tree. One top slider selects one central stack after
+350 ms; the currently selected page remains visible while browsing. Each demo
+loads on its first settled visit and retains its Data thereafter. The slider uses
+default=0; only dynamic catalogue/host metadata remains explicitly initialized.
+Python and JS twins, lesson and catalogue are aligned; older carousel guide
+records are marked historical and superseded by GE-010 §370.
+
+Verified: both Source/layout parity checks; Chromium and WebKit on Python 8098,
+Node 8096 and the documentation file export (six browser/host combinations).
+Checks cover one stack, slider above, no miniature frames, one initial load,
+rapid traversal, same iframe and retained edited Data, file routes and narrow
+geometry. The mobile screenshot was inspected. Executable documentation builds
+91 lessons and validates its guides/links. Implementation and checks complete;
+owner trial pending, no framework change, publication or release.
+
+
+<a id="gc-070-1955"></a>
+## 1955 · Gallery bars at 42 pixels (2026-10-24)
+
+Block ID: **GC-070-1955**.
+
+Owner: “porterei tutto a 42”, referring to title height, left toolbar width
+and bottom toolbar height. Implemented in the Python/JS gallery twins and
+responsive styling, with 36-pixel buttons fitting the padding and navigation
+aligned below the title. Placement choices and aspect-ratio rules are unchanged.
+
+Verified: 27 JS gallery tests, seven Python tests and a successful browser build.
+Chromium and WebKit measured exactly 42 CSS pixels on Python 8098 and Node 8096
+at desktop, portrait and landscape sizes (12 combinations); every button fits
+its region and the settings floating opens/closes. Screenshot inspected.
+No core runtime changes or publication; visual trial remains with the owner.
+
+
+<a id="gc-070-1960"></a>
+## 1960 · Remove redundant gallery scrolling (2026-10-24)
+
+Block ID: **GC-070-1960**.
+
+Owner reports nested scrollbars in the border introduction. The full-height
+category iframe was inline, reserving a four-pixel text baseline and making its
+containing gallery panel overflow. Gallery CSS now displays direct category
+and introduction iframes as blocks. Content scrolling remains inside the lesson;
+no overflow masking, scrollbar hiding or core changes.
+
+Verified on Python 8098 and Node 8096 with Chromium/WebKit at four viewport sizes
+(16 combinations): no outer document or category-panel overflow in either axis;
+the last lesson item remains reachable by scrolling, and Settings opens.
+A narrow screenshot was inspected. Complete locally; no publication.
+
+
+<a id="gc-070-1965"></a>
+## 1965 · Coordinated release preparation (2026-10-24)
+
+Block ID: **GC-070-1965**.
+
+Owner requests a release of the current work. Isolated candidates under
+/tmp/gramlot-release-20261024 preserve all original working checkouts. Targets:
+core 0.3.11, examples 0.3.12, JavaScript integrations 0.2.17 and Python
+integrations 0.2.13. Scope is this session's consumed dataSetter nodes, TYTX
+companions, gallery migration, layout/themes and page-loading optimizations.
+Independent Typst split and database work remain excluded.
+
+Fresh dependency qualification: core 273 Python tests and 382 subtests pass
+(one existing expected failure); 3845 JavaScript checks pass across the full run
+and the corrected Python-environment IDE rerun. Inspector unit tests and
+Chromium/WebKit inspector and binding checks pass. The examples pass 256 JS
+tests (five browser-only skips), 27 Python tests; Node server 41, serverless 49
+and create 3 tests pass against packed npm artifacts. Core documentation builds
+with warnings treated as errors and all public links/identities validate.
+
+Release preparation fixes stale collection/consumed-setter test expectations
+and installs local source dependencies as packages to avoid duplicated Bag/TYTX
+module identity. The Python candidate retains the published shared Adapter base
+and integrates verified startup collection resources there, rather than copying
+the older standalone ASGI implementation from the performance preview.
+Kajenn overwrites HEAD Content-Length in its response finalization; owner choice
+on documenting this upstream debt or correcting Kajenn is pending. No release
+is published at this checkpoint. CI, remaining browser/docs checks and final
+publication receipts remain required.

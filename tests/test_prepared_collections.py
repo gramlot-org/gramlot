@@ -107,3 +107,65 @@ def test_dependency_first_identity_and_cumulative_inheritance(tmp_path, monkeypa
     object.__setattr__(derived, "dependencies", (derived,))
     with pytest.raises(ValueError, match="cycle"):
         collection_graph([derived])
+
+
+def test_server_reuses_compilation_but_isolates_builder_state(monkeypatch):
+    from gramlot import GramlotBuilder
+    from gramlot.collections.inputs import mygramlot
+    from gramlot.server import GramlotServer
+    from unittest.mock import patch
+
+    server = GramlotServer()
+    original = GramlotBuilder.load_collection
+    loads = []
+    def load(builder, document):
+        loads.append(document)
+        return original(builder, document)
+    monkeypatch.setattr(GramlotBuilder, 'load_collection', load)
+    left, right = GramlotBuilder(), GramlotBuilder()
+    server._load_collections(left, (mygramlot,))
+    left.root.textbox(value='^left')
+    left._schema.get_node('textbox').set_attr({'test_marker': True})
+    with patch.object(GramlotCollection, 'verify', side_effect=AssertionError('already verified')):
+        server._load_collections(right, (mygramlot,))
+    assert len(loads) == 1
+    assert right._schema.get_node('textbox').attr.get('test_marker') is None
+    right.root.textbox(value='^right')
+    assert 'left' not in right.to_tytx()
+    assert 'right' not in left.to_tytx()
+    assert left._collection is not right._collection
+    assert left._schema is not right._schema
+    assert GramlotBuilder()._schema is not right._schema
+
+
+def test_prepared_grammar_keeps_initial_overrides_and_builder_classes_separate():
+    from gramlot import GramlotBuilder
+    from gramlot.collections.inputs import mygramlot
+    from gramlot.server import GramlotServer
+    from pathlib import Path
+    controls = json.loads((Path(__file__).parent / 'fixtures/collections/controls.json').read_text())
+    server = GramlotServer()
+    first = GramlotBuilder(collections=[controls])
+    server._load_collections(first, (mygramlot,))
+    first.root.statusText('OK', required_label='Status')
+    second = GramlotBuilder()
+    server._load_collections(second, (mygramlot,))
+    with pytest.raises(AttributeError):
+        second.root.statusText('unavailable')
+    class SpecializedBuilder(GramlotBuilder):
+        pass
+    third = SpecializedBuilder()
+    server._load_collections(third, (mygramlot,))
+    assert len(server._prepared_grammars) == 3
+
+
+def test_new_server_reverifies_changed_artifact(tmp_path, monkeypatch):
+    from gramlot.server import GramlotServer
+    descriptor, package = artifact(tmp_path, monkeypatch)
+    server = GramlotServer()
+    document = server._collection_document(descriptor)
+    path = tmp_path / 'prepared_example/assets/collection.js'
+    path.write_text('tampered')
+    assert server._collection_document(descriptor) == document
+    with pytest.raises(ValueError, match='fingerprint mismatch'):
+        GramlotServer()._collection_document(descriptor)

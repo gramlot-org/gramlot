@@ -65,7 +65,7 @@ start a phase or assign parallel implementations from this list alone.
 | 2.1 | Input component collection | Create the Gramlot input component collection. |
 | 2.2 | Layout component integration | Integrate layout components, including border and tab layouts. |
 | 3 | Database connections | Define the database integration workstream. |
-| 3.1 | dataRecord, dataSelection, db selection | Retain these three areas as named by the owner; exact APIs and ownership remain to be defined. |
+| 3.1 | dataRecord, dataSelection, db selection | Retain these three areas as named by the owner; exact APIs and ownership remain to be defined. Reminder: assess the TYTX/JSONL iterator for large dataSelection results, e.g. 4,000 customers; [note only, no implementation](../internal/070-work-status.md#gc-070-1865). |
 | 4 | Stores | Define the store workstream and its contract. |
 | 5 | Store-based widgets | Tree and grid, using stores. |
 

@@ -71,9 +71,15 @@ warning. R1, installation only: non-null writes; null on an existing path keeps 
 value and applies attributes; null on a missing path creates null plus attributes.
 `dataSetter('x', 7)` then `dataSetter('x', None)` leaves 7. Runtime writes are not
 affected. `value` and attributes are stored as written (`'^y'`, `'==a+b'`, `'a${b}'`
-stay strings; computed values use `dataFormula`). Removing the declaration keeps Data;
-rebuild/thaw do not reinstall. A Bag value moves into Data without copy and leaves the
-Source node. Gallery lesson: *Setters and defaults*.
+stay strings; computed values use `dataFormula`). Each processed `dataSetter` is removed from Source immediately after its Data
+write. Its binding and nodeId registration are released before removal; the renderer
+ignores the setter's deletion event. Other Source observers can still see that event.
+The Data remains, including a Bag payload transferred without copying. A rebuild or
+thaw cannot reinstall a consumed declaration. This applies to initial pages, remote
+fragments and local insertions through the same installer. A null destination (Q7)
+is consumed without a write. A failed write propagates its error; existing Data
+writes are not rolled back. Controllers remain in Source and retain their lifecycle.
+Gallery lesson: *Setters and defaults*.
 
 <a id="gc-095-050"></a>
 

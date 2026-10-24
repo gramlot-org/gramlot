@@ -28,7 +28,8 @@ Node and the generator; consumers of prepared Python packages do not.
 ## 015 · Builder, grammar, Source and Data
 
 Grammar validates names, parameters and structure. Source describes occurrences
-and behavior; Data holds state; not every Source node creates DOM. `^` subscribes,
+and behavior; Data holds state; not every Source node creates DOM. Setters leave
+Source after writing Data; controllers remain for later events. `^` subscribes,
 `=` reads without subscribing. A plain reactive value pointer supports writeback.
 Component values reject presentation transforms. Defaults need not appear in
 Source; component parameter projection supplies omitted defaults.

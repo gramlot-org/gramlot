@@ -58,8 +58,8 @@ test('pointers are registered from pointers(); = is not registered; a dataSetter
     builder.root.dataSetter({destination_path: 'x', value: 1});
     builder.root.dataController({func: 'go', a: '^trigger'});
     assert.deepEqual(registered(app, node).sort(), ['a', 'b?caption']);
-    const [setter, controller] = builder.source.getNodes().slice(1);
-    assert.deepEqual(app.src.binding.bindingFor(setter).registrations, []);
+    const [controller] = builder.source.getNodes().slice(1);
+    assert.equal(builder.source.getNodes().some(node => node.nodeTag === 'dataSetter'), false);
     // S08: a provider registers its `^` pointers through its Provider, not on the NodeBinding.
     assert.deepEqual(app.src.binding.bindingFor(controller).registrations, []);
     assert.equal(app.src.binding.bindingFor(controller).providers.length, 1);

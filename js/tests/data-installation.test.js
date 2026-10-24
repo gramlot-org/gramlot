@@ -59,6 +59,125 @@ function attributes(data, path) {
     return data.getNode(path).getAttr();
 }
 
+test('consumption closes bindings and indexes before deletion, and the renderer ignores the deletion', () => {
+    const {app, data} = page();
+    const {binding, renderer, source} = app.src;
+    const semanticDeletions = [];
+    const structuralDeletions = [];
+    const handle = binding.handleSourceEvent.bind(binding);
+    binding.handleSourceEvent = event => {
+        if (event.evt === 'del') semanticDeletions.push(event);
+        return handle(event);
+    };
+    const remove = renderer.remove.bind(renderer);
+    renderer.remove = node => { structuralDeletions.push(node); return remove(node); };
+    let consumed = 0;
+    source.subscribe('consumption', {any: event => {
+        if (event.evt !== 'del') return;
+        const node = event.node;
+        if (node.nodeTag !== 'dataSetter') return;
+        consumed++;
+        assert.equal(data.getItem('answer'), 42);
+        assert.equal(binding.bindingFor(node), null);
+        assert.equal(binding.nodeIds.has('initializer'), false);
+        assert.equal([...renderer.references.entries.values()].some(entry => entry.node === node), false);
+    }});
+    const size = binding.size;
+    const setter = sourceTarget(app.src.builder.root.dataSetter({
+        destination_path: 'answer', value: 42, nodeId: 'initializer', __ref: 'setter-reference',
+    }));
+    assert.equal(consumed, 1);
+    assert.equal(setter.parentBag, null);
+    assert.equal(binding.size, size);
+    assert.equal(semanticDeletions.length, 0);
+    assert.equal(structuralDeletions.length, 0);
+    assert.equal(renderer.references.entries.has('setter-reference'), false);
+    // The released identity can be used by a persistent visual node.
+    const visual = sourceTarget(app.src.builder.root.div('kept', {nodeId: 'initializer'}));
+    assert.equal(binding.nodeIds.get('initializer'), visual);
+    app.dispose();
+});
+
+for (const language of ['Python', 'JavaScript']) {
+    test(`${language} TYTX: initial page and a frozen remote replacement consume nested setters`, async () => {
+        const initial = language === 'Python'
+            ? pythonWire('box = root.div(datapath="customer", nodeId="slot", id="slot")\nbox.span("^.name", id="name")\nbox.dataSetter(".name", "Ada")')
+            : wire(root => {
+                const box = root.div({datapath: 'customer', nodeId: 'slot', id: 'slot'});
+                box.span('^.name', {id: 'name'});
+                box.dataSetter({destination_path: '.name', value: 'Ada'});
+            });
+        const replacement = language === 'Python'
+            ? pythonWire('box = root.div(datapath=".details")\nbox.span("^.city", id="city")\nbox.dataSetter(".city", "Rome")')
+            : wire(root => {
+                const box = root.div({datapath: '.details'});
+                box.span('^.city', {id: 'city'});
+                box.dataSetter({destination_path: '.city', value: 'Rome'});
+            });
+        const {app, data, byId} = page({main: () => initial, source: () => replacement});
+        const consumed = [];
+        app.src.source.subscribe('setters', {any: event => {
+            if (event.evt === 'del' && event.node.nodeTag === 'dataSetter') consumed.push(event.node);
+        }});
+        await app.start();
+        assert.equal(byId('name').textContent, 'Ada');
+        assert.equal(consumed.length, 1);
+        const target = app.src.binding.nodeIds.get('slot');
+        app.src.renderer.freeze(target);
+        assert.equal(await app.src.remoteSource(target, 'details'), true);
+        assert.equal(data.getItem('customer.details.city'), 'Rome');
+        assert.equal(consumed.length, 2);
+        assert.equal(byId('city'), null);
+        app.src.renderer.unfreeze(target);
+        assert.equal(byId('city').textContent, 'Rome');
+        for (const setter of consumed) {
+            assert.equal(setter.parentBag, null);
+            assert.equal(app.src.binding.bindingFor(setter), null);
+        }
+        app.dispose();
+    });
+}
+
+test('each setter leaves Source before the next setter writes, in document order', () => {
+    const {app, data} = page();
+    const setters = [];
+    const candidate = authored(root => {
+        setters.push(sourceTarget(root.dataSetter({destination_path: 'first', value: 1})));
+        setters.push(sourceTarget(root.div().dataSetter({destination_path: 'second', value: 2})));
+    });
+    let observed = 0;
+    data.subscribe('order', {any: () => {
+        if (data.getItem('second') !== 2) return;
+        observed++;
+        assert.equal(setters[0].parentBag, null);
+        assert.equal(app.src.binding.bindingFor(setters[0]), null);
+    }});
+    app.src.startSource(candidate);
+    assert.equal(observed, 1);
+    for (const setter of setters) assert.equal(setter.parentBag, null);
+    app.dispose();
+});
+
+test('a batch deletion ignores setters but still closes and removes visual siblings', () => {
+    const {app, byId} = page();
+    const box = app.src.builder.root.div();
+    const visual = sourceTarget(box.span('visible', {id: 'sibling'}));
+    const visualBinding = app.src.binding.bindingFor(visual);
+    // A failed write leaves the declaration in Source with no open binding.
+    assert.throws(() => box.dataSetter({destination_path: '#missing.x', value: 1}), /cannot resolve/);
+    const events = [];
+    const handle = app.src.binding.handleSourceEvent.bind(app.src.binding);
+    app.src.binding.handleSourceEvent = event => {
+        if (event.evt === 'del') events.push(event.node.map(node => node.nodeTag));
+        return handle(event);
+    };
+    sourceTarget(box).value.clear();
+    assert.deepEqual(events, [['span']]);
+    assert.equal(visualBinding.closed, true);
+    assert.equal(byId('sibling'), null);
+    app.dispose();
+});
+
 test('A2: an earlier element sees a deep dataSetter declared after it, at the first render', () => {
     const {app, byId} = page();
     app.src.startSource(authored(root => {
@@ -171,7 +290,7 @@ test('R17: a null attribute counts as omitted, the same from Python and from Jav
     }
 });
 
-test('P25: a Bag payload moves into Data with its backref; the value attribute leaves the Source node silently', () => {
+test('a consumed setter transfers its Bag payload and backref to Data', () => {
     const {app, data, byId} = page();
     const payload = new Bag();
     payload.setItem('nome', 'Ada');
@@ -179,26 +298,29 @@ test('P25: a Bag payload moves into Data with its backref; the value attribute l
         root.span('^cliente.nome', {id: 's'});
         root.dataSetter({destination_path: 'cliente', value: payload, tipo: 'persona'});
     });
+    const setter = source.getNodes()[1];
     const events = [];
     app.src.source.subscribe('spy', {any: event => events.push(event.evt)});
     app.src.startSource(source);
-    const setter = app.src.source.getItem('main').getNodes()[1];
+    assert.equal(setter.parentBag, null);
+    assert.equal(app.src.binding.bindingFor(setter), null);
     assert.strictEqual(data.getItem('cliente'), payload);
     assert.strictEqual(payload.parentNode, data.getNode('cliente'));
     assert.deepEqual(attributes(data, 'cliente'), {tipo: 'persona'});
     assert.equal(Object.hasOwn(setter.getAttr(), 'value'), false);
     assert.equal(setter.getAttr('tipo'), 'persona');
-    assert.deepEqual(events, ['ins']);
+    assert.deepEqual(events, ['del', 'ins']);
     assert.equal(byId('s').textContent, 'Ada');
     data.setItem('cliente.nome', 'Bea');
     assert.equal(byId('s').textContent, 'Bea');
     app.dispose();
 });
 
-test('P25: a scalar value stays on the Source node', () => {
-    const {app} = page();
+test('a scalar setter is consumed while its Data remains', () => {
+    const {app, data} = page();
     app.src.startSource(authored(root => root.dataSetter({destination_path: 'n', value: 3})));
-    assert.equal(app.src.source.getItem('main').getNodes()[0].getAttr('value'), 3);
+    assert.equal(app.src.source.getItem('main').getNodes().length, 0);
+    assert.equal(data.getItem('n'), 3);
     app.dispose();
 });
 
@@ -245,12 +367,12 @@ test('the _path rule: a destination_path written as a pointer loses its symbol, 
     console.warn = (...args) => warnings.push(args.join(' '));
     try {
         app.src.startSource(authored(root => {
-            root.dataSetter({destination_path: '^x', value: 1});
+            const first = sourceTarget(root.dataSetter({destination_path: '^x', value: 1}));
+            first.pathAttribute('destination_path'); // repeated reads warn only once
+            first.pathAttribute('destination_path');
             root.dataSetter({destination_path: '=y', value: 2});
             root.dataSetter({destination_path: 'z', value: 3});
         }));
-        const [first] = app.src.source.getItem('main').getNodes();
-        app.src.binding.installer.applySetter(first); // a second read of the same declaration
         app.src.builder.root.dataSetter({destination_path: '^w', value: 4});
     } finally {
         console.warn = warn;
@@ -270,10 +392,11 @@ test('Q7: a dataSetter on a null path is skipped', () => {
         box.dataSetter({destination_path: '.x', value: 1});
     }));
     assert.equal(data.getNodes().length, 0);
+    assert.equal(app.src.source.getItem('main').getNodes()[0].value.getNodes().length, 0);
     app.dispose();
 });
 
-test('an inserted branch installs its setters before its DOM, and the NodeBinding is stamped installed', () => {
+test('an inserted branch consumes its setters before its DOM and releases their bindings', () => {
     const {app, data, byId} = page();
     const box = sourceTarget(app.src.builder.root.div({id: 'box'}));
     const branch = new GramlotBuilderBag(null, app.src.builder);
@@ -281,10 +404,12 @@ test('an inserted branch installs its setters before its DOM, and the NodeBindin
     const setter = sourceTarget(app.src.builder.wrapSource(branch).dataSetter({destination_path: 'late', value: 'ok'}));
     box.setValue(branch);
     assert.equal(byId('late').textContent, 'ok');
-    assert.equal(app.src.binding.bindingFor(setter).hasStamp('installed'), true);
+    assert.equal(app.src.binding.bindingFor(setter), null);
+    assert.equal(setter.parentBag, null);
     const direct = sourceTarget(app.src.builder.root.dataSetter({destination_path: 'direct', value: 1}));
     assert.equal(data.getItem('direct'), 1);
-    assert.equal(app.src.binding.bindingFor(direct).hasStamp('installed'), true);
+    assert.equal(app.src.binding.bindingFor(direct), null);
+    assert.equal(direct.parentBag, null);
     app.dispose();
 });
 
@@ -302,15 +427,16 @@ test('P3: a branch inserted under freeze installs at once; its DOM waits for tha
     app.dispose();
 });
 
-test('no reinstallation at rebuild or thaw, nor on a Source change of the dataSetter', () => {
+test('consumed setters cannot reinstall Data at rebuild, thaw or a change of the detached declaration', () => {
     const {app, data, byId} = page();
+    let setter;
     app.src.startSource(authored(root => {
         const box = root.section({id: 'box'});
         box.span('^x', {id: 'x'});
-        box.dataSetter({destination_path: 'x', value: 1});
+        setter = sourceTarget(box.dataSetter({destination_path: 'x', value: 1}));
     }));
     const box = app.src.source.getItem('main').getNodes()[0];
-    const setter = box.value.getNodes()[1];
+    assert.equal(box.value.getNodes().length, 1);
     data.setItem('x', 5);
     app.src.renderer.freeze(box);
     app.src.renderer.unfreeze(box); // thaw rebuilds the section
@@ -336,6 +462,7 @@ test('remoteSource installs the dataSetters of the replacement before its first 
     assert.equal(data.getItem('remote.nome'), 'Ada');
     assert.deepEqual(attributes(data, 'remote.nome'), {caption: 'Nome'});
     assert.equal(byId('nome').textContent, 'Ada');
+    assert.deepEqual(target.value.getNodes().map(node => node.nodeTag), ['span']);
     app.dispose();
 });
 

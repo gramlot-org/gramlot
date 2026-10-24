@@ -243,7 +243,9 @@ export class BindingRuntime {
         try {
             for (const node of nodes) this.openBinding(node);
             this.installer.install(branch);
-            for (const node of nodes) this.bindingFor(node).registerPointers();
+            for (const node of nodes) {
+                if (this.renderer.attached(node)) this.bindingFor(node).registerPointers();
+            }
         } catch (error) {
             const errors = [error];
             for (const node of nodes.filter(node => !known.has(node)).reverse()) {
@@ -384,7 +386,7 @@ export class NodeBinding {
         return ++this.#clickCount;
     }
 
-    /** Whether the lifecycle step `name` ('installed', 'init', 'built', 'start') ran for the node. */
+    /** Whether the lifecycle step `name` ('init', 'built', 'start') ran for the node. */
     hasStamp(name) {
         return this.#stamps.has(name);
     }

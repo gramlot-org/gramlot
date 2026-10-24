@@ -480,7 +480,7 @@ two Gramlot classes:
   `NodeBinding`, stored in a `Map` of `BindingRuntime` keyed by the Source node. It can
   move onto the node later, as in legacy, with no effect for authors.
 - Semantic lifetime is `NodeBinding`: registrations, providers, timers, click counter,
-  stamps (`installed`, `init`, `built`, `start`) and the `remoteSource` request.
+  stamps (`init`, `built`, `start`) and the `remoteSource` request.
 - DOM lifetime stays the renderer record (`record.cleanup`, `gramlot-renderer.js:84`):
   element, listeners, `ControlAdapter`, `ButtonBinding`, `NativeEventBinding`.
   A rebuild of the same node closes only the DOM lifetime.
@@ -690,3 +690,8 @@ provides them:
 
 If a Builder or Bag hook proves insufficient, the solution goes into the Gramlot classes
 and is decided with the owner.
+
+DataSetter consumption (owner, 2026-10-24): DataInstaller writes Data, closes the
+setter binding and removes the setter immediately. Renderer intake ignores the
+setter deletion; remaining nodes alone register pointers. No installed stamp,
+lasting setter binding or nodeId registration remains. See GC-210 §035.

@@ -148,9 +148,12 @@ function WindowShell(HTMLElement) {
         #paint(rect) { for(const key of ['left','top','width','height'])this.shell.style[key]=`${rect[key]}px`; }
         #raise() {
             if(this.modal||!this.#open)return;
+            // Reserve the page's low stacking levels for layout chrome (splitters/drawers).
+            // Modal dialogs and menu popovers remain above these nonmodal windows in the top layer.
+            const base=100;
             const peers=[...this.getRootNode().querySelectorAll('gramlot-floating-pane')].filter(n=>n.opened&&n!==this);
-            peers.sort((a,b)=>Number(a.shell.style.zIndex)-Number(b.shell.style.zIndex)).forEach((n,i)=>n.shell.style.zIndex=String(i+1));
-            this.shell.style.zIndex=String(peers.length+1);
+            peers.sort((a,b)=>Number(a.shell.style.zIndex)-Number(b.shell.style.zIndex)).forEach((n,i)=>n.shell.style.zIndex=String(base+i));
+            this.shell.style.zIndex=String(base+peers.length);
         }
         // #geometry always holds the normal expanded rectangle, never viewport size.
         #renderGeometry() {

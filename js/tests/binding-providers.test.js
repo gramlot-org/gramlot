@@ -249,8 +249,7 @@ test('P4: an _init that inserts a branch; the insertion is processed after the c
     assert.deepEqual(seen, [null]);
     assert.ok(byId('box'));
     assert.equal(byId('g').textContent, 'once');
-    const setter = app.src.source.getNodes().at(-1).value.getNodes()[0];
-    assert.equal(app.src.binding.bindingFor(setter).hasStamp('installed'), true);
+    assert.deepEqual(app.src.source.getNodes().at(-1).value.getNodes().map(node => node.nodeTag), ['span']);
     data.setItem('g', 'changed');
     assert.equal(byId('g').textContent, 'changed');
     app.dispose();
@@ -356,7 +355,8 @@ test('an _init error propagates; the NodeBindings of the branch stay open (P12, 
     const failing = sourceTarget(app.src.builder.wrapSource(branch).dataController({func: 'fail', _init: true}));
     assert.throws(() => box.setValue(branch), /init failure/);
     assert.equal(data.getItem('x'), 1);
-    assert.ok(app.src.binding.bindingFor(setter));
+    assert.equal(app.src.binding.bindingFor(setter), null);
+    assert.equal(setter.parentBag, null);
     assert.ok(app.src.binding.bindingFor(failing));
     app.dispose();
 });

@@ -157,3 +157,25 @@ test('maximize while collapsed and geometry bindings updated while maximized pre
  f.window.dispatchEvent(new f.window.Event('resize'));assert.equal(w.shell.style.width,'300px');
  w.maximizeButton.click();await settle();assert.equal(w.shell.style.width,'284px');assert.equal(w.shell.style.left,'8px');
 });
+
+
+test('floating windows stay above layout chrome when opened and raised', async t=>{
+ const f=await fixture(t,root=>{
+  const border=root.borderContainer({id:'layout',height:'400px'});
+  border.contentPane({region:'left',width:'180px',splitter:true,drawer:true}).div('Navigation');
+  border.contentPane({region:'center'}).div('Page');
+  root.floatingPane({id:'first',open:true}).frame.center.input({id:'retained',value:'^draft'});
+  root.floatingPane({id:'second',open:true}).frame.center.div('Second');
+ });
+ const first=f.element('first'),second=f.element('second');
+ const chrome=[...f.element('layout').shadowRoot.querySelectorAll('.separator,.drawer,.drag-cover')];
+ const chromeLevel=Math.max(...chrome.map(el=>Number(f.window.getComputedStyle(el).zIndex)||0));
+ assert.ok(Number(first.shell.style.zIndex)>chromeLevel);
+ assert.ok(Number(second.shell.style.zIndex)>Number(first.shell.style.zIndex));
+ const input=f.element('retained');f.app.data.setItem('draft','Still here');
+ first.shell.dispatchEvent(new f.window.Event('pointerdown',{bubbles:true}));
+ assert.ok(Number(first.shell.style.zIndex)>Number(second.shell.style.zIndex));
+ assert.ok(Number(second.shell.style.zIndex)>chromeLevel);
+ assert.equal(f.element('retained'),input);assert.equal(input.value,'Still here');
+ assert.equal(first.shell.dataset.modal,undefined);
+});

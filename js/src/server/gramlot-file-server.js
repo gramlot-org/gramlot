@@ -4,11 +4,15 @@
  *
  * @module
  */
-import {realpath, stat} from 'node:fs/promises';
+import {Bag} from '@genrojs/bag';
+import {SourceBag} from '@genrojs/builders';
+import {fromTytx} from '@genrojs/tytx';
+import {readFile, readdir, realpath, stat} from 'node:fs/promises';
 import {basename, dirname, extname, join, relative, resolve, sep} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {gramlotDev} from './assets.js';
 import {fileBelow, inside, realFile} from './files.js';
+import {Page} from './page.js';
 import {GramlotServer, PageNotFound} from './gramlot-server.js';
 import {InvalidResourceName, SEGMENT, parseRequires} from './resources.js';
 
@@ -78,6 +82,46 @@ export class GramlotFileServer extends GramlotServer {
 
     async resolvePage(path) {
         return (await import(await this._moduleUrl(await this.locatePage(path)))).Page;
+    }
+
+    /** Import route-eligible page modules at startup, without calling their methods. */
+    async *iterPageClasses() {
+        const seenFiles = new Set(), seenClasses = new Set();
+        const visit = async function* (directory, prefix = '') {
+            const entries = await readdir(directory, {withFileTypes: true});
+            for (const entry of entries.sort((a,b)=>a.name.localeCompare(b.name))) {
+                if (entry.isSymbolicLink() || entry.name.startsWith('.') || entry.name.startsWith('_')) continue;
+                const logical = prefix + entry.name;
+                if (entry.isDirectory()) yield* visit(join(directory,entry.name), logical + '/');
+                else if (entry.isFile() && entry.name.endsWith('.js') && !entry.name.endsWith('_aux.js')) yield logical.slice(0,-3);
+            }
+        };
+        for await (const logical of visit(this.pagesDir)) {
+            let file;
+            try { file = await this.locatePage(logical); }
+            catch (error) { if (error instanceof PageNotFound) continue; throw error; }
+            file = await realpath(file);
+            if (seenFiles.has(file)) continue;
+            seenFiles.add(file);
+            const module = await import(await this._moduleUrl(file));
+            if (!Object.hasOwn(module,'Page') || module.Page === Page) continue;
+            const cls = module.Page;
+            if (typeof cls !== 'function' || !(cls.prototype instanceof Page)) throw new TypeError(`Invalid Page export: ${file}`);
+            if (!seenClasses.has(cls)) { seenClasses.add(cls); yield cls; }
+        }
+    }
+
+    /** Read foo_data.tytx beside foo.js. Data files are not public companion URLs. */
+    async resolveData(path) {
+        const pageFile = await this.locatePage(path);
+        const filename = join(dirname(pageFile), `${basename(pageFile, extname(pageFile))}_data.tytx`);
+        let real;
+        try { real = await realpath(filename); }
+        catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+        if (!inside(real, await realpath(this.pagesDir))) throw new Error('Data companion leaves the pages folder');
+        const data = fromTytx(await readFile(real, 'utf8'));
+        if (!(data instanceof Bag) || data instanceof SourceBag) throw new TypeError('Initial page data must be a Data Bag');
+        return data;
     }
 
     /** Page.css URLs as written, then the companion foo.css and the page logic. */

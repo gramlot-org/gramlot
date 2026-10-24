@@ -73,7 +73,7 @@ export class Gramlot {
     async loadMain() {
         let wire;
         try {
-            wire = await this.rpc.call('source', 'main');
+            wire = await this.rpc.callEnvelope('source', 'main');
         } catch (error) {
             // The dispose aborts the call at once (RpcHandler.call): the start rejects naming the dispose.
             if (this.state === 'disposed') throw new Error('Gramlot was disposed during main', {cause: error});
@@ -82,7 +82,7 @@ export class Gramlot {
         }
         if (this.state === 'disposed') throw new Error('Gramlot was disposed during main');
         try {
-            return this.src.mountMainSource(wire);
+            return this.src.mountMainSource(wire.value, wire.data);
         } catch (error) {
             if (this.state !== 'disposed') this.state = 'failed';
             throw error;

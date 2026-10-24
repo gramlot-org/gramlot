@@ -106,7 +106,7 @@ CSS. A page that still lists Base in `Page.css` loads it once. There is no
 `root.css()` API. `css_requires` names resources in a resource host; it is not a
 replacement for stylesheet URLs in the current file servers.
 
-The core ships one complete theme, Base. Compact, mimi and joanna are overlays:
+The core ships one complete theme, Base. Compact, mimi, joanna and Mela are overlays:
 load them with `Page.css`, after Base.
 
 <a id="gc-096-010"></a>
@@ -1222,3 +1222,34 @@ pages use their declared CSS and system/explicit color mode; gallery preferences
 apply inside the gallery, not as an application-wide preferences service. The
 existing `data-theme="light"` / `data-theme="dark"` convention remains unchanged.
 The color combinations are provisional visual choices to try with real content.
+
+
+<a id="gc-096-080"></a>
+
+## Mela: desktop and touch
+
+Mela is an Apple-inspired web appearance, with system typography, neutral surfaces,
+blue actions and rounded controls. It does not use Apple artwork or turn web
+controls into native macOS/iOS controls. The design reference is Apple's
+[button guidance](https://developer.apple.com/design/human-interface-guidelines/buttons).
+
+Load Base, Compact, then `/themes/mela/theme.css`. In the gallery select
+**Theme → Mela**, **Colors → Theme default**, and Light or Dark. A palette can
+still override colors while retaining Mela's dimensions.
+
+Desktop uses 13px type and a 28px field minimum; at viewport widths up to 640px
+or with a coarse pointer, type is 16px and fields/command targets use 44px.
+The existing touch-mode support remains available. Light/dark honor the standard
+`data-theme` choice and the system preference when no explicit choice exists.
+
+```python
+class Page(GramlotPage):
+    css = ("/themes/gramlot-compact/theme.css", "/themes/mela/theme.css")
+```
+
+The host serves packaged theme assets. Theme CSS changes appearance; application
+Source still owns toolbar placement and window composition. Dialogs remain modal;
+floating windows remain nonmodal. The gallery lesson **Containers → Mela: desktop
+and touch** compares a hierarchical menu, toolbar, fields and both window types
+using shared draft Data. Narrow windows scroll their content rather than clipping
+the form permanently. Initial visual acceptance remains pending.

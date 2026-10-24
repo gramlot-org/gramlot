@@ -424,7 +424,7 @@ getDomNode uses records, null for fragment/nonvisual/unbuilt/removed. No object 
 Block ID: **GC-210-035**.
 
 Ordered branch sequence: validate without effects → all setters in document order
-(parent first) → defaults → bindings/pointers/providers → init once → DOM → built
+(parent first, consuming each immediately after its write) → defaults → bindings/pointers/providers → init once → DOM → built
 once after complete success → start after page ready (later branch after built).
 Freeze runs first five now, remaining at first build; P22 start delay separate.
 Existing observers see setter writes synchronously; new providers wait. Errors close
@@ -437,7 +437,8 @@ Exclude destination_path/value, _meta/META_ATTRS and binding fields from Data at
 R1 non-null or absent null: data.setItem(path,value,attrs,'>',false,true,node).
 Existing null: data.getNode(path).setAttr(attrs,true), retain value. Transfer Bag
 identity/backref, silently remove Source value with node.setAttr({value:null},false),
-no Source event, then installed stamp. Defaults for ^/= only null/missing; retain
+no attribute event. Then close its binding and pop it from Source; renderer intake
+ignores that deletion. No installed stamp. Defaults for ^/= only null/missing; retain
 false/0/empty string, default_value wins, attr_* reads before own default. No warnings
 for duplicate setters.
 

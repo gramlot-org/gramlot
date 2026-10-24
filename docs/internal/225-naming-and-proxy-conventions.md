@@ -1299,3 +1299,20 @@ Overflow indicator revision (2026-10-23). Owner prefers “>> o un icona simile 
 
 
 Tree disclosure refinement (2026-10-23). Owner requests an unfilled chevron and tighter spacing before the label. Reuse the existing expander/spacer/icon/caption parts and aria-expanded state; internal chevron/chevronPath locals follow component SVG naming. The SVG rotates on expanded branches without a parallel state attribute. No public API or icon-selection change.
+
+
+Automatic Data companion — 2026-10-24. Owner confirms the additive foo_data.tytx convention. Reuse data for the optional initial-main response field alongside the unchanged value (Source). resolveData / resolve_data follows the server's existing resolveResources / resolve_resources hook convention; null means no companion. RpcHandler.callEnvelope names the existing envelope operation, shared with value-only call. mountMainSource's initialData argument names startup Data and does not replace the Builder-owned root. Gallery route data names the companion file; staged wrappers retain its _data.tytx suffix. Worker initialData holds serialized TYTX, decoded freshly for each main. These implementation names add no author-facing loader or dataSetter alias.
+
+
+Mela appearance — owner-confirmed name, 2026-10-24: “tema Mela per desktop e mobile, chiaro e scuro”. Display name Mela maps to lowercase appearance key `mela` and `themes/mela/theme.css`, following mimi/joanna. Reuse existing semantic tokens; no new component parameter, theme protocol field or DOM marker.
+
+
+Page-loading performance — 2026-10-24. Reuse Page.gramlots and existing collection identities. Internal Python _collection_documents, _prepared_grammars and _load_collections follow underscore-prefixed server state/method conventions; cached schemas are copied into request-local builders. Resource _content names process-fixed verified bytes. No new author-facing API.
+
+
+JavaScript loading performance — 2026-10-24. Page.gramlots retains the Python declaration name; pageCollections, iterPageClasses and loadCollections are the camelCase server counterparts of the Python hooks. preparedGrammars names the server-local compilation cache. Gallery-generated descriptor.js contains the existing prepared metadata shape without importing widget implementations. These files sit outside the verified artifact inventory; runtime artifact bytes remain unchanged.
+
+`clonePreparedSchema` copies resolved grammar metadata for the server cache, retaining compiled validators and cloning cardinality Maps and parent Sets.
+
+
+Gallery toolbar placement — 2026-10-24. Owner: “consideriamo anche il rapporto larghezza altezza e fammi provare la toolbar sotto o di lato nella gallery.” Reuse the gallery Data preference convention: toolbarPosition (auto/left/bottom), control gallery-toolbar-position and subscription gallery-toolbar-position. The existing Source attribute spelling data_toolbar_position emits data-toolbar-position on gallery-frame for placement styling. This is a gallery trial, not a core device-classification API. Automatic placement uses the existing narrow-layout threshold plus portrait/square proportions; explicit choices override placement alone.

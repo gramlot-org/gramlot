@@ -335,14 +335,14 @@ test('§8.1 story through the real Page/GramlotServer/TYTX/PageBootstrap path: P
         const dom = index < 6 ? step.dom : step.dom.filter(item => !item.startsWith('childList:'));
         assert.deepEqual(dom, expected.dom, `${step.name}: DOM mutations`);
     });
-    // Counters: steady through the Data steps; the remote branch adds its NodeBindings (div, h3, p and two
-    // setters), records and registrations; the removed note takes its own away; the close leaves nothing.
+    // Counters: steady through the Data steps; the remote branch adds persistent bindings
+    // (div, h3, p), records and registrations; its setters are consumed; the removed note takes its own away; the close leaves nothing.
     const at = name => steps.find(step => step.name === name).counters;
     for (const name of ['2 editing', '3 formula and controller', '4 radio', '5 button']) {
         assert.deepEqual(at(name), at('1 first render'), name);
     }
     assert.deepEqual([at('1 first render').bindings, at('6 remoteSource').bindings, at('7 freeze and thaw').bindings],
-        [52, 56, 55]);
+        [47, 49, 48]);
     assert.deepEqual([at('1 first render').registrations, at('6 remoteSource').registrations], [18, 20]);
     for (const step of records.js) t.diagnostic(`${step.name}: ${JSON.stringify(step)}`);
 });
