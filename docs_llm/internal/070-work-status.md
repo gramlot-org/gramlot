@@ -12656,3 +12656,102 @@ Block ID: **GC-070-1970**.
 Owner corrected the coordinated release target to 0.3.15 for core and both integration repositories; examples remain 0.3.12. Owner requests publication as soon as possible to update gramlot.dev. Isolated release candidates preserve local work. The newly developed prepared-Python serverless feature is excluded from this release.
 
 Kajenn HEAD Content-Length debt is accepted by the owner (“Documenta il debito e procedi”) and tracked in https://github.com/kajenn-org/kajenn/issues/77. The official gallery reconciliation run 40114497421 succeeded but found generation 20261022T101051Z unchanged; newer gallery content awaits this publication.
+
+<a id="gc-070-1975"></a>
+## 1975 · Hosted gallery reconciliation (2026-10-24)
+
+Block ID: **GC-070-1975**.
+
+Owner requested an interim update of the galleries on gramlot.dev. The official
+main-branch Update hosted galleries workflow completed successfully:
+https://github.com/gramlot-org/gramlot/actions/runs/40114497421.
+It reported “Published releases unchanged: 20261022T101051Z”; no generation was
+replaced. Both gallery-py.gramlot.dev and gallery-js.gramlot.dev returned HTTP 200.
+The latest published core remains 0.3.10 and examples 0.3.11. Local gallery
+changes still require the already requested coordinated release; no new package
+publication or prepared-Python feature deployment is claimed by this check.
+
+
+<a id="gc-070-1980"></a>
+## 1980 · Coordinated 0.3.15 publication in progress (2026-10-24)
+
+Block ID: **GC-070-1980**.
+
+Owner asks to make the public galleries available as soon as possible. The isolated release candidates are now persistent under worktrees/release-20261024. Core 0.3.15 was consolidated through PR 66 and published successfully to npm and PyPI (workflow 40115220271). Examples 0.3.12 were consolidated through PR 29; publication workflow 40117438391 is running. JavaScript PR 25 and Python PR 21 target 0.3.15; prepared Python serverless artifacts remain excluded.
+
+Local qualification: 132 Python adapter tests pass, including immutable collection GET/HEAD behavior across all five frameworks. Examples pass 256 JavaScript tests (five browser-only skips), 58 Python tests (one skip) and 150 subtests. Both hosted languages pass behavioral checks of all 91 catalogue pages in Chromium. Every Python adapter passes the gallery browser harness. JavaScript passes 41 server tests, 49 serverless tests, three project-template tests and 40 Bun checks. Offline Chromium opens all 92 exported lesson pages without HTTP requests; quick-start exports and Worker/window sentinel CSP checks pass. Paired integration documentation builds and the 91 executable documentation lessons pass.
+
+Release checks exposed stale browser harness assumptions: new b12/l09 pages lacked dedicated checks; the carousel title moved; settings now open in a floating panel. Those checks now follow the actual UI. The Worker sentinel owns its fixture instead of depending on tests omitted from the packaged core. Python mounted collection URLs apply the prefix once.
+
+The automatic intermediate deploy after core publication failed before promotion because the release set was incomplete. Existing public gallery HTTP responses remain 200; no newer gallery is claimed live. Python remote checks must be rerun after examples 0.3.12 reaches PyPI. Kajenn HEAD debt remains explicitly accepted (issue 77).
+
+
+<a id="gc-070-1985"></a>
+## 1985 · Coordinated release and public galleries completed (2026-10-24)
+
+Block ID: **GC-070-1985**.
+
+Published and verified on their public registries: Gramlot Python/npm 0.3.15, gramlot-py-server 0.3.15, JavaScript server/serverless/create 0.3.15, and examples Python/npm 0.3.12. All four release workflows succeeded: core 40115220271, examples 40117438391, JavaScript 40117855985, Python 40118994226. Consolidated through core PR 66, examples PR 29, JavaScript PR 25 and Python PR 21.
+
+Final deployment workflow https://github.com/gramlot-org/gramlot-py-server/actions/runs/40119389706 succeeded and promoted generation 20261024T181003Z. Both public hosts return HTTP 200 and that generation's asset ETag. The rebuilt serverless ZIP is available from /downloads/gramlot-gallery-serverless.zip on both hosts; SHA256 d545e16d634eec78b87272293c749cfe3000ed06d8792ead89de9584d2244516. Promotion checked 25 component pages, bindings and validation on both candidate servers, offline files and both public HTTPS hosts, and checked download hashes. Additional Chromium/WebKit public checks pass toolbar geometry, navigation/settings, theme propagation and retained lessons across desktop/mobile viewport changes.
+
+Public destinations: https://gallery-py.gramlot.dev/ and https://gallery-js.gramlot.dev/. Original working checkouts remain intact. Prepared Python serverless artifacts remain separate, unpublished work. The intermediate failed deployments never replaced the preceding live generation. Known Kajenn HEAD Content-Length debt remains accepted and documented under kajenn-org/kajenn#77.
+
+<a id="gc-070-1990"></a>
+## 1990 · Gallery topics and IDE sample workspace (2026-10-24)
+
+Block ID: **GC-070-1990**.
+
+Owner requests clearer task-based navigation and titles, separate editor/tool groups,
+and an IDE over sample documents with draft editing but no persistence unless Remote
+Edit is enabled. Implemented on isolated development checkouts based on the published
+0.3.15/0.3.12 state. Existing local work and prepared-Python export work are preserved.
+
+Seven shared topic families replace the mixed taxonomy; all 91 example keys are
+preserved. The Python gallery adds Tools and IDE using the existing endpoint/Source
+contracts, verified Page.gramlots and a temporary bounded sample directory. Native
+compiler execution is excluded. Core IDE separates draft editing from writable
+permission; host RPC enforces roots and Remote Edit independently.
+
+Verified: examples JavaScript 260 passed; Python 58 passed, one skipped and 150
+subtests; all five Python adapters 138 passed; 12 additional staging and live HTTP
+IDE regressions pass across all five hosts, with Remote Edit both disabled and
+enabled. Core IDE lifecycle/draft tests: 13 passed. Browser trial confirms actual typing,
+Save disabled, Undo/Revert active and restoration without persistence. Documentation: 91 executable playgrounds rebuilt; Sphinx and all local links,
+anchors and paired guides verified; Python host full/concise documentation builds
+pass. Final staging/IDE regression rerun: 23 passed. Review complete; the preview
+on port 8099 is ready for owner trial. This revision is not published; public galleries still run the completed release.
+
+
+<a id="gc-070-1995"></a>
+## 1995 · Bounded navigation in narrow layouts (2026-10-24)
+
+Block ID: **GC-070-1995**.
+
+Owner requests a reasonable navigation width when there is space, independently
+of horizontal/vertical toolbar placement. The gallery uses a 260 px navigation
+column when at least 360 px remain for content after a lateral rail; smaller
+windows retain single-panel navigation. Same-breakpoint resize and orientation
+changes update the panel width and example visibility without rebuilding either.
+Focused gallery regressions cover phone, landscape and portrait tablet layouts,
+explicit toolbar placement and disposal. Browser trial confirms the small-phone
+full-width behavior. Bundle rebuilt; available in the existing port 8099 preview.
+No publication or framework layout changes.
+
+<a id="gc-070-2000"></a>
+## 2000 · Publish the organized gallery and bounded IDE (2026-10-24)
+
+Block ID: **GC-070-2000**.
+
+Owner authorization: “Bene, pubblica sul sito la gallery aggiornata, con la nuova
+organizzazione, la IDE e questa correzione della navigazione. Lascia Remote Edit
+disabilitato sul pubblico.” Coordinated patch releases keep core and integrations
+at 0.3.16 and examples at 0.3.13, followed by the existing verified package-based
+hosted-gallery updater. The production command must omit --remote-edit; verify
+server-side rejection of writes to the sample workspace after promotion. This
+scope excludes prepared-Python exports and unrestricted filesystem access.
+
+Previous local qualification covers all examples, all five Python hosts, IDE
+read/write permission variants and responsive navigation. Release CI and registry
+publication remain mandatory; report actual deployment and public verification
+receipts after completion.

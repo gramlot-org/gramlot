@@ -117,10 +117,10 @@ print(b.to_tytx())
     app.rpc.call=async(type,method,args)=>{
         calls.push({method,args});
         if(method==='document_create') return {root:args.root,path:args.path,revision:'new'};
-        if(method==='workspace_open') return {root:args.root,entries:entries()};
+        if(method==='workspace_open') return {root:args.root,entries:entries(),writable:true};
         if(method==='document_read' && args.path.endsWith('.md')) return {path:args.path,content:'<div><strong>HTML</strong></div>',revision:'md1',writable:true,language:'markdown'};
         return method==='document_read'
-            ?{path:args.path,content:'value = 1\n',revision:'r1',writable:true,language:'python'}:{revision:'r2'};
+            ?{path:args.path,content:'value = 1\n',revision:'r1',writable:args.path !== 'draft.py',language:'python'}:{revision:'r2'};
     };
     app.src.startSource(source);await new Promise(resolve=>setTimeout(resolve,20));
     t.after(()=>{app.dispose();window.close();});
@@ -152,6 +152,21 @@ print(b.to_tytx())
     assert.equal(editor.editor.view.state.doc.toString(),'value = 1\n');
     assert.equal(button('undo').disabled,true);assert.equal(button('redo').disabled,true);
     editor.editor.view.dispatch({changes:{from:8,to:9,insert:'2'}});
+    await app.logic.ideOpenDocument('/workspace','draft.py');
+    const draftKey=documentKey('/workspace','draft.py');
+    const draft=app.logic.ideDocuments.documents.getItem(draftKey);
+    assert.equal(draft.getItem('readonly'),false,'draft editing is allowed without host writes');
+    draft.setItem('content','value = 42\n');
+    assert.equal(draft.getItem('saveDisabled'),true);
+    assert.equal(draft.getItem('revertDisabled'),false);
+    const saves=calls.filter(call=>call.method==='document_save').length;
+    assert.equal(await app.logic.ideDocuments.save(draftKey),false);
+    assert.equal(calls.filter(call=>call.method==='document_save').length,saves);
+    app.logic.ideDocuments.revert(draftKey);
+    assert.equal(draft.getItem('content'),'value = 1\n');
+    await new Promise(resolve=>setTimeout(resolve,20));
+    window.document.querySelector('gramlot-tab-container').shadowRoot.querySelector('[aria-label="Close draft.py"]').click();
+    await new Promise(resolve=>setTimeout(resolve,0));
     await app.logic.ideOpenDocument('/workspace','b.py');
     const secondEditor=window.document.querySelectorAll('gramlot-code-mirror')[1];await secondEditor.ready;
     assert.equal(app.data.getItem('ide.active'),documentKey('/workspace','b.py'));
@@ -282,4 +297,17 @@ test('ordinary Python and read-only recipes are not executed',async()=>{
     docs.documents.getItem(recipe).setItem('writable',false);
     assert.equal(await docs.renderRecipe(python),false);
     assert.equal(await docs.renderRecipe(recipe),false);
+});
+
+
+test('a new draft without host write permission never calls document_create',async()=>{
+    let calls=0;
+    const docs=new IdeDocuments({rpc:{call:async()=>{calls++;}}},state());
+    const key=docs.newDocument('text','.txt','/workspace');
+    docs.documents.getItem(key).setItem('writable',false);
+    docs.documents.getItem(key).setItem('content','Draft only');
+    assert.equal(await docs.create(key),false);
+    assert.equal(calls,0);
+    assert.equal(docs.documents.getItem(key).getItem('content'),'Draft only');
+    docs.dispose();
 });

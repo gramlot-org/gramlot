@@ -81,6 +81,7 @@ export class FileSystemController {
             this.resolver = resolver;
             this.state.setItem('selectedPath', null);
             this.state.setItem('store', store);
+            this.state.setItem('writable', result.writable);
             this.state.setItem('root', result.root);
             this.state.setItem('status', '');
             return result.root;

@@ -355,7 +355,7 @@ pages/
 `pages/index.py` is the entry point served at `/` (or at the application's mount).
 `00-index.py` is the page describing a navigation directory; it is not a replacement
 for the host's root `index.py`. Numbering sorts siblings and remains in the URL.
-Use lowercase names with underscores inside names, such as `01-html_elements`.
+Use lowercase names with underscores inside names, such as `08-html_svg`.
 Keep each nested directory in its public path.
 
 In the root Page above, replace `navigation` with:
