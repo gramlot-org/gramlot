@@ -3796,3 +3796,8 @@ Owner: “genericamente tendiamo a sfruttare tutte le funzionalita attuali e qui
 ### Bounded error notifications — owner, 2026-10-25
 
 Owner answered “ok” to: at most five distinct errors visible, a counter for further errors, and suppression of the same dismissed periodic error until the page is loaded again. This supersedes coalescing only while visible. Identity is the existing title/message pair; dismissed identities belong to the current BindingRuntime. Diagnostic text must remain literal, including text resembling pointers or inline expressions. Non-Error rejections, including null and undefined, must not cause a secondary unhandled exception. The correction scope includes transformPane completion errors through the same internal runtime notification channel.
+
+<a id="gc-000-tree-search"></a>
+### Explicit tree search — 2026-10-25
+
+Owner confirms `searchText` and requests a navigation search toolbar, including unloaded branches and expansion restoration on clear. Search explicitly reads resolver-backed children; ordinary rendering still does not fetch them. The literal, case-insensitive query is debounced, highlights sanitized caption text, keeps ancestors, and uses temporary expansion without changing the store, selection or normal expansion set. Late reads may populate the owning resolver cache but cannot reinstate a cleared filter.

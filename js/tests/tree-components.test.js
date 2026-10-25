@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
+import {readFile} from 'node:fs/promises';
 import {Bag, BagResolver} from '@genrojs/bag';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
 import tree, {Tree} from '../src/components/tree.js';
@@ -38,6 +39,7 @@ function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, l
     store.getNode('folder').setAttr({caption: 'Folder'});
     app.data.setItem('model.nodes', store);
     app.data.setItem('model.selection', null);
+    app.data.setItem('model.search', '');
     const b = new GramlotBuilder(null, {collections: [collection]});
     const pane = b.root.div({datapath: 'model', node_label: 'pane'});
     pane[tag]({id: 'tree', node_label: 'tree', storepath: '.nodes',
@@ -779,4 +781,91 @@ test('cached scalar resolver children remain lazy until requested', async t => {
     assert.equal(f.row('number').querySelector('.value').textContent, '42');
     f.row('number').querySelector('button').click(); f.row('number').querySelector('button').click();
     await tick(); assert.equal(reads, 1);
+});
+
+const searchWait = () => new Promise(resolve => setTimeout(resolve, 230));
+const shownPaths = f => [...f.host.shadowRoot.querySelectorAll('[role=treeitem]')]
+    .filter(row => !row.closest('[hidden]')).map(row => row.dataset.path);
+
+test('searchText matches literal captions, retains ancestors and restores expansion without selecting', async t => {
+    const f=fixture(t,{attrs:{searchText:'^.search',autoCollapse:true}}); await tick();
+    f.row('folder').querySelector('button').click();
+    f.store.setItem('folder.special',null,{caption:'Use (A+B) safely'}); await tick();
+    const original=shownPaths(f);
+    f.app.data.setItem('model.search','(a+b)'); await searchWait();
+    assert.deepEqual(shownPaths(f),['folder','folder.special']);
+    assert.equal(f.row('folder.special').querySelector('mark').textContent,'(A+B)');
+    assert.equal(f.app.data.getItem('model.selection'),null);
+    f.app.data.setItem('model.search',''); await tick();
+    assert.deepEqual(shownPaths(f),original);
+    assert.equal(f.host.shadowRoot.querySelector('mark'),null);
+});
+
+test('searchText reads unopened nested resolvers, shares cached data and never changes original expansions', async t => {
+    let reads=0;
+    class Nested extends BagResolver {load(){reads++;return new Bag({needle:'found'});}}
+    class Outer extends BagResolver {load(){reads++;const bag=new Bag();bag.setItem('deep',new Nested({cacheTime:-1}));return bag;}}
+    const f=fixture(t,{attrs:{searchText:'^.search'}});await tick();
+    f.store.setItem('lazy',new Outer({cacheTime:-1}));await tick();assert.equal(reads,0);
+    f.app.data.setItem('model.search','needle');await searchWait();
+    assert.deepEqual(shownPaths(f),['lazy','lazy.deep','lazy.deep.needle']);assert.equal(reads,2);
+    f.app.data.setItem('model.search','');await tick();
+    assert.equal(f.row('lazy').getAttribute('aria-expanded'),'false');
+    f.app.data.setItem('model.search','needle');await searchWait();assert.equal(reads,2);
+});
+
+test('clearing or changing a pending search ignores late results and supports store replacement', async t => {
+    let finish;
+    class Pending extends BagResolver {load(){return new Promise(resolve=>{finish=resolve;});}}
+    const f=fixture(t,{attrs:{searchText:'^.search'}});await tick();
+    f.store.setItem('lazy',new Pending({cacheTime:-1}));await tick();
+    f.app.data.setItem('model.search','needle');await searchWait();
+    f.app.data.setItem('model.search','');await tick();
+    finish(new Bag({needle:'result'}));await tick();await tick();await tick();
+    assert.equal(f.row('lazy').getAttribute('aria-expanded'),'false');
+    assert.equal(f.host.shadowRoot.querySelector('mark'),null);
+    f.app.data.setItem('model.search','other');f.app.data.setItem('model.search','alpha');await searchWait();
+    assert.deepEqual(shownPaths(f),['folder','folder.alpha']);
+    f.app.data.setItem('model.nodes',new Bag({alpha:1,unrelated:2}));await tick();
+    assert.deepEqual(shownPaths(f),['alpha']);
+});
+
+test('failed search branches remain visible for retry; HTML caption matches are marked safely', async t => {
+    let reads=0;
+    class Failing extends BagResolver {load(){reads++;throw new Error('offline');}}
+    class Logic {label(source,{item}){return {html:`<b>${item.label}</b><script>bad()</script>`};}}
+    const f=fixture(t,{attrs:{searchText:'^.search',getLabel:'label'},logic:Logic});await tick();
+    f.store.setItem('lazy',new Failing({cacheTime:-1}));await tick();
+    f.app.data.setItem('model.search','alpha');await searchWait();
+    assert.equal(reads,1);assert.ok(shownPaths(f).includes('lazy'), f.host.control.outerHTML);
+    assert.match(f.host.shadowRoot.querySelector('[role=status]').textContent,/could not be searched/);
+    assert.equal(f.row('folder.alpha').querySelector('b mark').textContent,'alpha');
+    assert.equal(f.host.shadowRoot.querySelector('.caption script'),null);
+    f.app.data.setItem('model.search','zzzzz');await searchWait();assert.equal(reads,2);
+    f.app.data.setItem('model.search','');await tick();
+    f.store.popNode('lazy');await tick();f.app.data.setItem('model.search','zzzzz');await searchWait();
+    assert.equal(f.host.shadowRoot.querySelector('[role=status]').textContent,'No matches');
+});
+
+
+test('search survives detaching before debounce and respects manual collapse on rerender', async t => {
+    const f=fixture(t,{attrs:{searchText:'^.search'}}); await tick();
+    f.app.data.setItem('model.search','alpha');
+    const parent=f.host.parentNode; f.host.remove(); parent.append(f.host);
+    await searchWait();
+    assert.deepEqual(shownPaths(f),['folder','folder.alpha']);
+    f.row('folder').querySelector('button').click();
+    f.store.setItem('unrelated',null,{caption:'Unrelated'}); await tick();
+    assert.deepEqual(shownPaths(f),['folder']);
+    assert.equal(f.row('folder').getAttribute('aria-expanded'),'false');
+    f.row('folder').querySelector('button').click();
+    assert.deepEqual(shownPaths(f),['folder','folder.alpha']);
+    f.app.data.setItem('model.search',''); await tick();
+    assert.equal(f.row('folder').getAttribute('aria-expanded'),'false');
+});
+
+
+test('Python tree grammar matches the current component document', async () => {
+    const grammar = JSON.parse(await readFile(new URL('../../src/gramlot/collections/tree.json', import.meta.url), 'utf8'));
+    assert.deepEqual(grammar, tree.toDocument());
 });

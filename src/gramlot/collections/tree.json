@@ -204,6 +204,17 @@
             "default": ""
           },
           {
+            "name": "searchText",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
             "name": "autoCollapse",
             "kind": "keyword_only",
             "role": "attribute",
@@ -310,6 +321,11 @@
               "default": null
             },
             "selectedLabelClass": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
+            "searchText": {
               "dtype": "T",
               "default": "",
               "binding": "read"

@@ -1498,3 +1498,19 @@ save, and the host must independently reject writes. Ordinary editor `readonly`
 attributes are unchanged. New IDE documents inherit the opened workspace's write
 permission. The Python gallery demonstrates this contract on a bounded sample
 workspace; see GP-020 for its `--remote-edit` startup flag.
+
+<a id="gc-105-965"></a>
+## 965 · Searching a tree
+
+Bind `searchText` to a text field to filter displayed captions, case-insensitively and literally (not as a regular expression). Initialize that text with the field's `default`. For example:
+
+```python
+pane.input(type="search", value="^navigation.search", default="", live=True,
+           placeholder="Search examples", aria_label="Search examples")
+pane.tree(storepath="navigation.items", labelAttribute="title", hideValues=True,
+          searchText="^navigation.search")
+```
+
+After 200 ms without a new query, search reads previously unloaded resolver branches and keeps matching nodes and their ancestor path visible. It highlights text within sanitized captions. Ordinary rendering still does not load branches. Results update as reads finish; an unavailable branch stays visible with its error and can be expanded to retry. Large remote trees can require many branch reads; this parameter is not a server-side search endpoint or pagination API.
+
+Clearing the field removes highlighting and restores the previous expansion set. Search does not select a result, replace the Bag or change its node identities. Selecting a result uses the ordinary `selectedPath` binding. A late response after clear may fill the resolver cache, but does not reopen branches or restore the old filter. Closing the tree cancels pending search scheduling; resolver lifetime remains with its owner.

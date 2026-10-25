@@ -1315,3 +1315,8 @@ Gallery toolbar placement — 2026-10-24. Owner: “consideriamo anche il rappor
 ### Internal error notifications — 2026-10-25
 
 Owner selected “Notifica non modale, con dettagli espandibili” for remote and drag/drop errors, then instructed “vai”. `ErrorNotifications` names the internal presentation owner, following `AskDialog` and other responsibility-named internal classes. `BindingRuntime.reportError(error, title)` follows camelCase action naming; it is not a new Gramlot proxy or application API. Source-authored notices use the `gramlot-error-notifications` class, native manual popover presentation, and the existing named Logic close-event convention. The internal component context delegates error reporting to its binding runtime.
+
+<a id="gc-225-tree-search"></a>
+## Tree searchText — 2026-10-25
+
+Owner confirms: “Sì, confermo searchText. Procedi con la toolbar di ricerca nella navigazione, includendo i rami non ancora caricati e il ripristino dell’albero quando svuoto il campo.” `searchText` is a read-bound text parameter, default empty. It filters caption text literally and case-insensitively after a short debounce. Ancestors remain visible; resolver branches are read on explicit search. Clearing restores the unfiltered expansion state. Search presentation does not replace the store or alter Source.
