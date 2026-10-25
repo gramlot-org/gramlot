@@ -132,7 +132,7 @@ branch.
 - `sendHttp(path, url)`: branch as a JSON object, HTTP `POST`; resolves with the
   response, rejects outside 200–299.
 - `save(path, name)`: TYTX file. `restore(path)`: file dialog, reads a `save` file
-  into `path` with exact types (dates, decimals).
+  into `path` with exact types (dates, decimals). Cancellation rejects with `AbortError` without changing Data.
 - `download(path, name, 'json' | 'xml')`: `Bag.toJson`, or `Bag.toXml` in one root
   element named after the last path segment; types become text.
 Dates in the email `1990-05-02`, datetimes ISO. Email > 2000 characters (`mailto:`

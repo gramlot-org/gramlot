@@ -29,7 +29,7 @@ const NATIVE_ATTRIBUTES = {
 const DISPLAY_ATTRIBUTES = ['format', 'mask', 'locale', 'timeZone', 'places', 'dtype'];
 
 // Output URL attributes, including the native form action authored as html_action.
-const URL_ATTRIBUTES = new Set(['href', 'src', 'action', 'formaction', 'xlink:href', 'xlink_href']);
+const URL_ATTRIBUTES = new Set(['href', 'src', 'data', 'action', 'formaction', 'xlink:href', 'xlink_href']);
 
 /** The attributes of `attrs` that are not binding attributes. */
 export function withoutBindingAttributes(attrs) {

@@ -311,3 +311,13 @@ test('a new draft without host write permission never calls document_create',asy
     assert.equal(docs.documents.getItem(key).getItem('content'),'Draft only');
     docs.dispose();
 });
+
+test('new IDE documents use random bytes even when randomUUID is unavailable', t => {
+    t.mock.method(globalThis.crypto, 'randomUUID', () => {throw Error('Secure context required');});
+    const docs=new IdeDocuments({},state());
+    const first=docs.newDocument('python','.py'),second=docs.newDocument('python','.py');
+    assert.match(first,/^new_[a-f0-9]{32}$/);
+    assert.notEqual(first,second);
+    assert.equal(docs.documents.getItem(first).getItem('content'),'');
+    docs.dispose();
+});

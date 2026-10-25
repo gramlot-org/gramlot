@@ -33,7 +33,7 @@ NATIVE_ATTRIBUTES = {
 DISPLAY_ATTRIBUTES = ("format", "mask", "locale", "timeZone", "places", "dtype")
 
 # Output URL attributes, including the native form action authored as html_action.
-URL_ATTRIBUTES = frozenset({"href", "src", "action", "formaction", "xlink:href", "xlink_href"})
+URL_ATTRIBUTES = frozenset({"href", "src", "data", "action", "formaction", "xlink:href", "xlink_href"})
 
 # The form of a native event handler: ``on`` followed by at least one character.
 EVENT_HANDLER = re.compile(r"^on.", re.IGNORECASE)
@@ -41,7 +41,7 @@ EVENT_HANDLER = re.compile(r"^on.", re.IGNORECASE)
 # A ``javascript:`` URL as the URL parser reads it: tabs and newlines removed, leading controls and spaces trimmed.
 URL_TABS_AND_NEWLINES = re.compile(r"[\t\n\r]")
 URL_LEADING_CONTROLS = re.compile(r"^[\x00-\x20]+")
-JAVASCRIPT_SCHEME = re.compile(r"^javascript:", re.IGNORECASE)
+JAVASCRIPT_SCHEME = re.compile(r"^javascript:", re.IGNORECASE | re.ASCII)
 
 
 def without_binding_attributes(attrs):

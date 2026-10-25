@@ -71,3 +71,10 @@ test('IDE history belongs to the active HTML view, with Preview commands disable
     doc.setItem('view','preview');logic.ideHistoryState(doc);
     assert.equal(doc.getItem('undoDisabled'),true);assert.equal(doc.getItem('redoDisabled'),true);
 });
+
+
+test('protected HTML markers work without secure-context randomUUID',t=>{
+    t.mock.method(crypto,'randomUUID',()=>{throw Error('randomUUID unavailable');});
+    const doc=prepareHtmlDocument('<p>Text</p><script>keep()</script>',window);
+    assert.match(doc.serialize(doc.html),/<script>keep\(\)<\/script>/);
+});

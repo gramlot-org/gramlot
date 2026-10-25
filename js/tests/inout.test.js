@@ -131,3 +131,15 @@ test('download: JSON from Bag.toJson, XML inside one root element, any other for
     assert.equal(links.length, 2);
     app.dispose();
 });
+
+test('restore cancellation settles without changing Data, including an empty change event', async () => {
+    for (const event of ['cancel','change']) {
+        const {window,app}=page();
+        const before=app.data.toTytx();
+        window.HTMLInputElement.prototype.click=function(){this.dispatchEvent(new window.Event(event));};
+        try {
+            await assert.rejects(app.utl.inout.restore('modulo'),{name:'AbortError'});
+            assert.equal(app.data.toTytx(),before);
+        } finally {app.dispose();window.close();}
+    }
+});

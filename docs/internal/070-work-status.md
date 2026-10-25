@@ -13823,3 +13823,13 @@ Previous local qualification covers all examples, all five Python hosts, IDE
 read/write permission variants and responsive navigation. Release CI and registry
 publication remain mandatory; report actual deployment and public verification
 receipts after completion.
+
+
+<a id="gc-070-2130"></a>
+## 2130 — Independent audit correction commit (2026-10-25)
+
+Owner requested closing and committing a coherent block: “conviene chiudere qualcosa e committe?”. This block contains independent URL validation, ASCII scheme parity, resolved radio values, secure-random-byte IDE/HTML identifiers, restore cancellation, readonly/disabled editor save shortcuts, Typst crash/retry lifecycle and best-effort HTTP close corrections, with their regressions and restore API documentation.
+
+Verified the exact selected source snapshot on top of the consolidated baseline, excluding other local mobile, detach, tree-search and notification work. The snapshot's runtime build passed, 193 targeted JavaScript tests passed and 23 Python renderer-security tests passed. Dependencies came from the existing prepared environment; no dependency source was changed. This is targeted verification, not full release qualification. Jodit coverage exercises the real event wiring with an inert third-party editor.
+
+The block is closed as a local develop commit. No push, package release or deployment is included. Remaining local changes are preserved separately, including the second notification/review tranche and previously authorized gallery/mobile prerequisites. The wider audit backlog remains open; in particular, this commit does not resolve the HTTP configuration-versus-delivery distinction. Other current work-status entries remain in the working checkout until their corresponding changes are consolidated.

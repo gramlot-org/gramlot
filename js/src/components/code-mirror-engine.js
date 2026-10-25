@@ -70,7 +70,7 @@ export function createEditor(host) {
         });
     };
     const extensions = [history(), theme, colors, drawSelection(), dropCursor(),
-        search({top:true}), keymap.of([{key:'Mod-s', preventDefault:true, run:() => {host.pageContext.publish('save', {value:host.readControlValue()}); return true;}},
+        search({top:true}), keymap.of([{key:'Mod-s', preventDefault:true, run:() => {if (!view.state.facet(EditorState.readOnly)) host.pageContext.publish('save', {value:host.readControlValue()}); return true;}},
             indentWithTab, ...searchKeymap, ...defaultKeymap, ...historyKeymap]),
         EditorView.updateListener.of(update => {
             if (update.docChanged) host.editorChanged(update.state.doc.toString());

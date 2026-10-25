@@ -46,7 +46,7 @@ export function createHtmlEditor(host) {
     frameDoc.addEventListener('submit',event=>event.preventDefault(),options);
     frameDoc.addEventListener('click',event=>{if(event.target.closest('a'))event.preventDefault();},options);
     frameDoc.addEventListener('keydown',event=>{
-        if ((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s') {event.preventDefault();host.pageContext.publish('save',{value:host.readControlValue()});}
+        if ((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s') {event.preventDefault();if(!locked())host.pageContext.publish('save',{value:host.readControlValue()});}
     },options);
     editor.value=content.html;
     editor.history.clear();

@@ -46,14 +46,16 @@ export class HttpTransport {
      */
     close(pageId, {beacon = false} = {}) {
         const body = JSON.stringify({pageId});
-        if (beacon) {
-            this.navigator.sendBeacon(this.closeUrl, new Blob([body], {type: 'application/json'}));
-        } else {
-            this.fetcher(this.closeUrl, {
-                method: 'POST', credentials: 'same-origin', keepalive: true,
-                headers: {'Content-Type': 'application/json'}, body,
-            });
-        }
+        try {
+            if (beacon) {
+                this.navigator.sendBeacon(this.closeUrl, new Blob([body], {type: 'application/json'}));
+            } else {
+                this.fetcher(this.closeUrl, {
+                    method: 'POST', credentials: 'same-origin', keepalive: true,
+                    headers: {'Content-Type': 'application/json'}, body,
+                }).catch(() => { /* Best-effort delivery: the server TTL owns failed cleanup. */ });
+            }
+        } catch { /* Local disposal must also complete when delivery throws synchronously. */ }
     }
     /** Release the transport at the dispose of the page: HTTP holds no connection, so nothing is released. The
      * calls in flight are aborted by the page (`RpcHandler.call`). */

@@ -220,7 +220,7 @@ root.button("Reload", action="gramlot.utl.inout.restore('modulo')")
 | `sendMail(path, email)` | Prepares an email in the mail program of the user (`mailto:`): recipient `email`, subject the page title, one line `name: Rossi` per value, `address.street: …` for a nested value. The email leaves when the user presses send. |
 | `sendHttp(path, url)` | Sends the branch as a JSON object with an HTTP `POST` to `url`; resolves with the response, rejects on a status outside 200–299. |
 | `save(path, name)` | Saves the branch as a TYTX file named `name`. |
-| `restore(path)` | Opens the choice of a local file and loads a file written by `save` into `path`, with the exact types: dates and decimals come back as dates and decimals. |
+| `restore(path)` | Opens the choice of a local file and loads a file written by `save` into `path`, with the exact types: dates and decimals come back as dates and decimals. Cancelling rejects with `AbortError` and leaves Data unchanged. |
 | `download(path, name, 'json' \| 'xml')` | Exports the branch for other programs: `Bag.toJson`, or `Bag.toXml` inside one root element named after the last segment of `path`. Types become text. |
 
 - A date is written `1990-05-02` in the email; a date with a time keeps its ISO text.

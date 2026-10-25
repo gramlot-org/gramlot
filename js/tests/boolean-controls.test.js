@@ -428,3 +428,15 @@ test('ASTRA-06: a failed first projection of a control cleans up its partial rec
     assert.equal(added.filter(([target]) => target.localName === 'select').length, 4);
     assert.deepEqual([...app.src.renderer.records.keys()].map(node => node.nodeTag).sort(), ['div', 'span']);
 });
+
+test('radio inline false does not conflict with a selected peer at initial rendering', () => {
+    const {app, window, byId} = page();
+    const builder = new GramlotBuilder();
+    builder.root.input({id:'selected',type:'radio',group:'choice',value:'==true'});
+    builder.root.input({id:'off',type:'radio',group:'choice',value:'==false'});
+    try {
+        app.src.startSource(builder.toTytx());
+        assert.equal(byId('selected').checked,true);
+        assert.equal(byId('off').checked,false);
+    } finally {app.dispose(); window.close();}
+});

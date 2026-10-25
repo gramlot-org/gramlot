@@ -116,3 +116,18 @@ test('live false commits on leaving editor; native contenteditable events do not
     assert.match(app.data.getItem('document.content'),/^xdef/);
     host.remove();
 });
+
+test('save shortcut is consumed but never published while readonly or disabled',async()=>{
+    const {keymap}=await import('@codemirror/view');
+    const {app,host}=fixture((root,app)=>{app.data.setItem('locked',true);app.data.setItem('disabled',false);base(root,{readonly:'^locked',disabled:'^disabled'});});
+    try {
+        await host.ready;const view=host.editor.view,calls=[];
+        host.pageContext.publish=(name,payload)=>calls.push({name,payload});
+        const save=()=>view.state.facet(keymap).flat().find(item=>item.key==='Mod-s').run(view);
+        assert.equal(save(),true);assert.equal(calls.filter(c=>c.name==='save').length,0);
+        app.data.setItem('locked',false);app.data.setItem('disabled',true);
+        assert.equal(save(),true);assert.equal(calls.filter(c=>c.name==='save').length,0);
+        app.data.setItem('disabled',false);save();
+        assert.deepEqual(calls.filter(c=>c.name==='save'),[{name:'save',payload:{value:app.data.getItem('document.content')}}]);
+    } finally {app.dispose();}
+});

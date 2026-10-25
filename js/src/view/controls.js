@@ -14,10 +14,10 @@ import {callLogic, invokeHook} from '../binding/hooks.js';
 const CONTROL_TAGS = new Set(['input', 'select', 'textarea']);
 const REBUILD_ATTRIBUTES = ['type', 'multiple', 'group'];
 
-/** The resolved value of the attribute `name` of `node`: a pointer reads the Data. */
-function resolved(node, name) {
-    const value = node.getAttr(name);
-    return node.pointerType(value) ? node.getRelativeData(value) : value;
+/** Read current pointer Data, including during freeze; expressions use the resolved projection. */
+function resolved(control, name) {
+    const node = control.node, value = node.getAttr(name);
+    return node.pointerType(value) ? node.getRelativeData(value) : control.resolved[name];
 }
 
 export class ControlAdapter {
@@ -402,7 +402,7 @@ export class RadioControl extends CheckboxControl {
      */
     #requireSingleTrue(group, form) {
         const node = this.node;
-        if (resolved(node, 'value') && this.groups.peersOf(group, form).some(peer => !peer.binding.closed && peer.read())) {
+        if (resolved(this, 'value') && this.groups.peersOf(group, form).some(peer => !peer.binding.closed && peer.read())) {
             throw new Error(`${node.nodeTag} '${node.label}': several true values in radio group '${group}'`);
         }
     }
@@ -439,7 +439,7 @@ export class RadioControl extends CheckboxControl {
             if (this.binding.closed) return;
             if (peer.binding.closed) continue;
             if (peer.element.checked) peer.element.checked = false;
-            if (resolved(peer.node, 'value')) peer.commit(null);
+            if (resolved(peer, 'value')) peer.commit(null);
         }
     }
 }
