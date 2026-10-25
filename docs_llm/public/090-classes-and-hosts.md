@@ -18,7 +18,7 @@ Map of the core: folders, classes, server boundary, packages. Published on PyPI 
 resources, conformance), renderer/ (static HTML/SVG), db/ (reserved), collections/ (exported grammars),
 resources/ (runtime bundles, themes, branding). `js/src`: server/ (JS server contracts, file page loading,
 conformance), builder/ (dialect, GramlotBuilderBag/node), binding/, components/, handlers/ (src, rpc, dom,
-utl), renderer/, view/, date-parser/, bootstrap.js, http-transport.js, server-adapter.js. `js/tools`: built
+utl), renderer/, view/, bootstrap.js, http-transport.js, server-adapter.js. `js/tools`: built
 inspector; `themes/`; `tools/`: inspector source. `tests`/`js/tests`: contracts and fixtures. `docs/public`:
 manual; `docs/internal`: working decisions; `docs_llm`: concise mirrors; `ports`: bounded reviews. Generic
 Bag/builders live separately; `build` is generated output. No component inventory implied. Example pages and

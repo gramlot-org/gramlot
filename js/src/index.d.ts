@@ -34,8 +34,8 @@ export type {BeaconNavigator, DomDocument, DomElement, DomEvent, DomFragment, Do
 export {IndexPage} from "./server/index-page.js";
 export {IndexLogic, mountIndexPage} from "./index-page-runtime.js";
 
-export {parseDateExpression} from './date-parser/index.js';
-export type {DateExpressionOptions, DateExpressionResult, DateExpressionErrorCode} from './date-parser/index.js';
+export {parseDateExpression} from '@genrojs/toolbox';
+export type {DateExpressionOptions, DateExpressionResult, DateExpressionErrorCode} from '@genrojs/toolbox';
 
 export {FramePage} from "./server/frame-page.js";
 export {NavigationResolver} from "./navigation-resolver.js";
