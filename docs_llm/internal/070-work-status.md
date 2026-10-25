@@ -12798,3 +12798,26 @@ The owner authorized pushing the verified audit, notification, tree and declarat
 Verified the merged tree with freshly installed declared dependencies (without lockfile), runtime build, the complete npm suite: 1,067 tests passed, zero failed/skipped. The focused Python component, collection and renderer checks passed 38 tests and 143 subtests with one existing expected failure. TypeScript consumer checking and the new Toolbox re-export/bundle tests are included. The first full attempt exposed test setup needs (the prepared Python environment and permission for localhost fixture servers) and the missing Popover stub; those were resolved before the successful run. No package release, gallery deployment or mobile/theme/detach consolidation is included.
 
 Dependency follow-up: npm's advisory service reported DOMPurify 3.4.16 under GHSA-cg2g-xh64-v4q7 (critical: SAFE_FOR_TEMPLATES with attached shadow roots and DOM output), GHSA-mrv2-3pqr-j5jr (high: IN_PLACE plus removal hooks), and GHSA-c6gr-qvv4-5v3f (low: XHTML SMIL). The current core calls use HTML profiles; none enables SAFE_FOR_TEMPLATES, IN_PLACE/removal hooks or XHTML parsing. This inspection does not constitute a complete exploitability assessment. A separate dependency-update/security assessment remains; no forced npm audit fix or first-party lockfile was introduced.
+
+<a id="gc-070-2160"></a>
+## 2160 — DOMPurify advisory assessment (2026-10-25)
+
+Owner answered “ok” to “Procedo con la verifica di DOMPurify?”. This slice assesses exposure and tests the patched dependency in isolation; it does not record approval of a release or deployment. Maintained manifests remain unchanged. The minimal proposed update is dompurify 3.4.16 → 3.4.17.
+
+All three reported advisories identify 3.4.17 as patched, matching the npm latest tag checked today:
+- [GHSA-cg2g-xh64-v4q7](https://github.com/advisories/GHSA-cg2g-xh64-v4q7): SAFE_FOR_TEMPLATES, DOM-returning mode, attached shadow-root input and downstream template evaluation are required. Gramlot never enables SAFE_FOR_TEMPLATES and supplies strings to the sanitizer.
+- [GHSA-mrv2-3pqr-j5jr](https://github.com/advisories/GHSA-mrv2-3pqr-j5jr): IN_PLACE with hooks detaching other nodes is required. Gramlot uses neither IN_PLACE nor sanitizer hooks.
+- [GHSA-c6gr-qvv4-5v3f](https://github.com/advisories/GHSA-c6gr-qvv4-5v3f): XHTML parsing with allowed SVG animation is required. Gramlot uses HTML profiles and does not configure XHTML parsing or SVG animation allowlists.
+
+The three core consumers are border-container drawer labels, structured tree captions and optional embedded Markdown HTML. Drawer/tree sanitization returns a fragment; Markdown returns a string. Their existing HTML formatting contract remains intact. Inspection found no current core path meeting the reported exploit conditions. This is a bounded finding for these advisories and configurations, not a blanket security guarantee for custom collections or all attacks.
+
+Verification on consolidated c0c61b3: 69 affected-component tests passed with 3.4.16; installing 3.4.17 with --no-save/--no-package-lock changed only that installed package, leaving the manifest hash unchanged. The runtime build and complete 1,067-test JavaScript suite passed with 3.4.17, zero failures/skips. npm reported zero vulnerabilities for the installed dependency set. Existing regressions check safe formatting plus removal of scripts, event attributes, javascript URLs and disallowed controls in all three consumers, including reactive drawer updates and tree highlighting. No new browser qualification is claimed.
+
+Recommendation: consolidate the one-line dependency update and rebuild distributable bundles before a future release/deployment. The proposal and logs are retained locally under temp/dompurify-assessment-20261025. The isolated /private/tmp/gramlot-review-push-20261025 checkout has 3.4.17 installed for this experiment while its manifest still declares 3.4.16; do not treat that environment as a manifest-reproducible release until the proposal is applied. Other local work was not modified.
+
+<a id="gc-070-2165"></a>
+## 2165 — DOMPurify patched dependency consolidated (2026-10-25)
+
+Owner approved consolidation with “ok procediamo” after the assessment in §2160. The maintained JavaScript manifest now declares DOMPurify 3.4.17. This supersedes §2160's pending proposal and manifest/environment mismatch in the clean integration checkout. No sanitizer configuration, permitted formatting, core API or first-party dependency constraint changes.
+
+The installed 3.4.17 package is exactly the one tested in §2160: build and 1,067 JavaScript tests passed, with npm reporting zero vulnerabilities in that dependency set. After applying the manifest change, npm ls confirms the declared/installed version and all six runtime-bundle checks pass, including readable/minified JavaScript and Python resource copies. Unchanged suites were not repeated. Bundles are generated build outputs, not tracked source. No lockfile, package release or gallery deployment is included. Unrelated local mobile, theme, panel and review work remains separate.
