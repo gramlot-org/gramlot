@@ -678,11 +678,15 @@ Owner, 2026-10-16: "allora portiamola subito in gramlot" after the demonstrated
 PoC `parseDateExpression(text, options)` API. Preserve this function name and its
 `workdate`, `locale`, `twoDigitYearAhead` options and result keys. It is a named
 JavaScript package export, usable by page Logic, Node and Workers. It is not a
-new Gramlot proxy, instance alias or Python Builder method. Keep the bounded
-PoC `date-parser/index.js`, `civil.js` and `locales.js` module organization.
+new Gramlot proxy, instance alias or Python Builder method.
 Public type names follow the function: `DateExpressionOptions`,
 `DateExpressionResult`, `DateExpressionErrorCode`. No alternate parser API is
 introduced. See constitution 11.83 and PORT-0009-date-expression-parser.
+
+Owner, 2026-10-25: the parser comes from `@genrojs/toolbox`; Gramlot re-exports
+it with the same name, options and type names. Gramlot no longer has its own
+`date-parser/` module. See the constitution entry "Date-expression parser from
+Toolbox" (gc-000-toolbox-date-parser).
 
 
 Toolbox alignment, owner "o procedi", 2026-10-16: retain this JS API, but

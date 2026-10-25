@@ -623,7 +623,8 @@ remote `nodeId` routing are not supported. Unsupported descriptor keys fail expl
 <a id="gc-095-120"></a>
 ## 120 · Natural-language dates and periods
 
-`parseDateExpression` uses the built-in Italian/English semantics of Toolbox
+`parseDateExpression` comes from `@genrojs/toolbox` and is re-exported by
+`@gramlot/gramlot`. It uses the built-in Italian/English semantics of Toolbox
 Python `parse_period`, with structured JavaScript results. It interprets complete
 expressions; it does not format values, edit a widget or write a Data Bag.
 

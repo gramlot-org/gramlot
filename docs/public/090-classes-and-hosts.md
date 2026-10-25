@@ -33,7 +33,6 @@ js/src/              Browser runtime and JavaScript authoring
   handlers/          The proxies src, rpc, dom and utl of a Gramlot instance
   renderer/          Source events and DOM lifetime
   view/              HTML and SVG element handling
-  date-parser/       parseDateExpression
   bootstrap.js       PageBootstrap
   http-transport.js  The envelope over HTTP
   server-adapter.js  The HTTP ServerAdapter

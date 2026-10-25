@@ -1,6 +1,7 @@
 # PORT-0009-date-expression-parser
 
-- **Status:** implemented and locally verified; publication not requested
+- **Status:** superseded on 2026-10-25 — the parser moved to `@genrojs/toolbox`;
+  Gramlot re-exports it (see the end of this record).
 - **Owner authorization:** "allora portiamola subito in gramlot", 2026-10-16,
   following the PoC parser demonstration and verification.
 - **PoC revision:** `gramlot-org/gramlot-poc@10478b57ce3f22e6445eb6b72eba343520cbebac`
@@ -110,3 +111,17 @@ Final verification (2026-10-16):
 
 Destination technical review: accepted within the owner-approved alignment scope.
 The user-facing release remains unpublished; no editor or formatter was added.
+
+## Move to Toolbox — 2026-10-25
+
+Owner: "Approvo l'emendamento: scrivilo in docs e docs_llm, aggiorna i docs
+correnti e committa." The parser was extracted into `@genrojs/toolbox` 0.19.0.
+Gramlot depends on `@genrojs/toolbox` (>=0.19.0) and re-exports
+`parseDateExpression` and its type names from `@gramlot/gramlot`.
+`js/src/date-parser/`, the copied Toolbox corpus and its fixtures are removed.
+
+Verification before removal: the Gramlot corpus test passed 2797/2797 against
+`@genrojs/toolbox`; the Gramlot parser tests passed 14/14 against it. After the
+change: `npm --prefix js run build` succeeded and the full JS suite passed
+1036/1036. `js/tests/date-parser.test.js` now checks only the re-export and the
+readable/minified bundles. Constitution entry gc-000-toolbox-date-parser.
