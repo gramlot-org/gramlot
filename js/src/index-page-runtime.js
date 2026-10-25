@@ -32,6 +32,12 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             onSelection(entries, entry.url);
         } finally { selecting = false; }
     };
+    // Includes validation and preparation errors before the asynchronous load starts.
+    function requestSelection(path) {
+        void select(path).catch(error => {
+            if (!disposed) renderer.binding.reportError(error, 'Page could not be opened');
+        });
+    }
     async function select(path) {
         const node = navigation.getNode(path);
         if (!node) throw new Error(`Unknown index navigation path: ${path}`);
@@ -47,7 +53,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         }
         while (tabs.value !== null && tabs.value.getNode(`page${sequence}`)) sequence++;
         const pane = sourceTarget(builder.wrapSource(tabs).contentPane({node_label: `page${sequence++}`,
-            title: node.attr.title ?? node.label, pageName: url, height: '100%'}));
+            title: node.attr.title ?? node.label, pageName: url, height: '100%', closable: true}));
         const previous = state.getItem('active');
         entry = {url, path, node, pane, title: node.attr.title ?? node.label, loading: true};
         entries.set(url, entry);
@@ -61,12 +67,14 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
                 const mounted = await renderer.binding.gramlot.src.remoteSource(pane, 'index_panel', {selection});
                 if (!mounted) throw new Error('Panel loading was cancelled');
             }
-            if (disposed) return;
+            if (disposed || entries.get(url) !== entry) return;
             entry.loading = false;
             opened.setItem(pane.label, null, {url, path: entry.path, title: entry.title});
             prepareEntry(entry);
             if (requested === url) { onLoad(url, 'ready'); activate(entry); }
         } catch (error) {
+            if (disposed || entries.get(url) !== entry) return;
+            renderer.binding.reportError(error, 'Page could not be opened');
             entries.delete(url);
             if (opened.getNode(pane.label)) opened.popNode(pane.label);
             if (pane.parentBag) pane.parentBag.popNode(pane.label);
@@ -86,12 +94,32 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
             }
         }
     }
+    const sourceSubscription = `${root.getAttr('id')}-page-close`;
+    root.value.subscribe(sourceSubscription, {any: event => {
+        if (event.evt !== 'del') return;
+        const entry = [...entries.values()].find(candidate => candidate.pane === event.node);
+        if (!entry) return;
+        const {url, pane} = entry;
+        if (disposed || renderer.disposed || entries.get(url) !== entry) return;
+        entries.delete(url);
+        if (opened.getNode(pane.label)) opened.popNode(pane.label);
+        if (state.getItem('active') === url) {
+            const next = [...entries.values()].at(-1);
+            requested = next?.url ?? null;
+            if (next) activate(next);
+            else {
+                selecting = true;
+                try { state.setItem('active', null); state.setItem('navigationSelection', null); onSelection(entries, null); }
+                finally { selecting = false; }
+            }
+        } else onSelection(entries, state.getItem('active'));
+    }});
     const subscription = `${root.getAttr('id')}-selection`;
     state.subscribe(subscription, {any: event => {
         if (selecting || disposed) return;
         if (event.node === state.getNode('navigationSelection')) {
             const path = state.getItem('navigationSelection');
-            if (path !== null) void select(path);
+            if (path !== null) requestSelection(path);
         } else if (event.node === state.getNode('active')) {
             const entry = entries.get(state.getItem('active'));
             if (entry) { requested = entry.url; activate(entry); }
@@ -101,6 +129,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
         if (disposed) return;
         disposed = true;
         state.unsubscribe(subscription, {any: true});
+        root.value.unsubscribe(sourceSubscription, {any: true});
         for (const entry of entries.values()) if (entry.loading && entry.pane.parentBag) {
             entry.pane.parentBag.popNode(entry.pane.label);
         }
@@ -108,7 +137,7 @@ export function mountIndexPage(renderer, root, onSelection = () => {}, prepareEn
     renderer.onDispose(root, dispose);
     const active = entries.get(state.getItem('active'));
     if (active) activate(active);
-    else if (state.getItem('navigationSelection') !== null) void select(state.getItem('navigationSelection'));
+    else if (state.getItem('navigationSelection') !== null) requestSelection(state.getItem('navigationSelection'));
     return {entries, dispose};
 }
 

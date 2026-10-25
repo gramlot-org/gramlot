@@ -1316,3 +1316,8 @@ JavaScript loading performance — 2026-10-24. Page.gramlots retains the Python 
 
 
 Gallery toolbar placement — 2026-10-24. Owner: “consideriamo anche il rapporto larghezza altezza e fammi provare la toolbar sotto o di lato nella gallery.” Reuse the gallery Data preference convention: toolbarPosition (auto/left/bottom), control gallery-toolbar-position and subscription gallery-toolbar-position. The existing Source attribute spelling data_toolbar_position emits data-toolbar-position on gallery-frame for placement styling. This is a gallery trial, not a core device-classification API. Automatic placement uses the existing narrow-layout threshold plus portrait/square proportions; explicit choices override placement alone.
+
+<a id="gc-225-error-notifications"></a>
+### Internal error notifications — 2026-10-25
+
+Owner selected “Notifica non modale, con dettagli espandibili” for remote and drag/drop errors, then instructed “vai”. `ErrorNotifications` names the internal presentation owner, following `AskDialog` and other responsibility-named internal classes. `BindingRuntime.reportError(error, title)` follows camelCase action naming; it is not a new Gramlot proxy or application API. Source-authored notices use the `gramlot-error-notifications` class, native manual popover presentation, and the existing named Logic close-event convention. The internal component context delegates error reporting to its binding runtime.

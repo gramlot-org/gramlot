@@ -578,6 +578,7 @@ function componentContext(adapter) {
         locale:app.locale, timeZone:app.timeZone, createDecimal, isDecimal, getDecimalLibrary,
         publish:(topic, payload) => node.publish(topic, payload),
         isActive:() => !binding.closed,
+        reportError:(error, title) => { if (!binding.closed) binding.runtime.reportError(error, title); },
         callLogic:(name, keywords) => callLogic(binding.runtime, node, name, keywords),
         format:(value, options) => app.format(value, options), invoke,
         remote:(method, keywords, signal) => app.rpc.call('data', method, keywords, {signal}),
@@ -599,7 +600,7 @@ function componentContext(adapter) {
             if (ok) for (const patch of result.datachanges) node.getRelativeData('.').update(patch);
             const attribute = ok ? 'validate_onAccept' : 'validate_onReject';
             if (rules[attribute]) {
-                const report = error => console.error('Validation notification failed:', error);
+                const report = error => { if (!binding.closed) binding.runtime.reportError(error, 'Validation callback failed'); };
                 try {
                     const validations = Object.fromEntries(Object.entries(rules).map(([key, value]) => [key.slice(9), value]));
                     const returned = invoke(attribute, rules[attribute], {value:result.value, result, validations, userChange:true});
@@ -614,7 +615,10 @@ function componentContext(adapter) {
     };
 }
 function commitComponent(host, outcome, commit) {
+    const context = host.pageContext;
     const finish = result => { if (result.ok && result.isCurrent()) { commit(result); host.finishValidation(result); } };
-    if (outcome instanceof Promise) outcome.then(finish).catch(error => console.error('Validation notification failed:', error));
-    else finish(outcome);
+    if (outcome instanceof Promise) outcome.then(finish).catch(error => context.reportError(error, 'Field update failed'));
+    else {
+        try { finish(outcome); } catch (error) { context.reportError(error, 'Field update failed'); }
+    }
 }

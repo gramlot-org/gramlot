@@ -41,7 +41,7 @@ export class RemoteBinding {
 
     /** Start `_timing` again from its current value: called at every registration of the node's pointers. */
     register() {
-        this.#timers.startTiming(this.#control('_timing'), () => this.update());
+        this.#timers.startTiming(this.#control('_timing'), () => this.trigger());
     }
 
     /**
@@ -51,8 +51,15 @@ export class RemoteBinding {
     receive(change) {
         if (this.#control('_userChanges') && change.level !== 'node') return;
         const delay = this.#control('_delay');
-        if (delay > 0) this.#timers.debounce(delay, () => this.update());
-        else this.update();
+        if (delay > 0) this.#timers.debounce(delay, () => this.trigger());
+        else this.trigger();
+    }
+
+    /** Runtime-owned triggers report failures; explicit update callers still receive rejection. */
+    trigger() {
+        void this.update().catch(error => {
+            if (!this.closed) this.binding.runtime.reportError(error, 'Content could not be loaded');
+        });
     }
 
     /**
@@ -88,7 +95,7 @@ export class RemoteBinding {
             throw new Error(`${node.nodeTag} '${node.label}': remote '${name}' failed: ${error.message}`, {cause: error});
         }
         const onRemote = node.getAttr('_onRemote');
-        if (!this.closed && mounted && onRemote) this.#inline('_onRemote', onRemote, onRemote, params);
+        if (!this.closed && mounted && onRemote) await this.#inline('_onRemote', onRemote, onRemote, params);
     }
 
     /**

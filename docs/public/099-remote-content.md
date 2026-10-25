@@ -250,3 +250,15 @@ Intended differences from the legacy:
 - No `lazy` loading by visibility, no `_waitingMessage`, no `tbody` merge, no
   `_resolved` and no `_fired`.
 - The legacy alias `data(path, remote=…)` is not accepted: write `dataRemote`.
+
+
+<a id="gc-099-runtime-errors"></a>
+## Runtime-triggered failures
+
+A failed automatic `remote` load shows a nonmodal error notification. Open
+**Details** for the error and its cause; the rest of the page stays usable.
+Identical visible errors are coalesced. At most five distinct errors are visible; further failures increment a counter. Dismissed errors stay suppressed until the page is loaded again. Changing the remote
+parameters or the next configured trigger can retry the load. Intentional
+cancellation and results arriving after the owner closes do not show alerts.
+Explicit programmatic requests retain their Promise rejection contract; their
+caller remains responsible for handling errors.

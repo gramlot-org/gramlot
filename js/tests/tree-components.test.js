@@ -31,6 +31,7 @@ function nativeDrag(f, type, path, dataTransfer) {
 }
 function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, logic = null} = {}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
+    window.HTMLElement.prototype.showPopover = function () {};
     const app = new Gramlot({document: window.document, transport: false, collections: [collection]});
     const children = new Bag({alpha: 'A', beta: 'B'});
     const store = new Bag({folder: children, other: 'C'});
@@ -379,7 +380,6 @@ test('external payloads and another window instance do not enter the internal dr
 });
 
 test('a vetoed or failed preparation cancels startup without endDrag notification', async t => {
-    t.mock.method(console, 'error', () => {});
     let mode = 'veto', ends = 0;
     class Logic { prepare() { if (mode === 'error') throw new Error('Preparation failed'); return false; } }
     const f = fixture(t, {attrs: {nodeId: 'dragTree', draggable: true, onDrag: 'prepare'}, logic: Logic}); await tick();
@@ -389,11 +389,10 @@ test('a vetoed or failed preparation cancels startup without endDrag notificatio
         nativeDrag(f, 'dragend', 'folder', data); await tick();
         assert.equal(f.host.shadowRoot.querySelector('.draggedItem'), null);
     }
-    assert.equal(ends, 0); assert.equal(console.error.mock.callCount(), 1);
+    assert.equal(ends, 0); assert.equal(f.window.document.querySelectorAll('[role=alert]').length, 1);
 });
 
 test('eligibility errors reject and clean the gesture; end callback errors still publish completion', async t => {
-    t.mock.method(console, 'error', () => {});
     let ends = 0;
     class Logic { check() { throw new Error('Check failed'); } ended() { throw new Error('End callback failed'); } }
     const f = fixture(t, {attrs: {nodeId: 'dragTree', draggable: true, dropTypes: '*', dropTargetCb: 'check', onDragEnd: 'ended'}, logic: Logic}); await tick();
@@ -402,11 +401,10 @@ test('eligibility errors reject and clean the gesture; end callback errors still
     assert.equal(data.dropEffect, 'none'); assert.equal(data.image.isConnected, false);
     assert.equal(f.host.shadowRoot.querySelector('.canBeDropped,.cannotBeDropped'), null);
     nativeDrag(f, 'dragend', 'folder', data); await tick(); await tick();
-    assert.equal(ends, 1); assert.equal(console.error.mock.callCount(), 2);
+    assert.equal(ends, 1); assert.equal(f.window.document.querySelectorAll('[role=alert]').length, 2);
 });
 
 test('action errors do not roll back Data or redefine the browser effect as operation success', async t => {
-    t.mock.method(console, 'error', () => {});
     let ending;
     class Logic { receive(source, {item}) { item.setAttr({caption: 'Written before failure'}); throw new Error('Action failed'); } }
     const f = fixture(t, {attrs: {nodeId: 'dragTree', draggable: true, dropTarget: true, dropTypes: 'nodeattr', onDrop: 'receive'}, logic: Logic}); await tick();
@@ -415,11 +413,10 @@ test('action errors do not roll back Data or redefine the browser effect as oper
     assert.equal(data.image.isConnected, false);
     assert.equal(f.row('other').querySelector('.caption').textContent, 'Written before failure');
     nativeDrag(f, 'dragend', 'folder', data); await tick();
-    assert.equal(ending.dropEffect, 'move'); assert.equal(console.error.mock.callCount(), 1);
+    assert.equal(ending.dropEffect, 'move'); assert.equal(f.window.document.querySelectorAll('[role=alert]').length, 1);
 });
 
 test('a late rejected async action cannot clear a subsequent active drag', async t => {
-    t.mock.method(console, 'error', () => {});
     let reject;
     class Logic { receive() { return new Promise((resolve, fail) => { reject = fail; }); } }
     const f = fixture(t, {attrs: {draggable: true, dropTarget: true, dropTypes: 'nodeattr', onDrop: 'receive'}, logic: Logic}); await tick();
