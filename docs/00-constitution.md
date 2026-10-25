@@ -3801,3 +3801,7 @@ Owner answered “ok” to: at most five distinct errors visible, a counter for 
 ### Explicit tree search — 2026-10-25
 
 Owner confirms `searchText` and requests a navigation search toolbar, including unloaded branches and expansion restoration on clear. Search explicitly reads resolver-backed children; ordinary rendering still does not fetch them. The literal, case-insensitive query is debounced, highlights sanitized caption text, keeps ancestors, and uses temporary expansion without changing the store, selection or normal expansion set. Late reads may populate the owning resolver cache but cannot reinstate a cleared filter.
+
+<a id="gc-000-toolbox-date-parser"></a>
+
+Date-expression parser from Toolbox — owner, 2026-10-25: “Approvo l'emendamento: scrivilo in docs e docs_llm, aggiorna i docs correnti e committa.” `parseDateExpression` comes from `@genrojs/toolbox` (0.19.0 or later), which was extracted from the Gramlot port and runs the same Toolbox corpus. Gramlot re-exports it from `@gramlot/gramlot` with the same name, options and type names (`DateExpressionOptions`, `DateExpressionResult`, `DateExpressionErrorCode`), so consumers do not change. This supersedes the in-Gramlot location of the parser in 11.83 and the `date-parser/` module organization of GC-225 §065. Parsing semantics and their corpus tests belong to Toolbox; Gramlot tests only the re-export and its shipped bundles. No new parser API, alias or publication is authorized.

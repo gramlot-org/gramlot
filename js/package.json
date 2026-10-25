@@ -18,6 +18,7 @@
   "dependencies": {
     "@genrojs/bag": ">=0.11.0",
     "@genrojs/builders": ">=0.7.0",
+    "@genrojs/toolbox": ">=0.19.0",
     "@genrojs/tytx": ">=0.16.3",
     "dompurify": "3.4.16",
     "@codemirror/autocomplete": "^6.20.4",
