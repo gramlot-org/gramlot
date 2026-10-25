@@ -61,7 +61,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     renderedItem(node: SourceBagNode, item: unknown, runtimeAttrs: Record<string, unknown>,
         opts?: {tag?: string; document?: DomDocument}): any;
     /** Validate a detached candidate Source without changing the observed Source. */
-    validateCandidate(block: SourceBag, options?: {replacingNode?: SourceBagNode | null}): void;
+    validateCandidate(block: SourceBag, options?: {replacingNode?: SourceBagNode | null}): SourceBag;
     /** Suspend rendering for a mounted branch; the Source keeps changing normally. */
     freeze(node: SourceBagNode): void;
     /** Resume the whole branch and build its current Source once. */
@@ -73,7 +73,18 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     /** Build an inserted node and report the build to the binding runtime. */
     insert(node: SourceBagNode): void;
     /** Build the DOM of a node inside `container`, before `before`. */
-    buildNode(node: SourceBagNode, container: DomNode, before?: DomNode | null, parent?: unknown): void;
+    buildNode(node: SourceBagNode, container: DomNode, before?: DomNode | null, parent?: unknown): {
+        node: SourceBagNode;
+        binding: unknown;
+        container: DomNode;
+        parent: unknown;
+        children: Set<SourceBagNode>;
+        cleanup: Array<() => void>;
+        /** Element records have element; structural fragments have start/end markers. */
+        element?: DomElement;
+        start?: DomNode;
+        end?: DomNode;
+    };
     /** Set the container of a render record and of its children. */
     assignContainer(record: unknown, container: DomNode): void;
     /** Apply a Source update event to the DOM of a node. */
