@@ -44,3 +44,15 @@ write permission. Regression evidence: 13 core IDE tests; 12 host staging/live R
 tests including all five adapters with Remote Edit off/on; actual browser typing,
 Undo/Revert and disabled Save verified. Implemented and verified locally, awaiting
 owner trial and a separate publication decision.
+
+
+### Source ownership review — 2026-10-25
+
+Owner requires instance state to belong to Data or Source and relative Data access.
+Shared Logic groups must not retain a current IDE. The local correction attaches
+coordination and request resources to each owning Source node, derives panels from
+Source, and gives editors per-instance identities. Reusable lesson for later ports:
+multiple mounts must be tested with identical external document keys and delayed
+completion, not merely with different pages. A two-IDE Python composition verifies
+isolation and DOM-only detach/dock. The 62-test focused suite and runtime build pass;
+owner trial and publication remain separate. See GC-365 §035 and GC-070 §2180.

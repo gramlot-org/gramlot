@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {Gramlot, Handler, SourceHandler, RpcHandler, DomHandler, UtilitiesHandler, GramlotBuilder,
-    GramlotRenderer, InOut} from '../src/index.js';
+    GramlotRenderer, InOut, DeviceHandler} from '../src/index.js';
 
 function page() {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
@@ -16,14 +16,14 @@ test('a Gramlot instance has lifecycle, Data, formatting context, the server ada
     for (const name of ['publish', 'subscribe', 'unsubscribe']) assert.equal(typeof app[name], 'function');
     assert.equal(app.subscriptions, undefined);
     assert.deepEqual(Object.keys(app).sort(),
-        ['abort', 'capabilities', 'commands', 'data', 'devices', 'dom', 'locale', 'logic', 'pageId', 'rpc', 'serverAdapter', 'src', 'state',
+        ['abort', 'capabilities', 'commands', 'data', 'devices', 'dom', 'dvc', 'locale', 'logic', 'pageId', 'rpc', 'serverAdapter', 'src', 'state',
             'timeZone', 'utl']);
 });
 
 test('each proxy is an instance of its handler and of Handler, pointing back to the page', () => {
     const app = page();
     for (const [name, handlerClass] of [['src', SourceHandler], ['rpc', RpcHandler], ['dom', DomHandler],
-        ['utl', UtilitiesHandler]]) {
+        ['utl', UtilitiesHandler], ['dvc', DeviceHandler]]) {
         assert.ok(app[name] instanceof handlerClass, name);
         assert.ok(app[name] instanceof Handler, name);
         assert.equal(app[name].gramlot, app, name);
@@ -46,4 +46,16 @@ test('every moved member is reachable at its new path', () => {
     for (const name of ['getDomNode', 'getBaseSourceNode', 'reference']) assert.equal(typeof app.dom[name], 'function', name);
     assert.ok(app.utl.inout instanceof InOut);
     assert.equal(app.utl.inout.gramlot, app);
+});
+
+
+test('navigate uses the owning document and rejects executable, relative or credential URLs', () => {
+    const calls=[];
+    const owner={src:{renderer:{destination:{ownerDocument:{defaultView:{location:{assign:url=>calls.push(url)}}}}}}};
+    const handler=new DomHandler(owner);
+    handler.navigate('https://example.test/gallery/');
+    assert.deepEqual(calls,['https://example.test/gallery/']);
+    for(const url of ['javascript:alert(1)','data:text/html,x','file:///tmp/x','/gallery/',
+        'https://name:password@example.test/',null,{}]) assert.throws(()=>handler.navigate(url));
+    assert.equal(calls.length,1);
 });

@@ -104,7 +104,11 @@ export class ControlAdapter {
             this.#pending = true;
             return;
         }
-        if (this.constructor.preservesUnchangedValue && this.#hasProjectedValue && this.same(this.#projectedValue, value)) return;
+        // A synchronous Data rule can reject an edit and restore the previous
+        // projection. The control may already hold the rejected candidate.
+        if (this.constructor.preservesUnchangedValue && this.#hasProjectedValue
+            && this.same(this.#projectedValue, value)
+            && (!this.#committing || this.same(this.read(), value))) return;
         this.#projectedValue = value;
         this.#hasProjectedValue = true;
         if (this.#committing && this.same(this.read(), value)) return;

@@ -1,7 +1,7 @@
 /** Civil-date calendar shared by the inline control and the text editor popup. */
 import {controlElement} from './bases.js';
 
-export function civilDate(year, month, day) {
+function civilDate(year, month, day) {
     const value = new Date(0); value.setUTCFullYear(year, month, day); return value;
 }
 export function checkCivilDate(value) {

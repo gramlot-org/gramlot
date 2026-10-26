@@ -20,6 +20,21 @@ async function fixture(t,author,logic=class {}) {
  t.after(()=>{app.dispose();window.close();});
  return {app,window,element:id=>window.document.getElementById(id)};
 }
+test('Labelbox around the frame preserves window content and binding across reopen',async t=>{
+ const f=await fixture(t,(root,app)=>{
+  app.data.setItem('open',true);app.data.setItem('label','Document');
+  const frame=root.floatingPane({id:'float',open:'^open'}).frame;
+  sourceTarget(frame).setAttr({lbl:'^label'});
+  frame.center.input({id:'draft',value:'^draft'});
+ });
+ const win=f.element('float'),input=f.element('draft'),presentation=win.firstElementChild;
+ const frame=presentation.labelbox.controlBox.firstElementChild;
+ assert.equal(frame.localName,'gramlot-frame-pane');assert.equal(win.opened,true);
+ f.app.data.setItem('draft','Retained');f.app.data.setItem('label','Changed');
+ f.app.data.setItem('open',false);await settle();f.app.data.setItem('open',true);await settle();
+ assert.equal(win.firstElementChild,presentation);assert.equal(f.element('draft'),input);
+ assert.equal(input.value,'Retained');assert.equal(presentation.labelbox.fieldLabel.textContent,'Changed');
+});
 test('window grammar and real frame helpers keep native dialog separate',async t=>{
  const b=new GramlotBuilder(null,{collections:[layout]});const w=b.root.dialog();
  assert.equal(w.frame,w.frame);assert.equal(sourceTarget(w).value.getNodes().length,1);

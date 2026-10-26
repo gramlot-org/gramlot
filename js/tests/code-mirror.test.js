@@ -122,6 +122,49 @@ test('live false commits on leaving editor; native contenteditable events do not
     host.remove();
 });
 
+
+test('detachable tab retains Source, editor, selection, Undo and live bindings through repeated docking', async () => {
+    window.HTMLDialogElement.prototype.show = function () { this.open = true; };
+    window.HTMLDialogElement.prototype.close = function () { this.open = false; };
+    const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+    const {app, host, stop} = fixture(root => {
+        const tabs = root.tabContainer({id:'tabs', selectedPage:'code'});
+        tabs.contentPane({title:'Example', pageName:'example'}).div('Example');
+        base(tabs.contentPane({id:'code-pane', title:'Code', pageName:'code', detachable:true}));
+    });
+    try {
+        await host.ready; await settle();
+        const tabs = document.getElementById('tabs'), pane = document.getElementById('code-pane');
+        const originalParent = pane.parentNode, editorParent = host.parentNode, view = host.editor.view;
+        const source = app.src.renderer.elements.get(pane).node;
+        view.dispatch({changes:{from:0,insert:'# edit\n'},selection:{anchor:7}});
+        for (let cycle=0; cycle<3; cycle++) {
+            tabs.shadowRoot.querySelector('[aria-label="Detach Code"]').click(); await settle();
+            const floating = tabs.shadowRoot.querySelector('dialog[open]');
+            assert.ok(floating);
+            assert.equal(host.editor.view, view);
+            assert.equal(pane.parentNode, originalParent); assert.equal(host.parentNode, editorParent);
+            assert.equal(app.src.renderer.elements.get(pane).node, source);
+            assert.equal(view.state.selection.main.head,7); assert.equal(undoDepth(view.state),1);
+            assert.equal(tabs.shadowRoot.querySelector('[aria-selected=true]').textContent,'Example');
+            floating.querySelector('[aria-label="Close window"]').click(); await settle();
+            assert.equal(tabs.shadowRoot.querySelector('dialog'),null);
+            assert.equal(tabs.shadowRoot.querySelector('[aria-selected=true]').textContent,'Code');
+            assert.equal(host.editor.view,view); assert.equal(undoDepth(view.state),1);
+        }
+        tabs.shadowRoot.querySelector('[aria-label="Detach Code"]').click(); await settle();
+        undo(view); assert.match(app.data.getItem('document.content'),/^def/);
+        app.data.setItem('document.content','from server');
+        assert.equal(view.state.doc.toString(),'from server');
+        tabs.shadowRoot.querySelector('[aria-label="Close window"]').click(); await settle();
+        assert.equal(host.editor.view,view); assert.equal(view.state.doc.toString(),'from server');
+        tabs.shadowRoot.querySelector('[aria-label="Detach Code"]').click(); await settle();
+        tabs.remove(); await settle();
+        assert.equal(tabs.shadowRoot.querySelector('dialog'),null);
+        assert.equal(host.editor,null);
+    } finally { stop(); }
+});
+
 test('save shortcut is consumed but never published while readonly or disabled',async()=>{
     const {keymap}=await import('@codemirror/view');
     const {app,host}=fixture((root,app)=>{app.data.setItem('locked',true);app.data.setItem('disabled',false);base(root,{readonly:'^locked',disabled:'^disabled'});});

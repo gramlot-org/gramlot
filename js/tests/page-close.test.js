@@ -27,13 +27,12 @@ test('explicit disposal sends one owned close request and releases the page loca
     app.dispose();
     app.dispose();
     window.dispatchEvent(new window.Event('pagehide'));
-    assert.equal(requests.length, 2);
+    assert.equal(requests.length, 1);
     assert.equal(requests[0].url, '/prefix/rpc');
-    assert.equal(requests[1].url, '/prefix/close');
-    assert.equal(requests[1].options.keepalive, true);
-    assert.equal(requests[1].options.credentials, 'same-origin');
-    assert.equal(requests[1].options.body, '{"pageId":"page"}');
-    assert.equal(beacons.length, 0);
+    assert.equal(beacons.length, 1);
+    assert.equal(beacons[0].url, '/prefix/close');
+    assert.equal(beacons[0].body.type.split(';', 1)[0], 'application/json');
+    assert.equal(await beacons[0].body.text(), '{"pageId":"page"}');
     assert.equal(app.state, 'disposed');
 });
 

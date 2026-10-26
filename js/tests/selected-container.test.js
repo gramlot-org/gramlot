@@ -172,3 +172,50 @@ test('tabAlign defaults to start and reactive alignment retains selection, draft
         f.window.close();
     }
 });
+
+test('detachable icon handles drag, cancellation, dynamic eligibility and Source removal', async () => {
+    const f=await fixture(), {app,element,source,window}=f;
+    window.HTMLDialogElement.prototype.show=function(){this.open=true;};
+    window.HTMLDialogElement.prototype.close=function(){this.open=false;};
+    const child=source.value.getNode('a'); child.setAttr({detachable:true}); await settle();
+    const button=element.shadowRoot.querySelector('[aria-label="Detach Alpha"]');
+    const toolbar=button.closest('.panel-tools'), viewport=button.closest('[role=tabpanel]');
+    assert.ok(viewport, 'detach belongs inside the panel');
+    assert.equal(element.shadowRoot.querySelector('.tabs .detach'),null);
+    assert.equal(toolbar.hidden,false);
+    element.shadowRoot.querySelector('[role=tab][aria-label=Beta]').click();await settle();
+    assert.equal(toolbar.hidden,true,'closed panel does not expose a detach control');
+    element.shadowRoot.querySelector('[role=tab][aria-label=Alpha]').click();await settle();
+    assert.equal(toolbar.hidden,false);
+    let capture=null;
+    button.setPointerCapture=id=>{capture=id;};button.hasPointerCapture=id=>capture===id;
+    button.releasePointerCapture=()=>{capture=null;};
+    const pointer=(type,x,y)=>{
+        const event=new window.MouseEvent(type,{button:0,clientX:x,clientY:y,bubbles:true});
+        Object.defineProperty(event,'pointerId',{value:1});button.dispatchEvent(event);
+    };
+    pointer('pointerdown',30,20);pointer('pointercancel',100,100);pointer('pointerup',100,100);await settle();
+    assert.equal(element.shadowRoot.querySelector('dialog'),null);
+    pointer('pointerdown',30,20);pointer('pointerup',300,180);button.click();await settle();
+    assert.equal(element.shadowRoot.querySelectorAll('dialog[open]').length,1);
+    assert.equal(app.data.getItem('page'),'b');
+    assert.equal(toolbar.hidden,true,'floating uses its own window title bar');
+    element.shadowRoot.querySelector('[aria-label="Close window"]').click();await settle();
+    assert.equal(toolbar.hidden,false,'docking restores the internal handle');
+    button.click();await settle();
+    assert.equal(app.src.renderer.elements.get(window.document.getElementById('a')).node,child);
+    child.setAttr({title:'Updated'});await settle();
+    assert.equal(element.shadowRoot.querySelector('dialog').getAttribute('aria-label'),'Updated');
+    child.setAttr({hidden:true});await settle();
+    assert.equal(element.shadowRoot.querySelector('dialog'),null);
+    child.setAttr({hidden:false});await settle();
+    element.shadowRoot.querySelector('[aria-label="Detach Updated"]').click();await settle();
+    child.setAttr({detachable:false});await settle();
+    assert.equal(element.shadowRoot.querySelector('dialog'),null);
+    child.setAttr({detachable:true});await settle();
+    element.shadowRoot.querySelector('[aria-label="Detach Updated"]').click();await settle();
+    source.value.popNode('a');await settle();
+    assert.equal(element.shadowRoot.querySelector('dialog'),null);
+    assert.equal(window.document.getElementById('field'),null);
+    app.dispose();window.close();
+});

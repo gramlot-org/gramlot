@@ -13,7 +13,7 @@ SVG_NS = "http://www.w3.org/2000/svg"
 BINDING_ATTRIBUTES = frozenset({
     "default", "default_value", "live", "group", "visible", "action", "fire", "ask", "_ask", "_ask_if", "_ask_title", "_ask_onCancel",
     "if", "else", "_init", "_onStart", "_onBuilt", "_delay", "_timing", "_userChanges",
-    "remote", "_cachedRemote", "_onRemote", "_onCalling", "onClose", "onDrag", "onDrop", "dropTargetCb", "onDragEnd",
+    "remote", "_cachedRemote", "_onRemote", "_onCalling", "onClose", "onEnd", "onDrag", "onDrop", "dropTargetCb", "onDragEnd",
     "dropTarget", "dropTypes", "dragTags", "dropTags", "effectAllowed", "dropEffect", "dragClass",
 })
 BINDING_ATTRIBUTE_PREFIXES = ("default_", "attr_", "fire_", "connect_on", "subscribe_", "selfsubscribe_", "formsubscribe_", "remote_")
@@ -77,6 +77,8 @@ def require_no_script_attributes(node, attrs, prefixes=()):
         for name, value in executable:
             if node.pointer_type(value) or is_expression(value):
                 raise ValueError(f"script '{node.label}': '{name}' must be literal Source; script code and URLs cannot come from Data")
+    if attrs.get("onEnd") is not None and (node.node_tag.lower() != "transformpane" or not (node._get_meta("gramlot_component") or {}).get("parameters", {}).get("onEnd")):
+        raise ValueError("onEnd is only supported on transformPane")
     if attrs.get("onClose") is not None and (node.parent_node is None or not (node.parent_node._get_meta("gramlot_component") or {}).get("childParameters", {}).get("onClose")):
         raise ValueError("onClose is only supported on a tab/stack panel")
     for name, value in without_null_values(without_binding_attributes(attrs)).items():

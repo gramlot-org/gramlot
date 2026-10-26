@@ -30,6 +30,7 @@ export function defineComponent({name, tag, base, mixins = [], parameters = {}, 
     Object.assign(effective, parameters);
     for (const spec of Object.values(effective)) annotation(spec);
     return Object.freeze({name, tag, base, subTags, presentationDefaults: Object.freeze([...presentationDefaults]), dataScope, command, bagStore, mixins: Object.freeze([...mixins]),
+        labelbox: mixins.some(mixin => mixin.labelbox === true),
         parameters: freeze(structuredClone(effective)), childParameters: freeze(structuredClone(childParameters)), sourceContext, dragSource, implementation});
 }
 
@@ -78,6 +79,7 @@ export class ComponentCollection {
                     presentationDefaults: [...component.presentationDefaults], dataScope: component.dataScope, command: component.command,
                     ...(Object.keys(component.childParameters).length ? {childParameters: structuredClone(component.childParameters)} : {}),
                     ...(component.sourceContext ? {sourceContext: true} : {}),
+                    ...(component.labelbox ? {labelbox: true} : {}),
                     ...(component.dragSource ? {dragSource: true} : {}),
                     ...(component.bagStore ? {bagStore: true} : {})}}
             }]))};

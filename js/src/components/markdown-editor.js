@@ -14,7 +14,7 @@ function MarkdownControl(MarkdownElement) {
             this.control.className='markdown-editor-control';
             this.controlBox.append(this.control);
             const style=this.ownerDocument.createElement('style');
-            style.textContent=':host{display:block;height:400px;min-height:0}.control-box,.labelbox,.markdown-editor-control{height:100%;min-height:0}.labelbox{grid-template-rows:auto minmax(0,1fr)}.markdown-editor-control{overflow:hidden}.markdown-editor-status{font:inherit;color:var(--gramlot-text-secondary,GrayText)}.markdown-editor-status:empty{display:none}';
+            style.textContent=':host{display:block;height:400px;min-height:0}.control-box,.markdown-editor-control{height:100%;min-height:0}.markdown-editor-control{overflow:hidden}.markdown-editor-status{font:inherit;color:var(--gramlot-text-secondary,GrayText)}.markdown-editor-status:empty{display:none}';
             this.shadowRoot.append(style);
             for (const type of ['input','change']) this.control.addEventListener(type,event=>{
                 if (event.target!==this.control) event.stopImmediatePropagation();

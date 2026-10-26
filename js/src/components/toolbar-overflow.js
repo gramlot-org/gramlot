@@ -1,3 +1,4 @@
+import {labelboxContent} from '../view/labelbox.js';
 import {SVG_NS} from '../renderer/attributes.js';
 /** Responsive menu projection. Original Source and light-DOM nodes never move. */
 import {positionPopup} from './popup.js';
@@ -96,7 +97,7 @@ export class ToolbarOverflow {
         if(available<=0)return;
         let active=menu.ownerDocument.activeElement;
         while(active?.shadowRoot?.activeElement)active=active.shadowRoot.activeElement;
-        const units=[...menu.children].filter(unit=>!unit.hidden && (unit.localName!=='gramlot-menu' || unit.permanent));
+        const units=[...menu.children].filter(unit=>!unit.hidden && (labelboxContent(unit).localName!=='gramlot-menu' || labelboxContent(unit).permanent));
         for(const unit of this.#units)if(!units.includes(unit)){
             this.#resize.unobserve(unit);unit.removeAttribute('slot');unit.removeAttribute('data-menu-overflow');
         }
@@ -111,19 +112,19 @@ export class ToolbarOverflow {
         const gap=parseFloat(win.getComputedStyle(this.#viewport).gap)||0;
         const lengths=new Map(units.map(unit=>{
             const css=win.getComputedStyle(unit);
-            const length=unit.localName==='gramlot-spacer'?(unit.parameters.size??0):unit.getBoundingClientRect()[axis];
+            const length=labelboxContent(unit).localName==='gramlot-spacer'?(labelboxContent(unit).parameters.size??0):unit.getBoundingClientRect()[axis];
             return [unit,length+(parseFloat(css[vertical?'marginTop':'marginLeft'])||0)+(parseFloat(css[vertical?'marginBottom':'marginRight'])||0)];
         }));
-        const separator=unit=>unit.getAttribute('role')==='separator';
+        const separator=unit=>labelboxContent(unit).getAttribute('role')==='separator';
         const tidy=list=>list.filter((unit,index)=>!separator(unit) ||
-            list.slice(0,index).some(item=>item.localName!=='gramlot-spacer'&&!separator(item)) &&
-            list.slice(index+1).find(item=>item.localName!=='gramlot-spacer') &&
-            !separator(list.slice(index+1).find(item=>item.localName!=='gramlot-spacer')));
+            list.slice(0,index).some(item=>labelboxContent(item).localName!=='gramlot-spacer'&&!separator(item)) &&
+            list.slice(index+1).find(item=>labelboxContent(item).localName!=='gramlot-spacer') &&
+            !separator(list.slice(index+1).find(item=>labelboxContent(item).localName!=='gramlot-spacer')));
         const required=remaining=>remaining.reduce((sum,unit)=>sum+lengths.get(unit),0)+Math.max(0,remaining.length-1)*gap;
         let remaining=tidy(units);
         if(required(remaining)>available){
-            const candidates=units.map((unit,index)=>({unit,index})).filter(({unit})=>unit.localName==='gramlot-menu-line' && !separator(unit) && unit.parameters.overflowable)
-                .sort((a,b)=>a.unit.parameters.priority-b.unit.parameters.priority || b.index-a.index);
+            const candidates=units.map((unit,index)=>({unit,index})).filter(({unit})=>labelboxContent(unit).localName==='gramlot-menu-line' && !separator(unit) && labelboxContent(unit).parameters.overflowable)
+                .sort((a,b)=>labelboxContent(a.unit).parameters.priority-labelboxContent(b.unit).parameters.priority || b.index-a.index);
             for(const {unit} of candidates){
                 if(required(remaining)<=available-32)break;
                 this.#overflow.add(unit);remaining=tidy(remaining.filter(item=>item!==unit));

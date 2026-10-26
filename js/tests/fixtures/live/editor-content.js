@@ -10,9 +10,9 @@ window.exerciseEditors=async()=>{
     app.data.setItem('html',original);
     app.data.setItem('markdown','# Original\n');
     app.data.setItem('code','original');
-    app.data.setItem('live',true);
+    app.data.setItem('live',true);app.data.setItem('labelPosition','TL');
     for(const [tag,path] of [['htmlEditor','html'],['markdownEditor','markdown'],['codeMirror','code']])
-        builder.root[tag]({id:path,value:`^${path}`,readonly:'^locked',live:'^live',height:'260px'});
+        builder.root[tag]({id:path,value:`^${path}`,readonly:'^locked',live:'^live',height:'260px',lbl:path,lbl_position:'^labelPosition'});
     app.src.startSource(builder.toTytx());
     const hosts=['html','markdown','code'].map(id=>document.getElementById(id));
     await Promise.all(hosts.map(host=>host.ready));
@@ -20,6 +20,10 @@ window.exerciseEditors=async()=>{
     const engines=hosts.map(host=>host.engine??host.editor);
     const frame=html.control.querySelector('iframe'), body=frame.contentDocument.body;
     const controls=hosts.map(host=>host.control);
+    app.data.setItem('labelPosition','L');
+    check(hosts.every((host,index)=>(host.engine??host.editor)===engines[index]),'Label layout preserves editor engines');
+    check(hosts.every(host=>!host.shadowRoot.querySelector('.labelbox')),'Only renderer owns editor Labelbox');
+    app.data.setItem('labelPosition','TL');
     const native=Object.values(Jodit.instances).find(instance=>instance.editor===body);
     check(native,'Real Jodit instance is registered');
     check(!frame.hasAttribute('sandbox'),'Editing uses sanitization and CSP, not the WebKit-blocking sandbox');
@@ -86,7 +90,7 @@ window.exerciseEditors=async()=>{
     check(html.engine===engines[0],'Deferred update retains the same engine');
     // Exercise Jodit's official insertion paths with untrusted markup. The fixture uses
     // actual clipboard/drop events, accepting HTML rather than opening its choice dialog.
-    app.data.setItem('live',true);
+    app.data.setItem('live',true);app.data.setItem('labelPosition','TL');
     native.options.askBeforePasteHTML=false;
     window.editorAttack=0;frame.contentWindow.editorAttack=0;
     const attack='<p>Accepted <strong>formatting</strong></p>'+

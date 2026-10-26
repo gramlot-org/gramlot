@@ -19,7 +19,7 @@ export class DirectoryResolver extends RemoteResolver {
     abort():void;
 }
 export class FileSystemController {
-    constructor(gramlot:Gramlot, state:Bag);
+    constructor(gramlot:Gramlot, source:SourceBagNode);
     open(root:string):Promise<string|null>;
     dispose():void;
 }

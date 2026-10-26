@@ -8,13 +8,13 @@
     --gramlot-tree-selected-background: var(--gramlot-selected);
     --gramlot-tree-selected-color: var(--gramlot-ink);
     --gramlot-window-backdrop: rgb(0 0 0 / 24%);
-    --gramlot-background: #f5f5f7;
+    --gramlot-background: #f2f2f7;
     --gramlot-surface: #ffffff;
     --gramlot-surface-subtle: #eaeaed;
     --gramlot-ink: #1d1d1f;
     --gramlot-text-secondary: #636366;
     --gramlot-border: #d9d9de;
-    --gramlot-border-control: #b5b5bd;
+    --gramlot-border-control: #8a8a8e;
     --gramlot-action: #0066cc;
     --gramlot-action-hover: #004c99;
     --gramlot-selected: #dceaff;
@@ -38,8 +38,10 @@
     --gramlot-field-font-size: 1rem;
     --gramlot-button-padding: 3px 9px;
     --gramlot-button-gap: 4px;
-    --gramlot-button-background: var(--gramlot-surface);
-    --gramlot-button-hover: var(--gramlot-selected);
+    --gramlot-button-background: #0066cc;
+    --gramlot-button-color: #ffffff;
+    --gramlot-chrome-background: var(--gramlot-surface);
+    --gramlot-button-hover: #004c99;
     --gramlot-label-size: 1em;
     --gramlot-label-gap: 4px;
     --gramlot-radius-sm: 6px;
@@ -69,8 +71,8 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --gramlot-background: #1c1c1e;
-    --gramlot-surface: #2c2c2e;
+    --gramlot-background: #000000;
+    --gramlot-surface: #1c1c1e;
     --gramlot-surface-subtle: #38383a;
     --gramlot-ink: #f5f5f7;
     --gramlot-text-secondary: #bdbdc4;
@@ -78,8 +80,8 @@
     --gramlot-border-control: #74747c;
     --gramlot-action: #70b7ff;
     --gramlot-action-hover: #abd5ff;
-    --gramlot-selected: #27476d;
-    --gramlot-field-background: #2c2c2e;
+    --gramlot-selected: #244367;
+    --gramlot-field-background: #1c1c1e;
     --gramlot-field-readonly-background: #38383a;
     --gramlot-label-color: #bdbdc4;
     --gramlot-focus-ring: #70b7ff;
@@ -97,8 +99,8 @@
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --gramlot-background: #1c1c1e;
-    --gramlot-surface: #2c2c2e;
+    --gramlot-background: #000000;
+    --gramlot-surface: #1c1c1e;
     --gramlot-surface-subtle: #38383a;
     --gramlot-ink: #f5f5f7;
     --gramlot-text-secondary: #bdbdc4;
@@ -106,8 +108,8 @@
     --gramlot-border-control: #74747c;
     --gramlot-action: #70b7ff;
     --gramlot-action-hover: #abd5ff;
-    --gramlot-selected: #27476d;
-    --gramlot-field-background: #2c2c2e;
+    --gramlot-selected: #244367;
+    --gramlot-field-background: #1c1c1e;
     --gramlot-field-readonly-background: #38383a;
     --gramlot-label-color: #bdbdc4;
     --gramlot-focus-ring: #70b7ff;
@@ -136,11 +138,15 @@
   :where(button,input[type="button"],input[type="submit"],input[type="reset"],.button) {
     min-block-size: var(--gramlot-field-height); padding: var(--gramlot-button-padding);
     font-size: 1rem; line-height: 1.3; font-weight: 500;
-    background: var(--gramlot-button-background); color: var(--gramlot-ink); border-color: var(--gramlot-border-control);
+    background: var(--gramlot-button-background); color: #ffffff; border-color: transparent;
   }
   :where(button,input[type="button"],input[type="submit"],input[type="reset"],.button):hover:not(:disabled) {
-    background: var(--gramlot-selected); color: var(--gramlot-action-hover); border-color: var(--gramlot-action);
+    background: #004c99; color: #ffffff; border-color: transparent;
   }
+  gramlot-button.button--secondary,gramlot-toggle-button.button--secondary,gramlot-drop-down-button.button--secondary { background:transparent; border-color:transparent; }
+  :where(.button--secondary,button.secondary) { background:var(--gramlot-selected); color:var(--gramlot-action); border-color:transparent; }
+  :where(.button--secondary,button.secondary):hover:not(:disabled) { background:var(--gramlot-selected); color:var(--gramlot-action-hover); border-color:var(--gramlot-action); }
+  :where(button,.button):active:not(:disabled) { transform:none; filter:brightness(.9); }
   :where(label) { font-size: 1em; font-weight: 400; color: var(--gramlot-label-color); margin-block-end: var(--gramlot-label-gap); }
   :where(input[readonly],textarea[readonly]) { background: var(--gramlot-field-readonly-background); }
   :where(.button--quiet,button.quiet) { background: transparent; color: var(--gramlot-action); border-color: transparent; }
@@ -179,6 +185,47 @@
 }
 @layer gramlot.base {
   @media (max-width: 640px), (pointer: coarse) {
-    html { font-size: 16px; }
+    html { font-size: 17px; }
+    @supports (font: -apple-system-body) { html { font: -apple-system-body; } }
+    body { line-height:1.4; }
+    h1 { font-size:2rem; font-weight:700; letter-spacing:-.025em; }
+    h2 { font-size:1.3rem; font-weight:650; }
+    h3 { font-size:1.05rem; font-weight:600; }
+  }
+}
+
+/* Touch presentation follows the existing density setting; minimums grow with text. */
+@layer gramlot.touch {
+  @media (max-width:640px), (pointer:coarse) {
+    :root:not([data-gramlot-touch="off"]) {
+      --gramlot-field-height:max(44px,2.65rem); --gramlot-field-font-size:max(16px,1rem);
+      --gramlot-field-padding:.55rem .75rem; --gramlot-button-padding:.6rem 1rem;
+      --gramlot-label-size:.88rem; --gramlot-label-gap:.4rem;
+      --gramlot-tree-row-height:max(44px,2.65rem); --gramlot-tab-height:max(44px,2.65rem);
+    }
+    :where(button,.button,summary,[role="tab"],a) { min-block-size:44px; }
+    :where(nav a,.actions a) { display:inline-flex; align-items:center; }
+    :where(label:has(input[type="checkbox"]),label:has(input[type="radio"])) { min-block-size:44px; display:inline-flex; align-items:center; gap:.6rem; }
+  }
+}
+/* Content stays opaque. Materials are confined to navigation controls. */
+@layer gramlot.components {
+  :where([role="toolbar"]) { --gramlot-button-padding:4px 6px; background:var(--gramlot-surface); color:var(--gramlot-ink); }
+  @supports (backdrop-filter:blur(16px)) {
+    :where([role="toolbar"]) { background:color-mix(in srgb,var(--gramlot-surface) 92%,transparent); backdrop-filter:blur(16px) saturate(1.2); }
+  }
+  @media (prefers-reduced-transparency:reduce), (prefers-contrast:more) {
+    :where([role="toolbar"]) { background:var(--gramlot-surface); backdrop-filter:none; }
+  }
+  @media (prefers-contrast:more) {
+    :where(input,select,textarea,button,.button) { border:2px solid currentColor; }
+    :where(a) { text-decoration:underline; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    :where(button,.button) { transition:none; transform:none; }
+  }
+  @media (forced-colors:active) {
+    :where(button,.button) { background:ButtonFace; color:ButtonText; border-color:ButtonText; filter:none; }
+    :where([role="toolbar"]) { background:Canvas; color:CanvasText; backdrop-filter:none; }
   }
 }

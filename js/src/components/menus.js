@@ -1,4 +1,5 @@
 /** Shared popup/permanent menu presentation. Source and execution stay in bindings. */
+import {labelboxContent, labelboxPresentation} from '../view/labelbox.js';
 import {projectParameters} from './parameters.js';
 import {positionPopup} from './popup.js';
 import {ToolbarOverflow} from './toolbar-overflow.js';
@@ -38,7 +39,7 @@ export function MenuContainer(HTMLElement) {
         get items() { return [...this.querySelectorAll('gramlot-menu-line')].filter(item => item.menuOwner===this && !item.parameters.group); }
         get overflow() { return this.#overflow; }
         isOverflowed(item) { return this.#overflow.contains(item); }
-        get usableItems() { return this.items.filter(item => item.slot!=='suppressed' && !item.disabled && !item.hidden && !item.closest('[hidden]') && item.getAttribute('role') !== 'separator'); }
+        get usableItems() { return this.items.filter(item => labelboxPresentation(item).slot!=='suppressed' && !item.disabled && !item.hidden && !item.closest('[hidden]') && item.getAttribute('role') !== 'separator'); }
         get parentMenu() { return this.parentElement?.closest('gramlot-menu') ?? null; }
         connectedCallback() {
             this.#observer = new this.ownerDocument.defaultView.MutationObserver(() => {this.refreshItems();this.#overflow.schedule();});
@@ -73,10 +74,10 @@ export function MenuContainer(HTMLElement) {
             return keys;
         }
         #attachOpening() {
-            const owner=this.parentElement;
+            const owner=labelboxPresentation(this).parentElement;
             if (this.permanent || !owner) return;
-            if (['gramlot-menu-line','gramlot-drop-down-button'].includes(owner.localName)) { this.slot='menu'; return; }
-            this.removeAttribute('slot');
+            if (['gramlot-menu-line','gramlot-drop-down-button'].includes(owner.localName)) { labelboxPresentation(this).slot='menu'; return; }
+            labelboxPresentation(this).removeAttribute('slot');
             if (owner.localName==='gramlot-menu') return;
             this.#attachment=owner;
             this.#attachmentEvents=new this.ownerDocument.defaultView.AbortController();
@@ -261,7 +262,7 @@ export function menuLine(Base) {
             this.addEventListener('pointerleave',()=>clearTimeout(this.#hover));
         }
         get menuOwner() { return this.parentElement?.closest('gramlot-menu') ?? null; }
-        get submenu() { return [...this.children].find(child=>child.localName==='gramlot-menu') ?? null; }
+        get submenu() { return [...this.children].map(labelboxContent).find(child=>child.localName==='gramlot-menu') ?? null; }
         get entryCaption() { return this.parameters.caption ?? this.#registry?.label ?? ''; }
         get entryIcon() { return this.parameters.icon || this.parameters.iconSrc ? this.parameters.icon : this.#registry?.icon; }
         get entryIconSrc() { return this.parameters.icon || this.parameters.iconSrc ? this.parameters.iconSrc : this.#registry?.iconSrc; }
@@ -337,7 +338,7 @@ export function menuLine(Base) {
         prepareCommand(event) {
             if (this.parameters.group || this.disabled || this.hidden) return false;
             if (this.submenu) { event.stopPropagation(); if(this.submenu.opened)this.submenu.close();else this.openSubmenu();return false; }
-            const drop=this.menuOwner?.parentElement;
+            const drop=labelboxPresentation(this.menuOwner)?.parentElement;
             if (drop?.localName==='gramlot-drop-down-button') drop.selectCommand(this,event.shiftKey);
             else this.menuOwner.closeChain();
             return true;

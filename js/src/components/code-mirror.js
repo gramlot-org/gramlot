@@ -5,7 +5,7 @@ import {FieldState} from './field-state.js';
 
 const languages = ['text', 'python', 'javascript', 'typescript', 'json', 'html', 'css', 'xml', 'markdown', 'sql', 'typst'];
 let engineModule;
-export function EditorControl(HTMLElement) {
+function EditorControl(HTMLElement) {
     return class extends controlElement(HTMLElement) {
         #value = '';
         #generation = 0;
@@ -16,8 +16,7 @@ export function EditorControl(HTMLElement) {
             this.controlBox.append(this.control);
             const style = this.ownerDocument.createElement('style');
             style.textContent = `:host{display:block;height:300px;min-height:0;min-width:0}
-                .control-box,.labelbox,.editor-control{height:100%;min-height:0;min-width:0}
-                .labelbox{grid-template-rows:auto minmax(0,1fr)}
+                .control-box,.editor-control{height:100%;min-height:0;min-width:0}
                 .editor-control{border:1px solid var(--gramlot-border-control,GrayText);border-radius:var(--gramlot-radius-sm,4px);overflow:hidden}
                 :host([data-editor-disabled]) .editor-control{opacity:.6}
                 .editor-status{padding:1em;color:var(--gramlot-text-secondary,GrayText)}`;

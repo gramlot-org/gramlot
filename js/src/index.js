@@ -42,3 +42,7 @@ export {CommandRegistry} from './commands.js';
 export * from './components/index.js';
 
 export {collectionBuildId, verifyCollectionArtifact} from './collection-artifact.js';
+
+export {DeviceHandler} from './handlers/device-handler.js';
+
+export {MobileEnvironment} from './mobile-environment.js';

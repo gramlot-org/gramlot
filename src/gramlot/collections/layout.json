@@ -11,6 +11,310 @@
   },
   "abstracts": {},
   "elements": {
+    "transformPane": {
+      "doc": null,
+      "sub_tags": "*",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "x",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 0
+          },
+          {
+            "name": "y",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 0
+          },
+          {
+            "name": "rotate",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 0
+          },
+          {
+            "name": "zoom",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 1
+          },
+          {
+            "name": "min",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 0.5
+          },
+          {
+            "name": "max",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 3
+          },
+          {
+            "name": "step",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 0.01
+          },
+          {
+            "name": "onEnd",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "render_tag": "gramlot-transform-pane",
+        "gramlot_component": {
+          "parameters": {
+            "x": {
+              "dtype": "R",
+              "default": 0,
+              "binding": "read"
+            },
+            "y": {
+              "dtype": "R",
+              "default": 0,
+              "binding": "read"
+            },
+            "rotate": {
+              "dtype": "R",
+              "default": 0,
+              "binding": "read"
+            },
+            "zoom": {
+              "dtype": "R",
+              "default": 1,
+              "binding": "read"
+            },
+            "min": {
+              "dtype": "R",
+              "default": 0.5,
+              "binding": "read"
+            },
+            "max": {
+              "dtype": "R",
+              "default": 3,
+              "binding": "read"
+            },
+            "step": {
+              "dtype": "R",
+              "default": 0.01,
+              "binding": "read"
+            },
+            "onEnd": {
+              "dtype": "T",
+              "nullable": true
+            }
+          },
+          "presentationDefaults": [],
+          "dataScope": false,
+          "command": false,
+          "sourceContext": true
+        }
+      }
+    },
     "dialog": {
       "doc": null,
       "sub_tags": "framePane",
@@ -1131,6 +1435,205 @@
         }
       }
     },
+    "trayPane": {
+      "doc": null,
+      "sub_tags": "*",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "storepath",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "locked",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "gridStep",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "L"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 10
+          },
+          {
+            "name": "gridVisible",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "rotationStep",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "N"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 15
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "render_tag": "gramlot-tray-pane",
+        "gramlot_component": {
+          "parameters": {
+            "storepath": {
+              "dtype": "T"
+            },
+            "locked": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "gridStep": {
+              "dtype": "L",
+              "default": 10,
+              "binding": "read"
+            },
+            "gridVisible": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "rotationStep": {
+              "dtype": "N",
+              "default": 15,
+              "binding": "read"
+            }
+          },
+          "presentationDefaults": [],
+          "dataScope": false,
+          "command": false,
+          "childParameters": {
+            "minWidth": {
+              "dtype": "N",
+              "default": 100
+            },
+            "minHeight": {
+              "dtype": "N",
+              "default": 64
+            }
+          },
+          "bagStore": true
+        }
+      }
+    },
     "formlet": {
       "doc": null,
       "sub_tags": "*",
@@ -1366,13 +1869,15 @@
               "binding": "read",
               "enum": [
                 "bar",
-                "underline"
+                "underline",
+                "card"
               ]
             }
           },
           "presentationDefaults": [],
           "dataScope": true,
-          "command": false
+          "command": false,
+          "labelbox": true
         }
       }
     },
@@ -1788,6 +2293,9 @@
           "childParameters": {
             "onClose": {
               "inline": []
+            },
+            "detachable": {
+              "dtype": "B"
             }
           },
           "sourceContext": true

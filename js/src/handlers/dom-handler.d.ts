@@ -10,6 +10,8 @@ import {Handler} from './handler.js';
 
 /** The DOM and its correspondence with the Source. */
 export class DomHandler extends Handler {
+    /** Navigate the current document to an absolute HTTP(S) URL without credentials. */
+    navigate(url: string): void;
     setTouchMode(mode?: 'auto' | 'on' | 'off'): void;
     /** Resolve a node or DOM reference descriptor. */
     reference(descriptor: SourceReference): SourceBagNode | DomElement;

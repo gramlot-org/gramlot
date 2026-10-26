@@ -240,8 +240,13 @@ a hash policy (section 025).
 
 A page with a transport closes its server page when it is disposed: the transport
 sends the close message (`close`) and is released (`dispose`). Over HTTP explicit
-disposal sends a best-effort close request; non-persisted `pagehide` disposes the
-page with a JSON beacon. A page retained in the browser's back/forward cache stays
+disposal and non-persisted `pagehide` both send one JSON `sendBeacon` request.
+The obsolete `beacon` selector is removed from `close(pageId)` and `dispose()`.
+The browser's acceptance into its queue is not a server acknowledgement; refused
+or undelivered beacons leave cleanup to the server TTL, without a fetch fallback.
+Missing `sendBeacon`, a non-text/empty close URL and native URL TypeErrors are
+reported rather than hidden as delivery failures. The transport is released even
+if close reports a configuration error. A page retained in the browser's back/forward cache stays
 registered. The adapter supplies the owner of the request, and `GramlotServer`
 deletes only a page owned by it; a page that no call has used for `page_ttl`
 seconds expires, which removes a page whose close message never arrives. The Worker

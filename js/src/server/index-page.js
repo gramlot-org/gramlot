@@ -20,14 +20,14 @@ export class IndexPage extends FramePage {
     }
     left(pane) {
         pane.setAttr({width: '240px', splitter: true, drawer: true, drawer_label: 'Navigation'});
-        pane.tree({node_label: 'tree', storepath: `${this.constructor.datapath}.navigation`,
-            labelAttribute: 'title', hideValues: true, selectedPath: `^${this.constructor.datapath}.navigationSelection`});
+        pane.tree({node_label: 'tree', storepath: '.navigation',
+            labelAttribute: 'title', hideValues: true, selectedPath: '^.navigationSelection'});
     }
     center(pane) {
-        pane.tabContainer({node_label: 'tabs', height: '100%', selectedPage: `^${this.constructor.datapath}.active`});
+        pane.tabContainer({node_label: 'tabs', height: '100%', selectedPage: '^.active'});
     }
     behavior(shell) {
-        shell.dataController({func: 'indexMount', _onStart: true, shell_id: this.constructor.shellId});
+        shell.dataController({func: 'indexMount', _onStart: true});
     }
     index_panel(pane, {selection}) { this.panel(pane, selection.getNode('#0')); }
     panel(pane, node) {

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 import ts from 'typescript';
 
-test('TypeScript consumers can use IDE, resolver and renderer runtime contracts', () => {
+test('TypeScript consumers can use IDE, IndexPage, resolver and renderer runtime contracts', () => {
     const fixture = fileURLToPath(new URL('./fixtures/types/review-contracts.mts', import.meta.url));
     const program = ts.createProgram([fixture], {
         noEmit: true, strict: true, target: ts.ScriptTarget.ES2022,

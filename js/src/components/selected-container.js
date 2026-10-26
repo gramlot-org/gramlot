@@ -1,6 +1,8 @@
 /** Shared selection keeps panel Source and light DOM mounted until explicit closing. */
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
+import {WindowSurface} from './window-surface.js';
+import {SVG_NS} from '../renderer/attributes.js';
 
 function SelectedContainer(HTMLElement) {
     // Named as its factory: inside the body `SelectedContainer` is this class, owner of the static state.
@@ -10,12 +12,13 @@ function SelectedContainer(HTMLElement) {
         static #selectionPanels = new WeakMap();
         static #panelSequence = 0;
         static projectChild(element, attrs, actions) {
-            const {pageName = null, title = '', icon = '', badge = null, badge_color = '', closable = false, onClose, hidden = false, disabled = false, ...rest} = attrs;
+            const {pageName = null, title = '', icon = '', badge = null, badge_color = '', closable = false, detachable = false, onClose, hidden = false, disabled = false, ...rest} = attrs;
             if (pageName !== null && typeof pageName !== 'string') throw new TypeError('pageName must be a string');
             if (typeof closable !== 'boolean') throw new TypeError('closable must be a boolean');
+            if (typeof detachable !== 'boolean') throw new TypeError('detachable must be a boolean');
             const panels = SelectedContainer.#selectionPanels;
             const slot = panels.get(element)?.slot ?? `panel-${++SelectedContainer.#panelSequence}`;
-            panels.set(element, {pageName, title, icon, badge, badge_color, closable, hidden, disabled, slot,
+            panels.set(element, {pageName, title, icon, badge, badge_color, closable, detachable, hidden, disabled, slot,
                 remove: actions.remove, allowClose: () => onClose == null ? true : actions.invoke('onClose', onClose, {})});
             rest.slot = slot;
             if (element.parentElement) element.parentElement.scheduleSelection();
@@ -42,7 +45,10 @@ function SelectedContainer(HTMLElement) {
         }
         setSourceContext(context) { this.#context = context; }
         connectedCallback() { this.#observer.observe(this, {childList:true}); this.scheduleSelection(); }
-        disconnectedCallback() { this.#observer.disconnect(); }
+        disconnectedCallback() {
+            this.#observer.disconnect();
+            for (const record of this.#panels.values()) this.reattachPanel(record, false);
+        }
         scheduleSelection() {
             if (this.#scheduled) return;
             this.#scheduled = true;
@@ -75,11 +81,15 @@ function SelectedContainer(HTMLElement) {
                     record = {child, viewport, config, index:records.length}; this.#panels.set(child, record);
                 }
                 record.config = config;
+                if (record.surface) {
+                    if (!config.detachable || config.hidden || config.disabled) this.reattachPanel(record, false);
+                    else record.surface.configure({...record.surface.parameters, title:config.title || config.pageName || 'Panel'});
+                }
                 records.push(record);
             }
             const previousIndex = this.#selected?.index ?? 0;
             for (const [child, record] of this.#panels) {
-                if (!records.includes(record)) { record.viewport.remove(); this.#panels.delete(child); }
+                if (!records.includes(record)) { this.reattachPanel(record, false); record.viewport.remove(); this.#panels.delete(child); }
             }
             records.forEach((record, index) => { record.index = index; });
             this.#panels = new Map(records.map(record => [record.child, record]));
@@ -87,7 +97,7 @@ function SelectedContainer(HTMLElement) {
             const nameChanged = !Object.is(selectedPage, this.#requested.selectedPage);
             const indexChanged = !Object.is(selected, this.#requested.selected);
             this.#requested = {selectedPage, selected};
-            const available = record => record && !record.config.hidden && !record.config.disabled;
+            const available = record => record && !record.surface && !record.config.hidden && !record.config.disabled;
             let target = this.#selected;
             if (!this.#initialized || nameChanged || indexChanged) {
                 const requested = (nameChanged || !this.#initialized && selectedPage != null)
@@ -103,6 +113,7 @@ function SelectedContainer(HTMLElement) {
         renderTabs() {}
         selectPanel(record) {
             if (record.config.hidden || record.config.disabled) return;
+            if (record.surface) { record.surface.focus(); return; }
             this.#select(record);
         }
         #payload(record, selected) {
@@ -124,11 +135,51 @@ function SelectedContainer(HTMLElement) {
                 if (target) this.#context.publish('showing', {pageName:target.config.pageName, index:target.index});
             }
             this.#selected = target; this.#initialized = true;
-            for (const record of this.#panels.values()) record.viewport.hidden = record !== target;
+            for (const record of this.#panels.values()) record.viewport.hidden = !record.surface && record !== target;
             this.renderTabs([...this.#panels.values()], target);
             this.#writeSelection(target);
             if (!initial && previous) this.#context.publish('selected', this.#payload(previous, false));
             if (target) this.#context.publish('selected', this.#payload(target, true));
+        }
+        detachPanel(record, position = null) {
+            if (!record.config.detachable || record.config.hidden || record.config.disabled) return;
+            if (record.surface) { record.surface.focus(); return; }
+            const doc = this.ownerDocument, mount = doc.createElement('div');
+            this.shadowRoot.append(mount);
+            const surface = new WindowSurface(this, mount, {modal:false, validateContent:() => {
+                if (record.viewport.parentNode !== surface.body) throw new Error('Detached panel lost its presentation');
+            }});
+            record.surface = surface; record.mount = mount;
+            surface.body.replaceChildren(record.viewport);
+            record.viewport.style.cssText = 'flex:1;min-width:0;height:100%;';
+            record.viewport.hidden = false;
+            surface.setSourceContext({
+                writeParameter:(name,value) => { surface.parameters[name] = value; },
+                publish:topic => { if (topic === 'closed') this.reattachPanel(record, true); },
+                callLogic:(name,kwargs) => this.#context.callLogic(name,kwargs),
+            });
+            const rect = this.getBoundingClientRect();
+            surface.configure({title:record.config.title || record.config.pageName || 'Panel', open:true,
+                movable:true, resizable:true, collapsible:false, maximizable:false, maximized:false,
+                collapsed:false, closable:true, beforeClose:null,
+                width:`${Math.max(320, Math.min(rect.width, 720))}px`, height:`${Math.max(240, Math.min(rect.height, 560))}px`,
+                left:position ? `${position.left}px` : null, top:position ? `${position.top}px` : null,
+                minWidth:'220px', minHeight:'140px'});
+            surface.connect();
+            if (record === this.#selected) this.#select([...this.#panels.values()].find(r => r !== record && !r.surface && !r.config.hidden && !r.config.disabled) ?? null);
+            else this.renderTabs([...this.#panels.values()], this.#selected);
+        }
+        reattachPanel(record, select = true) {
+            if (!record.surface) return;
+            const surface = record.surface; record.surface = null;
+            // Move only the viewport/slot, never the Source-owned content DOM.
+            this.panelArea.append(record.viewport); record.viewport.style.cssText = '';
+            surface.disconnect(); record.mount.remove(); record.mount = null;
+            record.viewport.hidden = record !== this.#selected;
+            if (select && record.child.isConnected) {
+                this.#select(record);
+                this.tabStrip.querySelector(`#tab-${record.config.slot}`).focus();
+            }
         }
         closePanel(record) {
             if (!record.config.closable) return;
@@ -158,7 +209,7 @@ export const StackContainer = defineComponent({
 
 export const TabContainer = defineComponent({
     name:'tabContainer', tag:'gramlot-tab-container', base:SelectedContainer, subTags:'*',
-    sourceContext: true, childParameters: selectionChildParameters,
+    sourceContext: true, childParameters: {...selectionChildParameters, detachable:{dtype:'B'}},
     parameters: {
         tabMode: {dtype:'T', default:'tabs', binding:'read', enum:['tabs','underline']},
         tabPosition: {dtype:'T', default:'top', binding:'read', enum:['top','bottom','left','right']},
@@ -185,17 +236,28 @@ export const TabContainer = defineComponent({
                     border-radius:var(--tab-radius) var(--tab-radius) 0 0;color:var(--gramlot-tab-color,var(--gramlot-text-secondary,#555))}
                 .tab-entry:has([aria-selected=true]){border-color:var(--tab-border);color:var(--gramlot-tab-selected-color,var(--gramlot-ink,#222));
                     background:var(--gramlot-tab-selected-background,var(--gramlot-surface,white))}
-                button{box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:var(--gramlot-tab-content-gap,.4em);
+                .tabs button{box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:var(--gramlot-tab-content-gap,.4em);
                     font:inherit;line-height:1.2;color:inherit;border:0;background:transparent;cursor:pointer;white-space:nowrap;min-width:0;
                     padding:var(--gramlot-tab-padding,4px 10px);min-height:max(var(--gramlot-touch-target,0px),var(--gramlot-tab-height,28px));border-radius:inherit}
-                button[aria-selected=true]{font-weight:600}
+                .tabs button[aria-selected=true]{font-weight:600}
                 .icon,.badge{flex:none}.icon:empty{display:none}.caption{overflow:hidden;text-overflow:ellipsis}
                 .badge{font-size:var(--gramlot-tab-badge-size,.8em);font-weight:600;line-height:1.3;border-radius:999px;
                     min-width:1.3em;padding:var(--gramlot-tab-badge-padding,0 .35em);text-align:center;
                     background:var(--gramlot-tab-badge-background,var(--gramlot-brand-blue,#3766b5));color:var(--gramlot-tab-badge-color,white)}
-                @media(hover:hover){button:not(:disabled):hover{background:var(--gramlot-tab-hover-background,var(--gramlot-selected,#e8f1fc))}}
-                button:disabled{opacity:.5;cursor:default}
-                button:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:-3px}
+                @media(hover:hover){.tabs button:not(:disabled):hover{background:var(--gramlot-tab-hover-background,var(--gramlot-selected,#e8f1fc))}}
+                .tabs button:disabled{opacity:.5;cursor:default}
+                .tabs button:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:-3px}
+                .panel:has(>.panel-tools:not([hidden])){display:flex;flex-direction:column;overflow:hidden}
+                .panel:has(>.panel-tools:not([hidden]))>slot{display:block;flex:1;min-height:0;overflow:auto}
+                .panel-tools{display:flex;flex:none;justify-content:flex-end;padding:2px 4px;
+                    background:var(--gramlot-surface-subtle,var(--gramlot-surface,#fff));border-bottom:1px solid var(--tab-border)}
+                .detach{display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;
+                    font:inherit;color:inherit;border:0;border-radius:var(--gramlot-radius-sm,4px);background:transparent;
+                    padding:var(--gramlot-group-action-padding,.2em .4em);min-width:var(--gramlot-touch-target,var(--gramlot-group-action-size,24px));min-height:var(--gramlot-touch-target,var(--gramlot-group-action-size,24px))}
+                @media(hover:hover){.detach:hover{background:var(--gramlot-field-readonly-background,#ddd)}}
+                .detach:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:-2px}
+                .detach svg{width:1.25em;height:1.25em;flex:none;pointer-events:none}
+                .detach[data-dragging]{cursor:grabbing;background:var(--gramlot-selected,#e8f1fc)}
                 .close{align-self:center;flex:none;min-height:var(--gramlot-touch-target,20px);min-width:var(--gramlot-touch-target,20px);
                     padding:0;margin-inline-end:3px;border-radius:var(--tab-radius);font-size:1.15em}
                 [hidden]{display:none!important}
@@ -205,7 +267,7 @@ export const TabContainer = defineComponent({
                 [data-position=bottom] .tab-entry{border-bottom:1px solid transparent;border-top:0;border-radius:0 0 var(--tab-radius) var(--tab-radius)}
                 [data-position=left]{flex-direction:row}[data-position=right]{flex-direction:row-reverse}
                 :is([data-position=left],[data-position=right]) .tabs{flex-direction:column;max-width:min(40%,var(--gramlot-tab-side-width,12rem));border-bottom:0}
-                :is([data-position=left],[data-position=right]) button[role=tab]{flex:1;justify-content:flex-start}
+                :is([data-position=left],[data-position=right]) .tabs button[role=tab]{flex:1;justify-content:flex-start}
                 [data-position=left] .tabs{border-right:1px solid var(--tab-border);padding-right:0}
                 [data-position=right] .tabs{border-left:1px solid var(--tab-border);padding-left:0}
                 [data-position=left] .tab-entry{border-bottom:1px solid transparent;border-right:0;border-radius:var(--tab-radius) 0 0 var(--tab-radius)}
@@ -267,7 +329,34 @@ export const TabContainer = defineComponent({
                         const [next, tab] = available[index]; this.selectPanel(next); tab.button.focus();
                         tab.button.scrollIntoView({block:'nearest',inline:'nearest'});
                     });
-                    root.append(button, close); this.tabStrip.append(root); entry = {root,button,close,icon,caption,badge}; this.#tabs.set(record, entry);
+                    const detach = doc.createElement('button'); detach.type = 'button'; detach.className = 'detach';
+                    const symbol = doc.createElementNS(SVG_NS, 'svg'); symbol.setAttribute('viewBox','0 0 20 20'); symbol.setAttribute('aria-hidden','true');
+                    const path = doc.createElementNS(SVG_NS, 'path'); path.setAttribute('d','M11 3h6v6M17 3l-8 8M8 4H4v12h12v-4');
+                    path.setAttribute('fill','none'); path.setAttribute('stroke','currentColor'); path.setAttribute('stroke-width','1.8');
+                    path.setAttribute('stroke-linecap','round'); path.setAttribute('stroke-linejoin','round'); symbol.append(path); detach.append(symbol);
+                    let gesture = null, dragged = false;
+                    detach.addEventListener('pointerdown', event => {
+                        if (event.button !== 0) return;
+                        gesture = {id:event.pointerId,x:event.clientX,y:event.clientY}; dragged = false;
+                        detach.setPointerCapture(event.pointerId); detach.setAttribute('data-dragging','');
+                    });
+                    detach.addEventListener('pointerup', event => {
+                        if (!gesture || gesture.id !== event.pointerId) return;
+                        const start = gesture; gesture = null; detach.removeAttribute('data-dragging');
+                        if (detach.hasPointerCapture(event.pointerId)) detach.releasePointerCapture(event.pointerId);
+                        dragged = Math.hypot(event.clientX-start.x,event.clientY-start.y) >= 8;
+                        if (dragged) this.detachPanel(record,{left:event.clientX-12,top:event.clientY-12});
+                    });
+                    for (const type of ['pointercancel','lostpointercapture']) detach.addEventListener(type, () => {
+                        gesture = null; detach.removeAttribute('data-dragging');
+                    });
+                    detach.addEventListener('click', () => {
+                        if (dragged) { dragged = false; return; }
+                        this.detachPanel(record);
+                    });
+                    const tools = doc.createElement('div'); tools.className = 'panel-tools'; tools.append(detach);
+                    record.viewport.prepend(tools);
+                    root.append(button, close); this.tabStrip.append(root); entry = {root,button,close,icon,caption,badge,detach,tools}; this.#tabs.set(record, entry);
                 }
                 if (this.tabStrip.children[index] !== entry.root) this.tabStrip.insertBefore(entry.root, this.tabStrip.children[index] ?? null);
                 entry.root.hidden = !!record.config.hidden;
@@ -281,6 +370,10 @@ export const TabContainer = defineComponent({
                 entry.button.disabled = !!record.config.disabled;
                 entry.button.setAttribute('aria-selected', String(record === selected));
                 entry.button.tabIndex = record === selected ? 0 : -1;
+                entry.tools.hidden = !record.config.detachable || record !== selected || !!record.surface;
+                entry.detach.disabled = !!record.config.disabled;
+                entry.detach.setAttribute('aria-label', `Detach ${caption}`);
+                entry.detach.title = `Drag or click to detach ${caption}`;
                 entry.close.hidden = !record.config.closable;
                 entry.close.disabled = !!record.config.disabled;
                 entry.close.setAttribute('aria-label', `Close ${caption}`);

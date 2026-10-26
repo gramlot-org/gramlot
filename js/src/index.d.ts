@@ -47,3 +47,8 @@ export {CommandRegistry} from './commands.js';
 export type {CommandDefinition,CommandGroupMetadata} from './commands.js';
 
 export {collectionBuildId, verifyCollectionArtifact} from './collection-artifact.js';
+
+export {DeviceHandler} from './handlers/device-handler.js';
+export type {DeviceProvider, DeviceClipboard, DeviceName, DeviceAudio, DeviceAudioSession, DeviceNetwork, DeviceLifecycleEvent, DeviceHapticStyle, AppInfo, DeviceLocation, DevicePhoto, DeviceBarcode, DeviceBiometrics, DeviceNotificationRequest, DeviceNotificationSchedule, DeviceNotificationEvent, DevicePushRegistration, DevicePushEvent, DeviceShortcutRequest, DeviceLinkRequest} from './handlers/device-handler.js';
+
+export {MobileEnvironment} from './mobile-environment.js';

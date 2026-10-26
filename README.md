@@ -13,7 +13,7 @@
 [![Python coverage](https://codecov.io/gh/gramlot-org/gramlot/branch/main/graph/badge.svg?flag=python)](https://app.codecov.io/gh/gramlot-org/gramlot?flags%5B0%5D=python)
 [![PyPI](https://img.shields.io/pypi/v/gramlot)](https://pypi.org/project/gramlot/)
 [![npm](https://img.shields.io/npm/v/@gramlot/gramlot)](https://www.npmjs.com/package/@gramlot/gramlot)
-[![Status: 0.3.16](https://img.shields.io/badge/status-0.3.16-blue)](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.16)
+[![Status: 0.3.17](https://img.shields.io/badge/status-0.3.17-blue)](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.17)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue)](https://github.com/gramlot-org/gramlot/blob/main/LICENSE)
 
 **Describe application interfaces in Python; let a JavaScript runtime handle
@@ -25,10 +25,10 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a web server; the core is
 independent of server and database technology.
 
-> **Release status.** The current release is **0.3.16**, distributed through
+> **Release status.** The current release is **0.3.17**, distributed through
 > [PyPI](https://pypi.org/project/gramlot/) (`gramlot`), on
 > [npm](https://www.npmjs.com/package/@gramlot/gramlot) (`@gramlot/gramlot`) and as the
-> [GitHub release v0.3.16](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.16).
+> [GitHub release v0.3.17](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.17).
 > JavaScript releases are distributed through npm; JSR publication is suspended.
 
 ## What a page contains

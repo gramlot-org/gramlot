@@ -314,9 +314,9 @@ const EXPECTED = [
         'attributes:circle@circle.r', 'attributes:circle@circle.fill'],
     data: ['upd_value:extras.title', 'upd_value:story.quantity', 'upd_value:story.total', 'upd_value:story.radius',
         'upd_value:story.color']},
-    // The close removes every element; the radios leave their group on the way (their `name` is rewritten).
+    // Closing releases the framework viewport marker and removes every element; the radios leave their group on the way (their `name` is rewritten).
     // The Data write of the test after the close reaches nothing.
-    {name: '8 close', transport: ['beacon:close'], dom: ['attributes:input@small.name', 'attributes:input@large.name'],
+    {name: '8 close', transport: ['beacon:close'], dom: ['attributes:div@gramlot-root.data-gramlot-viewport', 'attributes:input@small.name', 'attributes:input@large.name'],
         data: ['upd_value:story.quantity']},
 ];
 

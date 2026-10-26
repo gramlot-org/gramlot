@@ -48,6 +48,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.source = source;
         this.destination = destination;
         this.html = new HtmlElement({metadataAttributes: ['__ref'],
+            reportError: (node, error, title) => { if (this.records.has(node)) binding.reportError(error, title); },
             callLogic: (node, name, keywords) => {
                 const {group, method} = binding.gramlot.src.logicRegistry.resolve(name, node);
                 return method.call(group, node, keywords);
@@ -116,7 +117,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             this.#presentationDefaults.set(node, Object.fromEntries(Object.entries(attrs)
                 .filter(([name]) => Object.hasOwn(declared, name) && component.presentationDefaults.some(prefix => name.startsWith(prefix)))));
         }
-        if (component && (component.parameters.value?.binding === 'twoWay' || component.presentationDefaults.length)) {
+        if (this.html.hasLabelbox(node) || component?.presentationDefaults.length) {
             const ancestors = [];
             for (let parent = node.parentNode; parent; parent = parent.parentNode) {
                 if (this.#presentationDefaults.has(parent)) ancestors.unshift(this.#presentationDefaults.get(parent));
@@ -206,6 +207,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         // cleanup removes, listeners included (ASTRA-06).
         this.records.set(node, record);
         this.elements.set(record.element, record);
+        this.elements.set(record.presentation, record);
         const control = ControlAdapter.for(record.binding, record);
         // An input can acquire/change its adapter through type while its DOM record survives.
         if (control || (record.element.namespaceURI === XHTML_NS && record.element.localName === 'input'))
@@ -235,7 +237,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             child.container = record.element;
             record.children.add(child.node);
         }
-        return record.element;
+        return record.presentation;
     }
 
     /**
@@ -446,7 +448,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         let before = parent?.end ?? null;
         for (let i = siblings.indexOf(node) + 1; i < siblings.length; i++) {
             const record = this.records.get(siblings[i]);
-            if (record) { before = record.element ?? record.start; break; }
+            if (record) { before = record.presentation ?? record.start; break; }
         }
         this.buildNode(node, container, before, parent);
     }
@@ -605,7 +607,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             let inherited = changed;
             if (component?.presentationDefaults.length) {
                 inherited = new Set([...changed].filter(name => !Object.hasOwn(declared, name)));
-            } else if (component?.parameters.value?.binding === 'twoWay'
+            } else if (this.html.hasLabelbox(child)
                 && [...changed].some(name => !Object.hasOwn(declared, name))) {
                 this.project(child);
             }
@@ -703,7 +705,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
 
     #rebuild(node) {
         const record = this.records.get(node);
-        const before = record.element?.nextSibling ?? record.end?.nextSibling ?? null;
+        const before = record.presentation?.nextSibling ?? record.end?.nextSibling ?? null;
         const container = record.container;
         const parent = record.parent;
         let removeError = null;
@@ -745,7 +747,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         }
         this.references?.remove(node);
         if (record.element) this.elements.delete(record.element);
-        record.element?.remove();
+        if (record.presentation) this.elements.delete(record.presentation);
+        record.presentation?.remove();
         record.start?.remove();
         record.end?.remove();
         record.parent?.children.delete(node);

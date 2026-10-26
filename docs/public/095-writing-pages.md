@@ -308,8 +308,32 @@ Call the corresponding superclass hook when adding content to either region.
 `behavior(shell)` declares the standard startup controller. `datapath` defaults
 to `index`; its Data contains `navigation`, `navigationSelection`, `active` and
 `opened`. Active pages are identified by URL; opened records retain panel labels
-and navigation paths. `shell_id` (JS `shellId`) defaults to `index`. Use one index
-shell per document. There is no tab-count or eviction policy.
+and navigation paths. `shell_id` (JS `shellId`) defaults to `index`. For multiple
+indexes in one document, give each shell a distinct ID and Data path. Relative
+paths such as `.leftIndex` inherit the containing Source's datapath. The tree and
+tabs use `.navigation`, `^.navigationSelection` and `^.active` in their own scope.
+There is no tab-count or eviction policy.
+
+The owning Source node retains the coordinator through its internal `indexContext`
+attachment; Logic only supplies behavior. `IndexLogic.indexMount(node)` receives
+the startup controller's Source node and mounts its parent shell, without a DOM
+ID lookup or a Logic field. Subscriptions and pending entries are released through
+the renderer's existing Source disposal mechanism. Each iframe page has its own
+Gramlot, Source and Data. Detaching a containing panel moves DOM only: its Source,
+Data scope, coordinator and iframe element are retained.
+
+`mountIndexPage` also accepts `onLoad(url, status, error)`. Each new load emits
+`loading`, followed once by `ready`, `error` or `cancelled`, including loads that
+finish in a background tab. Closing a pending tab or disposing its index emits
+`cancelled`; late replies are ignored, including after reopening the same URL.
+Closing an already loaded tab does not emit another load outcome. `ready` reports
+successful panel preparation, not completion of the iframe's own page resources.
+A callback failure is reported separately without changing an outcome already sent.
+
+Load outcomes do not select tabs. `onSelection(entries, active)` reports the current
+selection, and the active entry's `loading` flag determines its indicator. Consumers
+must not clear a current spinner merely because a different URL completed. During
+index disposal, callbacks settle pending loads but must not update disposed UI.
 
 The JavaScript equivalent uses `static navigation` (a Bag or a getter returning
 one), `static datapath` and the same five region hooks. It exports IndexLogic as
