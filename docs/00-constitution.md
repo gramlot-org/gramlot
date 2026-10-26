@@ -3801,3 +3801,89 @@ Owner answered “ok” to: at most five distinct errors visible, a counter for 
 ### Explicit tree search — 2026-10-25
 
 Owner confirms `searchText` and requests a navigation search toolbar, including unloaded branches and expansion restoration on clear. Search explicitly reads resolver-backed children; ordinary rendering still does not fetch them. The literal, case-insensitive query is debounced, highlights sanitized caption text, keeps ancestors, and uses temporary expansion without changing the store, selection or normal expansion set. Late reads may populate the owning resolver cache but cannot reinstate a cleared filter.
+
+<a id="gc-000-editor-data-projection"></a>
+
+### Editor Data projection preserves the widget — owner, 2026-10-25
+
+Owner: “Correggi i tre editor usando le API per aggiornare il contenuto senza
+ricrearli o azzerare lo stato. Aggiungi test che verifichino che l’istanza resti
+la stessa. Poi vediamo separatamente type, multiple e group.” Further clarification:
+“la regola se si incorpora un tool esterno è di capire cosa offre la sua API”.
+
+HTML/Jodit, Markdown/ProseMirror and CodeMirror project external Data values
+through the existing engine's content-update APIs. They retain the instance,
+configuration and existing history, suppress projection echoes to Data, and
+preserve/map selection where the new content permits. Content changes can enter
+engine history; they do not establish a new empty history baseline. This supersedes
+the documented external-replacement/Revert history-reset behavior for these three
+editors. Engine destruction remains tied to component disposal. The review of
+`type`, `multiple` and `group` is separate and is not implemented by this change.
+Tree/grid content regeneration is not classified as widget recreation.
+
+
+<a id="gc-000-jodit-official-sanitization"></a>
+### Jodit update and official sanitization — owner, 2026-10-26
+
+Owner: “Sì, aggiorna Jodit e usa i suoi meccanismi ufficiali di sanitizzazione.
+Verifica su WebKit e semplifica la nostra integrazione, senza perdere stato,
+binding e undo.” The scope is the existing HTML editor, its bundled dependency,
+regressions and documentation. Use upstream sanitization APIs and preserve the
+Source-owned editor instance, Data bindings and native history. This supersedes
+the editing canvas's script-disabled sandbox in PORT-0020: retain the iframe for
+style isolation, use official sanitization and retain its restrictive CSP. It does
+not relax htmlPreview's empty sandbox or authorize executing document scripts.
+The loss-preserving document codec remains separate from display sanitization;
+original source is not silently rewritten into sanitized application Data.
+No dependency-source patch, application sanitizer service, release or deployment
+is authorized. Upstream limitations must be recorded rather than worked around.
+
+
+<a id="gc-000-setter-before-rebuild"></a>
+### Use the setter before rebuilding — owner, 2026-10-26
+
+Owner: “ho un setter ? allora lo uso” / “non ho il setter =? allora ricreo”, then
+“ok” to applying this rule to input.type. A control's supported setter is the
+primary update path; rebuild only when no setter exists. Inspect the embedded
+tool/browser API first. This supersedes the classification of input.type as
+setterless in 11.48 item 13 / C04.1. Input type changes keep the DOM element,
+Source and NodeBinding. Replace only the internal control adapter when the value
+semantics require it; do not convert or rewrite application Data as part of the
+projection. Compatible type changes retain the adapter and uncommitted draft.
+Native sanitization and selection limitations still apply to the chosen type.
+This implementation tranche covers input.type; multiple and group are separate
+follow-up reviews. Existing freeze/thaw behavior and actual HTML-tag replacement
+are not redesigned. No publication is authorized.
+
+
+<a id="gc-000-component-setters"></a>
+### Native multiple and component setters — owner, 2026-10-26
+
+Owner confirmed proceeding with multiple ("ok") and clarified: "useremo molt
+piu spesso gramloto components che elementi html. per questo potrai predisporre
+ne components tutti i settere che hanno senso". Native input/select.multiple
+therefore uses its supported setter, preserving the element, Source and binding.
+Application Data is not converted by a mode change: callers supply the value
+contract appropriate to the selected control. This extends the previous tranche;
+group remains a separate review. Gramlot components should expose meaningful
+setters for mutable parameters, using existing projection mechanisms. Embedded
+tools must be inspected for their supported APIs before proposing reconstruction.
+This is an API design principle, not approval for speculative parameters or a
+claim that every component has been audited. No Logic state or parallel store;
+no release/deployment is authorized by this amendment.
+
+
+<a id="gc-000-radio-group-reset"></a>
+### Radio group changes clear the related Data — owner, 2026-10-26
+
+Owner requested clearing selections in both "partenza e destinazioen", clarified
+that group names represent choices such as color or shipping, and concluded
+"ok svuota i relativi dati". A resolved group change on an existing radio clears
+the writable boolean Data values of the moving radio and both affected groups,
+within their existing form/page scope. False represents no selection. Keep DOM,
+Source, binding and adapter identity; update membership through the existing radio
+registry. This supersedes the group-rebuild policy and the proposed rejection
+when a changed group already has a selected peer. Initial group construction and
+form-scope changes retain their existing conflict checks. Literal/read-only value
+expressions retain their existing no-write contract; do not invent Data paths.
+No new public parameter, application state on Logic, release or deployment.

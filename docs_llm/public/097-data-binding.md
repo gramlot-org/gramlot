@@ -208,8 +208,19 @@ never writes; a literal `value` (neither `^` nor `=`) is also the control defaul
 authored `selected`/`checked`. `live=False` (default) writes on `change`; `live=True` on `input` for
 text, textarea, number, range; select, color and temporal types always write on
 `change`. A controller correction returns to the originating control; other attributes
-on the same path update while typing. Changing `type`, `multiple` or `group` rebuilds
-the element and keeps its binding. Gallery lessons: *Native editing*, *Checkbox and radio*,
+on the same path update while typing. An input type change uses its native setter,
+retaining DOM and NodeBinding. Compatible changes retain the adapter and draft;
+a different value contract changes only the adapter. Native sanitization can
+change the display, never Data. Native input/select `multiple` uses its setter,
+retaining element, options and binding. Multiple select still needs an array or
+null; changing mode does not convert Data. Email drafts and selected files survive.
+Changing a radio's `group` keeps the widget and binding, but resets the writable
+boolean Data of the moving radio and both affected groups to `false`. Other
+forms/pages remain independent; an unchanged group does not reset selections.
+Literal and read-only values have no writable Data path and are not rewritten.
+In `<input type="password">`, the HTML tag is `input`, the input
+type is `password`; changing to a different HTML tag is separate. Selection is
+not available for every type; file inputs reject nonempty programmatic values. Gallery lessons: *Native editing*, *Checkbox and radio*,
 *Style and visibility*, *Bound SVG*; input components ([Components](105-components.md)) use the same binding.
 Checkbox `input(type='checkbox', value='^.flag')`: Data only `true`/`false`, never
 `'on'`. Radio `input(type='radio', group='size', value='^.small')`: one boolean per

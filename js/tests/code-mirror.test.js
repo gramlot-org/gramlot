@@ -8,7 +8,7 @@ import {codeMirrorWithOptions} from '../src/server/page.js';
 import inputs from '../src/components/inputs.js';
 import layout from '../src/components/layout.js';
 import {undo, undoDepth} from '@codemirror/commands';
-import {EditorState} from '@codemirror/state';
+import {EditorState, StateField, StateEffect} from '@codemirror/state';
 
 const {window} = new JSDOM('<body></body>', {pretendToBeVisual:true});
 for (const name of ['window','document','MutationObserver','Window','HTMLElement','Node','getComputedStyle']) globalThis[name] = window[name];
@@ -33,10 +33,10 @@ test('editor grammar is portable; engine is not loaded by grammar authoring', ()
     assert.match(b.toTytx(), /codeMirror/);
 });
 
-test('live binding writes once; external replacements are silent and reset history', async () => {
+test('live binding writes once; external updates preserve the engine and undo history without echoing Data', async () => {
     const {app,host} = fixture(root => base(root));
     await host.ready;
-    const view=host.editor.view;
+    const engine=host.editor, view=engine.view;
     let inputs=0; host.addEventListener('input',()=>inputs++);
     view.dispatch({changes:{from:0,insert:'# comment\n'},selection:{anchor:10}});
     assert.equal(app.data.getItem('document.content'),view.state.doc.toString());
@@ -44,7 +44,12 @@ test('live binding writes once; external replacements are silent and reset histo
     assert.equal(undoDepth(view.state),1);
     app.data.setItem('document.content','new document');
     assert.equal(view.state.doc.toString(),'new document');
-    assert.equal(inputs,1); assert.equal(undoDepth(view.state),0);
+    assert.equal(inputs,1); assert.equal(undoDepth(view.state),2);
+    assert.equal(host.editor,engine);assert.equal(host.editor.view,view);
+    assert.equal(host.undo(),true);assert.match(app.data.getItem('document.content'),/^# comment/);
+    assert.equal(host.undo(),true);assert.match(app.data.getItem('document.content'),/^def/);
+    assert.equal(host.redo(),true);assert.equal(host.redo(),true);
+    assert.equal(app.data.getItem('document.content'),'new document');
     host.remove(); assert.equal(host.editor,null);
 });
 
@@ -130,4 +135,19 @@ test('save shortcut is consumed but never published while readonly or disabled',
         app.data.setItem('disabled',false);save();
         assert.deepEqual(calls.filter(c=>c.name==='save'),[{name:'save',payload:{value:app.data.getItem('document.content')}}]);
     } finally {app.dispose();}
+});
+
+
+test('Data updates retain CodeMirror state fields, selection and configuration',async()=>{
+    const {app,host,stop}=fixture(root=>base(root,{lineWrapping:false}));await host.ready;
+    const engine=host.editor,view=engine.view;
+    const field=StateField.define({create:()=>({retained:true}),update:value=>value});
+    view.dispatch({effects:StateEffect.appendConfig.of(field),selection:{anchor:4}});
+    const state=view.state.field(field),before=app.data.getItem('document.content');
+    app.data.setItem('document.content',before+'# incoming\n');
+    assert.equal(host.editor,engine);assert.equal(view.state.field(field),state);
+    assert.equal(view.state.selection.main.head,4);
+    assert.equal(view.contentDOM.classList.contains('cm-lineWrapping'),false);
+    assert.equal(host.undo(),true);assert.equal(app.data.getItem('document.content'),before);
+    stop();
 });

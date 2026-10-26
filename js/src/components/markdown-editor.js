@@ -50,7 +50,7 @@ function MarkdownControl(MarkdownElement) {
             if (typeof value!=='string') throw new TypeError('Markdown editor value must be a string');
             if (value===this.#value) return;
             this.#value=value;
-            if (this.isConnected && this.engine) this.load();
+            this.engine?.replace(value);
         }
         editorChanged(value) {
             this.#value=value;

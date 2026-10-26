@@ -10,9 +10,9 @@ import {Bag} from '@genrojs/bag';
 import {XHTML_NS} from '../renderer/attributes.js';
 import {callLogic, invokeHook} from '../binding/hooks.js';
 
-// The elements whose `type`, `multiple` and `group` have no setter: a change rebuilds (C04.1, D7).
+// Native input.type and input/select.multiple use setters; radio group updates membership.
 const CONTROL_TAGS = new Set(['input', 'select', 'textarea']);
-const REBUILD_ATTRIBUTES = ['type', 'multiple', 'group'];
+const REBUILD_ATTRIBUTES = ['type', 'multiple'];
 
 /** Read current pointer Data, including during freeze; expressions use the resolved projection. */
 function resolved(control, name) {
@@ -59,14 +59,18 @@ export class ControlAdapter {
     }
 
     /**
-     * The resolved `type`, `multiple` and `group` of a form control element, as one comparable
-     * string, or null for any other element: a different shape rebuilds the element (C04.1, D7).
+     * Attributes still requiring reconstruction, as one comparable string, or null for other
+     * elements. Native input.type and input/select.multiple use setters; radio group changes
+     * update the existing membership and never contribute to this signature.
      * `attrs` are the attributes of the renderer's resolved projection (`^`, `=` and `==` resolved).
      */
     static shape(element, attrs) {
-        if (element?.constructor.gramlotComponent?.parameters.value?.binding === 'twoWay' && element.control.type === 'radio') return JSON.stringify([attrs.group ?? null]);
+        if (element?.constructor.gramlotComponent?.parameters.value?.binding === 'twoWay' && element.control.type === 'radio') return JSON.stringify([]);
         if (element?.namespaceURI !== XHTML_NS || !CONTROL_TAGS.has(element.localName)) return null;
-        return JSON.stringify(REBUILD_ATTRIBUTES.map(name => attrs[name] ?? null));
+        return JSON.stringify(REBUILD_ATTRIBUTES.filter(name =>
+            (name !== 'type' || element.localName !== 'input') &&
+            (name !== 'multiple' || !['input', 'select'].includes(element.localName)))
+            .map(name => attrs[name] ?? null));
     }
 
     constructor(binding, record) {
@@ -380,15 +384,28 @@ export class RadioControl extends CheckboxControl {
     }
 
     /**
-     * Follow the semantic form owner: when a `form` or `formId` above the node was added, removed or
-     * moved, the button leaves its group and joins the group of the same name in its new scope, with a
-     * new generated `name`; the NodeBinding and the element stay (ASTRA-04). A button that is on and
-     * meets another button on in the new scope raises before any effect, as at the join (P11).
+     * A changed group clears writable selections in both scopes without replacing the control.
+     * Membership moves before Data writes so synchronous binding projections see the new group.
+     * Form-owner-only moves keep their existing initial-conflict rule.
      */
-    refresh() {
-        if (this.#name === null) return;
-        const group = this.resolved.group;
+    refresh(previousGroup = this.resolved.group) {
+        const group = this.resolved.group ?? null;
         const form = formNode(this.node);
+        if (!Object.is(previousGroup ?? null, group)) {
+            const affected = new Set([this, ...this.groups.peers(this),
+                ...(group === null ? [] : this.groups.peersOf(group, form))]);
+            this.groups.leave(this);
+            this.#name = group === null ? null : this.groups.join(this, group, form);
+            if (this.#name === null) this.element.removeAttribute('name');
+            else this.element.setAttribute('name', this.#name);
+            for (const peer of affected) {
+                if (this.binding.closed || !this.binding.runtime.renderer.attached(this.node)) return;
+                if (peer.binding.closed || !peer.binding.runtime.renderer.attached(peer.node)) continue;
+                peer.binding.runtime.renderer.html.writeParameter(peer.node, 'value', false);
+            }
+            return;
+        }
+        if (this.#name === null) return;
         if (this.groups.nameOf(group, form) === this.#name) return;
         this.#requireSingleTrue(group, form);
         this.groups.leave(this);

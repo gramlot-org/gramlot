@@ -150,7 +150,13 @@ print(b.to_tytx())
     assert.equal(app.data.getItem(`ide.documents.${key}.content`),'value = 2\n');
     button('revert').click();await new Promise(resolve=>setTimeout(resolve,0));
     assert.equal(editor.editor.view.state.doc.toString(),'value = 1\n');
-    assert.equal(button('undo').disabled,true);assert.equal(button('redo').disabled,true);
+    assert.equal(button('undo').disabled,false);assert.equal(button('redo').disabled,true);
+    const retainedEditor=editor.editor;
+    button('undo').click();await new Promise(resolve=>setTimeout(resolve,0));
+    assert.equal(app.data.getItem(`ide.documents.${key}.content`),'value = 2\n');
+    assert.equal(editor.editor,retainedEditor);
+    button('redo').click();await new Promise(resolve=>setTimeout(resolve,0));
+    assert.equal(app.data.getItem(`ide.documents.${key}.content`),'value = 1\n');
     editor.editor.view.dispatch({changes:{from:8,to:9,insert:'2'}});
     await app.logic.ideOpenDocument('/workspace','draft.py');
     const draftKey=documentKey('/workspace','draft.py');

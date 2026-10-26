@@ -1251,7 +1251,7 @@ Gallery: Input components → tree → Bag tree, Tree labels and classes, Tree c
 
 Block ID: **GC-105-125**.
 
-Activate the `editors` collection for `codeMirror`. The optional browser collection owns the locally bundled CodeMirror 6 engine; it does not fetch a CDN or create a textarea substitute. The value is a string and `value="^document.source"` uses the shared control binding. User changes write live by default. `live=False` commits on leaving the editor. External document replacement is silent and resets the undo baseline; equal values and configuration changes preserve the editor, selection and undo history.
+Activate the `editors` collection for `codeMirror`. The optional browser collection owns the locally bundled CodeMirror 6 engine; it does not fetch a CDN or create a textarea substitute. The value is a string and `value="^document.source"` uses the shared control binding. User changes write live by default. `live=False` commits on leaving the editor. External Data updates are silent document transactions on the existing editor: they retain configuration and prior undo history, and map the selection through the changed range. Equal values do not create a transaction.
 
 ```python
 pane.codeMirror(value="^document.source", language="python", height="340px")
@@ -1300,7 +1300,7 @@ The component Data contains `requestedRoot`, the successfully opened `root`, `st
 
 The workspace combo remembers six successfully opened directories in sessionStorage, most recent first, without duplicates. It suggests the most recent directory after a reload; opening remains explicit. The values are server paths. Session storage does not persist drafts, grant file permissions, or promise sharing across browser tabs. Switching directories retains document tabs and drafts; documents with the same relative path in different roots remain distinct.
 
-Save and Ctrl/Cmd+S submit the draft with its loaded revision. Conflicts retain the draft. Python syntax is checked before writing, without executing the file. The document's saved baseline becomes the submitted snapshot, so typing during a save remains dirty. Each document has Save, Revert, Undo and Redo icons in its own toolbar. Save and Revert are disabled without changes or while saving; Save is also disabled for read-only documents. Revert restores the last loaded or successfully saved baseline without closing the tab or writing the file, and clears editor history. Undo and Redo use the editor’s independent history and are disabled when unavailable. Closing a dirty or pending document is vetoed: save or revert before closing. The workspace combo opens a nonempty changed directory on focus-out after committing its value; no Open button is required. Executable Python preview, file creation/rename/delete and filesystem watches remain outside this increment. HTML, Markdown and Typst views are described below.
+Save and Ctrl/Cmd+S submit the draft with its loaded revision. Conflicts retain the draft. Python syntax is checked before writing, without executing the file. The document's saved baseline becomes the submitted snapshot, so typing during a save remains dirty. Each document has Save, Revert, Undo and Redo icons in its own toolbar. Save and Revert are disabled without changes or while saving; Save is also disabled for read-only documents. Revert restores the last loaded or successfully saved baseline without closing the tab or writing the file, and preserves editor history; the replacement can be undone. Undo and Redo use the editor’s independent history and are disabled when unavailable. Closing a dirty or pending document is vetoed: save or revert before closing. The workspace combo opens a nonempty changed directory on focus-out after committing its value; no Open button is required. Executable Python preview, file creation/rename/delete and filesystem watches remain outside this increment. HTML, Markdown and Typst views are described below.
 
 ### Local-choice sources
 
@@ -1323,7 +1323,7 @@ IDE new documents (2026-10-21): select a document type and use **New document**.
 <a id="gc-105-135"></a>
 ## HTML editor and preview
 
-The optional `editors` collection provides `htmlEditor` (Jodit Community 4.13.9)
+The optional `editors` collection provides `htmlEditor` (Jodit Community 4.18.10)
 and `htmlPreview`. They share an HTML string through ordinary Data bindings:
 
 ```python
@@ -1338,16 +1338,27 @@ publishes `save`; the application owns persistence. Dependencies and styles are
 bundled locally in the optional collection, without a CDN.
 
 Jodit edits the body while retaining the original head, doctype and document
-attributes. Scripts, styles, embedded content, SVG/MathML and comments appear as
+attributes. Scripts, styles, embedded content, SVG/MathML, form controls, noscript and comments appear as
 protected placeholders. Active attributes are kept outside the editable DOM.
 Removing or duplicating protected content rejects the edit with a visible message;
 change that content in Code instead. Visual edits serialize the DOM and can
 normalize whitespace, quoting and markup. Undo to the initial rich snapshot restores
-the original source string exactly. External replacement resets editor history.
+the original source string exactly. External Data updates use the same Jodit instance and retain its history. Undo/Redo also retain the corresponding head, styles and protected content; internal history markers are not written to Data.
 
 The preview is an iframe with an empty sandbox: page scripts do not execute.
-The rich editor uses its own iframe without script permission and a restrictive
-content policy. Original head styles apply to its editing canvas; the toolbar uses
+The rich editor uses an iframe for document-style isolation, without the sandbox
+that prevented WebKit editing events. Jodit's official `cleanHTML.sanitizer` uses
+DOMPurify for assigned HTML. The canvas CSP still blocks scripts, external
+resources and form submission; it is essential, not an optional styling setting.
+The official paste and drag/drop plugins are bundled locally. Ordinary formatted
+HTML can be inserted and undone; active/embedded rich content is rejected by the
+existing document guard with an instruction to use Code, without changing Data.
+Jodit 4.18.10 does not pass fragment contents correctly to its string sanitizer on
+all insertion paths, so the CSP and document guard must remain. See
+[GC-365 §060](../internal/365-review-0-3-16.md#gc-365-060).
+Chromium and Playwright WebKit pass the editor/content/security regression;
+this is not an iPhone or Safari-application qualification.
+Original head styles apply to its editing canvas; the toolbar uses
 Gramlot theme tokens. These are HTML document views, not Python execution previews.
 
 The IDE opens HTML documents with Code, Preview and Rich text tabs over the same
@@ -1372,7 +1383,7 @@ Bold, Italic, Code, Undo and Redo controls, standard editing keys, Ctrl/Cmd+B/I,
 Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Ctrl/Cmd+S publishes `save`; persistence remains
 application-owned. `historyChanged`, `undo()` and `redo()` follow the other editors.
 Edits write live by default; `live=False` commits on blur. `readonly` and `disabled`
-prevent edits, while external Data updates continue to render and reset history.
+prevent user edits, while external Data updates use transactions on the existing view, retaining plugins and history without emitting an input echo.
 Disabled editing also leaves the keyboard tab order. Removing the control releases
 its engine and prevents late history publications.
 

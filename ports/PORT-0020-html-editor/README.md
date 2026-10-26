@@ -13,3 +13,12 @@ Status: implemented and locally verified; owner trial/acceptance pending. No pub
 Verification: 46 focused JS tests, 48 Python tests and 47 subtests, both core/gallery builds and public documentation checks passed. Real browser verified shared code/preview/rich content, protected script/SVG/comments retained in the saved temporary file, exact clean initial undo, redo, keyboard save, revert/history reset, readonly, light/dark toolbar and resize on hidden-tab activation. Final browser error log empty. Screenshot: /tmp/gramlot-html-gallery.png. Gallery runs locally on 8877.
 
 Additional feedback: map Jodit's panel and icon-text tokens as well as its surface/icon tokens; otherwise the dark toolbar has insufficient contrast. Notify Jodit's resize lifecycle when a hidden Gramlot tab becomes visible; observing the host is necessary because window size did not change.
+
+
+2026-10-26 follow-up (owner-approved): Jodit 4.18.10 and official sanitization,
+paste/drop plugins replace the original dependency baseline. The rich canvas
+retains CSP but no longer uses the WebKit-blocking sandbox; Preview still does.
+External projection retains native history, superseding the original Revert reset.
+Chromium/WebKit and 63 targeted Node regressions pass, as does the runtime build.
+GC-365 §060 documents the remaining upstream DocumentFragment sanitizer gap;
+codec rejection/CSP are retained, with no consumer workaround. No publication.

@@ -12789,3 +12789,158 @@ Verified the exact isolated commit candidate on the notification correction: run
 Owner approved declaration alignment after closing shared tree search. IdeLogic now declares its existing document creation, recipe, state/history and forget methods. NavigationResolver and DirectoryResolver declarations share their actual RemoteResolver inheritance and expose cached reads, asynchronous refresh/loading, disposal and existing scheduling hooks. Renderer declarations return the validated Source and built render record instead of void. Runtime behavior and public API names are unchanged.
 
 The exact isolated candidate passed runtime build and 95 JavaScript tests covering declaration consumption, filesystem/IDE, navigation, renderer and remote flows. The TypeScript consumer regression uses strict NodeNext checking without skipLibCheck, including invalid-call assertions; it fails with the preceding declarations and passes after alignment. TypeScript 5.9.3 is a development test dependency, with no first-party dependency pin or lockfile added. Tests used the existing prepared Python environment for filesystem fixtures. This is bounded verification, not a release or deployment.
+
+<a id="gc-070-2215"></a>
+
+## 2215 — Editor content projection corrected; WebKit limitation isolated (2026-10-25)
+
+Owner authorizes correcting the three editors with their content APIs, retaining
+instances/state and adding regressions; `type`, `multiple` and `group` are deferred
+to a separate explanation/review. The owner requires API inspection for embedded tools.
+
+Implemented: HTML/Jodit uses its public setter and history/selection APIs;
+CodeMirror and ProseMirror use document transactions without reinitializing their
+engines or state. Silent Data projection, existing history, configuration and
+compatible/mapped selection are retained. HTML protection contexts follow native
+history; markers never enter Data. Background HTML updates preserve caller focus.
+IDE Revert preserves history. Constitution, naming notes and editor documentation
+are aligned in both trees. No modifications to control-shape rebuilding.
+
+Verified: 62 targeted Node tests, runtime build and Chromium regression with the
+real engines pass. Tests include instance/plugin identity, Undo/Redo through
+external updates, readonly projection, protected HTML/head-only edits, empty HTML,
+deferred drafts, focus and cleanup. Browser test is reproducible via
+`node js/scripts/verify-editor-content.mjs chromium` with Playwright installed in
+the test environment.
+
+Open separately: WebKit blocks event execution in the existing Jodit iframe
+sandbox. Real typing does not reach Data; the pre-correction engine reproduces
+this before any external update. No sandbox relaxation was made. Review this
+security/integration contract separately; do not claim Safari verification.
+Next planned GUI discussion: native control `type`, `multiple`, `group` rebuilding.
+Changes remain local; no release or deployment. Owner visual acceptance is pending.
+See GC-365 §055 for the API inventory and exact verification scope.
+
+
+<a id="gc-070-2220"></a>
+## 2220 — Jodit updated; WebKit editing restored (2026-10-26)
+
+Owner explicitly authorized updating Jodit, using official sanitization and
+simplifying integration without losing state/bindings/undo. Implemented locally:
+Jodit 4.18.10; DOMPurify through `cleanHTML.sanitizer`; official paste/drop plugins;
+style-isolating iframe without the WebKit-blocking sandbox, with script/resource
+blocking CSP retained. Preview's empty sandbox and document source preservation
+are unchanged. Known history comments survive filtering; sanitizer hooks release
+with the existing editor instance. No replacement widget/history baseline.
+
+Verified: 63 targeted Node tests; runtime build; real-engine Chromium and WebKit
+regressions covering typing, identity, selection, silent bindings, native history,
+protected/head-only updates, readonly, deferred writes, safe paste/drop, rejection
+of active paste/drop without Data changes/execution, subsequent undo/redo and
+cleanup. Chromium's adversarial tests produce expected CSP violation diagnostics;
+no uncaught page errors. Logs: /private/tmp/jodit-update-node.log,
+/private/tmp/jodit-update-build.log, /private/tmp/jodit-security-chromium.log and
+/private/tmp/jodit-security-webkit.log.
+
+GC-365 §060 records a remaining upstream Jodit defect: its string sanitizer hook
+receives undefined for DocumentFragment insertion. Existing codec rejection and
+CSP remain essential; no dependency patch or alternate ingress workaround was
+added. This limitation prevents claiming that DOMPurify alone covers all ingress.
+The WebKit typing blocker in §2215 is resolved locally; Safari/iPhone manual
+acceptance and publication are not claimed. `type`, `multiple`, `group` remain a
+separate GUI review, not changed here. No release/deployment.
+
+
+<a id="gc-070-2225"></a>
+## 2225 — Input type setter implemented and verified (2026-10-26)
+
+Owner reaffirmed “ho un setter ? allora lo uso” and confirmed proceeding. Native
+input.type now updates the same DOM element. Source, renderer record and binding
+retain identity; compatible changes keep draft, selection/focus where supported,
+and IME adapter state. Semantic type changes replace only the internal adapter,
+with correct radio membership and listener cleanup. Browser sanitization affects
+the display, not Data. No Logic state or new public API. Docs distinguish HTML tag
+from input type and supersede the earlier setterless/rebuild claim.
+
+Verified: 203 targeted Node tests and Chromium/WebKit browser fixture pass; runtime
+build passes. Evidence: /private/tmp/input-type-qualified.log,
+/private/tmp/input-type-chromium.log, /private/tmp/input-type-webkit.log,
+/private/tmp/input-type-build.log. No release/deployment. Next separate reviews:
+multiple and group under the same setter rule; freeze/thaw and actual tag changes
+were not redesigned. Jodit's upstream fragment-sanitizer issue remains as in §2220.
+
+
+<a id="gc-070-2230"></a>
+## 2230 — Multiple setter and component API principle (2026-10-26)
+
+Owner confirmed the next multiple tranche and requested meaningful setters for
+Gramlot components, which will be preferred over native HTML in applications.
+Recorded this principle without adding speculative component parameters.
+Implemented native input/select.multiple setters: DOM, Source, binding, adapter
+and select options retain identity; email drafts and chosen files survive.
+Select uses its existing value contract; no implicit application Data conversion.
+Invalid array contracts still report the existing error and recover on valid Data.
+Group and existing freeze/thaw behavior remain outside this tranche.
+
+Verified locally: 205 targeted Node tests pass; Chromium and WebKit fixture passes
+for select focus/options/commits, file retention and prior input-type regressions;
+runtime build passes. Evidence: /private/tmp/multiple-qualified.log,
+/private/tmp/multiple-chromium.log, /private/tmp/multiple-webkit.log,
+/private/tmp/multiple-build.log. Documentation mirrors updated. No publication or
+release. Next: explain and review group separately before implementation. This
+is not an exhaustive audit of every component's mutable API. Jodit's upstream
+fragment-sanitizer limitation remains documented in §2220 / GC-365 §060.
+
+
+<a id="gc-070-2235"></a>
+## 2235 — Radio group reset implemented and verified (2026-10-26)
+
+Owner confirmed clearing related Data in both departing and destination groups.
+Implemented for native radios and Gramlot radioButton: same DOM host/control,
+Source, binding and adapter; update membership, reset writable boolean Data to
+false through the existing parameter writer, then project current Data. Relative
+paths, scope isolation and read-only contracts are preserved. Disabled peers are
+included. Unchanged groups do not reset; adding/removing group resets affected
+members. Initial construction/form-owner conflict rules remain unchanged.
+
+A reset that synchronously removes a Source node no longer projects the detached
+node while queued cleanup is pending: use the renderer's existing attached check.
+Name/group conflicts reject before changing membership/Data and permit recovery.
+No dependency edits, new application API, Logic state or independent Data store.
+
+Verified: 211 targeted Node tests pass across controls, components, renderer,
+bindings, editors, IDE and declarations; Chromium/WebKit core fixture passes
+for native/component group reset, focus/identity, binding commits and previous
+type/multiple regressions. Runtime build passes. Evidence:
+/private/tmp/group-qualified.log, /private/tmp/group-chromium.log,
+/private/tmp/group-webkit.log, /private/tmp/group-build.log.
+Paired documentation updated. This tranche is complete locally; no publication,
+release or device-app acceptance claimed. Prior unrelated review debt (including
+Jodit's upstream fragment-sanitizer limitation) is unchanged.
+
+
+<a id="gc-070-2240"></a>
+## 2240 — Editor and native setter consolidation verified (2026-10-26)
+
+Owner authorized the bounded local consolidation with "procedi allora" after
+reviewing editor updates and native type/multiple/group setters. Unrelated local
+mobile, theme, IDE/IndexPage ownership and notification work stays outside this
+commit. No public deployment, push or package release is part of this step.
+
+The exact staged implementation was applied to an isolated checkout and built
+with Jodit 4.18.10 and DOMPurify 3.4.17. All 3,893 JavaScript tests pass (zero
+failures or skips). Chromium and WebKit pass the real-engine editor and native
+control fixtures: identity, bindings, selection, undo/redo, protected HTML,
+paste/drop, native setters and both native/component radio group reset.
+The IDE Revert test now expects retained undo history; the frame test supplies
+the required Popover API in JSDOM. No runtime compatibility fallback was added.
+
+Rebuilt the local gallery and restarted its port-8099 server so its cached
+collection descriptors reference the new artifacts. Interactive HTML/Markdown
+checks confirm Code/Rich text updates, Data binding and working Undo/Redo after
+external updates. Remote Edit remains disabled. Evidence is retained in
+/private/tmp/editor-setters-clean-tests.log, editor-setters-clean-build.log,
+editor-setters-clean-chromium.log, editor-setters-clean-webkit.log and
+/private/tmp/gramlot-editor-setters-gallery.png. Jodit's upstream fragment
+sanitizer limitation remains documented in GC-365 §060; this consolidation does
+not claim its upstream resolution or complete closure of the wider review.

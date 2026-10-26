@@ -433,8 +433,22 @@ radio keep the default of their authored `selected` or `checked` attribute.
   and the temporal types always write on `change`.
 - A correction written by a controller is shown on the control that produced the
   edit. Other attributes bound to the same path update while the user types.
-- Changing `type`, `multiple` or `group` rebuilds the element and keeps its
-  binding.
+- Changing an input's `type` uses its native setter and keeps the element and
+  binding. For example, password → text retains focus and the uncommitted draft.
+  A different value contract updates only the internal binding adapter. The browser
+  can sanitize the displayed value for the new type; this never rewrites Data.
+- Changing native input/select `multiple` also uses its setter, keeping the
+  element, options and binding. A multiple select still needs an array or null;
+  changing mode does not convert Data. Email drafts and selected files survive.
+- Changing a radio's `group` keeps the widget and binding, but resets the writable
+  boolean Data of the moving radio and both affected groups to `false`. Other
+  forms/pages remain independent; an unchanged group does not reset selections.
+  Literal and read-only values have no writable Data path and are not rewritten.
+
+In `<input type="password">`, the **HTML tag** is `input` and the **input type** is
+`password`. Changing the input type is different from replacing the HTML tag with
+`textarea`. Native browser limitations still apply: selection is not available
+for every input type, and a file input cannot receive a nonempty value from code.
 
 Gallery lessons: *Native editing*, *Checkbox and radio*, *Style and visibility*
 and *Bound SVG*. The input components of [Components](105-components.md) use the

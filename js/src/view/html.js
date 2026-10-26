@@ -181,10 +181,22 @@ export class HtmlElement {
         if (text.data !== nextText) text.data = nextText;
         const keys = [...new Set([...Object.keys(previous), ...Object.keys(attrs)])];
         // The browser reads `sandbox` when `src` or `srcdoc` starts a navigation: `sandbox` is written first.
-        keys.sort((a, b) => (b === 'sandbox') - (a === 'sandbox'));
+        keys.sort((a, b) => (b === 'sandbox') - (a === 'sandbox')
+            || (isHtml && element.localName === 'input' ? (b === 'type') - (a === 'type') : 0));
         for (const key of keys) {
             if (this.metadataAttributes.has(key) || ['ask', '_ask'].includes(key) || (controlled && key === 'value')) continue;
             const value = attrs[key];
+            if (isHtml && key === 'multiple' && ['input', 'select'].includes(element.localName)) {
+                if (element.multiple !== Boolean(value)) element.multiple = Boolean(value);
+                continue;
+            }
+            if (isHtml && element.localName === 'input' && key === 'type') {
+                if (!Object.is(previous.type, value)) {
+                    if (value == null) element.removeAttribute('type');
+                    else element.type = String(value);
+                }
+                continue;
+            }
             const attrName = key;
             const propertyName = domPropertyName(attrName);
             const isBoolean = isHtml && BOOLEAN_PROPERTIES.has(propertyName)

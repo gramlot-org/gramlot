@@ -275,3 +275,22 @@ print(to_tytx(b.source))
     assert.equal(get('single').checked,true);assert.equal(get('color').value,'#123456');
     assert.equal(get('horizontal').value,'0.5');assert.equal(get('vertical').value,'1');app.dispose();
 });
+
+
+test('component radio group reset retains host, inner control, focus and relative bindings',()=>{
+    const {app,element}=fixture((pane,app)=>{
+        app.data.setItem('group','colors');
+        app.data.setItem('form.moving',true);app.data.setItem('form.old',false);app.data.setItem('form.next',true);
+        pane.radioButton({id:'moving',value:'^.moving',group:'^group',label:'Option'});
+        pane.radioButton({id:'old',value:'^.old',group:'colors',label:'Old'});
+        pane.radioButton({id:'next',value:'^.next',group:'shipping',label:'Next',disabled:true});
+    });
+    const host=element('moving'),input=host.control,record=app.src.renderer.elements.get(host),adapter=record.control;
+    input.focus();app.data.setItem('group','shipping');
+    assert.strictEqual(element('moving'),host);assert.strictEqual(host.control,input);
+    assert.strictEqual(record.control,adapter);assert.strictEqual(host.shadowRoot.activeElement,input);
+    for(const key of ['moving','old','next'])assert.equal(app.data.getItem(`form.${key}`),false,key);
+    assert.equal(input.name,element('next').control.name);
+    input.click();assert.equal(app.data.getItem('form.moving'),true);
+    app.dispose();
+});

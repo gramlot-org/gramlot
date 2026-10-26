@@ -21,6 +21,7 @@ test('FramePage creates only implemented regions, including inherited hooks', ()
 function fixture(t, createEntry) {
     const window = new JSDOM('<main id="gramlot-root"></main>', {url:'https://index.test/'}).window;
     window.ResizeObserver = class { observe() {} disconnect() {} unobserve() {} };
+    window.HTMLElement.prototype.showPopover = function() {};
     const nav = new Bag();
     nav.setItem('folder', new Bag());
     nav.setItem('one', null, {url: '/one', title: 'One'});

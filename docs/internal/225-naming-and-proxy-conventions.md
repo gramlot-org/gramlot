@@ -1326,3 +1326,29 @@ Owner selected “Notifica non modale, con dettagli espandibili” for remote an
 ## Tree searchText — 2026-10-25
 
 Owner confirms: “Sì, confermo searchText. Procedi con la toolbar di ricerca nella navigazione, includendo i rami non ancora caricati e il ripristino dell’albero quando svuoto il campo.” `searchText` is a read-bound text parameter, default empty. It filters caption text literally and case-insensitively after a short debounce. Ancestors remain visible; resolver branches are read on explicit search. Clearing restores the unfiltered expansion state. Search presentation does not replace the store or alter Source.
+
+Editor Data projection, 2026-10-25: the existing internal engine method `replace(value)`
+is reused by HTML and Markdown, matching CodeMirror. No public authoring parameter
+or alternate Data representation is added. Jodit's public `value`, `history` and
+selection APIs are used; CodeMirror and ProseMirror use document transactions.
+The HTML protection codec's per-document context is retained with engine history:
+an inert `gramlot-document-` comment uses the existing random-ID convention and
+never becomes application HTML. It identifies the codec for the head/protected
+content when Jodit restores a body snapshot, including head-only replacements.
+These resources belong to the editor instance and are released on disposal.
+The owner's editor-projection amendment supersedes the earlier Revert reset text.
+
+
+Jodit security integration (2026-10-26, owner update instruction): reuse upstream
+`cleanHTML.sanitizer`, DOMPurify's documented hook/configuration, and the existing
+`gramlot-document-` history marker. Only a comment matching an existing instance
+record is retained by the sanitizer. No new authoring parameter, marker format,
+proxy or application state is introduced. Sanitizer hooks are instance-owned and
+released with the editor.
+
+
+Input type setter (2026-10-26): reuse the existing `type` attribute, native
+`HTMLInputElement.type` setter, `ControlAdapter.classFor`, attach/detach and the
+Source-owned renderer record. No public API or new state store is introduced.
+Documentation distinguishes the HTML tag (`input`, `textarea`) from the input type
+(`text`, `password`, `checkbox`). `multiple` and `group` remain separate follow-ups.

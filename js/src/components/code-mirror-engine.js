@@ -2,7 +2,7 @@
 import {EditorState, Compartment} from '@codemirror/state';
 import {EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter, drawSelection, dropCursor} from '@codemirror/view';
 import {syntaxHighlighting, HighlightStyle, bracketMatching, indentOnInput, indentUnit, foldGutter, foldKeymap} from '@codemirror/language';
-import {defaultKeymap, history, historyKeymap, undo, redo, undoDepth, redoDepth, indentWithTab, insertNewline, insertNewlineAndIndent} from '@codemirror/commands';
+import {defaultKeymap, history, historyKeymap, isolateHistory, undo, redo, undoDepth, redoDepth, indentWithTab, insertNewline, insertNewlineAndIndent} from '@codemirror/commands';
 import {search, searchKeymap, highlightSelectionMatches} from '@codemirror/search';
 import {closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap} from '@codemirror/autocomplete';
 import {setDiagnostics} from '@codemirror/lint';
@@ -73,14 +73,24 @@ export function createEditor(host) {
         search({top:true}), keymap.of([{key:'Mod-s', preventDefault:true, run:() => {if (!view.state.facet(EditorState.readOnly)) host.pageContext.publish('save', {value:host.readControlValue()}); return true;}},
             indentWithTab, ...searchKeymap, ...defaultKeymap, ...historyKeymap]),
         EditorView.updateListener.of(update => {
-            if (update.docChanged) host.editorChanged(update.state.doc.toString());
+            if (update.docChanged && !projecting) host.editorChanged(update.state.doc.toString());
             if (update.docChanged || update.transactions.some(transaction => transaction.reconfigured)) publishHistory();
         })];
+    let projecting = false;
     const state = doc => EditorState.create({doc, extensions:[options.of(configuration(host.parameters)), ...extensions]});
     const view = new EditorView({state:state(host.readControlValue()), parent:host.control, root:host.shadowRoot});
     return {view,
         configure() {view.dispatch({effects:options.reconfigure(configuration(host.parameters))});},
-        replace(value) {view.setState(state(value)); publishHistory();},
+        replace(value) {
+            const current = view.state.doc.toString();
+            let from = 0, end = current.length, nextEnd = value.length;
+            while (from < end && from < nextEnd && current[from] === value[from]) from++;
+            while (end > from && nextEnd > from && current[end - 1] === value[nextEnd - 1]) {end--; nextEnd--;}
+            if (from === end && from === nextEnd) return;
+            projecting = true;
+            try {view.dispatch({changes:{from, to:end, insert:value.slice(from,nextEnd)}, annotations:isolateHistory.of('full')});}
+            finally {projecting = false;}
+        },
         publishHistory,
         undo() {return !view.state.facet(EditorState.readOnly) && undo(view);},
         redo() {return !view.state.facet(EditorState.readOnly) && redo(view);},
