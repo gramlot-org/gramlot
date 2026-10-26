@@ -27,6 +27,25 @@ function fixture(t,author,remote=async()=>new Bag()){
  return {app,window,received,element,click(id,options={}){element(id).control.dispatchEvent(new window.MouseEvent('click',{bubbles:true,composed:true,...options}));}};
 }
 function frame(root){const frame=root.framePane({node_label:'frame'});frame.center.contentPane({frameTarget:true,node_label:'editor',selfsubscribe_save:'save'});return frame;}
+test('Labelbox preserves submenu ownership and toolbar overflow priority',async t=>{
+ const f=fixture(t,(root,app)=>{
+  app.data.setItem('label','Actions');const bar=frame(root).top.menu({presentation:'bar',id:'bar'});
+  bar.menuline('documenti:save',{id:'keep',lbl:'Pinned',overflowable:false});
+  const item=bar.menuline({id:'more',caption:'More',lbl:'Group',priority:0});
+  item.menu({id:'submenu',lbl:'^label'}).menuline('documenti:save',{id:'nested'});
+ });
+ const bar=f.element('bar'),item=f.element('more'),menu=f.element('submenu');
+ const presentation=item.parentElement.parentElement,subPresentation=menu.parentElement.parentElement;
+ assert.equal(item.submenu,menu);assert.equal(subPresentation.slot,'menu');
+ f.app.data.setItem('label','Updated');assert.equal(subPresentation.slot,'menu');
+ Object.defineProperty(bar,'clientWidth',{value:150,configurable:true});
+ bar.shadowRoot.querySelector('.toolbar-viewport').style.gap='0px';
+ for(const unit of bar.children)unit.getBoundingClientRect=()=>({width:100,height:30});
+ bar.overflow.layout();assert.equal(presentation.slot,'overflow');
+ assert.equal(f.element('keep').parentElement.parentElement.slot,'');
+ bar.overflow.open();f.click('more');await settle();assert.equal(menu.opened,true);
+ f.click('nested');assert.equal(f.received.length,1);assert.equal(f.element('more'),item);
+});
 test('frame regions are unique Source nodes; repeated command occurrences have independent messages',async t=>{
  const f=fixture(t,(root,app)=>{app.data.setItem('id',42);const shell=frame(root);assert.equal(shell.top,shell.top);
   const bar=shell.top.menu({presentation:'bar',id:'bar'});bar.menuline('documenti:save',{id:'save',parameters:{id:'^id'}});bar.spacer({size:12});bar.menuline('documenti:save',{id:'copy',caption:'Copy',parameters:{id:99}});

@@ -1,5 +1,5 @@
 /** Typed text drafts. Components parse/present; ControlAdapter alone writes Data. */
-import {parseDateExpression} from '../date-parser/index.js';
+import {parseDateExpression} from '@genrojs/toolbox';
 import {CalendarView, checkCivilDate} from './date-calendar.js';
 import {SVG_NS} from '../renderer/attributes.js';
 import {NativeControl} from './bases.js';

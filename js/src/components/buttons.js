@@ -1,3 +1,4 @@
+import {labelboxContent} from '../view/labelbox.js';
 /** Built-in command surfaces. Execution stays in ButtonBinding, state in ControlAdapter. */
 import {defineComponent, defineCollection} from './registry.js';
 import {controlElement} from './bases.js';
@@ -21,11 +22,15 @@ function Command(HTMLElement) {
             const style = doc.createElement('style');
             style.textContent = `:host{vertical-align:middle} .control-box{display:flex;align-items:stretch}
                 button{display:inline-flex;align-items:center;justify-content:center;gap:var(--gramlot-button-gap,.35em);font:inherit;
-                    color:var(--gramlot-ink,CanvasText);background:var(--gramlot-button-background,var(--gramlot-field-background,Canvas));
+                    color:var(--gramlot-button-color,var(--gramlot-ink,CanvasText));background:var(--gramlot-button-background,var(--gramlot-field-background,Canvas));
                     border:1px solid var(--gramlot-border-control,#888);border-radius:var(--gramlot-radius-sm,4px);
                     min-height:max(var(--gramlot-field-height,28px),var(--gramlot-touch-target,0px));
                     padding:var(--gramlot-button-padding,.25em .65em);cursor:pointer}
                 button:hover:not(:disabled){background:var(--gramlot-button-hover,var(--gramlot-field-readonly-background,#eee))}
+                :host(.button--secondary) button{background:var(--gramlot-selected,Highlight);color:var(--gramlot-action,CanvasText);border-color:transparent}
+                :host(.button--secondary) button:hover:not(:disabled){background:var(--gramlot-selected,Highlight);color:var(--gramlot-action-hover,CanvasText);border-color:var(--gramlot-action,CanvasText)}
+                button:active:not(:disabled){filter:brightness(.9)}
+                @media(prefers-contrast:more){button{border:2px solid currentColor}}
                 :host(.button--quiet) button{background:transparent;color:var(--gramlot-action,CanvasText);border-color:transparent}
                 :host(.button--quiet) button:hover:not(:disabled){background:var(--gramlot-selected,Highlight);color:var(--gramlot-action-hover,CanvasText);border-color:transparent}
                 button:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:2px}
@@ -40,7 +45,9 @@ function Command(HTMLElement) {
                     color:var(--gramlot-ink,CanvasText);background:var(--gramlot-field-background,Canvas);box-shadow:0 3px 12px #0003}
                 :host(:is([role=menuitem],[role=menuitemcheckbox])){display:block} :host(:is([role=menuitem],[role=menuitemcheckbox])) button{width:100%;justify-content:start;border:0;background:transparent}
                 :host([role=separator]){display:block;border-top:1px solid var(--gramlot-border-control,#888);margin:.25em}
-                :host([role=separator]) button{display:none}`;
+                :host([role=separator]) button{display:none}
+                @media(forced-colors:active){button,:host(.button--secondary) button,:host(.button--quiet) button{background:ButtonFace;color:ButtonText;border-color:ButtonText;filter:none}}
+                `;
             this.shadowRoot.append(style);
         }
         get disabled() { return this.control.disabled; }
@@ -146,7 +153,7 @@ export const DropDownButton = defineComponent({name:'dropDownButton',tag:'gramlo
             this.#arrow.addEventListener('click',event=>{event.stopPropagation();if(this.menu.opened)this.closeMenu();else this.openMenu();});
             this.#arrow.addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();this.openMenu(event.key==='ArrowUp');}});
         }
-        get menu(){return [...this.children].find(child=>child.localName==='gramlot-menu');}
+        get menu(){return [...this.children].map(labelboxContent).find(child=>child.localName==='gramlot-menu');}
         get menuItems(){return this.menu?.items??[];}
         projectAttributes(attrs,adapt){const rest=super.projectAttributes(attrs,adapt);this.#arrow.disabled=this.disabled;
             if(this.disabled)this.menu?.close(false);this.#refreshCaption();return rest;}

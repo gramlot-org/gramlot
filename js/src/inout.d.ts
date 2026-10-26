@@ -34,7 +34,7 @@ export class InOut {
     sendHttp(path: string, url: string): Promise<Response>;
     /** Save the data at `path` as a TYTX file, which `restore` reads back with its exact types. */
     save(path: string, filename: string): void;
-    /** Read a TYTX file chosen by the user into `path`; resolves with the restored Bag. Needs a user gesture. */
+    /** Read a TYTX file into `path`; resolves with the Bag, rejects with AbortError on cancel. Needs a user gesture. */
     restore(path: string): Promise<Bag>;
     /** Export the data at `path` as `'json'` or `'xml'`; types become text. */
     download(path: string, filename: string, format: 'json' | 'xml'): void;

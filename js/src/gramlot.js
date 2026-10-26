@@ -4,6 +4,7 @@
  *
  * @module
  */
+import {MobileEnvironment} from './mobile-environment.js';
 import {CommandRegistry} from './commands.js';
 import {ServerAdapter} from './server-adapter.js';
 import {NAME_SYNTAX, NameSyntax} from './builder/name-syntax.js';
@@ -11,6 +12,7 @@ import {SourceHandler} from './handlers/source-handler.js';
 import {RpcHandler} from './handlers/rpc-handler.js';
 import {DomHandler} from './handlers/dom-handler.js';
 import {SubscriptionsHandler} from './handlers/subscriptions-handler.js';
+import {DeviceHandler} from './handlers/device-handler.js';
 import {UtilitiesHandler} from './handlers/utilities-handler.js';
 import buttons from './components/buttons.js';
 import {ComponentCollection} from './components/registry.js';
@@ -23,6 +25,7 @@ import {formatValue} from './format.js';
  * name syntax the server declared in the bootstrap, `{kind: 'regex', pattern, flags}`, null for the core default.
  */
 export class Gramlot {
+    #mobileEnvironment;
     constructor({pageId, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
                  element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = [],
                  locale = null, timeZone = null, devices = [], serverAdapter = new ServerAdapter(), nameSyntax = null} = {}) {
@@ -42,7 +45,9 @@ export class Gramlot {
         this.serverAdapter = serverAdapter;
         this.src = new SourceHandler(this, {collections, destination: element ?? document.getElementById(rootId),
             subscriptions: this._subscriptions, nameSyntax: nameSyntax === null ? NAME_SYNTAX : NameSyntax.fromJSON(nameSyntax)});
+        this.#mobileEnvironment = MobileEnvironment.install({document,root:this.src.renderer.destination});
         this.data = this.src.builder.data;
+        this.dvc = new DeviceHandler(this);
         this.rpc = new RpcHandler(this, {rpcUrl, closeUrl, document, transport});
         this.dom = new DomHandler(this);
         this.utl = new UtilitiesHandler(this, document);
@@ -51,7 +56,7 @@ export class Gramlot {
         this.abort = new AbortController();
         // A page with a transport closes its server page when the browser leaves it (a beacon over HTTP).
         if (this.rpc.transport) {
-            this.pagehide = event => { if (!event.persisted) this.dispose({beacon: true}); };
+            this.pagehide = event => { if (!event.persisted) this.dispose(); };
             document.defaultView.addEventListener('pagehide', this.pagehide);
             this.window = document.defaultView;
         }
@@ -88,9 +93,11 @@ export class Gramlot {
             throw error;
         }
     }
-    dispose({beacon = false} = {}) {
+    dispose() {
         if (this.state === 'disposed') return;
         this.state = 'disposed';
+        this.dvc.dispose();
+        this.#mobileEnvironment.dispose();
         this._subscriptions.dispose();
         if (this.pagehide) this.window.removeEventListener('pagehide', this.pagehide);
         // Every call in flight is aborted: RpcHandler.call follows this signal.
@@ -100,8 +107,8 @@ export class Gramlot {
             finally { this.src.renderer.dispose(); }
         } finally {
             if (this.rpc.transport) {
-                this.rpc.transport.close(this.pageId, {beacon});
-                this.rpc.transport.dispose();
+                try { this.rpc.transport.close(this.pageId); }
+                finally { this.rpc.transport.dispose(); }
             }
         }
     }

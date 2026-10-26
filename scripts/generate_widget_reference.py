@@ -34,6 +34,8 @@ DESCRIPTIONS = {
  'spacer': 'Fixed or elastic space in a menu/toolbar; it does not publish a command.',
  'dialog': 'A modal window containing a framePane; remains modal when collapsed or maximized.',
  'floatingPane': 'A nonmodal window containing a framePane.',
+ 'trayPane': 'Data-owned arrangement of labelled live cards with selection, movement, resize, layers, rotation, zoom and snapping.',
+ 'transformPane': 'Applies bound translation, rotation and scale to its retained content.',
  'framePane': 'A border composition exposing top, bottom, left, right and center region builders.',
  'formlet': 'Responsive field layout with shared label alignment.',
  'groupBox': 'A labelled content group, optionally collapsible, with an optional Data copy command.',
@@ -82,7 +84,7 @@ FAMILIES = {
     'Numbers, dates and time': ('numberTextBox', 'horizontalSlider', 'verticalSlider',
                               'dateTextBox', 'dateCalendar', 'timeTextBox'),
     'Buttons, menus and toolbars': ('button', 'toggleButton', 'dropDownButton', 'menu', 'menuline', 'spacer'),
-    'Forms and containers': ('formlet', 'groupBox', 'contentPane', 'borderContainer', 'framePane', 'stackContainer', 'tabContainer'),
+    'Forms and containers': ('formlet', 'groupBox', 'contentPane', 'borderContainer', 'framePane', 'stackContainer', 'tabContainer', 'trayPane', 'transformPane'),
     'Dialogs and floating windows': ('dialog', 'floatingPane'),
     'Trees': ('tree',),
     'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview'),
@@ -201,7 +203,9 @@ connects these controls to runnable lessons and screenshots.
 | --- | --- |"""]
     entries = {key: (name, element) for name, doc in docs for key, element in doc['elements'].items()}
     # Numeric block IDs were allocated in collection order before the purpose-based grouping.
-    stable = {key: f'gc-345-{15 + index * 5:03d}' for index, key in enumerate(entries)}
+    stable = {'textbox': 'gc-345-015', 'passwordbox': 'gc-345-035', 'textBoxArea': 'gc-345-030', 'checkbox': 'gc-345-020', 'radioButton': 'gc-345-040', 'radioButtonText': 'gc-345-025', 'checkBoxText': 'gc-345-100', 'colorpicker': 'gc-345-045', 'filteringSelect': 'gc-345-075', 'callbackSelect': 'gc-345-080', 'comboBox': 'gc-345-085', 'dbSelect': 'gc-345-090', 'dbComboBox': 'gc-345-095', 'numberTextBox': 'gc-345-060', 'horizontalSlider': 'gc-345-050', 'verticalSlider': 'gc-345-055', 'dateTextBox': 'gc-345-065', 'dateCalendar': 'gc-345-105', 'timeTextBox': 'gc-345-070', 'button': 'gc-345-110', 'toggleButton': 'gc-345-115', 'dropDownButton': 'gc-345-120', 'menu': 'gc-345-125', 'menuline': 'gc-345-130', 'spacer': 'gc-345-135', 'formlet': 'gc-345-155', 'groupBox': 'gc-345-160', 'contentPane': 'gc-345-165', 'borderContainer': 'gc-345-170', 'framePane': 'gc-345-150', 'stackContainer': 'gc-345-175', 'tabContainer': 'gc-345-180', 'dialog': 'gc-345-140', 'floatingPane': 'gc-345-145', 'tree': 'gc-345-185', 'codeMirror': 'gc-345-190', 'htmlEditor': 'gc-345-195', 'htmlPreview': 'gc-345-200', 'markdownEditor': 'gc-345-205', 'markdownPreview': 'gc-345-210', 'typstPreview': 'gc-345-215', 'trayPane': 'gc-345-220', 'transformPane': 'gc-345-225'}
+    if set(stable) != set(entries):
+        raise ValueError('Allocate a stable documentation ID for every new component')
     grouped = [key for widgets in FAMILIES.values() for key in widgets]
     if len(grouped) != len(entries) or set(grouped) != set(entries):
         raise ValueError('Every component must occur in exactly one purpose family')
@@ -242,6 +246,8 @@ connects these controls to runnable lessons and screenshots.
             name, element = entries[key]
             meta = element['_meta']['gramlot_component']
             guide, caption = DETAILS[name]
+            if key == 'trayPane':
+                guide, caption = '105-components.md#gc-105-970', 'Tray workspaces and shared Labelboxes'
             if key in ('dialog', 'floatingPane', 'framePane'):
                 guide, caption = '350-menus-toolbars-and-windows.md', 'Window and frame composition'
             heading = f'\n<a id="{stable[key]}"></a>\n<a id="gc-345-{key.lower()}"></a>\n### `{key}`\n'

@@ -151,10 +151,20 @@ try{
         }
         assert(selected, 'Calendar date remains clickable outside the rounded ancestor');
         assert.equal(await popup.isVisible(),false);
+        await page.locator('#popup-choice .toggle').scrollIntoViewIfNeeded();
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        const contentScroll = await page.locator('#popup-choice').evaluate(el => {
+            const pane = el.closest('gramlot-content-pane');
+            return {top:pane.scrollTop, left:pane.scrollLeft};
+        });
         await page.locator('#popup-choice .toggle').click();
         const choiceBox=await page.locator('#popup-choice input').boundingBox();
         const menuBox=await page.locator('#popup-choice .choices').boundingBox();
         assert(Math.abs(menuBox.width-(choiceBox.width-4))<1, 'choice popup is inset from its field');
+        assert.deepEqual(await page.locator('#popup-choice').evaluate(el => {
+            const pane = el.closest('gramlot-content-pane');
+            return {top:pane.scrollTop, left:pane.scrollLeft};
+        }), contentScroll, 'Opening choices does not scroll the containing pane');
         await page.getByRole('option',{name:'Weekend',exact:true}).click();
         assert.equal(await page.evaluate(()=>gramlot.data.getItem('delivery')),'weekend');
         for(const side of ['top','bottom','left','right']) {

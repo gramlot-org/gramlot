@@ -10,14 +10,14 @@ import {Bag} from '@genrojs/bag';
 import {XHTML_NS} from '../renderer/attributes.js';
 import {callLogic, invokeHook} from '../binding/hooks.js';
 
-// The elements whose `type`, `multiple` and `group` have no setter: a change rebuilds (C04.1, D7).
+// Native input.type and input/select.multiple use setters; radio group updates membership.
 const CONTROL_TAGS = new Set(['input', 'select', 'textarea']);
-const REBUILD_ATTRIBUTES = ['type', 'multiple', 'group'];
+const REBUILD_ATTRIBUTES = ['type', 'multiple'];
 
-/** The resolved value of the attribute `name` of `node`: a pointer reads the Data. */
-function resolved(node, name) {
-    const value = node.getAttr(name);
-    return node.pointerType(value) ? node.getRelativeData(value) : value;
+/** Read current pointer Data, including during freeze; expressions use the resolved projection. */
+function resolved(control, name) {
+    const node = control.node, value = node.getAttr(name);
+    return node.pointerType(value) ? node.getRelativeData(value) : control.resolved[name];
 }
 
 export class ControlAdapter {
@@ -59,14 +59,18 @@ export class ControlAdapter {
     }
 
     /**
-     * The resolved `type`, `multiple` and `group` of a form control element, as one comparable
-     * string, or null for any other element: a different shape rebuilds the element (C04.1, D7).
+     * Attributes still requiring reconstruction, as one comparable string, or null for other
+     * elements. Native input.type and input/select.multiple use setters; radio group changes
+     * update the existing membership and never contribute to this signature.
      * `attrs` are the attributes of the renderer's resolved projection (`^`, `=` and `==` resolved).
      */
     static shape(element, attrs) {
-        if (element?.constructor.gramlotComponent?.parameters.value?.binding === 'twoWay' && element.control.type === 'radio') return JSON.stringify([attrs.group ?? null]);
+        if (element?.constructor.gramlotComponent?.parameters.value?.binding === 'twoWay' && element.control.type === 'radio') return JSON.stringify([]);
         if (element?.namespaceURI !== XHTML_NS || !CONTROL_TAGS.has(element.localName)) return null;
-        return JSON.stringify(REBUILD_ATTRIBUTES.map(name => attrs[name] ?? null));
+        return JSON.stringify(REBUILD_ATTRIBUTES.filter(name =>
+            (name !== 'type' || element.localName !== 'input') &&
+            (name !== 'multiple' || !['input', 'select'].includes(element.localName)))
+            .map(name => attrs[name] ?? null));
     }
 
     constructor(binding, record) {
@@ -100,7 +104,11 @@ export class ControlAdapter {
             this.#pending = true;
             return;
         }
-        if (this.constructor.preservesUnchangedValue && this.#hasProjectedValue && this.same(this.#projectedValue, value)) return;
+        // A synchronous Data rule can reject an edit and restore the previous
+        // projection. The control may already hold the rejected candidate.
+        if (this.constructor.preservesUnchangedValue && this.#hasProjectedValue
+            && this.same(this.#projectedValue, value)
+            && (!this.#committing || this.same(this.read(), value))) return;
         this.#projectedValue = value;
         this.#hasProjectedValue = true;
         if (this.#committing && this.same(this.read(), value)) return;
@@ -380,15 +388,28 @@ export class RadioControl extends CheckboxControl {
     }
 
     /**
-     * Follow the semantic form owner: when a `form` or `formId` above the node was added, removed or
-     * moved, the button leaves its group and joins the group of the same name in its new scope, with a
-     * new generated `name`; the NodeBinding and the element stay (ASTRA-04). A button that is on and
-     * meets another button on in the new scope raises before any effect, as at the join (P11).
+     * A changed group clears writable selections in both scopes without replacing the control.
+     * Membership moves before Data writes so synchronous binding projections see the new group.
+     * Form-owner-only moves keep their existing initial-conflict rule.
      */
-    refresh() {
-        if (this.#name === null) return;
-        const group = this.resolved.group;
+    refresh(previousGroup = this.resolved.group) {
+        const group = this.resolved.group ?? null;
         const form = formNode(this.node);
+        if (!Object.is(previousGroup ?? null, group)) {
+            const affected = new Set([this, ...this.groups.peers(this),
+                ...(group === null ? [] : this.groups.peersOf(group, form))]);
+            this.groups.leave(this);
+            this.#name = group === null ? null : this.groups.join(this, group, form);
+            if (this.#name === null) this.element.removeAttribute('name');
+            else this.element.setAttribute('name', this.#name);
+            for (const peer of affected) {
+                if (this.binding.closed || !this.binding.runtime.renderer.attached(this.node)) return;
+                if (peer.binding.closed || !peer.binding.runtime.renderer.attached(peer.node)) continue;
+                peer.binding.runtime.renderer.html.writeParameter(peer.node, 'value', false);
+            }
+            return;
+        }
+        if (this.#name === null) return;
         if (this.groups.nameOf(group, form) === this.#name) return;
         this.#requireSingleTrue(group, form);
         this.groups.leave(this);
@@ -402,7 +423,7 @@ export class RadioControl extends CheckboxControl {
      */
     #requireSingleTrue(group, form) {
         const node = this.node;
-        if (resolved(node, 'value') && this.groups.peersOf(group, form).some(peer => !peer.binding.closed && peer.read())) {
+        if (resolved(this, 'value') && this.groups.peersOf(group, form).some(peer => !peer.binding.closed && peer.read())) {
             throw new Error(`${node.nodeTag} '${node.label}': several true values in radio group '${group}'`);
         }
     }
@@ -439,7 +460,7 @@ export class RadioControl extends CheckboxControl {
             if (this.binding.closed) return;
             if (peer.binding.closed) continue;
             if (peer.element.checked) peer.element.checked = false;
-            if (resolved(peer.node, 'value')) peer.commit(null);
+            if (resolved(peer, 'value')) peer.commit(null);
         }
     }
 }
@@ -578,6 +599,7 @@ function componentContext(adapter) {
         locale:app.locale, timeZone:app.timeZone, createDecimal, isDecimal, getDecimalLibrary,
         publish:(topic, payload) => node.publish(topic, payload),
         isActive:() => !binding.closed,
+        reportError:(error, title) => { if (!binding.closed) binding.runtime.reportError(error, title); },
         callLogic:(name, keywords) => callLogic(binding.runtime, node, name, keywords),
         format:(value, options) => app.format(value, options), invoke,
         remote:(method, keywords, signal) => app.rpc.call('data', method, keywords, {signal}),
@@ -599,7 +621,7 @@ function componentContext(adapter) {
             if (ok) for (const patch of result.datachanges) node.getRelativeData('.').update(patch);
             const attribute = ok ? 'validate_onAccept' : 'validate_onReject';
             if (rules[attribute]) {
-                const report = error => console.error('Validation notification failed:', error);
+                const report = error => { if (!binding.closed) binding.runtime.reportError(error, 'Validation callback failed'); };
                 try {
                     const validations = Object.fromEntries(Object.entries(rules).map(([key, value]) => [key.slice(9), value]));
                     const returned = invoke(attribute, rules[attribute], {value:result.value, result, validations, userChange:true});
@@ -614,7 +636,10 @@ function componentContext(adapter) {
     };
 }
 function commitComponent(host, outcome, commit) {
+    const context = host.pageContext;
     const finish = result => { if (result.ok && result.isCurrent()) { commit(result); host.finishValidation(result); } };
-    if (outcome instanceof Promise) outcome.then(finish).catch(error => console.error('Validation notification failed:', error));
-    else finish(outcome);
+    if (outcome instanceof Promise) outcome.then(finish).catch(error => context.reportError(error, 'Field update failed'));
+    else {
+        try { finish(outcome); } catch (error) { context.reportError(error, 'Field update failed'); }
+    }
 }

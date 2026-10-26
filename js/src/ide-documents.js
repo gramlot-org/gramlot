@@ -1,15 +1,17 @@
 import {Bag} from '@genrojs/bag';
+import {randomId} from './random-id.js';
 
 /** UTF-8 identity is safe in Bag paths and keeps distinct roots/files distinct. */
 export const documentKey = (root, path) => 'd_' + [...new TextEncoder().encode(JSON.stringify([root,path]))]
     .map(byte => byte.toString(16).padStart(2,'0')).join('');
 
-/** Drafts and saved baselines live in Data; only request lifetime lives here. */
+/** Source-owned document requests; drafts and saved baselines are relative Data. */
 export class IdeDocuments {
-    constructor(gramlot, state) {
-        this.gramlot = gramlot; this.state = state;
+    constructor(gramlot, source) {
+        this.gramlot = gramlot; this.source = source;
         this.pending = new Map(); this.disposed = false;
     }
+    get state() { return this.source.getRelativeData('.'); }
     get documents() { return this.state.getItem('documents'); }
     async open(root, path) {
         const key = documentKey(root, path);
@@ -28,7 +30,7 @@ export class IdeDocuments {
         return promise;
     }
     newDocument(language, extension, root = '') {
-        const key = `new_${crypto.randomUUID().replaceAll('-','')}`;
+        const key = `new_${randomId()}`;
         const doc = new Bag();
         for (const [name,value] of Object.entries({language, root, path:`Untitled${extension}`,
             content:'', saved:'', writable:true, busy:false, isNew:true, createHidden:true,

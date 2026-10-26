@@ -8,7 +8,7 @@ import {codeMirrorWithOptions} from '../src/server/page.js';
 import inputs from '../src/components/inputs.js';
 import layout from '../src/components/layout.js';
 import {undo, undoDepth} from '@codemirror/commands';
-import {EditorState} from '@codemirror/state';
+import {EditorState, StateField, StateEffect} from '@codemirror/state';
 
 const {window} = new JSDOM('<body></body>', {pretendToBeVisual:true});
 for (const name of ['window','document','MutationObserver','Window','HTMLElement','Node','getComputedStyle']) globalThis[name] = window[name];
@@ -33,10 +33,10 @@ test('editor grammar is portable; engine is not loaded by grammar authoring', ()
     assert.match(b.toTytx(), /codeMirror/);
 });
 
-test('live binding writes once; external replacements are silent and reset history', async () => {
+test('live binding writes once; external updates preserve the engine and undo history without echoing Data', async () => {
     const {app,host} = fixture(root => base(root));
     await host.ready;
-    const view=host.editor.view;
+    const engine=host.editor, view=engine.view;
     let inputs=0; host.addEventListener('input',()=>inputs++);
     view.dispatch({changes:{from:0,insert:'# comment\n'},selection:{anchor:10}});
     assert.equal(app.data.getItem('document.content'),view.state.doc.toString());
@@ -44,7 +44,12 @@ test('live binding writes once; external replacements are silent and reset histo
     assert.equal(undoDepth(view.state),1);
     app.data.setItem('document.content','new document');
     assert.equal(view.state.doc.toString(),'new document');
-    assert.equal(inputs,1); assert.equal(undoDepth(view.state),0);
+    assert.equal(inputs,1); assert.equal(undoDepth(view.state),2);
+    assert.equal(host.editor,engine);assert.equal(host.editor.view,view);
+    assert.equal(host.undo(),true);assert.match(app.data.getItem('document.content'),/^# comment/);
+    assert.equal(host.undo(),true);assert.match(app.data.getItem('document.content'),/^def/);
+    assert.equal(host.redo(),true);assert.equal(host.redo(),true);
+    assert.equal(app.data.getItem('document.content'),'new document');
     host.remove(); assert.equal(host.editor,null);
 });
 
@@ -115,4 +120,77 @@ test('live false commits on leaving editor; native contenteditable events do not
     view.contentDOM.dispatchEvent(new window.FocusEvent('focusout',{bubbles:true}));
     assert.match(app.data.getItem('document.content'),/^xdef/);
     host.remove();
+});
+
+
+test('detachable tab retains Source, editor, selection, Undo and live bindings through repeated docking', async () => {
+    window.HTMLDialogElement.prototype.show = function () { this.open = true; };
+    window.HTMLDialogElement.prototype.close = function () { this.open = false; };
+    const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+    const {app, host, stop} = fixture(root => {
+        const tabs = root.tabContainer({id:'tabs', selectedPage:'code'});
+        tabs.contentPane({title:'Example', pageName:'example'}).div('Example');
+        base(tabs.contentPane({id:'code-pane', title:'Code', pageName:'code', detachable:true}));
+    });
+    try {
+        await host.ready; await settle();
+        const tabs = document.getElementById('tabs'), pane = document.getElementById('code-pane');
+        const originalParent = pane.parentNode, editorParent = host.parentNode, view = host.editor.view;
+        const source = app.src.renderer.elements.get(pane).node;
+        view.dispatch({changes:{from:0,insert:'# edit\n'},selection:{anchor:7}});
+        for (let cycle=0; cycle<3; cycle++) {
+            tabs.shadowRoot.querySelector('[aria-label="Detach Code"]').click(); await settle();
+            const floating = tabs.shadowRoot.querySelector('dialog[open]');
+            assert.ok(floating);
+            assert.equal(host.editor.view, view);
+            assert.equal(pane.parentNode, originalParent); assert.equal(host.parentNode, editorParent);
+            assert.equal(app.src.renderer.elements.get(pane).node, source);
+            assert.equal(view.state.selection.main.head,7); assert.equal(undoDepth(view.state),1);
+            assert.equal(tabs.shadowRoot.querySelector('[aria-selected=true]').textContent,'Example');
+            floating.querySelector('[aria-label="Close window"]').click(); await settle();
+            assert.equal(tabs.shadowRoot.querySelector('dialog'),null);
+            assert.equal(tabs.shadowRoot.querySelector('[aria-selected=true]').textContent,'Code');
+            assert.equal(host.editor.view,view); assert.equal(undoDepth(view.state),1);
+        }
+        tabs.shadowRoot.querySelector('[aria-label="Detach Code"]').click(); await settle();
+        undo(view); assert.match(app.data.getItem('document.content'),/^def/);
+        app.data.setItem('document.content','from server');
+        assert.equal(view.state.doc.toString(),'from server');
+        tabs.shadowRoot.querySelector('[aria-label="Close window"]').click(); await settle();
+        assert.equal(host.editor.view,view); assert.equal(view.state.doc.toString(),'from server');
+        tabs.shadowRoot.querySelector('[aria-label="Detach Code"]').click(); await settle();
+        tabs.remove(); await settle();
+        assert.equal(tabs.shadowRoot.querySelector('dialog'),null);
+        assert.equal(host.editor,null);
+    } finally { stop(); }
+});
+
+test('save shortcut is consumed but never published while readonly or disabled',async()=>{
+    const {keymap}=await import('@codemirror/view');
+    const {app,host}=fixture((root,app)=>{app.data.setItem('locked',true);app.data.setItem('disabled',false);base(root,{readonly:'^locked',disabled:'^disabled'});});
+    try {
+        await host.ready;const view=host.editor.view,calls=[];
+        host.pageContext.publish=(name,payload)=>calls.push({name,payload});
+        const save=()=>view.state.facet(keymap).flat().find(item=>item.key==='Mod-s').run(view);
+        assert.equal(save(),true);assert.equal(calls.filter(c=>c.name==='save').length,0);
+        app.data.setItem('locked',false);app.data.setItem('disabled',true);
+        assert.equal(save(),true);assert.equal(calls.filter(c=>c.name==='save').length,0);
+        app.data.setItem('disabled',false);save();
+        assert.deepEqual(calls.filter(c=>c.name==='save'),[{name:'save',payload:{value:app.data.getItem('document.content')}}]);
+    } finally {app.dispose();}
+});
+
+
+test('Data updates retain CodeMirror state fields, selection and configuration',async()=>{
+    const {app,host,stop}=fixture(root=>base(root,{lineWrapping:false}));await host.ready;
+    const engine=host.editor,view=engine.view;
+    const field=StateField.define({create:()=>({retained:true}),update:value=>value});
+    view.dispatch({effects:StateEffect.appendConfig.of(field),selection:{anchor:4}});
+    const state=view.state.field(field),before=app.data.getItem('document.content');
+    app.data.setItem('document.content',before+'# incoming\n');
+    assert.equal(host.editor,engine);assert.equal(view.state.field(field),state);
+    assert.equal(view.state.selection.main.head,4);
+    assert.equal(view.contentDOM.classList.contains('cm-lineWrapping'),false);
+    assert.equal(host.undo(),true);assert.equal(app.data.getItem('document.content'),before);
+    stop();
 });

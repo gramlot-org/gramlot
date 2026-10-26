@@ -469,6 +469,24 @@ Shared contracts: [Panel selection](#gc-345-shared-selection).
 Specific parameters: `tabMode`, `tabPosition`, `tabAlign`.
 
 
+<a id="gc-345-220"></a>
+<a id="gc-345-traypane"></a>
+### `trayPane`
+
+Collection: layout. Data-owned arrangement of labelled live cards with selection, movement, resize, layers, rotation, zoom and snapping.
+
+Specific parameters: `storepath`, `locked`, `gridStep`, `gridVisible`, `rotationStep`.
+
+
+<a id="gc-345-225"></a>
+<a id="gc-345-transformpane"></a>
+### `transformPane`
+
+Collection: layout. Applies bound translation, rotation and scale to its retained content.
+
+Specific parameters: `x`, `y`, `rotate`, `zoom`, `min`, `max`, `step`, `onEnd`.
+
+
 <a id="gc-345-325"></a>
 ## Dialogs and floating windows
 
@@ -505,7 +523,7 @@ No additional component-specific parameters.
 
 Collection: tree. Hierarchical Bag presentation with selection, disclosure and declared drag behavior.
 
-Specific parameters: `storepath`, `draggable`, `labelAttribute`, `hideValues`, `labelCb`, `getLabel`, `getLabelClass`, `getIconClass`, `selectedLabelClass`, `autoCollapse`, `selectedPath`.
+Specific parameters: `storepath`, `draggable`, `labelAttribute`, `hideValues`, `labelCb`, `getLabel`, `getLabelClass`, `getIconClass`, `selectedLabelClass`, `searchText`, `autoCollapse`, `selectedPath`.
 
 
 <a id="gc-345-335"></a>

@@ -80,7 +80,7 @@ test('checkbox: an authored checked with a ^ value is an error (two sources)', (
         {message: "input 'input_0': checked and a ^ value are two sources"});
 });
 
-test('D1: type from text to checkbox through ^.tipo rebuilds with CheckboxControl, a boolean in the Data, same NodeBinding', () => {
+test('Input type from text to checkbox retains DOM and NodeBinding with CheckboxControl', () => {
     const {app, builder, data, byId, record} = page();
     data.setItem('r.tipo', 'text');
     data.setItem('r.v', 'abc');
@@ -90,7 +90,7 @@ test('D1: type from text to checkbox through ^.tipo rebuilds with CheckboxContro
     const text = byId('f');
     data.setItem('r.tipo', 'checkbox');
     const box = byId('f');
-    assert.notStrictEqual(box, text);
+    assert.strictEqual(box, text);
     assert.ok(record(node).control instanceof CheckboxControl);
     assert.strictEqual(app.src.binding.bindingFor(node), binding);
     assert.equal(box.checked, true, "'abc' is truthy");
@@ -173,7 +173,7 @@ test('a projection that keeps a button on writes nothing on its peers', () => {
     assert.equal(data.getItem('g.b'), null, 'the mount does not write false on the peers');
 });
 
-test('a rebuilt radio that is on is not a conflict (C04.1 through a Data type)', () => {
+test('a case-only radio type change retains its adapter and group', () => {
     const {builder, data, byId} = page();
     data.setItem('g.a', true);
     data.setItem('kind', 'radio');
@@ -181,7 +181,7 @@ test('a rebuilt radio that is on is not a conflict (C04.1 through a Data type)',
     builder.root.input({id: 'b', type: 'radio', group: 'g', value: '^g.b'});
     const first = byId('a');
     data.setItem('kind', 'RADIO');
-    assert.notStrictEqual(byId('a'), first);
+    assert.strictEqual(byId('a'), first);
     assert.equal(byId('a').checked, true);
     assert.equal(byId('a').name, byId('b').name);
 });
@@ -333,7 +333,7 @@ test('ASTRA-02: group from ^, = and == is the resolved group, at mount and on up
     data.setItem('gn', 'sizes');
     assert.equal(byId('e').name, `${prefix}sizes`);
     assert.equal(byId('p').name, `${prefix}sizes`);
-    assert.equal(byId('r').name, `${prefix}colors`);
+    assert.equal(byId('r').name, `${prefix}sizes`, 'resetting its value reprojects the = group pointer');
     assert.strictEqual(app.src.binding.bindingFor(eq), binding);
 });
 
@@ -427,4 +427,112 @@ test('ASTRA-06: a failed first projection of a control cleans up its partial rec
     assert.deepEqual(live.map(([, type]) => type), []);
     assert.equal(added.filter(([target]) => target.localName === 'select').length, 4);
     assert.deepEqual([...app.src.renderer.records.keys()].map(node => node.nodeTag).sort(), ['div', 'span']);
+});
+
+test('radio inline false does not conflict with a selected peer at initial rendering', () => {
+    const {app, window, byId} = page();
+    const builder = new GramlotBuilder();
+    builder.root.input({id:'selected',type:'radio',group:'choice',value:'==true'});
+    builder.root.input({id:'off',type:'radio',group:'choice',value:'==false'});
+    try {
+        app.src.startSource(builder.toTytx());
+        assert.equal(byId('selected').checked,true);
+        assert.equal(byId('off').checked,false);
+    } finally {app.dispose(); window.close();}
+});
+
+test('leaving and rejoining radio type updates group membership without replacing the input',()=>{
+    const {app,builder,data,byId,record}=page();
+    data.setItem('kind','radio');data.setItem('g.a',true);data.setItem('g.b',false);
+    const a=sourceTarget(builder.root.input({id:'a',type:'^kind',group:'g',value:'^g.a'}));
+    builder.root.input({id:'b',type:'radio',group:'g',value:'^g.b'});
+    const field=byId('a'),cleanupCount=record(a).cleanup.length;
+    data.setItem('kind','checkbox');
+    assert.strictEqual(byId('a'),field);assert.equal(field.hasAttribute('name'),false);
+    byId('b').click();assert.equal(data.getItem('g.a'),true,'A is no longer a radio peer');
+    data.setItem('g.a',false);data.setItem('kind','radio');
+    assert.equal(field.name,byId('b').name);field.click();
+    assert.equal(data.getItem('g.a'),true);assert.equal(data.getItem('g.b'),false);
+    assert.equal(record(a).cleanup.length,cleanupCount);app.dispose();
+});
+
+
+for (const movingSelected of [false, true]) {
+    test(`changing group clears both choices and retains the radio (${movingSelected})`, () => {
+        const {app,builder,data,byId,record,document}=page();
+        data.setItem('choice','colors');
+        for(const [key,value] of Object.entries({moving:movingSelected,old:!movingSelected,next:true,unrelated:true}))
+            data.setItem(`g.${key}`,value);
+        const moving=sourceTarget(builder.root.input({id:'moving',type:'radio',group:'^choice',value:'^g.moving'}));
+        builder.root.input({id:'old',type:'radio',group:'colors',value:'^g.old'});
+        builder.root.input({id:'next',type:'radio',group:'shipping',value:'^g.next'});
+        builder.root.div({formId:'other'}).input({id:'unrelated',type:'radio',group:'shipping',value:'^g.unrelated'});
+        const field=byId('moving'),adapter=record(moving).control,binding=record(moving).binding;
+        field.focus();
+        data.setItem('choice','shipping');
+        for(const key of ['moving','old','next']) {
+            assert.equal(data.getItem(`g.${key}`),false,key);
+            assert.equal(byId(key).checked,false,key);
+        }
+        assert.equal(data.getItem('g.unrelated'),true,'other form unaffected');
+        assert.strictEqual(byId('moving'),field);assert.strictEqual(document.activeElement,field);
+        assert.strictEqual(record(moving).control,adapter);assert.strictEqual(record(moving).binding,binding);
+        assert.equal(moving.getAttr('group'),'^choice');
+        assert.equal(field.name,byId('next').name);assert.notEqual(field.name,byId('old').name);
+        byId('old').click();byId('next').click();field.click();
+        assert.equal(data.getItem('g.old'),true,'old group is independent');
+        assert.equal(data.getItem('g.next'),false);assert.equal(data.getItem('g.moving'),true);
+        moving.setAttr({group:'shipping'});
+        assert.equal(data.getItem('g.moving'),true,'unchanged resolved group does not reset');
+        app.dispose();
+    });
+}
+
+test('adding and removing group reset affected writable Data without inventing paths for read-only values',()=>{
+    const {app,builder,data,byId}=page();
+    data.setItem('values.moving',true);data.setItem('values.next',true);data.setItem('read',false);
+    const moving=sourceTarget(builder.root.input({id:'moving',type:'radio',value:'^values.moving'}));
+    builder.root.input({id:'next',type:'radio',group:'shipping',value:'^values.next'});
+    builder.root.input({id:'read',type:'radio',group:'shipping',value:'=read'});
+    builder.root.input({id:'literal',type:'radio',group:'shipping',value:false});
+    const field=byId('moving');
+    moving.setAttr({group:'shipping'});
+    assert.deepEqual([data.getItem('values.moving'),data.getItem('values.next')],[false,false]);
+    assert.equal(data.getItem('read'),false);
+    byId('next').click();
+    moving.setAttr({group:null});
+    assert.equal(data.getItem('values.next'),false);assert.equal(field.hasAttribute('name'),false);
+    assert.strictEqual(byId('moving'),field);
+    field.click();byId('next').click();
+    assert.deepEqual([data.getItem('values.moving'),data.getItem('values.next')],[true,true]);
+    app.dispose();
+});
+
+test('a reset may remove the moving radio without projecting a disposed record',()=>{
+    const {app,builder,data,byId}=page();
+    data.setItem('g.moving',true);data.setItem('g.peer',true);
+    const moving=sourceTarget(builder.root.input({id:'moving',type:'radio',group:'colors',value:'^g.moving'}));
+    builder.root.input({id:'peer',type:'radio',group:'shipping',value:'^g.peer'});
+    data.subscribe('remove-on-reset',{any:event=>{
+        if(event.node.label==='moving'&&event.node.value===false) moving.parentBag.popNode(moving.label);
+    }});
+    moving.setAttr({group:'shipping'});
+    assert.equal(byId('moving'),null);assert.equal(app.src.renderer.records.has(moving),false);
+    app.dispose();
+});
+
+
+test('conflicting name is rejected before group mutation; removing it permits a reset',()=>{
+    const {app,builder,data,byId,record}=page();
+    data.setItem('g.moving',true);data.setItem('g.next',true);
+    const moving=sourceTarget(builder.root.input({id:'moving',type:'radio',name:'manual',value:'^g.moving'}));
+    builder.root.input({id:'next',type:'radio',group:'shipping',value:'^g.next'});
+    const field=byId('moving'),adapter=record(moving).control;
+    assert.throws(()=>moving.setAttr({group:'shipping'}),/name and group are two names/);
+    assert.equal(field.name,'manual');assert.equal(data.getItem('g.moving'),true);assert.equal(data.getItem('g.next'),true);
+    moving.setAttr({name:null});
+    assert.strictEqual(byId('moving'),field);assert.strictEqual(record(moving).control,adapter);
+    assert.equal(field.name,byId('next').name);
+    assert.equal(data.getItem('g.moving'),false);assert.equal(data.getItem('g.next'),false);
+    app.dispose();
 });

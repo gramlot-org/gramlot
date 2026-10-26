@@ -31,6 +31,15 @@ test('HTML fragments remain fragments and external replacements get independent 
     const a=prepareHtmlDocument('<p onclick="a()">A</p>',window),b=prepareHtmlDocument('<p onclick="b()">B</p>',window);
     assert.throws(()=>a.serialize(b.html),/Protected/);
 });
+test('controls and noscript content survive rich edits as protected source, not interactive DOM',()=>{
+    const source='<p>Before</p><form action="/save"><input name="draft" value="keep"></form>'+
+        '<button onclick="run()">Run</button><select><option>A</option></select><textarea>Draft</textarea>'+
+        '<noscript>Fallback</noscript>';
+    const doc=prepareHtmlDocument(source,window);
+    assert.doesNotMatch(doc.html,/<(?:form|input|button|select|textarea|noscript)[\s>]/i);
+    assert.equal(doc.serialize(doc.html.replace('Before','After')),source.replace('Before','After'));
+    assert.throws(()=>doc.serialize(doc.html+'<form></form>'),/Active/);
+});
 test('preview descriptor exposes a read-only HTML value',()=>{
     assert.equal(HtmlPreview.name,'htmlPreview');
     assert.equal(HtmlPreview.parameters.value.binding,'read');
@@ -70,4 +79,11 @@ test('IDE history belongs to the active HTML view, with Preview commands disable
     assert.equal(doc.getItem('undoDisabled'),true);assert.equal(doc.getItem('redoDisabled'),false);
     doc.setItem('view','preview');logic.ideHistoryState(doc);
     assert.equal(doc.getItem('undoDisabled'),true);assert.equal(doc.getItem('redoDisabled'),true);
+});
+
+
+test('protected HTML markers work without secure-context randomUUID',t=>{
+    t.mock.method(crypto,'randomUUID',()=>{throw Error('randomUUID unavailable');});
+    const doc=prepareHtmlDocument('<p>Text</p><script>keep()</script>',window);
+    assert.match(doc.serialize(doc.html),/<script>keep\(\)<\/script>/);
 });

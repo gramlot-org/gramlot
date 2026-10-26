@@ -81,13 +81,17 @@ export class InOut {
         this.saveText(this.branch(path).toTytx(), filename, 'application/json');
     }
 
-    /** Read a TYTX file chosen by the user into path; resolves with the restored Bag. Needs a user gesture. */
+    /** Read a TYTX file into path; resolves with the Bag, rejects with AbortError on cancel. Needs a user gesture. */
     restore(path) {
         const input = this.document.createElement('input');
         input.type = 'file';
         input.accept = '.json,application/json';
         return new Promise((resolve, reject) => {
+            const cancel = () => reject(new this.document.defaultView.DOMException('File selection cancelled', 'AbortError'));
+            input.addEventListener('cancel', cancel, {once: true});
             input.addEventListener('change', async () => {
+                input.removeEventListener('cancel', cancel);
+                if (!input.files.length) { cancel(); return; }
                 try {
                     const bag = fromTytx(await input.files[0].text());
                     if (!(bag instanceof Bag)) throw new TypeError('the file must contain a typed Bag');

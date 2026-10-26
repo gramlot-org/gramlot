@@ -8,6 +8,7 @@ import tree from '../src/components/tree.js';
 import {JSDOM} from 'jsdom';
 
 function state() {const bag=new Bag();bag.setItem('store',new Bag());bag.setItem('documents',new Bag());return bag;}
+const dataOwner = data => ({getRelativeData: path => {assert.equal(path,'.');return data;}});
 const defer=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
 const entries=()=>{const b=new Bag();b.setItem('folder',null,{path:'nested',caption:'Nested',is_directory:true});b.setItem('file',null,{path:'a.py',caption:'a.py',is_directory:false});return b;};
 
@@ -30,7 +31,7 @@ test('filesystem loads one level, caches child resolution and aborts pending des
 test('late and failed workspace requests cannot replace a successful tree',async()=>{
     const first=defer(),second=defer();
     const data=state(), app={rpc:{call:(t,m,{root})=>root==='first'?first.promise:second.promise}};
-    const controller=new FileSystemController(app,data);
+    const controller=new FileSystemController(app,dataOwner(data));
     const a=controller.open('first'),b=controller.open('second');
     second.resolve({root:'/second',entries:entries()});assert.equal(await b,'/second');
     first.resolve({root:'/first',entries:entries()});assert.equal(await a,null);assert.equal(data.getItem('root'),'/second');
@@ -52,7 +53,7 @@ test('six recent directories preserve punctuation, deduplicate and survive a new
 test('documents retain drafts across roots, save submitted snapshot and reject dirty/pending close',async()=>{
     const save=defer(),data=state();
     const app={rpc:{call:async(t,method,args)=>method==='document_read'?{path:args.path,content:'original',revision:'r1',writable:true,language:'text'}:save.promise}};
-    const docs=new IdeDocuments(app,data);
+    const docs=new IdeDocuments(app,dataOwner(data));
     const key=await docs.open('/first','a.txt'),key2=await docs.open('/second','a.txt');
     assert.notEqual(key,key2);assert.equal(await docs.open('/first','a.txt'),key);
     const doc=docs.documents.getItem(key);doc.setItem('content','submitted');assert.equal(docs.close(key),false);
@@ -67,7 +68,7 @@ test('documents retain drafts across roots, save submitted snapshot and reject d
 
 test('save errors retain revision and draft, disposal rejects pending read results',async()=>{
     const data=state(),app={rpc:{call:async(t,method,args)=>{if(method==='document_read')return {path:args.path,content:'x',revision:'r1',writable:true};throw new Error('conflict');}}};
-    const docs=new IdeDocuments(app,data),key=await docs.open('/root','file.py');
+    const docs=new IdeDocuments(app,dataOwner(data)),key=await docs.open('/root','file.py');
     docs.documents.getItem(key).setItem('content','y');await assert.rejects(docs.save(key),/conflict/);
     assert.equal(docs.documents.getItem(key).getItem('revision'),'r1');assert.equal(docs.dirty(key),true);
     const pending=defer();app.rpc.call=()=>pending.promise;const loading=docs.open('/root','late.py');docs.dispose();
@@ -96,7 +97,7 @@ test('Python IDE closes Source before document Data and retains edits when closu
     const {default:layout}=await import('../src/components/layout.js');
     const {default:inputs}=await import('../src/components/inputs.js');
     const {default:editors}=await import('../src/components/editors.js');
-    const source=execFileSync('python3',['-c',`
+    const source=execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? 'python3',['-c',`
 import json
 from pathlib import Path
 from gramlot import GramlotBuilder
@@ -124,8 +125,10 @@ print(b.to_tytx())
     };
     app.src.startSource(source);await new Promise(resolve=>setTimeout(resolve,20));
     t.after(()=>{app.dispose();window.close();});
+    const ideSource = app.src.source.getItem('main').getNodes()[0];
+    const ideDocuments = ideSource.ideContext.documents;
     assert.equal(window.document.getElementById('ide-open'),null);
-    const workspace=window.document.getElementById('ide-workspace');
+    const workspace=window.document.getElementById('gramlot-ide-workspace');
     workspace.control.value='/workspace';
     workspace.control.dispatchEvent(new window.Event('input',{bubbles:true}));
     workspace.control.dispatchEvent(new window.FocusEvent('blur'));
@@ -134,7 +137,7 @@ print(b.to_tytx())
     assert.equal(app.data.getItem('ide.browser.root'),'/workspace');
     workspace.control.dispatchEvent(new window.FocusEvent('focusout',{bubbles:true,composed:true}));
     assert.equal(calls.filter(call=>call.method==='workspace_open').length,1);
-    await app.logic.ideOpenDocument('/workspace','a.py');
+    await app.logic.ideOpenDocument(ideSource,'/workspace','a.py');
     const editor=window.document.querySelector('gramlot-code-mirror');assert.ok(editor,app.data.getItem('ide.status'));await editor.ready;
     const key=documentKey('/workspace','a.py');
     const button=name=>window.document.querySelector(`.gramlot-ide-${name}`).control;
@@ -150,24 +153,30 @@ print(b.to_tytx())
     assert.equal(app.data.getItem(`ide.documents.${key}.content`),'value = 2\n');
     button('revert').click();await new Promise(resolve=>setTimeout(resolve,0));
     assert.equal(editor.editor.view.state.doc.toString(),'value = 1\n');
-    assert.equal(button('undo').disabled,true);assert.equal(button('redo').disabled,true);
+    assert.equal(button('undo').disabled,false);assert.equal(button('redo').disabled,true);
+    const retainedEditor=editor.editor;
+    button('undo').click();await new Promise(resolve=>setTimeout(resolve,0));
+    assert.equal(app.data.getItem(`ide.documents.${key}.content`),'value = 2\n');
+    assert.equal(editor.editor,retainedEditor);
+    button('redo').click();await new Promise(resolve=>setTimeout(resolve,0));
+    assert.equal(app.data.getItem(`ide.documents.${key}.content`),'value = 1\n');
     editor.editor.view.dispatch({changes:{from:8,to:9,insert:'2'}});
-    await app.logic.ideOpenDocument('/workspace','draft.py');
+    await app.logic.ideOpenDocument(ideSource,'/workspace','draft.py');
     const draftKey=documentKey('/workspace','draft.py');
-    const draft=app.logic.ideDocuments.documents.getItem(draftKey);
+    const draft=ideDocuments.documents.getItem(draftKey);
     assert.equal(draft.getItem('readonly'),false,'draft editing is allowed without host writes');
     draft.setItem('content','value = 42\n');
     assert.equal(draft.getItem('saveDisabled'),true);
     assert.equal(draft.getItem('revertDisabled'),false);
     const saves=calls.filter(call=>call.method==='document_save').length;
-    assert.equal(await app.logic.ideDocuments.save(draftKey),false);
+    assert.equal(await ideDocuments.save(draftKey),false);
     assert.equal(calls.filter(call=>call.method==='document_save').length,saves);
-    app.logic.ideDocuments.revert(draftKey);
+    ideDocuments.revert(draftKey);
     assert.equal(draft.getItem('content'),'value = 1\n');
     await new Promise(resolve=>setTimeout(resolve,20));
     window.document.querySelector('gramlot-tab-container').shadowRoot.querySelector('[aria-label="Close draft.py"]').click();
     await new Promise(resolve=>setTimeout(resolve,0));
-    await app.logic.ideOpenDocument('/workspace','b.py');
+    await app.logic.ideOpenDocument(ideSource,'/workspace','b.py');
     const secondEditor=window.document.querySelectorAll('gramlot-code-mirror')[1];await secondEditor.ready;
     assert.equal(app.data.getItem('ide.active'),documentKey('/workspace','b.py'));
     assert.equal(window.document.querySelectorAll('.gramlot-ide-save')[1].control.disabled,true);
@@ -182,27 +191,27 @@ print(b.to_tytx())
     await new Promise(resolve=>setTimeout(resolve,0));
     assert.equal(editor.isConnected,false);assert.equal(app.data.getNode(`ide.documents.${key}`),null);
     app.data.setItem('ide.newType','python');
-    app.logic.ideNew();
+    app.logic.ideNew(ideSource);
     const newKey=app.data.getItem('ide.active');
     const newDoc=app.data.getItem(`ide.documents.${newKey}`);
     assert.equal(newDoc.getItem('saveDisabled'),false);
     assert.equal(newDoc.getItem('revertDisabled'),true);
     assert.equal(newDoc.getItem('createHidden'),true);
-    await app.logic.ideSave(null,{documentKey:newKey});
+    await app.logic.ideSave(ideSource,{documentKey:newKey});
     assert.equal(newDoc.getItem('createHidden'),false);
     assert.equal(calls.filter(call=>call.method==='document_create').length,0);
-    app.logic.ideCancelCreate(null,{documentKey:newKey});
+    app.logic.ideCancelCreate(ideSource,{documentKey:newKey});
     assert.equal(newDoc.getItem('createHidden'),true);
-    await app.logic.ideSave(null,{documentKey:newKey});
+    await app.logic.ideSave(ideSource,{documentKey:newKey});
     newDoc.setItem('savePath','created.py');
-    await app.logic.ideCreate(null,{documentKey:newKey});
+    await app.logic.ideCreate(ideSource,{documentKey:newKey});
     assert.equal(newDoc.getItem('isNew'),false);
     assert.equal(newDoc.getItem('saveDisabled'),true);
     assert.equal(newDoc.getItem('createHidden'),true);
     assert.equal(newDoc.getItem('path'),'created.py');
-    await app.logic.ideOpenDocument('/workspace','created.py');
+    await app.logic.ideOpenDocument(ideSource,'/workspace','created.py');
     assert.equal(app.data.getItem('ide.active'),newKey);
-    await app.logic.ideOpenDocument('/workspace','note.md');
+    await app.logic.ideOpenDocument(ideSource,'/workspace','note.md');
     const mdKey=app.data.getItem('ide.active'),mdDoc=app.data.getItem(`ide.documents.${mdKey}`);
     const htmlOption=window.document.querySelector('.gramlot-ide-allow-html').control;
     const mdPreview=window.document.querySelector('gramlot-markdown-preview');
@@ -219,7 +228,7 @@ print(b.to_tytx())
 test('new documents are distinct, can save empty content and retain edits during creation',async()=>{
     const request=defer(), data=state(), calls=[];
     const app={rpc:{call:(type,method,args)=>{calls.push({method,args});return request.promise;}}};
-    const docs=new IdeDocuments(app,data);
+    const docs=new IdeDocuments(app,dataOwner(data));
     const key=docs.newDocument('typst','.typ','/workspace');
     assert.notEqual(key,docs.newDocument('typst','.typ','/workspace'));
     assert.equal(calls.length,0);
@@ -242,7 +251,7 @@ test('new documents are distinct, can save empty content and retain edits during
 
 test('failed creation retains unsaved draft and allows retry',async()=>{
     const app={rpc:{call:async()=>{throw new Error('File already exists');}}};
-    const docs=new IdeDocuments(app,state()),key=docs.newDocument('python','.py','/workspace');
+    const docs=new IdeDocuments(app,dataOwner(state())),key=docs.newDocument('python','.py','/workspace');
     const doc=docs.documents.getItem(key);doc.setItem('content','value = 1');
     await assert.rejects(docs.create(key),/already exists/);
     assert.equal(doc.getItem('content'),'value = 1');
@@ -255,7 +264,7 @@ test('failed creation retains unsaved draft and allows retry',async()=>{
 
 test('Typst recipes explicitly render unsaved Python and invalidate derived output',async()=>{
     const calls=[],app={rpc:{call:async(t,method,args)=>{calls.push({method,args});return {source:'#par("From Python")'};}}};
-    const docs=new IdeDocuments(app,state()),key=docs.newDocument('python','.typ.py');
+    const docs=new IdeDocuments(app,dataOwner(state())),key=docs.newDocument('python','.typ.py');
     const doc=docs.documents.getItem(key);doc.setItem('content','recipe draft');
     docs.invalidateRecipe(key);
     assert.equal(calls.length,0);assert.equal(doc.getItem('previewHidden'),true);
@@ -274,7 +283,7 @@ test('Typst recipes explicitly render unsaved Python and invalidate derived outp
 
 test('recipe requests reject stale results, errors and disposed completion',async()=>{
     const first=defer(),app={rpc:{call:()=>first.promise}};
-    const docs=new IdeDocuments(app,state()),key=docs.newDocument('python','.typ.py');
+    const docs=new IdeDocuments(app,dataOwner(state())),key=docs.newDocument('python','.typ.py');
     const doc=docs.documents.getItem(key);doc.setItem('content','first');
     const generating=docs.renderRecipe(key);assert.equal(await docs.renderRecipe(key),false);
     assert.equal(docs.canClose(key,true),false);
@@ -292,7 +301,7 @@ test('recipe requests reject stale results, errors and disposed completion',asyn
 
 test('ordinary Python and read-only recipes are not executed',async()=>{
     const app={rpc:{call:()=>{throw new Error('must not be called');}}};
-    const docs=new IdeDocuments(app,state());
+    const docs=new IdeDocuments(app,dataOwner(state()));
     const python=docs.newDocument('python','.py'),recipe=docs.newDocument('python','.typ.py');
     docs.documents.getItem(recipe).setItem('writable',false);
     assert.equal(await docs.renderRecipe(python),false);
@@ -302,12 +311,22 @@ test('ordinary Python and read-only recipes are not executed',async()=>{
 
 test('a new draft without host write permission never calls document_create',async()=>{
     let calls=0;
-    const docs=new IdeDocuments({rpc:{call:async()=>{calls++;}}},state());
+    const docs=new IdeDocuments({rpc:{call:async()=>{calls++;}}},dataOwner(state()));
     const key=docs.newDocument('text','.txt','/workspace');
     docs.documents.getItem(key).setItem('writable',false);
     docs.documents.getItem(key).setItem('content','Draft only');
     assert.equal(await docs.create(key),false);
     assert.equal(calls,0);
     assert.equal(docs.documents.getItem(key).getItem('content'),'Draft only');
+    docs.dispose();
+});
+
+test('new IDE documents use random bytes even when randomUUID is unavailable', t => {
+    t.mock.method(globalThis.crypto, 'randomUUID', () => {throw Error('Secure context required');});
+    const docs=new IdeDocuments({},dataOwner(state()));
+    const first=docs.newDocument('python','.py'),second=docs.newDocument('python','.py');
+    assert.match(first,/^new_[a-f0-9]{32}$/);
+    assert.notEqual(first,second);
+    assert.equal(docs.documents.getItem(first).getItem('content'),'');
     docs.dispose();
 });

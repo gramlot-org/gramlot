@@ -3780,3 +3780,505 @@ JavaScript loading performance — owner, 2026-10-24: “Bene, applica le stesse
 Gallery toolbar placement trial — owner, 2026-10-24: “Bene, ora torniamo allo switch mobile: consideriamo anche il rapporto larghezza altezza e fammi provare la toolbar sotto o di lato nella gallery.” Authorizes a gallery-only trial: automatic placement considers viewport proportions in addition to width, with explicit Left/Bottom choices for comparison. It reuses the existing Source-authored frame/menu, Data bindings and provisional runner presentation lifecycle. No framework device-classification change, dependency edits or publication. Concrete thresholds are provisional trial settings, not a frozen product contract.
 
 Gallery organization and IDE drafts — owner, 2026-10-24: “dividerei alla inizio tra ... data logic rpc ... gli editor a parte ... tool ... metti la ide ... una cartella doc esempio ... potremo fare modifiche ma non salvare se non è abilitato remote edit”. Authorizes the gallery taxonomy/title revision and bounded Python IDE integration with sample documents. Existing IDE documents remain editable in memory even when the host forbids saving; Remote Edit gates persistence on the server. This supersedes coupling the editor's read-only state to the host's writable flag for the IDE only. Other read-only widgets retain their behavior. Use the existing Source/Data/IDE and filesystem RPC contracts. Sample files are outside executable pages and only their disposable workspace is exposed. No native Python/Typst recipe execution, unrestricted filesystem roots or public write access is authorized.
+
+<a id="gc-000-mobile-gallery-integration"></a>
+## Mobile gallery integration — owner, 2026-10-25
+
+Owner: “Integra nella gallery il modulo Mobile application e il tema Mela aggiornato, seguendo il contratto” GCP-110, including its six explicit integration requirements. Authorizes the external native-only catalogue, direct same-origin frames, existing DeviceProvider broker and lifecycle, updated core Mela/mobile resources, and the existing frame theme protocol. The mobile module remains in gramlot-capacitor (bounded exception to 11.56); ordinary examples remain in gramlot-examples. The receiver integrates the bounded DeviceHandler/resolver, DeviceFrameHost/FrameDeviceProvider, MobileEnvironment and transformPane prerequisites from the connected device work, preserving the newer gallery/core baseline. Capacitor detection is presentation, never authorization. No APNs keys/private host configuration, native build, package release or public deployment is included. This supersedes the examples-only restriction solely for these shared-runtime and host integration prerequisites.
+
+
+<a id="gc-000-detachable-tabs"></a>
+### Detachable tab presentation — 2026-10-25
+
+Owner confirms `detachable=True`: “si e diovrebbe far comparire un icona da draggare. e quando chiudo il floating ritorna.” The parameter belongs to tab child contentPane configuration; it defaults to false. Source and content DOM ownership stay fixed. A draggable, keyboard-operable icon opens the same content in a shared nonmodal window; closing returns it to its original tab. Naming follows existing boolean child parameters and window vocabulary: internal `WindowSurface` (`components/window-surface.js`) owns shared chrome/geometry; `WindowShell` remains the custom-element adapter. No new public custom element or alternate Source representation is introduced.
+
+
+<a id="gc-000-mobile-sqlite-deployment"></a>
+### Mobile motion and SQLite deployment — owner, 2026-10-25
+
+Owner: “Aggiorna e pubblica la gallery per usare la beta iOS Gramlot senza dipendere dal Mac”, explicitly including GCP-110 §050/055/060, matching core, compiled provider, English module pages and catalogue. Integrate the existing device-worktree DeviceHandler motion/database lifecycle and the frame broker database resources; preserve the newer gallery/core changes. Module and Asqueel model remain in gramlot-capacitor. Publish only the Python gallery application and its matching assets, keeping Remote Edit disabled, unavailable host prerequisites omitted, HTTPS-only routes and the Apple association. No TestFlight upload or npm/PyPI publication.
+
+
+<a id="gc-000-detach-inside-panel"></a>
+### Detach handle inside the active panel — 2026-10-25
+
+Owner correction: “il detachable non deve essere sul tab esteno ma nella parte interna in modo ce sia visibile solo se lo apro”. This supersedes the external tab-strip handle placement. The handle belongs to the open panel and is hidden when its tab is inactive or its content is floating. Source, Data and docking semantics are unchanged. Detachable navigation is discussed as a possible application; this correction does not claim support for detaching border regions.
+
+
+<a id="gc-000-tree-search"></a>
+### Explicit tree search — 2026-10-25
+
+Owner confirms `searchText` and requests a navigation search toolbar, including unloaded branches and expansion restoration on clear. Search explicitly reads resolver-backed children; ordinary rendering still does not fetch them. The literal, case-insensitive query is debounced, highlights sanitized caption text, keeps ancestors, and uses temporary expansion without changing the store, selection or normal expansion set. Late reads may populate the owning resolver cache but cannot reinstate a cleared filter.
+
+
+<a id="gc-000-review-error-notifications"></a>
+### Visible asynchronous errors — owner, 2026-10-25
+
+Owner approved “Notifica non modale, con dettagli espandibili” for the confirmed review defects in remote loading and drag/drop, and subsequently instructed “vai” on the correction plan including navigation and component commits. Report failures without blocking the page or stealing focus; details remain expandable. Intentional cancellation and completion after disposal do not create alerts. This replaces console-only/unhandled behavior for this bounded scope, not explicit caller-owned rejection contracts or best-effort HTTP close. Notifications use Source and named Logic; no application-level DOM workaround, new public proxy, or dependency edit is authorized by this decision.
+
+
+<a id="gc-000-modern-browser-policy"></a>
+### Modern browser capabilities and compatibility range — owner, 2026-10-25
+
+Owner: “genericamente tendiamo a sfruttare tutte le funzionalita attuali e quindi potremmo solo documentare una fascia di compatibilita”, after stating no strong interest in compatibility with old browsers. Use current web capabilities and document the actual compatibility range instead of automatically adding legacy implementations. This does not approve every new API or claim that every current engine implements it. The minimum range must follow the APIs actually used, engine/WebView requirements and executed checks; distinguish required capabilities, tested versions and unverified environments. No fixed version matrix is approved by this statement. In particular, no notification fallback for browsers without Popover is added. Explicit compatibility exceptions still require owner approval under §13.
+
+<a id="gc-000-error-notification-limits"></a>
+### Bounded error notifications — owner, 2026-10-25
+
+Owner answered “ok” to: at most five distinct errors visible, a counter for further errors, and suppression of the same dismissed periodic error until the page is loaded again. This supersedes coalescing only while visible. Identity is the existing title/message pair; dismissed identities belong to the current BindingRuntime. Diagnostic text must remain literal, including text resembling pointers or inline expressions. Non-Error rejections, including null and undefined, must not cause a secondary unhandled exception. The correction scope includes transformPane completion errors through the same internal runtime notification channel.
+
+
+<a id="gc-000-data-state-relocatability"></a>
+### Data-only state and Source-owned external objects — owner, 2026-10-25
+
+Owner instruction: “mai mai mai scrivere se non nella bag dei dati ... MAI”, followed by: “posso accettare di 'appiccicare a nodi di source oggetti esterni ma gramlot data è l'unico luogo dove si salva lo stato e l'accesso per path relativi garantisce relocabilita”.
+
+This clarifies §4 across Gramlot: Data is the sole store of Gramlot state, including component and UI coordination state. Logic instance properties, side maps and other parallel containers must not become alternative state stores. Reusable behavior accesses its Data through paths relative to its Source context, so changing the enclosing datapath does not require rewriting the behavior. Distinct component instances must not depend on a shared mutable “current instance” reference.
+
+External objects may be attached to Source nodes. This allowance does not authorize storing Gramlot state inside those objects instead of Data. The attachment mechanism, names and detailed lifecycle are not newly defined by this clarification. No formal Live Object Tree semantics are implied.
+
+This supersedes the agent's proposed state-owning IDE coordinator as a solution to multiple IDE mounts; that proposal was not an approved implementation contract. Existing code is not evidence of an exception. The immediate review will distinguish Data state from external objects before proposing a bounded IDE correction. This record approves the architectural rule, not a claim that current implementations already conform or an authorization for a repository-wide rewrite.
+
+
+Floating detachment clarification — owner, 2026-10-25: “spostare in un floating dovrebbe riguardare solo l'albero dom non l'albero source”. Detaching and docking a panel moves its existing DOM subtree only; the panel's Source subtree remains in its original position and retains its identity, ancestry and relative Data context. Detachment must not reparent or recreate that Source subtree, rebase its datapath, or recreate the panel as a new instance. Docking restores the DOM presentation to its original host. This makes explicit the Source/Data preservation requirement of the detachable-panel contract and supersedes any interpretation that floating detachment relocates Source. It does not prohibit Source changes for unrelated, explicitly requested structural editing. Runtime conformance remains to be verified; no new attachment API is approved here.
+
+
+<a id="gc-000-source-data-state-ownership"></a>
+### Source and Data state ownership — owner correction, 2026-10-25
+
+Owner corrects the preceding Data-only wording: “puoi anche usare la source entrambe hanno il loro senso ... il data è più volatile mentre il source accompagna il widget nella sua vita”. Data owns values and the state associated with a datapath; Source may also own the widget's instance and lifecycle state, including external objects. This supersedes the preceding prohibition on all non-Data coordination state. Logic must not keep mutable instance state outside both owners. Behavior starts from its owning Source node and reaches Data through relative paths; a datapath is not a reverse unique identifier for Source, since controls may share Data. DOM-only floating detachment remains unchanged.
+
+Owner then requests correcting the IDE under this ownership rule and explicitly requests a separate agent audit of other occurrences. This authorizes the bounded IDE/filesystem coordination correction and regression tests; the audit is read-only and does not authorize unrelated runtime rewrites or publication.
+
+
+<a id="gc-000-logic-index-runtime-ownership"></a>
+### Logic, iframe pages and Gramlot-owned runtime state — owner, 2026-10-25
+
+Owner: “logic MAI MAI MAI puo essere toccato per mettere dati”. Logic provides behavior; application/widget instance data, lifecycle state and coordinator references must not be assigned to a shared Logic group. In particular, IndexLogic.this.index is outside the approved ownership model even if existing closure-based callbacks do not demonstrate a collision. Methods start from their supplied Source context and access its Data relatively.
+
+Owner further clarifies: “le varie pagine che creo sono iframe e quindi ogni pagina ha un suo gramlot con i suoi dati e il suo source ... la index page è un'entità che ha un suo source node e dei dati e solo lì vanno messi”. Each iframe page has its own Gramlot instance, Source and Data. The containing IndexPage has its own Source owner and Data in the parent page; its coordination must not be placed on Logic or confused with the child pages' state.
+
+Owner explicitly allows Gramlot itself to retain runtime state for responsibilities managed by Gramlot: “unica eccezione è gramlot ... potrebbe tenere degli stati nella sua memoria ma sono cose che deve gestire lui”. This refines the preceding Source/Data rule with a framework-runtime exception, not permission to relocate application or widget state into Gramlot. The owner's example of a mounted-iframe registry in the parent Gramlot identifies a possible runtime responsibility; no new registry API, representation or implementation is approved by that example. IndexPage alternatives must first inspect existing runtime mechanisms. No Source movement is authorized for DOM-only panel detachment.
+
+IndexPage implementation authorization — owner, 2026-10-25: “Sì, ora sistema IndexPage con lo stato nel suo Source e nei suoi Data, senza mettere nulla su Logic. Riusa i meccanismi esistenti e aggiungi i test di regressione.” Scope: the existing IndexPage coordinator, relative Data access and Python/JS authoring, with regression tests. Reuse Source attachments and renderer disposal; do not introduce a Gramlot iframe registry, move Source during detachment, or publish this work.
+
+
+<a id="gc-000-index-load-outcomes"></a>
+### IndexPage load outcomes — owner, 2026-10-25
+
+Owner answered “si” to completing `onLoad` with `cancelled` and separating load
+completion from selection. Each started panel load has one terminal outcome:
+`ready`, `error` or `cancelled`, independently of the selected URL. Closing a
+pending panel cancels it without an error notification; late replies must not
+emit another outcome or affect a reopened replacement. Source-owned coordinator
+disposal cancels its pending loads as well. The gallery indicator follows the
+relevant active load. Reuse the callback, Source/Data ownership and existing
+remote-source cancellation; no new reactive-state representation or publication
+is authorized. `ready` means the panel was mounted, not that iframe navigation
+and all its resources finished loading.
+
+
+<a id="gc-000-future-http-websocket-delivery"></a>
+### Future HTTP/WebSocket coexistence — owner, 2026-10-25
+
+Deferred design, not implemented or authorized for implementation in this tranche.
+The owner wants a priority WebSocket between the index page and server while
+retaining HTTP RPC, with both channels usable together. Owner confirmation:
+“Il piggyback solo per HTTP, sul websocket il server manda subito. I due canali
+devono poter convivere senza duplicare i messaggi.” HTTP responses carry pending
+server-to-client messages by piggyback; WebSocket delivers them immediately.
+The two channels must not cause duplicate message processing at the destination.
+
+Owner confirmed the acknowledgement boundary: “la conferma parte quando il runtime
+della pagina destinataria prende in carico il messaggio, senza aspettare le
+operazioni asincrone”. This acknowledges runtime acceptance by the destination
+page, not successful completion of application handlers or durable business effects.
+An intermediate index-page relay must not be confused with destination acceptance.
+Runtime communication resources remain runtime-owned; Logic stores no state and
+each iframe retains its own Source and Data.
+
+The proposed shared delivery queue, message IDs, deduplication and acknowledgement
+routing are design candidates; wire schema, retention, reconnect/replay behavior,
+ordering and implementation boundaries still need definition. No durable
+exactly-once guarantee across reloads or crashes is established. Owner explicitly
+defers this work: “prendi nota di questo punto per il futuro per ora procediamo
+sul punto dove eravamo”. Resume the existing HttpTransport close-error review;
+this note neither changes its current HTTP paths nor approves a beacon-only
+implementation. No runtime change or publication is included.
+
+
+<a id="gc-000-http-close-beacon"></a>
+### One HTTP close path — owner, 2026-10-25
+
+Owner: “Sì, usa sendBeacon anche per la chiusura esplicita, mantieni il TTL e
+distingui gli errori di configurazione. Procedi con la correzione e i test.”
+All HTTP page closes use sendBeacon, including explicit disposal and bootstrap
+cleanup. This supersedes fetch/keepalive for explicit close; ordinary RPC fetch
+is unchanged. No alternate delivery path or retry is introduced. A refused or
+undelivered beacon leaves server cleanup to the existing TTL. Missing required
+API, invalid configuration and native beacon URL TypeErrors must remain visible;
+local cleanup must still release the transport. The obsolete beacon selector is
+removed from close/dispose calls and declarations. WebSocket work remains deferred.
+
+
+<a id="gc-000-error-layer-deferral"></a>
+### Error policy deferred to the application-use layer — owner, 2026-10-25
+
+Owner: “io sospenderei tutta questa parte perché andiamo molto in logica
+applicativa. qui stiamo facendo il layer della GUI. poi ci sarà sopra un layer
+di uso che chiuderà queste parti”. Suspend the current error-handling/presentation
+workstream: notification ownership changes, notification-count/suppression policy,
+and the proposed uniform `_onError` extension. The immediate scope is the GUI layer;
+the later application-use layer will define these higher-level policies. This
+supersedes proceeding now with the recently discussed hook uniformity. It does
+not approve a new error framework or treat the existing five-notification limit
+as a definitive GUI contract.
+
+The current implementation and existing dataRpc `_onError` remain unchanged by
+this decision; suspension does not instruct a rollback or deletion. No uniform
+hook extension has been implemented. Previously completed GUI/runtime lifecycle,
+Source/Data ownership and HTTP-close corrections are not reopened by this pause.
+Future resumption must distinguish existing implementation from newly agreed
+application-layer behavior. No publication is authorized.
+
+
+<a id="gc-000-editor-data-projection"></a>
+
+### Editor Data projection preserves the widget — owner, 2026-10-25
+
+Owner: “Correggi i tre editor usando le API per aggiornare il contenuto senza
+ricrearli o azzerare lo stato. Aggiungi test che verifichino che l’istanza resti
+la stessa. Poi vediamo separatamente type, multiple e group.” Further clarification:
+“la regola se si incorpora un tool esterno è di capire cosa offre la sua API”.
+
+HTML/Jodit, Markdown/ProseMirror and CodeMirror project external Data values
+through the existing engine's content-update APIs. They retain the instance,
+configuration and existing history, suppress projection echoes to Data, and
+preserve/map selection where the new content permits. Content changes can enter
+engine history; they do not establish a new empty history baseline. This supersedes
+the documented external-replacement/Revert history-reset behavior for these three
+editors. Engine destruction remains tied to component disposal. The review of
+`type`, `multiple` and `group` is separate and is not implemented by this change.
+Tree/grid content regeneration is not classified as widget recreation.
+
+
+<a id="gc-000-jodit-official-sanitization"></a>
+### Jodit update and official sanitization — owner, 2026-10-26
+
+Owner: “Sì, aggiorna Jodit e usa i suoi meccanismi ufficiali di sanitizzazione.
+Verifica su WebKit e semplifica la nostra integrazione, senza perdere stato,
+binding e undo.” The scope is the existing HTML editor, its bundled dependency,
+regressions and documentation. Use upstream sanitization APIs and preserve the
+Source-owned editor instance, Data bindings and native history. This supersedes
+the editing canvas's script-disabled sandbox in PORT-0020: retain the iframe for
+style isolation, use official sanitization and retain its restrictive CSP. It does
+not relax htmlPreview's empty sandbox or authorize executing document scripts.
+The loss-preserving document codec remains separate from display sanitization;
+original source is not silently rewritten into sanitized application Data.
+No dependency-source patch, application sanitizer service, release or deployment
+is authorized. Upstream limitations must be recorded rather than worked around.
+
+
+<a id="gc-000-setter-before-rebuild"></a>
+### Use the setter before rebuilding — owner, 2026-10-26
+
+Owner: “ho un setter ? allora lo uso” / “non ho il setter =? allora ricreo”, then
+“ok” to applying this rule to input.type. A control's supported setter is the
+primary update path; rebuild only when no setter exists. Inspect the embedded
+tool/browser API first. This supersedes the classification of input.type as
+setterless in 11.48 item 13 / C04.1. Input type changes keep the DOM element,
+Source and NodeBinding. Replace only the internal control adapter when the value
+semantics require it; do not convert or rewrite application Data as part of the
+projection. Compatible type changes retain the adapter and uncommitted draft.
+Native sanitization and selection limitations still apply to the chosen type.
+This implementation tranche covers input.type; multiple and group are separate
+follow-up reviews. Existing freeze/thaw behavior and actual HTML-tag replacement
+are not redesigned. No publication is authorized.
+
+
+<a id="gc-000-component-setters"></a>
+### Native multiple and component setters — owner, 2026-10-26
+
+Owner confirmed proceeding with multiple ("ok") and clarified: "useremo molt
+piu spesso gramloto components che elementi html. per questo potrai predisporre
+ne components tutti i settere che hanno senso". Native input/select.multiple
+therefore uses its supported setter, preserving the element, Source and binding.
+Application Data is not converted by a mode change: callers supply the value
+contract appropriate to the selected control. This extends the previous tranche;
+group remains a separate review. Gramlot components should expose meaningful
+setters for mutable parameters, using existing projection mechanisms. Embedded
+tools must be inspected for their supported APIs before proposing reconstruction.
+This is an API design principle, not approval for speculative parameters or a
+claim that every component has been audited. No Logic state or parallel store;
+no release/deployment is authorized by this amendment.
+
+
+<a id="gc-000-radio-group-reset"></a>
+### Radio group changes clear the related Data — owner, 2026-10-26
+
+Owner requested clearing selections in both "partenza e destinazioen", clarified
+that group names represent choices such as color or shipping, and concluded
+"ok svuota i relativi dati". A resolved group change on an existing radio clears
+the writable boolean Data values of the moving radio and both affected groups,
+within their existing form/page scope. False represents no selection. Keep DOM,
+Source, binding and adapter identity; update membership through the existing radio
+registry. This supersedes the group-rebuild policy and the proposed rejection
+when a changed group already has a selected peer. Initial group construction and
+form-scope changes retain their existing conflict checks. Literal/read-only value
+expressions retain their existing no-write contract; do not invent Data paths.
+No new public parameter, application state on Logic, release or deployment.
+
+
+<a id="gc-000-html-labelbox-experiment"></a>
+### HTML labelbox experiment — 2026-10-26
+
+Owner: "primo farei un branch sperimentale per metterli e vedere se non crea
+problema mettere lbl e box anch ad esempio ad un div". Authorizes an isolated
+prototype of existing lbl/box_* presentation on HTML, starting with div/input.
+No new component, release, deployment or adoption into develop is approved.
+Source and Data identities remain unchanged; presentation wrappers belong to
+the renderer. Structural HTML and component-parent interactions must be assessed,
+not silently normalized. This extends the component-only scope for experiment.
+
+
+<a id="gc-000-unified-labelbox-experiment"></a>
+### Unified Labelbox and movable workspace direction — 2026-10-26
+
+Owner: “esista SOLO il label box”, “mettere lbl ... è solo una scorciatoia”,
+“potenzialmente qualunque cosa può stare in un lbl box”, then “puoi fare un lavoro
+fatto per bene per farlo”. Extend the isolated experiment to one renderer-owned
+Labelbox composition for HTML and components, preserving Source/Data, controls,
+bindings and editor state. This supersedes the prototype's component-owned
+Labelbox construction and div/input-only restriction. HTML content-model
+constraints remain explicit; there is no dependency workaround or publication.
+
+Owner confirmed “Sì, questo è il comportamento” to contained movement from the
+label, resizing, optional grid snapping and geometry/stacking stored in Source or
+bound Data, independently of floating detachment. This approves behavior; concrete
+workspace authoring parameters remain to be settled before implementing movement.
+
+
+<a id="gc-000-tray-pane-direction"></a>
+### TrayPane: DOM workspace and restorable state — 2026-10-26
+
+Owner selected “traypane” after the trayPane proposal, then specified selectable
+blocks which can move to higher/lower levels, “anche ruotati e zoomati”, confirmed
+“esatto. tutto dom”, and required parameters to be saved and read again.
+The authoring name is trayPane, following framePane/floatingPane. This supersedes
+canvasPane/workspacePane proposals; no aliases are approved.
+
+Blocks remain DOM widgets with their Source, Data and bindings. Selection,
+position, dimensions, stacking level, rotation and scale are explicit restorable
+state in Source or bound Data, never application state on Logic or only DOM style.
+Interaction updates the owning state; rendering projects that state. Zoom scales
+content and controls visually; resize changes layout space. Neither operation
+reconstructs widgets. Persisted parameters must restore the arrangement when read.
+No automatic storage backend or localStorage/sessionStorage policy is approved.
+Detailed parameter names/units, transform origin, selection cardinality and
+serialization entry points remain to be settled. Existing Bag serialization is
+the basis; no parallel state format is authorized. Scope remains experimental,
+with no release or deployment.
+
+
+<a id="gc-000-tray-pane-geometry"></a>
+### TrayPane geometry contract — 2026-10-26
+
+Owner replied “ok” to the concrete geometry proposal: numeric left, top, width
+and height in tray-plane pixels; integer stacking level z_index; rotation in
+degrees; scale as a zoom factor with 1 meaning normal size. All accept Data
+bindings and interactions update their canonical Source/Data values. Rotation
+and scale use the block center as origin; position and dimensions describe the
+untransformed rectangle. This resolves the geometry names/units/origin questions
+in the preceding TrayPane direction, without approving a selection policy,
+automatic storage backend or unmentioned transform/group behavior.
+
+
+<a id="gc-000-tray-pane-selection"></a>
+### TrayPane selection — 2026-10-26
+
+Owner requested multiple selection with visible highlighting, then replied “ok”
+to the proposed interaction: a thin theme-colored border on every selected block,
+without changing its background/content; click selects one block, Shift+click
+adds/removes a block, and clicking empty tray space clears the selection.
+This resolves selection cardinality and basic pointer interaction. It does not
+settle how rotation/scale operate on multiple selected blocks. Selection remains
+Source/Data state under the previously approved ownership rule; no Logic state
+or browser-only persistence is introduced.
+
+
+<a id="gc-000-labelbox-phases"></a>
+### Incremental Labelbox scope — 2026-10-26
+
+Owner: “ora concentriamoci sul fare una prima fase col label box che funziona.
+poi il movable e poi il resto. non fare un unico passo gigante ... la vista
+d'assieme ... per farti progettare meglio”. Complete and qualify the unified
+Labelbox first. Movement is a separate subsequent phase; selection, stacking,
+rotation, zoom and their further details are future directions. Do not block
+Labelbox on completing the TrayPane design or implement these as one increment.
+Earlier accepted behavior informs architecture but does not require all-at-once
+implementation. This supersedes the immediately preceding next-decision sequence.
+
+
+<a id="gc-000-labelbox-movement-trial"></a>
+### Labelbox movement and card trial — 2026-10-26
+
+Owner: “Sì, confermo lbl_variant="card", predefinito per il movable.
+Procedi con il trascinamento dall’etichetta dentro il pannello e fammelo provare.
+La x la vediamo dopo.” Implement only contained label dragging in the isolated
+experiment, using the already named trayPane and numeric left/top contract.
+Card has a centered light title on a dark header and rounded outer corners.
+Keep geometry in Source literals or writable Data bindings, never Logic or
+DOM-only state; preserve the existing widget and binding instances. No resize,
+selection, stacking changes, rotation, scale or close button in this phase.
+
+
+<a id="gc-000-tray-pane-storepath"></a>
+### TrayPane geometry Bag — 2026-10-26
+
+Owner: “la position dovrebbe stare in dati collegati al trayPane ... storepath”,
+then “Sì, usa node_label come chiave nella Bag del trayPane. Procedi con storepath,
+trascinamento e lbl_variant="card", poi fammelo provare.” Geometry for this
+increment belongs exclusively to the Data Bag selected by storepath; each exact
+Source node_label identifies one child Bag with numeric left/top. Content
+Datapaths remain independent. This supersedes the Source-literal position path
+proposed immediately before this clarification. Reuse Bag serialization for
+save/restore; do not introduce another state store or automatic persistence.
+
+
+<a id="gc-000-tray-pane-resize"></a>
+### TrayPane resize increment — 2026-10-26
+
+Owner: “completiamo prima il resize: width e height nella Bag del trayPane,
+senza ricreare il contenuto. Aggiorna la prova ... oggetti anche più complessi”.
+Extend the isolated trial with resize and numeric width/height in the same
+node_label-keyed geometry Bag. Preserve widget, DOM, Source and bindings. Include
+slider, buttons and toolbar content in the Python trial. Layers and collision
+rules remain a subsequent increment, as explicitly confirmed by the owner.
+
+
+<a id="gc-000-tray-pane-layers"></a>
+### TrayPane layers and contact — 2026-10-26
+
+Owner: “Sì, procedi con layer nella Bag: stesso layer si fermano al contatto
+anche nel resize, layer diversi possono sovrapporsi. Metti nella prova un modo
+per cambiare layer così verifico.” Each row's integer `layer` is the sole
+stacking value, projected to CSS z-index inside its isolated tray. This
+supersedes `z_index` as the tray geometry field in the earlier geometry proposal.
+Movement and resize stop at first contact with blocks in the same layer; they
+may overlap blocks of other layers. Owner also confirms “Sì, rifiuta il cambio”
+when a layer change would create overlap: retain its previous layer without
+moving either block. No layer groups, selection, rotation or zoom in this step.
+
+
+<a id="gc-000-tray-pane-selection-data"></a>
+### TrayPane selection in its Data Bag — 2026-10-26
+
+Owner: “aggiungiamo la selezione multipla dei blocchi, con un bordo che evidenzi
+quelli selezionati e lo stato sempre nella Bag del trayPane. Rotazione e zoom
+li vediamo dopo.” Implement the earlier confirmed click/Shift-click/empty-space
+selection policy in the isolated trial. Selection belongs to each geometry row,
+not Logic or a parallel runtime set. Preserve mounted contents and existing
+individual movement/resize; this does not authorize group transformations.
+
+
+<a id="gc-000-tray-layer-menu"></a>
+### Tray layer popup control — 2026-10-26
+
+Owner requests a vertical slider opened from the upper-right corner of each
+block (correcting the preceding upper-left request), then confirms “-10 a 10”.
+Add this bounded integer editor to the isolated tray trial, retaining layer
+in the existing Bag and the approved overlap rejection. The slider's range
+is -10 through +10; the underlying integer layer model is not redefined.
+
+
+<a id="gc-000-tray-transforms"></a>
+### Tray rotation, zoom and settings — 2026-10-26
+
+Owner: “Sì, confermo il rettangolo esterno trasformato, senza ombre e
+arrotondamenti. Procedi con rotazione e zoom nella Bag e il floating delle
+impostazioni aperto dall’ingranaggio in alto a destra, poi fammelo provare.”
+Extend the isolated trial with rotation (degrees) and scale (factor), centered
+on the existing Labelbox, preserving content instances. The transformed outer
+rectangle governs continuous first contact on the same layer and tray bounds;
+ignore shadows and rounded corners. Different layers may overlap. Replace the
+layer popup with an upright floating settings panel opened by a subtle gear.
+Keep geometry in the existing Data rows. Group transforms remain out of scope.
+
+
+<a id="gc-000-tray-rotation-handle"></a>
+### Tray rotation handle and zoom slider — 2026-10-26
+
+Owner: “per la rotazione puoi mettere nell’angolo sinistro un handler di
+rotazione da trascinare? e lo zoom slider”. Add an upper-left rotation grip
+and a zoom slider in the existing settings floating, retaining the current
+geometry Bag, collision rules and stable content.
+
+
+<a id="gc-000-tray-lock-save"></a>
+### Tray layout lock and Bag snapshot — 2026-10-26
+
+Owner requests a tray toolbar with a lock hiding move/resize/rotation/settings
+chrome and Save/Reload to verify position, dimensions, layer, rotation and scale.
+Implement a bindable trayPane locked state for layout editing; mounted widgets
+remain usable. The Python trial saves an independent copy of its geometry Bag
+in Data and restores an independent copy without remounting content. No disk,
+backend persistence or publication is included.
+
+
+<a id="gc-000-tray-compact-controls"></a>
+### Separate layer and zoom sliders — 2026-10-26
+
+Owner: “metti di nuovo icona piani con lo slider per il livello ... per lo zoom
+fai un'altra icona a fianco sempre con vertical slider”. Replace the gear and
+settings floating with two header icons and vertical-slider popovers. Retain
+the left rotation grip, layer -10..10 and zoom 10..200%. Lock hides both.
+This supersedes the settings-floating UI, not the Data geometry contract.
+
+
+<a id="gc-000-tray-grid"></a>
+### Tray grid and Shift snapping — owner decision, 2026-10-26
+
+Owner: “Sì, procedi con la griglia opzionale e i passi modificabili nella toolbar.
+Shift aggancia spostamento, resize e rotazione; senza resta tutto libero.
+Salva le impostazioni nella Bag e fammelo provare.” Grid visibility is independent
+of snapping. Spatial step is a nonnegative integer in pixels (0 disables it);
+angular step is editable in degrees, initially 15. Contact and containment remain
+higher priority than quantization. Parameters bind to tray-owned Data settings;
+no state on Logic. Scope: isolated Labelbox/trayPane trial, no publication.
+
+
+<a id="gc-000-tray-group-move"></a>
+### Tray selected-group movement — owner decision, 2026-10-26
+
+Owner: “se seleziono più blocchi vorrei poterli spostare insieme, mantenendo le
+distanze e rispettando il contatto con gli altri blocchi dello stesso layer.”
+Extend title dragging to the selected group. Apply one common translation limited
+by each member's same-layer external obstacles and tray bounds. Members moving
+together are not mutual obstacles. Existing geometry and selection remain in
+Data, with gesture snapshots only for cancellation. Scope: isolated tray trial.
+
+
+<a id="gc-000-tray-marquee"></a>
+### Tray rectangle selection — owner request, 2026-10-26
+
+Owner: “vorrei poter selezionare più blocchi trascinando un rettangolo da una zona
+vuota del trayPane, senza doverli cliccare uno per uno.” Extend selection gestures
+in the isolated tray trial. Selection remains the existing per-block selected
+Data field; rectangle DOM and cancellation snapshot exist only during the gesture.
+No publication or separate persistent selection model.
+
+
+<a id="gc-000-tray-implicit-controls"></a>
+### Tray membership and frame composition — owner decisions, 2026-10-26
+
+After clarification that movable/resizable only act on tray children, owner:
+“allora li toglerei”. Remove both child parameters: direct tray children receive
+movement/resize and card chrome implicitly. locked still blocks tray editing.
+Window parameters are separate and unchanged. This supersedes the optional
+per-child tray flags and immovable-member rule in the experimental tray design.
+Owner “esatto” confirms composing the trial with framePane: menu bar in top,
+trayPane in center. The tray does not duplicate frame region management.
+
+<a id="gc-000-toolbox-date-parser"></a>
+
+Date-expression parser from Toolbox — owner, 2026-10-25: “Approvo l'emendamento: scrivilo in docs e docs_llm, aggiorna i docs correnti e committa.” `parseDateExpression` comes from `@genrojs/toolbox` (0.19.0 or later), which was extracted from the Gramlot port and runs the same Toolbox corpus. Gramlot re-exports it from `@gramlot/gramlot` with the same name, options and type names (`DateExpressionOptions`, `DateExpressionResult`, `DateExpressionErrorCode`), so consumers do not change. This supersedes the in-Gramlot location of the parser in 11.83 and the `date-parser/` module organization of GC-225 §065. Parsing semantics and their corpus tests belong to Toolbox; Gramlot tests only the re-export and its shipped bundles. No new parser API, alias or publication is authorized.

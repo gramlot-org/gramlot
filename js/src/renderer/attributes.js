@@ -11,7 +11,7 @@ export const SVG_NS = 'http://www.w3.org/2000/svg';
 const BINDING_ATTRIBUTES = new Set([
     'default', 'default_value', 'live', 'group', 'visible', 'action', 'fire', 'ask', '_ask', '_ask_if', '_ask_title', '_ask_onCancel',
     'if', 'else', '_init', '_onStart', '_onBuilt', '_delay', '_timing', '_userChanges',
-    'remote', '_cachedRemote', '_onRemote', '_onCalling', 'onClose', 'onDrag', 'onDrop', 'dropTargetCb', 'onDragEnd',
+    'remote', '_cachedRemote', '_onRemote', '_onCalling', 'onClose', 'onEnd', 'onDrag', 'onDrop', 'dropTargetCb', 'onDragEnd',
     'dropTarget', 'dropTypes', 'dragTags', 'dropTags', 'effectAllowed', 'dropEffect', 'dragClass',
 ]);
 const BINDING_ATTRIBUTE_PREFIXES = ['default_', 'attr_', 'fire_', 'connect_on', 'subscribe_', 'selfsubscribe_', 'formsubscribe_', 'remote_'];
@@ -29,7 +29,7 @@ const NATIVE_ATTRIBUTES = {
 const DISPLAY_ATTRIBUTES = ['format', 'mask', 'locale', 'timeZone', 'places', 'dtype'];
 
 // Output URL attributes, including the native form action authored as html_action.
-const URL_ATTRIBUTES = new Set(['href', 'src', 'action', 'formaction', 'xlink:href', 'xlink_href']);
+const URL_ATTRIBUTES = new Set(['href', 'src', 'data', 'action', 'formaction', 'xlink:href', 'xlink_href']);
 
 /** The attributes of `attrs` that are not binding attributes. */
 export function withoutBindingAttributes(attrs) {
@@ -64,6 +64,9 @@ export function requireNoScriptAttributes(node, attrs, prefixes = []) {
                 throw new Error(`script '${node.label}': '${name}' must be literal Source; script code and URLs cannot come from Data`);
             }
         }
+    }
+    if (attrs.onEnd != null && (node.nodeTag.toLowerCase() !== 'transformpane' || !node._getMeta('gramlot_component')?.parameters?.onEnd)) {
+        throw new Error('onEnd is only supported on transformPane');
     }
     if (attrs.onClose != null && !node.parentNode?._getMeta('gramlot_component')?.childParameters?.onClose) {
         throw new Error('onClose is only supported on a tab/stack panel');

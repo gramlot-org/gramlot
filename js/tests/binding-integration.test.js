@@ -64,9 +64,9 @@ test('rebuild of the same node: nothing installed or started again, same NodeBin
     const binding = app.src.binding.bindingFor(input);
     const element = ctx.byId('name1');
     trace.length = 0;
-    // C04.1: `type` has no setter, the element is rebuilt.
+    // Input type uses its setter; the element and adapter remain.
     input.setAttr({type: 'search'});
-    assert.notEqual(ctx.byId('name1'), element);
+    assert.equal(ctx.byId('name1'), element);
     assert.equal(ctx.byId('name1').value, 'anon');
     // A thaw rebuilds the whole pane once.
     const paneElement = ctx.byId('pane1');

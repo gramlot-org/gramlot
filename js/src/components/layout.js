@@ -2,6 +2,7 @@
 import {defineComponent, defineCollection} from './registry.js';
 import {Labelbox} from './labelbox.js';
 import {Container} from './container.js';
+import {randomId} from '../random-id.js';
 import {BorderContainer, ContentPane, FramePane} from './border-container.js';
 export {BorderContainer, ContentPane, FramePane};
 import {StackContainer, TabContainer} from './selected-container.js';
@@ -10,6 +11,11 @@ import {positionPopup} from './popup.js';
 import {FormletLabels} from './formlet-labels.js';
 import {Dialog, FloatingPane} from './windows.js';
 export {Dialog, FloatingPane};
+import {TrayPane} from './tray-pane.js';
+export {TrayPane};
+
+import {TransformPane} from './transform-pane.js';
+export {TransformPane};
 
 const COPY_FEEDBACK_DURATION = 1600;
 
@@ -52,7 +58,7 @@ export const GroupBox = defineComponent({
     name: 'groupBox', tag: 'gramlot-group-box', base: Container, subTags: '*', dataScope: true, mixins: [Labelbox],
     parameters: {
         copy: {dtype: 'B', default: false, binding: 'read'},
-        lbl_variant: {dtype: 'T', default: 'bar', binding: 'read', enum: ['bar', 'underline']},
+        lbl_variant: {dtype: 'T', default: 'bar', binding: 'read', enum: ['bar', 'underline', 'card']},
     },
     implementation: Base => class extends Base {
         #generation = 0;
@@ -63,23 +69,22 @@ export const GroupBox = defineComponent({
         constructor() {
             super();
             this.control.setAttribute('role', 'group');
-            this.fieldLabel.removeAttribute('for');
             const doc = this.ownerDocument;
             const style = doc.createElement('style');
-            style.textContent = `.labelbox{gap:0;border:1px solid var(--gramlot-border-control,#aaa);border-radius:var(--gramlot-radius-sm,4px)}
-                .label-box{display:flex;align-items:center;gap:.4em;padding:var(--gramlot-group-header-padding,.35em .65em);background:var(--gramlot-surface-subtle,#eef1f5)}
-                .label-box[hidden]{display:none}.label-box label{flex:1;min-width:0}
-                .control-box{padding:var(--gramlot-group-padding,.65em)}.labelbox[data-variant=underline]{border:0}
-                [data-variant=underline]>.label-box{background:transparent;border-bottom:1px solid var(--gramlot-border-control,#aaa)}
-                .actions{display:flex;align-items:center}.actions[hidden]{display:none}
-                button{font:inherit;color:inherit;cursor:pointer;border:0;border-radius:var(--gramlot-radius-sm,4px);background:transparent;
+            style.textContent = `.gramlot-group-labelbox{gap:0;border:1px solid var(--gramlot-border-control,#aaa);border-radius:var(--gramlot-radius-sm,4px)}
+                .gramlot-group-labelbox>.label-box{display:flex;align-items:center;gap:.4em;padding:var(--gramlot-group-header-padding,.35em .65em);background:var(--gramlot-surface-subtle,#eef1f5)}
+                .gramlot-group-labelbox>.label-box[hidden]{display:none}.gramlot-group-labelbox>.label-box label{flex:1;min-width:0}
+                .gramlot-group-labelbox>.control-box{padding:var(--gramlot-group-padding,.65em)}.gramlot-group-labelbox[data-variant=underline]{border:0}
+                .gramlot-group-labelbox[data-variant=underline]>.label-box{background:transparent;border-bottom:1px solid var(--gramlot-border-control,#aaa)}
+                .gramlot-group-labelbox>.label-box>.actions{display:flex;align-items:center}.gramlot-group-labelbox>.label-box>.actions[hidden]{display:none}
+                .gramlot-group-labelbox>.label-box>.actions button{font:inherit;color:inherit;cursor:pointer;border:0;border-radius:var(--gramlot-radius-sm,4px);background:transparent;
                     padding:var(--gramlot-group-action-padding,.2em .4em);min-width:var(--gramlot-touch-target,var(--gramlot-group-action-size,24px));min-height:var(--gramlot-touch-target,var(--gramlot-group-action-size,24px))}
-                button:hover{background:var(--gramlot-field-readonly-background,#ddd)}button:disabled{opacity:.5}
-                button:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight)}
-                .copy-menu{max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);max-height:var(--gramlot-popup-available-height,100vh);overflow:auto;border:1px solid var(--gramlot-border-control,#aaa);
+                .gramlot-group-labelbox>.label-box>.actions button:hover{background:var(--gramlot-field-readonly-background,#ddd)}.gramlot-group-labelbox>.label-box>.actions button:disabled{opacity:.5}
+                .gramlot-group-labelbox>.label-box>.actions button:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight)}
+                .gramlot-group-labelbox>.copy-menu{max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);max-height:var(--gramlot-popup-available-height,100vh);overflow:auto;border:1px solid var(--gramlot-border-control,#aaa);
                     background:var(--gramlot-field-background,Canvas);color:var(--gramlot-ink,CanvasText);border-radius:var(--gramlot-radius-sm,4px)}
-                .copy-menu button{display:block;width:100%;text-align:left}
-                .status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}`;
+                .gramlot-group-labelbox>.copy-menu button{display:block;width:100%;text-align:left}
+                .gramlot-group-labelbox>.label-box>.actions>.status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}`;
             this.actions = doc.createElement('span'); this.actions.className = 'actions';
             this.copyButton = doc.createElement('button'); this.copyButton.type = 'button';
             this.copyButton.textContent = '⧉'; this.copyButton.title = 'Copy TYTX';
@@ -88,8 +93,8 @@ export const GroupBox = defineComponent({
             this.menuButton.textContent = '▾'; this.menuButton.setAttribute('aria-label', 'Choose copy format');
             this.menuButton.setAttribute('aria-expanded', 'false');
             this.copyMenu = doc.createElement('div'); this.copyMenu.className = 'copy-menu';
-            this.copyMenu.id = 'copy-menu'; this.copyMenu.setAttribute('popover', 'auto');
-            this.menuButton.setAttribute('aria-controls', 'copy-menu');
+            this.copyMenu.id = `copy-menu-${randomId()}`; this.copyMenu.setAttribute('popover', 'auto');
+            this.menuButton.setAttribute('aria-controls', this.copyMenu.id);
             for (const format of ['TYTX', 'JSON']) {
                 const button = doc.createElement('button'); button.type = 'button'; button.textContent = `Copy ${format}`;
                 button.addEventListener('click', () => { this.closeCopyMenu(); this.copyData(format); });
@@ -118,8 +123,14 @@ export const GroupBox = defineComponent({
                 }
             });
             this.actions.append(this.copyButton, this.menuButton, this.status);
+            // The renderer supplies the shared Labelbox after construction.
+            this.labelboxStyle = style;
+        }
+        setLabelbox(layout) {
+            super.setLabelbox(layout);
+            layout.box.classList.add('gramlot-group-labelbox');
             this.labelBox.append(this.actions);
-            this.shadowRoot.append(style, this.copyMenu);
+            layout.box.append(this.labelboxStyle, this.copyMenu);
         }
         closeCopyMenu() {
             if (this.#menuOpen) this.copyMenu.hidePopover();
@@ -129,7 +140,8 @@ export const GroupBox = defineComponent({
         }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
-            if (!this.constructor.gramlotComponent.parameters.lbl_variant.enum.includes(this.parameters.lbl_variant)) throw new TypeError('groupBox lbl_variant must be bar or underline');
+            if (!this.constructor.gramlotComponent.parameters.lbl_variant.enum.includes(this.parameters.lbl_variant)) throw new TypeError('groupBox lbl_variant must be bar, underline or card');
+            this.box.classList.add('gramlot-group-labelbox');
             this.box.dataset.variant = this.parameters.lbl_variant;
             this.actions.hidden = !this.parameters.copy;
             if (!this.parameters.copy) this.closeCopyMenu();
@@ -172,4 +184,4 @@ export const GroupBox = defineComponent({
         }
     }
 });
-export default defineCollection({name: 'layout', components: [Dialog, FloatingPane, FramePane, Formlet, GroupBox, ContentPane, BorderContainer, StackContainer, TabContainer]});
+export default defineCollection({name: 'layout', components: [TransformPane, Dialog, FloatingPane, FramePane, TrayPane, Formlet, GroupBox, ContentPane, BorderContainer, StackContainer, TabContainer]});

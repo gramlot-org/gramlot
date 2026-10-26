@@ -14,8 +14,8 @@ import {Handler} from './handler.js';
 export interface RpcTransport {
     /** Send the request envelope text; resolves with the response envelope text. */
     call(text: string, signal?: AbortSignal): Promise<string>;
-    /** Send the close message of the page `pageId` without waiting; `beacon` on page hide. */
-    close(pageId: string, options?: {beacon?: boolean}): void;
+    /** Send the close message of the page `pageId` without waiting; HTTP always uses a beacon. */
+    close(pageId: string): void;
     /** Release the transport; called once, after `close`, when the page is disposed. */
     dispose(): void;
     /** True when the transport sends a synchronous call with `callSync`; a transport without it has none. */

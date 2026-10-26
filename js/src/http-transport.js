@@ -41,18 +41,24 @@ export class HttpTransport {
         return request.responseText;
     }
     /**
-     * Send the close message `{pageId}` without waiting for the answer: a beacon on page hide, else a
-     * `keepalive` POST. A failed delivery leaves the page to the server TTL; local disposal does not wait.
+     * Queue `{pageId}` as a JSON beacon for every close. A refused or undelivered
+     * beacon leaves cleanup to the server TTL; configuration errors remain visible.
      */
-    close(pageId, {beacon = false} = {}) {
-        const body = JSON.stringify({pageId});
-        if (beacon) {
-            this.navigator.sendBeacon(this.closeUrl, new Blob([body], {type: 'application/json'}));
-        } else {
-            this.fetcher(this.closeUrl, {
-                method: 'POST', credentials: 'same-origin', keepalive: true,
-                headers: {'Content-Type': 'application/json'}, body,
-            });
+    close(pageId) {
+        if (typeof this.closeUrl !== 'string' || !this.closeUrl.trim()) {
+            throw new TypeError('HttpTransport.closeUrl must be nonempty text');
+        }
+        if (typeof this.navigator?.sendBeacon !== 'function') {
+            throw new TypeError('HttpTransport requires navigator.sendBeacon');
+        }
+        const body = new Blob([JSON.stringify({pageId})], {type: 'application/json'});
+        try {
+            this.navigator.sendBeacon(this.closeUrl, body);
+        } catch (error) {
+            // Native beacon rejects malformed/unsupported URLs with TypeError,
+            // including errors originating in the page's separate browser realm.
+            if (error.name === 'TypeError') throw error;
+            // Delivery failure must not prevent local disposal; the server TTL remains.
         }
     }
     /** Release the transport at the dispose of the page: HTTP holds no connection, so nothing is released. The

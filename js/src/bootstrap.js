@@ -40,8 +40,8 @@ export class PageBootstrap {
         const pagehide = event => {
             if (event.persisted || closed) return;
             closed = true;
-            this.closePage();
-            resolveClosed(null);
+            try { this.closePage(); }
+            finally { resolveClosed(null); }
         };
         window.addEventListener('pagehide', pagehide);
         try {
@@ -118,7 +118,7 @@ export class PageBootstrap {
      * with a beacon, as `Gramlot` sends on pagehide. */
     closePage() {
         const transport = this.serverAdapter.createTransport({...this.config, document: this.document});
-        transport.close(this.config.pageId, {beacon: true});
-        transport.dispose();
+        try { transport.close(this.config.pageId); }
+        finally { transport.dispose(); }
     }
 }

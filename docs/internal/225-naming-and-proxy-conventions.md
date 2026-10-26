@@ -678,11 +678,15 @@ Owner, 2026-10-16: "allora portiamola subito in gramlot" after the demonstrated
 PoC `parseDateExpression(text, options)` API. Preserve this function name and its
 `workdate`, `locale`, `twoDigitYearAhead` options and result keys. It is a named
 JavaScript package export, usable by page Logic, Node and Workers. It is not a
-new Gramlot proxy, instance alias or Python Builder method. Keep the bounded
-PoC `date-parser/index.js`, `civil.js` and `locales.js` module organization.
+new Gramlot proxy, instance alias or Python Builder method.
 Public type names follow the function: `DateExpressionOptions`,
 `DateExpressionResult`, `DateExpressionErrorCode`. No alternate parser API is
 introduced. See constitution 11.83 and PORT-0009-date-expression-parser.
+
+Owner, 2026-10-25: the parser comes from `@genrojs/toolbox`; Gramlot re-exports
+it with the same name, options and type names. Gramlot no longer has its own
+`date-parser/` module. See the constitution entry "Date-expression parser from
+Toolbox" (gc-000-toolbox-date-parser).
 
 
 Toolbox alignment, owner "o procedi", 2026-10-16: retain this JS API, but
@@ -1316,3 +1320,342 @@ JavaScript loading performance — 2026-10-24. Page.gramlots retains the Python 
 
 
 Gallery toolbar placement — 2026-10-24. Owner: “consideriamo anche il rapporto larghezza altezza e fammi provare la toolbar sotto o di lato nella gallery.” Reuse the gallery Data preference convention: toolbarPosition (auto/left/bottom), control gallery-toolbar-position and subscription gallery-toolbar-position. The existing Source attribute spelling data_toolbar_position emits data-toolbar-position on gallery-frame for placement styling. This is a gallery trial, not a core device-classification API. Automatic placement uses the existing narrow-layout threshold plus portrait/square proportions; explicit choices override placement alone.
+
+
+<a id="gc-225-100"></a>
+## 100 · Device integration namespace and Data map
+
+Block ID: **GC-225-100**.
+
+Owner, 2026-10-24 (translated): “This philosophy is important. I would only change it to gramlot.dvc (device) and DeviceHandler; the reserved Data path gramlot.device is where I will map everything.” Follow-up: “If we are agnostic, in the future we could use something other than Capacitor.”
+
+Confirmed names and scope:
+
+- `gramlot.dvc`: the device-themed runtime proxy; `DeviceHandler`: its class. The names follow the existing three-lowercase-letter proxy and theme-plus-Handler class conventions. The derived JavaScript class filename is `device-handler.js` when implemented.
+- `gramlot.device`: the reserved subtree inside the page's Data Bag for the device map. This is a Data path, not a new `gramlot.device` property on the runtime object. This decision reserves this subtree only; it does not settle the broader deferred system Data namespace.
+- Application-facing contracts are provider-independent. Capacitor is the first PoC provider, owned by gramlot-capacitor; the core must not acquire a Capacitor dependency. No alternative provider or implicit capability emulation is selected.
+- Reads use resolvers and their agreed cache behavior. Native state/events enter Data and triggers. A publish activates an ordinary dataController; that controller creates/enqueues work in Data. Controllers own the application orchestration, including reactive dataRpc calls. No parallel application state or queue framework is implied.
+
+These names supersede the discussion proposals `gramlot.capacitor` and `gramlot.cap`, and the device-map roots `grmlt.capacitor` and `native.app`. The earlier App.getInfo fixture names are historical preparation evidence; the initial appinfo/location destinations are subsequently approved below. No compatibility aliases are approved.
+
+This is an approved naming/architecture direction, not an implemented proxy, resolver or provider interface. The current runtime still constructs its existing handlers. Exact leaf schema, provider attachment/lifecycle, commands, subscription topics, queue semantics and interpage ownership remain design work. The index page was discussed as a possible owner, not established as a globally shared Data Bag. See GCP-020 in gramlot-capacitor for the bounded design record.
+
+
+Owner confirmation, 2026-10-24: “ok” to the proposed initial result map. Data paths are gramlot.device.appinfo and gramlot.device.location. appinfo has string fields id, name, version and build; location has numeric latitude and longitude in degrees, accuracy in metres and timestamp in Unix-epoch milliseconds for the position measurement. GCP-020 §045 records this bounded result contract. Operational metadata belongs in node attributes (owner “puoi uaare degli atibuti”); their exact names remain undecided. These names establish no runtime implementation or aliases.
+
+
+Owner confirmation, 2026-10-24: “ok” to the common device node attribute status and values idle, pending, success, error, unavailable, denied and cancelled. GCP-020 §050 defines their meanings for appinfo/location. This selects status only; the remaining operational attributes and handler methods are still design work.
+
+
+Owner confirmation, 2026-10-24: “ok” to the device node attribute error, its object fields code/message and common codes UNAVAILABLE, PERMISSION_DENIED, TIMEOUT and FAILED. GCP-020 §055 defines their status mapping and null/clearing behavior. These names are provider-independent and add no runtime implementation.
+
+
+Owner confirmation, 2026-10-24: “ok” to DeviceHandler.invalidate(name) and DeviceHandler.refresh(name), exposed through gramlot.dvc for appinfo and location. These method names follow the existing camelCase JavaScript method convention. GCP-020 §060 defines invalidation/refresh behavior; return values and detailed lifecycle interactions are not selected by the naming decision. No implementation or aliases are introduced.
+
+
+**Historical record — public methods superseded by GCP-020 §070 below.** Owner confirmation, 2026-10-24: “ok” to DeviceHandler.watch('location') and DeviceHandler.unwatch('location'), exposed through gramlot.dvc, and the location node attribute watching. Method names follow the existing camelCase JavaScript convention. GCP-020 §065 defines the bounded monitoring contract. No appinfo monitoring, aliases or runtime implementation are introduced.
+
+
+Owner, 2026-10-24 (verbatim): “ok allora usiamo enabled per il desiderio e watching per lo stato effettivo, senza watch e unwatch pubblici”. GCP-020 §070 supersedes the public watch/unwatch proposal: the location node attribute enabled expresses application intent, and watching reports the effective listening state. No public watch/unwatch methods or compatibility aliases remain in the selected contract. invalidate/refresh retain their separately approved responsibilities. No runtime implementation is claimed.
+
+
+Implementation delegation, 2026-10-24: owner “mi are cge tu abbia capito,. non farmi trppo domande e vediamo cime viene” authorizes proceeding with the bounded appinfo/location PoC using the established design, resolving remaining implementation details without repeated questions. This is scoped to this device increment, not a general relaxation of constitutional confirmation requirements. Apply existing Handler/Resolver class naming and camelCase methods: DeviceResolver (device-resolver.js), DeviceHandler.attach(provider), and the provider methods readAppInfo, readLocation and startLocationUpdates. CapacitorDeviceProvider belongs to gramlot-capacitor. attach installs one explicit provider per page; no runtime discovery, monkeypatches or alternate providers. invalidate/refresh are commands returning no result; Data owns outcomes. Provider async internals may use Promises. No public watch/unwatch. Core retains no Capacitor dependency.
+
+
+Implementation checkpoint, 2026-10-24: the bounded device increment now implements the delegated names above. cacheTime reuses the established Bag resolver spelling and seconds convention. DeviceProvider, DeviceName, AppInfo and DeviceLocation are TypeScript contract types following the existing PascalCase type convention; the page's deviceAttach/deviceRefresh/deviceInvalidate/deviceError Logic methods follow the existing camelCase named-logic convention. Provider installation is opt-in through dvc.attach, with no alternate discovery path. Status and test evidence are recorded in GC-070 and GCP-025; physical-device validation remains pending.
+
+
+Camera increment naming, 2026-10-24: owner “proviamo ora con la fotocamera, sempre con la stessa filosofia dei dati”, followed by “continua”, extends the device PoC to camera capture. Together with the earlier request to proceed without repeated implementation questions, this authorizes the bounded implementation details below; these are scoped choices, not individually confirmed API proposals. Apply existing Data attribute and camelCase conventions: gramlot.device.camera stores a result Bag with url and format; capture is a transient attribute event issued with Source.FIRE('gramlot.device.camera?capture'). Reads never acquire a photo. Existing status/error attributes carry progress and outcomes. One pending capture per page; repeated pending commands are ignored. Cancellation and failure retain the last photo. DevicePhoto is the PascalCase result type; the explicit provider method takePhoto(signal) owns acquisition. The Python fixture uses named Logic deviceCapture/devicePending and an ordinary image src binding. No new public handler command, resolver for camera, gallery selection, upload or queue is introduced. Local photo preview lifetime is the current page/native temporary file. GCP-030 records implementation and verification.
+
+
+Biometrics increment naming, 2026-10-24: owner “Funziona, vedo la foto. Proviamo ora Face ID, sempre con la stessa filosofia dei dati.” accepts native camera capture/preview and requests the next bounded device slice. The earlier instruction to proceed without repeated implementation questions covers coherent details within this request, not unrelated APIs. Reuse the Camera Data-event convention: gramlot.device.biometrics, transient verify attribute issued through Source.FIRE, and shared status/error attributes. Result is null until successful completion, then a Bag containing verified=true; every new attempt clears the prior result, and unsuccessful outcomes leave it null. This represents one local biometric check, not a durable authorization grant or server login. Existing PascalCase/camelCase conventions give DeviceBiometrics, provider verifyBiometrics(signal) and fixture Logic deviceVerifyBiometrics. Reads never prompt; there is no biometric resolver, cache or public handler verification method. No passcode fallback or web simulation. GCP-035 records the chosen implementation, checks and limits.
+
+
+Local notifications increment naming, 2026-10-24: owner “Proviamo ora le notifiche, sempre con la stessa filosofia dei dati.” The announced first slice is local notifications; remote APNs push remains a separate planned gate. Scoped details follow the earlier instruction to proceed without repeated implementation questions. Under gramlot.device.notifications, request is a Bag with id (positive signed-32-bit integer), title/body (nonempty strings), delay (positive finite seconds); scheduled holds id/at (Unix milliseconds) after OS scheduling acknowledgement, received holds id/title/body, and action additionally holds actionId. Source.FIRE('gramlot.device.notifications?schedule') snapshots request and starts scheduling. Root attributes status/error describe this command; listening/listenerError separately describe event-listener readiness. Attach installs native event listeners without permission prompts; scheduling requests permission when needed. Plain reads/writes do not schedule. DeviceNotificationRequest, DeviceNotificationSchedule and DeviceNotificationEvent follow PascalCase types; provider scheduleNotification/startNotificationEvents and fixture deviceScheduleNotification follow camelCase. Events update ordinary Bag bindings with no automatic navigation, upload or executable payload. No public watch/unwatch, automatic notification queue or remote-push claim. GCP-040 records behavior and verification.
+
+
+Server push increment naming, 2026-10-24: owner “Funziona, vedo la notifica e il tocco aggiorna i dati. Proviamo ora le push dal server, sempre con la stessa filosofia.” accepts local display/action and requests real APNs push. The owner says an APNs key must be created; key creation remains their action while implementation proceeds. Scoped names follow existing event/Data conventions and the earlier instruction to avoid repeated detail questions: gramlot.device.push contains registration (token), received and action; ?register triggers native registration, status/error describe its result, listening/listenerError describe page event listeners. Registration completion is the native token event, not the SDK register() acknowledgement; a 30-second wait can time out, with later genuine token updates still accepted. Provider methods registerPush/startPushEvents and types DevicePushRegistration/DevicePushEvent are generic; Core has no APNs dependency. Events carry id/title/body/messageId/destination and actionId for actions. The fixture uses deviceRegisterPush, pushRegister (Python endpoint) and view.push.serverRegistration/serverStatus/serverError. A ^token dataRpc registers the dedicated anonymous PoC device slot on the server; no send endpoint is public. Operator-only server CLI sends an alert to that slot with destination=device. Tokens/key material are not rendered or logged. No arbitrary URL execution, account login, background silent push, production environment or general routing protocol is introduced. GCP-045 records the bounded implementation and verification.
+
+
+Shortcut increment, 2026-10-24: owner “ok proviamo a registrare uno shortcut che apra la gallery, sempre passando dai dati gramlot”, then explicitly “Sì, procedi con questo percorso” to gramlot.device.shortcuts.request (id/destination), a controller accepting only gallery, and the new gramlot.dom.navigate(url) with the fixed official gallery URL. This explicitly authorizes the missing core navigation capability under §13. DeviceShortcutRequest is the generic event type; startShortcutEvents(callback, signal) follows the existing provider event lifecycle and returns asynchronous cleanup. shortcuts has request=null and listening/listenerError attributes. The provider callback receives a request or null plus an error, following the location event convention. Core projects nonempty string id/destination into a Bag and suppresses duplicate current ids; it never chooses a destination. navigate accepts an absolute HTTP(S) string without embedded credentials and navigates the current document; app policy selects the URL. No arbitrary native dispatcher or automatic core routing is introduced.
+
+Fixture names deviceOpenShortcut and view.shortcuts.error follow existing camelCase Logic/Data conventions. Native names GramlotShortcuts, ShortcutStore, OpenGalleryIntent, GramlotAppShortcuts and DeviceBridgeViewController are confined to gramlot-capacitor. One persistent native pending request (latest wins, five-minute lifetime) bridges app startup; takePending consumes it once before delivery to JavaScript, so this is not a transaction across process crashes. The App Intent has no user-supplied URL and only queues destination=gallery. A running app on another page returns to its configured Device entry point to attach the consumer; only the Data controller opens the fixed official gallery. Existing owner-specified official gallery is the single additional native navigation hostname. New native integration targets iOS 26+ App Intents supportedModes, with no legacy intent path. GCP-050 records implementation and hardware verification separately.
+
+
+Barcode increment, 2026-10-24: following the feature proposal including QR/barcodes, owner “si tutte utili” and later “passiamo alle altre funzioni” authorizes continuing the device PoC. The announced next slice is QR/barcode scanning. Coherent implementation details follow the earlier scoped instruction to proceed without repeated detail questions; no new dispatcher or architecture exception is introduced. Names follow existing camera/biometrics conventions: gramlot.device.barcode holds null or a Bag with text/format; scan is a transient FIRE attribute and status/error use the shared contract. Source.FIRE('gramlot.device.barcode?scan') starts a single scan; plain writes/reads never do. A new attempt clears the previous result. DeviceBarcode and provider scanBarcode(signal) are generic; fixture Logic deviceScanBarcode and view.barcode.pending are camelCase. Native numeric symbologies are projected to their standard string names (QR_CODE, EAN_13, CODE_128, etc.) by the Capacitor provider, not exposed as SDK enum numbers. The page renders the result as text without executing URLs or sending it to a server. Cancellation is cancelled with no error; denial is denied/PERMISSION_DENIED; unavailable native plugin is unavailable/UNAVAILABLE. Disposal ignores late results; the selected native scanner has no public abort operation, so user dismissal remains the way to close an already-presented scanner. GCP-055 records tests and hardware acceptance separately.
+
+
+Network/lifecycle/haptics increment, 2026-10-24: owner “Sì, Code 128 e annullamento funzionano. Passiamo a rete, ciclo di vita dell’app e feedback aptico, sempre con la stessa filosofia dei dati.” accepts those barcode checks and explicitly requests this bounded continuation. Names follow the existing event/Data conventions and scoped delegation of implementation details, without a new dispatcher or architectural exception. gramlot.device.network is null or a Bag with connected:boolean and type:none/unknown/wifi/cellular. gramlot.device.lifecycle is a Bag with active:null/boolean, event:null/pause/resume and sequence:0/increasing integer; active is independent of background entry. Both have status/error/listening attributes and page-owned automatic subscription plus an initial snapshot, never a timer or permission prompt. Provider startNetworkEvents(callback, signal) and startLifecycleEvents(callback, signal) return asynchronous cleanup. DeviceNetwork and DeviceLifecycleEvent are provider-independent types; lifecycle events are kind=state with active, or kind=pause/resume. A snapshot cannot overwrite a newer native state event. On disposal callbacks are ignored and every acquired handle is removed, including handles acquired after disposal. Listener setup errors use the shared status/error contract. Core state validation errors leave the previous valid value and report error; subsequent valid events recover. gramlot.device.haptics is null or a Bag with style and acknowledged=true; attributes style=medium (light/medium/heavy allowed), impact=null, status=idle and error=null. Only FIRE(?impact) starts provider impact(style, signal); plain writes and reads never execute it. Pending commands deduplicate, snapshot style, clear old result, and ignore late completion after disposal. Success means the SDK acknowledged the call, not proof of physical feedback on unsupported hardware. Fixture names deviceImpact, deviceLifecycleEvent and view.lifecycle.pauses/resumes follow existing Logic/Data conventions. No background JavaScript execution guarantee, Internet reachability assertion, persistent event history or browser fallback is introduced. GCP-060 records verification separately.
+
+
+Vibration increment, 2026-10-24: owner “ok proviamo anche una vibrazione più lunga, sempre passando dai dati gramlot” explicitly requests a separate sustained vibration test. Existing haptics Data gains duration=600 (integer milliseconds, 1–5000 for this bounded PoC) and a transient vibrate attribute. FIRE('gramlot.device.haptics?vibrate') calls provider vibrate(duration, signal); reading or ordinary writes never execute it. The result is a Bag {duration, acknowledged:true}; impact retains {style, acknowledged:true}. Each new command clears the prior result. Both commands share one pending-request gate and the existing status/error/disposal semantics. Success is SDK acknowledgement, not elapsed vibration or proof of perception; the SDK has no cancel API and pending ends when its call resolves. No timer-based repetition or replacement of impact is introduced. Fixture Logic deviceVibrate emits FIRE; the Python page adds “Vibrazione 600 ms”. The already installed official plugin supplies vibrate, so no new native package or API bridge is needed.
+
+
+Audio increment, 2026-10-24: owner “bene, proviamo ora a registrare audio, sempre passando dai dati gramlot” requests recording; “Preferisco una dipendenza con licenza MIT” selects MIT over the proposed MPL-2.0 plugin. Scoped implementation uses @independo/capacitor-voice-recorder and official Filesystem (MIT), retaining Capacitor 8/SPM. gramlot.device.audio starts null with start/stop/cancel FIRE attributes, status=idle, error=null, recording=false. Explicit start clears the previous result and releases its recording; pending covers native startup and stopping; recording indicates a confirmed open capture. Stop returns a Bag {url,mimeType,duration} and success; duration is milliseconds. Cancel, native interruption and app background discard the capture; normal reads/writes never request the microphone. Generic DeviceAudio/DeviceAudioSession and provider startAudioRecording(onInterruption, signal) provide stop() and dispose() ownership: dispose releases microphone, owned listeners and the captured file. No auto-resume, background capture, upload, transcription or arbitrary dispatcher. Commands deduplicate while pending; cancel is allowed during startup. Disposal ignores late results and awaits cleanup. Cleanup failure is reported, not swallowed. Fixture deviceAudioStart/deviceAudioStop/deviceAudioCancel only FIRE; deviceAudioBusy/deviceAudioCanStop/deviceAudioCanCancel derive button state. Python audio(src=^gramlot.device.audio.url, controls=True) provides playback without app DOM wiring. Recording output is an app-cache file; only the provider knows its file path. The result exposes a playable native URL. A later start or page disposal deletes the owned result. Abnormal process termination may leave cache files; this PoC does not claim durable file management or crash cleanup. GCP-065 records verification separately.
+
+
+Audio sharing increment, 2026-10-24: owner “bene, proviamo ora a condividere la registrazione audio, sempre passando dai dati gramlot” explicitly requests sharing the current recording. The official @capacitor/share 8.0.3 is MIT and supports Capacitor 8/SPM. Scoped names follow existing audio commands: FIRE(gramlot.device.audio?share), shareStatus (idle/pending/success/cancelled/unavailable/error), shareError and shareActivity (null or string, including empty). Existing audio result and recording status are preserved by share outcomes. DeviceAudioSession gains share(signal):Promise<{activity:string}>; the provider alone knows the retained native file path. Sharing requires a completed recording and deduplicates pending commands; start/cancel do not invalidate a file while its panel is open. Missing recording is an error, not an empty panel. No arbitrary URL/file input, app-selected recipient, automatic sending, server upload or public sharing dispatcher is introduced. iOS completed means the activity completed, not recipient delivery. Exact SDK cancellation message “Share canceled” maps to CANCELLED only within the Share adapter. Disposal ignores late results and delays deletion of the audio file until the native panel settles; Share has no public dismiss API. Fixture deviceAudioShare emits FIRE; deviceAudioShareDisabled derives availability. Existing busy/cancel formulas also depend on shareStatus. A new recording or audio cancellation clears sharing metadata. GCP-070 records checks and owner acceptance separately.
+
+
+Slider fixture, 2026-10-24: owner “ok proviamo uno slider collegato ai dati gramlot, con una publish al rilascio” authorizes a bounded page example using the existing horizontalSlider, live binding, connect_onchange and publish/controller subscription. Fixture names follow existing camelCase Logic and topic conventions: sliderReleased publishes sliderReleased with {value} read from view.slider.value; sliderReceived writes view.slider.lastReleased and increments view.slider.releases. view.slider.value starts at 25, releases at 0 and lastReleased at null. Native range change denotes a committed user edit (pointer/touch release or keyboard change), not every pointerup; unchanged release and programmatic Data writes do not publish. No new core API, gesture recognizer, DeviceHandler capability or native dependency.
+
+
+Pinch component, 2026-10-24: owner explicitly confirms “Sì, aggiungi pinchPane nel core e prepara la prova” in response to the concrete value/min/max/step/onEnd container proposal. PinchPane / pinch-pane.js / pinchPane / gramlot-pinch-pane follow the existing descriptor, filename, authoring and DOM-tag conventions. The layout collection owns this generic slotted container. value is a reactive read projection with explicit Source-context writeParameter writes, like container parameters; it is not a native input using ControlAdapter. onEnd is a named Logic callback receiving {value}; it does not itself prescribe a global topic. Existing fixture sliderReleased publishes the same topic for slider and pinch; subscribers stay unchanged.
+
+Two touch pointers establish an initial distance and Data value; their distance ratio produces a scale quantized by native range min/max/step semantics. Limits require finite positive min/step, max >= min and finite value. An internal detached native range provides the same quantization as horizontalSlider, not another application value store. Pointerup ends the gesture once; callback runs only for a changed value. Pointercancel, capture loss, third touch, document hiding, window blur, disconnect or an external parameter change cancels without callback or rollback. Already written Data remains authoritative. All captures/listeners are released; a new gesture needs two fresh touches. Gesture-local coordinates/baseline exist only while interacting. touch-action:none applies only to the pane, not the whole page. No global gestures, image transform logic, native dependency, application DOM wiring or compatibility fallback. Fixture photo and rectangle bind their transform to view.slider.value alongside a horizontalSlider; range 0.5–3, step 0.01, initial 1.
+
+The approved onEnd name is a binding-owned callback, stripped from native DOM attributes and accepted only on pinchPane with its declared component metadata. Other onEnd declarations remain rejected by requireNoScriptAttributes; no generic on* bypass is introduced.
+
+
+Transform extension, 2026-10-24: owner proposes “potremmo anche traslare . in pratica x y rotate zoom” and confirms “ok” to the concrete four-Data transformPane proposal. TransformPane / transform-pane.js / transformPane / gramlot-transform-pane replace the unreleased pinch-only component without aliases. Parameters x/y (CSS pixels), rotate (degrees, continuous), zoom (factor) are finite reactive read projections explicitly written through Source context. min/max/step retain their existing meaning for zoom only. onEnd receives {x,y,rotate,zoom}; the fixture uses transformReleased/transformReceived and topic transformReleased, view.transform.{x,y,rotate,zoom,last,releases,css}. Children follow a Data-derived translate(x,y) rotate(angle) scale(zoom) CSS transform; the surface itself is not transformed.
+
+One primary pointer translates. Two touch pointers additionally rotate and zoom from their midpoint/angle/distance; movement of the midpoint translates. Pointer membership changes rebase against current Data, preserving continuity. Rotation unwraps each angular delta across ±180 degrees. A gesture ends only when all its pointers lift, publishing once when the final tuple differs from its initial tuple. Third pointer, cancellation/capture loss, blur/hiding, removal or external parameter change cancel without rollback or completion. Internal state is limited to gesture geometry/baselines, never a parallel application state store. Existing bounds/step sanitization and cleanup remain. No native plugin, release or compatibility alias.
+
+
+Clipboard increment, 2026-10-24: owner “bene, proviamo ora copia e incolla con la clipboard, sempre passando dai dati gramlot” activates the previously proposed official Clipboard integration. The bounded slice exchanges text only, using official @capacitor/clipboard 8.0.1 (MIT, Capacitor 8/SPM). Names follow existing device command conventions: gramlot.device.clipboard has result null or Bag {text}, attributes text (copy input, initially empty), copy/paste (FIRE only), operation (null/copy/paste), status and error. Copy snapshots input and returns that text after the native write acknowledgement; it does not read back the clipboard. Paste returns native text. Each start clears the previous result/error. Commands share one pending gate; normal Data reads/writes never access the clipboard. Existing success/unavailable/error/denied/cancelled conventions apply when the provider supplies the corresponding code; no permission diagnosis is inferred from an empty native result.
+
+Provider methods copyText(text,signal):Promise<void> and pasteText(signal):Promise<DeviceClipboard>, DeviceClipboard={text:string}. Empty strings are valid; no coercion or rich-format fallback. Native text/plain only is accepted from read; image/rich-only payloads fail without entering Data. The SDK rejects absent/unreadable content with a generic error; its message is preserved without fabricated empty success. Dispose aborts delivery and prevents subsequent Data writes, but cannot undo a native copy or dismiss an iOS prompt already started. No polling, resolver-triggered paste, automatic retry, server upload or clipboard logging. Fixture deviceCopyText/devicePasteText only FIRE; Python declares input, output and status. Browser remains unavailable, without Web Clipboard fallback.
+
+
+Photo library increment, 2026-10-24: owner “bene, proviamo ora a scegliere foto dalla libreria, sempre passando dai dati gramlot” requests single-photo selection through the established device Data contract. Scoped implementation names follow camera conventions: transient choose attribute on gramlot.device.camera, Source.FIRE('gramlot.device.camera?choose'), provider choosePhoto(signal):Promise<DevicePhoto>, fixture Logic deviceChoosePhoto. Capture and choose share the existing pending gate and result Bag {url,format}; ordinary writes/reads never open either native panel. Both commands retain the last successful image on cancellation/failure, use existing status/error outcomes and ignore completion after disposal. The installed Camera provider supplies explicit photo-only, single-selection acquisition; actual returned format is retained. Only preview URL and format enter Data, without EXIF, private path, thumbnail or upload. No resolver, multi-photo/video flow, image editing, automatic capture or fallback is introduced. These are bounded implementation details under the requested increment, not separately confirmed API proposals. GCP-095 records implementation and verification separately.
+
+
+Universal Link increment, 2026-10-25: owner “Per la prima prova usiamo https://gallery-py.gramlot.dev: un link a un esempio della gallery deve aprire quell’esempio nell’app.” The bounded destination is the verified current color example /pages/01-inputs/04-colorpicker. DeviceHandler gains links capability, gramlot.device.links.request Bag {id,url}, listening/listenerError attributes, provider startLinkEvents(callback,signal), and DeviceLinkRequest. These follow the established shortcut event naming and lifecycle. Native delivery validates the exact HTTPS URL, queues one pending public link for up to five minutes, and returns to the bundled entry Source; Data controllers perform the target navigation. The provider and entry Logic validate the same destination. The entry is Python-authored embedded Source, mounted by existing startSource without Page execution or a server transport. No login, account transfer, preferences persistence or arbitrary domain navigation is included in this first link probe. The owner also requests a gallery branch named “Mobile application”, visible “Solo nell’app Capacitor”; platform detection belongs to the gallery integration, not core. Android qualification remains pending; platform-neutral Data contracts are shared, native iOS plumbing is not claimed portable.
+
+
+Mobile environment/frame increment, 2026-10-25: the owner confirms automatic framework adaptation and iframe plugin delegation (constitution mobile-device-frames). Shared exports MobileEnvironment, DeviceFrameHost and FrameDeviceProvider use PascalCase classes in mobile-environment.js and device-frames.js. The transport marker gramlot:device is separate from gramlot:publish; a transferred MessagePort carries only the established DeviceProvider method allowlist, correlated results/events, explicit resource close and cancellation. No application-level device API aliases are added. The host validates Source ownership and exact allowed origins on connection and subsequent operations; opaque/unowned frames are rejected. Links/shortcuts remain top-level entry responsibilities. DeviceHandler accepts an optional attachment lifetime callback through attach(provider, {dispose}); frame transport disposal binds to page disposal. Shared mobile document/viewport setup and touch sizing belong to core; Capacitor-specific bar style and native calls belong to gramlot-capacitor. These are bounded implementation names under the expressly approved architecture, not approval of unrelated messaging semantics.
+
+
+Mobile module separation, 2026-10-25 (owner instruction, constitution mobile-examples-module): examples/mobile_application is the Python module in gramlot-capacitor, with pages/, assets/, page.py and catalog.json. The catalogue uses id/title/path/capabilities/requires entries and relative page paths; it contains no domain, credentials or deployment paths. Host mount and backend registration are integration responsibilities. DevicePage keeps its existing name and Data commands; its push_register callback is host-supplied and absent configuration produces an explicit error. This is the mobile module's handoff format, not an implemented generic gallery extension API. Theme work extends the existing mela name, existing CSS layers and tokens; no new theme alias is introduced.
+
+
+Mela theme refinement, 2026-10-25: --gramlot-button-color follows the existing --gramlot-button-background/--gramlot-button-hover convention and lets a theme give filled command controls readable foregrounds. The existing button--secondary class must have the same meaning inside shared command Shadow DOM as for HTML buttons; button--quiet remains unchanged. Press, contrast and forced-color states belong to the shared command component, not application wiring. This is bounded theme/component adaptation under the owner's explicit request for the Apple-inspired Gramlot theme.
+
+
+<a id="gc-225-mobile-gallery"></a>
+## Mobile gallery receiver names — 2026-10-25
+
+Owner requests integration under GCP-110 and preparation under GCP-120, explicitly
+excluding deployment/TestFlight upload. Python `gallery_modules`, `modules`,
+`catalog_file`, `prerequisites` and `stage_module` follow the existing snake_case
+page-option/host-function convention. Browser `mountGalleryModules` follows the
+existing gallery mount functions. Registration retains catalogue `id`, `title`,
+`visibility`, `entries`, `path`, `capabilities`, `requires`; host-only `mount` and
+`integration` select the trusted local resource. No new core proxy, provider
+representation or native command alias is introduced.
+
+MobileEnvironment uses its existing class name in the public runtime exports,
+following DeviceHandler/Gramlot class exports. The provider imports that same
+runtime instance instead of bundling another viewport owner. The core owns its
+disposal; integration code releases only its appearance subscription. This keeps
+GCP-110's single-owner viewport contract across the actual browser bundles.
+
+
+<a id="gc-225-detachable-tabs"></a>
+### Detachable tab presentation — 2026-10-25
+
+Owner confirms `detachable=True`: “si e diovrebbe far comparire un icona da draggare. e quando chiudo il floating ritorna.” The parameter belongs to tab child contentPane configuration; it defaults to false. Source and content DOM ownership stay fixed. A draggable, keyboard-operable icon opens the same content in a shared nonmodal window; closing returns it to its original tab. Naming follows existing boolean child parameters and window vocabulary: internal `WindowSurface` (`components/window-surface.js`) owns shared chrome/geometry; `WindowShell` remains the custom-element adapter. No new public custom element or alternate Source representation is introduced.
+
+
+<a id="gc-225-native-mobile-data"></a>
+## Native mobile Data and database names — 2026-10-25
+
+Owner requests integration of GCP-110 §050/060 and GCP-130. Retain the established owning-library names: DeviceHandler `openDatabase(name)` and its page-owned `query`, `execute`, `close` connection; `gramlot.device.database` for state/errors. Motion uses the existing `orientation`, `gyroscope`, `accelerometer` capability names and their matching `gramlot.device` Data branches. Gallery imports the compiled provider and catalogue, without renaming these APIs, declaring SQL models in core or adding plugin dispatch aliases. Database models remain in the mobile example and use Asqueel.
+
+
+<a id="gc-225-tree-search"></a>
+## Tree searchText — 2026-10-25
+
+Owner confirms: “Sì, confermo searchText. Procedi con la toolbar di ricerca nella navigazione, includendo i rami non ancora caricati e il ripristino dell’albero quando svuoto il campo.” `searchText` is a read-bound text parameter, default empty. It filters caption text literally and case-insensitively after a short debounce. Ancestors remain visible; resolver branches are read on explicit search. Clearing restores the unfiltered expansion state. Search presentation does not replace the store or alter Source.
+
+
+<a id="gc-225-error-notifications"></a>
+### Internal error notifications — 2026-10-25
+
+Owner selected “Notifica non modale, con dettagli espandibili” for remote and drag/drop errors, then instructed “vai”. `ErrorNotifications` names the internal presentation owner, following `AskDialog` and other responsibility-named internal classes. `BindingRuntime.reportError(error, title)` follows camelCase action naming; it is not a new Gramlot proxy or application API. Source-authored notices use the `gramlot-error-notifications` class, native manual popover presentation, and the existing named Logic close-event convention. The internal component context delegates error reporting to its binding runtime.
+
+
+The follow-up review extends the same internal `reportError(error, title)` delegation to Source-context components for transformPane `onEnd`. No new public handler or proxy is introduced. The five-notice limit and dismissed-identity policy are recorded in the constitution (2026-10-25).
+
+
+IDE ownership correction (2026-10-25): reuse existing `ide*` camelCase method names, passing the originating Source node explicitly wherever instance context is required. Internal non-enumerable Source object attachments `ideContext` and `fileSystemController` follow the JavaScript camelCase convention and existing class vocabulary. They own per-widget lifecycle/resources, are not authoring parameters, schema metadata or serialized Data, and introduce no new Source proxy API. `IdeDocuments` and `FileSystemController` receive their owning Source node and resolve Data relatively. Generated editor node IDs use a per-IDE prefix retained by Source to prevent collisions between identical documents in two IDEs. This implements the owner's Source/Data ownership correction, without introducing a public proxy or compatibility overload.
+
+IndexPage ownership correction — owner implementation instruction, 2026-10-25 (GC-000 Logic/index runtime ownership): `indexContext` follows the existing `ideContext` camelCase convention for a non-enumerable, configurable object attached to the owning Source node. It owns the existing coordinator and its lifecycle; it is not a Source attribute, proxy API, serialized state or Logic field. Existing `indexMount` and `mountIndexPage` names remain. `indexMount(node)` takes the controller Source context; no DOM shell-ID lookup is needed.
+
+IndexPage load outcomes — owner confirmation “si”, 2026-10-25 (GC-000 IndexPage
+load outcomes): retain `onLoad(url, status, error)` and the existing `loading`,
+`ready`, `error` values; add the approved `cancelled` terminal value. Cancellation
+is distinct from failure. No new proxy, event family or request-ID API is added.
+
+HTTP close simplification — owner approval, 2026-10-25 (GC-000 One HTTP close path):
+reuse `close(pageId)` and `dispose()` without the obsolete `beacon` selector. No
+new transport, fallback, public method or compatibility alias is introduced.
+
+
+Editor Data projection, 2026-10-25: the existing internal engine method `replace(value)`
+is reused by HTML and Markdown, matching CodeMirror. No public authoring parameter
+or alternate Data representation is added. Jodit's public `value`, `history` and
+selection APIs are used; CodeMirror and ProseMirror use document transactions.
+The HTML protection codec's per-document context is retained with engine history:
+an inert `gramlot-document-` comment uses the existing random-ID convention and
+never becomes application HTML. It identifies the codec for the head/protected
+content when Jodit restores a body snapshot, including head-only replacements.
+These resources belong to the editor instance and are released on disposal.
+The owner's editor-projection amendment supersedes the earlier Revert reset text.
+
+
+Jodit security integration (2026-10-26, owner update instruction): reuse upstream
+`cleanHTML.sanitizer`, DOMPurify's documented hook/configuration, and the existing
+`gramlot-document-` history marker. Only a comment matching an existing instance
+record is retained by the sanitizer. No new authoring parameter, marker format,
+proxy or application state is introduced. Sanitizer hooks are instance-owned and
+released with the editor.
+
+
+Input type setter (2026-10-26): reuse the existing `type` attribute, native
+`HTMLInputElement.type` setter, `ControlAdapter.classFor`, attach/detach and the
+Source-owned renderer record. No public API or new state store is introduced.
+Documentation distinguishes the HTML tag (`input`, `textarea`) from the input type
+(`text`, `password`, `checkbox`). `multiple` and `group` remain separate follow-ups.
+
+
+### HTML labelbox experiment — 2026-10-26
+
+Reuse the §050 lbl/lbl_position/lbl_*/box_*/box_l_*/box_c_* vocabulary.
+Internal createLabelbox/projectLabelbox and labelboxStyle name the shared
+creation/projection/style operations; gramlot-labelbox scopes shared CSS.
+Renderer record.presentation denotes the outer DOM presentation, while element
+remains the actual HTML target. These are internal experimental implementation
+names derived from existing Labelbox/renderer conventions, not public APIs.
+
+Unified Labelbox experiment (2026-10-26): preserve the existing Labelbox mixin
+as the component semantic integration contract, without DOM composition.
+`setLabelbox(layout)` attaches the renderer-owned presentation to that integration.
+The portable `labelbox` capability flag identifies that contract; plain HTML and
+other components can receive the same presentation without this hook. The outer
+DOM element's `labelbox` reference contains projection resources, not application
+state. No public authoring alias or new movement parameter is introduced.
+
+TrayPane naming (2026-10-26): owner selected “traypane” in response to the
+trayPane proposal. Use `trayPane` (component/authoring) and `TrayPane` (definition),
+following framePane/FramePane. canvasPane and workspacePane are superseded
+proposals, not aliases. Geometry, rotation, scale and selection parameter names
+remain undecided; this record does not introduce their public API.
+
+TrayPane geometry (2026-10-26): owner confirmed the concrete proposal with “ok”.
+Reuse left/top/width/height and z_index; add rotation (degrees) and scale (factor,
+1 = normal). Geometry is numeric in tray-plane pixels, not CSS strings; this is
+a tray block contract and does not redefine ordinary HTML style attributes.
+All are bindable to Data; center is the rotation/scale origin, and the rectangle
+is defined before transforms. Selection and additional authoring names are open.
+
+Labelbox composition helpers (2026-10-26): `labelboxContent(presentation)` and
+`labelboxPresentation(content)` are private DOM projection helpers, paired with
+createLabelbox/projectLabelbox. They identify the content and layout surface of
+the one renderer-created wrapper, so parent component contracts do not mistake
+presentation for authored content. No alternate Source representation is added.
+
+
+Labelbox movement trial (2026-10-26): reuse `trayPane`/`TrayPane` and
+`gramlot-tray-pane`, in the layout collection. The owner confirms `storepath`
+and `node_label` as the block's exact key in that Data Bag. Each row is a Bag
+with numeric `left`/`top` in tray pixels. Missing rows initialize to zero in Data.
+The direct Labelbox children reuse `movable` (default false). `lbl_variant="card"`
+is the confirmed shared presentation, default for movable blocks; box_* dimensions
+remain presentation attributes. TrayPane projectChild owns its direct children's
+positioning. Its internal context `label` is the Source label, not a new public
+identifier. Existing bagStore/setStoreBag and subtree bindings drive updates.
+Gesture/capture resources belong to the mounted TrayPane, never Logic.
+The owner's storepath decision supersedes the earlier literal Source geometry
+proposal for tray blocks; no writeLayoutParameter implementation remains.
+Shared card CSS reuses surface, border and window-radius tokens and adds
+--gramlot-card-header-background/color for the approved contrasting title bar.
+No new persistence format, implicit local storage or public proxy.
+
+
+TrayPane resize increment (2026-10-26): reuse `resizable`, `minWidth` and
+`minHeight` from window controls for direct tray children; defaults false,
+100 and 64 respectively. The existing geometry row adds positive numeric
+`width`/`height` (outer CSS pixels), required when resizable is enabled.
+The renderer-owned Labelbox keeps a `resizeHandle` DOM reference; this is a
+projection resource, not geometry state. The small corner button shares the
+window resize icon and supports pointer dragging and arrow keys. Minima govern
+interactive resize; the tray edge is the outer limit. `data-resizable` and
+`data-resizing` are private CSS markers alongside `data-moving`.
+
+
+TrayPane layer increment (2026-10-26): confirmed `layer` replaces the earlier
+proposed tray `z_index` field (no alias). Existing geometry rows require an
+integer layer; newly created zero-position rows start at layer 0. CSS z-index
+is only the projection, isolated by the tray's stacking context. Private
+`tray-geometry.js` rectangle helpers `overlaps` and `contactFraction` compute
+first contact for movement and resize without state. Bag update events supply
+the previous layer for rejected changes, so no parallel accepted-state cache
+is introduced. Layer subscription identity is a disposable runtime resource.
+
+
+TrayPane selection increment (2026-10-26): use boolean `selected` in each
+node_label-keyed Data row, alongside geometry and layer. Its default false is
+initialized in the Bag when absent. The private `data-selected` DOM marker is
+a projection for the thin theme-colored outline, never a second state store.
+Reuse the existing focus-ring/brand color tokens. Selection changes do not
+alter layer, background, content, or Source topology.
+
+
+Tray layer menu (2026-10-26): `createTrayLayerControl` in
+`tray-layer-control.js` creates renderer chrome stored as `labelbox.layerControl`
+(button, popup, slider, output DOM references). Private CSS uses `tray-layer-*`
+and `data-tray-block`. Reuse positionPopup, native Popover and the vertical
+range styling already used by verticalSlider. No additional public parameter,
+selection state, layer cache or application event wiring is introduced.
+
+
+Tray transforms (2026-10-26): use the already agreed `rotation` and `scale`
+geometry fields (defaults 0 and 1). Private `tray-geometry.js` helpers operate
+on transformed rectangles, without state. `createTraySettings` replaces
+createTrayLayerControl; `labelbox.traySettings` holds DOM resources, with
+`tray-settings-*` CSS markers. The settings floating uses the existing
+floatingPane/framePane components. Its UI parameters live in the owning
+geometry row's `settings` Bag; neither Logic nor a parallel state store is used.
+
+
+Tray rotation grip (2026-10-26): `labelbox.rotationHandle` is a DOM resource
+alongside resizeHandle; private `tray-rotate`/`data-rotating` markers mirror
+tray-resize/data-resizing. It edits the existing rotation field. The settings
+resource adds zoomSlider, editing scale as a percentage; no new state store.
+
+
+Tray layout lock (2026-10-26): `locked` is the boolean, bindable trayPane
+parameter for disabling user layout editing, following existing state adjectives
+(disabled/selected). It does not disable card contents or external Data projection.
+Reuse existing data-movable/data-selected and hidden handles; no new CSS marker.
+Save/restore in the trial uses Bag.deepcopy() and ordinary Data paths.
+
+
+Tray compact controls (2026-10-26): retain createTraySettings as the owner of
+header controls, now `controls.layer` and `controls.scale`, each with button,
+popup, input and output DOM references. Private tray-settings-button/popup
+styles; data-kind distinguishes the two controls. UI open state uses
+settings.layerOpen/settings.scaleOpen in the existing row. No geometry aliases.
+
+
+Tray snapping (2026-10-26): gridStep (pixels), gridVisible (boolean) and
+rotationStep (degrees) follow camelCase component parameters, bound read-only to
+Data like locked. They are tray settings, not reserved geometry row labels.
+The trial binds them to tray_ui and snapshots this Bag alongside composed_layout.
+Private --tray-grid-size/display properties project the grid decoration only.
+
+
+Tray group movement (2026-10-26): reuse selected, left/top and data-moving.
+The existing private drag resource holds members (DOM/Bag references and original
+poses for cancellation); no persistent group identity or duplicate selection.
+
+
+Tray rectangle selection (2026-10-26): reuse per-block selected in Data.
+Private tray-marquee names the transient selection rectangle DOM resource;
+its original selection snapshot belongs only to the active pointer gesture.
+
+
+Tray implicit controls (2026-10-26): remove movable/resizable child parameters.
+Private data-movable/data-resizable markers remain renderer projections only;
+no author flags or aliases. Use existing framePane/top/center/menu composition.

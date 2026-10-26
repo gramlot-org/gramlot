@@ -1251,7 +1251,7 @@ Gallery: Input components → tree → Bag tree, Tree labels and classes, Tree c
 
 Block ID: **GC-105-125**.
 
-Activate the `editors` collection for `codeMirror`. The optional browser collection owns the locally bundled CodeMirror 6 engine; it does not fetch a CDN or create a textarea substitute. The value is a string and `value="^document.source"` uses the shared control binding. User changes write live by default. `live=False` commits on leaving the editor. External document replacement is silent and resets the undo baseline; equal values and configuration changes preserve the editor, selection and undo history.
+Activate the `editors` collection for `codeMirror`. The optional browser collection owns the locally bundled CodeMirror 6 engine; it does not fetch a CDN or create a textarea substitute. The value is a string and `value="^document.source"` uses the shared control binding. User changes write live by default. `live=False` commits on leaving the editor. External Data updates are silent document transactions on the existing editor: they retain configuration and prior undo history, and map the selection through the changed range. Equal values do not create a transaction.
 
 ```python
 pane.codeMirror(value="^document.source", language="python", height="340px")
@@ -1300,7 +1300,26 @@ The component Data contains `requestedRoot`, the successfully opened `root`, `st
 
 The workspace combo remembers six successfully opened directories in sessionStorage, most recent first, without duplicates. It suggests the most recent directory after a reload; opening remains explicit. The values are server paths. Session storage does not persist drafts, grant file permissions, or promise sharing across browser tabs. Switching directories retains document tabs and drafts; documents with the same relative path in different roots remain distinct.
 
-Save and Ctrl/Cmd+S submit the draft with its loaded revision. Conflicts retain the draft. Python syntax is checked before writing, without executing the file. The document's saved baseline becomes the submitted snapshot, so typing during a save remains dirty. Each document has Save, Revert, Undo and Redo icons in its own toolbar. Save and Revert are disabled without changes or while saving; Save is also disabled for read-only documents. Revert restores the last loaded or successfully saved baseline without closing the tab or writing the file, and clears editor history. Undo and Redo use the editor’s independent history and are disabled when unavailable. Closing a dirty or pending document is vetoed: save or revert before closing. The workspace combo opens a nonempty changed directory on focus-out after committing its value; no Open button is required. Executable Python preview, file creation/rename/delete and filesystem watches remain outside this increment. HTML, Markdown and Typst views are described below.
+Save and Ctrl/Cmd+S submit the draft with its loaded revision. Conflicts retain the draft. Python syntax is checked before writing, without executing the file. The document's saved baseline becomes the submitted snapshot, so typing during a save remains dirty. Each document has Save, Revert, Undo and Redo icons in its own toolbar. Save and Revert are disabled without changes or while saving; Save is also disabled for read-only documents. Revert restores the last loaded or successfully saved baseline without closing the tab or writing the file, and preserves editor history; the replacement can be undone. Undo and Redo use the editor’s independent history and are disabled when unavailable. Closing a dirty or pending document is vetoed: save or revert before closing. The workspace combo opens a nonempty changed directory on focus-out after committing its value; no Open button is required. Executable Python preview, file creation/rename/delete and filesystem watches remain outside this increment. HTML, Markdown and Typst views are described below.
+
+
+
+IDE instance ownership: each composition has its own Source root and relative Data
+context. Give composed `IdePage` instances distinct `shell_id` values and relative
+`datapath` values under their parent. The same `IdeLogic` group may serve both:
+drafts, saved baselines and selection belong to their Data; request lifetimes and
+editor identities belong to the owning Source. Document panels are read from
+Source rather than tracked in a second panel map. Disposing one IDE cancels only
+its requests. Floating detachment moves presentation DOM only, keeping Source,
+Data and editor identity intact.
+
+Named controllers receive their Source node automatically. Direct JavaScript calls
+to instance-dependent helpers now pass that node explicitly, for example
+`this.ideOpenDocument(node, root, path)` or `this.ideNew(node)`; there is no implicit
+current IDE. `FileSystemController(page, sourceNode)` likewise resolves its Data
+through the node. This changes the earlier helper signatures without adding a
+compatibility overload. SessionStorage still stores only the already documented
+recent-directory preference, never drafts or instance coordination.
 
 ### Local-choice sources
 
@@ -1323,7 +1342,7 @@ IDE new documents (2026-10-21): select a document type and use **New document**.
 <a id="gc-105-135"></a>
 ## HTML editor and preview
 
-The optional `editors` collection provides `htmlEditor` (Jodit Community 4.13.9)
+The optional `editors` collection provides `htmlEditor` (Jodit Community 4.18.10)
 and `htmlPreview`. They share an HTML string through ordinary Data bindings:
 
 ```python
@@ -1338,16 +1357,27 @@ publishes `save`; the application owns persistence. Dependencies and styles are
 bundled locally in the optional collection, without a CDN.
 
 Jodit edits the body while retaining the original head, doctype and document
-attributes. Scripts, styles, embedded content, SVG/MathML and comments appear as
+attributes. Scripts, styles, embedded content, SVG/MathML, form controls, noscript and comments appear as
 protected placeholders. Active attributes are kept outside the editable DOM.
 Removing or duplicating protected content rejects the edit with a visible message;
 change that content in Code instead. Visual edits serialize the DOM and can
 normalize whitespace, quoting and markup. Undo to the initial rich snapshot restores
-the original source string exactly. External replacement resets editor history.
+the original source string exactly. External Data updates use the same Jodit instance and retain its history. Undo/Redo also retain the corresponding head, styles and protected content; internal history markers are not written to Data.
 
 The preview is an iframe with an empty sandbox: page scripts do not execute.
-The rich editor uses its own iframe without script permission and a restrictive
-content policy. Original head styles apply to its editing canvas; the toolbar uses
+The rich editor uses an iframe for document-style isolation, without the sandbox
+that prevented WebKit editing events. Jodit's official `cleanHTML.sanitizer` uses
+DOMPurify for assigned HTML. The canvas CSP still blocks scripts, external
+resources and form submission; it is essential, not an optional styling setting.
+The official paste and drag/drop plugins are bundled locally. Ordinary formatted
+HTML can be inserted and undone; active/embedded rich content is rejected by the
+existing document guard with an instruction to use Code, without changing Data.
+Jodit 4.18.10 does not pass fragment contents correctly to its string sanitizer on
+all insertion paths, so the CSP and document guard must remain. See
+[GC-365 §060](https://github.com/gramlot-org/gramlot/blob/main/docs/internal/365-review-0-3-16.md#gc-365-060).
+Chromium and Playwright WebKit pass the editor/content/security regression;
+this is not an iPhone or Safari-application qualification.
+Original head styles apply to its editing canvas; the toolbar uses
 Gramlot theme tokens. These are HTML document views, not Python execution previews.
 
 The IDE opens HTML documents with Code, Preview and Rich text tabs over the same
@@ -1372,7 +1402,7 @@ Bold, Italic, Code, Undo and Redo controls, standard editing keys, Ctrl/Cmd+B/I,
 Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Ctrl/Cmd+S publishes `save`; persistence remains
 application-owned. `historyChanged`, `undo()` and `redo()` follow the other editors.
 Edits write live by default; `live=False` commits on blur. `readonly` and `disabled`
-prevent edits, while external Data updates continue to render and reset history.
+prevent user edits, while external Data updates use transactions on the existing view, retaining plugins and history without emitting an input echo.
 Disabled editing also leaves the keyboard tab order. Removing the control releases
 its engine and prevents late history publications.
 
@@ -1498,3 +1528,96 @@ save, and the host must independently reject writes. Ordinary editor `readonly`
 attributes are unchanged. New IDE documents inherit the opened workspace's write
 permission. The Python gallery demonstrates this contract on a bounded sample
 workspace; see GP-020 for its `--remote-edit` startup flag.
+
+
+<a id="gc-105-960"></a>
+## 960 · Detachable tab panels
+
+Set `detachable=True` on a child `contentPane` of a `tabContainer` to show a small
+SVG detach icon inside the open panel, above its content. It is visible only
+while that tab is selected; the outer tab strip has no detach icon. Drag it to place the panel in a
+nonmodal floating window; clicking it or pressing Enter/Space opens it too.
+The floating has the usual move, resize and close controls. Closing it returns
+the panel to its original tab and selects that tab; it does not delete Source.
+
+```python
+tabs = root.tabContainer(height="100%")
+tabs.contentPane(title="Example", pageName="example").div("Your running example")
+code = tabs.contentPane(title="Code", pageName="code", detachable=True)
+code.codeMirror(value="^document.source", language="python", height="100%")
+```
+
+Source ownership and the content's DOM parent do not change. Only the native
+viewport and its slot projection move inside the same shadow root. Existing
+widget instances, Data bindings, invalid drafts, editor selection and Undo remain
+alive. The internal WindowSurface supplies the same chrome and geometry behavior
+as floatingPane; no second Source subtree is built. The existing window component
+continues to require its framePane content.
+
+When the selected panel detaches, another available tab is selected. The detached
+tab remains in the strip: selecting it raises its floating window. Hiding,
+disabling or removing detachability docks the panel; removing its Source or
+removing the container releases the floating presentation. Ordinary tab closing
+with `closable=True` still deletes Source and follows its separate `onClose`
+contract. `detachable` defaults to false. This first version covers tab panels;
+groupBox detachment and drag-to-dock targets are not implemented.
+
+
+<a id="gc-105-965"></a>
+## 965 · Searching a tree
+
+Bind `searchText` to a text field to filter displayed captions, case-insensitively and literally (not as a regular expression). Initialize that text with the field's `default`. For example:
+
+```python
+pane.input(type="search", value="^navigation.search", default="", live=True,
+           placeholder="Search examples", aria_label="Search examples")
+pane.tree(storepath="navigation.items", labelAttribute="title", hideValues=True,
+          searchText="^navigation.search")
+```
+
+After 200 ms without a new query, search reads previously unloaded resolver branches and keeps matching nodes and their ancestor path visible. It highlights text within sanitized captions. Ordinary rendering still does not load branches. Results update as reads finish; an unavailable branch stays visible with its error and can be expanded to retry. Large remote trees can require many branch reads; this parameter is not a server-side search endpoint or pagination API.
+
+Clearing the field removes highlighting and restores the previous expansion set. Search does not select a result, replace the Bag or change its node identities. Selecting a result uses the ordinary `selectedPath` binding. A late response after clear may fill the resolver cache, but does not reopen branches or restore the old filter. Closing the tree cancels pending search scheduling; resolver lifetime remains with its owner.
+
+
+<a id="gc-105-970"></a>
+## 970 · Tray workspaces and shared Labelboxes
+
+`lbl` asks the renderer to wrap a node in the shared Labelbox presentation. The
+content remains the same HTML element or component: label, box and content-box
+styles belong to the presentation, while bindings and child Source remain with
+the original node. `lbl_variant="card"` gives it a centered title on a dark
+header. A direct tray child uses this variant by default.
+
+A `trayPane(storepath="layout")` arranges its direct labelled children. Give each
+child a stable `node_label`; that label is the key of its row in the layout Data
+Bag. Do not add `movable` or `resizable`: tray membership owns those operations.
+An outer `framePane` can place an ordinary `menu(presentation="bar")` toolbar in
+its top region and the tray in its center.
+
+Rows store `left`, `top`, `width`, `height`, integer `layer`, boolean `selected`,
+`rotation` in degrees and positive `scale` (1 = 100%). Move from the title, resize
+from the lower-right grip, rotate from the upper-left grip, or open the layer and
+zoom controls at the upper right. The controls remain outside the card transform.
+Widgets, editor instances and their bindings are preserved during arrangement.
+
+On the same layer, transformed outer rectangles stop at contact. Different layers
+may overlap; larger values appear above. A conflicting layer change is refused.
+Shadows and rounded corners do not participate in contact geometry.
+
+Click selects a card; Shift+click toggles it. Dragging from empty space selects
+fully enclosed transformed rectangles; Shift adds to the selection. Escape
+cancels. Dragging a selected title translates the whole selection without changing
+its spacing; the first contact or tray boundary stops the group. Rotation and
+resize affect the individual card.
+
+Bind `locked`, `gridStep`, `gridVisible` and `rotationStep` to Data to build your
+own toolbar. `locked` hides layout controls but keeps content usable. Shift snaps
+movement and resize to `gridStep`, rotation to `rotationStep`; zero disables a
+step. Without Shift, movement remains free. `gridVisible` only changes the grid's
+presentation. Defaults are false, 10, false and 15 respectively.
+
+Saving is an application Data operation: copy the layout Bag with `deepcopy()`,
+then assign a copy back to restore it. Persist its TYTX through your application's
+storage when durability is needed. The gallery's **Tray workspace** lesson shows
+an in-page snapshot, four different live cards and matching Python/JS code.

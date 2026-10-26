@@ -107,7 +107,7 @@ test('switch keeps boolean binding, native keyboard target, readonly and instanc
         root.checkbox({id:'plain',value:'^enabled',lbl:'Same boolean'});
     });
     const host=element('switch'),control=host.control;
-    assert.equal(control.getAttribute('role'),'switch');assert.equal(host.fieldLabel.control,control);
+    assert.equal(control.getAttribute('role'),'switch');assert.equal(control.getAttribute('aria-label'),host.fieldLabel.textContent);
     control.click();assert.equal(app.data.getItem('enabled'),true);assert.equal(element('plain').control.checked,true);
     app.data.setItem('readonly',true);control.click();assert.equal(control.checked,true);assert.equal(app.data.getItem('enabled'),true);
     app.data.setItem('mode','checkbox');assert.equal(host.control,control);assert.equal(control.hasAttribute('role'),false);
@@ -159,7 +159,7 @@ test('intrinsic label layout batches projection and releases observers on detach
     parent.append(form);
     scheduling.flush();
     assert(scheduling.observers[1].targets.has(field.fieldLabel));
-    field.remove();
+    field.box.remove();
     await Promise.resolve();
     scheduling.flush();
     assert.equal(scheduling.observers[1].targets.has(field.fieldLabel),false);

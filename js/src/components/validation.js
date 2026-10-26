@@ -2,7 +2,7 @@ import {Bag} from '@gramlot/gramlot';
 import {pointerTemplate} from '@genrojs/builders';
 
 /** Shared ordered rules. Context supplies activated callbacks/RPC; this module never writes Data. */
-export const validationRules = ['select', 'notnull', 'empty', 'case', 'len', 'min', 'max', 'email', 'regex', 'call', 'remote'];
+const validationRules = ['select', 'notnull', 'empty', 'case', 'len', 'min', 'max', 'email', 'regex', 'call', 'remote'];
 const deferredRules = ['nodup', 'exist', 'gridnodup'];
 const empty = value => value == null || value === '';
 const then = (value, next) => value instanceof Promise ? value.then(next) : next(value);

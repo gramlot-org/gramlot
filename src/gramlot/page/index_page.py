@@ -23,15 +23,15 @@ class IndexPage(FramePage):
     def left(self, pane):
         pane.set_attr({"width": "240px", "splitter": True, "drawer": True,
                        "drawer_label": "Navigation"})
-        pane.tree(node_label="tree", storepath=f"{self.datapath}.navigation",
-                  labelAttribute="title", hideValues=True, selectedPath=f"^{self.datapath}.navigationSelection")
+        pane.tree(node_label="tree", storepath=".navigation",
+                  labelAttribute="title", hideValues=True, selectedPath="^.navigationSelection")
 
     def center(self, pane):
         pane.tabContainer(node_label="tabs", height="100%",
-                          selectedPage=f"^{self.datapath}.active")
+                          selectedPage="^.active")
 
     def behavior(self, shell):
-        shell.dataController(func="indexMount", _onStart=True, shell_id=self.shell_id)
+        shell.dataController(func="indexMount", _onStart=True)
 
     @source
     def index_panel(self, pane, selection):

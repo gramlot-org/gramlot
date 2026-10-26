@@ -2,7 +2,7 @@
 
 Document ID: **GC-345**.
 
-This reference covers all **41 component declarations** in the six packaged
+This reference covers all **43 component declarations** in the six packaged
 component grammars in this checkout. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. It describes the development checkout;
@@ -58,7 +58,7 @@ connects these controls to runnable lessons and screenshots.
 | --- | --- |
 | `inputs` | [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar) |
 | `buttons` | [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menu](#gc-345-menu), [menuline](#gc-345-menuline), [spacer](#gc-345-spacer) |
-| `layout` | [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane), [framePane](#gc-345-framepane), [formlet](#gc-345-formlet), [groupBox](#gc-345-groupbox), [contentPane](#gc-345-contentpane), [borderContainer](#gc-345-bordercontainer), [stackContainer](#gc-345-stackcontainer), [tabContainer](#gc-345-tabcontainer) |
+| `layout` | [transformPane](#gc-345-transformpane), [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane), [framePane](#gc-345-framepane), [trayPane](#gc-345-traypane), [formlet](#gc-345-formlet), [groupBox](#gc-345-groupbox), [contentPane](#gc-345-contentpane), [borderContainer](#gc-345-bordercontainer), [stackContainer](#gc-345-stackcontainer), [tabContainer](#gc-345-tabcontainer) |
 | `tree` | [tree](#gc-345-tree) |
 | `editors` | [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview) |
 | `typst` | [typstPreview](#gc-345-typstpreview) |
@@ -795,7 +795,7 @@ Shared contracts: [Labels and field presentation](#gc-345-shared-labels).
 | Specific parameter | Type | Default | Binding | Allowed |
 | --- | --- | --- | --- | --- |
 | `copy` | B | False | read | — |
-| `lbl_variant` | T | 'bar' | read | 'bar', 'underline' |
+| `lbl_variant` | T | 'bar' | read | 'bar', 'underline', 'card' |
 
 Child grammar: `*`. This is a grammar expression, not a list of browser tags.
 
@@ -910,6 +910,56 @@ Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
 | `onClose` | {"inline": []} |
+| `detachable` | {"dtype": "B"} |
+
+<a id="gc-345-220"></a>
+<a id="gc-345-traypane"></a>
+### `trayPane`
+
+Data-owned arrangement of labelled live cards with selection, movement, resize, layers, rotation, zoom and snapping.
+
+Collection: **layout**. Browser element: `gramlot-tray-pane`.
+
+[Tray workspaces and shared Labelboxes](105-components.md#gc-105-970).
+
+| Specific parameter | Type | Default | Binding | Allowed |
+| --- | --- | --- | --- | --- |
+| `storepath` | T | — | — | — |
+| `locked` | B | False | read | — |
+| `gridStep` | L | 10 | read | — |
+| `gridVisible` | B | False | read | — |
+| `rotationStep` | N | 15 | read | — |
+
+Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+
+Parameters projected by this parent from its children:
+| Child parameter | Contract |
+| --- | --- |
+| `minWidth` | {"default": 100, "dtype": "N"} |
+| `minHeight` | {"default": 64, "dtype": "N"} |
+
+<a id="gc-345-225"></a>
+<a id="gc-345-transformpane"></a>
+### `transformPane`
+
+Applies bound translation, rotation and scale to its retained content.
+
+Collection: **layout**. Browser element: `gramlot-transform-pane`.
+
+[Forms, borders, panels and tabs](105-components.md#gc-105-085).
+
+| Specific parameter | Type | Default | Binding | Allowed |
+| --- | --- | --- | --- | --- |
+| `x` | R | 0 | read | — |
+| `y` | R | 0 | read | — |
+| `rotate` | R | 0 | read | — |
+| `zoom` | R | 1 | read | — |
+| `min` | R | 0.5 | read | — |
+| `max` | R | 3 | read | — |
+| `step` | R | 0.01 | read | — |
+| `onEnd` | T or None | — | — | — |
+
+Child grammar: `*`. This is a grammar expression, not a list of browser tags.
 
 <a id="gc-345-325"></a>
 ## Dialogs and floating windows
@@ -974,6 +1024,7 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 | `getLabelClass` | T or None | None | — | — |
 | `getIconClass` | T or None | None | — | — |
 | `selectedLabelClass` | T | '' | read | — |
+| `searchText` | T | '' | read | — |
 | `autoCollapse` | B | False | read | — |
 | `selectedPath` | T or None | None | twoWay | — |
 

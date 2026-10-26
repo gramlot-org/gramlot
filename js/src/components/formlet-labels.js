@@ -39,8 +39,9 @@ export class FormletLabels {
     }
     #align() {
         // Labelbox is the capability; nested formlets own their own fields.
-        const fields = new Set(this.slot.assignedElements().filter(field =>
-            'fieldLabel' in field && field.box.dataset.position === 'L'));
+        const fields = new Set(this.slot.assignedElements()
+            .filter(element => element.labelbox && element.labelbox.box.dataset.position === 'L')
+            .map(element => element.labelbox));
         for (const field of this.#fields) if (!fields.has(field)) {
             this.#observer.unobserve(field.fieldLabel);
             this.#clear(field);
@@ -52,8 +53,8 @@ export class FormletLabels {
         this.#fields = fields;
         const columns = new Map();
         for (const field of fields) {
-            if (!field.getClientRects().length) continue;
-            const host = field.getBoundingClientRect();
+            if (!field.box.getClientRects().length) continue;
+            const host = field.box.getBoundingClientRect();
             const label = field.labelBox.getBoundingClientRect();
             const style = this.window.getComputedStyle(field.labelBox);
             const boxStyle = this.window.getComputedStyle(field.box);

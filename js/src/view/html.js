@@ -1,3 +1,5 @@
+import {createLabelbox, projectLabelbox, labelboxStyle} from './labelbox.js';
+import {randomId} from '../random-id.js';
 import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder, pointerTransform} from '@genrojs/builders';
 import {ControlAdapter} from './controls.js';
 import {SVG_NS, XHTML_NS} from '../renderer/attributes.js';
@@ -36,9 +38,10 @@ function domPropertyName(name) {
  * names and style arrive adapted by the renderers (GramlotHtmlRenderer, GramlotSvgRenderer).
  */
 export class HtmlElement {
-    constructor({metadataAttributes = [], invokeScript = null, callLogic = null} = {}) {
+    constructor({metadataAttributes = [], invokeScript = null, callLogic = null, reportError = null} = {}) {
         this.invokeScript = invokeScript;
         this.callLogic = callLogic;
+        this.reportError = reportError;
         this.metadataAttributes = new Set([...META_ATTRS, '_text', ...metadataAttributes]);
     }
 
@@ -58,6 +61,7 @@ export class HtmlElement {
     }
 
     validate(node, builder = node.builder) {
+        this.validateLabelbox(node);
         const branch = node.value instanceof SourceBag;
         const text = branch ? node.getAttr('_text') : node.value;
         if (text != null && !['string', 'number', 'boolean'].includes(typeof text)) {
@@ -79,6 +83,27 @@ export class HtmlElement {
         builder.validateNode(node, {value: text, attrs: declaredAttrs, childTags});
     }
 
+    hasLabelbox(node) {
+        const component = this.definition(node).meta.gramlot_component;
+        if (component?.labelbox) return true;
+        if (component?.presentationDefaults.length) return Object.hasOwn(node.attr, 'lbl');
+        return Object.keys(node.attr).some(name => name === 'lbl' || name.startsWith('lbl_') || name.startsWith('box_'));
+    }
+
+    validateLabelbox(node) {
+        if (!this.hasLabelbox(node)) return;
+        const {tag,namespace} = this.definition(node);
+        if ((namespace !== XHTML_NS && tag !== 'svg') || ['html','head','body','style','script','link','meta','title','base','tr','td','th','thead','tbody','tfoot','col','colgroup','caption','option','optgroup','li','dt','dd','source','track','param','area'].includes(tag))
+            throw new TypeError('Labelbox requires content that can be placed in an HTML flow container');
+        const parent = node.parentNode;
+        if (parent?.nodeTag) {
+            const definition = this.definition(parent);
+            if ((definition.namespace !== XHTML_NS && definition.tag !== 'foreignObject')
+                || ['table','thead','tbody','tfoot','tr','colgroup','select','optgroup','ul','ol','dl','p','button','label'].includes(definition.tag))
+                throw new TypeError('Labelbox requires an HTML flow container');
+        }
+    }
+
     create(node, document, tag = null, attrs = node.attr, visible = null) {
         const {tag: defaultTag, namespace, meta} = this.definition(node);
         tag ??= defaultTag;
@@ -95,6 +120,7 @@ export class HtmlElement {
         }
         if (meta.gramlot_component?.sourceContext) {
             element.setSourceContext({
+                reportError: (error, title) => this.reportError(node, error, title),
                 publish: (topic, payload) => node.publish(topic, payload),
                 writeParameter: (name, value) => this.writeParameter(node, name, value),
                 callLogic: (name, keywords) => this.callLogic(node, name, keywords),
@@ -102,7 +128,18 @@ export class HtmlElement {
         }
         const text = document.createTextNode(this.text(node));
         if (namespace !== XHTML_NS || !meta.void) element.append(text);
-        const record = {element, text, tag};
+        const record = {element, text, tag, presentation: element};
+        if (this.hasLabelbox(node)) {
+            this.validateLabelbox(node);
+            const controlBox = document.createElement('div'); controlBox.append(element);
+            record.labelbox = createLabelbox(document,controlBox);
+            record.presentation = record.labelbox.box;
+            record.labelId = `gramlot-label-${randomId()}`;
+            record.controlId = `gramlot-control-${randomId()}`;
+            const style = document.createElement('style'); style.textContent = labelboxStyle;
+            record.presentation.prepend(style);
+            if (meta.gramlot_component?.labelbox) element.setLabelbox(record.labelbox);
+        }
         this.update(record, node, attrs, DEFAULT_TEXT, visible);
         return record;
     }
@@ -148,6 +185,8 @@ export class HtmlElement {
             }
         }
         const {element, text} = record;
+        if (this.hasLabelbox(node) && !record.labelbox)
+            throw new TypeError('Declare lbl or box_* when creating an experimental HTML labelbox');
         const isHtml = element.namespaceURI === XHTML_NS;
         const renderAttributes = this.definition(node).meta.render_attributes ?? {};
         const previous = record.attrs ?? {};
@@ -159,20 +198,34 @@ export class HtmlElement {
         const parent = node.parentNode;
         if (parent?._getMeta('gramlot_component')?.childParameters) {
             const Parent = element.ownerDocument.defaultView.customElements.get(parent._getMeta('render_tag'));
-            attrs = Parent.projectChild(element, attrs, {
+            attrs = Parent.projectChild(record.presentation, attrs, {
+                label: node.label,
                 adapt,
                 invoke: (name, code, keywords) => this.invokeScript(node, name, code, keywords),
+                reportError: (error, title) => this.reportError(node, error, title),
                 publish: (topic, payload) => node.publish(topic, payload),
                 publishParent: (topic, payload) => parent.publish(topic, payload),
                 writeParameter: (name, value) => this.writeParameter(node, name, value),
                 remove: () => node.parentBag.popNode(node.label),
             });
         }
+        if (record.labelbox) {
+            record.labelbox.box.style.visibility = '';
+            projectLabelbox(record.labelbox, attrs, adapt);
+        }
         if (this.definition(node).meta.gramlot_component) {
             if (this.definition(node).meta.gramlot_component.bagStore) {
                 element.setStoreBag(node.getRelativeData(node.getAttr('storepath')));
             }
             attrs = element.projectAttributes(attrs, adapt);
+        }
+        if (record.labelbox) {
+            attrs = Object.fromEntries(Object.entries(attrs).filter(([name]) =>
+                name !== 'lbl' && !name.startsWith('lbl_') && !name.startsWith('box_')));
+            if (attrs.slot != null) record.presentation.setAttribute('slot', attrs.slot);
+            else if (record.presentationSlot != null) record.presentation.removeAttribute('slot');
+            record.presentationSlot = attrs.slot;
+            delete attrs.slot;
         }
         attrs = Object.fromEntries(sourceAttributeItems({...attrs, ...renderAttributes}));
         const controlled = ControlAdapter.classFor(element, attrs) !== null;
@@ -181,10 +234,22 @@ export class HtmlElement {
         if (text.data !== nextText) text.data = nextText;
         const keys = [...new Set([...Object.keys(previous), ...Object.keys(attrs)])];
         // The browser reads `sandbox` when `src` or `srcdoc` starts a navigation: `sandbox` is written first.
-        keys.sort((a, b) => (b === 'sandbox') - (a === 'sandbox'));
+        keys.sort((a, b) => (b === 'sandbox') - (a === 'sandbox')
+            || (isHtml && element.localName === 'input' ? (b === 'type') - (a === 'type') : 0));
         for (const key of keys) {
             if (this.metadataAttributes.has(key) || ['ask', '_ask'].includes(key) || (controlled && key === 'value')) continue;
             const value = attrs[key];
+            if (isHtml && key === 'multiple' && ['input', 'select'].includes(element.localName)) {
+                if (element.multiple !== Boolean(value)) element.multiple = Boolean(value);
+                continue;
+            }
+            if (isHtml && element.localName === 'input' && key === 'type') {
+                if (!Object.is(previous.type, value)) {
+                    if (value == null) element.removeAttribute('type');
+                    else element.type = String(value);
+                }
+                continue;
+            }
             const attrName = key;
             const propertyName = domPropertyName(attrName);
             const isBoolean = isHtml && BOOLEAN_PROPERTIES.has(propertyName)
@@ -212,6 +277,22 @@ export class HtmlElement {
         }
         record.visible = visible;
         // Retain what was applied, including metadata, so later updates can remove it.
+        if (record.labelbox) {
+            const {fieldLabel,labelBox,box} = record.labelbox;
+            if (['input','textarea','select','button','output','meter','progress'].includes(record.tag)) {
+                if (!element.id) element.id = record.controlId;
+                fieldLabel.htmlFor = element.id;
+            } else {
+                fieldLabel.id = record.labelId;
+                if (!this.definition(node).meta.gramlot_component?.labelbox) {
+                    box.setAttribute('role','group');
+                    if (labelBox.hidden) box.removeAttribute('aria-labelledby');
+                    else box.setAttribute('aria-labelledby',fieldLabel.id);
+                }
+            }
+            box.hidden = !!attrs.hidden;
+            if (visible === false) box.style.visibility = 'hidden';
+        }
         record.attrs = attrs;
     }
 

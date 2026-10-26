@@ -42,9 +42,10 @@ test('textbox preserves null/empty, caret, label placement, binding and cleanup'
     });
     const host = element('name'), input = host.control;
     assert.equal(input.value, ''); assert.equal(app.data.getItem('form.name'), null);
-    assert.equal(host.fieldLabel.control, input);
+    assert.equal(input.getAttribute('aria-label'), host.fieldLabel.textContent);
+    host.fieldLabel.click(); assert.equal(host.shadowRoot.activeElement, input);
     assert.equal(host.fieldLabel.style.color, 'red');
-    assert.equal(host.controlBox.style.width, '220px');
+    assert.equal(host.box.labelbox.controlBox.style.width, '220px');
     assert.equal(host.hasAttribute('lbl'), false);
     input.value = 'Ada'; change(window, input, 'input');
     assert.equal(app.data.getItem('form.name'), null);
@@ -55,7 +56,7 @@ test('textbox preserves null/empty, caret, label placement, binding and cleanup'
         assert.equal(host.control, input); assert.equal(host.box.dataset.position, position);
         assert.equal(host.shadowRoot.activeElement, input); assert.equal(input.selectionStart, 1);
     }
-    app.data.setItem('width', 300); assert.equal(host.controlBox.style.width, '300px');
+    app.data.setItem('width', 300); assert.equal(host.box.labelbox.controlBox.style.width, '300px');
     app.data.setItem('live', true);
     input.value = ''; change(window, input, 'input'); assert.equal(app.data.getItem('form.name'), '');
     app.data.setItem('form.name', 'Grace'); assert.equal(input.value, 'Grace');
@@ -80,7 +81,7 @@ test('checkbox shares labelbox while radio groups commit independent string code
     assert.equal(app.data.getItem('form.second'), 'b');
     first.control.querySelector('input[value="a"]').click();
     assert.equal(app.data.getItem('form.first'), 'a'); assert.equal(second.readControlValue(), 'b');
-    assert.equal(first.control.getAttribute('aria-labelledby'), first.fieldLabel.id);
+    assert.equal(first.control.getAttribute('aria-label'), first.fieldLabel.textContent);
     assert.equal(first.control.style.gridTemplateColumns, 'repeat(2, minmax(0, 1fr))');
     app.dispose();
 });
@@ -147,7 +148,7 @@ test('label prefixes keep style removal and reject native script attributes', ()
     const host=element('name');
     assert.ok(host.box.classList.contains('labelbox')); assert.ok(host.box.classList.contains('custom'));
     app.data.setItem('color',null); assert.equal(host.fieldLabel.style.color,'');
-    app.data.setItem('customClass',null); assert.equal(host.box.className,'labelbox');
+    app.data.setItem('customClass',null); assert.equal(host.box.className,'labelbox gramlot-labelbox');
     app.dispose();
     assert.throws(()=>fixture(pane=>pane.textbox({lbl_onclick:'alert(1)'})),/native event handler/);
 });
@@ -196,7 +197,7 @@ test('textarea and password reuse editing, shared Data, labels and native constr
         pane.passwordbox({id:'password', value:'^.password', lbl:'Password', live:true});
     });
     const note=element('note'), password=element('password');
-    assert.equal(note.control.localName,'textarea'); assert.equal(note.fieldLabel.control,note.control);
+    assert.equal(note.control.localName,'textarea'); assert.equal(note.control.getAttribute('aria-label'),note.fieldLabel.textContent);
     assert.equal(note.control.rows,3); assert.equal(note.control.cols,20);
     note.control.value='Edited\ntext'; change(window,note.control,'input');
     assert.equal(element('copy').control.value,'Edited\ntext');
@@ -274,4 +275,23 @@ print(to_tytx(b.source))
     assert.equal(get('area').value,'Line one\nLine two');assert.equal(get('secret').type,'password');
     assert.equal(get('single').checked,true);assert.equal(get('color').value,'#123456');
     assert.equal(get('horizontal').value,'0.5');assert.equal(get('vertical').value,'1');app.dispose();
+});
+
+
+test('component radio group reset retains host, inner control, focus and relative bindings',()=>{
+    const {app,element}=fixture((pane,app)=>{
+        app.data.setItem('group','colors');
+        app.data.setItem('form.moving',true);app.data.setItem('form.old',false);app.data.setItem('form.next',true);
+        pane.radioButton({id:'moving',value:'^.moving',group:'^group',label:'Option'});
+        pane.radioButton({id:'old',value:'^.old',group:'colors',label:'Old'});
+        pane.radioButton({id:'next',value:'^.next',group:'shipping',label:'Next',disabled:true});
+    });
+    const host=element('moving'),input=host.control,record=app.src.renderer.elements.get(host),adapter=record.control;
+    input.focus();app.data.setItem('group','shipping');
+    assert.strictEqual(element('moving'),host);assert.strictEqual(host.control,input);
+    assert.strictEqual(record.control,adapter);assert.strictEqual(host.shadowRoot.activeElement,input);
+    for(const key of ['moving','old','next'])assert.equal(app.data.getItem(`form.${key}`),false,key);
+    assert.equal(input.name,element('next').control.name);
+    input.click();assert.equal(app.data.getItem('form.moving'),true);
+    app.dispose();
 });

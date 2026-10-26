@@ -42,6 +42,10 @@
     --gramlot-label-size: 1em;
     --gramlot-font-ui: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     --gramlot-font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --gramlot-editor-keyword: light-dark(#754052, #d5a7bc);
+    --gramlot-editor-string: light-dark(#35634d, #a7c5ac);
+    --gramlot-editor-number: light-dark(#80552d, #d6b58e);
+    --gramlot-editor-function: light-dark(#365f87, #a5bfdc);
     --gramlot-space-1: 0.25rem;
     --gramlot-space-2: 0.5rem;
     --gramlot-space-3: 0.75rem;
