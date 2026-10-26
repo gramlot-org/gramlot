@@ -15217,3 +15217,13 @@ styles remain disallowed and script CSP is unchanged. Exporting the static CSS
 from its internal module keeps the hash tied to the exact shipped bytes. All eight
 Python/JavaScript page-module checks pass on Chromium/WebKit. The attempted empty
 style/CSSOM insertion was rejected by the same CSP and was discarded.
+
+
+Final border-browser gate: bring the choice trigger into view and let that scroll
+settle before opening its popup. The previous test's automated scroll queued a
+normal outside-scroll dismissal after opening. The existing runtime passes with
+this preparation, including an assertion that opening leaves the content pane's
+scroll unchanged. A provisional runtime-scrolling change was investigated and
+removed; no change to choice semantics is included. Chromium and WebKit pass the
+complete border fixture; Chromium also passes slider quantization. The gallery's
+110 lessons pass interactive checks on both Python and JavaScript hosts.
