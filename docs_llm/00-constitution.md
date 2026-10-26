@@ -4081,3 +4081,7 @@ Window parameters are separate and unchanged. This supersedes the optional
 per-child tray flags and immovable-member rule in the experimental tray design.
 Owner “esatto” confirms composing the trial with framePane: menu bar in top,
 trayPane in center. The tray does not duplicate frame region management.
+
+<a id="gc-000-toolbox-date-parser"></a>
+
+Date-expression parser from Toolbox — owner, 2026-10-25: “Approvo l'emendamento: scrivilo in docs e docs_llm, aggiorna i docs correnti e committa.” `parseDateExpression` comes from `@genrojs/toolbox` (0.19.0 or later), which was extracted from the Gramlot port and runs the same Toolbox corpus. Gramlot re-exports it from `@gramlot/gramlot` with the same name, options and type names (`DateExpressionOptions`, `DateExpressionResult`, `DateExpressionErrorCode`), so consumers do not change. This supersedes the in-Gramlot location of the parser in 11.83 and the `date-parser/` module organization of GC-225 §065. Parsing semantics and their corpus tests belong to Toolbox; Gramlot tests only the re-export and its shipped bundles. No new parser API, alias or publication is authorized.

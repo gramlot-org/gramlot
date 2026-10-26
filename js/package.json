@@ -33,6 +33,7 @@
     "@codemirror/view": "^6.43.15",
     "@genrojs/bag": ">=0.11.0",
     "@genrojs/builders": ">=0.7.0",
+    "@genrojs/toolbox": ">=0.19.0",
     "@genrojs/tytx": ">=0.16.3",
     "@lezer/highlight": "^1.2.5",
     "@myriaddreamin/typst-ts-renderer": "0.7.0",

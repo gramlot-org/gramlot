@@ -15199,3 +15199,13 @@ unsupported local Node 23. Rechecking all 16 generator tests on supported Node 2
 passes. Chromium gallery checks confirm drag, full geometry restoration, retained
 widget identity and editable locked contents. Remaining: finish host/package,
 WebKit and documentation checks, consolidation and publication. No release yet.
+
+
+Release qualification update (2026-10-26): integrated the already-approved Toolbox
+parser extraction from current develop, preserving the shared public parser API.
+The rebuilt core passes all 1,259 JavaScript tests. Python tests pass after running
+localhost conformance fixtures outside the sandbox and generator tests on Node 22.
+The previous 4,069 JavaScript count included parser corpus cases now owned and
+executed by Toolbox. Gallery tray checks pass on Chromium and WebKit; the Node
+host opens all 110 examples. All 154 Python adapter tests pass, Node/Bun server
+suites pass, and runnable documentation validates. Publication is still pending.
