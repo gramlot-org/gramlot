@@ -8,6 +8,18 @@ const EDGES=`
   padding:env(safe-area-inset-top) max(12px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
   background:var(--gramlot-chrome-background,color-mix(in srgb,var(--gramlot-surface-subtle,Canvas) 88%,var(--gramlot-ink,CanvasText) 12%)); color:var(--gramlot-ink,CanvasText);
 `;
+/** Static trusted CSS, exported so hosts can authorize its exact CSP hash. */
+export const mobileEnvironmentStyle = `
+          [data-gramlot-viewport]{--gramlot-toolbar-thickness:42px;--gramlot-toolbar-control-size:36px;--gramlot-toolbar-padding:2px 3px;}
+          :root[data-gramlot-touch="on"] [data-gramlot-viewport]{${TOUCH}}
+          :root[data-gramlot-touch="on"] [data-gramlot-viewport="root"]{${EDGES}}
+          :root[data-gramlot-touch="on"] [data-gramlot-viewport="root"] > *{max-height:100%;}
+          @media(pointer:coarse){
+            :root:not([data-gramlot-touch="off"]) [data-gramlot-viewport]{${TOUCH}}
+            :root:not([data-gramlot-touch="off"]) [data-gramlot-viewport="root"]{${EDGES}}
+            :root:not([data-gramlot-touch="off"]) [data-gramlot-viewport="root"] > *{max-height:100%;}
+          }
+        `;
 export class MobileEnvironment {
     static install({document,root}) {
         if(!environments.has(root))environments.set(root,new MobileEnvironment(document,root));
@@ -21,17 +33,7 @@ export class MobileEnvironment {
         const parts=viewport.content.split(',').map(s=>s.trim()).filter(s=>!s.startsWith('viewport-fit='));
         viewport.content=[...parts,'viewport-fit=cover'].join(',');
         this.style=document.createElement('style');
-        this.style.textContent=`
-          [data-gramlot-viewport]{--gramlot-toolbar-thickness:42px;--gramlot-toolbar-control-size:36px;--gramlot-toolbar-padding:2px 3px;}
-          :root[data-gramlot-touch="on"] [data-gramlot-viewport]{${TOUCH}}
-          :root[data-gramlot-touch="on"] [data-gramlot-viewport="root"]{${EDGES}}
-          :root[data-gramlot-touch="on"] [data-gramlot-viewport="root"] > *{max-height:100%;}
-          @media(pointer:coarse){
-            :root:not([data-gramlot-touch="off"]) [data-gramlot-viewport]{${TOUCH}}
-            :root:not([data-gramlot-touch="off"]) [data-gramlot-viewport="root"]{${EDGES}}
-            :root:not([data-gramlot-touch="off"]) [data-gramlot-viewport="root"] > *{max-height:100%;}
-          }
-        `;
+        this.style.textContent=mobileEnvironmentStyle;
         document.head.append(this.style);
     }
     subscribeAppearance(callback) {

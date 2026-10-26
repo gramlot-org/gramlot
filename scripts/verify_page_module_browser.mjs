@@ -5,6 +5,8 @@
  * a strict CSP. Forms: the module that exports Page and Logic, and foo_aux.js. The page authors a Decimal literal.
  */
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {mobileEnvironmentStyle} from '../js/src/mobile-environment.js';
 import {spawn} from 'node:child_process';
 import {createServer} from 'node:http';
 import {mkdtemp, mkdir, readFile, rm, symlink, writeFile} from 'node:fs/promises';
@@ -19,7 +21,8 @@ if (!playwrightEntry) throw new Error('Usage: node scripts/verify_page_module_br
 const playwright = await import(pathToFileURL(playwrightEntry));
 const root = fileURLToPath(new URL('../', import.meta.url));
 const RUNTIME = join(root, 'js/dist/gramlot.js');
-const CSP = "default-src 'self'; script-src 'self' 'nonce-{nonce}'";
+const viewportStyleHash = createHash('sha256').update(mobileEnvironmentStyle).digest('base64');
+const CSP = `default-src 'self'; script-src 'self' 'nonce-{nonce}'; style-src 'self' 'sha256-${viewportStyleHash}'`;
 
 // The page also authors a Decimal literal: module.js is imported by the browser for its Logic, where the import
 // map resolves only @gramlot/gramlot/page, so the runtime must export createDecimal for the module to load.
@@ -183,13 +186,16 @@ try {
                 page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
                 page.on('request', request => requests.push(new URL(request.url()).pathname));
                 await page.goto(url + path);
-                await page.waitForFunction(() => window.gramlot?.state === 'started');
+                await page.waitForFunction(() => window.gramlot?.state === 'started').catch(error => {
+                    throw new Error(`${engineName} ${language} ${path}: ${errors.join('; ') || error.message}`);
+                });
                 const label = `${engineName} ${language} ${path}`;
                 assert.equal(await page.locator('#out').textContent(), '42', label);
                 assert.equal(await page.locator('#price').textContent(), '12.75', `${label}: Decimal literal`);
                 assert.equal(requests.filter(item => item === '/assets/gramlot.js').length, 1, `${label}: one runtime`);
                 assert.ok(requests.includes(logicUrl), `${label}: ${logicUrl} imported`);
                 assert.deepEqual(errors, [], label);
+                assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById('gramlot-root')).getPropertyValue('--gramlot-toolbar-thickness').trim()), '42px', `${label}: authorized viewport stylesheet`);
                 await page.close();
                 console.log(`PASS ${label}`);
             }

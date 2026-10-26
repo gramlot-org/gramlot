@@ -14141,3 +14141,11 @@ The previous 4,069 JavaScript count included parser corpus cases now owned and
 executed by Toolbox. Gallery tray checks pass on Chromium and WebKit; the Node
 host opens all 110 examples. All 154 Python adapter tests pass, Node/Bun server
 suites pass, and runnable documentation validates. Publication is still pending.
+
+CI follow-up: updated browser expectations for native select.multiple retention
+and the four editor color tokens. The page-module fixture now explicitly permits
+only the SHA-256 hash of the trusted mobile viewport stylesheet; generic inline
+styles remain disallowed and script CSP is unchanged. Exporting the static CSS
+from its internal module keeps the hash tied to the exact shipped bytes. All eight
+Python/JavaScript page-module checks pass on Chromium/WebKit. The attempted empty
+style/CSSOM insertion was rejected by the same CSP and was discarded.
