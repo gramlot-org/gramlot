@@ -602,10 +602,14 @@ or options raise an error; no general widget collection is implied.
 ```javascript
 gramlot.publish({topic: 'refresh', iframe: 'detail'}, {text: 'Hello'});
 gramlot.publish({topic: 'refresh', parent: true}, {text: 'Reply'});
+// Development: a registered direct Gramlot child, including an opened window.
+gramlot.publish({topic: 'refresh', pageId: childPageId}, {text: 'Hello'});
 ```
 
 The `iframe` selector accepts its HTML ID or a local iframe Source reference passed
-from Python. `parent` addresses the direct parent. The descriptor replaces the
+from Python. `parent` addresses the direct frame parent or opener. In the current
+development implementation, `pageId` selects a registered direct Gramlot child,
+including a popup. The descriptor replaces the
 first topic argument, as in legacy; there is no third routing argument.
 
 Local subscribers run first, then forwarding uses `postMessage`, even for same-origin
@@ -615,13 +619,48 @@ unready targets fail before local delivery; no queue, replay or acknowledgement 
 provided. A local callback error prevents forwarding. Reloading a child establishes
 a new session; disposed/stale sessions are rejected.
 
-The connection checks the exact parent/owned iframe window, expected origin and
+The common family connection checks the exact parent/owned iframe or registered
+same-origin opener-linked popup, expected origin and
 session. Opaque sandbox/file origins use wildcard targetOrigin with the exact
 window/session checks retained. Payloads cross as TYTX data. Live Source/DOM
 objects remain local and are rejected by frame and RPC transport; the iframe
 reference selects a local destination, not a remote live object.
 
-Recursive `iframe:'*'`, unrelated windows, forms, server/user recipients and combined
+Each Gramlot manages its own direct children. Closing a page or removing a Source
+iframe closes its registered descendants recursively, including their popup
+windows. Ordinary non-Gramlot windows are excluded. The common family protocol
+also carries binder and RPC traffic when a server WebSocket is configured;
+family membership and publication do not require a WebSocket. Only the primary
+opens a physical socket. Browser scheduling may delay detection of a destroyed
+parent when its final close message is lost.
+
+In the isolated Python/Uvicorn PageStore PoC, `server: true` sends a publication
+through the shared WebSocket to the sender's PageStore. An optional `pageId`
+selects another live PageStore of the same owner, including on another socket:
+
+```javascript
+gramlot.publish({topic: 'load_customer', server: true}, {pkey: 27});
+gramlot.publish({topic: 'load_customer', server: true, pageId: otherPageId},
+                {pkey: 27});
+```
+
+The server recipe declares `root.dataController(func="load_customer",
+subscribe_load_customer=True)`; its Python method receives the Source node and
+the named payload arguments. Declared parameters take precedence over payload
+fields. A server publication returns a Promise resolving to "ok" when validated
+and accepted, before executing its subscribers, or rejecting with RpcError when
+acceptance is refused. There is no option to wait for completion. The controller
+updates Data and binders carry the produced values back. This destination cannot combine with
+parent/iframe/nodeId. Readiness and serializability are checked before local
+publication; local subscribers still run before forwarding. There is no replay
+or HTTP fallback. A rejected destination or invalid publication payload returns
+an error for that message and leaves the shared channel open. Later subscriber
+exceptions are logged on the server without a second response or channel closure;
+controllers expose application outcomes in Data. The acknowledgement does not
+imply completion, rollback or a database commit.
+This is development behavior, not released adapter parity.
+
+Recursive `iframe:'*'`, unrelated browser windows, forms, cross-owner/user recipients and combined
 remote `nodeId` routing are not supported. Unsupported descriptor keys fail explicitly.
 
 <a id="gc-095-120"></a>

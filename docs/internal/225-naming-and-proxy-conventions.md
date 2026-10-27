@@ -58,6 +58,88 @@ For example, the proposed `radioButtonText` spelling is shared by both languages
 `radiobuttontext` is a case variant, while `radio_button_text` is not. This exception
 concerns widget names, not parameter names or ordinary Python/JS methods and classes.
 
+PageStore PoC names (owner, 2026-10-27): the separate class in the Page module is
+PageStore and its recipe entry is main(root), as explicitly requested. The
+owner's dataBinder declaration retains the canonical Source grammar spelling
+in Python and JavaScript, following the existing dataController/dataRpc family;
+the earlier data_binder suggestion is withdrawn. This concerns grammar elements,
+not ordinary method spelling. destination_path follows dataSetter; server_path
+names the other end of that relation. The internal DataBinder and
+PageStoreConnection classes name those responsibilities and introduce no
+application proxy. The prototype contract is recorded in GC-250.
+
+Shared-channel extension (owner, 2026-10-27: “ok procediamo con iframe e
+finestre figlie, mantenendo una sola websocket nella pagina primaria”): retain
+PageStoreConnection for each page's logical channel. Historical record, superseded
+by the unified family protocol below: its private window protocol
+uses gramlot:page-store, following gramlot:publish; session/recipient and
+hello/ready/close follow FrameMessages. up/down describe server-bound/return
+delivery, not publication. attach/detach register pageId routes on the existing
+store protocol. These internal names introduce no application API or proxy.
+
+Python PageStore reactivity (owner confirmation, 2026-10-27): BindingRuntime,
+DataChange and DataRegistration mirror the existing browser responsibilities;
+Python modules and fields follow snake_case. GramlotBuilder's private
+_start_reactivity/_stop_reactivity own runtime activation for PageStore only.
+The existing positional node remains the recipe Source node; optional named
+_node, _reason and _triggerpars mirror the browser provider trigger fields
+(_node is the changed Data node). Only these reserved context fields are
+selected by Python callable signature; authored arguments remain strict.
+No automatic browser-Source execution or new application proxy is added.
+
+Shared WebSocket RPC (owner request, 2026-10-27): WebSocketTransport follows
+HttpTransport/WorkerTransport and implements their existing call/close/dispose
+contract. ServerAdapter.createTransport receives an optional channel, the
+existing PageStoreConnection; no new authoring proxy is introduced. RPC uses
+the unchanged id/pageId/contentType/name/params envelope, distinguished from
+binder operations by absence of op. Responses retain id/contentType/value or
+error and add pageId for window routing. The internal cancel operation carries
+pageId/id; it follows AbortSignal cancellation and does not promise rollback.
+
+Unified family protocol (owner, 2026-10-27): retain FrameMessages and place its
+single instance privately at gramlot._frames, alongside _subscriptions and
+_pageStore. children exposes that internal registry's direct-child records;
+parent describes the immediate frame parent or opener. No new public proxy.
+The private message marker becomes gramlot:message (gramlot:<noun> convention);
+hello/ready/close retain session/recipient and carry page readiness plus channel
+state. All data messages have kind=message, channel and a TYTX wire. publish and
+server name their existing responsibilities; registerChannel/setChannelState/
+unregisterChannel/send describe internal operations. PageStoreConnection uses
+the server channel, with no second handshake. The existing pageId identity may
+select a directly registered child in a publish descriptor; parent also covers
+the opener, and iframe keeps its existing Source/id syntax. Recursive broadcast
+and arbitrary-window targeting remain excluded.
+
+PageStore topic publication (owner 2026-10-27): keep publish(topic, payload) for
+local PageStore publication, mirroring Gramlot.publish. Existing subscribe_<topic>
+grammar attributes declare Python controller/formula subscriptions; no new tag.
+The browser descriptor adds server (the destination) beside existing pageId.
+On the server channel, op=publish carries topic/payload and optional targetPageId;
+pageId remains the sending page identity. GramlotServer.publish(text, owner=...)
+mirrors call(text, owner=...) as the transport-neutral dispatcher. BindingRuntime
+owns the recipe's private topics index and publication execution; the reserved
+_subscription_kwargs follows the existing browser provider context. No second
+window protocol or socket is added; binder registration remains separate.
+The internal PageStoreConnection.preparePublish follows FrameMessages.prepare:
+it validates readiness and captures the typed payload before local subscribers
+run, returning the forwarding operation.
+
+Publication acknowledgement (owner 2026-10-27): reuse RPC id, contentType=data,
+value and error envelopes and the PageStoreConnection calls correlation map.
+The publish request retains op=publish, topic, payload and optional targetPageId,
+adding id. The response has no op and returns value="ok" or the existing
+code/name/message error structure. Server-targeted Gramlot.publish returns a
+Promise resolving to "ok" or rejecting with the existing RpcError. Local and
+window publications retain their synchronous return. No acknowledgement proxy,
+second pending index or additional transport is introduced.
+
+Acceptance-only acknowledgement (owner 2026-10-27): rename the neutral
+dispatcher to prepare_publish, following PageStoreConnection.preparePublish.
+It validates and returns (response wire, dispatch callable); a refused
+publication has no dispatch. The adapter sends the response before invoking
+the prepared callable. Local PageStore.publish continues to run subscribers.
+No wait flag, new public proxy, queue or response format is introduced.
+
 <a id="gc-225-015"></a>
 
 ## 015 · Primary objects and proxies
@@ -158,7 +240,8 @@ client/server contract in 0.2.14).
 - `gramlot.rpc` (`RpcHandler`) has one function, `call(contentType, name, params,
   {signal})`, which sends the GC-230 envelope and resolves with the value or rejects
   with `RpcError`. It holds the transport: `HttpTransport` (`js/src/http-transport.js`,
-  formerly `MainTransport` in `transport.js`) or one injected with the same `call`.
+  formerly `MainTransport` in `transport.js`), the shared-channel PoC's
+  `WebSocketTransport`, or one injected with the same `call`.
   `call` is the one cancellation of a request: `signal` and `gramlot.abort` abort it
   and it rejects at once; `remoteRequests` holds the AbortController of each call in
   flight by envelope id and is written only by `call`.
@@ -359,8 +442,10 @@ second registry is introduced for authored references.
 Interframe implementation naming (11.72 postMessage follow-up): internal
 `FrameMessages` in `frame-messages.js` describes the transport responsibility,
 following existing PascalCase class / kebab-case file convention. The protocol
-marker `gramlot:publish` is namespaced to this application messaging feature,
-separate from inspector messages. No new public proxy or page authoring API.
+marker was `gramlot:publish`. Historical record: the owner-requested unified
+family protocol on 2026-10-27 supersedes it with `gramlot:message`, shared by
+publications and server traffic. FrameMessages now belongs privately to Gramlot
+at _frames; SubscriptionsHandler consults that instance.
 
 
 Native ask implementation: internal `AskDialog` / `ask-dialog.js` follows the
@@ -988,3 +1073,35 @@ Embedded HTML in Markdown — owner 2026-10-21: “ok” confirms optional allow
 
 
 Editable Python gallery — owner 2026-10-21: “si procediamo con la gallery editabile e la ricarica dell’anteprima python dopo il salvataggio”. Implements the previously confirmed original-source, revision-check, explicit-save and affected-iframe-only contracts (GC-198 §070). Apply existing gallery Logic naming to galleryCodeMount/Save/Revert, galleryIndex.sourceDocuments Data, and gallery-code-* presentation identities. Python source_document provides the original source snapshot; the integration endpoint gallery_source_save maps the catalogue key to its original Python file and reuses FileSystemPageMixin validation/atomic persistence. No client-supplied filesystem target is accepted. remote_edit remains the host gate; --remote-edit follows the CLI long-option spelling convention and applies to the existing gallery verb without redesigning the CLI. Host adapters forward the existing GramlotFileServer reload option; editable startup enables it. The iframe Source src gets a gallery_revision query value from the successful saved revision. Companions remain read-only; no general module hot reload or serverless write service is introduced.
+
+
+Publication sender metadata (owner, 2026-10-27): "sì aggiungilo come metadato della
+publish e aggiorna l'esempio così il controller può sapere il pageId della
+finestra mittente". Extend the reserved _subscription_ context convention with
+_subscription_metadata, beside _subscription_kwargs. Its pageId key preserves
+the existing envelope spelling and identifies the validated sender, never the
+destination. PageStore.publish and BindingRuntime.publish carry a keyword-only
+metadata argument separately from payload. Local publications without metadata
+provide an empty mapping. Each subscriber receives its own metadata mapping;
+payload fields cannot replace this reserved context. No new wire field is needed.
+
+
+Server-to-browser publication (owner 2026-10-27, approved proposal): page_id is
+the Python spelling of existing pageId, a keyword-only destination on
+PageStore.publish. _publish_to_page is its injected neutral-server callback;
+GramlotServer.publish_to_page names that routing operation, while
+connect_page_channel registers the adapter send callback by page identity.
+_page_channels parallels the existing _page_stores registry and is cleared by
+the same page lifecycle. No transport implementation enters core. Server outbound
+messages reuse op=publish, pageId (recipient), topic and payload, without an id;
+the browser delivers locally through the existing subscriptions service.
+
+
+Reverse publication metadata (owner 2026-10-27): reuse metadata, pageId and the
+reserved _subscription_metadata names already established for PageStore delivery.
+SubscriptionsHandler.publish receives metadata as an internal third argument,
+while ordinary Gramlot.publish retains its current two-argument API. Subscriber
+callbacks receive metadata separately as a second argument; providers place it
+in the reserved context. Each subscriber gets a fresh mapping. Local publication
+without origin metadata supplies an empty mapping and does not inherit an outer
+publication's metadata. No second publication service or window protocol.

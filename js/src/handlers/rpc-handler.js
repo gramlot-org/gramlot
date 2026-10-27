@@ -26,7 +26,7 @@ export class RpcHandler extends Handler {
         super(gramlot);
         // The transport given in the options of the page, none for `false`, else the one of the server adapter.
         this.transport = transport === false ? null : transport ??
-            gramlot.serverAdapter.createTransport({rpcUrl, closeUrl, document});
+            gramlot.serverAdapter.createTransport({rpcUrl, closeUrl, document, channel: gramlot._pageStore});
         // The AbortController of each call in flight, by envelope id; written only by `call`.
         this.remoteRequests = new Map();
     }

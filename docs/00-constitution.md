@@ -3081,3 +3081,245 @@ Owner confirms: “sospenderei e basta. teniamo solo npm. piu semplice”. Suspe
 Owner requests closing the current release as implemented while retaining the review debts: “ora vorrei chiudere la release attuale a come è ora anche se abbiamo debiti come rilevato dalla review”. Publication scope is core on PyPI and npm, clarified by “no anche npm ovviamente”; “gramlot-js server e serverless possono attendere” defers releases of those integration packages. Python use cases have priority, and connected environments may realign less frequently. Existing CI-triggered gallery update policy remains in force. This authorizes release of the consolidated runtime/security corrections and JSR suspension, not unrelated local experiments or closure of outstanding audit items. Full qualification precedes publication.
 
 The following work is Gramlot Catalog and the requested dialog, floating, labelgroup if absent, and copy button, with existing implementations checked before porting. Owner confirms the Catalog maturity meanings with “Sì, confermo”: Alpha means usable with essential review and declared limitations; Beta means a consolidated contract and broader functional verification; Stable means complete review and explicit acceptance; unassessed entries remain Unclassified. The requested Catalog includes the component/library tree, status, annotations, JavaScript implementation and parameters; visual-editor and Inspector insertion should offer a dedicated parameter form. Persistence and implementation design remain open; no component receives a maturity level from publication alone.
+
+<a id="gc-000-shared-websocket-design"></a>
+
+### Parallel HTTP RPC and shared WebSocket design — owner, 2026-10-27
+
+Owner requests one WebSocket held by the primary page, serving its iframe pages
+and opened, connected windows through postMessage; every window retains its own
+Gramlot. This extends the design scope of 11.72 from direct iframe messaging to
+opened child windows and shared server connectivity. Registration, routing,
+authorization and lifecycle details still require explicit decisions.
+
+Owner settles the initial transport split: "per ora immagianmo due meccanismi
+paralleli : poi posso decidere di fare le rpc over websocket".
+RPC remains on the existing HTTP path for each page; the shared WebSocket is a
+separate communication channel. RPC over WebSocket is deferred to a future owner
+decision, not an automatic fallback or part of the initial implementation scope.
+
+This narrows the initial design relative to the optional RPC-over-WebSocket
+realisation in 11.58 / GC-230 Part D; the transport-independent RPC envelope and
+existing HTTP behavior remain unchanged. GC-230 §305's socket-close/page-close
+coupling remains an explicit unresolved lifecycle decision. This records design
+decisions, not a delivered transport or implementation acceptance.
+
+Owner clarification, 2026-10-27: "per la pagina figli ail canale è trasparente :
+lei parla col server tramite il suo page id" and "ogni pagina puo ignorare di
+essere figlia diretta o no". Each page communicates with the server under its
+own pageId; page-facing behavior does not depend on its depth or on holding the
+physical socket. Connection selection and interwindow forwarding are internal
+responsibilities. Forwarding preserves the originating page identity rather than
+replacing it with the primary page's identity. The owner's hypothetical send
+with from pageId and content illustrates the logical message; it does not settle
+the public method name/signature or wire field names. This refines the shared
+channel design above without changing the parallel HTTP RPC decision.
+
+Owner direction clarification, 2026-10-27: "no attento nella send io mando SOLO
+al server". Send is exclusively page-to-server; the originating pageId is not a
+destination selector. The publish/subscribe analogy does not authorize page-to-page
+send or multicast. Receiver declarations and incoming Bag write semantics remain
+under discussion in GC-070 §1615.
+
+Owner confirmation, 2026-10-27: "esatto", answering whether the path in the
+server's proposed send(pageId, channel, path, data_tytx, fired) is relative to the
+path declared by the page receiver. Confirmed example: with
+page.receiver('orders', 'data.orders'), channel orders and path selected target
+data.orders.selected. The server selects the receiving page and channel; the
+receiver supplies the base Data path. This settles relative addressing, not
+channel multiplicity, path grammar, empty paths, lifecycle, exact public naming
+or the detailed fired behavior. It adds to the shared-channel design above and
+does not change the existing RPC envelope.
+
+Owner confirmation, 2026-10-27, answering whether each channel must identify a
+single receiver in a page: "no : nessun vincolo" and "non è un problema avere
+sovrapposizioni. se poi serve le eviteremo". Multiple receivers may register the
+same channel; equal or overlapping receiver paths are permitted. A message is
+delivered to the matching receivers, each applying its declared base path.
+Do not introduce uniqueness or overlap rejection. This resolves the previously
+open multiplicity question without implying delivery to other pages. Any future
+restriction requires a new owner decision; delivery ordering remains unspecified.
+
+Owner design direction, 2026-10-27: "unmprogettista di applicazione dovrebbe per
+la pagina progettare il datastore del client e quello del server".
+The application author designs both the client and server datastores for a page,
+including their intended relationship. Do not infer a complete automatic mirror
+from the earlier word counterpart. The two-store design belongs to the same
+logical page identified by pageId; concrete structure, transfer declarations,
+storage ownership/lifetime and synchronization rules remain to be specified.
+Server-side dataController/dataFormula were discussed as a possible reactive
+execution model, not approved as an implemented API or runtime contract.
+
+Owner authorizes an isolated Uvicorn PoC, 2026-10-27: "potremmo fare in branch
+separati un poc con le modifiche all adapter python e a gramlotr per gestire
+i websocket ?" and "per ua prova neutra potremmo usare solo uvicorn".
+The bounded work spans core and gramlot-py-server in separate development
+worktrees/branches. The owner selects "Prima pagina singola, poi finestre figlie"
+for a trial of a per-page Bag, declarative dataBinder, initial snapshot,
+bidirectional changes and one reactive server controller producing an outcome.
+This advances that scope from design-only to PoC implementation authorization;
+API decisions not yet specified remain subject to section 1/11.43.
+For this experiment, the Python adapter may use the local core branch and
+qualify Uvicorn first, rather than requiring a released core and simultaneous
+implementation in all five adapters. The permanent host-neutral boundary of
+section 7 remains: shared semantics in core, ASGI/WebSocket integration in
+gramlot-py-server. Bag and Builder sources remain outside the edit scope.
+Kajenn and child-window routing are later work, and publication, deployment
+and acceptance into main are not authorized. The HTTP RPC path is preserved.
+
+Owner specifies the separate server class, 2026-10-27: "la chiamerei PageStore
+e la metterei nello stesso modulo della Page, con un suo main che costruisce
+la recipe". PageStore.main builds the server recipe and its named methods
+execute server behavior; Page.main continues to build client Source. This
+supersedes the proposed Page.store(root) entry point, rejected by "no farei
+una classe diversa". The two classes are not combined.
+
+Owner authorizes a bounded Bag JS correction, 2026-10-27: "ok correggilo allora
+se è un errore", after the explanation that popNode forwards reason in the
+pathlist argument of _onNodeDeleted. For this defect only, section 14's
+dependency-edit prohibition is lifted for the owning genro-bag-js repository,
+including regression tests and local package verification in the PoC.
+Builder source remains excluded; no release or publication is authorized.
+
+Owner advances the shared-window PoC, 2026-10-27: "ok procediamo con iframe e
+finestre figlie, mantenendo una sola websocket nella pagina primaria".
+This supersedes the single-page implementation limit above: implement and test
+iframe and opened-window routing through parents, including descendants, with
+one physical WebSocket in the primary and each page's own pageId and PageStore.
+The existing dataBinder API and parallel HTTP RPC remain unchanged.
+The bounded Uvicorn/local-core experiment authorization continues; this is not
+authorization for Kajenn, reconnect, persistence, publication or deployment.
+
+Owner confirms server recipe activation, 2026-10-27: "si certo diciamo che
+se metto il page store deve funzionare", after the bounded proposal to recover
+Python reactivity in GramlotBuilder for PageStore only, with node/child/container
+trigger context and separate binder synchronization. Declaring PageStore is
+sufficient: hosting activates and closes its builder runtime automatically.
+Ordinary Page authoring remains inert. Implement current Bag-event routing,
+fresh parameter resolution and trigger context for synchronous controllers and
+formulas; keep generic genro-builders/Bag sources and unrelated deferred features
+outside this change. This supersedes the PoC's minimal controller executor,
+not the current first-party dependency ownership boundaries.
+
+Owner extends the shared WebSocket PoC to RPC, 2026-10-27: "quindi potremmo
+far passare anche le dataRpc sulla stessa websocket mantenendo la sintassi
+attuale?" followed by "bisognerebbe quindi completare il girmwebsocer ance
+facendo transitare le rpoc". This supersedes the HTTP-only RPC restriction of
+the earlier PoC. With websocketUrl configured, the existing asynchronous RPC
+envelopes use the primary socket, including child-page routing; dataRpc authoring
+and the server dispatcher remain unchanged. HTTP remains the transport for
+hosts without that channel. No automatic HTTP retry or synchronous WebSocket
+call is introduced. Cancellation is cooperative and cannot undo completed
+side effects. The bounded Uvicorn scope and publication restrictions remain.
+
+Owner unifies page-family communication, 2026-10-27: "la pagina main deve avere
+i suoi iframe e i suoi popup ... ogni iframe poi ha l'elenco dei suoi ... alla
+chiusure di una finestar si debono chiudere le figie ... le nipoti" and
+"dovrebbe essereci u. solo protocollo di comunicazione usato da tutti".
+Extend the existing FrameMessages mechanism to own the direct Gramlot
+parent/iframe/popup hierarchy, peer identity, readiness and recursive closure.
+Publish and server-bound binder/RPC traffic share that protocol and registry.
+Remove PageStoreConnection's parallel window handshake, listener and lifecycle.
+Its pageId routes remain transport routing information, not a second window
+registry. Only registered Gramlot children belong to the hierarchy; unrelated
+windows are excluded. Closing a page or removing its Source iframe tears down
+its descendants, including opened popup windows. No cross-window direct
+Gramlot calls, worker migration or publication is authorized by this change.
+
+Owner authorizes WebSocket publication to PageStore topics, 2026-10-27:
+"vorrei potere usare anche la publish e subscrive attraversi i websochet ...
+avere sul page stire dei datacontroller subscribed" and the routing rule
+"verso il server senza indicare un ... id significa quello del mittente ...
+se invece indico un page id ... un altro id ... se ho il permesso".
+The owner selects "Consentito tra pagine dello stesso owner" for authorization.
+Use the existing publication descriptor with server=true and optional pageId.
+Omission targets the sender's PageStore; an explicit pageId targets another live
+PageStore owned by the same owner, including on another socket. Preserve the
+verified sender identity separately from the destination. Activate existing
+subscribe_<topic> declarations in the Python recipe and retain named payload,
+declared-argument precedence, local-first publication and synchronous provider
+semantics. This supersedes the earlier exclusion of server-topic delivery for
+this bounded Uvicorn PoC. It does not authorize cross-owner delivery, retained
+topics, retries, a distributed broker or RPC-style replies to publications.
+
+Owner corrects publication rejection and confirms acknowledgements, 2026-10-27:
+"dovrebbe rifiutare solo quel messaggio" and "se ... publish segue il protocollo
+simil rpc allora basta rendere 'ok' oppure un errore". A server publication
+uses a correlation id and returns ok or a structured error to the sending
+page on the existing socket. This supersedes the no-reply restriction above
+and socket closure on a rejected destination or publication payload.
+Synchronous subscriber completion produces ok; it is not a database commit
+guarantee or a controller result. Produced data still travels through binders.
+Application failures are error outcomes without rollback. Socket identity
+and transport failures remain separate. No retry, retained delivery or new
+window protocol is authorized.
+
+Owner supersedes subscriber-completion acknowledgement, 2026-10-27:
+"non facciamo mai wait" followed by "ok" after confirmation that a subscribed
+controller does not delay the publication acknowledgement. A server publication
+acknowledges validation and acceptance before invoking its subscribers, without
+wait/nowait/sync options. Validation and authorization failures still return
+correlated errors. Subsequent controller failures do not replace the acceptance
+or close the socket; applications expose business outcomes through Data.
+This supersedes the completion/error semantics above, not owner checks or
+page-family routing. No asynchronous Python provider or worker execution is
+introduced: controllers retain their synchronous, serialized execution.
+
+
+Owner extends the gallery scope, 2026-10-27: "metti esempi in gallery", then
+"Sì, includi gli adeguamenti" to preserving PageStore during gallery staging,
+enabling the Uvicorn WebSocket for the examples and staging current lesson URLs.
+Add Python-first trial lessons in gramlot-examples and the bounded gallery
+integration in gramlot-py-server. Preserve the optional PageStore class and the
+gallery Logic companion; use existing catalogues and the common family channel.
+This authorizes these integration changes beyond the examples-only boundary;
+it does not authorize other adapter WebSocket implementations or deployment.
+
+
+Owner adds a family publication lesson, 2026-10-27: "aggiungiamo anche un esempio
+con iframe e finestre figlie che fanno publish verso il PageStore mantenendo una
+sola websocket nella primaria". The owner additionally answers "Sì, correggi anche
+questo" to the bounded core fix for the false channel error during intentional
+parent closure. Once Gramlot is disposed, removing a family channel must not
+announce transient channel loss before the existing recursive close message.
+Live-page channel loss still propagates. No new protocol or lifecycle state.
+
+
+Owner adds publication sender metadata, 2026-10-27: "sì aggiungilo come metadato
+della publish e aggiorna l'esempio così il controller può sapere il pageId della
+finestra mittente". The server passes the validated publication sender pageId
+to PageStore subscribers as metadata separate from application payload. This
+extends the existing topic context; it supersedes payload-only dispatch without
+changing owner checks, acceptance timing or the single family WebSocket.
+The gallery recipient exposes the received sender identity through its Bag.
+
+
+Owner approves server-to-browser publication, 2026-10-27: "sì implementiamola e
+aggiorniamo l'esempio così il controller del PageStore fa una publish verso la
+finestra mittente e lì un datacontroller subscribed la riceve". Extend the agreed
+PageStore.publish with explicit page_id to address the browser page of the same
+owner. Omission preserves local PageStore subscribers. Route through the existing
+primary WebSocket and family channel, including another primary connection. The
+browser delivers the topic to its existing subscriptions. This is a new event,
+not the correlated acceptance or a controller-result RPC. No retention, replay,
+new socket or parallel window protocol. Missing/disconnected targets fail locally
+on the server; application subscriber failures must not close the browser channel.
+
+
+Owner approves reverse publication metadata, 2026-10-27: "sì aggiungiamo anche
+i metadati nella publish dal PageStore al client e aggiorniamo l'esempio così il
+datacontroller nella finestra figlia mostra il pageId del PageStore mittente".
+The server produces metadata.pageId from the validated source PageStore identity;
+the outer pageId still routes to the browser recipient. The browser controller
+receives _subscription_metadata separately from payload. This extends the
+previous reverse event without changing delivery, ownership or acknowledgement.
+
+
+Owner authorizes release preparation and Bag JS publication, 2026-10-27:
+"ok allora prima pubblichiamo la correzione di Bag JS, poi allineiamo tutto alle
+versioni correnti e risolviamo i test per fare release". The previously approved
+delete-origin correction may be published in its owning Bag JS repository.
+Integrate the PageStore/WebSocket work with current Gramlot, Python adapter and
+examples releases and resolve required tests. This supersedes the no-publication
+restriction for that dependency correction and authorizes coordinated release
+preparation; preserve unrelated newer work and the existing deployment boundary.

@@ -12,6 +12,7 @@ from genro_tytx import from_tytx, to_tytx
 
 from ..page.base import Page, resolve_declared
 from ..page.builder import GramlotBuilder
+from ..page.page_store import PageStore
 from ..page.name_syntax import NAME_SYNTAX
 from .assets import gramlot_dev
 from .files import THEMES, file_below
@@ -120,7 +121,8 @@ class GramlotServer:
     def __init__(self, *, runtime_url="/assets/gramlot.js",
                  rpc_url="/gramlot/rpc", close_url="/gramlot/close",
                  root_id="gramlot-root",
-                 page_ttl=1800, max_pages=1000, collections=(), css_theme="gramlot-base"):
+                 page_ttl=1800, max_pages=1000, collections=(), css_theme="gramlot-base",
+                 websocket_url=None):
         if css_theme is not False and not _theme_name(css_theme):
             raise ValueError(f"The base theme must be a theme name or False, not {css_theme!r}")
         try:
@@ -134,12 +136,92 @@ class GramlotServer:
         self.close_url, self.root_id = close_url, root_id
         self.page_ttl, self.max_pages = ttl, max_pages
         self._pages = {}
+        self._page_stores = {}
+        self._page_channels = {}
+        self.websocket_url = websocket_url
         self.collections = tuple(collections)
         self.css_theme = css_theme
 
     def resolve_page(self, path):
         """Return the ``Page`` class of ``path``, or raise ``PageNotFound``."""
         raise PageNotFound(f"Page not found: {path}")
+
+    def resolve_page_store(self, page_class):
+        """The PageStore class of this page; a plain server provides an empty store."""
+        return PageStore
+
+    def page_store(self, page_id, *, owner):
+        """Get and renew a live store only for the registered page's owner."""
+        self._prune()
+        record = self._pages.get(page_id)
+        if record is None or owner is None or record[2] != owner:
+            raise PageExpired("Unknown, expired or unowned page")
+        self._pages[page_id] = (self._expiry(), *record[1:])
+        return self._page_stores[page_id]
+
+    def connect_page_channel(self, page_id, send, *, owner):
+        """Register an adapter's outbound channel until the page closes."""
+        self.page_store(page_id, owner=owner)
+        if not callable(send):
+            raise TypeError("Page channel requires a send callback")
+        if page_id in self._page_channels:
+            raise ValueError("Page already has a channel")
+        self._page_channels[page_id] = send
+
+    def publish_to_page(self, topic, payload, *, source_page_id, page_id, owner):
+        """Enqueue an event for a connected browser page of the source's owner."""
+        if not isinstance(page_id, str) or not page_id:
+            raise InvalidRequest("Publication page_id must be a nonempty string")
+        if not isinstance(topic, str) or not topic:
+            raise InvalidRequest("Publication topic must be a nonempty string")
+        if not isinstance(payload, dict) or any(not isinstance(key, str) for key in payload):
+            raise InvalidRequest("Publication payload must contain named data")
+        self.page_store(source_page_id, owner=owner)
+        self.page_store(page_id, owner=owner)
+        send = self._page_channels.get(page_id)
+        if send is None:
+            raise PageExpired("Page has no connected channel")
+        send(to_tytx(dict(op="publish", pageId=page_id, topic=topic, payload=payload,
+                         metadata={"pageId": source_page_id})))
+
+    def prepare_publish(self, text, *, owner):
+        """Validate publication; return an acceptance wire and deferred subscriber dispatch."""
+        try:
+            message = from_tytx(text)
+        except Exception as error:
+            raise InvalidRequest("Publication is not TYTX text") from error
+        if not isinstance(message, dict) or message.get("op") != "publish":
+            raise InvalidRequest("Expected a publication envelope")
+        if not isinstance(message.get("id"), str) or not message["id"]:
+            raise InvalidRequest("Publication id must be a nonempty string")
+        response = {"id": message["id"], "contentType": "data"}
+        dispatch = None
+        try:
+            if set(message) - {"op", "id", "pageId", "targetPageId", "topic", "payload"}:
+                raise InvalidRequest("Unknown publication fields")
+            for field in ("pageId", "topic"):
+                if not isinstance(message.get(field), str) or not message[field]:
+                    raise InvalidRequest(f"Publication {field} must be a nonempty string")
+            target = message.get("targetPageId", message["pageId"])
+            if not isinstance(target, str) or not target:
+                raise InvalidRequest("Publication targetPageId must be a nonempty string")
+            payload = message.get("payload")
+            if not isinstance(payload, dict) or any(not isinstance(key, str) for key in payload):
+                raise InvalidRequest("Publication payload must contain named data")
+            # Neither a destination ID nor client-supplied data replaces the sender's owner.
+            self.page_store(message["pageId"], owner=owner)
+            destination = self.page_store(target, owner=owner)
+            metadata = {"pageId": message["pageId"]}
+            dispatch = lambda: destination.publish(message["topic"], payload, metadata=metadata)
+            response["value"] = "ok"
+        except Exception as error:
+            response["error"] = {
+                "code": "invalid_request" if isinstance(error, InvalidRequest)
+                else OUTCOME_CODES.get(type(error), "application_error"),
+                "name": type(error).__name__, "message": str(error)}
+            if gramlot_dev() == "DEBUG":
+                response["error"]["details"] = traceback.format_exc()
+        return to_tytx(response), dispatch
 
     def resolve_resources(self, path, cls):
         """Return ``{"css": [url], "js": [{"url": url, "group": str | None}]}``, in load
@@ -187,7 +269,9 @@ class GramlotServer:
 
     def _prune(self):
         now = time.monotonic()
-        self._pages = {key: record for key, record in self._pages.items() if record[0] > now}
+        for page_id, record in list(self._pages.items()):
+            if record[0] <= now:
+                self.close_page(page_id, owner=record[2])
 
     async def page_manifest(self, *, prefix=""):
         """Return the root app manifest without creating a page session."""
@@ -248,6 +332,15 @@ class GramlotServer:
         # Registered before the bootstrap is written, and removed if writing it fails, as in JavaScript.
         self._pages[page_id] = (self._expiry(), cls, owner)
         try:
+            store_class = self.resolve_page_store(cls)
+            if self.websocket_url is not None or store_class is not PageStore:
+                if not isinstance(store_class, type) or not issubclass(store_class, PageStore):
+                    raise TypeError("PageStore must subclass gramlot.PageStore")
+                store = store_class()
+                self._page_stores[page_id] = store
+                store._publish_to_page = lambda topic, payload, target: self.publish_to_page(
+                    topic, payload, source_page_id=page_id, page_id=target, owner=owner)
+                store.start()
             nonce = secrets.token_urlsafe(16)
             # The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9);
             # the compact JSON gives the same text as the JavaScript server.
@@ -255,6 +348,8 @@ class GramlotServer:
                 "config": {"pageId": page_id, "rpcUrl": _prefixed(prefix, self.rpc_url),
                            "closeUrl": _prefixed(prefix, self.close_url), "rootId": self.root_id,
                            "capabilities": self.capabilities, "nameSyntax": self.name_syntax.to_dict(),
+                           **({"websocketUrl": _prefixed(prefix, self.websocket_url)}
+                              if self.websocket_url is not None else {}),
                            **({"devices": list(cls.devices)} if cls.devices else {}),
                            **({"locale": cls.locale} if cls.locale is not None else {}),
                            **({"timeZone": cls.time_zone} if cls.time_zone is not None else {})},
@@ -375,7 +470,15 @@ class GramlotServer:
         record = self._pages.get(page_id)
         if record is not None and record[2] == owner:
             del self._pages[page_id]
+            self._page_channels.pop(page_id, None)
+            store = self._page_stores.pop(page_id, None)
+            if store is not None:
+                store.close()
 
     def close_all(self):
         """Forget every registered page; adapters call it on shutdown."""
         self._pages = {}
+        self._page_channels.clear()
+        for store in self._page_stores.values():
+            store.close()
+        self._page_stores.clear()

@@ -1,4 +1,3 @@
-import {FrameMessages} from '../frame-messages.js';
 import {Handler} from './handler.js';
 import {sourceTarget} from '@genrojs/builders';
 
@@ -9,10 +8,7 @@ export class SubscriptionsHandler extends Handler {
     #nodeIds = new WeakMap();
     #sequence = 0;
     #closed = false;
-    #frames;
-
-    attach(document) { this.#frames = new FrameMessages(this.gramlot, document); }
-    ready() { this.#frames.ready(); }
+    ready() { this.gramlot._frames.ready(); }
 
     subscribe(topic, callback) {
         this.#requireOpen();
@@ -32,33 +28,44 @@ export class SubscriptionsHandler extends Handler {
         }
     }
 
-    publish(topic, payload = {}) {
+    publish(topic, payload = {}, metadata = {}) {
         this.#requireOpen();
         if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
             throw new TypeError('publish requires one object of named data');
         }
-        if (typeof topic === 'string') return this.#deliver(topic, payload);
+        if (typeof topic === 'string') return this.#deliver(topic, payload, metadata);
         if (!topic || typeof topic !== 'object' || Array.isArray(topic)) {
             throw new TypeError('publish requires a topic string or descriptor');
         }
         const keys = Object.keys(topic);
-        if (keys.some(key => !['topic', 'nodeId', 'parent', 'iframe'].includes(key))) {
+        if (keys.some(key => !['topic', 'nodeId', 'parent', 'iframe', 'pageId', 'server'].includes(key))) {
             throw new Error('This publication route is not implemented yet');
         }
         this.#requireTopic(topic.topic);
         if (topic.parent !== undefined && typeof topic.parent !== 'boolean') throw new TypeError('parent must be boolean');
+        if (topic.server !== undefined && typeof topic.server !== 'boolean') throw new TypeError('server must be boolean');
         if (topic.iframe === '*') throw new Error('Recursive iframe broadcast is not implemented yet');
-        if ((topic.parent || topic.iframe !== undefined) && Object.hasOwn(topic, 'nodeId')) {
+        if (topic.pageId !== undefined && (typeof topic.pageId !== 'string' || !topic.pageId)) throw new TypeError('pageId must be a nonempty string');
+        if ((topic.parent || topic.iframe !== undefined || topic.pageId !== undefined) && Object.hasOwn(topic, 'nodeId')) {
             throw new Error('Interframe node addressing is not implemented yet');
         }
-        const forward = topic.parent || topic.iframe !== undefined ? this.#frames.prepare(topic, payload) : null;
+        let forward = null;
+        if (topic.server === true) {
+            if (['parent', 'iframe', 'nodeId'].some(key => Object.hasOwn(topic, key))) {
+                throw new Error('Server publication cannot combine window or node selectors');
+            }
+            if (!this.gramlot._pageStore) throw new Error('Server publication requires a WebSocket channel');
+            forward = this.gramlot._pageStore.preparePublish(topic, payload);
+        } else if (topic.parent || topic.iframe !== undefined || topic.pageId !== undefined) {
+            forward = this.gramlot._frames.prepare(topic, payload);
+        }
         if (Object.hasOwn(topic, 'nodeId')) {
             const node = this.gramlot.src.binding.nodeIds.get(topic.nodeId);
             if (!node) throw new Error(`nodeId not found: ${topic.nodeId}`);
             return this.publishNode(node, topic.topic, payload);
         }
         this.#deliver(topic.topic, payload);
-        forward?.();
+        return forward?.();
     }
 
     topicFor(node, topic) {
@@ -104,18 +111,17 @@ export class SubscriptionsHandler extends Handler {
 
     dispose() {
         this.#closed = true;
-        this.#frames.dispose();
         this.#topics.clear();
     }
 
-    #deliver(topic, payload) {
+    #deliver(topic, payload, metadata = {}) {
         this.#requireTopic(topic);
         const callbacks = this.#topics.get(topic);
         if (!callbacks) return;
         // Synchronous, ordered, no retention/equality suppression; exceptions propagate.
         for (const [handle, callback] of [...callbacks]) {
             if (this.#closed) break;
-            if (callbacks.has(handle)) callback(payload);
+            if (callbacks.has(handle)) callback(payload, {...metadata});
         }
     }
     #requireTopic(topic) {

@@ -5,6 +5,8 @@
  * @module
  */
 import {ServerAdapter} from './server-adapter.js';
+import {PageStoreConnection} from './page-store-connection.js';
+import {FrameMessages} from './frame-messages.js';
 import {NAME_SYNTAX, NameSyntax} from './builder/name-syntax.js';
 import {SourceHandler} from './handlers/source-handler.js';
 import {RpcHandler} from './handlers/rpc-handler.js';
@@ -24,7 +26,8 @@ import {formatValue} from './format.js';
 export class Gramlot {
     constructor({pageId, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
                  element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = [],
-                 locale = null, timeZone = null, devices = [], serverAdapter = new ServerAdapter(), nameSyntax = null} = {}) {
+                 locale = null, timeZone = null, devices = [], serverAdapter = new ServerAdapter(), nameSyntax = null,
+                 websocketUrl = null} = {}) {
         buttons.register(document.defaultView);
         for (const collection of collections) {
             if (collection instanceof ComponentCollection) collection.register(document.defaultView);
@@ -41,12 +44,14 @@ export class Gramlot {
         this.src = new SourceHandler(this, {collections, destination: element ?? document.getElementById(rootId),
             subscriptions: this._subscriptions, nameSyntax: nameSyntax === null ? NAME_SYNTAX : NameSyntax.fromJSON(nameSyntax)});
         this.data = this.src.builder.data;
-        this.rpc = new RpcHandler(this, {rpcUrl, closeUrl, document, transport});
         this.dom = new DomHandler(this);
         this.utl = new UtilitiesHandler(this, document);
         this.state = 'ready';
-        this._subscriptions.attach(document);
         this.abort = new AbortController();
+        Object.defineProperty(this, '_frames', {value: new FrameMessages(this, document)});
+        if (websocketUrl !== null) this._pageStore = new PageStoreConnection(this, websocketUrl, document);
+        this.rpc = new RpcHandler(this, {rpcUrl, closeUrl, document, transport});
+        this._frames.connect();
         // A page with a transport closes its server page when the browser leaves it (a beacon over HTTP).
         if (this.rpc.transport) {
             this.pagehide = event => { if (!event.persisted) this.dispose({beacon: true}); };
@@ -97,6 +102,8 @@ export class Gramlot {
             try { this.src.binding.dispose(); }
             finally { this.src.renderer.dispose(); }
         } finally {
+            this._pageStore?.close();
+            this._frames.dispose();
             if (this.rpc.transport) {
                 this.rpc.transport.close(this.pageId, {beacon});
                 this.rpc.transport.dispose();
