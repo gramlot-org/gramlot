@@ -16847,8 +16847,13 @@ the same integrated core artifact as Python, rather than a stale registry core.
 Prepared candidate metadata: core and Python adapter 0.3.19; examples 0.3.20.
 Consumer requirements include core >=0.3.19 because earlier published core
 versions do not export PageStore. READMEs still identify the actual published
-versions; update them only when publication is authorized. The remaining gates
-are the complete aligned examples suite and final candidate installation checks.
+versions; update them only when publication is authorized. The aligned examples suite passes all 316 JavaScript tests; the Python suite
+passes 62 tests and 178 subtests with one existing skip. The complete adapter
+suite passes 191 tests. The final candidate wheels install together in a clean
+environment, and the complete PageStore gallery passes Chromium/WebKit from
+those installed packages. Twine validates all six Python distributions. The
+only remaining work is release authorization/consolidation and the dependent
+registry-based consumer CI after core publication.
 Publication must run core first, followed by consumers. Existing successful
 release workflows automatically update both hosted galleries, so that deployment
 side effect needs explicit owner authorization before starting publication.
