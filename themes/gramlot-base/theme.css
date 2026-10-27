@@ -18,6 +18,8 @@
     --gramlot-ink: #243449;
     --gramlot-background: #f7f8f5;
     --gramlot-surface: #ffffff;
+    --gramlot-header-background: #303946;
+    --gramlot-header-color: #ffffff;
     --gramlot-surface-subtle: #edf1f7;
     --gramlot-text-secondary: #566579;
     --gramlot-border: #d5dce5;
@@ -67,6 +69,8 @@
       --gramlot-ink: #edf2fa;
       --gramlot-background: #111b29;
       --gramlot-surface: #1b293b;
+      --gramlot-header-background: #2c3d52;
+      --gramlot-header-color: #edf2fa;
       --gramlot-surface-subtle: #24354b;
       --gramlot-text-secondary: #bdc9d9;
       --gramlot-border: #44566d;
@@ -92,6 +96,8 @@
     --gramlot-ink: #edf2fa;
     --gramlot-background: #111b29;
     --gramlot-surface: #1b293b;
+    --gramlot-header-background: #2c3d52;
+    --gramlot-header-color: #edf2fa;
     --gramlot-surface-subtle: #24354b;
     --gramlot-text-secondary: #bdc9d9;
     --gramlot-border: #44566d;

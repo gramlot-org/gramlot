@@ -30,57 +30,47 @@ metadata; text is not translated.
 <a id="gc-105-010"></a>
 ## 010 · Author the controls in Python
 
-This complete authoring example uses the existing explicit Builder collection API.
-For an application, select the collection once as described in §035.
+Select the collection on the Page. The host loads its Python grammar and browser
+implementation together; application code does not assemble a Builder or load
+its grammar JSON by hand.
 
 ```python
-import json
-from importlib.resources import files
-from gramlot import GramlotBuilder
-from genro_tytx import to_tytx
+from gramlot import Page as GramlotPage
+from gramlot.collections.inputs import mygramlot as inputs
 
-inputs = json.loads(
-    files("gramlot").joinpath("collections/inputs.json").read_text()
-)
-builder = GramlotBuilder(collections=[inputs])
-pane = builder.root.div(datapath="form")
+class Page(GramlotPage):
+    gramlots = [inputs]
 
-pane.textbox(
-    value="^.customer", placeholder="Name and surname",
-    lbl="Customer", lbl_position="TL", lbl_color="navy",
-    box_c_width="260px", box_margin_bottom="12px",
-)
-pane.checkbox(
-    value="^.newsletter", lbl="Contact",
-    label="Send me the newsletter", box_margin_bottom="12px",
-)
-pane.radioButtonText(
-    value="^.shipping",
-    values="standard:Standard,express:Express,pickup:Pickup",
-    cols=3, lbl="Shipping", lbl_position="^label_position",
-)
-pane.dataSetter(destination_path="form.customer", value="Ada")
-pane.dataSetter(destination_path="form.newsletter", value=False)
-pane.dataSetter(destination_path="form.shipping", value="standard")
-pane.dataSetter(destination_path="label_position", value="TL")
-wire = to_tytx(builder.source)
+    def main(self, root):
+        pane = root.div(datapath="preferences")
+        pane.textbox(value="^.name", lbl="Name", live=True,
+                     placeholder="Type your name")
+        pane.checkbox(value="^.newsletter", default=False,
+                      label="Show newsletter preview")
+        pane.radioButtonText(value="^.preview", default="compact",
+                             values="compact:Compact,full:Full", lbl="Preview")
 ```
 
-`lbl` labels the entire field. For a checkbox, `label` is the caption beside the
-box. A radio group stores one option code (`express`), not a list of booleans.
-The bounded `values` syntax is `code:Caption,code:Caption`; duplicate codes fail.
-Codes without a colon use the code as their caption. Options from a Bag and
-escaping of commas and colons are not supported.
+`lbl` labels the whole field. A checkbox's `label` is the caption beside its
+check mark. The radio group writes one option code, such as `compact`. The two
+`default` values initialize local interface preferences only when Data is missing.
+Loaded records and sample datasets belong in Data; see
+[initial values](097-data-binding.md#gc-095-045).
 
-Textbox uses `change` by default and `input` with `live=True`, including the
-existing IME composition handling. Empty input writes `""`; displaying a Data
-`None` as an empty field does not rewrite it. `readonly` and `disabled` are
-reactive native-control properties. Radio groups accept `disabled`.
+Textbox writes on `change` by default, or on `input` with `live=True`. Editing
+updates the existing control. The `values` shorthand accepts `code:Caption`
+entries separated by commas; duplicate codes fail and commas/colons cannot be
+escaped in that shorthand.
 
 <a id="gc-105-015"></a>
 ## 015 · Activate the browser collection
 
-The browser entry point selects the collection and mounts the received Source:
+For a hosted Page, `Page.gramlots` is sufficient: the normal bootstrap loads the
+selected collections before rendering. You do not write the following startup
+code in an application page.
+
+For a custom embedding that owns its runtime, the equivalent low-level operation
+is shown below. `wire` is the TYTX Source returned by that embedding's producer:
 
 ```javascript
 import {Gramlot} from '@gramlot/gramlot';
@@ -91,7 +81,7 @@ const app = new Gramlot({
     transport: false,
     collections: [inputs]
 });
-app.src.startSource(wire); // TYTX produced by the Python authoring above
+app.src.startSource(wire); // TYTX Source supplied by the embedding host
 ```
 
 Bundle this entry point as one module graph. The existing application/runtime
@@ -130,9 +120,11 @@ its previous projection. Reading another Source attribute never consumes it.
 Native script attributes remain forbidden, including under these prefixes.
 See [styles and CSS](096-themes-and-css.md).
 
-The internal shadow DOM keeps label IDs local to each instance. Text and checkbox
-labels associate with their native input; radio groups use `aria-labelledby` and
-native radio inputs sharing a name within that group's shadow tree. A `radioButtonText` instance owns its option group. Separate `radioButton`
+The renderer creates one Labelbox presentation around the content; `lbl` is a
+shortcut for this same presentation on HTML elements and components. Changing
+its label or styles preserves the content instance. A component's `Labelbox`
+mixin connects that outer label to its shadow control for focus and accessible
+naming. Native radio inputs share a name inside each group's shadow tree. A `radioButtonText` instance owns its option group. Separate `radioButton`
 instances instead join the existing Source-scoped boolean group using `group`;
 the runtime maintains exclusivity and arrow navigation across their shadow roots.
 
@@ -171,7 +163,7 @@ The DOM creation here belongs to framework/component implementation. Application
 continue to declare Source; they do not scrape inputs or install a second binding
 system. `NativeControl` supplies lifecycle and the inner native control;
 `ChoiceGroup` supplies multiple options and one selected code. `Labelbox` adds
-both metadata and layout; `FieldState.setFieldState({invalid, pending})` projects
+label metadata and the connection to the renderer-owned presentation; `FieldState.setFieldState({invalid, pending})` projects
 accessibility state, without deciding validation or commit policy.
 
 Effective metadata combines the base, mixins in declared order, then explicit
@@ -225,7 +217,6 @@ class Page(GramlotPage):
     gramlots = [inputs, layout]
 
     def main(self, root):
-        root.dataSetter("customer", {"name": "Ada", "active": True})
         form = root.formlet(datapath="customer", columns=1, max_width="28rem")
         form.textbox(value="^.name", lbl="Name", live=True)
         form.checkbox(value="^.active", label="Active", mode="switch")
@@ -239,7 +230,7 @@ through the Page inheritance hierarchy, with dependencies loaded first.
 Do not assemble `{grammar, module}` URL-only entries for this preparation path.
 See [How components and collections work](340-components-and-collections-guide.md)
 for package generation, dependencies, CSS/assets, integrity checks and deliberate
-overrides. Its development-status notice applies to the prepared collection tools.
+overrides. The guide distinguishes collection authors from applications consuming a package.
 
 <a id="gc-105-040"></a>
 ## 040 · Simple native input variants
@@ -267,7 +258,7 @@ pane.horizontalSlider(value="^.level", lbl="Level", min=0, max=100, step=5, live
 pane.verticalSlider(value="^.level", lbl="Same level", min=0, max=100, step=5, live=True)
 ```
 
-Initialize these Data paths with `dataSetter`, as in §010. Each single radio stores
+Let records arrive in Data, or use `default` for a local interface choice as in §010. Each single radio stores
 its own boolean; choosing one clears the other bound radios in the same `group`
 and Source form scope. This differs from `radioButtonText`, which stores one option
 code. Arrow keys navigate grouped single radios across their shadow roots, skipping
@@ -970,8 +961,7 @@ Use a plain pointer to a number when both a slider and the splitter control the
 same size:
 
 ```python
-pane.dataSetter("navigationWidth", 150)
-pane.horizontalSlider(value="^navigationWidth", min=90, max=240, live=True)
+pane.horizontalSlider(value="^navigationWidth", default=150, min=90, max=240, live=True)
 border = pane.borderContainer(height="420px")
 border.contentPane(region="left", width="^navigationWidth", splitter=True,
                    minSize=90, maxSize=240)
@@ -1174,8 +1164,8 @@ For A → B, container-local publications use the existing nodeId prefix:
 If allowed, the container publishes closing {pageName, index, wasSelected}, removes the panel Source node, resolves selection and its normal notifications, then publishes closed with the same pre-removal identity. Closing an inactive panel has no selection notifications. Application Data is not cleared; rejected local drafts disappear with the deleted widget. Direct application Source removal also resolves selection, but is not a close-button request and does not run onClose or emit closing/closed. Ordinary switching never deletes Source. `onClose` restores the useful Dojo veto; the inspected Genropy close-button patch bypassed it. closing/closed are explicit Gramlot additions. Legacy per-binding duplicate selected publications are intentionally not reproduced.
 
 ```python
-pane.dataSetter(".page", "customer")
-tabs = pane.tabContainer(nodeId="editor", selectedPage="^.page", height="360px")
+tabs = pane.tabContainer(nodeId="editor", selectedPage="^.page",
+                         default_selectedPage="customer", height="360px")
 tabs.contentPane(pageName="customer", title="Customer").textbox(
     value="^.customer.name", lbl="Name")
 tabs.contentPane(pageName="notes", title="Notes", closable=True,
@@ -1266,7 +1256,6 @@ For an editor with its own right options drawer, activate `inputs`, `layout` and
 ```python
 from gramlot.page import code_mirror_with_options
 
-pane.dataSetter("document.source", "print('Hello')")
 code_mirror_with_options(pane, datapath="document", value="^.source",
                          language="python", height="420px")
 ```

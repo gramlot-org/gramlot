@@ -15,7 +15,7 @@ This chapter covers the lower-level extension boundaries and grammar/markup APIs
 | Page contents and metadata | Application | Subclass `Page` |
 | Server routing, identity and HTTP I/O | Server adapter | Python `GramlotServer`; JS `GramlotServer`/`GramlotFileServer`; the rules are in [Server protocol](101-server-protocol.md) |
 | Server-dependent browser behaviour | Server adapter | A `ServerAdapter` subclass named in the bootstrap ([Server protocol](101-server-protocol.md#gc-101-045)) |
-| Reusable Source macros | Not provided | No recipe API |
+| Reusable Source composition | Application | Ordinary Python functions/methods or JavaScript helpers; no recipe registry |
 | Static HTML text generation | Generic Builder JS | `HtmlBuilder` and `HtmlRenderer` |
 | Reactive Source realization | Gramlot | `GramlotRenderer` (extends `GramlotHtmlRenderer`, which extends `HtmlRenderer`), `GramlotSvgRenderer` (extends `SvgRenderer`) and `HtmlElement` |
 | Serialization, types and notifications | Bag/TYTX | Their registered-type and subscription contracts |
@@ -31,8 +31,15 @@ owning library, not in an application-local substitute.
 
 ## 010 · Recipes
 
-Recipes are not provided. There is no recipe declaration, registry or expansion
-stage in the main/remote pipeline.
+Reuse ordinary language functions before extending the framework. A helper
+receives a parent Source node and declares its children. Calling it under two
+parents with different `datapath` values gives each copy its own relative Data.
+It can be imported from another module, just like other Python or JavaScript code.
+The [Color Maker lesson](https://gramlot-examples.readthedocs.io/en/latest/lessons/composition/01-color_maker.html)
+demonstrates this composition.
+
+There is no separate recipe declaration, registry or expansion stage in the
+main/remote pipeline. A reusable helper does not need such a mechanism.
 
 <a id="gc-100-015"></a>
 

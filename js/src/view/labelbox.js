@@ -15,10 +15,12 @@ export const labelboxStyle = `.gramlot-labelbox[hidden]{display:none!important}
                 .gramlot-labelbox[data-formlet-aligned]>.label-box>label{width:max-content;margin-left:auto}
                 .gramlot-labelbox[data-position='L']{grid-template-columns:var(--gramlot-label-width,var(--gramlot-formlet-label-width,max-content)) minmax(0,1fr)}
 .gramlot-labelbox:has(>.label-box[hidden]){gap:0;grid-template-areas:'control';grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
-.gramlot-labelbox[data-variant='card']{gap:0;border:1px solid var(--gramlot-border-control,#b9c2ce);border-radius:var(--gramlot-window-radius,9px);background:var(--gramlot-surface,#fff);box-shadow:0 3px 10px #0002}
-.gramlot-labelbox[data-variant='card']>.label-box{background:var(--gramlot-card-header-background,#303946);color:var(--gramlot-card-header-color,#fff);padding:7px 12px;border-radius:calc(var(--gramlot-window-radius,9px) - 1px) calc(var(--gramlot-window-radius,9px) - 1px) 0 0;font-weight:600}
+.gramlot-labelbox[data-variant='card']{gap:0;border:1px solid var(--gramlot-border-control,#b9c2ce);border-radius:var(--gramlot-window-radius,9px);background:var(--gramlot-surface,#fff);color:var(--gramlot-ink,CanvasText);box-shadow:0 3px 10px #0002}
+.gramlot-labelbox[data-variant='card']>.label-box{background:var(--gramlot-card-header-background,var(--gramlot-header-background,#303946));color:var(--gramlot-card-header-color,var(--gramlot-header-color,#fff));box-sizing:border-box;min-height:28px;padding:3px 10px;border-radius:calc(var(--gramlot-window-radius,9px) - 1px) calc(var(--gramlot-window-radius,9px) - 1px) 0 0;font-weight:600}
+.gramlot-labelbox[data-variant='card']>.label-box>label{color:inherit;font:inherit;line-height:20px;margin:0}
 .gramlot-labelbox[data-variant='card']>.control-box{padding:12px}
 .gramlot-labelbox[data-movable]>.label-box{cursor:grab;touch-action:none;user-select:none}
+.gramlot-labelbox[data-movable]>.label-box>label{cursor:inherit;user-select:none;-webkit-user-select:none}
 .gramlot-labelbox[data-selected]{outline:2px solid var(--gramlot-focus-ring,var(--gramlot-brand-blue,#3766b5));outline-offset:-2px}
 .gramlot-labelbox[data-tray-block]>.label-box{position:relative;padding-inline:32px 60px}
 .gramlot-labelbox>.label-box>.tray-settings-button{position:absolute;right:3px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:26px;height:26px;padding:4px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer}

@@ -276,8 +276,8 @@ layout space. Neither is authorization. Real statuses also need meaningful text.
 
 Block ID: **GC-096-045**.
 
-IndexPage lists `gramlot-index/theme.css` in `css` (Base comes from the server) and needs its documented Logic module. Standard
-footer manages/persists appearance, mode and sidebar width. Iframes each load
+IndexPage lists `gramlot-index/theme.css` in `css` (Base comes from the server) and needs its documented Logic module. The gallery Settings panel manages appearance, palette and mode; navigation width
+is retained by the shell. Iframes each load
 their CSS; arbitrary children get no automatic receiver. Gallery receiver is not
 a general application API. Prefer application overlay, common tokens with mode
 variants, shared classes and local companions. Keep installed framework files
@@ -429,4 +429,20 @@ Source still owns toolbar placement and window composition. Dialogs remain modal
 floating windows remain nonmodal. The gallery lesson **Containers → Mela: desktop
 and touch** compares a hierarchical menu, toolbar, fields and both window types
 using shared draft Data. Narrow windows scroll their content rather than clipping
-the form permanently. Initial visual acceptance remains pending.
+the form permanently. Try both modes at your intended viewport and input size.
+
+### Surface and title colors
+
+Each theme and palette defines two independent background/text pairs:
+
+| Role | Background | Text |
+| --- | --- | --- |
+| Content surface | `--gramlot-surface` | `--gramlot-ink` |
+| Card/window title | `--gramlot-header-background` | `--gramlot-header-color` |
+
+Light and dark modes choose these values independently. Dark mode keeps dark
+surfaces with distinct tones; it does not invert or swap the colors. Card titles,
+dialogs and floating windows share the title pair. Define both members together
+when customizing a surface, and check text contrast in both modes. Explicit
+`--gramlot-card-header-background` and `--gramlot-card-header-color` customize
+only cards; title labels inherit that pair instead of the normal field-label color.

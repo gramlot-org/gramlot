@@ -10,6 +10,8 @@
     --gramlot-window-backdrop: rgb(0 0 0 / 24%);
     --gramlot-background: #f2f2f7;
     --gramlot-surface: #ffffff;
+    --gramlot-header-background: #38383d;
+    --gramlot-header-color: #ffffff;
     --gramlot-surface-subtle: #eaeaed;
     --gramlot-ink: #1d1d1f;
     --gramlot-text-secondary: #636366;
@@ -73,6 +75,8 @@
     color-scheme: dark;
     --gramlot-background: #000000;
     --gramlot-surface: #1c1c1e;
+    --gramlot-header-background: #323236;
+    --gramlot-header-color: #f5f5f7;
     --gramlot-surface-subtle: #38383a;
     --gramlot-ink: #f5f5f7;
     --gramlot-text-secondary: #bdbdc4;
@@ -101,6 +105,8 @@
     color-scheme: dark;
     --gramlot-background: #000000;
     --gramlot-surface: #1c1c1e;
+    --gramlot-header-background: #323236;
+    --gramlot-header-color: #f5f5f7;
     --gramlot-surface-subtle: #38383a;
     --gramlot-ink: #f5f5f7;
     --gramlot-text-secondary: #bdbdc4;

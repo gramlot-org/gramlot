@@ -14203,3 +14203,276 @@ locked, and the mobile branch hidden outside the app. The mobile catalog and
 compiled provider retain their exact pre-deployment hashes; /mobile-application/database
 and /pages/05-containers/07-tray return 200. Physical iPhone/native-plugin acceptance
 remains with the owner; no such device test is claimed.
+
+<a id="gc-070-2375"></a>
+## 2375 · Public documentation learning-path revision — 2026-10-27
+
+Owner request: review old documentation, remove superseded guidance and make the
+learning path coherent with minimal examples and clear explanations. Scope is
+maintained documentation and its staging/generation scripts in core, examples
+and the Python/JavaScript host manuals. Runtime, packages and deployment are unchanged.
+
+Implemented: HTML/SVG → components → Data → Logic/server calls → composition;
+Page-first component introduction; shared renderer-owned Labelbox for HTML and
+components; UI defaults versus initial TYTX Bags versus explicit setters;
+current gallery navigation, Code tab and Settings descriptions. Reusable Python
+helpers are distinguished from a nonexistent recipe registry. The visual tour
+selects current catalogue lessons rather than duplicating a stale release-ordered
+inventory. The examples manual has GE-030 for current use; GE-010's dated records
+remain in the repository, with public anchor links to those records. Host setup
+routes now link the framework learning path and preserve runnable fixture snippets.
+
+Verified locally: all four manuals build with Sphinx warnings treated as errors;
+core public scope/search/local-link/mirrored-anchor checks pass; six-grammar widget
+reference regeneration is reproducible. Examples staging rebuilds all 110 runnable
+playgrounds and checks catalogue coverage, links and four paired guides. Host
+checkers validate 15 paired Python guides/94 identities and 22 paired JS/Worker
+guides/136 identities, including concise builds. Seven complete rewritten Python
+pages author and serialize successfully and run in Chromium and WebKit; focused
+checks cover reactive text, UI defaults and style binding. All prior explicit
+anchors remain. Cross-manual Read the Docs links were checked against local builds.
+
+This editorial revision is locally verified, not yet owner-reviewed or published.
+No new package release, Read the Docs publication or gallery deployment is claimed.
+
+<a id="gc-070-2380"></a>
+## 2380 · Gallery teaching coverage baseline — 2026-10-27
+
+Owner requested a feature-to-example checklist and an honest assessment of lesson
+size, segmentation, usefulness and readability. GE-035 and its mirror now map
+43 component declarations from six packaged grammars to the 110-lesson common
+catalogue. Source inspection finds 40 components in both Python and JavaScript
+lessons (93% presence, not total feature or parameter coverage). The three missing
+component exercises are dbSelect, dbComboBox and transformPane.
+
+The separate behavioral checklist has 67 entries, distinguishes exercises from
+incidental use and gaps, and records nine code-simplification priorities with
+measured Python method/file sizes and JS file sizes. Consolidation candidates
+are recommendations; no lessons were deleted or declared universally qualified.
+Color Maker's module-import recipe is distinguished from its running in-Page
+helper. Corrected stale tree-feature scope and the read-without-subscription
+explanation for equals pointers. The owner's screenshot records a separate Code
+panel height/clipping symptom; no cause or runtime fix is claimed.
+
+Verified: 110 runnable documentation playgrounds rebuilt, Sphinx build with
+warnings treated as errors, and checks for five paired guides, catalogue scope,
+local links and anchors. Component mappings were checked against both authoring
+languages. This is a documentary/source audit, not a fresh interactive review of
+all lessons. Host/mobile and exhaustive parameter coverage remain separate work.
+The new checklist and editorial changes are local; no publication or deployment.
+
+<a id="gc-070-2385"></a>
+## 2385 · Database selector quarantine — 2026-10-27
+
+Owner clarification: dbSelect and dbComboBox were only sketched and should stay
+"in quarantena" until a complete review comparing legacy APIs. GE-035 and its
+mirror now classify both as Quarantine rather than teaching gaps. Do not add
+new gallery examples or recommend these components in the learning path before
+that review. The audit still reports 40/43 component declarations present; two
+of the three unmapped components are quarantined, and transformPane remains an
+example gap. No API redesign, removal or runtime disabling is implied or applied.
+
+The future review must establish the legacy contract, compare the current API
+and behavior, and identify differences before proposing changes. That review has
+not started. This documentation-only clarification does not publish anything.
+
+
+<a id="gc-070-2390"></a>
+## 2390 · Menu lessons and feature-first gallery index — 2026-10-27
+
+Owner requested shorter menu/toolbar examples, reusable methods and clear teaching
+notes without losing demonstrated features, plus an alternative grouped feature
+index. Owner explicitly confirmed "Sì, tre stati": To discover, Seen when a linked
+example opens, and Tried only when marked by the visitor, retained in sessionStorage.
+
+Six Python/JS menu page pairs now separate composition into small named methods;
+shared draft commands are reused within each complete editor. All fourteen menu
+lessons retain their original authored Source and options. Revised explanations
+identify what to try, expected results and the relevant helper; advanced and theme
+comparisons are optional follow-ups rather than a mandatory fourteen-page course.
+
+The Features rail action opens a grouped index of 43 component entries and 67
+selected behaviors, linked through existing catalogue keys. An example can mark
+several features Seen; Tried is never downgraded by opening it again. Live progress
+belongs to the gallery Data Bag; sessionStorage stores only a reload snapshot.
+Lazy navigation uses the existing NavigationResolver and cancels superseded intent.
+Switching index and lessons retains existing iframes and unsaved example state.
+dbSelect and dbComboBox stay in quarantine without exercises or progress controls.
+Missing coverage is explicit. This index is not exhaustive parameter coverage, a
+mastery assessment or proof that every lesson has been interactively qualified.
+
+Verified locally: full JavaScript suite 302 passing, followed by targeted gallery
+and index checks (37 passing and then all seven index tests after adding checklist
+alignment). Python suite initially exposed one stale rail-child-count assertion;
+the other 30 passed, and the corrected gallery test file passes all seven tests.
+All fourteen Python Source snapshots match the pre-refactor versions and Python/JS
+parity passes. Chromium and WebKit exercise all fourteen lessons, input retention
+through toolbar overflow, editor Save/Cancel, progress reload, lazy navigation,
+iframe/draft retention and mobile dark layout. Documentation rebuild stages all
+110 runnable playgrounds; Sphinx warnings-as-errors and five paired-guide/link/
+anchor checks pass. The feature metadata is checked against GE-035 mappings.
+
+Implemented and locally verified, awaiting owner trial. No publication, deployment
+or package release in this tranche. Other GE-035 simplification candidates and the
+previously reported Code-panel height/clipping symptom remain separate work.
+
+
+<a id="gc-070-2395"></a>
+## 2395 · Compact capability tree and short lesson titles — 2026-10-27
+
+Owner rejected the long first navigation title and the feature-card catalogue:
+"la lista delle features preferirei fosse un albero ... non deve seguire
+necessariamente l'indice della gallery ma solo un elenco generico di features".
+A subsequent Editors screenshot extends the short-title request to that chapter.
+
+The gallery now labels the first chapter HTML and SVG and the editor chapter
+Editors, with Code editor, Editor options, HTML editor, Markdown editor and Typst
+and PDF as lesson titles. Descriptions retain their teaching detail. Features use
+an ordinary tree backed by a Data Bag, grouped independently by capabilities.
+Short leaf labels select one explanatory panel through a bound stackContainer.
+Neutral labels become green when Seen; Tried also has a check mark. Branches show
+seen/available counts and turn green when all available leaves are seen. Existing
+feature identities, session progress, lesson links and quarantine remain intact.
+Mobile places the selected detail below the bounded tree. No core API changes.
+
+Verified: 39 gallery/index JavaScript tests and 16 Python gallery tests pass;
+10 affected HTML/editor Python/JS parity checks pass. Chromium and WebKit verify
+lazy lesson opening, tree selection, progress colors, manual Tried, session reload,
+short first chapter title, dark green contrast and narrow-screen overflow.
+Documentation stages 110 runnable examples, builds with warnings as errors and
+passes paired-guide/local-link/anchor checks. Preview remains on localhost:8141;
+no publication or deployment. Awaiting the owner's visual trial.
+
+
+<a id="gc-070-2400"></a>
+## 2400 · Labelbox card title contrast and density — 2026-10-27
+
+Owner reported unreadable tray card titles under the mimi palette and requested
+appropriate contrast and shorter title bars. Theme label rules assigned field
+label colors directly to the title label, overriding inheritance from the dark
+card header. The shared card Labelbox now makes its direct title label inherit
+the header color and font, clears field-label margins and uses a 20px line height.
+Card headers use 3px vertical padding with a 28px minimum, preserving the 26px
+rotation/layer/zoom controls. Explicit authored label styles still take precedence.
+No per-example style workaround or change to Data, geometry or bindings.
+
+Verified: 38 Labelbox/tray tests pass. Chromium and WebKit each check 40 combinations
+of five appearances, four palettes and light/dark modes on the four live tray cards:
+minimum title contrast is 11.67:1, header height is 28px, and dragging still works.
+Runtime and embedded gallery assets rebuilt; localhost:8141 serves the correction.
+This verification concerns card headers, not an exhaustive contrast audit of every
+widget. No publication or deployment.
+
+
+<a id="gc-070-2405"></a>
+## 2405 · Theme-owned surface and header pairs — 2026-10-27
+
+Owner confirmed: "ogni tema definisce sfondo e testo per superficie e testata,
+senza inversione automatica. Applicalo ai temi". Base, Compact, mimi, joanna,
+Mela and the three independent palettes now explicitly define the header pair
+for light, system dark and explicit dark. Existing surface/ink remain the content
+pair; header-background/header-color are the shared title pair (GC-225). Dark
+headers use a distinct dark tone, without swapping or inverting colors. Shared
+Labelbox card headers and dialog/floating titlebars consume the pair; existing
+card-local overrides remain available. Content labels keep their own field tokens.
+Documentation and its concise mirror describe the roles. Runtime collections,
+Python resources and embedded gallery themes are rebuilt from canonical sources.
+
+Verified: 38 Labelbox/tray tests pass; eight color-pair regressions and 13 window
+tests pass. The new regressions check contrast >=4.5 for both pairs, distinct
+surfaces and identical role values for system/explicit dark. Chromium and WebKit
+each exercise 40 appearance/palette/mode combinations on live tray cards (minimum
+header contrast 8.17), compact header sizing and dragging. Gallery-to-iframe theme
+propagation is verified for five appearances in both modes with a floating editor
+open; its unsaved draft survives all switches. Preview available on localhost:8141.
+No release, publication or deployment; awaiting owner visual trial.
+
+The first iframe check exposed a stale installed core copy in the examples build:
+embedded styles had not acquired the new tokens. Refreshed the local core package
+reference and rebuilt gallery assets. The repeated browser check asserts the
+actual header token for every selected appearance/mode, not only the root mode
+attribute. Base leaves the editor example's explicitly authored Compact stylesheet
+in place; the other appearance overrides apply their own header colors.
+
+
+<a id="gc-070-2410"></a>
+## 2410 · Features last in gallery navigation — 2026-10-27
+
+Owner: "la feature list deve essere ultima pagina gallery". Features is now the
+final leaf of the ordinary gallery navigation in Python and JS; its separate rail
+button is removed. Native module branches insert before this leaf. Selecting it
+shows the existing Data-backed capability index without replacing lesson iframes;
+selecting a lesson returns to the existing tabs. Session progress is unchanged.
+Paired gallery guides describe the new entry point.
+
+Verified: four focused gallery/native-module regressions and seven Python gallery
+tests pass. Chromium and WebKit verify final position, removed toolbar entry,
+feature selection, opening linked lessons, progress reload and narrow layout.
+The regression retains an existing iframe and its draft across Features/lesson
+switches. Preview updated on localhost:8141; no deployment or publication.
+
+
+<a id="gc-070-2415"></a>
+## 2415 · Empty tray with live gallery cards — 2026-10-27
+
+Owner requested an additional initially empty tray whose toolbar selects gallery
+examples and adds them as cards at reduced zoom. Implemented in the connected
+examples candidate as **Gallery tray**, under Containers. Python and JS author
+matching Source: framePane, menu toolbar, catalogue-derived grouped picker and
+trayPane. The companion TYTX Bag starts with an empty layout. Shared page Logic
+creates Source cards and records geometry in Data under their node_label; no
+state is stored on Logic. Each iframe retains its own page Source/Data. Cards
+start at 65% scale in two columns; the workspace grows for further rows. The
+tray itself and the carousel are excluded to prevent recursive embedding.
+
+The explanation and feature coverage links are paired; documentation exports use
+the existing gallery_urls/galleryUrls contract. No core behavior was changed.
+Verified: 16 Python gallery/build tests, 8 feature-index tests, Python/JS Source
+parity for the new tray and carousel. Chromium and WebKit verify hosted Python
+and exported Worker pages: empty initial tray, catalogue exclusions, independent
+copies, unchanged iframe identity and field values after drag/resize, and growth
+for five cards. Documentation builds without Sphinx warnings; 111 runnable
+lessons and local links validate. The local exporter setup now resolves the same
+core, Bag, Builder and TYTX installation as its pages (package links only, no
+dependency source edits). Preview: localhost:8141/pages/05-containers/08-gallery_tray.
+No deployment/publication. Owner visual acceptance remains pending.
+
+
+<a id="gc-070-2420"></a>
+## 2420 · Consistent tray title drag affordance — 2026-10-27
+
+Owner reported that dragging appeared active only at the titlebar edges. Browser
+inspection reproduced the inconsistent feedback: the label used cursor:default
+while the surrounding bar used grab; WebKit also allowed text selection on the
+label. The shared movable Labelbox title now inherits its header cursor and
+explicitly disables standard/WebKit text selection. Header buttons retain their
+own interaction; locked cards are outside this selector. No geometry, Source or
+Data lifecycle was changed.
+
+Verified: all 32 tray tests pass. Chromium and WebKit show grab across the title
+and bar, with no selectable label text; real drags from upper, middle and lower
+bar positions update Data by the expected delta at 65% scale. Core and gallery
+assets rebuilt; localhost:8141 preview restarted. No publication/deployment.
+
+
+<a id="gc-070-2425"></a>
+## 2425 · Aligned release preparation — 2026-10-27
+
+Owner: "intanto mettiamosu tutto e facciamo release anche sui siti pubblicu".
+The authorized release aligns core, examples and both server repositories at
+0.3.18, including the verified gallery, documentation and theme work above.
+Public deployment must retain the mobile module and IDE sample workspace, with
+Remote Edit disabled. No TestFlight upload is authorized.
+
+Core validation: 1,267 JavaScript tests pass across the full suite and the
+network-enabled conformance rerun. Python: 285 passing tests, one expected
+failure; collection/conformance subsets rerun with supported Node and localhost
+access after sandbox/environment failures. Sphinx builds with warnings as errors.
+The preceding Chromium/WebKit checks cover theme contrast, card drag feedback
+and live gallery tray state. Release workflows will repeat their full gates.
+Publication and deployment receipts are pending; no claim of public availability.
+
+Release gate follow-up: Inspector Styles browser test now expects the two new
+header tokens (47 Base tokens total) and explicitly checks both fields. Chromium
+and WebKit pass editing, preview, reset and export. The full core CI job passed;
+the corrected Inspector gate is being rerun.

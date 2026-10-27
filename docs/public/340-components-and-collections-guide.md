@@ -3,15 +3,18 @@
 Document ID: **GC-340**.
 
 
-> **Scope:** a practical guide to the implementation in the current development
-> checkout. Component primitives already exist; prepared collections and the
-> menu/command integration include development work. This guide does not claim
-> that the development generator is available on npm or that provisional APIs
-> have been accepted as stable. It introduces no new API.
->
-> Read sections 005–030 to understand the machinery, 035–065 to build and use a
-> collection, and 070–085 to understand extension and replacement. Sections
-> 090–105 cover lifecycle, troubleshooting and verification.
+Use a prepared collection through `Page.gramlots` when writing an application.
+Read this guide when you need to **create, package or deliberately override** a
+component. It describes the implemented contract; experimental plans and past
+release decisions are kept in internal documents.
+
+- Sections 005–030 explain Source, component instances and metadata.
+- Sections 035–065 cover packaging and bootstrap resources.
+- Sections 070–085 explain extension and replacement.
+- Sections 090–105 cover lifecycle, troubleshooting and verification.
+
+Collection generation is a development tool. Follow the installation prerequisites
+in §045 rather than assuming a generator package is available on npm.
 
 <a id="gc-340-005"></a>
 ## 005 · Start with three different objects
@@ -31,7 +34,7 @@ component associated with that name and connects it to **Data**.
 | --- | --- | --- |
 | Component definition | Name, DOM tag, parameters, base, mixins and implementation factory | Authored in JavaScript; inspected during generation; activated in a browser |
 | Source node | One occurrence, its parameters, pointers and children | Authored by a Builder; serialized and rendered |
-| Browser component instance | The actual control, presentation and local UI state | Created in the destination document; connected to Data by the runtime |
+| Browser component instance | The actual control and transient presentation; application state stays in Source/Data | Created in the destination document; connected to Data by the runtime |
 
 Calling `pane.textbox(...)` twice creates two Source nodes and eventually two
 component instances. Both instances use the same definition. They share Data
@@ -414,7 +417,6 @@ class Page(GramlotPage):
     gramlots = [mygramlot]
 
     def main(self, root):
-        root.dataSetter("form.query", "")
         pane = root.div(datapath="form", padding="16px")
         pane.searchbox(value="^.query", lbl="Search", live=True)
         pane.p("^.query")

@@ -64,9 +64,12 @@ if (process.argv.includes('--serve')) {
                 const exportLink = tool.getByText('Download CSS', {exact: true});
                 await field('--gramlot-action').waitFor();
                 assert.equal(await exportLink.getAttribute('href'), null);
-                assert.equal(await tool.locator('.style-row').count(), 45); // Base root tokens, including four editor colors.
+                assert.equal(await tool.locator('.style-row').count(), 47); // Base root tokens, including editor and header color pairs.
                 for (const token of ['keyword', 'string', 'number', 'function']) {
                     assert.equal(await field(`--gramlot-editor-${token}`).count(), 1);
+                }
+                for (const token of ['background', 'color']) {
+                    assert.equal(await field(`--gramlot-header-${token}`).count(), 1);
                 }
                 assert.equal(await tool.locator('.styles-empty').isVisible(), false);
                 assert.equal(await tool.locator('gramlot-poc-splitter').isVisible(), false);
