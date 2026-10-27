@@ -15544,3 +15544,67 @@ Release gate follow-up: Inspector Styles browser test now expects the two new
 header tokens (47 Base tokens total) and explicitly checks both fields. Chromium
 and WebKit pass editing, preview, reset and export. The full core CI job passed;
 the corrected Inspector gate is being rerun.
+
+
+<a id="gc-070-2430"></a>
+## 2430 · Published 0.3.18 and public verification — 2026-10-27
+
+Core, Python server, JavaScript server, serverless, create and examples 0.3.18
+are published on their npm/PyPI registries. All release gates passed. Core publish
+run 40484476189, Python server 40484692998, JavaScript server 40484281128 and
+examples 40487513554 completed successfully. Read the Docs latest/stable builds
+for all four repositories succeeded.
+
+Public galleries deployed as generation 20261027T103540Z (examples deployment
+40489146734). Server checks passed for both hosted galleries and the standalone
+ZIP (SHA-256 9cad066e7d8b13065c8f649c56606fe66264b191358c897fba5860ecb13d3e34).
+Chromium/WebKit verify the new tray on both public hosts and Read the Docs:
+independent live cards, drag/resize, unchanged iframe identity and edited Data.
+The Python Features tree passes navigation, session restoration, colors and
+narrow layout checks. Public IDE opens sample documents as draft-only; Remote
+Edit remains disabled. The mobile catalogue is byte-identical to the pre-release
+copy; all 15 eligible pages respond, including motion and database. No TestFlight
+upload or physical iPhone acceptance was performed.
+
+The public JavaScript Features check exposed a missing final entry in the hosted
+Page's filesystem navigation override; the shared/Worker Page was already correct.
+A bounded examples-only 0.3.19 patch adds that entry. Its new hosted-Page regression
+fails before and passes after the fix (nine feature tests pass). Local Node gallery
+passes the complete Features browser check on Chromium and WebKit. The standalone
+exporter has a separate filesystem override with the same omission; JavaScript
+workspace patch 0.3.19 adds the final entry in its generated Worker Page too.
+Its 93 workspace tests, 40 Bun tests and full Chromium offline gallery check pass;
+the targeted Features check also passes from file on Chromium and WebKit.
+The full WebKit console-clean harness reports the existing app.webmanifest
+file-origin CORS rejection, reproduced on the published 0.3.18 ZIP while runtime
+startup remains successful. This pre-existing limitation is not suppressed.
+Examples 0.3.19 is published (run 40490941052) and deployed by run 40492448397
+as generation 20261027T110124Z. Features now passes the full public JavaScript
+check in Chromium and WebKit, including progress/session restoration and narrow
+layout. JavaScript workspace PR 29 passed all eight checks and is integrated;
+publication run 40494195979 succeeded and all three npm packages are verified
+at 0.3.19. Core and Python server remain at 0.3.18. All four documentation
+projects have successful latest/stable builds. Deployment 40496193235 stopped
+before activation after Chromium crashed while opening the offline formlet page;
+both hosted checks had passed and the previous public generation stayed active.
+The same file page passes three repeated loads in both Chromium and WebKit locally.
+A second full attempt also crashed, on a different offline page. Kernel logs
+confirm global out-of-memory termination of Chromium (about 2.3 GB renderer RSS).
+The deployment smoke test reused one page for every file navigation. It now closes
+and recreates the page for each independent example, matching the existing
+serverless suite; all 25 starts, binding and validation assertions are preserved.
+The revised check passes both public hosts and the offline export locally.
+Examples PR 34 records this operational fix. The server verifier was updated under
+the deployment lock with a timestamped script/image backup; its runtime packages
+and promotion logic are unchanged. Deployment attempt 3 passed all checks and promoted generation
+20261027T113840Z. Both public galleries pass the 25-page/binding/validation checks.
+The downloaded ZIP matches SHA-256
+3fd631e48f48e9333ac40daf3daa1a8c0236ef609e9001e1ccddd9d959d6bfe7;
+its version receipt confirms core/Python server 0.3.18 and examples/JavaScript
+server/serverless 0.3.19. Features passes on Chromium and WebKit both from that
+actual ZIP and on the public JavaScript host. The public IDE sample opens with
+Remote Edit disabled and technical directories hidden. The mobile catalogue hash
+is unchanged and database/gallery-tray endpoints return HTTP 200.
+This isolates smoke cases; it does not claim to fix or qualify long browser-history
+memory retention in a user's offline browsing session. The verifier follow-up PR
+34 remains subject to its normal repository CI before source consolidation.
