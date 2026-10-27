@@ -15606,5 +15606,12 @@ actual ZIP and on the public JavaScript host. The public IDE sample opens with
 Remote Edit disabled and technical directories hidden. The mobile catalogue hash
 is unchanged and database/gallery-tray endpoints return HTTP 200.
 This isolates smoke cases; it does not claim to fix or qualify long browser-history
-memory retention in a user's offline browsing session. The verifier follow-up PR
-34 remains subject to its normal repository CI before source consolidation.
+memory retention in a user's offline browsing session.
+
+Closure, 2026-10-27: owner requested verification of the final check and
+consolidation of the verifier correction. Both complete CI runs (40497535776 and
+40497544353) and the Read the Docs preview succeeded: all 17 PR checks are green,
+including the final Chromium sweep of every gallery page. Examples PR 34 merged
+into main as f4547a92944812324dc848007d162092b796bed4. Its verifier is the same
+script already qualified by successful deployment 40496193235 attempt 3; no new
+package release or deployment is needed for this source consolidation.
