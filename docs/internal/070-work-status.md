@@ -16827,3 +16827,28 @@ one primary socket and recursive closure. Chromium passes all five adapters and
 the Python/JavaScript page-module checks. Example suites, remaining browser
 checks, documentation and package validation are still in progress. These are
 local verification results, not a Gramlot release receipt or owner acceptance.
+
+
+Release candidate follow-up, 2026-10-27: core integration PR #73 passes all
+required GitHub checks, including Linux Firefox inspector, core tests and
+browser qualification, documentation and Read the Docs. Local Firefox profile
+startup was an environment limitation, not a skipped CI gate. Core and adapter
+manuals build; the examples manual validates 111 lessons and local links.
+Registry-refreshed Python dependencies remain Bag 0.28.0, Builders 0.30.0 and
+TYTX 0.16.4. JavaScript uses Bag 0.11.1 and Builders 0.7.0.
+
+Built wheel/npm runtime bytes are identical. A new virtual environment installed
+only built wheels and registry dependencies; Chromium and WebKit pass the full
+WebSocket fixture, including RPC cancellation, publication refusal/recovery,
+child reload, source removal and recursive closure. The standard gallery passes
+all five adapters at both / and /py. The example JavaScript suite is now using
+the same integrated core artifact as Python, rather than a stale registry core.
+
+Prepared candidate metadata: core and Python adapter 0.3.19; examples 0.3.20.
+Consumer requirements include core >=0.3.19 because earlier published core
+versions do not export PageStore. READMEs still identify the actual published
+versions; update them only when publication is authorized. The remaining gates
+are the complete aligned examples suite and final candidate installation checks.
+Publication must run core first, followed by consumers. Existing successful
+release workflows automatically update both hosted galleries, so that deployment
+side effect needs explicit owner authorization before starting publication.
