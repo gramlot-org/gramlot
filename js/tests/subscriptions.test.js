@@ -97,6 +97,37 @@ test('subscribe activates the existing controller, preserves named argument prec
     app.dispose();
 });
 
+test('publication metadata is separate, isolated and available to subscribed inline providers', () => {
+    const {app} = page();
+    try {
+        const nested = [];
+        app.subscribe('nested', (payload, metadata) => nested.push(metadata));
+        app.subscribe('loaded', (payload, metadata) => {
+            metadata.pageId = 'subscriber mutation';
+            app.publish('nested', {});
+        });
+        authored(app, root => {
+            root.dataController({subscribe_loaded: true,
+                script: "this.SET('sender', _subscription_metadata.pageId); this.SET('value', value);"});
+            root.dataFormula({subscribe_loaded: true, result_path: 'formula_sender',
+                formula: '_subscription_metadata.pageId'});
+        });
+        const metadata = {pageId: 'source-store'};
+        const payload = {value: 42, _subscription_metadata: {pageId: 'payload forgery'}};
+        app._subscriptions.publish('loaded', payload, metadata);
+        assert.equal(app.data.getItem('sender'), 'source-store');
+        assert.equal(app.data.getItem('formula_sender'), 'source-store');
+        assert.equal(app.data.getItem('value'), 42);
+        assert.deepEqual(metadata, {pageId: 'source-store'});
+        assert.deepEqual(payload._subscription_metadata, {pageId: 'payload forgery'});
+        assert.deepEqual(nested, [{}]);
+        const local = [];
+        app.subscribe('local', (payload, metadata) => local.push(metadata));
+        app.publish('local', {_subscription_metadata: {pageId: 'forged'}});
+        assert.deepEqual(local, [{}]);
+    } finally { app.dispose(); }
+});
+
 test('legacy false subscription declarations still register and formula messages write their result', () => {
     const {app} = page();
     authored(app, root => root.dataFormula({result_path: 'total', formula: 'quantity * 2', subscribe_recalculate: false}));

@@ -12,10 +12,11 @@ const root=fileURLToPath(new URL('..', import.meta.url));
 const bundle=await build({entryPoints:[root+'/js/src/index.js'],bundle:true,format:'iife',globalName:'G',write:false,logLevel:'silent'});
 const dir=await mkdtemp('/tmp/gramlot-publish-browser-');
 const html=(code)=>'<!doctype html><html><head><meta charset="utf-8"></head><body><main id="root"></main><script>'+bundle.outputFiles[0].text.replaceAll('</script','<\\/script')+'\n'+code+'</script></body></html>';
-const child=`window.events=[]; const b=new G.GramlotBuilder(); b.root.p('Child'); b.root.dataController({subscribe_ping:true,script:"this.SET('received', number);"}); window.app=new G.Gramlot({rootId:'root',transport:false}); app.subscribe('ping',p=>{events.push(p); app.publish({topic:'reply',parent:true},{number:p.number,typed:p.typed});}); app.src.startSource(b.toTytx());`;
+const child=`window.events=[]; const b=new G.GramlotBuilder(); b.root.p('Child'); b.root.a('Open child',{id:'open-child',href:'child.html',target:'_blank',rel:'opener'}); b.root.dataController({subscribe_ping:true,script:"this.SET('received', number);"}); window.app=new G.Gramlot({rootId:'root',pageId:crypto.randomUUID(),transport:false}); app.subscribe('ping',p=>{events.push(p); app.publish({topic:'reply',parent:true},{number:p.number,typed:p.typed});}); app.src.startSource(b.toTytx());`;
 await writeFile(dir+'/child.html',html(child));
-const parent=`window.events=[]; window.local=[]; const b=new G.GramlotBuilder(); b.root.iframe({id:'child',nodeId:'child',src:'child.html'}); b.root.iframe({id:'isolated',src:'child.html',sandbox:'allow-scripts'}); b.root.dataController({subscribe_ask:true,script:"this.SET('answer',name);",_ask:{title:'Enter name',fields:[{name:'name',lbl:'Name',required:true}]}}); window.app=new G.Gramlot({rootId:'root',transport:false}); app.subscribe('ping',p=>local.push(p.number)); app.subscribe('reply',p=>events.push(p)); app.src.startSource(b.toTytx());`;
+const parent=`window.events=[]; window.local=[]; const b=new G.GramlotBuilder(); b.root.iframe({id:'child',nodeId:'child',src:'child.html'}); b.root.iframe({id:'isolated',src:'child.html',sandbox:'allow-scripts'}); b.root.a('Open child',{id:'open-child',href:'child.html',target:'_blank',rel:'opener'}); b.root.a('Plain window',{id:'open-plain',href:'plain.html',target:'_blank',rel:'opener'}); b.root.dataController({subscribe_ask:true,script:"this.SET('answer',name);",_ask:{title:'Enter name',fields:[{name:'name',lbl:'Name',required:true}]}}); window.app=new G.Gramlot({rootId:'root',pageId:'primary',transport:false}); app.subscribe('ping',p=>local.push(p.number)); app.subscribe('reply',p=>events.push(p)); app.src.startSource(b.toTytx());`;
 await writeFile(dir+'/index.html',html(parent));
+await writeFile(dir+'/plain.html','<!doctype html><title>Unregistered window</title><p>No Gramlot here.</p>');
 const server=createServer(async(req,res)=>{try {res.setHeader('Content-Type','text/html');res.end(await readFile(dir+(req.url==='/'?'/index.html':req.url)));} catch {res.statusCode=404;res.end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const origin='http://127.0.0.1:'+server.address().port;
@@ -25,7 +26,8 @@ const type = playwright[engine];
 const browser=await type.launch({headless:true});
 try {
 for(const url of [origin+'/index.html','file://'+dir+'/index.html']) {
-const page=await browser.newPage(); const errors=[];page.on('pageerror',e=>errors.push(e.message));
+const context=await browser.newContext();
+const page=await context.newPage(); const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(url); await page.waitForFunction(()=>window.app?.state==='started');
 for(const target of ['child','isolated']) {
 await page.waitForFunction(target=>{try {app.publish({topic:'ping',iframe:target},{number:1,typed:new Date('2026-10-15T00:00:00Z')});return true;} catch(e){if(e.message.includes('not ready')) return false; throw e;}},target);
@@ -50,7 +52,32 @@ await page.waitForFunction(()=>{try{app.publish({topic:'ping',iframe:'child'},{}
 await childFrame.goto(url.startsWith('file:')?'file://'+dir+'/child.html':origin+'/child.html');
 await page.waitForFunction(()=>{try{app.publish({topic:'ping',iframe:'child'},{number:3});return true;}catch(e){if(e.message.includes('not ready'))return false;throw e;}});
 await page.waitForFunction(()=>events.some(p=>p.number===3));
-assert.deepEqual(errors,[]);console.log('PASS',engine,url.startsWith('file:')?'file':'http','bidirectional/opaque/reference/typed/controller/ask/cancel/dispose/reload');await page.close();
+assert.deepEqual(errors,[]);console.log('PASS',engine,url.startsWith('file:')?'file':'http','bidirectional/opaque/reference/typed/controller/ask/cancel/dispose/reload');
+if (!url.startsWith('file:')) {
+const open = async (owner, id) => {
+    const pending = owner.waitForEvent('popup');
+    await owner.locator(id).click();
+    return pending;
+};
+const plain = await open(page, '#open-plain');
+const popup = await open(page, '#open-child');
+await popup.waitForFunction(()=>window.app?.state==='started');
+const popupId = await popup.evaluate(()=>app.pageId);
+await page.waitForFunction(id=>app._frames.children.some(peer=>peer.pageId===id && peer.ready),popupId);
+await page.evaluate(id=>app.publish({topic:'ping',pageId:id},{number:17}),popupId);
+await page.waitForFunction(()=>events.some(p=>p.number===17));
+const leaf = await open(popup, '#open-child');
+await leaf.waitForFunction(()=>window.app?.state==='started');
+await popup.waitForFunction(()=>app._frames.children.length===1);
+assert.equal(await page.evaluate(()=>app._frames.children.length),3);
+const closed=[popup,leaf].map(p=>p.waitForEvent('close'));
+await page.close();
+await Promise.all(closed);
+assert.equal(plain.isClosed(),false);
+await plain.close();
+console.log('PASS',engine,'family publication and recursive popup closure without WebSocket; non-Gramlot window preserved');
+} else await page.close();
+await context.close();
 }
 }finally{await browser.close();}
 }

@@ -58,7 +58,7 @@ export class DataRegistration {
 
 /** The object delivered to a recipient. */
 export class DataChange {
-    constructor({evt, node, path, oldvalue, attrsDiff, reason, fired, level, registration}) {
+    constructor({evt, node, path, oldvalue, attrsDiff, reason, fired, level, registration, index}) {
         this.evt = evt;
         this.node = node;
         this.path = path;
@@ -68,6 +68,7 @@ export class DataChange {
         this.fired = fired;
         this.level = level;
         this.registration = registration;
+        this.index = index;
     }
 }
 
@@ -142,6 +143,7 @@ export class DataRouter {
                     evt: event.evt, node, path, oldvalue: event.oldvalue ?? null,
                     attrsDiff: event.attrs_diff ?? null, reason: event.reason ?? null,
                     fired: event.fired ?? false, level, registration,
+                    index: event.ind ?? null,
                 }));
             }
         }

@@ -291,7 +291,7 @@ A server MAY, and then names the capability in the bootstrap (`capabilities`,
 | capability | Meaning | Implementation status |
 |---|---|---|
 | `auth` | evaluates `auth` rules against an identity (otherwise every rule is `not_authenticated`) | Implemented by the Kajenn adapter for avatar-tag auth |
-| `websocket` | the envelope over WebSocket (Part D) | Planned extended Genro/genro-kajenn scope; not in current adapters |
+| `websocket` | the envelope over WebSocket (Part D) | Isolated Uvicorn shared-channel PoC (GC-250); released adapter parity remains planned |
 | `push` | messages without `id` from the server | Planned extended Genro/genro-kajenn scope; not in current adapters |
 | `serverpath` | the client sends the changes of the `serverpath` Data branches with each call (extra field) | Planned extended Genro/genro-kajenn scope; not in current adapters |
 | `state` | page state kept between calls | Planned extended Genro/genro-kajenn scope; not in current adapters |
@@ -655,9 +655,14 @@ Block ID: **GC-230-305**.
 - A message without `id` from the server is a push (`push` capability).
 - The close message is `{pageId}` without `id`; closing the socket closes the
   page as well.
-- Planned for an extended Genro/genro-kajenn client; not a delivered capability
-  of the current adapters. The base client has no
-  WebSocket transport.
+- Released adapter support remains planned. The isolated Uvicorn PoC now
+  supplies WebSocketTransport on the shared PageStore channel (GC-250 §018),
+  as requested by the owner on 2026-10-27. It keeps these RPC envelopes and
+  adds pageId to responses for descendant routing. Its binder pushes use op
+  without id; cancellation uses op=cancel with pageId/id. Descendants close
+  through detach, the primary by socket close, with HTTP close notification
+  retained for bootstrap cleanup. This bounded extension supersedes the simple
+  close packet above for the PoC only; it does not claim adapter parity.
 
 
 ## Part E · Application metadata

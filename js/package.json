@@ -1,6 +1,6 @@
 {
   "name": "@gramlot/gramlot",
-  "version": "0.3.18",
+  "version": "0.3.19",
   "description": "Declarative HTML/SVG interfaces with live data binding, authored in JavaScript or Python.",
   "license": "Apache-2.0",
   "repository": {
@@ -31,7 +31,7 @@
     "@codemirror/search": "^6.7.2",
     "@codemirror/state": "^6.7.6",
     "@codemirror/view": "^6.43.15",
-    "@genrojs/bag": ">=0.11.0",
+    "@genrojs/bag": ">=0.11.1",
     "@genrojs/builders": ">=0.7.0",
     "@genrojs/toolbox": ">=0.19.0",
     "@genrojs/tytx": ">=0.16.3",

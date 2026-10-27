@@ -5,6 +5,7 @@ import {ControllerProvider, FormulaProvider, RemoteProvider, RpcProvider} from '
 import {InlineCompiler} from './inline.js';
 import {isLogicMethod, callLogic} from './hooks.js';
 import {RemoteBinding} from './remote.js';
+import {DataBinder} from './data-binder.js';
 import {AskDialog} from './ask-dialog.js';
 import {ErrorNotifications} from './error-notifications.js';
 import {randomId} from '../random-id.js';
@@ -357,6 +358,7 @@ export class NodeBinding {
     #registrations = [];
     #stamps = new Set();
     #provider = null;
+    #binder = null;
     #remote = null;
     // The registrations of `remote` and of the `remote_<k>` parameters: their changes request the fragment again.
     #remoteRegistrations = new Set();
@@ -416,7 +418,7 @@ export class NodeBinding {
         }
         const node = this.node;
         const dataElement = node._getMeta('data_element');
-        if (dataElement && !PROVIDERS[node.nodeTag]) return;
+        if (dataElement && !PROVIDERS[node.nodeTag] && node.nodeTag !== 'dataBinder') return;
         if (!dataElement && typeof node.getAttr('remote') === 'string') this.#remote ??= new RemoteBinding(this);
         else if (this.#remote) {
             this.#remote.close();
@@ -450,6 +452,11 @@ export class NodeBinding {
         if (!dataElement) {
             this.#registerTopics();
             this.remote?.register();
+            return;
+        }
+        if (node.nodeTag === 'dataBinder') {
+            this.#binder ??= new DataBinder(this);
+            this.#binder.register();
             return;
         }
         this.#provider ??= new PROVIDERS[node.nodeTag](this);
@@ -548,6 +555,7 @@ export class NodeBinding {
     }
 
     #closeRegistrations() {
+        this.#binder?.unregister();
         for (const registration of this.#registrations.splice(0)) registration.close();
         this.#datapathRegistrations.clear();
         this.#remoteRegistrations.clear();

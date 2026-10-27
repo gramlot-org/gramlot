@@ -1,6 +1,6 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-24**.
+Document ID: **GC-070**. Updated: **2026-10-27**.
 
 **Historical record — published checkpoint before the naming migration:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
 
@@ -14547,3 +14547,1254 @@ including the final Chromium sweep of every gallery page. Examples PR 34 merged
 into main as f4547a92944812324dc848007d162092b796bed4. Its verifier is the same
 script already qualified by successful deployment 40496193235 attempt 3; no new
 package release or deployment is needed for this source consolidation.
+
+
+<a id="gc-070-1615"></a>
+
+## 1615. Shared WebSocket connection design — 2026-10-27
+
+Owner requests a separate worktree to define a persistent page/server connection,
+using the page ID as reference: "la connessione è tenuta direttamete solo dalla
+pagina priaria" and child iframe pages and independent windows opened by that
+primary are "servite dalla primaria tramite postmessges tra finestre".
+Each window retains its own Gramlot and communicates with its parent/children.
+This is design scope, not acceptance of an implementation or of unresolved details.
+
+The dedicated worktree is websocket-page-connections, based on local develop
+afd5a78. Read-only inspection confirms constitution 11.72 already requires
+postMessage for direct parent/iframe messaging. FrameMessages implements that
+boundary with instance sessions, source/origin checks and readiness/disposal.
+It does not register opener/opened-window peers or relay server requests.
+Its ready handshake requires a started Gramlot; using it to obtain main would
+require resolving the startup dependency explicitly.
+
+Reuse candidates: the GC-230 envelope and page ownership rules, RpcHandler,
+ServerAdapter.createTransport, and the existing frame connection responsibility.
+A pageId identifies a server page, not authentication. Responses carry request id
+but no pageId; shared delivery needs request-to-page correlation. Push addressing
+is not specified. No WebSocket transport is implemented in the inspected core.
+
+Confirmed initial transport split — owner, 2026-10-27: "per ora immagianmo due
+meccanismi paralleli : poi posso decidere di fare le rpc over websocket".
+Every page retains HTTP RPC; only the separate persistent communication channel
+is shared through the primary. RPC-over-WebSocket remains a future decision.
+The constitutional follow-up records this scope. The main bootstrap therefore
+does not depend on the new interwindow relay; RPC correlation is a future concern.
+
+Confirmed page-facing transparency — owner, 2026-10-27: "per la pagina figli ail
+canale è trasparente : lei parla col server tramite il suo page id"; "ogni pagina
+puo ignorare di essere figlia diretta o no". A page uses its own identity regardless
+of depth; routing and physical connection ownership stay inside the communication
+mechanism. Forwarding retains the originating pageId. Hypothetical send/from/content
+illustrates this contract, not approved API or wire naming. The previously proposed
+parent-chain routing algorithm has not been confirmed by this clarification.
+
+Confirmed direction — owner: "no attento nella send io mando SOLO al server".
+Send goes only to the server; pageId identifies the originating page. No topic
+multicast or direct page-to-page send follows from the publish/subscribe analogy.
+
+Receiver proposal — owner: "e la receive presumibilmente è un contenut di bag
+quindi potremmo vederlo come un set in un path ?" followed by "potrei immaginae
+piu receiver" and the illustrative page.receiver(channel, path) declaration.
+The proposed page-owned mapping selects a Data path for incoming Bag content by
+receiver channel. Multiple receiver declarations could serve separate paths.
+The name/signature, Source declaration placement, set versus merge/event semantics
+and lifecycle are not yet accepted. Relative addressing and unrestricted receiver
+multiplicity were subsequently confirmed below; detailed path grammar remains open.
+Do not infer multicast or a server-selected arbitrary Data path from this proposal.
+No naming convention or runtime implementation has been introduced.
+
+Relative receiver path confirmed — owner, 2026-10-27: "esatto" to the concrete
+example page.receiver('orders', 'data.orders') plus a server message naming
+channel orders and path selected, targeting data.orders.selected. The server's
+proposed send carries pageId, channel, path, data_tytx and fired. This confirms
+the receiver's base path plus a relative message path; it does not approve a
+literal concatenation algorithm, empty-path rules or new API naming conventions.
+Receiver multiplicity subsequently confirmed — owner: "no : nessun vincolo";
+"non è un problema avere sovrapposizioni. se poi serve le eviteremo". Multiple
+receivers may use one channel, including equal or overlapping paths. Deliver to
+the matching receivers within the addressed page; impose no uniqueness or overlap
+restriction. This does not imply cross-page multicast. Delivery order is not yet
+specified; any later restriction requires an explicit owner decision.
+
+Read-only fired inspection: existing bag-contract and binding-writes tests
+describe FIRE resetting its value silently to null after notification, including
+exception paths; the Bag contract test also documents no event for an unchanged
+value. Reuse this established mechanism if selected; do not invent a separate
+WebSocket event/reset mechanism. Tests were inspected, not run at this checkpoint.
+
+Open decisions, to settle one at a time:
+1. Registration and routing of child pages, opened windows and nested descendants.
+2. Disconnection/reconnection, page expiry and primary-window closure.
+   GC-230 §305 currently closes the page when its socket closes; continuity needs
+   an explicit revision rather than silently changing that rule.
+3. Origin/owner authorization, pending-call failure and push delivery guarantees.
+
+
+Sender/datastore proposal — owner, 2026-10-27: "potremmo ipotizzare di avere un
+datastore sul server (bag) legato al pageid", with a client counterpart. This opens
+the design of server-side per-page Bag state; it does not yet approve automatic
+synchronization, whole-Data replication, path correspondence, persistence,
+conflict handling or a new sender API.
+
+Read-only inspection: the existing Python/JS page registries store the page class,
+owner and expiry, not a per-page Data Bag; each call creates a fresh Page instance.
+GC-230 §010 documents this, and §040 lists state and serverpath as planned optional
+capabilities. A datastore lasting across calls must have explicit ownership and
+lifecycle beyond a single Page instance. Reuse the pageId/owner registry contract;
+do not infer that a client counterpart means retaining the complete client Data
+or introducing a second page identity. Next: clarify the extent of the counterpart
+and the sender's write contract. No datastore implementation or runtime test.
+
+Two-store authoring direction — owner, 2026-10-27: "unmprogettista di applicazione
+dovrebbe per la pagina progettare il datastore del client e quello del server".
+The author designs both datastores and their intended relationship for the same
+logical page. This supersedes treating the client counterpart as an assumed
+whole-Data replica; mapping and transfer declarations remain to be defined.
+The preceding discussion of server-side dataController/dataFormula explores
+reactive computation and actions on the server Bag. It does not settle execution
+language, dependency tracking, scheduling, lifecycle or an implementation scope.
+Current work remains contract design; no server datastore or reactive executor
+has been implemented or tested.
+
+
+
+Legacy serverpath investigation — requested by the owner, 2026-10-27.
+
+Evidence: genropy/genropy checkout at fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea,
+inspected read-only. Sourcerer located indexed occurrences; the following findings
+use one consistent local revision. No legacy runtime tests were executed.
+
+1. Authoring and initialization. A data declaration accepts serverpath (and the
+   historical _serverpath spelling). It registers an initial value/attributes in
+   the server context and retains canonical serverpath in Source.
+   setPendingContext writes that value to the per-page store and subscribes the
+   server path. The browser registers absolute client path -> server path.
+   Evidence: gnrpy/gnr/web/gnrwebstruct/base.py:820, gnrwebpage.py:2572,
+   gnrjs/gnr_d11/js/genro_src.js:619, and
+   gnrpy/gnr/web/daemon/siteregister.py:719.
+2. Client -> server. genro.dataTrigger maps a changed client path below the
+   registered root to the server root plus its relative suffix. It accumulates
+   typed-text values in _serverstore_changes by destination path. Repeated writes
+   to a path before transmission overwrite the pending value: this is state
+   collection, not a guaranteed event log. RPC calls attach this map; the server
+   dispatcher applies it to the page store before executing the method.
+   Ping also transports pending changes. Evidence: genro.js:1613,
+   genro_rpc.js:314, gnrwebpage.py:638 and siteregister.py:1101.
+3. Server -> client. The page store is a Bag associated with page identity.
+   Changes below subscribed server paths enqueue ClientDataChange records with
+   reason serverChange. RPC/ping results deliver dataChanges; the browser maps
+   each server root back to registered client roots, retaining the relative
+   suffix and applying a Bag write. Evidence: gnrwebpage.py:1642,
+   siteregister.py:185 and :1049, genro_rpc.js:535.
+4. Echo prevention. The browser applies incoming mapped changes with reason
+   serverChange, and dataTrigger excludes that reason from outbound collection.
+   This suppresses direct retransmission of received writes; it does not prove
+   that arbitrary application controller cycles are impossible.
+5. Concrete legacy examples. In
+   projects/gnrcore/packages/test15/webpages/tools/serverpath.py:15, client
+   test0.willbesetonserver maps to mytest0.mirror; the server reads it through
+   self.pageStore().getItem(...). test_4_innerpath (:51) declares
+   data('.mypath4', bag, serverpath='myserverpath4'); writing
+   myserverpath4.foo.bar in the server store reaches the corresponding client
+   .mypath4.foo.bar. rpc_setval (:74) uses with self.pageStore() as store.
+6. Transport and related APIs. serverpath is a declared data-path relationship,
+   not inherently a continuous WebSocket. The inspected implementation has
+   RPC/ping collection and response delivery. Separately, setInClientData accepts
+   page_id/path/value/fired and can use WebSocket; gnrwebsocket.js:163 also
+   dispatches datachanges to the same incoming mapper. Legacy getChildrenInfo
+   gathers child page changes by page ID, including registered external windows;
+   its direct cross-window Genro access is not acceptable under Gramlot 11.72.
+
+Discussion consequences (proposals, not approved Gramlot APIs):
+- serverpath is a concrete precedent for the application-designed relationship
+  between selected client and server Bag branches, with independent root names.
+  It could declaratively compose outbound observation/sending and inbound
+  receiving/mapping over the channel mechanism we are defining.
+- A receiver is the inbound channel -> client base-path declaration; serverpath
+  adds the server-side path relationship. The two concepts must be reconciled
+  explicitly rather than equating channel names with datastore paths.
+- Preserve the agreed separate HTTP RPC and persistent communication channels;
+  inspecting the old piggyback implementation does not authorize changing that.
+- Existing Bag notifications and origin information should be examined for reuse.
+  This mechanism alone does not establish server-side dataController/dataFormula:
+  their execution and lifetime remain separate design work.
+- Legacy limitations are evidence, not requirements: outbound collection handles
+  evt upd and stops at its first matching client root; inbound mapping visits
+  every matching client registration. The general serverChange branch does not
+  process fired/reset or deletion like the separate direct-client change branch.
+  Do not claim complete replication of inserts, deletes, attributes or fired
+  events, and do not import its overlap behavior into our unrestricted receivers.
+- Legacy typed-text and Bag serialization are not evidence of the proposed TYTX
+  wire contract. New encoding, event ordering, delivery and reconnection rules
+  still require a bounded contract.
+
+Current Gramlot boundary: GC-097 §085 explicitly rejects serverpath; GC-230
+§040 describes serverpath/state as planned optional capabilities. This finding
+expands the design evidence only. No core, adapter or legacy runtime was changed.
+Sources at the inspected revision:
+[legacy declaration](https://github.com/genropy/genropy/blob/fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea/gnrpy/gnr/web/gnrwebstruct/base.py#L820),
+[client propagation](https://github.com/genropy/genropy/blob/fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea/gnrjs/gnr_d11/js/genro.js#L1613),
+[incoming mapping](https://github.com/genropy/genropy/blob/fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea/gnrjs/gnr_d11/js/genro_rpc.js#L535),
+[server store observation](https://github.com/genropy/genropy/blob/fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea/gnrpy/gnr/web/daemon/siteregister.py#L185),
+[legacy examples](https://github.com/genropy/genropy/blob/fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea/projects/gnrcore/packages/test15/webpages/tools/serverpath.py).
+
+
+
+Legacy shared objects investigation — requested by the owner, 2026-10-27.
+
+Evidence: read-only inspection of genropy/genropy at
+fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea (current legacy checkout), plus the original
+Tornado gnrasync implementation at b5ffa9fa2f465316da965f438f025813d25a4a58,
+the parent of the asyncio replacement. Sourcerer discovery was cross-checked
+against these revisions rather than mixing indexed branches.
+
+- Identity and authoring. pane.sharedObject('mydata', shared_id='so_test1')
+  mounts a shared object under the client's mydata path. The demo asks the reader
+  to visit from another browser. shared_id identifies server state independently
+  of any one pageId; multiple pages/users can subscribe to the same object.
+  Each client has its own mapped Bag branch. SharedObjectsManager holds one
+  SharedObject per ID, with a Bag root and subscriptions keyed by page ID.
+- Join and initial state. som.subscribe gets or creates the object, checks
+  subscription privilege, and returns an init snapshot plus privilege.
+  The client installs that snapshot before marking ready and enabling outbound
+  observation. Client registerSharedObject only allows one mount per shared_id
+  in that page; this legacy restriction does not constrain our approved
+  multiple receivers or overlapping paths.
+- Client changes. genro.dataTrigger observes the shared branch and sends
+  som.datachange over WebSocket, carrying shared_id, relative path, value,
+  attributes, event kind and fired. It excludes reason serverChange.
+  The server applies ordinary updates/deletions to the central Bag using the
+  originating pageId as reason. Bag notifications broadcast the change to all
+  subscribed pages except the originating page.
+- Receiving. som.do_sharedObjectChange maps the relative path under the local
+  mount and uses Bag setItem, popNode or fireItem with reason serverChange.
+  Local bindings/controllers still react; origin marking suppresses direct echo.
+  Server-originated Bag changes can also broadcast to subscribers.
+- Fired is distinct. In the historical Tornado datachange, fired is broadcast
+  directly without changing the server Bag. Receiving clients use fireItem.
+  Therefore this event path does not itself trigger a mutation observer on the
+  server Bag. Our proposed server controllers need an explicit event contract,
+  not an assumption that this old path activates them.
+- Lifecycle/persistence. Explicit unsubscribe or server unregisterPage removes
+  page subscriptions. With no subscribers the object is removed after expire;
+  resubscription cancels that timer. Default expiry is zero. Optional save/load,
+  autoSave/autoLoad and file XML or database storage exist; persistence is not
+  inherent to sharing. The collaborative demo switches shared_id by room and
+  requests autoLoad/autoSave with expire=20.
+- Permissions. read_tags/write_tags select forbidden, readonly or readwrite at
+  subscription; the browser checks readwrite before transmitting. In both
+  inspected server versions, do_datachange/datachange do not check membership or
+  write privilege on each mutation. Treat that as an enforcement gap to resolve
+  in its owning library, not as a sufficient authorization model to port.
+- Concurrency. A per-object lock serializes the server mutation method. Focus/blur
+  also broadcasts a path-lock hint that disables a matching control in other
+  clients, but datachange does not enforce that hint as a write lock.
+  No version check, conflict-resolution or replay/convergence contract appears
+  in this path. Excluding the origin from broadcasts is not by itself a proof
+  that concurrently edited replicas converge.
+- Wire boundary. The old transport uses typed JSON/Bag XML; it is not the proposed
+  TYTX Gramlot protocol, nor proof of our primary-window postMessage topology.
+
+The current checkout uses asyncio where the historical implementation used
+Tornado. The findings above distinguish those revisions; source inspection
+does not establish runtime equivalence of the migration.
+
+Verification scope: source and checked-in test inspection. The current
+gnrpy/tests/web/gnrasync_test.py includes a real-WebSocket subscribe-and-write
+test for one page; it does not establish multi-client conflict handling,
+permissions, persistence or fired delivery. A runtime import attempt stopped
+at missing requests in the available Python environment, before any test ran.
+No dependency installation, source changes or legacy tests were performed.
+
+Discussion: serverpath links selected client branches to that page's server
+store; shared objects link several pages to state identified by shared_id.
+Both are evidence for declarative Bag relationships over our generic channel
+transport. Do not merge page identity, receiver channel and shared-object identity,
+or treat this investigation as approval to implement cross-user sharing.
+Server-side controller/formula execution remains a separate design decision.
+
+Sources:
+[historical SharedObject](https://github.com/genropy/genropy/blob/b5ffa9fa2f465316da965f438f025813d25a4a58/gnrpy/gnr/web/gnrasync.py#L409),
+[historical fired and broadcast](https://github.com/genropy/genropy/blob/b5ffa9fa2f465316da965f438f025813d25a4a58/gnrpy/gnr/web/gnrasync.py#L575),
+[client handler](https://github.com/genropy/genropy/blob/fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea/gnrjs/gnr_d11/js/gnrsharedobjects.js#L34),
+[client change sending](https://github.com/genropy/genropy/blob/fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea/gnrjs/gnr_d11/js/genro.js#L1627),
+[collaborative demo](https://github.com/genropy/genropy/blob/fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea/projects/gnrcore/packages/test/webpages/websocket/collaborative.py).
+
+
+
+Dedicated-object base proposal — owner, 2026-10-27: "ora immaginavo di usare
+qualcosa di analogo come meccanismo base ovvero la gestione bormale è come uno
+shard ... non sbared ma dedicato". Interpret for discussion as using the same
+remote Bag relationship/notification mechanism investigated in shared objects
+for ordinary per-page state, with a dedicated object rather than multi-page
+collaboration. Do not interpret shard as approval of database sharding.
+
+Candidate model: ordinary server state belongs to the logical page identified by
+pageId; declared client branches connect to it. A collaborative extension could
+use the same underlying mechanism with multiple authorized page participants.
+The primary window transports messages for descendants; transport ownership
+does not merge their dedicated state. Preserve the owner-designed client/server
+datastores and explicit branch relationships rather than assuming identical
+complete Bags. Object identity beyond pageId, ownership, access scope, lifecycle,
+reactivity and the public declaration contract remain to be settled.
+This records a design proposal, not permission to port the legacy implementation
+or a completed architecture decision.
+
+
+
+Network-hosted live-object proposal — owner discussion, 2026-10-27.
+
+The owner corrects the earlier assistant interpretation: one store per page/user
+is not the stated limitation; process-local ownership of the in-memory Bag is.
+The owner reports solving routing in Kajenn Orchestra with user-sticky affinity.
+That implementation has not been inspected in this workstream; do not claim
+verified HTTP/WebSocket routing or failover behavior for Orchestra.
+
+The owner then proposes workers hosting many in-memory objects (illustrative
+counts: 2,300 objects in one process and 1,450 in another), followed by:
+"un master index con tutti gli oggetti replicato in ridondanza tra piu server"
+and network-addressable processes hosting "un liveObject fatto d una bag con
+i suoi data controller e data rpc e data resolver". Given its address and an
+access token, a client could read and write over WebSocket.
+
+Candidate architecture for discussion:
+- A redundantly replicated master index locates objects and their host processes.
+- Host processes keep the live Bag and its associated behavior in memory.
+- The live-object concept includes data controllers, data RPC and data resolvers;
+  exact execution, scheduling and API contracts are still to be defined.
+- Address plus an access token enables a WebSocket access contract to define.
+  Authentication, permissions, token lifetime/revocation and subscription scope
+  are not settled by the existence of a token.
+- Dedicated per-page objects and objects shared by multiple clients are potential
+  uses of the same object-hosting mechanism. This does not impose identical
+  client/server Data structures or alter the agreed relative receiver paths.
+- Index replication is explicitly proposed. Object-data replication, persistence,
+  migration, restart recovery and failover guarantees are not thereby approved.
+
+This is exploratory architecture, not approval of a formal Live Object Tree,
+class naming, dependencies or implementation. Logical versus physical address,
+index consistency/ownership, placement, remote read/write semantics and relation
+to the earlier one-primary-window connection remain open. Preserve the previously
+agreed HTTP RPC path until an explicit decision changes it; the proposed live
+object's data RPC does not silently move page RPC to WebSocket.
+
+
+
+Related-project research — owner asks whether analogous projects exist, 2026-10-27.
+
+Primary documentation reviewed:
+- [SwimOS fundamentals](https://www.swimos.org/swimos-concepts/fundamentals/):
+  URI-addressable Web Agents combine state and behavior; lanes expose values,
+  maps and commands; links stream bidirectional state changes.
+  [Downlinks](https://www.swimos.org/client/python/downlinks/) address host/node/lane
+  and multiplex links to one host over one WebSocket. Among the projects reviewed,
+  this is the closest conceptual match to connected reactive objects; that is a
+  design comparison, not a finding of identical semantics or operational readiness.
+- [Orleans grain directory](https://learn.microsoft.com/en-us/dotnet/orleans/host/grain-directory):
+  stable grain identities map to their current activation location; distributed
+  directory/placement is directly relevant to locating objects across processes.
+  [Observers](https://dotnet.github.io/orleans/docs/grains/observers/) distinguish
+  transient connected notifications from stream delivery. It does not establish
+  a built-in Gramlot Bag/path/binding or browser WebSocket synchronization contract.
+- [Cloudflare Durable Objects](https://developers.cloudflare.com/durable-objects/concepts/what-are-durable-objects/):
+  globally identified objects combine behavior, in-memory state and durable
+  storage, with platform-managed placement/lifecycle.
+  [WebSocket integration](https://developers.cloudflare.com/durable-objects/best-practices/websockets/)
+  supports multiple connected clients and hibernation; hibernation discards
+  in-memory state even when client sockets remain connected. This is a managed
+  platform reference, not evidence for a custom worker deployment or automatic
+  reactive Bag replication.
+- [Dapr actors](https://docs.dapr.io/developing-applications/building-blocks/actors/actors-overview/)
+  encapsulate identity, state and behavior with runtime routing and lifecycle.
+  [Placement](https://docs.dapr.io/concepts/dapr-services/placement/) distributes
+  routing information across processes and supports high availability; the docs
+  describe transition of placement responsibility to Scheduler in newer versions.
+  Study the placement contract rather than pinning the design to a service name.
+
+The proposed Worldbrain direction has established relatives in stateful/virtual
+actors and reactive distributed objects. Its proposed Bag/TYTX, declarative
+controllers/resolvers and Gramlot UI integration remain project-specific design
+work; this comparison makes no uniqueness claim or completeness claim.
+No dependency selection, implementation, benchmark, deployment or acceptance
+decision follows from this documentation research.
+
+
+
+Deno/Cloudflare follow-up — verified 2026-10-27. The official
+[announcement of 2026-10-09](https://blog.cloudflare.com/deno-joins-cloudflare/)
+connects the acquisition to self-hosted, distributed Workers/Durable Objects and
+integration of celld with workerd. This extends the earlier managed-platform
+comparison: self-hosted object placement, routing and storage are explicitly part
+of the announced direction, not a claim that the integration is already complete.
+[Deno's announcement](https://deno.com/blog/cloudflare) also emphasizes execution,
+persistent state and WebSockets. The architectural resemblance to our proposal
+is an inference; Bag/path reactivity and Gramlot bindings remain separate contracts.
+
+
+
+Detailed comparison — 2026-10-27, requested by the owner.
+
+The comparison must distinguish three layers: celld's distributed hosting,
+Durable Objects' object runtime/storage API, and Cloudflare Agents SDK's higher
+level state synchronization. The last is substantially closer to our discussion
+than the base Durable Object API alone.
+
+[Agents state documentation](https://developers.cloudflare.com/agents/runtime/lifecycle/state/)
+describes JSON-serializable state, setState persistence/broadcast,
+onStateChanged(state, source), validation before persistence, and bidirectional
+client synchronization. Thus server reactivity, origin information and automatic
+WebSocket state sync are not differentiators on their own. The proposed Bag model
+instead emphasizes selected branches, node/path semantics, independent receiver
+mount paths and declarative controller/formula/resolver dependencies. These are
+design targets, not implemented advantages or claims about all possible SDK extensions.
+
+[celld architecture](https://celld.dev/) describes SQLite per cell, a shared bucket,
+and conditional writes/leases determining ownership, with restoration on another
+node after host loss. That differs from the proposed replicated master index;
+neither directory technology nor durability has been chosen for our design.
+[Durable Objects](https://developers.cloudflare.com/durable-objects/concepts/what-are-durable-objects/)
+distinguish in-memory state from durable storage and can deactivate/hibernate;
+our object lifecycle and recovery policy remain undecided.
+
+A potential future composition is hosting Bag behavior within an existing object
+runtime; it is an architectural possibility, not a selected dependency or verified
+integration. No benchmark, compatibility, Agents-on-celld certification or
+implementation acceptance is claimed.
+
+
+
+Standalone object-service and client-reference clarification — owner, 2026-10-27.
+
+Owner corrects the browser-oriented interpretation: "il browser non è coinvolto".
+The live-object service is autonomous: Bag, controllers and resolvers run in the
+hosting process, and authorized programs access them remotely. The earlier
+Gramlot page connection is a possible consumer, not a required execution host.
+
+The owner first illustrates an object URL with a set operation, dotted Bag path
+and typed value, then proposes POST/GET/DELETE/PUT, and finally refines the desired
+application-facing shape to:
+    myobj = livObject.connect("https://liveobj.acme.com/iuyuiu8t8t6g")
+    myobj.setItem(path, ...)
+These are illustrative names/signatures, not approved GC-225 API spelling.
+The intended access is an object reference with familiar Bag operations; URLs,
+HTTP verbs and WebSocket frames belong below that application-facing abstraction.
+
+The acme.com URLs are hypothetical design examples, not endpoints to contact.
+This task has not navigated to or sent requests to them. Connect/read/write
+completion semantics, token presentation/validation details, subscription scope,
+serialization and failures remain to be defined. Local-copy behavior is confirmed below.
+Do not assume connect downloads the entire Bag, that the reference is an ordinary
+local Bag, or that setItem completes synchronously. HTTP method mappings remain
+proposals; connect's WebSocket role is confirmed below. The earlier separate page
+HTTP RPC contract is not silently replaced. No client library, hosting adapter or object runtime
+has been implemented or qualified.
+
+Connection behavior confirmed — owner, 2026-10-27: "la connect si collega al
+oggetto con token e attiva un websockert". Connect uses a token to establish
+access to the identified object and activates a WebSocket connection. The
+reference represents this ongoing connection. Exact names/signatures, token
+transport, operation envelopes, reconnect and delivery semantics
+remain open. No implementation or deployment is authorized by this design record.
+
+Synchronized local copy confirmed — owner, 2026-10-27: "si ha una copia che si
+sincrozza se un altro. utente scrive nell oggetto remoto", answering the local
+copy versus remote-only-read question. The connected reference keeps a local
+copy of the object data; changes made to the remote object by another user
+propagate to that copy through the established WebSocket connection.
+Whole-object versus selected-branch scope, initialization/readiness, local write
+timing (optimistic versus acknowledged), ordering, conflicts and reconnect
+resynchronization are not settled by this confirmation. Do not claim strong
+consistency or a particular replication algorithm. Next decision: whether a
+local setItem immediately changes the local copy or waits for server acceptance.
+The owner subsequently prioritizes ownership roles before settling write timing.
+
+Object owner clarified — owner, 2026-10-27: "il processo che ga dato il comando
+create object con un contenuto i iziale o vuoto e che sta condividendo con altri
+o che lo dichiara solo suo". Owner means the process that issued object creation,
+with supplied initial content or an empty object, and chooses exclusive use or
+sharing with others. Subscribers are the other connected participants maintaining
+synchronized copies under the access contract still to define.
+Creation ownership must be distinguished from the host process that celld or
+another runtime selects to hold the object. They may coincide, but their roles
+are not synonymous. The term owner in this live-object design also must not
+silently redefine the existing HTTP page registry's owner authentication field.
+Creator disconnect/death, ownership transfer, subscriber write permissions,
+object lifetime and local-write timing remain undecided. No API naming or
+implementation is introduced by this clarification.
+
+Ownership example/refinement — owner, 2026-10-27: "l'owner è la ditta x che
+pubbica un oggetto remoto listin prezzi che i suoi cliento possono sottoscrivere
+se lui cambia loro hanno il cambiamentio". The company publishes and updates a
+remote price-list object; its customers subscribe and receive the changes.
+The example distinguishes logical ownership/publication authority (the company)
+from the process that issues creation on its behalf and the infrastructure host.
+The prior creator-process description must not be read as assigning the company's
+ownership to the lifetime of a particular connection or process instance.
+The demonstrated flow is publisher writes -> remote object -> subscribed copies.
+General subscriber write permissions and owner-disconnection/object-lifetime
+rules are still open; the example does not by itself approve a universal
+read-only subscriber policy or a persistence implementation.
+
+
+Owner-side reactive copy — owner example, 2026-10-27: the publishing company
+can keep a reactive copy with its own triggers, for example updating its database
+or notifying its technical director when a price changes. Ownership and
+subscription are compatible roles. Local application behavior is distinct from
+behavior hosted with the remote object; sharing data does not imply sharing
+controller code. Side-effect timing and replay guarantees remain undecided.
+
+First-phase scope — owner, 2026-10-27: "la prima fase la facciamo che ogni
+adapter ha un elenco di page id e ogni page id ha una sua bag che puo essere
+abbinata ad una bag del client come faceva serverpath. serve una api piu furba".
+Each adapter maintains a page-ID registry with a server Bag per page ID, which
+can be linked to client Bag data using the previously discussed bidirectional
+serverpath relationship. This narrows the immediate design to adapter-held page
+stores. The separate Kajenn store service and distributed live-object
+infrastructure remain future possibilities, not prerequisites for this phase.
+Process-local storage does not itself solve process affinity or restart recovery.
+The owner requests an improved authoring API; no concrete new name, signature,
+initialization precedence or runtime implementation is approved by this statement.
+GC-097's current serverpath rejection remains the implemented boundary until
+the agreed replacement contract and its bounded implementation are defined.
+
+Declarative binder and change flow — owner, 2026-10-27: "ha il suo source node
+e funziona in analogia ad un dataRpc", proposing pane.dataBinder(...).
+The owner then specifies that the binder announces a subscription over WebSocket
+to server data at saas.dart; server datachanges are delivered to the page ID,
+which routes them to the binder for application under client .alfa. Conversely,
+the binder observes browser datachanges under .alfa and sends them to the server
+with destination saas.dart. Relative descendant paths are preserved in both
+directions. The latest example uses saas.dart (earlier examples used saas.dert).
+The page ID identifies the logical page even when its physical connection belongs
+to the primary window. A binder does not imply a separate physical WebSocket.
+The SourceNode declaration and two-way change flow are owner decisions; exact
+signature, subscription identity, activation/disposal protocol and initial-state
+precedence remain to define. The proposed Python/JS spelling follows GC-225
+mechanical translation (data_binder/dataBinder); no runtime API exists yet.
+
+Legacy shared-object flow rechecked read-only: gnrsharedobjects.js
+do_sharedObjectChange translates relative incoming paths to a local root and
+applies setItem/popNode/fireItem with serverChange origin. genro.js dataTrigger
+sends local changes with relative path, value, attributes, event and fired,
+excluding direct serverChange echoes. gnrasync.py SharedObject.datachange
+applies ordinary changes to its Bag; its observer broadcasts to subscribed
+pages except the originating page. Fired follows a separate broadcast path
+without changing the server Bag. These are precedents, not wholesale adoption:
+the new design allows multiple/overlapping bindings, so legacy first-match and
+page-wide origin exclusion must not silently drop delivery to other binders.
+Echo handling and reaction-generated changes need an explicit contract.
+
+Binder-level origin — owner proposal, 2026-10-27: "ogni binder potrebbe avere
+un suo id da usare come origine del datachange, così escludiamo solo quello
+che ha mandato la modifica e gli altri la ricevono".
+Use the originating binder identity to exclude only that binder from delivery,
+rather than excluding its entire page. Other interested binders, including
+those on the same page, receive the change. Exact identifier scope and wire
+fields remain unspecified; routing must distinguish binders across pages.
+Excluding the original binder and suppressing retransmission when another binder
+applies an incoming change are distinct concerns. The latter remains part of
+the echo contract; this proposal alone does not establish general cycle prevention
+for overlapping bindings or controller-generated changes.
+
+Initial snapshot followed by changes — owner, 2026-10-27: "quando il binder
+si registra il server gli manda il contenuto attuale di saas.dart e poi da quel
+momento solo i datachanges".
+On registration the server sends the current content of the subscribed server
+branch. The binder initializes its mapped client branch from that content;
+subsequent delivery consists of datachanges. This establishes server-provided
+initial content for the binding. The snapshot-to-changes transition must not
+lose intervening changes or deliver them out of sequence with the snapshot;
+the mechanism ensuring that transition remains to design. Missing-branch
+behavior, client writes during registration and reconnect behavior are not
+settled by this decision.
+
+Server-side recipe and reactive round trip — owner, 2026-10-27, proposes that
+the module serving a page also declares a recipe for its page store, containing
+data resolvers, data RPCs, data controllers and data formulas. In response to the
+proposed store-creation lifecycle, the owner confirms: "esatto e quindi un
+cambiamento dal client tramite il binder può attivare un datacontroller sul
+server che modifica altri dati e questi tornano al client tramite i binder".
+The adapter creates the page store and activates its recipe at store creation;
+the recipe's controllers remain active for the store's lifetime. The serving
+module describes both client behavior and server-side data behavior.
+A client change delivered through a binder mutates the server Bag and can trigger
+a server controller. Further data changes produced by that controller propagate
+through interested binders back to the client. They are new reactive changes,
+not merely the incoming write's echo; binder-origin exclusion must preserve
+delivery of derived results, including to the originally sending binder when
+its subscription covers those results.
+This is an accepted design direction, not an implemented headless runtime or
+approval of concrete method names/signatures. Server-side RPC destinations,
+resolver execution, controller scheduling, async behavior and store destruction
+remain unspecified.
+
+Remaining: settle access to the page's server Bag, store destruction, registration
+transition and subscription identity/routing, incoming-change echo semantics
+and server reactive execution, then child registration/routing and the adapter
+implementation boundary.
+PoC implementation request — owner, 2026-10-27: "potremmo fare in branch
+separati un poc con le modifiche all adapter python e a gramlot per gestire
+i websocket" and "per una prova neutra potremmo usare solo uvicorn".
+The owner selects "Prima pagina singola, poi finestre figlie" in response to a
+scope proposal covering a page Bag, dataBinder, initial snapshot, two-way changes
+and one server controller computing an outcome. This authorizes bounded connected
+core/Python adapter work, with Uvicorn as the first host. Child-window forwarding,
+Kajenn integration and general server resolver/RPC execution are subsequent work.
+Existing RPC stays on HTTP. No publication, deployment or consolidation is requested.
+
+Isolated preparation:
+- Core worktree: /Users/gporcari/.codex/worktrees/websocket-page-connections/gramlot,
+  branch codex/websocket-page-stores, based on afd5a78.
+- Python adapter worktree:
+  /Users/gporcari/Sviluppo/gramlot/worktrees/websocket-page-stores/gramlot-py-server,
+  branch codex/websocket-page-stores, based on develop at 285f031.
+- Existing unrelated edits in the primary checkouts were not copied.
+- Installed refreshed npm dependencies without a lockfile and built the browser
+  assets. Created /private/tmp/gramlot-websocket-poc-venv with both local packages
+  editable and current dependencies. These local linked packages are for the
+  requested cross-repository PoC, not a distribution-policy change.
+
+Read-only implementation findings: Uvicorn Application currently accepts HTTP
+and lifespan scopes, not WebSocket. GramlotServer's page registry tracks
+expiry/class/owner and creates a fresh Page per HTTP call. Python Builder
+compute_logic runs data elements once, not reactively; GramlotBuilder overrides
+it to leave client declarations inert. A server reactive executor is therefore
+new Gramlot work, not an existing capability to claim or an application-local
+callback substitute. Builder/Bag dependency source remains untouched.
+The owner rejected Page.store(root) / Page.page_store(root), choosing a separate
+PageStore class in the Page module, with its own main(root) and Python methods:
+"la chiamerei PageStore e la metterei nello stesso modulo della Page, con un suo
+main che costruisce la recipe". The implementation uses that separate class.
+
+First reviewable trial: a Python-authored page has two binders at different
+client paths observing the same server branch, a bound quantity input and a
+bound calculated total. Snapshot initializes both; editing one copy updates
+the server, the other copy and the controller's result. Verify typed Bag
+payloads, origin exclusion per binder, return of derived changes to the sender,
+subscription cleanup, owner isolation and preservation of HTTP RPC. Registration
+must order the snapshot before subsequent changes. Socket/store lifecycle,
+failure behavior and precise new API contracts must be recorded before their
+affected implementation; this request does not silently settle them.
+
+Baseline verification, before runtime edits:
+- Browser runtime build passed.
+- 57 core JavaScript tests passed across binding-rpc, gramlot-server and page-close.
+  The first invocation used the wrong Python executable; rerunning with the
+  isolated virtual environment on PATH passed all 57.
+- Uvicorn test_asgi: 9 passed, 3 failed. Two existing expected CSS lists omit
+  the current default core theme. The gallery staging test fails because its
+  output parent directory for pages/00-index.py is missing with the current
+  gramlot-examples package. These are pre-existing baseline failures, not new
+  WebSocket regressions. Logs: /private/tmp/gramlot-websocket-baseline-js.log
+  and /private/tmp/gramlot-websocket-baseline-py.log.
+- At this initial baseline checkpoint no PoC runtime had been implemented.
+
+Implementation checkpoint, 2026-10-27: core now has a separate PageStore
+recipe executor and per-page store lifecycle, the Source dataBinder element,
+one browser store connection and binder-level origins. Uvicorn adds the
+experimental websocket=True option, with a mounted ASGI WebSocket route,
+same-origin/owner checks and per-connection subscription membership.
+The module-local PageStore.main declares setters and synchronous named
+controllers/formulas. General server resolvers/RPCs and async methods are not
+implemented. Socket disconnect closes the page/store under the existing GC-230
+rule; reconnect, persistence and child windows remain out of scope.
+The earlier suggested Python spelling data_binder was not adopted: dataBinder
+is the common Source grammar name, following dataController/dataRpc and the
+owner's chosen declaration, with existing language-specific calling conventions.
+
+The new cancellation test exposed a Bag JS defect: popNode passed reason in
+_onNodeDeleted's pathlist slot. After the explanation, the owner authorized
+"ok correggilo allora se è un errore". The owning repository's isolated
+codex/bag-delete-origin branch corrects the argument position and adds six
+regressions. All 793 Bag tests pass. npm installs that local package in the
+PoC environment; no installed source was patched manually and nothing released.
+
+The ASGI contracts pass (5 tests), as do the focused browser binder contracts
+(6 tests) and PageStore contracts (7 tests). Chromium and WebKit both pass the
+real Uvicorn round trip: snapshot, two binders, typed server-calculated total,
+insert/delete without echo, HTTP RPC and disposal. The broader core Python run
+passed 240 tests and 382 subtests with one existing expected failure before
+the additional root-deletion regression; that additional test also passes.
+The broader JavaScript run passed all behavioral tests; stale generated bundles
+failed integrity checks and were rebuilt, after which the bundle checks passed.
+Final verification counts are recorded below when the final checks complete.
+
+The Uvicorn baseline failures remain visible: two stale default-theme
+expectations, the existing gallery staging failure with current examples,
+and two HTTP conformance cases where a leading UTF-8 BOM is not decoded by
+the original adapter. The latter two failures were reproduced against a
+temporary extraction of the unmodified adapter develop source, with the same
+environment; they are not introduced by the WebSocket work.
+No Kajenn or shared-window implementation has been attempted. The runnable
+fixture and reproduction instructions are in GC-250; these are experimental
+branch results, not production readiness or owner acceptance.
+
+Final checks, 2026-10-27: all 3,775 core JavaScript tests pass after the final
+browser build. The final full core Python run passes 242 tests and 382 subtests
+with one existing expected failure, including all 8 focused PageStore tests.
+The affected adapter selection
+has 14 passing tests and the five baseline failures detailed above; all five
+new WebSocket ASGI tests pass. Both final Chromium and WebKit runs pass.
+Adapter documentation pairing and both Sphinx builds pass; new GC-250 identity
+uniqueness, paired core records and whitespace checks pass. Bag JS has 793
+passing tests including all six deletion-origin regressions.
+The correction and PoC are local branch work; no package, source push, release
+or deployment was performed. The single-page trial is ready for owner review.
+
+Shared-window phase, 2026-10-27. Owner observes "ok pare andare" on the
+single-page demo and then explicitly requests "ok procediamo con iframe e
+finestre figlie, mantenendo una sola websocket nella pagina primaria".
+The PageStoreConnection now routes through parent/opener using postMessage;
+only the primary opens a socket. Uvicorn multiplexes explicitly attached page
+IDs under the authenticated owner, with separate per-page subscriptions.
+Same-origin peers and an identical store endpoint are required in this PoC.
+Source removal, navigation and window closure release the affected branch;
+socket loss retains the trial's existing close-store behavior for all attached
+pages. No reconnect or election of a replacement primary is implemented.
+
+Verification: all 3,782 core JavaScript tests pass, including seven new routing
+and lifecycle contracts. All eleven ASGI PageStore tests pass. Chromium and WebKit
+both pass direct/nested iframe and primary/descendant popup round trips with
+one physical socket, distinct page IDs and independent stores, HTTP RPC,
+child reload, branch removal and popup closure. WebKit exposed missing final
+postMessage delivery when contexts are destroyed; a 500ms window.closed check
+now handles both a lost parent and closed child windows, without reconnecting.
+The initial full JS run used a Python executable without Gramlot; rerunning
+with the PoC virtual environment on PATH passed the entire suite.
+No further dependency source changes were needed. These are verified local
+PoC results; owner review of this extension and consolidation remain separate.
+The broader Uvicorn suite still has the five previously recorded baseline
+failures and exposes one further stale default-theme expectation in its tutorial
+test. That sixth failure is reproduced against the unmodified adapter source.
+The new PageStore contracts pass, including primary-disconnect cleanup of every
+attached store. Logs: /private/tmp/gramlot-family-js-final.log,
+/private/tmp/gramlot-family-browser-final2.log,
+/private/tmp/gramlot-family-adapter-tests.log and
+/private/tmp/gramlot-family-tutorial-baseline.log.
+Adapter documentation pairing and both Sphinx builds pass; the four changed
+core document pairs retain matching anchors and GC-250 has matching content
+and section identities. The local demo now serves /py/family for owner review.
+
+Server trigger review, 2026-10-27. Owner questions ancestor propagation and
+node/child classification and directs comparison with legacy shared objects.
+Read-only inspection confirms two separate layers: legacy SharedObject
+subscribes to its root Bag, reconstructs the changed path from pathlist and
+broadcasts mutations (gnrpy/gnr/web/gnrasync.py, _on_data_trigger); the legacy
+Source runtime classifies each event relative to the dependency as node,
+child or container (gnrjs/gnr_d11/js/gnrdomsource.js, getTriggerReason) and
+passes _triggerpars and _reason to providers. This classification belongs
+to a delivery/dependency, not globally to the mutation.
+Gramlot's browser DataRouter and providers already preserve this distinction.
+The Python PageStore PoC receives propagated Bag events, but its controller
+selection reduces relationships to _intersects and _execute passes only the
+Source node and current parameter values. It loses event context for controller
+execution and does not implement the browser's attribute-sensitive routing.
+Thus verified WebSocket synchronization does not establish server reactive
+runtime parity. The earlier compiled-recipe explanation was too broad:
+compiling the Source alone does not supply event routing and provider semantics.
+No runtime or dependency source changes in this review. Follow-up is to align
+server trigger delivery with the legacy-derived Gramlot contract; concrete
+Python callback exposure and the bounded implementation remain to be settled.
+
+History investigation, owner request 2026-10-27: searched every locally
+available ref in the non-shallow genro-bag-js repository for trigger
+classification and deletion/move evidence. No removal of node/child/container
+classification from the modern src implementation was found. Its initial
+commit a8fffd55925e02d56bfddd5db1039a163bfd93b6 (2026-01-20) imports the
+legacy GnrDomSourceNode implementation as reference material; getTriggerReason
+remains in that legacy file at the inspected head. In GenroPy history,
+8b7abfaf1bcc2cd47eda5be384a6639df47f0479 (2015-05-20, "fix trigger js")
+extracts existing inline classification from trigger_data into getTriggerReason
+in gnrdomsource.js; it does not remove it from gnrbag.js. Gramlot PoC commit
+0f58485 (2026-09-11) includes the equivalent classification in BuilderHandler.
+This is bounded evidence from local history, not a claim about unavailable
+branches or repositories. No runtime or dependency edits.
+
+Corrected investigation target, owner clarification 2026-10-27:
+"dovevi vedere la stiria di builder.py". The relevant history is Python
+genro-builders, not genro-bag-js. It contains the requested functionality:
+72de432fc1ffee33bdcb6328c94ad591561534f5 (2026-04-03) adds reactive
+data_formula/data_controller execution to builder.py; 8aeea7cd3219d46d83a2252f037c46e20e85b46f
+the same day adds BindingManager's node/container/child classification and
+five tests. 09789d8f93abb9fef750d803e01406fde1082887 (2026-04-05) splits
+builder.py into a package; this is a move, not the removal of reactivity.
+3c84de19d19e4c9da7b08f0348ec5794519e8c13 (2026-04-14) replaces per-node
+push dispatch with a pull model, removes data_controller and retains
+get_trigger_reason as a utility. 696b7f1382bbbfc4db6e227b53e259528ba35bf0
+(2026-04-16) adds dependency-graph dispatch in ReactiveManager.
+The definitive removal from active source is
+0d2c169ff9dca86bb6071ef833fe69c2e4dda615 (2026-05-10): the restart removes
+builder/_binding.py, builder/_reactivity.py, manager.py, dependency_graph.py,
+formula_resolver.py and the legacy tests, reducing the builder to its grammar
+substrate. Its parent still contains get_trigger_reason. The commit attributes
+the removal to the 2026-05-03 restart decisions. aff54f4 (2026-05-25) later
+removes archived pre-rebuild material, not the original runtime removal.
+The current installed static-first implementation remains as previously
+observed, but a historical Python implementation exists and is the appropriate
+evidence for the owner's requested review. No restoration or dependency edits
+are authorized or performed by this history inspection.
+
+Historical implementation review, owner request 2026-10-27: "controlla come
+era implementata quella parte e nel caso la reintroduciamo almeno nel builder
+gramlot". Reviewed the April 3 BindingManager, builder.py controller/formula
+registry, the April 14 pre-pull BuiltBagNode/BindingManager and their tests,
+against today's GramlotBuilder, PageStore and browser DataRouter/providers.
+This is code/test inspection, not execution of the historical test suite.
+
+Recoverable mechanism: one subscription to the Data root; registrations from
+reactive pointers in the built recipe; absolute path comparison with segment
+boundaries; node/container/child classification; fresh parameter resolution
+at execution; subscription cleanup. April 3's five tests cover exact,
+ancestor, descendant and unrelated paths plus the classifier itself.
+However, BindingManager computes the relation then passes only a built node
+to its callback. The April 14 implementation similarly reduces it to
+_node_affected and calls on_data_changed(changed_path, reason=origin).
+Neither inspected execution path exposes the complete relation/event context
+to the authored controller. Their tests establish activation, not that API.
+Other historical assumptions cannot be copied: old attribute events use a
+list in oldvalue rather than today's attrs_diff; the inspected event handler
+does not append node.label for insert/delete; the old built/source split,
+render callbacks, timers and lifecycle differ from the current core.
+
+Concrete proposal, not yet accepted as an implementation contract: introduce
+the bounded Python reactive execution under GramlotBuilder, activated only
+for the separate PageStore recipe, and replace PageStore's minimal controller
+list/executor with that mechanism. Ordinary Page authoring stays inert.
+Reuse current SourceBagNode pointer/path/runtime-value services and Data Bag
+events; align per-dependency event classification and provider trigger context
+with current Gramlot JS (_reason, _triggerpars, changed Data node), retaining
+the distinction from binder origin. Keep the PageStore transport subscription
+and snapshot/delta delivery separate from reactive recipe execution.
+No generic genro-builders or Bag dependency edits, browser rendering,
+historical BuiltBag layer, timers, async/RPC/resolvers or general cycle policy
+are included in this proposal. Tests must cover all three relations,
+attributes versus values, insert/delete, ancestor replacement, unrelated
+paths, fresh passive values, controller cascades/context and disposal.
+Implementation activation/API details await owner confirmation; no runtime
+changes in this review.
+
+Python reactive recipe implementation, owner confirmation 2026-10-27:
+"si certo diciamo che se metto il page store deve funzionare".
+GramlotBuilder now owns a private BindingRuntime for server recipes.
+PageStore.start activates it automatically; GramlotServer creates explicitly
+declared PageStore subclasses even when no WebSocket is configured. PageStore
+retains its independent Bag observation for binder deltas; the former controller
+list and minimal executor are removed. Ordinary Page/GramlotBuilder authoring
+remains inert and never runs browser declarations as Python.
+
+Each reactive pointer registers its absolute path/attribute and Source parameter.
+DataChange preserves the mutated Data node, origin, event kind, path, old/new
+value, attribute diff and index, then derives node/child/container separately
+for each matching dependency. Optional _node/_reason/_triggerpars keyword
+parameters expose that context; existing authored arguments remain strict.
+Value and attribute subscriptions follow the browser routing filters.
+Controller-generated events queue behind the active event and parameters are
+read fresh. PageStore disposal and failed activation release the subscription;
+declaring a store needs no explicit application activation call.
+
+Verification: 18 focused PageStore/recipe tests pass, including the three
+relations, unrelated paths, per-dependency contexts, insertion/deletion,
+attribute filtering, passive values, cascades, startup, disposal, failure
+cleanup, inert browser authoring and automatic activation without a socket.
+The full core Python suite passes 252 tests and 382 subtests with one existing
+expected failure; all 3,782 core JS tests pass. All 11 ASGI PageStore tests
+pass. Chromium and WebKit pass the full binder/HTTP/shared-window round trip.
+Logs: /private/tmp/gramlot-server-reactivity-python-final.log,
+/private/tmp/gramlot-server-reactivity-js-final.log and
+/private/tmp/gramlot-server-reactivity-browser.log.
+
+The bounded runtime executes a fixed top-level recipe of setters and synchronous
+named controllers/formulas; _onStart/_userChanges are literal booleans.
+Unsupported controls fail explicitly. Dynamic Source rebinding, timers,
+topics, async/RPC/resolvers and cycle detection remain outside this increment.
+Local fired context follows router filters, but fired delivery through binders
+remains unsupported. No generic Builder/Bag dependency source was changed.
+GC-250 describes the implemented API and limitations. Implementation and
+verification are complete for this increment; owner acceptance is separate.
+
+Shared-channel RPC increment, owner request 2026-10-27: "bisognerebbe quindi
+completare il girmwebsocer ance facendo transitare le rpoc". The default browser
+adapter now selects WebSocketTransport when the page has websocketUrl. The
+same channel carries unchanged Source/Data RPC envelopes and binder operations,
+including child pages. The Uvicorn dispatcher reuses GramlotServer.call;
+per-page correlation, cooperative cancellation and disconnect cleanup are
+implemented. HTTP remains for pages without that channel; no RPC fallback.
+Verification complete: all 3,788 JS tests pass with freshly built runtime
+bundles; Python passes 252 tests and 382 subtests with one existing xfail.
+All 20 ASGI PageStore/RPC tests pass. Chromium and WebKit verify single-page
+and shared-window round trips, declarative dataRpc, reverse response order,
+errors and cancellation, including a nested popup and zero HTTP RPC requests.
+Both adapter documentation builds and paired identities pass.
+Logs: /private/tmp/gramlot-ws-rpc-js-full.log,
+/private/tmp/gramlot-ws-rpc-python.log, /private/tmp/gramlot-ws-rpc-asgi.log,
+/private/tmp/gramlot-ws-rpc-browser.log and /private/tmp/gramlot-ws-rpc-docs.log.
+The six previously established wider Uvicorn HTTP baseline failures remain
+outside this change; this increment does not claim a green full adapter suite.
+The optional Ruff check could not run because Ruff is absent from the PoC venv.
+The demo adds a Python-authored dataRpc input/result alongside the binders and
+initializes the server fixture directly, without an ordinary dataSetter example.
+Limits: asynchronous WS calls only, cooperative cancellation without rollback,
+no replay/reconnect or Kajenn integration. No publication or release.
+Implemented and verified in the isolated PoC; owner acceptance remains separate.
+The earlier HTTP-only PoC restriction is superseded by this explicit request.
+
+Unified family protocol increment, owner 2026-10-27: each Gramlot manages its
+direct Gramlot iframes and popups, closure cascades to descendants, and "dovrebbe
+essereci u. solo protocollo di comunicazione usato da tutti". FrameMessages now
+owns that common registry, handshake, identity checks and lifecycle; it is held
+privately by Gramlot at _frames. The separate PageStoreConnection peer/session/
+handshake/listener/timer implementation is removed. Its server-page routes use
+registered family children. All window data shares gramlot:message with typed
+publish/server payloads. Publication parent includes the opener; pageId selects
+a direct registered child. PageStore, binder and RPC authoring are unchanged.
+
+One handshake establishes the family before Source loading; page readiness and
+server-channel readiness remain separate metadata so initial RPC cannot deadlock.
+Closing a parent or removing a Source iframe disposes descendants and closes their
+registered popups. Lost unload messages are covered by the shared window.closed
+check. Unregistered/non-Gramlot windows remain outside this lifecycle. Network
+failure closes the server channel without destroying ordinary publications.
+No Web Worker, reconnect, alternate protocol or compatibility alias is introduced.
+
+Verification complete: all 3,789 JavaScript tests pass with rebuilt runtime
+bundles. Chromium and WebKit pass the combined publish/binder/RPC family scenario,
+including intermediate-popup closure, iframe branch removal and actual primary
+window closure. Both also pass existing HTTP/file/opaque iframe publications and
+the new no-WebSocket family scenario: popup publication, recursive closure and
+preservation of a non-Gramlot window opened by the primary. Browser tests use
+explicit contexts, so primary closure cannot implicitly close the test context.
+The public core Sphinx build and its links/anchors checks pass, as do both adapter
+documentation builds and paired document identities. ASGI implementation is
+unchanged; earlier backend checks and baseline limitations remain recorded above.
+
+Logs: /private/tmp/gramlot-family-unified-js-full.log,
+/private/tmp/gramlot-family-unified-browser.log,
+/private/tmp/gramlot-family-unified-publish.log,
+/private/tmp/gramlot-family-unified-docs.log and
+/private/tmp/gramlot-family-unified-adapter-docs.log.
+Implemented and verified in the isolated PoC; acceptance and publication remain
+separate. Existing browser pages must reload the primary and reopen connected
+children to use the unified protocol; no compatibility bridge is retained.
+
+Historical record — initial PageStore topic publication increment, owner
+2026-10-27 (no-reply and socket-close policies superseded below): server=true without
+pageId addresses the sender's PageStore, explicit pageId another store, with
+"Consentito tra pagine dello stesso owner" as the confirmed authorization rule.
+The existing common server channel now carries op=publish with verified sender
+pageId and optional targetPageId. GramlotServer.publish checks both owners and
+live stores before invoking PageStore.publish. Destinations can be on another
+socket; the registry remains process-local. No RPC reply or new window protocol.
+
+BindingRuntime now activates subscribe_<topic> on named synchronous controllers
+and formulas. Presence, including false, subscribes; declared arguments override
+payload and are resolved fresh. _subscription_kwargs exposes the original
+payload and normal trigger context names expose the topic. Ordinary Data
+reactivity and binder synchronization remain independent and receive resulting
+writes. All subscriptions exist before _onStart; disposal clears them.
+Server publication preserves existing local-first browser semantics. Invalid
+or unauthorized messages follow the PoC's socket-close policy. No retained
+events, retries, server-to-browser topic push API or Source self-topics added.
+
+Implementation checks pass: 3,791 JavaScript tests; 260 Python tests and 390
+subtests with one existing xfail; 26 ASGI PageStore tests. Chromium and WebKit
+pass own-store publication via the Python-authored demo, nested-page sender
+identity, two-way same-owner publication between independent primary sockets,
+binder results, ordinary RPC and complete family lifecycle. Rejection tests
+cover foreign owners, forged sender, missing/closed targets and malformed data.
+Public core documentation build, local links/mirrored anchors, both adapter
+documentation builds and paired identities pass. The local demo was restarted
+with its Python-authored Publish quantity action and subscribed PageStore
+controller. Reload the primary to start fresh pages after the restart.
+Logs: /private/tmp/gramlot-store-topics-js-full.log,
+/private/tmp/gramlot-store-topics-python-full.log,
+/private/tmp/gramlot-store-topics-asgi.log,
+/private/tmp/gramlot-store-topics-browser.log,
+/private/tmp/gramlot-store-topics-docs.log and
+/private/tmp/gramlot-store-topics-adapter-docs.log.
+Implementation and verification are complete for this increment; owner
+acceptance and publication remain separate. The earlier six wider adapter HTTP
+baseline failures remain outside this scope.
+
+Publication acknowledgement correction, owner 2026-10-27: "dovrebbe rifiutare
+solo quel messaggio", then "basta rendere 'ok' oppure un errore".
+Server publications now carry id and return the existing RPC-shaped response
+to the sending page, also when it is a nested child or targets another socket.
+The browser reuses its pending-call map; server-targeted publish returns a
+Promise resolving to "ok" or rejecting with RpcError. Local/window publication
+behavior stays synchronous. No retry, rollback or controller result is added.
+A refused destination, malformed publication payload or subscriber exception
+does not close the shared channel or cancel other calls. Invalid channel
+identity, missing correlation ids and transport failures remain channel errors.
+
+Verified: 3,791 core JavaScript tests; 261 core Python tests, 389 subtests and
+one existing xfail; 33 ASGI PageStore tests. The rejection regression failed
+against the previous socket-close behavior before the correction.
+Chromium and WebKit verify correlated acknowledgements in both directions
+between independent primaries and nested popups, foreign-owner errors reaching
+only the sender, continued RPC/binder/publication traffic and one primary socket.
+Logs: /private/tmp/gramlot-publish-ack-js-full.log,
+/private/tmp/gramlot-publish-ack-python-full.log,
+/private/tmp/gramlot-publish-ack-asgi.log and
+/private/tmp/gramlot-publish-ack-browser.log.
+Implementation and runtime verification are complete; owner acceptance remains
+separate. The six previously recorded wider adapter HTTP failures are unchanged.
+Core public documentation, links and mirrored anchors pass; both adapter
+documentation builds and paired identities pass. Logs:
+/private/tmp/gramlot-publish-ack-docs.log and
+/private/tmp/gramlot-publish-ack-adapter-docs.log. The local Uvicorn demo at
+127.0.0.1:8765 was restarted with this protocol; reload the primary and reopen
+its children to create fresh page identities.
+
+Acceptance-only publication, owner 2026-10-27: "non facciamo mai wait" and
+"ok" after clarification about subscribed controllers. This supersedes the
+completion acknowledgement above. GramlotServer.prepare_publish validates and
+returns the correlated acceptance/error wire plus a prepared dispatch.
+Uvicorn awaits ASGI send before entering subscribers. Invalid payloads and
+unauthorized destinations receive error outcomes; subsequent subscriber
+exceptions are logged without a second response, rollback or socket closure.
+Controllers remain synchronous on the event loop; no worker execution, wait
+flag or automatic Data error path is added. Business outcomes belong in the
+application's Bag. Browser authoring and logical-page routing are unchanged.
+
+Verified: 261 Python tests, 392 subtests and one existing xfail; 34 ASGI channel
+tests. A send-barrier test proves controller execution has not begun while the
+acceptance send is suspended. Chromium and WebKit pass family routing, RPC,
+binders, same-owner publication, foreign-owner rejection and continued operation
+after a subscriber raises. Logs: /private/tmp/gramlot-publish-accepted-python-full.log,
+/private/tmp/gramlot-publish-accepted-asgi.log and
+/private/tmp/gramlot-publish-accepted-browser.log.
+Implemented and runtime-verified; owner acceptance remains separate.
+Core documentation build, public links/mirrored anchors and both adapter
+documentation builds pass. Logs: /private/tmp/gramlot-publish-accepted-docs.log
+and /private/tmp/gramlot-publish-accepted-adapter-docs.log. The localhost:8765
+demo was restarted and responds HTTP 200; reload the primary and reopen its
+children to use fresh page identities.
+
+
+PageStore gallery lessons, owner 2026-10-27: "metti esempi in gallery"; bounded
+adapter changes confirmed by "Sì, includi gli adeguamenti". Two Python lessons
+live in the isolated gramlot-examples branch codex/page-store-gallery, under
+trials/page_store: bidirectional binders and publication-driven customer lookup.
+The latter uses a separate PageStore, declarative subscribe_load_customer,
+record Data, pkey/status attributes, explicit business errors and preservation
+of the last loaded record. No dataSetter or database dependency is introduced.
+
+Gallery staging in the connected Python adapter preserves optional PageStore,
+stages the catalogue route.url with nested directories and the gallery Logic
+companion. Uvicorn gallery --websocket opts into the same primary channel.
+The local gallery runs at http://127.0.0.1:8766/py/ with the additional catalog;
+the earlier fixture remains at port 8765.
+
+Verified: 44 gallery/ASGI tests pass, including a staged recipe that executes.
+Chromium and WebKit navigate both lessons, exercise both binder directions,
+lookup success/error/recovery, source and explanation views, and confirm one
+primary socket and no socket or HTTP RPC in the lesson frames. Logs:
+/private/tmp/gramlot-gallery-stores-tests.log and
+/private/tmp/gramlot-page-store-gallery-browser.log. Implementation and
+verification are complete for these cases; owner acceptance remains separate.
+No package publication or remote deployment was performed.
+The section's Python introduction is also staged and verified through tree
+selection. Core and adapter documentation builds pass; example guide IDs and
+mirrored anchors match. The in-app browser now shows the customer lesson in
+the local gallery. Documentation logs:
+/private/tmp/gramlot-page-store-gallery-core-docs.log and
+/private/tmp/gramlot-page-store-gallery-adapter-docs.log.
+
+
+Family publication gallery lesson, owner 2026-10-27: the third trial lesson is
+"Publish from a page family", with a direct customer iframe, a nested customer
+iframe and connected windows that can open further generations. Every customer
+page uses the same existing publish call and its own PageStore. The primary
+gallery owns the single WebSocket; an intermediate supporting page declares
+only ordinary Source iframe/link nodes. Source, explanation and section index
+are updated in gramlot-examples; no dataSetter or application transport added.
+
+The owner authorizes the discovered closure defect fix with "Sì, correggi anche
+questo". FrameMessages.unregisterChannel skips readiness announcements once
+Gramlot is disposed: the family close follows, instead of first presenting a
+missing endpoint as a failure. Live-page channel loss remains announced.
+The new regression failed before the fix with ready/close instead of close.
+
+Verified: all 3,792 JavaScript tests pass. Chromium and WebKit pass the gallery
+lessons and family publication through direct/nested iframes and three popup
+generations, distinct page identities, business-error isolation, one physical
+socket, continued sibling operation after intermediate closure and actual
+recursive popup closure with no console errors. Logs:
+/private/tmp/gramlot-family-close-before.log,
+/private/tmp/gramlot-family-close-js.log and
+/private/tmp/gramlot-page-store-family-browser.log.
+The gallery remains available at http://127.0.0.1:8766/py/. No deployment or
+release was performed; implementation verification is separate from owner acceptance.
+The existing HTTP/file and no-WebSocket family messaging scenarios also pass
+in Chromium and WebKit (/private/tmp/gramlot-family-close-messaging.log).
+Core and adapter documentation builds pass; example guide identities and anchors
+remain paired. Explicit CSS pixel heights keep the lesson frames usable.
+The final gallery browser run passes after that presentation adjustment, and
+the in-app browser is opened on the family lesson.
+
+
+Cross-page gallery publication, 2026-10-27: owner request "aggiungiamo anche una
+publish da una finestra figlia verso il PageStore di un'altra pagina dello stesso
+owner" authorizes a fourth lesson in the existing PageStore trial. A connected
+sender window uses the recipient iframe's visible page ID in the existing
+publication descriptor. Acceptance/refusal is sender Data; record/status/error
+remain recipient Data. No new core or adapter runtime capability is introduced.
+
+Chromium and WebKit verify recipient-only changes, accepted business errors,
+unknown-target and foreign-owner refusal, successful subsequent publication,
+one primary WebSocket and recursive closure without console errors or HTTP RPC.
+The foreign owner is an independent browser context. Earlier binder and family
+checks also pass in the same run. Log: /private/tmp/gramlot-cross-page-browser.log.
+Implementation and verification are complete; owner acceptance remains separate.
+
+
+Publication sender metadata, 2026-10-27: owner explicitly requests "sì aggiungilo
+come metadato della publish e aggiorna l'esempio così il controller può sapere il
+pageId della finestra mittente". Implemented _subscription_metadata beside the
+existing payload context: pageId comes from the validated envelope sender and
+remains distinct from the target. Each subscriber receives a fresh mapping;
+local/nested publication without metadata gets an empty mapping. Payload cannot
+spoof the reserved context. The customer gallery controller writes sender_page_id
+on its customer node and the recipient shows it through the ordinary binder.
+
+Verified: 263 core Python tests and 393 subtests pass, with one expected failure;
+44 focused adapter PageStore/gallery tests pass. Chromium and WebKit verify the
+actual child page ID on success, business error and recovery, recipient-only
+changes, authorization refusals, one primary socket and recursive closure.
+The broader adapter HTTP/gallery check has three existing unrelated failures:
+old CSS expectations (two) and /py/e01 route expectation (one). Prior baseline
+is recorded in /private/tmp/gramlot-family-adapter-tests.log; current details in
+/private/tmp/gramlot-metadata-adapter-tests.log. No HTTP behavior was changed.
+Logs: /private/tmp/gramlot-metadata-core-python.log,
+/private/tmp/gramlot-metadata-focused-adapter.log,
+/private/tmp/gramlot-publish-metadata-browser.log.
+Implementation and verification are complete; owner acceptance is separate.
+
+
+Server-to-browser publication, 2026-10-27: owner explicitly approves "sì
+implementiamola e aggiorniamo l'esempio così il controller del PageStore fa una
+publish verso la finestra mittente e lì un datacontroller subscribed la riceve".
+PageStore.publish(..., page_id=...) now routes an event to a same-owner browser
+page. Omission remains local to the PageStore. Core checks both live pages and
+owns only send callbacks; Uvicorn registers the existing primary/child channels.
+Page lifetime removes callbacks. The event uses op=publish with no correlation
+id and reaches ordinary browser subscriptions through the same family channel.
+Subscriber failure is logged without closing the browser channel. No replay,
+wait, extra WebSocket or alternate window protocol is introduced.
+
+The gallery's customer controller publishes customer_loaded to the verified
+sender; its browser dataController writes a separate notification branch shown
+as Server event. The recipient's bound record remains separate from this event.
+
+Verified: 265 core Python tests with 393 subtests pass (one expected failure),
+3,793 JavaScript tests pass and the browser runtime rebuild succeeds. The first
+JS run used the wrong Python environment, then the freshness check correctly
+required rebuilt bundles; the final configured build and full suite pass.
+46 focused Uvicorn PageStore/gallery tests pass, including child return events
+across one or two primary sockets, acceptance-before-event and live RPC afterward.
+Chromium and WebKit verify the actual subscribed controller receives the typed
+record only in the sender, retains the same single family socket and preserves
+all previous authorization, binder, metadata and closure scenarios.
+Logs: /private/tmp/gramlot-reverse-publish-core.log,
+/private/tmp/gramlot-reverse-publish-js.log,
+/private/tmp/gramlot-reverse-publish-adapter.log,
+/private/tmp/gramlot-reverse-publish-browser.log.
+Implementation and verification are separate from owner acceptance. Previously
+recorded general HTTP baseline failures are outside this bounded change.
+
+
+Reverse publication metadata, 2026-10-27: owner requests metadata on the
+PageStore-to-client event and its display in the child window. The outbound
+metadata.pageId comes from the validated source store; the outer pageId remains
+the recipient route. PageStoreConnection passes metadata separately into the
+existing subscriptions service. Each callback receives its own mapping as a
+second argument, and subscribed browser providers expose _subscription_metadata
+as a reserved context, including inline scripts and formulas. Payload cannot
+override it; nested/local publication receives empty metadata. No public
+Gramlot.publish signature change or new protocol is introduced.
+
+The gallery controller writes notification.sender and displays Server event —
+PageStore ID. Chromium and WebKit verify this equals the original recipient
+iframe's page ID on both successful loads; it differs from the original sender.
+The complete existing binder, owner refusal, recovery, one-socket and recursive
+closure scenarios pass too. Core: 265 Python tests plus 393 subtests, one expected
+failure; 3,794 JavaScript tests and rebuilt runtime pass. Adapter: 46 focused
+PageStore/gallery tests pass, with reverse metadata checked across sockets.
+Logs: /private/tmp/gramlot-reverse-metadata-core.log,
+/private/tmp/gramlot-reverse-metadata-js.log,
+/private/tmp/gramlot-reverse-metadata-adapter.log,
+/private/tmp/gramlot-reverse-metadata-browser.log.
+Implemented and verified; owner acceptance is separate. Earlier general HTTP
+baseline issues remain outside this bounded change.
+
+
+Release preparation authorized, 2026-10-27: owner says "ok allora prima
+pubblichiamo la correzione di Bag JS, poi allineiamo tutto alle versioni correnti
+e risolviamo i test per fare release". This explicitly extends the bounded Bag JS
+correction authorization to its publication. Bag PR genro-org/genro-bag-js#17
+passed local 793 tests and GitHub checks, merged as 2fcac6a; tag v0.11.1 starts
+the existing trusted publishing workflow. Gramlot integration must consume the
+published correction, preserve current develop work and qualify clean installs.
+Current remote bases: core/Python adapter 0.3.18, examples 0.3.19. The prior
+PoC used older bases; its passing test counts are not current release evidence.
+The next steps are current-base integration, dependency refresh, full validation,
+packaging and coordinated release. Hosted-gallery publication side effects must
+be accounted for by the existing release/deployment policy.
+
+
+Current-base qualification, 2026-10-27: Bag JS 0.11.1 publication completed on
+npm and JSR (workflow 40588593627). The core, Python adapter and examples now
+integrate the current develop bases without reverting the shared HTTP adapter,
+collection discovery or gallery staging. Staging explicitly retains PageStore.
+The menu fixture sets the native opener default that jsdom omits; an element
+named opener must not act as a popup parent. No browser fallback was added.
+
+Verified so far: core 315 Python tests and 393 subtests, one expected failure;
+1,292 JavaScript tests under supported Node 22; adapter 190 general tests plus
+50 focused PageStore/gallery tests after the staging correction; inspector 45
+tests. Chromium and WebKit pass the complete PageStore gallery and family
+messaging scenarios, including same-owner routing, refusal recovery, metadata,
+one primary socket and recursive closure. Chromium passes all five adapters and
+the Python/JavaScript page-module checks. Example suites, remaining browser
+checks, documentation and package validation are still in progress. These are
+local verification results, not a Gramlot release receipt or owner acceptance.
+
+
+Release candidate follow-up, 2026-10-27: core integration PR #73 passes all
+required GitHub checks, including Linux Firefox inspector, core tests and
+browser qualification, documentation and Read the Docs. Local Firefox profile
+startup was an environment limitation, not a skipped CI gate. Core and adapter
+manuals build; the examples manual validates 111 lessons and local links.
+Registry-refreshed Python dependencies remain Bag 0.28.0, Builders 0.30.0 and
+TYTX 0.16.4. JavaScript uses Bag 0.11.1 and Builders 0.7.0.
+
+Built wheel/npm runtime bytes are identical. A new virtual environment installed
+only built wheels and registry dependencies; Chromium and WebKit pass the full
+WebSocket fixture, including RPC cancellation, publication refusal/recovery,
+child reload, source removal and recursive closure. The standard gallery passes
+all five adapters at both / and /py. The example JavaScript suite is now using
+the same integrated core artifact as Python, rather than a stale registry core.
+
+Prepared candidate metadata: core and Python adapter 0.3.19; examples 0.3.20.
+Consumer requirements include core >=0.3.19 because earlier published core
+versions do not export PageStore. READMEs still identify the actual published
+versions; update them only when publication is authorized. The aligned examples suite passes all 316 JavaScript tests; the Python suite
+passes 62 tests and 178 subtests with one existing skip. The complete adapter
+suite passes 191 tests. The final candidate wheels install together in a clean
+environment, and the complete PageStore gallery passes Chromium/WebKit from
+those installed packages. Twine validates all six Python distributions. The
+only remaining work is release authorization/consolidation and the dependent
+registry-based consumer CI after core publication.
+Publication must run core first, followed by consumers. Existing successful
+release workflows automatically update both hosted galleries, so that deployment
+side effect needs explicit owner authorization before starting publication.
+
+
+Publication authorized, 2026-10-27: owner answers "Sì, pubblica e aggiorna le
+gallery" for the three prepared candidates and automatic deployment of both
+public galleries. Final local checks pass, including complete aligned examples
+and clean-wheel browser trials. The core PR is the first publication gate;
+consumer registry CI currently cannot resolve core >=0.3.19 and must be rerun
+after the core reaches PyPI/npm. Publication and deployment are now in progress,
+not yet claimed complete. WebSocket support remains Uvicorn-specific.

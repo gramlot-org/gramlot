@@ -15,6 +15,7 @@ import {JSDOM} from 'jsdom';
 import {build} from 'esbuild';
 import {fromTytx, toTytx} from '@genrojs/tytx';
 import {Gramlot, GramlotBuilder, HttpTransport, PageBootstrap, ServerAdapter} from '../src/index.js';
+import {WebSocketTransport} from '../src/websocket-transport.js';
 import {NAME_SYNTAX, NameSyntax, GramlotFileServer, GramlotServer, InvalidRequest, InvalidResourceName, Page,
     Exposed} from '../src/server/index.js';
 
@@ -283,6 +284,41 @@ test('the default ServerAdapter creates the HttpTransport of the page', () => {
     window.navigator.sendBeacon = url => { beacons.push(url); return true; };
     app.dispose();
     assert.deepEqual(beacons, ['/c']);
+});
+
+test('websocketUrl selects the shared asynchronous transport; explicit transport options retain precedence', async () => {
+    for (const transport of [undefined, false, recordingTransport([])]) {
+        const {window} = new JSDOM('<main id="gramlot-root"></main>', {url: 'http://test/'});
+        const sockets = [], beacons = [];
+        window.navigator.sendBeacon = url => { beacons.push(url); return true; };
+        window.WebSocket = class extends window.EventTarget {
+            messages = [];
+            constructor() { super(); sockets.push(this); }
+            send(text) { this.messages.push(fromTytx(text)); }
+            close() { this.closed = true; }
+        };
+        const app = new Gramlot({pageId: 'p', document: window.document, websocketUrl: '/gramlot/store',
+            closeUrl: '/close', transport});
+        try {
+            assert.equal(sockets.length, 1);
+            if (transport === undefined) {
+                assert.ok(app.rpc.transport instanceof WebSocketTransport);
+                assert.equal(app.rpc.supportsCallSync, false);
+                const result = app.rpc.call('data', 'echo', {value: 42});
+                assert.equal(sockets[0].messages.length, 0);
+                sockets[0].dispatchEvent(new window.Event('open'));
+                const sent = sockets[0].messages[0];
+                sockets[0].dispatchEvent(new window.MessageEvent('message', {
+                    data: toTytx({id: sent.id, pageId: 'p', contentType: 'data', value: 42})}));
+                assert.equal(await result, 42);
+            } else assert.equal(app.rpc.transport, transport === false ? null : transport);
+        } finally {
+            app.dispose({beacon: true});
+            window.close();
+        }
+        assert.equal(sockets[0].closed, true);
+        assert.deepEqual(beacons, transport === undefined ? ['/close'] : []);
+    }
 });
 
 test('a ServerAdapter subclass gives the transport; dispose closes the page and releases it once', async () => {
