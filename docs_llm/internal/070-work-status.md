@@ -14471,3 +14471,8 @@ access after sandbox/environment failures. Sphinx builds with warnings as errors
 The preceding Chromium/WebKit checks cover theme contrast, card drag feedback
 and live gallery tray state. Release workflows will repeat their full gates.
 Publication and deployment receipts are pending; no claim of public availability.
+
+Release gate follow-up: Inspector Styles browser test now expects the two new
+header tokens (47 Base tokens total) and explicitly checks both fields. Chromium
+and WebKit pass editing, preview, reset and export. The full core CI job passed;
+the corrected Inspector gate is being rerun.
