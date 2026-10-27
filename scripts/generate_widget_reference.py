@@ -148,10 +148,9 @@ def render():
 Document ID: **GC-345**.
 
 This reference covers all **{count} component declarations** in the six packaged
-component grammars in this checkout. It is regenerated from their effective
+component grammars. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
-documented once and linked from each applicable widget. It describes the development checkout;
-consult the installed package before relying on a feature in a released application.
+documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
 It does not assign a maturity level or imply that every component is production-ready.
 
 <a id="gc-345-005"></a>
@@ -186,7 +185,6 @@ class Page(GramlotPage):
     gramlots = [inputs, layout]
 
     def main(self, root):
-        root.dataSetter("customer.name", "Ada")
         root.textbox(value="^customer.name", lbl="Customer", live=True)
 ```
 

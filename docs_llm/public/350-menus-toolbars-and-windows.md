@@ -2,9 +2,11 @@
 
 Document ID: **GC-350**.
 
-> These interfaces are implemented in the development checkout. Their interaction
-> design remains provisional while applications try it. This chapter documents
-> that implementation; it does not promise availability in every released package.
+This chapter describes the shared menu/toolbar model and its composition with
+frames and windows. Start with one presentation, then reuse the same commands
+in another. The [gallery tour](355-examples-and-visual-tour.md#gc-355-030) points
+to runnable examples. Interaction choices can evolve; use matching packages and
+manuals when comparing behavior.
 
 <a id="gc-350-005"></a>
 ## 005 · Choose a presentation, keep one command hierarchy

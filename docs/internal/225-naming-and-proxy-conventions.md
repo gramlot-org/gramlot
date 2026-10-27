@@ -1659,3 +1659,13 @@ its original selection snapshot belongs only to the active pointer gesture.
 Tray implicit controls (2026-10-26): remove movable/resizable child parameters.
 Private data-movable/data-resizable markers remain renderer projections only;
 no author flags or aliases. Use existing framePane/top/center/menu composition.
+
+
+Surface/header color pairs (owner, 2026-10-27): "ogni tema definisce sfondo e
+testo per superficie e testata, senza inversione automatica". Keep the existing
+surface pair --gramlot-surface/--gramlot-ink. Name the shared title-surface pair
+--gramlot-header-background/--gramlot-header-color, following the existing
+--gramlot-<role>-background/color convention. Card headers and window titlebars
+consume it. Existing --gramlot-card-header-background/color remain explicit
+card-local overrides, not theme aliases. Light/dark values are chosen separately;
+no inverse-color derivation or automatic swapping is introduced.

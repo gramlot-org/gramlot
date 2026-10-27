@@ -576,6 +576,22 @@ not activate Base's root selectors. Ordinary pages can simply follow the system.
 For the selector of the index shell, see [IndexPage](095-writing-pages.md#gc-095-110)
 and the application-shell section below. Do not add application DOM manipulation to switch modes.
 
+### Surface and title colors
+
+Each theme and palette defines two independent background/text pairs:
+
+| Role | Background | Text |
+| --- | --- | --- |
+| Content surface | `--gramlot-surface` | `--gramlot-ink` |
+| Card/window title | `--gramlot-header-background` | `--gramlot-header-color` |
+
+Light and dark modes choose these values independently. Dark mode keeps dark
+surfaces with distinct tones; it does not invert or swap the colors. Card titles,
+dialogs and floating windows share the title pair. Define both members together
+when customizing a surface, and check text contrast in both modes. Explicit
+`--gramlot-card-header-background` and `--gramlot-card-header-color` customize
+only cards; title labels inherit that pair instead of the normal field-label color.
+
 ### Customize a surface in both modes
 
 Add this to `application.css` or to the first example's companion CSS:
@@ -883,9 +899,8 @@ Try the binding with this excerpt inside `main(root)`:
 ```python
 pane = root.div()
 pane.html_label("Text color", for_="text-color")
-pane.input(id="text-color", type="color", value="^text_color")
+pane.input(id="text-color", type="color", value="^text_color", default="#ff0000")
 pane.div("Watch my color", id="style-demo", color="^text_color")
-pane.dataSetter("text_color", "#ff0000")
 ```
 
 Choose a color: the native control writes its `value` to Data, and the div's `color`
@@ -932,20 +947,18 @@ from gramlot import Page as BasePage
 class Page(BasePage):
     def main(self, root):
         main_content = root.html_main(class_="example-page stack", datapath="appearance")
-        main_content.dataSetter(".status_class", "status status--success")
-        main_content.dataSetter(".panel_width", "16rem")
-        main_content.dataSetter(".show_details", True)
 
         main_content.h1("Appearance follows Data")
         main_content.html_label("Badge appearance", for_="status-choice")
-        choices = main_content.select(id="status-choice", value="^.status_class")
+        choices = main_content.select(id="status-choice", value="^.status_class",
+                                      default="status status--success")
         choices.option("Success", value="status status--success")
         choices.option("Warning", value="status status--warning")
         choices.option("Error", value="status status--error")
         main_content.span("Preview", class_="^.status_class")
 
         main_content.html_label("Panel width", for_="width-choice")
-        widths = main_content.select(id="width-choice", value="^.panel_width")
+        widths = main_content.select(id="width-choice", value="^.panel_width", default="16rem")
         widths.option("Narrow", value="16rem")
         widths.option("Wide", value="24rem")
         pane = main_content.section(
@@ -954,7 +967,7 @@ class Page(BasePage):
         pane.p("This panel follows the selected width.")
 
         label = main_content.html_label()
-        label.input(type="checkbox", value="^.show_details")
+        label.input(type="checkbox", value="^.show_details", default=True)
         label.span(" Show details")
         main_content.p("The layout keeps this space when hidden.",
                        visible="^.show_details")
@@ -971,15 +984,9 @@ the element from layout. These are presentation choices, not access controls.
 
 **Initial Data values**
 
-These declarations initialize the complete Python page above.
-
-```python
-main_content.dataSetter(
-    ".status_class", "status status--success"
-)
-main_content.dataSetter(".panel_width", "16rem")
-main_content.dataSetter(".show_details", True)
-```
+Each control declares its own `default`. These are interface preferences, so
+there is no sample record to load and no `dataSetter` is needed. If the Data
+already contains a preference, that value wins over the default.
 
 :::
 
@@ -1035,8 +1042,7 @@ Block ID: **GC-096-045**.
 
 `IndexPage` is the existing reusable application shell. Its `css` lists
 `gramlot-index/theme.css`; Base comes from the server, as for every page. The
-shell's standard footer manages the theme (Base, Compact, mimi, joanna) and the
-Light/Dark choice. Its behaviour remembers these choices and the sidebar width. Follow the complete
+gallery's Settings panel offers theme, palette and Light/Dark choices. Its behaviour remembers these choices and the sidebar width. Follow the complete
 [IndexPage setup](095-writing-pages.md#gc-095-110),
 including its browser Logic module; importing a CSS file alone does not supply
 the shell's behaviour.
@@ -1252,4 +1258,4 @@ Source still owns toolbar placement and window composition. Dialogs remain modal
 floating windows remain nonmodal. The gallery lesson **Containers → Mela: desktop
 and touch** compares a hierarchical menu, toolbar, fields and both window types
 using shared draft Data. Narrow windows scroll their content rather than clipping
-the form permanently. Initial visual acceptance remains pending.
+the form permanently. Try both modes at your intended viewport and input size.

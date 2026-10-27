@@ -1,115 +1,99 @@
-# Try Gramlot: the quick route
+# Your first page
 
 Document ID: **GC-018**.
 
-Open the examples, change a value, and see how the page works. You do not need
-to read the architecture guides first.
+Start with a running page. You can learn the architecture after seeing a value change.
 
 <a id="gc-018-005"></a>
+## 005 · Open the gallery
 
-## 005 · Choose where to run it
+Open the [Python gallery](https://gallery-py.gramlot.dev/) with no installation.
+Choose a lesson in the navigation tree. **Example** runs it, **Explanation** tells
+you what to try, and **Code** shows the source files. The **Inspector** in the
+navigation toolbar shows the current page's Data and Source.
 
-Block ID: **GC-018-005**.
+To run the same gallery locally, use Python 3.11 or later in a virtual environment:
 
-If you are unsure, start with **Python and Uvicorn**. Uvicorn runs the Python
-server; it is not another part of the example to learn.
+```sh
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install 'gramlot-py-server[uvicorn,gallery]'
+gramlot uvicorn gallery
+```
 
-| I want to… | Use | Start here |
-| --- | --- | --- |
-| Write pages in Python | **gramlot-py-server**, with Python 3.11 or later. Uvicorn is the simplest starting point; Django, Flask, FastAPI and Kajenn are also supported. | [Installation and Python CLI](https://github.com/gramlot-org/gramlot-py-server/blob/main/docs/020-command.md#gp-020-010). Install the `uvicorn` and `gallery` extras, then run `gramlot uvicorn gallery`. |
-| Write pages in JavaScript with a server | **gramlot-js-server**, with Node.js 22 or later and npm. Bun is another supported runtime. | [Installation and gallery commands](https://github.com/gramlot-org/gramlot-js-server#the-gallery-of-examples). After installation, run `npx gramlot node gallery`. |
-| Open JavaScript examples without an application server | **@gramlot/gramlot-serverless**, in the **gramlot-js-server** repository. Node.js and npm build the export; people opening it only need a browser. | [Installation](https://github.com/gramlot-org/gramlot-js-server#the-gallery-of-examples) and [serverless CLI](https://github.com/gramlot-org/gramlot-js-server/blob/main/docs/130-reference.md#gs-130-030). Run `npx gramlot-serverless gallery gallery`, then open `gallery/index.html`. Keep the exported folder together. |
-
-For a server, open the address printed in the terminal and leave the process
-running while you try the pages. Serverless runs JavaScript pages in the browser;
-it does not run Python. The two server repositories own the complete installation,
-CLI options and troubleshooting instructions.
+Open the address printed in the terminal and leave the process running.
+The Python wheel includes the browser runtime; Node.js is not needed for this route.
+For Windows activation and other hosts, follow the
+[Python CLI guide](https://gramlot-py-server.readthedocs.io/en/latest/020-command.html).
+JavaScript authors can use the [Node/Bun guide](https://gramlot-js-server.readthedocs.io/en/latest/010-tutorial.html)
+or [serverless exporter](https://gramlot-js-server.readthedocs.io/en/latest/135-serverless-tutorial.html).
 
 <a id="gc-018-010"></a>
+## 010 · Try three ideas
 
-## 010 · Try three examples
+1. **HTML, SVG and page structure:** compare a heading and paragraph with the
+   Python declarations. Each call adds a Source node.
+2. **Fields and input widgets:** type in a labelled field. A Gramlot component
+   adds editing, labels and validation to a browser control.
+3. **Data and bindings:** edit one value and watch another part of the page
+   update. The two declarations share a Data path.
 
-Block ID: **GC-018-010**.
-
-1. **HTML / SVG → Hello World:** compare the visible heading with its declaration.
-   **Source** is the tree that describes the page.
-2. **HTML / SVG → Forms:** type in a field and try Reset. This first section uses
-   Source and ordinary HTML controls, before introducing Data binding.
-3. **Binding → Native editing:** edit fields, then toggle **live**. Watch the
-   displayed values change. **Data** holds the values; a **binding** connects a
-   control or text to a Data path.
-
-Each section says which part of Gramlot it uses. Continue with
-[the learning route](025-try.md), which pairs each topic of the gallery with its
-guide.
-
-The gallery shows the result, explanation and source together. Python environments
-show Python; JavaScript environments show JavaScript. A separate **Logic** tab,
-when present, contains browser behavior. The ordinary source viewer is read-only. A Python gallery started with its explicit remote-edit option can also expose an editor; that host feature is separate from the viewer.
+Use the search box to find a topic. You do not need to read every lesson in order;
+[the learning route](025-try.md#gc-025-015) names the next concept for each section.
 
 <a id="gc-018-015"></a>
-
 ## 015 · Make a page of your own
 
-Block ID: **GC-018-015**.
+```sh
+gramlot uvicorn new hello
+```
 
-Use the CLI to create a project, then follow the commands it prints:
+Follow the generated project's install and start commands. Then replace
+`hello/pages/index.py` with this page:
 
-- **Python:** [create a project with `gramlot uvicorn new hello`](https://github.com/gramlot-org/gramlot-py-server/blob/main/docs/020-command.md#gp-020-005).
-- **JavaScript:** [create a page or site with `npm create @gramlot`](https://github.com/gramlot-org/gramlot-js-server/blob/main/docs/135-serverless-tutorial.md).
-  The generated project explains how to run it on Node.js or export it without a server.
+```python
+from gramlot import Page as GramlotPage
 
-Change a heading in the page file and reload, restart or rebuild as the chosen
-guide explains. Then try a bound field using [Data binding and controllers](097-data-binding.md).
+class Page(GramlotPage):
+    def main(self, root):
+        pane = root.div(datapath="demo", padding="16px")
+        pane.h1("Hello")
+        pane.input(value="^.name", lbl="Name", live=True,
+                   placeholder="Type your name")
+        pane.p("^.name", mask="You typed: {}")
+```
+
+Reload after saving; restart the server if development reload is not enabled.
+Type `Ada`: the paragraph becomes `You typed: Ada`. `live=True` writes each edit
+to `demo.name`; the paragraph reads that same path. This example uses the HTML
+`input` tag and the shared Labelbox. It needs no extra collection or inline code.
+The next chapter introduces [components such as textbox](105-components.md#gc-105-010).
 
 <a id="gc-018-020"></a>
+## 020 · Inspect what changed
 
-## 020 · Optional: inspect Data and Source in Chrome
+In the gallery, open **Inspector** from the navigation toolbar and compare Data
+with Source. Editing the field changes a value in Data; the declaration remains
+in Source. The toolbar is on the side or bottom according to the layout.
 
-Block ID: **GC-018-020**.
-
-[Download the DevTools ZIP from the latest release](https://github.com/gramlot-org/gramlot-devtools/releases/latest).
-It is already built; no compilation is needed.
-
-1. Extract the ZIP into a folder you will keep.
-2. Open `chrome://extensions` and turn on **Developer mode**.
-3. Choose **Load unpacked** and select the extracted folder containing `manifest.json`.
-4. Open Chrome DevTools on the gallery and select **Gramlot**. Choose the gallery
-   frame or the example in the panel's selector, then explore **Data** and **Source**.
-
-For a gallery opened from disk, enable **Allow access to file URLs** in the
-extension's details. After updating its files, reload the extension and reopen
-DevTools. See the [extension guide](https://github.com/gramlot-org/gramlot-devtools/blob/main/docs/010-usage.md)
-for editing and breakpoints. This optional Chrome extension is separate from the
-gallery's in-page inspector, opened from its footer.
+The optional [Chrome DevTools extension](https://github.com/gramlot-org/gramlot-devtools/releases/latest)
+provides a separate Gramlot panel. Extract its ZIP, open `chrome://extensions`,
+enable Developer mode and use **Load unpacked** on the folder with `manifest.json`.
+For exported pages opened from disk, enable **Allow access to file URLs**.
+See its [usage guide](https://github.com/gramlot-org/gramlot-devtools/blob/main/docs/010-usage.md).
 
 <a id="gc-018-025"></a>
+## 025 · Keep an installation current
 
-## 025 · Update an existing installation
+Update the packages in the environment that actually starts your gallery:
 
-Block ID: **GC-018-025**.
+- [Python packages](https://gramlot-py-server.readthedocs.io/en/latest/020-command.html#gp-020-025):
+  update core, examples and adapter, then restart the server.
+- [npm packages](https://gramlot-js-server.readthedocs.io/en/latest/010-tutorial.html#gn-110-035):
+  update in the project directory, then restart or regenerate the export.
+- [Source checkouts](https://gramlot-examples.readthedocs.io/en/latest/docs/005-repository-map.html#ge-005-010):
+  rebuild core and gallery browser bundles before restarting.
 
-Choose the instructions for **how you installed it**, not just the language of
-the pages. A Python gallery uses JavaScript bundles too. A published Python wheel
-already includes them; a source checkout must rebuild them after browser changes.
-
-| Your installation | Update procedure |
-| --- | --- |
-| Python packages from PyPI | [Update the active virtual environment](https://github.com/gramlot-org/gramlot-py-server/blob/main/docs/020-command.md#gp-020-025). Update core, examples and adapter explicitly; restart the server. No npm build is needed. |
-| npm packages, Node/Bun or serverless | [Update the project packages](https://github.com/gramlot-org/gramlot-js-server/blob/main/docs/010-tutorial.md#gn-110-035). Run the command in the same project used to start/export the gallery. Restart the server or regenerate the entire export. |
-| Local repository checkouts, including a Python gallery using editable sources | [Refresh dependencies and rebuild in order](https://github.com/gramlot-org/gramlot-examples/blob/main/docs/010-gallery.md#ge-010-050): core, gallery bundles, then restart/export. A Git pull alone does not rebuild browser files. |
-
-Stop the old gallery process first. After the update, reopen the printed address
-and reload the page; an installed web app still depends on that server/export.
-The gallery footer's magnifying glass opens the **in-page inspector**, bundled
-with `gramlot-examples`. The Chrome extension is separate and follows section 020.
-
-Verify the result: open **Controllers → Publish and subscribe**, press **Publish**,
-and check that the summary changes. Open the footer inspector and check its
-**Data**, **Source** and **Styles** tabs. Compare installed versions with each
-repository's README; core, examples and adapters have independent version numbers.
-
-If something is missing, report the start command, URL, installed versions and
-resolved package paths from the linked procedure. A menu entry can come from a
-new catalogue while an old process still serves the previous routes. Reloading
-alone cannot refresh a running server's imported modules or rebuild its assets.
+Reloading a browser cannot update an installed package or rebuild JavaScript.
+Compare installed versions with the repositories' READMEs. For a useful smoke
+check, open **Publish and subscribe to messages**, publish once, then inspect Data.

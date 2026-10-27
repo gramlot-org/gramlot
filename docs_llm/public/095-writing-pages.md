@@ -41,6 +41,20 @@ signatures accept any HTML attribute. Legacy style shortcuts (`color=`, `font_si
 `class`; all react to Data ([GC-095 070](097-data-binding.md#gc-095-070)). A length carries its CSS unit
 (`margin_top='4px'`), except in a few legacy sub-keys such as `rounded`; rule in [GC-096 040](096-themes-and-css.md#gc-096-040).
 
+### HTML tags and Gramlot components
+
+`input` and `html_button` declare browser HTML tags. `textbox` and `button`
+declare Gramlot components with their own parameters and behavior. Select the
+`inputs` collection to use `textbox`; command buttons are built in. Use the
+`html_` prefix when an HTML tag's name would otherwise select a component.
+
+Both HTML and components use the same renderer-owned Labelbox: `lbl="Name"`
+adds a label, `lbl_position="L"` places it beside the content, and `box_*`
+styles its surrounding box. For example, `pane.div(lbl="Summary")` can contain
+a whole layout, not just a field. See [shared labels](105-components.md#gc-105-020).
+Style keywords such as `color` and `padding` describe CSS independently from
+HTML attributes such as `type`, `name` and `disabled`.
+
 <a id="gc-095-010"></a>
 
 ## 010 · From a page to the browser
@@ -148,7 +162,7 @@ strict CSP → call from `Logic`. `sendHttp` reaches what `connect-src` allows. 
 
 Block ID: **GC-095-110**.
 
-The current development contract separates three responsibilities: `FramePage`
+Three classes separate these responsibilities: `FramePage`
 provides a five-region frame, `IndexPage` adds navigation and retained page tabs,
 and an application supplies its own region contents. The gallery is one such
 application; the core does not depend on it.
@@ -501,7 +515,7 @@ an installable root: choose directory export for installation.
 ### Open the application in its own window
 
 Serve the application over HTTPS, or on localhost for development. The index
-footer offers installation instructions and, when the browser supplies its
+Settings panel offers installation instructions and, when the browser supplies its
 installation prompt, an **Install** button. Dismissing the prompt leaves the
 browser's own installation menu available. On Safari for macOS Sonoma or later,
 use **File → Add to Dock**; see [Apple's web-app guide](https://support.apple.com/en-gb/104996).

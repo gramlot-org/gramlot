@@ -21,9 +21,9 @@ JavaScript, in families by topic, from HTML and SVG structure to binding,
 controllers, server calls, input components and containers. Choose a lesson in the
 [examples manual](https://gramlot-examples.readthedocs.io/en/latest/), or open the
 hosted gallery for [Python](https://gallery-py.gramlot.dev/) or
-[JavaScript](https://gallery-js.gramlot.dev/). The gallery runs on servers without a
-resource system and without an identity system: `js_requires` groups and the allow
-and deny of an `auth` rule need a server that has them.
+[JavaScript](https://gallery-js.gramlot.dev/). Prepared collections load through the ordinary bootstrap. Host resource names
+in `js_requires` and authorization rules require corresponding host services;
+they are separate from the portable collection mechanism.
 
 <a id="gc-095-005"></a>
 
@@ -39,7 +39,8 @@ class Page(BasePage):
     title = "People"
 
     def main(self, root):
-        panel = root.div("People", id="people")
+        panel = root.div(id="people")
+        panel.h1("People")
         panel.p("Choose a person")
 ```
 
@@ -48,13 +49,27 @@ nodes. Text is literal text, not parsed HTML. HTML attributes such as `id` are
 supported; `class_` escapes the Python keyword. The exported HTML5 collection
 defines the vocabulary; its open signatures accept any HTML attribute.
 
-The legacy style shortcuts become CSS styling in the browser: `color='red'`,
+Separate style attributes become CSS styling in the browser: `color='red'`,
 `font_size='12px'`, `margin_top='4px'`, `style_aspect_ratio='16/9'`, `rounded=8`. They
 compose one `style` attribute with `style='…'`, as the static Builder
 `HtmlRenderer` does. `_class` is `class`. They react to Data like any attribute
 ([Data binding and controllers](097-data-binding.md#gc-095-070)). A length is written
 with its CSS unit, except in a few legacy sub-keys such as `rounded`; the rule is in
 [Themes and CSS](096-themes-and-css.md#gc-096-040).
+
+### HTML tags and Gramlot components
+
+`input` and `html_button` declare browser HTML tags. `textbox` and `button`
+declare Gramlot components with their own parameters and behavior. Select the
+`inputs` collection to use `textbox`; command buttons are built in. Use the
+`html_` prefix when an HTML tag's name would otherwise select a component.
+
+Both HTML and components use the same renderer-owned Labelbox: `lbl="Name"`
+adds a label, `lbl_position="L"` places it beside the content, and `box_*`
+styles its surrounding box. For example, `pane.div(lbl="Summary")` can contain
+a whole layout, not just a field. See [shared labels](105-components.md#gc-105-020).
+Style keywords such as `color` and `padding` describe CSS independently from
+HTML attributes such as `type`, `name` and `disabled`.
 
 <a id="gc-095-010"></a>
 
@@ -72,11 +87,12 @@ Later Source insertions, removals and updates use the same subscription. Attribu
 updates can update an existing element; structural changes rebuild the affected
 subtree and release its owned objects. Framework code owns this work.
 
-The bootstrap document carries a script that creates `PageBootstrap` with the
-page's resources. In the browser it writes the stylesheet links (the theme, the
-`Page.css` URLs, then the same-name `foo.css`), imports the page's JavaScript
-modules, creates the `Gramlot` instance, registers the named logic and then starts
-the page ([Classes and server adapters](090-classes-and-hosts.md#gc-090-030)).
+The bootstrap creates `PageBootstrap`, loads the theme, selected collections and
+page resources in that order, and waits for required CSS before starting the
+page. Collection dependencies precede their consumers. A failed required load
+stops startup. An optional same-name `foo_data.tytx` supplies initial Data before
+Source defaults and rendering; `main` still returns Source. See
+[page companions](#gc-095-155) and [the server protocol](101-server-protocol.md).
 Between validation and DOM construction, each branch installs its Data
 declarations ([lifecycle](097-data-binding.md#gc-095-080)).
 
@@ -120,8 +136,9 @@ an element; from code a fragment is requested with
 - Input components, command buttons and containers:
   [Components](105-components.md).
 
-Recipes, record and form management, stores, grids, trees and database services are
-not provided; do not infer them from an HTML form or an endpoint-backed resolver.
+The tree component is provided through its own collection. Record management,
+automatic form persistence and database services are application concerns; do not
+infer them from an HTML form or an endpoint-backed selector.
 [Excluded declarations](097-data-binding.md#gc-095-085) lists the legacy
 declarations that raise an error.
 
@@ -246,7 +263,7 @@ Gallery lesson: *Data exchange*.
 
 Block ID: **GC-095-110**.
 
-The current development contract separates three responsibilities: `FramePage`
+Three classes separate these responsibilities: `FramePage`
 provides a five-region frame, `IndexPage` adds navigation and retained page tabs,
 and an application supplies its own region contents. The gallery is one such
 application; the core does not depend on it.
@@ -599,7 +616,7 @@ an installable root: choose directory export for installation.
 ### Open the application in its own window
 
 Serve the application over HTTPS, or on localhost for development. The index
-footer offers installation instructions and, when the browser supplies its
+Settings panel offers installation instructions and, when the browser supplies its
 installation prompt, an **Install** button. Dismissing the prompt leaves the
 browser's own installation menu available. On Safari for macOS Sonoma or later,
 use **File → Add to Dock**; see [Apple's web-app guide](https://support.apple.com/en-gb/104996).

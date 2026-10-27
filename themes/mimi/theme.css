@@ -4,6 +4,8 @@
     color-scheme: light;
     --gramlot-background: #edf1ef;
     --gramlot-surface: #fbfcfb;
+    --gramlot-header-background: #30473c;
+    --gramlot-header-color: #fbfcfb;
     --gramlot-surface-subtle: #e2e9e5;
     --gramlot-ink: #24332e;
     --gramlot-text-secondary: #52655d;
@@ -65,6 +67,8 @@
     color-scheme: dark;
     --gramlot-background: #17201d;
     --gramlot-surface: #202c27;
+    --gramlot-header-background: #334d40;
+    --gramlot-header-color: #ebf3ee;
     --gramlot-surface-subtle: #2a3932;
     --gramlot-ink: #ebf3ee;
     --gramlot-text-secondary: #b6c9be;
@@ -93,6 +97,8 @@
     color-scheme: dark;
     --gramlot-background: #17201d;
     --gramlot-surface: #202c27;
+    --gramlot-header-background: #334d40;
+    --gramlot-header-color: #ebf3ee;
     --gramlot-surface-subtle: #2a3932;
     --gramlot-ink: #ebf3ee;
     --gramlot-text-secondary: #b6c9be;

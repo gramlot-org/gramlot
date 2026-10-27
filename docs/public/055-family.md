@@ -15,7 +15,7 @@ JavaScript, and keeps it bound to the application state in the browser.
   their attributes, held in a Bag. The browser renders the DOM from it, and a change to
   the Source changes only the affected DOM.
 - **Data.** A second Bag with the values of the page. Attributes point into it:
-  `value='^.name'` follows `name`, `'=.name'` reads it once, `'==...'` computes an
+  `value='^.name'` follows `name`, `'=.name'` reads it without subscribing, and `'==...'` computes an
   expression. Form controls write back into the Data when the user edits them.
 - **Logic.** `dataFormula` computes a value, `dataController` runs code when the Data
   changes, buttons and `connect_on<event>` react to the user. The code is a method of
@@ -27,34 +27,24 @@ JavaScript, and keeps it bound to the application state in the browser.
   adapter connects a `GramlotServer` to a web server, or packages pages without a
   web server.
 
-A complete page, in Python:
+A complete Python page:
 
 ```python
 from gramlot import Page as BasePage
-
 
 class Page(BasePage):
     title = "Hello"
 
     def main(self, root):
         pane = root.div(datapath="person")
-        pane.html_label("Name", for_="name")
-        pane.input(id="name", value="^.name", live=True)
-        pane.p("^.greeting")
-        pane.dataFormula(".greeting", "'Hello, ' + name", name="^.name", _init=True)
-        pane.dataSetter(".name", "Ada")
+        pane.input(value="^.name", lbl="Name", live=True)
+        pane.p("^.name", mask="Hello, {}")
 ```
 
-The page shows a field with `Ada` and the text `Hello, Ada`; typing `Grace` in the
-field changes the text to `Hello, Grace` at every keystroke. The same page in
-JavaScript calls the same methods; data-elements take an object
-(`pane.dataSetter({destination_path: '.name', value: 'Ada'})`).
-[Data binding and controllers](097-data-binding.md) explains the declarations and their limits.
-
-This compact example uses an inline formula: it requires the permissive CSP
-profile explained in [Classes and server adapters](090-classes-and-hosts.md).
-For a project using strict CSP, follow the [named-Logic form](097-data-binding.md#gc-095-060)
-and the gallery lesson *Named logic*. The gallery does not cover every option.
+Type `Ada` in the field: the paragraph shows `Hello, Ada`. Both declarations
+use `person.name`; the input writes Data and the paragraph follows it. `lbl`
+uses the shared Labelbox presentation, also available to components. No formula
+or initialization script is needed here. See [Data binding](097-data-binding.md).
 
 <a id="gc-055-010"></a>
 

@@ -64,9 +64,9 @@ def main():
     for relative in PUBLIC_PAGES:
         home = home.replace(f"]({Path(relative).name}", f"]({relative}")
     groups = (
-        ("Start here", ("018-quickstart", "020-evaluate", "025-try", "030-quality", "055-family")),
-        ("Build applications", ("090-classes-and-hosts", "095-writing-pages", "097-data-binding", "098-server-calls", "099-remote-content")),
-        ("Widgets and presentation", ("345-widget-reference", "105-components", "350-menus-toolbars-and-windows", "096-themes-and-css", "355-examples-and-visual-tour")),
+        ("Start here", ("018-quickstart", "025-try", "055-family", "020-evaluate")),
+        ("Build applications", ("095-writing-pages", "105-components", "097-data-binding", "098-server-calls", "099-remote-content", "350-menus-toolbars-and-windows")),
+        ("Reference and examples", ("345-widget-reference", "096-themes-and-css", "355-examples-and-visual-tour", "090-classes-and-hosts", "030-quality")),
         ("Extend and integrate", ("340-components-and-collections-guide", "100-extensions", "101-server-protocol")),
     )
     for caption, pages in groups:

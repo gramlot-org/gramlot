@@ -23,7 +23,7 @@ export class WindowSurface {
                 .window-surface dialog[data-maximized]{max-width:100vw;max-height:100dvh;border-radius:0}
                 .window-surface dialog::backdrop{background:var(--gramlot-window-backdrop,#0006)}
                 .window-surface .titlebar{display:flex;align-items:center;gap:4px;flex:none;min-height:max(32px,var(--gramlot-tab-height,32px));padding:3px 5px 3px 12px;
-                  background:color-mix(in srgb,var(--gramlot-surface,Canvas) 60%,var(--gramlot-surface-subtle,#edf1f7));border-bottom:1px solid var(--gramlot-border,#d5dce5)}
+                  background:var(--gramlot-header-background,#303946);color:var(--gramlot-header-color,#fff);border-bottom:1px solid var(--gramlot-border,#d5dce5)}
                 .window-surface .title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;font-size:1em;font-weight:600}
                 .window-surface .titlebar[data-movable]{cursor:move;touch-action:none;user-select:none}
                 .window-surface button{font:inherit;color:inherit;background:transparent;border:0;border-radius:4px;cursor:pointer;min-width:max(24px,var(--gramlot-touch-target,0px));min-height:max(24px,var(--gramlot-touch-target,0px))}

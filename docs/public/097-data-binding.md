@@ -72,7 +72,21 @@ above.
 
 <a id="gc-095-045"></a>
 
-## 045 · Initial values: `dataSetter`
+## 045 · Choose where initial Data comes from
+
+| Situation | Use |
+| --- | --- |
+| Local interface preference, such as a preview color or selected tab | `default` for `value`, or `default_<attribute>` on its bound declaration. Defaults fill missing/null Data only. |
+| Sample dataset accompanying `foo.py` or `foo.js` | `foo_data.tytx`: a serialized Data Bag loaded by the host before rendering. |
+| Data computed by the server | An endpoint, `dataRpc`, or `dataRemote`, depending on when it is needed. |
+| A Source fragment explicitly installs a Data value | `dataSetter`; its declaration is consumed after writing. |
+
+Do not initialize every field with a setter. An empty bound field can start empty;
+a record normally arrives from the server. Defaults do not replace existing
+Data, including `False`, zero and the empty string. See [defaults](#gc-095-050)
+and [page companions](095-writing-pages.md).
+
+### Explicit installation writes: `dataSetter`
 
 ```python
 dataSetter(destination_path, value=None, **attr)
