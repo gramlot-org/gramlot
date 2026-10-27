@@ -1,5 +1,9 @@
 /** Build installed browser entry points and preserve their dependency notices. */
 import './export-components.mjs';
+import {generate} from '../../tools/gramlot-builder/src/generate.js';
+import {mkdtemp} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {typstInputs} from './build-typst.mjs';
 import {build} from 'esbuild';
 import {mkdir, copyFile, cp, readFile, readdir, writeFile, rm} from 'node:fs/promises';
@@ -11,7 +15,7 @@ const root = new URL('../', import.meta.url);
 const path = value => fileURLToPath(new URL(value, root));
 const compactStyle = await readFile(path('../themes/gramlot-compact/theme.css'), 'utf8');
 const appearanceStyles = {base:'', compact:compactStyle};
-for (const name of ['mimi', 'joanna']) {
+for (const name of ['mimi', 'joanna', 'mela']) {
     appearanceStyles[name] = compactStyle + '\n' + await readFile(path(`../themes/${name}/theme.css`), 'utf8');
 }
 await writeFile(path('src/index-page-styles.js'), '// Generated from canonical themes; edit themes/, not this file.\nexport const appearanceStyles = ' + JSON.stringify(appearanceStyles) + ';\n');
@@ -36,14 +40,25 @@ await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/gramlot-to
     outfile: path('tools/gramlot-tools-inspector.js'), bundle: true, format: 'esm',
     target: 'es2022', external: ['@gramlot/gramlot'], loader: {'.css': 'text'}});
 const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist/gramlot.js')});
-// Optional collections remain separate browser modules for host applications.
-for (const name of ['inputs', 'layout', 'tree', 'editors', 'typst']) {
-    const collection = await build({entryPoints:[path(`src/components/${name}.js`)],
-        outfile:path(`dist/components/${name}.js`), bundle:true, format:'esm', platform:'browser',
-        target:'es2022', legalComments:'inline', metafile:true, external:['@gramlot/gramlot'],loader:{'.css':'text'}});
-    Object.assign(hosted.metafile.inputs, collection.metafile.inputs);
-}
-await cp(path('dist/components'), path('../src/gramlot/resources/components'), {recursive:true});
+// Both distributions ship the same prepared collection artifacts and fingerprint.
+const staging = await mkdtemp(join(tmpdir(),'gramlot-core-collections-'));
+try {
+    const names = ['inputs','layout','tree','editors','typst'];
+    const config = {output:'../src', collections:names.map(name=>({
+        entry:`./src/components/${name}.js`,pythonPackage:`gramlot.collections.${name}`}))};
+    const result = await generate({protocolVersion:1,operation:'build',
+        configPath:path('gramlot.build.json'),projectRoot:path(''),stagingDirectory:staging,config,externals:[]});
+    for (const record of result.collections) {
+        const prepared = join(staging,...record.pythonPackage.split('.'));
+        const python = path(`../src/gramlot/collections/${record.name}`);
+        const javascript = path(`dist/components/${record.name}`);
+        // Generated artifact directories must not retain files from an older inventory.
+        await rm(python,{recursive:true,force:true});await rm(javascript,{recursive:true,force:true});
+        await mkdir(python,{recursive:true});await mkdir(javascript,{recursive:true});
+        await cp(prepared,python,{recursive:true});
+        await cp(prepared,javascript,{recursive:true});
+    }
+} finally { await rm(staging,{recursive:true,force:true}); }
 // The minified runtime is served in deploy and in development without GRAMLOT_DEV=DEBUG.
 await build({...runtimeOptions['gramlot.min.js'], outfile: path('dist/gramlot.min.js')});
 await writeFile(path('dist/gramlot.d.ts'), `${moduleDoc}\nexport * from '../src/index.d.ts';\n`);

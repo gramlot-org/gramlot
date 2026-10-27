@@ -376,26 +376,20 @@ topic subscriptions in this increment are declarative recipe attributes.
 
 <a id="gc-250-020"></a>
 
-## 020 · Local verification and dependency correction
+## 020 · Verification and published dependency correction
 
 Block ID: **GC-250-020**.
 
 Bag JS popNode passed reason as the third argument of _onNodeDeleted, whose
 third argument is pathlist. The owning repository now passes null in that slot
-and reason fourth, on its isolated codex/bag-delete-origin branch. Six regression
-cases cover popNode/pop/delItem at root and nested paths; all 793 Bag tests pass.
-The owner explicitly authorized this bounded dependency correction. No installed
-source was patched manually and no package was published.
+and reason fourth. Six regression cases cover popNode/pop/delItem at root and
+nested paths; all 793 Bag tests pass.
 
-The core trial uses that local package through npm installation without changing
-the published dependency declaration. Reinstalling registry dependencies will
-restore the released defect until the owning project releases its correction.
-For the prepared local checkouts, after ordinary dependency installation:
-
-```sh
-npm --prefix js install --no-save --no-package-lock --install-links /path/to/corrected/genro-bag-js
-npm --prefix js run build
-```
+The owner explicitly authorized this bounded correction and its publication on
+2026-10-27. [Bag JS 0.11.1](https://github.com/genro-org/genro-bag-js/releases/tag/v0.11.1)
+is published on npm and JSR; both trusted publishing jobs succeeded. Gramlot
+requires @genrojs/bag >=0.11.1 and uses the registry package. No installed source
+patch or local dependency substitution is needed.
 
 From gramlot-py-server with both local Python packages installed:
 

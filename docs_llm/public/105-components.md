@@ -2,6 +2,10 @@
 
 Document ID: **GC-105**.
 
+Use the [widget and parameter reference](345-widget-reference.md) to find a control,
+its collection, defaults and bindings. Read [menus, toolbars and windows](350-menus-toolbars-and-windows.md)
+for the shared command model and complete frame composition.
+
 > Input components require the selected `inputs` collection; importing a definition
 > alone does not activate it. The gallery uses the application configuration below.
 > The command family in §095 is built in; layout uses its separate collection.
@@ -15,10 +19,10 @@ need a handwritten Python class for each widget. Widget names are identical in
 both languages and lookup is case-insensitive: `radioButtonText` and
 `radiobuttontext` select the same declaration. Underscores are not case variants.
 
-The collection contains `textbox`, `checkbox`, `radioButtonText`, `textBoxArea`,
+The inputs collection contains `textbox`, `checkbox`, `radioButtonText`, `textBoxArea`,
 `passwordbox`, `radioButton`, `colorpicker`, `horizontalSlider`, `verticalSlider`,
 `numberTextBox`, `dateTextBox`, `timeTextBox`, `filteringSelect`, `callbackSelect`,
-`comboBox`, `checkBoxText` and `dateCalendar`.
+`comboBox`, `dbSelect`, `dbComboBox`, `checkBoxText` and `dateCalendar`.
 It demonstrates a single native control and a composite group using the same
 labelbox and binding contract. Localization is prepared through `intl_str`
 metadata; text is not translated.
@@ -26,57 +30,47 @@ metadata; text is not translated.
 <a id="gc-105-010"></a>
 ## 010 · Author the controls in Python
 
-This complete authoring example uses the existing explicit Builder collection API.
-For an application, select the collection once as described in §035.
+Select the collection on the Page. The host loads its Python grammar and browser
+implementation together; application code does not assemble a Builder or load
+its grammar JSON by hand.
 
 ```python
-import json
-from importlib.resources import files
-from gramlot import GramlotBuilder
-from genro_tytx import to_tytx
+from gramlot import Page as GramlotPage
+from gramlot.collections.inputs import mygramlot as inputs
 
-inputs = json.loads(
-    files("gramlot").joinpath("collections/inputs.json").read_text()
-)
-builder = GramlotBuilder(collections=[inputs])
-pane = builder.root.div(datapath="form")
+class Page(GramlotPage):
+    gramlots = [inputs]
 
-pane.textbox(
-    value="^.customer", placeholder="Name and surname",
-    lbl="Customer", lbl_position="TL", lbl_color="navy",
-    box_c_width="260px", box_margin_bottom="12px",
-)
-pane.checkbox(
-    value="^.newsletter", lbl="Contact",
-    label="Send me the newsletter", box_margin_bottom="12px",
-)
-pane.radioButtonText(
-    value="^.shipping",
-    values="standard:Standard,express:Express,pickup:Pickup",
-    cols=3, lbl="Shipping", lbl_position="^label_position",
-)
-pane.dataSetter(destination_path="form.customer", value="Ada")
-pane.dataSetter(destination_path="form.newsletter", value=False)
-pane.dataSetter(destination_path="form.shipping", value="standard")
-pane.dataSetter(destination_path="label_position", value="TL")
-wire = to_tytx(builder.source)
+    def main(self, root):
+        pane = root.div(datapath="preferences")
+        pane.textbox(value="^.name", lbl="Name", live=True,
+                     placeholder="Type your name")
+        pane.checkbox(value="^.newsletter", default=False,
+                      label="Show newsletter preview")
+        pane.radioButtonText(value="^.preview", default="compact",
+                             values="compact:Compact,full:Full", lbl="Preview")
 ```
 
-`lbl` labels the entire field. For a checkbox, `label` is the caption beside the
-box. A radio group stores one option code (`express`), not a list of booleans.
-The bounded `values` syntax is `code:Caption,code:Caption`; duplicate codes fail.
-Codes without a colon use the code as their caption. Options from a Bag and
-escaping of commas and colons are not supported.
+`lbl` labels the whole field. A checkbox's `label` is the caption beside its
+check mark. The radio group writes one option code, such as `compact`. The two
+`default` values initialize local interface preferences only when Data is missing.
+Loaded records and sample datasets belong in Data; see
+[initial values](097-data-binding.md#gc-095-045).
 
-Textbox uses `change` by default and `input` with `live=True`, including the
-existing IME composition handling. Empty input writes `""`; displaying a Data
-`None` as an empty field does not rewrite it. `readonly` and `disabled` are
-reactive native-control properties. Radio groups accept `disabled`.
+Textbox writes on `change` by default, or on `input` with `live=True`. Editing
+updates the existing control. The `values` shorthand accepts `code:Caption`
+entries separated by commas; duplicate codes fail and commas/colons cannot be
+escaped in that shorthand.
 
 <a id="gc-105-015"></a>
 ## 015 · Activate the browser collection
 
-The browser entry point selects the collection and mounts the received Source:
+For a hosted Page, `Page.gramlots` is sufficient: the normal bootstrap loads the
+selected collections before rendering. You do not write the following startup
+code in an application page.
+
+For a custom embedding that owns its runtime, the equivalent low-level operation
+is shown below. `wire` is the TYTX Source returned by that embedding's producer:
 
 ```javascript
 import {Gramlot} from '@gramlot/gramlot';
@@ -87,12 +81,12 @@ const app = new Gramlot({
     transport: false,
     collections: [inputs]
 });
-app.src.startSource(wire); // TYTX produced by the Python authoring above
+app.src.startSource(wire); // TYTX Source supplied by the embedding host
 ```
 
 Bundle this entry point as one module graph. The existing application/runtime
-bootstrap owns loading that entry point; automatic server discovery or a new
-Page configuration property is not supplied here. Each selected collection
+bootstrap owns loading that entry point; this is a low-level runtime example. For hosted Python pages, use
+`Page.gramlots` as shown in section 035. Each selected collection
 registers its custom-element classes in the destination document's realm before
 rendering. Reusing the same collection there is harmless. A conflicting tag
 registration raises an error. There is no per-widget `customElements.define`
@@ -126,9 +120,11 @@ its previous projection. Reading another Source attribute never consumes it.
 Native script attributes remain forbidden, including under these prefixes.
 See [styles and CSS](096-themes-and-css.md).
 
-The internal shadow DOM keeps label IDs local to each instance. Text and checkbox
-labels associate with their native input; radio groups use `aria-labelledby` and
-native radio inputs sharing a name within that group's shadow tree. A `radioButtonText` instance owns its option group. Separate `radioButton`
+The renderer creates one Labelbox presentation around the content; `lbl` is a
+shortcut for this same presentation on HTML elements and components. Changing
+its label or styles preserves the content instance. A component's `Labelbox`
+mixin connects that outer label to its shadow control for focus and accessible
+naming. Native radio inputs share a name inside each group's shadow tree. A `radioButtonText` instance owns its option group. Separate `radioButton`
 instances instead join the existing Source-scoped boolean group using `group`;
 the runtime maintains exclusivity and arrow navigation across their shadow roots.
 
@@ -167,7 +163,7 @@ The DOM creation here belongs to framework/component implementation. Application
 continue to declare Source; they do not scrape inputs or install a second binding
 system. `NativeControl` supplies lifecycle and the inner native control;
 `ChoiceGroup` supplies multiple options and one selected code. `Labelbox` adds
-both metadata and layout; `FieldState.setFieldState({invalid, pending})` projects
+label metadata and the connection to the renderer-owned presentation; `FieldState.setFieldState({invalid, pending})` projects
 accessibility state, without deciding validation or commit policy.
 
 Effective metadata combines the base, mixins in declared order, then explicit
@@ -184,12 +180,12 @@ document against the JS definitions to detect drift.
 <a id="gc-105-030"></a>
 ## 030 · Current limits and verification
 
-The inputs collection covers the seventeen controls listed above, Data binding,
+The inputs collection covers the nineteen controls listed above, Data binding,
 reactive labelbox, styling prefixes, typed editing, constrained choices, keyboard
 behavior and cleanup. Validation is described in §076. Other input families, form
 submission and reset of a component through ElementInternals, automatic collection
-discovery, theme-specific component skins and translated messages are not
-provided. The component value does not accept `:` or `:=`
+discovery and translated messages are not provided. The packaged density and color
+profiles style components through shared CSS tokens; see [Themes and CSS](096-themes-and-css.md). The component value does not accept `:` or `:=`
 transforms; those remain available on presentation attributes.
 
 A known upstream Python Builders limitation affects a literal-type-or-pointer
@@ -206,48 +202,35 @@ caret preservation, typing, checkbox clicks, radio arrow-key navigation and grou
 isolation. WebKit qualification is not a claim of testing the Safari application.
 
 <a id="gc-105-035"></a>
-## 035 · Activate a collection in an application
+## 035 · Activate collections in a Python page
 
-The application passes `collections` to its server. Each entry contains `grammar`
-(the generated JSON object) and `module` (the root-relative URL of its bundled
-browser ES module). The module exports the ComponentCollection as its default.
-The adapter serves that asset like other application assets.
+Select prepared collection descriptors through `Page.gramlots`. The import supplies
+both grammar metadata and verified browser resources; the host resolves dependencies
+and sends the matching descriptors in the bootstrap.
 
 ```python
-import json
-from importlib.resources import files
+from gramlot import Page as GramlotPage
+from gramlot.collections.inputs import mygramlot as inputs
+from gramlot.collections.layout import mygramlot as layout
 
-collections = [{
-    "grammar": json.loads(files("gramlot").joinpath("collections/inputs.json").read_text()),
-    "module": "/gallery/dist/inputs.js",
-}]
-# Pass collections=collections to the application/server constructor.
+class Page(GramlotPage):
+    gramlots = [inputs, layout]
+
+    def main(self, root):
+        form = root.formlet(datapath="customer", columns=1, max_width="28rem")
+        form.textbox(value="^.name", lbl="Name", live=True)
+        form.checkbox(value="^.active", label="Active", mode="switch")
 ```
 
-JavaScript can obtain the same grammar directly from the definition:
+The base grammar and command buttons remain available. Prepared descriptors are
+also provided for `gramlot.collections.tree`, `editors` and `typst`. Importing a
+package alone does not select it. Class-local `gramlots` selections accumulate
+through the Page inheritance hierarchy, with dependencies loaded first.
 
-```javascript
-import inputs from '@gramlot/gramlot/components/inputs';
-const collections = [{grammar: inputs.toDocument(), module: '/gallery/dist/inputs.js'}];
-```
-
-The server loads the grammar for every Source request, including remote fragments.
-It adds collection module URLs to the bootstrap with the application's mount prefix.
-PageBootstrap imports them, registers their custom elements and loads their grammar
-before requesting/mounting Source. The browser does not fetch the Python JSON:
-the JavaScript descriptor already contains that same metadata.
-
-The gallery declares `inputs` explicitly for Python, Node and serverless. Its build
-bundles a separate `inputs.js`; no second Gramlot runtime is bundled with it.
-The serverless directory exporter embeds the same JS module and passes the JSON
-grammar to the Worker server, so opening the export with `file://` needs no remote
-collection fetch. There is no automatic discovery or name-based fallback.
-
-Try the Input components family of the gallery: its first lessons show
-`textbox`, `checkbox`, `radioButtonText` and the simple input variants below. Label
-positions and layout are reactive, while all value writes use the Data binding
-engine. The examples use the shared component collection.
-
+Do not assemble `{grammar, module}` URL-only entries for this preparation path.
+See [How components and collections work](340-components-and-collections-guide.md)
+for package generation, dependencies, CSS/assets, integrity checks and deliberate
+overrides. The guide distinguishes collection authors from applications consuming a package.
 
 <a id="gc-105-040"></a>
 ## 040 · Simple native input variants
@@ -275,7 +258,7 @@ pane.horizontalSlider(value="^.level", lbl="Level", min=0, max=100, step=5, live
 pane.verticalSlider(value="^.level", lbl="Same level", min=0, max=100, step=5, live=True)
 ```
 
-Initialize these Data paths with `dataSetter`, as in §010. Each single radio stores
+Let records arrive in Data, or use `default` for a local interface choice as in §010. Each single radio stores
 its own boolean; choosing one clears the other bound radios in the same `group`
 and Source form scope. This differs from `radioButtonText`, which stores one option
 code. Arrow keys navigate grouped single radios across their shadow roots, skipping
@@ -931,13 +914,13 @@ menu.menuline("-")
 menu.menuline("Unavailable", code="later", disabled=True)
 ```
 
-`button` renders `gramlot-button` with an internal native button. It retains the single command mechanism: action, one nested dataController/dataRpc, or fire/fire_*. Existing ask, references, modifiers, counters and inherited _delay use the same engine. `icon` is optional text or emoji. Theme tokens and touch sizing also apply inside the component. Its caption can contain Source children.
+`button` renders `gramlot-button` with an internal native button. It retains the single command mechanism: action, one nested dataController/dataRpc, or fire/fire_*. Existing ask, references, modifiers, counters and inherited _delay use the same engine. `icon` is optional text or emoji; `iconSrc` supplies an image URL, including SVG. Theme tokens and touch sizing also apply inside the component. Its caption can contain Source children.
 
 `toggleButton` adds a boolean value binding and a visible LED. Its internal button exposes aria-pressed. Clicking, Enter or Space updates Data before running the optional action. An action confirmation does not undo that state change. Readonly and disabled prevent user toggling; external Data changes still update the LED. No implicit exclusive group is introduced.
 
 `dropDownButton` has separate main and arrow surfaces. Main click executes the current command and never opens the menu. Normal menu selection executes only; Shift+selection executes and also installs the selected command and its caption as the default. The same Shift rule applies to keyboard activation. Arrow keys, Home/End, Escape and native popover light-dismiss manage the menu. On touch, ordinary selection executes; changing the default currently requires Shift.
 
-`persist=True` requires an explicit stable id. Browser storage remembers only the unique menu-item code, scoped to this page URL and id. A saved code absent from the menu uses the authored default. Storage denial leaves the current in-memory selection functional. Each actionable menuline requires code; `menuline("-")` is a separator. The menu is flat and local; nested menus and button bars are not provided.
+`persist=True` requires an explicit stable id. Browser storage remembers only the unique menu-item code, scoped to this page URL and id. A saved code absent from the menu uses the authored default. Storage denial leaves the current in-memory selection functional. Each actionable menuline requires code; `menuline("-")` is a separator. This split-button example is local. Hierarchical menus and permanent toolbars use the shared menu/menuline system described in [Menus, toolbars, frames and windows](350-menus-toolbars-and-windows.md).
 
 **Migration:** `html_button` remains a real HTML button, including type=submit/reset and explicit connect_on events. Use it for native form actions. Gramlot command components do not implicitly submit forms. Native CSS selectors targeting button no longer select the component host; theme tokens style its internal button.
 
@@ -978,8 +961,7 @@ Use a plain pointer to a number when both a slider and the splitter control the
 same size:
 
 ```python
-pane.dataSetter("navigationWidth", 150)
-pane.horizontalSlider(value="^navigationWidth", min=90, max=240, live=True)
+pane.horizontalSlider(value="^navigationWidth", default=150, min=90, max=240, live=True)
 border = pane.borderContainer(height="420px")
 border.contentPane(region="left", width="^navigationWidth", splitter=True,
                    minSize=90, maxSize=240)
@@ -1182,8 +1164,8 @@ For A → B, container-local publications use the existing nodeId prefix:
 If allowed, the container publishes closing {pageName, index, wasSelected}, removes the panel Source node, resolves selection and its normal notifications, then publishes closed with the same pre-removal identity. Closing an inactive panel has no selection notifications. Application Data is not cleared; rejected local drafts disappear with the deleted widget. Direct application Source removal also resolves selection, but is not a close-button request and does not run onClose or emit closing/closed. Ordinary switching never deletes Source. `onClose` restores the useful Dojo veto; the inspected Genropy close-button patch bypassed it. closing/closed are explicit Gramlot additions. Legacy per-binding duplicate selected publications are intentionally not reproduced.
 
 ```python
-pane.dataSetter(".page", "customer")
-tabs = pane.tabContainer(nodeId="editor", selectedPage="^.page", height="360px")
+tabs = pane.tabContainer(nodeId="editor", selectedPage="^.page",
+                         default_selectedPage="customer", height="360px")
 tabs.contentPane(pageName="customer", title="Customer").textbox(
     value="^.customer.name", lbl="Name")
 tabs.contentPane(pageName="notes", title="Notes", closable=True,
@@ -1195,7 +1177,7 @@ pane.dataController("this.SET('.lastClosed', pageName)",
                     subscribe_editor_closed=True)
 ```
 
-Substitute stackContainer to retain the same selection and notification contract without tabs. Controllers receive named payload variables and the complete _subscription_kwargs object. Closing a `closable` panel removes it from the Source and keeps its Data. FramePane, incoming switchPage commands and asynchronous close guards are not provided.
+Substitute stackContainer to retain the same selection and notification contract without tabs. Controllers receive named payload variables and the complete _subscription_kwargs object. Closing a `closable` panel removes it from the Source and keeps its Data. For region composition use [framePane](350-menus-toolbars-and-windows.md#gc-350-035). Incoming switchPage commands and asynchronous tab-close guards are not provided.
 
 
 <a id="gc-105-115"></a>
@@ -1259,7 +1241,7 @@ Gallery: Input components → tree → Bag tree, Tree labels and classes, Tree c
 
 Block ID: **GC-105-125**.
 
-Activate the `editors` collection for `codeMirror`. The optional browser collection owns the locally bundled CodeMirror 6 engine; it does not fetch a CDN or create a textarea substitute. The value is a string and `value="^document.source"` uses the shared control binding. User changes write live by default. `live=False` commits on leaving the editor. External document replacement is silent and resets the undo baseline; equal values and configuration changes preserve the editor, selection and undo history.
+Activate the `editors` collection for `codeMirror`. The optional browser collection owns the locally bundled CodeMirror 6 engine; it does not fetch a CDN or create a textarea substitute. The value is a string and `value="^document.source"` uses the shared control binding. User changes write live by default. `live=False` commits on leaving the editor. External Data updates are silent document transactions on the existing editor: they retain configuration and prior undo history, and map the selection through the changed range. Equal values do not create a transaction.
 
 ```python
 pane.codeMirror(value="^document.source", language="python", height="340px")
@@ -1274,7 +1256,6 @@ For an editor with its own right options drawer, activate `inputs`, `layout` and
 ```python
 from gramlot.page import code_mirror_with_options
 
-pane.dataSetter("document.source", "print('Hello')")
 code_mirror_with_options(pane, datapath="document", value="^.source",
                          language="python", height="420px")
 ```
@@ -1308,7 +1289,26 @@ The component Data contains `requestedRoot`, the successfully opened `root`, `st
 
 The workspace combo remembers six successfully opened directories in sessionStorage, most recent first, without duplicates. It suggests the most recent directory after a reload; opening remains explicit. The values are server paths. Session storage does not persist drafts, grant file permissions, or promise sharing across browser tabs. Switching directories retains document tabs and drafts; documents with the same relative path in different roots remain distinct.
 
-Save and Ctrl/Cmd+S submit the draft with its loaded revision. Conflicts retain the draft. Python syntax is checked before writing, without executing the file. The document's saved baseline becomes the submitted snapshot, so typing during a save remains dirty. Each document has Save, Revert, Undo and Redo icons in its own toolbar. Save and Revert are disabled without changes or while saving; Save is also disabled for read-only documents. Revert restores the last loaded or successfully saved baseline without closing the tab or writing the file, and clears editor history. Undo and Redo use the editor’s independent history and are disabled when unavailable. Closing a dirty or pending document is vetoed: save or revert before closing. The workspace combo opens a nonempty changed directory on focus-out after committing its value; no Open button is required. Executable Python preview, file creation/rename/delete and filesystem watches remain outside this increment. HTML, Markdown and Typst views are described below.
+Save and Ctrl/Cmd+S submit the draft with its loaded revision. Conflicts retain the draft. Python syntax is checked before writing, without executing the file. The document's saved baseline becomes the submitted snapshot, so typing during a save remains dirty. Each document has Save, Revert, Undo and Redo icons in its own toolbar. Save and Revert are disabled without changes or while saving; Save is also disabled for read-only documents. Revert restores the last loaded or successfully saved baseline without closing the tab or writing the file, and preserves editor history; the replacement can be undone. Undo and Redo use the editor’s independent history and are disabled when unavailable. Closing a dirty or pending document is vetoed: save or revert before closing. The workspace combo opens a nonempty changed directory on focus-out after committing its value; no Open button is required. Executable Python preview, file creation/rename/delete and filesystem watches remain outside this increment. HTML, Markdown and Typst views are described below.
+
+
+
+IDE instance ownership: each composition has its own Source root and relative Data
+context. Give composed `IdePage` instances distinct `shell_id` values and relative
+`datapath` values under their parent. The same `IdeLogic` group may serve both:
+drafts, saved baselines and selection belong to their Data; request lifetimes and
+editor identities belong to the owning Source. Document panels are read from
+Source rather than tracked in a second panel map. Disposing one IDE cancels only
+its requests. Floating detachment moves presentation DOM only, keeping Source,
+Data and editor identity intact.
+
+Named controllers receive their Source node automatically. Direct JavaScript calls
+to instance-dependent helpers now pass that node explicitly, for example
+`this.ideOpenDocument(node, root, path)` or `this.ideNew(node)`; there is no implicit
+current IDE. `FileSystemController(page, sourceNode)` likewise resolves its Data
+through the node. This changes the earlier helper signatures without adding a
+compatibility overload. SessionStorage still stores only the already documented
+recent-directory preference, never drafts or instance coordination.
 
 ### Local-choice sources
 
@@ -1331,7 +1331,7 @@ IDE new documents (2026-10-21): select a document type and use **New document**.
 <a id="gc-105-135"></a>
 ## HTML editor and preview
 
-The optional `editors` collection provides `htmlEditor` (Jodit Community 4.13.9)
+The optional `editors` collection provides `htmlEditor` (Jodit Community 4.18.10)
 and `htmlPreview`. They share an HTML string through ordinary Data bindings:
 
 ```python
@@ -1346,16 +1346,27 @@ publishes `save`; the application owns persistence. Dependencies and styles are
 bundled locally in the optional collection, without a CDN.
 
 Jodit edits the body while retaining the original head, doctype and document
-attributes. Scripts, styles, embedded content, SVG/MathML and comments appear as
+attributes. Scripts, styles, embedded content, SVG/MathML, form controls, noscript and comments appear as
 protected placeholders. Active attributes are kept outside the editable DOM.
 Removing or duplicating protected content rejects the edit with a visible message;
 change that content in Code instead. Visual edits serialize the DOM and can
 normalize whitespace, quoting and markup. Undo to the initial rich snapshot restores
-the original source string exactly. External replacement resets editor history.
+the original source string exactly. External Data updates use the same Jodit instance and retain its history. Undo/Redo also retain the corresponding head, styles and protected content; internal history markers are not written to Data.
 
 The preview is an iframe with an empty sandbox: page scripts do not execute.
-The rich editor uses its own iframe without script permission and a restrictive
-content policy. Original head styles apply to its editing canvas; the toolbar uses
+The rich editor uses an iframe for document-style isolation, without the sandbox
+that prevented WebKit editing events. Jodit's official `cleanHTML.sanitizer` uses
+DOMPurify for assigned HTML. The canvas CSP still blocks scripts, external
+resources and form submission; it is essential, not an optional styling setting.
+The official paste and drag/drop plugins are bundled locally. Ordinary formatted
+HTML can be inserted and undone; active/embedded rich content is rejected by the
+existing document guard with an instruction to use Code, without changing Data.
+Jodit 4.18.10 does not pass fragment contents correctly to its string sanitizer on
+all insertion paths, so the CSP and document guard must remain. See
+[GC-365 §060](https://github.com/gramlot-org/gramlot/blob/main/docs/internal/365-review-0-3-16.md#gc-365-060).
+Chromium and Playwright WebKit pass the editor/content/security regression;
+this is not an iPhone or Safari-application qualification.
+Original head styles apply to its editing canvas; the toolbar uses
 Gramlot theme tokens. These are HTML document views, not Python execution previews.
 
 The IDE opens HTML documents with Code, Preview and Rich text tabs over the same
@@ -1380,7 +1391,7 @@ Bold, Italic, Code, Undo and Redo controls, standard editing keys, Ctrl/Cmd+B/I,
 Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Ctrl/Cmd+S publishes `save`; persistence remains
 application-owned. `historyChanged`, `undo()` and `redo()` follow the other editors.
 Edits write live by default; `live=False` commits on blur. `readonly` and `disabled`
-prevent edits, while external Data updates continue to render and reset history.
+prevent user edits, while external Data updates use transactions on the existing view, retaining plugins and history without emitting an input echo.
 Disabled editing also leaves the keyboard tab order. Removing the control releases
 its engine and prevents late history publications.
 
@@ -1467,3 +1478,135 @@ class Recipe(TypstBuilder):
 ```
 
 The Python host requires `genro-typst` and `remote_edit=True`. Recipes run as server Python code in a short-lived process, with a 15-second timeout; this is not a sandbox. Opening and saving a `.typ.py` only read/validate text and never execute it. The first slice uses self-contained generated Typst and the existing bundled browser fonts. Serverless can compile the generated `.typ` source but does not execute `.typ.py`.
+
+
+<a id="gc-105-950"></a>
+
+## 950 · Page-local loading and cache lifetime
+
+Block ID: **GC-105-950**.
+
+On the Python and JavaScript hosts, declare only the prepared descriptors needed by that page in
+`Page.gramlots`, including components produced by its remote Source methods and
+authoring helpers. A textbox in a formlet needs inputs and layout, not editors or
+Typst. An iframe is a separate page and declares its own dependencies. The host's
+startup registry can contain all installed page collections without activating
+all of them in every browser page. Server-wide collections are additive defaults;
+do not put the whole gallery catalogue there.
+
+The servers retain verified grammar documents and prepared schemas per
+builder class and ordered collection composition. Each request gets its own
+mutable schema and fresh Source; Data, authentication and authorization are never
+cached by this mechanism. The resource host retains the verified artifact bytes
+for the lifetime of its process. Restart after changing a collection build.
+
+Successful GET/HEAD responses for fingerprinted collection assets use
+`Cache-Control: public, max-age=31536000, immutable`. Changed builds have different
+URLs. Unknown fingerprints do not resolve to another build. Page bootstrap and
+RPC responses retain `no-store`; browser caching does not cache application Data.
+
+<a id="gc-105-955"></a>
+## 955 · IDE draft editing and host persistence
+
+Block ID: **GC-105-955**.
+
+An IDE document's `writable` flag describes permission to persist it on the host,
+not permission to edit its in-memory draft. A document with `writable=False` still
+supports typing, Undo, Redo and Revert. Save remains disabled, including keyboard
+save, and the host must independently reject writes. Ordinary editor `readonly`
+attributes are unchanged. New IDE documents inherit the opened workspace's write
+permission. The Python gallery demonstrates this contract on a bounded sample
+workspace; see GP-020 for its `--remote-edit` startup flag.
+
+
+<a id="gc-105-960"></a>
+## 960 · Detachable tab panels
+
+Set `detachable=True` on a child `contentPane` of a `tabContainer` to show a small
+SVG detach icon inside the open panel, above its content. It is visible only
+while that tab is selected; the outer tab strip has no detach icon. Drag it to place the panel in a
+nonmodal floating window; clicking it or pressing Enter/Space opens it too.
+The floating has the usual move, resize and close controls. Closing it returns
+the panel to its original tab and selects that tab; it does not delete Source.
+
+```python
+tabs = root.tabContainer(height="100%")
+tabs.contentPane(title="Example", pageName="example").div("Your running example")
+code = tabs.contentPane(title="Code", pageName="code", detachable=True)
+code.codeMirror(value="^document.source", language="python", height="100%")
+```
+
+Source ownership and the content's DOM parent do not change. Only the native
+viewport and its slot projection move inside the same shadow root. Existing
+widget instances, Data bindings, invalid drafts, editor selection and Undo remain
+alive. The internal WindowSurface supplies the same chrome and geometry behavior
+as floatingPane; no second Source subtree is built. The existing window component
+continues to require its framePane content.
+
+When the selected panel detaches, another available tab is selected. The detached
+tab remains in the strip: selecting it raises its floating window. Hiding,
+disabling or removing detachability docks the panel; removing its Source or
+removing the container releases the floating presentation. Ordinary tab closing
+with `closable=True` still deletes Source and follows its separate `onClose`
+contract. `detachable` defaults to false. This first version covers tab panels;
+groupBox detachment and drag-to-dock targets are not implemented.
+
+
+<a id="gc-105-965"></a>
+## 965 · Searching a tree
+
+Bind `searchText` to a text field to filter displayed captions, case-insensitively and literally (not as a regular expression). Initialize that text with the field's `default`. For example:
+
+```python
+pane.input(type="search", value="^navigation.search", default="", live=True,
+           placeholder="Search examples", aria_label="Search examples")
+pane.tree(storepath="navigation.items", labelAttribute="title", hideValues=True,
+          searchText="^navigation.search")
+```
+
+After 200 ms without a new query, search reads previously unloaded resolver branches and keeps matching nodes and their ancestor path visible. It highlights text within sanitized captions. Ordinary rendering still does not load branches. Results update as reads finish; an unavailable branch stays visible with its error and can be expanded to retry. Large remote trees can require many branch reads; this parameter is not a server-side search endpoint or pagination API.
+
+Clearing the field removes highlighting and restores the previous expansion set. Search does not select a result, replace the Bag or change its node identities. Selecting a result uses the ordinary `selectedPath` binding. A late response after clear may fill the resolver cache, but does not reopen branches or restore the old filter. Closing the tree cancels pending search scheduling; resolver lifetime remains with its owner.
+
+
+<a id="gc-105-970"></a>
+## 970 · Tray workspaces and shared Labelboxes
+
+`lbl` asks the renderer to wrap a node in the shared Labelbox presentation. The
+content remains the same HTML element or component: label, box and content-box
+styles belong to the presentation, while bindings and child Source remain with
+the original node. `lbl_variant="card"` gives it a centered title on a dark
+header. A direct tray child uses this variant by default.
+
+A `trayPane(storepath="layout")` arranges its direct labelled children. Give each
+child a stable `node_label`; that label is the key of its row in the layout Data
+Bag. Do not add `movable` or `resizable`: tray membership owns those operations.
+An outer `framePane` can place an ordinary `menu(presentation="bar")` toolbar in
+its top region and the tray in its center.
+
+Rows store `left`, `top`, `width`, `height`, integer `layer`, boolean `selected`,
+`rotation` in degrees and positive `scale` (1 = 100%). Move from the title, resize
+from the lower-right grip, rotate from the upper-left grip, or open the layer and
+zoom controls at the upper right. The controls remain outside the card transform.
+Widgets, editor instances and their bindings are preserved during arrangement.
+
+On the same layer, transformed outer rectangles stop at contact. Different layers
+may overlap; larger values appear above. A conflicting layer change is refused.
+Shadows and rounded corners do not participate in contact geometry.
+
+Click selects a card; Shift+click toggles it. Dragging from empty space selects
+fully enclosed transformed rectangles; Shift adds to the selection. Escape
+cancels. Dragging a selected title translates the whole selection without changing
+its spacing; the first contact or tray boundary stops the group. Rotation and
+resize affect the individual card.
+
+Bind `locked`, `gridStep`, `gridVisible` and `rotationStep` to Data to build your
+own toolbar. `locked` hides layout controls but keeps content usable. Shift snaps
+movement and resize to `gridStep`, rotation to `rotationStep`; zero disables a
+step. Without Shift, movement remains free. `gridVisible` only changes the grid's
+presentation. Defaults are false, 10, false and 15 respectively.
+
+Saving is an application Data operation: copy the layout Bag with `deepcopy()`,
+then assign a copy back to restore it. Persist its TYTX through your application's
+storage when durability is needed. The gallery's **Tray workspace** lesson shows
+an in-page snapshot, four different live cards and matching Python/JS code.

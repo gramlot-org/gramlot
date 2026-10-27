@@ -63,6 +63,17 @@
             "default": ""
           },
           {
+            "name": "iconSrc",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
             "name": "attr",
             "kind": "var_keyword",
             "role": "attribute",
@@ -85,6 +96,11 @@
               "binding": "read"
             },
             "icon": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
+            "iconSrc": {
               "dtype": "T",
               "default": "",
               "binding": "read"
@@ -138,6 +154,17 @@
           },
           {
             "name": "icon",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
+            "name": "iconSrc",
             "kind": "keyword_only",
             "role": "attribute",
             "annotation": {
@@ -234,6 +261,11 @@
               "default": "",
               "binding": "read"
             },
+            "iconSrc": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
             "value": {
               "dtype": "B",
               "default": false,
@@ -303,6 +335,17 @@
             "default": ""
           },
           {
+            "name": "iconSrc",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
             "name": "persist",
             "kind": "keyword_only",
             "role": "attribute",
@@ -340,6 +383,11 @@
               "default": "",
               "binding": "read"
             },
+            "iconSrc": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
             "persist": {
               "dtype": "B",
               "default": false
@@ -353,7 +401,7 @@
     },
     "menu": {
       "doc": null,
-      "sub_tags": "menuline",
+      "sub_tags": "menuline,spacer,contentPane",
       "parent_tags": null,
       "inherits_from": null,
       "ns": null,
@@ -361,6 +409,131 @@
       "collection_key": null,
       "attributes": {
         "parameters": [
+          {
+            "name": "presentation",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": "popup"
+          },
+          {
+            "name": "orientation",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": "horizontal"
+          },
+          {
+            "name": "modifiers",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "labelPosition",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": "beside"
+          },
+          {
+            "name": "iconSize",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": 24
+          },
+          {
+            "name": "resolver",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "cacheTime",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "R"
+            },
+            "has_default": true,
+            "default": -1
+          },
+          {
+            "name": "sync",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "B"
+            },
+            "has_default": true,
+            "default": false
+          },
           {
             "name": "attr",
             "kind": "var_keyword",
@@ -377,7 +550,55 @@
       "_meta": {
         "render_tag": "gramlot-menu",
         "gramlot_component": {
-          "parameters": {},
+          "parameters": {
+            "presentation": {
+              "dtype": "T",
+              "default": "popup",
+              "enum": [
+                "popup",
+                "bar"
+              ]
+            },
+            "orientation": {
+              "dtype": "T",
+              "default": "horizontal",
+              "enum": [
+                "horizontal",
+                "vertical"
+              ]
+            },
+            "modifiers": {
+              "dtype": "T",
+              "nullable": true
+            },
+            "labelPosition": {
+              "dtype": "T",
+              "binding": "read",
+              "default": "beside",
+              "enum": [
+                "beside",
+                "below",
+                "tooltip"
+              ]
+            },
+            "iconSize": {
+              "dtype": "R",
+              "binding": "read",
+              "default": 24
+            },
+            "resolver": {
+              "dtype": "T",
+              "nullable": true
+            },
+            "cacheTime": {
+              "dtype": "R",
+              "default": -1
+            },
+            "sync": {
+              "dtype": "B",
+              "default": false
+            }
+          },
           "presentationDefaults": [],
           "dataScope": false,
           "command": false
@@ -436,6 +657,57 @@
             "default": ""
           },
           {
+            "name": "iconSrc",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
+            "name": "command",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "caption",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "code",
             "kind": "keyword_only",
             "role": "attribute",
@@ -454,6 +726,179 @@
             },
             "has_default": true,
             "default": null
+          },
+          {
+            "name": "checked",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "tooltip",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "labelPosition",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "iconSize",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "group",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "B"
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "priority",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "R"
+            },
+            "has_default": true,
+            "default": 0
+          },
+          {
+            "name": "overflowable",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "B"
+            },
+            "has_default": true,
+            "default": true
+          },
+          {
+            "name": "parameters",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "dict"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "favorite",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "B"
+            },
+            "has_default": true,
+            "default": false
           },
           {
             "name": "attr",
@@ -482,14 +927,157 @@
               "default": "",
               "binding": "read"
             },
+            "iconSrc": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
+            "command": {
+              "dtype": "T",
+              "nullable": true
+            },
+            "caption": {
+              "dtype": "T",
+              "nullable": true
+            },
             "code": {
               "dtype": "T",
               "nullable": true
+            },
+            "checked": {
+              "dtype": "B",
+              "nullable": true,
+              "binding": "read"
+            },
+            "tooltip": {
+              "dtype": "T",
+              "nullable": true
+            },
+            "labelPosition": {
+              "dtype": "T",
+              "binding": "read",
+              "nullable": true,
+              "enum": [
+                "beside",
+                "below",
+                "tooltip"
+              ]
+            },
+            "iconSize": {
+              "dtype": "R",
+              "binding": "read",
+              "nullable": true
+            },
+            "group": {
+              "dtype": "B",
+              "default": false
+            },
+            "priority": {
+              "dtype": "R",
+              "default": 0
+            },
+            "overflowable": {
+              "dtype": "B",
+              "default": true
+            },
+            "parameters": {
+              "annotation": {
+                "kind": "type",
+                "module": "builtins",
+                "name": "dict"
+              },
+              "nullable": true
+            },
+            "favorite": {
+              "dtype": "B",
+              "default": false
             }
           },
           "presentationDefaults": [],
           "dataScope": false,
           "command": true
+        }
+      }
+    },
+    "spacer": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "size",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "flex",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "render_tag": "gramlot-spacer",
+        "gramlot_component": {
+          "parameters": {
+            "size": {
+              "dtype": "R",
+              "nullable": true
+            },
+            "flex": {
+              "dtype": "R",
+              "nullable": true
+            }
+          },
+          "presentationDefaults": [],
+          "dataScope": false,
+          "command": false
         }
       }
     }

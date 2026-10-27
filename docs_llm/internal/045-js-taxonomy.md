@@ -399,3 +399,8 @@ Data write: document Bag → Builder's `_dataroot` (`pathlist` starts `_root_`; 
 Authoring semantics: symbolic `#parent`, `#FORM`, `#ANCHOR`, `#<nodeId>` (Builder), `?attr` kept by `absDatapath`; `#WORKSPACE`/`#ROW`/`#DATA` out. Button: one mechanism (P10) among nested `dataController`, `action` (inline, `this` = button), `fire` (`FIRE` modifier string or `true`, Data attrs `modifier`, `_counter`), `fire_<name>` (value `'<name>'`, all fire in order); combinations → error. Control attributes incl. `result_path` excluded from `kwargs` (P20).
 
 Builder behavior missing today (Builder JS 0.1.5 / Bag JS 0.5.3), planned in `GramlotBuilderBagNode`; no fix in genro-builders/genro-bag (§14, owner 2026-09-25): silent `PUT` (today emits, `source-bag.js:237`), S08; `fired` via `FIRE` mark and `takeFire(path)`, not from the Bag event, S04/S08; `FIRE_AFTER(path, value = true, delay = 10)`, timer on `NodeBinding`, S08; variable datapath and symbolic `?attr` in `absDatapath` (today raw value in `_composeRelativeDatapath`), S04. An insufficient Builder/Bag hook → solution in the Gramlot classes, decided with the owner.
+
+DataSetter consumption (owner, 2026-10-24): DataInstaller writes Data, closes the
+setter binding and removes the setter immediately. Renderer intake ignores the
+setter deletion; remaining nodes alone register pointers. No installed stamp,
+lasting setter binding or nodeId registration remains. See GC-210 §035.

@@ -104,6 +104,11 @@ async function runStory(t, server) {
     const opened = await server.open();
     const args = bootstrapArguments(opened.html);
     const {window} = new JSDOM(opened.html, {url: pathToFileURL(`${PAGES}${PATH}`).href});
+    const appendStyle = window.document.head.append.bind(window.document.head);
+    window.document.head.append = (...nodes) => {
+        appendStyle(...nodes);
+        for(const node of nodes) if(node.tagName==='LINK') queueMicrotask(()=>node.dispatchEvent(new window.Event('load')));
+    };
     const document = window.document;
     const timers = liveTimers(t);
     const listeners = liveListeners(window);
@@ -168,7 +173,7 @@ async function runStory(t, server) {
         assert.equal(app.state, 'started');
         assert.equal(window.gramlot, app);
         // Page.css then the same-name stylesheet, both with the mount prefix; the page module 09_end_to_end.js gives the Logic.
-        assert.deepEqual(args.resources, {css: [`${PAGES}/themes/gramlot-base/theme.css`, `${PAGES}/09_end_to_end.css`],
+        assert.deepEqual(args.resources, {collections:[],css: [`${PAGES}/themes/gramlot-base/theme.css`, `${PAGES}/09_end_to_end.css`],
             js: [{url: `${PAGES}/09_end_to_end.js`, group: null}]});
         assert.deepEqual([...document.head.querySelectorAll('link[rel="stylesheet"]')].map(link => link.getAttribute('href')),
             args.resources.css);
@@ -309,9 +314,9 @@ const EXPECTED = [
         'attributes:circle@circle.r', 'attributes:circle@circle.fill'],
     data: ['upd_value:extras.title', 'upd_value:story.quantity', 'upd_value:story.total', 'upd_value:story.radius',
         'upd_value:story.color']},
-    // The close removes every element; the radios leave their group on the way (their `name` is rewritten).
+    // Closing releases the framework viewport marker and removes every element; the radios leave their group on the way (their `name` is rewritten).
     // The Data write of the test after the close reaches nothing.
-    {name: '8 close', transport: ['beacon:close'], dom: ['attributes:input@small.name', 'attributes:input@large.name'],
+    {name: '8 close', transport: ['beacon:close'], dom: ['attributes:div@gramlot-root.data-gramlot-viewport', 'attributes:input@small.name', 'attributes:input@large.name'],
         data: ['upd_value:story.quantity']},
 ];
 
@@ -330,14 +335,14 @@ test('§8.1 story through the real Page/GramlotServer/TYTX/PageBootstrap path: P
         const dom = index < 6 ? step.dom : step.dom.filter(item => !item.startsWith('childList:'));
         assert.deepEqual(dom, expected.dom, `${step.name}: DOM mutations`);
     });
-    // Counters: steady through the Data steps; the remote branch adds its NodeBindings (div, h3, p and two
-    // setters), records and registrations; the removed note takes its own away; the close leaves nothing.
+    // Counters: steady through the Data steps; the remote branch adds persistent bindings
+    // (div, h3, p), records and registrations; its setters are consumed; the removed note takes its own away; the close leaves nothing.
     const at = name => steps.find(step => step.name === name).counters;
     for (const name of ['2 editing', '3 formula and controller', '4 radio', '5 button']) {
         assert.deepEqual(at(name), at('1 first render'), name);
     }
     assert.deepEqual([at('1 first render').bindings, at('6 remoteSource').bindings, at('7 freeze and thaw').bindings],
-        [52, 56, 55]);
+        [47, 49, 48]);
     assert.deepEqual([at('1 first render').registrations, at('6 remoteSource').registrations], [18, 20]);
     for (const step of records.js) t.diagnostic(`${step.name}: ${JSON.stringify(step)}`);
 });

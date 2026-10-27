@@ -3,6 +3,8 @@
  *
  * @module
  */
+import type {Bag} from '@genrojs/bag';
+import type {GramlotBuilder} from '../builder/gramlot-builder.js';
 import type {Page} from './page.js';
 import type {Resources} from './resources.js';
 import type {NameSyntax, NameSyntaxDescriptor} from '../builder/name-syntax.js';
@@ -45,6 +47,16 @@ export class ServerCapacity extends Error {
 /** The outcome of a refused `auth` rule, or null when the call may proceed. */
 export type AuthOutcome = 'not_authenticated' | 'not_authorized' | null;
 
+/** Prepared artifact metadata, also accepted by Page.gramlots. */
+export interface PreparedCollection {
+    name: string;
+    buildId: string;
+    grammar: Record<string, unknown>;
+    module: string;
+    css: string[];
+    dependencies: string[];
+}
+
 /** The options of a `GramlotServer`. */
 export interface GramlotServerOptions {
     /** URL of the runtime bundle. */
@@ -60,7 +72,7 @@ export interface GramlotServerOptions {
     /** Maximum number of registered pages. */
     maxPages?: number;
     /** Application collections: generated Builder grammar and root-relative browser module URL. */
-    collections?: {grammar: Record<string, unknown>; module: string}[];
+    collections?: PreparedCollection[];
     /** The base theme of every page, a folder of the core themes, or false for none; default `gramlot-base`. */
     cssTheme?: string | false;
 }
@@ -110,11 +122,17 @@ export class GramlotServer {
     /** The base theme of every page, or false for none. */
     cssTheme: string | false;
     /** The registered pages by id. */
-    pages: Map<string, {PageClass: typeof Page; owner: unknown; expires: number}>;
+    pages: Map<string, {PageClass: typeof Page; path: string; owner: unknown; expires: number}>;
     /** Create a server. */
+    /** Resolve class-local declarations and their named dependencies, base first. */
+    pageCollections(PageClass: typeof Page): PreparedCollection[];
+    collectionGraph(collections: PreparedCollection[]): PreparedCollection[];
+    loadCollections(builder: GramlotBuilder, collections: PreparedCollection[]): void;
     constructor(options?: GramlotServerOptions);
     /** The Page class of `path`, or `PageNotFound`. */
     pageManifest(options?: {prefix?: string}): Promise<Record<string, unknown>>;
+    /** Optional initial Data Bag; null when the page has no companion. */
+    resolveData(path: string): Promise<Bag | null>;
     resolvePage(path: string): Promise<typeof Page>;
     /** The resources of the page at `path` in load order and without mount prefix, or `PageNotFound`. */
     resolveResources(path: string, PageClass: typeof Page): Promise<Resources>;

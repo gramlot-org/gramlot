@@ -17,6 +17,7 @@ export const Tree = defineComponent({
         getLabelClass: {dtype: 'T', nullable: true, default: null},
         getIconClass: {dtype: 'T', nullable: true, default: null},
         selectedLabelClass: {dtype: 'T', default: '', binding: 'read'},
+        searchText: {dtype: 'T', default: '', binding: 'read'},
         autoCollapse: {dtype: 'B', default: false, binding: 'read'},
         selectedPath: {dtype: 'T', nullable: true, default: null, binding: 'twoWay'}
     },
@@ -33,6 +34,15 @@ export const Tree = defineComponent({
         #scheduled = false;
         #loading = new Set();
         #errors = new Map();
+        #searchInput = '';
+        #searchText = '';
+        #searchTimer = null;
+        #searchVersion = 0;
+        #searchOpen = new Set();
+        #searchClosed = new WeakSet();
+        #searchAttempted = new WeakSet();
+        #searching = false;
+        #resolutions = new Map();
 
         constructor() {
             super();
@@ -46,7 +56,7 @@ export const Tree = defineComponent({
             style.textContent = `
                 .control-box{overflow:auto;padding:4px;min-height:32px}
                 ul{list-style:none;margin:0;padding:0} ul ul{padding-inline-start:20px}
-                .row{display:flex;align-items:center;min-height:var(--gramlot-tree-row-height,28px);gap:4px;border-radius:3px;cursor:default}
+                .row{display:flex;align-items:center;min-height:var(--gramlot-tree-row-height,28px);gap:2px;border-radius:3px;cursor:default}
                 .row:hover{background:var(--gramlot-tree-hover-background,var(--gramlot-field-readonly-background,#f2f4f7))}
                 .canBeDropped{outline:2px solid var(--gramlot-brand-blue,#3766b5);outline-offset:-2px}
                 .cannotBeDropped{outline:2px dashed currentColor;outline-offset:-2px}.draggedItem{opacity:.75}
@@ -54,13 +64,18 @@ export const Tree = defineComponent({
                     color:var(--gramlot-tree-selected-color,#214f91)}
                 [role=treeitem]:focus{outline:none}
                 [role=treeitem]:focus-visible>.row{outline:2px solid var(--gramlot-brand-blue,#3766b5);outline-offset:-2px}
-                button{border:0;background:transparent;color:inherit;width:24px;height:24px;padding:0;font:inherit;cursor:pointer}
-                .spacer{width:24px;flex:none}.caption{min-width:0;overflow-wrap:anywhere}
+                button{border:0;background:transparent;color:inherit;width:max(20px,var(--gramlot-touch-target,0px));height:24px;padding:0;font:inherit;cursor:pointer}
+                .expander{display:grid;place-items:center;flex:none}
+                .expander svg{display:block;width:14px;height:14px;pointer-events:none}
+                [aria-expanded=true]>.row>.expander svg{transform:rotate(90deg)}
+                .spacer{width:max(20px,var(--gramlot-touch-target,0px));flex:none}.caption{min-width:0;overflow-wrap:anywhere}
                 .icon{width:16px;height:16px;flex:none;background:currentColor;opacity:.7;mask:center/contain no-repeat;
                     mask-image:url("data:image/svg+xml,%3Csvg xmlns='${SVG_NS}' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='1.7' d='M5 3h9l5 5v13H5zM14 3v6h5M8 13h8M8 17h8'/%3E%3C/svg%3E")}
                 .branch-icon{mask-image:url("data:image/svg+xml,%3Csvg xmlns='${SVG_NS}' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='1.7' d='M3 7V4h7l3 3h8v13H3z'/%3E%3C/svg%3E")}
                 .opened-icon{mask-image:url("data:image/svg+xml,%3Csvg xmlns='${SVG_NS}' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='1.7' d='M3 19V4h7l3 3h8v3M3 20l3-9h16l-3 9z'/%3E%3C/svg%3E")}
                 .loading>.row{opacity:.65}.error>.row .caption{text-decoration:underline dotted}
+                mark{background:#ffe493;color:#302300;font-weight:600;border-radius:2px;padding:0 1px}
+                .search-status{padding:4px;color:var(--gramlot-text-secondary,#555);font-size:.9em}
                 [hidden]{display:none}`;
             this.shadowRoot.append(style);
         }
@@ -83,6 +98,8 @@ export const Tree = defineComponent({
             if (!(bag instanceof Bag)) throw new TypeError('tree storepath must resolve to a Bag');
             if (bag !== this.#store) {
                 this.#store = bag;
+                this.#resetSearch();
+                this.#searchText = this.#searchInput.toLowerCase();
                 this.#expanded.clear();
                 this.#errors.clear();
                 this.#requestedPath = undefined;
@@ -91,10 +108,65 @@ export const Tree = defineComponent({
         }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
+            const text = this.parameters.searchText.trim();
+            if (text !== this.#searchInput) {
+                this.#resetSearch();
+                this.#searchInput = text;
+                if (!text) this.#searchText = '';
+                else this.#searchTimer = setTimeout(() => {
+                    this.#searchTimer = null; this.#searchText = text.toLowerCase(); this.#schedule();
+                }, 200);
+            }
             this.#schedule();
             return rest;
         }
-        connectedCallback() { this.#schedule(); }
+        connectedCallback() {
+            if (this.#searchTimer === null) this.#searchText = this.#searchInput.toLowerCase();
+            this.#schedule();
+        }
+        disconnectedCallback() { this.#resetSearch(); }
+        #resetSearch() {
+            clearTimeout(this.#searchTimer); this.#searchTimer = null;
+            this.#searchVersion++; this.#searching = false;
+            this.#searchAttempted = new WeakSet(); this.#searchOpen.clear(); this.#searchClosed = new WeakSet();
+        }
+        #opened(node) { return this.#searchText ? this.#searchOpen.has(node) : this.#expanded.has(node); }
+        async #searchBranches() {
+            const version = this.#searchVersion, store = this.#store;
+            const current = () => this.isConnected && version === this.#searchVersion && store === this.#store;
+            this.#searching = true;
+            const visit = async (bag, ancestors = new Set()) => {
+                if (!current()) return;
+                if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
+                const next = new Set(ancestors).add(bag);
+                for (const node of bag.getNodes()) {
+                    if (!current()) return;
+                    if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node)) {
+                        this.#searchAttempted.add(node);
+                        await this.#resolve(node, true);
+                    }
+                    if (!current()) return;
+                    if (node.staticValue instanceof Bag) await visit(node.staticValue, next);
+                }
+            };
+            try { await visit(store); }
+            finally { if (current()) { this.#searching = false; this.#schedule(); } }
+        }
+        #highlight(caption) {
+            const walker = this.ownerDocument.createTreeWalker(caption, 4), texts = [];
+            while (walker.nextNode()) texts.push(walker.currentNode);
+            for (const text of texts) {
+                const value = text.textContent, lower = value.toLowerCase(), fragment = this.ownerDocument.createDocumentFragment();
+                let cursor = 0, start = lower.indexOf(this.#searchText);
+                if (start < 0) continue;
+                while (start >= 0) {
+                    fragment.append(value.slice(cursor, start));
+                    const mark = this.ownerDocument.createElement('mark'); mark.textContent = value.slice(start, start + this.#searchText.length);
+                    fragment.append(mark); cursor = start + this.#searchText.length; start = lower.indexOf(this.#searchText, cursor);
+                }
+                fragment.append(value.slice(cursor)); text.replaceWith(fragment);
+            }
+        }
         #schedule() {
             if (this.#scheduled) return;
             this.#scheduled = true;
@@ -118,6 +190,10 @@ export const Tree = defineComponent({
                 seen.delete(bag);
             };
             visit(this.#store, '', []);
+            if (this.#searchText && this.#searchTimer === null && !this.#searching && [...items.values()].some(({node}) =>
+                node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node))) {
+                void this.#searchBranches();
+            }
             const identities = new Set([...items.values()].map(item => item.node));
             for (const node of this.#expanded) if (!identities.has(node)) this.#expanded.delete(node);
             for (const node of this.#errors.keys()) if (!identities.has(node)) this.#errors.delete(node);
@@ -162,6 +238,14 @@ export const Tree = defineComponent({
                     if (branch) {
                         expander.className = 'expander';
                         expander.type = 'button'; expander.tabIndex = -1;
+                        const chevron = this.ownerDocument.createElementNS(SVG_NS, 'svg');
+                        chevron.setAttribute('viewBox', '0 0 24 24');
+                        chevron.setAttribute('aria-hidden', 'true'); chevron.setAttribute('focusable', 'false');
+                        const chevronPath = this.ownerDocument.createElementNS(SVG_NS, 'path');
+                        chevronPath.setAttribute('d', 'm9 5 7 7-7 7'); chevronPath.setAttribute('fill', 'none');
+                        chevronPath.setAttribute('stroke', 'currentColor'); chevronPath.setAttribute('stroke-width', '1.8');
+                        chevronPath.setAttribute('stroke-linecap', 'round'); chevronPath.setAttribute('stroke-linejoin', 'round');
+                        chevron.append(chevronPath); expander.append(chevron);
                         expander.addEventListener('click', event => {
                             event.stopPropagation(); toggle(); entry.focus();
                         });
@@ -205,13 +289,14 @@ export const Tree = defineComponent({
                         });
                     }
                     const present = () => {
-                        const opened = this.#expanded.has(node), selected = this.#selectedPath === path;
+                        const opened = this.#opened(node), selected = this.#selectedPath === path;
                         const keywords = {item: node, path, opened, selected};
                         const attribute = this.parameters.labelAttribute;
                         const label = this.parameters.getLabel !== null ? this.#call('getLabel', keywords)
                             : attribute !== null ? (Object.hasOwn(node.attr, attribute) ? node.attr[attribute] : node.label)
                             : this.parameters.labelCb !== null ? this.#call('labelCb', keywords) : node.label;
                         this.#setCaption(caption, label, this.parameters.getLabel !== null || (attribute === null && this.parameters.labelCb !== null));
+                        if (this.#searchText) this.#highlight(caption);
                         const labelClass = this.parameters.getLabelClass !== null ? this.#call('getLabelClass', keywords)
                             : node.attr[opened ? 'labelClassOpened' : 'labelClassClosed'] || node.attr.labelClass || '';
                         const labelClasses = [...this.#classes(labelClass), ...(selected ? this.#classes(this.parameters.selectedLabelClass) : [])];
@@ -232,20 +317,23 @@ export const Tree = defineComponent({
                     };
                     this.#presentations.set(path, present);
                     const sync = () => {
-                        const opened = this.#expanded.has(node);
+                        const opened = this.#opened(node);
                         entry.setAttribute('aria-expanded', String(opened));
                         entry.classList.toggle('opened', opened);
                         entry.classList.toggle('closed', !opened);
                         icon.classList.toggle('opened-icon', opened);
                         icon.setAttribute('part', `icon branch-icon ${opened ? 'opened-icon' : 'closed-icon'}`);
-                        expander.textContent = opened ? '▾' : '▸';
                         group.hidden = !opened;
                         present();
                     };
                     const toggle = () => {
-                        if (this.#expanded.has(node)) this.#expanded.delete(node);
+                        const expanded = this.#searchText ? this.#searchOpen : this.#expanded;
+                        if (expanded.has(node)) {
+                            expanded.delete(node);
+                            if (this.#searchText) this.#searchClosed.add(node);
+                        }
                         else {
-                            this.#expand(node);
+                            if (this.#searchText) { this.#searchClosed.delete(node); this.#searchOpen.add(node); } else this.#expand(node);
                             if (node.resolver !== null) this.#resolve(node);
                         }
                         for (const update of branchSync.values()) update();
@@ -262,9 +350,9 @@ export const Tree = defineComponent({
                         else if (event.key === 'Home') target = visible[0];
                         else if (event.key === 'End') target = visible.at(-1);
                         else if (event.key === 'ArrowRight' && branch) {
-                            if (!this.#expanded.has(node)) toggle(); else target = group.firstElementChild;
+                            if (!this.#opened(node)) toggle(); else target = group.firstElementChild;
                         } else if (event.key === 'ArrowLeft') {
-                            if (branch && this.#expanded.has(node)) toggle(); else target = parent;
+                            if (branch && this.#opened(node)) toggle(); else target = parent;
                         } else if (event.key === 'Enter' || event.key === ' ') this.#select(path);
                         else return;
                         event.preventDefault(); event.stopPropagation();
@@ -276,6 +364,25 @@ export const Tree = defineComponent({
                 return list;
             };
             this.control.replaceChildren(build(this.#store, '', null));
+            this.control.setAttribute('aria-busy', String(this.#searching));
+            if (this.#searchText) {
+                const visible = new Set(), matches = [];
+                this.#searchOpen.clear();
+                for (const [path, row] of this.#rows) {
+                    const caption = row.firstElementChild.querySelector('.caption'), item = items.get(path);
+                    const match = caption.textContent.toLowerCase().includes(this.#searchText);
+                    if (match) matches.push(caption);
+                    if (match || this.#errors.has(item.node) || this.#loading.has(item.node)) {
+                        visible.add(item.node);
+                        for (const ancestor of item.ancestors) { visible.add(ancestor); if (!this.#searchClosed.has(ancestor)) this.#searchOpen.add(ancestor); }
+                    }
+                }
+                for (const [path, row] of this.#rows) row.hidden = !visible.has(items.get(path).node);
+                for (const update of branchSync.values()) update();
+                const status = this.ownerDocument.createElement('div'); status.className = 'search-status'; status.setAttribute('role', 'status');
+                status.textContent = this.#searching ? 'Searching…' : this.#errors.size ? 'Some branches could not be searched. Expand them to retry.' : matches.length ? '' : 'No matches';
+                this.control.append(status);
+            }
             this.#tabStop(focused ?? selected);
             if (focused) this.#rows.get(focused)?.focus();
         }
@@ -306,6 +413,7 @@ export const Tree = defineComponent({
             return [...this.control.querySelectorAll('[role=treeitem]')].filter(row => !row.closest('[hidden]'));
         }
         #expand(node) {
+            if (this.#searchText) { this.#searchOpen.add(node); return; }
             if (this.parameters.autoCollapse) {
                 for (const sibling of node.parentBag.getNodes()) {
                     if (sibling !== node) this.#expanded.delete(sibling);
@@ -313,20 +421,16 @@ export const Tree = defineComponent({
             }
             this.#expanded.add(node);
         }
-        async #resolve(node) {
-            if (this.#loading.has(node)) return;
-            this.#loading.add(node);
-            this.#errors.delete(node);
-            this.#schedule();
-            try {
-                await node.getValue();
-            } catch (error) {
-                this.#errors.set(node, error);
-                this.#expanded.delete(node);
-            } finally {
-                this.#loading.delete(node);
-                this.#schedule();
-            }
+        #resolve(node, searching = false) {
+            if (this.#resolutions.has(node)) return this.#resolutions.get(node);
+            this.#loading.add(node); this.#errors.delete(node); this.#schedule();
+            const pending = (async () => {
+                try { await Promise.resolve().then(() => node.getValue()); }
+                catch (error) { this.#errors.set(node, error); if (!searching) this.#expanded.delete(node); }
+                finally { this.#loading.delete(node); this.#resolutions.delete(node); this.#schedule(); }
+            })();
+            this.#resolutions.set(node, pending);
+            return pending;
         }
         #tabStop(path) {
             const visible = this.#visible(), target = typeof path === 'string' || path == null

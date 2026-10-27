@@ -4,6 +4,8 @@
  *
  * @module
  */
+import {MobileEnvironment} from './mobile-environment.js';
+import {CommandRegistry} from './commands.js';
 import {ServerAdapter} from './server-adapter.js';
 import {PageStoreConnection} from './page-store-connection.js';
 import {FrameMessages} from './frame-messages.js';
@@ -12,6 +14,7 @@ import {SourceHandler} from './handlers/source-handler.js';
 import {RpcHandler} from './handlers/rpc-handler.js';
 import {DomHandler} from './handlers/dom-handler.js';
 import {SubscriptionsHandler} from './handlers/subscriptions-handler.js';
+import {DeviceHandler} from './handlers/device-handler.js';
 import {UtilitiesHandler} from './handlers/utilities-handler.js';
 import buttons from './components/buttons.js';
 import {ComponentCollection} from './components/registry.js';
@@ -24,6 +27,7 @@ import {formatValue} from './format.js';
  * name syntax the server declared in the bootstrap, `{kind: 'regex', pattern, flags}`, null for the core default.
  */
 export class Gramlot {
+    #mobileEnvironment;
     constructor({pageId, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
                  element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = [],
                  locale = null, timeZone = null, devices = [], serverAdapter = new ServerAdapter(), nameSyntax = null,
@@ -32,6 +36,7 @@ export class Gramlot {
         for (const collection of collections) {
             if (collection instanceof ComponentCollection) collection.register(document.defaultView);
         }
+        this.commands = new CommandRegistry();
         this.pageId = pageId;
         const browserContext = locale == null || timeZone == null
             ? document.defaultView.Intl.DateTimeFormat().resolvedOptions() : null;
@@ -43,7 +48,9 @@ export class Gramlot {
         this.serverAdapter = serverAdapter;
         this.src = new SourceHandler(this, {collections, destination: element ?? document.getElementById(rootId),
             subscriptions: this._subscriptions, nameSyntax: nameSyntax === null ? NAME_SYNTAX : NameSyntax.fromJSON(nameSyntax)});
+        this.#mobileEnvironment = MobileEnvironment.install({document,root:this.src.renderer.destination});
         this.data = this.src.builder.data;
+        this.dvc = new DeviceHandler(this);
         this.dom = new DomHandler(this);
         this.utl = new UtilitiesHandler(this, document);
         this.state = 'ready';
@@ -54,7 +61,7 @@ export class Gramlot {
         this._frames.connect();
         // A page with a transport closes its server page when the browser leaves it (a beacon over HTTP).
         if (this.rpc.transport) {
-            this.pagehide = event => { if (!event.persisted) this.dispose({beacon: true}); };
+            this.pagehide = event => { if (!event.persisted) this.dispose(); };
             document.defaultView.addEventListener('pagehide', this.pagehide);
             this.window = document.defaultView;
         }
@@ -76,7 +83,7 @@ export class Gramlot {
     async loadMain() {
         let wire;
         try {
-            wire = await this.rpc.call('source', 'main');
+            wire = await this.rpc.callEnvelope('source', 'main');
         } catch (error) {
             // The dispose aborts the call at once (RpcHandler.call): the start rejects naming the dispose.
             if (this.state === 'disposed') throw new Error('Gramlot was disposed during main', {cause: error});
@@ -85,15 +92,17 @@ export class Gramlot {
         }
         if (this.state === 'disposed') throw new Error('Gramlot was disposed during main');
         try {
-            return this.src.mountMainSource(wire);
+            return this.src.mountMainSource(wire.value, wire.data);
         } catch (error) {
             if (this.state !== 'disposed') this.state = 'failed';
             throw error;
         }
     }
-    dispose({beacon = false} = {}) {
+    dispose() {
         if (this.state === 'disposed') return;
         this.state = 'disposed';
+        this.dvc.dispose();
+        this.#mobileEnvironment.dispose();
         this._subscriptions.dispose();
         if (this.pagehide) this.window.removeEventListener('pagehide', this.pagehide);
         // Every call in flight is aborted: RpcHandler.call follows this signal.
@@ -105,8 +114,8 @@ export class Gramlot {
             this._pageStore?.close();
             this._frames.dispose();
             if (this.rpc.transport) {
-                this.rpc.transport.close(this.pageId, {beacon});
-                this.rpc.transport.dispose();
+                try { this.rpc.transport.close(this.pageId); }
+                finally { this.rpc.transport.dispose(); }
             }
         }
     }

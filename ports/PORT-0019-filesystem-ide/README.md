@@ -32,3 +32,27 @@ New-document increment, 2026-10-21: owner confirms “si” to type selection, b
 Owner requested and confirmed editable Python gallery sources and preview reload after saving. The integration reuses this port's FileSystemPageMixin read/save checks behind a catalogue-key endpoint. The gallery authors CodeMirror, Save/Revert and status in Python Source, keeps drafts/revisions in Data, and uses ordinary Logic/RPC. The original file is written; staged wrappers are never edited. Successful saves reload only the affected iframe from initial state; failures retain draft/preview, and concurrent new edits remain dirty. Default read-only and the shared remote_edit gate remain intact.
 
 Verified by nine host tests, three Python-authored live Source/CodeMirror tests and real browser syntax rejection/recovery/save/two-tab isolation. Wrapper compilation now bypasses stale bytecode, and all five hosts forward the existing reload option. This completes the previously deferred gallery save/reload slice; helper-module hot reload, JS companion editing and serverless filesystem writes remain outside scope. No release or deployment. Full receipts: GC-070's editable Python gallery entry.
+
+Gallery follow-up — 2026-10-24: owner requests an IDE over sample documents,
+with draft editing allowed and persistence gated by Remote Edit. The Python
+integration now stages the existing IDE with verified Page.gramlots and the agreed
+filesystem endpoints from the local integration trial. It exposes a disposable
+copy of the examples package's documents, outside route-eligible paths. No native
+recipe execution endpoint is ported. Core IDE no longer derives editor readonly
+from host writable; Save/create remain gated and new drafts inherit workspace
+write permission. Regression evidence: 13 core IDE tests; 12 host staging/live RPC
+tests including all five adapters with Remote Edit off/on; actual browser typing,
+Undo/Revert and disabled Save verified. Implemented and verified locally, awaiting
+owner trial and a separate publication decision.
+
+
+### Source ownership review — 2026-10-25
+
+Owner requires instance state to belong to Data or Source and relative Data access.
+Shared Logic groups must not retain a current IDE. The local correction attaches
+coordination and request resources to each owning Source node, derives panels from
+Source, and gives editors per-instance identities. Reusable lesson for later ports:
+multiple mounts must be tested with identical external document keys and delayed
+completion, not merely with different pages. A two-IDE Python composition verifies
+isolation and DOM-only detach/dock. The 62-test focused suite and runtime build pass;
+owner trial and publication remain separate. See GC-365 §035 and GC-070 §2180.

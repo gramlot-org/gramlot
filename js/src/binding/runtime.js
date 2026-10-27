@@ -7,6 +7,7 @@ import {isLogicMethod, callLogic} from './hooks.js';
 import {RemoteBinding} from './remote.js';
 import {DataBinder} from './data-binder.js';
 import {AskDialog} from './ask-dialog.js';
+import {ErrorNotifications} from './error-notifications.js';
 import {randomId} from '../random-id.js';
 import {pointerDependencies} from '@genrojs/builders';
 
@@ -37,6 +38,7 @@ export class BindingRuntime {
     #installer;
     #inlineCompiler;
     #askDialog;
+    #errorNotifications;
     #subscriptions;
     #subscription = `gramlot-data-${randomId()}`;
     #disposed = false;
@@ -48,9 +50,11 @@ export class BindingRuntime {
         this.#installer = new DataInstaller(this);
         this.#inlineCompiler = new InlineCompiler(this);
         this.#askDialog = new AskDialog(this);
+        this.#errorNotifications = new ErrorNotifications(this);
     }
 
     get gramlot() { return this.#gramlot; }
+    reportError(error, title) { if (!this.disposed) this.#errorNotifications.show(error, title); }
     /** The page topics and Source self-topics: the private `_subscriptions` of the Gramlot instance, given at construction. */
     get subscriptions() { return this.#subscriptions; }
     get builder() { return this.gramlot.src.builder; }
@@ -126,7 +130,7 @@ export class BindingRuntime {
         const nodes = this.#branchNodes(node);
         for (const each of nodes) this.bindingFor(each)?.rebind();
         for (const each of nodes) this.renderer.project(each);
-        for (const each of nodes) this.bindingFor(each)?.remote?.update();
+        for (const each of nodes) this.bindingFor(each)?.remote?.trigger();
     }
 
     /**
@@ -244,7 +248,9 @@ export class BindingRuntime {
         try {
             for (const node of nodes) this.openBinding(node);
             this.installer.install(branch);
-            for (const node of nodes) this.bindingFor(node).registerPointers();
+            for (const node of nodes) {
+                if (this.renderer.attached(node)) this.bindingFor(node).registerPointers();
+            }
         } catch (error) {
             const errors = [error];
             for (const node of nodes.filter(node => !known.has(node)).reverse()) {
@@ -274,7 +280,7 @@ export class BindingRuntime {
         if (binding.hasStamp('start')) return;
         binding.stamp('start');
         this.#lifecycle(binding, 'start', '_onStart');
-        binding.remote?.update();
+        binding.remote?.trigger();
     }
 
     /** Invoke the providers of `binding` for the lifecycle trigger `kind` when `attribute` is on; a number delays it. */
@@ -386,7 +392,7 @@ export class NodeBinding {
         return ++this.#clickCount;
     }
 
-    /** Whether the lifecycle step `name` ('installed', 'init', 'built', 'start') ran for the node. */
+    /** Whether the lifecycle step `name` ('init', 'built', 'start') ran for the node. */
     hasStamp(name) {
         return this.#stamps.has(name);
     }

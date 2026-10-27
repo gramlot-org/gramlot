@@ -7,8 +7,9 @@ import {callLogic, invokeHook} from '../binding/hooks.js';
  */
 import {BuilderBase, SourceBag, sourceTarget} from '@genrojs/builders';
 import {HtmlElement} from '../view/html.js';
-import {ControlAdapter, RadioGroups, SelectControl} from '../view/controls.js';
+import {ControlAdapter, RadioControl, RadioGroups, SelectControl} from '../view/controls.js';
 import {ButtonBinding} from '../view/button.js';
+import {MenuBinding} from '../view/menu.js';
 import {NativeEventBinding} from '../view/events.js';
 import {References} from '../references.js';
 import {randomId} from '../random-id.js';
@@ -16,7 +17,7 @@ import {GramlotBuilderBag, GramlotBuilderBagNode} from '../builder/source.js';
 import {BindingRuntime} from '../binding/runtime.js';
 import {requireInstallable} from '../binding/installation.js';
 import {GramlotHtmlRenderer} from './gramlot-html-renderer.js';
-import {displayItem} from './attributes.js';
+import {displayItem, XHTML_NS} from './attributes.js';
 import {DragPreparation} from './drag-preparation.js';
 import {DragDrop} from './drag-drop.js';
 
@@ -47,6 +48,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.source = source;
         this.destination = destination;
         this.html = new HtmlElement({metadataAttributes: ['__ref'],
+            reportError: (node, error, title) => { if (this.records.has(node)) binding.reportError(error, title); },
             callLogic: (node, name, keywords) => {
                 const {group, method} = binding.gramlot.src.logicRegistry.resolve(name, node);
                 return method.call(group, node, keywords);
@@ -115,7 +117,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             this.#presentationDefaults.set(node, Object.fromEntries(Object.entries(attrs)
                 .filter(([name]) => Object.hasOwn(declared, name) && component.presentationDefaults.some(prefix => name.startsWith(prefix)))));
         }
-        if (component && (component.parameters.value?.binding === 'twoWay' || component.presentationDefaults.length)) {
+        if (this.html.hasLabelbox(node) || component?.presentationDefaults.length) {
             const ancestors = [];
             for (let parent = node.parentNode; parent; parent = parent.parentNode) {
                 if (this.#presentationDefaults.has(parent)) ancestors.unshift(this.#presentationDefaults.get(parent));
@@ -205,11 +207,14 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         // cleanup removes, listeners included (ASTRA-06).
         this.records.set(node, record);
         this.elements.set(record.element, record);
+        this.elements.set(record.presentation, record);
         const control = ControlAdapter.for(record.binding, record);
+        // An input can acquire/change its adapter through type while its DOM record survives.
+        if (control || (record.element.namespaceURI === XHTML_NS && record.element.localName === 'input'))
+            record.cleanup.push(() => record.control?.detach());
         if (control) {
             record.control = control;
             control.attach();
-            record.cleanup.push(() => control.detach());
             this.#projectControl(record, node, attrs, null);
         }
         const button = ButtonBinding.for(record.binding, record);
@@ -217,6 +222,11 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             record.button = button;
             button.attach();
             record.cleanup.push(() => button.detach());
+        }
+        if (node.nodeTag === 'menu') {
+            record.menu = new MenuBinding(record.binding, record.element);
+            record.menu.attach();
+            record.cleanup.push(() => record.menu.detach());
         }
         this.#connectEvents(record);
         this.references?.register(node, record.element);
@@ -227,7 +237,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             child.container = record.element;
             record.children.add(child.node);
         }
-        return record.element;
+        return record.presentation;
     }
 
     /**
@@ -330,7 +340,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
 
     /**
      * Source event intake (§5.2): an event on a node under construction is ignored
-     * on arrival; every other event is queued and processed in arrival order.
+     * on arrival, as is the deletion of a consumed dataSetter (already closed by the installer).
+     * Every other event is queued and processed in arrival order.
      * Semantic work runs for every event, also under freeze; structural work only
      * outside frozen branches. A failing disposer does not block the rest: the
      * closing errors of the semantic work and the cleanup errors of the removals
@@ -338,11 +349,13 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
      */
     receive(event) {
         if (this.disposed) return;
+        const ignored = node => this.#constructing.has(node)
+            || (event.evt === 'del' && node.nodeTag === 'dataSetter');
         if (Array.isArray(event.node)) {
-            const nodes = event.node.filter(node => !this.#constructing.has(node));
+            const nodes = event.node.filter(node => !ignored(node));
             if (!nodes.length) return;
             event = {...event, node: nodes};
-        } else if (this.#constructing.has(event.node)) return;
+        } else if (ignored(event.node)) return;
         this.pending.push(event);
         if (this.building) return;
         this.building = true;
@@ -435,7 +448,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         let before = parent?.end ?? null;
         for (let i = siblings.indexOf(node) + 1; i < siblings.length; i++) {
             const record = this.records.get(siblings[i]);
-            if (record) { before = record.element ?? record.start; break; }
+            if (record) { before = record.presentation ?? record.start; break; }
         }
         this.buildNode(node, container, before, parent);
     }
@@ -493,7 +506,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         if ((event === 'upd_attrs' || scalarValueUpdate) && record.element && this.html.matches(record, node)) {
             if (node.nodeTag) this.html.validate(node, node._getMeta('subbuilder') ? node.parentBag._builder : node.builder);
             this.project(node);
-            // A change of `type`, `multiple` or `group` rebuilt the element inside project (C04.1).
+            // A remaining shape change rebuilt the element inside project.
             if (event === 'upd_attrs' && this.records.get(node) === record) {
                 this.references?.remove(node);
                 this.references?.register(node, record.element);
@@ -508,24 +521,45 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
      * adaptation as the first render, by the node's own renderer (R16). A node without an element
      * (not built yet, frozen before its first build, a fragment) is left alone; under freeze the
      * elements already built are projected. `change` is the DataChange that asked for it, or null.
-     * A form control whose resolved `type`, `multiple` or `group` changed is rebuilt instead, keeping
+     * Native input.type and input/select.multiple use setters. Other shape changes rebuild, keeping
      * its NodeBinding; under freeze the rebuild waits for the thaw (C04.1, D7). The resolved projection
      * (runtimeValues, then `==`) is computed once and is what every consumer reads, the rebuild included.
      */
     project(node, change = null) {
         const record = this.records.get(node);
-        if (!record?.element) return;
+        if (!record?.element || !this.attached(node)) return;
         const renderer = this.getRender(node.builder);
         const previousDefaults = this.#presentationDefaults.get(node);
         const [value, runtimeAttrs] = node.rootBuilder.runtimeValues(node);
         const [, resolvedAttrs] = renderer._handleMeta(node, runtimeAttrs);
         const resolved = this.#resolvedAttributes.get(node);
+        const typeChanged = record.element.namespaceURI === XHTML_NS && record.element.localName === 'input'
+            && !Object.is(record.resolved.type, resolved.type);
+        const multipleChanged = record.element.namespaceURI === XHTML_NS
+            && ['input', 'select'].includes(record.element.localName)
+            && Boolean(record.resolved.multiple) !== Boolean(resolved.multiple);
+        const previousGroup = record.resolved.group;
+        const groupChanged = record.control instanceof RadioControl
+            && !Object.is(previousGroup ?? null, resolved.group ?? null);
+        if ((typeChanged || multipleChanged || groupChanged) && this.#isFrozen(node)) return;
         if (record.shape !== ControlAdapter.shape(record.element, resolved)) {
             if (this.#isFrozen(node)) return;
             this.#rebuildAttributes.set(node, resolved);
             try { this.#rebuild(node); }
             finally { this.#rebuildAttributes.delete(node); }
             return;
+        }
+        const Control = typeChanged ? ControlAdapter.classFor(record.element, resolved) : null;
+        const replaceControl = typeChanged && (record.control?.constructor ?? null) !== Control;
+        const keepDraft = (typeChanged || (multipleChanged && record.element.localName === 'input'))
+            && !replaceControl && record.control
+            && Object.is(record.resolved.value, resolved.value);
+        if (replaceControl) {
+            record.control?.detach();
+            record.control = null;
+        }
+        if (groupChanged && !replaceControl && resolved.group != null && node.getAttr('name') != null) {
+            throw new TypeError(`${node.nodeTag} '${node.label}': name and group are two names`);
         }
         record.resolved = resolved;
         let attrs = node._getMeta('subbuilder') ? resolvedAttrs : renderer.adaptAttrs(resolvedAttrs);
@@ -538,9 +572,20 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         }
         attrs = this.componentAttributes(node, attrs);
         this.html.update(record, node, attrs, branch ? attrs._text : text, resolved.visible ?? null);
-        this.#projectControl(record, node, attrs, change);
+        if (replaceControl && Control) {
+            record.control = new Control(record.binding, record);
+            record.control.attach();
+        }
+        if (groupChanged && !replaceControl) {
+            record.control.refresh(previousGroup ?? null);
+            // Reset writes can synchronously change values or remove this node. Re-read Data.
+            if (this.records.get(node) === record && !record.binding.closed) this.project(node);
+            return;
+        }
+        if (!keepDraft) this.#projectControl(record, node, attrs, change);
         record.control?.refresh();
         record.button?.refresh();
+        record.menu?.refresh();
         this.#connectEvents(record);
         const defaults = this.#presentationDefaults.get(node);
         if (defaults) {
@@ -562,7 +607,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             let inherited = changed;
             if (component?.presentationDefaults.length) {
                 inherited = new Set([...changed].filter(name => !Object.hasOwn(declared, name)));
-            } else if (component?.parameters.value?.binding === 'twoWay'
+            } else if (this.html.hasLabelbox(child)
                 && [...changed].some(name => !Object.hasOwn(declared, name))) {
                 this.project(child);
             }
@@ -660,7 +705,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
 
     #rebuild(node) {
         const record = this.records.get(node);
-        const before = record.element?.nextSibling ?? record.end?.nextSibling ?? null;
+        const before = record.presentation?.nextSibling ?? record.end?.nextSibling ?? null;
         const container = record.container;
         const parent = record.parent;
         let removeError = null;
@@ -702,7 +747,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         }
         this.references?.remove(node);
         if (record.element) this.elements.delete(record.element);
-        record.element?.remove();
+        if (record.presentation) this.elements.delete(record.presentation);
+        record.presentation?.remove();
         record.start?.remove();
         record.end?.remove();
         record.parent?.children.delete(node);

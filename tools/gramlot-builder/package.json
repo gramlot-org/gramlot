@@ -1,0 +1,17 @@
+{
+  "name": "@gramlot/builder",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./cli": "./src/cli.js"
+  },
+  "engines": {
+    "node": "^22.0.0 || ^24.0.0 || ^26.0.0"
+  },
+  "dependencies": {
+    "esbuild": "0.28.2"
+  },
+  "peerDependencies": {
+    "@gramlot/gramlot": "*"
+  }
+}

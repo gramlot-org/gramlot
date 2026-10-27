@@ -52,6 +52,14 @@ Calls of another owner, of unknown or expired pages, undecodable requests and th
 a page no call names for `page_ttl` is removed (next call → `page_expired`). `GramlotServer.call` renews; the
 adapter does nothing. A new `Page` per call; no state between calls unless a capability (§040).
 
+Prepared collection resources are inventoried at host startup. Python pages select
+importable descriptors through `Page.gramlots`; the host includes dependencies
+before dependants and makes only inventoried browser assets available. A collection
+bootstrap entry is `{name, url, buildId}`, not a bare URL. Theme CSS precedes
+collection CSS, followed by page CSS. Startup waits for stylesheets and modules,
+and an identity/load failure prevents normal page startup. See the
+[complete collection lifecycle](340-components-and-collections-guide.md#gc-340-055).
+
 <a id="gc-101-015"></a>
 
 ### 015 · Content types and method names
@@ -341,3 +349,16 @@ Block ID: **GC-101-315**.
 `Page.devices` (tuple/array of `desktop`, `tablet`, `phone`; empty = undeclared) → copy in `config.devices`
 (HTTP) or the `registerPage` result (Worker) → frozen `gramlot.devices`. Information only, not permission,
 redirect or layout; adapters do not interpret it.
+
+
+<a id="gc-101-320"></a>
+
+## 320 · Optional initial Data companion
+
+Block ID: **GC-101-320**.
+
+The successful `source/main` response retains `id`, `contentType` and `value` (the existing Source representation). If the page has a same-name `_data.tytx` companion, the envelope additionally carries `data`, a TYTX-encoded Bag. Missing companions omit that field. Errors carry neither value nor data. Remote Source responses and endpoint values are unchanged.
+
+`GramlotServer.resolveData(path)` / `resolve_data(path)` supplies this optional Bag; the neutral server returns null/None, the file server reads the companion, and the Worker reads its embedded serialized copy. The registered page path is used only after normal owner/expiry validation. `RpcHandler.call` keeps returning the value; `callEnvelope` exposes the checked envelope to startup. Startup validates Source and Data before installing the companion into the existing Builder-owned Data root, then installs main normally. A Data installation is not rolled back after a later Source installation error, consistent with existing startup rules.
+
+This adds an initial-Data mechanism without replacing dataSetter, defaults, endpoints or resolvers. The initial main result is not replaced by a {source, data} value.

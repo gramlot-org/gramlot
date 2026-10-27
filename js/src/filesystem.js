@@ -60,13 +60,14 @@ export class DirectoryResolver extends RemoteResolver {
 
 /** Own directory requests; the selection and store remain in the component's Data Bag. */
 export class FileSystemController {
-    constructor(gramlot, state) {
+    constructor(gramlot, source) {
         this.gramlot = gramlot;
-        this.state = state;
+        this.source = source;
         this.request = null;
         this.resolver = null;
         this.disposed = false;
     }
+    get state() { return this.source.getRelativeData('.'); }
     async open(root) {
         this.request?.abort();
         const request = this.request = new AbortController();
@@ -81,6 +82,7 @@ export class FileSystemController {
             this.resolver = resolver;
             this.state.setItem('selectedPath', null);
             this.state.setItem('store', store);
+            this.state.setItem('writable', result.writable);
             this.state.setItem('root', result.root);
             this.state.setItem('status', '');
             return result.root;
@@ -92,17 +94,16 @@ export class FileSystemController {
     dispose() { this.disposed = true; this.request?.abort(); this.resolver?.abort(); }
 }
 
-/** Named Logic used by the reusable Source composition; instances are scoped by Data. */
+/** Named Logic routes through the Source owner; no instance state lives on the Logic group. */
 export class FileSystemLogic {
     fileSystemMount(node) {
-        this.fileSystems ??= new WeakMap();
-        const scope = node.parentNode, state = scope.getRelativeData('.');
-        const controller = new FileSystemController(this.page, state);
-        this.fileSystems.set(state, controller);
+        const scope = node.parentNode;
+        const controller = new FileSystemController(this.page, scope);
+        Object.defineProperty(scope,'fileSystemController',{value:controller,configurable:true});
         this.page.src.renderer.onDispose(scope, () => controller.dispose());
     }
     fileSystemOpen(node, {root}) {
-        if (root) return this.fileSystems.get(node.getRelativeData('.')).open(root);
+        if (root) return node.parentNode.fileSystemController.open(root);
     }
 }
 

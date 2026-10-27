@@ -10,6 +10,8 @@ import type {Resources} from './resources.js';
 
 /** Options of `GramlotFileServer`: those of `GramlotServer` and `reload`. */
 export interface GramlotFileServerOptions extends GramlotServerOptions {
+    /** Discover trusted candidate Page classes without running page methods. */
+    iterPageClasses(): AsyncGenerator<typeof Page>;
     /** Import the page module again when it changes; `null` takes the value from `GRAMLOT_DEV`. */
     reload?: boolean | null;
 }

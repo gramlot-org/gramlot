@@ -7,7 +7,7 @@ export function Container(HTMLElement) {
             super();
             const shadow = this.attachShadow({mode: 'open'});
             const style = this.ownerDocument.createElement('style');
-            style.textContent = `:host{display:block;min-width:0;font:inherit;color:var(--gramlot-ink,CanvasText)}
+            style.textContent = `:host{box-sizing:border-box;display:block;min-width:0;font:inherit;color:var(--gramlot-ink,CanvasText)}
                 *,*::before,*::after{box-sizing:border-box}.control-box{min-width:0}slot{display:contents}
                 ::slotted(*){min-width:0;max-width:100%}`;
             this.controlBox = this.ownerDocument.createElement('div');

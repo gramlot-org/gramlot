@@ -55,6 +55,12 @@ const logic = (body, delay = 0) => (delay ? `await new Promise(done => setTimeou
 /** A jsdom window on `html` at `url`, recording its beacons. */
 function browser(html, url) {
     const {window} = new JSDOM(html, {url});
+    // jsdom does not fetch CSS: simulate successful loads for the pre-existing behavior tests.
+    const append = window.document.head.append.bind(window.document.head);
+    window.document.head.append = (...nodes) => {
+        append(...nodes);
+        for (const node of nodes) if(node.tagName==='LINK') queueMicrotask(()=>node.dispatchEvent(new window.Event('load')));
+    };
     const beacons = [];
     window.navigator.sendBeacon = (target, body) => { beacons.push({url: target, body}); return true; };
     return {window, beacons};
@@ -380,17 +386,18 @@ test('CSP without unsafe-eval: a page with named logic only never calls the inli
 test('application collection grammar and browser module load before Source, including fragments', () => folder(async root => {
     const {default: inputs} = await import('../src/components/inputs.js');
     const moduleUrl = new URL('../src/components/inputs.js', import.meta.url).href;
+    const buildId='sha256:'+'a'.repeat(64);
     await write(root, 'index.js', `import {Page as Base} from ${JSON.stringify(PAGE_MODULE)};
 export class Page extends Base {
     main(root) { root.textbox({id:'customer', value:'^customer', lbl:'Customer'}); root.dataSetter({destination_path:'customer',value:'Ada'}); }
     more(root) { root.checkbox({value:false, lbl:'Contact'}); }
 }
 Page.registerSource('more');`);
-    await write(root, 'inputs.js', `export {default} from ${JSON.stringify(moduleUrl)};`);
-    const server = new GramlotFileServer(root, {collections:[{grammar:inputs.toDocument(), module:'/inputs.js'}]});
+    await write(root, 'inputs.js', `export {default} from ${JSON.stringify(moduleUrl)}; export const buildId=${JSON.stringify(buildId)};`);
+    const server = new GramlotFileServer(root, {collections:[{name:'inputs',grammar:inputs.toDocument(), module:'/inputs.js',buildId,css:[],dependencies:[]}]});
     const opened = await server.openPage('/', {prefix:root});
     const args = bootstrapArguments(opened.html);
-    assert.deepEqual(args.resources.collections,[root+'/inputs.js']);
+    assert.deepEqual(args.resources.collections,[{name:'inputs',url:root+'/inputs.js',buildId}]);
     const wire = await sourceText(server, opened.pageId);
     assert.match(await sourceText(server, opened.pageId, 'more'), /gramlot-checkbox/);
     const {window} = browser(EMPTY_PAGE, pathToFileURL(root+'/index.html').href);

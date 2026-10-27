@@ -13,7 +13,7 @@ SVG_NS = "http://www.w3.org/2000/svg"
 BINDING_ATTRIBUTES = frozenset({
     "default", "default_value", "live", "group", "visible", "action", "fire", "ask", "_ask", "_ask_if", "_ask_title", "_ask_onCancel",
     "if", "else", "_init", "_onStart", "_onBuilt", "_delay", "_timing", "_userChanges",
-    "remote", "_cachedRemote", "_onRemote", "_onCalling", "onClose", "onDrag", "onDrop", "dropTargetCb", "onDragEnd",
+    "remote", "_cachedRemote", "_onRemote", "_onCalling", "onClose", "onEnd", "onDrag", "onDrop", "dropTargetCb", "onDragEnd",
     "dropTarget", "dropTypes", "dragTags", "dropTags", "effectAllowed", "dropEffect", "dragClass",
 })
 BINDING_ATTRIBUTE_PREFIXES = ("default_", "attr_", "fire_", "connect_on", "subscribe_", "selfsubscribe_", "formsubscribe_", "remote_")
@@ -33,7 +33,7 @@ NATIVE_ATTRIBUTES = {
 DISPLAY_ATTRIBUTES = ("format", "mask", "locale", "timeZone", "places", "dtype")
 
 # Output URL attributes, including the native form action authored as html_action.
-URL_ATTRIBUTES = frozenset({"href", "src", "action", "formaction", "xlink:href", "xlink_href"})
+URL_ATTRIBUTES = frozenset({"href", "src", "data", "action", "formaction", "xlink:href", "xlink_href"})
 
 # The form of a native event handler: ``on`` followed by at least one character.
 EVENT_HANDLER = re.compile(r"^on.", re.IGNORECASE)
@@ -41,7 +41,7 @@ EVENT_HANDLER = re.compile(r"^on.", re.IGNORECASE)
 # A ``javascript:`` URL as the URL parser reads it: tabs and newlines removed, leading controls and spaces trimmed.
 URL_TABS_AND_NEWLINES = re.compile(r"[\t\n\r]")
 URL_LEADING_CONTROLS = re.compile(r"^[\x00-\x20]+")
-JAVASCRIPT_SCHEME = re.compile(r"^javascript:", re.IGNORECASE)
+JAVASCRIPT_SCHEME = re.compile(r"^javascript:", re.IGNORECASE | re.ASCII)
 
 
 def without_binding_attributes(attrs):
@@ -77,6 +77,8 @@ def require_no_script_attributes(node, attrs, prefixes=()):
         for name, value in executable:
             if node.pointer_type(value) or is_expression(value):
                 raise ValueError(f"script '{node.label}': '{name}' must be literal Source; script code and URLs cannot come from Data")
+    if attrs.get("onEnd") is not None and (node.node_tag.lower() != "transformpane" or not (node._get_meta("gramlot_component") or {}).get("parameters", {}).get("onEnd")):
+        raise ValueError("onEnd is only supported on transformPane")
     if attrs.get("onClose") is not None and (node.parent_node is None or not (node.parent_node._get_meta("gramlot_component") or {}).get("childParameters", {}).get("onClose")):
         raise ValueError("onClose is only supported on a tab/stack panel")
     for name, value in without_null_values(without_binding_attributes(attrs)).items():

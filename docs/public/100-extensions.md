@@ -2,6 +2,10 @@
 
 Document ID: **GC-100**.
 
+For a complete component, collection build, Python import and override tutorial,
+start with [How components and collections work](340-components-and-collections-guide.md).
+This chapter covers the lower-level extension boundaries and grammar/markup APIs.
+
 <a id="gc-100-005"></a>
 
 ## 005 · Choose the owning layer
@@ -11,7 +15,7 @@ Document ID: **GC-100**.
 | Page contents and metadata | Application | Subclass `Page` |
 | Server routing, identity and HTTP I/O | Server adapter | Python `GramlotServer`; JS `GramlotServer`/`GramlotFileServer`; the rules are in [Server protocol](101-server-protocol.md) |
 | Server-dependent browser behaviour | Server adapter | A `ServerAdapter` subclass named in the bootstrap ([Server protocol](101-server-protocol.md#gc-101-045)) |
-| Reusable Source macros | Not provided | No recipe API |
+| Reusable Source composition | Application | Ordinary Python functions/methods or JavaScript helpers; no recipe registry |
 | Static HTML text generation | Generic Builder JS | `HtmlBuilder` and `HtmlRenderer` |
 | Reactive Source realization | Gramlot | `GramlotRenderer` (extends `GramlotHtmlRenderer`, which extends `HtmlRenderer`), `GramlotSvgRenderer` (extends `SvgRenderer`) and `HtmlElement` |
 | Serialization, types and notifications | Bag/TYTX | Their registered-type and subscription contracts |
@@ -27,16 +31,23 @@ owning library, not in an application-local substitute.
 
 ## 010 · Recipes
 
-Recipes are not provided. There is no recipe declaration, registry or expansion
-stage in the main/remote pipeline.
+Reuse ordinary language functions before extending the framework. A helper
+receives a parent Source node and declares its children. Calling it under two
+parents with different `datapath` values gives each copy its own relative Data.
+It can be imported from another module, just like other Python or JavaScript code.
+The [Color Maker lesson](https://gramlot-examples.readthedocs.io/en/latest/lessons/composition/01-color_maker.html)
+demonstrates this composition.
+
+There is no separate recipe declaration, registry or expansion stage in the
+main/remote pipeline. A reusable helper does not need such a mechanism.
 
 <a id="gc-100-015"></a>
 
-## 015 · Extension contracts still to define
+## 015 · Explicit loading and remaining extension boundaries
 
-These contracts are not defined yet:
+Use explicit collections for custom controls and commands. The following boundaries remain:
 
-- **Third-party collection discovery:** package loading, class registration and extension of the HTML5 and SVG content models.
+- **Automatic package discovery:** not provided. Explicit prepared packages selected by `Page.gramlots` are implemented; see [Components and collections](340-components-and-collections-guide.md). Selecting a package is different from scanning installed packages.
 - **Controllers and resolvers:** declarations, lifecycle and Data ownership of
   controllers and resolvers written by a third party. `dataFormula`,
   `dataController` and named logic are in

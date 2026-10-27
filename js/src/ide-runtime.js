@@ -1,109 +1,127 @@
+import {randomId} from './random-id.js';
 import {sourceTarget} from '@genrojs/builders';
 import {FileSystemLogic} from './filesystem.js';
 import {IdeDocuments, RecentWorkspaces} from './ide-documents.js';
 import {codeMirrorWithOptions} from './components/editor-options.js';
+
+/** Resolve the owner through Source ancestry, independently of DOM placement. */
+function ideContext(node) {
+    for (let scope = node; scope; scope = scope.parentNode) {
+        const context = scope.ideContext;
+        if (context) return context;
+    }
+    throw new Error('IDE operation requires a node inside a mounted IDE');
+}
 
 /** Reusable IDE coordination uses Source for panels and Data for all document state. */
 export class IdeLogic {
     fileSystemMount(node) { return FileSystemLogic.prototype.fileSystemMount.call(this,node); }
     fileSystemOpen(node, args) { return FileSystemLogic.prototype.fileSystemOpen.call(this,node,args); }
     ideMount(node) {
-        this.ideRoot = node.parentNode;
-        this.ideState = node.getRelativeData('.');
-        this.ideDocuments = new IdeDocuments(this.page,this.ideState);
-        this.idePanels = new Map();
-        this.ideDisposed = false;
-        this.ideRequested = 0;
-        this.ideRecent = new RecentWorkspaces(this.page.src.renderer.destination.ownerDocument.defaultView.sessionStorage);
-        const roots = this.ideRecent.read();
-        this.ideState.setItem('recent',this.ideRecent.choices(roots));
-        this.ideState.setItem('workspace',roots[0] ?? '');
-        const browser = this.ideState.getItem('browser');
+        const scope = node.parentNode;
+        const context = {scope, documents:new IdeDocuments(this.page,scope), requested:0,
+            editorPrefix:`ide_${randomId()}`, recent:new RecentWorkspaces(this.page.src.renderer.destination.ownerDocument.defaultView.sessionStorage)};
+        Object.defineProperty(scope,'ideContext',{value:context,configurable:true});
+        const {documents, recent} = context;
+        const state = scope.getRelativeData('.');
+        const roots = recent.read();
+        state.setItem('recent',recent.choices(roots));
+        state.setItem('workspace',roots[0] ?? '');
+        const browser = state.getItem('browser');
         browser.subscribe('ide-browser',{any:event => {
             if (event.node === browser.getNode('root')) {
                 const root = browser.getItem('root');
-                this.ideState.setItem('workspace',root);
-                this.ideState.setItem('recent',this.ideRecent.choices(this.ideRecent.remember(root)));
-                this.ideState.setItem('status',`Workspace: ${root}`);
+                state.setItem('workspace',root);
+                state.setItem('recent',recent.choices(recent.remember(root)));
+                state.setItem('status',`Workspace: ${root}`);
             } else if (event.node === browser.getNode('selectedPath')) {
                 const path = browser.getItem('selectedPath');
                 const item = path === null ? null : browser.getItem('store').getNode(path);
-                if (item && !item.attr.is_directory) void this.ideOpenDocument(browser.getItem('root'),item.attr.path);
+                if (item && !item.attr.is_directory) void this.ideOpenDocument(scope,browser.getItem('root'),item.attr.path);
             }
         }});
-        this.ideDocuments.documents.subscribe('ide-documents',{any:event => {
+        const documentBag = documents.documents;
+        documentBag.subscribe('ide-documents',{any:event => {
             if (!['content','saved','busy','writable','view','isNew','path','root'].includes(event.node.label)) return;
-            for (const [key,pane] of this.idePanels) {
-                const doc = this.ideDocuments.documents.getItem(key);
+            for (const pane of scope.value.getNode('frame.center.tabs').value?.getNodes() ?? []) {
+                const key = pane.getAttr('documentKey');
+                const doc = documents.documents.getItem(key);
                 if (doc) {
-                    if (event.node === doc.getNode('content')) this.ideDocuments.invalidateRecipe(key);
-                    this.ideDocumentState(key);
-                    pane.setAttr({title:`${this.ideDocuments.dirty(key) ? '● ' : ''}${doc.getItem('path')}`});
+                    if (event.node === doc.getNode('content')) documents.invalidateRecipe(key);
+                    this.ideDocumentState(scope,key);
+                    pane.setAttr({title:`${documents.dirty(key) ? '● ' : ''}${doc.getItem('path')}`});
                 }
             }
         }});
-        this.page.src.renderer.onDispose(this.ideRoot,() => {
-            this.ideDisposed = true;
+        this.page.src.renderer.onDispose(context.scope,() => {
             browser.unsubscribe('ide-browser',{any:true});
-            this.ideDocuments.documents.unsubscribe('ide-documents',{any:true});
-            this.ideDocuments.dispose();
+            documentBag.unsubscribe('ide-documents',{any:true});
+            documents.dispose();
         });
     }
-    ideOpenWorkspace() {
-        const root = this.ideState.getItem('workspace');
-        if (root && root !== this.ideState.getItem('browser.root')) this.ideState.setItem('browser.requestedRoot',root);
+    ideOpenWorkspace(node) {
+        const context = ideContext(node);
+        const state = context.scope.getRelativeData('.');
+        const root = state.getItem('workspace');
+        if (root && root !== state.getItem('browser.root')) state.setItem('browser.requestedRoot',root);
     }
-    ideDocumentState(key) {
-        const doc = this.ideDocuments.documents.getItem(key);
-        const disabled = (!this.ideDocuments.dirty(key) && !doc.getItem('isNew')) || doc.getItem('busy');
+    ideDocumentState(node, key) {
+        const context = ideContext(node), {documents} = context;
+        const doc = documents.documents.getItem(key);
+        const disabled = (!documents.dirty(key) && !doc.getItem('isNew')) || doc.getItem('busy');
         doc.setItem('saveDisabled',Boolean(disabled || !doc.getItem('writable')));
-        doc.setItem('revertDisabled',Boolean(!this.ideDocuments.dirty(key) || doc.getItem('busy')));
+        doc.setItem('revertDisabled',Boolean(!documents.dirty(key) || doc.getItem('busy')));
         doc.setItem('displayPath',doc.getItem('isNew') ? doc.getItem('path') : `${doc.getItem('root')}/${doc.getItem('path')}`);
         doc.setItem('pdfFilename',doc.getItem('path').split('/').at(-1).replace(/\.typ(?:\.py)?$/i,'.pdf'));
         doc.setItem('renderDisabled',Boolean(doc.getItem('busy') || !doc.getItem('writable')));
         this.ideHistoryState(doc);
     }
-    async ideOpenDocument(root, path) {
-        const requested = ++this.ideRequested;
+    async ideOpenDocument(node, root, path) {
+        const context = ideContext(node), {documents} = context;
+        const state = context.scope.getRelativeData('.');
+        const requested = ++context.requested;
         try {
-            const key = await this.ideDocuments.open(root,path);
-            if (key === null || this.ideDisposed) return;
-            this.ideShowDocument(key);
-            if (requested === this.ideRequested) {
-                this.ideState.setItem('active',key);
-                this.ideState.setItem('status',`${path}${this.ideDocuments.documents.getItem(key).getItem('writable') ? '' : ' (read only)'}`);
+            const key = await documents.open(root,path);
+            if (key === null || documents.disposed) return;
+            this.ideShowDocument(node,key);
+            if (requested === context.requested) {
+                state.setItem('active',key);
+                state.setItem('status',`${path}${documents.documents.getItem(key).getItem('writable') ? '' : ' (draft only — Remote Edit is disabled)'}`);
             }
-        } catch (error) { if (!this.ideDisposed) this.ideState.setItem('status',error.message); }
+        } catch (error) { if (!documents.disposed) state.setItem('status',error.message); }
     }
-    ideNew() {
-        const type = this.ideState.getItem('newType');
+    ideNew(node) {
+        const context = ideContext(node), {documents} = context;
+        const state = context.scope.getRelativeData('.');
+        const type = state.getItem('newType');
         const language = type === 'typstRecipe' ? 'python' : type;
         const extensions = {typstRecipe:'.typ.py',typst:'.typ',markdown:'.md',html:'.html',python:'.py',javascript:'.js',
             typescript:'.ts',json:'.json',css:'.css',sql:'.sql',xml:'.xml',text:'.txt'};
-        const key = this.ideDocuments.newDocument(language,extensions[type],this.ideState.getItem('workspace'));
-        ++this.ideRequested;
-        this.ideShowDocument(key);
-        this.ideState.setItem('active',key);
-        this.ideState.setItem('status','New document. Choose directory and name when saving.');
+        const key = documents.newDocument(language,extensions[type],state.getItem('workspace'));
+        documents.documents.getItem(key).setItem('writable',state.getItem('browser.writable') === true);
+        ++context.requested;
+        this.ideShowDocument(node,key);
+        state.setItem('active',key);
+        state.setItem('status','New document. Choose directory and name when saving.');
     }
-    ideShowDocument(key) {
-        const document = this.ideDocuments.documents.getItem(key);
+    ideShowDocument(node, key) {
+        const context = ideContext(node), {documents} = context;
+        const document = documents.documents.getItem(key);
         const path = document.getItem('path');
-        if (!this.idePanels.has(key)) {
-            const doc = this.ideDocuments.documents.getItem(key);
+        const tabs = context.scope.value.getNode('frame.center.tabs');
+        if (!tabs.value?.getNode(key)) {
+            const doc = documents.documents.getItem(key);
             const recipe = path.endsWith('.typ.py');
-            if (recipe) this.ideDocuments.invalidateRecipe(key);
-            doc.setItem('readonly',!doc.getItem('writable'));
-            this.ideDocumentState(key);
+            if (recipe) documents.invalidateRecipe(key);
+            doc.setItem('readonly',false);
+            this.ideDocumentState(node,key);
             doc.setItem('view','code');
             doc.setItem('createHidden',true);
             doc.setItem('undoDisabled',true);
             doc.setItem('redoDisabled',true);
-            const tabs = this.ideRoot.value.getNode('frame.center.tabs');
             const pane = sourceTarget(tabs.builder.wrapSource(tabs).contentPane({node_label:key,
                 title:path, pageName:key, documentKey:key, closable:true, onClose:'ideClose',
                 height:'100%'}));
-            this.idePanels.set(key,pane);
             const target = pane.builder.wrapSource(pane).div({display:'flex',flex_direction:'column',height:'100%'});
             const toolbar = target.div({datapath:`.documents.${key}`,display:'flex',align_items:'center',gap:'6px',padding:'4px 12px',
                 height:'40px',flex_shrink:0,box_sizing:'border-box',class:'gramlot-ide-document-toolbar',role:'toolbar','aria-label':`Commands for ${path}`});
@@ -137,9 +155,9 @@ export class IdeLogic {
             const views = preview ? editorArea.tabContainer({height:'100%',selectedPage:`^.documents.${key}.view`}) : null;
             const code = preview ? views.contentPane({title:'Code',pageName:'code',height:'100%'}) : editorArea;
             codeMirrorWithOptions(code,{datapath:`.documents.${key}`,value:'^.content',language:doc.getItem('language'),
-                height:'100%', readonly:'^.readonly',nodeId:`editor_${key}`,
+                height:'100%', readonly:'^.readonly',nodeId:`${context.editorPrefix}_editor_${key}`,
                 editorView:'code',selfsubscribe_historyChanged:'ideHistoryChanged'});
-            target.dataController({func:'ideSave',documentKey:key,[`subscribe_editor_${key}_save`]:true});
+            target.dataController({func:'ideSave',documentKey:key,[`subscribe_${context.editorPrefix}_editor_${key}_save`]:true});
             if (typst) views.contentPane({title:'Preview',pageName:'preview',height:'100%'}).typstPreview({value:`^.documents.${key}.content`,filename:`^.documents.${key}.pdfFilename`,height:'100%'});
             if (recipe) {
                 const output = views.contentPane({title:'Preview',pageName:'preview',height:'100%',display:'flex',flex_direction:'column'});
@@ -159,43 +177,51 @@ export class IdeLogic {
                     ...(markdown ? {allowHtml:`^.documents.${key}.allowHtml`} : {})});
                 views.contentPane({title:'Rich text',pageName:'rich',height:'100%'})[html ? 'htmlEditor' : 'markdownEditor']({
                     datapath:`.documents.${key}`,value:'^.content',readonly:'^.readonly',height:'100%',
-                    nodeId:`rich_editor_${key}`,editorView:'rich',selfsubscribe_historyChanged:'ideHistoryChanged'});
-                target.dataController({func:'ideSave',documentKey:key,[`subscribe_rich_editor_${key}_save`]:true});
+                    nodeId:`${context.editorPrefix}_rich_editor_${key}`,editorView:'rich',selfsubscribe_historyChanged:'ideHistoryChanged'});
+                target.dataController({func:'ideSave',documentKey:key,[`subscribe_${context.editorPrefix}_rich_editor_${key}_save`]:true});
             }
         }
     }
     async ideRenderRecipe(node, {documentKey}) {
-        const doc = this.ideDocuments.documents.getItem(documentKey);
+        const context = ideContext(node), {documents} = context;
+        const doc = documents.documents.getItem(documentKey);
         doc.setItem('view','preview');
-        await this.ideDocuments.renderRecipe(documentKey);
+        await documents.renderRecipe(documentKey);
     }
     ideCancelCreate(node, {documentKey}) {
-        this.ideDocuments.documents.getItem(documentKey).setItem('createHidden',true);
+        const context = ideContext(node), {documents} = context;
+        documents.documents.getItem(documentKey).setItem('createHidden',true);
     }
     async ideCreate(node, {documentKey}) {
-        this.ideState.setItem('status','Creating file…');
+        const context = ideContext(node), {documents} = context;
+        const state = context.scope.getRelativeData('.');
+        state.setItem('status','Creating file…');
         try {
-            const saved = await this.ideDocuments.create(documentKey);
-            if (!this.ideDisposed && saved) {
-                this.ideState.setItem('status','File created.');
-                const browser = this.ideState.getItem('browser');
-                if (browser.getItem('root')) await this.fileSystems.get(browser).open(browser.getItem('root'));
+            const saved = await documents.create(documentKey);
+            if (!documents.disposed && saved) {
+                state.setItem('status','File created.');
+                const browser = state.getItem('browser');
+                if (browser.getItem('root')) await context.scope.value.getNode('frame.left.browser').fileSystemController.open(browser.getItem('root'));
             }
-        } catch (error) { if (!this.ideDisposed) this.ideState.setItem('status',error.message); }
+        } catch (error) { if (!documents.disposed) state.setItem('status',error.message); }
     }
     async ideSave(node, {documentKey = null} = {}) {
-        const key = documentKey ?? this.ideState.getItem('active');
-        if (!key || this.ideDocuments.documents.getItem(key).getItem('saveDisabled')) return;
-        const doc = this.ideDocuments.documents.getItem(key);
+        const context = ideContext(node), {documents} = context;
+        const state = context.scope.getRelativeData('.');
+        const key = documentKey ?? state.getItem('active');
+        if (!key || documents.documents.getItem(key).getItem('saveDisabled')) return;
+        const doc = documents.documents.getItem(key);
         if (doc.getItem('isNew')) { doc.setItem('createHidden',false); return; }
-        this.ideState.setItem('status','Saving…');
+        state.setItem('status','Saving…');
         try {
-            const saved = await this.ideDocuments.save(key);
-            if (!this.ideDisposed) this.ideState.setItem('status', saved ? 'Saved.' : 'Document is read only or a request is pending.');
-        } catch (error) { if (!this.ideDisposed) this.ideState.setItem('status',error.message); }
+            const saved = await documents.save(key);
+            if (!documents.disposed) state.setItem('status', saved ? 'Saved.' : 'Document is read only or a request is pending.');
+        } catch (error) { if (!documents.disposed) state.setItem('status',error.message); }
     }
     ideRevert(node, {documentKey}) {
-        if (this.ideDocuments.revert(documentKey)) this.ideState.setItem('status','Restored the last saved version.');
+        const context = ideContext(node), {documents} = context;
+        const state = context.scope.getRelativeData('.');
+        if (documents.revert(documentKey)) state.setItem('status','Restored the last saved version.');
     }
     ideHistoryChanged(node, {canUndo,canRedo}) {
         const doc = node.getRelativeData('.');
@@ -209,30 +235,34 @@ export class IdeLogic {
         doc.setItem('undoDisabled',!doc.getItem(`${view}CanUndo`));
         doc.setItem('redoDisabled',!doc.getItem(`${view}CanRedo`));
     }
-    ideEditor(documentKey) {
-        const rich = this.ideDocuments.documents.getItem(documentKey).getItem('view') === 'rich';
-        const node = this.page.src.binding.nodeIds.get(`${rich ? 'rich_' : ''}editor_${documentKey}`);
-        return this.page.src.renderer.records.get(node).element;
+    ideEditor(node, documentKey) {
+        const context = ideContext(node), {documents} = context;
+        const rich = documents.documents.getItem(documentKey).getItem('view') === 'rich';
+        const editor = this.page.src.binding.nodeIds.get(`${context.editorPrefix}_${rich ? 'rich_' : ''}editor_${documentKey}`);
+        return this.page.src.renderer.records.get(editor).element;
     }
-    ideUndo(node, {documentKey}) { this.ideEditor(documentKey).undo(); }
-    ideRedo(node, {documentKey}) { this.ideEditor(documentKey).redo(); }
+    ideUndo(node, {documentKey}) { this.ideEditor(node,documentKey).undo(); }
+    ideRedo(node, {documentKey}) { this.ideEditor(node,documentKey).redo(); }
     ideClose(node) {
+        const context = ideContext(node), {documents} = context;
+        const state = context.scope.getRelativeData('.');
         const key = node.getAttr('documentKey');
-        if (!this.ideDocuments.canClose(key)) {
-            this.ideState.setItem('status','Save or revert your changes before closing. Pending operations must finish first.');
+        if (!documents.canClose(key)) {
+            state.setItem('status','Save or revert your changes before closing. Pending operations must finish first.');
             return false;
         }
         return true;
     }
-    ideClosed(node, {pageName}) { this.ideForgetDocument(pageName); }
-    ideForgetDocument(key, discard = false) {
-        const document = this.ideDocuments.documents.getItem(key);
-        const browser = this.ideState.getItem('browser'), selectedPath = browser.getItem('selectedPath');
+    ideClosed(node, {pageName}) { this.ideForgetDocument(node,pageName); }
+    ideForgetDocument(node, key, discard = false) {
+        const context = ideContext(node), {documents} = context;
+        const state = context.scope.getRelativeData('.');
+        const document = documents.documents.getItem(key);
+        const browser = state.getItem('browser'), selectedPath = browser.getItem('selectedPath');
         const selected = selectedPath === null ? null : browser.getItem('store').getNode(selectedPath);
         if (document && browser.getItem('root') === document.getItem('root') && selected?.attr.path === document.getItem('path')) {
             browser.setItem('selectedPath',null);
         }
-        this.idePanels.delete(key);
-        this.ideDocuments.close(key,discard);
+        documents.close(key,discard);
     }
 }

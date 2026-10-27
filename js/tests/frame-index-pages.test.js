@@ -21,6 +21,7 @@ test('FramePage creates only implemented regions, including inherited hooks', ()
 function fixture(t, createEntry) {
     const window = new JSDOM('<main id="gramlot-root"></main>', {url:'https://index.test/'}).window;
     window.ResizeObserver = class { observe() {} disconnect() {} unobserve() {} };
+    window.HTMLElement.prototype.showPopover = function() {};
     const nav = new Bag();
     nav.setItem('folder', new Bag());
     nav.setItem('one', null, {url: '/one', title: 'One'});
@@ -65,6 +66,8 @@ test('pending selection, failed retry and disposal retain Source lifecycle owner
     f.state.setItem('navigationSelection','one'); f.state.setItem('navigationSelection','two');
     gates.get('/two')(); await settle(); gates.get('/one')(); await settle();
     assert.equal(f.state.getItem('active'), '/two'); assert.equal(f.behavior.entries.size, 1);
+    assert.equal(f.window.document.querySelectorAll('[role=alert]').length, 1);
+    assert.match(f.window.document.querySelector('[role=alert]').textContent, /Retry/);
     f.state.setItem('navigationSelection', 'one'); gates.get('/one')(); await settle();
     assert.equal(f.state.getItem('active'), '/one');
     f.behavior.dispose(); f.state.setItem('navigationSelection','two');

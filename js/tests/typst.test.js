@@ -73,3 +73,21 @@ test('browser compiler produces multipage PDF and static SVG without network, di
         const recovery=await compile('Recovered');assert.ok(recovery.pdf.length>1000);assert.equal(recovery.error,undefined);
     }finally{await worker.terminate();}
 });
+
+test('Worker crash rejects pending jobs and the same owners can retry on a new Worker',async()=>{
+    const {acquireCompiler}=await import('../src/components/typst-client.js');
+    const first=acquireCompiler(),second=acquireCompiler();
+    const failed=workers.at(-1);
+    const a=assert.rejects(first.compile('first'),/compiler crashed/);
+    const b=assert.rejects(second.compile('second'),/compiler crashed/);
+    failed.onerror({message:'compiler crashed'});
+    await Promise.all([a,b]);assert.equal(failed.stopped,true);
+    assert.equal(failed.onmessage,null);assert.equal(failed.onerror,null);
+    const retry=first.compile('retry'),replacement=workers.at(-1);
+    assert.notEqual(replacement,failed);
+    const next=second.compile('other');assert.equal(workers.at(-1),replacement);
+    replacement.answer(replacement.jobs[0]);replacement.answer(replacement.jobs[1]);
+    assert.ok((await retry).pdf);assert.ok((await next).pdf);
+    first.release();assert.equal(replacement.stopped,undefined);
+    second.release();assert.equal(replacement.stopped,true);
+});

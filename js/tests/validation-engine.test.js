@@ -183,3 +183,19 @@ test('explicit selection validation checks the constrained editor and rejects ot
     f.edit('choice','Unknown');assert.equal(f.app.data.getItem('choice'),'b');
     f.edit('name','Eve');assert.equal(f.app.data.getItem('name'),'Ada');assert.match(f.host('name').message.textContent,/constrained choice/);
 });
+
+test('async component commit errors are visible and late failures after disposal stay silent',async t=>{
+    const f=fixture(t,(r,a)=>{a.data.setItem('name','Ada');r.textbox({id:'name',value:'^name',validate_call:'check'});},class {async check(){return true;}});
+    f.app.data.subscribe('broken',{any:()=>{throw Error('Commit failed');}});
+    f.edit('name','Eve');await tick();
+    assert.match(f.window.document.querySelector('[role=alert]').textContent,/Field update failed/);
+    assert.match(f.window.document.querySelector('[role=alert]').textContent,/Commit failed/);
+    f.app.data.unsubscribe('broken',{any:true});
+    f.window.document.querySelector('[aria-label="Dismiss notification"]').click();
+    f.edit('name','Grace');await tick();assert.equal(f.app.data.getItem('name'),'Grace');
+    assert.equal(f.window.document.querySelector('[role=alert]'),null);
+    let reject;
+    f.host('name').acceptControlValue=()=>new Promise((resolve,fail)=>{reject=fail;});
+    f.edit('name','After');f.app.dispose();reject(Error('Late failure'));await tick();
+    assert.equal(f.window.document.querySelector('[role=alert]'),null);
+});

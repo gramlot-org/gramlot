@@ -91,3 +91,32 @@ test('Data widget attributes cannot override a script URL through its node value
         assert.equal(window.scriptAttack, undefined);
     } finally { app.dispose(); window.close(); }
 });
+
+test('object data rejects script URLs in literal, dialect and bound projections', () => {
+    for (const attribute of ['data','html_data','html_DATA']) {
+        for (const value of ['javascript:alert(1)', ' \tjava\nscript:alert(1)', '^url']) {
+            const builder = new GramlotBuilder();
+            builder.data.setItem('url', 'javascript:alert(1)');
+            builder.root.object({[attribute]:value});
+            assert.throws(() => builder.render(), /javascript: URL/);
+            const {app, window} = page();
+            try {
+                app.data.setItem('url', 'javascript:alert(1)');
+                assert.throws(() => app.src.startSource(builder.source), /javascript: URL/);
+                assert.equal(window.document.querySelector('object'), null);
+            } finally {app.dispose(); window.close();}
+        }
+    }
+    const builder = new GramlotBuilder();
+    builder.root.object({data:'/report.pdf'});
+    assert.match(builder.render(), /data="\/report.pdf"/);
+});
+
+
+test('javascript URL scheme matching is ASCII, matching Python',()=>{
+    const b=new GramlotBuilder();
+    b.root.a('Non-ASCII scheme',{href:'javaſcript:alert(1)'});
+    assert.doesNotThrow(()=>b.render());
+    const invalid=new GramlotBuilder();invalid.root.a('Invalid',{href:'JaVaScRiPt:alert(1)'});
+    assert.throws(()=>invalid.render(),/javascript: URL/);
+});

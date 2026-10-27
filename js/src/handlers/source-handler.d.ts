@@ -3,6 +3,7 @@
  *
  * @module
  */
+import type {Bag} from '@genrojs/bag';
 import type {SourceBag, SourceBagNode} from '@genrojs/builders';
 import type {DomElement} from '../dom.d.ts';
 import type {Gramlot} from '../gramlot.js';
@@ -35,7 +36,7 @@ export class SourceHandler extends Handler {
     /** Start from an embedded typed Source, with the same observed insertion as `main`. */
     startSource(wire: SourceBag | string): Gramlot;
     /** Validate and insert `main` in the Source. */
-    mountMainSource(wire: SourceBag | string): Gramlot;
+    mountMainSource(wire: SourceBag | string, initialData?: Bag | null): Gramlot;
     /**
      * A Source from a SourceBag or a TYTX wire; only Gramlot Source Bags are accepted, before any
      * effect. The received Source activates its inline code.

@@ -20,6 +20,8 @@ html_theme = "sphinx_rtd_theme"
 html_logo = "assets/branding/gramlot-logo.svg"
 html_title = "Gramlot — developer guide"
 html_show_sourcelink = False
+html_static_path = ["docs/_static"]
+html_css_files = ["manual.css"]
 
 
 def hide_reference_metadata(app, doctree):

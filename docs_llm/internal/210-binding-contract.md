@@ -424,7 +424,7 @@ getDomNode uses records, null for fragment/nonvisual/unbuilt/removed. No object 
 Block ID: **GC-210-035**.
 
 Ordered branch sequence: validate without effects → all setters in document order
-(parent first) → defaults → bindings/pointers/providers → init once → DOM → built
+(parent first, consuming each immediately after its write) → defaults → bindings/pointers/providers → init once → DOM → built
 once after complete success → start after page ready (later branch after built).
 Freeze runs first five now, remaining at first build; P22 start delay separate.
 Existing observers see setter writes synchronously; new providers wait. Errors close
@@ -437,7 +437,8 @@ Exclude destination_path/value, _meta/META_ATTRS and binding fields from Data at
 R1 non-null or absent null: data.setItem(path,value,attrs,'>',false,true,node).
 Existing null: data.getNode(path).setAttr(attrs,true), retain value. Transfer Bag
 identity/backref, silently remove Source value with node.setAttr({value:null},false),
-no Source event, then installed stamp. Defaults for ^/= only null/missing; retain
+no attribute event. Then close its binding and pop it from Source; renderer intake
+ignores that deletion. No installed stamp. Defaults for ^/= only null/missing; retain
 false/0/empty string, default_value wins, attr_* reads before own default. No warnings
 for duplicate setters.
 
@@ -1006,3 +1007,71 @@ Builder ownership update — 2026-10-17: see the constitution's Builder alignmen
 Review 0.3.5 p2 — 2026-10-19: `==` has one compile path, `InlineCompiler.compileExpression`: the other non-`==` attributes and `_F` are its arguments (§010 Q11.2) and its body is `return <text>`, the text without surrounding whitespace, as legacy `funcCreate('return ' + text)`; a text starting with a newline returns its value and a final `;` is accepted. The structural reader (`binding/pointer.js`) no longer compiles `==`: a `{name}` slot naming a `==` attribute reads null there too, as in `Builder.runtimeValues` and in Python.
 
 Review 0.3.5 p4b — 2026-10-19: the walk of a node and every consumer of its values (the renderer's projection, subscription handlers, `remote`) resolve them with `node.rootBuilder.runtimeValues(node)`. The root builder is the page's GramlotBuilder: its `evaluatePointerExpression` compiles the `:=` expressions with the page's InlineCompiler, and it shares the Data with its sub-builders. The library builder of a node created by a sub-builder (SVG, HTML inside SVG) has no page hook and computes no expression; the node's own builder still validates its dialect values (`validateCustomTypes`) and its own renderer writes its attributes. No method is assigned to a library instance: this replaces the mechanism, not the result, of the sentence above on HTML/SVG sub-builders. `GramlotHtmlRenderer.render` is Builder's `RendererBase.render` with this one change; Gramlot grammars declare no Builder `@component`. A string renderer has no page runtime: its SVG and HTML-in-SVG nodes write no `==` and no `:=`, in Python and in JavaScript.
+
+
+<a id="gc-210-input-type-setter"></a>
+## Input type uses the native setter — 2026-10-26
+
+Owner's setter-before-rebuild rule supersedes the input.type rebuild example in
+C04.1. A resolved change to a native input's type updates `HTMLInputElement.type`
+on the existing element. Removing type restores the native default. Source,
+renderer record and NodeBinding retain identity. Adapter selection still uses the
+existing type matrix: compatible changes keep the adapter, including pending IME
+state; semantic changes detach the old adapter and attach the appropriate one,
+including transitions to/from types without an adapter. Cleanup releases the
+current adapter once; radio membership is released and reacquired as required.
+No application state is stored on Logic.
+
+A compatible type-only update does not overwrite an uncommitted draft with an
+unchanged Data value. An actual value change is still projected. Browser type
+sanitization may change the displayed value; projection does not write it back
+to Data. Attribute changes are evaluated once, and the input type is applied
+before value/checked. This does not change multiple/group rebuilds, freeze/thaw
+or the lifecycle for changing the HTML tag itself. Tests cover Source/Data updates,
+expressions, IME, drafts, adapter/radio lifecycle and disposal.
+
+
+<a id="gc-210-multiple-setter"></a>
+## Multiple uses the native setter — 2026-10-26
+
+The native input/select.multiple setter supersedes the earlier multiple rebuild
+policy. The DOM element, Source, NodeBinding and current adapter survive; select
+options and focus are retained. A select projects the current value using its
+existing single/multiple contract. Multiple select requires an array or null;
+projection never converts application Data. Change the mode and value binding
+in one Source update when switching between separate single/multiple data paths.
+Invalid multiple values still raise the existing error; correcting Data recovers
+without replacing the element. Email input retains its draft when only multiple
+changes; file input retains the selected files. Native limitations still apply.
+Group and existing freeze/thaw behavior remain outside this tranche.
+
+Gramlot components follow the same owner-approved principle: meaningful mutable
+parameters use setters through existing component projection. This does not
+introduce new parameters or merge distinct single/multiple component contracts.
+
+
+<a id="gc-210-group-setter"></a>
+## Radio group changes reset Data without reconstruction — 2026-10-26
+
+A resolved group change keeps the native input or Gramlot radioButton, its inner
+control, adapter, Source and NodeBinding. Snapshot the departing and destination
+members in their existing form/page scopes, move membership, then write false
+through the existing writeParameter path for the moving radio and affected peers.
+This is a programmatic Data reset, not a synthetic click or input-validation event;
+disabled peers are reset too. Only writable ^ pointers write (including relative
+paths and attribute pointers); literal, = and transformed values keep their
+existing no-write contract. No inferred Data path or state on Logic is added.
+
+Adding a group resets the joining radio and destination; removing it resets the
+radio and departing group. An unchanged resolved group does nothing. Group lookup
+uses the existing runtime index, never the DOM. Initial mounting still rejects
+conflicting true selections; form-owner-only changes retain their prior conflict
+rule. The explicit group-reset rule supersedes the previous rebuild/conflict
+behavior for group edits. A simultaneous name/group conflict is rejected before
+membership/Data changes, and removing the authored name permits recovery.
+
+Writes are synchronous: bindings and controllers observe ordinary Data changes.
+Membership is updated first to support reentrant projection; the renderer then
+re-reads current Data rather than restoring its pre-reset value. A removed Source
+node is not projected even while its queued cleanup is pending; removed peers
+are not written and removal of the initiating node stops the reset loop.

@@ -6,14 +6,26 @@ Document ID: **GC-055**.
 
 ## 005 · What Gramlot is
 
-A web interface described as a tree of declarations in Python or JavaScript, bound to application state in the browser. Page: class with `main(root)` calling element methods. Source: the tree (HTML5/SVG elements and components in a Bag); the DOM follows it. Data: a Bag of values; `^` follows, `=` reads once, `==` computes; form controls write back. Logic: `dataFormula`, `dataController`, buttons, `connect_on<event>`; code as methods of the `Logic` export of the page module `foo.js` (beside `foo.py` for Python), else of `class Logic` in `foo_aux.js`, or inline where the CSP allows. Server (`GramlotServer`): opens a page for a browser (Page, bootstrap, Source, close); an adapter connects it to a web server or packages pages without one.
+A web interface described as a tree of declarations in Python or JavaScript, bound to application state in the browser. Page: class with `main(root)` calling element methods. Source: the tree (HTML5/SVG elements and components in a Bag); the DOM follows it. Data: a Bag of values; `^` follows, `=` reads without subscribing, `==` computes; form controls write back. Logic: `dataFormula`, `dataController`, buttons, `connect_on<event>`; code as methods of the `Logic` export of the page module `foo.js` (beside `foo.py` for Python), else of `class Logic` in `foo_aux.js`, or inline where the CSP allows. Server (`GramlotServer`): opens a page for a browser (Page, bootstrap, Source, close); an adapter connects it to a web server or packages pages without one.
 
-Example (Python): `pane = root.div(datapath="person")`; `pane.input(id="name", value="^.name", live=True)`; `pane.p("^.greeting")`; `pane.dataFormula(".greeting", "'Hello, ' + name", name="^.name", _init=True)`; `pane.dataSetter(".name", "Ada")` → shows `Hello, Ada`, and `Hello, Grace` while typing `Grace`. JavaScript: same methods, data-elements with an object. See [Data binding and controllers](097-data-binding.md).
+A complete Python page:
 
-This compact example uses an inline formula: it requires the permissive CSP
-profile explained in [Classes and server adapters](090-classes-and-hosts.md).
-For a project using strict CSP, follow the [named-Logic form](097-data-binding.md#gc-095-060)
-and the gallery lesson *Named logic*. The gallery does not cover every option.
+```python
+from gramlot import Page as BasePage
+
+class Page(BasePage):
+    title = "Hello"
+
+    def main(self, root):
+        pane = root.div(datapath="person")
+        pane.input(value="^.name", lbl="Name", live=True)
+        pane.p("^.name", mask="Hello, {}")
+```
+
+Type `Ada` in the field: the paragraph shows `Hello, Ada`. Both declarations
+use `person.name`; the input writes Data and the paragraph follows it. `lbl`
+uses the shared Labelbox presentation, also available to components. No formula
+or initialization script is needed here. See [Data binding](097-data-binding.md).
 
 <a id="gc-055-010"></a>
 

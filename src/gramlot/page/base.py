@@ -40,6 +40,7 @@ def endpoint(function=None, *, auth=None):
 
 
 class Page:
+    gramlots = ()
     title = "Gramlot"
     devices = ()
     locale = None

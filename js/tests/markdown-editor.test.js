@@ -5,7 +5,7 @@ import {createMarkdownCodec} from '../src/components/markdown-codec.js';
 import {renderMarkdownDocument} from '../src/components/markdown-document.js';
 import {Gramlot,GramlotBuilder} from '../src/index.js';
 import editors from '../src/components/editors.js';
-import {TextSelection} from 'prosemirror-state';
+import {TextSelection, Plugin, PluginKey} from 'prosemirror-state';
 
 const {window}=new JSDOM('<body></body>',{pretendToBeVisual:true});
 for(const name of ['window','document','MutationObserver','Window','HTMLElement','Node','getComputedStyle'])globalThis[name]=window[name];
@@ -42,9 +42,10 @@ test('Markdown preview renders syntax while keeping active HTML and unsafe links
     assert.match(html,/<h1>Title<\/h1>/);assert.match(html,/<strong>Bold<\/strong>/);
     assert.doesNotMatch(html,/<script/);assert.doesNotMatch(html,/<a href="javascript/);assert.match(html,/default-src 'none'/);
 });
-test('live edits update Data and preview; undo restores exact source, external replacement clears history',async()=>{
+test('live edits update Data and preview; undo restores exact source, external updates retain the engine and history',async()=>{
     const original='# Original\n\nA paragraph.\n',f=fixture(original);await f.host.ready;
     assert.equal(f.preview.parameters.allowHtml,false);
+    const engine=f.host.engine,view=engine.view;
     let inputs=0;f.host.addEventListener('input',()=>inputs++);
     f.host.engine.view.dispatch(f.host.engine.view.state.tr.insertText('Changed ',1));
     assert.match(f.app.data.getItem('source'),/# Changed Original/);assert.equal(inputs,1);
@@ -52,7 +53,13 @@ test('live edits update Data and preview; undo restores exact source, external r
     assert.equal(f.host.undo(),true);assert.equal(f.app.data.getItem('source'),original);
     assert.equal(f.host.redo(),true);assert.match(f.app.data.getItem('source'),/Changed/);
     f.app.data.setItem('source','## Replaced\n');await f.host.ready;
-    assert.equal(f.host.engine.view.state.doc.firstChild.textContent,'Replaced');assert.equal(f.host.undo(),false);
+    assert.equal(f.host.engine,engine);assert.equal(engine.view,view);
+    assert.equal(view.state.doc.firstChild.textContent,'Replaced');
+    assert.equal(inputs,3); // typing, undo, redo; external Data never echoes an input
+    assert.equal(f.host.undo(),true);assert.match(f.app.data.getItem('source'),/Changed/);
+    assert.equal(f.host.undo(),true);assert.equal(f.app.data.getItem('source'),original);
+    assert.equal(f.host.redo(),true);assert.equal(f.host.redo(),true);
+    assert.equal(view.state.doc.firstChild.textContent,'Replaced');
     f.stop();await tick();assert.equal(f.host.engine,null);
 });
 test('toolbar formatting uses the same Markdown Data and read-only rejects document changes',async()=>{
@@ -127,4 +134,18 @@ test('allowHtml binding changes only the preview, retaining Markdown and rich-ed
     assert.match(f.preview.frame.srcdoc,/&lt;div/);
     assert.equal(f.host.undo(),true);assert.equal(f.app.data.getItem('source'),original);
     f.stop();
+});
+
+
+test('Data updates retain ProseMirror plugins and mapped selection without an input echo',async()=>{
+    const f=fixture('# Heading\n\nParagraph.\n');await f.host.ready;
+    const engine=f.host.engine,view=engine.view,key=new PluginKey('retained');
+    const plugin=new Plugin({key,state:{init:()=>({retained:true}),apply:(_tr,value)=>value}});
+    view.updateState(view.state.reconfigure({plugins:[...view.state.plugins,plugin]}));
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc,3)));
+    const state=key.getState(view.state);let inputs=0;f.host.addEventListener('input',()=>inputs++);
+    f.app.data.setItem('source','# Heading\n\nParagraph expanded.\n');
+    assert.equal(f.host.engine,engine);assert.equal(engine.view,view);
+    assert.equal(key.getState(view.state),state);assert.equal(view.state.selection.anchor,3);
+    assert.equal(inputs,0);f.stop();
 });

@@ -1,5 +1,27 @@
 # Future work
 
+## Common menu system — 2026-10-22
+
+[GC-335 · Common menu system](335-common-menu-system.md) develops the full
+legacy-capability design and evaluates slotBar as a persistent presentation.
+Architecture and API details are proposed; no implementation has started.
+
+## Menu expansion study — 2026-10-22
+
+[GC-330 · Legacy menus and a Gramlot port proposal](330-menus-and-commands.md)
+inventories legacy capabilities and the existing dropdown-local menu, and proposes
+general menu ownership plus shared command definitions for bars/menus. Source
+inspection and targeted baseline tests complete; new APIs remain under review.
+
+## Extension authoring — 2026-10-22
+
+[GC-325 · How to extend Gramlot](325-how-to-extend-gramlot.md) separates existing
+collection/grammar/bootstrap mechanisms from the selected JS-owned extension
+direction, Python Page.gramlots with implicit base, and fixed slotButton grammar.
+The approved collection generator and bootstrap path are implemented and verified
+in development; see GC-325 §150 and GC-070 §1655. Menu/button presentation remains
+under design. This is internal development documentation, not a release claim.
+
 Planning backlog, updated 2026-10-16. Owner request: keep future work in a directory
 because some work may proceed in parallel and the next phase must be chosen.
 This directory is internal planning material, excluded from the public manual.
@@ -43,7 +65,7 @@ start a phase or assign parallel implementations from this list alone.
 | 2.1 | Input component collection | Create the Gramlot input component collection. |
 | 2.2 | Layout component integration | Integrate layout components, including border and tab layouts. |
 | 3 | Database connections | Define the database integration workstream. |
-| 3.1 | dataRecord, dataSelection, db selection | Retain these three areas as named by the owner; exact APIs and ownership remain to be defined. |
+| 3.1 | dataRecord, dataSelection, db selection | Retain these three areas as named by the owner; exact APIs and ownership remain to be defined. Reminder: assess the TYTX/JSONL iterator for large dataSelection results, e.g. 4,000 customers; [note only, no implementation](../internal/070-work-status.md#gc-070-1865). |
 | 4 | Stores | Define the store workstream and its contract. |
 | 5 | Store-based widgets | Tree and grid, using stores. |
 
@@ -96,3 +118,17 @@ These cards are not a second execution plan and do not reopen completed phases.
 legacy analysis and 0.3 proposal: button Web Component, dropdown/split/state
 controls and mixed dynamic button bars. Core button direction accepted; extended
 API and sequence remain proposed. No runtime delivery is claimed.
+
+## Frame, bars and windows design — 2026-10-22
+
+[GC-320 · Frames, slot bars and windows](320-frames-bars-and-windows.md) records
+confirmed requirements, proposed Python syntax, one canonical Source structure,
+Web Component responsibilities, dynamic edits and focused verification slices.
+Nested bars and multiple bars per region are confirmed; remaining API decisions
+are explicitly proposed. No new runtime implementation or release is claimed.
+
+## Database selectors — 2026-10-23
+
+[GC-315 · Database selectors](315-database-selectors.md) records the bounded
+PORT-0016 contract. The previously implemented selectors are consolidated with
+prepared collections and verified through Uvicorn; see GC-070 §1655.

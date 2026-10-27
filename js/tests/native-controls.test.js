@@ -382,35 +382,56 @@ test('Q7: user input on a null path raises from the listener naming node and pat
     assert.equal(errors.length, 1);
 });
 
-test('C04.1: multiple of a select rebuilds the element with the same NodeBinding, from the Source and from Data', () => {
-    const {app, builder, data, byId, record} = page();
-    data.setItem('m', ['a']);
-    const node = sourceTarget(select(builder, {id: 's', value: '^m', multiple: '^multi'}));
-    const binding = app.src.binding.bindingFor(node);
-    const first = byId('s');
-    assert.equal(first.multiple, false);
-    data.setItem('multi', true);
-    const second = byId('s');
-    assert.notStrictEqual(second, first);
-    assert.equal(second.multiple, true);
-    assert.deepEqual([...second.selectedOptions].map(option => option.value), ['a']);
-    assert.strictEqual(app.src.binding.bindingFor(node), binding);
-    node.setAttr({multiple: false});
-    const third = byId('s');
-    assert.notStrictEqual(third, second);
-    assert.strictEqual(app.src.binding.bindingFor(node), binding);
-    assert.equal(third.multiple, false);
-    // The detached element no longer writes.
-    first.value = 'c';
-    change(first);
-    assert.deepEqual(data.getItem('m'), ['a']);
-    third.value = 'b';
-    change(third);
-    assert.equal(data.getItem('m'), 'b');
-    assert.strictEqual(record(node).element, third);
+test('select multiple uses its setter and retains options, focus, adapter and binding', () => {
+    const {app,window,document,builder,data,byId,record} = page();
+    data.setItem('m', null);data.setItem('single','b');
+    const node = sourceTarget(select(builder, {id:'s',value:'^m',multiple:'^multi'}));
+    const binding=app.src.binding.bindingFor(node),field=byId('s'),adapter=record(node).control;
+    const options=[...field.options],setter=Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype,'multiple');
+    let sets=0;
+    Object.defineProperty(field,'multiple',{get(){return setter.get.call(this);},set(value){sets++;setter.set.call(this,value);}});
+    field.focus();data.setItem('multi',true);data.setItem('m',['a','c']);
+    assert.equal(sets,1);assert.strictEqual(byId('s'),field);assert.strictEqual(document.activeElement,field);
+    assert.deepEqual([...field.options],options);assert.strictEqual(record(node).control,adapter);
+    assert.strictEqual(app.src.binding.bindingFor(node),binding);
+    assert.deepEqual([...field.selectedOptions].map(option=>option.value),['a','c']);
+    assert.deepEqual(data.getItem('m'),['a','c']);
+    field.options[1].selected=true;change(field);assert.deepEqual(data.getItem('m'),['a','b','c']);
+    node.setAttr({multiple:false,value:'^single'});
+    assert.strictEqual(byId('s'),field);assert.equal(field.value,'b');assert.equal(sets,2);
+    assert.deepEqual([...field.options],options);assert.strictEqual(record(node).control,adapter);
+    assert.deepEqual(data.getItem('m'),['a','b','c'],'Projection does not convert the old Data');
+    field.value='c';change(field);assert.equal(data.getItem('single'),'c');app.dispose();
 });
 
-test('D7: type from Data rebuilds and chooses the adapter again; under freeze the rebuild waits for the thaw', () => {
+test('invalid data for multiple select reports an error without destroying the control; correction recovers',()=>{
+    const {app,builder,data,byId,record}=page();
+    data.setItem('value','a');
+    const node=sourceTarget(select(builder,{id:'s',multiple:'^multi',value:'^value'}));
+    const field=byId('s'),adapter=record(node).control,options=[...field.options];
+    assert.throws(()=>data.setItem('multi',true),/requires an array/);
+    assert.strictEqual(byId('s'),field);assert.strictEqual(record(node).control,adapter);
+    assert.equal(data.getItem('value'),'a');assert.deepEqual([...field.options],options);
+    data.setItem('value',['b','c']);
+    assert.deepEqual([...field.selectedOptions].map(option=>option.value),['b','c']);
+    app.dispose();
+});
+
+test('email multiple retains its adapter and uncommitted draft without writing Data',()=>{
+    const {app,builder,data,byId,record}=page();
+    data.setItem('value','saved@example.test');
+    const node=sourceTarget(builder.root.input({id:'mail',type:'email',value:'^value',multiple:'^many'}));
+    const field=byId('mail'),adapter=record(node).control;
+    type(field,'one@example.test,two@example.test');data.setItem('many',true);
+    assert.strictEqual(byId('mail'),field);assert.strictEqual(record(node).control,adapter);
+    assert.equal(field.value,'one@example.test,two@example.test');assert.equal(field.validity.typeMismatch,false);
+    assert.equal(data.getItem('value'),'saved@example.test');
+    change(field);assert.equal(data.getItem('value'),'one@example.test,two@example.test');
+    node.setAttr({multiple:null});assert.equal(field.multiple,false);assert.strictEqual(byId('mail'),field);
+    app.dispose();
+});
+
+test('Input type uses its setter and updates the adapter; existing freeze/thaw behavior remains', () => {
     const {app, builder, data, byId, record} = page();
     data.setItem('tipo', 'text');
     data.setItem('v', 3);
@@ -419,7 +440,7 @@ test('D7: type from Data rebuilds and chooses the adapter again; under freeze th
     assert.ok(record(node).control instanceof TextControl);
     const first = byId('f');
     data.setItem('tipo', 'number');
-    assert.notStrictEqual(byId('f'), first);
+    assert.strictEqual(byId('f'), first);
     assert.ok(record(node).control instanceof NumberControl);
     assert.equal(byId('f').value, '3');
     const second = byId('f');
@@ -505,7 +526,7 @@ test('ASTRA-02: type from ^, = and == is the resolved one, at mount and on updat
     assert.strictEqual(app.src.binding.bindingFor(nodes.e), binding);
 });
 
-test('ASTRA-02: multiple from == rebuilds the select; live from == is its value, not a truthy string', () => {
+test('ASTRA-02: multiple from == updates the same select; live from == is its value, not a truthy string', () => {
     const {app, data, byId, record, errors} = page();
     data.setItem('m', ['a']);
     const node = sourceTarget(mount(app, root => {
@@ -517,7 +538,7 @@ test('ASTRA-02: multiple from == rebuilds the select; live from == is its value,
     assert.equal(byId('s').multiple, false);
     const first = byId('s');
     data.setItem('manyFlag', true);
-    assert.notStrictEqual(byId('s'), first);
+    assert.strictEqual(byId('s'), first);
     assert.equal(byId('s').multiple, true);
     assert.ok(record(node).control instanceof SelectControl);
     assert.deepEqual([...byId('s').selectedOptions].map(option => option.value), ['a']);
@@ -609,4 +630,71 @@ test('control values and component parameters share one write rule: plain ^ only
     change(byId('n'));
     assert.equal(fieldWrites.mock.callCount(), 1);
     assert.equal(data.getItem('n'), 6);
+});
+
+test('input type setter retains focus, selection, draft, adapter and Source binding',()=>{
+    const {app,document,window,builder,data,byId,record}=page();
+    data.setItem('kind','password');data.setItem('value','committed');
+    const node=sourceTarget(builder.root.input({id:'field',type:'^kind',value:'^value'}));
+    const field=byId('field'),adapter=record(node).control,binding=app.src.binding.bindingFor(node);
+    const setter=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'type');
+    let sets=0;
+    Object.defineProperty(field,'type',{get(){return setter.get.call(this);},set(value){sets++;setter.set.call(this,value);}});
+    field.focus();type(field,'draft');field.setSelectionRange(1,3);
+    data.setItem('kind','text');
+    assert.equal(sets,1);assert.equal(field.type,'text');
+    assert.strictEqual(byId('field'),field);assert.strictEqual(record(node).control,adapter);
+    assert.strictEqual(app.src.binding.bindingFor(node),binding);assert.strictEqual(document.activeElement,field);
+    assert.equal(field.value,'draft');assert.equal(data.getItem('value'),'committed');
+    assert.deepEqual([field.selectionStart,field.selectionEnd],[1,3]);
+    data.setItem('kind','password');assert.equal(field.value,'draft');
+    change(field);assert.equal(data.getItem('value'),'draft');
+    node.setAttr({type:null});assert.strictEqual(byId('field'),field);assert.equal(field.type,'text');
+    node.setAttr({type:'password',value:'new value'});
+    assert.strictEqual(byId('field'),field);assert.equal(field.value,'new value');
+    assert.equal(data.getItem('value'),'draft','Changing the declaration does not rewrite the old Data path');
+    app.dispose();
+});
+
+test('compatible input type change retains an active IME composition',()=>{
+    const {app,window,builder,data,byId,record}=page();
+    data.setItem('kind','text');data.setItem('value','before');
+    const node=sourceTarget(builder.root.input({id:'field',type:'^kind',value:'^value',live:true}));
+    const field=byId('field'),adapter=record(node).control;
+    field.dispatchEvent(new window.CompositionEvent('compositionstart'));
+    type(field,'composing');data.setItem('kind','password');
+    assert.strictEqual(record(node).control,adapter);assert.equal(field.value,'composing');
+    assert.equal(data.getItem('value'),'before');
+    field.dispatchEvent(new window.CompositionEvent('compositionend'));
+    assert.equal(data.getItem('value'),'composing');app.dispose();
+});
+
+test('type setter native sanitization does not rewrite Data; text can show the original again',()=>{
+    const {app,builder,data,byId,record}=page();
+    data.setItem('kind','text');data.setItem('value','not a number');
+    const node=sourceTarget(builder.root.input({id:'field',type:'^kind',value:'^value'}));
+    const field=byId('field');data.setItem('kind','number');
+    assert.strictEqual(byId('field'),field);assert.ok(record(node).control instanceof NumberControl);
+    assert.equal(field.value,'');assert.equal(data.getItem('value'),'not a number');
+    data.setItem('kind','text');assert.equal(field.value,'not a number');app.dispose();
+});
+
+test('type transitions attach only the current adapter and release it on disposal',()=>{
+    const {app,builder,data,byId,record}=page();
+    data.setItem('kind','hidden');data.setItem('value','');
+    const node=sourceTarget(builder.root.input({id:'field',type:'^kind',value:'^value',live:true}));
+    const field=byId('field'),cleanupCount=record(node).cleanup.length;
+    let commits=0;
+    const write=app.src.renderer.html.writeParameter.bind(app.src.renderer.html);
+    app.src.renderer.html.writeParameter=(...args)=>{commits++;return write(...args);};
+    for(const kind of ['text','number','checkbox','radio','hidden','button','file','text']) {
+        data.setItem('value','');data.setItem('kind',kind);
+        assert.strictEqual(byId('field'),field);assert.equal(record(node).cleanup.length,cleanupCount);
+        const before=commits;
+        change(field);
+        assert.equal(commits-before,['checkbox','radio'].includes(kind)?1:0);
+    }
+    const before=commits;type(field,'final');assert.equal(commits,before+1);
+    assert.equal(data.getItem('value'),'final');
+    app.dispose();type(field,'detached');change(field);assert.equal(commits,before+1);
 });

@@ -72,7 +72,21 @@ above.
 
 <a id="gc-095-045"></a>
 
-## 045 · Initial values: `dataSetter`
+## 045 · Choose where initial Data comes from
+
+| Situation | Use |
+| --- | --- |
+| Local interface preference, such as a preview color or selected tab | `default` for `value`, or `default_<attribute>` on its bound declaration. Defaults fill missing/null Data only. |
+| Sample dataset accompanying `foo.py` or `foo.js` | `foo_data.tytx`: a serialized Data Bag loaded by the host before rendering. |
+| Data computed by the server | An endpoint, `dataRpc`, or `dataRemote`, depending on when it is needed. |
+| A Source fragment explicitly installs a Data value | `dataSetter`; its declaration is consumed after writing. |
+
+Do not initialize every field with a setter. An empty bound field can start empty;
+a record normally arrives from the server. Defaults do not replace existing
+Data, including `False`, zero and the empty string. See [defaults](#gc-095-050)
+and [page companions](095-writing-pages.md).
+
+### Explicit installation writes: `dataSetter`
 
 ```python
 dataSetter(destination_path, value=None, **attr)
@@ -150,9 +164,15 @@ run time are not affected by R1.
 `value` and the attributes are stored as written: `'^y'`, `'==a+b'` and
 `'a${b}'` stay strings. A computed value comes from `dataFormula`.
 
-Removing a `dataSetter` from the Source does not delete its Data. A rebuild or a
-thaw does not install it again. A `Bag` value moves into the Data without a copy;
-the Source node then no longer carries it. Gallery lesson: *Setters and defaults*.
+Each processed `dataSetter` is removed from Source immediately after its Data
+write. Its binding and nodeId registration are released before removal; the renderer
+ignores the setter's deletion event. Other Source observers can still see that event.
+The Data remains, including a Bag payload transferred without copying. A rebuild or
+thaw cannot reinstall a consumed declaration. This applies to initial pages, remote
+fragments and local insertions through the same installer. A null destination (Q7)
+is consumed without a write. A failed write propagates its error; existing Data
+writes are not rolled back. Controllers remain in Source and retain their lifecycle.
+Gallery lesson: *Setters and defaults*.
 
 <a id="gc-095-050"></a>
 
@@ -427,8 +447,22 @@ radio keep the default of their authored `selected` or `checked` attribute.
   and the temporal types always write on `change`.
 - A correction written by a controller is shown on the control that produced the
   edit. Other attributes bound to the same path update while the user types.
-- Changing `type`, `multiple` or `group` rebuilds the element and keeps its
-  binding.
+- Changing an input's `type` uses its native setter and keeps the element and
+  binding. For example, password → text retains focus and the uncommitted draft.
+  A different value contract updates only the internal binding adapter. The browser
+  can sanitize the displayed value for the new type; this never rewrites Data.
+- Changing native input/select `multiple` also uses its setter, keeping the
+  element, options and binding. A multiple select still needs an array or null;
+  changing mode does not convert Data. Email drafts and selected files survive.
+- Changing a radio's `group` keeps the widget and binding, but resets the writable
+  boolean Data of the moving radio and both affected groups to `false`. Other
+  forms/pages remain independent; an unchanged group does not reset selections.
+  Literal and read-only values have no writable Data path and are not rewritten.
+
+In `<input type="password">`, the **HTML tag** is `input` and the **input type** is
+`password`. Changing the input type is different from replacing the HTML tag with
+`textarea`. Native browser limitations still apply: selection is not available
+for every input type, and a file input cannot receive a nonempty value from code.
 
 Gallery lessons: *Native editing*, *Checkbox and radio*, *Style and visibility*
 and *Bound SVG*. The input components of [Components](105-components.md) use the

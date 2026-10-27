@@ -232,8 +232,8 @@ try {
     assert.deepEqual(ime, {during: null, shown: 'かな', after: 'かな', value: 'かな'});
     checks.push('IME synthetic');
 
-    // C04.1: multiple of a select rebuilds the element, the NodeBinding stays.
-    const rebuild = await page.evaluate(() => {
+    // C04.1: select.multiple uses its native setter; element and NodeBinding stay.
+    const multipleUpdate = await page.evaluate(() => {
         const node = window.app.src.source.getItem('main').getNodes().find(each => each.attr.id === 'multiple');
         const binding = window.app.src.binding.bindingFor(node);
         const before = document.getElementById('multiple');
@@ -241,8 +241,8 @@ try {
         const after = document.getElementById('multiple');
         return {rebuilt: before !== after, multiple: after.multiple, same: window.app.src.binding.bindingFor(node) === binding};
     });
-    assert.deepEqual(rebuild, {rebuilt: true, multiple: false, same: true});
-    checks.push('C04.1 rebuild');
+    assert.deepEqual(multipleUpdate, {rebuilt: false, multiple: false, same: true});
+    checks.push('C04.1 native setter');
 
     // S11 checkbox: mouse click and Space write booleans, never 'on'.
     await page.click('#cb');

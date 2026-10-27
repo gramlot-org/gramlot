@@ -64,7 +64,7 @@ export class DragDrop {
             }
             const session = this.#session = {record, wires, effectAllowed, phase: 'active',
                 tags: [declaredTags, prepared.dragValues.dragTags].filter(Boolean).join(','),
-                endTopic: this.#renderer.binding.gramlot._subscriptions.topicFor(record.node, 'endDrag'),
+                endTopic: this.#renderer.binding.subscriptions.topicFor(record.node, 'endDrag'),
                 source: {pageId: this.#renderer.binding.gramlot.pageId ?? null,
                     sourcePath: record.node.fullpath, itemPath: prepared.path ?? null}, preview: null, release: null};
             event.dataTransfer.clearData();
@@ -144,8 +144,9 @@ export class DragDrop {
         event.preventDefault();
         if (this.#session.phase !== 'active') return;
         const session = this.#session;
+        let target;
         try {
-            const target = this.#target(event); // Revalidate using current Data and declarations.
+            target = this.#target(event); // Revalidate using current Data and declarations.
             if (this.#session !== session) { event.dataTransfer.dropEffect = 'none'; return; }
             session.phase = 'dropped';
             this.#clearPayload();
@@ -158,7 +159,7 @@ export class DragDrop {
                 session.phase = 'rejected';
                 this.#clearPayload();
             }
-            this.#report(error);
+            if (!target || this.#renderer.records.has(target.record.node)) this.#report(error);
         }
     }
 
@@ -203,7 +204,7 @@ export class DragDrop {
             .catch(error => this.#report(error));
     }
 
-    #report(error) { console.error('Gramlot drag/drop failed:', error); }
+    #report(error) { this.#renderer.binding.reportError(error, 'Drag and drop failed'); }
 
     dispose() {
         this.#clearSession();

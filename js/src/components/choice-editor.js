@@ -1,7 +1,7 @@
-import {Bag} from '@gramlot/gramlot';
 import {NativeControl} from './bases.js';
 import {parseChoices} from './choices.js';
 import {positionPopup} from './popup.js';
+import {Bag} from '@gramlot/gramlot';
 
 /** Shared suggestions: constrained controls commit codes; comboBox commits text. */
 export function ChoiceEditor(HTMLElement) {
@@ -16,6 +16,8 @@ export function ChoiceEditor(HTMLElement) {
         #source;
         #separator;
         #cleanup;
+        #requestController;
+        #searchTimer;
         constructor() {
             super();
             const doc = this.ownerDocument;
@@ -26,6 +28,7 @@ export function ChoiceEditor(HTMLElement) {
                 .choices{max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);box-sizing:border-box;max-height:min(var(--gramlot-choice-max-height,12rem),var(--gramlot-popup-available-height,100vh));overflow:auto;
                     border:1px solid var(--gramlot-border-control,#aab4c2);border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-surface,Canvas);color:var(--gramlot-ink,CanvasText);font:inherit;box-shadow:var(--gramlot-shadow,0 3px 9px #0002)}
                 .choices[hidden]{display:none} .choice{min-height:var(--gramlot-touch-target,0px);display:flex;align-items:center;padding:.25em .5em;cursor:pointer}
+                .choice-detail{margin-inline-start:var(--gramlot-space-3,.75rem);color:var(--gramlot-text-secondary,GrayText)}
                 .choice[aria-selected=true]{background:var(--gramlot-selected,Highlight);color:var(--gramlot-ink,HighlightText)}`;
             this.toggle = doc.createElement('button');
             this.toggle.className = 'toggle'; this.toggle.type = 'button'; this.toggle.tabIndex = -1;
@@ -44,9 +47,9 @@ export function ChoiceEditor(HTMLElement) {
             this.choices.addEventListener('mousedown', event => event.preventDefault());
             this.control.addEventListener('input', event => {
                 this.#dirty = true; this.#picked = null;
-                if (!event.isComposing) this.search(this.control.value);
+                if (!event.isComposing) this.scheduleSearch(this.control.value);
             });
-            this.control.addEventListener('compositionend', () => this.search(this.control.value));
+            this.control.addEventListener('compositionend', () => this.scheduleSearch(this.control.value));
             this.control.addEventListener('keydown', event => {
                 if (event.isComposing || this.locked) return;
                 if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -71,16 +74,28 @@ export function ChoiceEditor(HTMLElement) {
             input.autocomplete = 'off'; return input;
         }
         get constrained() { return true; }
+        get choiceSource() { return this.parameters.store ?? this.parameters.callback ?? this.parameters.values; }
+        get searchDelay() { return 0; }
+        textValue(text) { return text; }
+        selectionAccepted(row) {}
+        selectionResolved(row) {}
+        renderChoice(row, item) { item.textContent = row.caption; }
+        scheduleSearch(query) {
+            this.closeChoices();
+            if (!this.searchDelay) return this.search(query);
+            this.#searchTimer = setTimeout(() => { this.#searchTimer = null; this.search(query); }, this.searchDelay);
+        }
         get commitOnChange() { return this.constrained; }
         get locked() { return this.control.disabled || this.control.readOnly; }
         get active() { return this.isConnected && this.pageContext?.isActive(); }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
-            const source = this.parameters.store ?? this.parameters.callback ?? this.parameters.values;
+            const source = this.choiceSource;
             const changed = source !== this.#source || this.parameters.separator !== this.#separator;
             this.#separator = this.parameters.separator;
             this.#source = source;
             this.toggle.disabled = this.locked;
+            if (changed) { this.#rows = []; this.#picked = null; }
             if (changed || this.locked) this.closeChoices();
             if (changed && this.active && !this.#dirty) this.resolveValue();
             return rest;
@@ -105,11 +120,12 @@ export function ChoiceEditor(HTMLElement) {
             if (this.constrained && text !== '' && matches.length !== 1) {
                 this.error('Choose a value from the list.'); return {ok: false};
             }
-            const value = this.constrained ? (text === '' ? null : matches[0].id) : text;
+            const value = this.constrained ? (text === '' ? null : matches[0].id) : this.textValue(text);
             return this.validateCandidate(value, accepted => {
                 if (accepted !== value && this.constrained) throw new Error('Validation cannot replace a selected code; update the Data explicitly.');
                 this.#value = accepted; this.#dirty = false; this.#picked = null;
                 if (!this.constrained) this.control.value = accepted ?? '';
+                this.selectionAccepted(matches.length === 1 && accepted === value ? matches[0] : null);
             });
         }
         commitDraft() {
@@ -122,30 +138,33 @@ export function ChoiceEditor(HTMLElement) {
             this.closeChoices(); this.commitDraft();
         }
         async request(keywords) {
+            this.#requestController?.abort();
+            const controller = new AbortController(); this.#requestController = controller;
             const generation = ++this.#generation;
             this.control.setAttribute('aria-busy', 'true'); this.error('');
             try {
-                const rows = await this.loadChoices(keywords);
+                const rows = await this.loadChoices(keywords, controller.signal);
                 if (generation !== this.#generation || !this.active) return null;
                 return rows;
             } catch (error) {
                 if (generation === this.#generation && this.active) this.error(error.message);
                 return null;
             } finally {
-                if (generation === this.#generation) this.control.setAttribute('aria-busy', 'false');
+                if (generation === this.#generation) { this.#requestController = null; this.control.setAttribute('aria-busy', 'false'); }
             }
         }
         async resolveValue() {
-            if (this.#value == null || this.#value === '') { this.control.value = ''; this.error(''); return; }
+            if (this.#value == null || this.#value === '') { this.control.value = ''; this.error(''); if (this.active) this.selectionResolved(null); return; }
             if (!this.active) return;
             this.control.value = this.#value;
-            if (!this.constrained) { this.error(''); return; }
+            if (!this.constrained) { this.error(''); this.selectionResolved(null); return; }
             const rows = await this.request({_id: this.#value});
             if (!rows) return;
             const row = rows.find(item => item.id === this.#value);
             this.#rows = rows;
             this.control.value = row ? row.caption : this.#value;
             this.error(row ? '' : 'Value is not in the list.');
+            this.selectionResolved(row ?? null);
         }
         async search(query) {
             if (this.locked || !this.active) return;
@@ -156,7 +175,7 @@ export function ChoiceEditor(HTMLElement) {
             const doc = this.ownerDocument;
             this.choices.replaceChildren(...rows.map((row, index) => {
                 const item = doc.createElement('div'); item.id = `choice-${index}`;
-                item.className = 'choice'; item.setAttribute('role', 'option'); item.textContent = row.caption;
+                item.className = 'choice'; item.setAttribute('role', 'option'); this.renderChoice(row, item);
                 item.addEventListener('click', () => this.choose(row)); return item;
             }));
             if (!rows.length) this.choices.textContent = 'No results';
@@ -185,6 +204,8 @@ export function ChoiceEditor(HTMLElement) {
             else this.control.setAttribute('aria-activedescendant', `choice-${this.#active}`);
         }
         closeChoices() {
+            clearTimeout(this.#searchTimer); this.#searchTimer = null;
+            this.#requestController?.abort(); this.#requestController = null;
             ++this.#generation; this.#cleanup?.(); this.#cleanup = null;
             if (this.#opened) this.choices.hidePopover();
             this.#opened = false; this.choices.hidden = true;

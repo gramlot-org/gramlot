@@ -1,5 +1,10 @@
 # 310 · Buttons and button bars: legacy analysis and 0.3 proposal
 
+> **Menu follow-up, 2026-10-22:** [GC-330](330-menus-and-commands.md) records
+> the legacy/core inventory and proposed command sharing between bars and menus.
+> The owner reaffirmed flex bars with ordinary Source children. A shared registry
+> and unnamed slotButton spacers remain proposals; unknown-name behavior is open.
+
 Document ID: **GC-310**. Date: **2026-10-17**.
 
 > Current scope: see [§040](#gc-310-040). One unified dropdown; button bars are deferred to containers.

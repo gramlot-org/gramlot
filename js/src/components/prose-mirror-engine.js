@@ -2,7 +2,7 @@ import {EditorState} from 'prosemirror-state';
 import {EditorView} from 'prosemirror-view';
 import {toggleMark,baseKeymap} from 'prosemirror-commands';
 import {keymap} from 'prosemirror-keymap';
-import {history,undo,redo} from 'prosemirror-history';
+import {history,undo,redo,closeHistory} from 'prosemirror-history';
 import {createMarkdownCodec} from './markdown-codec.js';
 
 const styleText=`.markdown-editor-control{display:flex;flex-direction:column;border:1px solid var(--gramlot-border-control,#aaa);border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-surface,white);color:var(--gramlot-ink,#243449)}
@@ -56,6 +56,19 @@ export function createMarkdownEditor(host) {
     refresh();
     return {
         view,
+        replace(value){
+            const doc=codec.parse(value), before=view.state.doc.content, after=doc.content;
+            const from=before.findDiffStart(after);
+            if(from===null)return;
+            let {a:to,b:nextTo}=before.findDiffEnd(after);
+            const overlap=from-Math.min(to,nextTo);
+            if(overlap>0){to+=overlap;nextTo+=overlap;}
+            const transaction=closeHistory(view.state.tr).replace(from,to,doc.slice(from,nextTo));
+            // Data projection is allowed when readonly and must not echo a normalized value to Data.
+            view.updateState(view.state.apply(transaction));
+            view.updateState(view.state.apply(closeHistory(view.state.tr)));
+            refresh();
+        },
         configure(){view.setProps({editable:()=>!locked()});refresh();},
         undo(){return !locked()&&undo(view.state,view.dispatch,view);},
         redo(){return !locked()&&redo(view.state,view.dispatch,view);},

@@ -12,7 +12,7 @@ export interface PageResources {
     /** CSS stylesheet URLs. */
     css: string[];
     /** Application collection modules, each exporting its ComponentCollection as default. */
-    collections?: string[];
+    collections?: {name: string; url: string; buildId: string}[];
     /** JavaScript module URLs, each with its Logic group (null for the page logic). */
     js: {url: string; group: string | null}[];
     /** The module whose default export is the ServerAdapter class of the page, when the server names one. */

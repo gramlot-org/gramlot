@@ -36,8 +36,9 @@ test('port snapshots preserve supported types, cached reads, node identity and r
         assert.equal(f.client.data.getItem('date').toISOString(), date.toISOString());
         assert.equal(f.client.source.getItem('main.greeting'), '^name');
         assert.equal(f.client.source.getNode('main.greeting').getAttr('_meta'), null);
-        assert.equal(f.client.source.getNode('main.setter').getAttr('_meta'), null);
-        assert.ok(f.app.src.source.getNode('main.setter').getAttr('_meta'));
+        assert.equal(f.client.source.getNode('main.setter'), null);
+        assert.equal(f.app.src.source.getNode('main.setter'), null);
+        assert.equal(f.client.data.getItem('initial'), 'x');
         assert.equal(f.client.nodeInfo(f.client.data.getNode('deferred')).readonly, true);
         const before = f.client.data.getNode('nested.count');
         f.app.data.setItem('nested.count', 43);

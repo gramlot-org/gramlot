@@ -226,7 +226,7 @@ test('bootstrap: the import map shares one runtime for page and component import
     for (const [prefix, runtime] of [['', '/static/gramlot.js'], ['/app', '/app/static/gramlot.js']]) {
         const opened = await server.openPage('/', {prefix});
         const map = `<script type="importmap" nonce="${opened.nonce}">` +
-            `{"imports":{"@gramlot/gramlot/page":"${runtime}","@gramlot/gramlot":"${runtime}"}}</script></head>`;
+            `{"imports":{"@gramlot/gramlot/page":"${runtime}","@gramlot/gramlot":"${runtime}","@gramlot/gramlot/components":"${runtime}"}}</script></head>`;
         assert.ok(opened.html.includes(map), prefix);
         assert.ok(opened.html.indexOf('type="importmap"') < opened.html.indexOf('type="module"'));
     }

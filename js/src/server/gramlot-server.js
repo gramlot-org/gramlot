@@ -4,6 +4,8 @@
  *
  * @module
  */
+import {Bag} from '@genrojs/bag';
+import {Collection} from '@genrojs/builders';
 import {fromTytx, toTytx} from '@genrojs/tytx';
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
 import {NAME_SYNTAX} from '../builder/name-syntax.js';
@@ -27,6 +29,17 @@ const OUTCOME_CODES = new Map([[PageExpired, 'page_expired'], [SourceNotFound, '
     [EndpointNotFound, 'not_found'], [NotAuthenticated, 'not_authenticated'], [NotAuthorized, 'not_authorized']]);
 
 const isMapping = value => value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
+
+/** Copy resolved grammar metadata, retaining its compiled validation functions.
+ * Cardinality Maps and parent Sets remain local to each builder. */
+function clonePreparedSchema(value) {
+    if (value === null || typeof value !== 'object') return value;
+    if (Array.isArray(value)) return value.map(clonePreparedSchema);
+    if (value instanceof Map) return new Map([...value].map(([key, item]) => [key, clonePreparedSchema(item)]));
+    if (value instanceof Set) return new Set(value);
+    if (!isMapping(value)) throw new TypeError('Unexpected resolved grammar metadata');
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, clonePreparedSchema(item)]));
+}
 
 /** Whether `value` is JSON written unchanged by `JSON.stringify`: null, a boolean, a string, a finite number,
  * or an array or plain object of such values, without cycles. The check of Python `json.dumps(allow_nan=False)`. */
@@ -106,13 +119,66 @@ export class GramlotServer {
         Object.assign(this, {runtimeUrl, rpcUrl, closeUrl, rootId, pageTtl, maxPages, cssTheme});
         this.pages = new Map();
         this.collections = [...collections];
+        this.preparedGrammars = new WeakMap();
     }
 
     /** The Page class of path, or PageNotFound. */
     async resolvePage(path) { throw new PageNotFound(`Page not found: ${path}`); }
 
+    /** Class-local declarations accumulate base first, just like Python Page.gramlots. */
+    pageCollections(PageClass) {
+        const classes = [];
+        for (let cls = PageClass; cls && cls !== Function.prototype; cls = Object.getPrototypeOf(cls)) classes.unshift(cls);
+        return this.collectionGraph([...this.collections, ...classes.flatMap(cls => Object.hasOwn(cls, 'gramlots') ? cls.gramlots : [])]);
+    }
+
+    /** Resolve named dependencies among prepared records; reject ambiguous identities. */
+    collectionGraph(collections) {
+        const byName = new Map(), visiting = new Set(), done = new Set(), ordered = [];
+        for (const collection of collections) {
+            if (typeof collection?.name !== 'string' || !collection.name || !Array.isArray(collection.dependencies)) throw new TypeError('Expected prepared collection descriptors');
+            const previous = byName.get(collection.name);
+            if (previous && previous !== collection && JSON.stringify(previous) !== JSON.stringify(collection)) throw new Error(`Conflicting collection identity: ${collection.name}`);
+            byName.set(collection.name, collection);
+        }
+        const visit = name => {
+            if (done.has(name)) return;
+            if (visiting.has(name)) throw new Error(`Collection dependency cycle: ${name}`);
+            const collection = byName.get(name);
+            if (!collection) throw new Error(`Missing collection dependency: ${name}`);
+            visiting.add(name);
+            for (const dependency of collection.dependencies) visit(dependency);
+            visiting.delete(name); done.add(name); ordered.push(collection);
+        };
+        for (const name of byName.keys()) visit(name);
+        return ordered;
+    }
+
+    /** Retain compilation only; every builder keeps independent schema, Source and Data. */
+    loadCollections(builder, collections) {
+        if (!collections.length) return;
+        let cache = this.preparedGrammars.get(builder.constructor);
+        if (!cache) this.preparedGrammars.set(builder.constructor, cache = new Map());
+        const initial = builder._collection?.toDocument() ?? null;
+        const key = JSON.stringify([initial, collections]);
+        let prepared = cache.get(key);
+        if (!prepared) {
+            for (const collection of collections) builder.loadCollection(collection.grammar);
+            prepared = {schema: clonePreparedSchema(builder.schema), names: {...builder.schemaTagNames},
+                document: builder._collection.toDocument()};
+            cache.set(key, prepared);
+        } else {
+            builder._schemaOverride = clonePreparedSchema(prepared.schema);
+            builder._tagNamesOverride = {...prepared.names};
+            builder._collection = new Collection(prepared.document);
+        }
+    }
+
     /** {css: [url], js: [{url, group}]} in load order and without mount prefix, or PageNotFound. */
     async resolveResources(path, PageClass) { throw new PageNotFound(`Page resources not found: ${path}`); }
+
+    /** Optional initial Data Bag for this page path; no companion in the neutral server. */
+    async resolveData(path) { return null; }
 
     /** The capabilities announced in the bootstrap; none in the base server. */
     get capabilities() {
@@ -202,14 +268,18 @@ export class GramlotServer {
         if (typeof PageClass !== 'function' || !(PageClass.prototype instanceof Page)) {
             throw new TypeError('Page modules must export a subclass of Page');
         }
+        const selected = this.pageCollections(PageClass);
         const resolved = await this.resolveResources(path, PageClass);
-        const resources = loadOrder({...resolved, css: [...this.themeCss(PageClass), ...resolved.css]});
-        if (this.collections.length) resources.collections = this.collections.map(item => item.module);
+        const resources = loadOrder({...resolved, css: [...this.themeCss(PageClass), ...selected.flatMap(collection=>collection.css ?? []), ...resolved.css]});
+        resources.collections = selected.map(({name,module,buildId}) => {
+            if (typeof name!=='string' || !name || typeof module!=='string' || !/^sha256:[0-9a-f]{64}$/.test(buildId)) throw new TypeError('Invalid prepared collection identity');
+            return {name,url:module,buildId};
+        });
         if (this.serverAdapter !== null) resources.serverAdapter = this.serverAdapter;
         this.prune();
         if (this.pages.size >= this.maxPages) throw new ServerCapacity('Page registry capacity reached');
         const pageId = crypto.randomUUID().replaceAll('-', '');
-        this.pages.set(pageId, {PageClass, owner, expires: this.#expiry()});
+        this.pages.set(pageId, {PageClass, path, owner, expires: this.#expiry()});
         return {pageId, title: PageClass.title, resources, nameSyntax: this.nameSyntax.toJSON(),
             ...(PageClass.devices.length ? {devices: [...PageClass.devices]} : {}),
             ...(PageClass.locale == null ? {} : {locale: PageClass.locale}),
@@ -229,7 +299,7 @@ export class GramlotServer {
                     rootId: this.rootId, capabilities: this.capabilities, nameSyntax,
                     ...(devices === undefined ? {} : {devices}),
                     ...(locale === undefined ? {} : {locale}), ...(timeZone === undefined ? {} : {timeZone})},
-                resources: {...(resources.collections ? {collections: resources.collections.map(url => prefixed(prefix, url))} : {}),
+                resources: {...(resources.collections ? {collections: resources.collections.map(record => ({...record,url:prefixed(prefix,record.url)}))} : {}),
                     css: resources.css.map(url => prefixed(prefix, url)),
                     js: resources.js.map(({url, group}) => ({url: prefixed(prefix, url), group})),
                     ...(resources.serverAdapter ? {serverAdapter: prefixed(prefix, resources.serverAdapter)} : {})},
@@ -245,7 +315,9 @@ export class GramlotServer {
             }
             // A page module served for its Logic imports the core from the runtime already loaded.
             head.script(scriptJson({imports: {'@gramlot/gramlot/page': prefixed(prefix, this.runtimeUrl),
-                '@gramlot/gramlot': prefixed(prefix, this.runtimeUrl)}}),
+                '@gramlot/gramlot': prefixed(prefix, this.runtimeUrl),
+                '@gramlot/gramlot/components':prefixed(prefix,this.runtimeUrl),
+                ...Object.fromEntries((resources.collections ?? []).map(({name,url})=>[`@gramlot/collections/${encodeURIComponent(name)}`,prefixed(prefix,url)]))}}),
                 {type: 'importmap', nonce});
             const body = root.body();
             body.div({id: this.rootId});
@@ -279,9 +351,17 @@ export class GramlotServer {
         const response = {id: request.id, contentType: request.contentType};
         try {
             response.value = (await this.#run(request, owner, identity)) ?? null;
+            if (request.contentType === 'source' && request.name === 'main') {
+                const data = await this.resolveData(this.pages.get(request.pageId).path);
+                if (data !== null) {
+                    if (!(data instanceof Bag)) throw new TypeError('Initial page data must be a Bag');
+                    response.data = data;
+                }
+            }
             return toTytx(response);
         } catch (error) {
             delete response.value;
+            delete response.data;
             response.error = {code: OUTCOME_CODES.get(error?.constructor) ?? 'application_error',
                 name: error?.name ?? 'Error', message: error?.message ?? String(error)};
             if (gramlotDev() === 'DEBUG') response.error.details = error?.stack;
@@ -325,7 +405,7 @@ export class GramlotServer {
         if (!source) return callable.call(instance, params);
         const builder = new record.PageClass.sourceBuilder(name,
             {auth: elementRule => this.#authOutcome(elementRule, owner, identity), nameSyntax: this.nameSyntax});
-        for (const collection of this.collections) builder.loadCollection(collection.grammar);
+        this.loadCollections(builder, this.pageCollections(record.PageClass));
         const result = await callable.call(instance, builder.root, params);
         if (result !== undefined && result !== null) throw new TypeError('Source methods populate root and return no value');
         return builder.toTytx();

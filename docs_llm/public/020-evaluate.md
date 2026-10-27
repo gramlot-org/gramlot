@@ -46,8 +46,9 @@ validation, command buttons, border, tab and stack containers, `dataRpc`, declar
 Source fragments, `remote`, the endpoint-backed `dataRemote` resolver, messages and
 the application index.
 
-Recipes, a record/form framework, database-backed controls and database services
-are not provided. An HTML form is not a record framework; the presence of
+Recipes, a record/form framework and database services are not provided.
+The inputs collection includes endpoint-backed `dbSelect`/`dbComboBox`;
+the application supplies their endpoint and database integration. An HTML form is not a record framework; the presence of
 `dataRemote` does not imply every legacy resolver is available. See
 [excluded declarations](097-data-binding.md#gc-095-085).
 

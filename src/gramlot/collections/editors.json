@@ -2592,7 +2592,8 @@
           },
           "presentationDefaults": [],
           "dataScope": false,
-          "command": false
+          "command": false,
+          "labelbox": true
         }
       }
     },
@@ -4747,7 +4748,8 @@
           },
           "presentationDefaults": [],
           "dataScope": false,
-          "command": false
+          "command": false,
+          "labelbox": true
         }
       }
     },
@@ -6952,7 +6954,8 @@
           },
           "presentationDefaults": [],
           "dataScope": false,
-          "command": false
+          "command": false,
+          "labelbox": true
         }
       }
     },

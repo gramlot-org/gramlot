@@ -268,7 +268,7 @@ function recordingTransport(record) {
             record.push('call');
             return toTytx({id, contentType, value: new GramlotBuilder().toTytx()});
         },
-        close(pageId, {beacon = false} = {}) { record.push(`close:${pageId}:${beacon}`); },
+        close(pageId) { record.push(`close:${pageId}`); },
         dispose() { record.push('dispose'); },
     };
 }
@@ -282,7 +282,7 @@ test('the default ServerAdapter creates the HttpTransport of the page', () => {
     assert.equal(typeof app.rpc.transport.dispose, 'function');
     const beacons = [];
     window.navigator.sendBeacon = url => { beacons.push(url); return true; };
-    app.dispose({beacon: true});
+    app.dispose();
     assert.deepEqual(beacons, ['/c']);
 });
 
@@ -333,17 +333,17 @@ test('a ServerAdapter subclass gives the transport; dispose closes the page and 
     await app.start();
     app.dispose();
     app.dispose();
-    assert.deepEqual(record, ['call', 'close:p:false', 'dispose']);
+    assert.deepEqual(record, ['call', 'close:p', 'dispose']);
 });
 
-test('pagehide disposes a page with any transport, with a beacon', async () => {
+test('pagehide disposes a page through its transport', async () => {
     const record = [];
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const app = new Gramlot({pageId: 'p', document: window.document, transport: recordingTransport(record)});
     await app.start();
     window.dispatchEvent(new window.Event('pagehide'));
     assert.equal(app.state, 'disposed');
-    assert.deepEqual(record, ['call', 'close:p:true', 'dispose']);
+    assert.deepEqual(record, ['call', 'close:p', 'dispose']);
     const alone = new Gramlot({pageId: 'q', document: window.document, transport: false});
     assert.equal(alone.pagehide, undefined);
     alone.dispose();
@@ -395,7 +395,7 @@ export default class Named extends ServerAdapter {
     const bootstrapped = new PageBootstrap({config: {pageId: 'q', rpcUrl: '/r', closeUrl: '/c'}, resources: {css: [], js: []},
         document: window.document});
     bootstrapped.closePage();
-    assert.deepEqual(beacons, ['/c']);
+    assert.deepEqual(beacons, ['/gramlot/close', '/c']);
 }));
 
 // The synchronous call (owner 2026-10-19, review p4): `gramlot.rpc.callSync`, sent only by a transport whose
@@ -445,9 +445,9 @@ test('gramlot.rpc.callSync answers the value through the XMLHttpRequest of the w
     const other = new Gramlot({pageId: 'p', document: window.document, rpcUrl: '/r'});
     assert.throws(() => other.rpc.callSync('data', 'x'), error => error.name === 'RpcError' && error.code === 'not_found');
     window.navigator.sendBeacon = () => true;
-    other.dispose({beacon: true});
+    other.dispose();
     assert.throws(() => other.rpc.callSync('data', 'x'), error => error.name === 'AbortError');
-    app.dispose({beacon: true});
+    app.dispose();
 });
 
 test('a transport without supportsCallSync has no synchronous call', () => {

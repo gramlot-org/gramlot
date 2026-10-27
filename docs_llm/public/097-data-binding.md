@@ -37,7 +37,21 @@ Attributes ending in `_path` hold a bare path; a written `^`/`=` is removed with
 
 <a id="gc-095-045"></a>
 
-## 045 · Initial values: `dataSetter`
+## 045 · Choose where initial Data comes from
+
+| Situation | Use |
+| --- | --- |
+| Local interface preference, such as a preview color or selected tab | `default` for `value`, or `default_<attribute>` on its bound declaration. Defaults fill missing/null Data only. |
+| Sample dataset accompanying `foo.py` or `foo.js` | `foo_data.tytx`: a serialized Data Bag loaded by the host before rendering. |
+| Data computed by the server | An endpoint, `dataRpc`, or `dataRemote`, depending on when it is needed. |
+| A Source fragment explicitly installs a Data value | `dataSetter`; its declaration is consumed after writing. |
+
+Do not initialize every field with a setter. An empty bound field can start empty;
+a record normally arrives from the server. Defaults do not replace existing
+Data, including `False`, zero and the empty string. See [defaults](#gc-095-050)
+and [page companions](095-writing-pages.md).
+
+### Explicit installation writes: `dataSetter`
 
 `dataSetter(destination_path, value=None, **attr)` replaces legacy `data(path, value)`,
 without alias; `root.data(...)` raises an error naming `dataSetter` and `html_data`; on
@@ -71,9 +85,15 @@ warning. R1, installation only: non-null writes; null on an existing path keeps 
 value and applies attributes; null on a missing path creates null plus attributes.
 `dataSetter('x', 7)` then `dataSetter('x', None)` leaves 7. Runtime writes are not
 affected. `value` and attributes are stored as written (`'^y'`, `'==a+b'`, `'a${b}'`
-stay strings; computed values use `dataFormula`). Removing the declaration keeps Data;
-rebuild/thaw do not reinstall. A Bag value moves into Data without copy and leaves the
-Source node. Gallery lesson: *Setters and defaults*.
+stay strings; computed values use `dataFormula`). Each processed `dataSetter` is removed from Source immediately after its Data
+write. Its binding and nodeId registration are released before removal; the renderer
+ignores the setter's deletion event. Other Source observers can still see that event.
+The Data remains, including a Bag payload transferred without copying. A rebuild or
+thaw cannot reinstall a consumed declaration. This applies to initial pages, remote
+fragments and local insertions through the same installer. A null destination (Q7)
+is consumed without a write. A failed write propagates its error; existing Data
+writes are not rolled back. Controllers remain in Source and retain their lifecycle.
+Gallery lesson: *Setters and defaults*.
 
 <a id="gc-095-050"></a>
 
@@ -202,8 +222,19 @@ never writes; a literal `value` (neither `^` nor `=`) is also the control defaul
 authored `selected`/`checked`. `live=False` (default) writes on `change`; `live=True` on `input` for
 text, textarea, number, range; select, color and temporal types always write on
 `change`. A controller correction returns to the originating control; other attributes
-on the same path update while typing. Changing `type`, `multiple` or `group` rebuilds
-the element and keeps its binding. Gallery lessons: *Native editing*, *Checkbox and radio*,
+on the same path update while typing. An input type change uses its native setter,
+retaining DOM and NodeBinding. Compatible changes retain the adapter and draft;
+a different value contract changes only the adapter. Native sanitization can
+change the display, never Data. Native input/select `multiple` uses its setter,
+retaining element, options and binding. Multiple select still needs an array or
+null; changing mode does not convert Data. Email drafts and selected files survive.
+Changing a radio's `group` keeps the widget and binding, but resets the writable
+boolean Data of the moving radio and both affected groups to `false`. Other
+forms/pages remain independent; an unchanged group does not reset selections.
+Literal and read-only values have no writable Data path and are not rewritten.
+In `<input type="password">`, the HTML tag is `input`, the input
+type is `password`; changing to a different HTML tag is separate. Selection is
+not available for every type; file inputs reject nonempty programmatic values. Gallery lessons: *Native editing*, *Checkbox and radio*,
 *Style and visibility*, *Bound SVG*; input components ([Components](105-components.md)) use the same binding.
 Checkbox `input(type='checkbox', value='^.flag')`: Data only `true`/`false`, never
 `'on'`. Radio `input(type='radio', group='size', value='^.small')`: one boolean per

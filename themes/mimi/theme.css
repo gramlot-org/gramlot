@@ -1,98 +1,160 @@
-/* Gramlot adaptation of legacy mimi; load after Base and Compact. */
+/* mimi: professional density profile; load after Base and Compact. */
 @layer gramlot.tokens {
   :root {
+    color-scheme: light;
+    --gramlot-background: #edf1ef;
+    --gramlot-surface: #fbfcfb;
+    --gramlot-header-background: #30473c;
+    --gramlot-header-color: #fbfcfb;
+    --gramlot-surface-subtle: #e2e9e5;
+    --gramlot-ink: #24332e;
+    --gramlot-text-secondary: #52655d;
+    --gramlot-border: #c4d0c9;
+    --gramlot-border-control: #768a7e;
+    --gramlot-action: #176b61;
+    --gramlot-action-hover: #105247;
+    --gramlot-selected: #dceee8;
+    --gramlot-field-background: #fbfcfb;
+    --gramlot-field-readonly-background: #e2e9e5;
+    --gramlot-label-color: #52655d;
+    --gramlot-focus-ring: #176b61;
+    --gramlot-brand-blue: #176b61;
+    --gramlot-brand-yellow: #176b61;
+    --gramlot-navigation: #24332e;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #aa2637;
+    --gramlot-error-background: #fff0f1;
+    --gramlot-success: #236747;
+    --gramlot-success-background: #e9f4ec;
+    --gramlot-warning: #735313;
+    --gramlot-warning-background: #fff5da;
+    --gramlot-field-height: 24px;
+    --gramlot-field-padding: 1px 5px;
+    --gramlot-field-line-height: 1.3;
+    --gramlot-field-font-size: 1rem;
+    --gramlot-button-padding: 1px 5px;
+    --gramlot-button-gap: 4px;
+    --gramlot-button-background: var(--gramlot-surface);
+    --gramlot-button-hover: var(--gramlot-selected);
+    --gramlot-label-size: 1em;
+    --gramlot-label-gap: 3px;
+    --gramlot-radius-sm: 3px;
+    --gramlot-radius: 3px;
+    --gramlot-radius-lg: 5px;
+    --gramlot-window-radius: 5px;
+    --gramlot-toolbar-gap: 2px;
+    --gramlot-tree-row-height: var(--gramlot-field-height);
+    --gramlot-space-1: 3px;
+    --gramlot-space-2: 3px;
+    --gramlot-space-3: 6px;
+    --gramlot-space-4: 6px;
+    --gramlot-space-6: 9px;
+    --gramlot-space-8: 12px;
+    --gramlot-space-12: 18px;
     --gramlot-tab-height: 24px;
-    --gramlot-tab-padding: 3px 10px;
+    --gramlot-tab-padding: 1px 5px;
     --gramlot-tab-radius: 3px;
     --gramlot-tab-gap: 2px;
-    --gramlot-tab-strip-padding: 3px;
-    --gramlot-tab-background: var(--gramlot-background);
+    --gramlot-tab-strip-padding: 2px;
+    --gramlot-tab-background: var(--gramlot-surface-subtle);
     --gramlot-tab-selected-background: var(--gramlot-surface);
-    --gramlot-tab-selected-color: var(--gramlot-ink);
+    --gramlot-tab-selected-color: var(--gramlot-action);
     --gramlot-tab-border: var(--gramlot-border);
-    --gramlot-background: #EDEEF0;
-    --gramlot-surface: #F5F5F6;
-    --gramlot-surface-subtle: #E0E1E3;
-    --gramlot-ink: #3C3D40;
-    --gramlot-text-secondary: #6B6E72;
-    --gramlot-border: #BDBFC2;
-    --gramlot-border-control: #9EA0A3;
-    --gramlot-navigation: #48494C;
-    --gramlot-navigation-text: #FFFFFF;
-    --gramlot-action: #0071E3;
-    --gramlot-action-hover: #005BBB;
-    --gramlot-brand-blue: #0071E3;
-    --gramlot-brand-yellow: #9EA0A3;
-    --gramlot-selected: #E8F1FC;
-    --gramlot-focus-ring: #0071E3;
-    --gramlot-field-background: #FFFFFF;
-    --gramlot-field-readonly-background: #E0E1E3;
-    --gramlot-error: #B3261E;
-    --gramlot-error-background: #FFF1F0;
-    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 6%);
-    --gramlot-radius-sm: 4px;
-    --gramlot-radius: 3px;
-    --gramlot-radius-lg: 3px;
-    --gramlot-field-height: 18px;
-    --gramlot-field-padding: 1px 3px;
-    --gramlot-field-line-height: 1.15;
-    --gramlot-field-font-size: 1rem;
-    --gramlot-label-size: .9em;
-    --gramlot-label-gap: 2px;
-    --gramlot-label-color: var(--gramlot-text-secondary);
-    --gramlot-space-4: 6px;
-    --gramlot-font-ui: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --gramlot-shadow: 0 2px 8px rgb(0 0 0 / 10%);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-    --gramlot-background: #242527;
-    --gramlot-surface: #303134;
-    --gramlot-surface-subtle: #3C3D40;
-    --gramlot-ink: #F2F2F7;
-    --gramlot-text-secondary: #C7C7CC;
-    --gramlot-border: #6B6E72;
-    --gramlot-border-control: #8E8E93;
-    --gramlot-navigation: #1C1C1E;
-    --gramlot-action: #78B7FF;
-    --gramlot-action-hover: #A6CFFF;
-    --gramlot-brand-blue: #3478CA;
-    --gramlot-selected: #254163;
-    --gramlot-focus-ring: #78B7FF;
-    --gramlot-field-background: #202124;
-    --gramlot-field-readonly-background: #3C3D40;
-    --gramlot-error: #FFB4AB;
-    --gramlot-error-background: #482524;
-    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+    color-scheme: dark;
+    --gramlot-background: #17201d;
+    --gramlot-surface: #202c27;
+    --gramlot-header-background: #334d40;
+    --gramlot-header-color: #ebf3ee;
+    --gramlot-surface-subtle: #2a3932;
+    --gramlot-ink: #ebf3ee;
+    --gramlot-text-secondary: #b6c9be;
+    --gramlot-border: #40594a;
+    --gramlot-border-control: #7c9987;
+    --gramlot-action: #8ad8c4;
+    --gramlot-action-hover: #b0eadc;
+    --gramlot-selected: #2d4c40;
+    --gramlot-field-background: #202c27;
+    --gramlot-field-readonly-background: #2a3932;
+    --gramlot-label-color: #b6c9be;
+    --gramlot-focus-ring: #8ad8c4;
+    --gramlot-brand-blue: #8ad8c4;
+    --gramlot-brand-yellow: #8ad8c4;
+    --gramlot-navigation: #17201d;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #ffb4b4;
+    --gramlot-error-background: #48292f;
+    --gramlot-success: #98dfbd;
+    --gramlot-success-background: #243f32;
+    --gramlot-warning: #f3d58c;
+    --gramlot-warning-background: #413820;
     }
   }
   :root[data-theme="dark"] {
-    --gramlot-background: #242527;
-    --gramlot-surface: #303134;
-    --gramlot-surface-subtle: #3C3D40;
-    --gramlot-ink: #F2F2F7;
-    --gramlot-text-secondary: #C7C7CC;
-    --gramlot-border: #6B6E72;
-    --gramlot-border-control: #8E8E93;
-    --gramlot-navigation: #1C1C1E;
-    --gramlot-action: #78B7FF;
-    --gramlot-action-hover: #A6CFFF;
-    --gramlot-brand-blue: #3478CA;
-    --gramlot-selected: #254163;
-    --gramlot-focus-ring: #78B7FF;
-    --gramlot-field-background: #202124;
-    --gramlot-field-readonly-background: #3C3D40;
-    --gramlot-error: #FFB4AB;
-    --gramlot-error-background: #482524;
-    --gramlot-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+    color-scheme: dark;
+    --gramlot-background: #17201d;
+    --gramlot-surface: #202c27;
+    --gramlot-header-background: #334d40;
+    --gramlot-header-color: #ebf3ee;
+    --gramlot-surface-subtle: #2a3932;
+    --gramlot-ink: #ebf3ee;
+    --gramlot-text-secondary: #b6c9be;
+    --gramlot-border: #40594a;
+    --gramlot-border-control: #7c9987;
+    --gramlot-action: #8ad8c4;
+    --gramlot-action-hover: #b0eadc;
+    --gramlot-selected: #2d4c40;
+    --gramlot-field-background: #202c27;
+    --gramlot-field-readonly-background: #2a3932;
+    --gramlot-label-color: #b6c9be;
+    --gramlot-focus-ring: #8ad8c4;
+    --gramlot-brand-blue: #8ad8c4;
+    --gramlot-brand-yellow: #8ad8c4;
+    --gramlot-navigation: #17201d;
+    --gramlot-navigation-text: #f6f8fb;
+    --gramlot-error: #ffb4b4;
+    --gramlot-error-background: #48292f;
+    --gramlot-success: #98dfbd;
+    --gramlot-success-background: #243f32;
+    --gramlot-warning: #f3d58c;
+    --gramlot-warning-background: #413820;
   }
 }
 @layer gramlot.base {
-  html { font-size: 12px; }
+  html { font-size: 12.5px; }
+  body { line-height: 1.4; }
+  :where(h1,h2,h3,h4,h5,h6,p,ul,ol,dl,blockquote,pre,figure) { margin-block: 0 var(--gramlot-space-3); }
+  h1 { font-size: 1.4rem; } h2 { font-size: 1.15rem; } h3 { font-size: 1rem; }
+  :where(h1,h2,h3) { letter-spacing: -.015em; }
+  pre { padding: var(--gramlot-space-3); }
+  hr { margin-block: var(--gramlot-space-6); }
 }
 @layer gramlot.components {
-  :where(label) { font-size: var(--gramlot-label-size); font-weight: normal; color: var(--gramlot-label-color); margin-block-end: var(--gramlot-label-gap); }
-  :where(button, input[type="button"], input[type="submit"], input[type="reset"], .button) { min-block-size: 24px; padding: 2px 8px; font-weight: 500; }
+  :where(button,input[type="button"],input[type="submit"],input[type="reset"],.button) {
+    min-block-size: var(--gramlot-field-height); padding: var(--gramlot-button-padding);
+    font-size: 1rem; line-height: 1.3; font-weight: 500;
+    background: var(--gramlot-button-background); color: var(--gramlot-ink); border-color: var(--gramlot-border-control);
+  }
+  :where(button,input[type="button"],input[type="submit"],input[type="reset"],.button):hover:not(:disabled) {
+    background: var(--gramlot-selected); color: var(--gramlot-action-hover); border-color: var(--gramlot-action);
+  }
+  :where(label) { font-size: 1em; font-weight: 400; color: var(--gramlot-label-color); margin-block-end: var(--gramlot-label-gap); }
+  :where(input[readonly],textarea[readonly]) { background: var(--gramlot-field-readonly-background); }
+  :where(.button--quiet,button.quiet) { background: transparent; color: var(--gramlot-action); border-color: transparent; }
+  :where(.button--quiet,button.quiet):hover:not(:disabled) { background: var(--gramlot-selected); border-color: transparent; }
+  :where(textarea) { min-block-size: 4.5rem; }
+  :where(input[type="color"]) { min-block-size: var(--gramlot-field-height); }
+  :where(input[type="file"])::file-selector-button { padding: var(--gramlot-field-padding); }
+  :where(fieldset,details) { padding: var(--gramlot-space-3); margin-block-end: var(--gramlot-space-3); }
+  :where(table) { font-size: 1rem; }
+  :where(th,td) { padding: var(--gramlot-field-padding); height: var(--gramlot-field-height); vertical-align: middle; }
+  :where(details[open]>summary) { margin-block-end: var(--gramlot-space-3); }
+  :where(dialog) { padding: var(--gramlot-space-4); }
 }
 @layer gramlot.utilities {
-  .card { box-shadow: var(--gramlot-shadow); }
+  .example-page { inline-size: min(100% - 2 * var(--gramlot-space-4),var(--gramlot-page-width)); padding-block: var(--gramlot-space-4); }
+  .card { padding: var(--gramlot-space-4); box-shadow: none; }
 }

@@ -55,6 +55,8 @@ jobs:
           node-version: "22"
       - name: Install JavaScript dependencies
         run: npm --prefix js install --ignore-scripts --package-lock=false
+      - name: Install collection generator dependencies
+        run: npm --prefix tools/gramlot-builder install --ignore-scripts --package-lock=false
       - name: Build browser resources
         run: npm --prefix js run build
       - name: Install Python package and test dependencies

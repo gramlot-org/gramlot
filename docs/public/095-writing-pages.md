@@ -21,9 +21,9 @@ JavaScript, in families by topic, from HTML and SVG structure to binding,
 controllers, server calls, input components and containers. Choose a lesson in the
 [examples manual](https://gramlot-examples.readthedocs.io/en/latest/), or open the
 hosted gallery for [Python](https://gallery-py.gramlot.dev/) or
-[JavaScript](https://gallery-js.gramlot.dev/). The gallery runs on servers without a
-resource system and without an identity system: `js_requires` groups and the allow
-and deny of an `auth` rule need a server that has them.
+[JavaScript](https://gallery-js.gramlot.dev/). Prepared collections load through the ordinary bootstrap. Host resource names
+in `js_requires` and authorization rules require corresponding host services;
+they are separate from the portable collection mechanism.
 
 <a id="gc-095-005"></a>
 
@@ -39,7 +39,8 @@ class Page(BasePage):
     title = "People"
 
     def main(self, root):
-        panel = root.div("People", id="people")
+        panel = root.div(id="people")
+        panel.h1("People")
         panel.p("Choose a person")
 ```
 
@@ -48,13 +49,27 @@ nodes. Text is literal text, not parsed HTML. HTML attributes such as `id` are
 supported; `class_` escapes the Python keyword. The exported HTML5 collection
 defines the vocabulary; its open signatures accept any HTML attribute.
 
-The legacy style shortcuts become CSS styling in the browser: `color='red'`,
+Separate style attributes become CSS styling in the browser: `color='red'`,
 `font_size='12px'`, `margin_top='4px'`, `style_aspect_ratio='16/9'`, `rounded=8`. They
 compose one `style` attribute with `style='…'`, as the static Builder
 `HtmlRenderer` does. `_class` is `class`. They react to Data like any attribute
 ([Data binding and controllers](097-data-binding.md#gc-095-070)). A length is written
 with its CSS unit, except in a few legacy sub-keys such as `rounded`; the rule is in
 [Themes and CSS](096-themes-and-css.md#gc-096-040).
+
+### HTML tags and Gramlot components
+
+`input` and `html_button` declare browser HTML tags. `textbox` and `button`
+declare Gramlot components with their own parameters and behavior. Select the
+`inputs` collection to use `textbox`; command buttons are built in. Use the
+`html_` prefix when an HTML tag's name would otherwise select a component.
+
+Both HTML and components use the same renderer-owned Labelbox: `lbl="Name"`
+adds a label, `lbl_position="L"` places it beside the content, and `box_*`
+styles its surrounding box. For example, `pane.div(lbl="Summary")` can contain
+a whole layout, not just a field. See [shared labels](105-components.md#gc-105-020).
+Style keywords such as `color` and `padding` describe CSS independently from
+HTML attributes such as `type`, `name` and `disabled`.
 
 <a id="gc-095-010"></a>
 
@@ -72,11 +87,12 @@ Later Source insertions, removals and updates use the same subscription. Attribu
 updates can update an existing element; structural changes rebuild the affected
 subtree and release its owned objects. Framework code owns this work.
 
-The bootstrap document carries a script that creates `PageBootstrap` with the
-page's resources. In the browser it writes the stylesheet links (the theme, the
-`Page.css` URLs, then the same-name `foo.css`), imports the page's JavaScript
-modules, creates the `Gramlot` instance, registers the named logic and then starts
-the page ([Classes and server adapters](090-classes-and-hosts.md#gc-090-030)).
+The bootstrap creates `PageBootstrap`, loads the theme, selected collections and
+page resources in that order, and waits for required CSS before starting the
+page. Collection dependencies precede their consumers. A failed required load
+stops startup. An optional same-name `foo_data.tytx` supplies initial Data before
+Source defaults and rendering; `main` still returns Source. See
+[page companions](#gc-095-155) and [the server protocol](101-server-protocol.md).
 Between validation and DOM construction, each branch installs its Data
 declarations ([lifecycle](097-data-binding.md#gc-095-080)).
 
@@ -120,8 +136,9 @@ an element; from code a fragment is requested with
 - Input components, command buttons and containers:
   [Components](105-components.md).
 
-Recipes, record and form management, stores, grids, trees and database services are
-not provided; do not infer them from an HTML form or an endpoint-backed resolver.
+The tree component is provided through its own collection. Record management,
+automatic form persistence and database services are application concerns; do not
+infer them from an HTML form or an endpoint-backed selector.
 [Excluded declarations](097-data-binding.md#gc-095-085) lists the legacy
 declarations that raise an error.
 
@@ -220,7 +237,7 @@ root.button("Reload", action="gramlot.utl.inout.restore('modulo')")
 | `sendMail(path, email)` | Prepares an email in the mail program of the user (`mailto:`): recipient `email`, subject the page title, one line `name: Rossi` per value, `address.street: …` for a nested value. The email leaves when the user presses send. |
 | `sendHttp(path, url)` | Sends the branch as a JSON object with an HTTP `POST` to `url`; resolves with the response, rejects on a status outside 200–299. |
 | `save(path, name)` | Saves the branch as a TYTX file named `name`. |
-| `restore(path)` | Opens the choice of a local file and loads a file written by `save` into `path`, with the exact types: dates and decimals come back as dates and decimals. |
+| `restore(path)` | Opens the choice of a local file and loads a file written by `save` into `path`, with the exact types: dates and decimals come back as dates and decimals. Cancelling rejects with `AbortError` and leaves Data unchanged. |
 | `download(path, name, 'json' \| 'xml')` | Exports the branch for other programs: `Bag.toJson`, or `Bag.toXml` inside one root element named after the last segment of `path`. Types become text. |
 
 - A date is written `1990-05-02` in the email; a date with a time keeps its ISO text.
@@ -246,7 +263,7 @@ Gallery lesson: *Data exchange*.
 
 Block ID: **GC-095-110**.
 
-The current development contract separates three responsibilities: `FramePage`
+Three classes separate these responsibilities: `FramePage`
 provides a five-region frame, `IndexPage` adds navigation and retained page tabs,
 and an application supplies its own region contents. The gallery is one such
 application; the core does not depend on it.
@@ -308,8 +325,32 @@ Call the corresponding superclass hook when adding content to either region.
 `behavior(shell)` declares the standard startup controller. `datapath` defaults
 to `index`; its Data contains `navigation`, `navigationSelection`, `active` and
 `opened`. Active pages are identified by URL; opened records retain panel labels
-and navigation paths. `shell_id` (JS `shellId`) defaults to `index`. Use one index
-shell per document. There is no tab-count or eviction policy.
+and navigation paths. `shell_id` (JS `shellId`) defaults to `index`. For multiple
+indexes in one document, give each shell a distinct ID and Data path. Relative
+paths such as `.leftIndex` inherit the containing Source's datapath. The tree and
+tabs use `.navigation`, `^.navigationSelection` and `^.active` in their own scope.
+There is no tab-count or eviction policy.
+
+The owning Source node retains the coordinator through its internal `indexContext`
+attachment; Logic only supplies behavior. `IndexLogic.indexMount(node)` receives
+the startup controller's Source node and mounts its parent shell, without a DOM
+ID lookup or a Logic field. Subscriptions and pending entries are released through
+the renderer's existing Source disposal mechanism. Each iframe page has its own
+Gramlot, Source and Data. Detaching a containing panel moves DOM only: its Source,
+Data scope, coordinator and iframe element are retained.
+
+`mountIndexPage` also accepts `onLoad(url, status, error)`. Each new load emits
+`loading`, followed once by `ready`, `error` or `cancelled`, including loads that
+finish in a background tab. Closing a pending tab or disposing its index emits
+`cancelled`; late replies are ignored, including after reopening the same URL.
+Closing an already loaded tab does not emit another load outcome. `ready` reports
+successful panel preparation, not completion of the iframe's own page resources.
+A callback failure is reported separately without changing an outcome already sent.
+
+Load outcomes do not select tabs. `onSelection(entries, active)` reports the current
+selection, and the active entry's `loading` flag determines its indicator. Consumers
+must not clear a current spinner merely because a different URL completed. During
+index disposal, callbacks settle pending loads but must not update disposed UI.
 
 The JavaScript equivalent uses `static navigation` (a Bag or a getter returning
 one), `static datapath` and the same five region hooks. It exports IndexLogic as
@@ -355,7 +396,7 @@ pages/
 `pages/index.py` is the entry point served at `/` (or at the application's mount).
 `00-index.py` is the page describing a navigation directory; it is not a replacement
 for the host's root `index.py`. Numbering sorts siblings and remains in the URL.
-Use lowercase names with underscores inside names, such as `01-html_elements`.
+Use lowercase names with underscores inside names, such as `08-html_svg`.
 Keep each nested directory in its public path.
 
 In the root Page above, replace `navigation` with:
@@ -448,28 +489,24 @@ resizing remains live. Do not simulate an operator click to initialize a drawer.
 
 The shell needs the **layout** and **tree** collections. Add **inputs** when your
 pages use widgets from it. Native HTML inputs in the example above need no inputs
-collection. Use the same selected collections for the root, child pages and remote
-Source requests, as described in [collection activation, GC-105 §035](105-components.md).
-A Python host's collection descriptors can be prepared as follows:
+collection. Select only the collections needed by each Page class; its remote Source methods
+use that same selection, as described in [collection activation, GC-105 §035](105-components.md).
+Select prepared descriptors on your IndexPage subclass:
 
 ```python
-import json
-from importlib.resources import files
+from gramlot.collections.layout import mygramlot as layout
+from gramlot.collections.tree import mygramlot as tree
 
-collections = [
-    {"grammar": json.loads(files("gramlot").joinpath(f"collections/{name}.json").read_text()),
-     "module": f"/assets/{name}.js"}
-    for name in ("layout", "tree")
-]
+class Page(IndexPage):
+    gramlots = [layout, tree]
 ```
 
-Supply these descriptors to your host and serve the corresponding browser ES
-modules at `/assets/layout.js` and `/assets/tree.js`. Bundle their entry points
-`@gramlot/gramlot/components/layout` and `@gramlot/gramlot/components/tree`, with
-`@gramlot/gramlot` external, so both share the bootstrap's runtime and Bag classes.
-The JSON grammar alone does not load browser controls. Host setup and public
-asset routing belong to the integration; see
-[page resources and file layout, GC-090 §030](090-classes-and-hosts.md).
+Here `IndexPage` is the shell base described above. Select the required descriptors
+on child Page classes too; an iframe is a separate page. The host resolves the
+prepared dependency graph and exposes verified collection files in its bootstrap.
+Do not create URL-only collection dictionaries or bundle unrelated runtime copies.
+See [collection loading and resource ownership](340-components-and-collections-guide.md#gc-340-055)
+for the preparation and bootstrap contract.
 
 Navigation URLs are resolved by the iframe against the shell document URL. The
 relative paths in this example work at `/` and at a mounted root such as `/app/`.
@@ -579,7 +616,7 @@ an installable root: choose directory export for installation.
 ### Open the application in its own window
 
 Serve the application over HTTPS, or on localhost for development. The index
-footer offers installation instructions and, when the browser supplies its
+Settings panel offers installation instructions and, when the browser supplies its
 installation prompt, an **Install** button. Dismissing the prompt leaves the
 browser's own installation menu available. On Safari for macOS Sonoma or later,
 use **File → Add to Dock**; see [Apple's web-app guide](https://support.apple.com/en-gb/104996).
@@ -764,7 +801,8 @@ remote `nodeId` routing are not supported. Unsupported descriptor keys fail expl
 <a id="gc-095-120"></a>
 ## 120 · Natural-language dates and periods
 
-`parseDateExpression` uses the built-in Italian/English semantics of Toolbox
+`parseDateExpression` comes from `@genrojs/toolbox` and is re-exported by
+`@gramlot/gramlot`. It uses the built-in Italian/English semantics of Toolbox
 Python `parse_period`, with structured JavaScript results. It interprets complete
 expressions; it does not format values, edit a widget or write a Data Bag.
 
@@ -1014,3 +1052,18 @@ while JavaScript writes `String(value)`, which gives `1`. The live page always
 writes the text in JavaScript; there `format` gives the same exact text from either
 authoring language. `mask` only wraps the text: a static page that needs an exact
 number text passes it as a string.
+
+
+<a id="gc-095-155"></a>
+
+## 155 · Automatic initial Data
+
+Block ID: **GC-095-155**.
+
+Place `foo_data.tytx` beside `foo.py` and/or `foo.js` to supply an optional initial Data Bag. The page needs no dataRemote or dataSetter declaration for this file. Its contents must decode to a Bag, preserving typed values, nested Bags and node attributes; ordinary JSON objects are not accepted.
+
+The file is applied before Source installation, defaults and rendering. An explicit dataSetter can still write a value during installation; defaults fill missing values. Endpoints, dataRemote and later Data writes keep their existing behavior. No file means no automatic initialization. A malformed file fails startup rather than silently ignoring the dataset. Every page load gets a fresh Bag; client edits do not modify the file.
+
+This convention supplies initial example/application data; it is not a dynamic query or persistence mechanism. Use default for small interface-state values and endpoints/resolvers for server-driven data. The file host reads the companion inside its pages directory and does not expose it as a public companion URL. The serverless exporter embeds it for the Worker, including file-origin exports.
+
+The pilot is `02-binding/01-paths_and_updates/foo` in gramlot-examples (lesson b12), shared by Python, JavaScript and the executable documentation. Other lessons have not been migrated.

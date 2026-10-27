@@ -117,9 +117,8 @@ test('html_data renders the HTML5 data element and stays distinct from dataSette
     const element = document.getElementById('d');
     assert.equal(element.outerHTML, '<data value="1" id="d">one</data>');
     assert.equal(document.querySelector('main').children.length, 1);
-    const [data, setter] = builder.source.getNodes();
-    assert.equal(data.nodeTag, 'data');
-    assert.equal(setter.nodeTag, 'dataSetter');
+    assert.deepEqual(builder.source.getNodes().map(node => node.nodeTag), ['data']);
+    assert.equal(renderer.builder.data.getItem('x'), 7);
     renderer.dispose();
 });
 
@@ -130,11 +129,12 @@ test('R08: literal data-elements mount with no resolution and no DOM, also witho
     builder.root.dataSetter({destination_path: 'literal', value: '^.unresolved', title: '=.other',
         expression: '==a + b', template: '${width}px'});
     builder.root.dataFormula({result_path: 'total', func: 'sum', a: '^a'});
+    const setter = builder.source.getNodes()[1];
     const renderer = mount();
     const main = document.querySelector('main');
     // The nested dataController is the button's click mechanism: R3 gives it type="button" (S12).
     assert.equal(elementsHtml(main), '<gramlot-button id="save" type="button">Save</gramlot-button>');
-    const setter = builder.source.getNodes()[1];
+    assert.equal(setter.parentBag, null);
     assert.deepEqual({...setter.getAttr(), _meta: undefined}, {
         destination_path: 'literal', value: '^.unresolved', title: '=.other',
         expression: '==a + b', template: '${width}px', _meta: undefined,
@@ -196,7 +196,7 @@ builder.root.dataSetter("literal", value="^.unresolved", title="=.other", expres
 print(to_tytx(builder.source))
 `;
 
-test('a Python Source with html_label, html_data and literal setters mounts in the browser unchanged', () => {
+test('a Python Source mounts HTML nodes and consumes literal setters in the browser', () => {
     const wire = execFileSync(python, ['-c', PYTHON_AUTHORING], {encoding: 'utf8'}).trim();
     const document = new JSDOM('<div id="gramlot-root"></div>').window.document;
     const app = new Gramlot({document, transport: false});
@@ -204,12 +204,7 @@ test('a Python Source with html_label, html_data and literal setters mounts in t
     const root = document.getElementById('gramlot-root');
     assert.equal(document.getElementById('d').outerHTML, '<data value="1" id="d">one</data>');
     assert.equal(root.querySelector('label').getAttribute('for'), 'n');
-    const setter = app.src.source.getItem('main').getNodes()[1];
-    assert.equal(setter.nodeTag, 'dataSetter');
-    assert.equal(setter.getAttr('value'), '^.unresolved');
-    assert.equal(setter.getAttr('title'), '=.other');
-    assert.equal(setter.getAttr('expression'), '==a + b');
-    assert.equal(setter.getAttr('template'), '${width}px');
+    assert.equal(app.src.source.getItem('main').getNodes().some(node => node.nodeTag === 'dataSetter'), false);
     assert.equal(root.querySelectorAll('*').length, 3);
     assert.equal(app.data.getItem('literal'), '^.unresolved');
     assert.deepEqual(app.data.getNode('literal').getAttr(), {title: '=.other', expression: '==a + b', template: '${width}px'});

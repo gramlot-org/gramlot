@@ -815,3 +815,42 @@ test('_else="this.setValue(null)" clears the content when _if turns false; true 
     assert.equal(slot(document), 'details:2');
     assert.deepEqual(calls.map(([, params]) => params.id), [1, 2]);
 });
+
+test('runtime remote failures are notified once, can retry, and rejected completion hooks are handled',async t=>{
+    let failing=true;
+    const {app,document}=page({main:async()=>wire(root=>root.div({id:'slot',nodeId:'slot',remote:'details',remote_id:'^id',_onRemote:'return Promise.reject(new Error("Completion failed"));'})),
+        source:async()=>{if(failing)throw new Error('Server offline');return wire(root=>root.span('Recovered'));}});
+    document.defaultView.HTMLElement.prototype.showPopover=function(){};
+    t.after(()=>app.dispose());
+    await app.start();await settle();
+    assert.match(document.querySelector('[role=alert]').textContent,/Server offline/);
+    failing=false;app.data.setItem('id',2);await settle();
+    assert.equal(slot(document),'Recovered');
+    assert.match(document.querySelector('.gramlot-error-notifications').textContent,/Completion failed/);
+    document.querySelectorAll('.gramlot-error-notifications button').forEach(button=>button.click());
+    const target=app.src.binding.nodeIds.get('slot');
+    target.parentBag.popNode(target.label);await settle();
+    assert.equal(document.querySelector('[role=alert]'),null);
+});
+
+test('timed, delayed and rebound remote failures are handled; removing the node cancels further triggers',async t=>{
+    let calls=0;
+    const {app,document}=page({main:async()=>wire(root=>root.div({nodeId:'slot',datapath:'initial',remote:'details',remote_id:'^.id',_timing:0.01,_delay:5})),
+        source:async()=>{calls++;throw Error('Temporarily unavailable');}});
+    document.defaultView.HTMLElement.prototype.showPopover=function(){};
+    t.after(()=>app.dispose());await app.start();await settle(25);
+    app.data.setItem('initial.id',1);await settle(10);
+    const node=app.src.binding.nodeIds.get('slot');node.setAttr({datapath:'rebased'});await settle(10);
+    assert.ok(calls>=3);assert.equal(document.querySelectorAll('[role=alert]').length,1);
+    node.parentBag.popNode(node.label);const before=calls;await settle(25);assert.equal(calls,before);
+});
+
+test('a failed remote response after its node closes does not alert',async t=>{
+    let reject;
+    const {app,document}=page({main:async()=>wire(root=>root.div({nodeId:'slot',remote:'details'})),source:()=>new Promise((resolve,fail)=>{reject=fail;})});
+    document.defaultView.HTMLElement.prototype.showPopover=function(){};
+    t.after(()=>app.dispose());await app.start();await settle();
+    const node=app.src.binding.nodeIds.get('slot');node.parentBag.popNode(node.label);
+    reject(Error('Late transport failure'));await settle();
+    assert.equal(document.querySelector('[role=alert]'),null);
+});

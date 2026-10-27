@@ -11,6 +11,10 @@ from pathlib import Path
 from urllib.parse import quote
 from uuid import uuid4
 
+from genro_bag import Bag
+from genro_builders.builder import SourceBag
+from genro_tytx import from_tytx
+
 from .assets import gramlot_dev
 from .files import file_below
 from .gramlot_server import GramlotServer, PageNotFound
@@ -88,6 +92,48 @@ class GramlotFileServer(GramlotServer):
                 raise
             self._modules[real] = module
         return getattr(module, "Page", None)
+
+    def resolve_data(self, path):
+        """Read foo_data.tytx beside foo.py without exposing a public file URL."""
+        page_file = self.locate_page(path)
+        filename = page_file.with_name(f"{page_file.stem}_data.tytx")
+        try:
+            real = filename.resolve(strict=True)
+        except FileNotFoundError:
+            return None
+        if not real.is_relative_to(self.pages_dir.resolve()):
+            raise ValueError("Data companion leaves the pages folder")
+        data = from_tytx(real.read_text(encoding="utf-8"))
+        if not isinstance(data, Bag) or isinstance(data, SourceBag):
+            raise TypeError("Initial page data must be a Data Bag")
+        return data
+
+    def iter_page_classes(self):
+        """Import route-eligible candidates deterministically and classify Page exports."""
+        from ..page import Page
+        root = self.pages_dir.resolve()
+        seen_files, seen_classes = set(), set()
+        for filename in sorted(root.rglob('*.py'), key=lambda p: p.relative_to(root).as_posix()):
+            logical = filename.relative_to(root).with_suffix('').as_posix()
+            try:
+                resolved = self.locate_page(logical).resolve()
+            except PageNotFound:
+                continue
+            if resolved in seen_files:
+                continue
+            seen_files.add(resolved)
+            try:
+                cls = self.resolve_page(logical)
+            except Exception as error:
+                raise ValueError(f'Page catalogue import failed: {filename}: {error}') from error
+            module = self._modules[resolved]
+            if 'Page' not in vars(module) or cls is Page:
+                continue
+            if not isinstance(cls, type) or not issubclass(cls, Page):
+                raise ValueError(f'Invalid Page export: {filename}')
+            if cls not in seen_classes:
+                seen_classes.add(cls)
+                yield cls
 
     def resolve_page_store(self, page_class):
         """Read the separate PageStore declaration from the page's own module."""

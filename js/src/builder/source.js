@@ -177,6 +177,34 @@ function isExpression(value) {
  * setRelativeData too, with the Gramlot reset rules.
  */
 export class GramlotBuilderBagNode extends SourceBagNode {
+    get frame() {
+        if (!['dialog','floatingPane'].includes(this.nodeTag)) throw new TypeError('frame accessor requires a window');
+        const children = this.value instanceof SourceBag ? this.value.getNodes() : [];
+        if (children.length) {
+            if (children.length !== 1 || children[0].nodeTag !== 'framePane') throw new TypeError('A window requires exactly one framePane');
+            return this.builder.wrapSource(children[0]);
+        }
+        return this.builder.wrapSource(this.builder.commandOnNode(this, 'framePane', null, {node_label:'frame'}));
+    }
+    requestClose(reason = 'application') {
+        if (!['dialog','floatingPane'].includes(this.nodeTag)) throw new TypeError('requestClose requires a window');
+        return this.rootBuilder.binding.gramlot.dom.getDomNode(this).requestClose(reason);
+    }
+    get top() { return this.frameRegion('top'); }
+    get bottom() { return this.frameRegion('bottom'); }
+    get left() { return this.frameRegion('left'); }
+    get right() { return this.frameRegion('right'); }
+    get center() { return this.frameRegion('center'); }
+    frameRegion(region) {
+        if (this.nodeTag !== 'framePane') throw new TypeError('Region accessors require framePane');
+        const existing = this.value instanceof SourceBag
+            ? this.value.getNodes().find(child => child.getAttr('region') === region) : null;
+        if (existing) return this.builder.wrapSource(existing);
+        const attrs = {region, node_label: region};
+        if (region !== 'center') Object.assign(attrs, {display: 'flex', flex_direction: ['top', 'bottom'].includes(region) ? 'column' : 'row'});
+        return this.builder.wrapSource(this.builder.commandOnNode(this, 'contentPane', null, attrs));
+    }
+
     // Attributes ending in `_path` whose pointer symbol was already reported.
     #reportedPathPointers = new Set();
     // The texts of the inline code received with the Source, by the name InlineCompiler uses; null before activation.
@@ -286,7 +314,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     pointers() {
         const datapath = this.getAttr('datapath');
         const dependencies = pointerTransform(datapath) ? pointerDependencies(this, datapath) : new Set();
-        const result = super.pointers().filter(([name, pointer]) => !dependencies.has(name) && !this.#isPathAttribute(name, pointer))
+        const result = super.pointers().filter(([name, pointer]) => !(this.nodeTag === 'menuline' && ['caption','icon','tooltip','command'].includes(name)) && !dependencies.has(name) && !this.#isPathAttribute(name, pointer))
             .map(([name, pointer]) => [name, pointerTransform(pointer)?.pointer ?? pointer]);
         for (const name of dependencies) {
             const value = this.getAttr(name);
@@ -303,6 +331,10 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     runtimeToEvaluate() {
         const items = super.runtimeToEvaluate();
         for (const [name, value] of items) {
+            if (this.nodeTag === 'menuline' && ['caption','icon','tooltip','command'].includes(name)) {
+                items.set(name, new BagCbResolver(() => value));
+                continue;
+            }
             if (!this.pointerType(value)) continue;
             if (pointerTransform(value)) {
                 if (typeof name !== 'string') throw new Error(`${this.nodeTag} '${this.label}': pointer suffixes belong to attributes; use format/mask for node text`);

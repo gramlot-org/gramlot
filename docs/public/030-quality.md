@@ -6,7 +6,7 @@ Document ID: **GC-030**.
 
 ## 005 · Read badges in context
 
-The README shows eight badges. The tests badge reports the `Core tests`
+The README links the current test, documentation and package badges. The tests badge reports the `Core tests`
 workflow on `main`: it builds the browser runtime, installs the Python package, and
 runs the Python suite, the core JavaScript suite (with the quiet-write and
 symbolic-attribute contracts) and the browser checks in Chromium on core fixture
@@ -58,3 +58,17 @@ count of mounted fragments cannot prove that no transport request occurred.
 When you review a lesson, check its prerequisites, its expected result and its
 exercises against the running page, in Python and JavaScript. Coverage is not a
 production-readiness guarantee.
+
+
+<a id="gc-030-020"></a>
+## 020 · Modern browser compatibility
+
+Gramlot uses current web capabilities. It does not automatically provide alternate implementations for old browsers or embedded WebViews. A release's compatibility range must follow the APIs its runtime actually uses, with these distinctions:
+
+- **Required capabilities:** browser APIs and secure-context requirements used by the relevant features.
+- **Verified environments:** exact browser/engine and operating-system versions, test date and exercised features.
+- **Unverified environments:** no support claim follows merely from a unit test or an API compatibility table.
+
+Embedded applications must account for their WebView engine and operating-system constraints, not only the app version. New capabilities may raise the minimum supported range. Any exception for older environments must be explicit; a missing API does not automatically justify a fallback.
+
+For example, popup menus use `HTMLElement.showPopover()`; the method is available across browsers since April 2024 ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/showPopover)), and Safari introduced it in version 17 ([WebKit](https://webkit.org/blog/14445/webkit-features-in-safari-17-0/)). These facts concern this API alone, not the minimum version for all Gramlot features. The complete minimum-version matrix has not yet been qualified. Do not infer support for an older browser from this API alone.

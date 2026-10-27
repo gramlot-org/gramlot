@@ -3,13 +3,17 @@
  * target selection; this binding owns execution, ask, delay and disposal.
  */
 
+import {SourceBag} from '@genrojs/builders';
 import {invokeHook} from '../binding/hooks.js';
+import {captureCommand} from './menu-command.js';
 
 export class ButtonBinding {
     #binding;
     #record;
     #cancelDelay = null;
     #pendingCount = 0;
+    #activations = new Set();
+    #warnedCommand = null;
 
     /** The binding of a Gramlot button; html_button remains native despite its DOM tag. */
     static for(binding, record) {
@@ -48,7 +52,15 @@ export class ButtonBinding {
         const found = [];
         if (controllers.length) found.push('controller');
         if (attrs.action != null) found.push('action');
+        if (node.nodeTag === 'menuline' && attrs.command != null) found.push('registered');
         if (fireAttributes(attrs).length) found.push('fire');
+        if (node.nodeTag === 'menuline' && node.value instanceof SourceBag
+            && node.value.getNodes().some(child => child.nodeTag === 'menu') && found.length) {
+            throw new Error(`menuline '${node.label}': a submenu cannot also execute a command`);
+        }
+        if (node.nodeTag==='menuline' && attrs.group && found.length) {
+            throw new Error(`menuline '${node.label}': a group cannot execute a command`);
+        }
         if (found.length > 1) {
             throw new Error(`${node.nodeTag} '${node.label}': ${found.join(' and ')} together; a button has one click mechanism`);
         }
@@ -68,6 +80,16 @@ export class ButtonBinding {
      * again, so an ambiguity raises now, and a button that gained a mechanism gets `type="button"`.
      */
     refresh() {
+        if (this.node.nodeTag === 'menuline') {
+            const command = this.node.getAttr('command');
+            const definition = command ? this.binding.runtime.gramlot.commands.get(command) : null;
+            this.element.setCommandDefinition(definition, this.node.label);
+            if (command && !definition && this.#warnedCommand !== command) {
+                console.warn(`Unknown command '${command}' in menu '${this.node.parentNode?.label}', entry '${this.node.label}'`);
+                this.#warnedCommand = command;
+            }
+        }
+        for (const activation of this.#activations) if (!activation.current()) activation.cancel();
         const mechanism = this.mechanism;
         if (mechanism && this.node.getAttr('type') == null && this.element.getAttribute('type') !== 'button') {
             this.element.setAttribute('type', 'button');
@@ -79,6 +101,8 @@ export class ButtonBinding {
         this.element.releaseCommand();
         delete this.element.activateCommand;
         this.#cancelDelay?.();
+        for (const activation of this.#activations) { activation.cancel(); activation.release(); }
+        this.#activations.clear();
     }
 
     handleEvent(event) {
@@ -103,6 +127,9 @@ export class ButtonBinding {
         if (!mechanism) return;
         event.stopPropagation();
         if (this.element.disabled) return;
+        const activation = mechanism === 'registered' ? captureCommand(this.binding, event) : null;
+        if (mechanism === 'registered' && !activation) return;
+        if (activation) this.#activations.add(activation);
         const counter = this.binding.countClick();
         // Legacy reads inherited _delay. An explicit zero overrides an ancestor's delay.
         let owner = this.node;
@@ -116,11 +143,12 @@ export class ButtonBinding {
                 release();
                 this.#cancelDelay = null;
                 this.#pendingCount = 0;
-                this.#execute(event, count);
+                this.#execute(event, count, activation);
             }, delay);
             const release = this.binding.track(() => this.#cancelDelay?.());
             this.#cancelDelay = () => {
                 clearTimeout(timer);
+                if (activation) { activation.cancel(); activation.release(); this.#activations.delete(activation); }
                 release();
                 this.#cancelDelay = null;
                 this.#pendingCount = 0;
@@ -128,11 +156,27 @@ export class ButtonBinding {
             return;
         }
         this.#cancelDelay?.();
-        return this.#execute(event, counter);
+        return this.#execute(event, counter, activation);
+    }
+
+    async #executeRegistered(activation) {
+        try {
+            if (!activation.current()) return;
+            const ask = this.node.getAttr('ask'), dialog = this.binding.runtime.askDialog;
+            const keywords = {...activation.message.parameters};
+            if (ask && dialog.required(this.binding, ask, keywords, 'ask')) {
+                const result = await dialog.show(this.binding, ask, keywords);
+                if (result === null) return;
+            }
+            activation.deliver();
+        } finally {
+            activation.release(); this.#activations.delete(activation);
+        }
     }
 
     /** Deliver the last event once; arguments are read when the mechanism executes. */
-    #execute(event, counter) {
+    #execute(event, counter, activation = null) {
+        if (activation) return this.#executeRegistered(activation);
         if (this.binding.closed || this.element.disabled) return;
         const mechanism = this.mechanism;
         if (!mechanism) return;

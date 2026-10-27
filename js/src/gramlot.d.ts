@@ -1,3 +1,4 @@
+import type {CommandRegistry} from './commands.js';
 /**
  * One Gramlot page in the browser.
  *
@@ -13,6 +14,7 @@ import type {NameSyntaxDescriptor} from './builder/name-syntax.js';
 import type {SourceHandler} from './handlers/source-handler.js';
 import type {RpcHandler} from './handlers/rpc-handler.js';
 import type {DomHandler} from './handlers/dom-handler.js';
+import type {DeviceHandler} from './handlers/device-handler.js';
 import type {UtilitiesHandler} from './handlers/utilities-handler.js';
 
 /** The options of a `Gramlot` instance. */
@@ -74,6 +76,7 @@ export type Publication = string | {topic: string; nodeId: string} |
 
 /** One Gramlot page: lifecycle, Data and the four proxies `src`, `rpc`, `dom`, `utl`. */
 export class Gramlot {
+    readonly commands: CommandRegistry;
     readonly devices: readonly ('desktop' | 'tablet' | 'phone')[];
     locale: string;
     timeZone: string;
@@ -89,6 +92,7 @@ export class Gramlot {
     src: SourceHandler;
     /** The Data Bag of the page. */
     data: Bag;
+    dvc: DeviceHandler;
     /** The exchange with the server. */
     rpc: RpcHandler;
     /** The DOM and its correspondence with the Source. */
@@ -121,5 +125,5 @@ export class Gramlot {
     /** Request `main` from the transport and mount it. */
     loadMain(): Promise<Gramlot>;
     /** Dispose the page: abort requests, close bindings and the renderer, and close the server page. */
-    dispose(options?: {beacon?: boolean}): void;
+    dispose(): void;
 }

@@ -16,7 +16,7 @@ export class HttpTransport {
     fetcher: Fetcher;
     /** The URL of the page close endpoint. */
     closeUrl: string;
-    /** The navigator whose `sendBeacon` sends the close request on page hide. */
+    /** The navigator whose `sendBeacon` sends every close request. */
     navigator: BeaconNavigator;
     /** The XMLHttpRequest class of the window, used by `callSync`. */
     XMLHttpRequest: DomXMLHttpRequestClass;
@@ -29,8 +29,8 @@ export class HttpTransport {
     call(text: string, signal?: AbortSignal): Promise<string>;
     /** POST the request envelope text with a synchronous XMLHttpRequest; the response envelope text, or a throw on a non-200 status. Blocks the page while it waits. */
     callSync(text: string): string;
-    /** Ask the server to close the page, with a beacon or a best-effort fetch; delivery failure is ignored. */
-    close(pageId: string, options?: {beacon?: boolean}): void;
+    /** Ask the server to close the page, with a beacon; delivery failure is ignored, configuration errors propagate. */
+    close(pageId: string): void;
     /** Release the transport at the dispose of the page; HTTP holds no connection, so nothing is released. */
     dispose(): void;
 }

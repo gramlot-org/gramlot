@@ -18,6 +18,8 @@
     --gramlot-ink: #243449;
     --gramlot-background: #f7f8f5;
     --gramlot-surface: #ffffff;
+    --gramlot-header-background: #303946;
+    --gramlot-header-color: #ffffff;
     --gramlot-surface-subtle: #edf1f7;
     --gramlot-text-secondary: #566579;
     --gramlot-border: #d5dce5;
@@ -42,6 +44,10 @@
     --gramlot-label-size: 1em;
     --gramlot-font-ui: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     --gramlot-font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --gramlot-editor-keyword: light-dark(#754052, #d5a7bc);
+    --gramlot-editor-string: light-dark(#35634d, #a7c5ac);
+    --gramlot-editor-number: light-dark(#80552d, #d6b58e);
+    --gramlot-editor-function: light-dark(#365f87, #a5bfdc);
     --gramlot-space-1: 0.25rem;
     --gramlot-space-2: 0.5rem;
     --gramlot-space-3: 0.75rem;
@@ -63,6 +69,8 @@
       --gramlot-ink: #edf2fa;
       --gramlot-background: #111b29;
       --gramlot-surface: #1b293b;
+      --gramlot-header-background: #2c3d52;
+      --gramlot-header-color: #edf2fa;
       --gramlot-surface-subtle: #24354b;
       --gramlot-text-secondary: #bdc9d9;
       --gramlot-border: #44566d;
@@ -88,6 +96,8 @@
     --gramlot-ink: #edf2fa;
     --gramlot-background: #111b29;
     --gramlot-surface: #1b293b;
+    --gramlot-header-background: #2c3d52;
+    --gramlot-header-color: #edf2fa;
     --gramlot-surface-subtle: #24354b;
     --gramlot-text-secondary: #bdc9d9;
     --gramlot-border: #44566d;

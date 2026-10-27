@@ -4,13 +4,16 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gramlot"
-version = "0.3.10"
+version = "0.3.18"
 description = "Declarative HTML/SVG interfaces with live data binding, authored in JavaScript or Python."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.11"
 dependencies = ["genro-bag>=0.28.0", "genro-builders>=0.30.0", "genro-tytx>=0.16.3"]
+
+[project.scripts]
+gramlot-builder = "gramlot.preparation.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/gramlot-org/gramlot"
@@ -26,6 +29,7 @@ test = ["genro-tytx[msgpack]", "pytest>=8"]
 # and the build hook in hatch_build.py refuses to build without them.
 [tool.hatch.build]
 artifacts = [
+    "/src/gramlot/collections/*/",
     "/src/gramlot/resources/*.js",
     "/src/gramlot/resources/components/*.js",
     "/src/gramlot/resources/runtime-notices.json",
@@ -35,7 +39,8 @@ artifacts = [
 include = [
     "/src/gramlot/**/*.py",
     "/src/gramlot/py.typed",
-    "/src/gramlot/collections/*.json",
+    "/src/gramlot/collections/**/*.json",
+    "/src/gramlot/collections/**/assets/**",
     "/src/gramlot/resources/*.json",
     "/src/gramlot/resources/*.js",
     "/src/gramlot/resources/components/*.js",

@@ -1,5 +1,7 @@
+import {randomId} from '../random-id.js';
+
 /** Preserve nonvisual document content while editing the body through Jodit. */
-const protectedSelector = 'script,style,iframe,object,embed,template,svg,math,link,meta,base';
+const protectedSelector = 'script,style,iframe,object,embed,template,svg,math,link,meta,base,noscript,form,input,button,select,textarea';
 const unsafeAttribute = (element, name, value) => /^on/i.test(name) || ['autofocus','srcdoc'].includes(name) ||
     (['href','src','action','formaction','xlink:href'].includes(name) && /^(?:javascript|vbscript|data):/i.test(value.trim()) &&
     !(element.tagName === 'IMG' && name === 'src' && /^data:image\/(?:png|jpeg|gif|webp);base64,/i.test(value)));
@@ -9,7 +11,7 @@ export function prepareHtmlDocument(value, window) {
     const original = parse(value);
     const full = /<(?:html|head|body)[\s>]|<!doctype/i.test(value) || original.head.children.length > 0;
     const display = original.body.cloneNode(true);
-    const marker = `data-gramlot-${crypto.randomUUID()}`;
+    const marker = `data-gramlot-${randomId()}`;
     const nodes = new Map(), attributes = new Map();
     let sequence = 0;
     const comments = [], walker = original.createTreeWalker(display,128);
