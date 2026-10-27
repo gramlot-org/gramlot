@@ -15227,3 +15227,12 @@ scroll unchanged. A provisional runtime-scrolling change was investigated and
 removed; no change to choice semantics is included. Chromium and WebKit pass the
 complete border fixture; Chromium also passes slider quantization. The gallery's
 110 lessons pass interactive checks on both Python and JavaScript hosts.
+
+
+Release outcome (2026-10-27): v0.3.17 is consolidated on main and published on
+npm and PyPI. The release workflow verified the tag, complete test suites,
+browser checks and identical runtime bytes in the wheel and npm archive.
+Both public registries expose 0.3.17; npm's post-upload processing completed.
+Examples 0.3.17 are also published in both registries. Aligned server publication
+and the final hosted-gallery promotion are still in progress. The existing
+Kajenn HEAD limitation and documented audit debts remain open.
