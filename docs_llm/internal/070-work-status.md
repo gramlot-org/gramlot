@@ -14168,3 +14168,38 @@ Both public registries expose 0.3.17; npm's post-upload processing completed.
 Examples 0.3.17 are also published in both registries. Aligned server publication
 and the final hosted-gallery promotion are still in progress. The existing
 Kajenn HEAD limitation and documented audit debts remain open.
+
+
+<a id="gc-070-2370"></a>
+## 2370 — Aligned 0.3.17 publication and mobile deployment (2026-10-27)
+
+All authorized packages are published and their public registry version endpoints
+confirm 0.3.17: core and examples on npm/PyPI, gramlot-py-server on PyPI, and
+@gramlot/gramlot-js-server, @gramlot/gramlot-serverless and @gramlot/create on npm.
+Successful publication runs: core 40414767639, examples 40415694620, JavaScript
+servers 40417228514 and Python server 40451570175. The Python tag points to the
+verified main merge 416f87cbf3e96c5d58b9b5d5dd0d911eebc0b38c; GitHub API was used
+after the local SSH agent failed before creating the tag.
+
+The owner explicitly approved root configuration installation with “Sì, installa
+la configurazione”, referring to the prepared mobile-deployment plan. The installed
+profile preserves the already-public mobile module, runs the gallery unprivileged,
+and keeps Remote Edit disabled. Backups and public-file hashes are under
+/opt/gramlot-galleries/trials/release-0.3.17. No private APNs material or TestFlight
+upload is included. The previous deployment attempts did not promote: one lacked
+the check image (rebuilt from the existing recipe), another preceded publication
+of the required Python module support. Automatic deployment 40452104030 succeeded on retry, promoting generation
+20261027T045612Z. The first attempt hit a confirmed host OOM during offline
+Chromium checks. Six unreferenced old gallery trial containers were stopped
+without deletion after verifying their ports were absent from nginx; their
+restart information is recorded beside the configuration backup. The same checks
+then passed unchanged: Python/Node candidate galleries, offline ZIP and both public
+galleries. Public ZIP SHA-256:
+61416678c15d2e1d66e327378d53fefa8454891e567639fd757cff490f9d8649.
+
+Additional public checks pass on Chromium and WebKit for both galleries: tray
+movement, full geometry restore, retained editor identity, editable contents while
+locked, and the mobile branch hidden outside the app. The mobile catalog and
+compiled provider retain their exact pre-deployment hashes; /mobile-application/database
+and /pages/05-containers/07-tray return 200. Physical iPhone/native-plugin acceptance
+remains with the owner; no such device test is claimed.
