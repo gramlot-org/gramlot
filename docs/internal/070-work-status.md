@@ -16857,3 +16857,12 @@ registry-based consumer CI after core publication.
 Publication must run core first, followed by consumers. Existing successful
 release workflows automatically update both hosted galleries, so that deployment
 side effect needs explicit owner authorization before starting publication.
+
+
+Publication authorized, 2026-10-27: owner answers "Sì, pubblica e aggiorna le
+gallery" for the three prepared candidates and automatic deployment of both
+public galleries. Final local checks pass, including complete aligned examples
+and clean-wheel browser trials. The core PR is the first publication gate;
+consumer registry CI currently cannot resolve core >=0.3.19 and must be rerun
+after the core reaches PyPI/npm. Publication and deployment are now in progress,
+not yet claimed complete. WebSocket support remains Uvicorn-specific.

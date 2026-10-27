@@ -4327,3 +4327,13 @@ Integrate the PageStore/WebSocket work with current Gramlot, Python adapter and
 examples releases and resolve required tests. This supersedes the no-publication
 restriction for that dependency correction and authorizes coordinated release
 preparation; preserve unrelated newer work and the existing deployment boundary.
+
+
+Owner authorizes coordinated publication and deployment, 2026-10-27:
+"Sì, pubblica e aggiorna le gallery", answering the explicit question about
+core 0.3.19, Python adapter 0.3.19, examples 0.3.20 and the automatic update of
+both public galleries. This supersedes the release-preparation-only and
+no-deployment boundary for these candidates. Publish through the existing
+verified workflows in dependency order, then verify both hosted galleries.
+The WebSocket adapter scope remains Uvicorn; no other adapter implementation
+is authorized by this release approval.
