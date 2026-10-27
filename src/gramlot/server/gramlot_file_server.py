@@ -135,6 +135,11 @@ class GramlotFileServer(GramlotServer):
                 seen_classes.add(cls)
                 yield cls
 
+    def resolve_page_store(self, page_class):
+        """Read the separate PageStore declaration from the page's own module."""
+        from ..page.page_store import PageStore
+        return vars(sys.modules[page_class.__module__]).get("PageStore", PageStore)
+
     def close_all(self):
         """Release pages and their registered modules when the adapter shuts down."""
         super().close_all()

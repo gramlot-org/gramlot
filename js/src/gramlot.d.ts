@@ -19,6 +19,8 @@ import type {UtilitiesHandler} from './handlers/utilities-handler.js';
 
 /** The options of a `Gramlot` instance. */
 export interface GramlotOptions {
+    /** Experimental shared family WebSocket for PageStore synchronization and asynchronous RPC. */
+    websocketUrl?: string | null;
     /** Formatting locale of this page; null/omitted uses the browser locale. */
     locale?: string | null;
     /** Declared device suitability; empty means unspecified. */
@@ -70,7 +72,7 @@ export interface FormatOptions {
 
 /** Legacy-shaped publication. Frame forwarding follows synchronous local delivery. */
 export type Publication = string | {topic: string; nodeId: string} |
-    {topic: string; parent?: boolean; iframe?: string | SourceBagNode};
+    {topic: string; parent?: boolean; iframe?: string | SourceBagNode; pageId?: string; server?: boolean};
 
 /** One Gramlot page: lifecycle, Data and the four proxies `src`, `rpc`, `dom`, `utl`. */
 export class Gramlot {
@@ -110,9 +112,10 @@ export class Gramlot {
     /** Create the page instance; the construction order is the one of the source plan. */
     constructor(options?: GramlotOptions);
     /** Publish one named payload; forwarding uses postMessage and requires a ready page. */
-    publish(topic: Publication, payload?: Record<string, unknown>): void;
+    publish(topic: {topic: string; server: true; pageId?: string}, payload?: Record<string, unknown>): Promise<'ok'>;
+    publish(topic: Publication, payload?: Record<string, unknown>): void | Promise<'ok'>;
     /** Subscribe to a local page topic, synchronously in registration order. */
-    subscribe(topic: string, callback: (payload: Record<string, unknown>) => unknown): SubscriptionHandle;
+    subscribe(topic: string, callback: (payload: Record<string, unknown>, metadata: {pageId?: string}) => unknown): SubscriptionHandle;
     /** Remove a registration; repeating removal of an owned handle is harmless. */
     unsubscribe(registration: SubscriptionHandle): void;
     /** Format a number, Date or null. Explicit dtype overrides TYTX-style Date inference. */

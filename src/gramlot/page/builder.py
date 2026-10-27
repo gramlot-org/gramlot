@@ -67,6 +67,7 @@ class GramlotBuilder(HtmlBuilder):
         if not isinstance(name_syntax, NameSyntax):
             raise TypeError(f"name_syntax must be a NameSyntax, not {name_syntax!r}")
         super().__init__(name)
+        self._binding_runtime = None
         self._collection = None
         self._auth = auth
         self._name_syntax = name_syntax
@@ -162,6 +163,25 @@ class GramlotBuilder(HtmlBuilder):
 
     def compute_logic(self, nodes):
         """The browser owns declarative logic execution."""
+
+    def _start_reactivity(self, logic):
+        """Activate this builder's server recipe explicitly, only for PageStore."""
+        from .binding_runtime import BindingRuntime
+        if self._binding_runtime is not None:
+            raise RuntimeError("The server recipe is already active")
+        runtime = self._binding_runtime = BindingRuntime(self, logic)
+        try:
+            runtime.start()
+        except BaseException:
+            self._stop_reactivity()
+            raise
+
+    def _stop_reactivity(self):
+        """Release a PageStore recipe; ordinary browser Source has no runtime."""
+        runtime = self._binding_runtime
+        if runtime is not None:
+            runtime.close()
+            self._binding_runtime = None
 
     def _promote_child_content(self, node, value):
         """Preserve HTML mixed text when a node gains structural children.

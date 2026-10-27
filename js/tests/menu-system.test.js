@@ -10,11 +10,14 @@ import {layoutWindow} from './helpers/layout-window.js';
 const settle=()=>new Promise(resolve=>setTimeout(resolve,0));
 function fixture(t,author,remote=async()=>new Bag()){
  const {window}=new JSDOM('<main id="gramlot-root"></main>',{url:'https://example.test/menu'});layoutWindow(window);
+ // jsdom omits native window.opener; an element id must not impersonate a popup parent.
+ window.opener=null;
  const matches=window.Element.prototype.matches;
  window.Element.prototype.matches=function(s){return s===':popover-open'?this.hasAttribute('data-test-open'):matches.call(this,s);};
  window.HTMLElement.prototype.showPopover=function(){this.setAttribute('data-test-open','');};
  window.HTMLElement.prototype.hidePopover=function(){this.removeAttribute('data-test-open');};
  const app=new Gramlot({document:window.document,transport:false,collections:[layout]});
+ t.after(()=>{app.dispose();window.close();});
  const group=app.commands.registerGroup('documenti');group.register('save',{label:'Save',publish:'save'});group.register('toggle',{label:'Details',publish:'toggle'});group.register('toggleDetails',{label:'Details',publish:'toggleDetails'});
  const received=[];
  app.src.logicRegistry.register(class Logic {toggleDetails(node){node.SET('details',!node.GET('details'));} save(node,message){received.push(message);node.SET('received',message.parameters.id??0);}},{resource:'test:menu'});
@@ -22,7 +25,6 @@ function fixture(t,author,remote=async()=>new Bag()){
  const b=new GramlotBuilder(null,{collections:[layout]});
  if(typeof author === "function")author(b.root,app);
  app.src.startSource(typeof author === "string" ? author : b.toTytx());
- t.after(()=>{app.dispose();window.close();});
  const element=id=>window.document.getElementById(id);
  return {app,window,received,element,click(id,options={}){element(id).control.dispatchEvent(new window.MouseEvent('click',{bubbles:true,composed:true,...options}));}};
 }

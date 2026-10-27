@@ -127,8 +127,8 @@ export class Provider {
             if (name === '_timing' || timingDependencies.has(name)) this.#timingRegistrations.add(registration);
         }
         // Legacy provider declarations subscribe by presence, including a false value.
-        this.#registrations.push(...this.binding.runtime.subscriptions.subscribeNode(node, (name, value, topic) => payload => {
-            const trigger = {kind: 'subscription', topic, payload};
+        this.#registrations.push(...this.binding.runtime.subscriptions.subscribeNode(node, (name, value, topic) => (payload, metadata) => {
+            const trigger = {kind: 'subscription', topic, payload, metadata};
             if (this.#resolved('_userChanges') && topic !== 'node') return;
             const delay = this.#resolved('_delay');
             if (delay > 0) this.#timers.debounce(delay, () => this.invoke(trigger));
@@ -234,7 +234,10 @@ export class Provider {
             !CONTROL_ATTRIBUTES.has(name) && !name.startsWith('subscribe_') && !name.startsWith('selfsubscribe_')));
         const kwargs = {...(trigger.kind === 'subscription' ? trigger.payload : {}),
             ...this.binding.runtime.renderer.references.resolveArguments(authored)};
-        if (trigger.kind === 'subscription') kwargs._subscription_kwargs = trigger.payload;
+        if (trigger.kind === 'subscription') {
+            kwargs._subscription_kwargs = trigger.payload;
+            kwargs._subscription_metadata = trigger.metadata;
+        }
         const change = trigger.change ?? null;
         const reason = change ? change.level : trigger.kind === 'subscription' ? trigger.topic : trigger.kind;
         kwargs._node = change ? change.node : null;
@@ -396,7 +399,7 @@ export class RemoteProvider extends Provider {
 }
 
 // The trigger fields of the kwargs, in the legacy order of the inline parameters.
-const TRIGGER_FIELDS = ['_node', '_triggerpars', '_reason', '_subscription_kwargs', '_askResult'];
+const TRIGGER_FIELDS = ['_node', '_triggerpars', '_reason', '_subscription_kwargs', '_subscription_metadata', '_askResult'];
 // The fields a click adds (P9): locals of the inline bodies, never author arguments.
 const CLICK_FIELDS = ['_evt', 'button_counter', 'button_shift', 'button_ctrl', 'button_alt', 'button_meta'];
 
