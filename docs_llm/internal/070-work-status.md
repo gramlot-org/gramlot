@@ -2,6 +2,8 @@
 
 Document ID: **GC-070**. Updated: **2026-10-28**.
 
+**Kajenn extension:** native WebSocket and database access are implemented and locally verified; the upstream async-cancellation issue remains open. See the latest checkpoint in [§2435](#gc-070-2435).
+
 **PageStore release:** the authorized package publication and both standard-gallery deployments are complete. WebSocket integration is Uvicorn-only; see the [dated release receipts and scope (§2435)](#gc-070-2435).
 
 **Historical record — published checkpoint before the naming migration:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
@@ -15849,3 +15851,125 @@ update the standard galleries and do not expose that optional catalogue.
 PageStores remain process-local, with synchronous server recipes; persistence,
 reconnect/replay, cross-process stores and server-recipe dataRpc/dataResolver
 execution are not part of this release. The requested release work is complete.
+
+
+Kajenn follow-up authorized, 2026-10-28: owner requests the native Kajenn
+WebSocket integration and database access through kajenn-db. Work starts from the
+released implementation in separate core/adapter branches. The installed Kajenn
+0.6.0 provides serve_websocket, WebSocket and per-call database handlers; the
+older local Kajenn checkout is not the integration baseline. Reuse the current
+Gramlot channel and test both adapters. Asqueel is the principal kajenn-db
+handler; SQLAlchemy and Django are declared probes, and Django has documented
+thread-affinity limits outside synchronous routes. The proposed Page/PageStore
+db(name)/async_db(name) authoring API awaits owner confirmation. No new release
+or deployment is in progress.
+
+
+Database authoring API confirmed, 2026-10-28: owner answers "Sì, db e async_db
+su Page e PageStore" to exposing db(name)/async_db(name) through Kajenn's
+configured databases and kajenn-db handlers, without introducing dbSelect or a
+Gramlot ORM. The adapter owns Kajenn call registration, sync worker execution
+and database cleanup; core exposes only backend-neutral access and invocation
+seams. Synchronous PageStore recipes remain synchronous. This resolves the
+pending API question above.
+
+
+Kajenn implementation checkpoint, 2026-10-28: the adapter uses Kajenn's native
+serve_websocket/WebSocket and connection registry, with handshake authentication
+passed to Gramlot RPC. Uvicorn and Kajenn share one _StoreChannel implementation;
+the existing owner/origin policy, family routing, snapshots, binders, RPC
+cancellation and bidirectional publication metadata are preserved. Both galleries
+accept the opt-in --websocket switch. No browser protocol change was needed.
+
+Owner-confirmed db(name)/async_db(name) are implemented on Page and PageStore,
+with a backend-neutral host reference and protected _invoke seam in core.
+Kajenn registers one call per WebSocket operation, uses its native worker pool
+for sync page/controller code and releases sync database handles on that same
+thread. An application operation gate serializes live-Bag mutation and HTTP
+closure; asynchronous Page methods release it while awaiting. Repeated sync
+cancellation drains the worker before releasing the gate or call resources.
+No ORM translation, database-name alias or automatic commit was added.
+
+Verification against registry Kajenn 0.7.0 and kajenn-db 0.1.0: core 317 tests and
+397 subtests pass, with one existing expected failure, using supported Node 22;
+adapter 243 tests pass. Twelve real SQLite checks cover Asqueel, SQLAlchemy and
+Django, HTTP/WS access, named databases, binder-triggered and subscribed
+controllers, explicit commits, rollback, async access/refusal, closing during
+sync work and repeated cancellation. Django async_db remains explicitly refused
+by its handler; synchronous access/release thread identity is verified. Shared
+channel tests pass in both adapters. Chromium/WebKit pass the complete Kajenn
+family fixture; Chromium passes the extracted Uvicorn channel. Both adapter
+manuals build. Logs: /private/tmp/kajenn-complete-adapter-tests.log,
+/private/tmp/gramlot-kajenn-core-full.log, /private/tmp/kajenn-database-browser.log,
+/private/tmp/uvicorn-shared-channel-browser.log, /private/tmp/kajenn-complete-docs.log.
+
+Remaining upstream issue: /private/tmp/check-kajenn-cancel.py reproduces that
+Kajenn 0.7.0 WorkPool.run finishes its cancelled await while the executor work is
+still active. Native async database cleanup can consequently race in-flight I/O.
+The owner has been asked to authorize a bounded Kajenn pool correction and its
+tests without publication. No workaround was added for this upstream async issue.
+Async I/O cancellation is not claimed qualified until it is resolved. This
+increment depends on the matching core changes and is not yet published or
+consolidated into the public reference.
+
+
+Upstream report, 2026-10-28: owner says "fai un issue non so se su kajenn o
+kajen db". Filed [Kajenn #89](https://github.com/kajenn-org/kajenn/issues/89),
+"WorkPool cancellation can let call cleanup run before executor work finishes".
+The event-controlled reproduction on Kajenn 0.7.0 confirms a cancelled await
+completes while its worker has not finished; the same pool implementation is
+present on upstream main. The report separates that observation from the
+potential database-cleanup race; no corruption or data loss was demonstrated.
+The remaining upstream work is tracked by this issue. No Kajenn source change
+or publication was authorized or performed as part of filing it.
+
+
+Kajenn/Asqueel gallery example authorized, 2026-10-28: owner says "sì procediamo
+con l'esempio in gallery Kajenn e Asqueel su SQLite, con lettura e salvataggio del
+cliente anche da iframe e finestre figlie". Implement the optional Python
+catalogue in gramlot-examples and its Kajenn/SQLite setup in gramlot-py-server.
+Use existing Source, dataBinder, PageStore controllers and publication, with one
+primary WebSocket. Read/save outcomes remain Data; use a dedicated demonstration
+database and explicit commits. The upstream cancellation issue remains tracked
+in Kajenn #89; this synchronous example does not change that work or authorize
+publication/deployment.
+
+
+Kajenn/Asqueel gallery verification, 2026-10-28: implemented the owner-authorized
+optional customer catalogue in gramlot-examples and its native Kajenn runner in
+gramlot-py-server. A dedicated SQLite file is migrated/seeded only when new;
+subsequent startup preserves committed changes and deletions. Separate Page and
+PageStore classes use existing dataBinder and subscribed controllers. Key changes
+load records; saves explicitly commit or roll back, with loaded ID, status and
+error in Data. Independent page drafts read other windows' commits on reload;
+the last successful save wins. No cross-draft sync or conflict detection is implied.
+
+Verified real reads/saves, missing keys, empty-name validation, duplicate-email
+rollback and recovery in Chromium and WebKit. Direct/nested iframes, connected
+windows and their descendants share exactly one physical primary WebSocket;
+closing a connected parent closes its descendant window. The persistence test
+verifies startup does not reseed or overwrite existing data. All 244 adapter tests
+pass; examples pass 62 Python tests and 178 subtests, with one existing skip.
+Both adapter manuals build; examples documentation validates 111 lessons,
+5 paired guides and local links/anchors. Logs: /private/tmp/kajenn-sqlite-gallery-browser.log,
+/private/tmp/kajenn-gallery-adapter-tests.log, /private/tmp/kajenn-gallery-examples-tests.log,
+/private/tmp/kajenn-gallery-adapter-docs.log, /private/tmp/kajenn-gallery-examples-docs.log.
+
+Local preview: http://127.0.0.1:8768/py/ with demonstration data at
+/private/tmp/gramlot-kajenn-demo/customers.sqlite. The optional catalogue requires
+the matching development versions, including the unreleased core database API.
+Implemented and locally verified; owner review remains distinct from acceptance.
+No release, deployment or upstream Kajenn source edit was performed. Kajenn #89
+remains the separate async-cancellation dependency; these synchronous controllers
+do not exercise or resolve it.
+
+
+Public release authorized, 2026-10-28: owner says "rendi tutto pubblico" after
+reviewing the completed Kajenn/Asqueel gallery. This confirms publication of the
+core host database API, native Kajenn adapter and optional SQLite examples,
+including package releases, consolidation into main, public documentation and
+the existing automatic hosted-gallery update workflows. The optional Kajenn
+catalogue is distributed as source/pages and its runner; the existing deployments
+continue to serve their standard catalogues. Kajenn #89 remains an explicitly
+documented upstream async-cancellation limitation; no upstream source correction
+or claim that it is resolved is authorized by this publication request.

@@ -4,6 +4,7 @@ import re
 from inspect import isfunction
 
 from .builder import GramlotBuilder
+from .databases import _PageDatabases
 from .name_syntax import NAME_SYNTAX
 
 MARKERS = {"__gramlot_source__": "@source", "__gramlot_endpoint__": "@endpoint"}
@@ -39,7 +40,7 @@ def endpoint(function=None, *, auth=None):
     return _mark(function, "__gramlot_endpoint__", auth)
 
 
-class Page:
+class Page(_PageDatabases):
     gramlots = ()
     title = "Gramlot"
     devices = ()

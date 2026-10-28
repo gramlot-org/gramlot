@@ -142,6 +142,7 @@ class GramlotServer:
         self.page_ttl, self.max_pages = ttl, max_pages
         self._pages = {}
         self._page_stores = {}
+        self._database_access = None
         self._page_channels = {}
         self.websocket_url = websocket_url
         self.collections = collection_graph(collections)
@@ -391,10 +392,11 @@ class GramlotServer:
                 if not isinstance(store_class, type) or not issubclass(store_class, PageStore):
                     raise TypeError("PageStore must subclass gramlot.PageStore")
                 store = store_class()
+                store._database_access = self._database_access
                 self._page_stores[page_id] = store
                 store._publish_to_page = lambda topic, payload, target: self.publish_to_page(
                     topic, payload, source_page_id=page_id, page_id=target, owner=owner)
-                store.start()
+                await self._invoke(store.start)
             nonce = secrets.token_urlsafe(16)
             # The CSS links and the JS modules reach the page through PageBootstrap (§4.12, D9);
             # the compact JSON gives the same text as the JavaScript server.
@@ -473,6 +475,11 @@ class GramlotServer:
                 response["error"]["details"] = traceback.format_exc()
         return to_tytx(response)
 
+    async def _invoke(self, function, *args, **kwargs):
+        """Execute page/store code; adapters may supply their native worker policy."""
+        result = function(*args, **kwargs)
+        return await result if inspect.isawaitable(result) else result
+
     async def _run(self, request, owner, identity):
         """Run the fragment or endpoint of a checked request: the value of the response. ``name`` is
         ``main``, a method of the page or a path ``a.b.c.method`` read from the page
@@ -485,6 +492,7 @@ class GramlotServer:
             raise PageExpired("Unknown, expired or unowned page")
         self._pages[request["pageId"]] = (self._expiry(), *record[1:])
         page = record[1]()
+        page._database_access = self._database_access
         page.page_id = request["pageId"]
         name, params = request["name"], request["params"]
         source = request["contentType"] == "source"
@@ -504,14 +512,11 @@ class GramlotServer:
             raise {OUTCOME_CODES[cls]: cls for cls in (NotAuthenticated, NotAuthorized)}[refused](
                 f"Access refused: {name}")
         if not source:
-            result = function(**params)
-            return await result if inspect.isawaitable(result) else result
+            return await self._invoke(function, **params)
         builder = page.source_builder(name, auth=lambda element_rule: self._auth_outcome(element_rule, owner, identity),
                                       name_syntax=self.name_syntax)
         self._load_collections(builder, self.page_collections(type(page)))
-        result = function(builder.root, **params)
-        if inspect.isawaitable(result):
-            result = await result
+        result = await self._invoke(function, builder.root, **params)
         if result is not None:
             raise TypeError("Source methods must build into root and return None")
         return builder.to_tytx()
