@@ -10,6 +10,7 @@ import re
 from genro_bag import Bag
 from genro_tytx import from_tytx, to_tytx
 from .builder import GramlotBuilder
+from .databases import _PageDatabases
 
 _PATH = re.compile(r"^[^.?#\[\]!:]+(?:\.[^.?#\[\]!:]+)*$")
 
@@ -25,7 +26,7 @@ def _intersects(left, right):
     return left == right or left.startswith(right + ".") or right.startswith(left + ".")
 
 
-class PageStore:
+class PageStore(_PageDatabases):
     """One live Bag per page ID. Subclasses declare their recipe in main(root)."""
 
     def __init__(self):

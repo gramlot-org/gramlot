@@ -4337,3 +4337,35 @@ no-deployment boundary for these candidates. Publish through the existing
 verified workflows in dependency order, then verify both hosted galleries.
 The WebSocket adapter scope remains Uvicorn; no other adapter implementation
 is authorized by this release approval.
+
+
+### Kajenn WebSocket and database integration — owner, 2026-10-28
+
+Owner: "ora portiamo la gestione websocket anche su Kajenn, usando il suo
+supporto nativo e su kajen usando kajen db metti anche il supporto ad asqueel
+e agli altri db."
+
+This extends the Uvicorn-only integration scope to the Kajenn adapter in
+`gramlot-py-server`, using Kajenn's native WebSocket facilities and reusing the
+existing Gramlot channel semantics: one primary connection, child-page routing,
+PageStore binders, RPC and publication with owner validation and sender metadata.
+The existing Uvicorn integration remains supported. Shared channel rules belong
+to the integration repository; core remains independent of Kajenn.
+
+Database integration must use Kajenn and kajenn-db's existing handlers, including
+Asqueel and the available SQLAlchemy/Django implementations. This request does
+not imply complete backend capability parity: declared upstream limitations
+must remain explicit. The Page/PageStore authoring API is awaiting the owner's
+answer to the proposed db(name)/async_db(name) surface. No new database-selector
+contract or ORM is inferred. This supersedes the preceding Uvicorn-only and
+no-database implementation limits for this bounded increment; publication and
+deployment of the new increment are not authorized by this request.
+
+
+Database authoring API confirmed, 2026-10-28: owner answers "Sì, db e async_db
+su Page e PageStore" to exposing db(name)/async_db(name) through Kajenn's
+configured databases and kajenn-db handlers, without introducing dbSelect or a
+Gramlot ORM. The adapter owns Kajenn call registration, sync worker execution
+and database cleanup; core exposes only backend-neutral access and invocation
+seams. Synchronous PageStore recipes remain synchronous. This resolves the
+pending API question above.

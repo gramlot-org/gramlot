@@ -1779,3 +1779,12 @@ callbacks receive metadata separately as a second argument; providers place it
 in the reserved context. Each subscriber gets a fresh mapping. Local publication
 without origin metadata supplies an empty mapping and does not inherit an outer
 publication's metadata. No second publication service or window protocol.
+
+
+Kajenn database names, 2026-10-28: owner confirms db(name)/async_db(name) on
+Page and PageStore. These mirror Kajenn's public snake_case accessors and pass
+name unchanged. The private _database_access reference binds the host service;
+GramlotServer._invoke is the protected execution seam used by host adapters for
+sync/async page code and store reactions. _StoreChannel owns the existing
+Gramlot wire rules; native transport classes retain their host's names. No
+backend-specific type or import enters the core.
