@@ -17041,3 +17041,42 @@ catalogue is distributed as source/pages and its runner; the existing deployment
 continue to serve their standard catalogues. Kajenn #89 remains an explicitly
 documented upstream async-cancellation limitation; no upstream source correction
 or claim that it is resolved is authorized by this publication request.
+
+
+**Historical record — coordinated Kajenn publication, 2026-10-28.**
+The owner's "rendi tutto pubblico" authorizes these releases and the existing
+automatic hosted-gallery workflows. The core, adapter and example implementation
+is consolidated into main, with all required checks passed before merging.
+
+| Package | Published version | Successful publisher | Integration / consolidation PRs |
+| --- | --- | --- | --- |
+| Gramlot core | 0.3.20, PyPI and npm | [40668249807](https://github.com/gramlot-org/gramlot/actions/runs/40668249807) | #77 / #78 |
+| Python server | 0.3.20, PyPI | [40676324079](https://github.com/gramlot-org/gramlot-py-server/actions/runs/40676324079) | #27 / #28 |
+| Examples | 0.3.22, PyPI and npm | [40672504350](https://github.com/gramlot-org/gramlot-examples/actions/runs/40672504350) | #39 / #40 |
+
+GitHub releases carry wheels, source distributions, npm artifacts where applicable
+and SHA256SUMS. Registry installs confirm core database access and the packaged
+Kajenn catalogue. Adapter gallery/test extras require examples >=0.3.22; its source
+distribution includes the host launcher. The already accepted examples learning-path
+changes are preserved. Transient CI installation failures came from registry indexes
+that had not yet propagated the new core/examples; the affected jobs passed on rerun.
+No check was disabled, dependency downgraded or branch protection bypassed.
+
+Qualification includes 244 adapter tests, the full core and example CI suites,
+clean installations, both documentation views, and real Asqueel/SQLite gallery
+reads/saves in Chromium and WebKit from installed candidate wheels. Missing keys,
+validation, unique-email rollback/recovery, direct/nested iframes, descendant
+windows, one physical primary WebSocket and cascading closure were verified.
+
+The core deployment [40669324597](https://github.com/gramlot-org/gramlot/actions/runs/40669324597)
+promoted generation 20261028T100932Z. The examples deployment
+[40674142313](https://github.com/gramlot-org/gramlot-examples/actions/runs/40674142313)
+also succeeded. Final reconciliation after the adapter publication is tracked by
+[40677253429](https://github.com/gramlot-org/gramlot-py-server/actions/runs/40677253429).
+These workflows update the existing standard galleries and offline ZIP. The Kajenn
+SQLite catalogue and runner are public and opt-in; no additional hosted database
+demo was provisioned by this release.
+
+Kajenn [#89](https://github.com/kajenn-org/kajenn/issues/89) remains the documented
+upstream limitation for cancellation during asynchronous database I/O. The gallery
+uses synchronous controllers; publication does not claim that issue is resolved.
