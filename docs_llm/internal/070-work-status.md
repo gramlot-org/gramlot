@@ -1,6 +1,8 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-27**.
+Document ID: **GC-070**. Updated: **2026-10-28**.
+
+**PageStore release:** the authorized package publication and both standard-gallery deployments are complete. WebSocket integration is Uvicorn-only; see the [dated release receipts and scope (§2435)](#gc-070-2435).
 
 **Historical record — published checkpoint before the naming migration:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
 
@@ -14549,9 +14551,9 @@ script already qualified by successful deployment 40496193235 attempt 3; no new
 package release or deployment is needed for this source consolidation.
 
 
-<a id="gc-070-1615"></a>
+<a id="gc-070-2435"></a>
 
-## 1615. Shared WebSocket connection design — 2026-10-27
+## 2435. Shared WebSocket connection design — 2026-10-27
 
 Owner requests a separate worktree to define a persistent page/server connection,
 using the page ID as reference: "la connessione è tenuta direttamete solo dalla
@@ -15798,3 +15800,52 @@ and clean-wheel browser trials. The core PR is the first publication gate;
 consumer registry CI currently cannot resolve core >=0.3.19 and must be rerun
 after the core reaches PyPI/npm. Publication and deployment are now in progress,
 not yet claimed complete. WebSocket support remains Uvicorn-specific.
+
+
+**Historical record — coordinated release receipts, 2026-10-28 (Europe/Rome).**
+Owner authorization is the explicit "Sì, pubblica e aggiorna le gallery" recorded
+above. Publication and the authorized standard-gallery deployments are complete.
+The earlier preparation and in-progress checkpoints in this section are historical.
+
+| Package | Published version | Successful publisher |
+| --- | --- | --- |
+| Bag JS | 0.11.1 (npm and JSR) | [40588593627](https://github.com/genro-org/genro-bag-js/actions/runs/40588593627) |
+| Gramlot core | 0.3.19 (PyPI and npm) | [40593932800](https://github.com/gramlot-org/gramlot/actions/runs/40593932800) |
+| Python server | 0.3.19 (PyPI) | [40597714307](https://github.com/gramlot-org/gramlot-py-server/actions/runs/40597714307) |
+| Examples | 0.3.20 (PyPI and npm) | [40598557612](https://github.com/gramlot-org/gramlot-examples/actions/runs/40598557612) |
+
+GitHub releases and registry versions were verified. The core, adapter and
+examples release sources were consolidated into main through PRs #74, #26 and
+#37 in their respective repositories, after their integration PRs and required
+checks passed. Consumer CI was rerun against the published core; no dependency
+pin, relaxed timeout or bypassed gate was introduced.
+
+Final qualification: core 315 Python tests plus 393 subtests (one expected
+failure), 1,292 JavaScript tests and 45 inspector tests; adapter 191 Python tests;
+examples 62 Python tests plus 178 subtests (one existing skip), 316 Node and 316
+Bun tests. Required browser, documentation, clean-install and publication checks
+passed. Candidate wheel/npm core runtime bytes matched. Clean-wheel PageStore
+trials passed in Chromium and WebKit; all five adapters passed their HTTP gallery
+checks at both / and /py.
+
+The automatic deployments after core and adapter publication succeeded in runs
+[40594738635](https://github.com/gramlot-org/gramlot/actions/runs/40594738635) and
+[40598516827](https://github.com/gramlot-org/gramlot-py-server/actions/runs/40598516827).
+The final examples deployment
+[40599555089](https://github.com/gramlot-org/gramlot-examples/actions/runs/40599555089)
+verified core/Python server 0.3.19 and examples 0.3.20, then promoted generation
+`20261027T230815Z`. Public smoke checks passed on
+[the Python gallery](https://gallery-py.gramlot.dev) and
+[the JavaScript gallery](https://gallery-js.gramlot.dev): 25 component pages,
+binding and validation. Both public asset responses independently returned HTTP
+200 and this generation's ETag. The verified offline ZIP SHA-256 is
+`7e72b0580ec040f91f1108ff788473018209beab981c83ba240163ca34d098e0`.
+
+Scope remains explicit: WebSocket integration is implemented only by the Uvicorn
+adapter. Django, Flask, FastAPI and Kajenn retain HTTP; their passing checks do
+not claim WebSocket support. The published PageStore trials are an optional
+Python catalogue, launched with `--websocket --catalog`; the deployments above
+update the standard galleries and do not expose that optional catalogue.
+PageStores remain process-local, with synchronous server recipes; persistence,
+reconnect/replay, cross-process stores and server-recipe dataRpc/dataResolver
+execution are not part of this release. The requested release work is complete.
