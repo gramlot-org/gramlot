@@ -4534,3 +4534,57 @@ no-deployment boundary for these candidates. Publish through the existing
 verified workflows in dependency order, then verify both hosted galleries.
 The WebSocket adapter scope remains Uvicorn; no other adapter implementation
 is authorized by this release approval.
+
+
+### Kajenn WebSocket and database integration — owner, 2026-10-28
+
+Owner: "ora portiamo la gestione websocket anche su Kajenn, usando il suo
+supporto nativo e su kajen usando kajen db metti anche il supporto ad asqueel
+e agli altri db."
+
+This extends the Uvicorn-only integration scope to the Kajenn adapter in
+`gramlot-py-server`, using Kajenn's native WebSocket facilities and reusing the
+existing Gramlot channel semantics: one primary connection, child-page routing,
+PageStore binders, RPC and publication with owner validation and sender metadata.
+The existing Uvicorn integration remains supported. Shared channel rules belong
+to the integration repository; core remains independent of Kajenn.
+
+Database integration must use Kajenn and kajenn-db's existing handlers, including
+Asqueel and the available SQLAlchemy/Django implementations. This request does
+not imply complete backend capability parity: declared upstream limitations
+must remain explicit. The Page/PageStore authoring API is awaiting the owner's
+answer to the proposed db(name)/async_db(name) surface. No new database-selector
+contract or ORM is inferred. This supersedes the preceding Uvicorn-only and
+no-database implementation limits for this bounded increment; publication and
+deployment of the new increment are not authorized by this request.
+
+
+Database authoring API confirmed, 2026-10-28: owner answers "Sì, db e async_db
+su Page e PageStore" to exposing db(name)/async_db(name) through Kajenn's
+configured databases and kajenn-db handlers, without introducing dbSelect or a
+Gramlot ORM. The adapter owns Kajenn call registration, sync worker execution
+and database cleanup; core exposes only backend-neutral access and invocation
+seams. Synchronous PageStore recipes remain synchronous. This resolves the
+pending API question above.
+
+
+Kajenn/Asqueel gallery example authorized, 2026-10-28: owner says "sì procediamo
+con l'esempio in gallery Kajenn e Asqueel su SQLite, con lettura e salvataggio del
+cliente anche da iframe e finestre figlie". Implement the optional Python
+catalogue in gramlot-examples and its Kajenn/SQLite setup in gramlot-py-server.
+Use existing Source, dataBinder, PageStore controllers and publication, with one
+primary WebSocket. Read/save outcomes remain Data; use a dedicated demonstration
+database and explicit commits. The upstream cancellation issue remains tracked
+in Kajenn #89; this synchronous example does not change that work or authorize
+publication/deployment.
+
+
+Public release authorized, 2026-10-28: owner says "rendi tutto pubblico" after
+reviewing the completed Kajenn/Asqueel gallery. This confirms publication of the
+core host database API, native Kajenn adapter and optional SQLite examples,
+including package releases, consolidation into main, public documentation and
+the existing automatic hosted-gallery update workflows. The optional Kajenn
+catalogue is distributed as source/pages and its runner; the existing deployments
+continue to serve their standard catalogues. Kajenn #89 remains an explicitly
+documented upstream async-cancellation limitation; no upstream source correction
+or claim that it is resolved is authorized by this publication request.
