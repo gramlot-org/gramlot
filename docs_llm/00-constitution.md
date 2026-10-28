@@ -4380,3 +4380,14 @@ primary WebSocket. Read/save outcomes remain Data; use a dedicated demonstration
 database and explicit commits. The upstream cancellation issue remains tracked
 in Kajenn #89; this synchronous example does not change that work or authorize
 publication/deployment.
+
+
+Public release authorized, 2026-10-28: owner says "rendi tutto pubblico" after
+reviewing the completed Kajenn/Asqueel gallery. This confirms publication of the
+core host database API, native Kajenn adapter and optional SQLite examples,
+including package releases, consolidation into main, public documentation and
+the existing automatic hosted-gallery update workflows. The optional Kajenn
+catalogue is distributed as source/pages and its runner; the existing deployments
+continue to serve their standard catalogues. Kajenn #89 remains an explicitly
+documented upstream async-cancellation limitation; no upstream source correction
+or claim that it is resolved is authorized by this publication request.
