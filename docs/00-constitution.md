@@ -4566,3 +4566,14 @@ Gramlot ORM. The adapter owns Kajenn call registration, sync worker execution
 and database cleanup; core exposes only backend-neutral access and invocation
 seams. Synchronous PageStore recipes remain synchronous. This resolves the
 pending API question above.
+
+
+Kajenn/Asqueel gallery example authorized, 2026-10-28: owner says "sì procediamo
+con l'esempio in gallery Kajenn e Asqueel su SQLite, con lettura e salvataggio del
+cliente anche da iframe e finestre figlie". Implement the optional Python
+catalogue in gramlot-examples and its Kajenn/SQLite setup in gramlot-py-server.
+Use existing Source, dataBinder, PageStore controllers and publication, with one
+primary WebSocket. Read/save outcomes remain Data; use a dedicated demonstration
+database and explicit commits. The upstream cancellation issue remains tracked
+in Kajenn #89; this synchronous example does not change that work or authorize
+publication/deployment.
