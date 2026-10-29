@@ -17210,3 +17210,27 @@ can be reviewed independently before resolving that branch occupancy. The origin
 form work also uses amendment number 11.95 independently; reconcile that historical
 reference when integrating the form tranche, without silently overwriting either
 record. No owner visual acceptance or public release is claimed here.
+
+
+<a id="gc-070-2465"></a>
+## 2465 · Local release branch selected — 2026-10-29
+
+Owner answered the proposal to relocate the occupied develop branches with:
+“possiamo fare un branche di release e partire da quyello ?”. Use a release
+branch instead; do not rename the existing develop branches or change their
+worktrees. This supersedes develop consolidation as the immediate destination
+of the local tranche in §2460, without changing the general main/develop policy.
+
+Created codex/release-database-local-20261029 in core, gramlot-py-server and
+gramlot-examples from the verified local integration commits 8139153f, bd7f070
+and bc83f1e respectively. Both Base and Application are included. Subsequent
+bounded integrations can start from these release candidates. Existing develop,
+main and all other worktrees are preserved. No tag, push, package publication or
+deployment occurred. Local wheels retain their existing version fields and are
+identified by source revision and SHA-256 in the local artifact receipt; they
+are not new public releases.
+
+Local trial endpoints: Base Asqueel/Kajenn on 61501, SQLAlchemy/Uvicorn on 61502,
+Django on 61503, Application/Kajenn on 61504. The full database verification and
+package/browser checks are recorded in §2460. Owner trial and the scope of the
+next integration remain separate from this completed local checkpoint.
