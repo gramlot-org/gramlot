@@ -43,7 +43,7 @@ test('typed zero, lookup, projected outputs, callback and rejected draft',async 
 });
 test('free text and clearing remove old selected outputs',async t=>{
     const f=fixture(t,r=>r.dbComboBox({id:'choice',value:'^choice',method:'dedicated',searchDelay:0,selected_email:'email'}),lookup);
-    f.type('choice','Ad');await settle();f.key('choice','Enter');assert.equal(f.app.data.getItem('choice'),'Ada');assert.equal(f.app.data.getItem('email'),'ada@test');
+    f.type('choice','Ad');await settle();f.key('choice','ArrowDown');f.key('choice','Enter');assert.equal(f.app.data.getItem('choice'),'Ada');assert.equal(f.app.data.getItem('email'),'ada@test');
     f.type('choice','New customer');await settle();f.event(f.host('choice').control,'change');
     assert.equal(f.app.data.getItem('choice'),'New customer');assert.equal(f.app.data.getItem('email'),null);
     f.type('choice','');f.event(f.host('choice').control,'change');assert.equal(f.app.data.getItem('choice'),null);
@@ -54,7 +54,7 @@ test('dedicated method, bound filters, cancellation, response races and removal'
         (method,kw,signal)=>new Promise(resolve=>calls.push({method,kw,signal,resolve})));
     f.type('choice','old');f.type('choice','new');assert.equal(calls[0].signal.aborted,true);
     assert.equal(calls[1].method,'customers');assert.equal(calls[1].kw.country,'IT');assert.equal('dbtable' in calls[1].kw,false);
-    calls[1].resolve(reply([rows[1]]));await settle();calls[0].resolve(reply([rows[0]]));await settle();assert.equal(f.host('choice').choices.textContent,'Ada');
+    calls[1].resolve(reply([rows[1]]));await settle();calls[0].resolve(reply([rows[0]]));await settle();assert.equal(f.host('choice').choices.textContent,'Clear selectionAda');
     f.type('choice','pending');f.app.data.setItem('country','GB');assert.equal(calls[2].signal.aborted,true);
     f.type('choice','remove');const host=f.host('choice');f.app.src.source.popNode('main.choice');assert.equal(calls[3].signal.aborted,true);
     calls[3].resolve(reply(rows));await settle();assert.equal(host.choices.hidden,true);
@@ -88,7 +88,7 @@ test('string keys, visible columns, hidden fields and disabled autoSelect',async
     let requests=0;
     const f=fixture(t,r=>r.dbSelect({id:'choice',value:'^choice',method:'strings',searchDelay:0,columns:'name,country',hiddenColumns:'email'}),()=>{
         requests++;return reply([{id:'a',name:'Ada',country:'GB',email:'private@test'}]);});
-    f.type('choice','Ada');await settle();assert.equal(f.host('choice').choices.textContent,'AdaGB');
+    f.type('choice','Ada');await settle();assert.equal(f.host('choice').choices.textContent,'Clear selectionAdaGB');
     f.key('choice','Enter');assert.equal(f.app.data.getItem('choice'),'a');
     const locked=fixture(t,r=>r.dbSelect({id:'choice',value:'^choice',dbtable:'customers',autoSelect:true,disabled:true,hasDownArrow:false}),()=>{throw Error('Disabled autoSelect requested data');});
     await settle();assert.equal(locked.app.data.getItem('choice'),null);assert.equal(locked.host('choice').toggle.hidden,true);

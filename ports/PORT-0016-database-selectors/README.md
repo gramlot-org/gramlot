@@ -33,3 +33,58 @@ package. A search limit cannot establish candidate uniqueness; probe at least tw
 rows for autoSelect. Search cancellation and validation cancellation are separate
 lifecycles and both must invalidate on eligibility changes. Ordinary selected
 output writes do not promise a multi-path atomic Data transaction.
+
+
+### Gallery recovery — 2026-10-29
+
+Constitution 11.101 authorizes separate Base/Application galleries. The previously approved selector package is recovered on current develop; the existing full selector regressions are retained. Real Asqueel/SQLAlchemy/Django copies and read-only Invoice qualification are recorded in GC-315 §170 and GC-070 §2440. Physical model/application behavior limits remain explicit. This is implementation/verification evidence, not owner acceptance of the port or publication authorization.
+
+
+2026-10-29 owner follow-up: direct auxColumns relation projection is implemented under constitution 11.103 and GC-315 §175. Native compiled Asqueel keys and metadata are used without model alias columns; shared rendering validates the declared response. Verification is recorded in GC-070 §2450. Full advanced-policy/legacy parity remains outside this increment.
+
+
+## Model-resolved auxiliary correction — 2026-10-29
+
+Asqueel now resolves auxColumns directly from its model at request time. The
+caller does not register each auxiliary field or relation path first. Native
+compiled result names remain authoritative, including nested relation aliases;
+those names can be used by template and selected-field hidden projections in the
+same request. Auxiliary metadata and projections are request-local: no request
+mutates the registered selector or leaves fields available to later requests.
+Duplicate output names representing different expressions are refused.
+
+Only model field/path syntax is accepted, not client SQL expressions. Asqueel
+compilation errors propagate unchanged to the RPC error envelope and the browser
+shows the failure. An invalid field is not an empty successful query. Ordinary
+registered projections, ordering/filter configuration and eligibility predicates
+retain their existing behavior. SQLAlchemy/Django still use explicitly prepared
+projections and reject unsupported paths; no cross-provider relation translation
+was introduced. This supersedes the per-auxiliary-field registration restriction
+in GC-315 §175 and GC-070 §2450, per constitution 11.104.
+
+The Base and Application service registrations no longer list @state.name. The
+same Python pages request it through auxColumns. Implementation is in the two
+invoice-galleries adapter worktrees; the current component baseline is in
+invoice-galleries/runtime/gramlot. No frontend runtime change was needed for this
+correction; an explicit native-error regression was added for both controls.
+The older database-selector-package worktrees were left intact.
+
+Verification: 56 focused Base Python tests pass, including 35 Asqueel/RPC and
+auxiliary cases; the same 35 Asqueel cases pass from the Application worktree.
+47 JavaScript selector/choice tests pass. Real PostgreSQL reads compare all 3,200
+customer relation values against an independent LEFT JOIN in both Base and
+Application, without relation registration. Base's native-model verification and
+17 selector cases pass. Application lookup and missing-field propagation pass.
+No data/schema or dependency source was changed. Broader legacy behavior and
+visual acceptance remain separate from this bounded correction.
+
+Final runtime verification: Base/Kajenn on port 61401 and Application/Kajenn on
+61404 were restarted with the corrected provider and without @state.name in
+registration. The browser verifies Base search, state output and dbComboBox
+Enter/Tab free text, plus Application search/template/state output. SQLAlchemy
+and Django servers were left running unchanged. No runtime rebuild was needed:
+this increment changes Python provider behavior and adds a frontend error test,
+not JavaScript runtime code. Both adapter documentation identity checks and both
+Sphinx views pass. Component/provider responsibility is retained here; gallery
+pages/models/dataset work remains in the dedicated gallery chat. No merge,
+publication, dependency edit or owner visual acceptance is claimed.

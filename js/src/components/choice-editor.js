@@ -25,9 +25,9 @@ export function ChoiceEditor(HTMLElement) {
             style.textContent = `.option{position:relative} #control{width:100%;padding-right:calc(var(--gramlot-choice-toggle-width,1.6em) + .2em)}
                 #control:focus-visible{outline:1px solid var(--gramlot-border-control,#7a8798);outline-offset:-3px}
                 .toggle{position:absolute;right:0;top:0;bottom:0;width:var(--gramlot-choice-toggle-width,1.6em);min-width:0;min-height:0;font:inherit;font-size:var(--gramlot-field-font-size,1em);padding:0;border:0;background:transparent;color:inherit}
-                .choices{max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);box-sizing:border-box;max-height:min(var(--gramlot-choice-max-height,12rem),var(--gramlot-popup-available-height,100vh));overflow:auto;
-                    border:1px solid var(--gramlot-border-control,#aab4c2);border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-surface,Canvas);color:var(--gramlot-ink,CanvasText);font:inherit;box-shadow:var(--gramlot-shadow,0 3px 9px #0002)}
-                .choices[hidden]{display:none} .choice{min-height:var(--gramlot-touch-target,0px);display:flex;align-items:center;padding:.25em .5em;cursor:pointer}
+                .choices{max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);box-sizing:border-box;max-height:min(var(--gramlot-choice-max-height,20rem),var(--gramlot-popup-available-height,100vh));overflow:auto;
+                    border:1px solid var(--gramlot-border-control,#aab4c2);border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-surface,Canvas);color:var(--gramlot-ink,CanvasText);font:inherit;font-size:var(--gramlot-field-font-size,1em);line-height:1.4;box-shadow:var(--gramlot-shadow,0 3px 9px #0002)}
+                .choices[hidden]{display:none} .choice{min-height:var(--gramlot-touch-target,0px);display:flex;align-items:center;padding:.5em .75em;border-radius:var(--gramlot-radius-sm,4px);cursor:pointer}
                 .choice-detail{margin-inline-start:var(--gramlot-space-3,.75rem);color:var(--gramlot-text-secondary,GrayText)}
                 .choice[aria-selected=true]{background:var(--gramlot-selected,Highlight);color:var(--gramlot-ink,HighlightText)}`;
             this.toggle = doc.createElement('button');
@@ -54,18 +54,24 @@ export function ChoiceEditor(HTMLElement) {
                 if (event.isComposing || this.locked) return;
                 if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
                     event.preventDefault();
-                    if (!this.#opened) this.search('');
-                    else this.activate(this.#active + (event.key === 'ArrowDown' ? 1 : -1));
+                    const direction = event.key === 'ArrowDown' ? 1 : -1;
+                    if (!this.#opened) this.search('', direction);
+                    else this.activate(this.#active < 0 ? (direction > 0 ? 0 : this.#rows.length - 1) : Math.max(0, this.#active + direction));
                 } else if (event.key === 'Enter') {
                     event.preventDefault();
                     if (this.#opened && this.#rows[this.#active]) this.choose(this.#rows[this.#active]);
                     else this.commitDraft();
                 } else if (event.key === 'Escape') {
                     this.closeChoices(); this.#dirty = false; this.#picked = null;
-                    this.resolveValue();
+                    if (this.constrained) this.resolveValue();
+                    else { this.control.value = this.#value ?? ''; this.error(''); }
                 }
             });
-            this.control.addEventListener('blur', () => { if (this.#dirty) this.commitDraft(); this.closeChoices(); });
+            this.control.addEventListener('blur', () => {
+                if (!this.autoHighlight && this.#opened && this.#rows[this.#active]) this.choose(this.#rows[this.#active]);
+                else if (this.#dirty) this.commitDraft();
+                this.closeChoices();
+            });
         }
         createControl() {
             const input = this.ownerDocument.createElement('input'); input.type = 'text';
@@ -74,6 +80,9 @@ export function ChoiceEditor(HTMLElement) {
             input.autocomplete = 'off'; return input;
         }
         get constrained() { return true; }
+        get autoHighlight() { return true; }
+        get matchTypedChoice() { return true; }
+        get emptyChoice() { return null; }
         get choiceSource() { return this.parameters.store ?? this.parameters.callback ?? this.parameters.values; }
         get searchDelay() { return 0; }
         textValue(text) { return text; }
@@ -115,8 +124,10 @@ export function ChoiceEditor(HTMLElement) {
         }
         acceptControlValue() {
             if (!this.#dirty) return this.validateCandidate(this.#value, accepted => this.writeControlValue(accepted));
-            const text = this.control.value;
-            const matches = this.#picked ? [this.#picked] : this.#rows.filter(row => row.caption === text);
+            const picked = this.#picked ?? (!this.autoHighlight && this.#opened ? this.#rows[this.#active] : null);
+            const text = picked && !this.constrained ? picked.caption : this.control.value;
+            const matches = picked ? [picked] : this.matchTypedChoice
+                ? this.#rows.filter(row => row.caption === text) : [];
             if (this.constrained && text !== '' && matches.length !== 1) {
                 this.error('Choose a value from the list.'); return {ok: false};
             }
@@ -124,8 +135,9 @@ export function ChoiceEditor(HTMLElement) {
             return this.validateCandidate(value, accepted => {
                 if (accepted !== value && this.constrained) throw new Error('Validation cannot replace a selected code; update the Data explicitly.');
                 this.#value = accepted; this.#dirty = false; this.#picked = null;
-                if (!this.constrained) this.control.value = accepted ?? '';
-                this.selectionAccepted(matches.length === 1 && accepted === value ? matches[0] : null);
+                if (accepted == null || !this.constrained) this.control.value = accepted ?? '';
+                this.selectionAccepted(matches.length === 1 && accepted === value && matches[0].id !== null ? matches[0] : null);
+                if (picked && !this.autoHighlight) this.closeChoices();
             });
         }
         commitDraft() {
@@ -134,7 +146,7 @@ export function ChoiceEditor(HTMLElement) {
         }
         choose(row) {
             if (this.locked || !this.active) return;
-            this.#picked = row; this.#dirty = true; this.control.value = row.caption;
+            this.#picked = row; this.#dirty = true; this.control.value = row.id === null ? '' : row.caption;
             this.closeChoices(); this.commitDraft();
         }
         async request(keywords) {
@@ -158,32 +170,42 @@ export function ChoiceEditor(HTMLElement) {
             if (!this.active) return;
             this.control.value = this.#value;
             if (!this.constrained) { this.error(''); this.selectionResolved(null); return; }
-            const rows = await this.request({_id: this.#value});
-            if (!rows) return;
+            const pending = this.request({_id: this.#value});
+            const generation = this.#generation;
+            const rows = await pending;
+            if (!rows) {
+                if (generation === this.#generation && this.active) this.selectionResolved(null);
+                return;
+            }
             const row = rows.find(item => item.id === this.#value);
             this.#rows = rows;
             this.control.value = row ? row.caption : this.#value;
             this.error(row ? '' : 'Value is not in the list.');
             this.selectionResolved(row ?? null);
         }
-        async search(query) {
+        async search(query, navigation = 0) {
             if (this.locked || !this.active) return;
             this.closeChoices(); this.#rows = [];
             const rows = await this.request({_querystring: query});
             if (!rows || this.locked || this.shadowRoot.activeElement !== this.control) return;
-            this.#rows = rows;
+            const emptyChoice = this.emptyChoice;
+            this.#rows = emptyChoice ? [emptyChoice, ...rows] : rows;
             const doc = this.ownerDocument;
-            this.choices.replaceChildren(...rows.map((row, index) => {
+            this.choices.replaceChildren(...this.#rows.map((row, index) => {
                 const item = doc.createElement('div'); item.id = `choice-${index}`;
                 item.className = 'choice'; item.setAttribute('role', 'option'); this.renderChoice(row, item);
                 item.addEventListener('click', () => this.choose(row)); return item;
             }));
-            if (!rows.length) this.choices.textContent = 'No results';
+            if (!this.#rows.length) this.choices.textContent = 'No results';
             const view = doc.defaultView;
             this.choices.hidden = false; this.choices.showPopover(); this.#opened = true;
             const inset = parseFloat(view.getComputedStyle(this).getPropertyValue('--gramlot-choice-popup-inset') || '2');
             positionPopup(this.choices, this.control, {matchWidth: true, inset});
-            this.control.setAttribute('aria-expanded', 'true'); this.activate(0);
+            this.control.setAttribute('aria-expanded', 'true');
+            const reopening = this.constrained && !this.#dirty && query === '' && this.#value != null;
+            this.activate(reopening ? this.#rows.findIndex(row => row.id === this.#value)
+                : navigation < 0 ? this.#rows.length - 1 : navigation > 0 ? 0
+                : this.autoHighlight && rows.length ? (emptyChoice ? 1 : 0) : -1);
             const close = () => this.closeChoices();
             const outside = event => { if (!event.composedPath().includes(this)) close(); };
             const scroll = event => { if (!event.composedPath().includes(this.choices)) close(); };
@@ -195,7 +217,7 @@ export function ChoiceEditor(HTMLElement) {
             };
         }
         activate(index) {
-            this.#active = this.#rows.length ? Math.max(0, Math.min(index, this.#rows.length - 1)) : -1;
+            this.#active = this.#rows.length && index >= 0 ? Math.min(index, this.#rows.length - 1) : -1;
             for (const [i, item] of [...this.choices.children].entries()) {
                 item.setAttribute('aria-selected', String(i === this.#active));
                 if (i === this.#active) item.scrollIntoView({block: 'nearest'});

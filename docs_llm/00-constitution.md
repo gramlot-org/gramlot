@@ -4391,3 +4391,174 @@ catalogue is distributed as source/pages and its runner; the existing deployment
 continue to serve their standard catalogues. Kajenn #89 remains an explicitly
 documented upstream async-cancellation limitation; no upstream source correction
 or claim that it is resolved is authorized by this publication request.
+
+
+### Amendment 11.93 — auxColumns implementation limited to Kajenn initially — 2026-10-28
+
+Owner correction in the selector review chat: “no auxciolumn va implementato magari con sintassi diverse e in ogni caso per ora è relativo solo al backend kajen nentre gli altri non hamno le capabiities”.
+
+auxColumns is required implementation work, initially available only through the
+Kajenn backend. Other backends do not currently have this capability. Its purpose
+must be supported even if the destination syntax differs from legacy; no specific
+replacement syntax was selected by this instruction.
+
+This clarifies §8's backend-specific boundary and supersedes the review's framing
+of whether to implement auxColumns as a pending decision. It does not generalize
+the capability to SQLAlchemy/SQLite or other backends, require legacy syntax
+compatibility, or approve a new general capability protocol. Shared browser
+presentation stays in core; backend/model integration retains its existing owner.
+This is an implementation direction, not a claim that the current Kajenn adapter
+already exposes the service. Exact API, result metadata and capability signaling
+remain to be settled under §1; no release or deployment is authorized.
+
+
+### Amendment 11.94 — Selector integration targets Kajenn and Asqueel, not a database engine — 2026-10-28
+
+Owner, responding to the proposed PostgreSQL-first qualification plan:
+“basta keajenn e asqueel . poi lui gestisce se postgres o altro”.
+
+The advanced selector integration targets Kajenn + Asqueel. Asqueel owns the
+underlying database choice and engine-specific behavior. Do not introduce a
+PostgreSQL-first product contract, engine-specific selector paths or separate
+Gramlot selector implementations for PostgreSQL, SQLite or another engine.
+Use the supported Asqueel contract; missing database-layer capabilities belong
+in Asqueel, not in consumer workarounds.
+
+This clarifies §8 and amendment 11.93: auxColumns remains initially scoped to
+Kajenn with Asqueel. References to the existing SQLAlchemy/SQLite provider concern
+that separate provider, not a ban on SQLite underneath Asqueel. It supersedes the
+unapproved engine-by-engine rollout proposal in the preceding chat response.
+Integration checks still verify Kajenn/Asqueel end to end; this decision does not
+claim automatic support for every database or waive Asqueel's own engine tests.
+Concrete selector APIs and new capability signaling remain to be agreed. No
+additional dependency edits, release or deployment are authorized here.
+
+
+### Historical record 11.95 — Overbroad Asqueel authorization interpretation, corrected — 2026-10-28
+
+Owner: “se il piano è prontopuoi implementare come worktree separato”. Separate
+Gramlot implementation worktrees are authorized. The earlier version of this
+record incorrectly treated that instruction as approval to implement Asqueel
+prerequisites directly. The owner's explicit answer to the Asqueel-worktree
+question is “fai unnissue”. That answer controls: report prerequisites upstream,
+do not implement the dependency in this task. See amendment 11.96. Exploratory
+Asqueel changes have been preserved as evidence and removed from the active
+dependency worktree; they are not accepted APIs.
+
+### Amendment 11.96 — Upstream Asqueel issue and HTML selector template — 2026-10-28
+
+Owner answers: “fai unnissue” to the question about directly implementing Asqueel
+prerequisites; “metterei template e un template html in cui mettere le colonne”
+to the auxColumns/multiline proposal, also clarifying “piu che multilane direi che
+doun template”.
+
+Use an upstream issue for Asqueel model-caption/search/projection gaps:
+[asqueel-org/asqueel#63](https://github.com/asqueel-org/asqueel/issues/63).
+The previous direct-dependency implementation interpretation in 11.95 is withdrawn.
+Do not substitute consumer implementations for missing Asqueel capabilities.
+
+The selector presentation parameter is template, containing authored HTML with
+record-column values. This replaces the proposed auxColumns_multiline control.
+The precise placeholder grammar remains a proposal until explicitly confirmed;
+the HTML-template decision does not itself approve a general template framework,
+a new capability protocol or all advanced result metadata. Kajenn + Asqueel remains
+the integration target and Asqueel still owns database differences. This amendment
+clarifies 11.93–11.94 and supersedes the multiline proposal. No publication,
+release or deployment is authorized.
+
+### Amendment 11.97 — Selector HTML record placeholders — 2026-10-28
+
+Owner answered “Confermo {nome}” to the concrete proposal
+template="<b>{name}</b><br>{city}", where {name} reads a record column and inserts
+its value as text while authored HTML defines presentation. This settles the
+placeholder decision left open by 11.96. It does not change Source-attribute
+pointer-template semantics or authorize JavaScript evaluation in a template.
+The upstream-issue boundary for Asqueel remains in force. Advanced service/result
+capabilities remain separate from this shared rendering contract.
+
+### Amendment 11.98 — Implement the proposed selector package in a dedicated worktree — 2026-10-28
+
+After GC-315 §§110–130 and its first-package summary, the owner asks “puoi provare
+in un suo worktree a 9imlementare ?”. This authorizes the proposed package and its
+recommended shared-control behavior: automatic selected/template projection,
+dbComboBox preserving free text until explicit suggestion navigation/selection,
+and an optional dbSelect null choice separate from placeholder. Existing columns
+meaning remains unchanged. New work starts from the verified template snapshot
+in its own worktree. This is implementation authorization, not acceptance of the
+result or permission to publish.
+
+The upstream-issue boundary in 11.96 remains in force. Asqueel #63 is still open
+at this implementation checkpoint; do not implement missing dependency APIs in
+this task or create a consumer substitute. Advanced response field names and
+service capability signaling still require their concrete contract before coding.
+
+### Amendment 11.99 — Bounded Kajenn adaptations for a real Asqueel selector — 2026-10-28
+
+Owner: “si ma per ora puoi usare comunque il db e mettere adattamenti in kajenn
+gramlot”. This explicitly permits the bounded consumer adaptations needed to run
+the database selectors against actual Asqueel now, in the Gramlot Python/Kajenn
+integration. For this selector increment it supersedes the no-consumer-substitute
+restriction in 11.96 and 11.98 and the corresponding general restriction in §13.
+Explicit trusted selection configuration may supply caption/search fields and
+projection mappings while the upstream model helpers are unavailable. Query
+predicates and result adaptation belong in that integration, using supported
+Asqueel query/session APIs. Database differences remain managed by Asqueel;
+do not introduce per-engine branches or change Asqueel/Builder/Bag sources.
+
+Use the existing dbSelect endpoint/provider and {rows, identifier, caption}
+response contract, with the confirmed template and selected-field projection.
+Qualify a real Kajenn RPC path and an isolated database. No live application data,
+publication or release is authorized. The existing dedicated adapter/core worktrees
+may be used together for this unreleased integration qualification, superseding
+the adapter's release-only setup rule solely within this work. Keep Asqueel #63
+open for the complete model-derived APIs; do not claim full legacy parity.
+
+### Amendment 11.100 — Read-only test_invoice_pg model and selector qualification — 2026-10-28
+
+Owner requests using the existing PostgreSQL test_invoice_pg, preparing a complete
+model folder for all tables, verifying the customer structure built by Asqueel,
+and trying dbSelect/dbComboBox through Kajenn without modifying data. This
+supersedes 11.99's isolated-database-only boundary solely for read-only access to
+this named database. Catalog inspection and SELECT qualification are authorized;
+data/schema writes, migrations and dependency edits are not. Use database-enforced
+read-only connections, preserve the model as local application files and record
+physical coverage separately from application formulas/behavior qualification.
+
+
+### Amendment 11.101 — Separate Base and Application galleries — 2026-10-29
+
+Owner's pasted assignment: “Implementa due gallery, Base e Application, in worktree separati” and “Le decisioni seguenti sono già approvate: procedi senza richiederne conferma.” Both galleries and their Python pages belong to gramlot-examples. Base shares one precise minimum physical model of state, customer, invoice, product and invoice_row, implemented through Asqueel, SQLAlchemy and Django in gramlot-py-server. It reduces columns, never rows; dedicated PostgreSQL copies retain every source row and verify counts and relations. PostgreSQL is the common qualification engine, not a new core database dependency. Application reuses the complete test_invoice_pg model with Kajenn/Asqueel, initially qualifying real customer dbSelect/dbComboBox, templates and selected fields. It does not implement a complete Invoice management system.
+
+The source test_invoice_pg remains database-enforced read-only, including Application. No original schema/data changes, record dumps, credentials or personal data enter repositories. Adapter-owned local tooling populates dedicated copies. Concrete models/data access remain in the adapters; examples retain pages, the common specification and dataset references, with no universal modeling framework. No Asqueel/Builder/Bag edits, dependency pins, publication, deployment or merge are authorized. Existing worktrees remain intact. This supersedes the temporary placement of application pages in the Python adapter under 11.100 and extends the dedicated-copy verification scope; the physical/application coverage limits of 11.100 remain.
+
+
+### Amendment 11.102 — Base customer selector with full state name — 2026-10-29
+
+Owner: “ora fammi una dbselect conil customer e il nome dello stato (non la sigla) in asquell dovrebbe essere sempluce negli altri meno”. Extend the Base gallery's shared customer selector with the related state's name across its three native providers. This supersedes the physical-fields-only presentation restriction of 11.101 solely for this relation projection; the five-table, 21-physical-column dataset stays unchanged. Use native relation/query expressions in the integration and the existing template/selected-field contract in examples. All read-only, dependency and publication boundaries remain in force. This instruction is implementation authorization, not acceptance of its eventual result.
+
+
+### Amendment 11.103 — Direct auxiliary relation columns — 2026-10-29
+
+> The per-field registration restriction below is superseded by owner clarification 11.104.
+
+Owner: “allora fai come nel legacy, voglio poter mettere auxColumns='@state.name' direttamente nella dbSelect senza dover creare un aliasColumn”. Implement the legacy auxiliary-field authoring path through Asqueel and the shared selector popup, without a model aliasColumn. This extends 11.102 and supersedes the simple-field-only selector projection restriction for explicitly exposed relation paths. Asqueel resolves relations and result aliases; the integration enforces the registered projection boundary. Retain the current columns meaning and template precedence. Reuse legacy response names columns and headers for ordered display metadata (JSON arrays in the current rows/identifier/caption envelope), rather than introduce a separate advanced-service protocol. Other registered providers may expose their existing simple projections as auxiliary columns; this does not authorize a cross-ORM relation language or full legacy parity. Existing read-only and repository boundaries remain.
+
+
+### Amendment 11.104 — Asqueel auxiliary fields resolve from the model — 2026-10-29
+
+Owner clarification in chat Implementa le due gallery (01a18653-4f32-7ac0-9f91-3f9539643005):
+“nel legacy bastava metterlo in auxColumns”, “probabilmente questa feature e asqueel only”,
+and “asqueel se chiedo in campo non esistente mi rebnde errore”. Responsibility for
+component/provider corrections returns to the dbSelect/dbComboBox chat; the gallery
+chat retains pages, models and datasets.
+
+For Asqueel, auxColumns model fields and relation paths are resolved for each
+request by Asqueel, without registering each auxiliary field in columns first.
+Native compilation errors propagate through the existing RPC error path; they
+must not become empty successful results. SQLAlchemy/Django retain their explicit
+projection contracts and may reject unsupported inputs. This supersedes the
+per-auxiliary-field registration requirement recorded in 11.103, GC-315 §175 and
+GC-070 §2450; it is not a new cross-provider relation language. Table registration,
+search fields, eligibility conditions and existing non-auxiliary request policies
+remain unchanged. Compiled output names, template precedence and the read-only,
+dependency and publication boundaries remain in force.

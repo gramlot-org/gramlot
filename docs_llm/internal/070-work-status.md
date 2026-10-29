@@ -16012,3 +16012,133 @@ demo was provisioned by this release.
 Kajenn [#89](https://github.com/kajenn-org/kajenn/issues/89) remains the documented
 upstream limitation for cancellation during asynchronous database I/O. The gallery
 uses synchronous controllers; publication does not claim that issue is resolved.
+
+
+<a id="gc-070-2440"></a>
+## 2440 · Base and Invoice Application galleries — 2026-10-29
+
+Owner's pasted assignment is recorded in constitution 11.101. Separate example/adapter worktrees under worktrees/invoice-galleries preserve all previous worktrees. The current runtime worktree starts from develop and recovers the previously approved selector package (HTML template, selected/template projection, free-text combo and null choice); the older core baseline cannot serve current examples correctly. No dependency downgrade or source patch is used.
+
+Implemented: one Base page in examples, 21-column physical specification over five entities, explicit native models and providers in the Python integration, local copy/verification commands and a separate Invoice gallery using the recovered complete model. PostgreSQL copies retain 8/3200/256/1695/806 rows respectively and verify every copied value plus four relations. Runtime and original Application connections are database-enforced read-only. Kajenn-db lifecycle handlers were located and distinguished from the Gramlot selector providers; no dependency sources changed. Django's existing core invocation seam now runs sync page methods on the ORM's thread.
+
+Verified: 55 focused Python tests; 43 JavaScript tests; five native model projections/counts and 14 selector cases for each provider; 76 Application physical models and 39 customer fields individually and together. Browser search, templates and selected outputs work through real Kajenn, Uvicorn and Django RPC. Desktop gallery and narrow Base-page visual checks pass. Both adapter worktrees pass the official documentation identity checker and both Sphinx views. New examples guides and new core blocks have paired anchors. A pre-existing duplicate gc-070-1440 anchor remains unchanged in both current core views; it predates this work and is not a new gallery defect. Implementation and requested verification are complete; owner visual acceptance remains pending. No owner acceptance, publication, deployment or merge is claimed. Commands and scope: integration GP-035 and examples GE-015.
+
+
+<a id="gc-070-2445"></a>
+## 2445 · Base customer selector with full state name — 2026-10-29
+
+Owner follow-up and scope are recorded in constitution 11.102. Implemented in the existing isolated Base worktrees: the common customer page shows `state_name` in choices and the selected output; its dbComboBox shares the updated template. Native projections use Asqueel aliasColumn, a SQLAlchemy outer-join subquery and a registered Django F annotation. The physical 21-column specification and database copies are unchanged; all live connections remain database-enforced read-only.
+
+Verified: all 3,200 customer projections per provider match an independent PostgreSQL LEFT JOIN; name lookup and unregistered relation rejection pass, bringing each provider to 17 selector cases. The real copies have no null customer states; isolated SQLAlchemy and Django fixtures retain a customer without a state, and Django performs one query. All 57 focused Python tests pass. Real browser RPC checks on ports 61401/61402/61403 show the full state name in suggestions and selected-field output. Both integration Sphinx views and documentation identity checks pass. JavaScript was unchanged; prior JavaScript results in §2440 were not rerun or reattributed to this increment. Requested implementation and verification are complete; owner acceptance remains pending, with no publication or merge claimed.
+
+
+<a id="gc-070-2450"></a>
+## 2450 · Direct auxColumns relation path — 2026-10-29
+
+> **Historical record:** the per-field Asqueel registration restriction and its completion claim were corrected by constitution 11.104 and GC-315 §180. Earlier tests do not constitute owner acceptance of that restriction.
+
+Owner's exact instruction is recorded in constitution 11.103. Implemented: dbSelect/dbComboBox accept auxColumns, Asqueel resolves exposed relation paths and compiled result keys without a model aliasColumn, and the shared popup requires ordered columns/headers metadata and displays labelled cells. Existing HTML templates take precedence. Base customer no longer has state_name as a model alias. Application explicitly declares auxColumns='@state.name' and uses the native _state_name output. SQLAlchemy/Django retain their native state_name projections and expose those as simple auxiliary fields; no common cross-ORM relation language is claimed.
+
+Verified: 64 focused Python tests and 46 JavaScript tests, including nested relations, nullable state, native alias collisions, unexposed/malformed requests, missing display metadata, template precedence, HTML escaping and selected-field lookup/clear. Each Base provider matches an independent LEFT JOIN for all 3,200 customers and passes 17 selector checks. Application again qualifies 76 physical models and 39 customer fields. Runtime and generated Python collections rebuilt successfully. Real browser RPC checks pass for direct relation search/selection in Base and Application, clearing Base projected fields and the existing SQLAlchemy/Django page paths. Both adapter worktrees pass documentation identity and both Sphinx builds. New paired guide/status anchors were checked; the pre-existing gc-070-1440 duplication remains outside scope.
+
+Requested implementation and verification are complete. Model exposure is still trusted server registration; client auxColumns cannot authorize arbitrary fields. Database connections remain read-only, no dependency sources changed, and no publication/merge or owner acceptance is claimed. Contract: GC-315 §175; integration GP-035 §035; examples GE-015 §025.
+
+
+<a id="gc-070-2455"></a>
+## 2455 · Selector ownership and model-resolved auxiliary fields — 2026-10-29
+
+Asqueel now resolves auxColumns directly from its model at request time. The
+caller does not register each auxiliary field or relation path first. Native
+compiled result names remain authoritative, including nested relation aliases;
+those names can be used by template and selected-field hidden projections in the
+same request. Auxiliary metadata and projections are request-local: no request
+mutates the registered selector or leaves fields available to later requests.
+Duplicate output names representing different expressions are refused.
+
+Only model field/path syntax is accepted, not client SQL expressions. Asqueel
+compilation errors propagate unchanged to the RPC error envelope and the browser
+shows the failure. An invalid field is not an empty successful query. Ordinary
+registered projections, ordering/filter configuration and eligibility predicates
+retain their existing behavior. SQLAlchemy/Django still use explicitly prepared
+projections and reject unsupported paths; no cross-provider relation translation
+was introduced. This supersedes the per-auxiliary-field registration restriction
+in GC-315 §175 and GC-070 §2450, per constitution 11.104.
+
+The Base and Application service registrations no longer list @state.name. The
+same Python pages request it through auxColumns. Implementation is in the two
+invoice-galleries adapter worktrees; the current component baseline is in
+invoice-galleries/runtime/gramlot. No frontend runtime change was needed for this
+correction; an explicit native-error regression was added for both controls.
+The older database-selector-package worktrees were left intact.
+
+Verification: 56 focused Base Python tests pass, including 35 Asqueel/RPC and
+auxiliary cases; the same 35 Asqueel cases pass from the Application worktree.
+47 JavaScript selector/choice tests pass. Real PostgreSQL reads compare all 3,200
+customer relation values against an independent LEFT JOIN in both Base and
+Application, without relation registration. Base's native-model verification and
+17 selector cases pass. Application lookup and missing-field propagation pass.
+No data/schema or dependency source was changed. Broader legacy behavior and
+visual acceptance remain separate from this bounded correction.
+
+Final runtime verification: Base/Kajenn on port 61401 and Application/Kajenn on
+61404 were restarted with the corrected provider and without @state.name in
+registration. The browser verifies Base search, state output and dbComboBox
+Enter/Tab free text, plus Application search/template/state output. SQLAlchemy
+and Django servers were left running unchanged. No runtime rebuild was needed:
+this increment changes Python provider behavior and adds a frontend error test,
+not JavaScript runtime code. Both adapter documentation identity checks and both
+Sphinx views pass. Component/provider responsibility is retained here; gallery
+pages/models/dataset work remains in the dedicated gallery chat. No merge,
+publication, dependency edit or owner visual acceptance is claimed.
+
+<a id="gc-070-2460"></a>
+## 2460 · Local database integration checkpoint — 2026-10-29
+
+Owner confirmed a local-only integration tranche after proposing partial local
+releases before a wider public release. Scope: selector core, Python providers,
+both Base and Application galleries and their database models. Grid/Collection
+Store, new form-state management, grouplets, mobile and chat remain outside it.
+The target is develop; this does not authorize main consolidation, publication,
+deployment, tags or package releases.
+
+Implemented in isolated database-local-integration worktrees: the selector changes
+and their paired decision records from invoice-galleries/runtime; Base and
+Application examples from 9962b09 and 610fe5b; provider/model code from their
+invoice-galleries server trees. Existing shared HTTP adapters, collection caching,
+page-specific collections and PageStore staging exports are retained. No older
+adapter/staging implementation was copied over them. Original worktrees remain
+untouched. Separate built core npm and three Python wheel artifacts were installed
+into a fresh, non-editable consumer environment with refreshed first-party dependencies.
+
+Review corrections: synchronous Django calls use its thread-sensitive invocation
+seam; both database pages declare the inputs collection; launchers do not activate
+all gallery collections. SQLAlchemy registration accepts configured descending
+ordering consistently and refuses empty/unexposed ordering. Disposable SQLite
+fixtures live in tests. Application verification prints results without writing
+into installed packages. User-facing Application text is English.
+
+Verified: core 1,321 JavaScript tests and 317 Python tests plus 397 subtests
+(one existing expected failure); Python server 248 tests with all extras;
+examples 316 JavaScript tests, 62 Python tests plus 178 subtests (one existing
+skip), followed by three new database-gallery tests. Core Python HTTP tests
+require local socket access; sandbox startup failures were rerun successfully
+with that access. Documentation GP-035 passes paired-identity checks and both
+Sphinx builds. GE-015 has matching paired document/block identities and anchors.
+
+Database checks use enforced read-only connections. Each Base copy retains all
+8/3200/256/1695/806 records, passes full value-digest/four-relation verification,
+17 selector cases and all 3,200 state-name comparisons. Application verifies
+76 physical models and all 39 customer fields, identity lookup and projection
+rejection. No database was created, populated, aligned or modified in this tranche.
+Browser checks on installed artifacts pass Base selection/projected fields through
+Asqueel/Kajenn, SQLAlchemy/Uvicorn and Django, and Application through Kajenn.
+Application's template, clear operation and Code tab work; Remote Edit is disabled.
+Base free-text Enter preserves the typed value. Detailed logs and artifacts are
+local under /private/tmp/gramlot-db-local; no record dumps are committed.
+
+The occupied local develop worktrees contain substantial older, uncommitted work.
+This checkpoint must not overwrite, reset or stash that work. Integration commits
+can be reviewed independently before resolving that branch occupancy. The original
+form work also uses amendment number 11.95 independently; reconcile that historical
+reference when integrating the form tranche, without silently overwriting either
+record. No owner visual acceptance or public release is claimed here.

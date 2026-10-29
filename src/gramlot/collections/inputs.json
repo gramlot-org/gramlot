@@ -35351,6 +35351,28 @@
             "default": null
           },
           {
+            "name": "auxColumns",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "template",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "order_by",
             "kind": "keyword_only",
             "role": "attribute",
@@ -35490,7 +35512,7 @@
               "dtype": "T"
             },
             "has_default": true,
-            "default": ""
+            "default": "Clear selection"
           },
           {
             "name": "selectedCaption",
@@ -36015,6 +36037,14 @@
               "dtype": "T",
               "binding": "read"
             },
+            "auxColumns": {
+              "dtype": "T",
+              "binding": "read"
+            },
+            "template": {
+              "dtype": "T",
+              "binding": "read"
+            },
             "order_by": {
               "dtype": "T",
               "binding": "read"
@@ -36041,7 +36071,8 @@
             },
             "emptyLabel": {
               "dtype": "T",
-              "default": "",
+              "qualification": "intl_str",
+              "default": "Clear selection",
               "binding": "read"
             },
             "selectedCaption": {
@@ -37845,6 +37876,28 @@
             "default": null
           },
           {
+            "name": "auxColumns",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "template",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "order_by",
             "kind": "keyword_only",
             "role": "attribute",
@@ -37984,7 +38037,7 @@
               "dtype": "T"
             },
             "has_default": true,
-            "default": ""
+            "default": "Clear selection"
           },
           {
             "name": "selectedCaption",
@@ -38476,6 +38529,14 @@
               "dtype": "T",
               "binding": "read"
             },
+            "auxColumns": {
+              "dtype": "T",
+              "binding": "read"
+            },
+            "template": {
+              "dtype": "T",
+              "binding": "read"
+            },
             "order_by": {
               "dtype": "T",
               "binding": "read"
@@ -38502,7 +38563,8 @@
             },
             "emptyLabel": {
               "dtype": "T",
-              "default": "",
+              "qualification": "intl_str",
+              "default": "Clear selection",
               "binding": "read"
             },
             "selectedCaption": {

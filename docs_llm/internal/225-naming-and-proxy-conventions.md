@@ -1788,3 +1788,12 @@ GramlotServer._invoke is the protected execution seam used by host adapters for
 sync/async page code and store reactions. _StoreChannel owns the existing
 Gramlot wire rules; native transport classes retain their host's names. No
 backend-specific type or import enters the core.
+
+
+Gallery selector naming, 2026-10-29 (constitution 11.101): DjangoSelect follows the established SQLAlchemySelect/AsqueelSelect provider class and register/select protocol. Native model classes State, Customer, Invoice, Product and InvoiceRow apply the existing Python class convention; their field names are the source's physical identifiers. _DjangoFileServer follows the existing server-subclass convention and supplies only Django's invocation policy. No browser proxy, JS marker, compatibility alias or universal model type is added.
+
+
+State-name selector naming, 2026-10-29 (constitution 11.102): `state_name` reuses the complete Invoice customer's existing relation alias; `selected_state_name` follows the approved `selected_<field>` projection convention. Django registration's `annotations` uses Django's native annotation terminology and trusted expression mapping; relation paths remain server-side. No browser API or proxy is added.
+
+
+Direct auxiliary selector naming, 2026-10-29 (constitution 11.103): `auxColumns`, response `columns` and `headers` retain legacy names. Compiled Asqueel result column names are authoritative (`@state.name` yields `_state_name`); `selected__state_name` follows `selected_<returned field>`. As corrected by constitution 11.104, Asqueel auxiliary paths are model-resolved per request; `columns` registration is not a prerequisite for them. Returned names remain compiler-owned. No relation-name conversion is implemented in Gramlot. Base page `selector_parameters` is ordinary Python example configuration supplied by its runner, not a framework API.
