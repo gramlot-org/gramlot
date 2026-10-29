@@ -1016,3 +1016,7 @@ active lookup of the committed value. Changing/clearing that value, changing
 the data-source configuration, or removing the control cancels obsolete lookup.
 Enter commits free text and closes pending search, including before its debounce
 elapses. These lifecycle fixes preserve the existing value/projection contract.
+
+The owner subsequently excluded the Application/Invoice gallery from the current
+local release (GC-070 §2475). Its template remains a separate development example;
+only the common selector behavior and independent regressions stay in the candidate.

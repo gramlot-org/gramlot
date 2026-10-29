@@ -17162,6 +17162,9 @@ publication, dependency edit or owner visual acceptance is claimed.
 <a id="gc-070-2460"></a>
 ## 2460 · Local database integration checkpoint — 2026-10-29
 
+> Historical checkpoint: its Application/Invoice inclusion is superseded by §2475.
+> The current local release contains Base only.
+
 Owner confirmed a local-only integration tranche after proposing partial local
 releases before a wider public release. Scope: selector core, Python providers,
 both Base and Application galleries and their database models. Grid/Collection
@@ -17239,6 +17242,9 @@ next integration remain separate from this completed local checkpoint.
 <a id="gc-070-2470"></a>
 ## 2470 · Reviewed selector presentation in the local candidate — 2026-10-29
 
+> Historical checkpoint: its Application/Invoice inclusion is superseded by §2475.
+> The current local release contains Base only.
+
 Owner asked to review the separate chat's additions and incorporate accepted work
 into the local release. Requests and implementation scope are recorded in
 GC-315 §185; the source chat is 01a1874b-9446-7910-98f3-2a793361c1d5.
@@ -17268,3 +17274,36 @@ develop work remains intact. General legacy selector parity, direct .aggr()
 expressions, form-state management and additional application features remain
 outside this tranche. Base SQLAlchemy/Django auxiliary column headings still
 use provider labels; broader editorial alignment is separate from this correction.
+
+<a id="gc-070-2475"></a>
+## 2475 · Base-only local release scope — 2026-10-29
+
+Owner correction: “la gallery invoice e fuori perimetro perf la release attuale”,
+followed by “procediamo invece con quello che serve per questa release di avvicinamento”.
+This supersedes the overbroad inclusion of Application/Invoice in §2460 and §2470;
+it does not withdraw its separate development authorization.
+
+The local candidate retains common selector code, Python providers and the Base
+examples on Asqueel/Kajenn, SQLAlchemy/Uvicorn and Django. The Application catalog,
+pages, launcher and full model are removed from candidate packages. Their complete
+checkpoint is preserved on codex/invoice-local-preserved-20261029 in the three
+repositories. Existing develop worktrees remain untouched.
+
+The common template/null presentation and lookup/search lifecycle fixes have core
+regressions independent of Invoice and remain in scope. No new forms, grid or full
+legacy parity work is included. This remains a local candidate with unchanged
+version fields, not authorization to publish packages, deploy or consolidate main.
+
+Verified: rebuilt wheels contain Base and exclude Application/Invoice, as does
+installation into the non-editable consumer environment. Server tests: 249 passed.
+Examples Python tests: 64 passed, 178 subtests, one existing skip. Both server
+Sphinx builds and 16 paired guides / 102 identities pass. Each installed provider
+passes 17 selector cases and 3,200 state-name comparisons against its read-only
+Base copy. Browser verifies Base navigation, search options and selection with
+caption/locality/state projection, with no captured errors. Core code and browser
+bundles are unchanged from the preceding 1,326-JavaScript / 317-Python-test checkpoint.
+
+Three Base servers run on 61501/61502/61503. The Application trial on 61504 is stopped;
+its previous archives and receipt are preserved separately. Current local artifacts
+and receipt are under /private/tmp/gramlot-db-local. The bounded local checkpoint
+is ready; public publication and further feature integration remain separate.
