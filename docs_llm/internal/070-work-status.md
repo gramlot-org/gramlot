@@ -17101,3 +17101,35 @@ and verified locally, not publicly deployed. Follow-up: shared saved resources,
 Grouplet-specific form/store composition and remaining families, each under its
 own agreed scope. The initial shared form manager is now available in the common
 base; this supersedes only the prerequisite observation in GC-360 §105.
+
+
+<a id="gc-070-js-server-reconciliation-20261029"></a>
+## JavaScript server and serverless — common local base, 2026-10-29
+
+Owner approved proceeding with the JavaScript/serverless consolidation before
+Python compiled-page export. The isolated server worktree is
+/private/tmp/gramlot-db-local/gramlot-js-server, branch
+codex/release-database-local-20261029, based on public main 1b84bdb. Original
+JavaScript worktrees remain unchanged (HEAD, working status and 65 file hashes).
+Invoice remains outside the common base.
+
+Directory exports discover Page.gramlots through the existing core registry,
+share the artifact payload and activate each page's dependency graph separately.
+Explicit collection defaults retain their meaning. The gallery no longer makes
+all lesson collections global requirements. Installable exports attach their
+manifest only when hosted over HTTP/HTTPS; file-origin WebKit remains usable.
+
+Verified against packed common core/examples: 41 Node server, 51 serverless and
+3 create tests; 41 Bun server tests. Chromium and WebKit pass the Node gallery
+(125 examples), offline gallery (126 examples), quickstart exports and installed
+host checks. Both server documentation views build. New regressions execute
+real exported Workers and check route collections and web-only manifest linking.
+No dependency source changes, package version changes, publication or deployment.
+Detailed receipt: server GS-020 §040. Logs:
+/private/tmp/gramlot-js-consolidation-20261029/.
+
+This closes the JavaScript/serverless common-base qualification prerequisite
+reported at the Grouplets checkpoint; it does not claim a complete Read the Docs
+publication or Python compiled-page export. Next: review and integrate the
+Python → foo.glt.tytx → Worker/serverless path as a separate phase, preserving its
+original worktree and keeping Invoice excluded.
