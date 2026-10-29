@@ -1,0 +1,578 @@
+{
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "grammar": {
+    "name": "grid",
+    "version": null,
+    "title": "grid",
+    "description": null
+  },
+  "abstracts": {},
+  "elements": {
+    "grid": {
+      "doc": null,
+      "sub_tags": "struct",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "storepath",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": false
+          },
+          {
+            "name": "structpath",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "rowMode",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "dtype",
+                "dtype": "T"
+              },
+              "metadata": [
+                {
+                  "kind": "regex",
+                  "pattern": "^(values|attributes)$",
+                  "flags": 0
+                }
+              ]
+            },
+            "has_default": false
+          },
+          {
+            "name": "rowHeaders",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "rowResize",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "selfDragRows",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "sortedBy",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
+            "name": "filter",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "dict"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "render_tag": "gramlot-grid",
+        "gramlot_component": {
+          "parameters": {
+            "storepath": {
+              "dtype": "T"
+            },
+            "structpath": {
+              "dtype": "T"
+            },
+            "rowMode": {
+              "dtype": "T"
+            },
+            "rowHeaders": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "rowResize": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "selfDragRows": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "sortedBy": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
+            "filter": {
+              "annotation": {
+                "kind": "type",
+                "module": "builtins",
+                "name": "dict"
+              },
+              "nullable": true,
+              "default": null,
+              "binding": "read"
+            }
+          },
+          "presentationDefaults": [],
+          "dataScope": false,
+          "command": false,
+          "sourceContext": true,
+          "bagStore": true,
+          "bagStruct": true
+        }
+      }
+    },
+    "searchBox": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "searchOn",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": true
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "render_tag": "gramlot-search-box",
+        "gramlot_component": {
+          "parameters": {
+            "searchOn": {
+              "dtype": [
+                "B",
+                "T"
+              ],
+              "default": true,
+              "binding": "read"
+            }
+          },
+          "presentationDefaults": [],
+          "dataScope": false,
+          "command": false,
+          "sourceContext": true
+        }
+      }
+    },
+    "struct": {
+      "doc": null,
+      "sub_tags": "column,colgroup",
+      "parent_tags": "grid",
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [],
+        "accepts_var_keyword": false,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "data_element": true,
+        "gridStruct": true
+      }
+    },
+    "column": {
+      "doc": null,
+      "sub_tags": "",
+      "parent_tags": "struct,colgroup",
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "field",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "dtype",
+                "dtype": "T"
+              },
+              "metadata": [
+                {
+                  "kind": "regex",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                  "flags": 0
+                }
+              ]
+            },
+            "has_default": false
+          },
+          {
+            "name": "name",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "dtype",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "dtype",
+                "dtype": "T"
+              },
+              "metadata": [
+                {
+                  "kind": "regex",
+                  "pattern": "^(T|B|L|R|N|D|H|DHZ)$",
+                  "flags": 0
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "width",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "dtype",
+                "dtype": "T"
+              },
+              "metadata": [
+                {
+                  "kind": "regex",
+                  "pattern": "^[0-9]+([.][0-9]+)?(px|em|rem|ch|%)$",
+                  "flags": 0
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "align",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "dtype",
+                "dtype": "T"
+              },
+              "metadata": [
+                {
+                  "kind": "regex",
+                  "pattern": "^(start|center|end)$",
+                  "flags": 0
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "format",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "white_space",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "dtype",
+                "dtype": "T"
+              },
+              "metadata": [
+                {
+                  "kind": "regex",
+                  "pattern": "^(normal|nowrap|pre-wrap)$",
+                  "flags": 0
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          }
+        ],
+        "accepts_var_keyword": false,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "data_element": true
+      }
+    },
+    "colgroup": {
+      "doc": null,
+      "sub_tags": "column",
+      "parent_tags": "struct",
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "code",
+            "kind": "positional_or_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "annotated",
+              "base": {
+                "kind": "dtype",
+                "dtype": "T"
+              },
+              "metadata": [
+                {
+                  "kind": "regex",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                  "flags": 0
+                }
+              ]
+            },
+            "has_default": false
+          },
+          {
+            "name": "name",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "background",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "color",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          }
+        ],
+        "accepts_var_keyword": false,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "data_element": true
+      }
+    }
+  }
+}

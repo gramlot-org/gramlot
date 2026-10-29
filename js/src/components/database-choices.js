@@ -3,6 +3,8 @@ import createDOMPurify from 'dompurify';
 /** Database suggestions share the choice editor and the ordinary data RPC. */
 export const databaseParameters = {
     dbtable: {dtype:'T', binding:'read'},
+    condition: {dtype:'T', binding:'read'},
+    weakCondition: {dtype:['B','T'], default:false, binding:'read'},
     method: {dtype:'T', default:'dbSelect', binding:'read'},
     columns: {dtype:'T', binding:'read'},
     hiddenColumns: {dtype:'T', binding:'read'},
@@ -19,11 +21,12 @@ export const databaseParameters = {
     selectedRecord: {dtype:'T'},
     selectedCb: {dtype:'T'}
 };
-const requestParameters = ['dbtable','method','columns','hiddenColumns','auxColumns','order_by','limit','ignoreCase'];
+const requestParameters = ['dbtable','method','columns','hiddenColumns','auxColumns','order_by','limit','ignoreCase','condition','weakCondition'];
 
 export function databaseChoices(Base) {
     return class extends Base {
         #configuration = {};
+        #conditionChanged = false;
         #outputs = {};
         #revision = 0;
         #acceptedRow;
@@ -35,6 +38,7 @@ export function databaseChoices(Base) {
         }
         get choiceSource() { return this.#revision; }
         get searchDelay() { return this.parameters.searchDelay; }
+        get revalidateDraftOnSourceChange() { return this.constrained; }
         get autoHighlight() { return this.constrained; }
         get matchTypedChoice() { return this.constrained; }
         get emptyChoice() {
@@ -48,6 +52,10 @@ export function databaseChoices(Base) {
             const configuration = Object.fromEntries(Object.entries(attrs).filter(([key]) =>
                 requestParameters.includes(key) || ['autoSelect','template','templateNull','emptyLabel','validate_notnull'].includes(key)
                 || key.startsWith('condition_') || key.startsWith('selected_')));
+            const conditionKeys = new Set([...Object.keys(configuration), ...Object.keys(this.#configuration)]
+                .filter(key => key === 'condition' || key === 'weakCondition' || key.startsWith('condition_')));
+            if (Object.keys(this.#configuration).length && [...conditionKeys].some(key =>
+                !Object.is(configuration[key], this.#configuration[key]))) this.#conditionChanged = true;
             const keys = new Set([...Object.keys(configuration), ...Object.keys(this.#configuration)]);
             if ([...keys].some(key => !Object.is(configuration[key], this.#configuration[key]))) {
                 this.cancelValidation(); this.#acceptedRow = undefined;
@@ -71,6 +79,11 @@ export function databaseChoices(Base) {
             }
             this.choices.style.minWidth = this.#template
                 ? 'min(var(--gramlot-choice-popup-min-width,28rem),var(--gramlot-popup-available-width,100vw))' : '';
+            if (this.parameters.condition != null && !this.parameters.condition.trim()) throw new TypeError('condition must be a nonempty expression.');
+            if (typeof this.parameters.weakCondition !== 'boolean' &&
+                (typeof this.parameters.weakCondition !== 'string' || !this.parameters.weakCondition.trim())) {
+                throw new TypeError('weakCondition must be boolean or a nonempty expression.');
+            }
             const {limit, searchDelay, hasDownArrow} = this.parameters;
             if (!Number.isInteger(limit) || limit < 1) throw new TypeError('limit must be a positive integer.');
             if (!Number.isInteger(searchDelay) || searchDelay < 0) throw new TypeError('searchDelay must be a non-negative integer.');
@@ -82,6 +95,7 @@ export function databaseChoices(Base) {
         async loadChoices(keywords, signal) {
             const parameters = Object.fromEntries(requestParameters.filter(key => key !== 'method' && this.parameters[key] != null)
                 .map(key => [key, this.parameters[key]]));
+            if (parameters.weakCondition === false) delete parameters.weakCondition;
             const required = new Set(Object.entries(this.#outputs).filter(([, path]) => path).map(([name]) => name.slice(9)));
             if (this.#template) {
                 const walker = this.ownerDocument.createTreeWalker(this.#template, 4);
@@ -113,6 +127,9 @@ export function databaseChoices(Base) {
                 }
                 for (const name of result.columns) required.add(name);
             }
+            if (result.errors != null && (typeof result.errors !== 'string' || !Object.hasOwn(keywords, '_id'))) {
+                throw new TypeError('Selector errors must be literal text attached to identity lookup.');
+            }
             const ids = new Set();
             return result.rows.map(record => {
                 const id = record[result.identifier], caption = record[result.caption];
@@ -122,7 +139,7 @@ export function databaseChoices(Base) {
                 for (const name of required) if (!Object.hasOwn(record, name)) {
                     throw new TypeError(`Missing requested selector column: ${name}`);
                 }
-                ids.add(id); return {id, caption, record, captionField:result.caption,
+                ids.add(id); return {id, caption, record, error:result.errors, captionField:result.caption,
                     columns:parameters.auxColumns != null ? result.columns : null,
                     headers:parameters.auxColumns != null ? result.headers : null};
             });
@@ -194,13 +211,20 @@ export function databaseChoices(Base) {
             super.finishValidation(outcome);
         }
         async resolveValue() {
+            const changed = this.#conditionChanged;
+            this.#conditionChanged = false;
+            if (changed && this.active && !this.locked && this.constrained && this.parameters.validate_notnull) {
+                const rows = await this.request({_querystring:'', limit:2}, {selection:true});
+                if (!rows) return;
+                if (rows.length === 1) { this.choose(rows[0]); return; }
+            }
             const value = this.readControlValue();
             const pending = super.resolveValue();
             // Identity resolution must not start autoSelect after a later clear/edit.
             if (value != null && value !== '') return pending;
             await pending;
             if (this.active && !this.locked && this.parameters.autoSelect && this.readControlValue() == null && this.control.value === '') {
-                const rows = await this.request({_querystring:'', limit:2});
+                const rows = await this.request({_querystring:'', limit:2}, {selection:true});
                 if (rows?.length === 1 && this.readControlValue() == null && !this.locked) this.choose(rows[0]);
             }
         }

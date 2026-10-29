@@ -72,11 +72,27 @@ function excludedAttribute(attrs) {
 /** Gramlot vocabulary and inert authoring on the shared builder grammar. */
 export class GramlotBuilder extends HtmlBuilder {
     static _name = 'gramlot';
+    static containers = ['frameGrid'];
     static _sourceClass = GramlotBuilderBag;
     // Composed on the inherited HtmlBuilder grammar; its data-elements replace Builder's.
     static { this.defineGrammar(BINDING); }
     static { this.defineGrammar(WEBCOMPONENT); }
     static { this.defineGrammar(buttons.toDocument()); }
+
+    /** Compose real Source nodes; frame/grid/menu retain their existing runtime owners. */
+    frameGrid(parent, {storepath, rowMode, structpath, searchOn = false, ...attrs} = {}) {
+        for (const tag of ['framePane', 'grid']) {
+            if (!this.schemaTag(tag)) throw new TypeError(`frameGrid requires the ${tag} collection`);
+        }
+        const gridAttrs = {storepath, rowMode, ...(structpath == null ? {} : {structpath}),
+            node_label: 'grid', frameTarget: true, height: '100%', width: '100%'};
+        this.validateNodeValues('grid', null, gridAttrs);
+        if (searchOn !== false) this.validateNodeValues('searchBox', null, {searchOn});
+        const frame = parent.framePane(attrs);
+        frame.center.grid(gridAttrs);
+        if (searchOn !== false) frame.top.menu({presentation:'bar', node_label:'search', aria_label:'Grid search', padding:'4px 8px', background:'var(--gramlot-surface-subtle)'}).menuline({group:true}).searchBox({searchOn});
+        return frame;
+    }
 
     /** Tag prefixes of the parent dialects, from the `_name` of the classes above GramlotBuilder. */
     static get dialectPrefixes() {

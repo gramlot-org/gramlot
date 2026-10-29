@@ -1104,6 +1104,7 @@ Generate assets/index.js as an exact wrapper, with no application logic:
 
 ```javascript
 export {default} from "./collection.js";
+export * from "./collection.js";
 export const buildId = "sha256:<generated digest>";
 ```
 
@@ -1114,6 +1115,8 @@ in the string literal. Compute the digest and emit the final wrapper containing
 it. Verification requires the installed wrapper to match the fixed template with
 the descriptor's digest, then hashes the placeholder form. Do not search/replace
 arbitrary source text or strip all buildId-like strings from other files.
+The named-export line was approved on 2026-10-29 for issue #80. Prepared
+collections using the earlier wrapper must be regenerated for this verifier.
 
 ### Deterministic input
 

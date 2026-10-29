@@ -490,6 +490,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 | Specific parameter | Type | Default | Binding | Allowed |
 | --- | --- | --- | --- | --- |
 | `dbtable` | T | — | read | — |
+| `condition` | T | — | read | — |
+| `weakCondition` | B / T | False | read | — |
 | `method` | T | 'dbSelect' | read | — |
 | `columns` | T | — | read | — |
 | `hiddenColumns` | T | — | read | — |
@@ -522,6 +524,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 | Specific parameter | Type | Default | Binding | Allowed |
 | --- | --- | --- | --- | --- |
 | `dbtable` | T | — | read | — |
+| `condition` | T | — | read | — |
+| `weakCondition` | B / T | False | read | — |
 | `method` | T | 'dbSelect' | read | — |
 | `columns` | T | — | read | — |
 | `hiddenColumns` | T | — | read | — |

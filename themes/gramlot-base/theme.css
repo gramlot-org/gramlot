@@ -303,3 +303,31 @@
     min-block-size:calc(var(--gramlot-touch-target, 0px) / 2);
   }
 }
+
+/* Resident Bag grid: shared palette and theme density. */
+:root {
+    --gramlot-grid-background: var(--gramlot-surface);
+    --gramlot-grid-color: var(--gramlot-ink);
+    --gramlot-grid-border-color: var(--gramlot-border);
+    --gramlot-grid-header-background: light-dark(#e5e7eb, #373b42);
+    --gramlot-grid-header-color: light-dark(#28313b, #f1f3f5);
+    --gramlot-grid-header-border-color: light-dark(#b8bec7, #59606a);
+    --gramlot-grid-header-highlight: light-dark(rgb(255 255 255 / 75%), rgb(255 255 255 / 12%));
+    --gramlot-grid-group-background: color-mix(in srgb, var(--gramlot-header-background) 75%, var(--gramlot-border));
+    --gramlot-grid-group-color: var(--gramlot-header-color);
+    --gramlot-grid-column-border-color: color-mix(in srgb, var(--gramlot-border) 65%, transparent);
+    --gramlot-grid-row-border-color: var(--gramlot-border);
+    --gramlot-grid-row-alt-background: color-mix(in srgb, var(--gramlot-surface) 40%, var(--gramlot-surface-subtle));
+    --gramlot-grid-row-hover-background: var(--gramlot-selected);
+    --gramlot-grid-radius: var(--gramlot-radius-sm);
+    --gramlot-grid-font-size: 1rem;
+    --gramlot-grid-line-height: 1.35;
+    --gramlot-grid-header-weight: 600;
+    --gramlot-grid-row-height: 32px;
+    --gramlot-grid-header-height: 32px;
+    --gramlot-grid-group-height: 24px;
+    --gramlot-grid-cell-padding: .3rem .65rem;
+    --gramlot-grid-row-header-width: 44px;
+    --gramlot-grid-column-min-width: 40px;
+    --gramlot-grid-column-width: 10rem;
+}

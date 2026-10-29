@@ -1,3 +1,4 @@
+import {FormState} from '../form-state.js';
 import {BagCbResolver} from '@genrojs/bag';
 import {SourceBag, SourceBagNode, sourceAttributeItems, wrapSource} from '@genrojs/builders';
 import {fromTytx, getSubtypeDict, setSubtypeDict, toTytx} from '@genrojs/tytx';
@@ -177,6 +178,19 @@ function isExpression(value) {
  * setRelativeData too, with the Gramlot reset rules.
  */
 export class GramlotBuilderBagNode extends SourceBagNode {
+    #formState = null;
+    /** The local form lifecycle owned by the nearest marked Source ancestor. */
+    get formState() {
+        for (let owner = this; owner; owner = owner.parentNode) {
+            if (owner.getAttr('formId') != null || owner.getAttr('form') === true) {
+                const state = owner.#formState ??= new FormState(owner, this.rootBuilder.binding);
+                state.rebind();
+                return state;
+            }
+        }
+        return null;
+    }
+
     get frame() {
         if (!['dialog','floatingPane'].includes(this.nodeTag)) throw new TypeError('frame accessor requires a window');
         const children = this.value instanceof SourceBag ? this.value.getNodes() : [];
@@ -189,6 +203,15 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     requestClose(reason = 'application') {
         if (!['dialog','floatingPane'].includes(this.nodeTag)) throw new TypeError('requestClose requires a window');
         return this.rootBuilder.binding.gramlot.dom.getDomNode(this).requestClose(reason);
+    }
+    /** frameGrid returns an ordinary frame; its grid remains an ordinary Source node. */
+    get grid() {
+        if (this.nodeTag === 'framePane') {
+            const grid = this.staticValue instanceof SourceBag ? this.staticValue.getNode('center.grid') : null;
+            if (!grid || grid.nodeTag !== 'grid') throw new TypeError('This frame has no central grid');
+            return this.builder.wrapSource(grid);
+        }
+        return (attrs = {}) => this.builder.wrapSource(this.builder.commandOnNode(this, 'grid', null, attrs));
     }
     get top() { return this.frameRegion('top'); }
     get bottom() { return this.frameRegion('bottom'); }

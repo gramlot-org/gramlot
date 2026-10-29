@@ -1,0 +1,39 @@
+✔ required and length use the legacy empty and length contracts without truthiness coercion (1.321834ms)
+✔ textbox keeps rejected drafts across label projection and Data echoes, then recovers (118.168958ms)
+✔ live validation respects composition, reactive rules, locking and disposal (59.411792ms)
+✔ floating error expires without clearing invalid state, reopens and cleans up (50.38675ms)
+✔ typed editor and calendar reject null before accepting it internally or overwriting Data (68.587083ms)
+✔ multiple choices retain the empty rejected selection and correct through the common writer (45.508042ms)
+✔ choice editor validates the proposed code before replacing the committed choice (73.092458ms)
+✔ text editors request browser assistance off without disabling their own choice semantics (44.59175ms)
+✔ a scalar update validates only its node; insertion creates one DOM element (66.50125ms)
+✔ renderer rejects unsupported Source representations without mutating mounted state (7.699084ms)
+✔ unbound typed Source is rejected and never acquires fallback builder ownership (3.262583ms)
+✔ ordered transformations feed following rules; false and zero defaults are real values (1.973083ms)
+✔ numeric, exact Decimal and civil date limits preserve types (2.703375ms)
+✔ regex negation, warnings and message overrides have explicit precedence (0.54ms)
+✔ conditions and callback result contract, including a normalized warning (0.193459ms)
+✔ local normalized acceptance and hooks use the sole Data writer (108.905125ms)
+✔ activated conditions and callbacks see resolved validation arguments (61.507166ms)
+✔ async candidates leave Data intact; newer input cancels old replies (56.010042ms)
+✔ external Data, rules, locks and disposal invalidate pending acceptance (50.767792ms)
+✔ remote uses data RPC, typed arguments, cancellation and failure handling (44.723292ms)
+✔ remote Bag response applies patches only on acceptance (47.393709ms)
+✔ async typed candidate commits parsed value only after acceptance (45.843292ms)
+✔ warnings remain accessible without invalidating the field (41.519459ms)
+✔ timeout aborts transport and rejects without an unhandled late rejection (62.45125ms)
+✔ relative binding rebase invalidates the previous request even when values are equal (42.810083ms)
+✔ literal-valued fields still validate without requiring a Data address (39.841417ms)
+✔ single radio has callback context and does not change Data on rejection (40.209042ms)
+✔ the remote result hook uses activated Source and never runs for an obsolete response (38.609791ms)
+✔ an asynchronous condition serializes its rule and follows cancellation (0.142333ms)
+✔ Escape cancels a typed pending edit; normalization cannot change the value type (52.785041ms)
+✔ explicit selection validation checks the constrained editor and rejects other controls (67.7545ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1323.063416

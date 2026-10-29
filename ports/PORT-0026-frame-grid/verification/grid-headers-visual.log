@@ -1,0 +1,2 @@
+{"theme":"mimi","mode":"Light","header":"rgb(229, 231, 235)","ink":"rgb(40, 49, 59)","relief":"linear-gradient(rgba(255, 255, 255, 0.75), rgba(0, 0, 0, 0) 65%)","border":"rgb(184, 190, 199)","frame":"rgb(226, 233, 229)"}
+{"theme":"mimi","mode":"Dark","header":"rgb(55, 59, 66)","ink":"rgb(241, 243, 245)","relief":"linear-gradient(rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0) 65%)","border":"rgb(89, 96, 106)","frame":"rgb(42, 57, 50)"}

@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: grid-01: Python and JavaScript author equivalent Source and page options
+ok 1 - grid-01: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 1099.850584
+  ...
+# Subtest: grid-02: Python and JavaScript author equivalent Source and page options
+ok 2 - grid-02: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 1119.959042
+  ...
+# Subtest: grid-03: Python and JavaScript author equivalent Source and page options
+ok 3 - grid-03: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 1386.09425
+  ...
+# Subtest: grid-04: Python and JavaScript author equivalent Source and page options
+ok 4 - grid-04: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 1152.373083
+  ...
+# Subtest: grid-05: Python and JavaScript author equivalent Source and page options
+ok 5 - grid-05: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 1215.812083
+  ...
+# Subtest: menu-15: Python and JavaScript author equivalent Source and page options
+ok 6 - menu-15: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 1094.542375
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7187.63725

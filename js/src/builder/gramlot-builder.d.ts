@@ -13,6 +13,11 @@ import type {NameSyntax} from './name-syntax.js';
 export class GramlotBuilder extends HtmlBuilder {
     /** The dialect name, `'gramlot'`. */
     static _name: string;
+    static containers: string[];
+    /** Build an ordinary framePane containing center.grid; requires layout and grid. */
+    frameGrid(parent: SourceBag | SourceBagNode, options: SourceAttributes & {
+        storepath: string; rowMode: 'values' | 'attributes'; structpath?: string; searchOn?: boolean | string;
+    }): SourceBagNode;
     /** Tag prefixes of the parent dialects, from the names of the classes above `GramlotBuilder`. */
     static get dialectPrefixes(): string[];
     /** Create a builder; `collections` are grammar documents loaded into it; `auth` evaluates the `auth` rules of the elements when the Source is serialised; `nameSyntax` checks the method names of `remote` (default `NAME_SYNTAX`). */

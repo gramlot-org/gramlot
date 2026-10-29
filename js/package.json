@@ -71,6 +71,7 @@
     "./components": "./src/components/index.js",
     "./components/inputs": "./src/components/inputs.js",
     "./components/layout": "./src/components/layout.js",
+    "./components/grid": "./src/components/grid.js",
     "./components/tree": "./src/components/tree.js",
     "./components/editors": "./src/components/editors.js",
     "./components/typst": "./src/components/typst.js",

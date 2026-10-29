@@ -1,0 +1,40 @@
+✔ item form store copies, saves and guards location changes (1.853167ms)
+✔ hierarchical form store copies, saves and guards location changes (0.256875ms)
+✔ subform form store copies, saves and guards location changes (0.171708ms)
+✔ collection form store loads by stable key and updates the shared row (0.552625ms)
+✔ record form store forwards typed Bags and cancellation to shared RPC (0.809333ms)
+✔ formlet outside a form owns relative scope and shared defaults without rewriting fields (66.480917ms)
+✔ changing columns and responsive width preserves the focused editor and data (23.038417ms)
+✔ formlet diagnoses unsupported defaults and invalid numeric columns (10.610917ms)
+✔ reactive defaults resolve in the formlet scope and keep explicit child overrides (19.816583ms)
+✔ formlet position and decoration defaults reach fields and explicit boxes (22.408625ms)
+✔ explicit labeled box owns relative scope and preserves labels, content and defaults (127.721666ms)
+✔ typed invalid draft enters Bag, messages block save, warning-only save succeeds (58.850042ms)
+✔ normalization is inherited, explicit false preserves types; restore and memory are detached (45.124584ms)
+✔ rules retain zero/order, source callback results and explicit email severity (40.6595ms)
+✔ dependency changes and obsolete async responses cannot overwrite the current draft (72.92225ms)
+✔ save snapshots retain edits during persistence and failures retain the baseline (20.417875ms)
+✔ save parses active editors before checking the draft and preserves incomplete number input (21.133125ms)
+✔ typing invalidates in-flight validation before a blur commit (18.994042ms)
+✔ async rejection and timeout block saves, and unmounted owners never run accept effects (49.333084ms)
+✔ memory replacement persists deleted nodes and attributes; failed save retains dirty baseline (22.549208ms)
+✔ load protects programmatic writes while its adapter is pending (12.353917ms)
+✔ state projection stays outside persisted data and source removal unregisters errors (10.187125ms)
+✔ outside a form errors reject the Bag write and reactive rule changes preserve focus (5.748291ms)
+✔ configuration changes require explicit normalization reload and unsupported rules fail clearly (26.093833ms)
+✔ callback effects run once for a user commit, never for passive dependency checks (43.581625ms)
+✔ selection errors remain editor-local and save commits a selected caption to its typed code (20.731541ms)
+✔ declared date types parse to dates and reset keeps their editor text (24.629042ms)
+✔ starting a load cancels older field validation and normalizes the new baseline (26.279042ms)
+✔ box style precedence is deterministic and child defaults preserve false and null (13.67725ms)
+✔ an explicit null write differs from a missing node and is dirty until restored (11.547875ms)
+✔ form commands use source scope through slotted containers (249.509959ms)
+✔ remote validation forwards method, context, candidate and abort signal (2.321ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1388.723583

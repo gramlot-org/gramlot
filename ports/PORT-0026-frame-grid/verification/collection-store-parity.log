@@ -1,0 +1,15 @@
+TAP version 13
+# Subtest: menu-15: Python and JavaScript author equivalent Source and page options
+ok 1 - menu-15: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 922.021333
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1049.500666

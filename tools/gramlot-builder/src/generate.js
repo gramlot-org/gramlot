@@ -41,7 +41,7 @@ export async function generate(request) {
     const rows = [], byName = new Map(), byEntry = new Map(), byObject = new Map(), imports = new Map();
     for (const config of request.config.collections) {
         keys(config,['entry','pythonPackage']); packageName(config.pythonPackage);
-        rows.push({entry:resolveEntry(config.entry), pythonPackage:config.pythonPackage, external:false});
+        rows.push({entry:resolveEntry(config.entry), specifier:config.entry, pythonPackage:config.pythonPackage, external:false});
     }
     for (const metadata of request.externals) {
         keys(metadata,['entry','pythonImport','name','buildId','dependencies']);
@@ -49,7 +49,7 @@ export async function generate(request) {
         const parts = metadata.pythonImport.split(':');
         if (parts.length !== 2) throw new Error('Invalid external Python import');
         packageName(parts[0]); packageName(parts[1]);
-        rows.push({entry:resolveEntry(metadata.entry), metadata, external:true});
+        rows.push({entry:resolveEntry(metadata.entry), specifier:metadata.entry, metadata, external:true});
     }
     for (const row of rows) {
         row.collection = (await import(pathToFileURL(row.entry))).default;
@@ -127,8 +127,12 @@ export async function generate(request) {
                 b.onResolve({filter:/.*/},async args=>{
                     if(args.path==='@gramlot/gramlot/components' || (args.path.startsWith('.') && path.resolve(args.resolveDir,args.path)===coreRegistry)) return args.namespace==='collection-authoring'
                         ? {path:'@gramlot/gramlot/components',external:true} : {path:'@gramlot/gramlot/components',namespace:'collection-authoring'};
-                    if((args.path==='@gramlot/gramlot' || args.path.startsWith('@gramlot/gramlot/'))) return {path:args.path,external:true};
                     if(args.kind==='entry-point') return;
+                    if(args.path==='@gramlot/gramlot' || args.path.startsWith('@gramlot/gramlot/')) {
+                        const target=rows.find(candidate=>candidate.specifier===args.path);
+                        if(target && target!==row) return {path:`@gramlot/collections/${encodeURIComponent(target.collection.name)}`,external:true};
+                        return {path:args.path,external:true};
+                    }
                     let resolved;
                     if(args.path.startsWith('.')) resolved=path.resolve(args.resolveDir,args.path);
                     else if(path.isAbsolute(args.path)) resolved=args.path;

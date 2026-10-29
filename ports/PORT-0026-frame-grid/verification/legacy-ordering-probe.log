@@ -1,0 +1,3 @@
+ValuesBagRows: grid delegates; store sorts raw values by multiple criteria; Bag order changes; node identities and filtered position mapping verified
+AttributesBagRows: grid delegates; store sorts raw values by multiple criteria; Bag order changes; node identities and filtered position mapping verified
+VirtualSelection: no local sort; cache invalidation and server request preserve full sort criteria and page coordinates

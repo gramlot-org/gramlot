@@ -32,6 +32,7 @@ export function controlElement(HTMLElement) {
             return projectParameters(this, attrs);
         }
         setPageContext(context) { this.pageContext = context; }
+        connectedCallback() {}
         releaseControl() {}
         get liveWrites() { return this.control.localName === 'textarea' || ['text', 'password', 'range', 'color'].includes(this.control.type); }
         validateCandidate(value, accept) {
@@ -49,6 +50,7 @@ export function controlElement(HTMLElement) {
                 if (!this.sameControlValue(value, accepted)) this.writeControlValue(accepted);
             });
         }
+        restoreFormValue(value) { this.writeControlValue(value); }
         sameControlValue(a, b) { return Object.is(a, b); }
         focus(options) { this.control.focus(options); }
     };

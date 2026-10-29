@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: filesystem navigation is one level per request, with independent directory index URLs
+ok 1 - filesystem navigation is one level per request, with independent directory index URLs
+  ---
+  duration_ms: 94.737167
+  ...
+# Subtest: border lessons retain their routes and teaching assets inside a lazy directory with its own page
+ok 2 - border lessons retain their routes and teaching assets inside a lazy directory with its own page
+  ---
+  duration_ms: 45.904959
+  ...
+# Subtest: every catalogue lesson is reachable with its title, route and nested source assets
+ok 3 - every catalogue lesson is reachable with its title, route and nested source assets
+  ---
+  duration_ms: 123.534916
+  ...
+# Subtest: numbered siblings mix directories and pages, hide indexes and use Markdown headings
+ok 4 - numbered siblings mix directories and pages, hide indexes and use Markdown headings
+  ---
+  duration_ms: 1.1695
+  ...
+# Subtest: host tools share one navigation category with the common playground
+ok 5 - host tools share one navigation category with the common playground
+  ---
+  duration_ms: 3.44475
+  ...
+# Subtest: every advertised sample companion decodes as a Data Bag in JavaScript
+ok 6 - every advertised sample companion decodes as a Data Bag in JavaScript
+  ---
+  duration_ms: 20.52725
+  ...
+# Subtest: sample records retain nested paths, types and attributes; UI preferences stay with controls
+ok 7 - sample records retain nested paths, types and attributes; UI preferences stay with controls
+  ---
+  duration_ms: 0.572375
+  ...
+# Subtest: explicit setters in lessons are confined to setter teaching and host-generated gallery metadata
+ok 8 - explicit setters in lessons are confined to setter teaching and host-generated gallery metadata
+  ---
+  duration_ms: 19.276458
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 435.929708

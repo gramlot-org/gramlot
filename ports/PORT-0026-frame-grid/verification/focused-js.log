@@ -1,0 +1,296 @@
+TAP version 13
+# Subtest: frameGrid is ordinary Source with idempotent access and optional collections
+ok 1 - frameGrid is ordinary Source with idempotent access and optional collections
+  ---
+  duration_ms: 24.685708
+  ...
+# Subtest: two frame toolbars address their own grid and survive row changes without remounting
+ok 2 - two frame toolbars address their own grid and survive row changes without remounting
+  ---
+  duration_ms: 230.917125
+  ...
+# Subtest: Python and JS frameGrid produce the same Source composition
+ok 3 - Python and JS frameGrid produce the same Source composition
+  ---
+  duration_ms: 253.476292
+  ...
+# Subtest: frame routes preflight readiness and forward typed data after local dispatch to exactly one child
+ok 4 - frame routes preflight readiness and forward typed data after local dispatch to exactly one child
+  ---
+  duration_ms: 144.008166
+  ...
+# Subtest: only the current connected source/origin/session can publish; hello reconnect and lifecycle are explicit
+ok 5 - only the current connected source/origin/session can publish; hello reconnect and lifecycle are explicit
+  ---
+  duration_ms: 27.567875
+  ...
+# Subtest: live Source/DOM values are local only, including nested transport fields and Bag attributes
+ok 6 - live Source/DOM values are local only, including nested transport fields and Bag attributes
+  ---
+  duration_ms: 26.400833
+  ...
+# Subtest: removing a Source-owned iframe closes its connection even before a browser unload event
+ok 7 - removing a Source-owned iframe closes its connection even before a browser unload event
+  ---
+  duration_ms: 16.760916
+  ...
+# Subtest: values: read-only Bag cells update without replacing rows
+ok 8 - values: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 169.694792
+  ...
+# Subtest: attributes: read-only Bag cells update without replacing rows
+ok 9 - attributes: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 37.43675
+  ...
+# Subtest: nested struct is installed as ordinary Data before the component renders
+ok 10 - nested struct is installed as ordinary Data before the component renders
+  ---
+  duration_ms: 37.595667
+  ...
+# Subtest: insert, delete, replace store and retarget path follow the existing binding lifecycle
+ok 11 - insert, delete, replace store and retarget path follow the existing binding lifecycle
+  ---
+  duration_ms: 21.968667
+  ...
+# Subtest: external struct changes and replacement update all sharing grids
+ok 12 - external struct changes and replacement update all sharing grids
+  ---
+  duration_ms: 36.842125
+  ...
+# Subtest: the header is outside the rows viewport and both layouts expose one logical table
+ok 13 - the header is outside the rows viewport and both layouts expose one logical table
+  ---
+  duration_ms: 25.398958
+  ...
+# Subtest: scroll/gutter synchronization has one geometry observer and releases pending work
+ok 14 - scroll/gutter synchronization has one geometry observer and releases pending work
+  ---
+  duration_ms: 18.549292
+  ...
+# Subtest: rendering is read-only and a Source rebuild reuses the installed Data struct
+ok 15 - rendering is read-only and a Source rebuild reuses the installed Data struct
+  ---
+  duration_ms: 22.41125
+  ...
+# Subtest: nested struct (empty=false) and external structpath conflict before Data installation
+ok 16 - nested struct (empty=false) and external structpath conflict before Data installation
+  ---
+  duration_ms: 27.368041
+  ...
+# Subtest: nested struct (empty=true) and external structpath conflict before Data installation
+ok 17 - nested struct (empty=true) and external structpath conflict before Data installation
+  ---
+  duration_ms: 20.931583
+  ...
+# Subtest: empty rows, false, zero and HTML-like text remain distinct and inert
+ok 18 - empty rows, false, zero and HTML-like text remain distinct and inert
+  ---
+  duration_ms: 27.6705
+  ...
+# Subtest: wrong representations and resolvers fail without reads or writes
+ok 19 - wrong representations and resolvers fail without reads or writes
+  ---
+  duration_ms: 0.348333
+  ...
+# Subtest: struct rejects unknown attributes, duplicate fields and nested groups
+ok 20 - struct rejects unknown attributes, duplicate fields and nested groups
+  ---
+  duration_ms: 0.313
+  ...
+# Subtest: invalid inline structure is rejected before preceding Data setters run
+ok 21 - invalid inline structure is rejected before preceding Data setters run
+  ---
+  duration_ms: 21.247375
+  ...
+# Unknown command 'missing:save' in menu 'menu_0', entry 'menuline_1'
+# Subtest: Labelbox preserves submenu ownership and toolbar overflow priority
+ok 22 - Labelbox preserves submenu ownership and toolbar overflow priority
+  ---
+  duration_ms: 295.357625
+  ...
+# Subtest: frame regions are unique Source nodes; repeated command occurrences have independent messages
+ok 23 - frame regions are unique Source nodes; repeated command occurrences have independent messages
+  ---
+  duration_ms: 41.150291
+  ...
+# Subtest: bound checked/disabled/hidden and unknown command never toggle or dispatch accidentally
+ok 24 - bound checked/disabled/hidden and unknown command never toggle or dispatch accidentally
+  ---
+  duration_ms: 41.849166
+  ...
+# Subtest: delay captures parameters before data changes and cancels when its target is removed
+ok 25 - delay captures parameters before data changes and cancels when its target is removed
+  ---
+  duration_ms: 88.967667
+  ...
+# Menu 'menu_0' failed to load Error: offline
+#     at file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/tests/menu-system.test.js:81:176
+#     at app.rpc.call (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/tests/menu-system.test.js:21:37)
+#     at NodeBinding.call (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/binding/runtime.js:519:58)
+#     at RpcResolver.loadAsync (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/binding/rpc-resolver.js:62:46)
+#     at \#load (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/binding/remote-resolver.js:39:37)
+#     at file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/binding/remote-resolver.js:19:61
+#     at \#start (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/builder/source.js:145:38)
+#     at NodeRequests.submit (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/builder/source.js:99:31)
+#     at RpcResolver.startLoad (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/binding/rpc-resolver.js:60:25)
+#     at RpcResolver.refresh (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/binding/remote-resolver.js:19:30)
+# Subtest: toolbar resolver mounts, reuses cache, refreshes on bound arguments and preserves stable entries
+ok 26 - toolbar resolver mounts, reuses cache, refreshes on bound arguments and preserves stable entries
+  ---
+  duration_ms: 40.678583
+  ...
+# Cannot dispatch command 'documenti:save' at 'menuline_0': missing or duplicate frame recipient
+# Subtest: popup resolver waits for opening and exposes error/retry and empty states
+ok 27 - popup resolver waits for opening and exposes error/retry and empty states
+  ---
+  duration_ms: 22.857542
+  ...
+# Subtest: camel-case registered topic and checked binding update both presentations
+ok 28 - camel-case registered topic and checked binding update both presentations
+  ---
+  duration_ms: 25.491875
+  ...
+# Subtest: nested Data initialized from Python-shaped mapping remains reactive
+ok 29 - nested Data initialized from Python-shaped mapping remains reactive
+  ---
+  duration_ms: 21.74025
+  ...
+# Subtest: Python wire preserves checked and transformed hidden bindings
+ok 30 - Python wire preserves checked and transformed hidden bindings
+  ---
+  duration_ms: 147.923166
+  ...
+# Subtest: a nested frame never borrows its outer recipient
+ok 31 - a nested frame never borrows its outer recipient
+  ---
+  duration_ms: 26.99975
+  ...
+# Subtest: commands and submenu opening are mutually exclusive
+ok 32 - commands and submenu opening are mutually exclusive
+  ---
+  duration_ms: 18.536542
+  ...
+# Menu 'menu_0' failed to load TypeError: Separator record accepts kind only
+#     at file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/view/menu.js:20:81
+#     at Array.map (<anonymous>)
+#     at entries (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/view/menu.js:11:27)
+#     at MenuBinding.load (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/src/view/menu.js:78:27)
+#     at async TestContext.<anonymous> (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/tests/menu-system.test.js:130:11)
+#     at async Test.run (node:internal/test_runner/test:980:9)
+#     at async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+# Subtest: literal resolver captions never become pointers or expressions; invalid results do not partly replace entries
+ok 33 - literal resolver captions never become pointers or expressions; invalid results do not partly replace entries
+  ---
+  duration_ms: 28.589583
+  ...
+# Subtest: keyboard skips separators and unavailable entries and relocates focus
+ok 34 - keyboard skips separators and unavailable entries and relocates focus
+  ---
+  duration_ms: 30.551917
+  ...
+# Subtest: an entry becoming hidden cancels delayed delivery even if it is shown again
+ok 35 - an entry becoming hidden cancels delayed delivery even if it is shown again
+  ---
+  duration_ms: 48.356792
+  ...
+# Subtest: a stale resolver result cannot overwrite a newer argument result
+ok 36 - a stale resolver result cannot overwrite a newer argument result
+  ---
+  duration_ms: 23.039458
+  ...
+# Subtest: an asynchronously populated popup focuses its first usable entry
+ok 37 - an asynchronously populated popup focuses its first usable entry
+  ---
+  duration_ms: 25.418916
+  ...
+# Subtest: frame side bars share a row; reactive contentPane flex projects to the slot container
+ok 38 - frame side bars share a row; reactive contentPane flex projects to the slot container
+  ---
+  duration_ms: 31.0685
+  ...
+# Subtest: popup rows align check/icon/caption/arrow and cascade from a toolbar
+ok 39 - popup rows align check/icon/caption/arrow and cascade from a toolbar
+  ---
+  duration_ms: 454.138
+  ...
+# Subtest: attached menu uses contextual opening, pointer position, keyboard and cleanup
+ok 40 - attached menu uses contextual opening, pointer position, keyboard and cleanup
+  ---
+  duration_ms: 26.398584
+  ...
+# Subtest: opening modifiers match exactly; star means ordinary click with no modifiers
+ok 41 - opening modifiers match exactly; star means ordinary click with no modifiers
+  ---
+  duration_ms: 25.6775
+  ...
+# Subtest: vertical bar submenus open to the side while horizontal bar submenus open below
+ok 42 - vertical bar submenus open to the side while horizontal bar submenus open below
+  ---
+  duration_ms: 60.091417
+  ...
+# Subtest: toolbar overflow respects priority, end-first ties and indivisible groups without moving Source
+ok 43 - toolbar overflow respects priority, end-first ties and indivisible groups without moving Source
+  ---
+  duration_ms: 98.943041
+  ...
+# Subtest: overflow keeps a focused input, its live binding and identity through exit and return
+ok 44 - overflow keeps a focused input, its live binding and identity through exit and return
+  ---
+  duration_ms: 53.489291
+  ...
+# Subtest: retained units never overflow; elastic space is consumed before migration and vertical sizing uses height
+ok 45 - retained units never overflow; elastic space is consumed before migration and vertical sizing uses height
+  ---
+  duration_ms: 53.127875
+  ...
+# Subtest: overflow keyboard navigation traverses grouped commands and opens their submenu sideways
+ok 46 - overflow keyboard navigation traverses grouped commands and opens their submenu sideways
+  ---
+  duration_ms: 36.659292
+  ...
+# Subtest: group command ambiguity is rejected and overflow cleanup removes observers and popovers
+ok 47 - group command ambiguity is rejected and overflow cleanup removes observers and popovers
+  ---
+  duration_ms: 41.717042
+  ...
+# Subtest: overflow suppresses orphan separators and restores declaration order on return
+ok 48 - overflow suppresses orphan separators and restores declaration order on return
+  ---
+  duration_ms: 34.125166
+  ...
+# Subtest: opening an input-only overflow focuses the input and hidden groups leave no overflow button
+ok 49 - opening an input-only overflow focuses the input and hidden groups leave no overflow button
+  ---
+  duration_ms: 30.264917
+  ...
+# Subtest: toolbar label modes preserve captions, tooltip names and command identity through overflow and return
+ok 50 - toolbar label modes preserve captions, tooltip names and command identity through overflow and return
+  ---
+  duration_ms: 44.439083
+  ...
+# Subtest: toolbar style inherits through groups, supports occurrence overrides and updates reactively
+ok 51 - toolbar style inherits through groups, supports occurrence overrides and updates reactively
+  ---
+  duration_ms: 19.8875
+  ...
+# Subtest: SVG icons use image nodes, occurrence overrides and live image/text transitions
+ok 52 - SVG icons use image nodes, occurrence overrides and live image/text transitions
+  ---
+  duration_ms: 29.154958
+  ...
+# Subtest: Escape in a permanent bar without an open popup reaches the containing window
+ok 53 - Escape in a permanent bar without an open popup reaches the containing window
+  ---
+  duration_ms: 19.181125
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2544.747917

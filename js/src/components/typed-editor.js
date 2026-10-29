@@ -47,7 +47,8 @@ export function TypedEditor(HTMLElement) {
             this.control.addEventListener('keydown', event => {
                 if (event.isComposing || this.control.disabled || this.control.readOnly) return;
                 if (event.key === 'Escape') {
-                    event.preventDefault(); this.#selection = null; this.#dirty = false; this.#policy = null; this.error(''); this.display();
+                    event.preventDefault(); this.#selection = null; this.#dirty = false; this.#policy = null; if (this.pageContext.form) this.pageContext.formClearDraft(); this.error(''); this.display();
+                    if (this.pageContext.form) this.validateCandidate(this.#value, () => {});
                 } else if (event.key === 'Enter') {
                     event.preventDefault(); this.control.dispatchEvent(new this.ownerDocument.defaultView.Event('change'));
                 }
@@ -93,8 +94,9 @@ export function TypedEditor(HTMLElement) {
                     // Preserve accepted spelling unless validation normalized the candidate.
                     if (!this.#focused || !this.sameControlValue(value, accepted)) { this.#policy = null; this.display(); }
                 });
-            } catch (error) { this.error(error.message); return {ok: false}; }
+            } catch (error) { if (this.pageContext.form) this.pageContext.formParseError(error.message); this.error(error.message); return {ok: false}; }
         }
+        restoreFormValue(value) { this.#dirty = false; this.#policy = null; this.#selection = null; this.error(''); this.writeControlValue(value); this.display(); }
         display() {
             if (!this.pageContext || !this.parameters) return;
             const text = this.#value == null ? '' : this.#focused

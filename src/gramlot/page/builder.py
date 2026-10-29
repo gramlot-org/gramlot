@@ -3,7 +3,7 @@
 from uuid import uuid4
 
 from genro_bag import Bag
-from genro_builders.builder import SourceBag, SourceBagNode
+from genro_builders.builder import SourceBag, SourceBagNode, container
 from genro_builders.contrib.html import HtmlBuilder
 from genro_tytx import to_tytx
 
@@ -127,6 +127,26 @@ class GramlotBuilder(HtmlBuilder):
                 return self._bag_call(target, actual)(*args, **attrs)
             return self._command_on_node(target, actual, *args, **attrs)
         return call
+
+    @container
+    def frameGrid(self, parent, *, storepath, rowMode, structpath=None, searchOn=False, **attrs):
+        """Compose a real framePane with one central, command-target grid."""
+        for tag in ("framePane", "grid"):
+            if self.schema_tag(tag) is None:
+                raise ValueError(f"frameGrid requires the {tag} collection")
+        grid_attrs = dict(storepath=storepath, rowMode=rowMode, node_label="grid",
+                          frameTarget=True, height="100%", width="100%")
+        if structpath is not None:
+            grid_attrs["structpath"] = structpath
+        self._validate_call_args(self._get_schema_info("grid"), None, grid_attrs, "grid")
+        if searchOn is not False:
+            self._validate_call_args(self._get_schema_info("searchBox"), None, dict(searchOn=searchOn), "searchBox")
+        frame = parent.framePane(**attrs)
+        frame.center.grid(**grid_attrs)
+        if searchOn is not False:
+            frame.top.menu(presentation="bar", node_label="search", aria_label="Grid search",
+                           padding="4px 8px", background="var(--gramlot-surface-subtle)").menuline(group=True).searchBox(searchOn=searchOn)
+        return frame
 
     @property
     def renderer_html(self):

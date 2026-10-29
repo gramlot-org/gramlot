@@ -158,3 +158,11 @@
   .example-page { inline-size: min(100% - 2 * var(--gramlot-space-4),var(--gramlot-page-width)); padding-block: var(--gramlot-space-4); }
   .card { padding: var(--gramlot-space-4); box-shadow: none; }
 }
+
+/* Resident Bag grid: shared palette and theme density. */
+:root {
+    --gramlot-grid-row-height: 26px;
+    --gramlot-grid-header-height: 26px;
+    --gramlot-grid-group-height: 22px;
+    --gramlot-grid-cell-padding: 3px 8px;
+}

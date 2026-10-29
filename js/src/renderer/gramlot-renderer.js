@@ -48,6 +48,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.source = source;
         this.destination = destination;
         this.html = new HtmlElement({metadataAttributes: ['__ref'],
+            format: (value, options) => binding.gramlot.format(value, options),
             reportError: (node, error, title) => { if (this.records.has(node)) binding.reportError(error, title); },
             callLogic: (node, name, keywords) => {
                 const {group, method} = binding.gramlot.src.logicRegistry.resolve(name, node);
@@ -571,7 +572,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
                 (value, options) => this._binding.gramlot.format(value, options));
         }
         attrs = this.componentAttributes(node, attrs);
-        this.html.update(record, node, attrs, branch ? attrs._text : text, resolved.visible ?? null);
+        this.html.update(record, node, attrs, branch ? attrs._text : text, resolved.visible ?? null, change);
         if (replaceControl && Control) {
             record.control = new Control(record.binding, record);
             record.control.attach();

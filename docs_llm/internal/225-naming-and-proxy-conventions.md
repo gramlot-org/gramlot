@@ -1814,3 +1814,196 @@ and rotation, zoom, layer controls grouped on the left. Reuse the established
 child parameter `closable` (default false), as for selected-container panels;
 no alias or separate close state. The renderer remove action deletes the card
 Source, and trayPane removes its keyed layout row. Layout lock hides the action.
+
+
+Selector conditions — 2026-10-29: owner confirms condition, weakCondition and
+required dbSelect single-candidate replacement, then clarifies “certe capabilities
+sono asqueel only”. Retain these legacy spellings and condition_* binding names.
+Reuse the legacy errors response text in the current selector envelope for an
+ineligible identity; do not introduce a parallel result or global capability registry.
+Owner requires the legacy behavior; the proposed second conditions registration
+is withdrawn. Preserve direct widget declarations without introducing that API.
+
+
+Form tranche — 2026-10-29: `node.formState` is a Source proxy under the existing
+free, descriptive Source-proxy naming convention. It resolves the nearest existing
+`formId` / `form=True` scope. `FormState` owns `registers` (a Bag), `status`,
+`accept()` (local baseline acceptance, not persistence) and `restore()`.
+The existing self-topic mechanism carries `formStatus`; applications may project
+its summary to Data outside the record. `formDraft` is a field Source attachment.
+No new form tag, storage adapter, Logic state or path syntax is introduced.
+
+
+Frame grid composition — owner, 2026-10-28: confirms the proposed central grid,
+composable top/bottom bars and access to the contained grid with “si : usando il
+sistema slot bar nuovo”. Use frameGrid as the bounded Source-generating Builder
+container (Python @container / JS containers), composing the existing framePane
+and grid. This does not introduce a generic recipe engine or a second frame/menu
+component. Frame.grid resolves the real center.grid Source node; top/bottom retain
+the existing frame region accessors. Ordinary parent.grid(...) remains the grid
+factory. storepath, structpath and rowMode retain the reviewed grid spelling.
+Bars use menu(presentation="bar"), menuline and spacer with existing groups,
+priority, overflow and frameTarget command routing. No slotBar alias is added.
+
+Resident grid transport to the current baseline retains GridRows, GridStructure,
+Grid and gridStyles, the optional grid collection, bagStruct capability and
+structpath subtree binding. The gridStruct marker identifies one DataInstaller
+payload, removed after installation just like current dataSetter nodes. Column and
+colgroup declarations retain their reviewed schema; rowMode is values/attributes.
+Grid theme tokens use --gramlot-grid-<role>; header pairs reference the current
+--gramlot-header-background/color palette. Private --grid-columns-width and
+--grid-scrollbar-width hold layout geometry only. No store or editing API is added.
+
+
+Grid header interaction — owner, 2026-10-28: “le colonne devono essere draggabili
+e resizabili andando a modificare il dato nella struct” authorizes header gestures
+whose committed state is the Data struct. GridHeaderInteraction is an internal
+responsibility-named collaborator, alongside GridRows/GridStructure; its module
+is grid-header-interaction.js. GridStructure.columnNode and setColumnWidth use
+the existing camelCase method convention and existing column/width vocabulary.
+DOM data-field identifies the existing field, and column-resize is an internal
+CSS class, not serialized Data or a new authoring parameter. Gesture snapshots
+are temporary; committed width is the existing column width attribute.
+
+GridStructure.moveColumn follows the same method convention; internal data-drop
+and column-dragging markers project a transient drop hint, never persisted order.
+
+Owner correction, 2026-10-28: groups split into visual runs when columns move;
+“cerca di copiare il meccanismo legacy senza inventare” selects the legacy
+mechanism. Preserve its Data vocabulary: view_0.rows_0 contains ordered cell
+nodes; info.columnsets contains group definitions; cell.columnset references a
+group and cell.width stores width. These are the single resident struct schema,
+not aliases or multiple supported representations. Existing Source struct/column/
+colgroup authoring is compiled into that Data shape; no Dojo view authoring API
+is introduced. GridStructure groups are projected contiguous runs, not Data.
+
+Grid presentation follows the owner's PoC reference and request for SVG/visual
+quality using legacy CSS attribute names: columnset background/color and cell
+white_space. Source colgroup passes background/color to the columnset definition;
+column white_space is carried to its cell. No wrap alias is introduced.
+
+Grid header visual roles (owner 2026-10-28: distinguish column headers from the
+frame background with a neutral gray header appearance): header-border-color and
+header-highlight follow --gramlot-grid-<role>. They separate header edge/relief
+from row borders. Existing header-background/header-color own the neutral pair;
+light-dark follows the established theme color-scheme mechanism. No Source or
+Data parameter is introduced.
+
+Row heading/resize increment — owner, 2026-10-28: requests header styling for
+row numbers and dragging to increase row height. Reuse the PoC boolean rowHeaders and internal row-heading class. rowResize
+and row-height-handle remain proposed names for the pending resize increment.
+The row heading is generated presentation with ordinal numbering, not a column
+field. --gramlot-grid-row-header-width follows the existing grid role convention.
+Committed row-height ownership is being clarified with the owner; this record
+does not approve a parallel widget-state map or a store attribute.
+
+
+Row-height ownership clarification — owner, 2026-10-28: “la riga non puo essere
+la stessa. se,mai mostra gli stessi dati”. Rows belong to their individual grid;
+sharing the displayed Data does not share row presentation. This resolves the
+pending ownership question above. Reuse PoC rowResize and row-height-handle,
+including pointer drag, Escape/cancel, double-click reset and ArrowUp/Down/Home.
+GridRowLayout and GridRowInteraction follow GridStructure/GridHeaderInteraction
+class/file conventions. Source-owned gridRowLayout holds committed manual heights
+by BagNode identity, cleared on store replacement and pruned on row removal.
+The existing internal sourceContext supplies sourceNode to allow this explicit
+Source attachment; no Logic state, business-row attribute or alternate Data
+schema is introduced. DOM-only moves preserve the attachment; gestures own only
+a temporary preview. The current table's intrinsic content height is the minimum.
+
+
+Self row drag — owner, 2026-10-28: “prima vorrei il dra delle righe se si abilita
+il self dra rows”. Reuse the legacy/PoC boolean selfDragRows, default false.
+GridRows.moveRow follows GridStructure.moveColumn and calls the existing Bag.move;
+no separate row-order array or cell-value write. GridRowInteraction owns transient
+native drag state for the same grid only. Internal row-dragging/data-row-drop use
+the existing column drag marker conventions. One row moves at a time: selection,
+legacy function callbacks and counter fields are not introduced by this increment.
+
+
+Bag collection ordering — owner, 2026-10-28: “ok procedi con il collection
+store sulla Bag e collega sort multicolonna e selfDragRows della grid, usando
+l'indice sui nodi come abbiamo detto”. This supersedes the physical move draft
+above. BagCollectionStore follows existing class/file conventions; it lives in
+stores/bag-collection-store.js. Legacy rowidx names the zero-based ordinal on
+each row node; sortedBy on the containing Data node uses legacy field:a,field:d
+criteria. These are store metadata, not record identity or formatted cell values.
+BindingRuntime.collectionStore caches one resource per Bag identity and explicit
+rowMode; the internal sourceContext.collectionStore supplies it to components.
+The cache owns resource identity only: committed order and criteria stay in Data.
+GridRows only projects store values; GridRowInteraction calls store.moveRow.
+Store getRows/sort/moveRow/value/subscribe follow existing verb conventions.
+GridHeaderInteraction delegates click (single criterion), Shift-click (multiple),
+and Enter/Space to the store; data-sort-direction/data-sort-priority are derived
+DOM markers, following the existing data-field/data-drop convention. Native drag
+and resize remain separate gestures. No public Source store factory, remote
+provider, selection or alternate ordering representation is introduced here.
+
+BagCollectionStore.synchronize reconciles membership/value changes; receiveData
+uses the existing BindingRuntime Data event path, without an additional Bag
+subscription. getRows reads rowidx only. This preserves the owner's separation:
+Data updates or an explicit request compute order; redraw only consumes it.
+
+
+Grid hardening (2026-10-29, owner-approved review without new features):
+BindingRuntime.isCollectionStoreUpdating follows existing predicate/method naming
+and reports the cached store's active commit only. NodeBinding's private
+storeRegistration identifies the grid subtree route deferred until completion;
+it is not a new component capability or authoring parameter. HtmlElement.update
+receives the existing DataChange to avoid rebuilding an unrelated Data struct.
+No new public schema, transaction API, ordering representation or fallback.
+
+
+Deferred grid invalidation — owner, 2026-10-29: “ogni grid funziona pull”,
+“ogni grid viene avvisata di cambiamenti”, followed by the proposal to subscribe /
+publish affected rows or a full redraw and “procedi alla revisione tenendo conto
+di questi aspetti”. BagCollectionStore.subscribe/publish uses an internal
+invalidation payload {full, rows}, with stable BagNode identities in rows and no
+copied cell values. Grid coalesces notifications in one cancellable setTimeout,
+reads current store data on delivery and reports its own render errors. Full
+invalidation subsumes row invalidations; structure and store replacement invalidate
+fully. Private pendingRows/pendingFull/refreshTimer are transient render work, not
+application state. Existing GridRows.read accepts the affected node list for partial
+projection. No generic SET/FIRE router-policy change, polling or new provider API.
+
+
+Collection filtering and FrameGrid search — owner, 2026-10-29: “si procedi con
+filtered nel collection store e collega il searchOn della framegrid, mantenendo
+separati filtro e ordinamento e seguendo il legacy”, including the all/column
+menu and type-dependent input syntax. Preserve legacy searchOn, searchBox,
+filterColumn, currentFilterValue and filtered terminology. FrameGrid searchOn
+accepts true (automatic menu), false (no search), or the legacy comma-separated
+caption:field list / *dtype selection. SearchBox is the optional grid collection
+component, mounted in a real top menu bar group. GridSearch is an internal
+Source-owned connection between the grid's current store/column model and its
+search control; it owns no record copies. The containing Data node's filter
+attribute holds the committed {value, columns, dtype, locale, timeZone} search definition.
+BagCollectionStore.applyFilter/isFiltered/filtered retain legacy verbs; filtered
+is a derived list of logical rowidx values (null means no filter). getRows(false)
+reads the full indexed order; its default reads the filtered order. Clearing a
+filter never clears sortedBy. These names introduce no remote query/provider,
+filterset manager, aliases or changes to tree searchText.
+
+The internal sourceContext.frameRecipient callback reuses the core menu-command
+frameRecipient/commandFrame helpers. Optional collection bundles request this
+Source relationship from core instead of bundling a second Builder class identity.
+sourceContext.locale/timeZone carry the existing page formatting context; no new
+public locale override or component reference syntax is introduced.
+
+
+Independent collection views — owner, 2026-10-29: “ogni grid deve avere
+ordinamento e filtered propri condividendo gli stessi dati. procedi e metti in
+gallery un esempio con due grid ordinate e filtrate diversamente”. This explicitly
+supersedes the shared rowidx/sortedBy/filter ownership above. BagCollectionStore
+owns resident Bag access and change publication only. BagCollectionView follows
+the existing class/file convention; gridCollectionView attaches one view to its
+grid Source node. Its private node-to-index map, sortedBy and filter are Source
+instance state, not attributes on business nodes or copied records. filtered is
+derived from this view's indices. BindingRuntime.collectionView and the matching
+sourceContext callback supply this resource from the shared collectionStore.
+View connect/disconnect owns the parent subscription; binding a replacement Bag
+retains the widget's accepted criteria while rebuilding its identity index.
+Grid sortedBy (text) and filter (mapping or null) are read-bound declarative
+requests, applied when their input changes; interactive current criteria belong
+to the view. Filter locale/timeZone default to the existing page context. No
+write-back, alternate state path, remote provider or alias is introduced.

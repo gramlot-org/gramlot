@@ -1,3 +1,6 @@
+import {Bag} from '@genrojs/bag';
+import {BagCollectionView} from '../stores/bag-collection-view.js';
+import {BagCollectionStore} from '../stores/bag-collection-store.js';
 import {SourceBag} from '@genrojs/builders';
 import {DataRouter} from './router.js';
 import {DataInstaller} from './installation.js';
@@ -42,6 +45,7 @@ export class BindingRuntime {
     #subscriptions;
     #subscription = `gramlot-data-${randomId()}`;
     #disposed = false;
+    #collectionStores = new WeakMap();
 
     constructor(gramlot, {subscriptions}) {
         this.#gramlot = gramlot;
@@ -76,6 +80,26 @@ export class BindingRuntime {
     /** `nodeId → node` of the Source nodes with an open NodeBinding (R06). */
     get nodeIds() { return this.#nodeIds; }
 
+    /** One shared resident data resource per Bag; presentation state belongs to views. */
+    collectionStore(bag, rowMode) {
+        if (this.disposed) throw new Error('BindingRuntime is disposed');
+        let store = this.#collectionStores.get(bag);
+        if (!store) {
+            store = new BagCollectionStore(bag, rowMode);
+            this.#collectionStores.set(bag, store);
+        } else if (store.rowMode !== rowMode) throw new TypeError('A shared collection store requires one rowMode');
+        return store;
+    }
+
+    /** Each grid Source owns one view; only the underlying Bag access is shared. */
+    collectionView(node, bag, rowMode) {
+        const store = this.collectionStore(bag,rowMode);
+        if (!Object.hasOwn(node,'gridCollectionView')) {
+            Object.defineProperty(node,'gridCollectionView',{value:new BagCollectionView(store),configurable:true});
+        } else node.gridCollectionView.bindStore(store);
+        return node.gridCollectionView;
+    }
+
     /** Subscribe once on Builder's Data wrapper; nothing is created. */
     attach() {
         this.root.subscribe(this.#subscription, {any: event => this.receiveData(event)});
@@ -83,6 +107,16 @@ export class BindingRuntime {
 
     /** Callback of the one Data subscription. */
     receiveData(event) {
+        // Visit resident stores along the affected Data path before their consumers.
+        // Static values avoid invoking resolvers; deletion paths still reach the containing Bag.
+        let bag = this.root;
+        for (const [index, segment] of (event.pathlist ?? []).entries()) {
+            const value = bag.node(segment)?.staticValue;
+            if (!(value instanceof Bag)) break;
+            const store = this.#collectionStores.get(value);
+            store?.receiveData(event, index + 1 < event.pathlist.length ? value.node(event.pathlist[index + 1]) : null);
+            bag = value;
+        }
         this.router.deliver(event);
     }
 
@@ -212,6 +246,7 @@ export class BindingRuntime {
         this.#disposed = true;
         this.root.unsubscribe(this.#subscription, {any: true});
         this.nodeIds.clear();
+        this.#collectionStores = new WeakMap();
         const errors = [];
         for (const [node, binding] of [...this.#bindings.entries()].reverse()) {
             this.#bindings.delete(node);
@@ -368,6 +403,7 @@ export class NodeBinding {
     #clickCount = 0;
     // The registration of the node's own variable datapath, read in the parent's context.
     #datapathRegistrations = new Set();
+    #storeRegistration = null;
 
     constructor(runtime, node) {
         this.#runtime = runtime;
@@ -425,13 +461,19 @@ export class NodeBinding {
             this.#remote = null;
         }
         const remoteDependencies = new Set();
-        if (node._getMeta('gramlot_component')?.bagStore) {
-            const storepath = node.getAttr('storepath');
-            if (typeof storepath !== 'string' || !storepath || /^[\^=]/.test(storepath) || storepath.includes('?')) {
-                throw new TypeError('storepath requires a plain Bag data path');
+        const component = node._getMeta('gramlot_component');
+        for (const [capability, attribute] of [['bagStore', 'storepath'], ['bagStruct', 'structpath']]) {
+            if (!component?.[capability]) continue;
+            const value = node.getAttr(attribute);
+            if (typeof value !== 'string' || !value || /^[\^=]/.test(value) || value.includes('?')) {
+                throw new TypeError(`${attribute} requires a plain Bag data path`);
             }
-            const path = node.absDatapath(storepath);
-            this.#registrations.push(this.runtime.router.register({path, recipient: this, subtree: true}));
+            const path = node.absDatapath(value);
+            const registration = this.runtime.router.register({path, recipient: this, subtree: true});
+            this.#registrations.push(registration);
+            // Grid receives store invalidations separately. Other Bag consumers
+            // (such as tree) continue to receive every ordinary Data event.
+            if (capability === 'bagStore' && component.bagStruct) this.#storeRegistration = registration;
         }
         const timingDependencies = this.remote ? pointerDependencies(node, node.getAttr('_timing')) : new Set();
         if (this.remote) for (const [name, raw] of Object.entries(node.getAttr())) {
@@ -492,6 +534,8 @@ export class NodeBinding {
      * registration of its `_timing` restarted the timer.
      */
     receive(change) {
+        if (change.registration === this.#storeRegistration &&
+            (change.level === 'child' || change.evt === 'upd_attrs')) return;
         if (this.#datapathRegistrations.has(change.registration)) {
             this.runtime.rebindBranch(this.node);
             return;
@@ -557,6 +601,7 @@ export class NodeBinding {
     #closeRegistrations() {
         this.#binder?.unregister();
         for (const registration of this.#registrations.splice(0)) registration.close();
+        this.#storeRegistration = null;
         this.#datapathRegistrations.clear();
         this.#remoteRegistrations.clear();
         this.#remoteTimingRegistrations.clear();

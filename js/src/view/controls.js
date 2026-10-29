@@ -205,18 +205,38 @@ export class ControlAdapter {
 
 /** Custom controls share the existing typed commit, IME and cleanup machinery. */
 class ComponentControl extends ControlAdapter {
+    #releaseForm;
+    form = null;
+    commitFormValue(value) { super.commit(null,value); }
+    validateForm() {
+        const value = this.node.getRelativeData(this.node.getAttr('value'));
+        commitComponent(this.element,this.element.validateCandidate(value, () => {}), result => {
+            this.form.candidate(this,result.value);
+        });
+    }
+
     static writesDefault = false;
     static preservesUnchangedValue = true;
     get eventElement() { return this.element.control; }
     attach() {
+        this.form = this.element.supportsFormValidation && this.node.pointerType(this.node.getAttr('value')) === '^' ? this.node.formState : null;
         this.element.setPageContext(componentContext(this));
+        if (this.form && this.node.pointerType(this.node.getAttr('value')) === '^') this.#releaseForm = this.form.register(this);
         super.attach();
+    }
+    refresh() {
+        const form = this.element.supportsFormValidation && this.node.pointerType(this.node.getAttr('value')) === '^' ? this.node.formState : null;
+        if (form === this.form) return;
+        this.#releaseForm?.();
+        this.form = form;
+        this.element.setPageContext(componentContext(this));
+        this.#releaseForm = form ? form.register(this) : null;
     }
     project(value, change) {
         if (this.element.shouldProjectControlValue(value)) super.project(value, change);
     }
     same(a, b) { return this.element.sameControlValue(a, b); }
-    detach() { this.element.releaseControl(); super.detach(); }
+    detach() { this.element.releaseControl(); this.#releaseForm?.(); super.detach(); }
     commit(event) {
         if (this.binding.closed || this.element.control.disabled || this.element.control.readOnly) return;
         commitComponent(this.element, this.element.acceptControlValue(), result => super.commit(event, result.value));
@@ -229,6 +249,9 @@ class ComponentControl extends ControlAdapter {
     read() { return this.element.readControlValue(); }
     write(value) { this.element.writeControlValue(value); }
     handleEvent(event) {
+        if (event.type === 'input' && this.form && !this.binding.closed && !this.element.control.disabled && !this.element.control.readOnly) {
+            this.form.draft(this.node,this.element.control.value ?? '');
+        }
         super.handleEvent(event);
         // Native change does not cross a shadow boundary; expose it to connect_onchange.
         if (!event.composed && !this.binding.closed && ['input', 'change'].includes(event.type)) {
@@ -597,6 +620,15 @@ function componentContext(adapter) {
     };
     return {
         locale:app.locale, timeZone:app.timeZone, createDecimal, isDecimal, getDecimalLibrary,
+        form:adapter.form,
+        formCandidate:value => adapter.form?.candidate(adapter,value),
+        formPending:pending => adapter.form?.pending(adapter,pending),
+        formValidate:() => adapter.form?.scheduleValidation(adapter),
+        formResult:result => adapter.form?.result(node,result),
+        formSelectionPending:active => adapter.form?.pendingPart(node,'selection',active ? 'active' : null),
+        formSelectionError:message => adapter.form?.issue(node,'selection',message),
+        formParseError:message => adapter.form?.parseError(node,message),
+        formClearDraft:() => adapter.form?.clearDraft(node),
         publish:(topic, payload) => node.publish(topic, payload),
         isActive:() => !binding.closed,
         reportError:(error, title) => { if (!binding.closed) binding.runtime.reportError(error, title); },

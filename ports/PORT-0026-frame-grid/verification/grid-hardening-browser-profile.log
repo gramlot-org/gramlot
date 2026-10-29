@@ -1,0 +1,8 @@
+chromium ordering: {"size":100,"structures":0,"projections":0,"indexEvents":100,"sortMs":6,"settledMs":34,"identity":true,"physicalOrder":true}
+chromium ordering: {"size":1000,"structures":0,"projections":0,"indexEvents":1000,"sortMs":55,"settledMs":144,"identity":true,"physicalOrder":true}
+chromium ordering: {"size":10000,"structures":0,"projections":0,"indexEvents":10000,"sortMs":514,"settledMs":1089,"identity":true,"physicalOrder":true}
+chromium: Python Source, two frame recipients, live counts, 10 theme/mode combinations, stable rows, header/body geometry, responsive overflow actions, scroll, individual row resize/reset/cancel/keyboard, indexed sort/multicolumn/physical-order preservation, self row drag/identity/cross-grid rejection, column resize Data/preview/cancel/keyboard, reorder/split/join and disposal passed
+webkit ordering: {"size":100,"structures":0,"projections":0,"indexEvents":100,"sortMs":15,"settledMs":71,"identity":true,"physicalOrder":true}
+webkit ordering: {"size":1000,"structures":0,"projections":0,"indexEvents":1000,"sortMs":122,"settledMs":351,"identity":true,"physicalOrder":true}
+webkit ordering: {"size":10000,"structures":0,"projections":0,"indexEvents":10000,"sortMs":1595,"settledMs":6551,"identity":true,"physicalOrder":true}
+webkit: Python Source, two frame recipients, live counts, 10 theme/mode combinations, stable rows, header/body geometry, responsive overflow actions, scroll, individual row resize/reset/cancel/keyboard, indexed sort/multicolumn/physical-order preservation, self row drag/identity/cross-grid rejection, column resize Data/preview/cancel/keyboard, reorder/split/join and disposal passed

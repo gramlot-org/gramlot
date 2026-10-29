@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: values: read-only Bag cells update without replacing rows
+ok 1 - values: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 100.9185
+  ...
+# Subtest: attributes: read-only Bag cells update without replacing rows
+ok 2 - attributes: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 17.993416
+  ...
+# Subtest: nested struct is installed as ordinary Data before the component renders
+ok 3 - nested struct is installed as ordinary Data before the component renders
+  ---
+  duration_ms: 22.845042
+  ...
+# Subtest: insert, delete, replace store and retarget path follow the existing binding lifecycle
+ok 4 - insert, delete, replace store and retarget path follow the existing binding lifecycle
+  ---
+  duration_ms: 17.064791
+  ...
+# Subtest: external struct changes and replacement update all sharing grids
+ok 5 - external struct changes and replacement update all sharing grids
+  ---
+  duration_ms: 20.977041
+  ...
+# Subtest: the header is outside the rows viewport and both layouts expose one logical table
+ok 6 - the header is outside the rows viewport and both layouts expose one logical table
+  ---
+  duration_ms: 14.375708
+  ...
+# Subtest: scroll/gutter synchronization has one geometry observer and releases pending work
+ok 7 - scroll/gutter synchronization has one geometry observer and releases pending work
+  ---
+  duration_ms: 14.200667
+  ...
+# Subtest: rendering is read-only and a Source rebuild reuses the installed Data struct
+ok 8 - rendering is read-only and a Source rebuild reuses the installed Data struct
+  ---
+  duration_ms: 22.545167
+  ...
+# Subtest: nested struct (empty=false) and external structpath conflict before Data installation
+ok 9 - nested struct (empty=false) and external structpath conflict before Data installation
+  ---
+  duration_ms: 15.653708
+  ...
+# Subtest: nested struct (empty=true) and external structpath conflict before Data installation
+ok 10 - nested struct (empty=true) and external structpath conflict before Data installation
+  ---
+  duration_ms: 11.407375
+  ...
+# Subtest: empty rows, false, zero and HTML-like text remain distinct and inert
+ok 11 - empty rows, false, zero and HTML-like text remain distinct and inert
+  ---
+  duration_ms: 17.070417
+  ...
+# Subtest: wrong representations and resolvers fail without reads or writes
+ok 12 - wrong representations and resolvers fail without reads or writes
+  ---
+  duration_ms: 0.27125
+  ...
+# Subtest: struct rejects unknown attributes, duplicate fields and nested groups
+ok 13 - struct rejects unknown attributes, duplicate fields and nested groups
+  ---
+  duration_ms: 0.255917
+  ...
+# Subtest: invalid inline structure is rejected before preceding Data setters run
+ok 14 - invalid inline structure is rejected before preceding Data setters run
+  ---
+  duration_ms: 10.496166
+  ...
+# Subtest: resizing writes the existing struct column and preserves both sharing grids and rows
+ok 15 - resizing writes the existing struct column and preserves both sharing grids and rows
+  ---
+  duration_ms: 15.087625
+  ...
+# Subtest: column movement changes Bag order and projects all sharing grids without replacing rows
+ok 16 - column movement changes Bag order and projects all sharing grids without replacing rows
+  ---
+  duration_ms: 19.238584
+  ...
+# Subtest: moving across a columnset preserves membership and splits/joins contiguous header bands
+ok 17 - moving across a columnset preserves membership and splits/joins contiguous header bands
+  ---
+  duration_ms: 18.603
+  ...
+# Subtest: legacy group colors and cell white_space project from struct Data
+ok 18 - legacy group colors and cell white_space project from struct Data
+  ---
+  duration_ms: 24.844958
+  ...
+# Subtest: values: row headers are generated ordinals and follow Bag order
+ok 19 - values: row headers are generated ordinals and follow Bag order
+  ---
+  duration_ms: 15.782084
+  ...
+# Subtest: attributes: row headers are generated ordinals and follow Bag order
+ok 20 - attributes: row headers are generated ordinals and follow Bag order
+  ---
+  duration_ms: 15.678833
+  ...
+# Subtest: values: row heights belong to each Source grid, not shared Data
+ok 21 - values: row heights belong to each Source grid, not shared Data
+  ---
+  duration_ms: 15.400625
+  ...
+# Subtest: attributes: row heights belong to each Source grid, not shared Data
+ok 22 - attributes: row heights belong to each Source grid, not shared Data
+  ---
+  duration_ms: 16.58625
+  ...
+# Subtest: row heights survive updates and DOM moves; removal/replacement clears their state
+ok 23 - row heights survive updates and DOM moves; removal/replacement clears their state
+  ---
+  duration_ms: 15.267417
+  ...
+# Subtest: values: selfDragRows moves Bag nodes, retaining rows and individual heights
+not ok 24 - values: selfDragRows moves Bag nodes, retaining rows and individual heights
+  ---
+  duration_ms: 19.333542
+  location: '/Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/tests/grid-components.test.js:401:45'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be reference-equal to "expected":
+    + actual - expected
+    
+      HTMLTableRowElement {
+        [Symbol(SameObject caches)]: [Object: null prototype] {
+          cells: HTMLCollection {},
+    -     classList: DOMTokenList {},
+          dataset: DOMStringMap {},
+          style: CSSStyleDeclaration {}
+        }
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/tests/grid-components.test.js:415:12)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:979:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:677:18)
+    Test.postRun (node:internal/test_runner/test:1090:19)
+    Test.run (node:internal/test_runner/test:1018:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: attributes: selfDragRows moves Bag nodes, retaining rows and individual heights
+not ok 25 - attributes: selfDragRows moves Bag nodes, retaining rows and individual heights
+  ---
+  duration_ms: 17.450875
+  location: '/Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/tests/grid-components.test.js:401:45'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be reference-equal to "expected":
+    + actual - expected
+    
+      HTMLTableRowElement {
+        [Symbol(SameObject caches)]: [Object: null prototype] {
+          cells: HTMLCollection {},
+    -     classList: DOMTokenList {},
+          dataset: DOMStringMap {},
+          style: CSSStyleDeclaration {}
+        }
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/gporcari/Sviluppo/gramlot/gramlot/worktrees/frame-grid/js/tests/grid-components.test.js:415:12)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:979:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:677:18)
+    Test.postRun (node:internal/test_runner/test:1090:19)
+    Test.run (node:internal/test_runner/test:1018:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: selfDragRows is opt-in, rejects foreign-grid drops and cancels when disabled or retargeted
+ok 26 - selfDragRows is opt-in, rejects foreign-grid drops and cancels when disabled or retargeted
+  ---
+  duration_ms: 20.722
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 24
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 972.978416

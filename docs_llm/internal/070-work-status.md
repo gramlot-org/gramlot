@@ -1,10 +1,14 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-28**.
+Document ID: **GC-070**. Updated: **2026-10-29**.
+
+**Current local base:** Grid, forms, selectors, tray and prepared collections are combined for consolidation; see [the current checkpoint](#gc-070-unified-consolidation-base). No new public release.
 
 **Kajenn extension:** native WebSocket and database access are implemented and locally verified; the upstream async-cancellation issue remains open. See the latest checkpoint in [§2435](#gc-070-2435).
 
 **PageStore release:** the authorized package publication and both standard-gallery deployments are complete. WebSocket integration is Uvicorn-only; see the [dated release receipts and scope (§2435)](#gc-070-2435).
+
+**FrameGrid first increment (2026-10-28):** implemented with the existing framePane and menu bar system, central grid recipient, composable top/bottom and theme tokens. Compiled-asset Chromium/WebKit qualification and full current-baseline JS/Python checks pass; visual acceptance pending. [Grid checkpoint](#gc-070-grid-2460).
 
 **Historical record — published checkpoint before the naming migration:** core 0.3.6, gramlot-py-server 0.2.11, gramlot-js-server 0.2.14 and gramlot-examples 0.3.9 are published on PyPI and npm and run on both hosted galleries (generation `20261020T090845Z`); JSR is optional. The JSR package 0.3.6 does not find its themes: the manifest is corrected for the next core release. See [§1485](#gc-070-1485).
 
@@ -16282,3 +16286,547 @@ This closes the local consolidation on codex/release-database-local-20261029.
 Artifacts, exact revisions and SHA-256 checksums are recorded under
 /private/tmp/gramlot-db-local. Version numbers remain unchanged because these are
 local candidates. No main merge, push, tag, package publication or deployment.
+
+
+<a id="gc-070-2490"></a>
+## 2490 · Condition port contract approved; provider boundary under review — 2026-10-29
+
+Owner requests condition/weakCondition before the public release and confirms
+required dbSelect single-candidate replacement after condition changes. GC-315
+§190 records search/lookup/revalidation, both weak forms, authorization retention,
+async lifecycle and Base-only gallery scope. Contract recorded; runtime unchanged.
+Asqueel supports legacy expressions; current SQLAlchemy/Django providers do not.
+The provider scope is awaiting the owner's answer; no translator or silent fallback
+is assumed. Response metadata and server expression authorization need a concrete
+contract. No new runtime tests, acceptance, commit or publication claimed.
+
+
+Owner follow-up: “certe capabilities sono asqueel only”, followed by “deve
+funzionare esattamente come il legacy”. Treat conditions as Asqueel-only and
+withdraw the proposed second expression registration. Core parameter forwarding,
+identity error display, required unique-candidate replacement, request races and
+combo free text are implemented with controlled-service regressions: 57 shared
+choice/selector tests pass. SQLAlchemy/Django explicitly reject these capabilities;
+18 SQLAlchemy/endpoint/provider-refusal tests pass. These are partial implementation
+checks, not actual Asqueel condition or gallery qualification. Asqueel service,
+server expression handling, generated metadata, end-to-end Base gallery and full
+integration verification remain outstanding. No release artifacts replaced.
+
+
+<a id="gc-070-2495"></a>
+## 2495 · Asqueel conditions and State/Customer local trial — 2026-10-29
+
+Owner requests “prova db select su state e pou su customer vioncolato a state”.
+The Base Asqueel runner now registers states and loads its separate conditions
+catalog. The Python lesson declares two dbSelect widgets: condition='$state=:state'
+with condition_state='^.state', and a checkbox binding weakCondition='^.weak'.
+SQLAlchemy/Django do not load this catalog and explicitly reject condition support.
+
+Verified: 57 shared choice/selector JS regressions, 55 provider tests, and three
+Base gallery authoring/catalog tests pass. Runtime, collection grammar and widget
+reference were regenerated. Real read-only PostgreSQL checks cover state lookup,
+NSW/VIC filtering, hard-ineligible identity recovery and weak identity acceptance.
+Browser trial on port 61505 selected NSW and a customer, then Victoria: the customer
+and caption remained with a condition error; enabling weakCondition cleared it.
+
+Preview uses the current source packages plus regenerated browser artifacts at
+http://127.0.0.1:61505/pages/81-asqueel/01-state_customers. The previous consolidated
+candidate archives have not been replaced. This is a local trial, not a completed
+release qualification or a public security review of client-authored expressions.
+Invoice remains excluded; no publication, push or deployment performed.
+
+
+<a id="gc-070-form-local-tranche"></a>
+## Form GUI tranche — 2026-10-29
+
+Owner includes forms in the approaching release and approves Source-owned
+incomplete text, last typed Data and blocked save. Contract: GC-380 §060 and
+constitution `gc-000-form-drafts`. Implemented and locally verified; owner trial
+acceptance is pending. No publication, push or deployment was performed.
+
+The nearest marked Source node owns FormState and its Bag registers. Existing
+ControlAdapter commits and FieldState validation are reused. Parsed invalid values
+enter Data inside the form; unparseable numeric/date text remains in Source. Net
+changes compare against the accepted baseline. Local accept/restore preserve the
+controls, validation epochs reject stale answers, and dbSelect identity/candidate
+requests block acceptance. Record-path relocation and field disposal are covered.
+
+Verification: 1,346 core tests passed, including 13 new form regressions. Browser
+qualification through Uvicorn at port 61506 verified real typing, return-to-baseline,
+required rejection, incomplete number/date text, pending and rejected remote
+validation, local acceptance and restore. It found and fixed a mixin setter issue:
+restoring an unchanged typed value now clears its incomplete editor text too.
+
+Gallery `form-state` has Python/JS pages, TYTX data, a guide and feature-index link.
+Its Source parity passes; the feature/sample-data checks pass (12 tests), and all
+Python gallery routes build (4 route/endpoint test methods). The broader JS
+checks exposed a pre-existing Gallery tray error: `08-gallery_tray.js:26` calls
+`dataFormula` without required `result_path`. The line is unchanged from examples
+HEAD and affects page-collections plus that lesson's parity check. It was not
+silently folded into this form increment. All other lesson parity checks passed.
+
+Preview: http://127.0.0.1:61506/pages/01-inputs/07-forms_and_validation/05-form_state
+Remote Edit remains disabled. Logs: `/private/tmp/forms-core-full-final.log`,
+`/private/tmp/forms-gallery-tests.log`, `/private/tmp/forms-gallery-final.log`,
+`/private/tmp/forms-parity-final.log`, `/private/tmp/forms-python-pages.log`.
+Native HTML validation, nested/overlapping form transactions, grid editor flushing,
+undo/redo, database persistence/concurrency and Invoice remain outside this tranche.
+
+
+<a id="gc-070-gallery-tray-release-followup"></a>
+## Gallery tray release follow-up — 2026-10-29
+
+Owner requested: fix Gallery tray, verify it and report what remains to close the
+release. The JavaScript page now uses named `result_path` and `formula` attributes
+instead of Python positional arguments. This resolves the finding recorded above;
+no core runtime change was required.
+
+Verification: all 115 examples page-collection and Python/JavaScript Source-parity
+tests pass. In the JavaScript preview at port 61507, adding a Form state card,
+editing its name to Ada, adding/removing/re-adding Text and links updated the count
+and preserved the first card's Data and changed status. No console errors were
+reported. Log: `/private/tmp/gallery-tray-release-check.log`.
+
+Release remains local. The consolidated candidate archives predate the conditions,
+form and this Gallery tray increment. Remaining work: complete combined release
+qualification (including the Asqueel client-condition/server-constraint boundary),
+rebuild and verify the final artifacts and their consumers, then consolidate and
+perform the approved public release/deployments. Invoice remains excluded; the
+other form capabilities explicitly deferred above are not silently added to scope.
+No publication, push or deployment was performed in this follow-up.
+
+
+<a id="gc-070-unified-release-preview"></a>
+## Unified local release preview — 2026-10-29
+
+Owner prioritized activating one local gallery with the release candidate.
+The preview at http://127.0.0.1:61505/ combines the ordinary gallery, Base database,
+Asqueel selectors, PageStore/WebSocket and Kajenn/Asqueel catalogues. Invoice is
+excluded and Remote Edit is disabled. The temporary runner composes existing
+stage/Application APIs and enables Kajenn WebSocket; it is not a public deployment.
+Runner and logs: `/private/tmp/gramlot-release-integration-20261029/`.
+
+Issue #80's prepared-collection correction is integrated locally; core and gallery
+collections were regenerated together. Core verification: 1347 JavaScript tests
+passed; Python 318 passed, 1 xfailed (397 subtests). Collection checks: 23 passed.
+Server integration tests: 294 passed, 13 skipped before installing the optional
+Kajenn database dependencies; those skipped paths still require a rerun.
+The optional Asqueel catalogue now has its required directory index, with four
+passing database-gallery tests. The full index renders and the browser verified
+State options from the database and customers filtered to New South Wales.
+
+The preview is ready for owner testing, not final release acceptance. Remaining:
+combined qualification, optional database checks, JS/serverless consumer artifact
+checks, final consolidation and publication. Existing artifact receipts predate
+this integration. No public release or deployment was performed here.
+
+<a id="gc-070-grid-2460"></a>
+## 2460 · Resident grid and frameGrid on the current menu/frame baseline — 2026-10-28
+
+Owner confirms “si : usando il sistema slot bar nuovo” for the proposed frameGrid
+composition. [GC-375](375-frame-grid.md) and [PORT-0026](../../ports/PORT-0026-frame-grid/README.md)
+record Source ownership, exact scope and legacy evidence. frameGrid composes a real
+framePane and its center.grid; top/bottom use the existing menu(presentation="bar")
+with menuline, groups, spacers and overflow. The grid is the existing frameTarget
+recipient. No duplicate layout, registry, dispatch or state mechanism.
+
+The prior read-only grid is integrated with this baseline's consumed DataInstaller
+nodes and prepared collection build. Header/body separation and Bag row/struct
+contracts remain; header colors now follow the current shared palette. This work
+lives at worktrees/frame-grid, based on 1be04a2, separately from the active gallery.
+
+Verified: full current JS suite 1284 passed; focused grid/frame/menu 49 passed;
+Python 66 tests plus 62 subtests; build; Chromium/WebKit against compiled artifacts,
+two frame recipients, counts, ten theme/mode combinations, responsive overflow,
+scroll alignment and disposal. Screenshots inspected. The review fixture is served
+at http://127.0.0.1:64550/. Requested composition implemented and verified; owner
+visual acceptance pending. No editing/filtering/collectionStore expansion, merge,
+release or deployment. The fixture's local update/remove commands and count formula
+are authored consumers, not automatic frameGrid persistence services.
+
+
+<a id="gc-070-grid-2465"></a>
+## 2465 · FrameGrid gallery and visual reference — 2026-10-28
+
+The owner's requested gallery integration is implemented in the connected
+worktrees/frame-grid-examples preview at http://127.0.0.1:64551/: Menus and toolbars
+→ FrameGrid (menu-15). External gallery settings control all five themes in both
+modes. The example has twelve Bag attribute rows, normal Data commands, shared
+bars and Python/JavaScript Source parity. Column headers now use surface/ink,
+group titles are centered, and unused body space follows the theme.
+
+Verified after this presentation change: core build and 53 focused grid/frame/menu
+tests; gallery build, lesson Source parity, Chromium/WebKit with ten theme/mode
+combinations each, stable grid/row identity, header/body separation and commands.
+Visual acceptance pending. Legacy floating configurator reviewed in GC-375 §030;
+new struct styles and first configurator scope are not implemented or approved.
+No release, publication, consolidation or deployment.
+
+
+<a id="gc-070-grid-2470"></a>
+## 2470 · Legacy grid gestures and visual refinement — 2026-10-28
+
+Owner explicitly requests SVG, better visual quality, column drag/resize writing
+struct Data, split group bands and reuse of the legacy mechanism. Implemented:
+flat legacy cell order at view_0.rows_0, group definitions at info.columnsets,
+preserved columnset membership, derived contiguous bands, width writes, pointer
+preview/cancellation, keyboard equivalents and cleanup. Source column/colgroup
+syntax is retained. No alternate Data schema or independent order store.
+
+The gallery now has SVG commands/title, theme-colored bands, aligned captions,
+multiline notes, stronger striping and integrated button surfaces. GC-375 §035
+records contracts, exact legacy evidence and supersession of the earlier proof.
+Verified: 1288 JS tests, 16 Python tests, builds and example Source parity;
+Chromium/WebKit real resize/reorder/split/join/cancel/disposal; five gallery themes
+in both modes with retained identity and multiline geometry. Local gallery:
+http://127.0.0.1:64551/. Owner visual acceptance pending; configurator and cell
+editing are not implemented. No publication, deployment or consolidation.
+
+
+<a id="gc-070-grid-2475"></a>
+## 2475 · Grid band and toolbar polish — 2026-10-28
+
+Owner requests lower/more rounded group bands and borderless SVG toolbar icons.
+Implemented shared group/spacer geometry, smaller theme group heights, radius-lg
+corners and the existing icon/tooltip toolbar mode. Explicit example button
+borders/backgrounds removed. Builds, lesson Source parity and Chromium/WebKit
+geometry/interactions/theme checks pass; final Mimi visual/hover inspection passes.
+Preview remains http://127.0.0.1:64551/. GC-375 §040 records measurements. Visual
+acceptance pending; no new API, publication or deployment.
+
+
+<a id="gc-070-grid-2480"></a>
+## 2480 · Distinct grid header palette — 2026-10-28
+
+Owner requests neutral gray headers distinct from the frame background. Column
+headers now have a separate light/dark gray palette, stronger separators and
+subtle relief through shared theme tokens. GC-375 §045 records the scope; the
+sample row-number field remains an ordinary data column, not a row-header API.
+Builds and Chromium/WebKit theme/identity/command checks pass; final Mimi light
+and dark screenshots inspected. Preview: http://127.0.0.1:64551/. No publication
+or deployment; visual acceptance remains with the owner.
+
+
+<a id="gc-070-grid-2485"></a>
+## 2485 · Generated grid row headers; height ownership pending — 2026-10-28
+
+Row numbers now use real row headers, the neutral header palette and a sticky
+left gutter. They follow Bag ordering/removal and preserve column resize/reorder.
+20 grid tests, Chromium/WebKit geometry and gallery theme/command checks, builds
+and menu-15 Source parity pass. GC-375 §050 records the exact owner request.
+Individual variable row heights are requested; drag resizing remains pending the
+answer about per-grid versus shared height ownership. No manual-height state or
+rowResize API is implemented. Preview: http://127.0.0.1:64551/.
+
+
+<a id="gc-070-grid-2490"></a>
+## 2490 · Independent row-height resizing — 2026-10-28
+
+Owner clarifies that distinct grid rows may display the same data. Manual height
+belongs to each grid's row, not the shared record. GC-375 §055 closes §050's
+pending ownership/implementation question. rowResize enables pointer resizing,
+keyboard adjustment and double-click/Home automatic reset, with cancellation and
+intrinsic content minimums. Heights are Source-owned; Data and struct stay intact.
+Verified: 23 focused grid tests, 16 Python tests, Source parity, builds, complete
+JS suite (1293 tests), Chromium/WebKit gestures and gallery theme checks. Preview
+http://127.0.0.1:64551/ is updated. Implementation complete; visual acceptance
+remains with the owner. No publication, deployment or consolidation.
+
+
+<a id="gc-070-grid-2495"></a>
+## 2495 · selfDragRows blocked by move notification contract — 2026-10-28
+
+Owner requests opt-in selfDragRows. Draft uses legacy/PoC same-grid row dragging
+and Bag.move; it does not add selection or alternate order state. Focused tests:
+24 pass, 2 fail because Bag.move emits del while the node is absent, then ins.
+The intermediate synchronous projection destroys the row and its manual height.
+GC-375 §060 and PORT-0026 contain a minimal reproducer and the dependency finding.
+Gallery opt-in is withheld; the earlier row-header/height increment stays usable.
+A bounded Bag JS correction requires the owner's explicit §14 exception. The
+question is pending; no dependency edits or workaround were made. Remaining:
+settle/fix movement semantics, integrate, verify browser dragging, enable gallery.
+
+
+<a id="gc-070-2500"></a>
+## 2500 · Row-order investigation supersedes the Bag-change assumption — 2026-10-28
+
+Owner requests examining legacy logical reorder, a precomputed numeric node
+attribute and header-click sorting before implementation. GC-375 §065 records
+evidence: rowidx is a derived selection rank; counterField optionally persists
+manual order; sortedBy drives typed/store/server ordering; visible indexes are
+separate. PoC sorts visible references and blocks drag under sort/filter.
+The §2495 assertion that Bag JS must change is limited to the abandoned-as-default
+physical-move assumption. Logical order does not require deleting/moving Bag nodes.
+No dependency edits or scope exception were made. selfDragRows remains an inactive
+draft (24 passing/2 failing physical-move tests); headers and row resize remain
+usable. Next: settle rank ownership and drag/sort transitions, then implement.
+No new runtime checks were run during this source investigation.
+
+
+<a id="gc-070-2505"></a>
+## 2505 · Multicolumn Bag-value sorting required — 2026-10-28
+
+Owner explicitly requires multicolumn sorting and comparison of actual Bag values.
+GC-375 §070 records ordered criteria and directions, raw typed value access through
+rowMode, and exclusion of formatted DOM text from comparisons. Rank ownership,
+header gestures and drag/sort transitions are still open; the physical self-drag
+draft remains inactive. This is a requirement clarification only; no new runtime
+implementation or verification is claimed.
+
+
+<a id="gc-070-2510"></a>
+## 2510 · Presentation-index ordering approved — 2026-10-28
+
+Owner specifies one numeric node index: sort computes it from Bag values, self
+drag changes it, and redraw uses it regardless of physical Bag order. GC-375 §075
+records the exact confirmation. This supersedes the physical Bag.move draft and
+its claimed dependency prerequisite. Next implementation must use this shared
+index mechanism for multicolumn sort and drag, preserving row identity/heights.
+No runtime code or dependencies changed in this clarification; the old draft
+remains inactive and needs revision before testing/enabling it.
+
+
+<a id="gc-070-2515"></a>
+## 2515 · Legacy store ordering verified precisely — 2026-10-28
+
+GC-375 §080 traces NewIncludedView header sorting and row access through the
+collection store. Resident Values/AttributesBagRows sort their actual Bag nodes;
+VirtualSelection obtains globally ordered pages from the server. rowidx is derived
+selection position, not a universal rank-driven renderer contract. Older grids
+sort Bag data directly; default selfDragRows also physically reorders its Bag.
+A read-only executable probe of legacy methods passes resident multicolumn/order/
+identity/filter checks and virtual cache/RPC checks. No full legacy browser/server
+execution is claimed. The owner's index-driven Gramlot design remains the agreed
+new direction; the old physical self-drag draft is inactive and needs replacement.
+
+
+<a id="gc-070-2520"></a>
+## 2520 · Store-owned indexed ordering approved — 2026-10-28
+
+Owner assigns indexed ordering to the collection store. Grid requests multicolumn
+sort or drag reorder; store computes/updates node indexes from actual Bag values;
+grid redraws in indexed order. GC-375 §085 records exact confirmation and replaces
+the direct Bag.move draft. Current runtime still lacks the collection-store ordering
+layer; implementation and verification remain TODO. Existing row headers/heights
+remain usable and selfDragRows remains inactive. No dependency change is required
+by this responsibility decision, and none was made.
+
+
+<a id="gc-070-2525"></a>
+## 2525 · Resident store, multicolumn sort and indexed drag verified — 2026-10-28
+
+Implemented the owner's explicit instruction in GC-375 §090: BagCollectionStore
+owns rowidx on row nodes and sortedBy on their containing Data node. Grid requests
+sort/move and renders indices only; physical Bag order, node identity and per-grid
+heights survive. Click sorts one column; Shift-click adds criteria; selfDragRows
+switches to manual indexed order. The gallery now enables it.
+
+Verified: 1,309 JS tests, 16 Python tests, source parity, core browser fixtures and
+five-theme light/dark gallery checks in Chromium/WebKit. WebKit's first missing
+pointerdown after native drag is independently reproduced in plain HTML; the test
+separates that pointer cycle before resize. No runtime workaround was added.
+Implementation and checks complete; owner acceptance is separate. This increment
+does not include remote providers, filtering, editing or a public store builder.
+
+
+<a id="gc-070-2530"></a>
+## 2530 · Progressive Grid gallery section — 2026-10-28
+
+Owner requests a separate Grid index category and progressively richer examples.
+Implemented in the connected frame-grid-examples worktree: five new examples
+(Bag values, attributes, groups/heights, sorting/drag, shared store) plus the
+existing FrameGrid moved into the same family. There are six lessons, each with
+Python/JS Source, Data and explanation; theme selection stays outside the lesson.
+The stable FrameGrid key is retained. No core runtime change was needed.
+Verified six source-parity cases, 23 JS index/build/feature checks and 26 Python
+tests with 26 subtests; all six lessons exercise successfully in Chromium/WebKit.
+See GE-015 §130 for scope and verification limits. The live gallery remains on
+port 64551. Implementation/checks complete; owner visual acceptance is separate.
+
+
+<a id="gc-070-2535"></a>
+## 2535 · Browser locale in Grid examples — 2026-10-29
+
+Owner: “allora togli il locale da tutti gli esempi grid e lascia quello del browser”.
+Removed the explicit en-GB locale from all six Grid lessons in both Python and
+JavaScript. They inherit the existing browser locale/time-zone defaults; no core
+behavior changed. Six source-parity checks pass. Chromium and WebKit both verify
+all six pages with it-IT, including price display 89,90 and no page errors. The
+local gallery was rebuilt and restarted on port 64551.
+
+
+<a id="gc-070-2540"></a>
+## 2540 · Grid initial quality review — 2026-10-29
+
+Owner requested a worktree quality assessment. Read-only runtime inspection and
+adversarial probes reproduced partial/duplicate ordering indices after a Data
+observer throws, skipped consumers after a store listener throws, and 501
+structure rebuilds/projectAttributes calls for one 500-row sort (not 501 complete
+DOM renders). Receipt: frame-grid worktree PORT-0026 verification/grid-quality-probes.log;
+analysis: its GC-375 §095. Existing success-path qualification does not cover these
+cases. No runtime fix or architectural redesign was made. Full review and defect
+resolution are still required before consolidation; the next hardening phase is
+proposed, not yet owner-approved.
+
+
+<a id="gc-070-2545"></a>
+## 2545 · Grid hardening; router policy decision pending — 2026-10-29
+
+Owner authorized review and corrections without new features. The frame-grid
+worktree now completes store order writes and completion callbacks despite observer
+failures, removes per-index grid/struct reprojection, avoids sibling-array scans,
+clears failed cache initialization, removes duplicate column validation and validates
+Python frame parameters before composition. Added adverse/lifecycle/performance
+regressions. See its GC-375 §100 and PORT-0026 verification receipts.
+
+General DataRouter isolation was investigated but NOT retained: existing P12/R10
+tests explicitly stop later SET/FIRE recipients after an error. The owner requested
+an explanation before deciding on that contract. No approval is inferred; current
+router behavior and contract tests remain unchanged. Review closure and a generic
+view-error policy remain pending. No dependency edits or new grid features.
+
+Verified after hardening: 1,316 JS and 18 Python tests pass; Chromium/WebKit
+interaction/theme checks and 100/1,000/10,000-row measurements pass. No struct
+rebuilds during sort; large resident DOM latency remains, especially in WebKit.
+Router policy remains unchanged and pending owner decision.
+
+
+<a id="gc-070-2550"></a>
+## 2550 · Legacy DB-change/store refresh recovered — 2026-10-29
+
+Owner requested the legacy external-change mechanism and its relevance to current
+hardening. Source inspection traced commit-time event compression, subscribed-page
+Data delivery, per-table topics, Selection.pendingChanges/visibility-delay gates,
+query-based membership reconciliation, linked-grid refresh and VirtualSelection's
+server-side frozen-selection relevance check. Evidence and exact source anchors:
+frame-grid worktree GC-375 §105, Genropy revision
+fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea.
+
+Useful direction: reconcile provider/store first, then refresh dependent views;
+keep arbitrary SET/FIRE controller delivery separate. This is a proposal, not an
+approved implementation. Legacy did not isolate grid exceptions, and its external
+batchUpdating calls are commented out; no atomic redraw/rollback guarantee is
+claimed. Documentation-only research; runtime unchanged and P12/R10 decision open.
+
+
+<a id="gc-070-2555"></a>
+## 2555 · Grid invalidation and deferred pull — 2026-10-29
+
+Owner selected store publish/grid subscribe with affected rows or full invalidation,
+per-grid setTimeout and pull rendering, then authorized the revision. Implemented
+in the frame-grid worktree (GC-375 §110): immutable identity-only invalidations,
+coalesced partial/full pulls, deferred struct validation, independent render-error
+reporting, timer/subscription cleanup and retargeting. Formatting and cell updates
+share the existing paths. No polling, row-value snapshots or provider feature.
+
+This resolves the previous general-router question: DataRouter and the P12/R10
+SET/FIRE fail-fast tests remain unchanged. No amendment to controller delivery.
+Implementation acceptance remains distinct from test verification; no publication.
+
+Final verification: 1,323 JS tests (56 focused), 18 Python tests, compiled-bundle
+checks and Chromium/WebKit interaction/theme/ordering checks pass. P12/R10 remains
+unchanged. Deferred-pull revision complete; owner visual acceptance separate.
+
+
+<a id="gc-070-2560"></a>
+## 2560 · Collection filtered and FrameGrid searchOn — 2026-10-29
+
+Owner explicitly approved store-owned filtering, separate from rowidx/sortedBy,
+and FrameGrid searchOn with the legacy all/column menu and typed syntax.
+Implemented and verified in GC-375 §115: filter criteria in Data, derived filtered
+indices, full/partial invalidations, hidden-row-preserving drag/heights; Source-owned
+search connection, real toolbar composition, localized numeric/date comparisons,
+regex text, debounce, errors and cleanup. No dependency edits or SET/FIRE changes.
+Full JS suite: 1,336 pass; final focused/build-identity checks: 75 pass; Python: 19
+pass; Chromium/WebKit and live gallery pass. Receipts in PORT-0026. Preview at
+http://127.0.0.1:64552/ → Grid → FrameGrid; browser locale inherited.
+Resident filtering/DOM limits remain; no remote filtering/filtersets/editing.
+Implementation and verification complete; owner visual acceptance separate.
+
+
+<a id="gc-070-2565"></a>
+## 2565 · Per-grid sort and filtered over shared data — 2026-10-29
+
+Owner explicitly confirmed independent ordering and filtered for each grid on
+shared data. Implemented and verified in GC-375 §120; supersedes §2560's shared
+metadata ownership. BagCollectionStore shares data; Source-owned BagCollectionView
+owns index, sort and filter. No copies, business metadata writes, dependency edits
+or general-router changes. Declarative initial/reactive requests coexist with
+interactive criteria; both search bars and row drag address only their own view.
+Gallery fifth Grid lesson demonstrates distinct initial mixed sorts and filters,
+independent searches and a shared data update. JS 1,331, focused 64, Python 19,
+six Python/JS example parity checks, Chromium/WebKit and live gallery pass.
+Receipts: PORT-0026 verification/grid-view-*.log. Preview: http://127.0.0.1:64552/.
+Implementation and checks complete; owner visual acceptance/consolidation separate.
+
+
+<a id="gc-070-2570"></a>
+## 2570 · Polished search control and dedicated gallery lesson — 2026-10-29
+
+Owner requested rounded search, an internal background lens, an internal clear
+button visible only with text, and a dedicated explanatory example. Implemented
+in GC-375 §125: theme-token capsule, integrated selector, stable clear geometry,
+keyboard focus and narrow-toolbar layout; unchanged filter/state ownership.
+Gallery Grid → Search · text, numbers and dates explains text, typed comparisons,
+invalid drafts, clearing and sort preservation using one FrameGrid. Python/JS
+Source parity and typed sample Data verified. Checks: 52 focused core tests,
+seven Grid parity tests, eight gallery tests, Chromium/WebKit including ten theme
+combinations and narrow toolbar. Live example verified at http://127.0.0.1:64552/.
+Receipts in PORT-0026. Implemented and verified; visual acceptance separate.
+
+
+<a id="gc-070-2575"></a>
+## 2575 · Search appearance corrected to owner feedback — 2026-10-29
+
+Owner rejected the blue halo and syntax-filled input; requested an information
+icon and distinct label background. GC-375 §130 implements neutral borders, a
+subtle selector background, empty input with lens and a small circled info button
+opening typed instructions. No filter contract change. Twelve FrameGrid tests,
+build, Chromium/WebKit and live gallery checks pass. Receipts in PORT-0026.
+Preview http://127.0.0.1:64552/ → Grid → Search. Visual acceptance separate.
+
+
+<a id="gc-070-unified-consolidation-base"></a>
+## Unified consolidation base — 2026-10-29
+
+Owner requested one worktree containing the current tranches before starting
+consolidation branches, and confirmed “ok”. This is a local integration checkpoint,
+not public release acceptance. Invoice remains excluded.
+
+The release branch now combines forms (first tranche), Asqueel condition and
+weakCondition, issue #80 prepared collections, tray corrections and the resident
+Grid/FrameGrid work. Grid was imported as the uncommitted delta of frame-grid
+against 1be04a2, through a three-way merge into this newer release base. The source
+worktrees and occupied develop checkouts were preserved. Seven Grid lessons are
+integrated into the existing examples catalogue; the generated demo collection
+was rebuilt against the current wrapper contract, rather than copied from Grid.
+
+Verification on the combined sources:
+
+- Core: 1,411 JavaScript tests; Python 337 passed, one expected failure and
+  397 subtests. Runtime and collection builds passed.
+- Python server: all 307 tests passed, including the optional Kajenn database
+  and PageStore/WebSocket paths previously skipped in the preview checkpoint.
+- Examples: full JavaScript run exposed ten integration failures (catalogue
+  counts, naming and the test fixture's missing Grid collection). After fixing
+  them, all 120 tests in the affected files passed; the other 212 had passed
+  in the full run. A further shared-view regression passed. Python: 65 passed,
+  one skipped and 186 subtests in the full run, followed by all nine tests in
+  the corrected catalogue file passing.
+- Documentation: public core Sphinx build and all 19-page link/anchor checks
+  pass; both Python server documentation views build without warnings.
+- Live Python gallery at http://127.0.0.1:61505/: Grid and all four database/
+  channel catalogues are present. The shared-view lesson was exercised: changing
+  a shared quantity updates both grids while retaining their distinct filters;
+  restoring the quantity restores the second view's row. Remote Edit is disabled.
+
+Integration backups, provenance manifest and detailed logs are under
+/private/tmp/gramlot-grid-integration-20261029/. The local runner is under
+/private/tmp/gramlot-release-integration-20261029/. These are local receipts,
+not distributable artifacts. Existing package versions are unchanged.
+
+Next consolidation work starts from this combined base. Outstanding public-release
+work includes JS/serverless consumer qualification of the new artifact format,
+security qualification of client conditions versus server-owned constraints,
+clean-install/package checks and owner acceptance. Grid editing/virtualization,
+full form persistence/undo and Invoice are not included by this checkpoint.

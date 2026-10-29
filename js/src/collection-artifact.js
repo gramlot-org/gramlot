@@ -1,6 +1,6 @@
 /** Portable prepared-artifact integrity; hosts provide bytes, never filesystem paths. */
 const encoder = new TextEncoder();
-const wrapper = id => `export {default} from "./collection.js";\nexport const buildId = "${id}";\n`;
+const wrapper = id => `export {default} from "./collection.js";\nexport * from "./collection.js";\nexport const buildId = "${id}";\n`;
 const pathValid = value => typeof value === 'string' && value.length > 0 &&
     !/[\\\x00-\x1f:?#%]/.test(value) && !value.split('/').some(part => !part || part === '.' || part === '..');
 function validate(metadata, files) {

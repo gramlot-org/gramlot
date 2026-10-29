@@ -35318,6 +35318,51 @@
             "default": null
           },
           {
+            "name": "condition",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "weakCondition",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
             "name": "method",
             "kind": "keyword_only",
             "role": "attribute",
@@ -36033,6 +36078,18 @@
             },
             "dbtable": {
               "dtype": "T",
+              "binding": "read"
+            },
+            "condition": {
+              "dtype": "T",
+              "binding": "read"
+            },
+            "weakCondition": {
+              "dtype": [
+                "B",
+                "T"
+              ],
+              "default": false,
               "binding": "read"
             },
             "method": {
@@ -37859,6 +37916,51 @@
             "default": null
           },
           {
+            "name": "condition",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "weakCondition",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
             "name": "method",
             "kind": "keyword_only",
             "role": "attribute",
@@ -38541,6 +38643,18 @@
             },
             "dbtable": {
               "dtype": "T",
+              "binding": "read"
+            },
+            "condition": {
+              "dtype": "T",
+              "binding": "read"
+            },
+            "weakCondition": {
+              "dtype": [
+                "B",
+                "T"
+              ],
+              "default": false,
               "binding": "read"
             },
             "method": {

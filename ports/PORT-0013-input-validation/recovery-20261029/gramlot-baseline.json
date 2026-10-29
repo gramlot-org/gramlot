@@ -1,0 +1,43 @@
+{
+  "revision": "d01bf3dc6389ad9bca91ef0f4bdbaafbfcc10242",
+  "working_files": true,
+  "note": "Local inspection baseline; not an assertion of public release contents.",
+  "files": [
+    {
+      "path": "js/src/components/validation.js",
+      "sha256": "138c968b32f8593c0a2d2a9f8eaae7c161c9ba0fe11706fc096fe1d374a309af"
+    },
+    {
+      "path": "js/src/components/field-state.js",
+      "sha256": "17a0528125d0fd7e95666e7057f98579e0e82330f4d1902f8a11f81eb27da2fe"
+    },
+    {
+      "path": "js/src/components/formlet-labels.js",
+      "sha256": "bb34dffaaff8cd9cb5b870d84707d4ebf5048eba95bc98d8c4d46f7b8e1cb688"
+    },
+    {
+      "path": "js/src/view/controls.js",
+      "sha256": "5fa1dd08960dc1619e5856197e0720b52cb8e7cca38974b35eefcd3ca7521db2"
+    },
+    {
+      "path": "js/src/binding/runtime.js",
+      "sha256": "335a62dc588ad77a9afb1db40ea9313dd02c04cbfa015540c603cbe4d21f5333"
+    },
+    {
+      "path": "js/tests/validation-engine.test.js",
+      "sha256": "09b4d288483b787886dfd2cc909416812727ee907499802b4cfd4e46e2b6d75a"
+    },
+    {
+      "path": "js/tests/input-validation.test.js",
+      "sha256": "8f315c5f5b987b86e41eaa884d52d3f18334e40662b0bf5ad90e3a5aaf229064"
+    },
+    {
+      "path": "js/tests/live-source-validation.test.js",
+      "sha256": "a5ac79992688a69e8add146449051f6089302937eae8a4a067e02693d06fe0d8"
+    },
+    {
+      "path": "docs/00-constitution.md",
+      "sha256": "7198b8208d0176b059aa65f5e68f223cedc8ce18e86b1b3b038a7fd9cc3f87ff"
+    }
+  ]
+}

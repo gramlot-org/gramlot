@@ -20,3 +20,6 @@ await writeFile(new URL('../../src/gramlot/collections/editors.json', import.met
 
 import typst from '../src/components/typst.js';
 await writeFile(new URL('../../src/gramlot/collections/typst.json', import.meta.url), JSON.stringify(typst.toDocument(), null, 2) + '\n');
+
+import grid from '../src/components/grid.js';
+await writeFile(new URL('../../src/gramlot/collections/grid.json', import.meta.url), JSON.stringify(grid.toDocument(), null, 2) + '\n');

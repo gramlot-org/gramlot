@@ -224,6 +224,34 @@ Transaction(root).commit({name:((root/name).read_bytes(),b'interrupted')},lambda
     assert run("check", config) == 0
 
 
+def test_builtin_layout_dependency_links_named_exports(project, monkeypatch):
+    import importlib
+
+    root, config = project
+    config.write_text(json.dumps({"output": "./src", "collections": [
+        {"entry": "@gramlot/gramlot/components/layout", "pythonPackage": "sample.layout"}
+    ]}))
+    assert run("build", config) == 0
+    monkeypatch.syspath_prepend(str(root / "src"))
+    sys.modules.pop("sample.layout", None)
+    sys.modules.pop("sample", None)
+    importlib.invalidate_caches()
+    (root / "ui/consumer.js").write_text("""import {defineCollection} from '@gramlot/gramlot/components';
+import layout, {ContentPane} from '@gramlot/gramlot/components/layout';
+if (!ContentPane.base) throw new Error('missing ContentPane');
+export default defineCollection({name:'consumer',components:[],dependencies:[layout]});
+""")
+    config.write_text(json.dumps({"output": "./consumer-output", "collections": [
+        {"entry": "./ui/consumer.js", "pythonPackage": "consumer.widgets"}
+    ], "externals": [{"entry": "@gramlot/gramlot/components/layout",
+                       "pythonImport": "sample.layout:mygramlot"}]}))
+    assert run("build", config) == 0
+    emitted = (root / "consumer-output/consumer/widgets/assets/collection.js").read_text()
+    assert '@gramlot/collections/layout' in emitted
+    assert '@gramlot/gramlot/components/layout' not in emitted
+    assert 'export * from "./collection.js";' in (root / "src/sample/layout/assets/index.js").read_text()
+
+
 def test_external_collection_is_linked_and_never_regenerated(project, monkeypatch):
     import importlib
 

@@ -1,3 +1,4 @@
+import {validateGridDeclaration, installGridStruct} from './grid-struct.js';
 import {Bag} from '@genrojs/bag';
 import {META_ATTRS, SourceBag} from '@genrojs/builders';
 import {isExpression, withoutBindingAttributes} from '../renderer/attributes.js';
@@ -35,7 +36,8 @@ export class DataInstaller {
         const setters = this.setterNodes(branch);
         requireInstallable(branch);
         for (const node of setters) {
-            this.applySetter(node);
+            if (node._getMeta('gridStruct')) installGridStruct(node, this.runtime.data);
+            else this.applySetter(node);
             this.runtime.closeBranch(node);
             if (node.parentBag) node.parentBag.popNode(node.label);
         }
@@ -44,7 +46,7 @@ export class DataInstaller {
 
     /** The `dataSetter` nodes of `branch`, in document order, parent before children. */
     setterNodes(branch) {
-        return branchNodes(branch).filter(node => node.nodeTag === 'dataSetter');
+        return branchNodes(branch).filter(node => node.nodeTag === 'dataSetter' || node._getMeta('gridStruct'));
     }
 
     /**
@@ -166,6 +168,7 @@ function requireGramlotSetter(node) {
  */
 export function requireInstallable(branch) {
     for (const node of branchNodes(branch)) {
+        validateGridDeclaration(node);
         if (node.nodeTag === 'dataSetter') requireGramlotSetter(node);
         requireProviderAttributes(node);
     }

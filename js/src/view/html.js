@@ -1,4 +1,5 @@
 import {createLabelbox, projectLabelbox, labelboxStyle} from './labelbox.js';
+import {commandFrame, frameRecipient} from './menu-command.js';
 import {randomId} from '../random-id.js';
 import {SourceBag, META_ATTRS, resolveRenderTag, sourceAttributeItems, SvgBuilder, pointerTransform} from '@genrojs/builders';
 import {ControlAdapter} from './controls.js';
@@ -38,7 +39,8 @@ function domPropertyName(name) {
  * names and style arrive adapted by the renderers (GramlotHtmlRenderer, GramlotSvgRenderer).
  */
 export class HtmlElement {
-    constructor({metadataAttributes = [], invokeScript = null, callLogic = null, reportError = null} = {}) {
+    constructor({format, metadataAttributes = [], invokeScript = null, callLogic = null, reportError = null} = {}) {
+        this.format = format;
         this.invokeScript = invokeScript;
         this.callLogic = callLogic;
         this.reportError = reportError;
@@ -67,8 +69,11 @@ export class HtmlElement {
         if (text != null && !['string', 'number', 'boolean'].includes(typeof text)) {
             throw new TypeError('HTML text must be scalar');
         }
+        const component = this.definition(node).meta.gramlot_component;
         for (const [key, value] of Object.entries(node.attr)) {
-            if (key === 'value' && this.definition(node).meta.gramlot_component) continue;
+            // Declared component parameters are checked by the builder schema;
+            // only ordinary DOM attributes must be scalar.
+            if (component && Object.hasOwn(component.parameters, key)) continue;
             if (node.nodeTag === 'menuline' && key === 'parameters') continue;
             if (this.metadataAttributes.has(key) || ['ask', '_ask'].includes(key) || (value && typeof value === 'object' && Object.hasOwn(value, '$gramlotRef'))) continue;
             if (value != null && !['string', 'number', 'boolean'].includes(typeof value)) {
@@ -120,6 +125,12 @@ export class HtmlElement {
         }
         if (meta.gramlot_component?.sourceContext) {
             element.setSourceContext({
+                sourceNode: node,
+                frameRecipient: () => frameRecipient(commandFrame(node)),
+                locale: node.rootBuilder.binding.gramlot.locale,
+                timeZone: node.rootBuilder.binding.gramlot.timeZone,
+                collectionView: (bag, rowMode) => node.rootBuilder.binding.collectionView(node, bag, rowMode),
+                format: this.format,
                 reportError: (error, title) => this.reportError(node, error, title),
                 publish: (topic, payload) => node.publish(topic, payload),
                 writeParameter: (name, value) => this.writeParameter(node, name, value),
@@ -176,7 +187,7 @@ export class HtmlElement {
      * other value gives the current `style` back (V1, legacy genro_wdg.js). The `value` of a form
      * control belongs to its ControlAdapter: neither the attribute nor the property is written here.
      */
-    update(record, node, attrs = node.attr, textValue = DEFAULT_TEXT, visible = null) {
+    update(record, node, attrs = node.attr, textValue = DEFAULT_TEXT, visible = null, change = null) {
         if (node.nodeTag === 'script') {
             for (const [name, code] of node.codeAttributes()) {
                 if (node.activatedCode(name) !== code) {
@@ -216,6 +227,12 @@ export class HtmlElement {
         if (this.definition(node).meta.gramlot_component) {
             if (this.definition(node).meta.gramlot_component.bagStore) {
                 element.setStoreBag(node.getRelativeData(node.getAttr('storepath')));
+            }
+            if (this.definition(node).meta.gramlot_component.bagStruct) {
+                const path = node.absDatapath(node.getAttr('structpath'));
+                if (!change || change.path === path || change.path.startsWith(`${path}.`) || path.startsWith(`${change.path}.`)) {
+                    element.setStructBag(node.getRelativeData(node.getAttr('structpath')));
+                }
             }
             attrs = element.projectAttributes(attrs, adapt);
         }

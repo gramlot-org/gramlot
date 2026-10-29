@@ -1,0 +1,4 @@
+120 → 121 → 122: baseline 120; one net change 120 → 122; save includes oldValue: 120::L
+Return to 120: net change and _loadedValue removed.
+Insert then delete: no remaining net change.
+Deletion log has path but no old subtree/value: insufficient on its own for undo.

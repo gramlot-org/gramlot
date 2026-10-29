@@ -240,7 +240,7 @@ Collection: inputs. Endpoint-backed choices. Requires an application endpoint im
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-Specific parameters: `dbtable`, `method`, `columns`, `hiddenColumns`, `auxColumns`, `template`, `templateNull`, `order_by`, `limit`, `searchDelay`, `ignoreCase`, `hasDownArrow`, `emptyLabel`, `selectedCaption`, `selectedRecord`, `selectedCb`, `autoSelect`.
+Specific parameters: `dbtable`, `condition`, `weakCondition`, `method`, `columns`, `hiddenColumns`, `auxColumns`, `template`, `templateNull`, `order_by`, `limit`, `searchDelay`, `ignoreCase`, `hasDownArrow`, `emptyLabel`, `selectedCaption`, `selectedRecord`, `selectedCb`, `autoSelect`.
 
 
 <a id="gc-345-095"></a>
@@ -251,7 +251,7 @@ Collection: inputs. Endpoint-backed suggestions with free text; the application 
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-Specific parameters: `dbtable`, `method`, `columns`, `hiddenColumns`, `auxColumns`, `template`, `templateNull`, `order_by`, `limit`, `searchDelay`, `ignoreCase`, `hasDownArrow`, `emptyLabel`, `selectedCaption`, `selectedRecord`, `selectedCb`.
+Specific parameters: `dbtable`, `condition`, `weakCondition`, `method`, `columns`, `hiddenColumns`, `auxColumns`, `template`, `templateNull`, `order_by`, `limit`, `searchDelay`, `ignoreCase`, `hasDownArrow`, `emptyLabel`, `selectedCaption`, `selectedRecord`, `selectedCb`.
 
 
 <a id="gc-345-310"></a>

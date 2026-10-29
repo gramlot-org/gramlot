@@ -1,0 +1,72 @@
+TAP version 13
+# Subtest: frameGrid is ordinary Source with idempotent access and optional collections
+ok 1 - frameGrid is ordinary Source with idempotent access and optional collections
+  ---
+  duration_ms: 29.818875
+  ...
+# Subtest: invalid grid parameters cannot leave a partial frame
+ok 2 - invalid grid parameters cannot leave a partial frame
+  ---
+  duration_ms: 22.421583
+  ...
+# Subtest: two frame toolbars address their own grid and survive row changes without remounting
+ok 3 - two frame toolbars address their own grid and survive row changes without remounting
+  ---
+  duration_ms: 174.842584
+  ...
+# (node:35460) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Python and JS frameGrid produce the same Source composition
+ok 4 - Python and JS frameGrid produce the same Source composition
+  ---
+  duration_ms: 206.665
+  ...
+# Subtest: values: FrameGrid search selects all or a typed column and reacts to Data changes
+ok 5 - values: FrameGrid search selects all or a typed column and reacts to Data changes
+  ---
+  duration_ms: 97.940208
+  ...
+# Subtest: attributes: FrameGrid search selects all or a typed column and reacts to Data changes
+ok 6 - attributes: FrameGrid search selects all or a typed column and reacts to Data changes
+  ---
+  duration_ms: 57.934125
+  ...
+# Subtest: search menu accepts legacy caption/field lists and dtype restriction
+ok 7 - search menu accepts legacy caption/field lists and dtype restriction
+  ---
+  duration_ms: 112.753542
+  ...
+# Subtest: search timer is cancelled on removal and hidden row heights survive filtering
+ok 8 - search timer is cancelled on removal and hidden row heights survive filtering
+  ---
+  duration_ms: 94.999166
+  ...
+# Subtest: explicit legacy menu captions select only the declared fields
+ok 9 - explicit legacy menu captions select only the declared fields
+  ---
+  duration_ms: 85.761792
+  ...
+# Subtest: store replacement retargets search and pending work cannot filter the old Bag
+ok 10 - store replacement retargets search and pending work cannot filter the old Bag
+  ---
+  duration_ms: 64.2645
+  ...
+# Subtest: active filters recompute membership and omit hidden rows from partial refreshes
+ok 11 - active filters recompute membership and omit hidden rows from partial refreshes
+  ---
+  duration_ms: 68.557125
+  ...
+# Subtest: two search bars and declarative requests remain independent on one Bag
+ok 12 - two search bars and declarative requests remain independent on one Bag
+  ---
+  duration_ms: 76.547375
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1630.123666

@@ -1,0 +1,4 @@
+{"case":"Data observer throws during sort","error":"Observer failure","indices":[0,1,0],"sortedBy":"","updating":false}
+{"case":"One consumer throws","error":"First consumer failed","secondConsumerNotified":false,"indices":[2,1,0]}
+{"case":"Single sort","rows":100,"indexEvents":100,"structRebuilds":101,"projectionCalls":101,"elapsedMs":18}
+{"case":"Single sort","rows":500,"indexEvents":500,"structRebuilds":501,"projectionCalls":501,"elapsedMs":117}

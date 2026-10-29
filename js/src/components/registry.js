@@ -17,7 +17,7 @@ function annotation(parameter) {
 }
 
 /** Compose effective metadata without invoking a DOM class factory. */
-export function defineComponent({name, tag, base, mixins = [], parameters = {}, subTags = '', presentationDefaults = [], dataScope = false, command = false, childParameters = {}, sourceContext = false, bagStore = false, dragSource = false, implementation}) {
+export function defineComponent({name, tag, base, mixins = [], parameters = {}, subTags = '', presentationDefaults = [], dataScope = false, command = false, childParameters = {}, sourceContext = false, bagStore = false, bagStruct = false, dragSource = false, implementation}) {
     webcomponentCode({code: tag});
     if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) throw new TypeError('Invalid component authoring name');
     const effective = {...base.parameters};
@@ -29,7 +29,7 @@ export function defineComponent({name, tag, base, mixins = [], parameters = {}, 
     }
     Object.assign(effective, parameters);
     for (const spec of Object.values(effective)) annotation(spec);
-    return Object.freeze({name, tag, base, subTags, presentationDefaults: Object.freeze([...presentationDefaults]), dataScope, command, bagStore, mixins: Object.freeze([...mixins]),
+    return Object.freeze({name, tag, base, subTags, presentationDefaults: Object.freeze([...presentationDefaults]), dataScope, command, bagStore, bagStruct, mixins: Object.freeze([...mixins]),
         labelbox: mixins.some(mixin => mixin.labelbox === true),
         parameters: freeze(structuredClone(effective)), childParameters: freeze(structuredClone(childParameters)), sourceContext, dragSource, implementation});
 }
@@ -81,7 +81,8 @@ export class ComponentCollection {
                     ...(component.sourceContext ? {sourceContext: true} : {}),
                     ...(component.labelbox ? {labelbox: true} : {}),
                     ...(component.dragSource ? {dragSource: true} : {}),
-                    ...(component.bagStore ? {bagStore: true} : {})}}
+                    ...(component.bagStore ? {bagStore: true} : {}),
+                    ...(component.bagStruct ? {bagStruct: true} : {})}}
             }]))};
     }
     /** Register once per document realm, only when the collection is activated. */

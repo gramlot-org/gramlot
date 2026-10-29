@@ -22,7 +22,7 @@ def _path(value):
 
 
 def _wrapper(build_id):
-    return f'export {{default}} from "./collection.js";\nexport const buildId = "{build_id}";\n'.encode()
+    return f'export {{default}} from "./collection.js";\nexport * from "./collection.js";\nexport const buildId = "{build_id}";\n'.encode()
 
 
 def _fingerprint(metadata, content):

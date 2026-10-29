@@ -64,6 +64,11 @@ class GramlotBuilderBagNode(SourceBagNode):
                     raise ValueError("A window requires exactly one framePane")
                 return children[0]
             return self._resolve_builder().element_call(self, "framePane")(node_label="frame")
+        if self.node_tag == "framePane" and name == "grid":
+            grid = self.static_value.get_node("center.grid") if isinstance(self.static_value, SourceBag) else None
+            if grid is None or grid.node_tag != "grid":
+                raise AttributeError("This frame has no central grid")
+            return grid
         if self.node_tag == "framePane" and name in ("top", "bottom", "left", "right", "center"):
             children = self.static_value
             if isinstance(children, SourceBag):

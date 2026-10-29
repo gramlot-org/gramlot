@@ -1,0 +1,208 @@
+{
+  "repository": "genropy/genropy",
+  "revision": "8ea63843fd11c4bd556869438ae289800c890db7",
+  "retrieved": "2026-10-29",
+  "scope": "Selected form, validation, authoring, examples and regression sources; not a repository-wide content census",
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha256": "927488d979bd4a3b178a18808b7c6bfab85cc04a5e1346f235b1e8f900583ab9",
+      "bytes": 24093
+    },
+    {
+      "path": "docs/genro/webpage_elements/form/form_validations.rst",
+      "sha256": "107cc24bfc1cc9799a1a8f269333cce21f7209b8abb7b13957df159c123b9e97",
+      "bytes": 18935
+    },
+    {
+      "path": "docs/genro/webpage_elements/widgets/form_widgets/formbuilder.rst",
+      "sha256": "2544debb5d7e4281fb9ccef03a680f941cd16563e0730562f86131e746ffe8c6",
+      "bytes": 9372
+    },
+    {
+      "path": "docs/genro/webpage_elements/widgets/form_widgets/formlet.rst",
+      "sha256": "fbb1f5430581b33f894f50811787429ff7c62201701f05c25e158fa1140f25ed",
+      "bytes": 16477
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_dev.js",
+      "sha256": "1e7c40f7ec039e2a2611c17b87c806636b472b0354f8b2ef12448d2bef17ee54",
+      "bytes": 72965
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_dlg.js",
+      "sha256": "1619c75bb8c460e6fe957cbbdf3d42f0f99ecb2742cc8e5cab3e79491feaa2aa",
+      "bytes": 81885
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_frm.js",
+      "sha256": "3f641017452a5d6cfc6ea8405d5860787cbff1c788f6295f5a46566c8c7e3da6",
+      "bytes": 147448
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_wdg.js",
+      "sha256": "bf5df0a5b3c053636e7103c85f9b42edebded48a277c28877575318c6ec810ea",
+      "bytes": 106510
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_widgets.js",
+      "sha256": "2b1a45d6cdb7237c25a29c419c47daa66414d632ba2f4cc6b70fa3162f270584",
+      "bytes": 290126
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrbag.js",
+      "sha256": "92bdf2c1d0868811d593b1c6b95ed5818023a1d4656dbf5b0a7fa09652ab604c",
+      "bytes": 83118
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrdomsource.js",
+      "sha256": "3ee2c06921c94501e28fe3e5fb9df72277db973cc1c0f63597e3f5ad914ffb2f",
+      "bytes": 93498
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrlang.js",
+      "sha256": "d42f063639aad129a48d5c0eced2b555510f9e41255ccfc5352304245f1958dd",
+      "bytes": 78526
+    },
+    {
+      "path": "gnrjs/tests/form_bag_deletion.test.js",
+      "sha256": "81273431870dfd0fa9c5eeed14bb3a54569268c8047464d3ae1c20b3471d5683",
+      "bytes": 7224
+    },
+    {
+      "path": "gnrjs/tests/form_invalid_fields_deletion.test.js",
+      "sha256": "5bf324577457d17e9c9e4a0d5702fd398ef45d29e4fd38987a0b925083a725e0",
+      "bytes": 4289
+    },
+    {
+      "path": "gnrjs/tests/form_rpc_failure.test.js",
+      "sha256": "a2dab5935ffb20aabd6df7eb4123df03a2cf084b3f29295bcf8e5fed49441888",
+      "bytes": 22409
+    },
+    {
+      "path": "gnrjs/tests/form_torn_down_field.test.js",
+      "sha256": "0f866c663384bf75325bfffda57c3ebd64897a19bafea90b51992914c8277fdf",
+      "bytes": 8412
+    },
+    {
+      "path": "gnrjs/tests/formbuilder_formlet.test.js",
+      "sha256": "2e488f448a8c6eeca78daf3a86f62afcf1fffde252e89fb13e8f11d088a0ab1e",
+      "bytes": 13039
+    },
+    {
+      "path": "gnrjs/tests/formlet_hidden_group.test.js",
+      "sha256": "f31ef615283e73c577ef172c77ec55a40b1580d28d1f0fdf4c79d8657c816735",
+      "bytes": 4406
+    },
+    {
+      "path": "gnrjs/tests/item_formstore_record.test.js",
+      "sha256": "e0a67abe8327ec10e3230488a940406c9141282320d27299676dbf715cb2becb",
+      "bytes": 12128
+    },
+    {
+      "path": "gnrjs/tests/rebuilt_widget_validation.test.js",
+      "sha256": "35ffc5583dd4bf1a01abc10baf08152d6fe3696561b1430c89fa85808e751c88",
+      "bytes": 4835
+    },
+    {
+      "path": "gnrpy/gnr/web/gnrwebstruct/base.py",
+      "sha256": "5ac6bb5fc23d06950e6684151e4bfb8e9005d1f0ac42663258f1948f7268aeab",
+      "bytes": 57608
+    },
+    {
+      "path": "gnrpy/gnr/web/gnrwebstruct/formbuilder.py",
+      "sha256": "677257a037eb38941849dadd01c32a5f533c05185a9428567c743b6d2ad33cfe",
+      "bytes": 17552
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/bag/ext_formats.py",
+      "sha256": "720c6cb5eeadac970cfc3ed6b1554c3b83ea699250de6fcf7e7a837cb392d829",
+      "bytes": 1611
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/components/advanced_form.py",
+      "sha256": "482962c1afe222793726bbd1e159ed6ea79dbfedd5bccfd3608501985a6e83ec",
+      "bytes": 2871
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/components/form_dialog.py",
+      "sha256": "bf3290bab95975476eafc8c538c34832b8b2dbc950addd2482234137ac9e1d15",
+      "bytes": 2517
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/ask_formlet.py",
+      "sha256": "2fa750493422037a3cee00975d4789c2df115912fea57378ebc093486fe7b933",
+      "bytes": 11994
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/dynamicform.py",
+      "sha256": "1b2c61f67a2b021af77f31a800cf8c1977e93d9249ff7427350813c2a6247584",
+      "bytes": 8176
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formHandler.py",
+      "sha256": "3c4eb64cac26a79d436bcfa602c4b1a993b635d2bc44914f710578db3420e800",
+      "bytes": 9951
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formbuilder.py",
+      "sha256": "1e5f0c3c90e27d8071482959cdda7833b56197d22e472ce4255c8ce743b7b9d5",
+      "bytes": 13614
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formbuilder_hidden.py",
+      "sha256": "62e73ccc55e79bfa06962882c28f3e1b85ef25f1e37bc0173cd41a0d8bec8645",
+      "bytes": 6353
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formclientstore.py",
+      "sha256": "36fc95e6e243bcf09d00d0c4d2bee4e2b74b03da2d354b937697180cd079cd12",
+      "bytes": 4396
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formdocumentstore.py",
+      "sha256": "6e10e53cb9d8c6e097e96245d74f5b3fdb3e1633e0ba2b4d4e25e6163fd6b5ca",
+      "bytes": 3310
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formhandler_baggrid.py",
+      "sha256": "a93d6554aa1ec4f152e71503e146d8eb60a8ac181a9c80e3be0849505ddd7dba",
+      "bytes": 4430
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formhandler_selection.py",
+      "sha256": "b737fe19c495d141a0131500c90f487dd22ba3b94143605f575dbb0f8705f18d",
+      "bytes": 8841
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formlet.py",
+      "sha256": "36c3a07b3f8ec5e77e8fe927d808312217aee7c497ae92c20e1986a6189fd0c4",
+      "bytes": 30382
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/14_entry_in_form.py",
+      "sha256": "d672753105b56acd3f532ebd9aa3d059690881c52b1f1adfa8ab189eadb6b49c",
+      "bytes": 5141
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/04_grouplet_form.py",
+      "sha256": "ff3d8f7fbed8aa2b808327264e89cd32e8e277f5d9f57861a3a87b10e0c25717",
+      "bytes": 4702
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/10_grouplet_transform.py",
+      "sha256": "9defceaccd2991f50f25075141b816b8cd3045b0ca58deb7a7288f9260c82b24",
+      "bytes": 2366
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/inputfields/validations.py",
+      "sha256": "839f10f262fb91f85f949869634a996b53d1184768fb867b85363574b9c87f47",
+      "bytes": 673
+    },
+    {
+      "path": "resources/common/gnrcomponents/formhandler.py",
+      "sha256": "a527fc81756cafdafa4edeac4a80874568ea991a4df90d72e3c4ef513634d31e",
+      "bytes": 29873
+    }
+  ]
+}

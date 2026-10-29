@@ -658,6 +658,7 @@ Generated assets/index.js wrapper:
 
 ```javascript
 export {default} from "./collection.js";
+export * from "./collection.js";
 export const buildId = "sha256:<generated digest>";
 ```
 
@@ -665,6 +666,8 @@ The implementation is in assets/collection.js. Hash the fixed wrapper template
 with __GRAMLOT_BUILD_ID__ as its literal value; then emit the digest. Host verifies
 the exact installed wrapper with descriptor digest before hashing the placeholder
 template. No arbitrary source replacement. Both files are covered by files.
+The named-export line was approved on 2026-10-29 for issue #80. Prepared
+collections using the earlier wrapper must be regenerated for this verifier.
 
 Prepare inventory/digest/descriptor/wrapper together. Host recomputes and validates
 before serving or using metadata for Source; cached validation requires unchanged

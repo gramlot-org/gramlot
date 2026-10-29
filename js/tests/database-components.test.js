@@ -93,3 +93,82 @@ test('string keys, visible columns, hidden fields and disabled autoSelect',async
     const locked=fixture(t,r=>r.dbSelect({id:'choice',value:'^choice',dbtable:'customers',autoSelect:true,disabled:true,hasDownArrow:false}),()=>{throw Error('Disabled autoSelect requested data');});
     await settle();assert.equal(locked.app.data.getItem('choice'),null);assert.equal(locked.host('choice').toggle.hidden,true);
 });
+
+test('Asqueel conditions keep an ineligible identity readable and revalidate without replacing the widget', async t => {
+    const calls=[];
+    const f=fixture(t,(r,a)=>{
+        a.data.setItem('choice',0); a.data.setItem('country','IT');
+        r.dbSelect({id:'choice',value:'^choice',dbtable:'customers',condition:'$country=:country',
+            condition_country:'^country',selectedCaption:'caption'});
+    },(method,kw)=>{
+        calls.push(kw);
+        return {...reply([rows[0]]), ...(kw.country==='FR'?{errors:'Current value does not fit condition.'}:{})};
+    });
+    await settle(); const host=f.host('choice');
+    assert.equal(host.control.value,'Zero');
+    f.app.data.setItem('country','FR'); await settle();
+    assert.equal(f.app.data.getItem('choice'),0);
+    assert.equal(f.app.data.getItem('caption'),'Zero');
+    assert.equal(host.control.value,'Zero');
+    assert.match(host.message.textContent,/does not fit/);
+    assert.equal(host.validateSelection(0).errorcode,'condition');
+    f.app.data.setItem('country','IT'); await settle();
+    assert.equal(host.message.textContent,''); assert.equal(f.host('choice'),host);
+    assert.equal(calls.at(-1).condition,'$country=:country');
+    assert.equal(calls.at(-1).country,'IT');
+});
+
+test('required dbSelect replaces the previous key only for one condition candidate, despite display limit one', async t=>{
+    const calls=[];
+    const f=fixture(t,(r,a)=>{
+        a.data.setItem('choice',2); a.data.setItem('country','all');
+        r.dbSelect({id:'choice',value:'^choice',dbtable:'customers',condition:'$country=:country',
+            condition_country:'^country',validate_notnull:true,limit:1,selectedCaption:'caption'});
+    },(method,kw)=>{
+        calls.push(kw);
+        return reply('_id' in kw?rows.filter(r=>r.id===kw._id):kw.country==='sole'?[rows[0]]:rows.slice(0,kw.limit));
+    });
+    await settle(); f.app.data.setItem('country','multiple'); await settle(); await settle();
+    assert.equal(f.app.data.getItem('choice'),2);
+    assert.equal(calls.find(kw=>kw._querystring==='').limit,2);
+    f.app.data.setItem('country','sole'); await settle(); await settle();
+    assert.equal(f.app.data.getItem('choice'),0); assert.equal(f.app.data.getItem('caption'),'Zero');
+});
+
+test('condition revalidation discards stale unique-candidate replies after a value change or removal',async t=>{
+    const pending=[];
+    const f=fixture(t,(r,a)=>{
+        a.data.setItem('choice',2);a.data.setItem('country','IT');
+        r.dbSelect({id:'choice',node_label:'choice',value:'^choice',dbtable:'customers',condition_country:'^country',validate_notnull:true});
+    },(method,kw,signal)=>'_id' in kw?reply(rows.filter(r=>r.id===kw._id)):new Promise(resolve=>pending.push({resolve,signal})));
+    await settle();f.app.data.setItem('country','FR');
+    f.app.data.setItem('choice',0);pending[0].resolve(reply([rows[1]]));await settle();
+    assert.equal(pending[0].signal.aborted,true);assert.equal(f.app.data.getItem('choice'),0);
+    f.app.data.setItem('country','GB');f.app.src.source.popNode('main.choice');
+    pending[1].resolve(reply([rows[1]]));await settle();assert.equal(f.app.data.getItem('choice'),0);
+});
+
+test('weakCondition is forwarded in both forms; missing records differ from literal eligibility errors',async t=>{
+    const calls=[];
+    const f=fixture(t,(r,a)=>{
+        a.data.setItem('choice',0); a.data.setItem('weak',true);
+        r.dbSelect({id:'choice',value:'^choice',condition:'$country=:country',condition_country:'IT',weakCondition:'^weak'});
+    },(method,kw)=>{calls.push(kw);return kw.weakCondition===true?reply([rows[0]]):reply([]);});
+    await settle();assert.equal(calls.at(-1).weakCondition,true);assert.equal(f.host('choice').message.textContent,'');
+    f.app.data.setItem('weak','$preferred IS TRUE');await settle();
+    assert.equal(calls.at(-1).weakCondition,'$preferred IS TRUE');
+    assert.equal(f.app.data.getItem('choice'),0);assert.match(f.host('choice').message.textContent,/not in the list/);
+    const literal=fixture(t,(r,a)=>{a.data.setItem('secret','DO NOT SHOW');a.data.setItem('choice',0);r.dbSelect({id:'literal',value:'^choice'});},
+        ()=>({...reply([rows[0]]),errors:'^secret'}));
+    await settle();assert.equal(literal.host('literal').message.textContent,'^secret');
+});
+
+test('dbComboBox condition changes preserve free text and never select a sole candidate',async t=>{
+    let calls=0;
+    const f=fixture(t,(r,a)=>{
+        a.data.setItem('choice','My own text');a.data.setItem('country','IT');
+        r.dbComboBox({id:'choice',value:'^choice',condition:'$country=:country',condition_country:'^country',validate_notnull:true});
+    },()=>{calls++;return reply([rows[0]]);});
+    await settle();f.app.data.setItem('country','FR');await settle();
+    assert.equal(f.app.data.getItem('choice'),'My own text');assert.equal(calls,0);
+});

@@ -1,0 +1,125 @@
+TAP version 13
+# Subtest: values: read-only Bag cells update without replacing rows
+ok 1 - values: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 97.355792
+  ...
+# Subtest: attributes: read-only Bag cells update without replacing rows
+ok 2 - attributes: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 17.88075
+  ...
+# Subtest: nested struct is installed as ordinary Data before the component renders
+ok 3 - nested struct is installed as ordinary Data before the component renders
+  ---
+  duration_ms: 21.276958
+  ...
+# Subtest: insert, delete, replace store and retarget path follow the existing binding lifecycle
+ok 4 - insert, delete, replace store and retarget path follow the existing binding lifecycle
+  ---
+  duration_ms: 18.1935
+  ...
+# Subtest: external struct changes and replacement update all sharing grids
+ok 5 - external struct changes and replacement update all sharing grids
+  ---
+  duration_ms: 17.814459
+  ...
+# Subtest: the header is outside the rows viewport and both layouts expose one logical table
+ok 6 - the header is outside the rows viewport and both layouts expose one logical table
+  ---
+  duration_ms: 16.496292
+  ...
+# Subtest: scroll/gutter synchronization has one geometry observer and releases pending work
+ok 7 - scroll/gutter synchronization has one geometry observer and releases pending work
+  ---
+  duration_ms: 15.415833
+  ...
+# Subtest: rendering is read-only and a Source rebuild reuses the installed Data struct
+ok 8 - rendering is read-only and a Source rebuild reuses the installed Data struct
+  ---
+  duration_ms: 23.497666
+  ...
+# Subtest: nested struct (empty=false) and external structpath conflict before Data installation
+ok 9 - nested struct (empty=false) and external structpath conflict before Data installation
+  ---
+  duration_ms: 15.279541
+  ...
+# Subtest: nested struct (empty=true) and external structpath conflict before Data installation
+ok 10 - nested struct (empty=true) and external structpath conflict before Data installation
+  ---
+  duration_ms: 13.102833
+  ...
+# Subtest: empty rows, false, zero and HTML-like text remain distinct and inert
+ok 11 - empty rows, false, zero and HTML-like text remain distinct and inert
+  ---
+  duration_ms: 18.617334
+  ...
+# Subtest: wrong representations and resolvers fail without reads or writes
+ok 12 - wrong representations and resolvers fail without reads or writes
+  ---
+  duration_ms: 0.311208
+  ...
+# Subtest: struct rejects unknown attributes, duplicate fields and nested groups
+ok 13 - struct rejects unknown attributes, duplicate fields and nested groups
+  ---
+  duration_ms: 0.287875
+  ...
+# Subtest: invalid inline structure is rejected before preceding Data setters run
+ok 14 - invalid inline structure is rejected before preceding Data setters run
+  ---
+  duration_ms: 11.878375
+  ...
+# Subtest: resizing writes the existing struct column and preserves both sharing grids and rows
+ok 15 - resizing writes the existing struct column and preserves both sharing grids and rows
+  ---
+  duration_ms: 16.253833
+  ...
+# Subtest: column movement changes Bag order and projects all sharing grids without replacing rows
+ok 16 - column movement changes Bag order and projects all sharing grids without replacing rows
+  ---
+  duration_ms: 21.022542
+  ...
+# Subtest: moving across a columnset preserves membership and splits/joins contiguous header bands
+ok 17 - moving across a columnset preserves membership and splits/joins contiguous header bands
+  ---
+  duration_ms: 16.463875
+  ...
+# Subtest: legacy group colors and cell white_space project from struct Data
+ok 18 - legacy group colors and cell white_space project from struct Data
+  ---
+  duration_ms: 27.367792
+  ...
+# Subtest: values: row headers are generated ordinals and follow Bag order
+ok 19 - values: row headers are generated ordinals and follow Bag order
+  ---
+  duration_ms: 16.211375
+  ...
+# Subtest: attributes: row headers are generated ordinals and follow Bag order
+ok 20 - attributes: row headers are generated ordinals and follow Bag order
+  ---
+  duration_ms: 16.135833
+  ...
+# Subtest: values: row heights belong to each Source grid, not shared Data
+ok 21 - values: row heights belong to each Source grid, not shared Data
+  ---
+  duration_ms: 16.925375
+  ...
+# Subtest: attributes: row heights belong to each Source grid, not shared Data
+ok 22 - attributes: row heights belong to each Source grid, not shared Data
+  ---
+  duration_ms: 14.692292
+  ...
+# Subtest: row heights survive updates and DOM moves; removal/replacement clears their state
+ok 23 - row heights survive updates and DOM moves; removal/replacement clears their state
+  ---
+  duration_ms: 16.382084
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 891.161208

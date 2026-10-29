@@ -4382,6 +4382,13 @@ in Kajenn #89; this synchronous example does not change that work or authorize
 publication/deployment.
 
 
+Prepared collection named exports — owner, 2026-10-29: "ok", confirming the
+proposed change for issue #80: the fixed prepared collection wrapper also
+re-exports named exports from collection.js. Python and JavaScript artifact
+verification use that wrapper, and existing prepared collections must be
+regenerated. This supersedes the prior fixed-wrapper format; no old-format
+compatibility path or publication is authorized.
+
 Public release authorized, 2026-10-28: owner says "rendi tutto pubblico" after
 reviewing the completed Kajenn/Asqueel gallery. This confirms publication of the
 core host database API, native Kajenn adapter and optional SQLite examples,
@@ -4562,3 +4569,38 @@ GC-070 §2450; it is not a new cross-provider relation language. Table registrat
 search fields, eligibility conditions and existing non-auxiliary request policies
 remain unchanged. Compiled output names, template precedence and the read-only,
 dependency and publication boundaries remain in force.
+
+
+<a id="gc-000-form-drafts"></a>
+### Form registers and incomplete typed drafts — 2026-10-29
+
+Owner: “Sì, teniamo il testo incompleto nel Source e l’ultimo valore tipizzato
+nei Data, bloccando il salvataggio. Aggiorna il contratto e procedi con la prima
+tranche delle form, con test e un esempio nella gallery.”
+
+The form Source node owns its baseline, net changes (including previous values),
+errors, pending validations and unfinished editor drafts. Logic contains behavior,
+never these registers. Inside a form, parsed values enter Data even when validation
+rejects them; unparseable number/date text remains on the field Source while Data
+retains its last typed value. Both errors and unfinished/pending validation block
+acceptance. Returning to the loaded value clears the net change. Outside a form,
+the existing accepted-value policy remains unchanged. This supersedes the historical
+field-only rejection rule solely inside a form. The first tranche is a local GUI
+lifecycle; server persistence, record stores, undo/redo and Invoice remain separate.
+The earlier form study in another worktree numbered its amendment 11.95; this stable
+anchor preserves that decision without replacing this checkout’s unrelated 11.95.
+
+
+<a id="gc-000-grid-view-ownership"></a>
+### Independent grid collection views — owner, 2026-10-29
+
+Owner: “si confermo, ogni grid deve avere ordinamento e filtered propri
+condividendo gli stessi dati. procedi e metti in gallery un esempio con due grid
+ordinate e filtrate diversamente”. Each grid owns a Source-attached collection
+view with its own order index, sort criteria and filtering. The parent collection
+store shares the original resident Bag nodes and publishes their changes.
+This supersedes GC-375's earlier shared row-node rowidx and containing-node
+sortedBy/filter contract for this worktree. Sorting or filtering one grid must not
+change another grid or write ordering metadata into shared business nodes. No
+record copying, dependency edits, general router change or remote-store contract
+is authorized. Source-owned widget state follows the existing ownership rule.

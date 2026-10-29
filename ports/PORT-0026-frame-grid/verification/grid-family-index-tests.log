@@ -1,0 +1,125 @@
+TAP version 13
+# Subtest: common gallery
+ok 1 - common gallery
+  ---
+  duration_ms: 143.644917
+  ...
+# Subtest: media types
+ok 2 - media types
+  ---
+  duration_ms: 123.183167
+  ...
+# Subtest: environment catalogue
+ok 3 - environment catalogue
+  ---
+  duration_ms: 83.342333
+  ...
+# Subtest: logic companion of an environment page
+ok 4 - logic companion of an environment page
+  ---
+  duration_ms: 105.303958
+  ...
+# Subtest: catalogue without environment
+ok 5 - catalogue without environment
+  ---
+  duration_ms: 12.5245
+  ...
+# Subtest: key outside the environment
+ok 6 - key outside the environment
+  ---
+  duration_ms: 5.990917
+  ...
+# Subtest: duplicate family
+ok 7 - duplicate family
+  ---
+  duration_ms: 6.091042
+  ...
+# Subtest: duplicate example across catalogues
+ok 8 - duplicate example across catalogues
+  ---
+  duration_ms: 7.349333
+  ...
+# Subtest: missing page
+ok 9 - missing page
+  ---
+  duration_ms: 22.690667
+  ...
+# Subtest: feature inventory references catalogue keys and keeps quarantined selectors out of the lesson path
+ok 10 - feature inventory references catalogue keys and keeps quarantined selectors out of the lesson path
+  ---
+  duration_ms: 3.543834
+  ...
+# Subtest: one lesson marks all linked features seen, preserves tried, and restores the session on reload
+ok 11 - one lesson marks all linked features seen, preserves tried, and restores the session on reload
+  ---
+  duration_ms: 149.845416
+  ...
+# Subtest: malformed progress or blocked storage stays explicit and does not claim restored progress
+ok 12 - malformed progress or blocked storage stays explicit and does not claim restored progress
+  ---
+  duration_ms: 21.215917
+  ...
+# Subtest: feature links resolve the existing navigation Bag and select through IndexPage Data
+ok 13 - feature links resolve the existing navigation Bag and select through IndexPage Data
+  ---
+  duration_ms: 14.720792
+  ...
+# Subtest: feature links wait for lazy NavigationResolvers before selecting nested lessons
+ok 14 - feature links wait for lazy NavigationResolvers before selecting nested lessons
+  ---
+  duration_ms: 13.417542
+  ...
+# Subtest: leaving the index while a branch loads cancels its pending navigation intent
+ok 15 - leaving the index while a branch loads cancels its pending navigation intent
+  ---
+  duration_ms: 14.634416
+  ...
+# Subtest: public coverage checklist and feature navigation agree on titles, lesson links and quarantine
+ok 16 - public coverage checklist and feature navigation agree on titles, lesson links and quarantine
+  ---
+  duration_ms: 22.208792
+  ...
+# Subtest: feature tree follows capabilities and updates leaf and completed branch colors from Data
+ok 17 - feature tree follows capabilities and updates leaf and completed branch colors from Data
+  ---
+  duration_ms: 19.012167
+  ...
+# Subtest: hosted JavaScript navigation ends with Features while keeping directory branches lazy
+ok 18 - hosted JavaScript navigation ends with Features while keeping directory branches lazy
+  ---
+  duration_ms: 91.805583
+  ...
+# Subtest: filesystem navigation is one level per request, with independent directory index URLs
+ok 19 - filesystem navigation is one level per request, with independent directory index URLs
+  ---
+  duration_ms: 241.503541
+  ...
+# Subtest: border lessons retain their routes and teaching assets inside a lazy directory with its own page
+ok 20 - border lessons retain their routes and teaching assets inside a lazy directory with its own page
+  ---
+  duration_ms: 253.291792
+  ...
+# Subtest: every catalogue lesson is reachable with its title, route and nested source assets
+ok 21 - every catalogue lesson is reachable with its title, route and nested source assets
+  ---
+  duration_ms: 737.379708
+  ...
+# Subtest: numbered siblings mix directories and pages, hide indexes and use Markdown headings
+ok 22 - numbered siblings mix directories and pages, hide indexes and use Markdown headings
+  ---
+  duration_ms: 7.558792
+  ...
+# Subtest: host tools share one navigation category with the common playground
+ok 23 - host tools share one navigation category with the common playground
+  ---
+  duration_ms: 13.806875
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2461.401166

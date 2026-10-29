@@ -1,0 +1,2 @@
+{"browser":"webkit","version":"26.6","events":[["pointerdown","from"],["mousedown","from"],["dragstart","from"],["dragend","from"],["mousedown","next"],["pointerup","next"],["mouseup","next"]]}
+{"browser":"chromium","version":"153.0.8010.12","events":[["pointerdown","from"],["mousedown","from"],["dragstart","from"],["pointercancel","to"],["dragend","from"],["pointerdown","next"],["mousedown","next"],["pointerup","next"],["mouseup","next"]]}

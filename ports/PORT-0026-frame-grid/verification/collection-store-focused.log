@@ -1,0 +1,205 @@
+TAP version 13
+# Subtest: values: stable typed multicolumn sorting changes indices, never membership or values
+ok 1 - values: stable typed multicolumn sorting changes indices, never membership or values
+  ---
+  duration_ms: 2.763167
+  ...
+# Subtest: values: Decimal precision, dates, booleans, null and missing keys use raw values
+ok 2 - values: Decimal precision, dates, booleans, null and missing keys use raw values
+  ---
+  duration_ms: 0.6895
+  ...
+# Subtest: values: invalid sort is rejected before metadata writes
+ok 3 - values: invalid sort is rejected before metadata writes
+  ---
+  duration_ms: 0.526417
+  ...
+# Subtest: attributes: stable typed multicolumn sorting changes indices, never membership or values
+ok 4 - attributes: stable typed multicolumn sorting changes indices, never membership or values
+  ---
+  duration_ms: 0.154375
+  ...
+# Subtest: attributes: Decimal precision, dates, booleans, null and missing keys use raw values
+ok 5 - attributes: Decimal precision, dates, booleans, null and missing keys use raw values
+  ---
+  duration_ms: 0.177875
+  ...
+# Subtest: attributes: invalid sort is rejected before metadata writes
+ok 6 - attributes: invalid sort is rejected before metadata writes
+  ---
+  duration_ms: 0.100833
+  ...
+# Subtest: existing indices determine first projection; append/remove/reload keep a contiguous order
+ok 7 - existing indices determine first projection; append/remove/reload keep a contiguous order
+  ---
+  duration_ms: 0.189667
+  ...
+# Subtest: one completion notification exposes all indices and criteria, unsubscribe stops notifications
+ok 8 - one completion notification exposes all indices and criteria, unsubscribe stops notifications
+  ---
+  duration_ms: 0.089334
+  ...
+# Subtest: manual moves ignore self/foreign targets and never delete or insert nodes
+ok 9 - manual moves ignore self/foreign targets and never delete or insert nodes
+  ---
+  duration_ms: 0.29175
+  ...
+# Subtest: projection follows explicit indices even while sortedBy is set; only synchronization sorts again
+ok 10 - projection follows explicit indices even while sortedBy is set; only synchronization sorts again
+  ---
+  duration_ms: 0.277042
+  ...
+# Subtest: values: read-only Bag cells update without replacing rows
+ok 11 - values: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 87.167416
+  ...
+# Subtest: attributes: read-only Bag cells update without replacing rows
+ok 12 - attributes: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 18.417541
+  ...
+# Subtest: nested struct is installed as ordinary Data before the component renders
+ok 13 - nested struct is installed as ordinary Data before the component renders
+  ---
+  duration_ms: 22.502375
+  ...
+# Subtest: insert, delete, replace store and retarget path follow the existing binding lifecycle
+ok 14 - insert, delete, replace store and retarget path follow the existing binding lifecycle
+  ---
+  duration_ms: 20.945417
+  ...
+# Subtest: external struct changes and replacement update all sharing grids
+ok 15 - external struct changes and replacement update all sharing grids
+  ---
+  duration_ms: 19.347209
+  ...
+# Subtest: the header is outside the rows viewport and both layouts expose one logical table
+ok 16 - the header is outside the rows viewport and both layouts expose one logical table
+  ---
+  duration_ms: 14.763916
+  ...
+# Subtest: scroll/gutter synchronization has one geometry observer and releases pending work
+ok 17 - scroll/gutter synchronization has one geometry observer and releases pending work
+  ---
+  duration_ms: 13.424959
+  ...
+# Subtest: rendering is read-only and a Source rebuild reuses the installed Data struct
+ok 18 - rendering is read-only and a Source rebuild reuses the installed Data struct
+  ---
+  duration_ms: 22.126583
+  ...
+# Subtest: nested struct (empty=false) and external structpath conflict before Data installation
+ok 19 - nested struct (empty=false) and external structpath conflict before Data installation
+  ---
+  duration_ms: 15.731375
+  ...
+# Subtest: nested struct (empty=true) and external structpath conflict before Data installation
+ok 20 - nested struct (empty=true) and external structpath conflict before Data installation
+  ---
+  duration_ms: 12.902042
+  ...
+# Subtest: empty rows, false, zero and HTML-like text remain distinct and inert
+ok 21 - empty rows, false, zero and HTML-like text remain distinct and inert
+  ---
+  duration_ms: 13.96125
+  ...
+# Subtest: wrong representations and resolvers fail without reads or writes
+ok 22 - wrong representations and resolvers fail without reads or writes
+  ---
+  duration_ms: 0.296416
+  ...
+# Subtest: struct rejects unknown attributes, duplicate fields and nested groups
+ok 23 - struct rejects unknown attributes, duplicate fields and nested groups
+  ---
+  duration_ms: 0.194
+  ...
+# Subtest: invalid inline structure is rejected before preceding Data setters run
+ok 24 - invalid inline structure is rejected before preceding Data setters run
+  ---
+  duration_ms: 9.917208
+  ...
+# Subtest: resizing writes the existing struct column and preserves both sharing grids and rows
+ok 25 - resizing writes the existing struct column and preserves both sharing grids and rows
+  ---
+  duration_ms: 16.128334
+  ...
+# Subtest: column movement changes Bag order and projects all sharing grids without replacing rows
+ok 26 - column movement changes Bag order and projects all sharing grids without replacing rows
+  ---
+  duration_ms: 22.297084
+  ...
+# Subtest: moving across a columnset preserves membership and splits/joins contiguous header bands
+ok 27 - moving across a columnset preserves membership and splits/joins contiguous header bands
+  ---
+  duration_ms: 16.755417
+  ...
+# Subtest: legacy group colors and cell white_space project from struct Data
+ok 28 - legacy group colors and cell white_space project from struct Data
+  ---
+  duration_ms: 25.496292
+  ...
+# Subtest: values: row headers are generated ordinals and follow store indices
+ok 29 - values: row headers are generated ordinals and follow store indices
+  ---
+  duration_ms: 16.51325
+  ...
+# Subtest: attributes: row headers are generated ordinals and follow store indices
+ok 30 - attributes: row headers are generated ordinals and follow store indices
+  ---
+  duration_ms: 16.546333
+  ...
+# Subtest: values: row heights belong to each Source grid, not shared Data
+ok 31 - values: row heights belong to each Source grid, not shared Data
+  ---
+  duration_ms: 16.4495
+  ...
+# Subtest: attributes: row heights belong to each Source grid, not shared Data
+ok 32 - attributes: row heights belong to each Source grid, not shared Data
+  ---
+  duration_ms: 14.821292
+  ...
+# Subtest: row heights survive updates and DOM moves; removal/replacement clears their state
+ok 33 - row heights survive updates and DOM moves; removal/replacement clears their state
+  ---
+  duration_ms: 19.457042
+  ...
+# Subtest: values: selfDragRows changes indices only, retaining rows and individual heights
+ok 34 - values: selfDragRows changes indices only, retaining rows and individual heights
+  ---
+  duration_ms: 22.153792
+  ...
+# Subtest: attributes: selfDragRows changes indices only, retaining rows and individual heights
+ok 35 - attributes: selfDragRows changes indices only, retaining rows and individual heights
+  ---
+  duration_ms: 23.267791
+  ...
+# Subtest: selfDragRows is opt-in, rejects foreign-grid drops and cancels when disabled or retargeted
+ok 36 - selfDragRows is opt-in, rejects foreign-grid drops and cancels when disabled or retargeted
+  ---
+  duration_ms: 17.495417
+  ...
+# Subtest: values: multicolumn headers share typed store order and drag switches to manual
+ok 37 - values: multicolumn headers share typed store order and drag switches to manual
+  ---
+  duration_ms: 33.674875
+  ...
+# Subtest: attributes: multicolumn headers share typed store order and drag switches to manual
+ok 38 - attributes: multicolumn headers share typed store order and drag switches to manual
+  ---
+  duration_ms: 35.151209
+  ...
+# Subtest: sort metadata survives detach, struct changes and store replacement; resize does not sort
+ok 39 - sort metadata survives detach, struct changes and store replacement; resize does not sort
+  ---
+  duration_ms: 15.847916
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1019.237167

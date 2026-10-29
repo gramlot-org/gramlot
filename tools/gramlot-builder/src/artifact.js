@@ -1,5 +1,5 @@
 /** Fixed wrapper and generated Python initializer; no final-output writes. */
-export const wrapper = buildId => `export {default} from "./collection.js";\nexport const buildId = "${buildId}";\n`;
+export const wrapper = buildId => `export {default} from "./collection.js";\nexport * from "./collection.js";\nexport const buildId = "${buildId}";\n`;
 export function initializer(record, imports) {
     const text = JSON.stringify;
     const tuple = values => `(${values.join(', ')}${values.length ? ',' : ''})`;

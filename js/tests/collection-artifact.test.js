@@ -20,6 +20,12 @@ test('shared API verifies the same prepared artifact as Python and the generator
     const reversed = {...metadata, files:[...metadata.files].reverse()};
     assert.equal(await collectionBuildId(reversed, files), metadata.buildId);
 });
+test('prepared layout exposes its default collection and named component descriptors', async () => {
+    const layout = await import('../dist/components/layout/assets/index.js');
+    assert.equal(layout.default.name, 'layout');
+    assert.ok(layout.ContentPane.base);
+    assert.match(layout.buildId, /^sha256:[a-f0-9]{64}$/);
+});
 test('every byte, wrapper, metadata field and inventory participates in verification', async () => {
     const {files, metadata} = await artifact();
     for (const path of files.keys()) {

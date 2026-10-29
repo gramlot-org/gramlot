@@ -1,0 +1,74 @@
+{
+  "revision": "10478b57ce3f22e6445eb6b72eba343520cbebac",
+  "working_files": true,
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha256": "7f0f022815d9ffe57a2b9a717d49893f77bfed052f16af179dcb99dbbb6f6ab8"
+    },
+    {
+      "path": "docs/history/genro-pages/notes/forms-20260908/implementation.md",
+      "sha256": "6a05dc563132cab601a3a6143d82c0c244352f28d284146d3ebe87c0e5646e90"
+    },
+    {
+      "path": "docs/history/genro-pages/notes/labeled-box-validation-form-contract-proposal-20260908.md",
+      "sha256": "2b8af52cb0ed75af55b81cd2f886a60304fb050f4b6f651e463c48e90ab82fee"
+    },
+    {
+      "path": "docs/history/genro-pages/notes/labeled-box-validation-form-review-20260908.md",
+      "sha256": "afe2bc762f108435fd055a3aeeba958f7207b9b4521c5ba907f020776923c7b3"
+    },
+    {
+      "path": "js/dom/src/forms/controller.js",
+      "sha256": "88c0bfdc38fe41120fa18484aca2b53b7e4b871fbf02d5e6c3022278674a7534"
+    },
+    {
+      "path": "js/dom/src/forms/field.js",
+      "sha256": "58bd8558314c8919e34ef0d2e5e4967627610ccf1c434f567b1995314acfb7f5"
+    },
+    {
+      "path": "js/dom/src/forms/service.js",
+      "sha256": "3a27413962497a3c75fec7896fed83a27e2db48fc444a173d4e3dcea3ccf491f"
+    },
+    {
+      "path": "js/dom/src/forms/stores.js",
+      "sha256": "27f8ab2b5cad7d79be850af3ba858edd77e6029f860844d6597f864f6ff9a58d"
+    },
+    {
+      "path": "js/dom/src/forms/validator.js",
+      "sha256": "e695a16b763d0f24206a0631c272d1ac55cb7fbbb5a0a46c7535b4b8e917fe18"
+    },
+    {
+      "path": "js/dom/src/forms/value-snapshot.js",
+      "sha256": "5887ff5a0f3ab03ff88f7845713fa55fc4bc3f9a03e6398d7d427ca2d0c68c78"
+    },
+    {
+      "path": "js/dom/tests/form-stores.test.js",
+      "sha256": "a1dff959a71e7c285b070ae3d19607dbddd92be027db216d166504b5f8537f49"
+    },
+    {
+      "path": "js/dom/tests/formlet.test.js",
+      "sha256": "0293c24dcf5cc6f674dcbb92efbd9467a5a5f3271695f563ac57f6ffd006057a"
+    },
+    {
+      "path": "js/dom/tests/forms.test.js",
+      "sha256": "26508e6f44a317e83983d90b2fec50bb9c9cd1ec304af918ac88897f271e709a"
+    },
+    {
+      "path": "js/dom/tests/remote-validation.test.js",
+      "sha256": "337eff9e1578af685c5c7d593040facc2125df9433d9f1609db9c101550f39b7"
+    },
+    {
+      "path": "js/dom/tests/validation-authoring.test.js",
+      "sha256": "7971bd15ad20c795b61cef78600f15e147fbf68704e2f168647d232b8d710121"
+    },
+    {
+      "path": "src/gramlot/grammar/forms.py",
+      "sha256": "ce20114abe625c078f51e96ad88501146a4c5f2e03404a96e9d008225ba31edd"
+    },
+    {
+      "path": "src/gramlot/grammar/logic.py",
+      "sha256": "e780c989ba0863568323d6e1dcf1abc2ca4a6d6dee1a95b5f5575f91e7ee34ca"
+    }
+  ]
+}

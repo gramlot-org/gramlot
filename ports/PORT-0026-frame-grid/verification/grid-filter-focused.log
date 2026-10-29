@@ -1,0 +1,390 @@
+TAP version 13
+# Subtest: values: stable typed multicolumn sorting changes indices, never membership or values
+ok 1 - values: stable typed multicolumn sorting changes indices, never membership or values
+  ---
+  duration_ms: 14.963958
+  ...
+# Subtest: values: Decimal precision, dates, booleans, null and missing keys use raw values
+ok 2 - values: Decimal precision, dates, booleans, null and missing keys use raw values
+  ---
+  duration_ms: 2.95975
+  ...
+# Subtest: values: invalid sort is rejected before metadata writes
+ok 3 - values: invalid sort is rejected before metadata writes
+  ---
+  duration_ms: 3.639833
+  ...
+# Subtest: attributes: stable typed multicolumn sorting changes indices, never membership or values
+ok 4 - attributes: stable typed multicolumn sorting changes indices, never membership or values
+  ---
+  duration_ms: 0.615333
+  ...
+# Subtest: attributes: Decimal precision, dates, booleans, null and missing keys use raw values
+ok 5 - attributes: Decimal precision, dates, booleans, null and missing keys use raw values
+  ---
+  duration_ms: 0.738167
+  ...
+# Subtest: attributes: invalid sort is rejected before metadata writes
+ok 6 - attributes: invalid sort is rejected before metadata writes
+  ---
+  duration_ms: 1.549417
+  ...
+# Subtest: existing indices determine first projection; append/remove/reload keep a contiguous order
+ok 7 - existing indices determine first projection; append/remove/reload keep a contiguous order
+  ---
+  duration_ms: 0.85675
+  ...
+# Subtest: one completion notification exposes all indices and criteria, unsubscribe stops notifications
+ok 8 - one completion notification exposes all indices and criteria, unsubscribe stops notifications
+  ---
+  duration_ms: 0.430708
+  ...
+# Subtest: manual moves ignore self/foreign targets and never delete or insert nodes
+ok 9 - manual moves ignore self/foreign targets and never delete or insert nodes
+  ---
+  duration_ms: 0.924375
+  ...
+# Subtest: projection follows explicit indices even while sortedBy is set; only synchronization sorts again
+ok 10 - projection follows explicit indices even while sortedBy is set; only synchronization sorts again
+  ---
+  duration_ms: 0.618875
+  ...
+# Subtest: observer failures cannot leave an order half-written or suppress store consumers
+ok 11 - observer failures cannot leave an order half-written or suppress store consumers
+  ---
+  duration_ms: 0.401291
+  ...
+# Subtest: reentrant ordering is rejected without interrupting the outer order
+ok 12 - reentrant ordering is rejected without interrupting the outer order
+  ---
+  duration_ms: 0.204875
+  ...
+# Subtest: a consumer removed during completion is not called from a stale snapshot
+ok 13 - a consumer removed during completion is not called from a stale snapshot
+  ---
+  duration_ms: 1.522709
+  ...
+# Subtest: values: filtered indices compose with sorting and dragging without losing hidden rows
+ok 14 - values: filtered indices compose with sorting and dragging without losing hidden rows
+  ---
+  duration_ms: 2.167584
+  ...
+# Subtest: values: typed predicates compare raw values and preserve precision
+ok 15 - values: typed predicates compare raw values and preserve precision
+  ---
+  duration_ms: 98.765542
+  ...
+# Subtest: attributes: filtered indices compose with sorting and dragging without losing hidden rows
+ok 16 - attributes: filtered indices compose with sorting and dragging without losing hidden rows
+  ---
+  duration_ms: 2.94625
+  ...
+# Subtest: attributes: typed predicates compare raw values and preserve precision
+ok 17 - attributes: typed predicates compare raw values and preserve precision
+  ---
+  duration_ms: 0.827417
+  ...
+# Subtest: invalid filter drafts preserve committed filter, order and result
+ok 18 - invalid filter drafts preserve committed filter, order and result
+  ---
+  duration_ms: 7.11675
+  ...
+# Subtest: frameGrid is ordinary Source with idempotent access and optional collections
+ok 19 - frameGrid is ordinary Source with idempotent access and optional collections
+  ---
+  duration_ms: 77.213084
+  ...
+# Subtest: invalid grid parameters cannot leave a partial frame
+ok 20 - invalid grid parameters cannot leave a partial frame
+  ---
+  duration_ms: 60.429208
+  ...
+# (node:18480) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: two frame toolbars address their own grid and survive row changes without remounting
+ok 21 - two frame toolbars address their own grid and survive row changes without remounting
+  ---
+  duration_ms: 538.031958
+  ...
+# Subtest: Python and JS frameGrid produce the same Source composition
+ok 22 - Python and JS frameGrid produce the same Source composition
+  ---
+  duration_ms: 445.939792
+  ...
+# Subtest: values: FrameGrid search selects all or a typed column and reacts to Data changes
+ok 23 - values: FrameGrid search selects all or a typed column and reacts to Data changes
+  ---
+  duration_ms: 138.990583
+  ...
+# Subtest: attributes: FrameGrid search selects all or a typed column and reacts to Data changes
+ok 24 - attributes: FrameGrid search selects all or a typed column and reacts to Data changes
+  ---
+  duration_ms: 110.116875
+  ...
+# Subtest: search menu accepts legacy caption/field lists and dtype restriction
+ok 25 - search menu accepts legacy caption/field lists and dtype restriction
+  ---
+  duration_ms: 94.261042
+  ...
+# Subtest: search timer is cancelled on removal and hidden row heights survive filtering
+ok 26 - search timer is cancelled on removal and hidden row heights survive filtering
+  ---
+  duration_ms: 99.567709
+  ...
+# Subtest: explicit legacy menu captions select only the declared fields
+ok 27 - explicit legacy menu captions select only the declared fields
+  ---
+  duration_ms: 92.191125
+  ...
+# Subtest: store replacement retargets search and pending work cannot filter the old Bag
+ok 28 - store replacement retargets search and pending work cannot filter the old Bag
+  ---
+  duration_ms: 98.600916
+  ...
+# Subtest: active filters recompute membership and omit hidden rows from partial refreshes
+ok 29 - active filters recompute membership and omit hidden rows from partial refreshes
+  ---
+  duration_ms: 88.445583
+  ...
+# (node:18481) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: values: row invalidations coalesce and pull only affected rows
+ok 30 - values: row invalidations coalesce and pull only affected rows
+  ---
+  duration_ms: 282.239375
+  ...
+# Subtest: attributes: row invalidations coalesce and pull only affected rows
+ok 31 - attributes: row invalidations coalesce and pull only affected rows
+  ---
+  duration_ms: 77.210083
+  ...
+# Subtest: full invalidation absorbs pending row changes and pulls the final order once
+ok 32 - full invalidation absorbs pending row changes and pulls the final order once
+  ---
+  duration_ms: 66.012125
+  ...
+# Subtest: render errors are isolated per grid and a later valid change recovers
+ok 33 - render errors are isolated per grid and a later valid change recovers
+  ---
+  duration_ms: 107.417875
+  ...
+# Subtest: removal cancels the pending pull and releases the store subscription
+ok 34 - removal cancels the pending pull and releases the store subscription
+  ---
+  duration_ms: 62.572458
+  ...
+# Subtest: explicit indices, including writes with row values, invalidate the complete view
+ok 35 - explicit indices, including writes with row values, invalidate the complete view
+  ---
+  duration_ms: 64.859833
+  ...
+# Subtest: retargeting discards queued identities and detaches the old store listener
+ok 36 - retargeting discards queued identities and detaches the old store listener
+  ---
+  duration_ms: 148.181667
+  ...
+# Subtest: sort defers subtree projection and row edits never rebuild the struct
+ok 37 - sort defers subtree projection and row edits never rebuild the struct
+  ---
+  duration_ms: 901.181667
+  ...
+# Subtest: ancestor replacement, emptying and disposal preserve binding ownership
+ok 38 - ancestor replacement, emptying and disposal preserve binding ownership
+  ---
+  duration_ms: 61.701291
+  ...
+# Subtest: failed initial synchronization is not cached as a usable collection store
+ok 39 - failed initial synchronization is not cached as a usable collection store
+  ---
+  duration_ms: 35.559167
+  ...
+# Subtest: values: read-only Bag cells update without replacing rows
+ok 40 - values: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 40.514125
+  ...
+# Subtest: attributes: read-only Bag cells update without replacing rows
+ok 41 - attributes: read-only Bag cells update without replacing rows
+  ---
+  duration_ms: 31.547583
+  ...
+# Subtest: nested struct is installed as ordinary Data before the component renders
+ok 42 - nested struct is installed as ordinary Data before the component renders
+  ---
+  duration_ms: 36.301041
+  ...
+# Subtest: insert, delete, replace store and retarget path follow the existing binding lifecycle
+ok 43 - insert, delete, replace store and retarget path follow the existing binding lifecycle
+  ---
+  duration_ms: 32.260875
+  ...
+# Subtest: external struct changes and replacement update all sharing grids
+ok 44 - external struct changes and replacement update all sharing grids
+  ---
+  duration_ms: 37.933333
+  ...
+# Subtest: the header is outside the rows viewport and both layouts expose one logical table
+ok 45 - the header is outside the rows viewport and both layouts expose one logical table
+  ---
+  duration_ms: 30.207709
+  ...
+# Subtest: scroll/gutter synchronization has one geometry observer and releases pending work
+ok 46 - scroll/gutter synchronization has one geometry observer and releases pending work
+  ---
+  duration_ms: 30.023125
+  ...
+# Subtest: rendering is read-only and a Source rebuild reuses the installed Data struct
+ok 47 - rendering is read-only and a Source rebuild reuses the installed Data struct
+  ---
+  duration_ms: 36.447458
+  ...
+# Subtest: nested struct (empty=false) and external structpath conflict before Data installation
+ok 48 - nested struct (empty=false) and external structpath conflict before Data installation
+  ---
+  duration_ms: 22.697625
+  ...
+# Subtest: nested struct (empty=true) and external structpath conflict before Data installation
+ok 49 - nested struct (empty=true) and external structpath conflict before Data installation
+  ---
+  duration_ms: 22.500917
+  ...
+# Subtest: empty rows, false, zero and HTML-like text remain distinct and inert
+ok 50 - empty rows, false, zero and HTML-like text remain distinct and inert
+  ---
+  duration_ms: 26.738292
+  ...
+# Subtest: wrong representations and resolvers fail without reads or writes
+ok 51 - wrong representations and resolvers fail without reads or writes
+  ---
+  duration_ms: 0.679042
+  ...
+# Subtest: struct rejects unknown attributes, duplicate fields and nested groups
+ok 52 - struct rejects unknown attributes, duplicate fields and nested groups
+  ---
+  duration_ms: 0.593166
+  ...
+# Subtest: invalid inline structure is rejected before preceding Data setters run
+ok 53 - invalid inline structure is rejected before preceding Data setters run
+  ---
+  duration_ms: 20.244042
+  ...
+# Subtest: resizing writes the existing struct column and preserves both sharing grids and rows
+ok 54 - resizing writes the existing struct column and preserves both sharing grids and rows
+  ---
+  duration_ms: 31.420541
+  ...
+# Subtest: column movement changes Bag order and projects all sharing grids without replacing rows
+ok 55 - column movement changes Bag order and projects all sharing grids without replacing rows
+  ---
+  duration_ms: 37.698875
+  ...
+# Subtest: moving across a columnset preserves membership and splits/joins contiguous header bands
+ok 56 - moving across a columnset preserves membership and splits/joins contiguous header bands
+  ---
+  duration_ms: 32.241333
+  ...
+# Subtest: legacy group colors and cell white_space project from struct Data
+ok 57 - legacy group colors and cell white_space project from struct Data
+  ---
+  duration_ms: 51.406541
+  ...
+# Subtest: values: row headers are generated ordinals and follow store indices
+ok 58 - values: row headers are generated ordinals and follow store indices
+  ---
+  duration_ms: 32.486584
+  ...
+# Subtest: attributes: row headers are generated ordinals and follow store indices
+ok 59 - attributes: row headers are generated ordinals and follow store indices
+  ---
+  duration_ms: 27.559709
+  ...
+# Subtest: values: row heights belong to each Source grid, not shared Data
+ok 60 - values: row heights belong to each Source grid, not shared Data
+  ---
+  duration_ms: 38.08375
+  ...
+# Subtest: attributes: row heights belong to each Source grid, not shared Data
+ok 61 - attributes: row heights belong to each Source grid, not shared Data
+  ---
+  duration_ms: 27.342292
+  ...
+# Subtest: row heights survive updates and DOM moves; removal/replacement clears their state
+ok 62 - row heights survive updates and DOM moves; removal/replacement clears their state
+  ---
+  duration_ms: 34.271
+  ...
+# Subtest: values: selfDragRows changes indices only, retaining rows and individual heights
+ok 63 - values: selfDragRows changes indices only, retaining rows and individual heights
+  ---
+  duration_ms: 39.518333
+  ...
+# Subtest: attributes: selfDragRows changes indices only, retaining rows and individual heights
+ok 64 - attributes: selfDragRows changes indices only, retaining rows and individual heights
+  ---
+  duration_ms: 44.790625
+  ...
+# Subtest: selfDragRows is opt-in, rejects foreign-grid drops and cancels when disabled or retargeted
+ok 65 - selfDragRows is opt-in, rejects foreign-grid drops and cancels when disabled or retargeted
+  ---
+  duration_ms: 38.842291
+  ...
+# Subtest: values: multicolumn headers share typed store order and drag switches to manual
+ok 66 - values: multicolumn headers share typed store order and drag switches to manual
+  ---
+  duration_ms: 66.204458
+  ...
+# Subtest: attributes: multicolumn headers share typed store order and drag switches to manual
+ok 67 - attributes: multicolumn headers share typed store order and drag switches to manual
+  ---
+  duration_ms: 58.897917
+  ...
+# Subtest: sort metadata survives detach, struct changes and store replacement; resize does not sort
+ok 68 - sort metadata survives detach, struct changes and store replacement; resize does not sort
+  ---
+  duration_ms: 35.937459
+  ...
+# Subtest: two grids share filtered membership and pull independently after a matching cell changes
+ok 69 - two grids share filtered membership and pull independently after a matching cell changes
+  ---
+  duration_ms: 32.452375
+  ...
+# Subtest: hosted input bundle accepts runtime Bags and respects Bag validation errors
+ok 70 - hosted input bundle accepts runtime Bags and respects Bag validation errors
+  ---
+  duration_ms: 409.904875
+  ...
+# Subtest: C07: every served runtime bundle is the build of js/src with the installed dependencies
+    # Subtest: dist/gramlot.js
+    ok 1 - dist/gramlot.js
+      ---
+      duration_ms: 5.670458
+      ...
+    # Subtest: ../src/gramlot/resources/gramlot.js
+    ok 2 - ../src/gramlot/resources/gramlot.js
+      ---
+      duration_ms: 6.800792
+      ...
+    # Subtest: dist/gramlot.min.js
+    ok 3 - dist/gramlot.min.js
+      ---
+      duration_ms: 3.283083
+      ...
+    # Subtest: ../src/gramlot/resources/gramlot.min.js
+    ok 4 - ../src/gramlot/resources/gramlot.min.js
+      ---
+      duration_ms: 6.235875
+      ...
+    1..4
+ok 71 - C07: every served runtime bundle is the build of js/src with the installed dependencies
+  ---
+  duration_ms: 391.225125
+  ...
+1..71
+# tests 75
+# suites 0
+# pass 75
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4643.76775

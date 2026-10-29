@@ -83,6 +83,7 @@ export function ChoiceEditor(HTMLElement) {
             input.autocomplete = 'off'; return input;
         }
         get constrained() { return true; }
+        get revalidateDraftOnSourceChange() { return false; }
         get autoHighlight() { return true; }
         get matchTypedChoice() { return true; }
         get emptyChoice() { return null; }
@@ -107,22 +108,29 @@ export function ChoiceEditor(HTMLElement) {
             this.#separator = this.parameters.separator;
             this.#source = source;
             this.toggle.disabled = this.locked;
+            if (changed && this.revalidateDraftOnSourceChange) this.#dirty = false;
             if (changed) { this.#rows = []; this.#picked = null; }
             if (changed || this.locked) this.closeChoices({cancelLookup: changed});
             if (changed && this.active && !this.#dirty) this.resolveValue();
             return rest;
         }
         setPageContext(context) { super.setPageContext(context); this.resolveValue(); }
-        connectedCallback() { this.resolveValue(); }
+        connectedCallback() { super.connectedCallback(); this.resolveValue(); }
         readControlValue() { return this.#value; }
         writeControlValue(value) {
             if (Object.is(value, this.#value)) return;
             this.#value = value; this.#dirty = false; this.#picked = null;
             this.closeChoices({cancelLookup: true}); this.resolveValue();
         }
+        restoreFormValue(value) {
+            this.#value = value; this.#dirty = false; this.#picked = null;
+            this.closeChoices({cancelLookup:true}); this.resolveValue();
+        }
         validateSelection(value) {
             if (!this.constrained) return super.validateSelection(value);
-            if (value == null || this.#rows.some(row => row.id === value) || this.#picked?.id === value) return true;
+            const row = this.#picked?.id === value ? this.#picked : this.#rows.find(row => row.id === value);
+            if (row?.error) return {errorcode:'condition', message:row.error};
+            if (value == null || row) return true;
             return {errorcode:'missing', message:'Choose a value from the list.'};
         }
         acceptControlValue() {
@@ -150,13 +158,15 @@ export function ChoiceEditor(HTMLElement) {
         }
         choose(row) {
             if (this.locked || !this.active) return;
+            if (this.pageContext.form) this.pageContext.formSelectionError(row.error ?? '');
             this.#picked = row; this.#dirty = true; this.control.value = row.id === null ? '' : row.caption;
             this.closeChoices(); this.commitDraft();
         }
-        async request(keywords) {
+        async request(keywords, {selection = false} = {}) {
             this.#requestController?.abort();
             const controller = new AbortController(); this.#requestController = controller;
-            this.#resolvingValue = Object.hasOwn(keywords, '_id');
+            this.#resolvingValue = selection || Object.hasOwn(keywords, '_id');
+            if (this.pageContext.form && this.#resolvingValue) this.pageContext.formSelectionPending(true);
             const generation = ++this.#generation;
             this.control.setAttribute('aria-busy', 'true'); this.error('');
             try {
@@ -164,14 +174,21 @@ export function ChoiceEditor(HTMLElement) {
                 if (generation !== this.#generation || !this.active) return null;
                 return rows;
             } catch (error) {
-                if (generation === this.#generation && this.active) this.error(error.message);
+                if (generation === this.#generation && this.active) {
+                    this.error(error.message);
+                    if (this.pageContext.form && this.#resolvingValue) this.pageContext.formSelectionError(error.message);
+                }
                 return null;
             } finally {
-                if (generation === this.#generation) { this.#requestController = null; this.#resolvingValue = false; this.control.setAttribute('aria-busy', 'false'); }
+                if (generation === this.#generation) {
+                    if (this.pageContext.form && this.#resolvingValue) this.pageContext.formSelectionPending(false);
+                    this.#requestController = null; this.#resolvingValue = false; this.control.setAttribute('aria-busy', 'false'); }
             }
         }
         async resolveValue() {
-            if (this.#value == null || this.#value === '') { this.control.value = ''; this.error(''); if (this.active) this.selectionResolved(null); return; }
+            if (this.#value == null || this.#value === '') {
+                if (this.pageContext?.form) { this.pageContext.formSelectionPending(false); this.pageContext.formSelectionError(''); }
+                this.control.value = ''; this.error(''); if (this.active) this.selectionResolved(null); return; }
             if (!this.active) return;
             this.control.value = this.#value;
             if (!this.constrained) { this.error(''); this.selectionResolved(null); return; }
@@ -179,13 +196,18 @@ export function ChoiceEditor(HTMLElement) {
             const generation = this.#generation;
             const rows = await pending;
             if (!rows) {
-                if (generation === this.#generation && this.active) this.selectionResolved(null);
+                if (generation === this.#generation && this.active) {
+                    this.selectionResolved(null);
+                    if (this.pageContext.form) this.pageContext.formValidate();
+                }
                 return;
             }
             const row = rows.find(item => item.id === this.#value);
             this.#rows = rows;
             this.control.value = row ? row.caption : this.#value;
-            this.error(row ? '' : 'Value is not in the list.');
+            const error = row ? row.error ?? '' : 'Value is not in the list.';
+            this.error(error);
+            if (this.pageContext.form) { this.pageContext.formSelectionError(error); this.pageContext.formValidate(); }
             this.selectionResolved(row ?? null);
         }
         async search(query, navigation = 0) {
@@ -234,6 +256,7 @@ export function ChoiceEditor(HTMLElement) {
             clearTimeout(this.#searchTimer); this.#searchTimer = null;
             // Closing suggestions must not cancel resolution of the selected Data value.
             if (cancelLookup || !this.#resolvingValue) {
+                if (this.pageContext?.form && this.#resolvingValue) this.pageContext.formSelectionPending(false);
                 this.#requestController?.abort(); this.#requestController = null;
                 this.#resolvingValue = false; ++this.#generation;
                 this.control.setAttribute('aria-busy', 'false');

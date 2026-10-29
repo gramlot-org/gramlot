@@ -1020,3 +1020,58 @@ elapses. These lifecycle fixes preserve the existing value/projection contract.
 The owner subsequently excluded the Application/Invoice gallery from the current
 local release (GC-070 §2475). Its template remains a separate development example;
 only the common selector behavior and independent regressions stay in the candidate.
+
+
+<a id="gc-315-190"></a>
+## 190 · Conditions and selected-value revalidation — owner contract, 2026-10-29
+
+Owner: “Prima della release completiamo condition e weakCondition come nel legacy.”
+After the behavior explanation, owner confirms: “Sì, manteniamo l’autoselezione del
+candidato unico per dbSelect obbligatorio, come nel legacy. Aggiorna il contratto e
+procedi con condition e weakCondition, con test ed esempi nella gallery.”
+This extends the Base-only local release; Invoice remains excluded. Implementation,
+verification and public publication are separate from this approved contract.
+
+- condition is a parameterized eligibility expression. condition_* supplies its
+  bound values, never interpolated SQL. Changes revalidate the selected identity
+  and invalidate obsolete suggestion/lookup work without recreating the widget.
+- weakCondition=False keeps condition mandatory. weakCondition=True makes the
+  entire condition soft. A string weakCondition adds a soft expression while the
+  original condition stays mandatory. Empty search results trigger a retry with
+  only the soft restriction removed; a short nonempty result is not filled from
+  outside the restriction. Each attempt retains prefix-then-containment search.
+- Server authorization/read restrictions are never relaxed, either for search or
+  for recovery of an existing caption. Browser input cannot authorize arbitrary
+  expressions or grant access to records.
+- An existing, readable but ineligible key stays in Data with its readable caption
+  and a field error. Returning to an eligible condition clears that error. A soft
+  condition alone does not invalidate the selected key. Missing/inaccessible keys
+  remain recognizable without exposing inaccessible record information.
+- On a condition change, an editable required dbSelect checks up to two candidates.
+  Exactly one candidate is selected through the existing validation/Data writer,
+  including replacement of the previous key. Zero/multiple candidates retain the
+  key and run identity validation. This is distinct from the existing autoSelect
+  behavior for an initially empty field. dbComboBox keeps its free-text contract;
+  required dbSelect replacement is not applied to it.
+- Async work exposes pending state and discards stale replies after condition/value
+  changes or removal. Source/Data retain application state; Logic carries none.
+  This increment does not implement the deferred form manager or save lifecycle.
+
+Owner clarification: “certe capabilities sono asqueel only”. condition and
+weakCondition are Asqueel-only capabilities; SQLAlchemy/Django reject their use
+explicitly rather than translate or ignore expressions. Core owns parameter
+transport and selection lifecycle, not expression interpretation. Owner further requires “deve funzionare esattamente come il legacy”. The proposed
+second conditions registration is withdrawn: applications declare condition,
+weakCondition and condition_* on the widget. No alternative authoring API or
+cross-ORM translator is approved. Server-side expression handling must be reviewed
+against that direct legacy path before claiming implementation or security parity.
+
+The response reuses legacy errors (literal text) in the existing rows/identifier/
+caption envelope for an identity found outside eligibility. Empty rows mean no
+accessible identity; returned errors must not become pointers or executable code.
+
+Required regressions: strict and both soft forms, retry ordering, immutable server
+restrictions, bound parameters, condition reversal, missing/ineligible identity,
+zero/one/two candidates despite a display limit of one, typed zero identity,
+current-value races, async-validation cancellation, removal, unchanged widget
+identity, and combo free text. Gallery uses the Base dataset, not Invoice.
