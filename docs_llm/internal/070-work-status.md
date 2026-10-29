@@ -17130,6 +17130,44 @@ Detailed receipt: server GS-020 §040. Logs:
 
 This closes the JavaScript/serverless common-base qualification prerequisite
 reported at the Grouplets checkpoint; it does not claim a complete Read the Docs
-publication or Python compiled-page export. Next: review and integrate the
-Python → foo.glt.tytx → Worker/serverless path as a separate phase, preserving its
-original worktree and keeping Invoice excluded.
+publication or Python compiled-page export.
+
+Deferred by the owner on 2026-10-29: “questo mettilo come punto sospeso ma da
+ricordare”. The Python → foo.glt.tytx → Worker/serverless path remains an open,
+suspended follow-up, not the next active phase. Preserve the original worktree;
+resume review and integration only when the owner asks to return to this item.
+Invoice remains excluded.
+
+
+<a id="gc-070-obsolete-worktree-cleanup-20261029"></a>
+## Obsolete worktree cleanup — 2026-10-29
+
+Owner: “prima farei una pulizia delle cose che sono irmai obsolete”.
+Archived and removed eight clean historical review/release checkouts after
+verifying that every HEAD is an ancestor of its repository's common-base HEAD:
+core audit-0-3-9, review-0-3-16, review-0-3-5 and source-nodeid-release;
+examples source-nodeid-examples and examples-review-0-3-5;
+py-server-review-0-3-5 and js-server-review-0-3-5.
+
+All files, including ignored files, were archived without following symlinks.
+Archive contents were compared to source hashes, link targets and file modes;
+the originals were checked again before removal. No forced removal, branch
+removal or history rewrite was used. Commit reachability and retained branch
+identities were verified after cleanup. Recovery manifests, archive checksums
+and restore instructions are retained outside disposable temporary storage:
+/Users/gporcari/Sviluppo/gramlot/worktree-archives/20261029-obsolete/README.md.
+
+The common bases, dirty originals and unresolved experiments remain intact.
+Their presence does not by itself indicate missing release work. In particular:
+
+- Python → foo.glt.tytx → Worker/serverless remains suspended, not active work.
+- Invoice remains excluded and preserved.
+- async-resolvers is a separate unintegrated experiment, not release scope.
+- s06-resources is historical architecture superseded by Kajenn resource
+  ownership; retain its unique commits, do not promote it to current runtime.
+- Dirty inspector, mobile, audit and other origin checkouts retain historical
+  and potentially distinct local work; do not bulk-delete or bulk-merge them.
+
+This cleanup changes no runtime behavior, packages, public sites or release
+acceptance. Tests were not rerun for archive-only operations. Paired status
+records and whitespace checks were verified.
