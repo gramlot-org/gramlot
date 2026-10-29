@@ -17000,3 +17000,64 @@ The original checkout HEAD/status and all 921 snapshotted file hashes are
 unchanged. Receipts and the original local patch are under
 `/private/tmp/gramlot-security-reconciliation-20261029/`. Invoice remains excluded.
 Implemented and verified locally; no publication, deployment or dependency edit.
+
+<a id="gc-070-mobile-reconciliation-20261029"></a>
+## Mobile application — common local base, 2026-10-29
+
+Owner: “Sì, procedi prima con mobile-application-gallery nella base comune,
+preservando il lavoro originale e verificando che funzioni. Poi passiamo ai
+Grouplets. Invoice resta fuori.” This checkpoint is local integration, not a
+package release, deployment or TestFlight upload. Grouplets remain the next
+separate integration; Invoice stays excluded.
+
+The original mobile-application-gallery worktree contains an older LAN-based,
+Italian prototype. GE-020's newer external-catalogue registration, trusted
+Source-owned iframe broker and appearance bridge are already in the common
+base. Reuse those mechanisms instead of importing the obsolete page list or
+replacing the gallery. The current owning Capacitor module supplies 17 English
+catalogue entries, including motion and native SQLite. Fifteen are eligible
+without backend prerequisites; server push and top-level shortcut entry stay
+unavailable and their page routes are not staged.
+
+The Python server now has a repeatable `scripts/serve_release_gallery.py` entry
+point with optional `--modules <prepared-parent>`. It preserves the ordinary,
+Grid, Base, Asqueel selector, PageStore/WebSocket and chat examples; Remote Edit
+is false and the IDE sees only demonstration documents. The module mounts at
+`/mobile-application/`. Its provider was rebuilt through the owning build script
+against this common core; the gallery bundle was rebuilt with current embedded
+themes. The public artifact contains no developer LAN destination or private
+Mac/APNs configuration. Native mounting still requires same-origin HTTPS.
+
+One SQLite page defect was corrected on an isolated Capacitor branch: external
+connection/query references now belong to the Source card, never Logic. Note
+text, results, readiness, busy/error values stay in Data. Same-card reopening
+reuses its connection; failed opening permits retry. DeviceHandler and the frame
+broker retain page-owned resource cleanup. This adds no core API or fallback.
+
+Local integration revisions:
+
+- gramlot-py-server: `182d699`, common release branch.
+- gramlot-examples: `8936f4b`, common release branch.
+- gramlot-capacitor: `51c5953`, isolated `codex/mobile-common-base-20261029`.
+
+Verification: all 313 server tests, 335 gallery JavaScript tests, 94 focused core
+device/frame/mobile/theme tests and 75 Capacitor provider/page tests pass. Python
+module checks pass 3 tests plus 17 page subtests; gallery module/artifact checks
+pass 4 tests plus 8 subtests. The browser rendered all 15 eligible pages with
+English headings and no captured loading errors. Ordinary-browser navigation
+correctly hides the native branch while retaining the other common catalogues.
+Native origin checks, frame ownership, resource isolation and cleanup are covered
+by automated tests, not a new physical-device run.
+
+Server documentation builds and paired anchors pass. Paired mobile guide anchors
+also pass. A full examples documentation-site rebuild was attempted but this
+local environment lacks `@gramlot/gramlot-serverless`; that separate build is not
+claimed as verified. The gallery browser bundle itself built successfully.
+
+The original gallery's 660 and original Capacitor repository's 176 snapshotted
+files, HEADs and working state remain unchanged. Local receipts and the prepared
+artifact are in `/private/tmp/gramlot-mobile-integration-20261029/`. The complete
+preview runs at `http://127.0.0.1:61508/`; this HTTP loopback preview does not
+bypass the native HTTPS rule. Physical iPhone plugin, keyboard/safe-area and
+Universal Link acceptance remains separate. Implemented and verified locally;
+owner acceptance and public deployment are not implied.
