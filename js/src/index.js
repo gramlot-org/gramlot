@@ -46,3 +46,5 @@ export {collectionBuildId, verifyCollectionArtifact} from './collection-artifact
 export {DeviceHandler} from './handlers/device-handler.js';
 
 export {MobileEnvironment} from './mobile-environment.js';
+
+export {chatRender, chatSend, chatCompleted, chatReset, chatResize, chatPickAttachments, chatRenderAttachments, chatRemoveAttachment} from './chat.js';

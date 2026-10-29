@@ -76,7 +76,9 @@
     "./components/editors": "./src/components/editors.js",
     "./components/typst": "./src/components/typst.js",
     "./device-frames": "./src/device-frames.js",
-    "./mobile-environment": "./src/mobile-environment.js"
+    "./mobile-environment": "./src/mobile-environment.js",
+    "./chat": "./src/chat.js",
+    "./components/chat": "./src/components/chat.js"
   },
   "files": [
     "LICENSE",

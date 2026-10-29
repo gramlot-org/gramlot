@@ -16830,3 +16830,132 @@ work includes JS/serverless consumer qualification of the new artifact format,
 security qualification of client conditions versus server-owned constraints,
 clean-install/package checks and owner acceptance. Grid editing/virtualization,
 full form persistence/undo and Invoice are not included by this checkpoint.
+<a id="gc-070-chat-base-20261029"></a>
+## Reusable base chat — 2026-10-29
+
+Owner explicitly requested implementation after confirming the layout, server
+echo hook, string/SourceBag result and isolated message datapaths. Implemented
+ChatPane/ChatPageStore, the optional chat viewport collection and shared browser
+projection/publication behavior; provider logic stays in the Page. GC-390 records
+authoring, lifecycle, limits and verification. No adapter/dependency edits.
+Live echo and two interactive Source replies passed on the separate provider-free
+example at port 8773. Owner acceptance and publication remain separate.
+
+Final verification receipt: 69 JavaScript tests passed across chat, PageStore
+connection, live Source validation, controller lifecycle and Source extension
+contracts; 67 Python tests plus 36 subtests passed across chat, PageStore,
+prepared collections and Builder. The first mixed-language JS run used system
+Python without Gramlot; rerunning with the configured environment passed all
+69 tests. Runtime/prepared collection build passed. The earlier provider-backed
+example's 21 Python tests also passed against this core. Live final verification
+confirmed reset removes the old interactive reply and a new reply starts at
+counter zero with an empty note. The new example remains available at port 8773.
+No release, deployment or owner acceptance is claimed.
+
+
+Chat appearance refinement — owner 2026-10-29 requested removing Assistant/You
+headings and using subtle gray-blue versus gray backgrounds. The base chat now
+omits visible author headings, preserving accessible article names. Assistant
+Source/text messages share a themed gray-blue background; user messages retain
+the gray bubble. The example's nested card no longer obscures the message color.
+Runtime/collection rebuild and all 5 focused browser tests pass. Live echo in the
+restarted port-8773 example verified both backgrounds and no visible author titles.
+
+Chat binder and transient feedback — 2026-10-29. Owner clarified that writing a
+request into Data must trigger server processing through sync, then authorized
+“ok procedi”, including the bounded integration correction. GC-390 §030
+supersedes the earlier publication proposal and authorization-pending gap.
+Implemented request/response Bags and one feedback field through the existing
+dataBinder; feedback(text) updates a fixed status row outside the message scroll.
+Core build passed; 70 JS tests and 69 Python tests plus 36 subtests passed.
+Adapter shared channel verified on Uvicorn and Kajenn; gated worker evidence
+proves feedback arrives before processing finishes. Live echo/Source controls
+verified at port 8773. No credentials or provider calls involved. Owner acceptance
+and release remain separate; implementation work for this increment is complete.
+
+
+AI/image chat migration — 2026-10-29. Owner requested “fammi anche la chat di
+prima con il component per ai e immagini”, then “ok procedi”. The provider
+application now composes ChatPane, subclasses ChatPageStore and delegates the
+four shared browser handlers. It uses ordinary bound settings/configuration,
+Data request/response/feedback and Source image replies. Provider text context
+stays in server Data and contains descriptions, not image pixels. Provider code
+and 1Password credentials remain application/server-owned. No core runtime or
+provider API change was required. Verified: 23 Python tests, 3 JS integration
+tests; real Anthropic context recall (Ginepro) and natural-language OpenAI image
+generation (a watercolor fireplace), visibly loaded as a 1024x1024 Source image.
+The settings drawer and separate model/effort controls remain available. The AI
+application runs locally on 8772; the base echo demo remains on 8773. This
+increment is implemented and verified; owner acceptance/release are separate.
+
+
+Compact chat composer — owner 2026-10-29 requested visible processing status,
+less space in composer top/bottom, a rounder question field and icon send in the
+bottom toolbar. ChatPane now exposes editor/toolbar/sendButton Source references;
+send is in the bottom toolbar. A normal dataFormula derives the visible status
+from pending/feedback, providing immediate sending feedback before the server's
+first update. AI composer height is 190px (was 280), with 48px toolbar and a notice
+region collapsed when empty. Rounded input, spinning pending indicator, accessible
+clear/send icons and a 36x36 circular send were verified live. The indicator uses
+CSS animation only; actual phase text still comes from server Data. Live base
+and Anthropic processing showed status before completion and cleared it afterward.
+Checks: 22 core Python tests plus 19 subtests, 23 provider tests, 6 core JS tests;
+layout verified in the browser. No adapter/provider protocol change. Implemented
+and verified locally; acceptance and release remain separate.
+
+
+Empty composer top — owner 2026-10-29 requested only a couple of pixels when
+empty. The shared top and AI notice top now use 2px when empty; the derived
+status row is display:none while empty, and editor center has no top padding.
+While processing, the same bound status becomes visible. This supersedes the
+previous permanently reserved status height; message viewport height is unchanged.
+Six focused Python composition/server checks passed.
+
+
+Chat growing input and attachments — 2026-10-29. Owner requested auto-growing
+input, compact toolbar and +; confirmed “Anche PDF” to the proposed draft Bag,
+preview/removal and server reading. GC-390 §040 / GC-225 record the contract.
+Shared core supplies 44–180px editor sizing, 44px toolbar, 2px empty top and
+file selection/preview/removal. Five files, 2 MiB image/PDF, 1 MiB text, 4 MiB total;
+Data binder snapshots files on Send. Server validation precedes request-scoped
+request_attachments; providers remain in the example PageStore. The AI example
+sends images/PDF/text and retains them in server-only context (24 MiB encoded
+history guard, no automatic compaction). Checks: 11 core Python, 8 core JS,
+24 example Python, 3 example JS tests and runtime build passed. Live base echo
+and real Claude PDF/text/image reading and next-turn PDF recall passed. Input
+cap/shrink and compact geometry verified. Implemented and verified; acceptance
+and release are separate. Local AI remains on 8772 and base demo on 8773.
+
+
+Local common-base integration — 2026-10-29. Owner: “Sì, verifica anche
+conversation-poc e integra la chat nella base comune, preservando il lavoro
+originale e controllando che funzioni nella gallery. Invoice resta fuori.”
+The conversation-poc changes were reviewed and merged into the existing local
+release base alongside Grid, forms, selectors and PageStore. The original core,
+examples and adapter checkouts remain untouched; their imported files were
+snapshotted and hash-checked. Invoice is excluded.
+
+The opt-in chat catalogue opens /pages/92-chat/01-echo directly in the gallery
+iframe. It uses the shared ChatPane/ChatPageStore and existing binder/WebSocket
+channel, without AI credentials. The provider-backed trial remains separate;
+this integration makes no paid provider calls and does not certify its historical
+provider results anew. Remote Edit remains disabled. Runtime/prepared collection
+and gallery browser builds pass. Full suites: 1,419 core JavaScript tests,
+335 gallery JavaScript tests and 312 Python adapter tests. The focused core
+Python chat/PageStore checks pass (20 tests).
+
+Live Kajenn gallery checks: text echo; feedback before processing completes;
+interactive Source replies with independent note/counter Data; appending replies
+preserves earlier state; reset clears conversation while retaining the unsent
+draft; no browser console errors. Current preview: http://127.0.0.1:61505/.
+Verification receipts: /private/tmp/gramlot-chat-integration-20261029/.
+Implemented and locally verified; publication and remaining public release gates
+are separate. No deployment, package release or TestFlight upload was performed.
+
+Final integration checks: the full core Python suite passes (348 tests and
+397 subtests; one declared expected failure). Focused example checks pass
+(28 chat/provider/collection tests, then 5 catalogue/base tests and 8 subtests).
+Documentation identities/paired anchors and whitespace checks pass. The base
+chat stylesheet now consumes the gallery theme tokens, fixing the low-contrast
+prototype button without changing the original trial. Browser verification uses
+Kajenn; both Kajenn and Uvicorn feedback/cleanup paths pass automated tests.

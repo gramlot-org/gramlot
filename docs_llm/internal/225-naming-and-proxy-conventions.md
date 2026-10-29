@@ -2007,3 +2007,80 @@ Grid sortedBy (text) and filter (mapping or null) are read-bound declarative
 requests, applied when their input changes; interactive current criteria belong
 to the view. Filter locale/timeZone default to the existing page context. No
 write-back, alternate state path, remote provider or alias is introduced.
+Reusable chat implementation — owner 2026-10-29: “ok procedi con la chat base
+con echo e un esempio di risposta con Source interattivo”. The confirmed layout,
+process_message(self, text), string/SourceBag result and per-message datapath
+are recorded in GE-040 §§025–045. ChatPane is a Python Source composition class
+(named like FramePage), with frame and composer references to real framePane
+nodes. ChatPageStore follows existing PageStore naming and supplies the echo
+hook. The optional chat collection exports ChatMessages/chatMessages/
+gramlot-chat-messages under existing component conventions; it replaces no
+example-owned chat-trial API. Shared browser functions chatRender, chatSend,
+chatCompleted and chatReset follow named Logic conventions and are delegated
+by Page Logic methods with those same names. chat_id/request_id are Python
+publication parameters; chat_send/chat_reset/chat_completed use the existing
+publication channel. Per-chat conversation Data is bound to chats.<chat_id>;
+messageData.<message label> is ordinary client Data for interactive fragments.
+No provider, transport, generic Source mounting API or dependency workaround
+is introduced. Collection availability and Page controllers stay application-owned.
+
+
+Chat message appearance — owner 2026-10-29 requested removing visible Assistant/You
+headings and distinguishing speakers with subtle gray-blue and gray backgrounds.
+The existing --gramlot-chat-bubble token remains the user background;
+--gramlot-chat-assistant-background follows the existing --gramlot-chat-* theme
+namespace for assistant replies. Author metadata remains available through the
+message article accessible name. No message schema or provider behavior changes.
+
+
+Chat binder correction — owner 2026-10-29: “la chiamata dovrebbe essere che io
+metto la domanda in un punto e la sync la manda al server”, then “ok procedi”.
+This supersedes the unreleased chat publication protocol above. Conversation Data
+contains request (Bag: id, action=send/reset, text), response (Bag: id, submitted,
+accepted, error), feedback (string), messages and ready. chat_request is the Python
+dataController reacting to request; chatCompleted observes response. Existing
+chatSend/chatReset write one request Bag; no chat topic is published. feedback(text)
+is the server hook helper writing the current request's feedback field, scoped by
+a ContextVar during process_message. chatFeedback is a Source node label for the
+bound status row outside the scrolling messages. Transport worker scheduling and
+outgoing delivery belong to gramlot-py-server; no new wire operation is introduced.
+
+
+AI chat application composition — owner 2026-10-29 requested migrating the prior
+AI/image chat to the shared component, then “ok procedi”. Existing ChatPane,
+ChatPageStore and chatRender/chatSend/chatCompleted/chatReset names are reused.
+Application settings/configuration/notice/turns Data retain their prior purpose;
+providerContext follows camelCase Data labels and names server-only completed
+text turns sent to the provider. Source image replies are presentation; neither
+providerContext nor provider selectors introduce a core proxy or marker. All
+provider behavior stays in gramlot-examples PageStore/application modules.
+
+
+Chat composer refinement — owner 2026-10-29 requests visible processing status,
+compact top/bottom regions, a rounder input and an icon send in the bottom toolbar.
+This supersedes placing send in composer center. ChatPane.toolbar exposes the
+ordinary Source container for application controls before the built-in send;
+ChatPane.editor and sendButton expose the existing controls using established
+camelCase reference naming. gramlot-chat-status/editor/toolbar/send are scoped
+presentation classes. Pending status projects existing pending and feedback Data,
+with an immediate waiting label; no timer-driven simulated processing is added.
+
+The composer .status field is derived presentation Data from pending/feedback
+using dataFormula; message text uses the ordinary pointer to .status.
+
+
+Chat attachments and content sizing — owner 2026-10-29 requests a growing input,
+compact toolbar and + for files/images, and confirms “Anche PDF” to draft Data
+attachments, preview/removal and server reading. ChatPane keeps its Source frames;
+chatResize sizes the editor/composer in shared core behavior. chatPickAttachments,
+chatRenderAttachments and chatRemoveAttachment follow existing Logic delegation.
+Draft attachments is a Bag keyed a_<randomId>; each value is a Bag with name,
+mediaType, size and base64 data. The request snapshots that Bag. request_attachments
+is the request-scoped Python hook property. Core validates formats/size and renders
+user attachment Source; application PageStore translates to provider content.
+Accepted formats are PNG/JPEG/WebP, PDF and UTF-8 text/code. Limits are five files,
+2 MiB per binary file, 1 MiB per text file and 4 MiB total per request. Only explicit
+selection reads files, no upload endpoint or file persistence is introduced.
+composerHeight and picking are ordinary presentation Data. data-chat-composer,
+data-chat-top and data-chat-toolbar are internal geometry markers for the shared
+ResizeObserver, not application DOM behavior or business state.

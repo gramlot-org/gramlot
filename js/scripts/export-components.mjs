@@ -23,3 +23,5 @@ await writeFile(new URL('../../src/gramlot/collections/typst.json', import.meta.
 
 import grid from '../src/components/grid.js';
 await writeFile(new URL('../../src/gramlot/collections/grid.json', import.meta.url), JSON.stringify(grid.toDocument(), null, 2) + '\n');
+import chat from '../src/components/chat.js';
+await writeFile(new URL('../../src/gramlot/collections/chat.json', import.meta.url), JSON.stringify(chat.toDocument(), null, 2)+'\n');

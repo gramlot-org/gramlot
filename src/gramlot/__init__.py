@@ -8,3 +8,6 @@ __all__ = ["GramlotCollection", "GramlotBuilder", "GramlotHtmlRenderer", "Gramlo
 
 from .page.frame_page import FramePage
 from .page.index_page import IndexPage
+
+from .page.chat import ChatPane, ChatPageStore
+__all__ += ['ChatPane', 'ChatPageStore']
