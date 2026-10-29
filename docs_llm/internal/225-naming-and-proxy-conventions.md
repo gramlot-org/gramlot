@@ -1808,3 +1808,9 @@ and choice scope. Owner requested generic, theme-based compact choices and a
 clear null value in chat 01a1874b-9446-7910-98f3-2a793361c1d5, then authorized
 review and incorporation here. Wider default presentation applies to database
 HTML templates; ordinary choices retain field-width presentation.
+
+Tray card removal — 2026-10-29: owner requests a removal cross in Gallery tray
+and rotation, zoom, layer controls grouped on the left. Reuse the established
+child parameter `closable` (default false), as for selected-container panels;
+no alias or separate close state. The renderer remove action deletes the card
+Source, and trayPane removes its keyed layout row. Layout lock hides the action.

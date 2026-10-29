@@ -12,16 +12,17 @@ export const TrayPane = defineComponent({
     parameters: {storepath: {dtype: 'T'}, locked: {dtype:'B',default:false,binding:'read'},
         gridStep:{dtype:'L',default:10,binding:'read'},gridVisible:{dtype:'B',default:false,binding:'read'},
         rotationStep:{dtype:'N',default:15,binding:'read'}},
-    childParameters: {minWidth:{dtype:'N',default:100},minHeight:{dtype:'N',default:64}},
+    childParameters: {closable:{dtype:'B',default:false},minWidth:{dtype:'N',default:100},minHeight:{dtype:'N',default:64}},
     implementation: Base => class TrayPane extends Base {
         // Projection metadata, keyed by the existing renderer presentation.
         static #blocks = new WeakMap();
-        static projectChild(box, attrs, {label}) {
+        static projectChild(box, attrs, {label, remove}) {
             if (!box.labelbox) throw new TypeError('trayPane children require a Labelbox (declare lbl)');
-            const {minWidth=100, minHeight=64, ...rest} = attrs;
+            const {minWidth=100, minHeight=64, closable=false, ...rest} = attrs;
+            if(typeof closable!=='boolean')throw new TypeError('closable must be a boolean');
             if (![minWidth,minHeight].every(value=>typeof value==='number'&&Number.isFinite(value)&&value>0))
                 throw new TypeError('trayPane minimum dimensions must be positive numbers');
-            TrayPane.#blocks.set(box, {label, minWidth, minHeight});
+            TrayPane.#blocks.set(box, {label, minWidth, minHeight, closable, remove});
             box.setAttribute('data-tray-block','');
             const settings=box.labelbox.traySettings ??= createTraySettings(box);
             for(const [key,{button}] of Object.entries(settings.controls)) {
@@ -41,6 +42,23 @@ export const TrayPane = defineComponent({
             }
             box.labelbox.rotationHandle.setAttribute('aria-label',`Rotate ${attrs.lbl ?? label}`);
             box.labelbox.rotationHandle.title='Rotate: drag around the center or use arrow keys';
+            if(closable&&!box.labelbox.closeButton) {
+                const button=box.ownerDocument.createElement('button');
+                button.type='button';button.className='tray-close';
+                const icon=box.ownerDocument.createElementNS(SVG_NS,'svg');
+                const path=box.ownerDocument.createElementNS(SVG_NS,'path');
+                icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');
+                path.setAttribute('d','m6 6 12 12M18 6 6 18');
+                path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');
+                path.setAttribute('stroke-width','1.5');path.setAttribute('stroke-linecap','round');
+                icon.append(path);button.append(icon);box.labelbox.labelBox.append(button);
+                box.labelbox.closeButton=button;
+            }
+            if(box.labelbox.closeButton) {
+                box.labelbox.closeButton.hidden=!closable;
+                box.labelbox.closeButton.title=`Remove ${attrs.lbl ?? label}`;
+                box.labelbox.closeButton.setAttribute('aria-label',box.labelbox.closeButton.title);
+            }
             box.toggleAttribute('data-movable', true);
             box.toggleAttribute('data-resizable', true);
             if (!box.labelbox.resizeHandle) {
@@ -132,6 +150,15 @@ export const TrayPane = defineComponent({
                 if(this.parameters.locked)return;
                 const path=event.composedPath(),box=path.find(item=>item.parentElement===this);
                 if(!TrayPane.#blocks.has(box))return;
+                const block=TrayPane.#blocks.get(box);
+                if(block.closable&&path.includes(box.labelbox.closeButton)) {
+                    event.preventDefault();event.stopPropagation();this.#finish();
+                    box.labelbox.traySettings.remove();
+                    this.#settings.delete(box.labelbox.traySettings);
+                    block.remove();
+                    if(this.#store.getNode(block.label))this.#store.popNode(block.label);
+                    return;
+                }
                 const settings=box.labelbox.traySettings;
                 for(const [key,{button}] of Object.entries(settings.controls))
                     if(path.includes(button))settings.open(this.#row(TrayPane.#blocks.get(box).label),key);
@@ -193,6 +220,7 @@ export const TrayPane = defineComponent({
                         if(locked&&row.getItem(`settings.${key}Open`)===true)row.setItem(`settings.${key}Open`,false);
                     }
                     box.labelbox.rotationHandle.hidden=locked;
+                    if(box.labelbox.closeButton)box.labelbox.closeButton.hidden=locked||!block.closable;
                     if(box.labelbox.resizeHandle)box.labelbox.resizeHandle.hidden=locked;
                     settings.mount(this,()=>this.#row(block.label),(key,value)=>{
                         if(!this.parameters.locked)this.#row(block.label).setItem(key,value);

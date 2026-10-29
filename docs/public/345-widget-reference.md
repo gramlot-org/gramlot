@@ -939,6 +939,7 @@ Child grammar: `*`. This is a grammar expression, not a list of browser tags.
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
+| `closable` | {"default": false, "dtype": "B"} |
 | `minWidth` | {"default": 100, "dtype": "N"} |
 | `minHeight` | {"default": 64, "dtype": "N"} |
 

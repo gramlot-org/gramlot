@@ -1578,6 +1578,11 @@ styles belong to the presentation, while bindings and child Source remain with
 the original node. `lbl_variant="card"` gives it a centered title on a dark
 header. A direct tray child uses this variant by default.
 
+A card can declare `closable=True` to show a removal cross on the right of its
+header. Closing removes its Source subtree and its keyed layout row, not other
+cards or their contents. Layout lock hides and disables removal. Rotation, zoom
+and layer controls are grouped on the left; the title remains the drag handle.
+
 A `trayPane(storepath="layout")` arranges its direct labelled children. Give each
 child a stable `node_label`; that label is the key of its row in the layout Data
 Bag. Do not add `movable` or `resizable`: tray membership owns those operations.
@@ -1587,7 +1592,7 @@ its top region and the tray in its center.
 Rows store `left`, `top`, `width`, `height`, integer `layer`, boolean `selected`,
 `rotation` in degrees and positive `scale` (1 = 100%). Move from the title, resize
 from the lower-right grip, rotate from the upper-left grip, or open the layer and
-zoom controls at the upper right. The controls remain outside the card transform.
+zoom controls beside it on the left. The controls remain outside the card transform.
 Widgets, editor instances and their bindings are preserved during arrangement.
 
 On the same layer, transformed outer rectangles stop at contact. Different layers

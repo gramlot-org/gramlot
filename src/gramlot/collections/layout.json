@@ -1621,6 +1621,10 @@
           "dataScope": false,
           "command": false,
           "childParameters": {
+            "closable": {
+              "dtype": "B",
+              "default": false
+            },
             "minWidth": {
               "dtype": "N",
               "default": 100

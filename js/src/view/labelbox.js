@@ -22,10 +22,14 @@ export const labelboxStyle = `.gramlot-labelbox[hidden]{display:none!important}
 .gramlot-labelbox[data-movable]>.label-box{cursor:grab;touch-action:none;user-select:none}
 .gramlot-labelbox[data-movable]>.label-box>label{cursor:inherit;user-select:none;-webkit-user-select:none}
 .gramlot-labelbox[data-selected]{outline:2px solid var(--gramlot-focus-ring,var(--gramlot-brand-blue,#3766b5));outline-offset:-2px}
-.gramlot-labelbox[data-tray-block]>.label-box{position:relative;padding-inline:32px 60px}
-.gramlot-labelbox>.label-box>.tray-settings-button{position:absolute;right:3px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:26px;height:26px;padding:4px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer}
+.gramlot-labelbox[data-tray-block]>.label-box{position:relative;padding-inline:88px 32px}
+.gramlot-labelbox>.label-box>.tray-settings-button{position:absolute;left:31px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:26px;height:26px;padding:4px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer}
 .gramlot-labelbox>.label-box>button[hidden]{display:none}
-.gramlot-labelbox>.label-box>.tray-settings-button[data-kind=layer]{right:31px}
+.gramlot-labelbox>.label-box>.tray-settings-button[data-kind=layer]{left:59px}
+.gramlot-labelbox>.label-box>.tray-close{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:26px;height:26px;display:grid;place-items:center;padding:4px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer;opacity:.65}
+.tray-close svg{width:18px;height:18px;pointer-events:none}
+.gramlot-labelbox>.label-box>.tray-close:hover{opacity:1;background:color-mix(in srgb,currentColor 12%,transparent)}
+.tray-close:focus-visible{opacity:1;outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:-2px}
 .tray-settings-button{opacity:.65}
 .tray-settings-button:hover,.tray-settings-button:focus-visible{opacity:1}
 .tray-settings-button svg{width:18px;height:18px;pointer-events:none}

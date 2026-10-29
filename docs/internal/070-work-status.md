@@ -17307,3 +17307,46 @@ Three Base servers run on 61501/61502/61503. The Application trial on 61504 is s
 its previous archives and receipt are preserved separately. Current local artifacts
 and receipt are under /private/tmp/gramlot-db-local. The bounded local checkpoint
 is ready; public publication and further feature integration remain separate.
+
+<a id="gc-070-2480"></a>
+## 2480 · Removable Gallery tray cards — 2026-10-29
+
+Owner requests a removal cross in Gallery tray and rotation, zoom and layer icons
+all on the left. Tray children reuse closable (default false) and the existing
+renderer remove action. Closing removes the card Source and its own layout Bag
+row, cleans popup resources, and preserves sibling widget instances. Layout lock
+hides and disables removal. The gallery opts in, counts layout rows reactively
+and keeps a separate monotonically increasing Data sequence for new Source labels.
+Python and JavaScript examples use the same Logic.
+
+Verified: 40 tray/geometry tests and six shared HTML Labelbox tests pass, including
+Source/Data removal, sibling identity, popup cleanup, dynamic closable and lock.
+Runtime/collection and gallery builds pass. Installed local preview on 61501
+shows rotation/zoom/layer on the left and remove on the right. Browser verifies
+add/remove/add, live embedded widgets, the counter and no captured console errors.
+This preview is in /private/tmp/gramlot-db-local/tray-preview-artifacts; the preceding
+Base-only release archives remain unchanged. No public release or deployment.
+
+<a id="gc-070-2485"></a>
+## 2485 · Local approach release consolidated with tray correction — 2026-10-29
+
+Owner: “incorpora anche questa correzione del tray nella release locale di
+avvicinamento e chiudiamo il consolidamento, lasciando Invoice fuori”. The reviewed
+§2480 tray change is accepted into the Base-only candidate of §2475.
+
+The candidate includes common selectors, Python providers, Base galleries and
+removable Gallery tray cards with rotation/zoom/layer controls on the left.
+Invoice pages, catalog, launcher and complete model remain excluded and preserved
+on their separate branch. No additional forms, grid or application work is included.
+
+Verification: the 46 focused tray/geometry/Labelbox tests and browser add/remove/add
+checks recorded in §2480 pass; generated widget metadata is current. Final core
+and examples wheels match every installed package file byte for byte. The rebuilt
+examples npm archive carries the updated lesson and embedded layout collection.
+Archive membership checks exclude Invoice; the unchanged Base server retains its
+249-test qualification and three-provider read-only checks from §2475.
+
+This closes the local consolidation on codex/release-database-local-20261029.
+Artifacts, exact revisions and SHA-256 checksums are recorded under
+/private/tmp/gramlot-db-local. Version numbers remain unchanged because these are
+local candidates. No main merge, push, tag, package publication or deployment.

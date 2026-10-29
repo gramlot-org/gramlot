@@ -571,3 +571,39 @@ test('tray membership alone supplies card chrome and resize works from authored 
     assert.equal(row.getItem('width'),120);assert.equal(row.getItem('height'),95);
     assert.equal(field.control,control);
 });
+
+test('closable tray card removes its Source and layout row while siblings keep their instance',async t=>{
+    const f=await fixture(t,obstacle);
+    sourceTarget(f.card).setAttr({closable:true});await settle();
+    const other=f.window.document.getElementById('obstacle');
+    const button=f.box.labelbox.closeButton;
+    assert.equal(button.hidden,false);
+    assert.equal(button.getAttribute('aria-label'),'Remove Customer');
+    f.box.labelbox.traySettings.controls.scale.button.click();await settle();
+    const popup=f.box.labelbox.traySettings.controls.scale.popup;
+    const parent=sourceTarget(f.card).parentBag;
+    button.click();await settle();
+    assert.equal(parent.getNode('card'),null);
+    assert.equal(f.store.getNode('card'),null);
+    assert.equal(f.window.document.getElementById('card'),null);
+    assert.equal(f.window.document.getElementById('obstacle'),other);
+    assert.equal(popup.isConnected,false);
+    assert.ok(f.store.getNode('other'));
+});
+
+test('tray close is opt-in and obeys layout lock and dynamic closable changes',async t=>{
+    const f=await fixture(t);
+    assert.equal(f.box.labelbox.closeButton,undefined);
+    const card=sourceTarget(f.card);
+    card.setAttr({closable:true});await settle();
+    const button=f.box.labelbox.closeButton;
+    card.parentNode.setAttr({locked:true});await settle();
+    assert.equal(button.hidden,true);button.click();await settle();
+    assert.ok(f.window.document.getElementById('card'));
+    card.parentNode.setAttr({locked:false});card.setAttr({closable:false});await settle();
+    assert.equal(button.hidden,true);button.click();await settle();
+    assert.ok(f.store.getNode('card'));
+    card.setAttr({closable:true});await settle();
+    assert.equal(f.box.labelbox.closeButton,button);
+    assert.equal(button.hidden,false);
+});
