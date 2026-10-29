@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: the pages follow the naming and theme conventions (GC-225)
+ok 1 - the pages follow the naming and theme conventions (GC-225)
+  ---
+  duration_ms: 28.728583
+  ...
+# Subtest: grouplets/01-remote_fragment: mounts without errors and behaves as its README says
+ok 2 - grouplets/01-remote_fragment: mounts without errors and behaves as its README says
+  ---
+  duration_ms: 468.849333
+  ...
+# Subtest: grouplets/02-independent_instances: mounts without errors and behaves as its README says
+ok 3 - grouplets/02-independent_instances: mounts without errors and behaves as its README says
+  ---
+  duration_ms: 335.304
+  ...
+# Subtest: grouplets/03-nested_fragments: mounts without errors and behaves as its README says
+ok 4 - grouplets/03-nested_fragments: mounts without errors and behaves as its README says
+  ---
+  duration_ms: 368.62775
+  ...
+# Subtest: grouplets/04-order_cards: mounts without errors and behaves as its README says
+ok 5 - grouplets/04-order_cards: mounts without errors and behaves as its README says
+  ---
+  duration_ms: 448.96125
+  ...
+# Subtest: g01: Python and JavaScript author equivalent Source and page options
+ok 6 - g01: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 956.992833
+  ...
+# Subtest: g02: Python and JavaScript author equivalent Source and page options
+ok 7 - g02: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 934.118334
+  ...
+# Subtest: g03: Python and JavaScript author equivalent Source and page options
+ok 8 - g03: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 857.371917
+  ...
+# Subtest: g04: Python and JavaScript author equivalent Source and page options
+ok 9 - g04: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 884.596667
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3770.234792

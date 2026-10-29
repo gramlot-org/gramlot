@@ -1,0 +1,1721 @@
+[
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_card.py",
+    "symbols": [
+      {
+        "name": "test_0_plain",
+        "line": 40,
+        "end_line": 48,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_1_roundedgroup",
+        "line": 50,
+        "end_line": 58,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_in_form",
+        "line": 60,
+        "end_line": 75,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_sides",
+        "line": 77,
+        "end_line": 86,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_bound_state",
+        "line": 88,
+        "end_line": 104,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_5_nested",
+        "line": 106,
+        "end_line": 118,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_6_profile",
+        "line": 120,
+        "end_line": 130,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_7_doc",
+        "line": 132,
+        "end_line": 140,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_8_clear",
+        "line": 142,
+        "end_line": 151,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_9_use_form",
+        "line": 153,
+        "end_line": 174,
+        "signature": "self, pane"
+      },
+      {
+        "name": "shipping_required",
+        "line": 177,
+        "end_line": 181,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "contact_fields",
+        "line": 183,
+        "end_line": 186,
+        "signature": "self, pane"
+      },
+      {
+        "name": "shipping_fields",
+        "line": 189,
+        "end_line": 193,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/01_gallery.py",
+    "symbols": [
+      {
+        "name": "_invoice_seed",
+        "line": 51,
+        "end_line": 63,
+        "signature": "self, n"
+      },
+      {
+        "name": "test_01_invoice_baseline",
+        "line": 65,
+        "end_line": 88,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_02_todolist_handler",
+        "line": 90,
+        "end_line": 130,
+        "signature": "self, pane"
+      },
+      {
+        "name": "todo_row_handler",
+        "line": 133,
+        "end_line": 138,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "test_03_invoice_responsive",
+        "line": 140,
+        "end_line": 161,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_04_kanban_dnd",
+        "line": 163,
+        "end_line": 239,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_05_team_tabs",
+        "line": 241,
+        "end_line": 320,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_06_struct_shopping_list",
+        "line": 322,
+        "end_line": 396,
+        "signature": "self, pane"
+      },
+      {
+        "name": "getMyTickets",
+        "line": 399,
+        "end_line": 412,
+        "signature": "self, **kwargs"
+      },
+      {
+        "name": "test_07_myticket_resourcefield",
+        "line": 414,
+        "end_line": 485,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_08_double_grid_same_pane",
+        "line": 487,
+        "end_line": 523,
+        "signature": "self, pane"
+      },
+      {
+        "name": "struct",
+        "line": 351,
+        "end_line": 361,
+        "signature": "struct"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/02_grid_db.py",
+    "symbols": [
+      {
+        "name": "test_1_region_provinces",
+        "line": 28,
+        "end_line": 56,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_struct_fieldcell",
+        "line": 58,
+        "end_line": 76,
+        "signature": "self, pane"
+      },
+      {
+        "name": "struct",
+        "line": 66,
+        "end_line": 69,
+        "signature": "struct"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/03_budget_editor.py",
+    "symbols": [
+      {
+        "name": "_xml_path",
+        "line": 28,
+        "end_line": 30,
+        "signature": "self"
+      },
+      {
+        "name": "main",
+        "line": 32,
+        "end_line": 111,
+        "signature": "self, root, **kwargs"
+      },
+      {
+        "name": "loadBudget",
+        "line": 114,
+        "end_line": 116,
+        "signature": "self, **kwargs"
+      },
+      {
+        "name": "saveBudget",
+        "line": 119,
+        "end_line": 124,
+        "signature": "self, payload=None, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_perf_50.py",
+    "symbols": [
+      {
+        "name": "_seed",
+        "line": 26,
+        "end_line": 35,
+        "signature": "self, n"
+      },
+      {
+        "name": "test_1_50_instances",
+        "line": 37,
+        "end_line": 76,
+        "signature": "self, pane"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_setlayout_dnd.py",
+    "symbols": [
+      {
+        "name": "test_setlayout_dnd",
+        "line": 41,
+        "end_line": 80,
+        "signature": "self, pane"
+      },
+      {
+        "name": "sl_row_handler",
+        "line": 83,
+        "end_line": 87,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/05_fill_parent.py",
+    "symbols": [
+      {
+        "name": "main",
+        "line": 28,
+        "end_line": 35,
+        "signature": "self, root, **kwargs"
+      },
+      {
+        "name": "_sidePane",
+        "line": 37,
+        "end_line": 61,
+        "signature": "self, parent, fill=False, title=None, **regionKwargs"
+      },
+      {
+        "name": "_chaptersSeed",
+        "line": 63,
+        "end_line": 77,
+        "signature": "self"
+      },
+      {
+        "name": "makeChapter",
+        "line": 80,
+        "end_line": 89,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "makeItem",
+        "line": 92,
+        "end_line": 95,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/06_fill_parent_scenarios.py",
+    "symbols": [
+      {
+        "name": "main",
+        "line": 15,
+        "end_line": 19,
+        "signature": "self, root, **kwargs"
+      },
+      {
+        "name": "_wrap",
+        "line": 21,
+        "end_line": 31,
+        "signature": "self, parent, datapath, title"
+      },
+      {
+        "name": "_chaptersSeed",
+        "line": 33,
+        "end_line": 45,
+        "signature": "self, sizes"
+      },
+      {
+        "name": "_vtabsScenario",
+        "line": 47,
+        "end_line": 62,
+        "signature": "self, parent"
+      },
+      {
+        "name": "_cardsScenario",
+        "line": 64,
+        "end_line": 79,
+        "signature": "self, parent"
+      },
+      {
+        "name": "_nestedScenario",
+        "line": 81,
+        "end_line": 96,
+        "signature": "self, parent"
+      },
+      {
+        "name": "makeChapter",
+        "line": 99,
+        "end_line": 109,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "makeItem",
+        "line": 112,
+        "end_line": 115,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/07_card_totals.py",
+    "symbols": [
+      {
+        "name": "test_1_document_totals",
+        "line": 29,
+        "end_line": 32,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_hidden_band",
+        "line": 34,
+        "end_line": 39,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_framed",
+        "line": 41,
+        "end_line": 44,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_sticky",
+        "line": 46,
+        "end_line": 51,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_5_theme_tokens",
+        "line": 53,
+        "end_line": 59,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_6_struct_unchanged",
+        "line": 61,
+        "end_line": 75,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_7_count_and_hidden_entries",
+        "line": 77,
+        "end_line": 89,
+        "signature": "self, pane"
+      },
+      {
+        "name": "_grid",
+        "line": 91,
+        "end_line": 97,
+        "signature": "self, pane, storepath, totals=None, **kwargs"
+      },
+      {
+        "name": "_righe",
+        "line": 99,
+        "end_line": 108,
+        "signature": "self, times=1"
+      },
+      {
+        "name": "rigaDocumento",
+        "line": 111,
+        "end_line": 120,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "struct",
+        "line": 65,
+        "end_line": 73,
+        "signature": "struct"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/08_phantom_row.py",
+    "symbols": [
+      {
+        "name": "test_01_phantom_in_form",
+        "line": 67,
+        "end_line": 106,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_02_phantom_empty",
+        "line": 108,
+        "end_line": 118,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_03_phantom_fill",
+        "line": 120,
+        "end_line": 146,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_04_phantom_cards",
+        "line": 148,
+        "end_line": 163,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_05_entry_struct",
+        "line": 165,
+        "end_line": 190,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_05b_entry_struct_template",
+        "line": 192,
+        "end_line": 217,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_06_entry_cards",
+        "line": 219,
+        "end_line": 243,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_07_entry_template",
+        "line": 245,
+        "end_line": 268,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_08_phantom_cards_in_form",
+        "line": 270,
+        "end_line": 292,
+        "signature": "self, pane"
+      },
+      {
+        "name": "drug_card",
+        "line": 295,
+        "end_line": 301,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "contact_line",
+        "line": 304,
+        "end_line": 309,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "contact_editor",
+        "line": 312,
+        "end_line": 317,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "_expense_struct",
+        "line": 319,
+        "end_line": 327,
+        "signature": "self, struct"
+      },
+      {
+        "name": "contact_card",
+        "line": 330,
+        "end_line": 335,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "_paste_sample",
+        "line": 337,
+        "end_line": 346,
+        "signature": "self, pane, sample, hint"
+      },
+      {
+        "name": "_shopping_struct",
+        "line": 348,
+        "end_line": 358,
+        "signature": "self, struct"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/09_bag_persistence.py",
+    "symbols": [
+      {
+        "name": "test_1_record_bag",
+        "line": 13,
+        "end_line": 76,
+        "signature": "self, pane"
+      },
+      {
+        "name": "row_struct",
+        "line": 78,
+        "end_line": 84,
+        "signature": "self, struct"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/09_empty_drop.py",
+    "symbols": [
+      {
+        "name": "_rows",
+        "line": 12,
+        "end_line": 18,
+        "signature": "self"
+      },
+      {
+        "name": "_pair",
+        "line": 20,
+        "end_line": 54,
+        "signature": "self, pane, prefix, target_mode='entry', seed=True, **target_kw"
+      },
+      {
+        "name": "test_01_entry",
+        "line": 56,
+        "end_line": 58,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_02_nested",
+        "line": 60,
+        "end_line": 75,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_03_phantom",
+        "line": 77,
+        "end_line": 79,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_04_plus_and_layout",
+        "line": 81,
+        "end_line": 89,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_05_limits",
+        "line": 91,
+        "end_line": 95,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_06_isolated",
+        "line": 97,
+        "end_line": 106,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_07_locked_form",
+        "line": 108,
+        "end_line": 116,
+        "signature": "self, pane"
+      },
+      {
+        "name": "_drag_probe",
+        "line": 118,
+        "end_line": 185,
+        "signature": "self, pane"
+      },
+      {
+        "name": "chapter",
+        "line": 188,
+        "end_line": 191,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "item",
+        "line": 194,
+        "end_line": 198,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "detail",
+        "line": 201,
+        "end_line": 204,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/10_default_row.py",
+    "symbols": [
+      {
+        "name": "test_01_default_from_data",
+        "line": 26,
+        "end_line": 53,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_02_next_code",
+        "line": 58,
+        "end_line": 76,
+        "signature": "self, pane"
+      },
+      {
+        "name": "account_card",
+        "line": 79,
+        "end_line": 82,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "item_card",
+        "line": 85,
+        "end_line": 89,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/11_tab_title_sort.py",
+    "symbols": [
+      {
+        "name": "_chapters",
+        "line": 28,
+        "end_line": 39,
+        "signature": "self"
+      },
+      {
+        "name": "_grid",
+        "line": 41,
+        "end_line": 57,
+        "signature": "self, pane, nodeId, **kwargs"
+      },
+      {
+        "name": "test_01_template_sorted",
+        "line": 59,
+        "end_line": 61,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_02_sort_store",
+        "line": 63,
+        "end_line": 65,
+        "signature": "self, pane"
+      },
+      {
+        "name": "chapter_tab",
+        "line": 68,
+        "end_line": 73,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "account_row",
+        "line": 76,
+        "end_line": 80,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/12_card_selection.py",
+    "symbols": [
+      {
+        "name": "test_01_cards_checkbox",
+        "line": 35,
+        "end_line": 47,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_02_selection_group",
+        "line": 49,
+        "end_line": 64,
+        "signature": "self, pane"
+      },
+      {
+        "name": "contact_card",
+        "line": 67,
+        "end_line": 71,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "item_card",
+        "line": 74,
+        "end_line": 83,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "detail_entry",
+        "line": 86,
+        "end_line": 90,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/13_collapsible_cards.py",
+    "symbols": [
+      {
+        "name": "_accounts",
+        "line": 27,
+        "end_line": 37,
+        "signature": "self"
+      },
+      {
+        "name": "test_01_closed_with_total",
+        "line": 39,
+        "end_line": 48,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_02_open_all",
+        "line": 50,
+        "end_line": 61,
+        "signature": "self, pane"
+      },
+      {
+        "name": "account_card",
+        "line": 64,
+        "end_line": 69,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "detail_row",
+        "line": 72,
+        "end_line": 75,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/14_entry_in_form.py",
+    "symbols": [
+      {
+        "name": "test_01_entry_form",
+        "line": 32,
+        "end_line": 68,
+        "signature": "self, pane"
+      },
+      {
+        "name": "chapter_tab",
+        "line": 71,
+        "end_line": 76,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "detail_entry",
+        "line": 79,
+        "end_line": 88,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/15_copy_paste.py",
+    "symbols": [
+      {
+        "name": "test_01_struct",
+        "line": 47,
+        "end_line": 64,
+        "signature": "self, pane"
+      },
+      {
+        "name": "remote_structCase",
+        "line": 66,
+        "end_line": 82,
+        "signature": "self, pane, rowCheckbox=None, delitem=None, copyitem=None, **kwargs"
+      },
+      {
+        "name": "test_02_cards",
+        "line": 84,
+        "end_line": 102,
+        "signature": "self, pane"
+      },
+      {
+        "name": "remote_cardsCase",
+        "line": 104,
+        "end_line": 111,
+        "signature": "self, pane, chromeSide=None, min_width=None, copyitem=None, **kwargs"
+      },
+      {
+        "name": "test_03_entry",
+        "line": 113,
+        "end_line": 126,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_04_nested",
+        "line": 128,
+        "end_line": 147,
+        "signature": "self, pane"
+      },
+      {
+        "name": "item_card",
+        "line": 150,
+        "end_line": 154,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "detail_line",
+        "line": 157,
+        "end_line": 172,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "contact_card",
+        "line": 175,
+        "end_line": 179,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "detail_entry",
+        "line": 182,
+        "end_line": 186,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "struct",
+        "line": 67,
+        "end_line": 75,
+        "signature": "struct"
+      },
+      {
+        "name": "struct",
+        "line": 167,
+        "end_line": 169,
+        "signature": "struct"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/01_grouplet_basics.py",
+    "symbols": [
+      {
+        "name": "test_1_handler",
+        "line": 13,
+        "end_line": 15,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_value_path",
+        "line": 17,
+        "end_line": 22,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_multiple_grouplets",
+        "line": 24,
+        "end_line": 30,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_resource",
+        "line": 32,
+        "end_line": 34,
+        "signature": "self, pane"
+      },
+      {
+        "name": "grp_address",
+        "line": 37,
+        "end_line": 42,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "grp_contact",
+        "line": 46,
+        "end_line": 51,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/02_grouplet_dialogs.py",
+    "symbols": [
+      {
+        "name": "test_1_memoryDataEditor",
+        "line": 13,
+        "end_line": 34,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_documentDataEditor",
+        "line": 36,
+        "end_line": 44,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_recordDataEditor",
+        "line": 46,
+        "end_line": 54,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_recordDataEditor_resource",
+        "line": 56,
+        "end_line": 63,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_5_recordDataEditor_territorio",
+        "line": 65,
+        "end_line": 72,
+        "signature": "self, pane"
+      },
+      {
+        "name": "grp_address",
+        "line": 75,
+        "end_line": 80,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "grp_document",
+        "line": 83,
+        "end_line": 87,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "grp_comune",
+        "line": 90,
+        "end_line": 95,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/03_grouplet_chunk.py",
+    "symbols": [
+      {
+        "name": "_comune_form",
+        "line": 16,
+        "end_line": 34,
+        "signature": "self, pane, frameCode, datapath"
+      },
+      {
+        "name": "test_1_chunk_with_handler",
+        "line": 36,
+        "end_line": 59,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_chunk_with_resource",
+        "line": 61,
+        "end_line": 81,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_chunk_with_box_kwargs",
+        "line": 83,
+        "end_line": 109,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_chunk_with_resource_template",
+        "line": 111,
+        "end_line": 126,
+        "signature": "self, pane"
+      },
+      {
+        "name": "_prospect_form",
+        "line": 128,
+        "end_line": 146,
+        "signature": "self, pane, frameCode, datapath"
+      },
+      {
+        "name": "test_5_chunk_prospect_topics",
+        "line": 148,
+        "end_line": 182,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_6_chunk_record_mode",
+        "line": 184,
+        "end_line": 205,
+        "signature": "self, pane"
+      },
+      {
+        "name": "grp_territorio",
+        "line": 208,
+        "end_line": 213,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "grp_dettagli",
+        "line": 216,
+        "end_line": 222,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/04_grouplet_form.py",
+    "symbols": [
+      {
+        "name": "test_1_groupletform_memory_handler",
+        "line": 14,
+        "end_line": 28,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_groupletform_record_handler",
+        "line": 31,
+        "end_line": 48,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_groupletform_record_resource",
+        "line": 50,
+        "end_line": 67,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_groupletform_record_nested_resource",
+        "line": 69,
+        "end_line": 86,
+        "signature": "self, pane"
+      },
+      {
+        "name": "grp_address",
+        "line": 89,
+        "end_line": 94,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "grp_comune_fields",
+        "line": 97,
+        "end_line": 104,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/05_grouplet_topic_grid.py",
+    "symbols": [
+      {
+        "name": "_comune_form",
+        "line": 14,
+        "end_line": 31,
+        "signature": "self, pane, frameCode, datapath"
+      },
+      {
+        "name": "_prospect_form",
+        "line": 33,
+        "end_line": 50,
+        "signature": "self, pane, frameCode, datapath"
+      },
+      {
+        "name": "test_1_topic_grid_columns",
+        "line": 52,
+        "end_line": 58,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_topic_grid_collapsible",
+        "line": 60,
+        "end_line": 66,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_topic_grid_custom_template",
+        "line": 68,
+        "end_line": 75,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_topic_grid_no_table",
+        "line": 77,
+        "end_line": 84,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_5_topic_grid_territorio",
+        "line": 86,
+        "end_line": 93,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_6_chunk_topic_comune",
+        "line": 95,
+        "end_line": 119,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_7_chunk_topics_prospect",
+        "line": 121,
+        "end_line": 164,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_8_chunk_topic_no_table",
+        "line": 166,
+        "end_line": 178,
+        "signature": "self, pane"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/06_grouplet_navigation.py",
+    "symbols": [
+      {
+        "name": "test_1_panel_tree",
+        "line": 16,
+        "end_line": 24,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_panel_multibutton_table",
+        "line": 26,
+        "end_line": 33,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_panel_multibutton_no_table",
+        "line": 35,
+        "end_line": 42,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_wizard_booking",
+        "line": 46,
+        "end_line": 54,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_5_wizard_no_summary",
+        "line": 57,
+        "end_line": 72,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_6_collapsible_grid",
+        "line": 74,
+        "end_line": 82,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_7_menu_tree",
+        "line": 86,
+        "end_line": 120,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_8_menu_topic_filter",
+        "line": 122,
+        "end_line": 152,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_9_menu_multibutton",
+        "line": 154,
+        "end_line": 171,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_10_menu_dialog_table",
+        "line": 173,
+        "end_line": 181,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_11_wizard_resume",
+        "line": 183,
+        "end_line": 200,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_12_wizard_left",
+        "line": 202,
+        "end_line": 211,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_13_wizard_step_summary_left",
+        "line": 213,
+        "end_line": 225,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_14_wizard_no_step_summary",
+        "line": 227,
+        "end_line": 234,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_15_wizard_save_on_one_step",
+        "line": 236,
+        "end_line": 249,
+        "signature": "self, pane"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/07_grouplet_nested_topics.py",
+    "symbols": [
+      {
+        "name": "test_1_nested_topic_grid",
+        "line": 14,
+        "end_line": 22,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_nested_topic_panel",
+        "line": 24,
+        "end_line": 31,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_nested_topic_wizard",
+        "line": 33,
+        "end_line": 42,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_nested_menu_rpc",
+        "line": 44,
+        "end_line": 58,
+        "signature": "self, pane"
+      },
+      {
+        "name": "getNestedMenu",
+        "line": 61,
+        "end_line": 62,
+        "signature": "self, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/08_grouplet_edge_cases.py",
+    "symbols": [
+      {
+        "name": "test_1_rpc_mixin_clash",
+        "line": 10,
+        "end_line": 21,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_rpc_mixin_clash_topic",
+        "line": 23,
+        "end_line": 30,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_submethod_clash",
+        "line": 32,
+        "end_line": 41,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_deferred_submethod_clash",
+        "line": 43,
+        "end_line": 53,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_5_recursive_grouplet",
+        "line": 55,
+        "end_line": 63,
+        "signature": "self, pane"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/09_grouplet_custom_root.py",
+    "symbols": [
+      {
+        "name": "test_1_custom_root_resource",
+        "line": 14,
+        "end_line": 22,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_custom_root_topic_grid",
+        "line": 24,
+        "end_line": 33,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_custom_root_panel",
+        "line": 35,
+        "end_line": 43,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_4_custom_root_menu_rpc",
+        "line": 45,
+        "end_line": 59,
+        "signature": "self, pane"
+      },
+      {
+        "name": "getCustomRootMenu",
+        "line": 62,
+        "end_line": 63,
+        "signature": "self, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/10_grouplet_transform.py",
+    "symbols": [
+      {
+        "name": "_sample_general_data",
+        "line": 20,
+        "end_line": 28,
+        "signature": "self"
+      },
+      {
+        "name": "_sample_payment_data",
+        "line": 30,
+        "end_line": 49,
+        "signature": "self"
+      },
+      {
+        "name": "test_1_transform_panel",
+        "line": 51,
+        "end_line": 62,
+        "signature": "self, pane"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/11_grouplet_wizard_stack.py",
+    "symbols": [
+      {
+        "name": "test_1_wizard_in_stack",
+        "line": 21,
+        "end_line": 47,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_grouplet_follows_resize",
+        "line": 49,
+        "end_line": 61,
+        "signature": "self, pane"
+      },
+      {
+        "name": "grp_red",
+        "line": 64,
+        "end_line": 65,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "test_3_wizard_dialog_ratio",
+        "line": 67,
+        "end_line": 78,
+        "signature": "self, pane"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/12_booking_thpage_probe.py",
+    "symbols": [
+      {
+        "name": "windowTitle",
+        "line": 13,
+        "end_line": 14,
+        "signature": "self"
+      },
+      {
+        "name": "main",
+        "line": 16,
+        "end_line": 18,
+        "signature": "self, root, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/13_grouplet_record_panel.py",
+    "symbols": [
+      {
+        "name": "_probe_prospect",
+        "line": 30,
+        "end_line": 41,
+        "signature": "self"
+      },
+      {
+        "name": "_probe_task",
+        "line": 43,
+        "end_line": 58,
+        "signature": "self"
+      },
+      {
+        "name": "_recordPanel",
+        "line": 60,
+        "end_line": 69,
+        "signature": "self, pane, table=None, pkey=None, frameCode=None, topic=None"
+      },
+      {
+        "name": "test_1_tree",
+        "line": 71,
+        "end_line": 75,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_multibutton",
+        "line": 77,
+        "end_line": 81,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_relation",
+        "line": 83,
+        "end_line": 86,
+        "signature": "self, pane"
+      },
+      {
+        "name": "formCb",
+        "line": 62,
+        "end_line": 65,
+        "signature": "form"
+      }
+    ]
+  },
+  {
+    "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/14_grouplet_choice.py",
+    "symbols": [
+      {
+        "name": "test_1_choice_step",
+        "line": 12,
+        "end_line": 20,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_2_choice_alone",
+        "line": 22,
+        "end_line": 26,
+        "signature": "self, pane"
+      },
+      {
+        "name": "test_3_choice_from_table",
+        "line": 28,
+        "end_line": 32,
+        "signature": "self, pane"
+      },
+      {
+        "name": "grp_choice",
+        "line": 35,
+        "end_line": 39,
+        "signature": "self, pane, **kwargs"
+      },
+      {
+        "name": "grp_choice_table",
+        "line": 42,
+        "end_line": 50,
+        "signature": "self, pane, **kwargs"
+      }
+    ]
+  },
+  {
+    "path": "resources/common/gnrcomponents/grouplet/grouplet.py",
+    "symbols": [
+      {
+        "name": "gr_loadGrouplet",
+        "line": 18,
+        "end_line": 60,
+        "signature": "self, pane, resource=None, table=None, handlername=None, valuepath=None, grouplets_root=None, rootTag='div', mandatory_enforced=None, **kwargs"
+      },
+      {
+        "name": "_groupletRequireFields",
+        "line": 62,
+        "end_line": 71,
+        "signature": "self, box, mandatory, enforced_path=None"
+      },
+      {
+        "name": "_loadGroupletTopic",
+        "line": 73,
+        "end_line": 126,
+        "signature": "self, pane, topic_menu, table=None, valuepath=None, grouplets_root=None, _depth=0, **kwargs"
+      },
+      {
+        "name": "gr_getTemplatePars",
+        "line": 128,
+        "end_line": 137,
+        "signature": "self, resource=None, table=None, grouplets_root=None"
+      },
+      {
+        "name": "_gr_resourceInfo",
+        "line": 139,
+        "end_line": 170,
+        "signature": "self, resource=None, table=None, grouplets_root=None"
+      },
+      {
+        "name": "_gr_cardInfo",
+        "line": 172,
+        "end_line": 186,
+        "signature": "self, resource=None, table=None, grouplets_root=None"
+      },
+      {
+        "name": "_gr_cardDocAddress",
+        "line": 188,
+        "end_line": 200,
+        "signature": "self, doc, resource=None, table=None"
+      },
+      {
+        "name": "_gr_cardDoc",
+        "line": 202,
+        "end_line": 221,
+        "signature": "self, doc, abs_path=None, table=None"
+      },
+      {
+        "name": "_gr_template",
+        "line": 223,
+        "end_line": 231,
+        "signature": "self, spec"
+      },
+      {
+        "name": "_gr_cardForJs",
+        "line": 233,
+        "end_line": 240,
+        "signature": "self, card"
+      },
+      {
+        "name": "gr_groupletChunk",
+        "line": 244,
+        "end_line": 321,
+        "signature": "self, pane, value=None, template=None, name=None, handler=None, resource=None, table=None, title=None, record_id=None, virtual_columns=None, grouplets_root=None, grouplet_kwargs=None, template_kwargs=None, btn_kwargs=None, **kwargs"
+      },
+      {
+        "name": "gr_groupletChoice",
+        "line": 324,
+        "end_line": 374,
+        "signature": "self, pane, field=None, table=None, columns=None, where=None, order_by=None, rows=None, value_column='pkey', glyph=None, title=None, note=None, caption_field=None, groups=None, autoNext=True, validate_notnull=True, **kwargs"
+      },
+      {
+        "name": "gr_groupletPanel",
+        "line": 378,
+        "end_line": 447,
+        "signature": "self, pane, table=None, topic=None, value=None, frameCode=None, grouplets_root=None, useForm=True, useRecordPath=False, menuCallback=None, startResource=None, grouplet_kwargs=None, **kwargs"
+      },
+      {
+        "name": "_groupletPanel_mandatoryPaths",
+        "line": 449,
+        "end_line": 463,
+        "signature": "self, menu, topic=None"
+      },
+      {
+        "name": "_groupletPanel_topic",
+        "line": 465,
+        "end_line": 493,
+        "signature": "self, pane, menu, frameCode=None, formId=None, useForm=True, grouplet_kwargs=None, **kwargs"
+      },
+      {
+        "name": "_groupletPanel_innerReload",
+        "line": 495,
+        "end_line": 508,
+        "signature": "self, node, formId, flagPath='#ANCHOR.after_save'"
+      },
+      {
+        "name": "_groupletPanel_tree",
+        "line": 510,
+        "end_line": 562,
+        "signature": "self, pane, menu, frameCode=None, formId=None, useForm=True, grouplet_kwargs=None, **kwargs"
+      },
+      {
+        "name": "gr_groupletWizard",
+        "line": 566,
+        "end_line": 910,
+        "signature": "self, pane, table=None, topic=None, value=None, frameCode=None, completeLabel=None, closeLabel=None, backLabel=None, saveMainFormOnComplete=None, saveOnNext=None, resumeStepField=None, grouplets_root=None, grouplet_kwargs=True, remote_kwargs=None, stepperPosition=None, stepSummary=False, saveLabel=None, _confirmedReadOnly=False, _bottomCb=None, _confirmOnLast=False, **kwargs"
+      },
+      {
+        "name": "gr_groupletWizardForm",
+        "line": 913,
+        "end_line": 970,
+        "signature": "self, form, pane=None, frameCode=None, saveOnNext=True, confirmedReadOnly=False, draftConfirm=False, backToDraft=None, saveDraftLabel=None, backToDraftLabel=None, confirmAsk=None, backToDraftAsk=None, **kwargs"
+      },
+      {
+        "name": "_wizardDraftButtons",
+        "line": 972,
+        "end_line": 1023,
+        "signature": "self, form, frameCode=None, backToDraft=None, completeLabel=None, saveDraftLabel=None, backToDraftLabel=None, confirmAsk=None, backToDraftAsk=None"
+      },
+      {
+        "name": "grouplet_wizardBackToDraft",
+        "line": 1026,
+        "end_line": 1034,
+        "signature": "self, frameCode=None, pkey=None"
+      },
+      {
+        "name": "_getGroupletResources",
+        "line": 1036,
+        "end_line": 1057,
+        "signature": "self, table=None, topic=None, grouplets_root=None"
+      },
+      {
+        "name": "gr_getGroupletMenu",
+        "line": 1060,
+        "end_line": 1068,
+        "signature": "self, table=None, topic=None, grouplets_root=None, **kwargs"
+      },
+      {
+        "name": "_buildGroupletMenu",
+        "line": 1070,
+        "end_line": 1087,
+        "signature": "self, result, resources, table=None, parent_path=None"
+      },
+      {
+        "name": "_processTopicNode",
+        "line": 1089,
+        "end_line": 1112,
+        "signature": "self, result, node, table=None, parent_path=None"
+      },
+      {
+        "name": "gr_groupletAddrowMenu",
+        "line": 1114,
+        "end_line": 1120,
+        "signature": "self, table=None, field=None, grouplets_root=None"
+      },
+      {
+        "name": "_buildAddrowMenu",
+        "line": 1122,
+        "end_line": 1132,
+        "signature": "self, result, menu, field=None"
+      },
+      {
+        "name": "_get_raw_info",
+        "line": 1134,
+        "end_line": 1139,
+        "signature": "self, resmodule"
+      },
+      {
+        "name": "_get_grouplet_info",
+        "line": 1141,
+        "end_line": 1155,
+        "signature": "self, node, table=None"
+      },
+      {
+        "name": "_getGroupletsRootInfo",
+        "line": 1157,
+        "end_line": 1166,
+        "signature": "self, table=None, topic=None, grouplets_root=None"
+      },
+      {
+        "name": "gr_groupletCard",
+        "line": 1176,
+        "end_line": 1281,
+        "signature": "self, pane, datapath=None, resource=None, handler=None, table=None, grouplets_root=None, chromeSide=None, collapsible=None, collapsed=None, title=None, titleField=None, titleTemplate=None, emptyTitle=None, tools=None, doc=None, doc_kw=None, delitem=None, editmenu=None, checkbox=None, useForm=False, nodeId=None, grouplet_kwargs=None, editmenu_kwargs=None, form_kwargs=None, **kwargs"
+      },
+      {
+        "name": "gr_getGroupletGridTemplate",
+        "line": 1292,
+        "end_line": 1319,
+        "signature": "self, resource=None, handler=None, table=None, grouplets_root=None, grouplet_kwargs=None, _inheritedAttributes=None, **kwargs"
+      },
+      {
+        "name": "gr_getGroupletGridTemplateMap",
+        "line": 1322,
+        "end_line": 1350,
+        "signature": "self, table=None, grouplets_root=None, grouplet_kwargs=None, _inheritedAttributes=None, **kwargs"
+      },
+      {
+        "name": "_walkGroupletMenu",
+        "line": 1352,
+        "end_line": 1360,
+        "signature": "self, menu"
+      },
+      {
+        "name": "gr_groupletGrid",
+        "line": 1368,
+        "end_line": 1597,
+        "signature": "self, pane, datapath=None, storepath=None, controllerPath=None, resource=None, handler=None, resourceField=None, struct=None, structpath=None, table=None, grouplets_root=None, cols=1, min_width=None, gap='12px', fillRow=False, height=None, max_height=None, fillParent=False, additem=True, delitem=None, copyitem=False, editmenu=None, layout='cards', lazyTabs=False, titleField=None, titleTemplate=None, sortField=None, sortStore=False, collapsible=None, collapsedTemplate=None, chromeSide=None, emptyTitle=None, dragCode=None, onSelfDropRows=None, afterSelfDropRows=None, minRows=0, maxRows=None, defaultRow=None, rowTemplate=None, selectionmenu=None, rowCheckbox=False, selectionGroup=None, counterField=None, formulas=None, totals=None, grouplet_kwargs=None, additem_kwargs=None, delitem_kwargs=None, copyitem_kwargs=None, editmenu_kwargs=None, totals_kwargs=None, store_kwargs=None, card_kwargs=None, nodeId=None, **kwargs"
+      },
+      {
+        "name": "_gr_groupletGrid_totals",
+        "line": 1599,
+        "end_line": 1627,
+        "signature": "self, totals, default_format=None"
+      },
+      {
+        "name": "_gr_groupletGrid_emitController",
+        "line": 1629,
+        "end_line": 1751,
+        "signature": "self, container, *, resource, handler_name, resourceField, structpath, table, grouplets_root, grouplet_kwargs, store_kwargs, cols, min_width, gap, additem, delitem, copyitem, editmenu, additem_kwargs, delitem_kwargs, copyitem_kwargs, editmenu_kwargs, layout, lazyTabs, titleField, emptyTitle, titleTemplate, sortField, sortStore, collapsible, collapsedTemplate, chromeSide, card, defaultRow, minRows, maxRows, counterField, formulas, totals, rowTemplate, selectionmenu, rowCheckbox, selectionGroup, resolved_drag_code, loaderrpc, mapLoaderrpc"
+      },
+      {
+        "name": "cb",
+        "line": 68,
+        "end_line": 70,
+        "signature": "node"
+      },
+      {
+        "name": "url",
+        "line": 218,
+        "end_line": 220,
+        "signature": "match"
+      },
+      {
+        "name": "render",
+        "line": 338,
+        "end_line": 341,
+        "signature": "spec, row"
+      },
+      {
+        "name": "cb",
+        "line": 453,
+        "end_line": 461,
+        "signature": "node"
+      },
+      {
+        "name": "bottomCb",
+        "line": 1008,
+        "end_line": 1022,
+        "signature": "bottom"
+      }
+    ]
+  }
+]

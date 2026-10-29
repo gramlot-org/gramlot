@@ -10,7 +10,7 @@ class RuntimeAssetsBuildHook(BuildHookInterface):
     def initialize(self, version, build_data):
         resources = Path(self.root) / "src" / "gramlot" / "resources"
         missing = [name for name in self.REQUIRED if not (resources / name).is_file()]
-        for name in ('inputs','layout','tree','grid','editors','typst'):
+        for name in ('inputs','layout','tree','grid','editors','typst','grouplets'):
             package=Path(self.root)/'src'/'gramlot'/'collections'/name
             for file in ('__init__.py','grammar.json','commands.json','assets/index.js','assets/collection.js'):
                 if not (package/file).is_file():missing.append(f'collections/{name}/{file}')

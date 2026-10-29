@@ -1,0 +1,4 @@
+
+> @gramlot/gramlot@0.3.20 build
+> node scripts/build-runtime.mjs
+

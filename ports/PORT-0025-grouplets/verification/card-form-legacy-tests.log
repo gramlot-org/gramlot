@@ -1,0 +1,25 @@
+TAP version 13
+# Subtest: a field in error inside the card marks the band, once per frame, until destroy
+ok 1 - a field in error inside the card marks the band, once per frame, until destroy
+  ---
+  duration_ms: 9.863958
+  ...
+# Subtest: useForm: an error status of the card's form marks the band even when no field shows it
+ok 2 - useForm: an error status of the card's form marks the band even when no field shows it
+  ---
+  duration_ms: 1.115959
+  ...
+# Subtest: Clear empties the bound values under the card data, or under its own form record
+ok 3 - Clear empties the bound values under the card data, or under its own form record
+  ---
+  duration_ms: 1.36825
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 54.862792

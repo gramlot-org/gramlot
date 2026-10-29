@@ -1,0 +1,41 @@
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting tests/web/grouplet_card_test.py _______________
+ImportError while importing test module '/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/tests/web/grouplet_card_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../.pyenv/versions/3.12.9/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/tests/web/grouplet_card_test.py:6: in <module>
+    from gnr.core.gnrbag import Bag
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/gnr/__init__.py:5: in <module>
+    from gnr.core import gnrlog
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/gnr/core/gnrlog.py:9: in <module>
+    from gnr.core.gnrconfig import getGnrConfig
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/gnr/core/gnrconfig.py:33: in <module>
+    from gnr.core.gnrbag import Bag
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/gnr/core/gnrbag.py:73: in <module>
+    from gnr.core import gnrstring, logger
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/gnr/core/gnrstring.py:36: in <module>
+    import unidecode
+E   ModuleNotFoundError: No module named 'unidecode'
+______________ ERROR collecting tests/web/grouplet_panel_test.py _______________
+ImportError while importing test module '/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/tests/web/grouplet_panel_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../.pyenv/versions/3.12.9/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/tests/web/grouplet_panel_test.py:5: in <module>
+    from gnr.core.gnrbag import Bag
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/gnr/core/gnrbag.py:73: in <module>
+    from gnr.core import gnrstring, logger
+/tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/gnr/core/gnrstring.py:36: in <module>
+    import unidecode
+E   ModuleNotFoundError: No module named 'unidecode'
+=========================== short test summary info ============================
+ERROR ../../../../../tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/tests/web/grouplet_card_test.py
+ERROR ../../../../../tmp/grouplet-research/genropy-genropy-a135c9d/gnrpy/tests/web/grouplet_panel_test.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+2 errors in 0.62s

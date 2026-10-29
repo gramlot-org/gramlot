@@ -1,0 +1,361 @@
+TAP version 13
+# Subtest: built-in command grammar is portable, case insensitive and keeps html_button native
+ok 1 - built-in command grammar is portable, case insensitive and keeps html_button native
+  ---
+  duration_ms: 118.841792
+  ...
+# Subtest: toggle LED uses boolean Data, commits before action, obeys readonly and disposes
+ok 2 - toggle LED uses boolean Data, commits before action, obeys readonly and disposes
+  ---
+  duration_ms: 20.014375
+  ...
+# Subtest: dropdown main, normal menu selection and Shift selection share exactly one executor
+ok 3 - dropdown main, normal menu selection and Shift selection share exactly one executor
+  ---
+  duration_ms: 57.864833
+  ...
+# Subtest: persist restores only a command code; a missing saved item uses authored default
+ok 4 - persist restores only a command code; a missing saved item uses authored default
+  ---
+  duration_ms: 83.339
+  ...
+# Subtest: menu keyboard movement excludes disabled entries and Escape restores arrow focus
+ok 5 - menu keyboard movement excludes disabled entries and Escape restores arrow focus
+  ---
+  duration_ms: 25.453292
+  ...
+# Subtest: a button disabled while ask is open cannot execute after confirmation
+ok 6 - a button disabled while ask is open cannot execute after confirmation
+  ---
+  duration_ms: 80.63525
+  ...
+# Subtest: popup padding and separators never execute the main action
+ok 7 - popup padding and separators never execute the main action
+  ---
+  duration_ms: 56.833792
+  ...
+# Subtest: disabling a dropdown during a menu confirmation blocks the pending command
+ok 8 - disabling a dropdown during a menu confirmation blocks the pending command
+  ---
+  duration_ms: 38.732791
+  ...
+# Subtest: command code remains Source-authored for every family member
+ok 9 - command code remains Source-authored for every family member
+  ---
+  duration_ms: 19.857708
+  ...
+# Subtest: storage failure does not prevent selecting and executing the in-memory default
+ok 10 - storage failure does not prevent selecting and executing the in-memory default
+  ---
+  duration_ms: 16.930084
+  ...
+# Subtest: plain card accepts authored fields without collapse or checkbox, and renders titles as text
+ok 11 - plain card accepts authored fields without collapse or checkbox, and renders titles as text
+  ---
+  duration_ms: 145.861709
+  ...
+# Subtest: card Data owns initial, external and interactive title/fold/check states independently
+ok 12 - card Data owns initial, external and interactive title/fold/check states independently
+  ---
+  duration_ms: 87.021458
+  ...
+# Subtest: nested cards fold independently and preserve fields, DOM, focus and request count
+ok 13 - nested cards fold independently and preserve fields, DOM, focus and request count
+  ---
+  duration_ms: 67.783375
+  ...
+# Subtest: a remote rebuild restores card states and edits from Data without duplicated headers
+ok 14 - a remote rebuild restores card states and edits from Data without duplicated headers
+  ---
+  duration_ms: 85.761375
+  ...
+# Subtest: header side and collapsible changes project without erasing Data state
+ok 15 - header side and collapsible changes project without erasing Data state
+  ---
+  duration_ms: 49.037208
+  ...
+# Subtest: removed cards cannot write Data through retained header controls
+ok 16 - removed cards cannot write Data through retained header controls
+  ---
+  duration_ms: 58.743292
+  ...
+# Subtest: literal card states follow the shared no-write rule without a private state store
+ok 17 - literal card states follow the shared no-write rule without a private state store
+  ---
+  duration_ms: 35.055458
+  ...
+# Subtest: checkboxLabel is visible, reactive, clickable and hidden together with its checkbox
+ok 18 - checkboxLabel is visible, reactive, clickable and hidden together with its checkbox
+  ---
+  duration_ms: 40.013708
+  ...
+# Subtest: unsupported header sides and legacy collapsed representations are rejected
+ok 19 - unsupported header sides and legacy collapsed representations are rejected
+  ---
+  duration_ms: 18.097208
+  ...
+# Subtest: header menu uses authored actions and a confirmed Clear limited to nested value paths
+ok 20 - header menu uses authored actions and a confirmed Clear limited to nested value paths
+  ---
+  duration_ms: 190.656166
+  ...
+# Subtest: Clear locks reactively and rechecks its gate after confirmation; null hides only Clear
+ok 21 - Clear locks reactively and rechecks its gate after confirmation; null hides only Clear
+  ---
+  duration_ms: 73.71275
+  ...
+# Subtest: Clear-only cards use the shared menu and removal cancels a pending confirmation
+ok 22 - Clear-only cards use the shared menu and removal cancels a pending confirmation
+  ---
+  duration_ms: 47.918125
+  ...
+# Subtest: remote replacement keeps one Clear and invalidates a confirmation for the old body
+ok 23 - remote replacement keeps one Clear and invalidates a confirmation for the old body
+  ---
+  duration_ms: 85.538209
+  ...
+# Subtest: card guides render Markdown safely and remain usable while folded without Data writes or RPC
+ok 24 - card guides render Markdown safely and remain usable while folded without Data writes or RPC
+  ---
+  duration_ms: 40.369167
+  ...
+# Subtest: bound guide content/title refresh live and empty content hides the opener without changing another card
+ok 25 - bound guide content/title refresh live and empty content hides the opener without changing another card
+  ---
+  duration_ms: 44.465292
+  ...
+# Subtest: guide cleanup releases document events and remote rebuild uses current Data
+ok 26 - guide cleanup releases document events and remote rebuild uses current Data
+  ---
+  duration_ms: 71.480625
+  ...
+# Subtest: guide opening and menu opening close the other presentation and preserve nested card states
+ok 27 - guide opening and menu opening close the other presentation and preserve nested card states
+  ---
+  duration_ms: 42.17875
+  ...
+# Subtest: grouplets is opt-in, DOM-free at import and exports the Python grammar
+ok 28 - grouplets is opt-in, DOM-free at import and exports the Python grammar
+  ---
+  duration_ms: 54.561834
+  ...
+# Subtest: two instances share a definition but isolate relative Data and reactive loading
+ok 29 - two instances share a definition but isolate relative Data and reactive loading
+  ---
+  duration_ms: 155.570583
+  ...
+# Subtest: nested fragments retain their local Data and dotted method targets
+ok 30 - nested fragments retain their local Data and dotted method targets
+  ---
+  duration_ms: 83.066667
+  ...
+# Subtest: first pending snapshot follows the applied in-flight answer
+ok 31 - first pending snapshot follows the applied in-flight answer
+  ---
+  duration_ms: 81.267709
+  ...
+# Subtest: removing a grouplet cancels its pending work and ignores the late answer
+ok 32 - removing a grouplet cancels its pending work and ignores the late answer
+  ---
+  duration_ms: 72.035542
+  ...
+# Subtest: readiness and cachedRemote retain the shared remote contract
+ok 33 - readiness and cachedRemote retain the shared remote contract
+  ---
+  duration_ms: 58.806333
+  ...
+# Subtest: prepared collection renders real Python Page and remote Source responses
+ok 34 - prepared collection renders real Python Page and remote Source responses
+  ---
+  duration_ms: 391.609083
+  ...
+# Unknown command 'missing:save' in menu 'menu_0', entry 'menuline_1'
+# Subtest: Labelbox preserves submenu ownership and toolbar overflow priority
+ok 35 - Labelbox preserves submenu ownership and toolbar overflow priority
+  ---
+  duration_ms: 335.684625
+  ...
+# Subtest: frame regions are unique Source nodes; repeated command occurrences have independent messages
+ok 36 - frame regions are unique Source nodes; repeated command occurrences have independent messages
+  ---
+  duration_ms: 58.352333
+  ...
+# Subtest: bound checked/disabled/hidden and unknown command never toggle or dispatch accidentally
+ok 37 - bound checked/disabled/hidden and unknown command never toggle or dispatch accidentally
+  ---
+  duration_ms: 82.424167
+  ...
+# Subtest: delay captures parameters before data changes and cancels when its target is removed
+ok 38 - delay captures parameters before data changes and cancels when its target is removed
+  ---
+  duration_ms: 100.833417
+  ...
+# Menu 'menu_0' failed to load Error: offline
+#     at file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/tests/menu-system.test.js:83:176
+#     at app.rpc.call (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/tests/menu-system.test.js:24:37)
+#     at NodeBinding.call (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/binding/runtime.js:524:58)
+#     at RpcResolver.loadAsync (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/binding/rpc-resolver.js:62:46)
+#     at \#load (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/binding/remote-resolver.js:39:37)
+#     at file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/binding/remote-resolver.js:19:61
+#     at \#start (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/builder/source.js:145:38)
+#     at NodeRequests.submit (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/builder/source.js:99:31)
+#     at RpcResolver.startLoad (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/binding/rpc-resolver.js:60:25)
+#     at RpcResolver.refresh (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/binding/remote-resolver.js:19:30)
+# Subtest: toolbar resolver mounts, reuses cache, refreshes on bound arguments and preserves stable entries
+ok 39 - toolbar resolver mounts, reuses cache, refreshes on bound arguments and preserves stable entries
+  ---
+  duration_ms: 56.053125
+  ...
+# Cannot dispatch command 'documenti:save' at 'menuline_0': missing or duplicate frame recipient
+# Subtest: popup resolver waits for opening and exposes error/retry and empty states
+ok 40 - popup resolver waits for opening and exposes error/retry and empty states
+  ---
+  duration_ms: 84.476084
+  ...
+# Subtest: camel-case registered topic and checked binding update both presentations
+ok 41 - camel-case registered topic and checked binding update both presentations
+  ---
+  duration_ms: 63.777417
+  ...
+# Subtest: nested Data initialized from Python-shaped mapping remains reactive
+ok 42 - nested Data initialized from Python-shaped mapping remains reactive
+  ---
+  duration_ms: 49.842416
+  ...
+# Subtest: Python wire preserves checked and transformed hidden bindings
+ok 43 - Python wire preserves checked and transformed hidden bindings
+  ---
+  duration_ms: 285.114875
+  ...
+# Subtest: a nested frame never borrows its outer recipient
+ok 44 - a nested frame never borrows its outer recipient
+  ---
+  duration_ms: 44.819209
+  ...
+# Subtest: commands and submenu opening are mutually exclusive
+ok 45 - commands and submenu opening are mutually exclusive
+  ---
+  duration_ms: 31.068542
+  ...
+# Menu 'menu_0' failed to load TypeError: Separator record accepts kind only
+#     at file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/view/menu.js:20:81
+#     at Array.map (<anonymous>)
+#     at entries (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/view/menu.js:11:27)
+#     at MenuBinding.load (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/src/view/menu.js:78:27)
+#     at async TestContext.<anonymous> (file:///Users/gporcari/.codex/worktrees/grouplets/gramlot/js/tests/menu-system.test.js:132:11)
+#     at async Test.run (node:internal/test_runner/test:980:9)
+#     at async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+# Subtest: literal resolver captions never become pointers or expressions; invalid results do not partly replace entries
+ok 46 - literal resolver captions never become pointers or expressions; invalid results do not partly replace entries
+  ---
+  duration_ms: 38.458792
+  ...
+# Subtest: keyboard skips separators and unavailable entries and relocates focus
+ok 47 - keyboard skips separators and unavailable entries and relocates focus
+  ---
+  duration_ms: 34.272792
+  ...
+# Subtest: an entry becoming hidden cancels delayed delivery even if it is shown again
+ok 48 - an entry becoming hidden cancels delayed delivery even if it is shown again
+  ---
+  duration_ms: 60.422209
+  ...
+# Subtest: a stale resolver result cannot overwrite a newer argument result
+ok 49 - a stale resolver result cannot overwrite a newer argument result
+  ---
+  duration_ms: 32.488084
+  ...
+# Subtest: an asynchronously populated popup focuses its first usable entry
+ok 50 - an asynchronously populated popup focuses its first usable entry
+  ---
+  duration_ms: 50.642416
+  ...
+# Subtest: frame side bars share a row; reactive contentPane flex projects to the slot container
+ok 51 - frame side bars share a row; reactive contentPane flex projects to the slot container
+  ---
+  duration_ms: 50.853334
+  ...
+# Subtest: popup rows align check/icon/caption/arrow and cascade from a toolbar
+ok 52 - popup rows align check/icon/caption/arrow and cascade from a toolbar
+  ---
+  duration_ms: 478.989833
+  ...
+# Subtest: attached menu uses contextual opening, pointer position, keyboard and cleanup
+ok 53 - attached menu uses contextual opening, pointer position, keyboard and cleanup
+  ---
+  duration_ms: 34.285
+  ...
+# Subtest: opening modifiers match exactly; star means ordinary click with no modifiers
+ok 54 - opening modifiers match exactly; star means ordinary click with no modifiers
+  ---
+  duration_ms: 24.064375
+  ...
+# Subtest: vertical bar submenus open to the side while horizontal bar submenus open below
+ok 55 - vertical bar submenus open to the side while horizontal bar submenus open below
+  ---
+  duration_ms: 31.759166
+  ...
+# Subtest: toolbar overflow respects priority, end-first ties and indivisible groups without moving Source
+ok 56 - toolbar overflow respects priority, end-first ties and indivisible groups without moving Source
+  ---
+  duration_ms: 109.364083
+  ...
+# Subtest: overflow keeps a focused input, its live binding and identity through exit and return
+ok 57 - overflow keeps a focused input, its live binding and identity through exit and return
+  ---
+  duration_ms: 48.737959
+  ...
+# Subtest: retained units never overflow; elastic space is consumed before migration and vertical sizing uses height
+ok 58 - retained units never overflow; elastic space is consumed before migration and vertical sizing uses height
+  ---
+  duration_ms: 52.004042
+  ...
+# Subtest: overflow keyboard navigation traverses grouped commands and opens their submenu sideways
+ok 59 - overflow keyboard navigation traverses grouped commands and opens their submenu sideways
+  ---
+  duration_ms: 37.005708
+  ...
+# Subtest: group command ambiguity is rejected and overflow cleanup removes observers and popovers
+ok 60 - group command ambiguity is rejected and overflow cleanup removes observers and popovers
+  ---
+  duration_ms: 51.10125
+  ...
+# Subtest: overflow suppresses orphan separators and restores declaration order on return
+ok 61 - overflow suppresses orphan separators and restores declaration order on return
+  ---
+  duration_ms: 38.632042
+  ...
+# Subtest: opening an input-only overflow focuses the input and hidden groups leave no overflow button
+ok 62 - opening an input-only overflow focuses the input and hidden groups leave no overflow button
+  ---
+  duration_ms: 33.979291
+  ...
+# Subtest: toolbar label modes preserve captions, tooltip names and command identity through overflow and return
+ok 63 - toolbar label modes preserve captions, tooltip names and command identity through overflow and return
+  ---
+  duration_ms: 55.27975
+  ...
+# Subtest: toolbar style inherits through groups, supports occurrence overrides and updates reactively
+ok 64 - toolbar style inherits through groups, supports occurrence overrides and updates reactively
+  ---
+  duration_ms: 26.902666
+  ...
+# Subtest: SVG icons use image nodes, occurrence overrides and live image/text transitions
+ok 65 - SVG icons use image nodes, occurrence overrides and live image/text transitions
+  ---
+  duration_ms: 34.790042
+  ...
+# Subtest: Escape in a permanent bar without an open popup reaches the containing window
+ok 66 - Escape in a permanent bar without an open popup reaches the containing window
+  ---
+  duration_ms: 22.833292
+  ...
+1..66
+# tests 66
+# suites 0
+# pass 66
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3349.039292

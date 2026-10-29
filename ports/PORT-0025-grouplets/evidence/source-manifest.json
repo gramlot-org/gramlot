@@ -1,0 +1,1590 @@
+{
+  "repository": "genropy/genropy",
+  "revision": "a135c9d949d0b014a22f57c418e83b315f85e7bf",
+  "retrieved": "2026-10-28",
+  "content_path_union_count": 196,
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha256": "927488d979bd4a3b178a18808b7c6bfab85cc04a5e1346f235b1e8f900583ab9",
+      "bytes": 24093,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/LICENSE"
+    },
+    {
+      "path": "LICENSE-3RD-PARTY",
+      "sha256": "06b2ae2f8db52da2d90ead17702ae650b37ca4298acf37dcb9c10928d039b114",
+      "bytes": 1033,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/LICENSE-3RD-PARTY"
+    },
+    {
+      "path": "dojo_libs/dojo_20/modernization/initial/genropy_crossref.md",
+      "sha256": "1d340fafd11a0abf0127122ad5834e0340ea5d0f649fb794533b4318d71da59b",
+      "bytes": 21400,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/dojo_libs/dojo_20/modernization/initial/genropy_crossref.md"
+    },
+    {
+      "path": "gnrjs/gnr_d11/css/gnrbase_css/20_gnr_misc_views.css",
+      "sha256": "6cefe51b1e0050f2c6026a10945e74589423295b927272045689b69e77d7f677",
+      "bytes": 17326,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/css/gnrbase_css/20_gnr_misc_views.css"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro.js",
+      "sha256": "6d7b7161c0c28a4a0f52c313c2ae6412f9fafce0286c5683abc24a554f2d2d46",
+      "bytes": 92867,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_components.js",
+      "sha256": "7879ac5c9c07bf8d948082d0de977a0042ac66a958ff233ba246fb7d5ddb5d9e",
+      "bytes": 377246,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_components.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_cordova.js",
+      "sha256": "9361d0d3456c42bb0b4a35224d2b6464e3e015bb74420767a5ede96f90fcce83",
+      "bytes": 5509,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_cordova.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_dev.js",
+      "sha256": "1e7c40f7ec039e2a2611c17b87c806636b472b0354f8b2ef12448d2bef17ee54",
+      "bytes": 72965,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_dev.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_dlg.js",
+      "sha256": "1619c75bb8c460e6fe957cbbdf3d42f0f99ecb2742cc8e5cab3e79491feaa2aa",
+      "bytes": 81885,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_dlg.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_dom.js",
+      "sha256": "53e3a6050a245e844105d96e9707d39eb1de568ac2fc5f6778fd7fd317433de8",
+      "bytes": 82940,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_dom.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_editors.js",
+      "sha256": "3ec7bbc89d37da630bbc8387bf41f86822737258d26fe78867193c60d24f3021",
+      "bytes": 153751,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_editors.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_extra.js",
+      "sha256": "2532868d808992fc38ad42a78f92591599835e2fddd5f0e2fedbc3066dd875f7",
+      "bytes": 73984,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_extra.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_frm.js",
+      "sha256": "3f641017452a5d6cfc6ea8405d5860787cbff1c788f6295f5a46566c8c7e3da6",
+      "bytes": 147448,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_frm.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_google.js",
+      "sha256": "1f658c4477b915484890d77234aae3612a5fe6c3cfbd436af7d0a6e4616f6b69",
+      "bytes": 7558,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_google.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_grid.js",
+      "sha256": "d1499196fb75028efcd1c9e43e91821361dd66a20d586c760e73bcd8e0419c80",
+      "bytes": 226368,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_grid.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_mobile.js",
+      "sha256": "92314c030c99f0f34e12038e0e59671f63b3028a6a22654fcf8fef204eda323b",
+      "bytes": 10429,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_mobile.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_patch.js",
+      "sha256": "bd762eeabca7317a4c008c4526f8a596701f50af4fcc87abf147be59f0d8e7a2",
+      "bytes": 68092,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_patch.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_rpc.js",
+      "sha256": "4f32f26940fe2fff542a1fcb045a652bfa6490172ca7ba4c13a7a03bb594e811",
+      "bytes": 45021,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_rpc.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_speech.js",
+      "sha256": "b9acc09d6731bb6f772c5758819bfd3f4006feb84108e0e3fefcf18aafe11a6f",
+      "bytes": 7653,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_speech.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_src.js",
+      "sha256": "7c7486cdef833d64f0347f8b9354f9ef6c47bb82a14f80d4740ecf4a87579dc1",
+      "bytes": 30289,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_src.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_toast.js",
+      "sha256": "ef1658071d06c6195234049159c8942560892e48b5ef2365c335afec191f5059",
+      "bytes": 8454,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_toast.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_tree.js",
+      "sha256": "89b0d2a980783f43de356c48d98b25e9ccf13761e47cb8c2455590b9204caab1",
+      "bytes": 40783,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_tree.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_wdg.js",
+      "sha256": "bf5df0a5b3c053636e7103c85f9b42edebded48a277c28877575318c6ec810ea",
+      "bytes": 106510,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_wdg.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_widgets.js",
+      "sha256": "2b1a45d6cdb7237c25a29c419c47daa66414d632ba2f4cc6b70fa3162f270584",
+      "bytes": 290126,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/genro_widgets.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnr_tracebackviewer.js",
+      "sha256": "b13ab651d2b13ee7201144181a3b1375c4682d709f635c97fb06abe63384fcf0",
+      "bytes": 8352,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/gnr_tracebackviewer.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrbag.js",
+      "sha256": "92bdf2c1d0868811d593b1c6b95ed5818023a1d4656dbf5b0a7fa09652ab604c",
+      "bytes": 83118,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/gnrbag.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrdomsource.js",
+      "sha256": "3ee2c06921c94501e28fe3e5fb9df72277db973cc1c0f63597e3f5ad914ffb2f",
+      "bytes": 93498,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/gnrdomsource.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrlang.js",
+      "sha256": "efb8ae2575b01c4239f39ef11a0559825475348e964ac80c42636e5e1dcbf8ee",
+      "bytes": 78554,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/gnrlang.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrsharedobjects.js",
+      "sha256": "f8d321082e5a95b439c50ace25e8d73a2d7ce858b6e6879ef192cd49175f42c8",
+      "bytes": 6781,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/gnrsharedobjects.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrstores.js",
+      "sha256": "2882ef339b8a9dece18a839cccc41b57b5494b840a5c9c3064575489317d26e3",
+      "bytes": 29945,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/gnrstores.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrwebsocket.js",
+      "sha256": "fd06f9f5629f595fa1a3f9baa80bbd9a2a045a11634263f926222182bb82f301",
+      "bytes": 24456,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/gnrwebsocket.js"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/gnrwebsocket_kajenn.js",
+      "sha256": "d8ac6f8a0af9178cb80990b0a8cd1c2b98cafee52b2c8e040a62f69ad6222e70",
+      "bytes": 11571,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/gnr_d11/js/gnrwebsocket_kajenn.js"
+    },
+    {
+      "path": "gnrjs/tests/doc_popup.test.js",
+      "sha256": "027c5f3dea40a7e3e2f375d1478810d0206fb71743ce2f6423239a586ae23d37",
+      "bytes": 28146,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/doc_popup.test.js"
+    },
+    {
+      "path": "gnrjs/tests/filtering_select_data_null.test.js",
+      "sha256": "719993b4a76f7352224ca64e27384f1ed04c99b197a0c81e6f44ae7a5de88d34",
+      "bytes": 6504,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/filtering_select_data_null.test.js"
+    },
+    {
+      "path": "gnrjs/tests/form_torn_down_field.test.js",
+      "sha256": "0f866c663384bf75325bfffda57c3ebd64897a19bafea90b51992914c8277fdf",
+      "bytes": 8412,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/form_torn_down_field.test.js"
+    },
+    {
+      "path": "gnrjs/tests/grouplet_card.test.js",
+      "sha256": "8b4ce7a238ff7ceba44e57301d8c080809e479f39e0f1e322c12382cbc73048e",
+      "bytes": 18479,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/grouplet_card.test.js"
+    },
+    {
+      "path": "gnrjs/tests/grouplet_grid_dnd.test.js",
+      "sha256": "5fc5ce1befac58a05c948642ea839fc4e5836290828f32ceef8093c4ac736bdb",
+      "bytes": 27291,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/grouplet_grid_dnd.test.js"
+    },
+    {
+      "path": "gnrjs/tests/grouplet_grid_options.test.js",
+      "sha256": "ff34bf2d3a29c655cf9526dcf517d9917a900356f5eba5dd22b74fbc72335869",
+      "bytes": 28273,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/grouplet_grid_options.test.js"
+    },
+    {
+      "path": "gnrjs/tests/grouplet_grid_phantom.test.js",
+      "sha256": "ebacefd34b57b2ffff7cb6cfbf6977702e90d27e26714a3cc15cf4328f2134fd",
+      "bytes": 59528,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/grouplet_grid_phantom.test.js"
+    },
+    {
+      "path": "gnrjs/tests/grouplet_grid_row_teardown.test.js",
+      "sha256": "496f2626c07e4449d5e91c4dd51cbeb1ce6fe728f662b7a6fd07a52b468b7c3b",
+      "bytes": 6205,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/grouplet_grid_row_teardown.test.js"
+    },
+    {
+      "path": "gnrjs/tests/grouplet_grid_totals.test.js",
+      "sha256": "df8a03329ccc7bdedb75009b05ac3209fc1c057e9f002bf94d6bcafbbe02f890",
+      "bytes": 5031,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/grouplet_grid_totals.test.js"
+    },
+    {
+      "path": "gnrjs/tests/grouplet_mandatory.test.js",
+      "sha256": "3ad520909072b3ae7bd13fac706cf2e273e2dba7791fe97bf96233412c5a06f1",
+      "bytes": 7508,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/grouplet_mandatory.test.js"
+    },
+    {
+      "path": "gnrjs/tests/item_formstore_record.test.js",
+      "sha256": "e0a67abe8327ec10e3230488a940406c9141282320d27299676dbf715cb2becb",
+      "bytes": 12128,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/item_formstore_record.test.js"
+    },
+    {
+      "path": "gnrjs/tests/memory_store_writeback.test.js",
+      "sha256": "b0f4da56ca40bfe96eaee31519c3197656ce22f0a160b7ff2ff6280bdbc5b255",
+      "bytes": 6331,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/memory_store_writeback.test.js"
+    },
+    {
+      "path": "gnrjs/tests/remote_content_reentry.test.js",
+      "sha256": "91a19ee1ca9a02f1516e3a2308f4079de46dfa88c1519d78a642411b935dc09b",
+      "bytes": 5561,
+      "role": "runtime/test dependency or license",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/remote_content_reentry.test.js"
+    },
+    {
+      "path": "gnrjs/tests/wizard_save_paths.test.js",
+      "sha256": "abf492714ee455460c0bc224dd83eadb6f0f674c69c99b8304557725a8bc962a",
+      "bytes": 17451,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrjs/tests/wizard_save_paths.test.js"
+    },
+    {
+      "path": "gnrpy/RELEASE_NOTES.rst",
+      "sha256": "826e63c962d83e129ae9f83ba2da02a6a775dba394f7fda4ecaa1f191c06862c",
+      "bytes": 69083,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/RELEASE_NOTES.rst"
+    },
+    {
+      "path": "gnrpy/gnr/localization.xml",
+      "sha256": "81d7c110430a5b3f4a8fdfd4a7eff399ce638772848de7a1fe02d9af81833af6",
+      "bytes": 125486,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/gnr/localization.xml"
+    },
+    {
+      "path": "gnrpy/gnr/web/gnrdocumentation.py",
+      "sha256": "d7906517258d0c2462b230387fac5344d21cdc299974668e730ca0174852095c",
+      "bytes": 10673,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/gnr/web/gnrdocumentation.py"
+    },
+    {
+      "path": "gnrpy/gnr/web/gnrwebstruct/base.py",
+      "sha256": "5ac6bb5fc23d06950e6684151e4bfb8e9005d1f0ac42663258f1948f7268aeab",
+      "bytes": 57608,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/gnr/web/gnrwebstruct/base.py"
+    },
+    {
+      "path": "gnrpy/tests/app/gnrlocalization_test.py",
+      "sha256": "a47ac2a4979381a2c93eee6631e66da045a84d6b9c580b37f6aa8021bbe29e13",
+      "bytes": 15089,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/tests/app/gnrlocalization_test.py"
+    },
+    {
+      "path": "gnrpy/tests/web/gnrdocumentation_test.py",
+      "sha256": "948a0988115af64ca804c4c8b178bef65a7f29abd85c759f0d3e454e59484994",
+      "bytes": 25166,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/tests/web/gnrdocumentation_test.py"
+    },
+    {
+      "path": "gnrpy/tests/web/gnrmanual_test.py",
+      "sha256": "c504ac8923efd67f7b448986d602d97e6ce55c6eae52de7f2bc51b9fb60275c8",
+      "bytes": 18644,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/tests/web/gnrmanual_test.py"
+    },
+    {
+      "path": "gnrpy/tests/web/gnrresourceloader_routing_test.py",
+      "sha256": "63613942797269cec32114a2f971896217356385ad0516d32a606a65933b09df",
+      "bytes": 2816,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/tests/web/gnrresourceloader_routing_test.py"
+    },
+    {
+      "path": "gnrpy/tests/web/grouplet_card_test.py",
+      "sha256": "48fd81efe4a5c8cba75b33222eacf9b236bb7cef4868a072397d3499af764a33",
+      "bytes": 10487,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/tests/web/grouplet_card_test.py"
+    },
+    {
+      "path": "gnrpy/tests/web/grouplet_panel_test.py",
+      "sha256": "6904aeb33124ce89d48f9d48cfeec42ebaf39f5f45e7a53e5d8c3fefa0cdbd33",
+      "bytes": 2323,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/gnrpy/tests/web/grouplet_panel_test.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/adm/resources/frameindex.py",
+      "sha256": "d0407c5e1805a6042eb7c0ce9e7c07cdcda9ee6a2475f0b3fcb81fc98bfee0c8",
+      "bytes": 36430,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/adm/resources/frameindex.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/adm/resources/prefhandler/prefhandler.py",
+      "sha256": "dee2e1acc4bdc2e05bd0a78a63914ce584b9891da50965f3bbadd4a9e2aacdec",
+      "bytes": 18676,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/adm/resources/prefhandler/prefhandler.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/docs/manual/inline_docs.md",
+      "sha256": "a5d60c062f409703e750562bda76d1335ac939647a69072867bb2d1f6c9d69c6",
+      "bytes": 4778,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/docs/manual/inline_docs.md"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/docs/manual/users.md",
+      "sha256": "04dc8d1cf4f83c55dd9f1ff50d5b1d1408d15e88963cce54c3c52622621ff9f5",
+      "bytes": 1286,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/docs/manual/users.md"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/lib/populate_mytickets.py",
+      "sha256": "24b924ed7eae491cdb814238d6fb42ae4f8072385d3ccc15976e2cfd80c41c86",
+      "bytes": 3478,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/lib/populate_mytickets.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/budget_editor/editor_budget.css",
+      "sha256": "534038781b54f92dba2fed2b42ab50af58d6ccd4a691df7b0893f6871878e97d",
+      "bytes": 1834,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/budget_editor/editor_budget.css"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/app/__info__.py",
+      "sha256": "0812115d2b24b8d14d97fe3d37397d2d388b885d79581cc9d8c6e63dff09a8d9",
+      "bytes": 587,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/app/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/app/android_qrcode.py",
+      "sha256": "cb3289f6b946843fae4ad076828f5097b951f495b042724306ebe2cf5cb7e1ee",
+      "bytes": 917,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/app/android_qrcode.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/app/connection_qrcode.py",
+      "sha256": "6fc33a29caf1f071899d89ba783e3a14fe3330a09fd8ab91cf57dc08fc2d4fc4",
+      "bytes": 952,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/app/connection_qrcode.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/app/ios_qrcode.py",
+      "sha256": "4f4a6b4f97ef1056ccceac4e9fdad4b9788c9731e3a29053ed6254b860cd5ac7",
+      "bytes": 879,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/app/ios_qrcode.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/budget/capitolo_card.py",
+      "sha256": "0126e0f6c8f4b134bdbdc12efc0e762ee07f1be4da2b72a54996503a99c72417",
+      "bytes": 2306,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/budget/capitolo_card.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/budget/conto_card.py",
+      "sha256": "80642962fbcce1ce458a0a9f2dad27a627f432e5743111114767781a2f8a9042",
+      "bytes": 4518,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/budget/conto_card.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/card_profile.py",
+      "sha256": "8b67ad199bc3624f13e36913910d16c0157a9d49795b44290d0fd4096578ac69",
+      "bytes": 766,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/card_profile.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/card_profile_doc.html",
+      "sha256": "e05f7cf02241a6f023064483c7fef899594b7cdc8040105b47f016fe87e1a0d1",
+      "bytes": 231,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/card_profile_doc.html"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/card_profile_doc.svg",
+      "sha256": "8cc02fc3499a4e1a231b8275a27f4764c2a13818e23b5fad338993430a7be741",
+      "bytes": 639,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/card_profile_doc.svg"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/contact_row.py",
+      "sha256": "0aa1a9e5f5f5c0a6af521043d53ac9cb45ece6f1ffe4b363d9c350eca231f38b",
+      "bytes": 695,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/contact_row.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/deferredtesting/__info__.py",
+      "sha256": "c54ea1bdf37a654328e732f6d130aa42d6cf751164504f13c24186b35c56adb5",
+      "bytes": 113,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/deferredtesting/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/deferredtesting/alfa.py",
+      "sha256": "8ce9634a3645d59b5c740d2ab5a85b2af4f9925ebb2480848967c0104d6f54c1",
+      "bytes": 553,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/deferredtesting/alfa.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/deferredtesting/beta.py",
+      "sha256": "def0ae75ea83328ec42d489ed28479fb343f1e2a5cb5b111b55a8782cd368052",
+      "bytes": 553,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/deferredtesting/beta.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/examples/__info__.py",
+      "sha256": "156a7936fb50cf20e0f14a8b9bce851ece11ee9f4343faf613203650a3a29425",
+      "bytes": 105,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/examples/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/examples/address_fields.py",
+      "sha256": "a0c8c27cf0c52769529b4b11ddf1735da49265dcd870e58c43422308ca34ecd3",
+      "bytes": 404,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/examples/address_fields.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/examples/recursive_grouplet.py",
+      "sha256": "56e0e029e26788934a4738ec25c2eab74c0b3f11bfa63a8f54962dae6c96a6cf",
+      "bytes": 629,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/examples/recursive_grouplet.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/invoice_row.py",
+      "sha256": "303869fbcfb3ccda9c36836a9ff5e0d9151f4c237974965607e57a6f331b24f7",
+      "bytes": 740,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/invoice_row.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/kanban_card.py",
+      "sha256": "063253e7d2d048364795798ec229e5735c3290e4bdcbe69fcf82ac03d14c8f5a",
+      "bytes": 1877,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/kanban_card.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/person_with_contacts.py",
+      "sha256": "04d47e4dd109166429e358aca373df1e615f6e95c3f57cfaf6600e3791438abd",
+      "bytes": 3347,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/person_with_contacts.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/province_row.py",
+      "sha256": "300af0ba436aabf04818949f62d2114ecfc2a033afb153e45e0bd5efa2c6cdf4",
+      "bytes": 1113,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/province_row.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/rpctesting/__info__.py",
+      "sha256": "525f01de7810de70ce99e14b3f496b0787683ec2d84411f39d51ea8847532ff1",
+      "bytes": 108,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/rpctesting/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/rpctesting/rpc_bar.py",
+      "sha256": "c9b06b15789c37911b1eccf364ab21eae7afae82f8260973690938572d410f1b",
+      "bytes": 533,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/rpctesting/rpc_bar.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/rpctesting/rpc_foo.py",
+      "sha256": "0ebd01f47091c15677699c767750ca08cf80c2948c6bc50ae69d3d267f353e7f",
+      "bytes": 533,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/rpctesting/rpc_foo.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/__info__.py",
+      "sha256": "141dc38580b07a3626fb38340ad32bec4027301fa161a3607a13e53c07542445",
+      "bytes": 114,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/submethodtesting/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/alfa.py",
+      "sha256": "45e343856a1ef122c8b44c4de0aca4397651af29f07fd2024d1ecf09132c924a",
+      "bytes": 346,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/submethodtesting/alfa.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/beta.py",
+      "sha256": "c054cb30f6e3dce8a6a61caa25257087c9cbad1e2dd4c57488287b568f64cf87",
+      "bytes": 345,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/submethodtesting/beta.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/__info__.py",
+      "sha256": "b011127c49654c79eb19dc64a5711d531b1b8cab644434169698cd63f00c9312",
+      "bytes": 108,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/delta.py",
+      "sha256": "31ed75e4d21eb39c7945c61c01b30d3b146cb90721fc1ce6991cb16fb9f66d9a",
+      "bytes": 340,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/delta.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/gamma.py",
+      "sha256": "d0947197a90ab650be53f04a5f90562921c30827732c1149407cb6855b8db57d",
+      "bytes": 331,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/gamma.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/transforms/__info__.py",
+      "sha256": "6484b226ac496da0f2f62646437f4e71ab91cfce9bd028010bf8c7ffa6a0d91a",
+      "bytes": 107,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/transforms/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/transforms/general_data.py",
+      "sha256": "429f6498cfcd5279a00ce494e64b78a22e50bebd6a2c830b9a974e0af7cb1c01",
+      "bytes": 620,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/transforms/general_data.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.js",
+      "sha256": "66938a7095de0b033186c2692ce190a9780c12b21f800faf7e939903b8f39e05",
+      "bytes": 1558,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.js"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.py",
+      "sha256": "6a62204b4e936fd7eecb458c067186ca3813a430c69c3e7f39ef6cf2e0c1b941",
+      "bytes": 1841,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_choice/__info__.py",
+      "sha256": "82aada1b1e55371d8945a172c25beddb2064029a186bd9eee221184669f48fad",
+      "bytes": 110,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_choice/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_choice/confirm.py",
+      "sha256": "7c753b758639c29eb067354432cb4475e5a6478ab1e94acd23613fba04e1985b",
+      "bytes": 349,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_choice/confirm.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_choice/details.py",
+      "sha256": "16db6f5a913c7fc9dfa933906f852488654233138d6a01831a9648ce2dace083",
+      "bytes": 379,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_choice/details.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_choice/kind.py",
+      "sha256": "ff3f1bad3485aa50fc7d0103cd5d56dcf7b5514f924d7aae3271ce66e743dfdc",
+      "bytes": 1304,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_choice/kind.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_summary/__info__.py",
+      "sha256": "3c938cba13b7d29b4a0fe5e840f3dbf529a4ea611b8e38f03ad43e191f16a47e",
+      "bytes": 111,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_summary/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_summary/confirm.py",
+      "sha256": "575d703948de46aea6a30abe4ff048e03a9300888beb697c65bd3aaf7da9d49e",
+      "bytes": 325,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_summary/confirm.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_summary/contact.py",
+      "sha256": "2cf60c217f7380b4c72f2cbd79202f0fff2af5a0edbfac3d132b4028b7cc40b7",
+      "bytes": 489,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_summary/contact.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_summary/notes.py",
+      "sha256": "af2972071c418fb95009f1d86ca95d66b9c1f008e8bd4f78459113158c74afd6",
+      "bytes": 374,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_summary/notes.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/wizard_summary/shipping.py",
+      "sha256": "40e063ae6537ad0e3dd7def2ed58f52f6efb690536abdd73decd929e985c062f",
+      "bytes": 688,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/grouplets/wizard_summary/shipping.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/advanced/__info__.py",
+      "sha256": "ec55c70ec449a3962b12fcf23b1490c1f5f0a9a4373c3f61dfe053cc1cea4736",
+      "bytes": 105,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/myconfigurations/advanced/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/advanced/custom_storage.py",
+      "sha256": "caf28f30df81a86214e485802a5c3adf938df74f37d6823b55239b082fe5acd6",
+      "bytes": 380,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/myconfigurations/advanced/custom_storage.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/contact_info.py",
+      "sha256": "0c4c94bd5263d62f01c5fa5f48ef8de15f78861b18e8eedfbff7642ffdbee91f",
+      "bytes": 412,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/myconfigurations/contact_info.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/preferences/__info__.py",
+      "sha256": "2f39e8a50a53b0f6f94f25594ad2954796e56f617461a5bd879a40ad96cd9dd8",
+      "bytes": 108,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/myconfigurations/preferences/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/preferences/notifications.py",
+      "sha256": "3f8e618b99611824dadc89730ebf61dae64acfdefb41e567c6b9181cf5370cc1",
+      "bytes": 467,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/myconfigurations/preferences/notifications.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/preferences/theme.py",
+      "sha256": "d65b1f74dd6f4ade78e3dd5babad43a14a40f172aa87ac793d402ba991e627cd",
+      "bytes": 425,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/myconfigurations/preferences/theme.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/anagrafica.py",
+      "sha256": "91e6fc08c30f8d567b33a34bf01292e999828b5891191bf200ec0c57c94c9435",
+      "bytes": 425,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/anagrafica.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/codici.py",
+      "sha256": "21b706e7e86a723899a998449020b4bfcea01c44c8cbf10a7f378c32c7dca130",
+      "bytes": 480,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/codici.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/statistiche.py",
+      "sha256": "c6594d7e87c23f9223d668522952de71c027a5aa4a335ac7b5642c762e051347",
+      "bytes": 337,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/statistiche.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/__info__.py",
+      "sha256": "c8079aaa9c7f80eaf78b3508089611b592d20363751f68f4796e315d861ed401",
+      "bytes": 516,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/altimetria.py",
+      "sha256": "d73a65efa47034e9d5191375f47d780131061c10742b707a48a40cc0b2c843a5",
+      "bytes": 372,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/altimetria.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/superficie.py",
+      "sha256": "5f0c6e7c6878892e765c9ff1be7639ba99cbc787cb14ce2832403d052db2b47f",
+      "bytes": 338,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/superficie.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/regione/th_regione.py",
+      "sha256": "71ddf13150b0a0919d83e8263f68b57cb25bfc0b55f182c9f6a8eb4e3fdf3549",
+      "bytes": 4114,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/glbl/regione/th_regione.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/sys/task/grouplets_record/logs.py",
+      "sha256": "2c5d0f9eda5ac3ed519bbd6a7727eac37eba1a9f38671a21e3acee2b916a4f71",
+      "bytes": 479,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/sys/task/grouplets_record/logs.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/sys/task/grouplets_record/main.py",
+      "sha256": "4276397f768de1b73206fc5dc16ba00a2edf2c83d16180f0d744482310696b91",
+      "bytes": 333,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/_packages/sys/task/grouplets_record/main.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/__info__.py",
+      "sha256": "60c696bb5b61809c41a45a25f24770d3e552df1b949f8a6e4c759efeaa3d86a9",
+      "bytes": 833,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/grouplets/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/guest.py",
+      "sha256": "3c34127a48b91f65e07439988452b9acdd5062205bd1aabd321af7ee6cbc9e14",
+      "bytes": 1603,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/grouplets/guest.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/payment.py",
+      "sha256": "63741ce9e870fe15c5b2618629c47351bb4166d6ddd8fade7e07b31f4ffc36ea",
+      "bytes": 632,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/grouplets/payment.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/services.py",
+      "sha256": "45e922f36722fc0f56ef8c62f1be065878fa4813adafa8aa18ce2ab3fd30e492",
+      "bytes": 550,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/grouplets/services.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/stay.py",
+      "sha256": "814ff29429ece3787eff518fe4af802a8c5b8ffa2a1a444a21873e1ba1f4a347",
+      "bytes": 723,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/grouplets/stay.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/redgrouplets/documento.py",
+      "sha256": "d468d626a17bacd18ca91fd9ea319418fe63536918743786affb8fada359621b",
+      "bytes": 435,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/redgrouplets/documento.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/redgrouplets/tipo.py",
+      "sha256": "cbb649f63a0ef2eb898875c71d3c9bd8f21e87aa65e99ce0393af41aa6ac2da0",
+      "bytes": 527,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/redgrouplets/tipo.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/__info__.py",
+      "sha256": "818f2f49ed9a0194ef466a4f59d4f45aed8b788d233763d6f345564e2863438b",
+      "bytes": 115,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/charge.py",
+      "sha256": "5f8cce5e0be8b0310a783d3423da8d1171576887f1e962994cf0ac9e7d09c53c",
+      "bytes": 435,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/charge.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/holder.py",
+      "sha256": "dbda3897b7f7fd6cdc2824d983bc5a1abae64a49e80586f22e7ceb4ccc53e8d2",
+      "bytes": 372,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/holder.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/period.py",
+      "sha256": "b26452725a7e5649f83582063f29d5fa8c44a82cf4d9cb574adec5099dfefce3",
+      "bytes": 550,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/period.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/registered.py",
+      "sha256": "9a6f519498b48c971bfa0203ad29864a4439fce29c181a558545e428a6fb16f2",
+      "bytes": 499,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/save_step_grouplets/registered.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/th_booking.py",
+      "sha256": "a3c32e1ab7f2030ce18c3e2db9723566bdfc180db983e58b879e40560f9d3fda",
+      "bytes": 3486,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/booking/th_booking.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/__info__.py",
+      "sha256": "f68f407541683fa822bf499ce8806a4bb05689531dbfcb9d90c71eb41ea1c071",
+      "bytes": 505,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/decision.py",
+      "sha256": "6850c87cc5d241a7767e6042805371b57eb62e5c724e3148ddacc9d8277ff3e1",
+      "bytes": 1130,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/decision.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/financials.py",
+      "sha256": "d17d0e1b0f54dc833dcf96d6c58a1e7deabef3d0806558097b17ffb30650a704",
+      "bytes": 1325,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/financials.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/timeline.py",
+      "sha256": "9bcb2448225fd622e092ef517b4068f1bcbb9600b29ba1ed8ca68213f2036269",
+      "bytes": 922,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/timeline.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/__info__.py",
+      "sha256": "fcf9bc27a91f461294e3c8f8a5cf05ebc2aa5a911e700ad748217c45cc87d899",
+      "bytes": 477,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/infrastructure.py",
+      "sha256": "664d415b0add879cb4b4b302597b47a89fb6d063c0dd91b360fcc3a494cc5880",
+      "bytes": 819,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/infrastructure.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/overview.py",
+      "sha256": "be86f978eaa72b3fe47d33de53e65ca2af57be9322261bab7f412b22f2dea5b4",
+      "bytes": 1417,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/overview.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/team.py",
+      "sha256": "68c5ae846bd9dd2ad0b102efc43a3c1e74b8185e89c9c1321e77c2510beaf9fc",
+      "bytes": 965,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/team.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/__info__.py",
+      "sha256": "1f12fbae8956d1bc82a009b7d12479edfa1683dcb2e0681b70c9591dc92ab6d6",
+      "bytes": 353,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/goals.py",
+      "sha256": "3e8d5493288122c4e8d2b20b49c74a4f10a308c170cb137e55fdb5159680ca73",
+      "bytes": 864,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/goals.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/pain_points.py",
+      "sha256": "53133739ac4aae3c8f82a3b2491b10d9a804bfee53df262d3652de67042cb2a7",
+      "bytes": 1063,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/pain_points.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/requirements.py",
+      "sha256": "99bce4404a360eff4ec509ed49b5e027b8a04214581bdf389ae3280208d67e21",
+      "bytes": 995,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/requirements.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets_record/main/__info__.py",
+      "sha256": "4dee82d80bba08a536855acd52f34327bce220b20f6391c55c812ae8b3f6d2db",
+      "bytes": 112,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets_record/main/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets_record/main/company.py",
+      "sha256": "0a9d4a7cf11634945763c951d8d3a1a4e91e3986e06e5da2d2112a40290092b9",
+      "bytes": 351,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets_record/main/company.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets_record/main/contact.py",
+      "sha256": "7915df14bb87127b68f9181fbf2ff0d704225164c47205179c91ee6b33aef53c",
+      "bytes": 353,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets_record/main/contact.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets_record/main/status.py",
+      "sha256": "28384101eecddb65271d6705cfa7191213983a2b38168991dfcaeee7babb5dba",
+      "bytes": 378,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/grouplets_record/main/status.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/th_myprospect.py",
+      "sha256": "33080ae2298eeee70560e462bf506b04bd0c717cef8a7c5ddc32caae9f0e44f3",
+      "bytes": 2932,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myprospect/th_myprospect.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/__info__.py",
+      "sha256": "c9f2d2b2e3aac489a8b636c170d8e9432664160ccabb2e6c66edbdd125439eec",
+      "bytes": 111,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/billing.py",
+      "sha256": "65a0076bc6dfc3b33b26688d951ee29901aeb87d1ba92214ece5768358c0a16b",
+      "bytes": 1743,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/billing.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/licenses.py",
+      "sha256": "5a0b6d889738d69591a4d48251ff267a75401b78adaf9f92cc072cd2959e1025",
+      "bytes": 1852,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/licenses.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/__info__.py",
+      "sha256": "2fe05cf9b6d1bdddc317c1ef7e7417a15884c3731b3da43c806eb25d1ccaa2f9",
+      "bytes": 107,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/company.py",
+      "sha256": "de10a5fbe1dfe629f98296d3ad8a1d36a7d7c240251434637f8e35e0fb139a7d",
+      "bytes": 1851,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/company.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/contract.py",
+      "sha256": "de84eff54836592003cedf7b5dbb59b7f1ad2b4d3be4f8368a438c349585c93f",
+      "bytes": 1933,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/contract.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/offer.py",
+      "sha256": "6a53ec8d61808a5707ac3bedb2907b44ac4cb8d988fd7608108797eeebcdff14",
+      "bytes": 2208,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/offer.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/__info__.py",
+      "sha256": "9cc16e78fedc1aece4ebfc04b4f14e068cd31aa04c84752a9a1f4b8b7de2519f",
+      "bytes": 106,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/error.py",
+      "sha256": "be2aadc549aa3d9d4f63c4b3fc3877e7bbf18f5c6642c844bb682123dd5a7c2e",
+      "bytes": 1793,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/error.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/reproduction.py",
+      "sha256": "a9f9ee893ecf932c8159d068bd7f911e636d636b7ecd23d36295ee3a2dc72fc5",
+      "bytes": 1873,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/reproduction.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/system.py",
+      "sha256": "6a365f26918a48e40a0ed643ccc8388ee52c243d5fee96f4e950e6cee335838a",
+      "bytes": 1792,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/system.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/__info__.py",
+      "sha256": "084829b57fac543aedac5f77116c125a105180f3027e2f2a907258254b78b77c",
+      "bytes": 415,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/billing.py",
+      "sha256": "695b4f13597048015eb5f1ad8f37a6f6b2d1f3761aaf2f544de858585c784afa",
+      "bytes": 442,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/billing.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/licenses.py",
+      "sha256": "6d15f1e1aff5414fef852269c63455ce97f8003b200c9acb3c13729f2e01f0eb",
+      "bytes": 550,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/licenses.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/__info__.py",
+      "sha256": "0eaf42c170683976b30fa724cad42f98f9c545d0129bd4cd6f8cf4b0e8fd34dd",
+      "bytes": 400,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/company.py",
+      "sha256": "f27cb690527ad6484f966047ee19a1cb050eccba3bcd5e34e392c65022b4c77c",
+      "bytes": 554,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/company.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/contract.py",
+      "sha256": "f696edd00d5af396ad5cc24d82757b5645d544e026e7535854bb4a5b22804b58",
+      "bytes": 635,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/contract.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/offer.py",
+      "sha256": "48f718cfd80cf7bf3b44eb14a4effb3930097d6adeddb6d27bfd00bf9c224357",
+      "bytes": 528,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/offer.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/__info__.py",
+      "sha256": "e42e1ffa457d699fb1748cd3b9125ba50ea090e239b37083ad491f2cbf9576fc",
+      "bytes": 402,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/error.py",
+      "sha256": "fd8a43b6e04653007510597831125fafe685b7f751ea1828559692b04f78e13d",
+      "bytes": 499,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/error.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/reproduction.py",
+      "sha256": "4855c6dcee93e0468d7b33b2a2ad61c85c39b16673d8148e5951448137fabf46",
+      "bytes": 546,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/reproduction.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/system.py",
+      "sha256": "aa57819992cae350585a64baff0125526720d20790d69f03eac8ee76e4805080",
+      "bytes": 497,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/system.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/th_myticket.py",
+      "sha256": "83d9566386866d7b5bb80eb84e4595963b6c3c69f98da5d770715e73f17407dd",
+      "bytes": 4344,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/th_myticket.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/__info__.py",
+      "sha256": "3786aa67fa1ae4ef374bfde80ba5796bddb636f247dd116597e4a3bde3c65cf7",
+      "bytes": 97,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/__info__.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/header.py",
+      "sha256": "cd14b3b158a36df57bd223fc2bb8a23450b6959e4ca26d7ec2c5fc862e32bc1c",
+      "bytes": 557,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/header.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/recap.py",
+      "sha256": "951385d9669c6c2c1f6996ccd4a2ec28482347ecbbdf358fc3c8774316124672",
+      "bytes": 617,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/recap.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/rows.py",
+      "sha256": "e0da38d812ea9343260a6abc297494e6960f0f3ad014d7261fca5fb38bed79ca",
+      "bytes": 1301,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/rows.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/tests/docstring_debt.txt",
+      "sha256": "05dd972e0909353f543d4798e6a9602552160f6a47a9453e3bd519f3396bebfb",
+      "bytes": 1592,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/tests/docstring_debt.txt"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/error_test/08_grouplet_semaphore.py",
+      "sha256": "ba9a0c9a8b59a571f093b7d9dff0be1ca7d0e9393c319dec402463f3dfbcaaf6",
+      "bytes": 2266,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/error_test/08_grouplet_semaphore.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/demo_inline_docs.py",
+      "sha256": "9ee73cfaf2b7cb50afefb2ef52524cead317b4fc01d98a4049bdfb23dab6b465",
+      "bytes": 6212,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/demo_inline_docs.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formlet.py",
+      "sha256": "36c3a07b3f8ec5e77e8fe927d808312217aee7c497ae92c20e1986a6189fd0c4",
+      "bytes": 30382,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/formlet.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_doc_storage.py",
+      "sha256": "7676ee2fc35b61e175f4846ac14ff5c68623c442a3b05681966e6a95b3fd0631",
+      "bytes": 2838,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_doc_storage.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_card.py",
+      "sha256": "3fe0fad4e8469a56f3bb9b132e1d289048ee177c7b0afb8d676c1ad43a1d57b0",
+      "bytes": 11934,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_card.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/01_gallery.py",
+      "sha256": "8e34e459ec3f64640775884aca9a98015fc94092077914ff7ecb5199be062695",
+      "bytes": 27295,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/01_gallery.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/02_grid_db.py",
+      "sha256": "be404cb8c5181b602270ad7d8ffd184ea78e81f77c521e98ab6251ff73e997fd",
+      "bytes": 3697,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/02_grid_db.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/03_budget_editor.py",
+      "sha256": "5cc5938d6b01425a4e1c2e97c36a8ebc9ce9924dc3a084c9c239c0e22f88ab8a",
+      "bytes": 4986,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/03_budget_editor.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_perf_50.py",
+      "sha256": "c0c544cf7b9baa6099acfb74bdd94178e71b1db2b302742cf9d6621d39f7009d",
+      "bytes": 3423,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_perf_50.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_setlayout_dnd.py",
+      "sha256": "ba6bb6f3cc067079ad71c40d2c3bab75af6d60ce81cca095176c07a6220ee088",
+      "bytes": 4025,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_setlayout_dnd.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/05_fill_parent.py",
+      "sha256": "bd73e127a0a66ea01f21a3a0a7dd8a862f4a61ff5ee5425310b165710bbf9007",
+      "bytes": 3828,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/05_fill_parent.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/06_fill_parent_scenarios.py",
+      "sha256": "8fc598e9e82eb22cca1a96723f838d9210e682f3bbeb777424cc8339a29caa75",
+      "bytes": 4437,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/06_fill_parent_scenarios.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/07_card_totals.py",
+      "sha256": "4ca5436a22e822189e393b4ab5f26c394b86c75a4b5db61c247522420d3a1203",
+      "bytes": 5612,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/07_card_totals.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/08_phantom_row.py",
+      "sha256": "fc6d37ab1a58837b6a0ac81986075809ebc250c0ca11790502bfab75d0f40a33",
+      "bytes": 19371,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/08_phantom_row.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/09_bag_persistence.py",
+      "sha256": "458a12bdf5ade5247e2502591a8afe999321f04ccf16404b531c5ad426f13b3c",
+      "bytes": 4680,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/09_bag_persistence.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/09_empty_drop.py",
+      "sha256": "b5ea61b95feeab167aeab49bf07109cfa59ff5b5f136be71e4c400070449cd34",
+      "bytes": 11234,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/09_empty_drop.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/10_default_row.py",
+      "sha256": "f0266d4b55ecfc7ad520c7231efc9fcae5dfb69977b37e6ba330b80c750b92fa",
+      "bytes": 5013,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/10_default_row.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/11_tab_title_sort.py",
+      "sha256": "0ae01634aae58e2257714358fbbe8945854aac2d8c8121185b4191e4a434e008",
+      "bytes": 4064,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/11_tab_title_sort.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/12_card_selection.py",
+      "sha256": "338b755e2056ab8454ff055f3b3f59153f18120084b4d0eaf7db963df7f7ea45",
+      "bytes": 4819,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/12_card_selection.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/13_collapsible_cards.py",
+      "sha256": "1bd0057c793837cd7dd317a23a53678a2432ca374ebb596de2550a70b3e45865",
+      "bytes": 3812,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/13_collapsible_cards.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/14_entry_in_form.py",
+      "sha256": "d672753105b56acd3f532ebd9aa3d059690881c52b1f1adfa8ab189eadb6b49c",
+      "bytes": 5141,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/14_entry_in_form.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/15_copy_paste.py",
+      "sha256": "c7b267139f21808f0003d3905b4ddd3903d1965b1f1c0c02639fb099ee3f73ff",
+      "bytes": 10309,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/15_copy_paste.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/01_grouplet_basics.py",
+      "sha256": "7bc83d2376b81ab7353783962cbb8725530f10d53a0194d6e70b2178ceaa0de5",
+      "bytes": 2064,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/01_grouplet_basics.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/02_grouplet_dialogs.py",
+      "sha256": "cf4ac2c6b608c2a8d41cc5d132fc4364034b3987ba4ed38a9d24893ef330da76",
+      "bytes": 4612,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/02_grouplet_dialogs.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/03_grouplet_chunk.py",
+      "sha256": "97ea332f202f7cd143d38a2f48881d67b022252d254c3bef02e8265bb40574b5",
+      "bytes": 10252,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/03_grouplet_chunk.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/04_grouplet_form.py",
+      "sha256": "ff3d8f7fbed8aa2b808327264e89cd32e8e277f5d9f57861a3a87b10e0c25717",
+      "bytes": 4702,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/04_grouplet_form.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/05_grouplet_topic_grid.py",
+      "sha256": "e97c05f6df99343bcc1a67e44be2a3a5c7bd2005b9e88bb0ac51ac94e667f421",
+      "bytes": 8021,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/05_grouplet_topic_grid.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/06_grouplet_navigation.py",
+      "sha256": "9aec2593038a091ae4a14f30d47af305761898c882df302cf0ebb25d0d72a7cf",
+      "bytes": 11977,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/06_grouplet_navigation.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/07_grouplet_nested_topics.py",
+      "sha256": "ae5a7ca10e24094ec8c893d146ebce86468f09d297331ffc36e49714bef1f94c",
+      "bytes": 2764,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/07_grouplet_nested_topics.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/08_grouplet_edge_cases.py",
+      "sha256": "e8acf9c8f34b8adc0715493229489a2a109adcc0736e8a5dfbe4b0e80143f8e4",
+      "bytes": 3898,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/08_grouplet_edge_cases.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/09_grouplet_custom_root.py",
+      "sha256": "4a0a076397bc9756c9ce722eb13515e808aab07af2892c59b82da8f506a61c00",
+      "bytes": 2864,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/09_grouplet_custom_root.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/10_grouplet_transform.py",
+      "sha256": "9defceaccd2991f50f25075141b816b8cd3045b0ca58deb7a7288f9260c82b24",
+      "bytes": 2366,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/10_grouplet_transform.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/11_grouplet_wizard_stack.py",
+      "sha256": "f2eba54cb6bd7ea0947ed833faf3c61239dad54802ed4a5dc59c33b64280f655",
+      "bytes": 3928,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/11_grouplet_wizard_stack.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/12_booking_thpage_probe.py",
+      "sha256": "04a384a061737feabdfabcecf865a33855587eec332cb807a9de31e2a31be6da",
+      "bytes": 645,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/12_booking_thpage_probe.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/13_grouplet_record_panel.py",
+      "sha256": "e04a22bf92427e5c5e8f7f1d4f13bc293b9757e87dcef70c9525ad456bb64ba5",
+      "bytes": 3965,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/13_grouplet_record_panel.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/14_grouplet_choice.py",
+      "sha256": "c9912162fb6775ec6f839f311397f7e8d310251d6f859a3290aac8f4ee5a3260",
+      "bytes": 2493,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/14_grouplet_choice.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_manual_help.py",
+      "sha256": "9156ce8caab3a3107718db6a2526a695f756b0f752c3d65e8e44247630ecdfa1",
+      "bytes": 3974,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_manual_help.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_page_doc.py",
+      "sha256": "d48d52b5c898e9fe2fba61c42994a0c78783b3a7c068b70827af4715983c2c79",
+      "bytes": 2176,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/gnrwdg/test_page_doc.py"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/inputfields/filtering_data_null.py",
+      "sha256": "60eb42f663e8f298b887adfd7803c9f82d35d1cc1ac676d0a2d9a9831c638090",
+      "bytes": 2945,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/projects/gnrcore/packages/test/webpages/inputfields/filtering_data_null.py"
+    },
+    {
+      "path": "resources/common/app_preferences/legacy_pref.py",
+      "sha256": "5dbcb5befa6565c667906d71adb7f5482f17f1d920d54d87e67300a5e5d32a8d",
+      "bytes": 399,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/app_preferences/legacy_pref.py"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet.css",
+      "sha256": "f6760741bd0c0a1a68a8a5c4900f394bddd3ee32a15623e70260d1e2a1da3462",
+      "bytes": 93423,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/gnrcomponents/grouplet/grouplet.css"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet.js",
+      "sha256": "b20edb0d591ea0e249cd1dc16a9f208f3f51c45212b6d16803dbf52a72f0cfbd",
+      "bytes": 17552,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/gnrcomponents/grouplet/grouplet.js"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet.py",
+      "sha256": "bb489d0f36300bd03fb191a49e18aebf251367d65fa6fb75e3f59a7cee014e93",
+      "bytes": 91284,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/gnrcomponents/grouplet/grouplet.py"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet_card.js",
+      "sha256": "3bea35f574cb7cd84ea431cf18a90cc3ca0c7556a881ae05339f9f05099ea591",
+      "bytes": 23636,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/gnrcomponents/grouplet/grouplet_card.js"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet_grid.js",
+      "sha256": "855e29987d798db8c82feed31e3f1306704f117828d1c450874e68afccd7302d",
+      "bytes": 233096,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/gnrcomponents/grouplet/grouplet_grid.js"
+    },
+    {
+      "path": "resources/common/grouplets/phonelink/__info__.py",
+      "sha256": "b06eb36fb37d55525927aa521ede0a3e4c8a5a2e196db492b9365958c0a1078b",
+      "bytes": 197,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/grouplets/phonelink/__info__.py"
+    },
+    {
+      "path": "resources/common/grouplets/phonelink/android_qrcode.py",
+      "sha256": "c98085f094fc3dd8a2cf88ebf8bf449d8d935c3c0470d43a507d1d155347ca9e",
+      "bytes": 1061,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/grouplets/phonelink/android_qrcode.py"
+    },
+    {
+      "path": "resources/common/grouplets/phonelink/connection_qrcode.py",
+      "sha256": "214b141febec9dd2237991fb50565abb3f94ae4e3207b15368466b0565d7609e",
+      "bytes": 1236,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/grouplets/phonelink/connection_qrcode.py"
+    },
+    {
+      "path": "resources/common/grouplets/phonelink/ios_qrcode.py",
+      "sha256": "d1fb44efb5ca05b9cdb6d448aad91f20a3c374b3a71ca695d60388de231546ea",
+      "bytes": 964,
+      "role": "grouplet path or content match",
+      "url": "https://github.com/genropy/genropy/blob/a135c9d949d0b014a22f57c418e83b315f85e7bf/resources/common/grouplets/phonelink/ios_qrcode.py"
+    }
+  ]
+}

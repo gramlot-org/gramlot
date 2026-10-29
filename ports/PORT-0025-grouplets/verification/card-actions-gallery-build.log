@@ -1,0 +1,5 @@
+
+> @gramlot/gramlot-examples@0.3.22 build
+> node scripts/build-browser.mjs
+
+Gallery browser scripts built.

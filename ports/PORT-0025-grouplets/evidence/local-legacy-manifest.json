@@ -1,0 +1,681 @@
+{
+  "head": "fa35e5adfa6ad1b269f3a22a9b12c4c1ee6513ea",
+  "note": "Local working-file snapshot, historical; hashes identify actual bytes independently of HEAD.",
+  "files": [
+    {
+      "path": "docs/bag-audit/callsites.json",
+      "bytes": 1165364,
+      "sha256": "f2c970d874bbe374b080cb3aefa4e55ea504f52600700a4935355ed63b513606"
+    },
+    {
+      "path": "docs/bag-audit/mixin-missing-callsites.json",
+      "bytes": 205112,
+      "sha256": "8193af5667a810b2817de097040992dc1abea8ff0926148c45b24c6f5b5380c8"
+    },
+    {
+      "path": "docs/bag-audit/mixin-missing-usage.md",
+      "bytes": 27561,
+      "sha256": "9357df502af42a5474caa6dc825703c64d52a760f0c41955beb7d86ce664bf8f"
+    },
+    {
+      "path": "dojo_libs/dojo_20/modernization/initial/genropy_crossref.md",
+      "bytes": 21400,
+      "sha256": "1d340fafd11a0abf0127122ad5834e0340ea5d0f649fb794533b4318d71da59b"
+    },
+    {
+      "path": "gnrjs/gnr_d11/css/gnrbase_css/20_gnr_misc_views.css",
+      "bytes": 13541,
+      "sha256": "cd423f11e070404a87585e4b32e262c2056433d633fde410e76b6397016495fa"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_components.js",
+      "bytes": 361668,
+      "sha256": "c1a434c1c88af5b4a2997f0a1795b4ace0532c5fc888ea3b717a2c25f0382acb"
+    },
+    {
+      "path": "gnrjs/gnr_d11/js/genro_dlg.js",
+      "bytes": 63205,
+      "sha256": "782d88dc0a3260cb65f55c8786a1d88026b60a2bb6b7a3199bdd659f8e67599a"
+    },
+    {
+      "path": "gnrpy/RELEASE_NOTES.rst",
+      "bytes": 67854,
+      "sha256": "d9e8d3b32a7b0a1e19a249feb4f3c2cb06d3e2a29b77688dac544b5a853d1801"
+    },
+    {
+      "path": "gnrpy/gnr/web/gnrwebstruct/base.py",
+      "bytes": 56071,
+      "sha256": "910e0a6d2e6495b57f1e9298c8a06d46069605458eec9596b28b6ea1e2cd2877"
+    },
+    {
+      "path": "projects/gnrcore/packages/adm/resources/frameindex.py",
+      "bytes": 34647,
+      "sha256": "89ea18fb9ebe9a504710a3de4c4267d504a261a6be5926c7c992fe168a76d6fb"
+    },
+    {
+      "path": "projects/gnrcore/packages/adm/resources/prefhandler/prefhandler.py",
+      "bytes": 18084,
+      "sha256": "1ec1d9978741bf1d03e225fe70c3e589f4435fa9d8a83a9c34061a1b0d4f95f7"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/lib/populate_mytickets.py",
+      "bytes": 3478,
+      "sha256": "24b924ed7eae491cdb814238d6fb42ae4f8072385d3ccc15976e2cfd80c41c86"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/budget_editor/editor_budget.css",
+      "bytes": 1834,
+      "sha256": "534038781b54f92dba2fed2b42ab50af58d6ccd4a691df7b0893f6871878e97d"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/app/__info__.py",
+      "bytes": 587,
+      "sha256": "0812115d2b24b8d14d97fe3d37397d2d388b885d79581cc9d8c6e63dff09a8d9"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/app/android_qrcode.py",
+      "bytes": 917,
+      "sha256": "cb3289f6b946843fae4ad076828f5097b951f495b042724306ebe2cf5cb7e1ee"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/app/connection_qrcode.py",
+      "bytes": 952,
+      "sha256": "6fc33a29caf1f071899d89ba783e3a14fe3330a09fd8ab91cf57dc08fc2d4fc4"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/app/ios_qrcode.py",
+      "bytes": 879,
+      "sha256": "4f4a6b4f97ef1056ccceac4e9fdad4b9788c9731e3a29053ed6254b860cd5ac7"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/budget/capitolo_card.py",
+      "bytes": 2306,
+      "sha256": "0126e0f6c8f4b134bdbdc12efc0e762ee07f1be4da2b72a54996503a99c72417"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/budget/conto_card.py",
+      "bytes": 4518,
+      "sha256": "80642962fbcce1ce458a0a9f2dad27a627f432e5743111114767781a2f8a9042"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/contact_row.py",
+      "bytes": 695,
+      "sha256": "0aa1a9e5f5f5c0a6af521043d53ac9cb45ece6f1ffe4b363d9c350eca231f38b"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/deferredtesting/__info__.py",
+      "bytes": 113,
+      "sha256": "c54ea1bdf37a654328e732f6d130aa42d6cf751164504f13c24186b35c56adb5"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/deferredtesting/alfa.py",
+      "bytes": 553,
+      "sha256": "8ce9634a3645d59b5c740d2ab5a85b2af4f9925ebb2480848967c0104d6f54c1"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/deferredtesting/beta.py",
+      "bytes": 553,
+      "sha256": "def0ae75ea83328ec42d489ed28479fb343f1e2a5cb5b111b55a8782cd368052"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/examples/__info__.py",
+      "bytes": 105,
+      "sha256": "156a7936fb50cf20e0f14a8b9bce851ece11ee9f4343faf613203650a3a29425"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/examples/address_fields.py",
+      "bytes": 404,
+      "sha256": "a0c8c27cf0c52769529b4b11ddf1735da49265dcd870e58c43422308ca34ecd3"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/examples/recursive_grouplet.py",
+      "bytes": 629,
+      "sha256": "56e0e029e26788934a4738ec25c2eab74c0b3f11bfa63a8f54962dae6c96a6cf"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/invoice_row.py",
+      "bytes": 740,
+      "sha256": "303869fbcfb3ccda9c36836a9ff5e0d9151f4c237974965607e57a6f331b24f7"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/kanban_card.py",
+      "bytes": 1877,
+      "sha256": "063253e7d2d048364795798ec229e5735c3290e4bdcbe69fcf82ac03d14c8f5a"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/person_with_contacts.py",
+      "bytes": 3347,
+      "sha256": "04d47e4dd109166429e358aca373df1e615f6e95c3f57cfaf6600e3791438abd"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/province_row.py",
+      "bytes": 1113,
+      "sha256": "300af0ba436aabf04818949f62d2114ecfc2a033afb153e45e0bd5efa2c6cdf4"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/rpctesting/__info__.py",
+      "bytes": 108,
+      "sha256": "525f01de7810de70ce99e14b3f496b0787683ec2d84411f39d51ea8847532ff1"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/rpctesting/rpc_bar.py",
+      "bytes": 533,
+      "sha256": "c9b06b15789c37911b1eccf364ab21eae7afae82f8260973690938572d410f1b"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/rpctesting/rpc_foo.py",
+      "bytes": 533,
+      "sha256": "0ebd01f47091c15677699c767750ca08cf80c2948c6bc50ae69d3d267f353e7f"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/__info__.py",
+      "bytes": 114,
+      "sha256": "141dc38580b07a3626fb38340ad32bec4027301fa161a3607a13e53c07542445"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/alfa.py",
+      "bytes": 346,
+      "sha256": "45e343856a1ef122c8b44c4de0aca4397651af29f07fd2024d1ecf09132c924a"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/beta.py",
+      "bytes": 345,
+      "sha256": "c054cb30f6e3dce8a6a61caa25257087c9cbad1e2dd4c57488287b568f64cf87"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/__info__.py",
+      "bytes": 108,
+      "sha256": "b011127c49654c79eb19dc64a5711d531b1b8cab644434169698cd63f00c9312"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/delta.py",
+      "bytes": 340,
+      "sha256": "31ed75e4d21eb39c7945c61c01b30d3b146cb90721fc1ce6991cb16fb9f66d9a"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/submethodtesting/inner/gamma.py",
+      "bytes": 331,
+      "sha256": "d0947197a90ab650be53f04a5f90562921c30827732c1149407cb6855b8db57d"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/transforms/__info__.py",
+      "bytes": 107,
+      "sha256": "6484b226ac496da0f2f62646437f4e71ab91cfce9bd028010bf8c7ffa6a0d91a"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/transforms/general_data.py",
+      "bytes": 620,
+      "sha256": "429f6498cfcd5279a00ce494e64b78a22e50bebd6a2c830b9a974e0af7cb1c01"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.js",
+      "bytes": 1558,
+      "sha256": "66938a7095de0b033186c2692ce190a9780c12b21f800faf7e939903b8f39e05"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.py",
+      "bytes": 1841,
+      "sha256": "6a62204b4e936fd7eecb458c067186ca3813a430c69c3e7f39ef6cf2e0c1b941"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/advanced/__info__.py",
+      "bytes": 105,
+      "sha256": "ec55c70ec449a3962b12fcf23b1490c1f5f0a9a4373c3f61dfe053cc1cea4736"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/advanced/custom_storage.py",
+      "bytes": 380,
+      "sha256": "caf28f30df81a86214e485802a5c3adf938df74f37d6823b55239b082fe5acd6"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/contact_info.py",
+      "bytes": 412,
+      "sha256": "0c4c94bd5263d62f01c5fa5f48ef8de15f78861b18e8eedfbff7642ffdbee91f"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/preferences/__info__.py",
+      "bytes": 108,
+      "sha256": "2f39e8a50a53b0f6f94f25594ad2954796e56f617461a5bd879a40ad96cd9dd8"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/preferences/notifications.py",
+      "bytes": 467,
+      "sha256": "3f8e618b99611824dadc89730ebf61dae64acfdefb41e567c6b9181cf5370cc1"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/myconfigurations/preferences/theme.py",
+      "bytes": 425,
+      "sha256": "d65b1f74dd6f4ade78e3dd5babad43a14a40f172aa87ac793d402ba991e627cd"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/anagrafica.py",
+      "bytes": 425,
+      "sha256": "91e6fc08c30f8d567b33a34bf01292e999828b5891191bf200ec0c57c94c9435"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/codici.py",
+      "bytes": 480,
+      "sha256": "21b706e7e86a723899a998449020b4bfcea01c44c8cbf10a7f378c32c7dca130"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/statistiche.py",
+      "bytes": 337,
+      "sha256": "c6594d7e87c23f9223d668522952de71c027a5aa4a335ac7b5642c762e051347"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/__info__.py",
+      "bytes": 516,
+      "sha256": "c8079aaa9c7f80eaf78b3508089611b592d20363751f68f4796e315d861ed401"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/altimetria.py",
+      "bytes": 372,
+      "sha256": "d73a65efa47034e9d5191375f47d780131061c10742b707a48a40cc0b2c843a5"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/comune/grouplets/territorio/superficie.py",
+      "bytes": 338,
+      "sha256": "5f0c6e7c6878892e765c9ff1be7639ba99cbc787cb14ce2832403d052db2b47f"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/_packages/glbl/regione/th_regione.py",
+      "bytes": 4114,
+      "sha256": "71ddf13150b0a0919d83e8263f68b57cb25bfc0b55f182c9f6a8eb4e3fdf3549"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/__info__.py",
+      "bytes": 833,
+      "sha256": "60c696bb5b61809c41a45a25f24770d3e552df1b949f8a6e4c759efeaa3d86a9"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/guest.py",
+      "bytes": 1603,
+      "sha256": "3c34127a48b91f65e07439988452b9acdd5062205bd1aabd321af7ee6cbc9e14"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/payment.py",
+      "bytes": 632,
+      "sha256": "63741ce9e870fe15c5b2618629c47351bb4166d6ddd8fade7e07b31f4ffc36ea"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/services.py",
+      "bytes": 550,
+      "sha256": "45e922f36722fc0f56ef8c62f1be065878fa4813adafa8aa18ce2ab3fd30e492"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/grouplets/stay.py",
+      "bytes": 723,
+      "sha256": "814ff29429ece3787eff518fe4af802a8c5b8ffa2a1a444a21873e1ba1f4a347"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/redgrouplets/documento.py",
+      "bytes": 435,
+      "sha256": "d468d626a17bacd18ca91fd9ea319418fe63536918743786affb8fada359621b"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/redgrouplets/tipo.py",
+      "bytes": 527,
+      "sha256": "cbb649f63a0ef2eb898875c71d3c9bd8f21e87aa65e99ce0393af41aa6ac2da0"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/booking/th_booking.py",
+      "bytes": 2780,
+      "sha256": "15cdb26a10ed4f76b5040d40a0adb6ee6f1947ff4e98f6649ad5640c1794b407"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/__info__.py",
+      "bytes": 505,
+      "sha256": "f68f407541683fa822bf499ce8806a4bb05689531dbfcb9d90c71eb41ea1c071"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/decision.py",
+      "bytes": 1130,
+      "sha256": "6850c87cc5d241a7767e6042805371b57eb62e5c724e3148ddacc9d8277ff3e1"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/financials.py",
+      "bytes": 1325,
+      "sha256": "d17d0e1b0f54dc833dcf96d6c58a1e7deabef3d0806558097b17ffb30650a704"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/budget/timeline.py",
+      "bytes": 922,
+      "sha256": "9bcb2448225fd622e092ef517b4068f1bcbb9600b29ba1ed8ca68213f2036269"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/__info__.py",
+      "bytes": 477,
+      "sha256": "fcf9bc27a91f461294e3c8f8a5cf05ebc2aa5a911e700ad748217c45cc87d899"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/infrastructure.py",
+      "bytes": 819,
+      "sha256": "664d415b0add879cb4b4b302597b47a89fb6d063c0dd91b360fcc3a494cc5880"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/overview.py",
+      "bytes": 1417,
+      "sha256": "be86f978eaa72b3fe47d33de53e65ca2af57be9322261bab7f412b22f2dea5b4"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/company/team.py",
+      "bytes": 965,
+      "sha256": "68c5ae846bd9dd2ad0b102efc43a3c1e74b8185e89c9c1321e77c2510beaf9fc"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/__info__.py",
+      "bytes": 353,
+      "sha256": "1f12fbae8956d1bc82a009b7d12479edfa1683dcb2e0681b70c9591dc92ab6d6"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/goals.py",
+      "bytes": 864,
+      "sha256": "3e8d5493288122c4e8d2b20b49c74a4f10a308c170cb137e55fdb5159680ca73"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/pain_points.py",
+      "bytes": 1063,
+      "sha256": "53133739ac4aae3c8f82a3b2491b10d9a804bfee53df262d3652de67042cb2a7"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/grouplets/needs/requirements.py",
+      "bytes": 995,
+      "sha256": "99bce4404a360eff4ec509ed49b5e027b8a04214581bdf389ae3280208d67e21"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myprospect/th_myprospect.py",
+      "bytes": 2932,
+      "sha256": "33080ae2298eeee70560e462bf506b04bd0c717cef8a7c5ddc32caae9f0e44f3"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/__info__.py",
+      "bytes": 111,
+      "sha256": "c9f2d2b2e3aac489a8b636c170d8e9432664160ccabb2e6c66edbdd125439eec"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/billing.py",
+      "bytes": 1743,
+      "sha256": "65a0076bc6dfc3b33b26688d951ee29901aeb87d1ba92214ece5768358c0a16b"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/administrative/licenses.py",
+      "bytes": 1852,
+      "sha256": "5a0b6d889738d69591a4d48251ff267a75401b78adaf9f92cc072cd2959e1025"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/__info__.py",
+      "bytes": 107,
+      "sha256": "2fe05cf9b6d1bdddc317c1ef7e7417a15884c3731b3da43c806eb25d1ccaa2f9"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/company.py",
+      "bytes": 1851,
+      "sha256": "de10a5fbe1dfe629f98296d3ad8a1d36a7d7c240251434637f8e35e0fb139a7d"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/contract.py",
+      "bytes": 1933,
+      "sha256": "de84eff54836592003cedf7b5dbb59b7f1ad2b4d3be4f8368a438c349585c93f"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/commercial/offer.py",
+      "bytes": 2208,
+      "sha256": "6a53ec8d61808a5707ac3bedb2907b44ac4cb8d988fd7608108797eeebcdff14"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/__info__.py",
+      "bytes": 106,
+      "sha256": "9cc16e78fedc1aece4ebfc04b4f14e068cd31aa04c84752a9a1f4b8b7de2519f"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/error.py",
+      "bytes": 1793,
+      "sha256": "be2aadc549aa3d9d4f63c4b3fc3877e7bbf18f5c6642c844bb682123dd5a7c2e"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/reproduction.py",
+      "bytes": 1873,
+      "sha256": "a9f9ee893ecf932c8159d068bd7f911e636d636b7ecd23d36295ee3a2dc72fc5"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grid_grouplets/technical/system.py",
+      "bytes": 1792,
+      "sha256": "6a365f26918a48e40a0ed643ccc8388ee52c243d5fee96f4e950e6cee335838a"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/__info__.py",
+      "bytes": 415,
+      "sha256": "084829b57fac543aedac5f77116c125a105180f3027e2f2a907258254b78b77c"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/billing.py",
+      "bytes": 442,
+      "sha256": "695b4f13597048015eb5f1ad8f37a6f6b2d1f3761aaf2f544de858585c784afa"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/administrative/licenses.py",
+      "bytes": 550,
+      "sha256": "6d15f1e1aff5414fef852269c63455ce97f8003b200c9acb3c13729f2e01f0eb"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/__info__.py",
+      "bytes": 400,
+      "sha256": "0eaf42c170683976b30fa724cad42f98f9c545d0129bd4cd6f8cf4b0e8fd34dd"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/company.py",
+      "bytes": 554,
+      "sha256": "f27cb690527ad6484f966047ee19a1cb050eccba3bcd5e34e392c65022b4c77c"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/contract.py",
+      "bytes": 635,
+      "sha256": "f696edd00d5af396ad5cc24d82757b5645d544e026e7535854bb4a5b22804b58"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/commercial/offer.py",
+      "bytes": 528,
+      "sha256": "48f718cfd80cf7bf3b44eb14a4effb3930097d6adeddb6d27bfd00bf9c224357"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/__info__.py",
+      "bytes": 402,
+      "sha256": "e42e1ffa457d699fb1748cd3b9125ba50ea090e239b37083ad491f2cbf9576fc"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/error.py",
+      "bytes": 499,
+      "sha256": "fd8a43b6e04653007510597831125fafe685b7f751ea1828559692b04f78e13d"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/reproduction.py",
+      "bytes": 546,
+      "sha256": "4855c6dcee93e0468d7b33b2a2ad61c85c39b16673d8148e5951448137fabf46"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/grouplets/technical/system.py",
+      "bytes": 497,
+      "sha256": "aa57819992cae350585a64baff0125526720d20790d69f03eac8ee76e4805080"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/th_myticket.py",
+      "bytes": 2485,
+      "sha256": "56c3a59c636785c41caf1d1749e51639cc4c217662a3e611d13292129ac7adaf"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/__info__.py",
+      "bytes": 97,
+      "sha256": "3786aa67fa1ae4ef374bfde80ba5796bddb636f247dd116597e4a3bde3c65cf7"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/header.py",
+      "bytes": 557,
+      "sha256": "cd14b3b158a36df57bd223fc2bb8a23450b6959e4ca26d7ec2c5fc862e32bc1c"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/recap.py",
+      "bytes": 406,
+      "sha256": "abefa3d0c7eafeb1ddcf1bbf26c4d478cee0ac59fa6c02da4a7118e435586b69"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/resources/tables/myticket/wizard_grouplets/rows.py",
+      "bytes": 1301,
+      "sha256": "e0da38d812ea9343260a6abc297494e6960f0f3ad014d7261fca5fb38bed79ca"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/tests/docstring_debt.txt",
+      "bytes": 4250,
+      "sha256": "7f0f373b4de0bc8ceb2ce8209de05a742a9895395157e2b05df7333aaa37389e"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/error_test/08_grouplet_semaphore.py",
+      "bytes": 2266,
+      "sha256": "ba9a0c9a8b59a571f093b7d9dff0be1ca7d0e9393c319dec402463f3dfbcaaf6"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/formlet.py",
+      "bytes": 29593,
+      "sha256": "4f7f5543ba3379dac756f85d015bc6bb44fb6c8c79e546ff7423b878447e662a"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/01_gallery.py",
+      "bytes": 27295,
+      "sha256": "8e34e459ec3f64640775884aca9a98015fc94092077914ff7ecb5199be062695"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/02_grid_db.py",
+      "bytes": 3697,
+      "sha256": "be404cb8c5181b602270ad7d8ffd184ea78e81f77c521e98ab6251ff73e997fd"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/03_budget_editor.py",
+      "bytes": 4986,
+      "sha256": "5cc5938d6b01425a4e1c2e97c36a8ebc9ce9924dc3a084c9c239c0e22f88ab8a"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_perf_50.py",
+      "bytes": 3423,
+      "sha256": "c0c544cf7b9baa6099acfb74bdd94178e71b1db2b302742cf9d6621d39f7009d"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_setlayout_dnd.py",
+      "bytes": 4025,
+      "sha256": "ba6bb6f3cc067079ad71c40d2c3bab75af6d60ce81cca095176c07a6220ee088"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/05_fill_parent.py",
+      "bytes": 3815,
+      "sha256": "25f7ab288b31df3fe4b9dcb0e929a64587b7bc3f872452dbd1aabd982d8f92be"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/06_fill_parent_scenarios.py",
+      "bytes": 4436,
+      "sha256": "d34a25ac0e25a854cc0192840464db9c8d02d2a8759473363e02c23a80dd15f3"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/01_grouplet_basics.py",
+      "bytes": 2064,
+      "sha256": "7bc83d2376b81ab7353783962cbb8725530f10d53a0194d6e70b2178ceaa0de5"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/02_grouplet_dialogs.py",
+      "bytes": 4612,
+      "sha256": "cf4ac2c6b608c2a8d41cc5d132fc4364034b3987ba4ed38a9d24893ef330da76"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/03_grouplet_chunk.py",
+      "bytes": 10252,
+      "sha256": "97ea332f202f7cd143d38a2f48881d67b022252d254c3bef02e8265bb40574b5"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/04_grouplet_form.py",
+      "bytes": 4702,
+      "sha256": "ff3d8f7fbed8aa2b808327264e89cd32e8e277f5d9f57861a3a87b10e0c25717"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/05_grouplet_topic_grid.py",
+      "bytes": 8021,
+      "sha256": "e97c05f6df99343bcc1a67e44be2a3a5c7bd2005b9e88bb0ac51ac94e667f421"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/06_grouplet_navigation.py",
+      "bytes": 8208,
+      "sha256": "dc4abc4762eb824f4581230e381fb74d567962ed3fb9861f4b99d84ae91f4417"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/07_grouplet_nested_topics.py",
+      "bytes": 2764,
+      "sha256": "ae5a7ca10e24094ec8c893d146ebce86468f09d297331ffc36e49714bef1f94c"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/08_grouplet_edge_cases.py",
+      "bytes": 3898,
+      "sha256": "e8acf9c8f34b8adc0715493229489a2a109adcc0736e8a5dfbe4b0e80143f8e4"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/09_grouplet_custom_root.py",
+      "bytes": 2864,
+      "sha256": "4a0a076397bc9756c9ce722eb13515e808aab07af2892c59b82da8f506a61c00"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/10_grouplet_transform.py",
+      "bytes": 2366,
+      "sha256": "9defceaccd2991f50f25075141b816b8cd3045b0ca58deb7a7288f9260c82b24"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/11_grouplet_wizard_stack.py",
+      "bytes": 3928,
+      "sha256": "f2eba54cb6bd7ea0947ed833faf3c61239dad54802ed4a5dc59c33b64280f655"
+    },
+    {
+      "path": "projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplets/12_booking_thpage_probe.py",
+      "bytes": 645,
+      "sha256": "04a384a061737feabdfabcecf865a33855587eec332cb807a9de31e2a31be6da"
+    },
+    {
+      "path": "resources/common/app_preferences/legacy_pref.py",
+      "bytes": 399,
+      "sha256": "5dbcb5befa6565c667906d71adb7f5482f17f1d920d54d87e67300a5e5d32a8d"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet.css",
+      "bytes": 55919,
+      "sha256": "ab6e21e899f867889485caca5a0760c9cd628fb1d60bf952b97ecbe9b2006d40"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet.js",
+      "bytes": 4262,
+      "sha256": "0dce0f3ba137cb3783dc545e85ce4551cd8ef85d25df47773efca10467c2aa14"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet.py",
+      "bytes": 45340,
+      "sha256": "4234407fcf5e4184b47c05e3faed423c1d8e2755e3f11974f7cf8501e551ec0c"
+    },
+    {
+      "path": "resources/common/gnrcomponents/grouplet/grouplet_grid.js",
+      "bytes": 102111,
+      "sha256": "79b810090aeb7f4aaea40fddda8fc373d64de820bd565a5a0addb05484afc55a"
+    },
+    {
+      "path": "resources/common/grouplets/phonelink/__info__.py",
+      "bytes": 197,
+      "sha256": "b06eb36fb37d55525927aa521ede0a3e4c8a5a2e196db492b9365958c0a1078b"
+    },
+    {
+      "path": "resources/common/grouplets/phonelink/android_qrcode.py",
+      "bytes": 1061,
+      "sha256": "c98085f094fc3dd8a2cf88ebf8bf449d8d935c3c0470d43a507d1d155347ca9e"
+    },
+    {
+      "path": "resources/common/grouplets/phonelink/connection_qrcode.py",
+      "bytes": 1236,
+      "sha256": "214b141febec9dd2237991fb50565abb3f94ae4e3207b15368466b0565d7609e"
+    },
+    {
+      "path": "resources/common/grouplets/phonelink/ios_qrcode.py",
+      "bytes": 964,
+      "sha256": "d1fb44efb5ca05b9cdb6d448aad91f20a3c374b3a71ca695d60388de231546ea"
+    }
+  ]
+}

@@ -75,6 +75,7 @@
     "./components/tree": "./src/components/tree.js",
     "./components/editors": "./src/components/editors.js",
     "./components/typst": "./src/components/typst.js",
+    "./components/grouplets": "./src/components/grouplets.js",
     "./device-frames": "./src/device-frames.js",
     "./mobile-environment": "./src/mobile-environment.js",
     "./chat": "./src/chat.js",

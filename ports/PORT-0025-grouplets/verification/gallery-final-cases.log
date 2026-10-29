@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: every family folder has a README and every example its Python, JavaScript and README files
+ok 1 - every family folder has a README and every example its Python, JavaScript and README files
+  ---
+  duration_ms: 2.138167
+  ...
+# Subtest: the pages follow the naming and theme conventions (GC-225)
+ok 2 - the pages follow the naming and theme conventions (GC-225)
+  ---
+  duration_ms: 33.876125
+  ...
+# Subtest: grouplets/01-remote_fragment: mounts without errors and behaves as its README says
+ok 3 - grouplets/01-remote_fragment: mounts without errors and behaves as its README says
+  ---
+  duration_ms: 302.746459
+  ...
+# Subtest: grouplets/02-independent_instances: mounts without errors and behaves as its README says
+ok 4 - grouplets/02-independent_instances: mounts without errors and behaves as its README says
+  ---
+  duration_ms: 226.704208
+  ...
+# Subtest: grouplets/03-nested_fragments: mounts without errors and behaves as its README says
+ok 5 - grouplets/03-nested_fragments: mounts without errors and behaves as its README says
+  ---
+  duration_ms: 240.540584
+  ...
+# Subtest: g01: Python and JavaScript author equivalent Source and page options
+ok 6 - g01: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 965.958291
+  ...
+# Subtest: g02: Python and JavaScript author equivalent Source and page options
+ok 7 - g02: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 965.065375
+  ...
+# Subtest: g03: Python and JavaScript author equivalent Source and page options
+ok 8 - g03: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 975.258917
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3085.540542

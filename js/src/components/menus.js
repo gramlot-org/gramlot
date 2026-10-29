@@ -77,6 +77,7 @@ export function MenuContainer(HTMLElement) {
             const owner=labelboxPresentation(this).parentElement;
             if (this.permanent || !owner) return;
             if (['gramlot-menu-line','gramlot-drop-down-button'].includes(owner.localName)) { labelboxPresentation(this).slot='menu'; return; }
+            if (owner.localName==='gramlot-grouplet-card') { labelboxPresentation(this).slot='card-menu'; return; }
             labelboxPresentation(this).removeAttribute('slot');
             if (owner.localName==='gramlot-menu') return;
             this.#attachment=owner;

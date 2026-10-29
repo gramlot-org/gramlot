@@ -1,0 +1,932 @@
+[
+  {
+    "path": "/Users/gporcari/Sviluppo/genropy/genropy_meta/audit/bag/mixin-missing-usage.md",
+    "sha256": "9357df502af42a5474caa6dc825703c64d52a760f0c41955beb7d86ce664bf8f",
+    "matches": [
+      {
+        "line": 74,
+        "text": "- [projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.js:42](/private/tmp/genropy-js-bag-integration/projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.js:42) \u2014 `sourceBag.addItem(...)`"
+      },
+      {
+        "line": 75,
+        "text": "- [projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.js:44](/private/tmp/genropy-js-bag-integration/projects/gnrcore/packages/test/resources/grouplets/transforms/payment_data.js:44) \u2014 `sourceBag.addItem(...)`"
+      },
+      {
+        "line": 193,
+        "text": "- [resources/common/gnrcomponents/grouplet/grouplet_grid.js:1205](/private/tmp/genropy-js-bag-integration/resources/common/gnrcomponents/grouplet/grouplet_grid.js:1205) \u2014 `kw.node.parentshipLevel(...)`"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/gramlot_inventory/legacy-census/implementation-reference-index.md",
+    "sha256": "033ac658f11b864f25b26e1d845fb3cb4ea684e9e56e91ea11b661f4f23db404",
+    "matches": [
+      {
+        "line": 184,
+        "text": "| `grouplet` | `gnrjs/gnr_d11/js/genro_components.js` |"
+      },
+      {
+        "line": 185,
+        "text": "| `groupletform` | none found |"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/genropy/genropy_meta/notes/bag-integration/getnodes-snapshot-audit.md",
+    "sha256": "84ed4974b9c2a3f285d132f3a407d5430eff5e180a2cb0d8913cb0c185fef720",
+    "matches": [
+      {
+        "line": 15,
+        "text": "Confirmed structural dependency: grouplet_grid.moveRow spliced the returned"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/gramlot_inventory/legacy-census/coverage-manifest.md",
+    "sha256": "b98854d83ac92f00665290c8e019a9e8497dc5a329f23d9790f78086a9271825",
+    "matches": [
+      {
+        "line": 212,
+        "text": "| `grouplet` | public authoring declaration | genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841 | [card](cards/grouplet.md) |"
+      },
+      {
+        "line": 213,
+        "text": "| `groupletform` | public authoring declaration | genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844 | [card](cards/groupletform.md) |"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/AGENTS.md",
+    "sha256": "bc6431c91c74bf04639314fc13dc5843ecdfd8d038456e115e60acbd6dde7bef",
+    "matches": [
+      {
+        "line": 31,
+        "text": "  expand the first migration to the entire stores/grouplets/routing backlog."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/development/drag-drop-legacy-audit-2026-09-12.md",
+    "sha256": "340182aafa0615751932071a18d9fecccda280da33acdd18c61ccee84602b5d5",
+    "matches": [
+      {
+        "line": 104,
+        "text": "| Lifecycle | Global listeners live with the page; `Moveable.destroy()` disconnects; custom grouplet code demonstrates listener staleness. | Palette clears active gesture state and its window listener; groupBox invalidates asynchronous copy completion on disconnect, while its element-owned drag listener is installed once in the constructor. | Nested removal, canceled drag cleanup, and source disappearance need focused tests. |"
+      },
+      {
+        "line": 467,
+        "text": "### Grouplet grids and lifecycle evidence"
+      },
+      {
+        "line": 469,
+        "text": "The grouplet grid implements a separate, direct native-DOM pipeline instead of the"
+      },
+      {
+        "line": 471,
+        "text": "`resources/common/gnrcomponents/grouplet/grouplet_grid.js:228-455`). It installs"
+      },
+      {
+        "line": 478,
+        "text": "`projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_setlayout_dnd.py:1-31`"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/gramlot_inventory/legacy-census/cards/formlet.md",
+    "sha256": "cadcb7c3cb8c041512cfd92bb70c55cf9339b467d75ba1034502e993901d7fa5",
+    "matches": [
+      {
+        "line": 64,
+        "text": "        #    auto-fit/minmax trick as the groupletGrid min_width. auto-fit"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/development/remote-store-integration-checklist-2026-09-13.md",
+    "sha256": "e67f0f1b4cf9aa8153e9b11653415e821fad090c7a67d4840ebeae3533664d8e",
+    "matches": [
+      {
+        "line": 3,
+        "text": "Owner direction, 2026-09-13: record the remote/grouplet findings and assess the"
+      },
+      {
+        "line": 13,
+        "text": "- [Grouplet audit](grouplet-remote-legacy-2026-09-13.md): resource versus instance,"
+      },
+      {
+        "line": 15,
+        "text": "  readiness and the distinct GroupletForm store load/save lifecycle."
+      },
+      {
+        "line": 40,
+        "text": "capabilities, and whether the gap blocks a basic grouplet or only an advanced one."
+      },
+      {
+        "line": 47,
+        "text": "3. Two grouplet instances using the same local store name and relative Data path;"
+      },
+      {
+        "line": 57,
+        "text": "9. New store registration versus post-install callback timing: a grouplet callback"
+      },
+      {
+        "line": 64,
+        "text": "Prioritize the minimum set needed for two independent grouplet instances and then"
+      },
+      {
+        "line": 65,
+        "text": "GroupletForm. Defer full filesystem, paging, wizard/grid/chunk support explicitly"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/context/decisions.md",
+    "sha256": "9ebf0fab9d74b24d767435f8611cb59b7c28e9daf9c3f321471c6a9078aa6377",
+    "matches": [
+      {
+        "line": 917,
+        "text": "The owner asks to retain the remote/grouplet findings and evaluate integration"
+      },
+      {
+        "line": 919,
+        "text": "scope, not the first PoC's implementation scope. Prioritize usable grouplets;"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/development/webstruct-declarations-legacy-audit.md",
+    "sha256": "9b472bed5e0f7238fe4d8bb904e6bb3b90a38a97c0f4c9d1acd079e3f3512bc4",
+    "matches": [
+      {
+        "line": 31,
+        "text": "`js_sourceNode`, `js_widget`, `js_domNode`, `js_form`, `makeRoot`, `_get_page`, `checkNodeId`, `register_nodeId`, `_get_parentfb`, `__getattr__`, `getAttach`, `child`, `htmlChild`, `nodeById`, `fullScreenDialog`, `framepane`, `record`, `chartpane`, `palettechart`, `statspane`, `palettestats`, `frameform`, `formstore`, `multibutton_item`, `multibutton_plusitem`, `multibutton_store`, `treegrid_column`, `treeframe_column`, `quickgrid`, `quickgrid_column`, `quickgrid_selectionstore`, `quickgrid_tools`, `formstore_handler`, `formstore_handler_addcallback`, `iframe`, `htmliframe`, `flexbox`, `expandbox`, `gridbox`, `labledbox`, `htmlform`, `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `li`, `td`, `th`, `span`, `pre`, `div`, `style`, `details`, `summary`, `a`, `dt`, `option`, `caption`, `button`, `lightbutton`, `semaphore`, `errorPane`, `tooltip`, `data`, `script`, `bagField`, `grouplet`, `groupletform`, `remote`, `func`, `connect`, `subscribe`, `css`, `styleSheet`, `cssrule`, `macro`, `input`, `getMainFormBuilder`, `getFormBuilder`, `mobileFormBuilder`, `setHelperData`, `formbuilder`, `formlet`, `formbuilder_formlet`, `formbuilder_table`, `place`, `getField`"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/context/first-version.md",
+    "sha256": "abb2d6ddb0844e120cabd17e4398e1c5684be314227e495f1cd99ab8b5385ab1",
+    "matches": [
+      {
+        "line": 17,
+        "text": "Use the exact [prepared baseline](README.md#baseline-and-actual-migration-state). New store APIs, grouplet design, a routing redesign and additional validators are recorded work, not prerequisites for this first integration."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/development/grouplet-remote-legacy-2026-09-13.md",
+    "sha256": "c297a747e258f1c1477d38c1b2d5ba556c9258e0eb3541cab37eb158b86e5eca",
+    "matches": [
+      {
+        "line": 1,
+        "text": "# Grouplets: remote-content dependencies in the current legacy"
+      },
+      {
+        "line": 5,
+        "text": "No claim of complete runtime compatibility and no grouplet implementation yet."
+      },
+      {
+        "line": 6,
+        "text": "The owner prioritizes usable grouplets when extending the remote PoC."
+      },
+      {
+        "line": 10,
+        "text": "- `gnrpy/gnr/web/gnrwebstruct/base.py:841`: pane.grouplet(value, handler, **kwargs)"
+      },
+      {
+        "line": 11,
+        "text": "  emits a grouplet Source tag. groupletform is separate."
+      },
+      {
+        "line": 12,
+        "text": "- `gnrjs/gnr_d11/js/genro_components.js:3155`: Grouplet.createContent resolves value"
+      },
+      {
+        "line": 16,
+        "text": "- The remote handler is gr_loadGrouplet, with py_requires pointing to"
+      },
+      {
+        "line": 17,
+        "text": "  GroupletHandler. Source normalization routes that through remoteBuilder."
+      },
+      {
+        "line": 18,
+        "text": "- `resources/common/gnrcomponents/grouplet/grouplet.py:14`: gr_loadGrouplet loads"
+      },
+      {
+        "line": 19,
+        "text": "  a plain resource or table resource, defaulting to class Grouplet and method"
+      },
+      {
+        "line": 20,
+        "text": "  grouplet_main. It mounts a wrapper with datapath=valuepath, grouplet_module"
+      },
+      {
+        "line": 21,
+        "text": "  and optional grouplet_code; grouplet_main builds its children."
+      },
+      {
+        "line": 24,
+        "text": "  recursively builds leaf grouplets locally inside the same server invocation."
+      },
+      {
+        "line": 30,
+        "text": "Grouplet.createContent adds a resource-presence predicate to any caller _if."
+      },
+      {
+        "line": 39,
+        "text": "The handler-presence predicate tests remote_grouplet_handler whereas the wrapper"
+      },
+      {
+        "line": 44,
+        "text": "A Gramlot grouplet can own a dedicated fragment without changing every remote"
+      },
+      {
+        "line": 49,
+        "text": "`genro_components.js:986` GroupletForm wraps a BoxForm and an inner grouplet."
+      },
+      {
+        "line": 52,
+        "text": "a database-backed grouplet is not the only intended use."
+      },
+      {
+        "line": 57,
+        "text": "loadOnBuilt/startKey. There is autosave behavior. Replacing a grouplet before"
+      },
+      {
+        "line": 60,
+        "text": "Panel code at grouplet.py:229 selects a resource reactively and optionally hosts"
+      },
+      {
+        "line": 61,
+        "text": "GroupletForm. Menu metadata is assigned before selected_resource, enabling the"
+      },
+      {
+        "line": 65,
+        "text": "Wizard code in grouplet.js calls form.save and immediately advances/publishes"
+      },
+      {
+        "line": 71,
+        "text": "and more lifecycle machinery. They are not prerequisites for a basic grouplet."
+      },
+      {
+        "line": 77,
+        "text": "resources can be mixed sequentially; immediate grouplet_main calls do not prove"
+      },
+      {
+        "line": 81,
+        "text": "grouplet_module and grouplet_code record identity; the presence of those attrs"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/context/open-work.md",
+    "sha256": "05759a459c112c0f3d889a7f2e2cb795a65e6d61076b55fc40bc01be5b24525c",
+    "matches": [
+      {
+        "line": 340,
+        "text": "| Grouplets | Definition versus instance; data, method and callback isolation; local versus remote recipes; optional form ownership | Isolating `datapath` alone does not prevent shared-mixin method collisions |"
+      },
+      {
+        "line": 362,
+        "text": "The grouplet review identified two independent collision risks: IDs in repeated recipes and methods mixed into the shared page object. Legacy immediate construction and resource-qualified remote lookup mitigate some cases but are not a general isolation guarantee. Panel/wizard/grid/chunk forms remain research. The wizard analysis noted that advancing after calling save without awaiting completion merits a future behavioral check."
+      },
+      {
+        "line": 565,
+        "text": "## Grouplet-driven remote priorities \u2014 2026-09-13"
+      },
+      {
+        "line": 567,
+        "text": "The owner wants grouplets soon. The [focused legacy audit](../development/grouplet-remote-legacy-2026-09-13.md)"
+      },
+      {
+        "line": 568,
+        "text": "traces the actual Grouplet \u2192 remoteBuilder \u2192 gr_loadGrouplet pipeline and the"
+      },
+      {
+        "line": 569,
+        "text": "separate GroupletForm lifecycle. Start with resource/instance isolation, Data"
+      },
+      {
+        "line": 578,
+        "text": "multiple grouplet instances. Use the [integration checklist](../development/remote-store-integration-checklist-2026-09-13.md)."
+      },
+      {
+        "line": 579,
+        "text": "The review does not imply implementing every legacy store before the first grouplet."
+      },
+      {
+        "line": 586,
+        "text": "store families; the full virtual, persistence/navigation and remote/grouplet"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/context/conversations.md",
+    "sha256": "f40cb39136077657ff33aa04573baf120a0e598cdf62530d9c1f1ee270ec0f79",
+    "matches": [
+      {
+        "line": 57,
+        "text": "The user requested two focused follow-ups: labeled box/validate/form design and a detailed illustrated internal manual. Those are the next two archived conversations. Tailwind and Bootstrap were explored as curiosities and then explicitly discarded. Grouplet analysis followed, covering data scope, reusable instances, form ownership and a distinct shared-mixin method-collision risk. No grouplet implementation was approved by the analysis itself. [147\u2013178.]"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/context/gramlot-builder.md",
+    "sha256": "7bef03812ebb00cbefb181eab020e411fadc9eb18eaf0354697657233dbc1baa",
+    "matches": [
+      {
+        "line": 105,
+        "text": "remote, grouplet loading and full routing integrations follow their own contracts. The first slice must preserve room for them, not implement them incidentally."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/gramlot_inventory/legacy-census/cards/grouplet.md",
+    "sha256": "7a5aaecb850b6b414488fc007d1a83b9093003fc068b243d2ce0f0a091e4ae78",
+    "matches": [
+      {
+        "line": 1,
+        "text": "# grouplet"
+      },
+      {
+        "line": 5,
+        "text": "- **Identity:** `grouplet`"
+      },
+      {
+        "line": 15,
+        "text": "Direct construction/delegation targets found in the Python bodies: `grouplet`."
+      },
+      {
+        "line": 19,
+        "text": "### `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841`"
+      },
+      {
+        "line": 33,
+        "text": "- `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841`: No behavior docstring is present in the primary declaration."
+      },
+      {
+        "line": 38,
+        "text": "### `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841`"
+      },
+      {
+        "line": 41,
+        "text": "def grouplet(self,value=None,handler=None,**kwargs):"
+      },
+      {
+        "line": 42,
+        "text": "        return self.child('grouplet',value=value,handler=handler,**kwargs)"
+      },
+      {
+        "line": 55,
+        "text": "root.grouplet(...)"
+      },
+      {
+        "line": 60,
+        "text": "- `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841`"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/context/transition-to-gramlot.md",
+    "sha256": "9e089c5a2cf5b9c349d5dd9df910f0d718616b9d2ed41ecfd4ee719e4a57cba8",
+    "matches": [
+      {
+        "line": 35,
+        "text": "The legacy record/selection helpers are optional domain adapters. Their absence, and the full remote/grouplet backlog, must not become accidental prerequisites for the first builder slice."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/docs/development/store-port-2026-09-13.md",
+    "sha256": "229661830c09202f73bd298df28d4c8ae08d1f8c8fb0fcf97ec9ae870d5c7f58",
+    "matches": [
+      {
+        "line": 29,
+        "text": "persistence/navigation, then remote/grouplet lifetime tests for each family."
+      },
+      {
+        "line": 93,
+        "text": "no page errors. Full virtual and remote/grouplet integration remains unverified."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-poc/gramlot_inventory/legacy-census/cards/groupletform.md",
+    "sha256": "aadbe92585d20fb85687790ab70ee2ffc2c46fa267d28bc5f98d9097d7abb3f1",
+    "matches": [
+      {
+        "line": 1,
+        "text": "# groupletform"
+      },
+      {
+        "line": 5,
+        "text": "- **Identity:** `groupletform`"
+      },
+      {
+        "line": 15,
+        "text": "Direct construction/delegation targets found in the Python bodies: `groupletform`."
+      },
+      {
+        "line": 19,
+        "text": "### `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844`"
+      },
+      {
+        "line": 33,
+        "text": "- `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844`: No behavior docstring is present in the primary declaration."
+      },
+      {
+        "line": 38,
+        "text": "### `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844`"
+      },
+      {
+        "line": 41,
+        "text": "def groupletform(self,value=None,handler=None,**kwargs):"
+      },
+      {
+        "line": 42,
+        "text": "        return self.child('groupletform',value=value,handler=handler,**kwargs)"
+      },
+      {
+        "line": 55,
+        "text": "root.groupletform(...)"
+      },
+      {
+        "line": 60,
+        "text": "- `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844`"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/2026-10-15-local-guidance/gramlot/temp/handoff_2026-10-09.md",
+    "sha256": "0ff7716cec5be4c0f535739332da9f7e04ca0c60974dcf7c7f36ef904794abfc",
+    "matches": [
+      {
+        "line": 46,
+        "text": "   `serverpath`, stato tra chiamate, grouplet. Poi D1 (nomi campi busta e `code`), D2 (operazione HTTP unica, es."
+      },
+      {
+        "line": 75,
+        "text": "    `dataChanges` (`genro_rpc.js:562-572`), ping (`:740-747`), `_tags` (`gnrwebstruct.py:351`), grouplet"
+      },
+      {
+        "line": 76,
+        "text": "    (`resources/grouplets/\u2026`, `__info__` + `grouplet_main`). Queste funzioni ricche vanno nel client esteso Kajenn."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/2026-10-15-local-guidance/gramlot/temp/retired-gc-055/docs/055-guida-collaboratori.md",
+    "sha256": "3aa807da02369a737707e6c636926eb00842fb5cf3aedb45bea3b4f27ac33075",
+    "matches": [
+      {
+        "line": 437,
+        "text": "| Layout e composizioni | `formbuilder`, `grouplet`, `palettePane` | Componente autonomo o recipe che espande Source? |"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/2026-10-15-local-guidance/gramlot/temp/perimetro-0-2-x.md",
+    "sha256": "ef212ab705d1ec891e83d262902cf9aa8e7399d7e0eba0a28e23a50a7dc83036",
+    "matches": [
+      {
+        "line": 124,
+        "text": "  chiamate, grouplet."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/2026-10-15-local-guidance/gramlot/temp/piano-0-2-14-endpoint.md",
+    "sha256": "33b1123cafc4849effafe74394a76764fa502061a2098a2f91f175639196130e",
+    "matches": [
+      {
+        "line": 20,
+        "text": "| `source` | un frammento: `main` (pagina intera) o un'altra parte | `main`, `@source` / `registerSource`; nella forma ricca i grouplet | un frammento di Source | documento frammento: TYTX JSON di `GramlotBuilderBag` | nella Source del client: radice per `main`, sotto un nodo per gli altri |"
+      },
+      {
+        "line": 63,
+        "text": "- cataloghi di frammenti (grouplet) \u2014 Kajenn/Genro;"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/gramlot_inventory/legacy-census/implementation-reference-index.md",
+    "sha256": "033ac658f11b864f25b26e1d845fb3cb4ea684e9e56e91ea11b661f4f23db404",
+    "matches": [
+      {
+        "line": 184,
+        "text": "| `grouplet` | `gnrjs/gnr_d11/js/genro_components.js` |"
+      },
+      {
+        "line": 185,
+        "text": "| `groupletform` | none found |"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/gramlot_inventory/legacy-census/coverage-manifest.md",
+    "sha256": "b98854d83ac92f00665290c8e019a9e8497dc5a329f23d9790f78086a9271825",
+    "matches": [
+      {
+        "line": 212,
+        "text": "| `grouplet` | public authoring declaration | genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841 | [card](cards/grouplet.md) |"
+      },
+      {
+        "line": 213,
+        "text": "| `groupletform` | public authoring declaration | genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844 | [card](cards/groupletform.md) |"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/context/decisions.md",
+    "sha256": "9ebf0fab9d74b24d767435f8611cb59b7c28e9daf9c3f321471c6a9078aa6377",
+    "matches": [
+      {
+        "line": 917,
+        "text": "The owner asks to retain the remote/grouplet findings and evaluate integration"
+      },
+      {
+        "line": 919,
+        "text": "scope, not the first PoC's implementation scope. Prioritize usable grouplets;"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/context/transition-to-gramlot.md",
+    "sha256": "9e089c5a2cf5b9c349d5dd9df910f0d718616b9d2ed41ecfd4ee719e4a57cba8",
+    "matches": [
+      {
+        "line": 35,
+        "text": "The legacy record/selection helpers are optional domain adapters. Their absence, and the full remote/grouplet backlog, must not become accidental prerequisites for the first builder slice."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/context/conversations.md",
+    "sha256": "f40cb39136077657ff33aa04573baf120a0e598cdf62530d9c1f1ee270ec0f79",
+    "matches": [
+      {
+        "line": 57,
+        "text": "The user requested two focused follow-ups: labeled box/validate/form design and a detailed illustrated internal manual. Those are the next two archived conversations. Tailwind and Bootstrap were explored as curiosities and then explicitly discarded. Grouplet analysis followed, covering data scope, reusable instances, form ownership and a distinct shared-mixin method-collision risk. No grouplet implementation was approved by the analysis itself. [147\u2013178.]"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/context/gramlot-builder.md",
+    "sha256": "7bef03812ebb00cbefb181eab020e411fadc9eb18eaf0354697657233dbc1baa",
+    "matches": [
+      {
+        "line": 105,
+        "text": "remote, grouplet loading and full routing integrations follow their own contracts. The first slice must preserve room for them, not implement them incidentally."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/context/first-version.md",
+    "sha256": "abb2d6ddb0844e120cabd17e4398e1c5684be314227e495f1cd99ab8b5385ab1",
+    "matches": [
+      {
+        "line": 17,
+        "text": "Use the exact [prepared baseline](README.md#baseline-and-actual-migration-state). New store APIs, grouplet design, a routing redesign and additional validators are recorded work, not prerequisites for this first integration."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/development/store-port-2026-09-13.md",
+    "sha256": "229661830c09202f73bd298df28d4c8ae08d1f8c8fb0fcf97ec9ae870d5c7f58",
+    "matches": [
+      {
+        "line": 29,
+        "text": "persistence/navigation, then remote/grouplet lifetime tests for each family."
+      },
+      {
+        "line": 93,
+        "text": "no page errors. Full virtual and remote/grouplet integration remains unverified."
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/context/open-work.md",
+    "sha256": "05759a459c112c0f3d889a7f2e2cb795a65e6d61076b55fc40bc01be5b24525c",
+    "matches": [
+      {
+        "line": 340,
+        "text": "| Grouplets | Definition versus instance; data, method and callback isolation; local versus remote recipes; optional form ownership | Isolating `datapath` alone does not prevent shared-mixin method collisions |"
+      },
+      {
+        "line": 362,
+        "text": "The grouplet review identified two independent collision risks: IDs in repeated recipes and methods mixed into the shared page object. Legacy immediate construction and resource-qualified remote lookup mitigate some cases but are not a general isolation guarantee. Panel/wizard/grid/chunk forms remain research. The wizard analysis noted that advancing after calling save without awaiting completion merits a future behavioral check."
+      },
+      {
+        "line": 565,
+        "text": "## Grouplet-driven remote priorities \u2014 2026-09-13"
+      },
+      {
+        "line": 567,
+        "text": "The owner wants grouplets soon. The [focused legacy audit](../development/grouplet-remote-legacy-2026-09-13.md)"
+      },
+      {
+        "line": 568,
+        "text": "traces the actual Grouplet \u2192 remoteBuilder \u2192 gr_loadGrouplet pipeline and the"
+      },
+      {
+        "line": 569,
+        "text": "separate GroupletForm lifecycle. Start with resource/instance isolation, Data"
+      },
+      {
+        "line": 578,
+        "text": "multiple grouplet instances. Use the [integration checklist](../development/remote-store-integration-checklist-2026-09-13.md)."
+      },
+      {
+        "line": 579,
+        "text": "The review does not imply implementing every legacy store before the first grouplet."
+      },
+      {
+        "line": 586,
+        "text": "store families; the full virtual, persistence/navigation and remote/grouplet"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/development/drag-drop-legacy-audit-2026-09-12.md",
+    "sha256": "340182aafa0615751932071a18d9fecccda280da33acdd18c61ccee84602b5d5",
+    "matches": [
+      {
+        "line": 104,
+        "text": "| Lifecycle | Global listeners live with the page; `Moveable.destroy()` disconnects; custom grouplet code demonstrates listener staleness. | Palette clears active gesture state and its window listener; groupBox invalidates asynchronous copy completion on disconnect, while its element-owned drag listener is installed once in the constructor. | Nested removal, canceled drag cleanup, and source disappearance need focused tests. |"
+      },
+      {
+        "line": 467,
+        "text": "### Grouplet grids and lifecycle evidence"
+      },
+      {
+        "line": 469,
+        "text": "The grouplet grid implements a separate, direct native-DOM pipeline instead of the"
+      },
+      {
+        "line": 471,
+        "text": "`resources/common/gnrcomponents/grouplet/grouplet_grid.js:228-455`). It installs"
+      },
+      {
+        "line": 478,
+        "text": "`projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_setlayout_dnd.py:1-31`"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/development/remote-store-integration-checklist-2026-09-13.md",
+    "sha256": "e67f0f1b4cf9aa8153e9b11653415e821fad090c7a67d4840ebeae3533664d8e",
+    "matches": [
+      {
+        "line": 3,
+        "text": "Owner direction, 2026-09-13: record the remote/grouplet findings and assess the"
+      },
+      {
+        "line": 13,
+        "text": "- [Grouplet audit](grouplet-remote-legacy-2026-09-13.md): resource versus instance,"
+      },
+      {
+        "line": 15,
+        "text": "  readiness and the distinct GroupletForm store load/save lifecycle."
+      },
+      {
+        "line": 40,
+        "text": "capabilities, and whether the gap blocks a basic grouplet or only an advanced one."
+      },
+      {
+        "line": 47,
+        "text": "3. Two grouplet instances using the same local store name and relative Data path;"
+      },
+      {
+        "line": 57,
+        "text": "9. New store registration versus post-install callback timing: a grouplet callback"
+      },
+      {
+        "line": 64,
+        "text": "Prioritize the minimum set needed for two independent grouplet instances and then"
+      },
+      {
+        "line": 65,
+        "text": "GroupletForm. Defer full filesystem, paging, wizard/grid/chunk support explicitly"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/development/webstruct-declarations-legacy-audit.md",
+    "sha256": "9b472bed5e0f7238fe4d8bb904e6bb3b90a38a97c0f4c9d1acd079e3f3512bc4",
+    "matches": [
+      {
+        "line": 31,
+        "text": "`js_sourceNode`, `js_widget`, `js_domNode`, `js_form`, `makeRoot`, `_get_page`, `checkNodeId`, `register_nodeId`, `_get_parentfb`, `__getattr__`, `getAttach`, `child`, `htmlChild`, `nodeById`, `fullScreenDialog`, `framepane`, `record`, `chartpane`, `palettechart`, `statspane`, `palettestats`, `frameform`, `formstore`, `multibutton_item`, `multibutton_plusitem`, `multibutton_store`, `treegrid_column`, `treeframe_column`, `quickgrid`, `quickgrid_column`, `quickgrid_selectionstore`, `quickgrid_tools`, `formstore_handler`, `formstore_handler_addcallback`, `iframe`, `htmliframe`, `flexbox`, `expandbox`, `gridbox`, `labledbox`, `htmlform`, `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `li`, `td`, `th`, `span`, `pre`, `div`, `style`, `details`, `summary`, `a`, `dt`, `option`, `caption`, `button`, `lightbutton`, `semaphore`, `errorPane`, `tooltip`, `data`, `script`, `bagField`, `grouplet`, `groupletform`, `remote`, `func`, `connect`, `subscribe`, `css`, `styleSheet`, `cssrule`, `macro`, `input`, `getMainFormBuilder`, `getFormBuilder`, `mobileFormBuilder`, `setHelperData`, `formbuilder`, `formlet`, `formbuilder_formlet`, `formbuilder_table`, `place`, `getField`"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/gramlot_inventory/legacy-census/cards/formlet.md",
+    "sha256": "cadcb7c3cb8c041512cfd92bb70c55cf9339b467d75ba1034502e993901d7fa5",
+    "matches": [
+      {
+        "line": 64,
+        "text": "        #    auto-fit/minmax trick as the groupletGrid min_width. auto-fit"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/gramlot_inventory/legacy-census/cards/groupletform.md",
+    "sha256": "aadbe92585d20fb85687790ab70ee2ffc2c46fa267d28bc5f98d9097d7abb3f1",
+    "matches": [
+      {
+        "line": 1,
+        "text": "# groupletform"
+      },
+      {
+        "line": 5,
+        "text": "- **Identity:** `groupletform`"
+      },
+      {
+        "line": 15,
+        "text": "Direct construction/delegation targets found in the Python bodies: `groupletform`."
+      },
+      {
+        "line": 19,
+        "text": "### `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844`"
+      },
+      {
+        "line": 33,
+        "text": "- `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844`: No behavior docstring is present in the primary declaration."
+      },
+      {
+        "line": 38,
+        "text": "### `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844`"
+      },
+      {
+        "line": 41,
+        "text": "def groupletform(self,value=None,handler=None,**kwargs):"
+      },
+      {
+        "line": 42,
+        "text": "        return self.child('groupletform',value=value,handler=handler,**kwargs)"
+      },
+      {
+        "line": 55,
+        "text": "root.groupletform(...)"
+      },
+      {
+        "line": 60,
+        "text": "- `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::groupletform:L844`"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/docs/development/grouplet-remote-legacy-2026-09-13.md",
+    "sha256": "c297a747e258f1c1477d38c1b2d5ba556c9258e0eb3541cab37eb158b86e5eca",
+    "matches": [
+      {
+        "line": 1,
+        "text": "# Grouplets: remote-content dependencies in the current legacy"
+      },
+      {
+        "line": 5,
+        "text": "No claim of complete runtime compatibility and no grouplet implementation yet."
+      },
+      {
+        "line": 6,
+        "text": "The owner prioritizes usable grouplets when extending the remote PoC."
+      },
+      {
+        "line": 10,
+        "text": "- `gnrpy/gnr/web/gnrwebstruct/base.py:841`: pane.grouplet(value, handler, **kwargs)"
+      },
+      {
+        "line": 11,
+        "text": "  emits a grouplet Source tag. groupletform is separate."
+      },
+      {
+        "line": 12,
+        "text": "- `gnrjs/gnr_d11/js/genro_components.js:3155`: Grouplet.createContent resolves value"
+      },
+      {
+        "line": 16,
+        "text": "- The remote handler is gr_loadGrouplet, with py_requires pointing to"
+      },
+      {
+        "line": 17,
+        "text": "  GroupletHandler. Source normalization routes that through remoteBuilder."
+      },
+      {
+        "line": 18,
+        "text": "- `resources/common/gnrcomponents/grouplet/grouplet.py:14`: gr_loadGrouplet loads"
+      },
+      {
+        "line": 19,
+        "text": "  a plain resource or table resource, defaulting to class Grouplet and method"
+      },
+      {
+        "line": 20,
+        "text": "  grouplet_main. It mounts a wrapper with datapath=valuepath, grouplet_module"
+      },
+      {
+        "line": 21,
+        "text": "  and optional grouplet_code; grouplet_main builds its children."
+      },
+      {
+        "line": 24,
+        "text": "  recursively builds leaf grouplets locally inside the same server invocation."
+      },
+      {
+        "line": 30,
+        "text": "Grouplet.createContent adds a resource-presence predicate to any caller _if."
+      },
+      {
+        "line": 39,
+        "text": "The handler-presence predicate tests remote_grouplet_handler whereas the wrapper"
+      },
+      {
+        "line": 44,
+        "text": "A Gramlot grouplet can own a dedicated fragment without changing every remote"
+      },
+      {
+        "line": 49,
+        "text": "`genro_components.js:986` GroupletForm wraps a BoxForm and an inner grouplet."
+      },
+      {
+        "line": 52,
+        "text": "a database-backed grouplet is not the only intended use."
+      },
+      {
+        "line": 57,
+        "text": "loadOnBuilt/startKey. There is autosave behavior. Replacing a grouplet before"
+      },
+      {
+        "line": 60,
+        "text": "Panel code at grouplet.py:229 selects a resource reactively and optionally hosts"
+      },
+      {
+        "line": 61,
+        "text": "GroupletForm. Menu metadata is assigned before selected_resource, enabling the"
+      },
+      {
+        "line": 65,
+        "text": "Wizard code in grouplet.js calls form.save and immediately advances/publishes"
+      },
+      {
+        "line": 71,
+        "text": "and more lifecycle machinery. They are not prerequisites for a basic grouplet."
+      },
+      {
+        "line": 77,
+        "text": "resources can be mixed sequentially; immediate grouplet_main calls do not prove"
+      },
+      {
+        "line": 81,
+        "text": "grouplet_module and grouplet_code record identity; the presence of those attrs"
+      }
+    ]
+  },
+  {
+    "path": "/Users/gporcari/Sviluppo/gramlot/gramlot-meta/archive/gramlot-poc/gramlot_inventory/legacy-census/cards/grouplet.md",
+    "sha256": "7a5aaecb850b6b414488fc007d1a83b9093003fc068b243d2ce0f0a091e4ae78",
+    "matches": [
+      {
+        "line": 1,
+        "text": "# grouplet"
+      },
+      {
+        "line": 5,
+        "text": "- **Identity:** `grouplet`"
+      },
+      {
+        "line": 15,
+        "text": "Direct construction/delegation targets found in the Python bodies: `grouplet`."
+      },
+      {
+        "line": 19,
+        "text": "### `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841`"
+      },
+      {
+        "line": 33,
+        "text": "- `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841`: No behavior docstring is present in the primary declaration."
+      },
+      {
+        "line": 38,
+        "text": "### `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841`"
+      },
+      {
+        "line": 41,
+        "text": "def grouplet(self,value=None,handler=None,**kwargs):"
+      },
+      {
+        "line": 42,
+        "text": "        return self.child('grouplet',value=value,handler=handler,**kwargs)"
+      },
+      {
+        "line": 55,
+        "text": "root.grouplet(...)"
+      },
+      {
+        "line": 60,
+        "text": "- `genropy/gnrpy/gnr/web/gnrwebstruct/base.py::GnrDomSrc::grouplet:L841`"
+      }
+    ]
+  }
+]

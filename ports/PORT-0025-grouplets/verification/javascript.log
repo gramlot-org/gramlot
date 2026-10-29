@@ -1,0 +1,514 @@
+TAP version 13
+# (node:75245) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: an expired remoteSource applies nothing: target removed, page disposed; a second call waits for the first
+ok 1 - an expired remoteSource applies nothing: target removed, page disposed; a second call waits for the first
+  ---
+  duration_ms: 165.72225
+  ...
+# Subtest: a validation error has no effect: no Data write, no NodeBinding, no DOM; the page can start again
+ok 2 - a validation error has no effect: no Data write, no NodeBinding, no DOM; the page can start again
+  ---
+  duration_ms: 24.759875
+  ...
+# Subtest: an installation error before any write closes the new NodeBindings and restores the nodeId map
+ok 3 - an installation error before any write closes the new NodeBindings and restores the nodeId map
+  ---
+  duration_ms: 8.007458
+  ...
+# Subtest: an installation error after a write: the NodeBindings close, the Data is not rolled back
+ok 4 - an installation error after a write: the NodeBindings close, the Data is not rolled back
+  ---
+  duration_ms: 9.194
+  ...
+# Subtest: a first render error leaves no record, listener or radio of the branch; the NodeBindings close with the node
+ok 5 - a first render error leaves no record, listener or radio of the branch; the NodeBindings close with the node
+  ---
+  duration_ms: 10.4225
+  ...
+# Subtest: a provider error propagates to the writer and leaves the page working
+ok 6 - a provider error propagates to the writer and leaves the page working
+  ---
+  duration_ms: 9.6145
+  ...
+# Subtest: a failing disposer does not block the others: removal, replacement and clear complete, then the error surfaces
+ok 7 - a failing disposer does not block the others: removal, replacement and clear complete, then the error surfaces
+  ---
+  duration_ms: 16.682708
+  ...
+# Subtest: dispose with a failing disposer still releases the renderer, the timers and the listeners
+ok 8 - dispose with a failing disposer still releases the renderer, the timers and the listeners
+  ---
+  duration_ms: 11.211
+  ...
+# Subtest: 100 mount and removal cycles: every counter back to its baseline, nothing runs after
+ok 9 - 100 mount and removal cycles: every counter back to its baseline, nothing runs after
+  ---
+  duration_ms: 249.883458
+  ...
+# Subtest: a ^ consumer of the path is projected with the value after the load
+ok 10 - a ^ consumer of the path is projected with the value after the load
+  ---
+  duration_ms: 94.921583
+  ...
+# Subtest: a read returns the current value and starts the load; the node then holds the typed value
+ok 11 - a read returns the current value and starts the load; the node then holds the typed value
+  ---
+  duration_ms: 18.266041
+  ...
+# Subtest: cacheTime: null resolves once; a read during the load starts no second load
+ok 12 - cacheTime: null resolves once; a read during the load starts no second load
+  ---
+  duration_ms: 14.872875
+  ...
+# Subtest: cacheTime: 0 writes the loaded value without the Data event: a value per explicit read
+ok 13 - cacheTime: 0 writes the loaded value without the Data event: a value per explicit read
+  ---
+  duration_ms: 18.167083
+  ...
+# (node:75246) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: cacheTime: 0 with a deferred ^ consumer loads once: no load loop
+ok 14 - cacheTime: 0 with a deferred ^ consumer loads once: no load loop
+  ---
+  duration_ms: 114.5495
+  ...
+# Subtest: cacheTime: 1 serves the cache within one second and loads again after it
+ok 15 - cacheTime: 1 serves the cache within one second and loads again after it
+  ---
+  duration_ms: 5.35125
+  ...
+# Subtest: a ^ param changed installs a new resolver that loads at once; the consumer receives the new value
+ok 16 - a ^ param changed installs a new resolver that loads at once; the consumer receives the new value
+  ---
+  duration_ms: 13.236417
+  ...
+# Subtest: a change during the load waits: the answer in flight is written, then the new load is sent
+ok 17 - a change during the load waits: the answer in flight is written, then the new load is sent
+  ---
+  duration_ms: 13.042041
+  ...
+# Subtest: _if false during the load does not abort it: its value is written and the resolver is removed
+ok 18 - _if false during the load does not abort it: its value is written and the resolver is removed
+  ---
+  duration_ms: 12.7015
+  ...
+# Subtest: _onCalling runs before each load with the arguments; false makes no load
+ok 19 - _onCalling runs before each load with the arguments; false makes no load
+  ---
+  duration_ms: 5.640084
+  ...
+# Subtest: an empty method rejects the load; the provider names the node
+ok 20 - an empty method rejects the load; the provider names the node
+  ---
+  duration_ms: 13.894459
+  ...
+# Subtest: _if false removes the resolver and the node keeps its value; _else runs as inline code
+ok 21 - _if false removes the resolver and the node keeps its value; _else runs as inline code
+  ---
+  duration_ms: 9.270209
+  ...
+# Subtest: the removal of the node removes the resolver and aborts the pending load
+ok 22 - the removal of the node removes the resolver and aborts the pending load
+  ---
+  duration_ms: 14.680459
+  ...
+# Subtest: an endpoint error rejects loading with an RpcError; the node value is unchanged and the next read loads again
+ok 23 - an endpoint error rejects loading with an RpcError; the node value is unchanged and the next read loads again
+  ---
+  duration_ms: 6.392375
+  ...
+# Subtest: method through a pointer; control attributes are not sent as params
+ok 24 - method through a pointer; control attributes are not sent as params
+  ---
+  duration_ms: 5.53275
+  ...
+# Subtest: authoring: the lifecycle attributes are refused on dataRemote; _delay, _timing, _userChanges are accepted
+ok 25 - authoring: the lifecycle attributes are refused on dataRemote; _delay, _timing, _userChanges are accepted
+  ---
+  duration_ms: 15.983542
+  ...
+# Subtest: the provider throws a failed load again naming the node; an abort is not a failure
+ok 26 - the provider throws a failed load again naming the node; an abort is not a failure
+  ---
+  duration_ms: 4.863625
+  ...
+# Subtest: an aborted load writes nothing, even when its answer had already arrived
+ok 27 - an aborted load writes nothing, even when its answer had already arrived
+  ---
+  duration_ms: 4.423542
+  ...
+# Subtest: a load ignored by cancel() writes nothing; the next read loads again
+ok 28 - a load ignored by cancel() writes nothing; the next read loads again
+  ---
+  duration_ms: 2.802042
+  ...
+# Subtest: sync: a read waits for the answer and returns it; the resolver records the cache time itself
+ok 29 - sync: a read waits for the answer and returns it; the resolver records the cache time itself
+  ---
+  duration_ms: 7.439209
+  ...
+# Subtest: sync: a ^ consumer reads the value at its first projection
+ok 30 - sync: a ^ consumer reads the value at its first projection
+  ---
+  duration_ms: 5.347625
+  ...
+# Subtest: sync: cacheTime 0 calls at every read; _onCalling false makes no call
+ok 31 - sync: cacheTime 0 calls at every read; _onCalling false makes no call
+  ---
+  duration_ms: 3.324666
+  ...
+# Subtest: sync: a failed call throws to the reader naming the node; the next read calls again
+ok 32 - sync: a failed call throws to the reader naming the node; the next read calls again
+  ---
+  duration_ms: 2.596667
+  ...
+# Subtest: sync: a method outside the name syntax throws to the reader and sends nothing
+ok 33 - sync: a method outside the name syntax throws to the reader and sends nothing
+  ---
+  duration_ms: 3.192458
+  ...
+# Subtest: sync: the asynchronous load of a changed ^ param records the parameters: the first explicit read makes no call
+ok 34 - sync: the asynchronous load of a changed ^ param records the parameters: the first explicit read makes no call
+  ---
+  duration_ms: 12.271542
+  ...
+# Subtest: sync false, or a transport without synchronous calls, keeps the asynchronous read
+ok 35 - sync false, or a transport without synchronous calls, keeps the asynchronous read
+  ---
+  duration_ms: 9.044125
+  ...
+# Subtest: removing remote cancels timing and delayed calls; readding gets a fresh lifecycle
+ok 36 - removing remote cancels timing and delayed calls; readding gets a fresh lifecycle
+  ---
+  duration_ms: 197.382667
+  ...
+# Subtest: removing remote suppresses its completion hook but preserves the in-flight fragment contract
+ok 37 - removing remote suppresses its completion hook but preserves the in-flight fragment contract
+  ---
+  duration_ms: 28.728083
+  ...
+# Subtest: remote transforms parameters and refreshes when a referenced attribute changes
+ok 38 - remote transforms parameters and refreshes when a referenced attribute changes
+  ---
+  duration_ms: 26.622375
+  ...
+# Subtest: remote requests the fragment with its parameters at start and mounts it
+ok 39 - remote requests the fragment with its parameters at start and mounts it
+  ---
+  duration_ms: 11.999
+  ...
+# Subtest: a change of a remote parameter requests again and replaces the content
+ok 40 - a change of a remote parameter requests again and replaces the content
+  ---
+  duration_ms: 23.048792
+  ...
+# Subtest: a change of a ^ remote name requests the new fragment
+ok 41 - a change of a ^ remote name requests the new fragment
+  ---
+  duration_ms: 21.338083
+  ...
+# Subtest: _cachedRemote: equal parameters do not request again
+ok 42 - _cachedRemote: equal parameters do not request again
+  ---
+  duration_ms: 36.074209
+  ...
+# Subtest: _cachedRemote: returning to the mounted parameters during a flight waits and mounts them after it
+ok 43 - _cachedRemote: returning to the mounted parameters during a flight waits and mounts them after it
+  ---
+  duration_ms: 41.208583
+  ...
+# Subtest: _cachedRemote: a changed reactive fragment name is not a cache hit
+ok 44 - _cachedRemote: a changed reactive fragment name is not a cache hit
+  ---
+  duration_ms: 35.07925
+  ...
+# Subtest: _cachedRemote: nested Bag parameter changes invalidate the mounted cache
+ok 45 - _cachedRemote: nested Bag parameter changes invalidate the mounted cache
+  ---
+  duration_ms: 25.964333
+  ...
+# Subtest: _cachedRemote: object parameters are captured before the pending response
+ok 46 - _cachedRemote: object parameters are captured before the pending response
+  ---
+  duration_ms: 24.424417
+  ...
+# Subtest: _cachedRemote: array parameters are captured before the pending response
+ok 47 - _cachedRemote: array parameters are captured before the pending response
+  ---
+  duration_ms: 22.368459
+  ...
+# Subtest: _cachedRemote: date parameters are captured before the pending response
+ok 48 - _cachedRemote: date parameters are captured before the pending response
+  ---
+  duration_ms: 22.96575
+  ...
+# Subtest: _cachedRemote: Bag attribute parameters are captured before the pending response
+ok 49 - _cachedRemote: Bag attribute parameters are captured before the pending response
+  ---
+  duration_ms: 24.039917
+  ...
+# Subtest: _cachedRemote: reordered object keys make another request under TYTX comparison
+ok 50 - _cachedRemote: reordered object keys make another request under TYTX comparison
+  ---
+  duration_ms: 15.546458
+  ...
+# Subtest: _if false: no request, and _else runs with the parameters
+ok 51 - _if false: no request, and _else runs with the parameters
+  ---
+  duration_ms: 16.123833
+  ...
+# Subtest: _onRemote runs after the fragment is mounted, with the parameters
+ok 52 - _onRemote runs after the fragment is mounted, with the parameters
+  ---
+  duration_ms: 8.624292
+  ...
+# Subtest: two quick changes: the answer in flight is mounted, then the first change; the second does nothing
+ok 53 - two quick changes: the answer in flight is mounted, then the first change; the second does nothing
+  ---
+  duration_ms: 40.834083
+  ...
+# Subtest: removing the node cancels the pending request and closes its RemoteBinding
+ok 54 - removing the node cancels the pending request and closes its RemoteBinding
+  ---
+  duration_ms: 16.354541
+  ...
+# Subtest: remote on a node of a fragment mounted by another remote
+ok 55 - remote on a node of a fragment mounted by another remote
+  ---
+  duration_ms: 17.163667
+  ...
+# Subtest: a node without remote has no RemoteBinding; a remote node activates _if, _else and _onRemote
+ok 56 - a node without remote has no RemoteBinding; a remote node activates _if, _else and _onRemote
+  ---
+  duration_ms: 10.330125
+  ...
+# Subtest: _if false while a request is in flight is a readiness condition: no abort, the fragment is mounted
+ok 57 - _if false while a request is in flight is a readiness condition: no abort, the fragment is mounted
+  ---
+  duration_ms: 15.542083
+  ...
+# Subtest: a failed request rejects naming the node; with _cachedRemote the same parameters are requested again
+ok 58 - a failed request rejects naming the node; with _cachedRemote the same parameters are requested again
+  ---
+  duration_ms: 12.283334
+  ...
+# Subtest: a change of the Data context of an ancestor requests the fragment for the new context
+ok 59 - a change of the Data context of an ancestor requests the fragment for the new context
+  ---
+  duration_ms: 15.599167
+  ...
+# Subtest: a variable name: ^ and = pointers, and a dotted path from the page, are sent as they are
+ok 60 - a variable name: ^ and = pointers, and a dotted path from the page, are sent as they are
+  ---
+  duration_ms: 15.982125
+  ...
+# Subtest: an empty, null or malformed name rejects the call naming the node, like a name outside the syntax
+ok 61 - an empty, null or malformed name rejects the call naming the node, like a name outside the syntax
+  ---
+  duration_ms: 9.319291
+  ...
+# Subtest: a waiting call with an empty name rejects when its turn comes; the request in flight is mounted
+ok 62 - a waiting call with an empty name rejects when its turn comes; the request in flight is mounted
+  ---
+  duration_ms: 10.059083
+  ...
+# Subtest: node.requests: both fields empty when idle; in flight the method, the parameters sent and the send time
+ok 63 - node.requests: both fields empty when idle; in flight the method, the parameters sent and the send time
+  ---
+  duration_ms: 23.896916
+  ...
+# Subtest: _onCalling runs before each call with the parameters; false makes no call
+ok 64 - _onCalling runs before each call with the parameters; false makes no call
+  ---
+  duration_ms: 21.509209
+  ...
+# Subtest: cancel() in _onCalling ignores the answer in flight and sends the new call at once, in place of the waiting one
+ok 65 - cancel() in _onCalling ignores the answer in flight and sends the new call at once, in place of the waiting one
+  ---
+  duration_ms: 29.293375
+  ...
+# Subtest: cancel() outside _onCalling ignores the answer in flight and sends the waiting call
+ok 66 - cancel() outside _onCalling ignores the answer in flight and sends the waiting call
+  ---
+  duration_ms: 15.96375
+  ...
+# Subtest: _delay debounces the changes, never the request in flight; _userChanges calls only for the level node
+ok 67 - _delay debounces the changes, never the request in flight; _userChanges calls only for the level node
+  ---
+  duration_ms: 80.478708
+  ...
+# Subtest: _timing requests the fragment again every period; a pointer change restarts it, 0 stops it
+ok 68 - _timing requests the fragment again every period; a pointer change restarts it, 0 stops it
+  ---
+  duration_ms: 153.937417
+  ...
+# Subtest: a fragment requested from code replaces the record of _cachedRemote: no false cache hit afterwards
+ok 69 - a fragment requested from code replaces the record of _cachedRemote: no false cache hit afterwards
+  ---
+  duration_ms: 10.413959
+  ...
+# Subtest: removing the node aborts the request in flight and sends no waiting call
+ok 70 - removing the node aborts the request in flight and sends no waiting call
+  ---
+  duration_ms: 17.712083
+  ...
+# Subtest: _else="this.setValue(null)" clears the content when _if turns false; true again mounts the fragment again
+ok 71 - _else="this.setValue(null)" clears the content when _if turns false; true again mounts the fragment again
+  ---
+  duration_ms: 23.48725
+  ...
+# Subtest: runtime remote failures are notified once, can retry, and rejected completion hooks are handled
+ok 72 - runtime remote failures are notified once, can retry, and rejected completion hooks are handled
+  ---
+  duration_ms: 65.159833
+  ...
+# Subtest: timed, delayed and rebound remote failures are handled; removing the node cancels further triggers
+ok 73 - timed, delayed and rebound remote failures are handled; removing the node cancels further triggers
+  ---
+  duration_ms: 102.963125
+  ...
+# Subtest: a failed remote response after its node closes does not alert
+ok 74 - a failed remote response after its node closes does not alert
+  ---
+  duration_ms: 16.932584
+  ...
+# Subtest: shared API verifies the same prepared artifact as Python and the generator
+ok 75 - shared API verifies the same prepared artifact as Python and the generator
+  ---
+  duration_ms: 96.241125
+  ...
+# Subtest: every byte, wrapper, metadata field and inventory participates in verification
+ok 76 - every byte, wrapper, metadata field and inventory participates in verification
+  ---
+  duration_ms: 153.104916
+  ...
+# Subtest: stylesheet failure prevents activation and closes the registered page
+ok 77 - stylesheet failure prevents activation and closes the registered page
+  ---
+  duration_ms: 48.389667
+  ...
+# Subtest: a bad fingerprint rejects the graph before any collection activates
+ok 78 - a bad fingerprint rejects the graph before any collection activates
+  ---
+  duration_ms: 12.807625
+  ...
+# Subtest: old URL-only bootstrap format is rejected instead of accepted as a fallback
+ok 79 - old URL-only bootstrap format is rejected instead of accepted as a fallback
+  ---
+  duration_ms: 7.487334
+  ...
+# Subtest: closing during CSS loading cancels startup without waiting for a load event
+ok 80 - closing during CSS loading cancels startup without waiting for a load event
+  ---
+  duration_ms: 6.625542
+  ...
+# Subtest: grouplets is opt-in, DOM-free at import and exports the Python grammar
+ok 81 - grouplets is opt-in, DOM-free at import and exports the Python grammar
+  ---
+  duration_ms: 41.161958
+  ...
+# Subtest: two instances share a definition but isolate relative Data and reactive loading
+ok 82 - two instances share a definition but isolate relative Data and reactive loading
+  ---
+  duration_ms: 153.519041
+  ...
+# Subtest: nested fragments retain their local Data and dotted method targets
+ok 83 - nested fragments retain their local Data and dotted method targets
+  ---
+  duration_ms: 58.724875
+  ...
+# Subtest: first pending snapshot follows the applied in-flight answer
+ok 84 - first pending snapshot follows the applied in-flight answer
+  ---
+  duration_ms: 58.15125
+  ...
+# Subtest: removing a grouplet cancels its pending work and ignores the late answer
+ok 85 - removing a grouplet cancels its pending work and ignores the late answer
+  ---
+  duration_ms: 53.476625
+  ...
+# Subtest: readiness and cachedRemote retain the shared remote contract
+ok 86 - readiness and cachedRemote retain the shared remote contract
+  ---
+  duration_ms: 53.665209
+  ...
+# Subtest: prepared collection renders real Python Page and remote Source responses
+ok 87 - prepared collection renders real Python Page and remote Source responses
+  ---
+  duration_ms: 208.418959
+  ...
+# Subtest: methods of Logic.prototype are copied into the group; the constructor never runs
+ok 88 - methods of Logic.prototype are copied into the group; the constructor never runs
+  ---
+  duration_ms: 74.282416
+  ...
+# Subtest: resolve gives {group, method}; this is the group and this.page the page; a group calls another
+ok 89 - resolve gives {group, method}; this is the group and this.page the page; a group calls another
+  ---
+  duration_ms: 14.29125
+  ...
+# Subtest: a name with / is a nested group, and a/b creates the group a as well
+ok 90 - a name with / is a nested group, and a/b creates the group a as well
+  ---
+  duration_ms: 12.8625
+  ...
+# Subtest: the same method name in the same group: the last registration wins
+ok 91 - the same method name in the same group: the last registration wins
+  ---
+  duration_ms: 10.360958
+  ...
+# Subtest: a missing name is an error naming the node and the resource, never an inline fallback
+ok 92 - a missing name is an error naming the node and the resource, never an inline fallback
+  ---
+  duration_ms: 20.959458
+  ...
+# Subtest: the §4.9 rules: constructor, page, child group names, accessors, symbols, extends, no class
+ok 93 - the §4.9 rules: constructor, page, child group names, accessors, symbols, extends, no class
+  ---
+  duration_ms: 75.835834
+  ...
+# Subtest: d-logic: a module without the Logic export registers no method; its group exists with its resource
+ok 94 - d-logic: a module without the Logic export registers no method; its group exists with its resource
+  ---
+  duration_ms: 6.358625
+  ...
+# Subtest: a method named like a child group is an error, in either registration order and in check
+ok 95 - a method named like a child group is an error, in either registration order and in check
+  ---
+  duration_ms: 6.606417
+  ...
+# Subtest: a method name like __proto__ or toString stays a plain member of the group
+ok 96 - a method name like __proto__ or toString stays a plain member of the group
+  ---
+  duration_ms: 5.590666
+  ...
+# Subtest: two instances are isolated: registries, groups and methods
+ok 97 - two instances are isolated: registries, groups and methods
+  ---
+  duration_ms: 7.924292
+  ...
+# Subtest: the constructor check reads the class body only at its top level
+ok 98 - the constructor check reads the class body only at its top level
+  ---
+  duration_ms: 0.632
+  ...
+# Subtest: ASTRA-01: the constructor check ends on regular expression literals and an unterminated /*
+ok 99 - ASTRA-01: the constructor check ends on regular expression literals and an unterminated /*
+  ---
+  duration_ms: 32.7875
+  ...
+# Subtest: ASTRA-01: an unterminated /* in a class source is not a comment and the scan ends
+ok 100 - ASTRA-01: an unterminated /* in a class source is not a comment and the scan ends
+  ---
+  duration_ms: 31.695541
+  ...
+1..100
+# tests 100
+# suites 0
+# pass 100
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2033.460708

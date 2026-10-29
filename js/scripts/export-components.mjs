@@ -25,3 +25,6 @@ import grid from '../src/components/grid.js';
 await writeFile(new URL('../../src/gramlot/collections/grid.json', import.meta.url), JSON.stringify(grid.toDocument(), null, 2) + '\n');
 import chat from '../src/components/chat.js';
 await writeFile(new URL('../../src/gramlot/collections/chat.json', import.meta.url), JSON.stringify(chat.toDocument(), null, 2)+'\n');
+
+import grouplets from '../src/components/grouplets.js';
+await writeFile(new URL('../../src/gramlot/collections/grouplets.json', import.meta.url), JSON.stringify(grouplets.toDocument(), null, 2) + '\n');

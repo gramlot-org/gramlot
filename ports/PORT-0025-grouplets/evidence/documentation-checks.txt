@@ -1,0 +1,7 @@
+2026-10-28
+Paired GC-350 anchors: pass.
+New plan, mirror, port, handoff and research-index local links: pass.
+GC-070-1770 paired unique anchors: pass.
+Sphinx -W --keep-going -n: build succeeded.
+check_public_docs.py: 11 pages, search, sources, local links and mirrored anchors verified.
+Portable source archive replay: 188 tests passed, 0 failed, 0 skipped.

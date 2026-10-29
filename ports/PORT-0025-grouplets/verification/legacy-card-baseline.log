@@ -1,0 +1,110 @@
+TAP version 13
+# Subtest: the band lays out chevron, title, doc, the framework spacer, then the checkbox
+ok 1 - the band lays out chevron, title, doc, the framework spacer, then the checkbox
+  ---
+  duration_ms: 6.304375
+  ...
+# Subtest: tools filters the band: an admitted tool without its host part is dropped too
+ok 2 - tools filters the band: an admitted tool without its host part is dropped too
+  ---
+  duration_ms: 1.382875
+  ...
+# Subtest: the chevron toggles by click and keyboard and never reaches the card
+ok 3 - the chevron toggles by click and keyboard and never reaches the card
+  ---
+  duration_ms: 1.417208
+  ...
+# Subtest: a folded card opens from its title, an open one ignores it
+ok 4 - a folded card opens from its title, an open one ignores it
+  ---
+  duration_ms: 1.002959
+  ...
+# Subtest: applyCollapsed sets the class and the chevron state, without animation when unsupported
+ok 5 - applyCollapsed sets the class and the chevron state, without animation when unsupported
+  ---
+  duration_ms: 1.49025
+  ...
+# Subtest: a card draws its folded state when its band is created, with the classes its host asks
+ok 6 - a card draws its folded state when its band is created, with the classes its host asks
+  ---
+  duration_ms: 1.120208
+  ...
+# Subtest: a folding card animates its height and keeps its content until closed
+ok 7 - a folding card animates its height and keeps its content until closed
+  ---
+  duration_ms: 4.521542
+  ...
+# Subtest: the checkbox mirrors the host and reports its clicks
+ok 8 - the checkbox mirrors the host and reports its clicks
+  ---
+  duration_ms: 1.050375
+  ...
+# Subtest: the doc icon is tracked by its address and opens it with the title, by click or keyboard
+ok 9 - the doc icon is tracked by its address and opens it with the title, by click or keyboard
+  ---
+  duration_ms: 1.840458
+  ...
+# Subtest: docSpec fills the doc on the card data and offers its fields as variables
+ok 10 - docSpec fills the doc on the card data and offers its fields as variables
+  ---
+  duration_ms: 3.733833
+  ...
+# Subtest: without the inlinedoc flag docSpec renders the inline template of the resource
+ok 11 - without the inlinedoc flag docSpec renders the inline template of the resource
+  ---
+  duration_ms: 0.954042
+  ...
+# Subtest: the band is the drag source, and destroy unwires it
+ok 12 - the band is the drag source, and destroy unwires it
+  ---
+  duration_ms: 1.040792
+  ...
+# Subtest: mount adds the band and its spacer as framework nodes
+ok 13 - mount adds the band and its spacer as framework nodes
+  ---
+  duration_ms: 1.362584
+  ...
+# Subtest: buildKebab keeps presets, overrides labels, merges dicts and drops false entries
+ok 14 - buildKebab keeps presets, overrides labels, merges dicts and drops false entries
+  ---
+  duration_ms: 1.118333
+  ...
+# Subtest: templates render on a Bag, with sums, and a blank title falls back to the label
+ok 15 - templates render on a Bag, with sums, and a blank title falls back to the label
+  ---
+  duration_ms: 1.208292
+  ...
+# Subtest: a field in error inside the card marks the band, once per frame, until destroy
+ok 16 - a field in error inside the card marks the band, once per frame, until destroy
+  ---
+  duration_ms: 1.172459
+  ...
+# Subtest: a field the row lacks shows blank, so a row with none of its fields shows its label
+ok 17 - a field the row lacks shows blank, so a row with none of its fields shows its label
+  ---
+  duration_ms: 0.993083
+  ...
+# Subtest: a doc renders on the card data, with doc_kw for values the data has not
+ok 18 - a doc renders on the card data, with doc_kw for values the data has not
+  ---
+  duration_ms: 0.811583
+  ...
+# Subtest: useForm: an error status of the card's form marks the band even when no field shows it
+ok 19 - useForm: an error status of the card's form marks the band even when no field shows it
+  ---
+  duration_ms: 0.77025
+  ...
+# Subtest: Clear empties the bound values under the card data, or under its own form record
+ok 20 - Clear empties the bound values under the card data, or under its own form record
+  ---
+  duration_ms: 0.912625
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 85.577458

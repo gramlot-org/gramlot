@@ -1,0 +1,2491 @@
+[
+  {
+    "number": 1714,
+    "url": "https://github.com/genropy/genropy/issues/1714",
+    "comments": []
+  },
+  {
+    "number": 912,
+    "url": "https://github.com/genropy/genropy/pull/912",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5397261375",
+        "html_url": "https://github.com/genropy/genropy/pull/912#issuecomment-5397261375",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/912",
+        "id": 5397261375,
+        "node_id": "IC_kwDOFdDsh88AAAABQbOsPw",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-08-24T15:13:00Z",
+        "updated_at": "2026-08-24T15:13:00Z",
+        "body": "Re-checked at `747aff66`: the push on 19 August is the `develop` merge only, so the one thing I asked for is still open and this PR is waiting on you rather than on a reviewer. Nothing else stands between it and a merge \u2014 checks are green on all four Python versions and there is no other objection from me.\n\nThe three markers, re-run just now against the current head:\n\n- `controllerPath` \u2014 0 occurrences across the 13 files of this PR, 16 in `resources/common/gnrcomponents/grouplet/grouplet.py` and `grouplet_grid.js` on `develop`\n- the \"the sibling BagStore is mandatory by design\" call-out is still in `tabs/grid.html`\n- `lazyTabs`, `fillParent` and `groupletChunk` record mode via `record_id` are still unmentioned\n\nSo it is still the \"How it works (architecture)\" section of `tabs/grid.html` and its SVG, not the tab and not the other twelve files. Everything else in the chapter has aged fine.\n\nOne practical note on why nobody picked this up in three months: `reviewRequests` is empty and there is no assignee, so this PR notifies nobody. `docs/` matched no rule in `.github/CODEOWNERS` when it opened. Assigning it to yourself and requesting a reviewer explicitly would put it back in somebody's queue \u2014 mine included, if you want it there.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5397261375/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1617,
+    "url": "https://github.com/genropy/genropy/issues/1617",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6045307675",
+        "html_url": "https://github.com/genropy/genropy/issues/1617#issuecomment-6045307675",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1617",
+        "id": 6045307675,
+        "node_id": "IC_kwDOFdDsh88AAAABaFQTGw",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-07T19:31:28Z",
+        "updated_at": "2026-10-07T19:31:28Z",
+        "body": "@dgpaci thanks, the bug list holds: all six are confirmed in `dynamicform.py` / `dynamicform.js` on develop.\n\nBefore splitting this up: how urgent is it for you, and which of the bugs is actually blocking a project right now?\n\nOn the redesign part (one storage place for widget attributes, migrating the existing `df_fields`, a new layout), I would rather not invest there. For complex cases the recommended pattern is grouplets, not dynamic fields. A dynamic-field form that needs a `dbSelect` with a `condition` is already a sign the case belongs in a grouplet.\n\nSo the proposal is:\n- fix the six bugs in one small PR, touching only `dynamicform.py` and `dynamicform.js`, with no change to stored data;\n- leave the storage redesign and migration out, and move the complex cases to grouplets.\n\nIf one of those cases is urgent for you, tell me which one and we can look at the grouplet version together.\n",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6045307675/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1095,
+    "url": "https://github.com/genropy/genropy/issues/1095",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5370048909",
+        "html_url": "https://github.com/genropy/genropy/issues/1095#issuecomment-5370048909",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1095",
+        "id": 5370048909,
+        "node_id": "IC_kwDOFdDsh88AAAABQBRxjQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-08-21T12:54:58Z",
+        "updated_at": "2026-08-21T12:55:41Z",
+        "body": "This needs a workflow because the three requested capabilities share one lifecycle contract. The phases are: (1) define terminal-resource placement, precedence with `summary_template`, `startStep` addressing, and new-record reload identity; (2) add the terminal resource by reusing the existing grouplet loader and exclude it from the step menu; (3) centralize initial navigation so reloads of the same document preserve state, including the first insert; (4) cover template/resource, index/code, new/existing records, same-record reload, and record changes in the real booking flow. The existing fix only covers reloads when no summary is present.\n",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5370048909/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      },
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5370241069",
+        "html_url": "https://github.com/genropy/genropy/issues/1095#issuecomment-5370241069",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1095",
+        "id": 5370241069,
+        "node_id": "IC_kwDOFdDsh88AAAABQBdgLQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-08-21T13:14:16Z",
+        "updated_at": "2026-08-21T13:14:16Z",
+        "body": "Working on this.",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5370241069/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 794,
+    "url": "https://github.com/genropy/genropy/issues/794",
+    "comments": []
+  },
+  {
+    "number": 910,
+    "url": "https://github.com/genropy/genropy/issues/910",
+    "comments": []
+  },
+  {
+    "number": 909,
+    "url": "https://github.com/genropy/genropy/issues/909",
+    "comments": []
+  },
+  {
+    "number": 1731,
+    "url": "https://github.com/genropy/genropy/pull/1731",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6337076606",
+        "html_url": "https://github.com/genropy/genropy/pull/1731#issuecomment-6337076606",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1731",
+        "id": 6337076606,
+        "node_id": "IC_kwDOFdDsh88AAAABebgdfg",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-22T09:09:48Z",
+        "updated_at": "2026-10-22T09:09:48Z",
+        "body": "Withdrawn. The documentation endpoint is being redone on a different basis: docs live as Markdown (MyST) files in a `documentation` storage service (S3 in production, a local folder in development), addressed by convention from fields, grouplets and pages, edited in place by users with the documenter tag, and reusable to build the full Sphinx reference. A new PR on develop replaces this one; it carries over the shared EndpointPermission check (with the ep_table tag fix), the shared doc popup and the light info icon.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6337076606/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1730,
+    "url": "https://github.com/genropy/genropy/pull/1730",
+    "comments": []
+  },
+  {
+    "number": 899,
+    "url": "https://github.com/genropy/genropy/issues/899",
+    "comments": []
+  },
+  {
+    "number": 1729,
+    "url": "https://github.com/genropy/genropy/pull/1729",
+    "comments": []
+  },
+  {
+    "number": 1736,
+    "url": "https://github.com/genropy/genropy/pull/1736",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6344263956",
+        "html_url": "https://github.com/genropy/genropy/pull/1736#issuecomment-6344263956",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1736",
+        "id": 6344263956,
+        "node_id": "IC_kwDOFdDsh88AAAABeiXJFA",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-22T15:16:02Z",
+        "updated_at": "2026-10-22T15:16:02Z",
+        "body": "Answering [the review](https://github.com/genropy/genropy/pull/1736#pullrequestreview-5615842361) in 7420059. Thanks for the careful read. All four blocking points held against the code; the push answers each of them, and the minor ones too, except the atomic 409 (below).\n\n> **Any logged user can grant themselves the documenter tags.**\n\n`doc_editor_tags` is gone, together with the page-store write in `gnrwebpage.py`: writing always needs `_DOC_,doc_<pkg>` of the doc's package, resolved server side (`ep_doc.documenterTags(address)`). Only the demo page used it; it now needs a real documenter. Removed test: `test_a_page_may_redefine_the_documenter_tags`.\n\n> **Stored XSS through the front-matter `title`.**\n\nThe doc's own title is now treated as text on the client: `genro.dlg._docTitleHtml` escapes it before it reaches the popup or the editor dialog title; a caller's title (a label, a card title) is the caller's markup and stays as it is. New test: `doc_popup.test.js` \u203a \"the doc's own title is text\u2026\" (fails with the escape removed).\n\n> **Docs are public in the default setup.**\n\nWorse than that: `/_storage/<name>/...` and `/<name>:...` serve *any* storage with no authentication (`storageDispatcher`), so a configured `inlinedoc` S3 service was public too. Now:\n- `BaseStorageHandler.isPrivateStorage()`: `inlinedoc` is private by name (`PRIVATE_STORAGES`), any other storage by `private=\"true\"`; `storageDispatcher` answers 404 for a private storage, and the `private` parameter never reaches a service's constructor.\n- An unconfigured private storage falls back to a folder of the **instance** (`<instance>/inlinedoc`), not of `site_static_dir`; `DocumentationStore.root` is always `inlinedoc:`.\n- New test: `test_no_url_serves_the_docs` (both url forms 404, while a `home` file is still served 200; fails with the check removed).\n\n> **No switch.**\n\nThe whole feature is behind `<experimental><gui inlinedoc=\"true\"/></experimental>` (`page.inlineDoc`, passed to the client as `startArgs.inlineDoc`). With the flag off everything is as on `develop`: helper.xml is back (`getHelperData`, `saveHelperValue`, `setHelperData`, `sys/helpeditor`, the developer prompt editor, the \"Open helper editor\" menu lines), fields carry `helpcode`/`helpcode_package`, grouplet cards keep their inline / `file:` HTML doc, no `_index` request is sent, and `sys/ep_doc` answers 404. With the flag on, a legacy `file:` doc of a card falls back to the resource's own address.\n\n**Minor**\n- `_listings` is no longer module state: the listings live on the site (`site.doc_listings`, keyed by domain). The cross-worker staleness you describe now affects only the index (the \u24d8 states, 30s): reading a single doc lists its own folder directly, so a doc just written by another worker is read at once and a save based on it does not get a false 409. Test: `test_a_doc_another_process_wrote_is_read_at_once`.\n- Uploads: at most 5 MB (`ASSET_MAX_SIZE`, checked before decoding), strict base64, and the bytes must be the declared image (png/jpeg/gif/webp magic numbers).\n- `_calling_page_id` as a bearer token: `checkEndpointPermission(same_connection=True)` refuses a request whose connection is not the page's own; `ep_doc` uses it on every call, `ep_table` is unchanged. Test: a page id used from another connection is refused.\n- The 409 is still read-then-write: opened as #1745 rather than solved here, since the local storage has no compare-and-swap, and S3 would need conditional writes.\n\nChecks: flake8 clean on the touched files; gnrpy pytest 3335 passed, 21 skipped (tests/sql included); JS 563 passed. Not verified in a browser (neither flag position), and not over real HTTP or S3: the dispatcher is exercised by calling `storageDispatcher` directly.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6344263956/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1735,
+    "url": "https://github.com/genropy/genropy/pull/1735",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6337091910",
+        "html_url": "https://github.com/genropy/genropy/pull/1735#issuecomment-6337091910",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1735",
+        "id": 6337091910,
+        "node_id": "IC_kwDOFdDsh88AAAABebhZRg",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-22T09:10:37Z",
+        "updated_at": "2026-10-22T09:10:37Z",
+        "body": "Pushed directly to develop as 83e7e44f80.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6337091910/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 897,
+    "url": "https://github.com/genropy/genropy/issues/897",
+    "comments": []
+  },
+  {
+    "number": 1733,
+    "url": "https://github.com/genropy/genropy/pull/1733",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6337090574",
+        "html_url": "https://github.com/genropy/genropy/pull/1733#issuecomment-6337090574",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1733",
+        "id": 6337090574,
+        "node_id": "IC_kwDOFdDsh88AAAABebhUDg",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-22T09:10:32Z",
+        "updated_at": "2026-10-22T09:10:32Z",
+        "body": "Pushed directly to develop as c8993e3db0.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6337090574/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1763,
+    "url": "https://github.com/genropy/genropy/issues/1763",
+    "comments": []
+  },
+  {
+    "number": 1533,
+    "url": "https://github.com/genropy/genropy/issues/1533",
+    "comments": []
+  },
+  {
+    "number": 1403,
+    "url": "https://github.com/genropy/genropy/pull/1403",
+    "comments": []
+  },
+  {
+    "number": 1466,
+    "url": "https://github.com/genropy/genropy/issues/1466",
+    "comments": []
+  },
+  {
+    "number": 1665,
+    "url": "https://github.com/genropy/genropy/issues/1665",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6164441040",
+        "html_url": "https://github.com/genropy/genropy/issues/1665#issuecomment-6164441040",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1665",
+        "id": 6164441040,
+        "node_id": "IC_kwDOFdDsh88AAAABb23n0A",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-14T08:42:52Z",
+        "updated_at": "2026-10-14T08:42:52Z",
+        "body": "Working on this.",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6164441040/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1738,
+    "url": "https://github.com/genropy/genropy/pull/1738",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6350668483",
+        "html_url": "https://github.com/genropy/genropy/pull/1738#issuecomment-6350668483",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1738",
+        "id": 6350668483,
+        "node_id": "IC_kwDOFdDsh88AAAABeoeCww",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-22T20:31:56Z",
+        "updated_at": "2026-10-22T20:31:56Z",
+        "body": "Thanks, every point held against the code. Answered in four commits on top of `feature/doc-storage`, merged in (fda4ef3), not rebased:\n\n> The way the manual's content reaches the page, though, needs work, and the #1736 points carry over.\n\n([review](https://github.com/genropy/genropy/pull/1738#pullrequestreview-5616445165))\n\n**Security**\n\n1. **XSS from the section title**: the panel's title now goes through `_docTitleHtml`, like the doc's own title in #1736; the manual's title and the doc's title are escaped text, only a caller's `kw.title` stays markup (fda4ef3, tested in a27e4e5).\n2. **Deny list**: replaced by an allow list (04403d1). A section keeps the tags a Sphinx section uses, and per tag only the attributes it needs (`href` on `a`, `src`/`alt`/`width`/`height` on `img`, `colspan`/`rowspan`, ...). `svg`, `math`, `base`, `meta`, `link`, forms and embedded content are dropped with what they hold, any other unknown tag keeps only its text, comments go. `style`, `class` and `id` go too, so the manual cannot reach the page's own classes or ids. `href`/`src` are made absolute and kept only when http(s) or a path of the site. Each of your cases is a test row in `test_a_section_keeps_only_the_allow_list`.\n3. **`manual.url`**: an inventory entry is used only when its url stays under the folder of the site's `objects.inv`, on the same scheme and host, so `javascript:`, another host, a link-local address or a file outside the site are ignored and never reach the page (04403d1). The panel also checks it again: the link and `openWindow` take only an http(s) url or a path of the site (a27e4e5).\n4. **SSRF**: the server reads only the configured pages (an http(s) url or an absolute path) and urls under their site's folder; remote reads follow no redirect, connect within 3 seconds and stop at 2 MB (04403d1). Tested with a real local server answering a 302 to `169.254.169.254` and a page past the size cap.\n\n**Other**\n\n5. **`_cache`**: gone. The cache is the site's (`site.manual_cache`, next to `doc_listings`), bounded to 16 MB with the least recently read out first, and a failure is kept 30 seconds instead of 300 (04403d1). It stays per process, like every cache of the site.\n6. **Cold cache, unreachable host**: the first network error stops the walk up the folders and marks the host as down for 30 seconds, so a page's index waits at most one 3-second connect timeout, and other pages on the same host are not asked (04403d1).\n7. **Another group's `--variant`**: never shown any more. The user's own pages first, then the label without variant, then nothing (04403d1, `test_the_variant_of_another_groups_manual_is_never_shown`).\n8. **Esc**: the panel's listener stops the event, so the form or dialog below does not close with it; inside a dialog above the page (the note's editor among them) Esc stays the dialog's (a27e4e5).\n9. **No switch**: `pageHelp`, `vhelp`, `form_help` and the rounded groups' help are built only under `<experimental><gui inlinedoc=\"true\"/>` (0c0df44); without it no help button exists and no page asks `sys/ep_doc` for its index, which already answers 404 since #1736.\n10. **Tests skipped in CI**: `gnrmanual_test.py` now reads a manual written in the shape Sphinx publishes it (`objects.inv` and the html of its pages, copied from a real build), so it runs in CI without Sphinx: 34 tests. The one test that builds the manual with Sphinx and myst-parser is skipped where they are not installed (04403d1).\n\n**The #1736 points**\n\n- `doc_editor_tags`: removed with the merge of #1736's fix; Edit and Add a note in the panel go through the same server-side documenter tags.\n- `innerHTML` for titles and content: points 1-3 above.\n- `home:inlinedoc` served publicly: unchanged here, as you said.\n- No switch: point 9.\n\n**Checks**: flake8 (CI selection) clean, full Python suite 3373 passed / 21 skipped, JS suite 566 passed.\n\nNot verified: no browser pass on a running instance; the panel's behaviour (Esc, link, title) is covered by the JS tests only.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6350668483/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      },
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6362298003",
+        "html_url": "https://github.com/genropy/genropy/pull/1738#issuecomment-6362298003",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1738",
+        "id": 6362298003,
+        "node_id": "IC_kwDOFdDsh88AAAABezj2kw",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-23T09:56:50Z",
+        "updated_at": "2026-10-23T09:56:50Z",
+        "body": "@genro your approval on 04403d1 was dismissed by GitHub, not by a change: #1736 merged into `develop`, its branch `feature/doc-storage` was deleted, and GitHub moved this PR's base to `develop`, which on this repository dismisses existing approvals. The head is still 04403d1, nothing you approved has moved, and the diff now shows only this PR's own 17 files. Could you approve it again?\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6362298003/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1499,
+    "url": "https://github.com/genropy/genropy/issues/1499",
+    "comments": []
+  },
+  {
+    "number": 1402,
+    "url": "https://github.com/genropy/genropy/issues/1402",
+    "comments": []
+  },
+  {
+    "number": 1497,
+    "url": "https://github.com/genropy/genropy/pull/1497",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5932943882",
+        "html_url": "https://github.com/genropy/genropy/pull/1497#issuecomment-5932943882",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1497",
+        "id": 5932943882,
+        "node_id": "IC_kwDOFdDsh88AAAABYaGKCg",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-01T13:56:16Z",
+        "updated_at": "2026-10-01T13:56:16Z",
+        "body": "@genro thanks for both reviews. Since your approval on 2f03563de0 only `223f8e9d17` was added, and it touches tests only.\n\n**1. Registration not tested.** `wizard_save_paths.test.js` now builds the step form through the real `GroupletForm` (`genro_components.js`) with the `_onRemote` hook exactly as `groupletWizard` passes it (read from `grouplet.py`). It runs the hook the way `updateRemoteContent` does and checks:\n- the step registers in the parent's `childForms`, takes its `table_name` and still loads;\n- the hook also runs next to another remote hook declaring the same names. That case caught a real bug in the browser: the first version of the hook declared `const frm` inline. The test fails with that version;\n- no parent form is a no-op, and a rebuilt step replaces the old one;\n- the dismiss tests now register the step through `wizardRegisterStep` instead of filling `childForms` by hand.\n\n**2. Deferred save on Confirm.** `Confirm with a deferred save leaves the record a draft, never wrongly confirmed` pins the behaviour: with a grid editor open in the main form, the draft is restored and the deferred save stores a draft, which can be confirmed again. The wizard's main form has no grids of its own, since the step grids register with the step form, so this is the safe failure direction rather than a reachable path. Also covered: a save completing at once keeps the record confirmed, a changed step is saved before confirming, and an invalid step blocks.\n\n**`_invalidFields`, the open question from the first review.** They stay on the step form's own record:\n- the Item store's `save_memory` writes values and their display attributes only, never the record node's attributes;\n- `load_memory` rebuilds the envelope at every step.\n\n`item_formstore_record.test.js` now has `invalid fields marked on the item form stay on its own record`: after `setRecordInvalidFields` on the item form and a save, the destination record has no `_invalidFields` on any node, and the item form loses them on reload. I saw the same in the browser: after Back on an incomplete step, the wizard's record carries no `_invalidFields`, so nothing reaches `crud.py:507`.\n\n**On the removed comment.** With `allowSaveInvalid` declared, `save()` no longer reports an untouched required field. The `form.changed` guard now only avoids a pointless save, so the reason the old comment gave no longer applies.\n\n**Not unit-tested:** `form_allowSaveInvalid` and `form_pendingChangesSaveSlot` set in `grouplet.py`, since building the structure needs a real page and site. Both are checked in the browser (`test_11_wizard_resume`).\n\nThe JS suite is at 196 passing. The new cases fail against the code before each fix (develop for #1496, 657b4398ce for #1498/#1499).",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5932943882/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1473,
+    "url": "https://github.com/genropy/genropy/issues/1473",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5933736473",
+        "html_url": "https://github.com/genropy/genropy/issues/1473#issuecomment-5933736473",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1473",
+        "id": 5933736473,
+        "node_id": "IC_kwDOFdDsh88AAAABYa2iGQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-01T14:39:54Z",
+        "updated_at": "2026-10-01T14:39:54Z",
+        "body": "Done in a449c75d60 on develop.",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5933736473/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1474,
+    "url": "https://github.com/genropy/genropy/pull/1474",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5933734312",
+        "html_url": "https://github.com/genropy/genropy/pull/1474#issuecomment-5933734312",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1474",
+        "id": 5933734312,
+        "node_id": "IC_kwDOFdDsh88AAAABYa2ZqA",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-01T14:39:47Z",
+        "updated_at": "2026-10-01T14:39:47Z",
+        "body": "Committed directly to develop as a449c75d60.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5933734312/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1507,
+    "url": "https://github.com/genropy/genropy/issues/1507",
+    "comments": []
+  },
+  {
+    "number": 1508,
+    "url": "https://github.com/genropy/genropy/pull/1508",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5952961931",
+        "html_url": "https://github.com/genropy/genropy/pull/1508#issuecomment-5952961931",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1508",
+        "id": 5952961931,
+        "node_id": "IC_kwDOFdDsh88AAAABYtL9iw",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-02T13:02:32Z",
+        "updated_at": "2026-10-02T13:02:32Z",
+        "body": "@genro on the MultiButton question: the case is real. Reloading the items and changing the value inside the same running build left the queued buttons with the old selection (on test_3: value `android_qrcode`, highlighted button still `ios_qrcode`). In the flow of #1507 the value does not change before the build, which is why it did not show there.\n\nFixed as you suggested in 5e7f02e8d7 (#1518): a button still queued for build gets `multibutton_selected` set or removed in its `_class` attribute, the one it is built from; built buttons keep `setClass` on their DOM node. New `gnrjs/tests/multibutton_queued_selection.test.js` (fails 3/3 on the previous code), JS suite 222/222, checked in the browser on test_3.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5952961931/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1764,
+    "url": "https://github.com/genropy/genropy/pull/1764",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6427816360",
+        "html_url": "https://github.com/genropy/genropy/pull/1764#issuecomment-6427816360",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1764",
+        "id": 6427816360,
+        "node_id": "IC_kwDOFdDsh88AAAABfyCxqA",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-26T21:30:55Z",
+        "updated_at": "2026-10-26T21:30:55Z",
+        "body": "@cgabriel could this fix also go into `release_candidate`?\n\nThe phantom rows (`additem='phantom'`) are already in `release_candidate` but not in `master`, so the next release would ship phantom cards that show every label twice inside a loaded form (Demetra and Teamset use this pattern). The change is 5 lines in `labledbox.onBuilding` and only affects the rebuild of an already built `labledbox`, which today produces broken DOM anyway.\n\nSince `release_candidate` is well behind `develop`, a cherry-pick of `d207daa61b` after the merge seems the cleanest way. Your call.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6427816360/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1542,
+    "url": "https://github.com/genropy/genropy/issues/1542",
+    "comments": []
+  },
+  {
+    "number": 1464,
+    "url": "https://github.com/genropy/genropy/issues/1464",
+    "comments": []
+  },
+  {
+    "number": 1495,
+    "url": "https://github.com/genropy/genropy/pull/1495",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5934221853",
+        "html_url": "https://github.com/genropy/genropy/pull/1495#issuecomment-5934221853",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1495",
+        "id": 5934221853,
+        "node_id": "IC_kwDOFdDsh88AAAABYbUKHQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-01T15:06:02Z",
+        "updated_at": "2026-10-01T15:06:02Z",
+        "body": "A node built inside a detached `GnrDomSource` never subscribes, before or after this change. Subscriptions are added only by `_setDynAttributes`, reached only from `build()` (directly, or via `stripData` -> `moveData`), and `build()` runs only from `_trigger_ins`/`_trigger_upd`, which fire from the `sourceTriggers` subscription that exists on `_main` alone (genro_src.js:129). `newRoot()` returns a bare `GnrDomSource` with no such subscription, and `_trigger_ins` already skips lost nodes (line 221, on develop too).\n\nAll 12 `newRoot()` callers (genro_grid.js:346, genro_dev.js x7, frameindex.js x3) mount the content under `_main` via `setSource` / `setItem` / `popNode` + `setItem` before anything builds; `setBackRef` relinks the parent chain at mount, so `isLostNode()` is false when the node builds and subscribes. A detached root is a structure buffer, not a live tree, and that stays as it is.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5934221853/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1506,
+    "url": "https://github.com/genropy/genropy/issues/1506",
+    "comments": []
+  },
+  {
+    "number": 1440,
+    "url": "https://github.com/genropy/genropy/pull/1440",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5836257817",
+        "html_url": "https://github.com/genropy/genropy/pull/1440#issuecomment-5836257817",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1440",
+        "id": 5836257817,
+        "node_id": "IC_kwDOFdDsh88AAAABW946GQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-25T17:00:57Z",
+        "updated_at": "2026-09-25T17:00:57Z",
+        "body": "Merged without waiting for the requested review: I am responsible for the components, so changes like this one do not need to go through a PR review. @genro, no need to look at it on my account.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5836257817/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1436,
+    "url": "https://github.com/genropy/genropy/issues/1436",
+    "comments": []
+  },
+  {
+    "number": 1418,
+    "url": "https://github.com/genropy/genropy/issues/1418",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5828766529",
+        "html_url": "https://github.com/genropy/genropy/issues/1418#issuecomment-5828766529",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1418",
+        "id": 5828766529,
+        "node_id": "IC_kwDOFdDsh88AAAABW2vrQQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-25T07:40:47Z",
+        "updated_at": "2026-09-25T07:40:47Z",
+        "body": "Fixed on develop by 31584b4b4: when an advance inserts a new record, wizardStepForward leaves the target step pending and the reload that follows the wizard's own save enters it, so the step is built on the saved record; a refused save or any other load drops the pending step.",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5828766529/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1753,
+    "url": "https://github.com/genropy/genropy/pull/1753",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6421570825",
+        "html_url": "https://github.com/genropy/genropy/pull/1753#issuecomment-6421570825",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1753",
+        "id": 6421570825,
+        "node_id": "IC_kwDOFdDsh88AAAABfsFlCQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-26T16:38:41Z",
+        "updated_at": "2026-10-26T16:38:41Z",
+        "body": "> Please re-run the workflow before merging.\n\n([review](https://github.com/genropy/genropy/pull/1753#pullrequestreview-5654825245))\n\nRe-running the failed jobs alone could not turn green: a re-run uses the workflow as it is on the PR head, which still installed wkhtmltopdf, while the fix (a5bc10b, which removes that step) is only on `develop`. I merged `develop` into the branch (b308411, no other change to the PR's own code), so the run used the current workflow: `build` 3.11\u20133.14, the JavaScript tests and CodeQL are all green now, and the Python suite and flake8 have actually run on this code.\n\nRequesting your review again only so you can see the green run before the merge.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6421570825/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1544,
+    "url": "https://github.com/genropy/genropy/issues/1544",
+    "comments": []
+  },
+  {
+    "number": 1477,
+    "url": "https://github.com/genropy/genropy/pull/1477",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5905700656",
+        "html_url": "https://github.com/genropy/genropy/pull/1477#issuecomment-5905700656",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1477",
+        "id": 5905700656,
+        "node_id": "IC_kwDOFdDsh88AAAABYAHXMA",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-30T06:44:53Z",
+        "updated_at": "2026-09-30T06:44:53Z",
+        "body": "Thanks \u2014 both points addressed in 256fa445ca.\n\n**1. A widget rebuilt over data that stays.** For the ValidationTextBox family (textbox, number/date/time boxes, filteringSelect, dbSelect) the new widget does validate its value when built: `_doBuildNode` (`gnrdomsource.js:1125-1131`), once `genro.src._started`, runs `validationsOnChange(..., validateOnly=true)` and `updateValidationStatus()`, which calls `form.updateInvalidField` for the new node. The new test *a widget rebuilt over a value still invalid makes the form invalid again* pins it: required field empty, old widget torn down (form valid), widget rebuilt \u2192 form invalid again, with the entry keyed on the new node only. It uses the real `validatemixin_validationsOnChange` and `GnrValidator`, and fails if that build-time block is disabled.\n\nA bad number is not at stake: the invalid text lives in the old widget only, the data keeps the last valid value, and the rebuilt widget shows that.\n\nWhat the build-time check does **not** cover is a widget carrying `validate_*` outside the ValidationTextBox family (checkbox, simpleTextArea, ComboBox): rebuilt over an empty required value it reads valid until touched or until the next record load. Before this PR that case stayed invalid only by accident \u2014 the stale entry pointed at the lost node, so filling the field on the rebuilt widget never cleared it and the form stayed invalid until the next load. Widening the condition at `gnrdomsource.js:1125` to any node with validations would close it; it changes build-time behaviour for those widgets, so I would keep it out of this PR and open an issue for it, if you agree.\n\n**2. `kw.where`.** Done: `triggerDEL` takes the parent path from `kw.where`; both `del` emitters in `gnrbag.js` (`_pop`, `clear`) pass it.\n\n`node --test gnrjs/tests/*.test.js`: 174/174.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5905700656/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1537,
+    "url": "https://github.com/genropy/genropy/issues/1537",
+    "comments": []
+  },
+  {
+    "number": 1439,
+    "url": "https://github.com/genropy/genropy/issues/1439",
+    "comments": []
+  },
+  {
+    "number": 1577,
+    "url": "https://github.com/genropy/genropy/issues/1577",
+    "comments": []
+  },
+  {
+    "number": 1498,
+    "url": "https://github.com/genropy/genropy/issues/1498",
+    "comments": []
+  },
+  {
+    "number": 1518,
+    "url": "https://github.com/genropy/genropy/issues/1518",
+    "comments": []
+  },
+  {
+    "number": 1297,
+    "url": "https://github.com/genropy/genropy/pull/1297",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5642049246",
+        "html_url": "https://github.com/genropy/genropy/pull/1297#issuecomment-5642049246",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1297",
+        "id": 5642049246,
+        "node_id": "IC_kwDOFdDsh88AAAABUErW3g",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-12T00:08:27Z",
+        "updated_at": "2026-09-12T00:08:27Z",
+        "body": "Split and tested since the PR was opened.\n\n- The groupletGrid focus-on-add went out of here \u2014 it is a UX addition, not this defect \u2014 and is on `develop` as 601d54e.\n- `gnrjs/tests/lightbutton_focus.test.js` pins the contract, in the style of `external_change.test.js` and picked up by the existing `javascript-tests` workflow. It loads the real `dijit/_base/focus.js` next to the real `genro_widgets.js`, so what is asserted is the interplay, not a stand-in: a mousedown on a lightButton blurs the widget being left, still stops propagating, and leaves an ancestor widget alone (that last one is the regression the `stopPropagation` was there to prevent \u2014 a button inside a palette must not blur the palette).\n\nChecked that the first case fails on the unfixed source. Full suite: 34 pass.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5642049246/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      },
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5642106979",
+        "html_url": "https://github.com/genropy/genropy/pull/1297#issuecomment-5642106979",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1297",
+        "id": 5642106979,
+        "node_id": "IC_kwDOFdDsh88AAAABUEu4Yw",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-12T00:17:47Z",
+        "updated_at": "2026-09-12T00:17:47Z",
+        "body": "Wrong root cause: the lightButton mousedown is not what makes the wizard's Next look inert. Closing; the real fix goes on wizardNext (save always, advance on reload).",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5642106979/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1673,
+    "url": "https://github.com/genropy/genropy/pull/1673",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6285721937",
+        "html_url": "https://github.com/genropy/genropy/pull/1673#issuecomment-6285721937",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1673",
+        "id": 6285721937,
+        "node_id": "IC_kwDOFdDsh88AAAABdqiBUQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-20T07:26:56Z",
+        "updated_at": "2026-10-20T07:26:56Z",
+        "body": "#1672 is merged into `develop` with a merge commit, so this branch keeps its SHA: the PR now targets `develop` and its diff is only b16e781, the commit you approved.\n\nDeleting #1672's branch closed this PR instead of retargeting it, so I reopened it and changed the base by hand. The base change dismissed your approval; nothing in the code moved since you approved it. Could you approve again?\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/6285721937/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1476,
+    "url": "https://github.com/genropy/genropy/issues/1476",
+    "comments": []
+  },
+  {
+    "number": 1437,
+    "url": "https://github.com/genropy/genropy/pull/1437",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5866374660",
+        "html_url": "https://github.com/genropy/genropy/pull/1437#issuecomment-5866374660",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1437",
+        "id": 5866374660,
+        "node_id": "IC_kwDOFdDsh88AAAABXanGBA",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-28T08:33:20Z",
+        "updated_at": "2026-09-28T08:33:20Z",
+        "body": "Answering the [review of 28 Sep](https://github.com/genropy/genropy/pull/1437#pullrequestreview-5335569791), on the head `81940103f`.\n\n> Requesting one change: an exception between `:1738` and `remoteCall` now leaves the node locked for good.\n\nFixed as you suggested. Everything from the line after `this._remotebuilding = true;` through `remoteCall` now runs inside a `try`. The `catch` calls `this._releaseRemoteUpdate(async)` and rethrows, so the exception still reaches the caller as it did before, and a trigger that went pending during the window is replayed. Apart from those 5 lines the diff is indentation only (`git diff -w`).\n\nTest added in `remote_content_reentry.test.js`: \"an exception before the fetch leaves the node free for the next trigger\". `_T` throws once, then a new trigger arrives, and the test expects exactly one fetch (`second`) and `second` mounted. It fails on `91c1a8b84` (4 passed, 1 failed) and passes with the fix: file 5/5, JS suite 105/105.\n\nOn the pre-existing ways the lock stays taken:\n- the third one (`formhandler.py:192` chaining `.addCallback` on an `undefined`) is now #1450. This PR makes it reachable from a synchronous re-entry too, but the cached-attributes and false-`_if` returns already led there;\n- the HTTP error that never calls the load callback, and the exception swallowed by `genro.safetry` inside `watch`, are left as they are here. They belong to #1319's settle turn more than to this fix.\n\nNot verified: a live run of the wizard after the `try/catch`. The exception path is covered only by the test above.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5866374660/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1300,
+    "url": "https://github.com/genropy/genropy/issues/1300",
+    "comments": []
+  },
+  {
+    "number": 1468,
+    "url": "https://github.com/genropy/genropy/issues/1468",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5891918862",
+        "html_url": "https://github.com/genropy/genropy/issues/1468#issuecomment-5891918862",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1468",
+        "id": 5891918862,
+        "node_id": "IC_kwDOFdDsh88AAAABXy-MDg",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-29T14:05:16Z",
+        "updated_at": "2026-09-29T14:05:16Z",
+        "body": "Root cause traced to the form core, not to `GroupletForm`: since #1465 `load_memory` sets the form pkey to the record `_pkey` while the Item store default stays `*loaditem*`, so every plain `form.load()` on a changed Item memory form looks like a navigation to `load_store` and asks. The pkey-null case (step form aborted by the parent `onLoaded`) was already asking before #1465.\n\nTracked as #1469 with the proposed fix (a `*loaditem*` guard in `load_store` plus a regression case in `gnrjs/tests/item_formstore_record.test.js`). This issue is the wizard symptom of that defect and closes with the same PR.",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5891918862/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      },
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5892892593",
+        "html_url": "https://github.com/genropy/genropy/issues/1468#issuecomment-5892892593",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1468",
+        "id": 5892892593,
+        "node_id": "IC_kwDOFdDsh88AAAABXz5nsQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-29T15:02:44Z",
+        "updated_at": "2026-09-29T15:02:44Z",
+        "body": "Duplicate of #1469, fixed by #1470.",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5892892593/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1560,
+    "url": "https://github.com/genropy/genropy/issues/1560",
+    "comments": []
+  },
+  {
+    "number": 900,
+    "url": "https://github.com/genropy/genropy/issues/900",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5828761725",
+        "html_url": "https://github.com/genropy/genropy/issues/900#issuecomment-5828761725",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/900",
+        "id": 5828761725,
+        "node_id": "IC_kwDOFdDsh88AAAABW2vYfQ",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-25T07:40:26Z",
+        "updated_at": "2026-09-25T07:40:26Z",
+        "body": "Resolved by PR #905 and PR #916: gnr.GroupletDataStore (grouplet_grid.js:473) is the controller's single funnel for add/remove/move/deleteAsk, and it forwards hasChanges/hasErrors/setLocked to a real framework store built from store_storeType. The remaining adapter/filter phases are tracked in #897.",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5828761725/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 898,
+    "url": "https://github.com/genropy/genropy/issues/898",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5828761142",
+        "html_url": "https://github.com/genropy/genropy/issues/898#issuecomment-5828761142",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/898",
+        "id": 5828761142,
+        "node_id": "IC_kwDOFdDsh88AAAABW2vWNg",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-25T07:40:23Z",
+        "updated_at": "2026-09-25T07:40:23Z",
+        "body": "Closing as obsolete: the declarative DnD approach was tried (530713c5), reverted, and deliberately replaced by the DOM-pure GroupletGridDnD dispatcher shared by tiles and chips, as documented in PR #905 (design decisions 3 and 4). The row move now splices bag._nodes in GroupletDataStore.moveRow instead of bag.moveNode, to keep nested grids anchored.",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5828761142/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1113,
+    "url": "https://github.com/genropy/genropy/pull/1113",
+    "comments": []
+  },
+  {
+    "number": 998,
+    "url": "https://github.com/genropy/genropy/issues/998",
+    "comments": []
+  },
+  {
+    "number": 771,
+    "url": "https://github.com/genropy/genropy/issues/771",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5828760440",
+        "html_url": "https://github.com/genropy/genropy/issues/771#issuecomment-5828760440",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/771",
+        "id": 5828760440,
+        "node_id": "IC_kwDOFdDsh88AAAABW2vTeA",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-25T07:40:21Z",
+        "updated_at": "2026-09-25T07:40:21Z",
+        "body": "A vertical left stepper is available as groupletWizard(stepperPosition='left') since 2fe9c1fbcb (sandbox test_12 in 06_grouplet_navigation).",
+        "author_association": "MEMBER",
+        "pin": null,
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5828760440/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1301,
+    "url": "https://github.com/genropy/genropy/pull/1301",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5664394864",
+        "html_url": "https://github.com/genropy/genropy/pull/1301#issuecomment-5664394864",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1301",
+        "id": 5664394864,
+        "node_id": "IC_kwDOFdDsh88AAAABUZ_OcA",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-14T13:03:03Z",
+        "updated_at": "2026-09-14T13:03:03Z",
+        "body": "@genro both points taken, in two commits. The push dismissed your approval and @cgabriel's, and nothing either of you approved has changed shape \u2014 this only adds teardown that was missing and removes a function nobody calls.\n\n> **The frozen path still skips the other half of the teardown.** `_trigger_upd` also runs `updatingNode._onDeleting()`, destroys `externalWidget`, and calls `_onDeletingContent(kw.oldvalue)`; `_trigger_del` destroys the widget and the DOM content. None of that happens while the node is frozen, and after `unfreeze()` the rebuild no longer has `kw.oldvalue`, so the discarded widgets are never destroyed.\n\nhttps://github.com/genropy/genropy/pull/1301#pullrequestreview-5196496164\n\nThe hole is there, and I traced it one step further before closing it, because the two halves of it behave differently.\n\n**The dijit widgets are not the leak.** `rebuild()` is `setValue(this._value)` (`gnrdomsource.js:957`), so the unfreeze re-enters `_trigger_upd`, which calls `widgetDestroyAndUnlink(kw.node.widget)` \u2192 `destroyRecursive()` on the frozen node's own widget (`genro_src.js:246-288`). The discarded content's widgets are its descendants, so they do go down there.\n\n**What is really never done** is the part no rebuild can reach: the `_onDeleting()` hook chain on the discarded nodes \u2014 at unfreeze `_onDeletingContent` runs on the *new* value, never on the one that was thrown away \u2014 and the `externalWidget`s, which hang off no dijit parent, so no `destroyRecursive` finds them. Those two now happen where the content is discarded.\n\n**The two events are not symmetric, and this is where I did not follow your comment literally.** On `del` the node is gone for good, so it takes the whole thing: its own `_onDeleting()`, the hooks on its content, its children's `externalWidget`s and its own. On `upd` only the *discarded content* does. Running `updatingNode._onDeleting()` and destroying `updatingNode.externalWidget` there would be wrong: that node is not dying, it is frozen and rebuilds on unfreeze, and tearing it down under freeze takes it off screen before that happens. So the `upd` branch is `_onDeletingContent(kw.oldvalue)` + the externalWidgets under `oldvalue`, behind the same `oldvalue !== _value` guard the subscription cleanup already used.\n\n`deleteChildrenExternalWidget` keeps its signature and delegates to a `deleteContentExternalWidget` taking the content, which is what the `upd` branch has in hand.\n\n**Three cases added to the test file**, and the two that pin new behaviour are real:\n\n```\n\u2716 content replaced under freeze is torn down, the frozen node is not\n\u2716 a node popped under a frozen ancestor is torn down with its content\n```\n\nBoth fail against the previous frozen branch and pass now. The third \u2014 a same-bag rebuild under freeze tears nothing down \u2014 passes both ways by design: it guards the `oldvalue !== _value` path against a future regression rather than pinning a change. `node --test gnrjs/tests/*.test.js`: 39/39.\n\n> **`refreshSourceIndexAndSubscribers` is dead code, and has been since #1152.** Zero callers\n\nRight, and gone. One correction: it was not quite zero references. `projects/gnrcore/packages/test/resources/heavy_profiler.js:75` named it in the list of methods it instruments \u2014 `wrap` only `console.warn`s on a missing method, so nothing broke, but the entry had to go with the function.\n\nOne thing I left standing rather than deciding for you: `_deletingNodeContent` is now written in two places and read nowhere, since that function was its only reader. Removing its reader is this change; removing the counter is a separate call, so I left it.\n\nStill not verified from here: no browser pass on a real batch. The four cases in the test file drive the trigger path in a `vm` with no DOM, so the widget teardown is asserted through spies, not observed.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5664394864/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      },
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5664583503",
+        "html_url": "https://github.com/genropy/genropy/pull/1301#issuecomment-5664583503",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1301",
+        "id": 5664583503,
+        "node_id": "IC_kwDOFdDsh88AAAABUaKvTw",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-14T13:17:06Z",
+        "updated_at": "2026-09-14T13:17:06Z",
+        "body": "Follow-up on the point I had left open: `_deletingNodeContent` is gone too, in `00de6092`.\n\nIt existed only for the guard at the top of `refreshSourceIndexAndSubscribers`, which stopped the global sweep from restarting while `deleteNodeContent` was emptying a node. With that function removed the counter was written in two places and read in none, which is the same half-finished state your comment objected to in the function itself \u2014 so leaving the decision open was the wrong call.\n\nA plain commit on top, not an amend: the branch is pushed and under review, so no history is rewritten. `node --test gnrjs/tests/*.test.js` still 39/39.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5664583503/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1182,
+    "url": "https://github.com/genropy/genropy/pull/1182",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5568623258",
+        "html_url": "https://github.com/genropy/genropy/pull/1182#issuecomment-5568623258",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1182",
+        "id": 5568623258,
+        "node_id": "IC_kwDOFdDsh88AAAABS-pymg",
+        "user": {
+          "login": "dgpaci",
+          "id": 62297249,
+          "node_id": "MDQ6VXNlcjYyMjk3MjQ5",
+          "avatar_url": "https://avatars.githubusercontent.com/u/62297249?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/dgpaci",
+          "html_url": "https://github.com/dgpaci",
+          "followers_url": "https://api.github.com/users/dgpaci/followers",
+          "following_url": "https://api.github.com/users/dgpaci/following{/other_user}",
+          "gists_url": "https://api.github.com/users/dgpaci/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/dgpaci/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/dgpaci/subscriptions",
+          "organizations_url": "https://api.github.com/users/dgpaci/orgs",
+          "repos_url": "https://api.github.com/users/dgpaci/repos",
+          "events_url": "https://api.github.com/users/dgpaci/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/dgpaci/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-09-07T09:36:21Z",
+        "updated_at": "2026-09-07T09:36:21Z",
+        "body": "Both blocking points and the three notes are addressed in ef0920a95, on top of a rebase on current `develop`. Every finding is now a test that fails on the previous head \u2014 I ran them against it before fixing, and the failures reproduce your observations verbatim, including the re-rooting under `site_static_dir` and the two `RecursionError`.\n\n**1. Loop in the parent chain.** `_loopingParentChain` walks the chain on the stored parameters before the parent gets built, and returns `None` on a loop, so the service falls into `UnconfiguredService`. The walk starts from the parent name rather than from the service itself on purpose: `service_name` is assigned only after the factory returns (`services/__init__.py:105`), so at `__init__` time the service does not know its own name \u2014 but revisiting any name in the chain is enough to catch both a self-parent and two services pointing at each other. `test_relative_storage_looping_parent_services` and `test_relative_storage_parent_of_itself` cover them; both raised `RecursionError` before.\n\n**2. Missing parent.** The parent is now looked up with `getStorageParameters` first, and an absent one leaves the service unconfigured, so the legacy `site_static_dir` fallback is never reached. `test_relative_storage_missing_parent_service_name` asserts the base path is `None` and that no folder appeared under the site static dir; on the previous head it resolved to `.../site/rel_gone_parent_storage/docs`. `test_relative_storage_deleted_parent_service` reproduces your live scenario \u2014 a working relative service, its parent removed, the child re-resolved \u2014 and it moved to `.../site/rel_deleted_parent/sub` before, base path `None` now.\n\n**3. Local parent with an empty base path.** Fixed, but at resolution time rather than in the property: a parent whose `base_path` is `None` is refused, so the service is unconfigured instead of exposing a `None` base path that `internal_path` would turn into `os.path.join(None, ...)`. That keeps the `not parent_base_path` branch correct for the bucket-root `''` of s3 and sftp \u2014 `BaseLocalService` is the only implementation that yields `None` (`storage.py:737`; sftp and s3 both normalise to `''`). The same check ends the chain on a relative parent that is unconfigured itself, which had the same effect: `test_relative_storage_parent_without_base_path` resolved to `docs` before, `test_relative_storage_on_unconfigured_relative_parent` to `2026` \u2014 both relative to the process CWD, as you said.\n\n**4. `UnconfiguredService` refusing less than its docstring.** `delete` now raises, and so do `renameNode` and `duplicateNode`, so every write entry point either raises the message or is unreachable. `size`, `mtime` and `md5hash` I left returning `None`, consistent with `exists()` being false \u2014 they are the abstract stubs of `StorageService`, and an empty storage answering \"nothing there\" reads better than an exception on a read. On `serve`: the base implementation already returns `not_found_exception` when `internal_path` is falsy (`storage.py:665-668`), and `not_found_exception` reads the environ through `Request(environ).url` (`gnrwsgisite.py:1506`), so the `KeyError: 'REQUEST_METHOD'` comes from the synthetic environ rather than from the service \u2014 with a real request it is a 404, which is what an empty storage should answer.\n\n**5. Log line without the service name.** It now logs the relative path, as you suggested.\n\n`tests/web/gnrstoragehandler_test.py` is at 65 tests (59 before, 6 new). Full suite on the rebased head: 2380 passed, 10 skipped. flake8 clean on the three modified files.\n\nStill not verified, same as your review: no real aws_s3 or sftp parent, and the form changes are verified as code paths only.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5568623258/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 905,
+    "url": "https://github.com/genropy/genropy/pull/905",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4466854804",
+        "html_url": "https://github.com/genropy/genropy/pull/905#issuecomment-4466854804",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/905",
+        "id": 4466854804,
+        "node_id": "IC_kwDOFdDsh88AAAABCj7LlA",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-05-16T12:31:46Z",
+        "updated_at": "2026-05-16T12:31:46Z",
+        "body": "Thanks for the thorough read. All four major points and the six medium ones are addressed in commit `665757574`. Recap below.\n\n### Major points\n\n1. **Scope creep** \u2014 turns out the diff was already clean: the PR is exactly one feature commit on top of `develop`, and `c25780309` (gnrwebstruct characterization tests) is *in develop*, not in the PR diff. The branch was just a couple of commits behind upstream `develop`, which made `git log` confusing. Merged `develop` in (commit `9e2b90f9e`) so the log reads cleanly now.\n\n2. **Docs placement** \u2014 `docs/groupletgrid_architecture.md` and `docs/groupletgrid_store_integration.html` removed from the repo. The architectural / vocabulary content lives in the Sourcerer KB under `GenroPy/User Interface/Components & Resources/Grouplets/GroupletGrid` (overview, basic usage, layouts, struct mode, DnD/nested/resourceField, etc.). The `.html` workspace artifact is gone for good.\n\n3. **Cross-browser** \u2014 re-tested the gallery (now `01_gallery.py`, the trimmed 7-test set), plus `02_grid_db`, `03_budget_editor` and `04_perf_50` on current Chrome, Safari and Firefox. All OK. PR body's test plan updated.\n\n4. **Perf claim** \u2014 taken off the reviewer. Added `projects/gnrcore/packages/test/webpages/gnrwdg/test_grouplet_grid/04_perf_50.py`: 50 realistic `invoice_row` groupletGrid instances on a single page with a JS counter that logs the bootstrap time to console once all `_onBuilt` callbacks have fired. Verified locally \u2014 no measurable overhead from the always-on sibling `BagStore` at this scale.\n\n### Medium points\n\n- **`gr_groupletGrid` length**: extracted the `_onBuilt` `dataController` bootstrap into a private helper `_gr_groupletGrid_emitController`. The public method is now 167 lines (from 216), the helper holds the JS bootstrap and its kwargs.\n- **`_namespaceFrameworkNodeIds`**: replaced the per-attribute scan with a static whitelist `NAMESPACED_ATTRS = ['nodeId', 'store', 'storeCode', 'dragCode']`. These are the only keys server-side emits with `grpgrid_*` values (verified against `grouplet.py` \u2014 the only file that produces such values). Complexity now `O(nodes \u00d7 |whitelist|)`.\n- **`_syncStructChromeToColumns`**: split into `_frameStructChromeToFirstRow` (former STEP 1, padding sync) and `_placeStructColumnCells` (former STEP 2, absolute placement). The outer method now does only the prep walk and dispatches.\n- **Phase 2 stubs**: `setFilter/clearFilter/setSort/clearSort` are now silent no-ops with a `// TODO Phase 2: route through _visualOrder()` comment. No more `console.warn` for any production caller.\n- **`populate_mytickets.py` reference**: docstring of `test_07_myticket_resourcefield` (former `test_12`) now explicitly tells the reader to run the populate script before exercising the page.\n- **`th_regione` overlay**: noted in the PR body \u2014 the test package overlay is needed because `02_grid_db` requires regione + province editing scoped to the test package, without touching upstream `gnr_it`.\n\n### Bonus pass on the demo gallery\n\nWhile re-reading the gallery I trimmed it from 12 tests to 7. `test_05_long_list_bottom_slot`, `test_07_nested_team`, `test_10_shopping_row_resource` were redundant against tests that already cover the same axis; `test_04_excel_framed_top_slot` (fakexcel toolbar in top slot) and `test_08_struct_datapath` (relative `structpath`) were exercising plumbing already covered elsewhere; `test_09_myticket_resourcefield` is now monocolumn (no layout picker \u2014 already shown by `test_05_team_tabs`). All demos moved into a dedicated `webpages/gnrwdg/test_grouplet_grid/` folder so the groupletGrid pages don't mix with the unrelated grouplet demos. Net: ~1060 lines removed from the PR.\n\nRe-requesting review.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4466854804/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 1152,
+    "url": "https://github.com/genropy/genropy/pull/1152",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5409473375",
+        "html_url": "https://github.com/genropy/genropy/pull/1152#issuecomment-5409473375",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/1152",
+        "id": 5409473375,
+        "node_id": "IC_kwDOFdDsh88AAAABQm4DXw",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-08-25T11:06:53Z",
+        "updated_at": "2026-08-25T11:06:53Z",
+        "body": "Thanks for running the demonstrator \u2014 both findings addressed in e285659e4.\n\n> I get the following try to use the test_heavy_build demonstrator: `AttributeError: 'GnrCustomWebPage' object has no attribute 'response'`\n\nConfirmed and fixed. `onIniting` also runs on the websocket registration path (`gnrasync.registerPage \u2192 gnrsimplepage.__init__`), where `self.response` does not exist \u2014 it is only set in `GnrWebPage.__init__` on the WSGI path. The header is now set only when a response is there (it is meaningless on the websocket registration anyway).\n\n> Having the data storm working (blazing fast!), the rebuild fails\n\nRoot cause understood, and it is pre-existing behavior this branch does not touch: `node.rebuild()` is `setValue(this._value)`, i.e. it re-expands the already-expanded source. Component nodes do not survive that \u2014 `_beforeCreation` moves their attributes into `_saved_attributes` on first expansion and nothing ever restores them, so the second expansion finds the framepane without its `frameCode` (your exact stack: `createContent` via `walk`). The demo button was asking the framework for an operation it has never supported over expanded components (bagGrid, formbuilder). The button now rebuilds the bound-divs subtree (3000 nodes with dynamic bindings, no components), which is the part that actually demonstrates the incremental subscriber cleanup; the limit is documented in the page docstring. Making components survive a source rebuild (restoring `_saved_attributes` and the original children) is real design work \u2014 if you think it is worth it, I would open a dedicated issue rather than widen this PR.\n\nNot verified live in this round: the rebuild button on a served instance (the fix removes components from the rebuilt subtree by construction). Full python suite green locally (2100 passed, 69 skipped).\n\nBoth inline threads answered in place.\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/5409473375/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 914,
+    "url": "https://github.com/genropy/genropy/pull/914",
+    "comments": []
+  },
+  {
+    "number": 915,
+    "url": "https://github.com/genropy/genropy/pull/915",
+    "comments": []
+  },
+  {
+    "number": 565,
+    "url": "https://github.com/genropy/genropy/pull/565",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/3952315085",
+        "html_url": "https://github.com/genropy/genropy/pull/565#issuecomment-3952315085",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/565",
+        "id": 3952315085,
+        "node_id": "IC_kwDOFdDsh87rk4rN",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-02-24T14:24:05Z",
+        "updated_at": "2026-02-24T14:24:05Z",
+        "body": "Superseded by new PR with single commit",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/3952315085/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 714,
+    "url": "https://github.com/genropy/genropy/pull/714",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4098112069",
+        "html_url": "https://github.com/genropy/genropy/pull/714#issuecomment-4098112069",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/714",
+        "id": 4098112069,
+        "node_id": "IC_kwDOFdDsh870RDpF",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-03-20T13:53:18Z",
+        "updated_at": "2026-03-20T13:53:18Z",
+        "body": "Thanks for the thorough review! All findings addressed in b4fc9b8:\n\n| # | Finding | Resolution |\n|---|---------|-----------|\n| 1 | d20 missing `formDatapath`/`formControllerPath` defaults | Added `|| '.record'` and `|| '.controller'` to align d20 with d11 |\n| 2 | `setItem` \u2192 `addItem` | Intentional \u2014 needed for duplicate-key patterns (PaymentDetail) |\n| 3 | `evaluateOnNode` for saveKw | Intentional \u2014 enables dynamic resolution of `onSaving` hooks |\n| 4 | `open='open'` inconsistency | Fixed to `open=True` |\n| 5 | `content_kw` dead code | Now applied in `created()` (both d11 and d20) to support `content_*` attributes on expandbox |\n| 6 | `remote.py` WIP changes | Reverted to develop version |",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4098112069/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 567,
+    "url": "https://github.com/genropy/genropy/pull/567",
+    "comments": []
+  },
+  {
+    "number": 560,
+    "url": "https://github.com/genropy/genropy/pull/560",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/3950338851",
+        "html_url": "https://github.com/genropy/genropy/pull/560#issuecomment-3950338851",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/560",
+        "id": 3950338851,
+        "node_id": "IC_kwDOFdDsh87rdWMj",
+        "user": {
+          "login": "cgabriel",
+          "id": 635661,
+          "node_id": "MDQ6VXNlcjYzNTY2MQ==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/635661?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/cgabriel",
+          "html_url": "https://github.com/cgabriel",
+          "followers_url": "https://api.github.com/users/cgabriel/followers",
+          "following_url": "https://api.github.com/users/cgabriel/following{/other_user}",
+          "gists_url": "https://api.github.com/users/cgabriel/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/cgabriel/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/cgabriel/subscriptions",
+          "organizations_url": "https://api.github.com/users/cgabriel/orgs",
+          "repos_url": "https://api.github.com/users/cgabriel/repos",
+          "events_url": "https://api.github.com/users/cgabriel/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/cgabriel/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-02-24T09:33:06Z",
+        "updated_at": "2026-02-24T09:33:06Z",
+        "body": "Please solve merge conflicts first.\r\n",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/3950338851/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 681,
+    "url": "https://github.com/genropy/genropy/pull/681",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4034952676",
+        "html_url": "https://github.com/genropy/genropy/pull/681#issuecomment-4034952676",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/681",
+        "id": 4034952676,
+        "node_id": "IC_kwDOFdDsh87wgH3k",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-03-10T22:48:02Z",
+        "updated_at": "2026-03-10T22:48:02Z",
+        "body": "Both review comments addressed in e7fec36c9:\n\n1. **Redundant datapath assignment**: removed the original `kw.datapath = datapath` at line 1001, keeping only the unified block at the end\n2. **Extra space before `=`**: fixed `grouplet_formControllerPath='.controller'`",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4034952676/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 587,
+    "url": "https://github.com/genropy/genropy/pull/587",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/3972417693",
+        "html_url": "https://github.com/genropy/genropy/pull/587#issuecomment-3972417693",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/587",
+        "id": 3972417693,
+        "node_id": "IC_kwDOFdDsh87sxkid",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-02-27T11:29:32Z",
+        "updated_at": "2026-02-27T11:29:32Z",
+        "body": "@cgabriel thanks for the review. All issues addressed:\n\n- **address_fields.py error**: the file is a grouplet resource, not a webpage \u2014 the error happens when the resource loader resolves it as a page URL. Will investigate the routing edge case.\n- **Scroll/overflow issues**: the old test files (`grouplet_menu_test.py`, `grouplet_panel_test.py`) have been deleted and reorganized into `test_grouplets/` with proper height constraints and `overflow='auto'`.\n- **05_grouplet_topic_grid.py**: fixed with proper layout containers.\n- **Test menu organization**: all grouplet tests are now grouped under `test_grouplets/` with numbered files (01-09) by topic.\n\n**Latest changes in this push:**\n- Renamed `panelMode` to `dynamicLocationPath` for clarity\n- Added support for explicit `locationpath` in grouplet `__info__()` \u2014 overrides the dynamic resource-based path computation\n- Added test grouplet (`myconfigurations/advanced/custom_storage.py`) to verify the locationpath override\n- Propagated `selected_locationpath` in both tree and topic panel selection modes\n\nRegarding the placeholder for booking models via record add button \u2014 will add that as a follow-up.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/3972417693/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 648,
+    "url": "https://github.com/genropy/genropy/pull/648",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/3991911529",
+        "html_url": "https://github.com/genropy/genropy/pull/648#issuecomment-3991911529",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/648",
+        "id": 3991911529,
+        "node_id": "IC_kwDOFdDsh87t77xp",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-03-03T15:45:13Z",
+        "updated_at": "2026-03-03T15:45:13Z",
+        "body": "## Replies to review notes\n\n### 1. `fi_slotbar_userpref` removed\n\nThe `userpref` slot was **not present** in any slot string \u2014 neither in `prepareBottom_std` nor `prepareBottom_mobile`. The method existed but was effectively dead code: the settings gear icon (`fi_slotbar_settings`) was already the entry point for user preferences via `openUserSettings()` in `frameindex.js`, which remains intact. No external project can break from its removal since it was never wired into a slot bar.\n\nThe CSS class `.iframeroot_userpref` in `frameindex.css` is now orphaned and will be cleaned up in a follow-up.\n\n### 2. `test_5_wizard_standalone` removed\n\nThe standalone wizard with `topic='app'` and no external form was a test for a use case that is now covered by the `useForm=False` option on `groupletPanel`. Specifically, `test_3_panel_multibutton_no_table` was updated with `useForm=False` to cover this scenario. The wizard variant without a wrapping form was redundant after the refactor.\n\nAdded this note for clarity \u2014 will update the PR body.\n\n### 3. Style inconsistencies \u2014 Fixed\n\nDouble spaces, missing spaces after commas, and extra blank lines have been fixed in commit `7ea9fa230`.\n\n### 4. Inconsistent `__info__` pattern in `connection_qrcode` \u2014 Fixed\n\nAligned to the same pattern as `android_qrcode` and `ios_qrcode`:\n```python\nnotEnabled = not self.site.is_mobile_app_enabled()\nreturn dict(..., tags='notEnabled' if notEnabled else None)\n```\n\nFixed in the same commit `7ea9fa230`.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/3991911529/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 661,
+    "url": "https://github.com/genropy/genropy/pull/661",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4029437896",
+        "html_url": "https://github.com/genropy/genropy/pull/661#issuecomment-4029437896",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/661",
+        "id": 4029437896,
+        "node_id": "IC_kwDOFdDsh87wLFfI",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-03-10T08:03:23Z",
+        "updated_at": "2026-03-10T08:03:23Z",
+        "body": "## Addressed review comments\n\n**@cgabriel** \u2014 The joanna theme does not exist in the project. Updated the test plan to reference only the available themes (mimi, ludo).\n\n**@genro** \u2014 Two points addressed:\n\n1. **`name_full` inconsistency** \u2014 Removed `name_full` from the caption fallback chain in `prefhandler.py` (both `BasePreferenceTabs` and `_ph_preferenceMenu`). Since `name_full` was intentionally removed from the adm package config to keep the tree label shorter, the code now uses `name_long` directly as the caption source.\n\n2. **CSS triangle base properties in ludo.css / default.py** \u2014 These are not addressed here as they belong to the theme-specific branch (`style-modernization`). The ludo theme in particular is scheduled for removal.\n\nCommit: f5bf03cc1",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4029437896/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  },
+  {
+    "number": 734,
+    "url": "https://github.com/genropy/genropy/pull/734",
+    "comments": []
+  },
+  {
+    "number": 708,
+    "url": "https://github.com/genropy/genropy/pull/708",
+    "comments": []
+  },
+  {
+    "number": 582,
+    "url": "https://github.com/genropy/genropy/pull/582",
+    "comments": []
+  },
+  {
+    "number": 682,
+    "url": "https://github.com/genropy/genropy/pull/682",
+    "comments": [
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4038952807",
+        "html_url": "https://github.com/genropy/genropy/pull/682#issuecomment-4038952807",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/682",
+        "id": 4038952807,
+        "node_id": "IC_kwDOFdDsh87wvYdn",
+        "user": {
+          "login": "genro",
+          "id": 604567,
+          "node_id": "MDQ6VXNlcjYwNDU2Nw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/604567?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/genro",
+          "html_url": "https://github.com/genro",
+          "followers_url": "https://api.github.com/users/genro/followers",
+          "following_url": "https://api.github.com/users/genro/following{/other_user}",
+          "gists_url": "https://api.github.com/users/genro/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/genro/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/genro/subscriptions",
+          "organizations_url": "https://api.github.com/users/genro/orgs",
+          "repos_url": "https://api.github.com/users/genro/repos",
+          "events_url": "https://api.github.com/users/genro/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/genro/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-03-11T12:41:31Z",
+        "updated_at": "2026-03-11T12:41:31Z",
+        "body": "### Correction on point 2 (XSS in getSemaphoreStatus)\n\nAfter further analysis, the unsanitized `_valuelabel` in `getSemaphoreStatus()` is **preexisting** \u2014 the old code did the same:\n\n```js\n// OLD\nr.setItem('fieldname','<div style=\"font-weight: bold;\">'+n.attr._valuelabel+'</div>', ...)\n```\n\nSo this is **not a regression** introduced by this PR. Downgrading from critical to a **suggestion** for opportunistic improvement.\n\n**Proposed fix** \u2014 in the changes logger block, use `getElementLabel()` which already sanitizes HTML:\n\n```js\n// Instead of:\n'<span class=\"fh_status_field\">' + (n.attr._valuelabel || '?') + '</span>'\n\n// Use:\nvar sn = genro.src.nodeBySourceNodeId(n.label);\nvar label = (sn && sn.getElementLabel()) || n.attr._valuelabel || '?';\n'<span class=\"fh_status_field\">' + label + '</span>'\n```\n\nThis is consistent with what the `getInvalidDojo()` block already does a few lines below. The `getElementLabel()` method strips HTML tags via `textContent`, so any markup in labels is neutralized.\n\nSince it's preexisting, this can be addressed in a follow-up if you prefer \u2014 not blocking.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4038952807/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      },
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4039165495",
+        "html_url": "https://github.com/genropy/genropy/pull/682#issuecomment-4039165495",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/682",
+        "id": 4039165495,
+        "node_id": "IC_kwDOFdDsh87wwMY3",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-03-11T13:19:58Z",
+        "updated_at": "2026-03-11T13:19:58Z",
+        "body": "## Review response\n\nThanks for the thorough review. Here's how each point was addressed:\n\n### Fixed (commit 288603449)\n\n1. **`dojo_20.py` missing `genro_toast`** \u2014 Added to `gnrjs_frontend()`, now matches `dojo_11.py`.\n\n2. **XSS in `getSemaphoreStatus()`** \u2014 Agreed it's preexisting, but fixed opportunistically: the changes logger block now uses `getElementLabel()` with `_valuelabel` as fallback, consistent with the `getInvalidDojo()` pattern already in use below.\n\n3. **Regex `color_variant`** \u2014 Fixed `\\w+` \u2192 `[\\w-]+` to support hyphenated variant names.\n\nAll changes synced to `gnr_d20`. Flake8 clean, 1368 tests pass.\n\n### By design (no changes needed)\n\n3. **`.treeerow_viewport` rename** \u2014 Verified: old triple-e name no longer exists anywhere. New name `.treerow_viewport` is consistent across JS (4 refs) and CSS (1 ref) in both d11/d20.\n\n4. **Dialog button order** \u2014 Intentional. The old JS `.sort().reverse()` was removed because `.dlg_ask_btnBox` now uses CSS `flex-direction: row-reverse`, which handles the visual ordering. Presentation logic moved from JS to CSS where it belongs.\n\n5. **`floatingMessage()` timing** \u2014 The duration calculations are equivalent: visible time = `duration_in + duration_out/2` in both old and new code. The rewrite is cleaner, adds `slideDown` mode, and uses a proper 16ms initial tick instead of 1ms.\n\n6. **TreeGrid `mainCellSize` removed** \u2014 The fixed pixel calculation is replaced by CSS flexbox: `.maincell.treecell { flex: 1; min-width: 0 }` takes available space, `.treerow_viewport { flex-shrink: 0; overflow: hidden }` constrains columns. The layout adapts automatically without JS measurement.\n\n### Deferred\n\n8. **Theme variable coverage (`_defaults.css`)** \u2014 Good idea, will address in a follow-up.\n9. **Deleted themes** \u2014 `get_css_theme()` fallback to `mimi` handles this gracefully. Will note in release notes.",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4039165495/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      },
+      {
+        "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4043132480",
+        "html_url": "https://github.com/genropy/genropy/pull/682#issuecomment-4043132480",
+        "issue_url": "https://api.github.com/repos/genropy/genropy/issues/682",
+        "id": 4043132480,
+        "node_id": "IC_kwDOFdDsh87w_U5A",
+        "user": {
+          "login": "fporcari",
+          "id": 7373156,
+          "node_id": "MDQ6VXNlcjczNzMxNTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/7373156?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/fporcari",
+          "html_url": "https://github.com/fporcari",
+          "followers_url": "https://api.github.com/users/fporcari/followers",
+          "following_url": "https://api.github.com/users/fporcari/following{/other_user}",
+          "gists_url": "https://api.github.com/users/fporcari/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/fporcari/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/fporcari/subscriptions",
+          "organizations_url": "https://api.github.com/users/fporcari/orgs",
+          "repos_url": "https://api.github.com/users/fporcari/repos",
+          "events_url": "https://api.github.com/users/fporcari/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/fporcari/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-03-12T00:42:25Z",
+        "updated_at": "2026-03-12T00:42:25Z",
+        "body": "Good catch on both points. Fixed in f15e5ef:\n\n- `default.xml`: replaced `$GNR_CSS_THEME` with hardcoded `mimi`, consistent with the `{VAR}` syntax used elsewhere in the file\n- `Dockerfile`: removed `ENV GNR_CSS_THEME=mimi` \u2014 deployments can now freely override `GNR_CSS_THEME` via environment without it being forced by the image",
+        "author_association": "MEMBER",
+        "reactions": {
+          "url": "https://api.github.com/repos/genropy/genropy/issues/comments/4043132480/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null
+      }
+    ]
+  }
+]

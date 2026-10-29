@@ -1,0 +1,365 @@
+TAP version 13
+# Subtest: removing remote cancels timing and delayed calls; readding gets a fresh lifecycle
+ok 1 - removing remote cancels timing and delayed calls; readding gets a fresh lifecycle
+  ---
+  duration_ms: 184.528291
+  ...
+# Subtest: removing remote suppresses its completion hook but preserves the in-flight fragment contract
+ok 2 - removing remote suppresses its completion hook but preserves the in-flight fragment contract
+  ---
+  duration_ms: 20.9215
+  ...
+# Subtest: remote transforms parameters and refreshes when a referenced attribute changes
+ok 3 - remote transforms parameters and refreshes when a referenced attribute changes
+  ---
+  duration_ms: 21.089834
+  ...
+# Subtest: remote requests the fragment with its parameters at start and mounts it
+ok 4 - remote requests the fragment with its parameters at start and mounts it
+  ---
+  duration_ms: 18.289708
+  ...
+# Subtest: a change of a remote parameter requests again and replaces the content
+ok 5 - a change of a remote parameter requests again and replaces the content
+  ---
+  duration_ms: 18.150875
+  ...
+# Subtest: a change of a ^ remote name requests the new fragment
+ok 6 - a change of a ^ remote name requests the new fragment
+  ---
+  duration_ms: 16.027708
+  ...
+# Subtest: _cachedRemote: equal parameters do not request again
+ok 7 - _cachedRemote: equal parameters do not request again
+  ---
+  duration_ms: 34.642792
+  ...
+# Subtest: _cachedRemote: returning to the mounted parameters during a flight waits and mounts them after it
+ok 8 - _cachedRemote: returning to the mounted parameters during a flight waits and mounts them after it
+  ---
+  duration_ms: 42.991875
+  ...
+# Subtest: _cachedRemote: a changed reactive fragment name is not a cache hit
+ok 9 - _cachedRemote: a changed reactive fragment name is not a cache hit
+  ---
+  duration_ms: 37.522083
+  ...
+# Subtest: _cachedRemote: nested Bag parameter changes invalidate the mounted cache
+ok 10 - _cachedRemote: nested Bag parameter changes invalidate the mounted cache
+  ---
+  duration_ms: 27.215625
+  ...
+# Subtest: _cachedRemote: object parameters are captured before the pending response
+ok 11 - _cachedRemote: object parameters are captured before the pending response
+  ---
+  duration_ms: 25.782417
+  ...
+# Subtest: _cachedRemote: array parameters are captured before the pending response
+ok 12 - _cachedRemote: array parameters are captured before the pending response
+  ---
+  duration_ms: 25.699959
+  ...
+# Subtest: _cachedRemote: date parameters are captured before the pending response
+ok 13 - _cachedRemote: date parameters are captured before the pending response
+  ---
+  duration_ms: 26.215292
+  ...
+# Subtest: _cachedRemote: Bag attribute parameters are captured before the pending response
+ok 14 - _cachedRemote: Bag attribute parameters are captured before the pending response
+  ---
+  duration_ms: 22.706875
+  ...
+# Subtest: _cachedRemote: reordered object keys make another request under TYTX comparison
+ok 15 - _cachedRemote: reordered object keys make another request under TYTX comparison
+  ---
+  duration_ms: 18.492583
+  ...
+# Subtest: _if false: no request, and _else runs with the parameters
+ok 16 - _if false: no request, and _else runs with the parameters
+  ---
+  duration_ms: 15.397
+  ...
+# Subtest: _onRemote runs after the fragment is mounted, with the parameters
+ok 17 - _onRemote runs after the fragment is mounted, with the parameters
+  ---
+  duration_ms: 9.330708
+  ...
+# Subtest: two quick changes: the answer in flight is mounted, then the first change; the second does nothing
+ok 18 - two quick changes: the answer in flight is mounted, then the first change; the second does nothing
+  ---
+  duration_ms: 43.524459
+  ...
+# Subtest: removing the node cancels the pending request and closes its RemoteBinding
+ok 19 - removing the node cancels the pending request and closes its RemoteBinding
+  ---
+  duration_ms: 15.952708
+  ...
+# Subtest: remote on a node of a fragment mounted by another remote
+ok 20 - remote on a node of a fragment mounted by another remote
+  ---
+  duration_ms: 17.913166
+  ...
+# Subtest: a node without remote has no RemoteBinding; a remote node activates _if, _else and _onRemote
+ok 21 - a node without remote has no RemoteBinding; a remote node activates _if, _else and _onRemote
+  ---
+  duration_ms: 10.942833
+  ...
+# Subtest: _if false while a request is in flight is a readiness condition: no abort, the fragment is mounted
+ok 22 - _if false while a request is in flight is a readiness condition: no abort, the fragment is mounted
+  ---
+  duration_ms: 25.270167
+  ...
+# Subtest: a failed request rejects naming the node; with _cachedRemote the same parameters are requested again
+ok 23 - a failed request rejects naming the node; with _cachedRemote the same parameters are requested again
+  ---
+  duration_ms: 13.476333
+  ...
+# Subtest: a change of the Data context of an ancestor requests the fragment for the new context
+ok 24 - a change of the Data context of an ancestor requests the fragment for the new context
+  ---
+  duration_ms: 24.300584
+  ...
+# Subtest: a variable name: ^ and = pointers, and a dotted path from the page, are sent as they are
+ok 25 - a variable name: ^ and = pointers, and a dotted path from the page, are sent as they are
+  ---
+  duration_ms: 25.716
+  ...
+# Subtest: an empty, null or malformed name rejects the call naming the node, like a name outside the syntax
+ok 26 - an empty, null or malformed name rejects the call naming the node, like a name outside the syntax
+  ---
+  duration_ms: 13.588292
+  ...
+# Subtest: a waiting call with an empty name rejects when its turn comes; the request in flight is mounted
+ok 27 - a waiting call with an empty name rejects when its turn comes; the request in flight is mounted
+  ---
+  duration_ms: 16.244792
+  ...
+# Subtest: node.requests: both fields empty when idle; in flight the method, the parameters sent and the send time
+ok 28 - node.requests: both fields empty when idle; in flight the method, the parameters sent and the send time
+  ---
+  duration_ms: 26.714833
+  ...
+# Subtest: _onCalling runs before each call with the parameters; false makes no call
+ok 29 - _onCalling runs before each call with the parameters; false makes no call
+  ---
+  duration_ms: 23.183375
+  ...
+# Subtest: cancel() in _onCalling ignores the answer in flight and sends the new call at once, in place of the waiting one
+ok 30 - cancel() in _onCalling ignores the answer in flight and sends the new call at once, in place of the waiting one
+  ---
+  duration_ms: 37.357333
+  ...
+# Subtest: cancel() outside _onCalling ignores the answer in flight and sends the waiting call
+ok 31 - cancel() outside _onCalling ignores the answer in flight and sends the waiting call
+  ---
+  duration_ms: 18.611417
+  ...
+# Subtest: _delay debounces the changes, never the request in flight; _userChanges calls only for the level node
+ok 32 - _delay debounces the changes, never the request in flight; _userChanges calls only for the level node
+  ---
+  duration_ms: 87.191042
+  ...
+# Subtest: _timing requests the fragment again every period; a pointer change restarts it, 0 stops it
+ok 33 - _timing requests the fragment again every period; a pointer change restarts it, 0 stops it
+  ---
+  duration_ms: 154.202625
+  ...
+# Subtest: a fragment requested from code replaces the record of _cachedRemote: no false cache hit afterwards
+ok 34 - a fragment requested from code replaces the record of _cachedRemote: no false cache hit afterwards
+  ---
+  duration_ms: 11.80675
+  ...
+# Subtest: removing the node aborts the request in flight and sends no waiting call
+ok 35 - removing the node aborts the request in flight and sends no waiting call
+  ---
+  duration_ms: 15.497583
+  ...
+# Subtest: _else="this.setValue(null)" clears the content when _if turns false; true again mounts the fragment again
+ok 36 - _else="this.setValue(null)" clears the content when _if turns false; true again mounts the fragment again
+  ---
+  duration_ms: 24.618958
+  ...
+# Subtest: runtime remote failures are notified once, can retry, and rejected completion hooks are handled
+ok 37 - runtime remote failures are notified once, can retry, and rejected completion hooks are handled
+  ---
+  duration_ms: 78.031792
+  ...
+# Subtest: timed, delayed and rebound remote failures are handled; removing the node cancels further triggers
+ok 38 - timed, delayed and rebound remote failures are handled; removing the node cancels further triggers
+  ---
+  duration_ms: 108.169292
+  ...
+# Subtest: a failed remote response after its node closes does not alert
+ok 39 - a failed remote response after its node closes does not alert
+  ---
+  duration_ms: 16.367834
+  ...
+# Subtest: shared API verifies the same prepared artifact as Python and the generator
+ok 40 - shared API verifies the same prepared artifact as Python and the generator
+  ---
+  duration_ms: 76.951541
+  ...
+# Subtest: every byte, wrapper, metadata field and inventory participates in verification
+ok 41 - every byte, wrapper, metadata field and inventory participates in verification
+  ---
+  duration_ms: 134.058583
+  ...
+# Subtest: stylesheet failure prevents activation and closes the registered page
+ok 42 - stylesheet failure prevents activation and closes the registered page
+  ---
+  duration_ms: 47.78575
+  ...
+# Subtest: a bad fingerprint rejects the graph before any collection activates
+ok 43 - a bad fingerprint rejects the graph before any collection activates
+  ---
+  duration_ms: 6.83025
+  ...
+# Subtest: old URL-only bootstrap format is rejected instead of accepted as a fallback
+ok 44 - old URL-only bootstrap format is rejected instead of accepted as a fallback
+  ---
+  duration_ms: 3.802834
+  ...
+# Subtest: closing during CSS loading cancels startup without waiting for a load event
+ok 45 - closing during CSS loading cancels startup without waiting for a load event
+  ---
+  duration_ms: 5.894959
+  ...
+# Subtest: full exported HTML grammar replaces the restricted list
+ok 46 - full exported HTML grammar replaces the restricted list
+  ---
+  duration_ms: 3.517792
+  ...
+# Subtest: future collection validates the same exported signature and structure
+ok 47 - future collection validates the same exported signature and structure
+  ---
+  duration_ms: 11.09675
+  ...
+# Subtest: collection instances are isolated and invalid merge leaves valid grammar intact
+ok 48 - collection instances are isolated and invalid merge leaves valid grammar intact
+  ---
+  duration_ms: 11.092333
+  ...
+# Subtest: custom collection renders its mapped tag
+ok 49 - custom collection renders its mapped tag
+  ---
+  duration_ms: 70.944084
+  ...
+# Subtest: Python authors a future collection that JavaScript validates and renders
+ok 50 - Python authors a future collection that JavaScript validates and renders
+  ---
+  duration_ms: 135.514916
+  ...
+# Subtest: ASTRA-03: a later collection replaces a named declaration whole, the same document in Python and JS
+ok 51 - ASTRA-03: a later collection replaces a named declaration whole, the same document in Python and JS
+  ---
+  duration_ms: 160.027666
+  ...
+# Subtest: DOM-free effective metadata is identical to shipped Python grammar
+ok 52 - DOM-free effective metadata is identical to shipped Python grammar
+  ---
+  duration_ms: 45.618583
+  ...
+# Subtest: textbox preserves null/empty, caret, label placement, binding and cleanup
+ok 53 - textbox preserves null/empty, caret, label placement, binding and cleanup
+  ---
+  duration_ms: 131.941583
+  ...
+# Subtest: checkbox shares labelbox while radio groups commit independent string codes
+ok 54 - checkbox shares labelbox while radio groups commit independent string codes
+  ---
+  duration_ms: 68.696
+  ...
+# Subtest: custom controls reuse IME handling and expose change to named Logic
+ok 55 - custom controls reuse IME handling and expose change to named Logic
+  ---
+  duration_ms: 71.329709
+  ...
+# Subtest: collection registration is realm-local, repeatable and rejects conflicting tags
+ok 56 - collection registration is realm-local, repeatable and rejects conflicting tags
+  ---
+  duration_ms: 6.261375
+  ...
+# Subtest: Python authors the same three widgets and JS mounts the resulting TYTX
+ok 57 - Python authors the same three widgets and JS mounts the resulting TYTX
+  ---
+  duration_ms: 226.146291
+  ...
+# Subtest: label prefixes keep style removal and reject native script attributes
+ok 58 - label prefixes keep style removal and reject native script attributes
+  ---
+  duration_ms: 100.111458
+  ...
+# Subtest: changing radio captions/options retains a valid selected code without cross-group writes
+ok 59 - changing radio captions/options retains a valid selected code without cross-group writes
+  ---
+  duration_ms: 72.766084
+  ...
+# Subtest: shared Data and a reactive datapath reuse controls and detach the previous path
+ok 60 - shared Data and a reactive datapath reuse controls and detach the previous path
+  ---
+  duration_ms: 88.283625
+  ...
+# Subtest: textarea and password reuse editing, shared Data, labels and native constraints
+ok 61 - textarea and password reuse editing, shared Data, labels and native constraints
+  ---
+  duration_ms: 80.634584
+  ...
+# Subtest: color preserves its projection contract and both ranges correct external bounds
+ok 62 - color preserves its projection contract and both ranges correct external bounds
+  ---
+  duration_ms: 62.211834
+  ...
+# Subtest: single component radios preserve boolean groups, scope, keyboard and disposal
+ok 63 - single component radios preserve boolean groups, scope, keyboard and disposal
+  ---
+  duration_ms: 63.241375
+  ...
+# Subtest: Python exports the six new controls, including fractional range parameters
+ok 64 - Python exports the six new controls, including fractional range parameters
+  ---
+  duration_ms: 241.833167
+  ...
+# Subtest: component radio group reset retains host, inner control, focus and relative bindings
+ok 65 - component radio group reset retains host, inner control, focus and relative bindings
+  ---
+  duration_ms: 58.345041
+  ...
+# Subtest: portable layout grammar allows nested fields in Python and JavaScript
+ok 66 - portable layout grammar allows nested fields in Python and JavaScript
+  ---
+  duration_ms: 458.417917
+  ...
+# Subtest: formlet inherits resolved defaults in declaring scope, preserves overrides and drafts
+ok 67 - formlet inherits resolved defaults in declaring scope, preserves overrides and drafts
+  ---
+  duration_ms: 151.229291
+  ...
+# Subtest: groupBox copies only its live Bag scope, TYTX preserves types and attributes, JSON is values-only
+ok 68 - groupBox copies only its live Bag scope, TYTX preserves types and attributes, JSON is values-only
+  ---
+  duration_ms: 161.678292
+  ...
+# Subtest: switch keeps boolean binding, native keyboard target, readonly and instance identity
+ok 69 - switch keeps boolean binding, native keyboard target, readonly and instance identity
+  ---
+  duration_ms: 161.854209
+  ...
+# Subtest: switch color follows Data, restores the theme and stays local to the active switch
+ok 70 - switch color follows Data, restores the theme and stays local to the active switch
+  ---
+  duration_ms: 115.093542
+  ...
+# Subtest: intrinsic label layout batches projection and releases observers on detach/disposal
+ok 71 - intrinsic label layout batches projection and releases observers on detach/disposal
+  ---
+  duration_ms: 115.499416
+  ...
+1..71
+# tests 71
+# suites 0
+# pass 71
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1978.684666

@@ -1,0 +1,18 @@
+{
+  "tree": "b6f22d446180a0c32114bcf0e16ddc0e57ae960c",
+  "branch": "feat-grouplet-grid",
+  "files": [
+    {
+      "path": "docs/groupletgrid_architecture.md",
+      "sha": "ae72d6ef72f52415ed6be5b28cb95a53dcb787e9",
+      "html_url": "https://github.com/genropy/genropy/blob/feat-grouplet-grid/docs/groupletgrid_architecture.md",
+      "size": 7644
+    },
+    {
+      "path": "docs/groupletgrid_store_integration.html",
+      "sha": "c717bff703342dd2a4c5225e54fe95e3c510c86b",
+      "html_url": "https://github.com/genropy/genropy/blob/feat-grouplet-grid/docs/groupletgrid_store_integration.html",
+      "size": 43002
+    }
+  ]
+}

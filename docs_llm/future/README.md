@@ -1,5 +1,7 @@
 # Future work
 
+[Grouplets and cards — GC-360](360-grouplets-implementation-plan.md): optional collection and six gallery lessons. Saved resources and shared-form composition remain future increments.
+
 ## Common menu system — 2026-10-22
 
 [GC-335 · Common menu system](335-common-menu-system.md) develops the full

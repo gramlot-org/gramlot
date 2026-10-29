@@ -1,0 +1,25 @@
+TAP version 13
+# Subtest: every endpoint and fragment answers the same in Python and JavaScript
+ok 1 - every endpoint and fragment answers the same in Python and JavaScript
+  ---
+  duration_ms: 18946.942375
+  ...
+# Subtest: grouplets/05-card_actions: mounts without errors and behaves as its README says
+ok 2 - grouplets/05-card_actions: mounts without errors and behaves as its README says
+  ---
+  duration_ms: 526.700583
+  ...
+# Subtest: g05: Python and JavaScript author equivalent Source and page options
+ok 3 - g05: Python and JavaScript author equivalent Source and page options
+  ---
+  duration_ms: 969.283375
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 19067.105667

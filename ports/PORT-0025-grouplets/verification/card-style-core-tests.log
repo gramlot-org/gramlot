@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: plain card accepts authored fields without collapse or checkbox, and renders titles as text
+ok 1 - plain card accepts authored fields without collapse or checkbox, and renders titles as text
+  ---
+  duration_ms: 82.328792
+  ...
+# Subtest: card Data owns initial, external and interactive title/fold/check states independently
+ok 2 - card Data owns initial, external and interactive title/fold/check states independently
+  ---
+  duration_ms: 29.708125
+  ...
+# Subtest: nested cards fold independently and preserve fields, DOM, focus and request count
+ok 3 - nested cards fold independently and preserve fields, DOM, focus and request count
+  ---
+  duration_ms: 32.011833
+  ...
+# Subtest: a remote rebuild restores card states and edits from Data without duplicated headers
+ok 4 - a remote rebuild restores card states and edits from Data without duplicated headers
+  ---
+  duration_ms: 44.935375
+  ...
+# Subtest: header side and collapsible changes project without erasing Data state
+ok 5 - header side and collapsible changes project without erasing Data state
+  ---
+  duration_ms: 21.2395
+  ...
+# Subtest: removed cards cannot write Data through retained header controls
+ok 6 - removed cards cannot write Data through retained header controls
+  ---
+  duration_ms: 22.859375
+  ...
+# Subtest: literal card states follow the shared no-write rule without a private state store
+ok 7 - literal card states follow the shared no-write rule without a private state store
+  ---
+  duration_ms: 21.770125
+  ...
+# Subtest: unsupported header sides and legacy collapsed representations are rejected
+ok 8 - unsupported header sides and legacy collapsed representations are rejected
+  ---
+  duration_ms: 5.988625
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 635.238833

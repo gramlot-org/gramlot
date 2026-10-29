@@ -2090,3 +2090,62 @@ selection reads files, no upload endpoint or file persistence is introduced.
 composerHeight and picking are ordinary presentation Data. data-chat-composer,
 data-chat-top and data-chat-toolbar are internal geometry markers for the shared
 ResizeObserver, not application DOM behavior or business state.
+
+
+Grouplet collection — owner implementation instruction, 2026-10-28: use the
+existing family convention (`inputs`, `layout`, `tree`) for `grouplets`, exported
+from components/grouplets.js and prepared as gramlot.collections.grouplets.
+`Grouplet`, authoring `grouplet` and DOM `gramlot-grouplet` follow the existing
+PascalCase definition / shared widget spelling / prefixed custom-element rules.
+`remote`, `remote_*` and `datapath` retain the existing Source names and contracts;
+no resource-name alias, loader proxy or alternate RPC marker is introduced.
+
+
+Grouplet card increment — owner confirmation, 2026-10-28: GroupletCard,
+`groupletCard` (both authoring languages) and `gramlot-grouplet-card` follow the
+Grouplet and compound-widget conventions. Reuse title, collapsible and collapsed
+from existing window parameters; chromeSide and checkbox retain the legacy card
+names. chromeSide admits top/left/right; checkbox is an optional boolean state,
+with null meaning no checkbox, and collapsed is boolean. Interactive states use
+ordinary writable ^ pointers. No titleField/titleTemplate alias, legacy 'closed'
+coercion or implicit workspace is added. Header/control/body DOM references are
+projection resources; state stays in Data through the existing sourceContext
+writeParameter. Private card-header/card-title/card-collapse/card-check styles
+follow the current component role-class convention. Shared header/surface theme
+tokens style the card. No separate menu/form/resource engine is introduced.
+
+
+GroupletCard checkbox label — owner, 2026-10-28: the explicitly requested
+`checkboxLabel` follows the camelCase component-parameter convention and extends
+existing checkbox with its visible text. Both authoring languages use this exact
+metadata spelling. It is a read-bound, translatable text parameter, default empty.
+Private checkLabel/checkCaption DOM references and card-check-label/caption CSS
+classes follow the existing card-check role convention. A native label owns the
+input and caption; no new event, state or proxy is added.
+
+
+Grouplet card actions — owner confirmation, 2026-10-28: “Confermo questo
+contratto”. Reuse menu/menuline Source authoring and legacy delitem as a nullable
+boolean read-bound parameter: omitted/null hides the built-in Clear entry, false
+disables it, true enables it. The direct popup menu belongs to the card header;
+body menus retain their ordinary ownership. No editmenu alias is introduced.
+Internal GroupletCardActions in view/grouplet-card.js owns confirmed scoped
+clearing through the actual NodeBinding. attach/detach/clear follow existing view
+binding method names. cardActions connects this binding to presentation.
+The component uses actionsButton, clearItem, actionsMenu, refreshMenu and
+openMenu for its header controls, and card-actions/card-menu as internal CSS/slot
+names. Built-in Clear is a framework-owned MenuLine presentation alongside the
+authored menu entries; it does not introduce application state or a second menu
+engine. The existing AskDialog and writeParameter own confirmation and writes.
+
+
+Grouplet card inline guide — owner, 2026-10-28: “Primo incremento: guida nella
+card”. Reuse legacy doc as the text parameter for this confirmed Markdown-only
+contract, with ordinary read binding and default empty text. It is not a document
+address or a file: loader. No doc_kw or card-specific template engine is added;
+contextual text is computed through ordinary Data/formulas. Internal docButton,
+docPopup, docTitle, docBody, docClose, openDoc, closeDoc and refreshDoc follow
+the existing component property/method conventions; card-doc* names are internal
+CSS roles. Reuse markdownRenderer and positionPopup. Presentation/focus/event
+resources belong to the component; document content belongs to authored Source
+or Data, without a private document store.

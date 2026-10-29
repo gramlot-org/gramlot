@@ -1,0 +1,14 @@
+{
+  "query": "grouplet",
+  "transcript_hits": 0,
+  "known_meeting_summaries_checked": 30,
+  "matching_summaries": [
+    {
+      "meeting_id": "db4835bb99614d319cc5f9c55e05830f_I_744396477832185927",
+      "title": "Genropy Developers",
+      "date": "2026-09-29T06:51:44+00:00",
+      "source": "Cisco AI Assistant summary retrieved through Sourcerer; secondary evidence, not an owner decision",
+      "excerpt": "<h3>Correzioni Grouplet / GroupPanel</h3><p>Francesco descrive di aver corretto diversi bug in GroupPanel/Grouplet che nascondevano elementi finché non venivano usati e causavano problemi di layout; ha aggiustato il posizionamento (left vs right) e altre questioni CSS. Questo è importante perché GroupPanel è un componente riutilizzabile dell'interfaccia e le regressioni ne riducono l'adozione. Stato attuale: GroupPanel è migliorato, Francesco completerà le correzioni rimanenti, chiuderà il branch Demetre e continuerà le attività legate all'ERP.</p><ul><li>Francesco Porcari riferisce di aver corretto bug in Grouplet/GroupPanel che causavano 'buchi' nascosti fino all'uso dei componenti.</li><li>Francesco Porcari ha cambiato scelte di layout (posizionando elementi a sinistra) per migliorare l'usabilità e ridurre margini scomodi.</li><li>Francesco Porcari dice di dover ancora chiudere il branch Demetre e continuare il lavoro su elementi legati all'ERP.</li></ul>"
+    }
+  ]
+}

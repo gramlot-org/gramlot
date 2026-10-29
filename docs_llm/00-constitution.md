@@ -4604,3 +4604,75 @@ sortedBy/filter contract for this worktree. Sorting or filtering one grid must n
 change another grid or write ordering metadata into shared business nodes. No
 record copying, dependency edits, general router change or remote-store contract
 is authorized. Source-owned widget state follows the existing ownership rule.
+
+
+### Independent grouplet collection — owner, 2026-10-28
+
+Owner: “ok allora su worktree separato comincia ad implementare i grouplet come
+collezione autonoma”, accepting Gramlot components built on the existing remote
+Source mechanism. Implement in the prepared grouplets worktree, starting with the
+base grouplet in its own opt-in collection. Reuse the current collection
+preparation/activation, Source/Data and remote request lifecycle. This authorizes
+the component implementation; it does not settle the saved-resource format or
+Kajenn write API. The requested resource integration remains in the plan. No
+release or deployment. This supersedes the unapproved Page-object-only proposal,
+not the existing core/host ownership boundary.
+
+
+### Incremental grouplet gallery cases — owner, 2026-10-28
+
+Owner: “si :farei un pezzettino per volta e farei nela. galleri dei casi con i
+@source necessari”. Deliver one grouplet increment at a time with runnable
+gallery cases containing the required Python @source methods. Connected changes
+to gramlot-examples are authorized for these examples. Examples remain in their
+own repository; this does not authorize a runner in core, a public deployment
+or acceptance of future composed-family/resource contracts.
+
+
+### Grouplet card first increment — owner, 2026-10-28
+
+Owner requests: “ok procediamo con i grouplet card, sempre guardando i test legacy
+e con esempi completi nella gallery”. The concrete follow-up proposal was confirmed
+with “Confermo questo primo incremento”: bindable title, top/left/right header,
+checkbox and collapse state in Data, static or remote/@source content and nested
+cards. Use ordinary Gramlot bindings, boolean collapsible/collapsed and paths
+relative to the card datapath. Do not add legacy titleField/titleTemplate or
+collapsible='closed' alternatives. The complete gallery case is an order dossier
+with customer, billing and delivery. Menu/Clear, documentation and shared form
+integration remain subsequent increments. This authorizes the first groupletCard
+component in the optional grouplets collection and connected gallery work; it
+does not change Source/Data/remote ownership or approve a resource/save protocol.
+
+
+### Grouplet card checkbox label — owner, 2026-10-28
+
+Owner: “sì aggiungi checkboxLabel e metti una scritta chiara accanto ai checkbox
+nella gallery”. Add checkboxLabel to groupletCard for the application-defined
+meaning of its optional header checkbox. Render a visible native label beside
+the control and use it as its accessible name. The gallery labels its review
+checklist explicitly. This extends the confirmed card presentation only; checkbox
+Data binding and state ownership are unchanged.
+
+
+### Grouplet card menu and Clear — owner, 2026-10-28
+
+Owner answers “Confermo questo contratto” to card.menu()/menuline header menus
+and a Data-bindable boolean delitem enabling Clear. Clear asks for confirmation
+and nulls only writable value bindings inside the card Data scope, including
+nested cards, preserving external Data and fold/review states. The gallery must
+include complete shipping management, custom actions, cancellation and an invoice
+lock. This supersedes the menu/Clear deferral for the first card increment only.
+Reuse shared menus, confirmation and binding rules; no legacy editmenu dictionary,
+form engine, save protocol or publication is authorized.
+
+
+### Grouplet card inline guide — owner, 2026-10-28
+
+Owner chooses “Primo incremento: guida nella card” in response to the concrete
+proposal: doc as Data-bound Markdown, an information button, readable popup even
+while the card is collapsed, Escape closure and a complete customer/delivery
+gallery lesson with contextual guidance. This authorizes the read-only card guide
+and connected gallery increment. Shared documentation addresses, manual/notes
+lookup, editing, languages and permissions via resources/Kajenn remain a distinct
+required future contract, as explicitly selected by the owner; they are not
+implemented or implied by this Markdown presentation. No publication.

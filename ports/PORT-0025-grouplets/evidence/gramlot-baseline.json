@@ -1,0 +1,62 @@
+{
+  "head": "d01bf3dc6389ad9bca91ef0f4bdbaafbfcc10242",
+  "note": "Working files inspected, including existing local changes; HEAD alone is not this baseline. Hashes are evidence, not dependency pins.",
+  "files": [
+    {
+      "path": "docs/internal/225-naming-and-proxy-conventions.md",
+      "sha256": "8a66c67b4cb722431d0a2c5757f628524073deb2d7785332cd5d17f68f58f186"
+    },
+    {
+      "path": "docs/internal/230-server-protocol.md",
+      "sha256": "18d1d232635e475fb4510d5a66995632567e8fc860a327d9613d5661d365b9c1"
+    },
+    {
+      "path": "docs/future/330-collection-store-agent-brief.md",
+      "sha256": "fbd1cec484adecf9358c6405482da83daec3e894830b7bcc7856404e5ec884a3"
+    },
+    {
+      "path": "docs/future/335-bag-formulas-and-validation.md",
+      "sha256": "8433878b9140593fb530ec89ca445a16f30016514bea53c4ac41d19647d4c23d"
+    },
+    {
+      "path": "js/src/binding/remote.js",
+      "sha256": "a2cdcb18f592335e6a3fe9cf3655712bb060071c7fbf2f0edf34a0d74e660228"
+    },
+    {
+      "path": "js/src/binding/logic.js",
+      "sha256": "18c04561bf45ae311ba9a57286c370d6ab1fbec5cc9d8ddeef0264ed41ddd00b"
+    },
+    {
+      "path": "js/src/binding/hooks.js",
+      "sha256": "45de4a93403c18289caa83d2414eeac2d8778ccaa14f31417335c86e9ef1be68"
+    },
+    {
+      "path": "js/src/handlers/source-handler.js",
+      "sha256": "28040d473e19f5a18e894add43880c88bfda67fbb717104ca4bb635ee9a8f320"
+    },
+    {
+      "path": "src/gramlot/page/base.py",
+      "sha256": "cf3f6d768f22ca135129e63eaacf4eaba93933c4b52d991f6e8ef7356b243ebe"
+    },
+    {
+      "path": "src/gramlot/page/builder.py",
+      "sha256": "030cfd06f37c7094d87747bd0394f7f2eab5b05c36d1cb8b68646c20ec150aad"
+    },
+    {
+      "path": "src/gramlot/server/resources.py",
+      "sha256": "7e47ab6aefb2ad1d0ddfd8379a42a685095ec7b107f2957a34adc393d051f30e"
+    },
+    {
+      "path": "docs/00-constitution.md",
+      "sha256": "7198b8208d0176b059aa65f5e68f223cedc8ce18e86b1b3b038a7fd9cc3f87ff"
+    },
+    {
+      "path": "docs/future/340-bag-js-calculation-and-validation.md",
+      "sha256": "aafda8204a95b3051b73369f7e146f8afa236c25a8fd8de4b361e5c22aa5c876"
+    },
+    {
+      "path": "docs/future/345-legacy-grid-filtering-review.md",
+      "sha256": "95cf4d28fb6a0688871b760c18b0578d4ce16f93a9ec66bdda7ab454f0cf8d6a"
+    }
+  ]
+}

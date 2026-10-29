@@ -17061,3 +17061,43 @@ preview runs at `http://127.0.0.1:61508/`; this HTTP loopback preview does not
 bypass the native HTTPS rule. Physical iPhone plugin, keyboard/safe-area and
 Universal Link acceptance remains separate. Implemented and verified locally;
 owner acceptance and public deployment are not implied.
+
+
+<a id="gc-070-grouplets-reconciliation-20261029"></a>
+## Grouplets reconciled into the common local base — 2026-10-29
+
+Owner: “Bene, passiamo ai Grouplets: verifica il worktree e integra nella base
+comune quello che approvi, preservando il lavoro originale e aggiungendo le
+verifiche necessarie. Invoice resta fuori.”
+
+Integrated the optional Grouplet/GroupletCard collection and six gallery lessons
+from the preserved Grouplets worktrees. The approved path reuses remote Source,
+Data bindings, menus, confirmation and Markdown rendering. No private form/store,
+saved-resource resolver or Kajenn write API was introduced. Grid, chat, mobile
+and initial forms remain in the common base; Invoice remains excluded.
+
+Core and gallery browser artifacts build; the local Python wheel contains the
+prepared Grouplets descriptor, grammar and browser assets. 44 focused core tests
+and 87 surrounding remote/labelbox/menu/security regressions pass. Four Python
+Grouplet tests pass; four strict expected failures preserve the known upstream
+Builder union/Regex limitation for unsupported boolean-state strings. No consumer
+coercion or dependency edit was added. A new regression verifies scoped Clear
+against Source-owned form registers, required-field errors, baseline restore and
+unchanged input instances.
+
+The real Python gallery renders all six lessons. Browser checks cover independent
+Data scopes, edit/fold/check retention, nested remote reload, menu actions,
+Clear cancellation/confirmation, contextual guides and a 390px viewport; no
+captured warning/error console entries. All 347 gallery JS cases are covered by the complete run plus successful
+rechecks of the corrected catalogue count and expanded parity timeout. Gallery
+Python covers 63 tests and 193 subtests, with the corrected catalogue file
+rechecked. Detailed results are in PORT-0025's common-base receipt. Full RTD export is not requalified here (the
+separate missing serverless build prerequisite from the mobile checkpoint remains).
+
+The original core's 1098 and original examples' 825 file hashes, HEADs and working
+states remain unchanged. Local evidence: /private/tmp/gramlot-grouplets-integration-20261029/.
+Complete preview: http://127.0.0.1:61509/, with Remote Edit disabled. Implemented
+and verified locally, not publicly deployed. Follow-up: shared saved resources,
+Grouplet-specific form/store composition and remaining families, each under its
+own agreed scope. The initial shared form manager is now available in the common
+base; this supersedes only the prerequisite observation in GC-360 §105.

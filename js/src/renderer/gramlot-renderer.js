@@ -10,6 +10,7 @@ import {HtmlElement} from '../view/html.js';
 import {ControlAdapter, RadioControl, RadioGroups, SelectControl} from '../view/controls.js';
 import {ButtonBinding} from '../view/button.js';
 import {MenuBinding} from '../view/menu.js';
+import {GroupletCardActions} from '../view/grouplet-card.js';
 import {NativeEventBinding} from '../view/events.js';
 import {References} from '../references.js';
 import {randomId} from '../random-id.js';
@@ -228,6 +229,11 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             record.menu = new MenuBinding(record.binding, record.element);
             record.menu.attach();
             record.cleanup.push(() => record.menu.detach());
+        }
+        if (node.nodeTag === 'groupletCard') {
+            const actions = new GroupletCardActions(record.binding, record.element);
+            actions.attach();
+            record.cleanup.push(() => actions.detach());
         }
         this.#connectEvents(record);
         this.references?.register(node, record.element);

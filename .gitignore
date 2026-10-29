@@ -53,3 +53,5 @@ src/gramlot/collections/tree/
 src/gramlot/collections/editors/
 src/gramlot/collections/typst/
 src/gramlot/resources/components/
+
+src/gramlot/collections/grouplets/

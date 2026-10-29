@@ -1,0 +1,90 @@
+TAP version 13
+# Subtest: plain card accepts authored fields without collapse or checkbox, and renders titles as text
+ok 1 - plain card accepts authored fields without collapse or checkbox, and renders titles as text
+  ---
+  duration_ms: 81.603209
+  ...
+# Subtest: card Data owns initial, external and interactive title/fold/check states independently
+ok 2 - card Data owns initial, external and interactive title/fold/check states independently
+  ---
+  duration_ms: 33.407959
+  ...
+# Subtest: nested cards fold independently and preserve fields, DOM, focus and request count
+ok 3 - nested cards fold independently and preserve fields, DOM, focus and request count
+  ---
+  duration_ms: 35.660542
+  ...
+# Subtest: a remote rebuild restores card states and edits from Data without duplicated headers
+ok 4 - a remote rebuild restores card states and edits from Data without duplicated headers
+  ---
+  duration_ms: 55.307083
+  ...
+# Subtest: header side and collapsible changes project without erasing Data state
+ok 5 - header side and collapsible changes project without erasing Data state
+  ---
+  duration_ms: 24.968667
+  ...
+# Subtest: removed cards cannot write Data through retained header controls
+ok 6 - removed cards cannot write Data through retained header controls
+  ---
+  duration_ms: 23.432667
+  ...
+# Subtest: literal card states follow the shared no-write rule without a private state store
+ok 7 - literal card states follow the shared no-write rule without a private state store
+  ---
+  duration_ms: 23.357916
+  ...
+# Subtest: checkboxLabel is visible, reactive, clickable and hidden together with its checkbox
+ok 8 - checkboxLabel is visible, reactive, clickable and hidden together with its checkbox
+  ---
+  duration_ms: 24.737417
+  ...
+# Subtest: unsupported header sides and legacy collapsed representations are rejected
+ok 9 - unsupported header sides and legacy collapsed representations are rejected
+  ---
+  duration_ms: 12.035625
+  ...
+# Subtest: grouplets is opt-in, DOM-free at import and exports the Python grammar
+ok 10 - grouplets is opt-in, DOM-free at import and exports the Python grammar
+  ---
+  duration_ms: 23.205958
+  ...
+# Subtest: two instances share a definition but isolate relative Data and reactive loading
+ok 11 - two instances share a definition but isolate relative Data and reactive loading
+  ---
+  duration_ms: 85.544584
+  ...
+# Subtest: nested fragments retain their local Data and dotted method targets
+ok 12 - nested fragments retain their local Data and dotted method targets
+  ---
+  duration_ms: 51.62125
+  ...
+# Subtest: first pending snapshot follows the applied in-flight answer
+ok 13 - first pending snapshot follows the applied in-flight answer
+  ---
+  duration_ms: 50.897083
+  ...
+# Subtest: removing a grouplet cancels its pending work and ignores the late answer
+ok 14 - removing a grouplet cancels its pending work and ignores the late answer
+  ---
+  duration_ms: 44.5655
+  ...
+# Subtest: readiness and cachedRemote retain the shared remote contract
+ok 15 - readiness and cachedRemote retain the shared remote contract
+  ---
+  duration_ms: 48.205292
+  ...
+# Subtest: prepared collection renders real Python Page and remote Source responses
+ok 16 - prepared collection renders real Python Page and remote Source responses
+  ---
+  duration_ms: 198.98225
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 965.524917

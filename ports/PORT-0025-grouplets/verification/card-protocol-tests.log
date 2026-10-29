@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: every endpoint and fragment answers the same in Python and JavaScript
+ok 1 - every endpoint and fragment answers the same in Python and JavaScript
+  ---
+  duration_ms: 16592.114291
+  ...
+# Subtest: filesystem navigation is one level per request, with independent directory index URLs
+ok 2 - filesystem navigation is one level per request, with independent directory index URLs
+  ---
+  duration_ms: 42.869291
+  ...
+# Subtest: border lessons retain their routes and teaching assets inside a lazy directory with its own page
+ok 3 - border lessons retain their routes and teaching assets inside a lazy directory with its own page
+  ---
+  duration_ms: 62.662209
+  ...
+# Subtest: every catalogue lesson is reachable with its title, route and nested source assets
+ok 4 - every catalogue lesson is reachable with its title, route and nested source assets
+  ---
+  duration_ms: 210.825292
+  ...
+# Subtest: numbered siblings mix directories and pages, hide indexes and use Markdown headings
+ok 5 - numbered siblings mix directories and pages, hide indexes and use Markdown headings
+  ---
+  duration_ms: 2.053917
+  ...
+# Subtest: host tools share one navigation category with the common playground
+ok 6 - host tools share one navigation category with the common playground
+  ---
+  duration_ms: 5.17875
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 16734.046792
