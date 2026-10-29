@@ -1303,3 +1303,32 @@ not JavaScript runtime code. Both adapter documentation identity checks and both
 Sphinx views pass. Component/provider responsibility is retained here; gallery
 pages/models/dataset work remains in the dedicated gallery chat. No merge,
 publication, dependency edit or owner visual acceptance is claimed.
+
+
+<a id="gc-315-185"></a>
+## 185 · Compact selector templates — 2026-10-29
+
+Owner requests in chat 01a1874b-9446-7910-98f3-2a793361c1d5: compact choices
+with alternating theme backgrounds, a wider template popup, and a clear display
+when invoice totals are null. The follow-up in the integration chat authorizes
+review and incorporation into the local candidate. No database expression syntax
+or provider responsibilities change.
+
+`templateNull` is read-bindable literal text replacing null values in template
+text slots; its default is empty text. Zero, false and empty strings are preserved.
+Requested columns must still exist in the response; missing columns remain a
+contract error. Replacements are text nodes, never HTML or evaluated pointers.
+
+The shared choice editor uses `--gramlot-choice-item-padding` (default `.25em .5em`)
+and `--gramlot-choice-alternate-background` (default the theme subtle surface).
+`--gramlot-choice-popup-min-width` controls minimum width. Database HTML templates
+default to `28rem`; ordinary choices retain the field width. Popups stay within
+the viewport and can scroll vertically. The Application example requests existing
+Asqueel model formulas `n_invoices` and `invoiced_total`, with `templateNull='—'`.
+It adds no query or aggregation language to the browser and performs no writes.
+
+Closing the suggestion popup cancels its search and debounce timer, not an
+active lookup of the committed value. Changing/clearing that value, changing
+the data-source configuration, or removing the control cancels obsolete lookup.
+Enter commits free text and closes pending search, including before its debounce
+elapses. These lifecycle fixes preserve the existing value/projection contract.

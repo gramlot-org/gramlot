@@ -15,9 +15,10 @@ def test_database_input_grammar_preserves_typed_keys_and_legacy_names():
     pane = builder.root.div(datapath='form')
     for value in (0, 12, 'code', None, '^.customer'):
         node = pane.DBSELECT(value=value, dbtable='customers', method='eligible', condition_country='^.country',
-                             selected_email='.email', lbl='Customer')
+                             selected_email='.email', lbl='Customer', templateNull='—')
         assert node.attr['_meta']['render_tag'] == 'gramlot-db-select'
         assert node.attr.get('value') == value
+        assert node.attr['templateNull'] == '—'
     assert pane.dbComboBox(value='New name').attr['_meta']['render_tag'] == 'gramlot-db-combo-box'
     with pytest.raises((TypeError, ValueError)):
         pane.dbComboBox(value=12)

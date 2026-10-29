@@ -405,3 +405,96 @@ test('both database controls show native provider errors instead of empty result
         assert.equal(f.host('choice').control.getAttribute('aria-busy'), 'false');
     }
 });
+
+
+test('templateNull preserves zero, false and empty text in both database controls', async t => {
+    for (const kind of ['dbSelect', 'dbComboBox']) {
+        const f = fixture(t, r => r[kind]({id:'choice', template:'<span>{amount}</span>',
+            templateNull:'—', searchDelay:0}),
+            () => reply([null, 0, false, ''].map((amount, id) => ({id, name:String(id), amount}))));
+        await settle(); f.host('choice').toggle.click(); await settle();
+        assert.deepEqual([...f.host('choice').choices.querySelectorAll('[role=option] span')]
+            .map(node => node.textContent), ['—', '0', 'false', '']);
+    }
+});
+
+test('bound templateNull updates literally without replacing the editor or selected value', async t => {
+    const f = fixture(t, (r, a) => {
+        a.data.setItem('placeholder', '—'); a.data.setItem('choice', 1);
+        a.data.setItem('secret', 'must not be displayed');
+        r.dbSelect({id:'choice', value:'^choice', template:'<span>{amount}</span>',
+            templateNull:'^placeholder', searchDelay:0});
+    }, () => reply([{id:1, name:'Alpha', amount:null}]));
+    await settle(); const host = f.host('choice'), control = host.control;
+    host.toggle.click(); await settle();
+    assert.equal(host.choices.querySelector('[role=option] span').textContent, '—');
+    f.key('choice','Escape');
+    f.app.data.setItem('placeholder', '^secret <img src=x onerror=alert(1)>');
+    await settle(); host.toggle.click(); await settle();
+    assert.equal(host.choices.querySelector('[role=option] span').textContent,
+        '^secret <img src=x onerror=alert(1)>');
+    assert.equal(host.choices.querySelector('img'), null);
+    assert.equal(f.host('choice'), host); assert.equal(host.control, control);
+    assert.equal(f.app.data.getItem('choice'), 1);
+});
+
+
+test('Escape followed by blur lets the selected-caption lookup finish', async t => {
+    let deferred = false, finish, signal;
+    const f = fixture(t, (r,a) => {
+        a.data.setItem('choice', 2);
+        r.dbSelect({id:'choice', value:'^choice', selected_email:'email', searchDelay:0});
+    }, (method,kw,currentSignal) => {
+        if (deferred && '_id' in kw) {
+            signal = currentSignal;
+            return new Promise(resolve => {finish = resolve;});
+        }
+        return lookup(method,kw);
+    });
+    await settle(); const host = f.host('choice');
+    assert.equal(host.control.value, 'Ada');
+    host.toggle.click(); await settle(); deferred = true;
+    f.key('choice','Escape'); f.event(host.control,'blur');
+    assert.equal(signal.aborted, false);
+    finish(reply([rows[1]])); await settle();
+    assert.equal(host.control.value, 'Ada');
+    assert.equal(f.app.data.getItem('choice'), 2);
+    assert.equal(f.app.data.getItem('email'), 'ada@test');
+    assert.equal(host.choices.hidden, true);
+});
+
+test('Enter cancels a debounced or in-flight combo search without reopening', async t => {
+    for (const delay of [0, 20]) {
+        let finish; const calls = [];
+        const f = fixture(t, r => r.dbComboBox({id:'choice', value:'^choice', searchDelay:delay}),
+            (method,kw,signal) => {calls.push(signal); return new Promise(resolve => {finish=resolve;});});
+        f.type('choice', 'Draft'); f.key('choice','Enter');
+        if (finish) finish(reply(rows));
+        await new Promise(resolve => setTimeout(resolve,40));
+        assert.equal(f.app.data.getItem('choice'),'Draft');
+        assert.equal(f.host('choice').choices.hidden,true);
+        if (delay) assert.equal(calls.length,0);
+        else assert.equal(calls[0].aborted,true);
+    }
+});
+
+
+test('clearing or removing a selector still cancels its pending selected-value lookup', async t => {
+    for (const remove of [false, true]) {
+        let finish, signal;
+        const f = fixture(t, (r,a) => {
+            a.data.setItem('choice',2);
+            r.dbSelect({id:'choice',node_label:'choice',value:'^choice',selected_email:'email'});
+        }, (method,kw,currentSignal) => {
+            signal=currentSignal; return new Promise(resolve=>{finish=resolve;});
+        });
+        const host=f.host('choice');
+        if (remove) f.app.src.source.popNode('main.choice');
+        else f.app.data.setItem('choice',null);
+        assert.equal(signal.aborted,true);
+        finish(reply([rows[1]])); await settle();
+        assert.equal(f.app.data.getItem('email'),null);
+        assert.equal(host.choices.hidden,true);
+        if (!remove) assert.equal(host.control.value,'');
+    }
+});

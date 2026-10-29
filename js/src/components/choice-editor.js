@@ -17,6 +17,7 @@ export function ChoiceEditor(HTMLElement) {
         #separator;
         #cleanup;
         #requestController;
+        #resolvingValue = false;
         #searchTimer;
         constructor() {
             super();
@@ -25,9 +26,11 @@ export function ChoiceEditor(HTMLElement) {
             style.textContent = `.option{position:relative} #control{width:100%;padding-right:calc(var(--gramlot-choice-toggle-width,1.6em) + .2em)}
                 #control:focus-visible{outline:1px solid var(--gramlot-border-control,#7a8798);outline-offset:-3px}
                 .toggle{position:absolute;right:0;top:0;bottom:0;width:var(--gramlot-choice-toggle-width,1.6em);min-width:0;min-height:0;font:inherit;font-size:var(--gramlot-field-font-size,1em);padding:0;border:0;background:transparent;color:inherit}
-                .choices{max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);box-sizing:border-box;max-height:min(var(--gramlot-choice-max-height,20rem),var(--gramlot-popup-available-height,100vh));overflow:auto;
+                .choices{min-width:min(var(--gramlot-choice-popup-min-width,0px),var(--gramlot-popup-available-width,100vw));max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);box-sizing:border-box;max-height:min(var(--gramlot-choice-max-height,20rem),var(--gramlot-popup-available-height,100vh));overflow:auto;
                     border:1px solid var(--gramlot-border-control,#aab4c2);border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-surface,Canvas);color:var(--gramlot-ink,CanvasText);font:inherit;font-size:var(--gramlot-field-font-size,1em);line-height:1.4;box-shadow:var(--gramlot-shadow,0 3px 9px #0002)}
-                .choices[hidden]{display:none} .choice{min-height:var(--gramlot-touch-target,0px);display:flex;align-items:center;padding:.5em .75em;border-radius:var(--gramlot-radius-sm,4px);cursor:pointer}
+                .choices[hidden]{display:none} .choice{min-height:var(--gramlot-touch-target,0px);display:flex;align-items:center;padding:var(--gramlot-choice-item-padding,.25em .5em);border-radius:var(--gramlot-radius-sm,4px);cursor:pointer}
+                .choice:nth-child(even){background:var(--gramlot-choice-alternate-background,var(--gramlot-surface-subtle,transparent))}
+                .choice:hover{background:var(--gramlot-selected,Highlight)}
                 .choice-detail{margin-inline-start:var(--gramlot-space-3,.75rem);color:var(--gramlot-text-secondary,GrayText)}
                 .choice[aria-selected=true]{background:var(--gramlot-selected,Highlight);color:var(--gramlot-ink,HighlightText)}`;
             this.toggle = doc.createElement('button');
@@ -105,7 +108,7 @@ export function ChoiceEditor(HTMLElement) {
             this.#source = source;
             this.toggle.disabled = this.locked;
             if (changed) { this.#rows = []; this.#picked = null; }
-            if (changed || this.locked) this.closeChoices();
+            if (changed || this.locked) this.closeChoices({cancelLookup: changed});
             if (changed && this.active && !this.#dirty) this.resolveValue();
             return rest;
         }
@@ -115,7 +118,7 @@ export function ChoiceEditor(HTMLElement) {
         writeControlValue(value) {
             if (Object.is(value, this.#value)) return;
             this.#value = value; this.#dirty = false; this.#picked = null;
-            this.closeChoices(); this.resolveValue();
+            this.closeChoices({cancelLookup: true}); this.resolveValue();
         }
         validateSelection(value) {
             if (!this.constrained) return super.validateSelection(value);
@@ -141,6 +144,7 @@ export function ChoiceEditor(HTMLElement) {
             });
         }
         commitDraft() {
+            this.closeChoices();
             const Event = this.ownerDocument.defaultView.Event;
             this.control.dispatchEvent(new Event('change', {bubbles: true}));
         }
@@ -152,6 +156,7 @@ export function ChoiceEditor(HTMLElement) {
         async request(keywords) {
             this.#requestController?.abort();
             const controller = new AbortController(); this.#requestController = controller;
+            this.#resolvingValue = Object.hasOwn(keywords, '_id');
             const generation = ++this.#generation;
             this.control.setAttribute('aria-busy', 'true'); this.error('');
             try {
@@ -162,7 +167,7 @@ export function ChoiceEditor(HTMLElement) {
                 if (generation === this.#generation && this.active) this.error(error.message);
                 return null;
             } finally {
-                if (generation === this.#generation) { this.#requestController = null; this.control.setAttribute('aria-busy', 'false'); }
+                if (generation === this.#generation) { this.#requestController = null; this.#resolvingValue = false; this.control.setAttribute('aria-busy', 'false'); }
             }
         }
         async resolveValue() {
@@ -225,16 +230,21 @@ export function ChoiceEditor(HTMLElement) {
             if (this.#active < 0) this.control.removeAttribute('aria-activedescendant');
             else this.control.setAttribute('aria-activedescendant', `choice-${this.#active}`);
         }
-        closeChoices() {
+        closeChoices({cancelLookup = false} = {}) {
             clearTimeout(this.#searchTimer); this.#searchTimer = null;
-            this.#requestController?.abort(); this.#requestController = null;
-            ++this.#generation; this.#cleanup?.(); this.#cleanup = null;
+            // Closing suggestions must not cancel resolution of the selected Data value.
+            if (cancelLookup || !this.#resolvingValue) {
+                this.#requestController?.abort(); this.#requestController = null;
+                this.#resolvingValue = false; ++this.#generation;
+                this.control.setAttribute('aria-busy', 'false');
+            }
+            this.#cleanup?.(); this.#cleanup = null;
             if (this.#opened) this.choices.hidePopover();
             this.#opened = false; this.choices.hidden = true;
-            this.control.setAttribute('aria-expanded', 'false'); this.control.setAttribute('aria-busy', 'false');
+            this.control.setAttribute('aria-expanded', 'false');
             this.control.removeAttribute('aria-activedescendant');
         }
-        releaseControl() { this.closeChoices(); }
+        releaseControl() { this.closeChoices({cancelLookup: true}); }
         disconnectedCallback() { this.releaseControl(); }
     };
 }

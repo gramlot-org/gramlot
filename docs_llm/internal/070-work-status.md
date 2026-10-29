@@ -16166,3 +16166,37 @@ Local trial endpoints: Base Asqueel/Kajenn on 61501, SQLAlchemy/Uvicorn on 61502
 Django on 61503, Application/Kajenn on 61504. The full database verification and
 package/browser checks are recorded in §2460. Owner trial and the scope of the
 next integration remain separate from this completed local checkpoint.
+
+
+<a id="gc-070-2470"></a>
+## 2470 · Reviewed selector presentation in the local candidate — 2026-10-29
+
+Owner asked to review the separate chat's additions and incorporate accepted work
+into the local release. Requests and implementation scope are recorded in
+GC-315 §185; the source chat is 01a1874b-9446-7910-98f3-2a793361c1d5.
+Accepted: compact, theme-based alternating choices; wider database HTML templates;
+literal null replacement; and the Invoice example's existing contact and aggregate
+model fields. Review limits the wider default to HTML templates, preserves normal
+choice widths and regenerates the Python grammar and widget reference.
+
+Browser qualification exposed two existing interaction races. Closing suggestions
+now cancels search/debounce but allows selected-value lookup to finish; value or
+configuration replacement and disposal still cancel stale lookup. Enter closes
+pending searches before committing, preventing a delayed popup from reopening.
+Two regressions failed before the fix; they and the additional lookup cancellation
+check pass afterward. No record state is added to Logic or outside Source/Data;
+request lifecycle markers remain private component resources.
+
+Checks: 1,326 core JavaScript tests; 317 Python tests and 397 subtests (one existing
+expected failure); 248 Python-server tests; 316 examples JavaScript tests; three
+database-page authoring tests. Build and generated widget-reference checks pass.
+All four local gallery servers use non-editable candidate wheels, not the separate
+chat's overlay. Desktop and 390 px checks cover template width, no horizontal
+popup overflow, selected fields, free text, and light/dark synchronization.
+
+The local candidate keeps the existing version fields and release branch. No
+public package, push, tag or deployment is part of this checkpoint. Existing
+develop work remains intact. General legacy selector parity, direct .aggr()
+expressions, form-state management and additional application features remain
+outside this tranche. Base SQLAlchemy/Django auxiliary column headings still
+use provider labels; broader editorial alignment is separate from this correction.

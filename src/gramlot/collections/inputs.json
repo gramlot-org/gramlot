@@ -35373,6 +35373,17 @@
             "default": null
           },
           {
+            "name": "templateNull",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
             "name": "order_by",
             "kind": "keyword_only",
             "role": "attribute",
@@ -36043,6 +36054,11 @@
             },
             "template": {
               "dtype": "T",
+              "binding": "read"
+            },
+            "templateNull": {
+              "dtype": "T",
+              "default": "",
               "binding": "read"
             },
             "order_by": {
@@ -37898,6 +37914,17 @@
             "default": null
           },
           {
+            "name": "templateNull",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
             "name": "order_by",
             "kind": "keyword_only",
             "role": "attribute",
@@ -38535,6 +38562,11 @@
             },
             "template": {
               "dtype": "T",
+              "binding": "read"
+            },
+            "templateNull": {
+              "dtype": "T",
+              "default": "",
               "binding": "read"
             },
             "order_by": {

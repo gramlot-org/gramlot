@@ -8,6 +8,7 @@ export const databaseParameters = {
     hiddenColumns: {dtype:'T', binding:'read'},
     auxColumns: {dtype:'T', binding:'read'},
     template: {dtype:'T', binding:'read'},
+    templateNull: {dtype:'T', default:'', binding:'read'},
     order_by: {dtype:'T', binding:'read'},
     limit: {dtype:'L', default:10, binding:'read'},
     searchDelay: {dtype:'L', default:300, binding:'read'},
@@ -45,7 +46,7 @@ export function databaseChoices(Base) {
         textValue(text) { return text === '' ? null : text; }
         projectAttributes(attrs, adapt) {
             const configuration = Object.fromEntries(Object.entries(attrs).filter(([key]) =>
-                requestParameters.includes(key) || ['autoSelect','template','emptyLabel','validate_notnull'].includes(key)
+                requestParameters.includes(key) || ['autoSelect','template','templateNull','emptyLabel','validate_notnull'].includes(key)
                 || key.startsWith('condition_') || key.startsWith('selected_')));
             const keys = new Set([...Object.keys(configuration), ...Object.keys(this.#configuration)]);
             if ([...keys].some(key => !Object.is(configuration[key], this.#configuration[key]))) {
@@ -68,6 +69,8 @@ export function databaseChoices(Base) {
                     }
                 }
             }
+            this.choices.style.minWidth = this.#template
+                ? 'min(var(--gramlot-choice-popup-min-width,28rem),var(--gramlot-popup-available-width,100vw))' : '';
             const {limit, searchDelay, hasDownArrow} = this.parameters;
             if (!Number.isInteger(limit) || limit < 1) throw new TypeError('limit must be a positive integer.');
             if (!Number.isInteger(searchDelay) || searchDelay < 0) throw new TypeError('searchDelay must be a non-negative integer.');
@@ -138,7 +141,7 @@ export function databaseChoices(Base) {
                 const walker = this.ownerDocument.createTreeWalker(content, 4);
                 while (walker.nextNode()) {
                     walker.currentNode.data = walker.currentNode.data.replace(/\{([A-Za-z0-9_]+)\}/g,
-                        (_, name) => row.record[name] == null ? '' : String(row.record[name]));
+                        (_, name) => row.record[name] == null ? this.parameters.templateNull : String(row.record[name]));
                 }
                 item.style.display = 'block';
                 item.style.overflowWrap = 'anywhere';

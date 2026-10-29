@@ -1803,3 +1803,14 @@ State-name selector naming, 2026-10-29 (constitution 11.102): `state_name` reuse
 
 
 Direct auxiliary selector naming, 2026-10-29 (constitution 11.103): `auxColumns`, response `columns` and `headers` retain legacy names. Compiled Asqueel result column names are authoritative (`@state.name` yields `_state_name`); `selected__state_name` follows `selected_<returned field>`. As corrected by constitution 11.104, Asqueel auxiliary paths are model-resolved per request; `columns` registration is not a prerequisite for them. Returned names remain compiler-owned. No relation-name conversion is implemented in Gramlot. Base page `selector_parameters` is ordinary Python example configuration supplied by its runner, not a framework API.
+
+
+Selector presentation, 2026-10-29: `templateNull` follows the existing camelCase
+component parameter names `template`, `emptyLabel` and `selectedCaption`. It is
+literal replacement text for null record values, not a new pointer syntax.
+`--gramlot-choice-popup-min-width`, `--gramlot-choice-item-padding` and
+`--gramlot-choice-alternate-background` follow the existing theme token prefix
+and choice scope. Owner requested generic, theme-based compact choices and a
+clear null value in chat 01a1874b-9446-7910-98f3-2a793361c1d5, then authorized
+review and incorporation here. Wider default presentation applies to database
+HTML templates; ordinary choices retain field-width presentation.
