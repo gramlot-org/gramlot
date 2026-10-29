@@ -56,3 +56,21 @@ def test_javascript_scheme_uses_ascii_case_matching():
     from gramlot.renderer.attributes import is_javascript_url
     assert is_javascript_url('JaVaScRiPt:alert(1)')
     assert not is_javascript_url('javaſcript:alert(1)')
+
+
+@pytest.mark.parametrize('tag, attribute, projected', [
+    ('form', 'html_action', 'action'),
+    ('object', 'html_data', 'data'),
+    ('a', 'href', 'href'),
+])
+def test_bound_url_is_checked_again_after_data_changes(tag, attribute, projected):
+    builder = GramlotBuilder()
+    getattr(builder.root, tag)(**{attribute: '^url'})
+    builder.data.set_item('url', '/safe')
+    assert f'{projected}="/safe"' in builder.render()
+    for unsafe in ('javascript:alert(1)', ' \tJaVa\nScRiPt:alert(1)'):
+        builder.data.set_item('url', unsafe)
+        with pytest.raises(ValueError, match='javascript: URL'):
+            builder.render()
+        builder.data.set_item('url', '/recovered')
+        assert f'{projected}="/recovered"' in builder.render()

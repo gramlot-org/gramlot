@@ -16959,3 +16959,44 @@ Documentation identities/paired anchors and whitespace checks pass. The base
 chat stylesheet now consumes the gallery theme tokens, fixing the low-contrast
 prototype button without changing the original trial. Browser verification uses
 Kajenn; both Kajenn and Uvicorn feedback/cleanup paths pass automated tests.
+
+
+<a id="gc-070-security-reconciliation-20261029"></a>
+## Security audit reconciliation — common local base, 2026-10-29
+
+Owner: “Sì, parti dall’audit di sicurezza: confronta le correzioni con la base
+comune e integra quelle ancora mancanti, con i test. Preserva il lavoro originale
+e lascia Invoice fuori.” Scope: reconcile the existing audit corrections, not a
+new security policy or a certification of every newly integrated feature.
+
+The original `audit-runtime-security` checkout is based on `afd5a78d` (0.3.10)
+and contains unrelated uncommitted feature work. Its security correction commit
+`8131c020` and the later audit correction `1b93036b` are already ancestors of the
+common local release base. Inspection found no missing runtime security fix from
+that audit; importing its older files would replace later implementations.
+
+| Protection | Common-base result |
+| --- | --- |
+| Script text and URL from Data/expressions | Rejected; initial literal Source activation remains supported, later executable replacement is refused. |
+| Native form action and object data URLs | JavaScript schemes rejected in literal, dialect and bound attributes; Python and JS use ASCII scheme matching. |
+| Drawer captions | Safe HTML preserved through DOMPurify on initial and reactive labels. |
+| Collection loading | Descriptor identity checked before activation; shared artifact verification covers bytes, metadata, wrapper and inventory. |
+| Runtime lifecycle | Existing remote-disposal, binding, subscription and page-module lifecycle regressions retained. |
+
+New regressions exercise safe → unsafe → safe URL changes for forms, objects and
+links after mounting: unsafe values never reach the DOM, valid values recover,
+and the DOM instance stays the same. Python rendering repeats validation after
+Data changes. No runtime behavior or compatibility path was added.
+
+Verification: 114 focused JavaScript tests passed (renderer security, drawers,
+runtime bundle, collection artifact/bootstrap, bindings, remotes, subscriptions),
+and 51 Python tests plus 37 subtests passed (renderer security and page resources).
+The initial JS invocation used the system Python and failed three cross-language
+fixtures for missing packages; the corrected invocation with the project venv
+passed the complete selected suite. These are automated checks, not a fresh
+browser qualification or a full dependency vulnerability scan.
+
+The original checkout HEAD/status and all 921 snapshotted file hashes are
+unchanged. Receipts and the original local patch are under
+`/private/tmp/gramlot-security-reconciliation-20261029/`. Invoice remains excluded.
+Implemented and verified locally; no publication, deployment or dependency edit.

@@ -120,3 +120,30 @@ test('javascript URL scheme matching is ASCII, matching Python',()=>{
     const invalid=new GramlotBuilder();invalid.root.a('Invalid',{href:'JaVaScRiPt:alert(1)'});
     assert.throws(()=>invalid.render(),/javascript: URL/);
 });
+
+for (const [tag, attribute, projected] of [
+    ['form', 'html_action', 'action'],
+    ['object', 'html_data', 'data'],
+    ['a', 'href', 'href']
+]) {
+    test(`${tag} rejects unsafe live URL updates and recovers on the same element`, () => {
+        const {app, window} = page();
+        const builder = new GramlotBuilder();
+        builder.root[tag]({[attribute]:'^url'});
+        try {
+            app.data.setItem('url', '/safe');
+            app.src.startSource(builder.source);
+            const element = window.document.querySelector(tag);
+            assert.equal(element.getAttribute(projected), '/safe');
+            for (const unsafe of ['javascript:alert(1)', ' \tJaVa\nScRiPt:alert(1)']) {
+                assert.throws(() => app.data.setItem('url', unsafe), /javascript: URL/);
+                assert.equal(window.document.querySelector(tag), element);
+                assert.equal(element.getAttribute(projected), '/safe');
+                app.data.setItem('url', '/recovered');
+                assert.equal(window.document.querySelector(tag), element);
+                assert.equal(element.getAttribute(projected), '/recovered');
+                app.data.setItem('url', '/safe');
+            }
+        } finally { app.dispose(); window.close(); }
+    });
+}
