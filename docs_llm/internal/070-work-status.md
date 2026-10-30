@@ -1,8 +1,8 @@
 # 070 · Release and current development status
 
-Document ID: **GC-070**. Updated: **2026-10-29**.
+Document ID: **GC-070**. Updated: **2026-10-30**.
 
-**Current local base:** Grid, forms, selectors, tray and prepared collections are combined for consolidation; see [the current checkpoint](#gc-070-unified-consolidation-base). No new public release.
+**Current release:** all agreed packages are published. The public galleries and offline archive are deployed; the Python gallery also exposes the approved database/Asqueel catalogues alongside ordinary and mobile examples. Public browser and database qualification passed. See [the release checkpoint](#gc-070-common-release-20261030).
 
 **Kajenn extension:** native WebSocket and database access are implemented and locally verified; the upstream async-cancellation issue remains open. See the latest checkpoint in [§2435](#gc-070-2435).
 
@@ -17625,3 +17625,107 @@ Gallery qualification passes 353 JavaScript tests and 93 Python tests (one optio
 Final installed-package qualification and publication are in progress. Public release and deployment have not yet occurred; record their receipts separately from these local checks.
 
 The first publication gate passed the complete core suite but stopped on the inspector browser test’s obsolete fixed theme-token count. The test now compares all unconditional root token names, including Grid tokens, with the displayed controls; Chromium and WebKit pass. No package was published by that failed run.
+
+
+Release publication checkpoint: core 0.3.24 passed the complete publication gate
+([run 41023041190](https://github.com/gramlot-org/gramlot/actions/runs/41023041190))
+and was accepted by npm and PyPI. npm reports that the uploaded package is still
+being processed; its archive currently returns 404. The automatic gallery
+deployment stopped before activation when npm could not download that archive.
+Do not confuse registry metadata with a usable installation.
+
+All 127 ordinary gallery pages pass behavioral checks through both local Python
+and JavaScript hosts; the hosted examples browser gate also passes. The examples
+publication is still running. Local Node gallery integration has three 30-second
+fixture timeouts under concurrent qualification; these are being investigated,
+not waived. Server publication and final public deployment remain pending.
+
+The npm archive subsequently became available: its registry SHA-1, version and
+selection_trial contents were verified against the publication metadata. Hosted
+examples qualification passes Node, Python 3.11/3.12, all-page browser checks and
+documentation. The three local jsdom timeout cases pass when rerun with proper
+window teardown and a bounded 90-second fixture budget. CPU profiling attributes
+over 30 seconds in the rebuild case to jsdom slot assignment; no runtime or
+assertion was changed to bypass that simulator cost.
+
+Examples publication completed successfully in
+[run 41023765781](https://github.com/gramlot-org/gramlot-examples/actions/runs/41023765781):
+Node, Bun, Python 3.11/3.12, every ordinary page on both hosts, documentation and
+the source-core comparison passed. PyPI is available; npm archive propagation is
+checked separately before deployment.
+
+Host qualification exposed CI preparation defects, not waived runtime failures:
+the Python source suite omitted database backend extras, and three staging tests
+used the developer's PostgreSQL despite testing only catalogue/resource mounting.
+The workflow now installs the backends and runs every root-level contract; staging
+tests inject database factories and assert their wiring. Locally, 134 root tests
+pass (one database integration skip); all three isolated staging cases pass.
+JavaScript release tags now select consolidated main source dependencies rather
+than develop; the first unpublished attempt was stopped by its own failed gate,
+and its unpublished tag was advanced with an explicit expected-old-commit lease.
+Package runtime files were not changed by these test/workflow corrections.
+
+Python server 0.3.24 is published on PyPI
+([run 41026002086](https://github.com/gramlot-org/gramlot-py-server/actions/runs/41026002086)).
+All required adapter, clean-install, browser and documentation gates passed. Its
+original informational source-core job lacked backend dependencies; the corrected
+main verification now passes both repository-wide and full source-core suites
+([run 41026820944](https://github.com/gramlot-org/gramlot-py-server/actions/runs/41026820944)).
+Examples npm archive availability is also confirmed. JavaScript publication and
+final hosted-gallery promotion are still pending.
+
+JavaScript server, serverless exporter and project scaffolder 0.3.24 are published
+on npm after all required and informational checks passed
+([run 41026494845](https://github.com/gramlot-org/gramlot-js-server/actions/runs/41026494845)).
+This includes Node/Bun host contracts, Worker/export contracts, exported files in
+Chromium, gallery checks on both runtimes and generated project checks. The final
+Python main suite is also entirely green, including browser qualification.
+All agreed package publications are complete. Final deployment remains pending
+while the latest npm archives become downloadable. No TestFlight upload occurred.
+
+Hosted deployment succeeded in [run 41029169976](https://github.com/gramlot-org/gramlot-js-server/actions/runs/41029169976), generation `20261030T085045Z`, offline archive SHA-256 `f21b748ae00ae38373f6bd4e4577837ad1a49e3cbf4108af8f5a70db0d123925`. The deployment checks 25 component pages, bindings and validation on both candidate hosts, the file export and both public hosts. Additional public checks cover the new form/Grid lessons and Grouplets on both hosts; Remote Edit remains disabled and the native mobile catalogue/SQLite page remains available. A Grouplet browser check must await its deepest initial remote fragment before interacting; waiting only for an earlier customer field can race with nested loading.
+
+The owner correctly identified that Asqueel Grid is absent from the public gallery. Package inclusion did not activate its optional host catalogue. The current public entry point stages ordinary and mobile catalogues only. Read-only inspection confirms an existing public `invoice_demo` database and `gramlot_reader` role; no local dataset transfer is necessary. Public Asqueel catalogue/connection wiring is outstanding. The cached trial additionally needs restricted public cache-role/schema preparation, whereas GP-035-065 authorizes that preparation only locally. No public database permissions or schema were changed. Keep this deployment gap open; do not claim the complete gallery objective finished.
+
+Owner confirmation on 2026-10-30: “si” to the explicit public Asqueel cache
+role/schema request. The public `invoice_demo` data are reused without transfer
+from the Mac. The dedicated non-superuser login has SELECT on five demonstration
+tables and owns only the cache schema. The reviewed native migration created only
+the cache catalogue and owner index. Database checks pass denied business writes,
+denied administrative reads, cache ownership isolation, sorting/search/windows
+and disposal. Public activation is still pending the candidate browser gate.
+
+The candidate browser gate now passes the Asqueel navigation entry, dependent
+state/customer selectors, resident customer and invoice grids, typed JSONL and
+cached selection transitions/search/sort. All 31 updater tests and the isolated
+nginx gzip/revalidation/deployment/rollback integration pass. The latter now
+waits for the expected generation before asserting a conditional 304 during
+graceful reload; old workers can briefly accept subsequent connections. Public
+promotion is in progress; the existing site remains available until activation.
+
+The first public promotion rolled back safely: the container did not trust the
+nginx gateway's forwarded HTTPS, so the strict WebSocket origin check refused
+the connection (403). The public site stayed on the previous generation. The
+deployment entry point now trusts only its Docker default gateway and loopback;
+no origin check is bypassed and no framework/dependency change was needed.
+An isolated TLS proxy passes the full Asqueel browser gate. A regression verifies
+that a different container address cannot spoof forwarded HTTPS. Final promotion
+is being retried with these checks included in every future deployment.
+
+Public activation completed on 2026-10-30, generation `20261030T093501Z`,
+offline archive SHA-256
+`1218eb446a24d96a10307bc47ecb94b77052346969186b3f7fa35a5b5bf7772a`.
+The deployment passed 25 component-page checks on both candidates, file export
+and both public hosts. The public Asqueel gate passes navigation discovery,
+dependent state/customer selectors, resident grids, typed JSONL, cached/resident
+transitions, server search and sort. A separate public check confirms Remote Edit
+is disabled and the native-only mobile catalogue and SQLite page are available.
+Database qualification verifies restricted permissions, independent cache owners
+and cleanup. Deployment source and tests are consolidated in examples `ac3587a`;
+existing package tags remain unchanged. The temporary TLS proxy and candidate
+container are removed; the previous public generation is retained for rollback.
+
+Local verification: `http://127.0.0.1:61513/` remains available; its cached Asqueel
+example starts and loads data in Chromium. Port 61505 also responds, but 61513 is
+the complete release preview recommended for this check. Invoice application
+remains excluded; no TestFlight upload occurred.
