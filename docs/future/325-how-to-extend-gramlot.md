@@ -2455,3 +2455,17 @@ its buildId remains a reference to the original artifact. HTTP serves original b
 Current test evidence and remaining integration limitations are tracked in
 [GC-070 §1655](../internal/070-work-status.md#gc-070-1655). No menus, toolbar/window
 UI, public package release or deployment is part of this implementation.
+
+
+<a id="gc-325-environment-collections-20261030"></a>
+## Environment inclusion and dynamic engines (2026-10-30)
+
+The owner-approved environment selection supersedes repeating standard collection
+imports in every example. A shared Page base (or host `collections`) includes the
+prepared descriptors. Extra page collections still accumulate. Component engines
+are declared through dynamic import(); generation preserves that boundary with
+ESM splitting and includes all chunks in the verified inventory. Their relative
+URLs require no new bootstrap field. Activating a collection does not fetch the
+engine. The existing file-origin derived bundle is still eager; deferred loading
+for that profile remains unresolved. See GC-070 environment checkpoint for sizes
+and verification, and GC-340 for application authoring.

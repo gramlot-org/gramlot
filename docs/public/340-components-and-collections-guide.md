@@ -3,7 +3,9 @@
 Document ID: **GC-340**.
 
 
-Use a prepared collection through `Page.gramlots` when writing an application.
+Declare prepared collections once on the environment Page base (or in the host
+`collections` option). Individual pages inherit them. `Page.gramlots` is needed
+only to add a collection outside that environment selection.
 Read this guide when you need to **create, package or deliberately override** a
 component. It describes the implemented contract; experimental plans and past
 release decisions are kept in internal documents.
@@ -431,15 +433,17 @@ The paragraph and input share one Data path. Typing updates Data through the
 existing binding machinery, and the paragraph displays the same value. The Python
 page contains no JS registration code and does not need to know the asset URL.
 
-For prepared built-in collections, the same shape applies, for example
-`from gramlot.collections.inputs import mygramlot`. The host integration must be
-using the matching prepared-collection implementation. A grammar-only JSON file
+For prepared built-in collections, put the same declaration on the environment
+base, for example `from gramlot.collections.inputs import mygramlot`. The gallery
+already includes its standard collections: its examples import only `Page`, not
+`inputs`, `layout` or `grid`. The host integration must use the matching
+prepared-collection implementation. A grammar-only JSON file
 is not a substitute for this package descriptor in `Page.gramlots`.
 
 <a id="gc-340-055"></a>
 ## 055 · What the host and bootstrap do for you
 
-The Python integration derives a dependency-first registry from page declarations
+The Python integration derives a dependency-first registry from environment and page declarations
 at process startup, verifies the packages and keeps the registry fixed for that
 process. Page discovery imports candidate modules, so module import should be
 safe and should not start application jobs. Each worker initializes its own
@@ -462,6 +466,14 @@ waits for CSS and module completion. The browser checks imported collection name
 and build IDs, registers custom-element classes, creates the runtime with the
 selected grammars, registers collection commands and page Logic, then starts the
 page. A failed stylesheet, module import or identity check prevents normal startup.
+
+Collection activation imports its lightweight component definitions. A component
+uses a dynamic `import()` for a heavy external engine. The generator emits that
+engine in separate verified files; the first use of the component loads it.
+Importing the editors collection alone does not download CodeMirror, Jodit or
+ProseMirror; importing Typst alone does not download its compiler. Repeated use
+in one document shares the module import. Self-contained file-origin exports
+still embed engine bytes and are not covered by this deferred-download claim.
 
 The build ID ties generated grammar, command metadata and files to one artifact.
 It is a consistency fingerprint, not a digital signature establishing who wrote
@@ -532,6 +544,12 @@ copy into every dependent collection.
 
 <a id="gc-340-065"></a>
 ## 065 · Inherit page selections deliberately
+
+The host `collections` option applies an environment-local Page base to every
+opened page, without mutating imported page classes. Environments can also expose
+a shared Page subclass with the same `gramlots` declaration. Both servers cache
+that composition and reuse the prepared grammar. A page does not repeat its
+environment collection imports.
 
 Python collects class-local `gramlots` declarations in base-to-derived MRO order,
 then resolves their dependency graph:

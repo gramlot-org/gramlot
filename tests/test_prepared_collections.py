@@ -169,3 +169,28 @@ def test_new_server_reverifies_changed_artifact(tmp_path, monkeypatch):
     assert server._collection_document(descriptor) == document
     with pytest.raises(ValueError, match='fingerprint mismatch'):
         GramlotServer()._collection_document(descriptor)
+
+
+def test_environment_page_has_all_included_collections_without_changing_module_class():
+    from gramlot import Page
+    from gramlot.collections.inputs import mygramlot as inputs
+    from gramlot.collections.layout import mygramlot as layout
+    from gramlot.server import GramlotServer
+    from gramlot.collection import page_collections
+
+    class Example(Page):
+        def main(self, root):
+            root.div(lbl='Name').textBox(value='^.name')
+
+    left = GramlotServer(collections=[inputs, layout])
+    right = GramlotServer(collections=[layout])
+    prepared = left._environment_page(Example)
+    assert prepared is left._environment_page(Example)
+    assert issubclass(prepared, Example)
+    assert page_collections(prepared) == (inputs, layout)
+    assert page_collections(right._environment_page(Example)) == (layout,)
+    assert not page_collections(Example)
+    builder = prepared.source_builder('main')
+    left._load_collections(builder, left.page_collections(prepared))
+    prepared().main(builder.root)
+    assert 'gramlot-textbox' in builder.to_tytx()

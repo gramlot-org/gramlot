@@ -211,3 +211,11 @@ See GC-105 for existing components, GC-097 for binding, GC-096 for styles, GC-32
 §150 for implemented preparation, GC-335 for provisional menus and GC-225 for
 naming. In this development checkout GC-325 §150 and this guide supersede GC-105's
 older URL-only collection activation paragraphs; no stable-release claim follows.
+
+
+Environment collections (2026-10-30): declare once on the environment Page base
+or host `collections` option; examples inherit all configured collections. Extra
+Page.gramlots still accumulate. Both hosts cache environment Page composition and
+grammar without mutating imported classes. Components' dynamic import() boundaries
+produce separate verified ESM files; external engines load on first use, shared
+within the document. File-origin derived bundles still embed engines eagerly.

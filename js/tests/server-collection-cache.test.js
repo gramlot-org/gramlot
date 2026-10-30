@@ -93,3 +93,16 @@ test('file discovery imports candidates once without constructing pages or calli
  await writeFile(join(root,'invalid.js'),'export const Page=42;');
  await assert.rejects(async()=>{for await(const cls of server.iterPageClasses())void cls;},/Invalid Page export/);
 });
+
+test('environment Page includes host collections without mutating imported classes',()=>{
+ const a=record('a'),b=record('b');
+ class Example extends Page {}
+ const left=new GramlotServer({collections:[a,b]}),right=new GramlotServer({collections:[b]});
+ const bound=left.environmentPage(Example);
+ assert.equal(bound,left.environmentPage(Example));
+ assert.ok(new bound() instanceof Example);
+ assert.deepEqual(bound.gramlots,[a,b]);
+ assert.deepEqual(right.environmentPage(Example).gramlots,[b]);
+ assert.deepEqual(Example.gramlots,[]);
+ assert.deepEqual(left.pageCollections(bound),[a,b]);
+});

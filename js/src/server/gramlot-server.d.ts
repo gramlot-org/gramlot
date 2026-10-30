@@ -126,6 +126,8 @@ export class GramlotServer {
     /** Create a server. */
     /** Resolve class-local declarations and their named dependencies, base first. */
     pageCollections(PageClass: typeof Page): PreparedCollection[];
+    /** Environment-local Page class; the imported class remains unchanged. */
+    environmentPage(PageClass: typeof Page): typeof Page;
     collectionGraph(collections: PreparedCollection[]): PreparedCollection[];
     loadCollections(builder: GramlotBuilder, collections: PreparedCollection[]): void;
     constructor(options?: GramlotServerOptions);

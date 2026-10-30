@@ -4676,3 +4676,32 @@ and connected gallery increment. Shared documentation addresses, manual/notes
 lookup, editing, languages and permissions via resources/Kajenn remain a distinct
 required future contract, as explicitly selected by the owner; they are not
 implemented or implied by this Markdown presentation. No publication.
+
+
+<a id="gc-000-environment-collections-20261030"></a>
+### Environment collections and deferred engines — owner, 2026-10-30
+
+Owner: "Sì, procedi così: collezioni disponibili dalla classe base dell’ambiente
+ e moduli esterni caricati solo quando servono. Verifica i pesi e togli gli import
+ delle collezioni dai singoli esempi." This supersedes per-example selection for
+collections already included by the environment; it does not activate every
+installed Python package or discover arbitrary packages by import side effects.
+
+The environment declares its prepared collections once. Its effective Page base
+makes their complete grammar and browser components available to every page.
+Python and JS servers compose and cache an environment-local Page class without
+mutating the imported application class. Existing additional Page.gramlots
+selections still accumulate. Prepared grammar is reused across openings.
+
+A component declares an external engine through its existing dynamic module
+import. The collection generator preserves that boundary as inventoried ESM
+chunks: activating the collection must not fetch CodeMirror, Jodit, ProseMirror
+or Typst. First component use imports its engine; the browser module cache
+shares the import within a document. Bootstrap retains verified collection URLs
+and build IDs; relative engine URLs remain part of the same verified artifact.
+No additional engine metadata schema or parallel loader is introduced.
+
+The existing self-contained file-origin export embeds verified derived bundles.
+It currently retains eager engine bytes; deferred downloads in that profile are
+not claimed. Changing that packaging is a separate unresolved part of this goal.
+No dependency edits, public release or deployment are authorized by this change.

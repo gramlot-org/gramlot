@@ -146,6 +146,7 @@ class GramlotServer:
         self._page_channels = {}
         self.websocket_url = websocket_url
         self.collections = collection_graph(collections)
+        self._environment_pages = {}
         self._collection_documents = {}
         self._prepared_grammars = {}
         self.css_theme = css_theme
@@ -164,6 +165,16 @@ class GramlotServer:
 
     def page_collections(self, cls):
         return collection_graph((*self.collections, *page_collections(cls)))
+
+    def _environment_page(self, cls):
+        """Bind the environment's collections without mutating the imported Page class."""
+        if not self.collections:
+            return cls
+        if cls not in self._environment_pages:
+            self._environment_pages[cls] = type(cls.__name__, (cls,), {
+                "__module__": cls.__module__, "gramlots": self.page_collections(cls),
+            })
+        return self._environment_pages[cls]
 
     def _collection_document(self, collection):
         """Verify an immutable descriptor once per server, retaining only its grammar."""
@@ -372,6 +383,7 @@ class GramlotServer:
         cls = self.resolve_page(path)
         if not isinstance(cls, type) or not issubclass(cls, Page) or cls is Page:
             raise TypeError("Page modules must expose a subclass of gramlot.Page")
+        cls = self._environment_page(cls)
         selected = self.page_collections(cls)
         for collection in selected:
             self._collection_document(collection)

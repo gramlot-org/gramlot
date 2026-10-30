@@ -121,8 +121,11 @@ export async function generate(request) {
             `options.css?.forEach((url,index)=>{url.href=css[index].href;});\n`+
             `for(const [key,url] of Object.entries(options.assets??{})) url.href=assets[key].href;\n`+
             `return create({...options,css,assets});\n}\n`;
-        await build({entryPoints:[row.entry],outfile:path.join(assets,'collection.js'),absWorkingDir:request.projectRoot,
-            bundle:true,format:'esm',platform:'browser',target:'es2022',logLevel:'silent',legalComments:'inline',loader:{'.css':'text'},
+        // Keep component-declared import() boundaries in the artifact. Engines are
+        // fetched on first use, not downloaded as part of collection activation.
+        await build({entryPoints:{collection:row.entry},outdir:assets,absWorkingDir:request.projectRoot,
+            bundle:true,splitting:true,chunkNames:'modules/[name]-[hash]',minify:true,
+            format:'esm',platform:'browser',target:'es2022',logLevel:'silent',legalComments:'inline',loader:{'.css':'text'},
             plugins:[{name:'collection-linking',setup(b){
                 b.onResolve({filter:/.*/},async args=>{
                     if(args.path==='@gramlot/gramlot/components' || (args.path.startsWith('.') && path.resolve(args.resolveDir,args.path)===coreRegistry)) return args.namespace==='collection-authoring'

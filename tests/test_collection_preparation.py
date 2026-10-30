@@ -330,3 +330,37 @@ def test_generator_protocol_rejects_invalid_result_without_touching_output(
         )
     assert len(calls) == 1 and calls[0]["operation"] == "check"
     assert not (root / "src").exists()
+
+
+def test_dynamic_engine_is_a_verified_lazy_module(project):
+    """Importing the collection must not download or execute its external engine."""
+    import subprocess
+
+    root, config = project
+    entry = root / 'ui/index.js'
+    entry.write_text(entry.read_text() + '\nexport const loadEngine = () => import("./engine.js");\n')
+    (root / 'ui/engine.js').write_text(
+        'globalThis.engineLoads = (globalThis.engineLoads ?? 0) + 1;\n'
+        'export const marker = "EXTERNAL_ENGINE_ONLY";\n'
+    )
+    assert run('build', config) == 0
+    artifact = root / 'src/sample/widgets'
+    primary = (artifact / 'assets/collection.js').read_text()
+    modules = list((artifact / 'assets/modules').glob('*.js'))
+    assert modules and 'EXTERNAL_ENGINE_ONLY' not in primary
+    assert any('EXTERNAL_ENGINE_ONLY' in module.read_text() for module in modules)
+    # Node uses the same ESM caching contract as the browser. The engine is not
+    # evaluated by importing the component definition, only by its first use.
+    check = subprocess.run(['node', '--input-type=module', '-e', f'''
+import assert from 'node:assert/strict';
+const component = await import({json.dumps((artifact / 'assets/index.js').as_uri())});
+assert.equal(globalThis.engineLoads, undefined);
+const first = await component.loadEngine();
+const second = await component.loadEngine();
+assert.equal(first, second);
+assert.equal(globalThis.engineLoads, 1);
+assert.equal(first.marker, 'EXTERNAL_ENGINE_ONLY');
+'''], capture_output=True, text=True)
+    assert check.returncode == 0, check.stderr
+    generated = (artifact / '__init__.py').read_text()
+    assert all(f'assets/modules/{module.name}' in generated for module in modules)

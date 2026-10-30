@@ -120,6 +120,7 @@ export class GramlotServer {
         this.pages = new Map();
         this.collections = [...collections];
         this.preparedGrammars = new WeakMap();
+        this.environmentPages = new WeakMap();
     }
 
     /** The Page class of path, or PageNotFound. */
@@ -130,6 +131,16 @@ export class GramlotServer {
         const classes = [];
         for (let cls = PageClass; cls && cls !== Function.prototype; cls = Object.getPrototypeOf(cls)) classes.unshift(cls);
         return this.collectionGraph([...this.collections, ...classes.flatMap(cls => Object.hasOwn(cls, 'gramlots') ? cls.gramlots : [])]);
+    }
+
+    /** Bind this environment without modifying a module shared by other hosts. */
+    environmentPage(PageClass) {
+        if (!this.collections.length) return PageClass;
+        if (!this.environmentPages.has(PageClass)) {
+            const gramlots = this.pageCollections(PageClass);
+            this.environmentPages.set(PageClass, class extends PageClass {static gramlots = gramlots;});
+        }
+        return this.environmentPages.get(PageClass);
     }
 
     /** Resolve named dependencies among prepared records; reject ambiguous identities. */
@@ -264,10 +275,11 @@ export class GramlotServer {
      * position. */
     async registerPage(path, {owner = null} = {}) {
         if (path.endsWith('/index.html')) path = path.slice(0, -'index.html'.length);
-        const PageClass = await this.resolvePage(path);
+        let PageClass = await this.resolvePage(path);
         if (typeof PageClass !== 'function' || !(PageClass.prototype instanceof Page)) {
             throw new TypeError('Page modules must export a subclass of Page');
         }
+        PageClass = this.environmentPage(PageClass);
         const selected = this.pageCollections(PageClass);
         const resolved = await this.resolveResources(path, PageClass);
         const resources = loadOrder({...resolved, css: [...this.themeCss(PageClass), ...selected.flatMap(collection=>collection.css ?? []), ...resolved.css]});

@@ -18239,3 +18239,99 @@ Their presence does not by itself indicate missing release work. In particular:
 This cleanup changes no runtime behavior, packages, public sites or release
 acceptance. Tests were not rerun for archive-only operations. Paired status
 records and whitespace checks were verified.
+
+
+<a id="gc-070-environment-collections-20261030"></a>
+## Environment collections and deferred engines — 2026-10-30
+
+Owner explicitly approved all configured environment collections on the Page base,
+external engines only when used, weight measurements and removal of per-example
+collection imports. Core Python/JS now cache environment-local Page subclasses
+and reuse the existing prepared-grammar cache. Gallery hosts inherit one standard
+collection selection; individual Python/JS examples no longer repeat it. Custom
+trial-only collections remain explicit. No application Invoice integration.
+
+The generator preserves dynamic ESM import boundaries and inventories every
+chunk under the collection fingerprint. Bootstrap activates component definitions;
+CodeMirror, Jodit, ProseMirror and Typst are separate module files. No alternate
+engine registry or loader was introduced. The browser module cache deduplicates
+imports within each document.
+
+Verified: generator 18 tests; core Python collections/server 23 tests and 29
+subtests; core JS collection/cache/bootstrap 13 tests; examples Python 15 tests;
+examples JS 13 tests; Python gallery/resources 20 tests across five adapters;
+JavaScript gallery/resources and serverless export 12 tests against an isolated
+copy of the current core/examples (installed copies in the preview environment
+were older). Existing preview processes were not replaced.
+
+Live browser/Uvicorn on separate port 61511: HTML/textbox renders with all
+component collections and no external engine request; Code editor loads the
+CodeMirror chunk; HTML rich text runs Jodit with no console errors. The test
+observed the actual fingerprint resource requests, not only deferred execution.
+No mobile-device or new public deployment verification is claimed.
+
+### Shipped JavaScript measurements
+
+Reproduce after building: `cd js && node scripts/measure-collection-sizes.mjs`.
+Bytes below use decimal KB; gzip level 6, Brotli quality 5, each emitted file
+compressed separately. This is transfer-content size, not latency or parse time.
+
+| Resource | Raw KB | gzip KB | Brotli KB |
+| --- | ---: | ---: | ---: |
+| Runtime | 674.7 | 187.4 | 174.5 |
+| inputs definitions | 448.7 | 123.9 | 116.8 |
+| layout definitions | 470.1 | 128.3 | 121.6 |
+| tree definitions | 387.8 | 106.7 | 101.5 |
+| grid definitions | 395.8 | 104.8 | 99.7 |
+| grouplets definitions | 202.1 | 70.1 | 67.6 |
+| chat definitions | 3.1 | 1.5 | 1.3 |
+| editors definitions | 553.3 | 164.0 | 156.5 |
+| typst definitions | 5.0 | 2.3 | 2.0 |
+| Editor engines | 2028.9 | 584.6 | 538.3 |
+| Typst compiler | 42734.8 | 17120.5 | 14495.5 |
+
+Runtime + eight standard collections: 3,140,645 raw bytes, 888,824 gzip bytes,
+841,655 Brotli bytes. Gallery-specific menu trial, CSS and page Logic are not in
+this total. Autonomous collection artifacts still duplicate shared helpers;
+these figures do not support a claim that the complete set costs only a few KB.
+
+Remaining: self-contained file-origin export keeps the previously approved
+verified derived bundles and eagerly embeds engine bytes. Its tests pass, but
+it does not satisfy deferred downloading; a file-compatible loading design is
+still needed. No publication/deployment performed. Browser cache qualification
+script now checks absent engine requests instead of absent component collections.
+
+
+<a id="gc-070-environment-collections-review-20261030"></a>
+## Environment collections: release review — 2026-10-30
+
+Owner requested review and incorporation of the delegated changes into the local
+release. Reviewed on an isolated HEAD plus this tranche across core, examples,
+Python server and JavaScript server. Concurrent grid work, query-design documents
+and Invoice were excluded; their original working files were preserved.
+
+Review corrections: the direct JavaScript GalleryPage now includes Typst like the
+other environment collections; obsolete collection instructions and missing host
+manual block identities were corrected. Rebuilt tracked grid/chat artifacts from
+the isolated release input, excluding concurrent grid implementation changes.
+
+Verification on Node 22: core Python 51 tests / 37 subtests; core JavaScript 13;
+examples Python 15 and JavaScript 11; complete Python-server suite 313;
+JavaScript-server Node suite 41 and Bun suite 40; serverless 6. Browser host and
+gallery qualification passed on Chromium. A separate Uvicorn preview on 61512
+passed Chromium and WebKit checks: a textbox requests no external engines,
+CodeMirror loads on use, and Jodit runs after opening Rich text without runtime
+errors. Its editing surface is in an iframe; the initial test's top-document
+selector was corrected. The isolated serverless test installation was aligned to
+one physical Bag dependency, without changing dependency sources.
+
+Core public documentation build/link check passed (19 pages); both host manuals
+built in full and compact views; examples documentation passed with 125 lessons,
+5 paired guides and local links/anchors. No public deployment or package release.
+
+Measured rebuilt JavaScript: runtime 674,496 bytes / 188,064 gzip;
+all collection entry closures 2,458,837 bytes / 703,408 gzip; deferred modules
+44,763,706 bytes / 17,618,401 gzip. These are artifact sizes (gzip level 6), not
+network timings. Collection helper duplication remains an optimization opportunity.
+File-origin standalone exports still embed a derived bundle: HTTP engine download
+deferral is not claimed for that approved single-file path.
