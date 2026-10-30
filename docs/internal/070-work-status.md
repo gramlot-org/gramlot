@@ -18796,3 +18796,43 @@ Local verification: `http://127.0.0.1:61513/` remains available; its cached Asqu
 example starts and loads data in Chromium. Port 61505 also responds, but 61513 is
 the complete release preview recommended for this check. Invoice application
 remains excluded; no TestFlight upload occurred.
+
+<a id="gc-070-public-xl-20261030"></a>
+
+## Public XL benchmark database — 2026-10-30
+
+Owner request: “fai un dump del nostro e mettilo su” Hetzner for performance
+measurements. The actual local name is `test_invoice_pg_xl`; it was restored under
+the same name in the existing PostgreSQL 17 demo cluster on `46.62.203.133`.
+A consistent exported snapshot supplied both the custom-format dump and source
+manifest. Transfer SHA-256: `b1da660965d6e91baf9643a566116b68cd2fd58151fd70ed3330bef4cb176192`.
+All 91 table counts and 354 index definitions match after restore: 3,200 customers,
+60,179 invoices and 410,429 invoice rows. `ANALYZE` completed; restored size 142 MB.
+The dedicated owner `gramlot_xl_owner` cannot log in; PUBLIC CONNECT is revoked.
+Dump, manifest and restore receipt are retained in the root-only directory
+`/opt/gramlot-galleries/backups/test_invoice_pg_xl-20261030/`.
+The public gallery still uses `invoice_demo`; switching the examples to the XL
+copy is separate work. No database was overwritten and Invoice application is
+not deployed by this transfer.
+
+Owner follow-up “collega” authorizes connecting the public database examples to
+`test_invoice_pg_xl`. The gallery role now has CONNECT and SELECT on the same
+five demonstration tables, with a separate native Asqueel cache schema in XL.
+Business writes and administrative reads remain denied. Database checks pass
+resident/cached transitions, paging, search, sort, independent owners and cleanup.
+The SQL sort comparison now correctly sorts the selected 1,000-row ID-ordered
+subset, rather than the entire table (the 806-row demo previously hid that
+difference). Deployment and a full 410,429-row browser qualification are pending.
+
+XL gallery activation completed: generation `20261030T095449Z`, archive SHA-256
+`1f156dde0216797563704343297cfd894c284e13e3f2129c0ec4521f0539a663`.
+Both candidate hosts, offline export and both public hosts pass the existing
+25-component browser qualification. Asqueel checks pass before promotion and
+on public HTTPS: dependent selectors, resident grids, JSONL, cached/resident
+transitions, search, sort and all 410,429 XL invoice rows with 200 browser rows.
+The public gallery now uses `test_invoice_pg_xl`; select Maximum records 500000
+in `/pages/84-cached-selection/01-invoice_rows` to exercise the complete dataset.
+The former `invoice_demo` database and previous generation are retained for
+rollback. Restricted privileges and Remote Edit disabled are unchanged.
+Deployment changes are consolidated in examples `f776939`; no new package tag
+or TestFlight build was created.
