@@ -22,6 +22,85 @@
       "attributes": {
         "parameters": [
           {
+            "name": "windowInfo",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "viewport",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "sortRequest",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
             "name": "storepath",
             "kind": "keyword_only",
             "role": "attribute",
@@ -215,6 +294,23 @@
         "render_tag": "gramlot-grid",
         "gramlot_component": {
           "parameters": {
+            "windowInfo": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
+              "binding": "read"
+            },
+            "viewport": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
+            },
+            "sortRequest": {
+              "dtype": "T",
+              "default": "",
+              "binding": "write"
+            },
             "storepath": {
               "dtype": "T"
             },
@@ -309,6 +405,40 @@
             "default": true
           },
           {
+            "name": "searchTime",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "R"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "attr",
             "kind": "var_keyword",
             "role": "attribute",
@@ -332,6 +462,12 @@
               ],
               "default": true,
               "binding": "read"
+            },
+            "searchTime": {
+              "dtype": "R",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
             }
           },
           "presentationDefaults": [],

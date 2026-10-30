@@ -962,3 +962,278 @@ check native instructions open/close, numeric context, accessible expanded state
 no outer focus shadow, empty placeholder, conditional clear and narrow layout,
 alongside the existing theme/interaction suite. Live gallery appearance and info
 click verified. Receipts: PORT-0026 verification/grid-search-info-*.log.
+
+
+<a id="gc-375-135"></a>
+## 135 · Resident viewport with variable heights — 2026-10-29
+
+Owner approved virtualizing the resident Bag Grid and corrected the first gallery
+size to 1,000 rows (GC-000 resident-grid-window-20261029). No public parameter is
+added: bounded grids now render a viewport slice plus a pixel margin.
+
+BagCollectionStore and BagCollectionView keep their existing responsibilities.
+Grid snapshots the view's ordered/filtered node identities on invalidation, and
+GridRows formats only mounted rows. Offscreen edits are read when entering the
+window. Row counts/indices and alternating backgrounds describe the full logical
+view, including when only its middle is mounted. Header scrolling is unchanged.
+
+GridRowLayout retains manual and measured heights by BagNode identity, separate
+from business data. Cumulative offsets map scroll pixels to logical indices by
+binary search. Unseen natural heights start with an estimate, refined from actual
+theme geometry. Column/typography changes invalidate measurements, not manual
+heights. Measurements preserve the visible anchor; reaching the bottom, including
+viewport End, preserves the bottom as its extent changes. Home returns to the
+start. Row-resize gestures finish before replacing their DOM window. Detach
+cancels timers, animation frames, observers and listeners.
+
+The scroll extent is approximate until unseen multiline rows have been measured.
+Geometry/index rebuilding is linear in resident row count; only formatting and
+DOM work are bounded by the window. Sorting/filtering still operate on the entire
+resident Bag. This is not a remote interval/provider API or partial DB loading.
+Non-Asqueel adapters will supply complete selections; partial Asqueel loading
+remains separate future work.
+
+Verification: full JS suite 1,450 passed; final focused suite 67 passed; Python
+Grid/FrameGrid authoring 19 passed; eight Grid Python/JS lesson parity checks
+passed (seven existing plus the new lesson); 12 gallery catalogue/sample tests
+passed. Chromium and WebKit cover themes, column/row gestures, filtering, and
+1,000-row window eviction/re-entry with natural/manual heights and bottom
+anchoring. Gallery grid-08 contains all 1,000 rows in its Data companion; initial
+live rendering mounted 20 rows and searching R0999 returned the offscreen record.
+Receipts: PORT-0026-frame-grid/verification/grid-viewport-*.log.
+Implemented and verified locally; owner visual acceptance remains separate.
+
+
+<a id="gc-375-row-number-width-20261029"></a>
+## Row-number width correction — 2026-10-29
+
+The owner reported that ordinal 1000 was truncated and the generated first column
+could not be resized. The row-number gutter now measures the largest view ordinal
+with the current font/padding and tabular digits. This is its minimum width; the
+existing theme token remains the default preference. The corner exposes the same
+pointer/keyboard column resize gesture, while committed gutter width belongs to
+GridRowLayout on this Source grid, not to a data column or shared Bag. Resizing
+cannot shrink below the measured ordinal minimum. Sort/filter/row updates retain
+the manual preference. No new public parameter, provider or data mutation.
+
+Verified: 56 focused tests and Chromium/WebKit regression suites, including
+1000 fitting without ellipsis, pointer gutter resize, keyboard minimum, isolation
+between grids, cancellation, ordinary column resize and virtual-scroll behavior.
+
+
+<a id="gc-375-selection-transfer-20261029"></a>
+### Separate selection-transfer experiment — 2026-10-29
+
+Owner requested two separate pages (current complete result and JSONL) and query,
+transfer, Bag creation and search timings. This authorizes a local experiment,
+not a final streaming RPC contract. The original WebSocket invoice example is
+unchanged; both new comparison pages use HTTP for a common transport baseline.
+Core owns the experimental Source-bound selectionTrial collection, TYTX framing
+and validation; gramlot-examples owns Python pages; gramlot-py-server owns the
+optional Kajenn stream route and `--selection-trials` preview flag.
+
+The normal core build prepares `gramlot.collections.selection_trial` and ships
+it in the Python package and the JavaScript distribution. No separate build or
+PYTHONPATH entry is needed. `--selection-trials` controls visibility of the timing
+lesson; the Base Asqueel application also uses the loader for resident invoice rows. There is no application-level fetch, alternate Data system or
+modified Bag/TYTX dependency. Codec exports use the runtime's single type registry.
+
+Python `to_tytx_iter` encodes typed records, the browser `fromTytxIter` decodes
+parsed frames. UTF-8 chunks need not align with records. A matching start and end
+receipt, row count and successful EOF precede publication. Failed/truncated streams,
+aborts and superseded loads retain the previous complete selection. Both endpoints
+fully fetch SQL results first; only JSONL serialization/transfer is incremental.
+
+Measurement boundaries:
+- Query/fetch includes SQL joins and fetching all selected rows.
+- Request-to-headers includes query and server preparation.
+- Body reception ends when the body has been consumed; JSONL overlaps decoding,
+  insertion and producer/backpressure waits. It is not isolated wire time.
+- JSON decoding hydrates the Bag and cannot be separated with the existing codec.
+  JSONL records parse/decode and Bag insertion separately. Server Bag construction
+  exists only for the complete JSON path. Blank means unavailable/not applicable.
+- Request-to-Bag-ready excludes Data publication/grid rendering. SearchBox's optional
+  `searchTime` output measures synchronous applyFilter, excluding debounce and paint.
+  No search optimization is part of this experiment.
+
+Observed Chrome run, 100,000 invoice rows on 2026-10-29 (milliseconds):
+
+| Metric | Complete JSON | Progressive JSONL |
+| --- | ---: | ---: |
+| Query/fetch | 433.69 | 487.98 |
+| Request-to-headers | 1695.40 | 492.60 |
+| Body reception | 38.20 | 756.80 |
+| Decode (includes Bag for JSON) | 435.90 | 246.80 |
+| Client Bag insertion | unavailable | 116.40 |
+| Server Bag construction | 362.33 | not applicable |
+| Request-to-Bag-ready | 2169.60 | 1249.40 |
+| Customer search, Parks | 29.50 | 28.10 |
+
+These overlapping intervals must not be summed; this is a local observation, not
+a repeated performance benchmark. Earlier All columns search on the same 100,000
+rows took 6773.70ms, confirming the independent search cost. No JSONL memory claim.
+
+Verification: 51 focused JS tests, two Python framing/authorization tests, enabled
+and disabled preview staging and Kajenn conformance. Real HTTP comparison checks
+all attributes at 1,000 and 100,000 rows, including typed Dates/Decimals, cancellation
+and unowned request rejection. Browser checks cover both pages, row limits, displayed
+timings and column search. Final visual acceptance remains with the owner.
+
+
+<a id="gc-375-websocket-comparison-20261029"></a>
+### WebSocket comparison and withdrawn block experiment — 2026-10-29
+
+Historical record: owner first requested immediate DataBinder block appends, then
+stopped and discarded that solution ("lasciamo star enon da vantaggi", "scarterei
+quest asoluzione"). Its page, client component and test protocol were removed.
+The first 500 rows arrived in 666.10ms, but per-row structural notifications caused
+repeated synchronous collection-view index reconstruction; at 61,500 rows cumulative
+insertion/notification time was 166349.20ms. The run was stopped, not completed.
+No final 100,000-row time exists for that variant; no silent-write workaround or
+collection-view optimization was introduced.
+
+Owner then requested checking complete WebSocket transfer against HTTP. The new
+optional page 03-websocket-rpc uses existing dataRpc and the same load_trial_json
+endpoint, complete TYTX Bag, query and limit as the HTTP page. Timing starts in
+onCalling and ends in onResult before Data publication. No new WebSocket transport,
+DataBinder semantics or core runtime change is required. Native dataRpc handles
+request supersession/disposal. The page is under Grid · Transfer experiments.
+
+Chrome observations at 100,000 rows, three repeats (ms): HTTP 2463.00, 2341.00,
+2531.80; WebSocket RPC 8843.80, 8755.90, 12174.30. Medians 2463.00/8843.80.
+Server query ranges 471.98–595.51ms and server Bag construction 341.15–447.48ms.
+This is exploratory, not a controlled network benchmark: the gallery WebSocket
+path includes parent/iframe family routing and codec work; a separate integration
+verification also ran during the third WebSocket sample. No causal wire-only
+performance claim is supported. JSONL remains available as the separate HTTP trial.
+
+All attributes match between real HTTP and WebSocket at 1,000 and 100,000 rows,
+including Dates/Decimals. Optional preview staging tests pass, as do examples guide
+pairing/link checks and both adapter documentation builds. Original HTTP/JSONL
+behavior remains available. Final visual/product acceptance remains with owner.
+
+<a id="gc-375-cached-selection-20261029"></a>
+### Asqueel-only cached selection — 2026-10-29
+
+Owner authorized a separate invoice-row page, limit 500,000 and configurable
+threshold 1,000 actual selected rows (GC-000 cached-selection record).
+Grid's `windowInfo` is a Bag with `start`, `total`, `revision`, `sortedBy`.
+`viewport` writes a zero-based `{start,count}` request; `sortRequest` writes the
+existing `field:a,other:d` syntax. A new revision resets scroll; a new window of
+the same revision retains global position. Ordinary resident grid behavior remains.
+No database-specific code is in Grid. The example does not enable manual row
+reordering/resizing or local searchOn on a remote window.
+
+GridRowLayout indexes only loaded nodes; offsets outside the window are estimated.
+Visible wrapped heights are measured, including resize effects, but unloaded
+variable heights are not known exactly. Scrollbar geometry is therefore estimated.
+Global row numbers and accessible row counts refer to the entire server selection.
+The current window is normally 200 rows. A larger viewport can request more, up to
+the experiment's 1,000-row request cap. No 500,000-node placeholder Bag is created.
+
+The isolated windowSelection component publishes selection_request and receives
+DataBinder replies. Request IDs discard superseded replies; criteria debounce is
+not overridden by an old viewport. Each accepted response replaces the small Bag
+atomically, rather than inserting into the active collection one row at a time.
+The response Bag remains owned by DataBinder; row attributes are copied into the
+view's Bag. Disposal cancels queued sends; cache cleanup belongs to PageStore.
+
+Asqueel uses its native cachedFetch materialization and `_rowidx` ranges, with
+native `_sortidx` search/sort. Small selections load completely and search/sort on
+the server without materialization. Threshold is evaluated when opening/reloading
+the base selection, before interactive text search; filtering a large cache down
+to fewer than 1,000 rows does not rematerialize it. Search is token-AND across text
+columns, not numeric/date searchOn syntax. Each page has its own cache owner.
+
+Local Chrome observations with 410,429 invoice rows, requested limit 500,000:
+materialization 829.41 ms, first window ready 981.20 ms, End-to-window 42.10 ms.
+Search Parks: 2,445 matches, server 119.10 ms, client total 374.70 ms. Mixed sort
+quantity descending / unit price ascending: server 164.67 ms. These are single
+exploratory observations, not a benchmark. Client timings exclude final paint;
+search total includes the 200 ms typing debounce. Full response comparison pages
+measure different completion points; do not equate first window with full transfer.
+
+Verification: 1,464 JavaScript tests pass with the integration Python environment;
+48 targeted grid/geometry/coordinator tests pass after final geometry cleanup.
+Ten adapter tests pass, including opt-in real XL cachedFetch, window contents,
+search/multi-sort, threshold configuration, cache cleanup and gallery staging.
+Browser checks cover resident 1,000, cached 410,429, End, search/reset/zero results
+and mixed multi-column sort. User visual acceptance remains open; no release.
+
+<a id="gc-375-comparison-100k-20261029"></a>
+### JSON / JSONL / cachedFetch comparison at 100,000 rows — 2026-10-29
+
+Owner requested comparison of loading, search and browser memory on the same
+100,000 invoice rows. Three sequential timing runs per mode in Chrome, same
+shared COLUMNS query, id ordering and limit, local host, no database cache flush.
+Separate temporary Python/Source pages instrument memory; production runtime,
+transports, CollectionStore and filters are unchanged. Raw evidence:
+ports/PORT-0026-frame-grid/verification/grid-cached-comparison-100k.json.
+
+Median timings (ms):
+
+| Measurement | JSON / HTTP | JSONL / HTTP | cachedFetch / PageStore |
+| --- | ---: | ---: | ---: |
+| Load to Bag / first window ready | 2367.80 | 1189.10 | 718.50 |
+| Query and fetch | 559.78 | 496.01 | n/a |
+| Materialization | n/a | n/a | 603.34 |
+| Search Parks: local filter / server execution | 6031.10 | 5625.20 | 60.21 |
+| Search Parks: client total | not instrumented | not instrumented | 308.90 |
+| Resident browser rows | 100000 | 100000 | 200 |
+| Page memory after GC, MB decimal | 80.315 | 80.225 | 14.223 |
+
+JSON/JSONL readiness means the full Bag is decoded, before publication/rendering;
+cachedFetch means the first 200-row window is ready, not transfer of the entire
+selection. Cached search total includes the 200 ms typing debounce and round trip.
+Local filter timings exclude the 100 ms debounce and paint. Response bodies were
+36.17 MB JSON and 30.98 MB JSONL; neither is resident memory. JSONL reception overlaps
+decoding/Bag construction, so its timing parts cannot be added independently.
+
+All searches returned 574 rows. The as-shipped local All columns filter formats
+numbers/dates before applying its regex; native cachedFetch searches text columns.
+A separate local control with the existing searchOn='*T' and the same Parks query
+returned the same 574 matches in 45.80, 65.20, 70.70 ms (median 65.20). Therefore the
+large search gap is not a wire-format advantage: text-only local filtering is in
+the same execution-time range as server search. No optimization was implemented.
+
+Memory was measured once per mode in separate fresh top-level pages, on a temporary
+isolated host (COOP/COEP), using performance.measureUserAgentSpecificMemory after
+Chrome GC. It includes JS, DOM and shared page allocations; it is an estimate of
+the page, not browser RSS or exclusive Bag ownership. Source:
+https://web.dev/articles/monitor-total-page-memory-usage . Approximate pre-GC heap
+readings (JSON 215.7 MB, JSONL 159.8 MB) included transient garbage and are excluded
+from the steady-memory comparison. Main timing measurements were taken separately
+on the ordinary host, without memory probes running concurrently.
+
+Observed result: JSONL halves full-selection readiness versus JSON and retains
+essentially the same final memory; cachedFetch makes the first window available
+sooner and uses roughly one sixth of the page memory, retaining only 200 rows.
+These are local exploratory samples, not a cross-browser or network benchmark.
+Temporary measurement pages and the isolated server were removed/stopped after
+measurement; the ordinary gallery remains on port 61509.
+
+<a id="gc-375-jsonl-adoption-20261030"></a>
+### JSONL adoption after comparison — 2026-10-30
+
+Owner selected JSONL and explicitly included the floating resident invoice-row
+Grid. The complete JSON HTTP and WebSocket comparison pages are retired; their
+historical measurements above remain valid. The local selectionTrial loader now
+has one JSONL path, with no wire switch or full-response decode branch. TYTX
+iterators, completion validation, cancellation and atomic Bag publication remain.
+
+The floating page inherits the shared selection loader/query. Its footer reports
+Query, Encode and Ready; Ready ends before rendering. Reload increments the same
+request key as the JSONL timing page. Its geometry, resize, local search/sort and
+resident Bag semantics are unchanged. The old load_invoice_rows implementation
+and load_trial_json comparison endpoint are removed, avoiding duplicate queries.
+
+The release preview always enables its existing JSONL-capable application because
+the invoice page is always present. --selection-trials controls only the optional
+JSONL timing catalogue. The Asqueel Base launcher also uses the JSONL-capable local
+application. Ordinary RPC remains outside this bounded example adoption.
+
+Verified: 12 targeted JS tests, 10 adapter/cache/staging tests, independent SQL
+comparison for every limit 100..100000, and real HTTP decoding of both pages at
+1000/100000 with every attribute equal. Cancellation and unowned-page refusal pass;
+retired JSON HTTP/WebSocket page routes return 404. Runtime remains experimental,
+not a published general streaming RPC contract.

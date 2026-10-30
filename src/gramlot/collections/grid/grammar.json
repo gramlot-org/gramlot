@@ -256,6 +256,11 @@
               "default": false,
               "dtype": "B"
             },
+            "sortRequest": {
+              "binding": "write",
+              "default": "",
+              "dtype": "T"
+            },
             "sortedBy": {
               "binding": "read",
               "default": "",
@@ -266,6 +271,18 @@
             },
             "structpath": {
               "dtype": "T"
+            },
+            "viewport": {
+              "binding": "write",
+              "default": null,
+              "dtype": "X",
+              "nullable": true
+            },
+            "windowInfo": {
+              "binding": "read",
+              "default": null,
+              "dtype": "X",
+              "nullable": true
             }
           },
           "presentationDefaults": [],
@@ -277,6 +294,85 @@
         "accepts_var_keyword": true,
         "accepts_var_positional": false,
         "parameters": [
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "windowInfo",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "viewport",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "sortRequest",
+            "role": "attribute"
+          },
           {
             "annotation": {
               "dtype": "T",
@@ -486,6 +582,12 @@
                 "B",
                 "T"
               ]
+            },
+            "searchTime": {
+              "binding": "write",
+              "default": null,
+              "dtype": "R",
+              "nullable": true
             }
           },
           "presentationDefaults": [],
@@ -529,6 +631,40 @@
             "has_default": true,
             "kind": "keyword_only",
             "name": "searchOn",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "R",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "searchTime",
             "role": "attribute"
           },
           {

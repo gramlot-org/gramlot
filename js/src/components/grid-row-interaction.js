@@ -8,14 +8,17 @@ export class GridRowInteraction {
     #drag = null;
     #store;
     #dragEnabled;
-    constructor(body, control, layout, nodeForRow, store, dragEnabled) {
+    #layoutChanged;
+    constructor(body, control, layout, nodeForRow, store, dragEnabled, layoutChanged) {
         this.#body = body;
         this.#control = control;
         this.#layout = layout;
         this.#nodeForRow = nodeForRow;
         this.#store = store;
         this.#dragEnabled = dragEnabled;
+        this.#layoutChanged = layoutChanged;
     }
+    get resizing() { return this.#gesture !== null; }
     connect() {
         this.#body.addEventListener('pointerdown', this.#start);
         this.#body.addEventListener('pointermove', this.#move);
@@ -106,6 +109,7 @@ export class GridRowInteraction {
     #value(row) {
         const handle = row.querySelector('.row-height-handle');
         if (handle) handle.setAttribute('aria-valuenow', String(Math.round(row.getBoundingClientRect().height)));
+        this.#layoutChanged();
     }
     #start = event => {
         const target = this.#target(event);

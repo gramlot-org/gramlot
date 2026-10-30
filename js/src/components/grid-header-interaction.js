@@ -1,17 +1,21 @@
-/** Pointer/keyboard gestures own a preview only. The Data struct owns committed widths. */
+/** Shared column resize gestures; Data owns field widths, per-grid layout owns the row header. */
 export class GridHeaderInteraction {
     #head;
     #control;
     #structure;
     #sort;
+    #rowLayout;
+    #layoutChanged;
     #suppressClick = false;
     #gesture = null;
     #drag = null;
-    constructor(head, control, structure, sort) {
+    constructor(head, control, structure, sort, rowLayout, layoutChanged) {
         this.#head = head;
         this.#control = control;
         this.#structure = structure;
         this.#sort = sort;
+        this.#rowLayout = rowLayout;
+        this.#layoutChanged = layoutChanged;
     }
     connect() {
         this.#head.addEventListener('click', this.#click);
@@ -86,7 +90,21 @@ export class GridHeaderInteraction {
             cell.classList.remove('column-dragging'); cell.removeAttribute('data-drop');
         }
     };
-    #minimum() {
+    #target(header) {
+        const field = header.dataset.field;
+        if (field === undefined) {
+            const layout = this.#rowLayout();
+            return {identity:layout, width:layout.headerWidth, setWidth:width => {
+                layout.setHeaderWidth(width); this.#layoutChanged();
+            }};
+        }
+        const structure = this.#structure(), node = structure.columnNode(field);
+        return {identity:node, width:node.getAttr('width'), setWidth:width => structure.setColumnWidth(field, width)};
+    }
+    #minimum(header) {
+        if (header.classList.contains('row-heading')) {
+            return Math.max(40, Math.ceil(header.querySelector('.row-number-measure').getBoundingClientRect().width));
+        }
         return Number.parseFloat(this.#control.ownerDocument.defaultView.getComputedStyle(this.#control)
             .getPropertyValue('--gramlot-grid-column-min-width')) || 40;
     }
@@ -94,13 +112,13 @@ export class GridHeaderInteraction {
         this.#suppressClick = false;
         const handle = event.target.closest('.column-resize');
         if (!handle || event.button !== 0 || this.#gesture) return;
-        const header = handle.closest('[data-field]');
+        const header = handle.closest('th');
         const field = header.dataset.field;
-        const node = this.#structure().columnNode(field);
+        const target = this.#target(header);
         const tables = [...this.#control.querySelectorAll('table')];
         const headers = [...this.#head.querySelectorAll('th[scope=col]')];
         const widths = headers.map(cell => cell.getBoundingClientRect().width);
-        this.#gesture = {pointerId:event.pointerId, field, node, originalWidth:node.getAttr('width'),
+        this.#gesture = {pointerId:event.pointerId, field, header, identity:target.identity, originalWidth:target.width,
             x:event.clientX, index:headers.indexOf(header), widths, width:header.getBoundingClientRect().width,
             tables:tables.map(table => ({table, width:table.style.width,
                 columns:[...table.querySelectorAll('col')].map(col => ({col, width:col.style.width}))}))};
@@ -111,7 +129,7 @@ export class GridHeaderInteraction {
     #move = event => {
         const gesture = this.#gesture;
         if (!gesture || gesture.pointerId !== event.pointerId) return;
-        gesture.width = Math.max(this.#minimum(), Math.round(gesture.widths[gesture.index] + event.clientX - gesture.x));
+        gesture.width = Math.max(this.#minimum(gesture.header), Math.round(gesture.widths[gesture.index] + event.clientX - gesture.x));
         const widths = gesture.widths.map((width, index) => index === gesture.index ? gesture.width : width);
         for (const {table, columns} of gesture.tables) {
             table.style.width = `${widths.reduce((sum, width) => sum + width, 0)}px`;
@@ -122,13 +140,12 @@ export class GridHeaderInteraction {
         const gesture = this.#gesture;
         if (!gesture || gesture.pointerId !== event.pointerId) return;
         this.#move(event);
-        const structure = this.#structure();
-        const current = structure.columnNode(gesture.field);
+        const current = this.#target(gesture.header);
         this.#suppressClick = true;
         this.cancel();
         // A retargeted/replaced struct or concurrent width edit must win over this gesture.
-        if (current !== gesture.node || current.getAttr('width') !== gesture.originalWidth) return;
-        structure.setColumnWidth(gesture.field, gesture.width);
+        if (current.identity !== gesture.identity || current.width !== gesture.originalWidth) return;
+        current.setWidth(gesture.width);
         this.#focus(gesture.field);
     };
     #key = event => {
@@ -154,14 +171,14 @@ export class GridHeaderInteraction {
             }
             event.preventDefault(); return;
         }
-        const header = handle.closest('[data-field]');
+        const header = handle.closest('th');
         const delta = (event.key === 'ArrowRight' ? 1 : -1) * (event.shiftKey ? 1 : 10);
-        this.#structure().setColumnWidth(header.dataset.field, Math.max(this.#minimum(), Math.round(header.getBoundingClientRect().width + delta)));
+        this.#target(header).setWidth(Math.max(this.#minimum(header), Math.round(header.getBoundingClientRect().width + delta)));
         this.#focus(header.dataset.field);
         event.preventDefault();
     };
     #focus(field) {
-        this.#head.querySelector(`th[data-field="${field}"] .column-resize`).focus({preventScroll:true});
+        this.#head.querySelector(field === undefined ? '.row-heading .column-resize' : `th[data-field="${field}"] .column-resize`).focus({preventScroll:true});
     }
     #cancel = () => { if (this.#gesture) this.cancel(); };
     cancel() {

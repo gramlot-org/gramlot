@@ -8,7 +8,8 @@ import {gridSearchStyles} from './grid-search-styles.js';
 /** FrameGrid's search slot. The collection view owns the accepted filter. */
 export const SearchBox = defineComponent({
     name:'searchBox', tag:'gramlot-search-box', base:Container, sourceContext:true,
-    parameters:{searchOn:{dtype:['B','T'], default:true, binding:'read'}},
+    parameters:{searchOn:{dtype:['B','T'], default:true, binding:'read'},
+        searchTime:{dtype:'R', nullable:true, default:null, binding:'write'}},
     implementation:Base => class extends Base {
         #context; #grid; #release; #releaseView; #view; #timer = null;
         #field; #input; #error; #helpText; #filterSignature; #bag;
@@ -127,9 +128,11 @@ export const SearchBox = defineComponent({
             if (!this.#view) return;
             try {
                 const value = this.#input.value;
+                const started = performance.now();
                 this.#view.applyFilter(value.trim() ? {value, columns:this.#field.value.split('+'), dtype:this.#dtype(),
                     locale:this.#context.locale,
                     timeZone:this.#context.timeZone} : null);
+                this.#context.writeParameter('searchTime', performance.now() - started);
                 this.#error.textContent = ''; this.#input.removeAttribute('aria-invalid');
             } catch (error) {
                 this.#error.textContent = error.message; this.#input.setAttribute('aria-invalid','true');

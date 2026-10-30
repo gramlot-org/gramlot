@@ -7,7 +7,7 @@ import {readFile} from 'node:fs/promises';
 import {chromium, webkit} from 'playwright';
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
-const wire = execFileSync(`${repo}/.venv/bin/python`, ['tests/fixtures/components/frame_grid.py'], {cwd: repo, encoding: 'utf8'}).trim();
+const wire = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? `${repo}/.venv/bin/python`, ['tests/fixtures/components/frame_grid.py'], {cwd: repo, encoding: 'utf8'}).trim();
 const bootstrap = `
 import {Gramlot} from '@gramlot/gramlot';
 import grid from '/collections/grid/index.js';
@@ -61,10 +61,10 @@ try {
             const first=page.locator('#grid-values');
             const row=await first.locator('tbody tr').first().elementHandle();
             assert.equal(await page.getByRole('toolbar').count(),6);
-            await page.locator('#update-values button').click();
+            await page.locator('#update-values button').click();await settle();
             assert.equal(await first.locator('tbody td[data-field=price]').first().textContent(),'99,50');
             assert.equal(await page.locator('#grid-attributes tbody td[data-field=price]').first().textContent(),'12,50');
-            await page.locator('#remove-values button').click();
+            await page.locator('#remove-values button').click();await settle();
             assert.equal(await page.locator('#count-values').textContent(),'59');
             assert.equal(await page.locator('#count-attributes').textContent(),'60');
             const geometry=()=>first.evaluate(host=>{
@@ -217,10 +217,10 @@ try {
                 assert.equal(await input.getAttribute('placeholder'),' ','query examples are not printed inside the input');
                 const capsuleBefore=await search.boundingBox();
                 await field.selectOption('quantity'); await input.fill('> 40');
-                await page.waitForFunction(mode=>document.getElementById(`grid-${mode}`).shadowRoot.querySelectorAll('tbody tr[data-row]').length===20,mode);
-                assert.equal(await visible.count(),20);
+                await page.waitForFunction(mode=>document.getElementById(`grid-${mode}`).shadowRoot.querySelector('[role=table]').getAttribute('aria-rowcount')==='22',mode);
+                assert.equal(await scope.locator('[role=table]').getAttribute('aria-rowcount'),'22');
                 assert.equal(await clear.isVisible(),true,'typing reveals the clear control');
-                await search.getByRole('button',{name:'Search instructions',exact:true}).click();
+                await search.getByRole('button',{name:'Search instructions',exact:true}).click();await settle();
                 const help=search.getByRole('dialog',{name:'Search instructions',exact:true});
                 assert.equal(await help.isVisible(),true);assert.match(await help.innerText(),/Compare numbers/);
                 assert.equal(await search.getByRole('button',{name:'Search instructions',exact:true}).getAttribute('aria-expanded'),'true');
@@ -234,14 +234,14 @@ try {
                 await scope.locator('th[data-field=quantity]').click(); await settle();
                 assert.equal(await visible.first().getAttribute('data-row'),'r59');
                 await input.fill('>'); await page.waitForTimeout(150);
-                assert.equal(await input.getAttribute('aria-invalid'),'true');assert.equal(await visible.count(),20);
+                assert.equal(await input.getAttribute('aria-invalid'),'true');assert.equal(await scope.locator('[role=table]').getAttribute('aria-rowcount'),'22');
                 await search.getByRole('button',{name:'Clear filter'}).click();await settle();
-                assert.equal(await visible.count(),60);
+                assert.equal(await scope.locator('[role=table]').getAttribute('aria-rowcount'),'62'); assert.ok(await visible.count()<60,'only the viewport is mounted');
                 assert.equal(await clear.isVisible(),false,'clearing hides the button');
                 assert.equal(await input.evaluate(el=>el.getRootNode().activeElement===el),true,'clear returns keyboard focus to input');
                 assert.equal(await visible.first().getAttribute('data-row'),'r59','clear retains descending sort');
                 await field.selectOption('updated');await input.fill('= 28/10/2026');await page.waitForTimeout(150);await settle();
-                assert.equal(await input.getAttribute('aria-invalid'),null);assert.equal(await visible.count(),60);
+                assert.equal(await input.getAttribute('aria-invalid'),null);assert.equal(await scope.locator('[role=table]').getAttribute('aria-rowcount'),'62'); assert.ok(await visible.count()<60,'only the viewport is mounted');
                 await field.selectOption('code');await input.fill('^P00[1-3]$');
                 await page.waitForFunction(mode=>document.getElementById(`grid-${mode}`).shadowRoot.querySelectorAll('tbody tr[data-row]').length===3,mode);
                 assert.equal(await visible.count(),3);
@@ -254,6 +254,62 @@ try {
             const narrowBox=await narrowSearch.boundingBox();assert.ok(narrowBox.x>=0 && narrowBox.x+narrowBox.width<=390);
             await page.screenshot({path:`/private/tmp/frame-grid-search-narrow-${name}.png`,fullPage:true});
             await page.setViewportSize({width:1200,height:1000});await settle();
+            await page.evaluate(()=>window.qualification.dispose());
+            await page.goto(url); await page.locator('#grid-attributes tbody tr').first().waitFor();
+            await page.evaluate(()=>{
+                const app=window.qualification, Bag=app.data.constructor, rows=new Bag();
+                for(let i=0;i<1000;i++)rows.setItem(`v${i}`,null,{code:`V${i}`,description:i%5===0?'Wrapped notes\nSecond line\nThird line':`Item ${i}`,quantity:i,price:i+.5,updated:new Date('2026-10-28')});
+                app.data.setItem('attributes.rows',rows);
+                app.data.setItem('values.rows',new Bag());
+                const node=app.src.binding.renderer.getBaseSourceNode(document.getElementById('grid-attributes'));
+                node.getRelativeData(node.getAttr('structpath')).getNode('view_0.rows_0.cell_description').setAttr({white_space:'pre-wrap'});
+            });
+            await settle();
+            const virtual=page.locator('#grid-attributes');
+            await virtual.locator('th[data-field=quantity]').click();await settle();
+            const scroll=async position=>{await virtual.locator('.body-viewport').evaluate((body,position)=>{body.scrollTop=position==='end'?body.scrollHeight:position;},position);await settle();await settle();};
+            assert.ok(await virtual.locator('tbody tr').count()<60,'1,000 rows mount only a small window');
+            assert.equal(await virtual.locator('[role=table]').getAttribute('aria-rowcount'),'1002');
+            const firstVirtual=virtual.locator('tr[data-row=v0]');
+            const initialHeight=(await firstVirtual.boundingBox()).height;
+            assert.ok(initialHeight>(await virtual.locator('tr[data-row=v1]').boundingBox()).height,'natural multiline rows have different heights');
+            await firstVirtual.locator('.row-height-handle').focus();await page.keyboard.press('ArrowDown');await settle();
+            const resizedHeight=(await firstVirtual.boundingBox()).height;
+            assert.ok(resizedHeight>initialHeight);
+            await virtual.locator('.body-viewport').press('End');await settle();await settle();
+            assert.ok(await virtual.locator('tr[data-row=v999]').count());
+            const endGap=await virtual.locator('.body-viewport').evaluate(el=>el.scrollHeight-el.clientHeight-el.scrollTop);
+            assert.ok(endGap<2,`scroll to end stays at end after measurement: ${endGap}`);
+            assert.ok(await virtual.locator('tbody tr').count()<60);
+            assert.equal(await virtual.locator('tr[data-row=v999]').getAttribute('aria-rowindex'),'1002');
+            const ordinal=virtual.locator('tr[data-row=v999] th');
+            const fits=()=>ordinal.evaluate(cell=>{
+                const range=cell.ownerDocument.createRange();range.selectNodeContents(cell.firstChild);
+                const style=getComputedStyle(cell);
+                return range.getBoundingClientRect().width+parseFloat(style.paddingLeft)+parseFloat(style.paddingRight)<=cell.clientWidth+1;
+            });
+            assert.equal(await fits(),true,'1000 fits the generated number column');
+            const gutter=virtual.getByRole('separator',{name:'Resize row numbers',exact:true});
+            const oldWidth=(await virtual.locator('thead .row-heading').boundingBox()).width;
+            const otherWidth=(await page.locator('#grid-values thead .row-heading').boundingBox()).width;
+            const grip=await gutter.boundingBox();
+            await page.mouse.move(grip.x+2,grip.y+grip.height/2);await page.mouse.down();
+            await page.mouse.move(grip.x+37,grip.y+grip.height/2);await page.mouse.up();await settle();
+            assert.ok((await virtual.locator('thead .row-heading').boundingBox()).width>=oldWidth+34);
+            assert.equal((await page.locator('#grid-values thead .row-heading').boundingBox()).width,otherWidth,'gutter width is per grid');
+            for(let i=0;i<8;i++)await gutter.press('ArrowLeft');await settle();
+            assert.equal(await fits(),true,'manual narrowing respects ordinal minimum');
+
+            await scroll(0);
+            assert.equal((await virtual.locator('tr[data-row=v0]').boundingBox()).height,resizedHeight,'manual height survives eviction');
+            const virtualSearch=page.locator('#frame-attributes gramlot-search-box');
+            await virtualSearch.getByRole('combobox').selectOption('quantity');
+            await virtualSearch.getByRole('searchbox').fill('= 999');await virtualSearch.getByRole('searchbox').press('Enter');await settle();
+            assert.equal(await virtual.locator('tbody tr').count(),1);
+            assert.equal(await virtual.locator('tbody tr').getAttribute('data-row'),'v999');
+            await virtualSearch.getByRole('button',{name:'Clear filter'}).click();await settle();
+            assert.equal(await virtual.locator('[role=table]').getAttribute('aria-rowcount'),'1002');
+            await page.screenshot({path:`/private/tmp/grid-virtual-${name}.png`,fullPage:true});
             await page.evaluate(()=>window.qualification.dispose());
             if (process.argv.includes('--measure-ordering')) {
                 await page.goto(url);
@@ -295,7 +351,7 @@ try {
                 await page.evaluate(()=>window.qualification.dispose());
             }
             assert.deepEqual(errors,[]);
-            console.log(`${name}: Python Source, two frame recipients, live counts, 10 theme/mode combinations, stable rows, header/body geometry, responsive overflow actions, scroll, individual row resize/reset/cancel/keyboard, indexed sort/multicolumn/physical-order preservation, self row drag/identity/cross-grid rejection, column resize Data/preview/cancel/keyboard, reorder/split/join, all/column search, regex/numeric/date filters, invalid drafts, clear retaining sort and disposal passed`);
+            console.log(`${name}: Python Source, two frame recipients, live counts, 10 theme/mode combinations, stable rows, header/body geometry, responsive overflow actions, scroll, individual row resize/reset/cancel/keyboard, indexed sort/multicolumn/physical-order preservation, self row drag/identity/cross-grid rejection, column resize Data/preview/cancel/keyboard, reorder/split/join, all/column search, regex/numeric/date filters, invalid drafts, clear retaining sort, 1,000-row viewport with natural/manual heights and End anchoring, and disposal passed`);
         } finally {await browser.close();}
     }
     if (process.argv.includes('--serve')) {console.log(`REVIEW_URL=${url}`); await new Promise(()=>{});}

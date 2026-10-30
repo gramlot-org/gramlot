@@ -1,0 +1,20 @@
+✔ common gallery (19.549ms)
+✔ media types (17.304875ms)
+✔ environment catalogue (15.296166ms)
+✔ logic companion of an environment page (16.384208ms)
+✔ catalogue without environment (0.834292ms)
+✔ key outside the environment (0.801458ms)
+✔ duplicate family (0.599042ms)
+✔ duplicate example across catalogues (0.599041ms)
+✔ missing page (3.699375ms)
+✔ every advertised sample companion decodes as a Data Bag in JavaScript (18.608667ms)
+✔ sample records retain nested paths, types and attributes; UI preferences stay with controls (0.596958ms)
+✔ explicit setters in lessons are confined to setter teaching and host-generated gallery metadata (17.923333ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 191.516

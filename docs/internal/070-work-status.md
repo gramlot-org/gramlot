@@ -18241,6 +18241,314 @@ acceptance. Tests were not rerun for archive-only operations. Paired status
 records and whitespace checks were verified.
 
 
+<a id="gc-070-grid-common-base-recheck-20261029"></a>
+## Grid common-base verification — 2026-10-29
+
+Owner requested verification that the common base retains the latest Grid work,
+including searchOn. All 15 Grid component, structure-binding and resident-store
+modules are byte-identical to the preserved frame-grid worktree. All seven
+Python/JS gallery lessons retain their behavior; their only source difference
+is the local variable rename pane to main_content. Lesson documentation and
+typed sample data are identical. No runtime repair was necessary.
+
+Fresh verification: 64 collection-store, Grid and FrameGrid tests passed
+(/tmp/grid-common-verification.log). On the running common gallery at
+http://127.0.0.1:61509/, search lesson grid-07 returned two rows for all-column
+lamp, four for Quantity > 2 and five for Updated >= 2026-10-15. The information
+button displayed numeric instructions; clearing restored all eight rows and
+hid the internal clear button. The latest neutral rounded search presentation,
+shaded column selector and empty placeholder are present. This is targeted
+verification, not a fresh whole-product qualification.
+
+The owner's earlier “ok” in the grids chat accepts the corrected search control
+appearance only; it does not imply acceptance or publication of the entire port.
+
+
+<a id="gc-070-resident-db-grid-analysis-20261029"></a>
+## Resident database-backed Grid examples — analysis, 2026-10-29
+
+Owner requests analysis of database-fed Grid examples with small, fully loaded
+collections, using legacy and prior store discussions as evidence. No new provider
+API or database-writing scope is approved by this analysis.
+
+Current primitives: endpoint/dataRpc can populate a Data Bag; BagCollectionStore
+provides shared resident access; each Grid owns a BagCollectionView with independent
+ordering/filtering. There is no declarative collectionStore/dataProvider authoring
+contract yet. The existing database selector service is an autocomplete/identity
+lookup contract, not a general collection-query API.
+
+Legacy evidence: genro_components.js SelectionStore.createContent composes a
+dataController and dataRpc (default app.getSelection), instantiates Selection or
+VirtualSelection and associates the store with the RPC. Selection.loadingDataDo
+broadcasts loading state, resets the filter and calls onLoaded; onLoaded writes
+the result to storepath. apphandler/get_selection.py returns grid Bag data and
+selection metadata; paging/named selections are separable from resident loading.
+Current independent per-grid filters supersede legacy shared filter ownership.
+
+Important existing RPC behavior: binding-rpc.test.js verifies one request in
+flight plus the first queued change; subsequent changes are not automatically
+latest-wins. Explicit cancellation can ignore an older response. Any automatic
+context-switch provider needs an explicit policy; do not silently change dataRpc.
+
+Proposal for owner discussion: first qualify a complete typed Bag returned by an
+explicit read-only database endpoint, then context reload and two independent
+views over that Bag. Query membership belongs to the server; searchOn acts only
+on loaded rows. Use stable record keys distinct from display positions, retain
+raw field types and report query failures distinctly from empty results. A row
+limit must not be presented as a complete unbounded selection. Provider syntax,
+loading/error policy and replacement identity remain decisions, not approved APIs.
+No runtime or example source was changed in this analysis.
+
+
+<a id="gc-070-resident-grid-viewport-20261029"></a>
+## Resident Grid viewport and 1,000-row gallery — 2026-10-29
+
+Implemented the owner-approved resident viewport (GC-375 §135). Grid mounts only
+a visible slice plus overscan; per-grid variable/manual heights, ordering, filters
+and logical row drag remain independent. Data stays complete in its Bag.
+Verification: 1,450 JS tests, final 67 focused tests, 19 Python authoring tests,
+eight Grid lesson parity checks and 12 gallery catalogue/sample tests. Chromium
+and WebKit pass, including natural multiline heights, resize eviction/re-entry
+and viewport End anchoring. No provider or database-writing API was added.
+
+Preview: http://127.0.0.1:61509/ → Grid → Scroll · 1,000 resident rows (grid-08).
+Core/examples are local built artifacts; the server must use the common adapter
+source: PYTHONPATH=/private/tmp/gramlot-db-local/gramlot-py-server/src with
+/private/tmp/gramlot-db-local/venv/bin/python scripts/serve_release_gallery.py,
+retaining the existing database, mobile module and port arguments. The installed
+adapter is older and does not accept the preview's websocket option.
+Implementation and targeted/browser verification complete; visual acceptance
+remains with the owner. No publication or version change.
+
+
+<a id="gc-070-floating-grid-example-20261029"></a>
+## Resizable floating Grid example — 2026-10-29
+
+Owner requested a gallery example of the 1,000-row resident Grid inside a
+resizable floating pane, verifying variable heights. Implemented in examples
+only (grid-09), using existing floatingPane/frameGrid composition and flex center
+sizing; no framework implementation change. Python/JavaScript Source parity and
+local build pass, as do all 51 gallery/catalogue/sample tests. Live gallery
+verification covers pointer/keyboard window resize,
+bounded DOM counts following viewport height (14–26 rows), natural multiline
+heights, manual height retention after resize and viewport re-entry, End anchoring
+at R1000, whole-Bag search and sort retention across close/reopen. Columns retain
+declared widths; a narrow window exposes horizontal scrolling. Evidence and
+steps: GE-010 floating-grid-20261029 and lesson ge-grid-09. Gallery remains at
+http://127.0.0.1:61509/. Visual acceptance remains with the owner; no publication.
+
+
+Floating example correction (2026-10-29): owner confirmed “Mantieni la barra del
+titolo; toolbar solo nel FrameGrid”. Example grid-09 now has 5px insets around
+the complete FrameGrid, which owns toolbar/top and Grid/center. Live browser
+measurements retain all four 5px insets at 768×416 and 648×296; mounted rows
+adapt from 20 to 14, with manual heights and End-to-R1000 preserved. Source
+parity/build pass. Examples-only composition; no framework code changed.
+
+
+Row-number gutter correction (2026-10-29): reported ordinal 1000 truncation and
+missing resize are corrected at the shared Grid component. Theme-aware measured
+minimum prevents clipped ordinals; pointer/keyboard resizing uses per-grid
+GridRowLayout geometry. 56 focused tests and both Chromium/WebKit suites pass,
+including real text-fit and independent gutter widths. See GC-375
+row-number-width-20261029. Local gallery artifact update only; no publication.
+
+
+Connected database Grid example (2026-10-29): owner requested a real DB load,
+server timing and nine maximum-record options from 100 to 100,000. Implemented
+in gramlot-examples with existing dataRpc/FrameGrid APIs and bounded host service
+injection in gramlot-py-server; no core API change. Read-only PostgreSQL
+`invc.invc_customer` has 3,200 rows. All limits match physical DB contents and
+order; browser checks confirm automatic reload, distinct requested/loaded counts,
+query/server timing and End-to-3,200 with 23 mounted rows. See GE-010
+database-grid-20261029 and GP-910-075. Gallery remains at 61509; no publication.
+
+
+Base XL and invoice-row example (2026-10-29): owner explicitly requested XL as
+Base source and customer name/state, invoice number/date, product, quantity,
+unit price and total columns. All three dedicated copies were backed up and
+transactionally refreshed; all values/relations and native models verified.
+The new Base example uses existing ORM/dataRpc/Grid APIs, with no core code
+change. All nine limits through 100,000 match independent SQL. Browser loaded
+100,000, reached the last ordinal with 20 mounted rows, and passed multi-sort
+and search/clear checks. Observed query/server: 552.31/930.23ms, excluding wire
+and client work; whole-selection search can take several seconds in the browser.
+Seven focused adapter tests pass. See GE-015-045 and GP-910-080. Gallery 61509
+is updated for owner evaluation; no release/publication or final acceptance.
+
+XL final checks: 54 gallery tests and both documentation validations pass
+(examples: 127 lessons, five paired guides). Search inspection confirms a 100ms
+debounce followed by synchronous whole-view filtering; All columns formats dates
+and numbers on every pass. This explains work the virtualization does not remove;
+no performance optimization was implemented under the examples-only request.
+
+
+XL Bag memory measurement (2026-10-29, owner question): isolated Node v23.11.0
+heap deltas after forced GC, three fresh-process repetitions per size, using the
+actual invoice-row selection and the same Bag source as the preview (0.11.1).
+Ten attributes per row, including typed dates/Decimals, null node values and
+backrefs. Median retained heap: 1,000 rows 1.10 MB; 10,000 rows 10.93 MB;
+100,000 rows 111.57 MB (decimal MB). Corresponding uncompressed TYTX Bag size:
+0.31/3.11/31.16 MB. This is not a Chrome heap measurement or total tab memory;
+view indices, grid/DOM, transport text and transient parsing allocations are
+excluded from the retained-Bag estimate. Temporary record samples were removed;
+aggregate results and measurement/export scripts remain under
+/private/tmp/gramlot-grid-memory. No implementation changes.
+
+
+Selection-transfer experiment (2026-10-29): implemented separate opt-in JSON/HTTP
+and JSONL/HTTP pages, native TYTX iterators and query/reception/decode/Bag/search
+metrics. Original WebSocket invoice page and ordinary RPC transport remain unchanged.
+JSONL publishes only a validated complete selection and cancels stale loads.
+All attributes match at 1,000/100,000 rows over real HTTP; typed values, interrupted
+streams and ownership checks pass. 51 focused JS tests, two Python tests and four
+adapter staging/conformance cases pass. Chrome at 100,000: request-to-Bag-ready
+2169.60ms JSON versus 1249.40ms JSONL; reception overlaps decoding/insertion for
+JSONL. Customer search Parks 29.50/28.10ms; earlier All columns 6773.70ms.
+GC-375 selection-transfer-20261029 records scope, reproduction and measurement
+limits. Gallery 61509 exposes Grid · Transfer experiments for owner evaluation.
+No final protocol acceptance, database changes, dependency patches or publication.
+
+Selection-trial final documentation checks pass: both adapter Sphinx views,
+examples paired guide identities and 127-lesson local link/search validation.
+The optional preview was restarted with the reproducible experimental collection
+build and both comparison pages verified in Chrome at 100,000 rows.
+
+
+WebSocket experiment disposition (2026-10-29): owner discarded progressive
+DataBinder appends after excessive synchronous per-row index work; removed its
+page/component/protocol, retaining the historical evidence in GC-375. No index
+optimization was authorized or implemented. Owner's follow-up complete WebSocket
+RPC comparison is implemented with ordinary dataRpc and the same query/endpoint
+as JSON/HTTP. Three Chrome runs at 100,000: HTTP 2341–2531.8ms, WebSocket path
+8755.9–12174.3ms. These include family routing/codec costs, not isolated wire time;
+the third WebSocket run overlapped integration verification. All row attributes
+match over real HTTP/WebSocket at 1,000/100,000. Staging and paired docs checks pass.
+Gallery 61509 is ready with JSON, JSONL and complete WebSocket RPC pages. No release
+or protocol acceptance. Remaining index-cost improvement is deferred, not part of
+this completed comparison.
+
+
+Asqueel cached-fetch investigation (2026-10-29, owner requested inspection before
+another experiment): read asqueel/cached_fetch.py, compiler numbering, PostgreSQL
+adapter, model expansion, guide and relevant tests. The installed cached_fetch.py
+matches the primary Asqueel checkout. destinationName materializes a numbered
+selection in _asql_ using CTAS and a unique _rowidx; query(start,count) reads index
+ranges. Sort/search rebuild a separate _sortidx-to-_rowidx table shared by the
+same owner:name; search is all-text token matching, not Grid typed searchOn.
+Creation/sort/search/cleanup use separately committed sessions. No automatic TTL
+or live source refresh was found; cleanup is explicit by owner. Current Base
+service has transaction_read_only enabled and no cachedFetch option; cached tables
+need bounded write access/setup. Current Grid consumes a resident Bag; server-window
+requests on scrolling are not implemented. No Asqueel, database or runtime change
+was made and no cached-fetch performance result is claimed. Experiment design and
+cache write/lifecycle scope remain to be agreed before implementation.
+
+<a id="gc-070-cached-selection-20261029"></a>
+### Cached-selection experiment implemented — 2026-10-29
+
+Supersedes the investigation-only status above. Owner confirmed Asqueel-only page,
+500,000 maximum, configurable 1,000 actual-row threshold, and bounded local cache
+schema/role setup. Generic Grid window descriptors and request bindings are now
+implemented, with PageStore-owned cache/search/sort and a small browser Bag.
+Local source database is untouched; the dedicated connection can only SELECT
+invoice data and write cache objects. Snapshot cleanup is explicit on page close.
+
+Implemented and verified: 1,000 resident / 410,429 cached, 200-row windows,
+End-to-last-row, global row numbers, text search including no matches, reset,
+multi-column mixed sort, obsolete-response rejection and cache cleanup. Tests:
+1,464 full JS passes; 48 targeted passes after cleanup; 10 adapter passes including
+real database integration. Python authoring/FrameGrid tests: 19 pass. Adapter paired Sphinx builds and
+examples guide/link checks pass. Gallery 61509 includes Grid · Asqueel only. GC-375 has
+measured timings and limits. Protocol and visual acceptance remain with owner;
+no publication or release. Unloaded variable heights remain estimates; no TTL.
+
+### 100,000-row transfer/cache comparison completed — 2026-10-29
+
+Owner-requested measurement completed without production code changes. Sequential
+three-run medians: JSON 2367.8 ms, JSONL 1189.1 ms to full Bag ready; cachedFetch
+718.5 ms to first 200-row window. Post-GC isolated Chrome page memory: 80.315,
+80.225 and 14.223 MB respectively (single memory sample each). Parks yields the
+same 574 matches. Current local all-column search takes 6.031/5.625 s; cached
+server search 60.21 ms, client total 308.9 ms including debounce. Control with
+existing searchOn='*T' takes 65.2 ms locally: numeric/date formatting in the broad
+filter explains much of the apparent search gap. No filter optimization is implied
+or implemented. GC-375 and PORT-0026 raw JSON preserve scope, timings and caveats.
+Temporary probes removed, isolated host stopped; gallery 61509 remains available.
+
+### JSONL adopted for the floating invoice Grid — 2026-10-30
+
+Owner selected JSONL after comparison and confirmed the floating page is included.
+Implemented: single JSONL trial loader, shared loader/query on the floating invoice
+page, retired JSON HTTP/complete WebSocket trial pages, no wire switch or duplicate
+full-response endpoint. Both local hosts expose JSONL for the floating page even
+without --selection-trials. cachedFetch remains separate and unchanged.
+Checks: 12 JS, 10 adapter tests; all nine limits match independent SQL; HTTP verifies
+all attributes at 1000/100000 across floating and JSONL lesson, cancellation,
+ownership rejection and old-route 404. Gallery 61509 serves the updated pages.
+No public transport release, ordinary RPC replacement or filter optimization.
+
+Final JSONL adoption checks: two server framing/ownership tests pass; both adapter
+Sphinx views and examples guide/link checks pass. The independent Asqueel Base
+launcher serves 1,000 typed JSONL rows on the floating page. Browser verifies
+100,000 rows, Reload and rapid limits 1000 → 100000 → 500 ending at exactly 500.
+The gallery is left on the 100,000-row floating example; the temporary Base test
+server is stopped. Implemented and verified; no publication or release.
+
+
+### Grid review and gallery feature coverage — 2026-10-30
+
+Owner request: “rivedi anche il nuovo lavoro sulle grid e aggiorna l’indice delle
+feature della gallery, distinguendo quelle generiche da quelle Asqueel only.
+Poi dimmi cosa manca per consolidare la release.” This scope does not authorize
+publication. Concurrent Grid work is preserved; Invoice application remains out
+and Python-to-serverless export remains suspended.
+
+Implemented in the examples working copy: Grid · Generic, Grid · Data loading,
+and Grid · Asqueel only feature groups. All nine common Grid lessons now have
+feature evidence; optional resident database, typed JSONL and cachedFetch lessons
+are linked through the host catalogue in gallery Data, using existing lazy
+navigation resolvers. Unavailable environments cannot open those links or restore
+their progress into available-feature counts. Independent views replace the stale
+shared-sort description. JSONL and cachedFetch retain Review status; no public
+protocol or general remote CollectionStore is certified. GE-035 and its mirror
+record the scope, availability and known limits.
+
+Verified this turn: 58 targeted core Grid/row-layout/selection-trial/window-selection
+tests; 15 Python gallery authoring/navigation/build tests plus four subtests;
+7 cachedFetch adapter tests including the prepared real database, criteria, window
+ordering and cleanup. Combined JS feature/build/gallery run: 58 passed, one lazy
+navigation test timed out (30-second limit, reported elapsed 189.8 seconds). That
+same test passes alone in 7.65 seconds without modifying its threshold; a fully
+green combined qualification remains a release gate. The 11 feature-index tests
+pass. Docs checker validates 127 lessons, five paired guides and all local links.
+A stale Python route-count assertion was corrected for the two new Grid lessons.
+
+Browser preview at http://127.0.0.1:61510/ uses the current core/examples/server,
+with Remote Edit disabled and all local Grid catalogues enabled; 61509 was left
+untouched. Features shows 116 available entries, and opening cachedFetch directly
+loads the example and marks its three linked features Seen. An initial PageStore
+1006 disconnect required a reload; opening then succeeded. This is not claimed as
+a reconnection qualification. Screenshot: /private/tmp/grid-feature-index-review.png.
+
+Review observations / remaining release work:
+- The JSONL/window coordinator is a locally generated gramlot_selection_trial
+  collection under build/selection-trial, outside the standard collection set.
+  Public distribution/activation and supported host scope must be settled before
+  including these optional lessons in a public installation. Do not disguise it
+  as ordinary RPC or an already consolidated transport contract.
+- Code inspection: Grid marks an unloaded server window aria-busy but its empty
+  row renderer still says “No rows”. Loading and an empty result need distinct
+  visible feedback; no core change was made in this index-only update.
+- Snapshot cleanup on close is tested; abandoned process/crash caches have no TTL.
+  No live refresh is promised. These are explicit release policy/operational limits.
+- Earlier measured broad local search at 100k rows remains ~6 seconds, whereas
+  text-only searchOn='*T' was ~65 ms; no optimization was attempted here.
+- Consolidation still needs a repeatable combined qualification, package/consumer
+  checks and explicit acceptance of the experimental scope. This turn is not a
+  full audit of every remaining gallery feature or a public release sign-off.
+
+
 <a id="gc-070-environment-collections-20261030"></a>
 ## Environment collections and deferred engines — 2026-10-30
 
@@ -18302,6 +18610,33 @@ still needed. No publication/deployment performed. Browser cache qualification
 script now checks absent engine requests instead of absent component collections.
 
 
+## Query-definition design checkpoint — 2026-10-30
+
+Owner requested a durable discussion record before implementation.
+[GC-395](../future/395-data-selection-and-db-query.md) records dataSelection as a
+specialized database-read RPC, generic method mode, Asqueel-shaped dbQuery
+definitions in protected PageStore paths, configurable views and the open
+Python Bag validation question. Owner statements and assistant proposals are
+distinguished; signatures, mutation/authorization contracts and partial-loading
+integration remain open. Legacy source and current PageStore/Bag inspected
+read-only. No dataSelection/dbQuery implementation or dependency edit performed;
+no implementation agent assigned to this port. Next: settle preventive branch
+validation before preparing the implementation handoff.
+
+
+<a id="gc-070-database-permissions-discussion"></a>
+## Database-managed permissions discussion — 2026-10-30
+
+Owner requested a discussion basis for option 3: database-managed permissions.
+[GC-396](../future/396-database-managed-permissions.md) compares real database
+logins and service role switching, table/column grants, RLS, configurable queries,
+connection reuse, cached selections and revocation. PostgreSQL documentation
+supports the concrete mechanisms; other databases are not assumed equivalent.
+This is exploratory documentation, not an adopted security architecture or
+implementation. No runtime, database configuration or deployment was changed.
+Next: discuss execution identity and trust boundaries before choosing an experiment.
+
+
 <a id="gc-070-environment-collections-review-20261030"></a>
 ## Environment collections: release review — 2026-10-30
 
@@ -18335,3 +18670,23 @@ all collection entry closures 2,458,837 bytes / 703,408 gzip; deferred modules
 network timings. Collection helper duplication remains an optimization opportunity.
 File-origin standalone exports still embed a derived bundle: HTTP engine download
 deferral is not claimed for that approved single-file path.
+
+<a id="gc-070-common-release-20261030"></a>
+### Complete common-base release qualification — 2026-10-30
+
+Owner explicitly includes all current Grid work in the release. Preparing aligned
+0.3.24 core, examples and server packages. The experimental selection_trial
+collection now ships in the normal core build; original local changes were saved
+before consolidation. No Invoice application, compiled Python export, new
+permission provisioning or bundle deduplication is included.
+
+Verified: 1,466 core JavaScript tests; prepared-collection integrity/import test;
+321 Python-adapter tests; Node host 41, Bun host 40, Worker/exporter 51 and create 3.
+Chromium/WebKit frameGrid qualification passes geometry, themes, row/column
+interactions, search/sort and resident viewport virtualization. Independent SQL
+checks pass for customers and all nine invoice-row limits through 100,000;
+Asqueel cached-selection tests pass against 410,429 rows with cache cleanup.
+
+Gallery qualification passes 353 JavaScript tests and 93 Python tests (one optional skip); the documentation build validates 127 executable lessons, five paired guides and local links. Python distributions and npm core package build successfully. Chromium also verifies the resident-to-cached transition, bounded 200-row browser window and server search with no uncaught errors.
+
+Final installed-package qualification and publication are in progress. Public release and deployment have not yet occurred; record their receipts separately from these local checks.

@@ -298,3 +298,11 @@ GC-375 §130 records the neutral flat capsule, shaded label and contextual info
 popover. The rejected §125 appearance remains historical evidence. Twelve
 FrameGrid tests, compiled bundle, Chromium/WebKit and live gallery pass.
 Receipts: verification/grid-search-info-*.log. Visual acceptance pending owner.
+
+
+### Resident viewport — 2026-10-29
+
+Owner authorized resident Grid virtualization and corrected the first gallery
+fixture to 1,000 rows. GC-375 §135 records ownership, estimates, preserved view
+state and verification. This supersedes this port's fully resident DOM limitation,
+not its resident-data scope. Evidence: verification/grid-viewport-*.log.

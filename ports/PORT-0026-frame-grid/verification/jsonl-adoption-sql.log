@@ -1,0 +1,9 @@
+{'requested': 100, 'available': 410429, 'loaded': 100, 'query_ms': 13.34}
+{'requested': 500, 'available': 410429, 'loaded': 500, 'query_ms': 14.73}
+{'requested': 1000, 'available': 410429, 'loaded': 1000, 'query_ms': 13.48}
+{'requested': 2000, 'available': 410429, 'loaded': 2000, 'query_ms': 14.33}
+{'requested': 5000, 'available': 410429, 'loaded': 5000, 'query_ms': 27.13}
+{'requested': 10000, 'available': 410429, 'loaded': 10000, 'query_ms': 48.06}
+{'requested': 20000, 'available': 410429, 'loaded': 20000, 'query_ms': 110.2}
+{'requested': 50000, 'available': 410429, 'loaded': 50000, 'query_ms': 218.9}
+{'requested': 100000, 'available': 410429, 'loaded': 100000, 'query_ms': 433.33}

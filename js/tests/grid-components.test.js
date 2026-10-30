@@ -184,7 +184,7 @@ test('sort defers subtree projection and row edits never rebuild the struct', t 
     f.flush();
     assert.equal(structures, 0);
     assert.equal(hosts[0].shadowRoot.querySelector('tbody td').textContent,'Updated');
-    assert.equal(hosts[1].shadowRoot.querySelector('tbody tr[data-row=r499] td').textContent,'Updated');
+    assert.equal(hosts[1].shadowRoot.querySelector('tbody tr[data-row=r499]'), null, 'offscreen data does not create DOM');
     f.app.data.getItem('model.structure.view_0.rows_0').getNode('code').setAttr({name:'Renamed'});
     f.flush();
     assert.equal(structures, 2, 'a struct event rebuilds each consumer once');
@@ -512,7 +512,7 @@ for (const mode of ['values', 'attributes']) test(`${mode}: row headers are gene
     const corner = f.host.shadowRoot.querySelector('thead .row-heading');
     f.flush();
     assert.equal(corner.rowSpan, 2);
-    assert.equal(corner.querySelector('.column-resize'), null);
+    assert.equal(corner.querySelector('.column-resize').getAttribute('aria-label'), 'Resize row numbers');
     assert.equal(f.host.shadowRoot.querySelectorAll('col').length, 6);
     f.source.gridCollectionView.moveRow(f.rows.getNode('r2'), f.rows.getNode('r1'));
     f.flush();
@@ -805,4 +805,116 @@ test('two grids keep independent filters and both react to shared values',t=>{
     assert.equal(second.shadowRoot.querySelectorAll('tbody tr[data-row]').length,0);
     assert.equal(other.filter.value,'^B$');
     assert.equal(f.rows.parentNode.getAttr('filter'),null);
+});
+
+
+test('resident viewport bounds DOM work, reads offscreen edits on entry and preserves independent views', t => {
+    const f = fixture(t, {empty:true, two:true, rowHeaders:true, rowResize:true});
+    const rows = new Bag();
+    for (let i=0;i<1000;i++) rows.setItem(`r${i}`,null,{code:`R${i}`,amount:i});
+    f.app.data.setItem('model.rows',rows); f.flush();
+    const body = f.host.shadowRoot.querySelector('.body-viewport');
+    Object.defineProperty(body,'clientHeight',{value:320});
+    Object.defineProperty(body,'scrollHeight',{get:()=>f.source.gridRowLayout.totalHeight});
+    f.layout.flush();
+    assert.ok(f.host.shadowRoot.querySelectorAll('tbody tr').length < 40);
+    assert.equal(f.host.control.getAttribute('aria-rowcount'),'1002');
+    const layout = f.source.gridRowLayout;
+    layout.setHeight(rows.getNode('r500'),96);
+    rows.getNode('r500').setAttr({code:'Offscreen update'}); f.flush();
+    body.scrollTop=layout.offset(500); body.dispatchEvent(new f.window.Event('scroll')); f.layout.flush();
+    const row=f.host.shadowRoot.querySelector('tr[data-row=r500]');
+    assert.equal(row.querySelector('td').textContent,'Offscreen update');
+    assert.equal(row.style.height,'96px');
+    assert.equal(row.getAttribute('aria-rowindex'),'503');
+    assert.equal(row.querySelector('.row-number').textContent,'501');
+    assert.equal(f.host.shadowRoot.querySelector('tr[data-row=r0]'),null);
+    const second=f.window.document.getElementById('second');
+    assert.equal(second.shadowRoot.querySelector('tbody tr').dataset.row,'r0');
+    f.source.gridCollectionView.applyFilter({value:'= 500',columns:['amount'],dtype:'N',locale:'en-US'}); f.flush();
+    assert.equal(f.host.shadowRoot.querySelectorAll('tbody tr').length,1);
+    assert.equal(body.scrollTop,0);
+    assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row,'r500');
+    assert.equal(f.host.shadowRoot.querySelector('tbody tr').style.height,'96px');
+    assert.equal(second.control.getAttribute('aria-rowcount'),'1002');
+    f.source.gridCollectionView.applyFilter(null); f.source.gridCollectionView.sort('amount:d'); f.flush();
+    assert.equal(f.host.shadowRoot.querySelector('tbody tr').dataset.row,'r999');
+    assert.equal(rows.getNodes()[0].label,'r0');
+    body.scrollTop=layout.totalHeight; body.dispatchEvent(new f.window.Event('scroll')); f.layout.flush();
+    assert.ok(f.host.shadowRoot.querySelector('tr[data-row=r0]'));
+    assert.ok(f.host.shadowRoot.querySelectorAll('tbody tr').length < 40);
+    f.source.parentBag.popNode(f.source.label);
+    assert.equal(f.layout.frames.size,0,'unmount cancels pending viewport work');
+});
+
+
+test('row number width is local geometry, survives view changes and shares resize gestures', t => {
+    const f = fixture(t, {two:true,rowHeaders:true});
+    const head = f.host.shadowRoot.querySelector('thead');
+    const header = head.querySelector('.row-heading');
+    const handle = header.querySelector('.column-resize');
+    header.getBoundingClientRect = () => ({width:60});
+    header.querySelector('.row-number-measure').getBoundingClientRect = () => ({width:58});
+    handle.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'ArrowRight',bubbles:true}));
+    assert.equal(f.source.gridRowLayout.headerWidth, 70);
+    assert.equal(f.app.src.source.getNode('main.pane.second').gridRowLayout.headerWidth, null);
+    handle.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'ArrowLeft',bubbles:true}));
+    assert.equal(f.source.gridRowLayout.headerWidth, 58, 'cannot clip the measured ordinal');
+    const captured = new Set();
+    head.setPointerCapture = id => captured.add(id);
+    head.hasPointerCapture = id => captured.has(id);
+    head.releasePointerCapture = id => captured.delete(id);
+    const pointer = (type,x,target=head) => {
+        const event = new f.window.MouseEvent(type, {bubbles:true,clientX:x,button:0});
+        Object.defineProperty(event,'pointerId',{value:1}); target.dispatchEvent(event);
+    };
+    pointer('pointerdown',60,handle); pointer('pointermove',100);
+    assert.equal(f.source.gridRowLayout.headerWidth,58,'preview does not commit');
+    pointer('pointercancel',100);
+    assert.equal(f.source.gridRowLayout.headerWidth,58);
+    pointer('pointerdown',60,handle); pointer('pointerup',100);
+    assert.equal(f.source.gridRowLayout.headerWidth,100);
+    f.source.setAttr({sortedBy:'code:d'}); f.flush();
+    assert.equal(f.source.gridRowLayout.headerWidth,100);
+    assert.equal(f.app.data.getItem('model.structure').getItem('view_0.rows_0').getNodes().length,2);
+});
+
+
+test('server windows request missing ranges, render global ordinals and delegate multi-sort', t => {
+    const f = fixture(t, {empty:true, rowHeaders:true});
+    const rows = start => {
+        const bag = new Bag();
+        for (let i=start; i<start+200; i++) bag.setItem(`r${i}`, null, {code:`R${i}`, amount:i});
+        return bag;
+    };
+    f.app.data.setItem('model.window', new Bag({start:0, total:500000, revision:1, sortedBy:''}));
+    f.source.setAttr({windowInfo:'^.window', viewport:'^.viewport', sortRequest:'^.sortRequest'});
+    f.app.data.setItem('model.rows', rows(0));
+    f.flush();
+    const body = f.host.shadowRoot.querySelector('.body-viewport');
+    Object.defineProperty(body, 'clientHeight', {value:320});
+    Object.defineProperty(body, 'scrollHeight', {get:()=>f.source.gridRowLayout.totalHeight});
+    f.layout.flush();
+    body.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'End', bubbles:true}));
+    f.layout.flush();
+    assert.deepEqual(f.app.data.getItem('model.viewport'), {start:499800, count:200});
+    assert.equal(f.host.control.getAttribute('aria-busy'), 'true');
+    f.app.data.setItem('model.window', new Bag({start:499800,total:500000,revision:1,sortedBy:''}));
+    f.app.data.setItem('model.rows', rows(499800));
+    f.flush(); f.layout.flush();
+    assert.ok(f.host.shadowRoot.querySelector('tr[data-row=r499999]'));
+    assert.equal(f.host.shadowRoot.querySelector('tr[data-row=r499999] .row-number').textContent, '500000');
+    assert.equal(f.host.control.getAttribute('aria-busy'), null);
+    assert.ok(f.host.shadowRoot.querySelectorAll('tbody tr').length < 40);
+    const header = field => f.host.shadowRoot.querySelector(`th[data-field=${field}]`);
+    header('amount').dispatchEvent(new f.window.MouseEvent('click', {bubbles:true}));
+    assert.equal(f.app.data.getItem('model.sortRequest'), 'amount:a');
+    assert.equal(f.source.gridCollectionView.sortedBy, '', 'loaded rows are never locally sorted');
+    f.app.data.setItem('model.window', new Bag({start:0,total:500000,revision:2,sortedBy:'amount:a'}));
+    f.app.data.setItem('model.rows', rows(0)); f.flush(); f.layout.flush();
+    assert.equal(body.scrollTop, 0);
+    header('code').dispatchEvent(new f.window.MouseEvent('click', {bubbles:true,shiftKey:true}));
+    assert.equal(f.app.data.getItem('model.sortRequest'), 'amount:a,code:a');
+    header('amount').dispatchEvent(new f.window.MouseEvent('click', {bubbles:true,shiftKey:true}));
+    assert.equal(f.app.data.getItem('model.sortRequest'), 'amount:d');
 });

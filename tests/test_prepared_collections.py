@@ -194,3 +194,18 @@ def test_environment_page_has_all_included_collections_without_changing_module_c
     left._load_collections(builder, left.page_collections(prepared))
     prepared().main(builder.root)
     assert 'gramlot-textbox' in builder.to_tytx()
+
+
+def test_selection_trial_is_a_verified_installable_core_collection():
+    from gramlot.collections.selection_trial import mygramlot
+    from gramlot import GramlotBuilder
+    from gramlot.server import GramlotServer
+
+    files = mygramlot.verify()
+    grammar = json.loads(files['grammar.json'])
+    assert {'selectionTrial', 'windowSelection'} <= grammar['elements'].keys()
+    builder = GramlotBuilder()
+    GramlotServer()._load_collections(builder, (mygramlot,))
+    builder.root.selectionTrial(url='/gramlot/selection-trial', method='records',
+                                limit='100', result='^.selection')
+    assert 'gramlot-selection-trial' in builder.to_tytx()

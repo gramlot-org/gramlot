@@ -22,7 +22,7 @@ export {GramlotSvgRenderer} from './renderer/gramlot-svg-renderer.js';
 export {Bag, BagNode} from '@genrojs/bag';
 // createDecimal and Bag are the typed literals of a page module, as in server/page.js: the import map of the browser
 // resolves @gramlot/gramlot/page to this entry only.
-export {createDecimal} from '@genrojs/tytx';
+export {createDecimal, toTytx, fromTytx, fromTytxIter} from '@genrojs/tytx';
 export {References} from './references.js';
 export {HttpTransport} from './http-transport.js';
 export {ServerAdapter} from './server-adapter.js';

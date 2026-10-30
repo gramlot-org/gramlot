@@ -4678,6 +4678,98 @@ required future contract, as explicitly selected by the owner; they are not
 implemented or implied by this Markdown presentation. No publication.
 
 
+<a id="gc-000-resident-grid-window-20261029"></a>
+### Resident Grid viewport — 2026-10-29
+
+Owner: “sì procedi con la virtualizzazione della grid sulla Bag residente,
+mantenendo altezze variabili, sort e filtri per ogni grid. metti in gallery un
+esempio con 10000 righe così proviamo lo scroll. pria 1000”. The final correction
+sets the first gallery fixture to 1,000 rows. Approves bounded DOM rendering of
+each Grid's resident view, preserving variable/manual heights and independent
+sort/filter state. Supersedes PORT-0026's fully resident DOM limitation only.
+Data remains fully resident; no partial network provider, database editing or
+publication is authorized. Non-Asqueel database adapters load complete selections;
+Asqueel partial loading remains future scope.
+
+
+### Base XL dataset and resident invoice-row Grid — owner, 2026-10-29
+
+Owner: “usiamo test_invoice_pg_xl per la copia Base e facciamo un esempio con
+le righe fattura, con la tendina fino a 100000 e i tempi server così proviamo
+davvero”. This supersedes the Base source choice of 11.101: the same five-table,
+21-column specification now takes all rows from test_invoice_pg_xl. Refreshing
+the three dedicated Base copies is authorized; preserve a local recovery copy
+before replacing their data. Both original datasets remain database-enforced
+read-only. Application's source and complete model remain unchanged. The new
+Python gallery example uses existing native ORM invoice/product relations and
+dataRpc to return up to 100,000 rows as a fully resident Bag, with query/endpoint
+timing. This introduces no core API, partial server loading or dependency edits.
+
+
+### Separate JSON/JSONL selection experiments — owner, 2026-10-29
+
+Owner requests separate pages, one with the current full-response behavior and
+one using JSONL with TYTX iterators, displaying query, transfer, Bag creation
+and search timings. Authorization is experimental, not approval of a public wire
+protocol or release. Keep the original gallery lesson and ordinary RPC unchanged.
+The comparison uses HTTP for both new pages (the original gallery uses WebSocket).
+Reusable browser behavior and typed framing belong to an isolated core experiment;
+Kajenn integration owns HTTP streaming, examples own Python pages/query declarations.
+Both use ordinary endpoint ownership/auth dispatch. Build the new selection in
+isolation and publish only after a valid completion receipt. Late/failed/cancelled
+loads cannot replace the last successful selection. Search timing is an optional
+binding on the existing searchBox, measuring applyFilter only (no debounce/paint).
+No dependency source changes, publication or final protocol acceptance are implied.
+
+<a id="gc-000-cached-selection-20261029"></a>
+### Bounded Asqueel cached-selection experiment — owner, 2026-10-29
+
+Owner instruction: "sì procedi con una pagina Asqueel only sulle righe fattura,
+cachedFetch sul server e finestra piccola nel browser. ricerca e sort sul server,
+con i tempi di materializzazione, prima finestra, scroll e ricerca. in questo caso
+possiamo mettere 500000 come limite. ovviamente se sono magari solo 1000 righe non
+usaom la cached". Threshold confirmation: "proviamo con 1000 in ogni caso potrebbe
+essere un parametro di config". Scope: one additional optional gallery page; the
+resident JSON/JSONL/complete WebSocket comparisons remain available.
+
+The core owns generic bounded viewport geometry and request bindings; the isolated
+windowSelection experiment coordinates Source/DataBinder/PageStore messages.
+The example owns the invoice query and server selection lifecycle. The integration
+owns the Asqueel model/connection. No database dependency enters the core.
+Grid receives a small Bag and explicit total/start/revision, never placeholder
+BagNodes for the full selection. Sort/search execute on the server, per page.
+This bounded experiment does not accept a general remote CollectionStore API.
+
+Owner explicitly answered "si" to request_user_input_async
+call_3431a1b186554c889bfa46533de4eb80: create schema _asql_ in local
+`gramlot_base_asqueel`, NOLOGIN role `gramlot_cached_trial`, SELECT on the five
+example invc tables and writes in the cache schema. The role is a PostgreSQL
+cluster object; this experiment grants it access only in the named local database.
+No source database writes, ordinary service privilege changes, dependency source
+edits, releases or deployments are authorized. Cache tables are isolated by a
+unique PageStore owner and explicitly cleaned on close. Process crashes require
+explicit cleanup; no automatic TTL or live snapshot refresh is claimed.
+
+<a id="gc-000-jsonl-adoption-20261030"></a>
+### JSONL for local resident invoice selections — owner, 2026-10-30
+
+Owner: "allora eliminiamo pure il json e usiamo jsonl". Asked whether this also
+covers Database grid · resident invoice rows in the floating pane, the owner
+confirmed "Anche la grid nel floating" (request_user_input_async
+call_a4e20d5f2e4b40c1ae240d97864a828c). Scope: the local resident invoice-row
+examples and their existing Kajenn JSONL host, in addition to the transfer lesson.
+This supersedes retaining complete JSON HTTP/WebSocket comparison variants in
+the local trial. The measured comparison remains historical evidence in GC-375.
+
+Use the existing TYTX iterator JSONL path and publish the completed Bag atomically;
+remove its JSON alternative, wire selector and full-response trial endpoint.
+The floating invoice grid shares that loader/query, preserving layout and local
+sort/filter. The local Base and release-preview hosts must expose the JSONL route
+when serving the floating page, independently of the optional timing catalogue.
+No general dataRpc transport replacement, adapter-wide public protocol, dependency
+source change, release or deployment is approved by this bounded adoption.
+
+
 <a id="gc-000-environment-collections-20261030"></a>
 ### Environment collections and deferred engines — owner, 2026-10-30
 
@@ -4705,3 +4797,23 @@ The existing self-contained file-origin export embeds verified derived bundles.
 It currently retains eager engine bytes; deferred downloads in that profile are
 not claimed. Changing that packaging is a separate unresolved part of this goal.
 No dependency edits, public release or deployment are authorized by this change.
+
+
+<a id="gc-000-common-release-20261030"></a>
+### Complete common-base release — owner, 2026-10-30
+
+Owner requested a release now ("tutto sommato preferirei fare una release proprio
+ora e poi ripartire da li col resto") and rejected excluding the latest Grid work:
+"no: mi serve tutto nella release attuale". This explicitly supersedes the local-only
+publication restriction of the resident virtualization, JSONL selection-transfer,
+cached-selection and environment-collection increments above. Their technical
+boundaries and experimental status remain unchanged.
+
+Include the consolidated core, Python and JavaScript servers, examples, complete
+Grid changes, typed JSONL loader and optional Asqueel cached-selection lessons.
+The experimental selection_trial collection is prepared by the normal core build
+and distributed as gramlot.collections.selection_trial, so installed examples
+need no private build directory. Invoice application remains excluded. Python
+compiled-page export stays suspended; dataSelection/dbQuery and database-managed
+permissions remain design work. Bundle deduplication is deferred until after the
+release. No TestFlight upload or new database privilege provisioning is authorized.

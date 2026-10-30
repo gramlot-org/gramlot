@@ -2143,3 +2143,68 @@ the existing component property/method conventions; card-doc* names are internal
 CSS roles. Reuse markdownRenderer and positionPopup. Presentation/focus/event
 resources belong to the component; document content belongs to authored Source
 or Data, without a private document store.
+
+
+Resident Grid viewport — owner 2026-10-29, GC-000 resident-grid-window-20261029:
+extend the existing GridRowLayout (grid-row-layout.js) responsibility with
+per-node measured heights, ordered pixel offsets, indexAt and window methods.
+These are internal geometry methods, not a store/provider or public authoring
+API. Grid's private visibleNodes retains only identities for the current view;
+windowStart/windowEnd and topSpace/bottomSpace describe its DOM window. Existing
+GridRows.read(columns, nodes) formats the requested slice. No alternate data
+representation, business-node metadata or new component parameter is introduced.
+
+
+Grid row-number gutter correction — 2026-10-29: reuse GridRowLayout for local
+headerWidth/setHeaderWidth geometry, alongside local manual row heights. The
+existing GridHeaderInteraction owns the same pointer/keyboard preview lifecycle
+for data columns and the generated gutter. Private row-number-measure and
+--grid-row-header-{width,min-width} are DOM geometry, not struct fields or store
+metadata. The existing public theme token remains the preferred default width;
+the measured ordinal establishes the minimum needed to avoid truncation.
+
+
+Selection-transfer experiment (2026-10-29 owner request for separate JSON/JSONL
+pages and timings): selectionTrial is the experimental component authoring name,
+gramlot-selection-trial its custom-element code, selection_trial its collection
+and Python module spelling. SelectionTrialRows is the experimental Python result
+carrier; server preparation/framing functions use snake_case. Existing searchBox
+adds optional numeric output searchTime, following camelCase binding parameters.
+These names are scoped to the local experiment; no public streaming RPC API is
+accepted. Measurement keys use *_ms consistently in Python, browser transport and Data Bags.
+
+The experiment imports toTytx/fromTytx/fromTytxIter from the shared runtime,
+re-exporting their exact upstream names beside createDecimal. This retains the
+single TYTX type registry that owns Bag hydration; no copied codec or private
+registry registration is introduced in the experimental collection.
+
+
+Historical record — WebSocket block experiment, 2026-10-29: the owner withdrew
+this experiment ("scarterei quest asoluzione", "lasciamo star enon da vantaggi").
+selectionBlocks and its private framing/acknowledgement implementation were removed.
+The follow-up compares ordinary complete WebSocket RPC with HTTP, using existing
+dataRpc and its callbacks; no new component, transport or public naming is needed.
+
+
+Cached-selection experiment — 2026-10-29: owner requests Asqueel-only cachedFetch,
+small browser windows, server sort/search and timings, with configurable threshold
+1,000 and maximum 500,000. Grid windowInfo is the explicit server-window descriptor Bag
+(start, total, revision, sortedBy); viewport and sortRequest are write bindings,
+following existing camelCase component parameters. GridRowLayout.setWindow owns
+bounded window geometry. The experimental windowSelection component coordinates
+selection_request publications and DataBinder replies, without SQL knowledge.
+These names extend existing geometry/binding conventions; the experiment does not
+add silent Bag metadata, a second renderer or a public database-aware Grid API.
+
+JSONL adoption — owner, 2026-10-30: selectionTrial/loadSelectionTrial remain the
+existing local selection-loading names; the wire parameter is removed with the
+JSON branch rather than retained as a one-choice selector or compatibility alias.
+load_trial_rows is shared by the JSONL lesson and floating invoice grid.
+encode_ms exposes the existing server receipt field, replacing server_bag_ms;
+no complete server Bag is built in this path. General RPC names are unchanged.
+
+
+Release packaging — 2026-10-30: the approved complete release packages the existing
+selection_trial collection at gramlot.collections.selection_trial and
+@gramlot/gramlot/components/selection_trial. No new authoring alias is added;
+selectionTrial and windowSelection retain their experimental names and scope.

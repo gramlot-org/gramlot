@@ -43,9 +43,9 @@ const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist
 // Both distributions ship the same prepared collection artifacts and fingerprint.
 const staging = await mkdtemp(join(tmpdir(),'gramlot-core-collections-'));
 try {
-    const names = ['inputs','layout','tree','grid','editors','typst','grouplets','chat'];
+    const names = ['inputs','layout','tree','grid','editors','typst','grouplets','chat','selection_trial'];
     const config = {output:'../src', collections:names.map(name=>({
-        entry:`./src/components/${name}.js`,pythonPackage:`gramlot.collections.${name}`}))};
+        entry:name === 'selection_trial' ? './src/experiments/selection-trial.js' : `./src/components/${name}.js`,pythonPackage:`gramlot.collections.${name}`}))};
     const result = await generate({protocolVersion:1,operation:'build',
         configPath:path('gramlot.build.json'),projectRoot:path(''),stagingDirectory:staging,config,externals:[]});
     for (const record of result.collections) {

@@ -101,7 +101,7 @@ export class BagCollectionView {
     }
 }
 
-function parseSort(sortedBy) {
+export function parseSort(sortedBy) {
     if (typeof sortedBy !== 'string') throw new TypeError('collection view sortedBy must be a string');
     if (sortedBy === '') return [];
     const seen = new Set();

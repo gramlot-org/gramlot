@@ -35,7 +35,9 @@ export const gridStyles = `
         background: var(--gramlot-surface-subtle, Canvas);
         scrollbar-gutter: stable;
         overscroll-behavior: contain;
+        overflow-anchor: none;
     }
+    .row-space { pointer-events: none; inline-size: 1px; }
     .body-viewport:focus-visible {
         outline: 2px solid var(--gramlot-focus-ring, Highlight);
         outline-offset: -2px;
@@ -89,7 +91,7 @@ export const gridStyles = `
         border-block-end: 1px solid var(--gramlot-grid-row-border-color, var(--gramlot-border, ButtonBorder));
     }
     tbody tr { background: var(--gramlot-grid-background, var(--gramlot-surface, Canvas)); }
-    tbody tr:nth-child(even) { background: var(--gramlot-grid-row-alt-background, var(--gramlot-surface-subtle, Canvas)); }
+    tbody tr.alternate { background: var(--gramlot-grid-row-alt-background, var(--gramlot-surface-subtle, Canvas)); }
     tbody tr:hover { background: var(--gramlot-grid-row-hover-background, var(--gramlot-selected, Highlight)); }
     th[data-field] { padding-inline-end: 14px; cursor: grab; user-select: none; }
     th[data-field]:hover { background-color: color-mix(in srgb, var(--gramlot-grid-header-background) 92%, var(--gramlot-grid-header-color)); }
@@ -108,6 +110,7 @@ export const gridStyles = `
     th[data-drop=before] { box-shadow: inset 3px 0 var(--gramlot-focus-ring, Highlight); }
     th[data-drop=after] { box-shadow: inset -3px 0 var(--gramlot-focus-ring, Highlight); }
     th.row-heading {
+        font-variant-numeric: tabular-nums;
         position: sticky;
         inset-inline-start: 0;
         z-index: 2;
@@ -118,6 +121,15 @@ export const gridStyles = `
         block-size: var(--gramlot-grid-row-height, 2rem);
     }
     thead th.row-heading { vertical-align: middle; font-weight: var(--gramlot-grid-header-weight, 600); }
+    .row-number-measure {
+        position: absolute;
+        visibility: hidden;
+        pointer-events: none;
+        inline-size: max-content;
+        padding-inline: inherit;
+        border-inline-end: inherit;
+        font-weight: 400;
+    }
     .row-height-handle {
         position: absolute;
         inset: auto 0 0;
