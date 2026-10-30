@@ -18690,3 +18690,5 @@ Asqueel cached-selection tests pass against 410,429 rows with cache cleanup.
 Gallery qualification passes 353 JavaScript tests and 93 Python tests (one optional skip); the documentation build validates 127 executable lessons, five paired guides and local links. Python distributions and npm core package build successfully. Chromium also verifies the resident-to-cached transition, bounded 200-row browser window and server search with no uncaught errors.
 
 Final installed-package qualification and publication are in progress. Public release and deployment have not yet occurred; record their receipts separately from these local checks.
+
+The first publication gate passed the complete core suite but stopped on the inspector browser test’s obsolete fixed theme-token count. The test now compares all unconditional root token names, including Grid tokens, with the displayed controls; Chromium and WebKit pass. No package was published by that failed run.
