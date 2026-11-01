@@ -19686,3 +19686,37 @@ complete release-installation qualification (hosts, file serverless and gallery)
 then release documentation and publication. Invoice remains excluded; Python
 compiled-page export is suspended. Localization, dbQuery/dataSelection design,
 full form persistence/undo-redo and cached-selection row reordering remain separate.
+
+
+<a id="gc-070-release-20261101"></a>
+## Common release 0.3.25 qualification — 2026-11-01
+
+Owner: “procediamo con quesa release”. Publish the reviewed common core, examples,
+Python and JavaScript hosts together, then update their public galleries. Preserve
+original worktrees; Invoice application remains excluded, Python compiled-page
+export suspended, Remote Edit disabled, no TestFlight upload.
+
+Local checks passed: core 1,695 JavaScript tests and 390 Python tests (five existing
+expected failures); Python host 355 passed/one skipped; Node server 45, Worker/export
+59, create 3 and Bun 41 tests; gallery 374 JavaScript and 130 Python tests (one skipped).
+Runtime/binding checks pass Chromium and WebKit. File-origin single/directory exports
+and static gallery pass Chromium. Core, gallery and both host documentation build
+with strict checks; gallery documentation covers 132 lessons and local links.
+
+All 132 Python examples pass the targeted browser checker. Five newly integrated
+lessons were added to that checker. Its loopback servers now serve the optional
+Markdown module, like the production adapters. The complete JavaScript page pass
+is being repeated after restarting the test server following the final asset build;
+the earlier process retained collection descriptors from before that build.
+
+Uvicorn upload metadata/attachment workflows pass. Real Asqueel caption changes pass
+Chromium/WebKit, preserving selection and input identity. Cached selection passes
+with 5,000 rows and a bounded 200-row browser window. Binary HTTP uploads remain
+Uvicorn-only; Kajenn does not yet implement them. The previously documented WebKit
+file-origin Worker limitation and dated Kajenn cancellation limitation remain.
+
+Wheel/npm artifacts were built and installed separately. Both runtime variants and
+the lazy Markdown module have identical hashes in the wheel and npm archive.
+The installed Python and npm catalogues expose 132 lessons at version 0.3.25.
+Evidence: /private/tmp/gramlot-release-20261101/. Publication and deployed verification
+are still pending; local success is not a claim of registry or public-site availability.
