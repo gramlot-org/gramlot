@@ -19602,3 +19602,87 @@ http://127.0.0.1:61520/pages/81-asqueel/01-state_customers .
 Original worktrees preserved. No package publication or deployment in this tranche.
 Invoice remains excluded; Python compiled-page export remains suspended. Next:
 separate release qualification; this completion does not claim full legacy parity.
+
+
+**Historical record — Kajenn #89 verification, 2026-10-28.**
+Owner asks whether the issue is resolved and the asynchronous-cancellation
+limitation can be removed. The issue remains open, but
+[PR #93](https://github.com/kajenn-org/kajenn/pull/93) is merged into develop at
+6b023a5c6e5fcc09ce9b2af1564089f115f58103. Main still has the original
+run_in_executor implementation; the latest GitHub/PyPI release is still 0.7.0.
+The ordinary installed/public environments were not changed.
+
+Verified the official develop source in an isolated temporary environment:
+49 upstream pool/database-lifecycle tests pass, and all 84 Kajenn adapter tests
+pass against the published Gramlot integration. Four additional controlled tests
+exercise real async_db SQLite reads through the adapter's RPC call lifecycle,
+with Asqueel and SQLAlchemy and one/three cancellations while the executor operation
+is held active. All four pass on the corrected source: the task remains pending,
+busy stays accurate, and the event order is io_started, io_ended, release.
+All four fail on published Kajenn 0.7.0 with io_started, release_during_io,
+confirming that the probe detects the original defect.
+
+The implementation is therefore qualified for this regression on develop, but
+the limitation must remain for published integrations until Kajenn releases the
+fix. A follow-up can require the first fixed release, retain the regression tests
+and update the maintained limitation text. No Kajenn publication, dependency
+change or removal of the current warning was performed by this verification.
+Cancellation waits for work already running; it does not interrupt SQL or undo
+a completed commit. Django's unsupported async access is a separate limitation.
+
+Evidence: /private/tmp/kajenn-89-upstream-tests.log,
+/private/tmp/kajenn-89-fixed-integration.log,
+/private/tmp/kajenn-89-published-integration.log,
+/private/tmp/kajenn-89-adapter-tests.log. The isolated regression probe is
+/private/tmp/test_kajenn89_gramlot_async_io.py.
+
+Imported from the preserved WebSocket worktree on 2026-11-01. This is dated
+evidence, not a fresh check of Kajenn upstream or a dependency change.
+
+
+<a id="gc-070-residual-worktrees-20261101"></a>
+## Residual worktree audit closed — 2026-11-01
+
+Owner: “ok”, following the proposed residual-worktree review before whole-release
+qualification. Scope is comparison and preservation of useful residual work;
+no new feature, worktree deletion, publication or deployment is authorized here.
+
+Refreshed the 66 registered worktree paths across the nine repositories from the
+previous inventory: no additional registered path appeared. Only the common core,
+host/gallery and isolated Capacitor integration heads advanced relative to that
+inventory. This does not discover arbitrary unregistered directories or prove
+that another chat cannot make later changes.
+
+Detailed comparison covered 12 residual entries: conversation core/examples,
+Grouplets core/examples, device-push, mobile gallery, issue-80, inspector, WebSocket
+core/host/examples and the consolidated Capacitor copy. Compared original working
+files and branch deltas with the current common implementation, rather than
+assuming differing files mean missing features. All 309 recorded original file
+hashes remain unchanged. No originals or branches were removed or renamed.
+
+| Candidate | Disposition |
+| --- | --- |
+| Conversation | Core implementation already present. The old chat_base index files moved to trials/chat_base/pages/92-chat/01-echo; current provider applications and environment collections supersede old runners/imports. |
+| Grouplets | Components, actions and six lessons already present. Differences include the approved lazy Markdown loading and environment-provided collections. Do not restore eager imports or older fixture assumptions. |
+| Mobile gallery | Old hardcoded LAN page list/Italian prototype superseded by the external English catalogue, same-origin module and broker integration. Keep the current public-module path. |
+| Device-push | Device/transform/mobile/theme behavior present, with later CSP and theme refinements. Two isolated Python transformPane authoring tests were missing and are now included, using the destination package grammar. |
+| Issue 80 | Collection specifier remapping, named exports and its preparation regression already present. |
+| Inspector | Candidate head 729c542 is an ancestor of the common base; later inspector bridge/history/style work is retained. |
+| WebSocket | No missing runtime delta. Imported the dated Kajenn #89 cancellation-verification record into paired core/host status docs; no claim of fresh upstream qualification. |
+| Capacitor | Source-owned SQLite correction already consolidated at 993a040. No additional local delta in that integration copy. |
+
+Fresh checks: 62 JavaScript cases for chat, Grouplets/cards, transformPane, mobile
+environment and iframe device broker; 20 Python transform/collection-preparation
+cases. All pass. The new Python regressions verify retained child rendering,
+consumption of onEnd and rejection on ordinary HTML. Existing expected-failure
+and physical-device/WebKit limitations are not waived by this audit.
+
+Evidence: /private/tmp/gramlot-residual-audit-20261101/ contains the comparison
+inventory, original deltas and test logs. Core checkpoint before this audit:
+e7ec6b31; Python host 283027c; gallery 5d75d7f; JavaScript host ec8a180.
+
+This closes the residual review for the enumerated candidates. Next phase is one
+complete release-installation qualification (hosts, file serverless and gallery),
+then release documentation and publication. Invoice remains excluded; Python
+compiled-page export is suspended. Localization, dbQuery/dataSelection design,
+full form persistence/undo-redo and cached-selection row reordering remain separate.
