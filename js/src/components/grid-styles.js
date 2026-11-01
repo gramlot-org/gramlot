@@ -2,6 +2,24 @@
  * A JS stylesheet module keeps the same source usable in Node and browser builds.
  */
 export const gridStyles = `
+.control-box{position:relative}
+.cell-editor{
+    position:absolute;z-index:4;height:var(--grid-editor-height);
+    background:var(--gramlot-grid-background,var(--gramlot-surface,Canvas));
+    --gramlot-field-height:0px;
+    --gramlot-field-block-size:var(--grid-editor-height);
+    --gramlot-field-padding:var(--gramlot-grid-cell-padding,.3rem .6rem);
+    --gramlot-field-font-size:1em;
+    --gramlot-field-line-height:var(--gramlot-grid-line-height,1.35);
+    --gramlot-field-radius:0px;
+    --gramlot-field-focus-outline:1px solid var(--gramlot-focus-ring,Highlight);
+    --gramlot-field-focus-offset:-1px;
+    --gramlot-field-resize:none;
+}
+.cell-editor[hidden]{display:none}
+.invalid-cell{background:var(--gramlot-error-background,#fff1f0)!important}
+.draft-cell{box-shadow:inset 0 -2px var(--gramlot-warning,#805600)}
+
     :host {
         min-block-size: 0;
         color: var(--gramlot-grid-color, var(--gramlot-ink, CanvasText));
@@ -27,8 +45,40 @@ export const gridStyles = `
         border-block-end: 1px solid var(--gramlot-grid-border-color, var(--gramlot-border, ButtonBorder));
     }
     .header-viewport { overflow: hidden; min-inline-size: 0; }
-    .body-viewport {
+    .body-frame {
         flex: 1 1 auto;
+        min-block-size: 0;
+        min-inline-size: 0;
+        display: grid;
+        grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    }
+    .loading-status {
+        grid-area: 1 / 1;
+        place-self: center;
+        z-index: 3;
+        padding: .5rem;
+        border-radius: 50%;
+        background: var(--gramlot-grid-background, var(--gramlot-surface, Canvas));
+        color: var(--gramlot-text-secondary, GrayText);
+        pointer-events: none;
+        opacity: 0;
+        animation: grid-loading-reveal 0s 200ms forwards;
+    }
+    .loading-status svg {
+        display: block;
+        inline-size: 1.5rem;
+        block-size: 1.5rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        animation: grid-loading-spin .9s linear infinite;
+    }
+    @keyframes grid-loading-reveal { to { opacity: 1; } }
+    @keyframes grid-loading-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .loading-status svg { animation: none; } }
+    .body-viewport {
+        grid-area: 1 / 1;
         min-block-size: 0;
         min-inline-size: 0;
         overflow: auto;

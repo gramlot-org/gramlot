@@ -111,3 +111,27 @@ test('disconnect releases parent subscription; reconnect and retarget retain vie
     assert.equal(f.first.sortedBy,'v:d');assert.deepEqual(f.labels(),['r1','r0']);
     const count=notices;f.parent.receiveData({});assert.equal(notices,count);
 });
+
+
+for (const mode of ['values','attributes']) test(`${mode}: all-column search retains formatted regex semantics and reads changed values`, () => {
+    const f=fixture(mode, [
+        {name:'Alpha', qty:1234.5, price:createDecimal('9007199254740993.25'), date:new Date('2026-10-16'), active:false},
+        {name:'Beta', qty:0, price:null, date:null, active:true},
+    ]);
+    const columns=['name','qty','price','date','active'];
+    const search = (view, value, locale) => view.applyFilter({value,columns,dtype:'T',locale});
+    search(f.first, '^Alpha 1\\.234,5 ', 'it-IT');
+    assert.deepEqual(f.labels(), ['r0'], 'regex can span column boundaries');
+    search(f.second, '9,007,199,254,740,993\\.25', 'en-US');
+    assert.deepEqual(f.labels(f.second), ['r0'], 'Decimal precision is preserved');
+    search(f.first, '16/10/26 false$', 'it-IT');
+    assert.deepEqual(f.labels(), ['r0']);
+    search(f.second, '^Beta 0   true$', 'en-US');
+    assert.deepEqual(f.labels(f.second), ['r1'], 'null columns retain separators');
+    const node=f.bag.getNode('r0');
+    if (mode==='values') node.staticValue.setItem('date',new Date('2026-10-17'));
+    else node.setAttr({date:new Date('2026-10-17')});
+    f.parent.receiveData({},node);
+    assert.deepEqual(f.labels(), [], 'no stale text is cached after a value update');
+    assert.deepEqual(f.labels(f.second), ['r1']);
+});

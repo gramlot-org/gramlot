@@ -77,3 +77,14 @@ const children: Set<SourceBagNode> = record.children;
 record.cleanup.push(() => {});
 // @ts-expect-error The built result is a render record, not a DOM element.
 const element: HTMLElement = renderer.buildNode(node, document.body);
+
+// Optional parser declarations retain markdown-it's constructor and instance API.
+import {loadMarkdown} from '../../../src/index.js';
+import MarkdownIt from '@gramlot/gramlot/markdown';
+const directParser = new MarkdownIt({html: false});
+const renderedMarkdown: string = directParser.render('# Heading');
+void loadMarkdown().then(({default: Parser}) => {
+    const parser = new Parser({html: true});
+    const html: string = parser.render(renderedMarkdown);
+    return html;
+});

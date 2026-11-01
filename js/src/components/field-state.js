@@ -1,20 +1,21 @@
 import {validateInput, validationParameters} from './validation.js';
+import {ValidationRun} from '../validation-run.js';
 import {positionPopup} from './popup.js';
 
 const MESSAGE_DURATION = 1800;
 const MESSAGE_FADE_DURATION = 200;
 
-/** Shared candidate validation and presentation; ControlAdapter alone writes Data. */
+/** Validation presentation; sessions own execution independently of mounted controls. */
 export function FieldState(Base) {
     return class extends Base {
         get supportsFormValidation() { return true; }
+        get validationExecutor() { return validateInput; }
         connectedCallback() { super.connectedCallback(); if (this.pageContext?.form) this.pageContext.formValidate(); }
         #rejected = false;
         #projected;
         #messageTimer;
         #messageEvents;
-        #validation;
-        #validationEpoch = 0;
+        #validation = new ValidationRun();
         #validationCurrent;
         #rules = {};
         validationResult = null;
@@ -69,7 +70,7 @@ export function FieldState(Base) {
             view.addEventListener('scroll', () => this.#hideMessage(), options);
             view.addEventListener('resize', () => this.#hideMessage(), options);
         }
-        releaseControl() { this.cancelValidation(); this.#hideMessage(); super.releaseControl(); }
+        releaseControl() { this.#validation.cancel(); this.#hideMessage(); super.releaseControl(); }
         disconnectedCallback() { this.releaseControl(); }
         setFieldState({invalid = false, pending = false} = {}) {
             this.control.setAttribute('aria-invalid', String(invalid));
@@ -84,71 +85,49 @@ export function FieldState(Base) {
         }
         restoreFormValue(value) { this.error(''); this.#rejected = false; super.restoreFormValue(value); }
         cancelValidation() {
-            if (this.pageContext?.form) this.pageContext.formPending(false);
-            this.#validationEpoch++;
-            this.#validation?.abort(); this.#validation = null; this.#validationCurrent = null;
+            if (this.pageContext?.form) this.pageContext.formCancelValidation();
+            this.#validation.cancel(); this.#validationCurrent = null;
             this.control.setAttribute('aria-busy', 'false');
         }
-        validateCandidate(value, accept) {
-            this.cancelValidation();
-            if (this.pageContext.form) this.pageContext.formCandidate(value);
-            const controller = new AbortController(); this.#validation = controller;
-            const epoch = this.#validationEpoch;
-            const rules = this.#rules;
-            const current = this.pageContext.validationCurrent(); this.#validationCurrent = current;
-            const valid = () => this.#validationEpoch === epoch && !controller.signal.aborted && current();
-            const failure = error => ({value, modified:false, error:error.message, warnings:[], issues:[], datachanges:[]});
-            const finish = result => {
-                if (!valid()) {
-                    if (this.#validation === controller) this.cancelValidation();
-                    return {ok:false};
-                }
-                this.#validation = null; this.#validationCurrent = null;
-                this.control.setAttribute('aria-busy', 'false');
-                try { if (!result.error || this.pageContext.form) accept(result.value); }
-                catch (error) { result = failure(error); }
-                if (this.pageContext.form) this.pageContext.formResult(result);
-                this.validationResult = result;
-                this.error(result.error || ''); this.message.dataset.severity = result.error ? 'error' : 'warning'; this.#rejected = Boolean(result.error);
-                if (!result.error && result.warnings.length) {
-                    this.message.textContent = result.warnings.join('\n'); this.#showMessage();
-                }
-                const outcome = {ok:!result.error, value:result.value, result, rules, isCurrent:valid};
-                if (!outcome.ok) this.finishValidation(outcome);
-                return outcome;
-            };
-            let result;
-            try {
-                if (rules.validate_timeout != null && (!Number.isInteger(rules.validate_timeout) || rules.validate_timeout <= 0)) throw new TypeError('validate_timeout must be a positive integer in milliseconds.');
-                result = validateInput(value, rules, {...this.pageContext, signal:controller.signal, selection:value => this.validateSelection(value)});
+        presentValidation(result) {
+            this.validationResult = result;
+            this.control.setAttribute('aria-busy','false');
+            this.error(result.error || '');
+            this.message.dataset.severity = result.error ? 'error' : 'warning';
+            this.#rejected = Boolean(result.error);
+            if (!result.error && result.warnings.length) {
+                this.message.textContent = result.warnings.join('\n'); this.#showMessage();
             }
-            catch (error) { return finish(failure(error)); }
-            if (!(result instanceof Promise)) return finish(result);
-            if (this.pageContext.form) this.pageContext.formPending(true);
-            this.control.setAttribute('aria-busy', 'true');
-            return new Promise(resolve => {
-                let timer;
-                const abort = () => { clearTimeout(timer); resolve({ok:false}); };
-                controller.signal.addEventListener('abort', abort, {once:true});
-                const settle = answer => {
-                    clearTimeout(timer); controller.signal.removeEventListener('abort', abort);
-                    resolve(finish(answer));
-                };
-                if (rules.validate_timeout != null) timer = setTimeout(() => {
-                    settle(failure(new Error('Validation timed out.'))); controller.abort();
-                }, rules.validate_timeout);
-                result.then(settle, error => settle(failure(error)));
-            });
+        }
+        validateCandidate(value, accept) {
+            if (this.pageContext.form) {
+                // Capture selection evidence before accepting clears the choice's picked row.
+                const selection = this.validationSelection();
+                accept(value);
+                return this.pageContext.formValidateCandidate(value,selection);
+            }
+            this.cancelValidation();
+            this.#validationCurrent = this.pageContext.validationCurrent();
+            return this.#validation.start(value,this.#rules,
+                {...this.pageContext,selection:value => this.validateSelection(value)},validateInput,outcome => {
+                    this.#validationCurrent = null;
+                    if (outcome.ok) {
+                        try { accept(outcome.value); }
+                        catch (error) { outcome.ok = false; outcome.result.error = error.message; }
+                    }
+                    this.presentValidation(outcome.result);
+                    if (!outcome.ok) this.finishValidation(outcome);
+                },() => this.control.setAttribute('aria-busy','true'));
         }
         finishValidation(outcome) {
             if (!outcome.result) return;
             this.pageContext.finishValidation(outcome);
         }
         shouldProjectControlValue(value) {
-            if (this.#validationCurrent && !this.#validationCurrent()) this.cancelValidation();
+            if (!this.pageContext?.form && this.#validationCurrent && !this.#validationCurrent()) this.cancelValidation();
             const same = this.sameControlValue(value, this.#projected);
             if (same && this.#rejected) return false;
-            if (!same) this.cancelValidation();
+            if (!same && !this.pageContext?.form) this.cancelValidation();
             this.#projected = value;
             if (!same && this.#rejected) this.error('');
             return true;
@@ -157,7 +136,7 @@ export function FieldState(Base) {
             const rest = super.projectAttributes(attrs, adapt);
             const rules = Object.fromEntries(Object.entries(attrs).filter(([name]) => name.startsWith('validate_')));
             const keys = new Set([...Object.keys(rules), ...Object.keys(this.#rules)]);
-            if ([...keys].some(key => !Object.is(rules[key], this.#rules[key])) || attrs.disabled || attrs.readonly) this.cancelValidation();
+            if (!this.pageContext?.form && ([...keys].some(key => !Object.is(rules[key], this.#rules[key])) || attrs.disabled || attrs.readonly)) this.cancelValidation();
             const rulesChanged = [...keys].some(key => !Object.is(rules[key], this.#rules[key]));
             this.#rules = rules;
             if (rulesChanged && this.pageContext?.form) this.pageContext.formValidate();

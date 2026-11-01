@@ -7,6 +7,7 @@ import {readFile} from 'node:fs/promises';
 import {chromium, webkit} from 'playwright';
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
+const artifacts = process.env.GRAMLOT_TEST_ARTIFACTS ?? `${repo}/src`;
 const wire = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? `${repo}/.venv/bin/python`, ['tests/fixtures/components/frame_grid.py'], {cwd: repo, encoding: 'utf8'}).trim();
 const bootstrap = `
 import {Gramlot} from '@gramlot/gramlot';
@@ -23,10 +24,10 @@ window.qualification = app;
 `;
 // Serve the prepared artifacts, so this test also verifies distribution identity.
 const assets = new Map([['/runtime.js', bootstrap],
-    ['/core.js', await readFile(`${repo}/src/gramlot/resources/gramlot.js`, 'utf8')],
+    ['/core.js', await readFile(`${artifacts}/gramlot/resources/gramlot.js`, 'utf8')],
     ['/logic.js', await readFile(`${repo}/tests/fixtures/components/frame_grid_logic.js`, 'utf8')]]);
-for (const name of ['grid', 'layout']) for (const file of ['index.js', 'collection.js']) {
-    assets.set(`/collections/${name}/${file}`, await readFile(`${repo}/src/gramlot/collections/${name}/assets/${file}`, 'utf8'));
+for (const name of ['grid', 'layout', 'inputs']) for (const file of ['index.js', 'collection.js']) {
+    assets.set(`/collections/${name}/${file}`, await readFile(`${artifacts}/gramlot/collections/${name}/assets/${file}`, 'utf8'));
 }
 const base = await readFile(`${repo}/themes/gramlot-base/theme.css`, 'utf8');
 const compact = await readFile(`${repo}/themes/gramlot-compact/theme.css`, 'utf8');
@@ -41,7 +42,7 @@ const server = createServer((req, res) => {
         const theme = Object.hasOwn(themes,url.searchParams.get('theme')) ? url.searchParams.get('theme') : 'compact';
         const mode = url.searchParams.get('mode') === 'dark' ? 'dark' : 'light';
         res.writeHead(200, {'Content-Type':'text/html'});
-        res.end(`<!doctype html><html data-theme="${mode}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gramlot · FrameGrid</title><script type="importmap">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js"}}</script><link rel="stylesheet" href="/base.css"><link id="appearance" rel="stylesheet" href="/theme.css?theme=${theme}"></head><body><div id="app"></div><script type="module" src="/runtime.js"></script></body></html>`);
+        res.end(`<!doctype html><html data-theme="${mode}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gramlot · FrameGrid</title><script type="importmap">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js","@gramlot/collections/inputs":"/collections/inputs/index.js"}}</script><link rel="stylesheet" href="/base.css"><link id="appearance" rel="stylesheet" href="/theme.css?theme=${theme}"></head><body><div id="app"></div><script type="module" src="/runtime.js"></script></body></html>`);
     }
 });
 const portIndex = process.argv.indexOf('--port');
@@ -350,6 +351,73 @@ try {
                 }
                 await page.evaluate(()=>window.qualification.dispose());
             }
+            // The status must remain inside the viewport on both forward and
+            // backward jumps, independently of virtual spacer positions.
+            await page.goto(url);
+            await page.locator('#grid-attributes tbody tr').first().waitFor();
+            const remote=page.locator('#grid-attributes');
+            await page.evaluate(async()=>{
+                const {Bag}=await import('/core.js');
+                const app=window.qualification, host=document.getElementById('grid-attributes');
+                const source=app.src.binding.renderer.getBaseSourceNode(host);
+                app.data.setItem('attributes.window',new Bag({start:0,total:1000,revision:1,sortedBy:''}));
+                source.setAttr({windowInfo:'^.window',viewport:'^.viewport',selfDragRows:false,rowResize:false});
+            });
+            const body=remote.locator('.body-viewport');
+            await body.focus(); await body.press('End');
+            await remote.locator('.loading-status:visible').waitFor();
+            const checkStatus = async()=>{
+                await page.waitForFunction(()=>{
+                    const status=document.getElementById('grid-attributes').shadowRoot.querySelector('.loading-status');
+                    return !status.hidden && getComputedStyle(status).opacity === '1';
+                });
+                const bounds=await remote.evaluate(host=>{
+                    const root=host.shadowRoot, status=root.querySelector('.loading-status').getBoundingClientRect();
+                    const body=root.querySelector('.body-viewport').getBoundingClientRect();
+                    return {visible:status.width>0 && status.height>0 && status.top>=body.top && status.bottom<=body.bottom && status.left>=body.left && status.right<=body.right,
+                        empty:!!root.querySelector('.empty'),
+                        centered:Math.abs((status.top+status.bottom)-(body.top+body.bottom))<2 && Math.abs((status.left+status.right)-(body.left+body.right))<2};
+                });
+                assert.equal(bounds.visible,true); assert.equal(bounds.empty,false); assert.equal(bounds.centered,true);
+            };
+            await checkStatus();
+            await remote.screenshot({path:`/private/tmp/grid-polish-loading-${name}.png`});
+            await page.emulateMedia({reducedMotion:'reduce'});
+            assert.equal(await remote.locator('.loading-status svg').evaluate(svg=>getComputedStyle(svg).animationName),'none');
+            await page.emulateMedia({reducedMotion:'no-preference'});
+            await page.evaluate(async()=>{
+                const {Bag}=await import('/core.js'), app=window.qualification, rows=new Bag();
+                for(let i=800;i<1000;i++) rows.setItem(`r${i}`,null,{code:`R${i}`,description:`Item ${i}`,quantity:i,price:1,updated:new Date('2026-10-28')});
+                app.data.setItem('attributes.window',new Bag({start:800,total:1000,revision:1,sortedBy:''}));
+                app.data.setItem('attributes.rows',rows);
+            });
+            await remote.locator('tr[data-row=r999]').waitFor();
+            assert.equal(await remote.locator('.loading-status').isVisible(),false);
+            await body.focus(); await body.press('Home');
+            await remote.locator('.loading-status:visible').waitFor(); await checkStatus();
+            await page.evaluate(async()=>{
+                const {Bag}=await import('/core.js'), app=window.qualification;
+                app.data.setItem('attributes.window',new Bag({start:0,total:0,revision:2,sortedBy:''}));
+                app.data.setItem('attributes.rows',new Bag());
+            });
+            await remote.locator('.empty').waitFor();
+            assert.equal(await remote.locator('.empty').textContent(),'No rows');
+            assert.equal(await remote.locator('.loading-status').isVisible(),false);
+            assert.equal(await remote.locator('.control-box').getAttribute('aria-busy'),null);
+            const fast = await page.evaluate(async()=>{
+                const {Bag}=await import('/core.js'), app=window.qualification;
+                const status=document.getElementById('grid-attributes').shadowRoot.querySelector('.loading-status');
+                app.data.setItem('attributes.window',new Bag({start:0,total:1000,revision:3,sortedBy:''}));
+                await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+                const opacity=getComputedStyle(status).opacity;
+                const pending=!status.hidden;
+                app.data.setItem('attributes.window',new Bag({start:0,total:0,revision:4,sortedBy:''}));
+                await new Promise(resolve=>setTimeout(resolve,250));
+                return {opacity,pending,hidden:status.hidden};
+            });
+            assert.deepEqual(fast,{opacity:'0',pending:true,hidden:true}, 'a fast request never reveals the spinner');
+            await page.screenshot({path:`/private/tmp/grid-polish-${name}.png`});
+            console.log(`${name}: centered SVG loading waits 200ms, cancels for fast windows and respects reduced motion; zero results show No rows`);
             assert.deepEqual(errors,[]);
             console.log(`${name}: Python Source, two frame recipients, live counts, 10 theme/mode combinations, stable rows, header/body geometry, responsive overflow actions, scroll, individual row resize/reset/cancel/keyboard, indexed sort/multicolumn/physical-order preservation, self row drag/identity/cross-grid rejection, column resize Data/preview/cancel/keyboard, reorder/split/join, all/column search, regex/numeric/date filters, invalid drafts, clear retaining sort, 1,000-row viewport with natural/manual heights and End anchoring, and disposal passed`);
         } finally {await browser.close();}

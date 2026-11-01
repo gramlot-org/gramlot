@@ -71,6 +71,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     /** Whether a node still belongs to the observed Source. */
     attached(node: SourceBagNode): boolean;
     /** Build an inserted node and report the build to the binding runtime. */
+    unmountView(node: SourceBagNode): void;
+    mountView(node: SourceBagNode): void;
     insert(node: SourceBagNode): void;
     /** Build the DOM of a node inside `container`, before `before`. */
     buildNode(node: SourceBagNode, container: DomNode, before?: DomNode | null, parent?: unknown): {

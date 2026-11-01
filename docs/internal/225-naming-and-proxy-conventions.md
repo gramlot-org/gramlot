@@ -2243,3 +2243,96 @@ That subpath re-exports the upstream constructor without a parser wrapper.
 `markdownUrl`, a sibling of `runtimeUrl`. Parser configuration, sanitization and
 rendering policy stay with consumers. The exporter substitutes the loader with
 an embedded blob module, retaining a single module instance per window.
+
+
+<a id="gc-225-grid-consultation-polish-20261101"></a>
+### Grid consultation polish internals — 2026-11-01
+
+Owner's bounded polish authorization is recorded in GC-375 §140. Existing
+camelCase/private-field conventions give intlFormatter, intlFormatters and
+#loadingStatus; existing component CSS kebab-case gives body-frame and
+loading-status. These are implementation details, not new Source parameters,
+commands, metadata, proxies or exported APIs. aria-busy and role=status use
+standard accessibility names; existing windowInfo/viewport remain unchanged.
+
+
+<a id="gc-225-grid-jsonl-loading-20261101"></a>
+### JSONL loading binding — 2026-11-01
+
+Owner authorization: GC-000 initial JSONL Grid loading feedback, GC-375 §150.
+loading follows the existing lower-camel-case component parameter convention.
+It is a boolean, default false: write binding on selectionTrial, read binding on
+grid. It denotes pending work, independently of status presentation text.
+No pending alias, timing parameter or imperative component lookup is added.
+
+
+<a id="gc-225-shared-editing-20261101"></a>
+### Shared local editing — 2026-11-01
+
+The confirmed common session uses internal EditingSession (PascalCase class),
+retaining the existing Source formState accessor and accept/restore local API.
+load(Bag) names the common explicit local snapshot-loading operation; it performs
+no I/O. editCollection is the Source hook selecting the owning local session.
+GridCellEditor is the grid UI collaborator, not a second editing-state owner.
+The existing legacy column edit boolean/dictionary is the authoring declaration;
+tag selects an existing input component and validation options use validate_* .
+Grid runtime editor Source children use the existing slot mechanism. Field keys
+derive from absolute Data pointers, including attribute selectors, never visible
+row positions. Internal retainField/releaseField distinguish a grid field from
+the temporary control editing it. No persistence API or alias is introduced.
+
+
+<a id="gc-225-session-validation-20261101"></a>
+### Session-owned validation — 2026-11-01
+
+Under the owner's explicit correction in GC-000 session-validation-20261101,
+internal ValidationRun names the shared execution resource (epoch, abort and
+timeout) used by EditingSession and standalone fields. Session validation records
+are keyed by real Source nodes, independently of mounted adapters. The existing
+NodeBinding carries editingSession for semantic dependency invalidation; no new
+public parameter or proxy is added. GridCellEditor retains its actual field Source
+declaration while pending/error/draft state exists, unmounts through renderer.unmountView
+and remounts through renderer.mountView. No hidden DOM controls or synthetic Source
+context is retained. Internal validateField/refreshField/cancelValidation follow
+the existing camelCase lifecycle names.
+
+Internal renderer mountView/unmountView distinguish view lifetime from semantic removal;
+Source updates to an unmounted branch keep its view unmounted. The existing
+remove/insert remain the Source-event lifecycle. validationValueCheck returns a
+pure typed-value policy, so accepted normalization has the same checks with and
+without a mounted input. Validation services reside in binding/validation-context,
+independently of the control adapter.
+
+validationExecutor exposes the existing pure rule evaluator from FieldState to
+the session; core does not import the input collection. validationSelection
+captures selection evidence independently of the mounted choice view.
+
+The existing upstream sourceTarget function is re-exported unchanged by the core
+entry point. Prepared grid collections import it from @gramlot/gramlot, preserving
+the runtime's fluent-handle identity instead of bundling a second WeakMap owner.
+This is an identity boundary, not a compatibility fallback or a dependency edit.
+
+
+<a id="gc-225-cell-editor-density-20261101"></a>
+### Cell editor density — 2026-11-01
+
+Owner: “non mi piace :troppo invasivo, troppo grosso”, with the oversized grid
+input screenshot. Scope: fit the existing input to its cell and use a thin inset
+focus indicator. Shared field CSS tokens follow existing --gramlot-field-* names:
+block-size, radius, focus-outline, focus-offset and resize. Defaults preserve
+standalone fields; Grid consumes them only inside its editor slot, reusing grid
+padding, typography and theme palette. --grid-editor-height is private measured
+geometry, not application state. No editing or validation contract changes.
+
+
+<a id="gc-225-editing-reports-20261101"></a>
+### Shared editing reports — 2026-11-01
+
+Under GC-000 editing-reports-20261101, editingStatus (gramlot-editing-status,
+EditingStatus) is a presentation in the inputs collection, following existing
+component authoring/tag/class conventions. It reads the nearest Source formState.
+EditingSession.errorEntries and changeEntries are read-only projections of the
+existing Bags. registerNavigator/focusField connect field paths to mounted
+presentations without owning values, drafts or validation. A navigator's disposer
+belongs to the presentation lifecycle. No history alias or duplicate change Bag
+is introduced; “Changes” names the PoC's outstanding-change summary accurately.

@@ -1,0 +1,2 @@
+chromium: initial JSONL loading uses the delayed SVG without No rows; 100000 real invoice rows loaded, spinner cleared, no page errors
+webkit: initial JSONL loading uses the delayed SVG without No rows; 100000 real invoice rows loaded, spinner cleared, no page errors

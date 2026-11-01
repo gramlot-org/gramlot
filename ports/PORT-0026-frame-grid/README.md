@@ -306,3 +306,30 @@ Owner authorized resident Grid virtualization and corrected the first gallery
 fixture to 1,000 rows. GC-375 §135 records ownership, estimates, preserved view
 state and verification. This supersedes this port's fully resident DOM limitation,
 not its resident-data scope. Evidence: verification/grid-viewport-*.log.
+
+
+### Consultation polish — 2026-11-01
+
+Owner authorized loading/empty distinction and local-search optimization only.
+GC-375 §140 records the existing request-state presentation and shared bounded
+Intl reuse, with unchanged filter semantics and no cached row text. Targeted
+regressions, Chromium/WebKit and before/after exact-label benchmark are verified.
+Evidence: verification/grid-consultation-*. Final core suite: 1,477/1,477 pass;
+standard build and Chromium/WebKit repeat qualification pass. Documentation/link
+and diff checks pass. Owner visual acceptance remains separate.
+No publication/deployment or general remote-store contract is implied.
+
+
+## Shared local editing increment — 2026-11-01
+
+Owner approved a common local editing mechanism for forms and grids, with no DB
+connection. Implemented as EditingSession plus GridCellEditor UI composition of
+ordinary Source controls. The PoC editor's parallel change/error Bags were not
+ported. Current typed-invalid-data semantics remain those of the destination
+form contract. See GC-380 §065, GC-375 §155 and verification/shared-editing.md.
+Implemented and verified, awaiting owner acceptance. No release/publication.
+
+Session validation correction (2026-11-01): owner explicitly requires validation
+to continue when scrolling unmounts the editor. The session now owns pending work,
+results and invalidation; no hidden widget or reopening requirement. See
+GC-380 §065 and verification/shared-editing.md for qualification.

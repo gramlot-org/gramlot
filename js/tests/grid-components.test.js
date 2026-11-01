@@ -899,12 +899,19 @@ test('server windows request missing ranges, render global ordinals and delegate
     f.layout.flush();
     assert.deepEqual(f.app.data.getItem('model.viewport'), {start:499800, count:200});
     assert.equal(f.host.control.getAttribute('aria-busy'), 'true');
+    assert.equal(f.host.shadowRoot.querySelector('.loading-status').hidden, false);
+    assert.equal(f.host.shadowRoot.querySelector('.empty'), null, 'an unloaded window is not an empty result');
     f.app.data.setItem('model.window', new Bag({start:499800,total:500000,revision:1,sortedBy:''}));
     f.app.data.setItem('model.rows', rows(499800));
     f.flush(); f.layout.flush();
     assert.ok(f.host.shadowRoot.querySelector('tr[data-row=r499999]'));
     assert.equal(f.host.shadowRoot.querySelector('tr[data-row=r499999] .row-number').textContent, '500000');
     assert.equal(f.host.control.getAttribute('aria-busy'), null);
+    assert.equal(f.host.shadowRoot.querySelector('.loading-status').hidden, true);
+    body.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'Home', bubbles:true}));
+    f.layout.flush();
+    assert.equal(f.host.shadowRoot.querySelector('.loading-status').hidden, false, 'backward scrolling also shows loading');
+    assert.equal(f.host.shadowRoot.querySelector('.empty'), null);
     assert.ok(f.host.shadowRoot.querySelectorAll('tbody tr').length < 40);
     const header = field => f.host.shadowRoot.querySelector(`th[data-field=${field}]`);
     header('amount').dispatchEvent(new f.window.MouseEvent('click', {bubbles:true}));
@@ -917,4 +924,51 @@ test('server windows request missing ranges, render global ordinals and delegate
     assert.equal(f.app.data.getItem('model.sortRequest'), 'amount:a,code:a');
     header('amount').dispatchEvent(new f.window.MouseEvent('click', {bubbles:true,shiftKey:true}));
     assert.equal(f.app.data.getItem('model.sortRequest'), 'amount:d');
+});
+
+
+test('missing first windows, empty results and return to resident data have distinct feedback', t => {
+    const f = fixture(t, {empty:true});
+    const status = f.host.shadowRoot.querySelector('[role=status]');
+    f.app.data.setItem('model.window', new Bag({start:0,total:1000,revision:1,sortedBy:''}));
+    f.source.setAttr({windowInfo:'^.window',viewport:'^.viewport'});
+    f.flush(); f.layout.flush();
+    assert.equal(status.hidden, false);
+    assert.equal(status.getAttribute('aria-label'), 'Loading…');
+    assert.equal(status.querySelector('svg').getAttribute('aria-hidden'), 'true');
+    assert.equal(f.host.shadowRoot.querySelector('.empty'), null);
+    assert.equal(f.host.shadowRoot.querySelectorAll('tbody tr').length, 0, 'loading creates no fake data row');
+    f.app.data.setItem('model.window', new Bag({start:0,total:0,revision:2,sortedBy:''}));
+    f.flush(); f.layout.flush();
+    assert.equal(status.hidden, true);
+    assert.deepEqual(f.cells(), ['No rows']);
+    assert.equal(f.host.control.hasAttribute('aria-busy'), false);
+    f.app.data.setItem('model.window', new Bag({start:0,total:1000,revision:3,sortedBy:''}));
+    f.flush(); f.layout.flush();
+    assert.equal(status.hidden, false);
+    f.app.data.setItem('model.window', null);
+    f.rows.setItem('r1',null,{code:'Ready',amount:1});
+    f.flush(); f.layout.flush();
+    assert.equal(status.hidden, true);
+    assert.equal(f.host.control.hasAttribute('aria-busy'), false);
+    assert.deepEqual(f.cells(), ['Ready','1.00']);
+});
+
+
+test('external loading and missing windows share one indicator without clearing each other', t => {
+    const f=fixture(t,{empty:true});
+    f.app.data.setItem('model.loading',true);
+    f.app.data.setItem('model.window',new Bag({start:0,total:1000,revision:1,sortedBy:''}));
+    f.source.setAttr({loading:'^.loading',windowInfo:'^.window',viewport:'^.viewport'});
+    f.flush();f.layout.flush();
+    f.app.data.setItem('model.loading',false);f.flush();
+    assert.equal(f.host.control.getAttribute('aria-busy'),'true','missing window is still pending');
+    f.app.data.setItem('model.loading',true);
+    f.app.data.setItem('model.window',null);f.flush();
+    assert.equal(f.host.control.getAttribute('aria-busy'),'true','resident producer is still pending');
+    assert.equal(f.host.shadowRoot.querySelectorAll('.loading-status').length,1);
+    assert.equal(f.host.shadowRoot.querySelector('.empty'),null);
+    f.app.data.setItem('model.loading',false);f.flush();
+    assert.equal(f.host.control.hasAttribute('aria-busy'),false);
+    assert.deepEqual(f.cells(),['No rows']);
 });

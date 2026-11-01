@@ -1,4 +1,4 @@
-/** Typed text drafts. Components parse/present; ControlAdapter alone writes Data. */
+/** Typed text drafts. Components parse/present; the editing owner writes through the canonical Data binding. */
 import {parseDateExpression} from '@genrojs/toolbox';
 import {CalendarView, checkCivilDate} from './date-calendar.js';
 import {SVG_NS} from '../renderer/attributes.js';
@@ -96,6 +96,7 @@ export function TypedEditor(HTMLElement) {
                 });
             } catch (error) { if (this.pageContext.form) this.pageContext.formParseError(error.message); this.error(error.message); return {ok: false}; }
         }
+        restoreFormDraft(text) { this.#dirty = true; this.#policy = this.context(); this.control.value = text; }
         restoreFormValue(value) { this.#dirty = false; this.#policy = null; this.#selection = null; this.error(''); this.writeControlValue(value); this.display(); }
         display() {
             if (!this.pageContext || !this.parameters) return;
@@ -118,12 +119,11 @@ TypedEditor.parameters = {...NativeControl.parameters,
 
 export const numberEditor = Base => class extends Base {
     createControl() { const control = super.createControl(); control.inputMode = 'decimal'; return control; }
-    checkValue(value) {
-        if (value === null) return;
-        if (!(typeof value === 'number' && Number.isFinite(value)) && !(this.pageContext.isDecimal(value) && finiteDecimal(value))) {
-            throw new TypeError('Expected a finite number or Decimal');
-        }
+    validationValueCheck() {
+        const isDecimal = this.pageContext.isDecimal;
+        return value => checkNumber(value,isDecimal);
     }
+    checkValue(value) { checkNumber(value,this.pageContext.isDecimal); }
     context() { return {...super.context(), pattern: this.parameters.format ?? '0.####################'}; }
     editText(value, context) { return String(value).replace('.', numberSymbols(context.locale).decimal); }
     parse(text, context) {
@@ -231,6 +231,7 @@ export const dateEditor = Base => class extends Base {
     }
     releaseControl() { this.closeCalendar(); super.releaseControl(); }
     context() { return {...super.context(), dtype: 'D', pattern: this.parameters.format ?? 'short'}; }
+    validationValueCheck() { return checkCivilDate; }
     checkValue(value) { checkCivilDate(value); }
     editText(value, context) { return this.pageContext.format(value, {...context, pattern: 'short'}); }
     parse(text, context) {
@@ -247,9 +248,8 @@ export const dateEditor = Base => class extends Base {
 
 export const timeEditor = Base => class extends Base {
     context() { return {...super.context(), dtype: 'H', pattern: this.parameters.format ?? 'short'}; }
-    checkValue(value) {
-        if (value !== null && (!(value instanceof Date) || !Number.isFinite(value.getTime()) || value.getUTCFullYear() !== 1970 || value.getUTCMonth() !== 0 || value.getUTCDate() !== 1)) throw new TypeError('Expected a civil time on the TYTX epoch date');
-    }
+    validationValueCheck() { return checkTime; }
+    checkValue(value) { checkTime(value); }
     editText(value) {
         return `${pad(value.getUTCHours())}:${pad(value.getUTCMinutes())}:${pad(value.getUTCSeconds())}` +
             (value.getUTCMilliseconds() ? `.${String(value.getUTCMilliseconds()).padStart(3, '0')}` : '');
@@ -260,3 +260,13 @@ export const timeEditor = Base => class extends Base {
         return new Date(Date.UTC(1970, 0, 1, +match[1], +match[2], +(match[3] ?? 0), +(match[4] ?? '').padEnd(3, '0')));
     }
 };
+
+function checkNumber(value, isDecimal) {
+    if (value === null) return;
+    if (!(typeof value === 'number' && Number.isFinite(value)) && !(isDecimal(value) && finiteDecimal(value))) {
+        throw new TypeError('Expected a finite number or Decimal');
+    }
+}
+function checkTime(value) {
+    if (value !== null && (!(value instanceof Date) || !Number.isFinite(value.getTime()) || value.getUTCFullYear() !== 1970 || value.getUTCMonth() !== 0 || value.getUTCDate() !== 1)) throw new TypeError('Expected a civil time on the TYTX epoch date');
+}

@@ -1,0 +1,36 @@
+{
+  "rows": 100000,
+  "source": "deterministic synthetic invoice-shaped rows",
+  "engine": "Chromium",
+  "variants": {
+    "before": [
+      {
+        "ms": 7207.5,
+        "matches": 579
+      },
+      {
+        "ms": 10607.600000023842,
+        "matches": 579
+      },
+      {
+        "ms": 14748.799999952316,
+        "matches": 579
+      }
+    ],
+    "after": [
+      {
+        "ms": 769.8999999761581,
+        "matches": 579
+      },
+      {
+        "ms": 711.3000000119209,
+        "matches": 579
+      },
+      {
+        "ms": 683.6000000238419,
+        "matches": 579
+      }
+    ]
+  },
+  "identicalRows": true
+}

@@ -1,3 +1,4 @@
+import {EditingStatus} from './editing-status.js';
 import {defineComponent, defineCollection} from './registry.js';
 import {NativeControl, ChoiceGroup} from './bases.js';
 import {Labelbox} from './labelbox.js';
@@ -223,6 +224,6 @@ export const CheckBoxText = defineComponent({
         get multiple() { return true; }
     }
 });
-export default defineCollection({name: 'inputs', components: [Textbox, Checkbox, RadioButtonText,
+export default defineCollection({name: 'inputs', components: [EditingStatus, Textbox, Checkbox, RadioButtonText,
     TextBoxArea, Passwordbox, RadioButton, Colorpicker, HorizontalSlider, VerticalSlider,
     NumberTextBox, DateTextBox, TimeTextBox, FilteringSelect, CallbackSelect, ComboBox, DbSelect, DbComboBox, CheckBoxText, DateCalendar]});

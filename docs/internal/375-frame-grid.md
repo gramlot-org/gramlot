@@ -1380,3 +1380,121 @@ comparison for every limit 100..100000, and real HTTP decoding of both pages at
 1000/100000 with every attribute equal. Cancellation and unowned-page refusal pass;
 retired JSON HTTP/WebSocket page routes return 404. Runtime remains experimental,
 not a published general streaming RPC contract.
+
+
+<a id="gc-375-140"></a>
+## 140 · Consultation polish — 2026-11-01
+
+Owner authorization: “sì procedi con le rifiniture della consultazione: distingui caricamento da risultato vuoto e ottimizza la ricerca locale, senza aggiungere funzionalità e senza workaround”.
+This is a correction of existing presentation and formatting costs, not a new
+provider, filter syntax, loading parameter, persistence or editing contract.
+
+The existing missing-window request determines both aria-busy and a visible
+Loading… status. A body-frame grid places the status over the viewport, outside
+its scrolling content: large forward/backward jumps cannot move it offscreen.
+It does not intercept pointer events or add placeholder data rows. No rows is
+rendered only when the logical row count is zero. Receiving the window, a zero
+result or switching back to resident data clears the busy presentation. Partial
+loaded rows remain usable. The initial resident load and request errors continue
+to use their existing loader status; a resident empty Bag alone is not interpreted
+as a pending request. No transport lifecycle is inferred by the Grid.
+
+The search hot path was constructing Intl.NumberFormat/DateTimeFormat for every
+numeric/temporal cell. The shared formatter now reuses at most 64 Intl instances,
+keyed by formatter kind, locale and complete internal Intl options, with least
+recently used eviction. Only successful configurations are retained; unsupported
+locales and invalid options still fail. Formatting reads each current value;
+there is no row/text cache, copied Bag, narrowed column set, alternate search
+algorithm or dependency modification. Regex matching over joined column text,
+localized values, exact Decimal formatting, masks and typed comparisons remain.
+
+Verification: 90 focused format/store/grid/geometry/FrameGrid tests pass, including
+constant constructor count as rows increase, configuration eviction, locale/zone
+isolation, mutation visibility and missing/empty/resident window transitions.
+Chromium and WebKit verify viewport-visible loading in both scroll directions,
+zero results and the existing 10 theme/mode, resize, sort, filter and virtualization
+qualification. The unchanged calendar validation test failed after the month
+changed even with the baseline formatter; its clock is now explicitly fixed to
+the October fixture. No calendar product behavior changed.
+
+A separate Chromium benchmark scans the same deterministic 100,000 synthetic
+invoice-shaped attribute rows with eight columns, including numbers, Decimal and
+dates. Three full applyFilter runs per variant compare the exact matching labels:
+579 identical rows each time. Before: 7207.5, 10607.6, 14748.8 ms; after: 769.9,
+711.3, 683.6 ms (medians 10607.6 / 711.3 ms). It excludes transfer and final paint,
+is not a new DB measurement and does not replace the historical invoice benchmark.
+It remains a synchronous full scan; no claim of constant-time search is made.
+Evidence and a rerunnable benchmark are under PORT-0026/verification.
+Implementation/verification does not authorize publication or deployment.
+
+Final verification: 1,477/1,477 core tests pass, standard artifacts rebuilt,
+Chromium/WebKit repeat qualification passes; public documentation and diff checks pass.
+
+
+<a id="gc-375-145"></a>
+## 145 · Delayed centered loading indicator — 2026-11-01
+
+Owner requests an animated icon at the center, then a slight delay so only slower
+loads show it. The existing missing-window status now presents an SVG spinner
+centered over the body viewport, using theme colors and an accessible Loading…
+label. CSS reveals it after 200 ms; hiding the status before then cancels the
+reveal. No extra timers, pending state or public parameters are introduced.
+Reduced-motion preferences stop rotation but retain the delay and status.
+The existing window request and aria-busy remain immediate. Initial resident
+loaders continue to own their loading state as described in §140.
+56 Grid/FrameGrid tests pass. Chromium and WebKit pass centering, delay, fast
+completion and reduced-motion checks, plus existing FrameGrid interactions.
+Standard artifacts rebuilt; local gallery restarted on port 61509.
+
+
+<a id="gc-375-150"></a>
+## 150 · Initial JSONL loading feedback — 2026-11-01
+
+Owner: “lo stesso indicatore deve comparire anche durante il caricamento iniziale delle 100000 righe via jsonl, sempre con il delay”. selectionTrial now publishes boolean loading through an ordinary
+write binding. Grid's read-bound loading defaults to false and combines with its
+missing-window state; either keeps aria-busy and the same delayed centered SVG.
+An empty resident Bag does not display No rows while its producer is loading.
+Successful completion, errors and loader removal clear the producer's state;
+superseded requests cannot clear a newer load. Reload retains existing rows
+until the new Bag is completed and published. No status-text comparison, polling,
+additional delay timer or direct producer/Grid lookup is used.
+
+The floating resident invoice page and the JSONL timing page bind both components
+to .loading. The cachedFetch coordinator remains unchanged. This supersedes the
+initial-JSONL limitation in §140/145 without altering remote-window semantics.
+
+Verified: 72 targeted JS tests; 21 Python authoring/transport tests; real local
+gallery tests on Chromium/WebKit each load 100,000 database invoice rows. The
+HTTP request is held temporarily by the test to inspect the initial indicator,
+then released to the real endpoint; this is verification, not a timing benchmark.
+The initial grid has no fake/empty row, completion hides the indicator, and no
+uncaught page errors occur. Existing CSS-delay/reduced-motion qualification applies
+to the shared indicator. Standard artifacts rebuilt; gallery 61509 restarted.
+No public deployment.
+
+
+<a id="gc-375-155"></a>
+## 155 · Shared local editing — 2026-11-01
+
+The owner approved sharing the form editing mechanism with resident grid cells,
+without DB integration. GC-380 §065 defines the implemented development contract.
+Grid columns accept edit=True or an editor-options dictionary. Ordinary Source
+inputs occupy a grid slot and use the same Source-owned EditingSession as a
+containing form; there is no separate GridEditor changes/errors implementation.
+Scroll unmounts the editor without disposing its draft/error records or cancelling
+session-owned validation. Pending completion and callbacks do not require a view. Data
+values and attributes are supported; row identity never uses the visible index.
+Existing sort, filters, variable heights, headers, resizing and read-only windows
+retain their responsibilities. Deferred: Asqueel–Kajenn autosave/save, row status
+indicators, whole-selection schema validation, configurator and DB acknowledgement protocol.
+
+
+<a id="gc-375-160"></a>
+## 160 · Shared reports and editor arrows — 2026-11-01
+
+`editingStatus` reads the common form/grid session's errors and outstanding
+changes; GC-380 §070 and GC-340 §115 describe its authoring and lifecycle. No
+GridEditor-owned error/change Bags were copied from the PoC. Report navigation
+and Tab/vertical-arrow navigation share the grid's row reveal/open path, using
+its sorted/filtered view and variable-height layout. Owner-confirmed Up/Down
+behavior preserves drafts and session-owned pending validations.

@@ -122,16 +122,29 @@ export function ChoiceEditor(HTMLElement) {
             this.#value = value; this.#dirty = false; this.#picked = null;
             this.closeChoices({cancelLookup: true}); this.resolveValue();
         }
+        restoreFormDraft(text) {
+            this.closeChoices({cancelLookup:true}); this.#dirty = true; this.#picked = null; this.control.value = text;
+        }
         restoreFormValue(value) {
             this.#value = value; this.#dirty = false; this.#picked = null;
             this.closeChoices({cancelLookup:true}); this.resolveValue();
         }
-        validateSelection(value) {
-            if (!this.constrained) return super.validateSelection(value);
-            const row = this.#picked?.id === value ? this.#picked : this.#rows.find(row => row.id === value);
-            if (row?.error) return {errorcode:'condition', message:row.error};
-            if (value == null || row) return true;
-            return {errorcode:'missing', message:'Choose a value from the list.'};
+        validationValueCheck() {
+            const constrained = this.constrained;
+            return (value, original) => {
+                if (constrained && value !== original) throw new Error('Validation cannot replace a selected code; update the Data explicitly.');
+            };
+        }
+        validationSelection() {
+            if (!this.constrained) return super.validationSelection();
+            const rows = this.#rows.map(({id,error}) => ({id,error}));
+            const picked = this.#picked ? {id:this.#picked.id,error:this.#picked.error} : null;
+            return value => {
+                const row = picked?.id === value ? picked : rows.find(row => row.id === value);
+                if (row?.error) return {errorcode:'condition',message:row.error};
+                if (value == null || row) return true;
+                return {errorcode:'missing',message:'Choose a value from the list.'};
+            };
         }
         acceptControlValue() {
             if (!this.#dirty) return this.validateCandidate(this.#value, accepted => this.writeControlValue(accepted));
@@ -144,7 +157,7 @@ export function ChoiceEditor(HTMLElement) {
             }
             const value = this.constrained ? (text === '' ? null : matches[0].id) : this.textValue(text);
             return this.validateCandidate(value, accepted => {
-                if (accepted !== value && this.constrained) throw new Error('Validation cannot replace a selected code; update the Data explicitly.');
+                this.validationValueCheck()(accepted,value);
                 this.#value = accepted; this.#dirty = false; this.#picked = null;
                 if (accepted == null || !this.constrained) this.control.value = accepted ?? '';
                 this.selectionAccepted(matches.length === 1 && accepted === value && matches[0].id !== null ? matches[0] : null);

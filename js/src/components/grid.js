@@ -3,6 +3,8 @@ import {SVG_NS} from '../renderer/attributes.js';
 import {defineComponent, ComponentCollection} from './registry.js';
 import {Container} from './container.js';
 import {parseSort} from '../stores/bag-collection-view.js';
+import inputs from './inputs.js';
+import {GridCellEditor} from './grid-cell-editor.js';
 import {GridRows} from './grid-rows.js';
 import {GridStructure} from './grid-structure.js';
 import {GridHeaderInteraction} from './grid-header-interaction.js';
@@ -15,8 +17,9 @@ import structureGrammar from './grid-grammar.json' with {type: 'json'};
 
 /** First grid: explicit Bag row representation and a separately observable Data struct. */
 export const Grid = defineComponent({
-    name: 'grid', tag: 'gramlot-grid', base: Container, bagStore: true, bagStruct: true, sourceContext: true, subTags: 'struct',
+    name: 'grid', tag: 'gramlot-grid', base: Container, bagStore: true, bagStruct: true, sourceContext: true, subTags: 'struct,div',
     parameters: {windowInfo: {dtype:'X', nullable:true, default:null, binding:'read'},
+        loading: {dtype:'B', default:false, binding:'read'},
         viewport: {dtype:'X', nullable:true, default:null, binding:'write'},
         sortRequest: {dtype:'T', default:'', binding:'write'},
         storepath: {dtype: 'T'}, structpath: {dtype: 'T'}, rowMode: {dtype: 'T'},
@@ -27,6 +30,19 @@ export const Grid = defineComponent({
         filter: {annotation:{kind:'type',module:'builtins',name:'dict'}, nullable:true, default:null, binding:'read'}},
     implementation: Base => class extends Base {
         #store;
+        #cellEditor;
+        #editCell = event => {
+            if (event.type === 'keydown' && !['Enter','F2'].includes(event.key)) return;
+            const cell = event.target.closest('td[data-field]');
+            if (!cell || !this.#structure) return;
+            const row = [...this.#rows].find(([, tr]) => tr === cell.parentElement)?.[0];
+            const column = this.#structure.columns.find(column => column.field === cell.dataset.field);
+            if (row && column.edit) {
+                event.preventDefault();
+                try { this.#cellEditor.open(row, column, cell); }
+                catch (error) { this.#context.reportError(error,'Grid editor'); }
+            }
+        };
         #windowRevision;
         #windowRequest;
         #context;
@@ -41,6 +57,7 @@ export const Grid = defineComponent({
         #bodyTable;
         #headerViewport;
         #bodyViewport;
+        #loadingStatus;
         #resizeObserver;
         #layoutFrame = null;
         #headerRows = 1;
@@ -112,7 +129,22 @@ export const Grid = defineComponent({
                 space.className = 'row-space'; space.setAttribute('aria-hidden', 'true');
             }
             this.#bodyViewport.append(this.#topSpace, this.#bodyTable, this.#bottomSpace);
-            this.control.replaceChildren(headerFrame, this.#bodyViewport); this.shadowRoot.append(style);
+            const bodyFrame = doc.createElement('div'); bodyFrame.className = 'body-frame';
+            this.#loadingStatus = doc.createElement('div');
+            this.#loadingStatus.className = 'loading-status';
+            this.#loadingStatus.setAttribute('role', 'status');
+            this.#loadingStatus.setAttribute('aria-label', 'Loading…');
+            this.#loadingStatus.hidden = true;
+            const spinner = doc.createElementNS(SVG_NS, 'svg');
+            spinner.setAttribute('viewBox', '0 0 24 24'); spinner.setAttribute('aria-hidden', 'true');
+            const track = doc.createElementNS(SVG_NS, 'circle');
+            track.setAttribute('cx', '12'); track.setAttribute('cy', '12'); track.setAttribute('r', '9');
+            track.setAttribute('opacity', '.2');
+            const arc = doc.createElementNS(SVG_NS, 'path');
+            arc.setAttribute('d', 'M12 3a9 9 0 0 1 9 9');
+            spinner.append(track, arc); this.#loadingStatus.append(spinner);
+            bodyFrame.append(this.#bodyViewport, this.#loadingStatus);
+            this.control.replaceChildren(headerFrame, bodyFrame); this.shadowRoot.append(style);
             this.#interaction = new GridHeaderInteraction(this.#head, this.control, () => this.#structure, (field, multiple) => this.#sort(field, multiple),
                 () => this.#rowLayout, () => this.#scheduleLayout());
             this.#rowInteraction = new GridRowInteraction(this.#body, this.control, () => this.#rowLayout, row => {
@@ -122,6 +154,9 @@ export const Grid = defineComponent({
             this.#resizeObserver = new doc.defaultView.ResizeObserver(() => this.#scheduleLayout());
         }
         connectedCallback() {
+            this.#body.addEventListener('dblclick', this.#editCell);
+            this.#body.addEventListener('keydown', this.#editCell);
+            this.#cellEditor?.connect();
             this.#observeStore();
             if (this.#collectionView) this.#invalidate({full:true, rows:[]});
             this.#interaction.connect();
@@ -133,6 +168,9 @@ export const Grid = defineComponent({
             this.#scheduleLayout();
         }
         disconnectedCallback() {
+            this.#body.removeEventListener('dblclick', this.#editCell);
+            this.#body.removeEventListener('keydown', this.#editCell);
+            this.#cellEditor?.disconnect();
             this.#cancelRefresh();
             this.#collectionView?.disconnect();
             this.#unsubscribeStore?.(); this.#unsubscribeStore = null;
@@ -163,7 +201,7 @@ export const Grid = defineComponent({
                 }
                 this.#headerViewport.scrollLeft = this.#bodyViewport.scrollLeft;
                 if (!this.#structure) return;
-                try { this.#layoutWindow(); }
+                try { this.#layoutWindow(); this.#cellEditor.position(); }
                 catch (error) { this.#context.reportError(error, 'Grid viewport'); }
             });
         }
@@ -231,14 +269,15 @@ export const Grid = defineComponent({
                         this.#windowRequest = key;
                         this.#context.writeParameter('viewport', {start:requestedStart, count});
                     }
-                    this.control.setAttribute('aria-busy', 'true');
-                } else {
-                    this.#windowRequest = null;
-                    this.control.removeAttribute('aria-busy');
-                }
+                } else this.#windowRequest = null;
                 start = Math.max(start, info.start);
                 end = Math.max(start, Math.min(end, loadedEnd));
             }
+            if (!info) this.#windowRequest = null;
+            const loading = this.parameters.loading || this.#windowRequest !== null;
+            this.#loadingStatus.hidden = !loading;
+            if (loading) this.control.setAttribute('aria-busy', 'true');
+            else this.control.removeAttribute('aria-busy');
             if (force || start !== this.#windowStart || end !== this.#windowEnd) {
                 const rows = new GridRows(this.#collectionView, this.#context.format)
                     .read(this.#structure.columns, this.#visibleNodes.slice(start-(info?.start ?? 0), end-(info?.start ?? 0)));
@@ -255,8 +294,42 @@ export const Grid = defineComponent({
             if (!(value instanceof Bag)) throw new TypeError('Grid windowInfo requires a Bag');
             return Object.fromEntries(['start', 'total', 'revision', 'sortedBy'].map(key => [key, value.getItem(key)]));
         }
+        #nextEditor(row,field,step) {
+            const rows = this.#collectionView.getRows(), columns = this.#structure.columns.filter(column => column.edit);
+            const index = rows.indexOf(row) * columns.length + columns.findIndex(column => column.field === field) + (typeof step === 'object' ? step.row * columns.length : step);
+            if (index < 0 || index >= rows.length * columns.length) return;
+            this.#openEditorAt(Math.floor(index / columns.length),columns[index % columns.length]);
+        }
+        #openEditorAt(rowIndex,column) {
+            const next = this.#collectionView.getRows()[rowIndex];
+            this.#endPinned = false;
+            const top = this.#rowLayout.offset(rowIndex), bottom = this.#rowLayout.offset(rowIndex + 1);
+            if (top < this.#bodyViewport.scrollTop) this.#scrollTo(top);
+            else if (bottom > this.#bodyViewport.scrollTop + this.#bodyViewport.clientHeight) this.#scrollTo(Math.max(0,bottom-this.#bodyViewport.clientHeight));
+            this.#renderWindow(true);
+            const cell = this.#rows.get(next).querySelector(`td[data-field="${column.field}"]`);
+            const rect = cell.getBoundingClientRect(), viewport = this.#bodyViewport.getBoundingClientRect();
+            if (rect.left < viewport.left) this.#bodyViewport.scrollLeft += rect.left-viewport.left;
+            else if (rect.right > viewport.right) this.#bodyViewport.scrollLeft += Math.min(rect.left-viewport.left,rect.right-viewport.right);
+            this.#headerViewport.scrollLeft = this.#bodyViewport.scrollLeft;
+            this.#cellEditor.open(next,column,cell);
+        }
+        #focusField(path) {
+            const prefix = this.#context.sourceNode.absDatapath(this.parameters.storepath) + '.';
+            if (!path.startsWith(prefix)) return false;
+            const relative = path.slice(prefix.length), separator = this.parameters.rowMode === 'attributes' ? '?' : '.';
+            const split = relative.indexOf(separator);
+            if (split < 0) return false;
+            const row = this.#store.getNode(relative.slice(0,split));
+            const column = this.#structure.columns.find(column => column.field === relative.slice(split+1) && column.edit);
+            const index = this.#collectionView.getRows().indexOf(row);
+            if (!column || index < 0) return false;
+            this.#openEditorAt(index,column);
+            return true;
+        }
         setSourceContext(context) {
             this.#context = context;
+            this.#cellEditor = new GridCellEditor(this, context, (row, field) => this.#rows.get(row)?.querySelector(`td[data-field="${field}"]`), () => ({bag:this.#store, mode:this.parameters.rowMode, window:this.parameters.windowInfo}), () => this.#rows, (row,field,step) => this.#nextEditor(row,field,step), path => this.#focusField(path));
             const node = context.sourceNode;
             if (!Object.hasOwn(node, 'gridRowLayout')) {
                 Object.defineProperty(node, 'gridRowLayout', {value:new GridRowLayout(), configurable:true});
@@ -265,6 +338,7 @@ export const Grid = defineComponent({
         }
         setStoreBag(bag) {
             if (!(bag instanceof Bag)) throw new TypeError('grid storepath must resolve to a Bag');
+            if (bag !== this.#store) this.#cellEditor?.replaceData();
             this.#store = bag;
             this.#rowLayout.bindStore(bag);
         }
@@ -333,6 +407,7 @@ export const Grid = defineComponent({
         }
         #project() {
             const model = this.#structureDirty ? new GridStructure(this.#structBag) : this.#structure;
+            this.#cellEditor.configure(model.columns);
             const nodes = this.#collectionView.getRows();
             this.#rowInteraction.cancel(); this.#rowInteraction.cancelDrag();
             this.#rowLayout.retain(this.#store.getNodes());
@@ -539,6 +614,7 @@ export const Grid = defineComponent({
                         td = this.ownerDocument.createElement('td'); td.setAttribute('part', 'cell');
                         td.dataset.field = column.field; td.setAttribute('role', 'cell');
                     }
+                    if (column.edit) td.tabIndex = 0; else td.removeAttribute('tabindex');
                     td.style.textAlign = column.align;
                     td.style.whiteSpace = column.white_space ?? '';
                     td.style.overflowWrap = column.white_space === 'pre-wrap' || column.white_space === 'normal' ? 'anywhere' : '';
@@ -550,13 +626,14 @@ export const Grid = defineComponent({
                 for (const td of existing.values()) td.remove();
                 tr.setAttribute('aria-rowindex', String(this.#headerRows + start + keep.size + 1));
                 this.#renderCells(tr, cells);
+                this.#cellEditor.decorate(tr, node);
                 const next = previous ? previous.nextSibling : this.#body.firstChild;
                 if (next !== tr) this.#body.insertBefore(tr, next);
                 this.#rowInteraction.project(tr, node);
                 previous = tr; keep.add(node);
             }
             for (const [node, tr] of this.#rows) if (!keep.has(node)) { tr.remove(); this.#rows.delete(node); }
-            if (!rows.length) {
+            if (!rows.length && this.#rowLayout.count === 0 && !this.parameters.loading) {
                 const tr = this.ownerDocument.createElement('tr'), td = this.ownerDocument.createElement('td');
                 tr.setAttribute('role', 'row'); tr.setAttribute('aria-rowindex', String(this.#headerRows + 1));
                 td.setAttribute('role', 'cell'); td.setAttribute('aria-colspan', String(columns.length + Number(this.#rowHeaders)));
@@ -586,4 +663,4 @@ class GridCollection extends ComponentCollection {
         return document;
     }
 }
-export default new GridCollection({name: 'grid', components: [Grid, SearchBox]});
+export default new GridCollection({name: 'grid', components: [Grid, SearchBox], dependencies:[inputs]});

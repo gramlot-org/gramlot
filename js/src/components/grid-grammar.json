@@ -153,6 +153,27 @@
             },
             "has_default": true,
             "default": null
+          },
+          {
+            "name": "edit",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "dict"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
           }
         ],
         "accepts_var_keyword": false,

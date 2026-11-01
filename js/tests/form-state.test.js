@@ -190,3 +190,60 @@ test('restore clears incomplete editor text even when the typed Data never chang
     assert.equal(f.state.status.status,'ok');
     assert.equal(f.state.registers.getItem('drafts').length,0);
 });
+
+test('two controls on one Data field keep independent validation contributions',async t=>{
+    const f=fixture(t,(form)=>{form.textbox({node_label:'mirror',id:'mirror',value:'^.name'});});await tick();
+    f.edit('name','');await tick();
+    f.edit('mirror','');await tick();
+    assert.equal(f.state.status.valid,false,'a permissive mirror must not erase the required error');
+    f.owner.value.popNode('mirror');await tick();
+    assert.equal(f.state.status.valid,false,'disposing the mirror must not erase another control error');
+    f.edit('name','Ada');await tick();assert.equal(f.state.status.valid,true);
+});
+
+
+test('form validation survives renderer unmount and completes without a replacement control',async t=>{
+    let resolve,signal,calls=0;
+    const f=fixture(t,(form,app)=>{
+        app.data.setItem('record.remote','ready');
+        form.textbox({node_label:'remote',id:'remote',value:'^.remote',validate_remote:'check'});
+        app.rpc.call=(_kind,_method,_params,options)=>{calls++;signal=options.signal;return new Promise(answer=>{resolve=answer;});};
+    });await tick();
+    const node=f.owner.value.getNode('remote');f.app.src.builder.binding.renderer.unmountView(node);
+    assert.equal(f.host('remote'),null);assert.equal(signal.aborted,false);
+    resolve({value:'READY'});await tick();assert.equal(f.app.data.getItem('record.remote'),'READY');
+    assert.equal(f.state.status.pending,false);assert.equal(f.state.accept(),true);
+    f.app.src.builder.binding.renderer.mountView(node);await tick();
+    assert.equal(calls,1);assert.equal(f.host('remote').control.value,'READY');
+});
+test('two form controls on the same value revalidate their independent rules after a candidate',async t=>{
+    const f=fixture(t,form=>form.textbox({id:'long-name',value:'^.name',validate_len:'4:'}));await tick();
+    f.edit('name','Al');await tick();assert.equal(f.state.status.valid,false);
+    f.edit('name','Alice');await tick();assert.equal(f.state.status.valid,true);
+});
+
+test('shared reports project form errors and outstanding changes without a second journal',async t => {
+    const f=fixture(t,form=>form.editingStatus({id:'reports'})); await tick();
+    f.edit('name','Luigi'); await tick();
+    assert.deepEqual(f.state.changeEntries,[{path:'record.name',previous:'Mario',current:'Luigi',existed:true,exists:true}]);
+    f.edit('name','Ada'); await tick();
+    assert.equal(f.state.changeEntries.length,1);
+    assert.equal(f.state.changeEntries[0].previous,'Mario');
+    assert.equal(f.state.changeEntries[0].current,'Ada');
+    f.edit('amount','-'); await tick();
+    assert.equal(f.state.errorEntries[0].path,'record.amount');
+    assert.ok(f.state.errorEntries[0].message.length);
+    const reports=f.host('reports');
+    assert.equal(reports.shadowRoot.querySelector('[data-kind=errors] .count').textContent,'1');
+    assert.equal(reports.shadowRoot.querySelector('[data-kind=changes] .count').textContent,'1');
+    assert.equal(f.state.focusField('record.name'),true);
+    assert.equal(f.host('name').shadowRoot.activeElement,f.host('name').control);
+    assert.equal(f.state.focusField('record.missing'),false);
+    f.edit('amount','12');f.edit('name','Mario');await tick();
+    assert.equal(f.state.errorEntries.length,0);assert.equal(f.state.changeEntries.length,0);
+    f.edit('name','Ada');f.state.accept();await tick();assert.equal(f.state.changeEntries.length,0);
+    f.edit('name','Eva');f.state.restore();await tick();assert.equal(f.state.changeEntries.length,0);
+    const count=f.state.listeners.size;
+    const parent=reports.parentNode;reports.remove();assert.equal(f.state.listeners.size,count-1);
+    parent.append(reports);await tick();assert.equal(f.state.listeners.size,count);
+});

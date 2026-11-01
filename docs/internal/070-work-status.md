@@ -18838,6 +18838,26 @@ Deployment changes are consolidated in examples `f776939`; no new package tag
 or TestFlight build was created.
 
 
+<a id="gc-070-cached-row-reorder-todo-20261030"></a>
+
+## TODO · Manual row ordering in cached selections (2026-10-30)
+
+Owner request: “annotab che va fatto nella todo”, following the discussion of
+`selfDragRows` with a cached query. Status: queued; not implemented.
+
+- [ ] Support manual row ordering across cached-selection windows, rather than
+  reordering only the browser's current window.
+- Investigated basis: resident `selfDragRows` changes the collection-view index;
+  Asqueel cached selections have a separate sort index but no manual row-move API.
+- Proposed approach, still requiring contract review: send stable row identities
+  and a before/after anchor to the server, update the selection's order index and
+  refresh the window without modifying business records.
+- Define active-sort and filter behavior, concurrent/stale requests and order
+  lifetime before implementation. Clearing column sort on manual movement is a
+  proposal, not an approved decision. Persistent business ordering is separate.
+- Verify moves across window boundaries and subsequent paging; any missing
+  Asqueel primitive belongs in Asqueel, not in a Gramlot workaround.
+
 <a id="gc-070-shared-dompurify-20261030"></a>
 
 ## Shared DOMPurify in the runtime — 2026-10-30
@@ -18950,6 +18970,345 @@ manifests, so entities is attributed with its actual package license.
 No publication, release or deployment performed. Original local work is retained.
 
 
+<a id="gc-070-application-selector-wiring-20261031"></a>
+## Application advanced-selector runner wiring — 2026-10-31
+
+The gallery chat `01a18653-4f32-7ac0-9f91-3f9539643005` delegated the adapter
+connection for its new `application-02` example under “Asqueel + Kajenn only”.
+Its request states: “runner Application deve iniettare Page.database = database
+anche in pages/asqueel-kajenn/01-auxiliary-columns.py”. This is bounded wiring
+of the existing Application provider under amendments 11.101–11.104, not a new
+selector API, permission policy or approval to integrate Invoice into the release.
+
+Implemented in the preserved `worktrees/invoice-galleries/application/gramlot-py-server`
+checkout: both selector wrappers receive the existing read-only customers provider.
+The examples and Invoice originals are unchanged. A focused regression passes
+real staging, shared provider identity, dbSelect delegation with @state.name and
+original-file preservation. Paired GP-035 documentation builds successfully.
+The gallery chat subsequently reports real Chrome qualification at local port
+61404: full state name, selected__state_name, clearing through No customer,
+template and section navigation all pass. This browser evidence is reported by
+that chat, separate from this checkout's staging regression. Its delivery is
+commit aa1547b in codex/application-gallery (10 files, verified not to include
+Invoice page changes), following Application commit 610fe5b; Base delivery is
+9962b09. These deliveries remain separate worktrees, not merged here. Any later
+integration must reconcile the shared GE-015 guide and preserve the release's
+Invoice exclusion. The model heading !!Name remains a presentation issue assigned
+to the selector chat; examples do not normalize it. No publication or deployment.
+The separate Application runtime's pending grid section is not evidence that grids
+are absent from this newer common release checkout.
+
+
+<a id="gc-070-grid-consultation-polish-20261101"></a>
+## Grid consultation polish — 2026-11-01
+
+Owner: “sì procedi con le rifiniture della consultazione: distingui caricamento da risultato vuoto e ottimizza la ricerca locale, senza aggiungere funzionalità e senza workaround”. Implemented in the current consolidated Grid checkout:
+missing-window Loading… remains visible over the viewport; No rows is reserved
+for a zero logical count. Existing request state is reused, with no new loading
+API. The shared formatter reuses a bounded set of Intl configurations, never row
+values; all-column regex/localized/Decimal behavior and per-view filtering remain.
+
+Verified so far: 90 focused tests; Chromium/WebKit existing FrameGrid qualification
+plus forward/backward missing windows and zero results. Synthetic Chromium scan
+of 100,000 rows: median 10607.6 → 711.3 ms, all 579 matching identities equal.
+GC-375 §140 records scope and limits. The first broad run found stale generated
+bundles and an unrelated calendar test assuming October (also fails with baseline
+formatter); artifacts rebuilt and the test clock fixed. Final verification: all 1,477 core tests pass after rebuilding standard artifacts;
+Chromium/WebKit qualification passes against those artifacts too. Public docs check
+passes (19 pages, search, sources, links and mirrored anchors), and diff whitespace
+checks pass. Implemented and locally verified; owner visual acceptance remains
+separate. No release, publication, deployment or other Grid feature work.
+
+
+Local review gallery activated — 2026-11-01: http://127.0.0.1:61509/ serves the
+rebuilt runtime/collections from this checkout, with JSONL and cachedFetch lessons
+enabled. The browser is open on the floating resident invoice Grid at requested
+100,000 / loaded 100,000; a Parks search returns matching invoice rows, then was
+cleared for owner review. This live run reports Query 2716.02 ms, Encode 1850.34 ms,
+Ready 4774.10 ms (one sample, not a benchmark). Existing loader status represents
+initial JSONL loading; the new viewport status is exercised by cached windows.
+No public deployment.
+
+
+<a id="gc-070-grid-loading-icon-20261101"></a>
+## Grid loading indicator — 2026-11-01
+
+Owner accepted consultation polish (“direi bene”), then requested a centered
+animated icon with a delay. Implemented a theme-colored SVG with an accessible
+Loading… label, CSS-only 200 ms reveal and reduced-motion support. Existing request
+state and immediate aria-busy are unchanged; no new API or timers.
+56 Grid/FrameGrid tests pass. Chromium/WebKit verify centered SVG, delayed reveal,
+fast-request cancellation, reduced motion and the existing full FrameGrid probe.
+Standard artifacts rebuilt and local gallery restarted at http://127.0.0.1:61509/.
+The browser-control connection could not reload the existing user tab; refresh it
+to use the new component.
+GC-375 §145 records scope. No publication or deployment.
+
+
+<a id="gc-070-grid-jsonl-loading-20261101"></a>
+## Initial JSONL loading feedback — 2026-11-01
+
+Owner: “lo stesso indicatore deve comparire anche durante il caricamento iniziale delle 100000 righe via jsonl, sempre con il delay”. Implemented selectionTrial→Data.loading→Grid binding with the
+existing centered SVG/200 ms delay. First loads suppress No rows while pending;
+reloads preserve prior data. Completion/failure/removal clear loading; stale
+requests cannot clear current loading. Cached window behavior remains separate
+and both sources share one indicator. Floating invoice and JSONL timing pages
+are connected. 72 JS + 21 Python tests pass; Chromium/WebKit each verify the
+initial indicator and 100,000 real invoice rows through the local JSONL endpoint.
+Standard artifacts and gallery http://127.0.0.1:61509/ updated. Implemented and
+verified locally; no publication/deployment. GC-375 §150 has details.
+
+
+<a id="gc-070-shared-editing-20261101"></a>
+### Shared local form/grid editing — 2026-11-01
+
+Owner authorized the common editing mechanism without DB integration and required
+form regression checks plus persistent grid drafts/errors across scrolling.
+Implemented and verified in the database-local-integration development worktree;
+awaiting owner review/acceptance, not a release or deployment.
+
+EditingSession replaces the form-specific state class, retaining formState and
+local accept/restore, adding explicit local load(Bag). Grid editors are ordinary
+Source input controls and use the same candidate/validation pipeline and Bag
+registers as form fields. Grid data inside a form shares its session; standalone
+grid data owns its session. Values and attributes, previous attribute values,
+incremental changes, field-driven validation, suspended drafts/errors, keyboard
+navigation and lifecycle cleanup are covered. No second grid change journal,
+validation engine or database path was added.
+
+Verified: 1,492 JavaScript tests; 20 focused Python tests; prepared runtime and
+collections rebuilt; public documentation checker (19 pages) passed. Chromium
+and WebKit both passed the new 1,000-row, variable-height editing fixture and
+existing FrameGrid/browser regression (themes, sort/filter, drag/resize, virtual
+scroll and loading). The editor DOM is actually removed on scroll, while the
+Source-owned draft/error survives and reopens correctly. Normal form regression
+and independent validators on a shared Data field passed.
+
+The original cancelled-validation limitation reported earlier was rejected by the owner and
+superseded by the session-owned validation correction in this section.
+Limits: local load/accept/restore, not DB persistence. Whole-selection schema
+validation, server acknowledgement,
+conflicts, Asqueel–Kajenn autosave/row indicators, undo/redo and configurator are
+outside this tranche. GC-380 §065 and GC-375 §155 describe the contract. No Bag,
+Builder or adapter source changes. Evidence: PORT-0026 verification/shared-editing.md.
+
+
+<a id="gc-070-session-validation-20261101"></a>
+### Session validation independent of mounted editors — 2026-11-01
+
+Owner explicitly rejected requiring reopening a cell to complete validation.
+Implemented: EditingSession owns each validation request and settled result;
+ValidationRun shares execution/cancellation/timeout logic with standalone inputs.
+Source-scoped callback services have no dependency on a control adapter. Typed
+normalization and selection evidence remain available without DOM. Grid views
+unmount while their real Source field declaration preserves callback scope;
+reopening reconnects without issuing a duplicate check. New values/rules,
+row removal/replacement and session resets invalidate obsolete requests.
+No DB writes, dependency source edits, hidden editors or second state tree.
+
+Verified: 1,508 JavaScript tests passed; 20 Python grid/frameGrid tests passed.
+Chromium and WebKit passed the prepared-bundle fixture with 1,000 variable-height
+rows in both value/attribute representations, including asynchronous success and
+failure after the editor DOM is removed, no duplicate request on reopening,
+retained errors and local acceptance. Existing FrameGrid browser regression also
+passed both engines. The 19-page public documentation check passed.
+
+The complete suite exposed and resolved a core/collection import cycle; real
+browser testing exposed and resolved cross-bundle Source-handle identity. The
+prepared collection now uses the runtime's sourceTarget export, not another
+bundled WeakMap. No dependency library was edited. Stale replies, timeout,
+normalization/type checks, Source/Data rule changes, deleted/replaced rows,
+load/restore/disposal and unparseable drafts have focused regressions.
+Implemented and verified; awaiting owner acceptance, no release/deployment.
+
+
+<a id="gc-070-editing-gallery-20261101"></a>
+### Editable grid gallery activated — 2026-11-01
+
+Owner requested a live gallery lesson to exercise validation and scroll retention.
+The connected gramlot-examples checkout now provides grid-10, Editing · drafts
+and validation: 1,000 resident rows, shared form session, local accept/restore,
+required text, nonnegative quantity and a delayed read-only validation endpoint.
+The gallery on http://127.0.0.1:61509/ was restarted against this core checkout
+and updated examples. Actual index navigation and Chromium/WebKit interaction
+passed, including completion after editor unmount. No additional core behavior
+or DB persistence was introduced. GE-015 records the gallery evidence and an
+unrelated g06 failure found by the wider JS example sweep. Awaiting owner trial.
+
+
+<a id="gc-070-cell-editor-density-20261101"></a>
+### Compact grid cell editor — 2026-11-01
+
+Owner rejected the oversized editor and external focus ring: "troppo invasivo,
+troppo grosso". The editor now matches the cell rectangle, accounting for the
+control border, and uses grid typography and padding with a square, one-pixel
+internal focus outline. Shared input style tokens retain their previous defaults
+outside the grid; GC-225 records their names. Editing and validation remain owned
+by the existing session.
+
+Verified: 40 focused form/grid tests passed. Chromium and WebKit on the live
+Python gallery confirmed equal cell/editor geometry and font size for text,
+numeric and multiline controls (32px and 66.046875px row heights). Existing live
+gallery interaction checks passed in both engines: drafts, errors, scroll,
+asynchronous validation after editor unmount and local acceptance. Core and
+gallery builds passed; the gallery on port 61509 serves the updated artifacts.
+Implemented and verified; awaiting owner visual acceptance, no release/deployment.
+
+
+<a id="gc-070-editing-reports-20261101"></a>
+### Common editing reports and PoC arrow navigation — 2026-11-01
+
+Owner requested errors and history “come nel poc” from the common session and
+confirmed “Sì, come nel PoC” for vertical-arrow editing navigation. Implemented
+editingStatus in inputs: compact SVG buttons, live error/change popovers and
+return-to-field navigation. Changes are original/current values since the local
+snapshot, matching the PoC; no audit log, undo/redo or duplicate register was added.
+Form fields and grid rows share the reports. Virtualized navigation releases
+bottom-pinning and reveals the target column; filtered-out targets do not reset
+filters. Up/Down preserves drafts and errors and does not wait for validation;
+choice menus, dates, times and multiline controls keep their own keys.
+
+Verified: 48 focused form/grid tests and the full 1,516-test JS core suite passed.
+The first broad run used system Python without Genro dependencies; the complete
+rerun with GRAMLOT_TEST_PYTHON set to the project environment passed. Standard core
+and gallery builds passed. Chromium and WebKit live-gallery checks passed shared
+reports, original/current values, offscreen focus, arrows, async errors and local
+acceptance, plus the prior draft/error/scroll/validation regression script.
+Additional checks: 20 Python grid/frameGrid authoring tests passed; every JavaScript
+example page builds with the updated environment collections. New paired document
+sections and anchors were checked. The updated Python-first grid-10 lesson is
+served on port 61509. Implemented and
+verified, awaiting owner trial; no DB write or release/deployment.
+
+
+<a id="gc-070-grid-caret-boundaries-20261101"></a>
+### Caret-boundary cell navigation — 2026-11-01
+
+Owner requested Left at the start and Right at the end to change fields and
+clarified “Campo successivo, anche compilato”. Updated the existing GridCellEditor
+arrow handler; the current-view reveal/open path and session remain unchanged.
+Collapsed text boundaries move to adjacent editable cells, placing the destination
+caret at its end/start respectively. Selected text, modifiers, composition,
+multiline/date/time/choice behavior and widgets without text carets retain their
+keys. Drafts and errors remain in the common session.
+
+Verified: 51 focused form/grid tests passed, including both row representations,
+selected text, dataset edges, invalid drafts, empty fields, modified/composing
+keys and checkbox behavior. Chromium/WebKit live-gallery reports/navigation
+checks passed horizontal and vertical navigation, offscreen focus and async
+errors. Core/gallery builds passed; paired instructions were updated.
+Gallery port 61509 serves the updated lesson. Implemented and verified;
+awaiting owner trial, no publication or DB changes.
+
+
+<a id="gc-070-consolidation-audit-20261101"></a>
+## Cross-chat consolidation audit — 2026-11-01
+
+**Scope.** Owner requested an assessment of ongoing Gramlot chats and an ordered
+route to reunification and closure. This entry records an audit and recommended
+sequence, not acceptance of unreviewed implementations or authorization to publish.
+No runtime edits, merges, branch renames, worktree deletion or deployment occurred
+in this audit. No active `.phased/active` plan was found in this checkout.
+
+**Evidence.** Recent and relevant archived chats were read and compared with
+66 registered worktree entries across nine repositories, plus 12 separately
+inventoried clones/candidates. These are directory entries, not 78 independent
+unfinished features. Some paths are stale; many originals contain work already
+transferred. Local main/reference ancestry was inspected; remote heads were not
+refreshed. Earlier test results below are delivery evidence, not a new combined
+qualification run. Full temporary inventories are in
+`/private/tmp/gramlot-consolidation-inventory.json` and
+`/private/tmp/gramlot-extra-inventory.json`.
+
+### Common reference and already transferred work
+
+Core reference `3b6a0f49` includes the common-base release records and earlier
+transfers: database selectors, initial forms/grid, chat (`cfc3fd2c`), security
+(`fb3d2fb2`), mobile (`2eb42b76`), Grouplets (`9d578722`) and environment collections
+with deferred external engines (`36439ea8`). The retained original worktrees do
+not establish that these entire features are missing. Residual differences must
+be assessed against the integrated implementation, rather than merged wholesale.
+Invoice application work remains excluded. Read-only test database examples are
+not the excluded Invoice application. Python-to-serverless export stays suspended.
+
+### Recommended consolidation sequence
+
+1. **Close runtime dependency sharing.** Isolate the already implemented shared
+   DOMPurify and lazy shared Markdown changes, their host mappings and serverless
+   packaging. Earlier measurements reported about 210 KB raw / 67 KB gzip removed
+   for Markdown sharing. Retain separate component sanitization settings and the
+   verified `file:` export behavior. These changes are not yet a separate closed
+   checkpoint; the common directory also contains later Grid work.
+2. **Checkpoint shared form/grid editing.** Chat `grids`
+   (`01a17baf-9088-7492-a926-19f0a4a73b41`) writes into this same core directory and
+   the common examples copy. Its current tranche includes the shared editing
+   session, typed drafts, validation surviving editor unmount, error/change
+   reports and keyboard navigation. Latest caret-boundary work records 51
+   focused checks and browser verification; earlier broader checks are recorded
+   separately in that chat. Review and commit bounded changes in dependency
+   order; do not mix them with sanitizer changes just because they share files.
+   The change register is baseline-relative, not a full undo/redo audit history.
+3. **Converge Tree and database-selector follow-ups.** Use the aligned Tree
+   copies under `gramlot/worktrees/relation-tree-aligned` and
+   `relation-tree-py-server-aligned`, not the recovered predecessors. They contain
+   TreeStore, lazy checkbox propagation, relation metadata, search/cycle behavior
+   and favorites. The core aligned copy is based on `3b6a0f49`. Chat
+   `01a196c3-0a5e-75a2-87cd-76fef189acc0` reports 1,512 JS and 91 Kajenn checks;
+   combined-base qualification is still needed. Separately complete or explicitly
+   defer the dbSelect `caption_field` widget-to-server wiring: chat
+   `01a18169-f8b7-7d43-8618-dea9169e8b9f` says it is not implemented, despite
+   server registration precedence being implemented. Review relation auxColumns
+   changes without importing the Invoice application. Previously integrated
+   condition/weakCondition work is not reopened wholesale.
+4. **Land the isolated uploader candidate.** Core `ba85b6db`, Python adapter
+   `8c5a391`, JS/Worker `2dcd0d5`, examples `04193d8` provide a committed candidate.
+   The later core `4b9e5eac` also adds visual-editor prerequisites, with JS
+   `677f9ae` and examples `bdc2dfd`. These candidates are based on older core
+   `2bfef866`; reconcile only missing changes onto the common checkpoint. Keep
+   existing develop worktrees intact, as expressly instructed in uploader chat
+   `01a1876d-e384-7c92-8abb-8599c230162d`. ASGI/Worker and simulated browser capture
+   are recorded as checked; physical-device capture is not established.
+5. **Reconcile the current Visual Editor.** The current implementation is under
+   `/Users/gporcari/.codex/worktrees/visual-editor-chat/`, not the old clean
+   `visual-source-core` location shown by its chat metadata. It has newer reusable
+   visual-editor modules and substantial uncommitted work on an old reference.
+   Compare it with the uploader/editor candidate instead of choosing either by
+   date or cleanliness. Resolve the reported WebKit framePane/layout limitation
+   before claiming browser parity. Chat `01a18910-bc12-7bd0-a921-3e26ce63c53c` is
+   also producing a comparison matrix; that matrix explicitly describes its old
+   grid baseline as read-only and must be regenerated from the consolidated code.
+6. **Close residual integrations, then qualify one complete installation.** Check
+   remaining deltas in original chat/Grouplets/mobile/issue-80 worktrees. In the
+   Capacitor integration copy, `51c5953` keeps SQLite resources on their Source
+   owner and is one commit ahead of its cached origin reference: verify upstream
+   disposition rather than discarding it with the older worktree. The WebSocket
+   leftovers inspected are documentation of Kajenn #89 cancellation tests, not a
+   missing WebSocket implementation. DevTools leftovers inspected are wording
+   changes only. Qualify core, Python/JS hosts, serverless from `file:`, gallery
+   navigation and ordinary/Asqueel examples together; then update feature coverage
+   and close/archive redundant copies only after unique content is preserved.
+
+### Gates and remaining design work
+
+Use immutable per-repository revisions for each tested checkpoint, preserving
+original dirty copies. A test pass on an old branch does not qualify its merged
+result. Check Source/Data ownership, shared validation, lazy resources, adapter
+boundaries, generated grammars and examples against the actual destination.
+No broad code deletion follows from a clean worktree or an old chat title.
+
+Localization remains a separate design topic. `!!` is a localization marker; the
+Tree chat has a later explicit temporary stripping decision for its preview.
+That bounded choice does not authorize global removal in Markdown or the runtime.
+The dbQuery/dataSelection authorization model, DB-managed privilege proposal,
+cached-selection manual row ordering and the suspended Python export are separate
+open tracks. They must not silently expand this consolidation. Full form
+persistence and undo/redo are not implied by the local editing-session tranche.
+
+**Next recommended action:** create a verified dependency-sharing checkpoint,
+then a separate shared-editing checkpoint from the common copy, before importing
+Tree/uploader/editor deltas. Publication is a later, separately authorized step.
+
+
 <a id="gc-070-shared-runtime-close-20261101"></a>
 ### Shared sanitizer and lazy Markdown consolidation — 2026-11-01
 
@@ -18978,3 +19337,48 @@ passed its other 353 cases.
 The earlier measured saving including the gallery remains 209,696 raw bytes /
 67,199 gzip bytes for Markdown; this checkpoint does not combine Grid growth
 with that before/after comparison. Localization marker `!!` remains future design.
+
+
+<a id="gc-070-shared-editing-close-20261101"></a>
+### Grid/Form common-base consolidation — 2026-11-01
+
+Owner continuation “ok procedi” covers the previously approved Grid/Form work
+after the separate shared-runtime checkpoint. Reviewed the actual integration
+from the Grid chat: one Source-owned EditingSession, shared typed controls and
+validation lifecycle, errors/drafts retained across virtualization, original/current
+change reports, caret-boundary navigation, loading feedback and format-cache work.
+The original working copies were preserved; no new database writing behavior,
+Invoice application, Python compiled-page export or localization implementation
+was added. User acceptance through the preview remains separate from these tests.
+
+Integration found and corrected the file-export dependency gap: prepared Grid
+imports inputs through its declared collection dependency. The serverless exporter
+keeps that import external and installs the verified blob module mapping before
+bootstrap. The runtime bridge exposes the existing sourceTarget primitive.
+This uses the same native import-map path as hosted pages, without a second
+inputs implementation or a compatibility fallback.
+
+Qualification:
+- Complete core JS run: 1,519 cases, 1,516 immediate passes. Two Python fixture
+  failures were missing local virtualenv setup; one short-TTL test expired under
+  parallel load. All 28 cases of their three suites passed on isolated rerun.
+- Complete core Python: 361 passed, 5 expected failures, 397 subtests passed,
+  using supported Node 22 and local-socket permission.
+- Combined gallery: 129 catalog/example cases, 9 Python catalog tests, and the
+  new grid-10 Python/JS Source parity passed. The separate shared-runtime checkpoint
+  covers all 355 previous gallery cases including the corrected lazy-Markdown tests.
+- Chromium/WebKit: live Python lesson, 1,000-row virtualization fixture, incomplete
+  drafts, local errors, async validation after unmount, accept/restore, shared
+  reports, focus and cell arrows passed. Gallery index opens grid-10 directly.
+- Serverless: 53 cases; actual file-origin editable grid and shared sanitizer/
+  Markdown probes passed in Chromium/WebKit without HTTP(S).
+- Core public documentation: 19 pages and links; gallery: 128 lessons, 5 paired
+  guides; both JS server documentation views passed. The public editing-guide link
+  now points to the repository contract rather than an omitted Sphinx page.
+
+Preview: http://127.0.0.1:61515/pages/05-grid/10_editing, Remote Edit disabled.
+Evidence: /private/tmp/gramlot-combined-*.log and the existing PORT-0026 records.
+No package version, tag, push, public deployment or TestFlight upload performed.
+Next separate consolidation: Tree/dbSelect; then uploader and Visual Editor.
+Keep Python export suspended and Invoice excluded. Localized `!!` text is still
+a design item, not an instruction to strip the marker from ordinary text.

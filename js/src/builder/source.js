@@ -1,4 +1,4 @@
-import {FormState} from '../form-state.js';
+import {EditingSession} from '../editing-session.js';
 import {BagCbResolver} from '@genrojs/bag';
 import {SourceBag, SourceBagNode, sourceAttributeItems, wrapSource} from '@genrojs/builders';
 import {fromTytx, getSubtypeDict, setSubtypeDict, toTytx} from '@genrojs/tytx';
@@ -182,13 +182,24 @@ export class GramlotBuilderBagNode extends SourceBagNode {
     /** The local form lifecycle owned by the nearest marked Source ancestor. */
     get formState() {
         for (let owner = this; owner; owner = owner.parentNode) {
+            if (owner.#formState && owner._getMeta('gramlot_component')?.bagStore) return owner.#formState;
             if (owner.getAttr('formId') != null || owner.getAttr('form') === true) {
-                const state = owner.#formState ??= new FormState(owner, this.rootBuilder.binding);
+                const state = owner.#formState ??= new EditingSession(owner, this.rootBuilder.binding);
                 state.rebind();
                 return state;
             }
         }
         return null;
+    }
+
+    editCollection(path) {
+        const parent = this.parentNode?.formState;
+        if (parent) {
+            if (path !== parent.path && !path.startsWith(parent.path + '.')) throw new Error('An edited grid in a form must use data within that form.');
+            return parent;
+        }
+        if (this.#formState && this.#formState.path !== path) throw new Error('An active grid editing session cannot change its storepath.');
+        return this.#formState ??= new EditingSession(this, this.rootBuilder.binding, path);
     }
 
     get frame() {

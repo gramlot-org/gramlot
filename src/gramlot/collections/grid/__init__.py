@@ -1,4 +1,5 @@
 from gramlot import GramlotCollection
+from gramlot.collections.inputs import mygramlot as _dependency_0
 
 mygramlot = GramlotCollection(
     name="grid",
@@ -7,7 +8,7 @@ mygramlot = GramlotCollection(
     commands="commands.json",
     module="assets/index.js",
     css=(),
-    dependencies=(),
-    build_id="sha256:25a92f7949a37998d1438bff44bba8164a8c36554f388a521f2e1043c6938da3",
+    dependencies=(_dependency_0,),
+    build_id="sha256:dff281ba3d044b3fcb3c7e8510208734eb1943ffe2c1fb93d027b753b889bed2",
     files=("assets/collection.js", "assets/index.js", "commands.json", "grammar.json",),
 )

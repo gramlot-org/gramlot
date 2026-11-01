@@ -12,6 +12,7 @@ const SelectionTrial = defineComponent({
         limit:{dtype:'T',binding:'read'},reload:{dtype:'L',default:0,binding:'read'},
         result:{dtype:'X',nullable:true,default:null,binding:'write'},
         metrics:{dtype:'X',nullable:true,default:null,binding:'write'},
+        loading:{dtype:'B',default:false,binding:'write'},
         status:{dtype:'T',default:'',binding:'write'}
     },
     implementation:Base => class extends Base {
@@ -23,7 +24,14 @@ const SelectionTrial = defineComponent({
             return rest;
         }
         connectedCallback() { this.#load(); }
-        disconnectedCallback() { this.#controller?.abort(); this.#key=undefined; }
+        disconnectedCallback() {
+            const controller=this.#controller;
+            this.#controller=null; this.#key=undefined;
+            if (controller) {
+                controller.abort();
+                this.#context.writeParameter('loading',false);
+            }
+        }
         async #load() {
             const {url,method,limit,reload}=this.parameters;
             const key=JSON.stringify([url,method,limit,reload]);
@@ -31,8 +39,10 @@ const SelectionTrial = defineComponent({
             this.#key=key; this.#controller?.abort();
             const controller=new AbortController(); this.#controller=controller;
             const page=this.#context.sourceNode.rootBuilder.binding.gramlot;
-            this.#context.writeParameter('status','Loading…');
             try {
+                this.#context.writeParameter('loading',true);
+                this.#context.writeParameter('status','Loading…');
+                if(this.#controller!==controller || !this.isConnected) return;
                 const {selection,metrics}=await loadSelectionTrial({url,method,limit,pageId:page.pageId,signal:controller.signal});
                 if(this.#controller!==controller || !this.isConnected) return;
                 this.#context.writeParameter('result',selection);
@@ -41,6 +51,12 @@ const SelectionTrial = defineComponent({
             } catch(error) {
                 if(controller.signal.aborted || this.#controller!==controller) return;
                 this.#context.writeParameter('status',`Failed: ${error.message}`);
+            } finally {
+                // Only the current request can end the shared loading state.
+                if(this.#controller===controller) {
+                    this.#controller=null;
+                    this.#context.writeParameter('loading',false);
+                }
             }
         }
     }

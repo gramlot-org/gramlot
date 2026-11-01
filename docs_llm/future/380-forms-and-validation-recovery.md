@@ -243,3 +243,98 @@ this validation lifecycle. Field-only numeric parser policies are unchanged.
 Gallery: `01-inputs/07-forms_and_validation/05-form_state`, Python and JavaScript,
 with `_data.tytx`. Existing field-only validation lessons remain unchanged so the
 inside/outside-form distinction can be compared.
+
+
+<a id="gc-380-065"></a>
+## 065 · Shared local form/grid session — 2026-11-01
+
+Owner: “sì procedi con il meccanismo comune di editing per form e grid, senza
+ duplicazioni e senza collegare ancora il db. verifica che la form continui a
+ funzionare e che scrollando non si perdano bozze ed errori della grid”.
+
+Implemented in the development worktree, awaiting owner acceptance. EditingSession
+replaces the form-specific implementation; node.formState remains the Source
+accessor. Form fields and resident grid editors use the same ControlAdapter,
+FieldState and validation engine. A grid under a form must bind data inside that
+form scope and shares its session; a standalone editable grid owns a session at
+its storepath. A changed active standalone storepath is rejected. Replacement
+of the Bag at the same path remains supported. No parallel grid change journal,
+validation engine, working-data copy or persistence handler is created.
+
+The common load(Bag) operation copies supplied local data into the scope and
+establishes its baseline. accept() flushes mounted drafts, refuses errors, pending
+checks or suspended incomplete text, and accepts a local snapshot. restore()
+restores the shared baseline and clears suspended drafts. None of these methods
+performs a server write. Real save acknowledgement, partial save scopes, conflicts,
+autosave and row traffic lights remain Asqueel–Kajenn integration work.
+
+Field register keys use absolute Data pointers (including ?attribute). Validation
+contributions also distinguish Source declarations so a second, more permissive
+control cannot clear another control's error. Form fields retain their existing
+removal semantics; retainField/releaseField keep grid field state independent of
+temporary control lifetime. GridCellEditor owns only Source-control mounting,
+positioning and navigation. It mounts an ordinary Source input in a stable slot,
+removes it when its cell leaves the viewport, and restores incomplete text and
+errors on reopening. Clean editor references are released; hidden rows do not
+retain one DOM control per cell. Removed rows release retained field state.
+
+Column edit=True chooses a typed existing input; edit=dict(tag=..., validate_*=...)
+configures that input. Double-click, Enter or F2 opens a cell. Enter confirms;
+Tab/Shift+Tab confirms and moves in current view order; multiline Enter remains
+text, with Ctrl/Cmd+Enter confirming. Escape discards unfinished text, not already
+committed working Data. Typed invalid values remain in working Data and block
+acceptance, exactly as in forms. Grid editing requires resident Bags; windowInfo
+selections remain read-only. A DHZ column needs an explicitly supported editor;
+there is no implicit datetime-to-text coercion.
+
+Net changes reconcile only the affected subtree. Changes retain previous/current
+values and attributes, including insertion/deletion identity. Initial snapshots
+and explicit load/accept/restore still copy the whole local scope. Validation
+continues to be field-driven, not a new whole-dataset schema-validation service.
+The session owns each started validation through ValidationRun, independently of
+mounted adapters. A grid field keeps its real Source declaration while its view
+is unmounted: callbacks retain their original scope and activated-code rules,
+without retaining a hidden widget. Completion updates Data, pending and errors
+without reopening the cell; reopening attaches to the same request/result.
+New candidates, external Data or rule changes, row removal/replacement,
+load/restore and disposal invalidate obsolete work. Timeouts and typed result
+checks also operate without a view. Ordinary form fields use this same mechanism;
+standalone inputs share the pure execution lifecycle. This is not whole-selection
+schema validation or undo/redo. The previously reported requirement to reopen a
+cancelled check was explicitly rejected and superseded by the owner on 2026-11-01
+(GC-000 session-validation-20261101).
+
+Verification: shared form tests plus grid integration tests cover values and
+attributes, 1,000 resident rows, real editor disposal, incomplete drafts, invalid
+values, independent validation contributions, attribute originals, local load,
+restore, row removal, Tab/Escape, incremental reconciliation and async completion
+without a view, stale-response cancellation, timeout and rule invalidation. Python authoring and actual prepared bundles are checked. The browser
+fixture tests Chromium and WebKit with variable-height rows and bounded DOM rows.
+
+
+<a id="gc-380-070"></a>
+## 070 · Shared reports and field navigation — 2026-11-01
+
+Owner request: GC-000 editing-reports-20261101. `editingStatus` in the inputs
+collection reads the nearest Source `formState`. `errorEntries` projects one
+message entry per absolute Data field; `changeEntries` projects existing baseline
+changes, including individual changed attributes. No additional history Bag is
+created. PoC `GridStatus` is behavioral evidence for outstanding changes rather
+than an event journal. Form and grid changes share local accept/restore semantics.
+
+`focusField(path)` first uses a mounted field adapter, then a registered grid
+navigator; navigator cleanup follows grid connection/disposal. Grid navigation
+uses the current collection view and row-layout geometry, releases end-pinning,
+and reveals the destination column before opening the ordinary Source editor.
+Filtered-out and removed rows remain unavailable without resetting the filter.
+Reports subscribe to session notifications and release subscriptions on removal.
+They do not acquire validation ownership or keep hidden editors alive.
+
+Owner confirmed PoC arrow behavior: Up/Down navigate the same editable column,
+including invalid/pending fields, without waiting for asynchronous validation.
+Tab/Shift+Tab retains its existing behavior. As amended by owner confirmation
+GC-000 grid-caret-boundaries-20261101, Left/Right navigates editable cells only
+when the text selection is collapsed at the beginning/end. Inside text or with
+a selection, caret behavior remains native. Multiline, date/time
+and choice controls retain their own arrow behavior. DB writes, autosave, audit
+persistence and undo/redo remain outside this tranche.

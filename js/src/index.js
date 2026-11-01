@@ -50,3 +50,6 @@ export {DeviceHandler} from './handlers/device-handler.js';
 export {MobileEnvironment} from './mobile-environment.js';
 
 export {chatRender, chatSend, chatCompleted, chatReset, chatResize, chatPickAttachments, chatRenderAttachments, chatRemoveAttachment} from './chat.js';
+
+// Preserve fluent Source identity across separately prepared collection bundles.
+export {sourceTarget} from '@genrojs/builders';

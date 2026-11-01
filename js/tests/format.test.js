@@ -130,3 +130,46 @@ test('Decimal formatting retains precision and sign sections', t => {
     assert.equal(app.format(createDecimal('-12.5'), {pattern:'0.00;-;(0.00)',locale:'it-IT'}),'(12,50)');
     assert.equal(app.format(createDecimal('0'), {pattern:'0.00;-;(0.00)',locale:'it-IT'}),'-');
 });
+
+
+test('formatters reuse configuration across values, isolate locale/style/zone, and retain no row text', async t => {
+    const counts = {NumberFormat:0, DateTimeFormat:0};
+    for (const name of Object.keys(counts)) {
+        t.mock.method(Intl, name, new Proxy(Intl[name], {
+            construct(Type, args) { counts[name]++; return new Type(...args); },
+        }));
+    }
+    const {formatValue} = await import('../src/format.js?reuse-test');
+    for (let i=0; i<1000; i++) {
+        assert.equal(formatValue(i + .5, {pattern:'0.00', locale:'en-US'}), `${i}.50`);
+        assert.equal(formatValue(i + .5, {pattern:'0.00', locale:'it-IT'}), `${i},50`);
+        assert.equal(formatValue(new Date('2026-10-16T00:00:00Z'), {dtype:'D', locale:'en-GB'}), '16/10/2026');
+    }
+    assert.deepEqual(counts, {NumberFormat:2, DateTimeFormat:1}, 'construction depends on configuration, not row count');
+    assert.equal(formatValue(2, {pattern:'000', locale:'en-US'}), '002');
+    assert.equal(formatValue(new Date('2026-10-16T00:00:00Z'), {dtype:'DHZ', locale:'en-GB', timeZone:'America/Los_Angeles'}), '15/10/2026, 17:00');
+    assert.equal(formatValue(new Date('2026-10-16T00:00:00Z'), {dtype:'DHZ', locale:'en-GB', timeZone:'UTC'}), '16/10/2026, 00:00');
+    const options = {pattern:'0.0', locale:'en-US'};
+    assert.equal(formatValue(2, options), '2.0');
+    options.locale = 'it-IT'; options.pattern = '0.00';
+    assert.equal(formatValue(3, options), '3,00');
+    for (const value of [0, 2]) assert.throws(() => formatValue(value, {pattern:'0;-;(0)',locale:'zz-ZZ'}), /Unsupported format locale/);
+});
+
+test('formatter retention is bounded and eviction preserves formatting', async t => {
+    let constructed = 0;
+    const Type = Intl.NumberFormat;
+    t.mock.method(Intl, 'NumberFormat', new Proxy(Type, {
+        construct(Type, args) { constructed++; return new Type(...args); },
+    }));
+    const {formatValue} = await import('../src/format.js?eviction-test');
+    for (const locale of ['en-US', 'it-IT', 'de-DE', 'fr-FR']) {
+        for (let digits=1; digits<=21; digits++) {
+            assert.equal(formatValue(12, {pattern:'0'.repeat(digits),locale}),
+                new Type(locale, {minimumIntegerDigits:digits,useGrouping:false,maximumFractionDigits:0}).format(12));
+        }
+    }
+    const before = constructed;
+    assert.equal(formatValue(12, {pattern:'0',locale:'en-US'}), '12');
+    assert.equal(constructed, before + 1, 'the oldest configuration was released');
+});

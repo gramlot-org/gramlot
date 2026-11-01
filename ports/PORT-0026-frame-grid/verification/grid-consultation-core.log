@@ -1,0 +1,11 @@
+Command: PATH=<venv>/bin:$PATH GRAMLOT_TEST_PYTHON=<venv>/bin/python PYTHONPATH=../src npm test
+Standard artifacts rebuilt with npm --prefix js run build before this final run.
+✔ invalid window response reports a failure without replacing the previous Bag (38.327708ms)
+ℹ tests 1477
+ℹ suites 0
+ℹ pass 1477
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 59592.623083

@@ -13,7 +13,7 @@
   "elements": {
     "grid": {
       "doc": null,
-      "sub_tags": "struct",
+      "sub_tags": "struct,div",
       "parent_tags": null,
       "inherits_from": null,
       "ns": null,
@@ -54,6 +54,36 @@
             },
             "has_default": true,
             "default": null
+          },
+          {
+            "name": "loading",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
           },
           {
             "name": "viewport",
@@ -298,6 +328,11 @@
               "dtype": "X",
               "nullable": true,
               "default": null,
+              "binding": "read"
+            },
+            "loading": {
+              "dtype": "B",
+              "default": false,
               "binding": "read"
             },
             "viewport": {
@@ -630,6 +665,27 @@
             },
             "has_default": true,
             "default": null
+          },
+          {
+            "name": "edit",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "dict"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
           }
         ],
         "accepts_var_keyword": false,

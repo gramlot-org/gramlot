@@ -12,13 +12,14 @@ export function controlElement(HTMLElement) {
                 input,textarea{font:inherit;max-width:100%} .control-box{min-width:0;color:var(--gramlot-ink,CanvasText)}
                 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),textarea{
                     appearance:none;box-sizing:border-box;width:100%;border:1px solid var(--gramlot-border-control,#7a8798);
-                    border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-field-background,Canvas);color:var(--gramlot-ink,CanvasText);
-                    min-height:var(--gramlot-field-height,28px);padding:var(--gramlot-field-padding,.25em .5em);font-size:var(--gramlot-field-font-size,1em);line-height:var(--gramlot-field-line-height,inherit)}
+                    border-radius:var(--gramlot-field-radius,var(--gramlot-radius-sm,4px));background:var(--gramlot-field-background,Canvas);color:var(--gramlot-ink,CanvasText);
+                    height:var(--gramlot-field-block-size,auto);min-height:var(--gramlot-field-height,28px);padding:var(--gramlot-field-padding,.25em .5em);font-size:var(--gramlot-field-font-size,1em);line-height:var(--gramlot-field-line-height,inherit)}
                 input:read-only:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),textarea:read-only{
                     background:var(--gramlot-field-readonly-background,Canvas)}
                 input:disabled,textarea:disabled{opacity:.6;cursor:not-allowed}
                 input::placeholder,textarea::placeholder{color:var(--gramlot-text-secondary,GrayText)}
-                input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:1px}
+                input:focus-visible,textarea:focus-visible,button:focus-visible{outline:var(--gramlot-field-focus-outline,2px solid var(--gramlot-focus-ring,Highlight));outline-offset:var(--gramlot-field-focus-offset,1px)}
+                textarea{resize:var(--gramlot-field-resize,both)}
                 input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--gramlot-brand-blue,Highlight)}
                 input[type=range],input[type=color],button{min-width:var(--gramlot-touch-target,0px);min-height:var(--gramlot-touch-target,0px)}
                 input[type=checkbox],input[type=radio]{min-width:calc(var(--gramlot-touch-target,0px) / 2);min-height:calc(var(--gramlot-touch-target,0px) / 2)}
@@ -40,16 +41,26 @@ export function controlElement(HTMLElement) {
             return {ok:true, value, isCurrent:() => this.pageContext.isActive()};
         }
         finishValidation() {}
-        validateSelection() { throw new TypeError('validate_select requires a constrained choice editor.'); }
+        validationValueCheck() {
+            const nullable = this.constructor.gramlotComponent.parameters.value.nullable;
+            return (value, original) => {
+                if (value == null && !nullable) throw new TypeError('This component requires a non-null value.');
+                if (value != null && original != null && typeof value !== typeof original) throw new TypeError('Validation must preserve the component value type.');
+            };
+        }
+        validationSelection() {
+            return () => { throw new TypeError('validate_select requires a constrained choice editor.'); };
+        }
+        validateSelection(value) { return this.validationSelection()(value); }
         shouldProjectControlValue() { return true; }
         acceptControlValue() {
             const value = this.readControlValue();
             return this.validateCandidate(value, accepted => {
-                if (accepted == null && !this.constructor.gramlotComponent.parameters.value.nullable) throw new TypeError('This component requires a non-null value.');
-                if (accepted != null && value != null && typeof accepted !== typeof value) throw new TypeError('Validation must preserve the component value type.');
+                this.validationValueCheck()(accepted,value);
                 if (!this.sameControlValue(value, accepted)) this.writeControlValue(accepted);
             });
         }
+        restoreFormDraft(text) { this.control.value = text; }
         restoreFormValue(value) { this.writeControlValue(value); }
         sameControlValue(a, b) { return Object.is(a, b); }
         focus(options) { this.control.focus(options); }

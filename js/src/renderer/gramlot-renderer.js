@@ -30,6 +30,8 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     static renderType = 'object';
     // Nodes inside buildNode: events on them are ignored on arrival (P4, R04).
     #constructing = new Set();
+    // Explicitly unmounted views keep Source bindings, but Source updates cannot remount them.
+    #unmounted = new WeakSet();
     // The attributes of each node after runtimeValues and the `==` evaluation, binding attributes included.
     #resolvedAttributes = new WeakMap();
     // The resolved projection that `project` hands to the rebuild of a control whose shape changed.
@@ -139,7 +141,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
      */
     render(node, opts = {}) {
         if (!(node instanceof GramlotBuilderBagNode)) throw new TypeError('Source children must be GramlotBuilderBagNodes');
-        if (node._getMeta('data_element')) return null;
+        if (node._getMeta('data_element') || this.#unmounted.has(node)) return null;
         if (!this.binding.bindingFor(node) && this.#queued(node)) return null;
         if (node.nodeTag) this.html.validate(node, node._getMeta('subbuilder') ? node.parentBag._builder : node.builder);
         else if (!(node.value instanceof SourceBag)) throw new TypeError('Source fragments must contain child SourceBags');
@@ -435,6 +437,16 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         walk(event.node);
     }
 
+    /** Release only the view; Source bindings and their semantic resources stay active. */
+    unmountView(node) {
+        this.#unmounted.add(node);
+        this.remove(node);
+    }
+    /** Rebuild an explicitly unmounted view from its current Source and Data. */
+    mountView(node) {
+        this.#unmounted.delete(node);
+        this.insert(node);
+    }
     /**
      * Build an inserted node, then report the build to the BindingRuntime (§5.1 step 7). A node that
      * left the Source meanwhile (an `_init` that removed its own branch, P4) is not built, nor a node
@@ -443,6 +455,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
      */
     insert(node) {
         if (!this.attached(node) || this.records.has(node)) return;
+        for (let current = node; current; current = current.parentNode) if (this.#unmounted.has(current)) return;
         if (node._getMeta('data_element')) {
             // A `dataController` or `dataRpc` inserted in a button may give it a mechanism, or an ambiguous one (S12).
             this.records.get(node.parentBag?.parentNode)?.button?.refresh();

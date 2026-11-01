@@ -404,6 +404,7 @@ export class NodeBinding {
     // The registration of the node's own variable datapath, read in the parent's context.
     #datapathRegistrations = new Set();
     #storeRegistration = null;
+    editingSession = null;
 
     constructor(runtime, node) {
         this.#runtime = runtime;
@@ -526,6 +527,7 @@ export class NodeBinding {
     rebind() {
         this.#closeRegistrations();
         this.registerPointers();
+        this.editingSession?.refreshField(this.node);
     }
 
     /**
@@ -542,6 +544,7 @@ export class NodeBinding {
         }
         if (this.#remoteRegistrations.has(change.registration)) this.remote.receive(change);
         if (this.#remoteTimingRegistrations.has(change.registration)) this.remote.register();
+        this.editingSession?.refreshField(this.node);
         this.runtime.renderer.project(this.node, change);
     }
 

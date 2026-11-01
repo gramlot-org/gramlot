@@ -7,8 +7,9 @@
 
 import {createDecimal, isDecimal, getDecimalLibrary} from '@genrojs/tytx';
 import {Bag} from '@genrojs/bag';
+import {validationContext} from '../binding/validation-context.js';
 import {XHTML_NS} from '../renderer/attributes.js';
-import {callLogic, invokeHook} from '../binding/hooks.js';
+import {callLogic} from '../binding/hooks.js';
 
 // Native input.type and input/select.multiple use setters; radio group updates membership.
 const CONTROL_TAGS = new Set(['input', 'select', 'textarea']);
@@ -207,14 +208,6 @@ export class ControlAdapter {
 class ComponentControl extends ControlAdapter {
     #releaseForm;
     form = null;
-    commitFormValue(value) { super.commit(null,value); }
-    validateForm() {
-        const value = this.node.getRelativeData(this.node.getAttr('value'));
-        commitComponent(this.element,this.element.validateCandidate(value, () => {}), result => {
-            this.form.candidate(this,result.value);
-        });
-    }
-
     static writesDefault = false;
     static preservesUnchangedValue = true;
     get eventElement() { return this.element.control; }
@@ -239,7 +232,8 @@ class ComponentControl extends ControlAdapter {
     detach() { this.element.releaseControl(); this.#releaseForm?.(); super.detach(); }
     commit(event) {
         if (this.binding.closed || this.element.control.disabled || this.element.control.readOnly) return;
-        commitComponent(this.element, this.element.acceptControlValue(), result => super.commit(event, result.value));
+        const outcome = this.element.acceptControlValue();
+        if (!this.form) commitComponent(this.element, outcome, result => super.commit(event, result.value));
     }
     get writeEvent() {
         if (this.element.commitOnChange) return 'change';
@@ -613,18 +607,12 @@ const INPUT_CONTROLS = {
 /** Component validation uses the same Source, activated code and RPC services as controllers. */
 function componentContext(adapter) {
     const {binding, node} = adapter, app = binding.runtime.gramlot;
-    const invoke = (attribute, code, keywords, expression = false) => {
-        if (!expression) return invokeHook(binding.runtime, node, attribute, code, keywords);
-        return binding.runtime.inlineCompiler.compile(node, attribute, code, Object.keys(keywords),
-            `return (${code});`)(keywords);
-    };
     return {
         locale:app.locale, timeZone:app.timeZone, createDecimal, isDecimal, getDecimalLibrary,
         form:adapter.form,
-        formCandidate:value => adapter.form?.candidate(adapter,value),
-        formPending:pending => adapter.form?.pending(adapter,pending),
+        formCancelValidation:() => adapter.form?.cancelValidation(node),
+        formValidateCandidate:(value, selection) => adapter.form.validateCandidate(node,value,selection),
         formValidate:() => adapter.form?.scheduleValidation(adapter),
-        formResult:result => adapter.form?.result(node,result),
         formSelectionPending:active => adapter.form?.pendingPart(node,'selection',active ? 'active' : null),
         formSelectionError:message => adapter.form?.issue(node,'selection',message),
         formParseError:message => adapter.form?.parseError(node,message),
@@ -633,8 +621,8 @@ function componentContext(adapter) {
         isActive:() => !binding.closed,
         reportError:(error, title) => { if (!binding.closed) binding.runtime.reportError(error, title); },
         callLogic:(name, keywords) => callLogic(binding.runtime, node, name, keywords),
-        format:(value, options) => app.format(value, options), invoke,
-        remote:(method, keywords, signal) => app.rpc.call('data', method, keywords, {signal}),
+        format:(value, options) => app.format(value, options),
+        ...validationContext(binding),
         selectionOutputs:({selectedCaption, selectedRecord, fields}, row) => {
             if (binding.closed) return;
             if (selectedCaption) node.setRelativeData(selectedCaption, row?.caption ?? null);
@@ -643,30 +631,9 @@ function componentContext(adapter) {
                 node.setRelativeData(path, row?.record[name.slice(9)] ?? null);
             }
         },
-        validationCurrent:() => {
-            const pointer = node.getAttr('value');
-            const path = node.pointerType(pointer) ? node.absDatapath(pointer) : null;
-            return () => !binding.closed && node.getAttr('value') === pointer && (path === null || node.absDatapath(pointer) === path);
-        },
-        finishValidation:({ok, result, rules}) => {
-            if (binding.closed) return;
-            if (ok) for (const patch of result.datachanges) node.getRelativeData('.').update(patch);
-            const attribute = ok ? 'validate_onAccept' : 'validate_onReject';
-            if (rules[attribute]) {
-                const report = error => { if (!binding.closed) binding.runtime.reportError(error, 'Validation callback failed'); };
-                try {
-                    const validations = Object.fromEntries(Object.entries(rules).map(([key, value]) => [key.slice(9), value]));
-                    const returned = invoke(attribute, rules[attribute], {value:result.value, result, validations, userChange:true});
-                    if (returned instanceof Promise) returned.catch(report);
-                } catch (error) { report(error); }
-            }
-        },
-        checkDataPatch:patch => {
-            if (!(patch instanceof Bag)) throw new TypeError('Validation data changes must be a Bag.');
-            if (!(node.getRelativeData('.') instanceof Bag)) throw new TypeError('Validation data changes require a Bag datapath.');
-        }
     };
 }
+
 function commitComponent(host, outcome, commit) {
     const context = host.pageContext;
     const finish = result => { if (result.ok && result.isCurrent()) { commit(result); host.finishValidation(result); } };

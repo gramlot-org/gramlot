@@ -4817,3 +4817,93 @@ need no private build directory. Invoice application remains excluded. Python
 compiled-page export stays suspended; dataSelection/dbQuery and database-managed
 permissions remain design work. Bundle deduplication is deferred until after the
 release. No TestFlight upload or new database privilege provisioning is authorized.
+
+
+<a id="gc-000-grid-jsonl-loading-20261101"></a>
+### Initial JSONL Grid loading feedback — 2026-11-01
+
+Owner: “lo stesso indicatore deve comparire anche durante il caricamento iniziale delle 100000 righe via jsonl, sempre con il delay”. Bounded extension: selectionTrial writes a boolean loading
+parameter to Data; Grid reads loading and combines it with its missing-window
+request state. Reuse the centered SVG and its 200 ms delay. Bind the floating
+invoice and JSONL timing examples through their existing Data scope. Only the
+current request may clear loading; failures/cancellation preserve the last
+completed selection. This supersedes GC-375 §140/145's limitation to missing
+windows for these JSONL examples. No new transport, cache, editing, publication
+or general provider contract is approved.
+
+
+<a id="gc-000-shared-editing-20261101"></a>
+### Shared local editing for forms and grids — 2026-11-01
+
+Owner: “sì procedi con il meccanismo comune di editing per form e grid, senza
+duplicazioni e senza collegare ancora il db. verifica che la form continui a
+funzionare e che scrollando non si perdano bozze ed errori della grid”.
+
+Generalize the existing Source-owned form session for resident Bag grid editing.
+Use one baseline/change/error/draft lifecycle and existing typed controls and
+validation rules. Form-contained grid data participates in the same session;
+standalone grids own a local session. Editor disposal/virtualization is distinct
+from removal of its data field. Typed invalid values remain in working Data;
+unparseable text remains a Source-owned draft and blocks local acceptance.
+No database writes, autosave, row traffic lights or remote-window editing are
+authorized in this tranche; those integration responsibilities remain specific
+to Asqueel–Kajenn. This extends the local form contract and resident read-only
+grid scope only for the approved local editing work.
+
+
+<a id="gc-000-session-validation-20261101"></a>
+### Validation survives editor unmount — 2026-11-01
+
+Owner: “quel limite non va bene: la validazione deve appartenere alla sessione e
+continuare anche se scrollando l'editor viene chiuso. sistemalo alla radice,
+senza workaround”. This supersedes the reported cancelled-validation limitation
+of the preceding local editing tranche. The shared editing session owns rule
+execution, cancellation, pending results and errors. Removing an editor's view
+must not cancel validation or require reopening it. New candidates, changed
+validation dependencies, row removal, load/restore and session disposal invalidate
+obsolete work. Existing Source declarations retain callback scope while their
+views are unmounted; no hidden editor, alternate Data tree or DB save is added.
+
+Within an editing session, parsed candidates and accepted normalization use the
+same canonical HtmlElement.writeParameter binding writer directly from the session;
+the temporary ControlAdapter no longer owns those writes or validation completion.
+Standalone controls retain their existing adapter commit contract.
+
+
+<a id="gc-000-editing-reports-20261101"></a>
+### Shared editing reports — 2026-11-01
+
+Owner: “ora mettiamo anche l’elenco degli errori e la history delle modifiche,
+come nel poc, usando la sessione comune a form e grid”. Add shared session reports
+for validation errors and outstanding changes, with original/current values,
+including form fields and grid cells. PoC evidence is grid-status.js and
+GridEditor.confirm in gramlot-poc/js/dom/src/collections: its changes Bag is a
+baseline-relative summary, not a chronological audit or undo/redo stack.
+Reports read existing session registers; they do not own editing state. Selecting
+an entry asks the relevant field/grid presentation to focus that data path,
+including virtualized rows. A hidden/removed field must not silently reset a
+filter or mutate Data. No persistence, autosave or audit log is added.
+
+
+<a id="gc-000-grid-editing-arrows-20261101"></a>
+### Grid editor arrows — 2026-11-01
+
+Owner confirmed “Sì, come nel PoC” to: Up/Down move to the same editable column
+in the previous/next visible row while retaining drafts and errors; Left/Right
+remain caret keys; Tab changes editable cells. Menus, dates and multiline editors
+retain their own arrow behavior. Navigation follows each grid's filtered/sorted
+view and reveals virtualized destination rows; it does not wait for validation.
+
+
+<a id="gc-000-grid-caret-boundaries-20261101"></a>
+### Horizontal cell navigation at caret boundaries — 2026-11-01
+
+Owner requested Right at the end of a field to advance and Left at the beginning
+to return to the previous field; clarified “Campo successivo, anche compilato”.
+This supersedes the preceding unconditional Left/Right caret-only statement.
+In single-line text editors, collapsed selection at the text boundary navigates
+through editable cells using the existing view order. Otherwise the control owns
+the key, including selected text, modified keys, composition and open popups.
+Multiline and date/time controls keep their existing keyboard behavior. Moving
+between cells retains drafts, errors and session-owned validation. This adds no
+empty-field search, alternate editor or new editing state.

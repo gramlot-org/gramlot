@@ -1,0 +1,32 @@
+(node:60932) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("/private/tmp/grid-format-baseline-loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ required and length use the legacy empty and length contracts without truthiness coercion (2.492792ms)
+✔ textbox keeps rejected drafts across label projection and Data echoes, then recovers (105.015208ms)
+✔ live validation respects composition, reactive rules, locking and disposal (50.278541ms)
+✔ floating error expires without clearing invalid state, reopens and cleans up (51.870208ms)
+✖ typed editor and calendar reject null before accepting it internally or overwriting Data (62.56175ms)
+✔ multiple choices retain the empty rejected selection and correct through the common writer (50.228459ms)
+✔ choice editor validates the proposed code before replacing the committed choice (76.949125ms)
+✔ text editors request browser assistance off without disabling their own choice semantics (45.692833ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 896.732959
+
+✖ failing tests:
+
+test at js/tests/input-validation.test.js:83:1
+✖ typed editor and calendar reject null before accepting it internally or overwriting Data (62.56175ms)
+  TypeError [Error]: Cannot read properties of null (reading 'click')
+      at TestContext.<anonymous> (file:///Users/gporcari/.codex/worktrees/database-local-integration/gramlot/js/tests/input-validation.test.js:92:73)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1047:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+      at Test.postRun (node:internal/test_runner/test:1173:19)
+      at Test.run (node:internal/test_runner/test:1101:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)

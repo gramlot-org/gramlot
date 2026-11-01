@@ -1,6 +1,23 @@
 import {getDateType, isDecimal} from '@genrojs/tytx';
 /** Bounded numeric patterns and temporal styles for Gramlot's formatting contract. */
 
+// Intl construction is expensive. Reuse configuration, never formatted values or
+// row data. The bound also limits retention when pages use many locales/patterns.
+const intlFormatters = new Map();
+function intlFormatter(temporal, locale, options) {
+    const key = JSON.stringify([temporal, locale, options]);
+    let formatter = intlFormatters.get(key);
+    if (formatter) intlFormatters.delete(key);
+    else {
+        const Type = temporal ? Intl.DateTimeFormat : Intl.NumberFormat;
+        if (!Type.supportedLocalesOf([locale]).length) throw new RangeError(`Unsupported format locale: ${locale}`);
+        formatter = new Type(locale, options);
+        if (intlFormatters.size === 64) intlFormatters.delete(intlFormatters.keys().next().value);
+    }
+    intlFormatters.set(key, formatter);
+    return formatter;
+}
+
 export function validateMask(mask) {
     if (mask != null && (typeof mask !== 'string' || /[{}]/.test(mask.replaceAll('{}', '')))) {
         throw new RangeError('This formatter mask supports only {} placeholders');
@@ -32,7 +49,7 @@ function temporalText(value, dtype, {pattern = 'short', locale, timeZone}) {
     const options = {timeZone: dtype === 'DHZ' ? timeZone : 'UTC'};
     if (dtype !== 'H') options.dateStyle = pattern;
     if (dtype !== 'D') options.timeStyle = pattern;
-    return new Intl.DateTimeFormat(locale, options).format(value);
+    return intlFormatter(true, locale, options).format(value);
 }
 
 function numericSection(section) {
@@ -90,32 +107,30 @@ export function formatValue(value, options = {}, context = {}) {
     const {pattern, locale, mask} = options;
     if (!temporal && typeof pattern !== 'string') throw new TypeError('Numeric formatting currently requires an explicit pattern');
     if (typeof locale !== 'string' || !locale) throw new TypeError('Formatting currently requires an explicit locale');
-    // Do not silently select the browser locale when the requested locale is unavailable.
-    const intl = temporal ? Intl.DateTimeFormat : Intl.NumberFormat;
-    if (!intl.supportedLocalesOf([locale]).length) throw new RangeError(`Unsupported format locale: ${locale}`);
     validateMask(mask);
     if (temporal) {
         const text = temporalText(value, dtype, options);
         return applyMask(text, mask);
     }
     const {positive, zero, negative} = numericPattern(pattern);
+    const formatter = intlFormatter(false, locale, positive.intl);
     const decimal = isDecimal(value);
     const zeroValue = decimal ? value.eq(0) : value === 0;
     const negativeValue = decimal ? value.lt(0) : value < 0;
-    if (decimal && new Intl.NumberFormat('en', {useGrouping: false}).format('9007199254740993') !== '9007199254740993') throw new Error('This browser cannot format Decimal without precision loss');
+    if (decimal && intlFormatter(false, 'en', {useGrouping: false}).format('9007199254740993') !== '9007199254740993') throw new Error('This browser cannot format Decimal without precision loss');
     let text;
     if (zeroValue && zero !== null) {
         if (zero === '') return '';
         if (zero === '-') text = '-';
         else {
             const section = numericSection(zero);
-            text = section.prefix + new Intl.NumberFormat(locale, section.intl).format(0) + section.suffix;
+            text = section.prefix + intlFormatter(false, locale, section.intl).format(0) + section.suffix;
         }
     } else {
         const affix = negativeValue && negative ? negative : positive;
         const number = decimal ? (negativeValue && negative ? value.abs() : value).toString()
             : negativeValue && negative ? -value : (value === 0 ? 0 : value);
-        text = affix.prefix + new Intl.NumberFormat(locale, positive.intl).format(number) + affix.suffix;
+        text = affix.prefix + formatter.format(number) + affix.suffix;
     }
     return applyMask(text, mask);
 }

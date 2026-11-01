@@ -1,7 +1,7 @@
 import {Bag} from '@gramlot/gramlot';
 
 const TYPES = new Set(['T', 'B', 'L', 'R', 'N', 'D', 'H', 'DHZ']);
-const COLUMN_KEYS = new Set(['tag', 'field', 'name', 'dtype', 'width', 'align', 'format', 'columnset', 'white_space']);
+const COLUMN_KEYS = new Set(['tag', 'field', 'name', 'dtype', 'width', 'align', 'format', 'columnset', 'white_space', 'edit']);
 const GROUP_KEYS = new Set(['tag', 'code', 'name', 'background', 'color']);
 
 /** Legacy Data contract: ordered cells and independent columnset definitions. */
@@ -41,6 +41,7 @@ export class GridStructure {
             }
             if (attrs.white_space != null && !['normal','nowrap','pre-wrap'].includes(attrs.white_space)) throw new TypeError('grid white_space requires normal, nowrap or pre-wrap');
             for (const key of ['name', 'format']) if (attrs[key] != null && typeof attrs[key] !== 'string') throw new TypeError(`grid ${key} must be text`);
+            if (attrs.edit != null && typeof attrs.edit !== 'boolean' && (typeof attrs.edit !== 'object' || Array.isArray(attrs.edit))) throw new TypeError('grid edit requires a boolean or editor options');
             const column = Object.freeze({...attrs, name: attrs.name ?? attrs.field,
                 align: attrs.align ?? (['L', 'R', 'N'].includes(attrs.dtype) ? 'end' : 'start')});
             this.columns.push(column);

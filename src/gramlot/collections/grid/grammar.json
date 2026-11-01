@@ -209,6 +209,27 @@
             "kind": "keyword_only",
             "name": "white_space",
             "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "kind": "type",
+                  "module": "builtins",
+                  "name": "dict"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "edit",
+            "role": "attribute"
           }
         ]
       },
@@ -237,6 +258,11 @@
               "binding": "read",
               "default": null,
               "nullable": true
+            },
+            "loading": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
             },
             "rowHeaders": {
               "binding": "read",
@@ -326,6 +352,36 @@
             "has_default": true,
             "kind": "keyword_only",
             "name": "windowInfo",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "loading",
             "role": "attribute"
           },
           {
@@ -567,7 +623,7 @@
       "node_label": null,
       "ns": null,
       "parent_tags": null,
-      "sub_tags": "struct"
+      "sub_tags": "struct,div"
     },
     "searchBox": {
       "_meta": {

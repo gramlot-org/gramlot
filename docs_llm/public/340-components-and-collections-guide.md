@@ -259,3 +259,74 @@ it through a local blob on first use. No CDN or network access is required.
 Parsing is not sanitization: consumers allowing HTML must still sanitize the
 rendered output before inserting it into the DOM. The shared engine does not
 change `allowHtml`, safe URL checks, editor history or component Data semantics.
+
+
+<a id="gc-340-110"></a>
+## 110 · Local editing shared by forms and grids
+
+Development preview: resident grids can use the same local editing session as
+form controls. Mark a column with edit=True or provide editor options:
+
+```python
+form = root.div(form=True, datapath='record')
+grid = form.grid(storepath='.rows', rowMode='values', height='320px')
+struct = grid.struct()
+struct.column('description', edit=True)
+struct.column('quantity', dtype='L', edit=dict(validate_min=0))
+form.button('Accept locally', action='this.formState.accept();')
+form.button('Restore', action='this.formState.restore();')
+```
+
+The form scope and rows must already contain Bags. values and attributes row
+modes use the same session. Include the inputs and grid collections when using
+the raw JavaScript authoring/runtime API; prepared grid collections declare the
+inputs dependency through the normal collection mechanism.
+
+The Source formState accessor owns baseline, changes, errors, pending checks
+and drafts. A grid inside the form shares these registers, while a standalone
+editable grid owns its scope. load(Bag) establishes local working data and its
+baseline; accept() accepts a validated local snapshot; restore() restores that
+snapshot. These are local operations, not database load/save or server replies.
+
+Cell editors are ordinary Source controls. Enter confirms, Tab/Shift+Tab moves
+between editable cells, and Escape discards unfinished text. Double-click or
+Enter/F2 opens an editable cell. Scrolling releases editor DOM while preserving
+incomplete drafts and errors in the session. Reopening restores the draft.
+Typed invalid values stay in working Data; unparseable text stays in the session.
+Both block acceptance. Validation belongs to the session: a check already running
+continues after scrolling removes the editor. Its result updates Data and errors,
+and clears pending state without reopening the cell. Reopening during a check
+does not repeat the request. A new candidate, changed rules, removed/replaced row
+or session reset invalidates obsolete replies.
+
+The first tranche does not add DB writes, autosave, remote-window editing,
+whole-selection schema validation, a configurator, or undo/redo.
+See [the editing contract](https://github.com/gramlot-org/gramlot/blob/main/docs/future/380-forms-and-validation-recovery.md#gc-380-065).
+
+
+<a id="gc-340-115"></a>
+## 115 · Editing reports and keyboard navigation
+
+Add `form.editingStatus()` from the inputs collection inside a form scope. Its
+compact Errors and Changes buttons open reports from that same session, including
+both form controls and resident grid cells. Errors display the validation messages;
+Changes display original → current values since the accepted snapshot. Repeated
+edits update one entry, returning to the original value removes it, and local
+accept/restore clears the outstanding changes. This is not a chronological audit
+log or undo/redo stack. The presentation owns no copy of the editing registers.
+
+Selecting an entry focuses its form field or reveals and opens its grid cell,
+including rows outside the rendered window. A filtered-out or removed target is
+reported as unavailable; navigation does not change filters. Session validation
+continues while reports are open and after editor disposal.
+
+While editing a single-line grid cell, Up/Down commits its candidate and opens the
+same column in the previous/next row of the current sorted/filtered view. Invalid
+drafts and errors remain in the session and do not prevent navigation. Left/Right
+move the caret within text. With a collapsed selection, Left at the beginning
+opens the previous editable cell (caret at its end); Right at the end opens the
+next editable cell (caret at its beginning), even if that field is already filled.
+Selected text and controls without a text caret keep their own keys.
+Tab/Shift+Tab advances through editable cells. Textareas,
+date/time fields and open choice menus retain their own vertical arrows; Down
+opens a choice menu. IME composition and modified arrow keys are not intercepted.

@@ -58,3 +58,11 @@ def test_legacy_style_names_remain_explicit_in_source():
     assert group.attr["background"] == "var(--gramlot-success)"
     with pytest.raises((TypeError, ValueError)):
         group.column("bad", white_space="unknown")
+
+
+def test_local_editors_use_boolean_or_dictionary_options():
+    s = builder().root.grid(storepath='rows', rowMode='values').struct()
+    assert s.column('name', edit=True).attr['edit'] is True
+    assert s.column('amount', dtype='L', edit=dict(validate_min=0)).attr['edit'] == {'validate_min': 0}
+    with pytest.raises((TypeError, ValueError)):
+        s.column('bad', edit='yes')
