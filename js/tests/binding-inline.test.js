@@ -620,6 +620,8 @@ test('an on<event> attribute is an error naming node and attribute, pointing to 
     const string = new GramlotBuilder();
     string.root.div({onclick: 'x()'});
     assert.throws(() => string.renderer_html.render(string.source.getNodes()[0]), /div '.+': 'onclick' has the form of a native event handler/);
+    const forbidden = page();
+    assert.throws(() => mount(forbidden.app, root => root.div({onChecked: 'x()'})), /onChecked is only supported/);
     // An attribute named `on`, a connect_on<event> and a dataController are not native handlers.
     const plain = page();
     mount(plain.app, root => root.input({id: 'i', on: '^flag', connect_onclick: 'void 0'}));

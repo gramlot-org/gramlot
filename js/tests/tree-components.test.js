@@ -4,10 +4,12 @@ import {JSDOM} from 'jsdom';
 import {readFile} from 'node:fs/promises';
 import {Bag, BagResolver} from '@genrojs/bag';
 import {Gramlot, GramlotBuilder} from '../src/index.js';
+import {TreeStore, TreeStoreLogic, TreeStoreResolver} from '../src/tree-store.js';
 import tree, {Tree} from '../src/components/tree.js';
 import {defineCollection, defineComponent} from '../src/components/registry.js';
 
 const tick = () => new Promise(resolve => queueMicrotask(resolve));
+const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 function dragEventPath(f, element) {
     let path;
     f.host.addEventListener('drag-context-test', event => { path = event.composedPath(); }, {once: true});
@@ -30,20 +32,23 @@ function nativeDrag(f, type, path, dataTransfer) {
     (path === null ? f.host : f.row(path).querySelector('.row')).dispatchEvent(event);
     return event;
 }
-function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, logic = null} = {}) {
+function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, logic = null, actions = null, barAttrs = {}, initialChecked = null} = {}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     window.HTMLElement.prototype.showPopover = function () {};
     const app = new Gramlot({document: window.document, transport: false, collections: [collection]});
     const children = new Bag({alpha: 'A', beta: 'B'});
     const store = new Bag({folder: children, other: 'C'});
     store.getNode('folder').setAttr({caption: 'Folder'});
+    if (initialChecked !== null) store.getNode('other').setAttr({checked: initialChecked});
     app.data.setItem('model.nodes', store);
     app.data.setItem('model.selection', null);
     app.data.setItem('model.search', '');
+    app.data.setItem('model.favorites', new Bag());
     const b = new GramlotBuilder(null, {collections: [collection]});
     const pane = b.root.div({datapath: 'model', node_label: 'pane'});
-    pane[tag]({id: 'tree', node_label: 'tree', storepath: '.nodes',
+    const treeNode = pane[tag]({id: 'tree', node_label: 'tree', storepath: '.nodes',
         labelAttribute: 'caption', hideValues: true, selectedPath: '^.selection', ...attrs});
+    if (actions) actions(treeNode.rowActions({position: 'end', ...barAttrs}));
     if (two) pane[tag]({id: 'second', node_label: 'second', storepath: '.nodes', hideValues: true, selectedPath: '^.otherSelection'});
     if (logic) app.src.logicRegistry.register(logic, {group: null, resource: '/tree-test.js'});
     app.src.startSource(b.toTytx());
@@ -52,6 +57,237 @@ function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, l
     return {window, app, store, host, source: app.src.source.getNode('main.pane.tree'),
         row: path => [...host.shadowRoot.querySelectorAll('[role=treeitem]')].find(row => row.dataset.path === path)};
 }
+
+test('row action presentation follows the focused row and reactive state', async t => {
+    class Logic {
+        presentation(node, {item, state}) {
+            return {hidden: item.staticValue instanceof Bag, icon: state.getItem('saved') ? '♥' : '♡',
+                title: state.getItem('saved') ? 'Remove favorite' : 'Add favorite'};
+        }
+    }
+    const f = fixture(t, {logic: Logic, barAttrs: {actionState: 'presentation', state: '^.favorites'}, actions: bar => {
+        bar.button({id: 'favorite-action', rowAction: 'favorite'}).dataController({func: 'presentation'});
+        bar.button({id: 'inspect-action', icon: 'i'});
+    }});
+    await tick();
+    const button = f.window.document.getElementById('favorite-action');
+    const inspect = f.window.document.getElementById('inspect-action');
+    f.row('folder').focus();
+    assert.equal(button.hidden, true);
+    assert.equal(inspect.hidden, false);
+    f.row('other').focus();
+    assert.equal(button.hidden, false);
+    assert.equal(button.icon.textContent, '♡');
+    assert.equal(button.control.getAttribute('aria-label'), 'Add favorite');
+    const favorites = new Bag(); favorites.setItem('saved', true);
+    f.app.data.setItem('model.favorites', favorites); await tick();
+    assert.equal(button.icon.textContent, '♥');
+    assert.equal(button.control.getAttribute('aria-label'), 'Remove favorite');
+});
+
+test('favorites are an expandable group in the same tree and select their original path', async t => {
+    const f = fixture(t, {attrs: {favorites: '^.favorites', checkedPaths: '^.checked', internalNames: '^.internalNames'}}); await tick();
+    const favorites = new Bag();
+    favorites.setItem('one', null, {favoriteEntry: true, originalPath: 'folder.alpha',
+        fieldpath: 'folder.alpha', fullcaption: 'Folder.Alpha', badge: 'T'});
+    f.app.data.setItem('model.favorites', favorites); await settle();
+    f.store.getNode('other').setAttr({fieldpath: 'other', caption: 'Descriptive name'}); await settle();
+    const group = f.host.shadowRoot.querySelector('[data-favorites-group]');
+    assert.ok(group);
+    assert.equal(f.window.document.querySelectorAll('gramlot-tree').length, 1);
+    assert.equal(group.getAttribute('aria-expanded'), 'false');
+    group.querySelector('button').click();
+    const favorite = group.querySelector('[data-favorite-path]');
+    assert.equal(favorite.querySelector('.caption').textContent, 'Folder.Alpha');
+    assert.equal(favorite.querySelector('.badge').textContent, 'T');
+    favorite.querySelector('.row').click(); await settle();
+    assert.equal(f.app.data.getItem('model.selection'), 'folder.alpha');
+    assert.equal(f.row('folder.alpha').getAttribute('aria-selected'), 'true');
+    assert.equal(f.row('folder').getAttribute('aria-expanded'), 'true');
+    f.app.data.setItem('model.internalNames', true); await settle();
+    assert.equal(f.host.shadowRoot.querySelector('[data-favorite-path] .caption').textContent, 'folder.alpha');
+    assert.equal(f.row('other').querySelector('.caption').textContent, 'other');
+    f.app.data.setItem('model.internalNames', false); await settle();
+    assert.equal(f.host.shadowRoot.querySelector('[data-favorite-path] .caption').textContent, 'Folder.Alpha');
+    assert.equal(f.row('other').querySelector('.caption').textContent, 'Descriptive name');
+    assert.equal(f.app.data.getItem('model.checked'), null);
+    f.app.data.setItem('model.favorites', new Bag()); await settle();
+    assert.equal(f.host.shadowRoot.querySelector('[data-favorites-group]'), null);
+});
+
+test('a shared Source rowActions bar invokes a controller with row context without selecting', async t => {
+    const calls = [];
+    class Logic { inspect(source, args) { calls.push({source, args}); } }
+    const f = fixture(t, {logic: Logic, actions: bar => bar.button({id: 'inspect', icon: 'i'}).dataController({func: 'inspect'})});
+    await tick();
+    const bar = f.host.querySelector('gramlot-row-actions');
+    assert.ok(bar);
+    f.row('folder').querySelector('.row').dispatchEvent(new f.window.Event('pointerenter'));
+    assert.equal(bar.hidden, false);
+    f.window.document.getElementById('inspect').shadowRoot.querySelector('button').click();
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].args.item, f.store.getNode('folder'));
+    assert.equal(calls[0].args.path, 'folder');
+    assert.equal(calls[0].args.event.type, 'click');
+    assert.equal(f.app.data.getItem('model.selection'), null);
+    assert.equal(f.row('folder').getAttribute('aria-expanded'), 'false');
+    f.store.popNode('folder'); await tick();
+    assert.equal(bar.hidden, true);
+    assert.equal(bar.getRowContext(), null);
+});
+
+test('rowActions uses focused row context for a named action', async t => {
+    const calls = [];
+    class Logic { inspect(source, args) { calls.push(args); } }
+    const f = fixture(t, {logic: Logic, actions: bar => bar.button({id: 'inspect-action', action: 'inspect'})});
+    await tick();
+    f.row('other').focus();
+    const bar = f.host.querySelector('gramlot-row-actions');
+    assert.equal(bar.hidden, false);
+    f.window.document.getElementById('inspect-action').shadowRoot.querySelector('button').click();
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].item, f.store.getNode('other'));
+    assert.equal(calls[0].path, 'other');
+    assert.equal(calls[0].event.type, 'click');
+    assert.equal(f.app.data.getItem('model.selection'), null);
+});
+
+test('rowActions menu commands retain the current row context', async t => {
+    const calls = [];
+    class Logic { inspect(source, args) { calls.push(args); } }
+    const f = fixture(t, {logic: Logic, actions: bar => {
+        bar.dropDownButton({id: 'row-menu'}).menu().menuline({caption: 'Inspect', id: 'row-menu-item', code: 'inspect'})
+            .dataController({func: 'inspect'});
+    }});
+    await tick();
+    f.row('other').focus();
+    f.window.document.getElementById('row-menu-item').shadowRoot.querySelector('button').click();
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].item, f.store.getNode('other'));
+    assert.equal(calls[0].path, 'other');
+});
+
+test('tree inspector shows row attributes and cleans up when closed or its Source is removed', async t => {
+    const f = fixture(t, {logic: TreeStoreLogic, actions: bar =>
+        bar.button({id: 'inspect-attributes', icon: 'i'}).dataController({func: 'treeInspect'})});
+    f.window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+    await tick();
+    const logic = f.app.logic;
+    const logicKeys = Object.keys(logic);
+    f.app.data.setItem('secret', 'must not be shown');
+    f.store.getNode('other').setAttr({caption: '<unsafe>', count: 0, diagnostic: '^secret', formula: '==1+1'}); await tick();
+    f.row('other').focus();
+    const click = () => f.window.document.getElementById('inspect-attributes').shadowRoot.querySelector('button').click();
+    click();
+    let dialog = f.window.document.querySelector('dialog');
+    assert.ok(dialog);
+    assert.match(dialog.textContent, /caption/);
+    assert.match(dialog.textContent, /<unsafe>/);
+    assert.equal(dialog.querySelector('unsafe'), null);
+    assert.match(dialog.textContent, /count/);
+    assert.match(dialog.textContent, /\^secret/);
+    assert.match(dialog.textContent, /==1\+1/);
+    assert.doesNotMatch(dialog.textContent, /must not be shown/);
+    assert.deepEqual(Object.keys(logic), logicKeys);
+    const inspector = [...f.app.src.binding.nodeIds.entries()].find(([key]) => key.startsWith('tree_inspect_'))[1];
+    assert.equal(typeof inspector.treeInspectClose, 'function');
+    dialog.querySelector('button').click(); await tick();
+    assert.equal(f.window.document.querySelector('dialog'), null);
+    assert.equal(Object.hasOwn(inspector, 'treeInspectClose'), false);
+    click();
+    assert.ok(f.window.document.querySelector('dialog'));
+    f.app.src.source.popNode('main'); await tick();
+    assert.equal(f.window.document.querySelector('dialog'), null);
+});
+
+test('node badges display reactive text and color, preserve zero and hide empty values', async t => {
+    const f = fixture(t); await tick();
+    const node = f.store.getNode('other');
+    let badge = f.row('other').querySelector('[part="badge"]');
+    assert.equal(badge.hidden, true);
+    node.setAttr({badge: 0, badge_color: '#218544'}); await tick();
+    badge = f.row('other').querySelector('[part="badge"]');
+    assert.equal(badge.textContent, '0');
+    assert.equal(badge.hidden, false);
+    assert.equal(badge.style.backgroundColor, 'rgb(33, 133, 68)');
+    assert.equal(badge.compareDocumentPosition(f.row('other').querySelector('.caption')) & f.window.Node.DOCUMENT_POSITION_FOLLOWING, f.window.Node.DOCUMENT_POSITION_FOLLOWING);
+    node.setAttr({badge: '<b>T</b>', badge_color: null}); await tick();
+    badge = f.row('other').querySelector('[part="badge"]');
+    assert.equal(badge.textContent, '<b>T</b>');
+    assert.equal(badge.children.length, 0);
+    assert.equal(badge.style.backgroundColor, '');
+    node.setAttr({badge: ''}); await tick();
+    assert.equal(f.row('other').querySelector('[part="badge"]').hidden, true);
+});
+
+test('external selection loads the missing lazy ancestors of its path', async t => {
+    const calls = [];
+    class Second extends BagResolver { load() { calls.push('second'); return new Bag({target: null}); } }
+    class First extends BagResolver { load() { calls.push('first'); const bag = new Bag(); bag.setItem('next', new Second()); return bag; } }
+    const f = fixture(t); await tick();
+    f.store.setItem('lazy', new First()); await tick();
+    f.app.data.setItem('model.selection', 'lazy.next.target');
+    await settle(); await settle();
+    assert.deepEqual(calls, ['first', 'second']);
+    assert.equal(f.row('lazy').getAttribute('aria-expanded'), 'true');
+    assert.equal(f.row('lazy.next').getAttribute('aria-expanded'), 'true');
+    assert.equal(f.row('lazy.next.target').getAttribute('aria-selected'), 'true');
+});
+
+test('marked loops open without a prompt by mouse, keyboard and selection', async t => {
+    let calls = 0;
+    class Loop extends BagResolver { load() { calls++; return new Bag({leaf: null}); } }
+    const f = fixture(t); await tick();
+    f.store.setItem('first', new Loop({cacheTime: -1}), {loop: true});
+    f.store.setItem('second', new Loop({cacheTime: -1}), {loop: true});
+    f.store.setItem('third', new Loop({cacheTime: -1}), {loop: true}); await tick();
+    f.row('first').querySelector('button').click(); await settle();
+    f.row('second').dispatchEvent(new f.window.KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true})); await settle();
+    f.app.data.setItem('model.selection', 'third.leaf'); await settle(); await settle();
+    assert.equal(calls, 3);
+    assert.equal(f.row('third.leaf').getAttribute('aria-selected'), 'true');
+    assert.equal(f.window.document.querySelector('dialog'), null);
+});
+
+test('checking and bound paths resolve marked loops without prompts', async t => {
+    let calls = 0;
+    class Loop extends BagResolver { load() { calls++; return new Bag({leaf: null}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('first', new Loop({cacheTime: -1}), {loop: true});
+    f.store.setItem('second', new Loop({cacheTime: -1}), {loop: true}); await tick();
+    f.row('first').querySelector('input').click(); await settle();
+    f.app.data.setItem('model.checked', 'second'); await settle(); await settle();
+    assert.equal(calls, 2);
+    assert.equal(f.store.getNode('second.leaf').attr.checked, true);
+    assert.equal(f.window.document.querySelector('dialog'), null);
+});
+
+test('a changed selection does not open later branches after a pending load', async t => {
+    let finish;
+    let nextLoads = 0;
+    class Next extends BagResolver { load() { nextLoads++; return new Bag({target: null}); } }
+    class First extends BagResolver { load() { return new Promise(resolve => { finish = resolve; }); } }
+    const f = fixture(t); await tick();
+    f.store.setItem('lazy', new First()); await tick();
+    f.app.data.setItem('model.selection', 'lazy.next.target'); await settle();
+    assert.equal(typeof finish, 'function');
+    f.app.data.setItem('model.selection', 'other'); await tick();
+    const bag = new Bag(); bag.setItem('next', new Next()); finish(bag);
+    await settle(); await settle();
+    assert.equal(nextLoads, 0);
+    assert.equal(f.row('other').getAttribute('aria-selected'), 'true');
+    assert.equal(f.row('lazy.next').getAttribute('aria-expanded'), 'false');
+});
+
+test('a failed lazy selection stops at the failed branch', async t => {
+    class Failure extends BagResolver { load() { throw new Error('load failed'); } }
+    const f = fixture(t); await tick();
+    f.store.setItem('failure', new Failure()); await tick();
+    f.app.data.setItem('model.selection', 'failure.child'); await settle(); await settle();
+    assert.equal(f.row('failure').getAttribute('aria-expanded'), 'false');
+    assert.equal(f.row('failure').classList.contains('error'), true);
+    assert.equal(f.row('failure.child'), undefined);
+});
 
 test('drag preparation is disabled by default and follows a reactive draggable parameter', async t => {
     let calls = 0;
@@ -536,6 +772,23 @@ test('unloaded resolver is not evaluated by render or store updates', async t =>
     assert.equal(loads, 0);
 });
 
+test('child_count suppresses empty lazy branches without resolving them', async t => {
+    let loads = 0;
+    class Lazy extends BagResolver { load() { loads++; return new Bag({child: 'Loaded'}); } }
+    const f = fixture(t); await tick();
+    f.store.setItem('empty', new Lazy({cacheTime: -1}), {child_count: 0});
+    f.store.setItem('unknown', new Lazy({cacheTime: -1}));
+    f.store.setItem('known', new Lazy({cacheTime: -1}), {child_count: 1});
+    await tick();
+    assert.equal(f.row('empty').querySelector('button'), null);
+    assert.ok(f.row('unknown').querySelector('button'));
+    assert.ok(f.row('known').querySelector('button'));
+    assert.equal(loads, 0);
+    f.row('unknown').querySelector('button').click(); await tick(); await tick();
+    assert.equal(loads, 1);
+    assert.ok(f.row('unknown.child'));
+});
+
 test('bagStore routing uses capability metadata, not the tree tag name', async t => {
     const collection = defineCollection({name: 'testTree', components: [
         defineComponent({...Tree, name: 'outline', tag: 'test-outline'})
@@ -868,4 +1121,300 @@ test('search survives detaching before debounce and respects manual collapse on 
 test('Python tree grammar matches the current component document', async () => {
     const grammar = JSON.parse(await readFile(new URL('../../src/gramlot/collections/tree.json', import.meta.url), 'utf8'));
     assert.deepEqual(grammar, tree.toDocument());
+});
+
+test('checkedPaths uses a two-way binding and propagates across loaded children', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    const check = path => f.row(path).querySelector('input[type=checkbox]');
+    check('folder').click(); await tick();
+    assert.equal(f.store.getNode('folder').attr.checked, true);
+    assert.equal(f.store.getNode('folder.alpha').attr.checked, true);
+    assert.equal(f.store.getNode('folder.beta').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta');
+    f.row('folder').querySelector('button').click();
+    check('folder.alpha').click(); await tick();
+    assert.equal(f.store.getNode('folder').attr.checked, -1);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.beta');
+    check('folder.beta').click(); await tick();
+    assert.equal(f.store.getNode('folder').attr.checked, false);
+    f.app.data.setItem('model.checked', 'other'); await tick(); await tick();
+    assert.equal(f.store.getNode('other').attr.checked, true);
+    assert.equal(f.store.getNode('folder.beta').attr.checked, false);
+});
+
+test('checkChildren false leaves descendants independent and includes checked branches', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked', checkChildren: false}}); await tick();
+    f.row('folder').querySelector('input').click(); await tick();
+    assert.equal(f.store.getNode('folder').attr.checked, true);
+    assert.equal(f.store.getNode('folder.alpha').attr.checked, undefined);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder');
+});
+
+test('checking a loaded parent carries its state to an unresolved descendant without loading it', async t => {
+    let loads = 0;
+    class Lazy extends BagResolver { load() { loads++; return new Bag({child: 1}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.getItem('folder').setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('folder').querySelector('input').click(); await tick();
+    assert.equal(loads, 0);
+    assert.equal(f.store.getNode('folder.lazy').attr.checked, true);
+    assert.equal(f.store.getNode('folder.alpha').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy');
+    f.row('folder').querySelector('button').click();
+    f.row('folder.lazy').querySelector('button').click(); await settle(); await settle();
+    assert.equal(f.store.getNode('folder.lazy.child').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy.child');
+});
+
+test('checking a cached resolver branch preserves checked children without reloading', async t => {
+    const inputs = [];
+    class Lazy extends BagResolver {
+        load(kwargs) { inputs.push(kwargs); return new Bag({child: 1}); }
+    }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1, query: 'first'})); await tick();
+    const children = f.store.getItem('lazy'); await tick();
+    f.row('lazy').querySelector('input').click(); await tick();
+    assert.equal(f.store.getItem('lazy'), children);
+    assert.equal(children.getNode('child').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy.child');
+    assert.deepEqual(inputs, [{query: 'first'}]);
+    f.store.getNode('lazy').setAttr({query: 'second'});
+    assert.notEqual(f.store.getItem('lazy'), children);
+    assert.deepEqual(inputs, [{query: 'first'}, {query: 'second'}]);
+});
+
+test('space toggles the checkbox without selecting the tree row', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.row('other').dispatchEvent(new f.window.KeyboardEvent('keydown', {key: ' ', bubbles: true, cancelable: true})); await tick();
+    assert.equal(f.store.getNode('other').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.selection'), null);
+});
+
+test('checking an unloaded node applies selection when its resolver completes', async t => {
+    let finish, calls = 0;
+    class Lazy extends BagResolver { load() { calls++; return new Promise(resolve => {finish = resolve;}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('lazy').querySelector('input').click(); await tick();
+    assert.equal(calls, 1);
+    assert.equal(f.store.getNode('lazy').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy');
+    finish(new Bag({child: 1})); await settle(); await settle();
+    assert.equal(f.store.getNode('lazy.child').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy.child');
+});
+
+test('checking a TreeStore resolver propagates to its returned children', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    const store = new TreeStore({gramlot: {rpc: {call: async (_kind, _method, args) => {
+        await settle();
+        const bag = new Bag();
+        if (!args.path) bag.setItem('invoice', new TreeStoreResolver());
+        else { bag.setItem('id', null); bag.setItem('links', new Bag({field: null})); }
+        return bag;
+    }}}, method: 'relations'});
+    const root = await store.load();
+    f.app.data.setItem('model.nodes', root); await settle();
+    f.row('invoice').querySelector('input').click(); await settle(); await settle(); await settle();
+    f.row('invoice').querySelector('button').click(); await settle();
+    assert.equal(root.getNode('invoice.id').attr.checked, true);
+    assert.equal(root.getNode('invoice.links.field').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'invoice.id,invoice.links.field');
+    store.dispose();
+});
+
+test('unchecking a pending branch applies the latest state after loading', async t => {
+    let finish, calls = 0;
+    class Lazy extends BagResolver { load() { calls++; return new Promise(resolve => {finish = resolve;}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('lazy').querySelector('input').click(); await tick();
+    f.row('lazy').querySelector('input').click(); await tick();
+    assert.equal(calls, 1);
+    const children = new Bag(); children.setItem('child', 1, {checked: true});
+    finish(children); await settle(); await settle();
+    assert.equal(f.store.getNode('lazy.child').attr.checked, false);
+    assert.equal(f.store.getNode('lazy').attr.checked, false);
+});
+
+test('an external checkedPaths update is preserved when an earlier load finishes', async t => {
+    let finish;
+    class Lazy extends BagResolver { load() { return new Promise(resolve => {finish = resolve;}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('lazy').querySelector('input').click(); await tick();
+    f.app.data.setItem('model.checked', 'other'); await settle();
+    finish(new Bag({child: 1})); await settle(); await settle();
+    assert.equal(f.app.data.getItem('model.checked'), 'other');
+    assert.equal(f.store.getNode('other').attr.checked, true);
+    assert.equal(f.store.getNode('lazy.child').attr.checked, false);
+});
+
+test('unchecking an ancestor overrides an in-flight descendant load', async t => {
+    let finish, calls = 0;
+    class Lazy extends BagResolver { load() { calls++; return new Promise(resolve => {finish = resolve;}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.getItem('folder').setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('folder').querySelector('input').click(); await tick();
+    f.row('folder').querySelector('button').click();
+    f.row('folder.lazy').querySelector('button').click(); await tick();
+    f.row('folder').querySelector('input').click(); await tick();
+    finish(new Bag({child: 1})); await settle(); await settle();
+    assert.equal(calls, 1);
+    assert.equal(f.store.getNode('folder.lazy.child').attr.checked, false);
+    assert.equal(f.app.data.getItem('model.checked'), '');
+});
+
+test('checkChildren false does not propagate to a later resolved branch', async t => {
+    let finish;
+    class Lazy extends BagResolver { load() { return new Promise(resolve => {finish = resolve;}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked', checkChildren: false}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('lazy').querySelector('input').click(); await tick();
+    finish(new Bag({child: 1})); await settle(); await settle();
+    assert.notEqual(f.store.getNode('lazy.child').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy');
+});
+
+test('a failed lazy check retains its branch path and propagates after retry', async t => {
+    let calls = 0;
+    class Lazy extends BagResolver { load() { if (++calls === 1) return Promise.reject(new Error('offline')); return new Bag({child: 1}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('lazy').querySelector('input').click(); await settle(); await settle();
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy');
+    assert.equal(f.row('lazy').classList.contains('error'), true);
+    f.row('lazy').querySelector('button').click(); await settle(); await settle();
+    assert.equal(calls, 2);
+    assert.equal(f.store.getNode('lazy.child').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy.child');
+});
+
+test('deferred propagation preserves disabled children and recomputes mixed parent state', async t => {
+    let finish;
+    class Lazy extends BagResolver { load() { return new Promise(resolve => {finish = resolve;}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('lazy').querySelector('input').click(); await tick();
+    const children = new Bag();
+    children.setItem('enabled', 1); children.setItem('locked', 2, {checked: 'disabled:off'});
+    finish(children); await settle(); await settle();
+    assert.equal(children.getNode('enabled').attr.checked, true);
+    assert.equal(children.getNode('locked').attr.checked, 'disabled:off');
+    assert.equal(f.store.getNode('lazy').attr.checked, -1);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy.enabled');
+});
+
+test('a child inserted later inherits a checked loaded parent without resetting older children', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.row('folder').querySelector('input').click(); await tick();
+    f.store.getItem('folder').setItem('late', 1, {checked: false}); await settle();
+    assert.equal(f.store.getNode('folder.late').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.late');
+    f.row('folder').querySelector('button').click();
+    f.row('folder.alpha').querySelector('input').click(); await settle();
+    f.store.getItem('folder').setItem('later', 2); await settle();
+    assert.equal(f.store.getNode('folder.alpha').attr.checked, false);
+    assert.equal(f.store.getNode('folder.later').attr.checked, undefined);
+    assert.equal(f.store.getNode('folder').attr.checked, -1);
+});
+
+test('a checked path supplied before its ancestor loads selects the path after expansion', async t => {
+    class Lazy extends BagResolver { load() { return new Bag({child: 1}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.app.data.setItem('model.checked', 'lazy.child'); await settle();
+    f.row('lazy').querySelector('button').click(); await settle(); await settle();
+    assert.equal(f.store.getNode('lazy.child').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'lazy.child');
+});
+
+test('loading one branch preserves selected paths in other unloaded branches', async t => {
+    class Lazy extends BagResolver { load() { return new Bag({child: 1}); } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.setItem('first', new Lazy({cacheTime: -1}));
+    f.store.setItem('second', new Lazy({cacheTime: -1})); await tick();
+    f.app.data.setItem('model.checked', 'first.child,second.child'); await settle();
+    f.row('first').querySelector('button').click(); await settle(); await settle();
+    assert.equal(f.store.getNode('first.child').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'first.child,second.child');
+    f.row('second').querySelector('button').click(); await settle(); await settle();
+    assert.equal(f.store.getNode('second.child').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'first.child,second.child');
+});
+
+test('loading a selected nested branch propagates through groups without following an unloaded loop', async t => {
+    let loopLoads = 0;
+    class Loop extends BagResolver { load() { loopLoads++; return new Bag({leaf: 1}); } }
+    class Lazy extends BagResolver {
+        load() { const group = new Bag(); group.setItem('loop', new Loop({cacheTime: -1}), {loop: true});
+            const children = new Bag(); children.setItem('group', group); return children; }
+    }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.getItem('folder').setItem('lazy', new Lazy({cacheTime: -1})); await tick();
+    f.row('folder').querySelector('input').click(); await tick();
+    assert.equal(loopLoads, 0);
+    f.row('folder').querySelector('button').click();
+    f.row('folder.lazy').querySelector('button').click(); await settle(); await settle();
+    assert.equal(f.store.getNode('folder.lazy.group.loop').attr.checked, true);
+    assert.equal(loopLoads, 0);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy.group.loop');
+    f.row('folder.lazy.group').querySelector('button').click();
+    f.row('folder.lazy.group.loop').querySelector('button').click();
+    await settle(); await settle();
+    assert.equal(loopLoads, 1);
+    assert.equal(f.window.document.querySelector('dialog'), null);
+    assert.equal(f.store.getNode('folder.lazy.group.loop.leaf').attr.checked, true);
+    assert.equal(f.app.data.getItem('model.checked'), 'folder.alpha,folder.beta,folder.lazy.group.loop.leaf');
+});
+
+test('disabled checkbox cannot be changed by a direct click or parent propagation', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}}); await tick();
+    f.store.getNode('folder.beta').setAttr({checked: 'disabled:off'}); await tick();
+    f.row('folder').querySelector('input').click(); await tick();
+    assert.equal(f.store.getNode('folder.beta').attr.checked, 'disabled:off');
+    f.row('folder').querySelector('button').click();
+    assert.equal(f.row('folder.beta').querySelector('input').disabled, true);
+    assert.equal(f.row('folder').getAttribute('aria-checked'), 'mixed');
+});
+
+test('onChecked Logic can veto without changing the Bag or checkedPaths', async t => {
+    const calls = [];
+    class Logic { check(source, {item, path}) { calls.push({source, item, path}); return false; } }
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked', onChecked: 'check'}, logic: Logic}); await tick();
+    f.row('other').querySelector('input').click(); await tick();
+    assert.equal(f.store.getNode('other').attr.checked, undefined);
+    assert.equal(f.app.data.getItem('model.checked'), null);
+    assert.equal(f.row('other').querySelector('input').checked, false);
+    assert.equal(f.host.hasAttribute('onChecked'), false);
+    assert.equal(calls[0].source, f.source);
+    assert.equal(calls[0].item, f.store.getNode('other'));
+    assert.equal(calls[0].path, 'other');
+});
+
+test('onChecked true enables independent checkbox display without checkedPaths', async t => {
+    const f = fixture(t, {attrs: {onChecked: true}}); await tick();
+    f.row('other').querySelector('input').click(); await tick();
+    assert.equal(f.store.getNode('other').attr.checked, true);
+});
+
+
+test('initial absent checkedPaths preserves preexisting disabled node state', async t => {
+    const f = fixture(t, {attrs: {checkedPaths: '^.checked'}, initialChecked: 'disabled:on'}); await tick();
+    assert.equal(f.store.getNode('other').attr.checked, 'disabled:on');
+    assert.equal(f.row('other').querySelector('input').checked, true);
+    assert.equal(f.row('other').querySelector('input').disabled, true);
+});
+
+test('search stops at loop nodes without loading or exposing matching descendants', async t => {
+    let calls = 0;
+    class Lazy extends BagResolver { load() { calls++; return new Bag({needle: null}); } }
+    const f = fixture(t, {attrs: {searchText: '^.search'}}); await tick();
+    f.store.setItem('looping', new Lazy({cacheTime: -1}), {loop: true});
+    const children = new Bag({needle: null}); f.store.setItem('cached', children, {loop: true});
+    f.app.data.setItem('model.search', 'needle'); await searchWait(); await settle();
+    assert.equal(calls, 0);
+    assert.equal(f.row('cached.needle').hidden, true);
+    assert.equal(f.row('cached').getAttribute('aria-expanded'), 'false');
 });

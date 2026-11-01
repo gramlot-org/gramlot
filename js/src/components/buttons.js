@@ -7,6 +7,7 @@ import {MenuContainer, menuLine} from './menus.js';
 
 function Command(HTMLElement) {
     return class extends controlElement(HTMLElement) {
+        #actionPresentation = null;
         constructor() {
             super();
             const doc = this.ownerDocument;
@@ -20,7 +21,7 @@ function Command(HTMLElement) {
             this.control.append(this.icon, this.caption);
             this.controlBox.append(this.control);
             const style = doc.createElement('style');
-            style.textContent = `:host{vertical-align:middle} .control-box{display:flex;align-items:stretch}
+            style.textContent = `:host{vertical-align:middle} :host([hidden]){display:none} .control-box{display:flex;align-items:stretch}
                 button{display:inline-flex;align-items:center;justify-content:center;gap:var(--gramlot-button-gap,.35em);font:inherit;
                     color:var(--gramlot-button-color,var(--gramlot-ink,CanvasText));background:var(--gramlot-button-background,var(--gramlot-field-background,Canvas));
                     border:1px solid var(--gramlot-border-control,#888);border-radius:var(--gramlot-radius-sm,4px);
@@ -59,6 +60,7 @@ function Command(HTMLElement) {
             this.renderIcon(this.parameters.icon, this.parameters.iconSrc);
             if (attrs['aria-label'] != null) this.control.setAttribute('aria-label', attrs['aria-label']);
             else this.control.removeAttribute('aria-label');
+            if (this.#actionPresentation) this.setActionPresentation(this.#actionPresentation);
             return rest;
         }
         renderIcon(icon, iconSrc) {
@@ -73,6 +75,13 @@ function Command(HTMLElement) {
         }
         get entryIcon() { return this.parameters.icon; }
         get entryIconSrc() { return this.parameters.iconSrc; }
+        setActionPresentation(presentation) {
+            this.#actionPresentation = presentation;
+            this.hidden = presentation.hidden;
+            this.icon.textContent = presentation.icon;
+            this.title = presentation.title;
+            this.control.setAttribute('aria-label', presentation.title);
+        }
         attachCommand() {}
         releaseCommand() {}
         commandTarget() { return this; }

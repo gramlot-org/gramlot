@@ -1233,7 +1233,44 @@ Class callbacks return a CSS class string. `getLabelClass` replaces the node's l
 
 Structural parts include tree, group, node, branch, leaf, row, caption, icon, expander, spacer, value-node, value-row and value. Default icon parts distinguish branch-icon, leaf-icon, opened-icon and closed-icon. Named callbacks and live Bag attribute changes refresh the presentation. Callback results must satisfy their contract; asynchronous results and legacy string label callbacks are unsupported.
 
-Gallery: Input components → tree → Bag tree, Tree labels and classes, Tree callbacks, HTML and icons. Checkboxes for tree selection, filtering, badges, row actions, expansion commands and drag/drop remain subsequent increments; the example's hideValues checkbox is an ordinary bound control.
+`searchText` filters captions and loads unresolved branches, stopping at nodes marked
+`loop=True`. Clearing it restores the ordinary tree. External `selectedPath`
+loads missing ancestors sequentially; explicit opening and selection do not ask
+for confirmation at loops. `child_count=0` hides an unloaded branch disclosure.
+
+```python
+pane.tree(storepath=".items", hideValues=True, searchText="^.search",
+          selectedPath="^.selection", checkedPaths="^.checked")
+```
+
+`checkedPaths` enables checkboxes and binds the comma-separated checked paths
+(`checkedPaths_joiner` changes the separator). State lives in each Bag node's
+`checked` attribute: true, false, -1 (mixed), `disabled:on`, or `disabled:off`.
+`checkChildren=True` propagates to loaded descendants; unresolved descendants
+inherit when loaded. A checked unresolved branch is represented by its own path
+until its checked descendants replace it. A synchronous named `onChecked` callback
+receives `{item, path}` and can return false to veto a click; `onChecked=True`
+enables ordinary checks without a callback.
+
+Nodes can expose `badge` (text or number) and `badge_color`; zero remains visible.
+The experimental `tree.rowActions(position="start"|"end")` holds one shared
+Source action bar. Its buttons/controllers receive `{item, path, event}` for the
+hovered or focused row. Optional `actionState` is a named synchronous callback
+returning `{hidden, icon, title}` for each identified `rowAction`, with reactive
+`state` supplied by a binding. `favorites` is a Bag rendered as a collapsible
+group; entries retain `originalPath` and selection loads that original path.
+
+For one endpoint serving every level, use `from gramlot.page import tree_store`:
+`tree_store(root, datapath="catalog", method="children")`. The endpoint returns a
+Bag; unresolved branches contain `gramlot.tree_store.TreeStoreResolver()`.
+The companion page Logic exports `TreeStoreLogic as Logic` from
+`@gramlot/gramlot/page`. The endpoint receives `path`, `label`, and `attributes`;
+these are client input, not authorization. Source disposal cancels pending loads.
+Database-specific relation exploration belongs to the Kajenn adapter.
+
+Gallery: the tree examples cover Bag values, captions, search and drag/drop.
+The store/row-action additions remain a development increment; complete legacy
+parity and visual acceptance are separate.
 
 <a id="gc-105-125"></a>
 

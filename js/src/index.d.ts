@@ -59,3 +59,4 @@ export {chatRender, chatSend, chatCompleted, chatReset, chatResize, chatPickAtta
 
 // Preserve fluent Source identity across separately prepared collection bundles.
 export {sourceTarget} from '@genrojs/builders';
+export {TreeStore, TreeStoreResolver, TreeStoreLogic} from './tree-store.js';

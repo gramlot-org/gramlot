@@ -26,16 +26,9 @@ export class RemoteResolver extends BagResolver {
     }
     resolveSync(options) { return super.resolve(options); }
     prepareValue(value) { return value; }
-    #fingerprint() {
-        const kwargs = {...this._kw};
-        for (const [name, value] of Object.entries(this.node?.attr ?? {})) {
-            if (!this.constructor.internalParams.has(name)) kwargs[name] = value;
-        }
-        return this._computeEffectiveFingerprint(kwargs);
-    }
     async #load(request) {
         if (this.closed) return undefined;
-        const fingerprint = this.#fingerprint();
+        const fingerprint = this._computeEffectiveFingerprint(this._buildEffectiveKw());
         const received = await this.loadAsync(request);
         if (this.closed || request.ignored) return undefined;
         const value = this.prepareValue(received);

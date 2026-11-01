@@ -13,7 +13,7 @@
   "elements": {
     "tree": {
       "doc": null,
-      "sub_tags": "",
+      "sub_tags": "rowActions[:1]",
       "parent_tags": null,
       "inherits_from": null,
       "ns": null,
@@ -81,6 +81,36 @@
             },
             "has_default": true,
             "default": null
+          },
+          {
+            "name": "internalNames",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
           },
           {
             "name": "hideValues",
@@ -215,6 +245,51 @@
             "default": ""
           },
           {
+            "name": "favorites",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "favoritesLabel",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": "Favorites"
+          },
+          {
             "name": "autoCollapse",
             "kind": "keyword_only",
             "role": "attribute",
@@ -265,6 +340,91 @@
             "default": null
           },
           {
+            "name": "onChecked",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "checkedPaths",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "checkedPaths_joiner",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ","
+          },
+          {
+            "name": "checkChildren",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": true
+          },
+          {
             "name": "attr",
             "kind": "var_keyword",
             "role": "attribute",
@@ -293,6 +453,11 @@
               "dtype": "T",
               "nullable": true,
               "default": null,
+              "binding": "read"
+            },
+            "internalNames": {
+              "dtype": "B",
+              "default": false,
               "binding": "read"
             },
             "hideValues": {
@@ -330,6 +495,17 @@
               "default": "",
               "binding": "read"
             },
+            "favorites": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
+              "binding": "read"
+            },
+            "favoritesLabel": {
+              "dtype": "T",
+              "default": "Favorites",
+              "binding": "read"
+            },
             "autoCollapse": {
               "dtype": "B",
               "default": false,
@@ -340,6 +516,29 @@
               "nullable": true,
               "default": null,
               "binding": "twoWay"
+            },
+            "onChecked": {
+              "dtype": [
+                "B",
+                "T"
+              ],
+              "nullable": true,
+              "default": null
+            },
+            "checkedPaths": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null,
+              "binding": "twoWay"
+            },
+            "checkedPaths_joiner": {
+              "dtype": "T",
+              "default": ","
+            },
+            "checkChildren": {
+              "dtype": "B",
+              "default": true,
+              "binding": "read"
             }
           },
           "presentationDefaults": [],
@@ -348,6 +547,121 @@
           "sourceContext": true,
           "dragSource": true,
           "bagStore": true
+        }
+      }
+    },
+    "rowActions": {
+      "doc": null,
+      "sub_tags": "button,dropDownButton",
+      "parent_tags": null,
+      "inherits_from": null,
+      "ns": null,
+      "node_label": null,
+      "collection_key": null,
+      "attributes": {
+        "parameters": [
+          {
+            "name": "position",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": "end"
+          },
+          {
+            "name": "actionState",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "state",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "attr",
+            "kind": "var_keyword",
+            "role": "attribute",
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false
+          }
+        ],
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false
+      },
+      "_meta": {
+        "render_tag": "gramlot-row-actions",
+        "gramlot_component": {
+          "parameters": {
+            "position": {
+              "dtype": "T",
+              "default": "end"
+            },
+            "actionState": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null
+            },
+            "state": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
+              "binding": "read"
+            }
+          },
+          "presentationDefaults": [],
+          "dataScope": false,
+          "command": false,
+          "sourceContext": true
         }
       }
     }

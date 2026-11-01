@@ -5103,3 +5103,7 @@ the key, including selected text, modified keys, composition and open popups.
 Multiline and date/time controls keep their existing keyboard behavior. Moving
 between cells retains drafts, errors and session-owned validation. This adds no
 empty-field search, alternate editor or new editing state.
+
+### Amendment 11.105 — Asqueel relation-tree enrichment in the adapter — 2026-11-01
+
+The owner rejects adding the explorer enrichment to the Asqueel resolver and directs “no. er ora fallo nel nostro adapter”, in response to the explicit question whether the resolver itself should return groups, virtual columns and explorer metadata. For this bounded relation-tree increment, `gramlot-py-server` may enrich the Asqueel relation resolver's output using the Asqueel model to supply those explorer features. This is a temporary exception to §13's ownership of a missing explorer capability; it supersedes that ownership rule only for this adapter enrichment. Core remains host/database independent. This decision does not authorize editing Asqueel, changing unrelated dependency boundaries, bypassing application authorization, publication or release.

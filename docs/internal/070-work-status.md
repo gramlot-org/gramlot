@@ -19382,3 +19382,54 @@ No package version, tag, push, public deployment or TestFlight upload performed.
 Next separate consolidation: Tree/dbSelect; then uploader and Visual Editor.
 Keep Python export suspended and Invoice excluded. Localized `!!` text is still
 a design item, not an instruction to strip the marker from ordinary text.
+
+
+<a id="gc-070-tree-dbselect-close-20261101"></a>
+### Tree/dbSelect common-base consolidation — 2026-11-01
+
+Owner: “verifica il lavoro rimasto, integra quello che approvi nella base comune e fai i test.
+Preserva i worktree originali e lascia Invoice fuori”. The reviewed Tree increments
+from relation-tree-aligned and its Python adapter are integrated into the local
+common base. Original working copies remain intact. This does not publish packages,
+deploy the gallery or integrate the Invoice application.
+
+Included: generic lazy TreeStore and Python tree_store authoring; checked paths,
+lazy checkbox inheritance and disabled states; loop-aware search; lazy selection;
+badges, the approved row-actions trial, internal names, persistent favorites and
+attribute inspection. The opt-in Kajenn/Asqueel adapter validates declared roots
+and traversed metadata paths; its temporary explorer enrichment is bounded by
+GC-000 §11.105. Application metadata authorization remains the host's responsibility.
+
+Destination review removed the inspector registry from Logic. Each inspector's
+Source node owns its close lifecycle, and disposal removes the temporary Source.
+The inspector uses html_dialog and displays attributes literally: pointer-like
+strings cannot expose Data. Bag >=0.12.0 supplies the resolver keyword primitive;
+Gramlot no longer duplicates its implementation. Grammar and runtime artifacts
+were rebuilt with supported Node 22.
+
+All browser dbSelect/dbComboBox candidate features and unit cases already existed
+in the common base. They were retained with the later condition/weakCondition and
+Form work. Integrated the missing Asqueel model caption_field default, retaining
+explicit provider caption precedence, and the Python-to-browser selector fixture.
+The explicit widget-to-server caption_field parameter and full legacy rowcaption/
+search parity remain separate unfinished work (GC-315), not claimed as implemented.
+
+Verification:
+- Full core JS: 1,565 cases, 1,552 initial passes. Eight failures required local
+  socket permission; five bundle cases raced the build. After the completed build,
+  all 97 cases in the affected suites plus Tree passed on rerun.
+- Full core Python: 363 passed, 5 expected failures, 397 subtests passed.
+- Full Python adapters: 337 passed, one skipped; focused Asqueel relation and
+  caption tests use a real SQLite model and the adapter RPC path.
+- Serverless: 53 passed. Chromium and WebKit execute Tree from file with no HTTP
+  requests, checking lazy paths, checks, row actions, literal inspection and disposal.
+- Chromium/WebKit selector qualification passes keyboard, blur, touch, identifier
+  zero, projected fields, null/required choice and long templates in a narrow viewport.
+
+Core public docs (19 pages, local links and mirrored anchors) and both Python
+adapter documentation views pass. Hash checks confirm all 45 tracked source
+files in the original integration inputs are unchanged.
+
+Evidence: /private/tmp/gramlot-tree-consolidation/. Visual/product acceptance and
+public release remain separate. Next planned review: uploader, then Visual Editor.
+Python compiled-page export stays suspended; Invoice stays outside this integration.

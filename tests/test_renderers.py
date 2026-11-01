@@ -187,6 +187,10 @@ class ScriptAttributeTests(unittest.TestCase):
                                                     r"the browser outside Gramlot; write connect_on\w+ for an event, or rename the attribute$"):
                 rendered(authoring)
 
+    def test_on_checked_is_rejected_on_an_ordinary_element(self):
+        with self.assertRaisesRegex(ValueError, 'onChecked is only supported'):
+            rendered(lambda root, data: root.div(onChecked='x()'))
+
     def test_an_attribute_named_on_and_connect_on_are_not_native_handlers(self):
         def authoring(root, data):
             root.input(on="yes", connect_onclick="void 0")

@@ -13,3 +13,5 @@ export {codeMirrorWithOptions} from '../components/editor-options.js';
 
 export {fileSystemTree, FileSystemLogic, FileSystemController, DirectoryResolver} from "../filesystem.js";
 export {IdeLogic} from "../ide-runtime.js";
+
+export {TreeStore, TreeStoreResolver, TreeStoreLogic} from '../tree-store.js';

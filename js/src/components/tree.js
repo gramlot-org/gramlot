@@ -4,12 +4,51 @@ import {defineComponent, defineCollection} from './registry.js';
 import {Container} from './container.js';
 import {SVG_NS} from '../renderer/attributes.js';
 
+export const RowActions = defineComponent({
+    name: 'rowActions', tag: 'gramlot-row-actions', base: Container,
+    subTags: 'button,dropDownButton', sourceContext: true, parameters: {
+        position: {dtype: 'T', default: 'end'},
+        actionState: {dtype: 'T', nullable: true, default: null},
+        state: {dtype: 'X', nullable: true, default: null, binding: 'read'}
+    },
+    implementation: Base => class extends Base {
+        #rowContext = null;
+        #context;
+        connectedCallback() { this.slot = 'row-actions'; this.hidden = true; }
+        setSourceContext(context) { this.#context = context; }
+        setRowContext(item, path) { this.#rowContext = {item, path}; this.#refresh(); }
+        getRowContext() { return this.#rowContext; }
+        clearRowContext() { this.#rowContext = null; this.hidden = true; }
+        projectAttributes(attrs, adapt) {
+            const rest = super.projectAttributes(attrs, adapt);
+            if (!['start', 'end'].includes(this.parameters.position)) throw new TypeError('rowActions position must be start or end');
+            this.#refresh();
+            return rest;
+        }
+        #refresh() {
+            if (!this.#rowContext || !this.parameters.actionState) return;
+            for (const action of this.children) {
+                const code = action.getAttribute('rowAction');
+                if (code === null) continue;
+                const presentation = this.#context.callLogic(this.parameters.actionState,
+                    {...this.#rowContext, action: code, state: this.parameters.state});
+                if (!presentation || typeof presentation.hidden !== 'boolean' ||
+                    typeof presentation.icon !== 'string' || typeof presentation.title !== 'string') {
+                    throw new TypeError('rowActions actionState must return hidden, icon and title');
+                }
+                action.setActionPresentation(presentation);
+            }
+        }
+    }
+});
+
 export const Tree = defineComponent({
-    name: 'tree', tag: 'gramlot-tree', base: Container, sourceContext: true, bagStore: true, dragSource: true,
+    name: 'tree', tag: 'gramlot-tree', base: Container, subTags: 'rowActions[:1]', sourceContext: true, bagStore: true, dragSource: true,
     parameters: {
         storepath: {dtype: 'T'},
         draggable: {dtype: 'B', default: false, binding: 'read'},
         labelAttribute: {dtype: 'T', nullable: true, default: null, binding: 'read'},
+        internalNames: {dtype: 'B', default: false, binding: 'read'},
         hideValues: {dtype: 'B', default: false, binding: 'read'},
         labelCb: {dtype: 'T', nullable: true, default: null},
         getLabel: {dtype: 'T', nullable: true, default: null},
@@ -17,8 +56,14 @@ export const Tree = defineComponent({
         getIconClass: {dtype: 'T', nullable: true, default: null},
         selectedLabelClass: {dtype: 'T', default: '', binding: 'read'},
         searchText: {dtype: 'T', default: '', binding: 'read'},
+        favorites: {dtype: 'X', nullable: true, default: null, binding: 'read'},
+        favoritesLabel: {dtype: 'T', default: 'Favorites', binding: 'read'},
         autoCollapse: {dtype: 'B', default: false, binding: 'read'},
-        selectedPath: {dtype: 'T', nullable: true, default: null, binding: 'twoWay'}
+        selectedPath: {dtype: 'T', nullable: true, default: null, binding: 'twoWay'},
+        onChecked: {dtype: ['B', 'T'], nullable: true, default: null},
+        checkedPaths: {dtype: 'T', nullable: true, default: null, binding: 'twoWay'},
+        checkedPaths_joiner: {dtype: 'T', default: ','},
+        checkChildren: {dtype: 'B', default: true, binding: 'read'}
     },
     implementation: Base => class extends Base {
         #store;
@@ -26,11 +71,19 @@ export const Tree = defineComponent({
         #context;
         #expanded = new Set();
         #rows = new Map();
+        #favoriteRows = new Map();
+        #favoritesOpen = false;
         #dragRows = new WeakMap();
         #presentations = new Map();
         #requestedPath;
+        #selectionVersion = 0;
         #selectedPath = null;
         #scheduled = false;
+        #checkedPaths;
+        #checksEnabled = false;
+        #pathsEnabled = false;
+        #checkedBags = new WeakMap();
+        #checkedNodes = new WeakSet();
         #loading = new Set();
         #errors = new Map();
         #searchInput = '';
@@ -53,6 +106,7 @@ export const Tree = defineComponent({
             this.control.setAttribute('part', 'tree');
             const style = this.ownerDocument.createElement('style');
             style.textContent = `
+                :host{position:relative}
                 .control-box{overflow:auto;padding:4px;min-height:32px}
                 ul{list-style:none;margin:0;padding:0} ul ul{padding-inline-start:20px}
                 .row{display:flex;align-items:center;min-height:var(--gramlot-tree-row-height,28px);gap:2px;border-radius:3px;cursor:default}
@@ -68,6 +122,10 @@ export const Tree = defineComponent({
                 .expander svg{display:block;width:14px;height:14px;pointer-events:none}
                 [aria-expanded=true]>.row>.expander svg{transform:rotate(90deg)}
                 .spacer{width:max(20px,var(--gramlot-touch-target,0px));flex:none}.caption{min-width:0;overflow-wrap:anywhere}
+                .badge{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:18px;
+                    height:16px;padding:0 3px;border-radius:3px;font-size:10px;line-height:1;
+                    background:var(--gramlot-tree-badge-background,#e7eaf0);color:var(--gramlot-tree-badge-color,#394452)}
+                .badge[data-colored]{color:var(--gramlot-tree-colored-badge-color,white)}
                 .icon{width:16px;height:16px;flex:none;background:currentColor;opacity:.7;mask:center/contain no-repeat;
                     mask-image:url("data:image/svg+xml,%3Csvg xmlns='${SVG_NS}' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='1.7' d='M5 3h9l5 5v13H5zM14 3v6h5M8 13h8M8 17h8'/%3E%3C/svg%3E")}
                 .branch-icon{mask-image:url("data:image/svg+xml,%3Csvg xmlns='${SVG_NS}' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='1.7' d='M3 7V4h7l3 3h8v13H3z'/%3E%3C/svg%3E")}
@@ -77,6 +135,13 @@ export const Tree = defineComponent({
                 .search-status{padding:4px;color:var(--gramlot-text-secondary,#555);font-size:.9em}
                 [hidden]{display:none}`;
             this.shadowRoot.append(style);
+            const actions = this.ownerDocument.createElement('slot');
+            actions.name = 'row-actions';
+            this.shadowRoot.append(actions);
+            this.addEventListener('pointerleave', () => {
+                const bar = this.#rowActions();
+                if (bar && !bar.contains(this.ownerDocument.activeElement)) bar.clearRowContext();
+            });
         }
         setSourceContext(context) { this.#context = context; }
         /** Read only the rendered row and its BagNode; never request a resolver value. */
@@ -102,10 +167,16 @@ export const Tree = defineComponent({
                 this.#expanded.clear();
                 this.#errors.clear();
                 this.#requestedPath = undefined;
+                this.#selectionVersion++;
+                this.#checkedPaths = undefined;
+                this.#checkedBags = new WeakMap();
+                this.#checkedNodes = new WeakSet();
             }
             this.#schedule();
         }
         projectAttributes(attrs, adapt) {
+            this.#pathsEnabled = Object.hasOwn(attrs, 'checkedPaths');
+            this.#checksEnabled = this.#pathsEnabled || Boolean(attrs.onChecked);
             const rest = super.projectAttributes(attrs, adapt);
             const text = this.parameters.searchText.trim();
             if (text !== this.#searchInput) {
@@ -140,6 +211,7 @@ export const Tree = defineComponent({
                 const next = new Set(ancestors).add(bag);
                 for (const node of bag.getNodes()) {
                     if (!current()) return;
+                    if (node.attr.loop === true) continue;
                     if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node)) {
                         this.#searchAttempted.add(node);
                         await this.#resolve(node, true);
@@ -166,6 +238,7 @@ export const Tree = defineComponent({
                 fragment.append(value.slice(cursor)); text.replaceWith(fragment);
             }
         }
+        retrySelection() { this.#requestedPath = undefined; this.#schedule(); }
         #schedule() {
             if (this.#scheduled) return;
             this.#scheduled = true;
@@ -176,6 +249,14 @@ export const Tree = defineComponent({
         }
         #render() {
             const focused = this.shadowRoot.activeElement?.closest('[role=treeitem]')?.dataset.path;
+            const focusedFavorite = this.shadowRoot.activeElement?.dataset.favoritePath;
+            const focusedFavoritesGroup = this.shadowRoot.activeElement?.dataset.favoritesGroup === 'true';
+            const loaded = [];
+            let checksChanged = false;
+            if (this.#checksEnabled && this.parameters.checkChildren &&
+                !(this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths)) {
+                checksChanged = this.#syncChecked(this.#store, new Set(), loaded);
+            }
             const items = new Map(), seen = new Set();
             const visit = (bag, prefix, ancestors) => {
                 if (seen.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
@@ -190,20 +271,63 @@ export const Tree = defineComponent({
             };
             visit(this.#store, '', []);
             if (this.#searchText && this.#searchTimer === null && !this.#searching && [...items.values()].some(({node}) =>
-                node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node))) {
+                node.attr.loop !== true && node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node))) {
                 void this.#searchBranches();
+            }
+            const actionBar = this.#rowActions();
+            const actionContext = actionBar ? actionBar.getRowContext() : null;
+            if (actionContext) {
+                const favorite = actionContext.item.getAttr('favoriteEntry') === true;
+                const valid = favorite ? this.parameters.favorites instanceof Bag && this.parameters.favorites.getNodes().includes(actionContext.item)
+                    : items.get(actionContext.path)?.node === actionContext.item;
+                if (!valid) actionBar.clearRowContext();
+            }
+            if (this.#pathsEnabled && this.parameters.checkedPaths !== this.#checkedPaths) {
+                const initial = this.#checkedPaths === undefined;
+                this.#checkedPaths = this.parameters.checkedPaths;
+                for (const {node} of items.values()) {
+                    if (!initial || this.#checkedPaths !== null) node.setAttr({checked: false});
+                }
+                for (const path of (this.#checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {
+                    const item = items.get(path);
+                    if (item) this.#check(item.node, true, false);
+                }
+            } else if (this.#pathsEnabled && loaded.length) {
+                const paths = (this.parameters.checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean);
+                for (const path of paths) {
+                    const item = items.get(path);
+                    if (!item || item.node.attr.checked === true || item.node.attr.checked === 'disabled:on' ||
+                        item.node.attr.checked === 'disabled:off') continue;
+                    let bag = item.node.parentBag;
+                    while (bag && !loaded.includes(bag)) bag = bag.parentNode?.parentBag;
+                    if (bag) this.#check(item.node, true, false);
+                }
+                if (checksChanged || paths.length) this.#publishChecked(true);
+            } else if (checksChanged) {
+                this.#publishChecked(true);
             }
             const identities = new Set([...items.values()].map(item => item.node));
             for (const node of this.#expanded) if (!identities.has(node)) this.#expanded.delete(node);
             for (const node of this.#errors.keys()) if (!identities.has(node)) this.#errors.delete(node);
             const requested = this.parameters.selectedPath;
+            let reveal = null;
             if (requested !== this.#requestedPath) {
                 this.#requestedPath = requested;
                 this.#selectedPath = requested;
-                for (const node of items.get(requested)?.ancestors ?? []) this.#expand(node);
+                const version = ++this.#selectionVersion;
+                const ancestors = items.get(requested)?.ancestors ?? [];
+                if (requested && !items.has(requested)) {
+                    reveal = {requested, version, store: this.#store};
+                }
+                for (let index = 0; index < ancestors.length; index++) {
+                    const node = ancestors[index];
+                    if (this.#expanded.has(node)) continue;
+                    this.#expand(node);
+                }
             }
             const selected = this.#selectedPath;
             this.#rows.clear();
+            this.#favoriteRows.clear();
             this.#dragRows = new WeakMap();
             this.#presentations.clear();
             const branchSync = new Map();
@@ -229,6 +353,8 @@ export const Tree = defineComponent({
                     entry.dataset.path = path;
                     entry.tabIndex = -1;
                     const row = this.ownerDocument.createElement('div'); row.className = 'row';
+                    row.addEventListener('pointerenter', () => this.#showRowActions(row, node, path));
+                    entry.addEventListener('focus', () => this.#showRowActions(row, node, path));
                     row.draggable = this.parameters.draggable;
                     row.setAttribute('part', `row ${branch ? 'branch-row' : 'leaf-row'}${selected === path ? ' selected-row' : ''}`);
                     if (this.#errors.has(node)) row.title = String(this.#errors.get(node));
@@ -246,10 +372,12 @@ export const Tree = defineComponent({
                         chevronPath.setAttribute('stroke-linecap', 'round'); chevronPath.setAttribute('stroke-linejoin', 'round');
                         chevron.append(chevronPath); expander.append(chevron);
                         expander.addEventListener('click', event => {
-                            event.stopPropagation(); toggle(); entry.focus();
+                            event.stopPropagation(); entry.focus(); toggle();
                         });
                     } else expander.className = 'spacer';
                     const caption = this.ownerDocument.createElement('span'); caption.className = 'caption';
+                    const badge = this.ownerDocument.createElement('span'); badge.className = 'badge';
+                    badge.setAttribute('part', 'badge');
                     this.#dragRows.set(row, {item: node, path, caption});
                     caption.setAttribute('part', 'caption');
                     const icon = this.ownerDocument.createElement('span');
@@ -257,7 +385,22 @@ export const Tree = defineComponent({
                     icon.setAttribute('aria-hidden', 'true');
                     icon.setAttribute('part', `icon ${branch ? 'branch-icon' : 'leaf-icon'}`);
 
-                    row.append(expander, icon, caption); entry.append(row);
+                    let check;
+                    if (this.#checksEnabled) {
+                        check = this.ownerDocument.createElement('input');
+                        check.type = 'checkbox'; check.className = 'checkbox'; check.setAttribute('part', 'checkbox');
+                        check.tabIndex = -1;
+                        check.addEventListener('click', event => {
+                            event.stopPropagation();
+                            if (typeof this.parameters.onChecked === 'string') {
+                                const result = this.#context.callLogic(this.parameters.onChecked, {item: node, path});
+                                if (result instanceof Promise) throw new TypeError('tree onChecked must be synchronous');
+                                if (result === false) { this.#schedule(); return; }
+                            }
+                            this.#check(node, check.checked, true);
+                        });
+                    }
+                    row.append(expander, check || icon, badge, caption); entry.append(row);
                     const group = branch ? (children ? build(children, path, entry) : this.ownerDocument.createElement('ul')) : null;
                     if (group) { group.className = 'group'; group.setAttribute('role', 'group'); group.setAttribute('part', 'group'); }
                     if (group) entry.append(group);
@@ -289,12 +432,24 @@ export const Tree = defineComponent({
                     }
                     const present = () => {
                         const opened = this.#opened(node), selected = this.#selectedPath === path;
+                        const value = node.attr.badge;
+                        if (value != null && typeof value !== 'string' && typeof value !== 'number') {
+                            throw new TypeError('tree badge must be text or a number');
+                        }
+                        const color = node.attr.badge_color;
+                        if (color != null && typeof color !== 'string') throw new TypeError('tree badge_color must be text');
+                        badge.textContent = value == null ? '' : String(value);
+                        badge.hidden = value == null || value === '';
+                        badge.style.backgroundColor = color ?? '';
+                        badge.toggleAttribute('data-colored', color != null && color !== '');
                         const keywords = {item: node, path, opened, selected};
                         const attribute = this.parameters.labelAttribute;
-                        const label = this.parameters.getLabel !== null ? this.#call('getLabel', keywords)
+                        const label = this.parameters.internalNames && node.getAttr('fieldpath') ? node.label
+                            : this.parameters.getLabel !== null ? this.#call('getLabel', keywords)
                             : attribute !== null ? (Object.hasOwn(node.attr, attribute) ? node.attr[attribute] : node.label)
                             : this.parameters.labelCb !== null ? this.#call('labelCb', keywords) : node.label;
-                        this.#setCaption(caption, label, this.parameters.getLabel !== null || (attribute === null && this.parameters.labelCb !== null));
+                        this.#setCaption(caption, label, !(this.parameters.internalNames && node.getAttr('fieldpath')) &&
+                            (this.parameters.getLabel !== null || (attribute === null && this.parameters.labelCb !== null)));
                         if (this.#searchText) this.#highlight(caption);
                         const labelClass = this.parameters.getLabelClass !== null ? this.#call('getLabelClass', keywords)
                             : node.attr[opened ? 'labelClassOpened' : 'labelClassClosed'] || node.attr.labelClass || '';
@@ -306,12 +461,20 @@ export const Tree = defineComponent({
                             ...(selected ? ['selected'] : []), ...(branch ? [opened ? 'opened' : 'closed'] : []),
                             ...(this.#loading.has(node) ? ['loading'] : []), ...(this.#errors.has(node) ? ['error'] : [])].join(' ');
                         entry.setAttribute('part', ['node', branch ? 'branch' : 'leaf', ...nodeClasses].join(' '));
-                        const customIcon = this.parameters.getIconClass !== null;
+                        const customIcon = !check && this.parameters.getIconClass !== null;
                         const iconClasses = customIcon ? this.#classes(this.#call('getIconClass', keywords))
                             : [branch ? 'branch-icon' : 'leaf-icon', ...(branch ? [opened ? 'opened-icon' : 'closed-icon'] : [])];
                         icon.className = ['icon', ...iconClasses].join(' ');
                         icon.setAttribute('part', ['icon', ...iconClasses].join(' '));
                         icon.hidden = customIcon && iconClasses.length === 0;
+                        if (check) {
+                            const value = node.attr.checked;
+                            check.checked = value === true || value === 'disabled:on';
+                            check.indeterminate = value === -1;
+                            entry.setAttribute('aria-checked', value === -1 ? 'mixed' : String(check.checked));
+                            check.disabled = value === 'disabled:on' || value === 'disabled:off';
+                            check.setAttribute('aria-label', caption.textContent);
+                        }
                         if (branch) expander.setAttribute('aria-label', `${opened ? 'Collapse' : 'Expand'} ${caption.textContent}`);
                     };
                     this.#presentations.set(path, present);
@@ -330,8 +493,7 @@ export const Tree = defineComponent({
                         if (expanded.has(node)) {
                             expanded.delete(node);
                             if (this.#searchText) this.#searchClosed.add(node);
-                        }
-                        else {
+                        } else {
                             if (this.#searchText) { this.#searchClosed.delete(node); this.#searchOpen.add(node); } else this.#expand(node);
                             if (node.resolver !== null) this.#resolve(node);
                         }
@@ -352,7 +514,8 @@ export const Tree = defineComponent({
                             if (!this.#opened(node)) toggle(); else target = group.firstElementChild;
                         } else if (event.key === 'ArrowLeft') {
                             if (branch && this.#opened(node)) toggle(); else target = parent;
-                        } else if (event.key === 'Enter' || event.key === ' ') this.#select(path);
+                        } else if (event.key === ' ' && check) check.click();
+                        else if (event.key === 'Enter' || event.key === ' ') this.#select(path);
                         else return;
                         event.preventDefault(); event.stopPropagation();
                         if (target) { this.#tabStop(target); target.focus(); }
@@ -362,13 +525,19 @@ export const Tree = defineComponent({
                 }
                 return list;
             };
-            this.control.replaceChildren(build(this.#store, '', null));
+            const root = build(this.#store, '', null);
+            if (this.parameters.favorites !== null) {
+                if (!(this.parameters.favorites instanceof Bag)) throw new TypeError('tree favorites must be a Bag');
+                if (this.parameters.favorites.length) root.prepend(this.#buildFavorites(this.parameters.favorites, selected));
+            }
+            this.control.replaceChildren(root);
             this.control.setAttribute('aria-busy', String(this.#searching));
             if (this.#searchText) {
                 const visible = new Set(), matches = [];
                 this.#searchOpen.clear();
                 for (const [path, row] of this.#rows) {
                     const caption = row.firstElementChild.querySelector('.caption'), item = items.get(path);
+                    if (item.ancestors.some(ancestor => ancestor.attr.loop === true)) continue;
                     const match = caption.textContent.toLowerCase().includes(this.#searchText);
                     if (match) matches.push(caption);
                     if (match || this.#errors.has(item.node) || this.#loading.has(item.node)) {
@@ -383,11 +552,232 @@ export const Tree = defineComponent({
                 this.control.append(status);
             }
             this.#tabStop(focused ?? selected);
-            if (focused) this.#rows.get(focused)?.focus();
+            if (focusedFavorite) this.#favoriteRows.get(focusedFavorite)?.focus();
+            else if (focusedFavoritesGroup) root.querySelector('[data-favorites-group]')?.focus();
+            else if (focused) this.#rows.get(focused)?.focus();
+            if (reveal) queueMicrotask(() => this.#loadSelection(reveal));
+        }
+        #buildFavorites(favorites, selected) {
+            const document = this.ownerDocument;
+            const group = document.createElement('li');
+            group.className = 'node branch'; group.setAttribute('role', 'treeitem');
+            group.dataset.favoritesGroup = 'true'; group.tabIndex = -1;
+            const row = document.createElement('div'); row.className = 'row';
+            const button = document.createElement('button'); button.type = 'button'; button.className = 'expander'; button.tabIndex = -1;
+            const heart = document.createElement('span'); heart.textContent = '♡'; heart.setAttribute('aria-hidden', 'true');
+            const title = document.createElement('span'); title.className = 'caption'; title.textContent = this.parameters.favoritesLabel;
+            const children = document.createElement('ul'); children.className = 'group'; children.setAttribute('role', 'group');
+            const sync = () => {
+                group.setAttribute('aria-expanded', String(this.#favoritesOpen));
+                button.textContent = this.#favoritesOpen ? '▾' : '▸';
+                button.setAttribute('aria-label', `${this.#favoritesOpen ? 'Collapse' : 'Expand'} ${this.parameters.favoritesLabel}`);
+                children.hidden = !this.#favoritesOpen;
+            };
+            const toggle = () => { this.#favoritesOpen = !this.#favoritesOpen; sync(); };
+            button.addEventListener('click', event => { event.stopPropagation(); toggle(); group.focus(); });
+            row.addEventListener('click', toggle);
+            group.addEventListener('focus', () => this.#rowActions()?.clearRowContext());
+            group.addEventListener('keydown', event => {
+                if (event.target !== group) return;
+                if (event.key === 'ArrowRight') { if (!this.#favoritesOpen) toggle(); else children.firstElementChild?.focus(); }
+                else if (event.key === 'ArrowLeft') { if (this.#favoritesOpen) toggle(); }
+                else if (event.key === 'Enter' || event.key === ' ') toggle();
+                else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                    const visible = this.#visible(), index = visible.indexOf(group);
+                    visible[index + (event.key === 'ArrowDown' ? 1 : -1)]?.focus();
+                } else return;
+                event.preventDefault(); event.stopPropagation();
+            });
+            row.append(button, heart, title); group.append(row, children);
+            for (const node of favorites.getNodes()) {
+                const path = node.getAttr('originalPath');
+                const entry = document.createElement('li'); entry.className = 'node leaf'; entry.setAttribute('role', 'treeitem');
+                entry.dataset.favoritePath = path; entry.tabIndex = -1; entry.setAttribute('aria-selected', String(selected === path));
+                const favoriteRow = document.createElement('div'); favoriteRow.className = 'row';
+                const spacer = document.createElement('span'); spacer.className = 'spacer';
+                const icon = document.createElement('span'); icon.className = 'icon'; icon.setAttribute('aria-hidden', 'true');
+                const badge = document.createElement('span'); badge.className = 'badge'; badge.setAttribute('part', 'badge');
+                const badgeValue = node.getAttr('badge'); badge.textContent = badgeValue == null ? '' : String(badgeValue);
+                badge.hidden = badgeValue == null || badgeValue === '';
+                const color = node.getAttr('badge_color'); if (color) { badge.style.backgroundColor = color; badge.setAttribute('data-colored', ''); }
+                const caption = document.createElement('span'); caption.className = 'caption';
+                caption.textContent = node.getAttr(this.parameters.internalNames ? 'fieldpath' : 'fullcaption');
+                favoriteRow.title = node.getAttr('fieldpath');
+                favoriteRow.draggable = this.parameters.draggable;
+                this.#dragRows.set(favoriteRow, {item: node, path, caption});
+                favoriteRow.addEventListener('pointerenter', () => this.#showRowActions(favoriteRow, node, path));
+                entry.addEventListener('focus', () => this.#showRowActions(favoriteRow, node, path));
+                favoriteRow.addEventListener('click', () => this.#selectFavorite(path));
+                entry.addEventListener('keydown', event => {
+                    if (event.target !== entry) return;
+                    if (event.key === 'Enter' || event.key === ' ') this.#selectFavorite(path);
+                    else if (event.key === 'ArrowLeft') group.focus();
+                    else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        const visible = this.#visible(), index = visible.indexOf(entry);
+                        visible[index + (event.key === 'ArrowDown' ? 1 : -1)]?.focus();
+                    } else return;
+                    event.preventDefault(); event.stopPropagation();
+                });
+                favoriteRow.append(spacer, icon, badge, caption); entry.append(favoriteRow); children.append(entry);
+                this.#favoriteRows.set(path, entry);
+            }
+            sync();
+            return group;
+        }
+        #selectFavorite(path) {
+            if (this.parameters.selectedPath === path) this.retrySelection();
+            else this.#context.writeParameter('selectedPath', path);
+        }
+        async #loadSelection({requested, version, store}) {
+            const current = () => this.isConnected && this.#selectionVersion === version &&
+                this.#store === store && this.parameters.selectedPath === requested && this.#selectedPath === requested;
+            const parts = requested.split('.');
+            let bag = store;
+            for (const part of parts.slice(0, -1)) {
+                if (!current()) return;
+                const node = bag.getNode(part);
+                if (!node) return;
+                if (node.resolver === null && !(node.staticValue instanceof Bag)) return;
+                if (!current() || bag.getNode(part) !== node) return;
+                this.#expand(node);
+                this.#schedule();
+                if (node.resolver !== null && !(node.staticValue instanceof Bag)) await this.#resolve(node);
+                if (!current() || bag.getNode(part) !== node || !(node.staticValue instanceof Bag)) return;
+                bag = node.staticValue;
+            }
+            if (current() && bag.getNode(parts.at(-1))) this.#schedule();
+        }
+        #check(node, value, publish) {
+            if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') return;
+            const children = this.#resolutions.get(node) ?? node.getValue();
+            if (children instanceof Promise && !this.#resolutions.has(node)) {
+                this.#errors.delete(node);
+                const pending = children.catch(error => {
+                    this.#errors.set(node, error);
+                    this.#expanded.delete(node);
+                }).finally(() => {
+                    if (this.#resolutions.get(node) === pending) this.#resolutions.delete(node);
+                    this.#schedule();
+                });
+                this.#resolutions.set(node, pending);
+            }
+            if (this.parameters.checkChildren && children instanceof Bag) {
+                if (node.resolver !== null) this.#checkedBags.set(node, children);
+                this.#applyChecked(children, value);
+            }
+            node.setAttr({checked: this.parameters.checkChildren && children instanceof Bag && children.length
+                ? this.#checkStatus(children) : value});
+            if (this.parameters.checkChildren) {
+                for (let parent = node.parentBag.parentNode; parent && parent !== this.#store.parentNode; parent = parent.parentBag.parentNode) {
+                    parent.setAttr({checked: this.#checkStatus(parent.staticValue)});
+                }
+            }
+            if (publish) this.#publishChecked();
+        }
+        #applyChecked(bag, value, onlyNew = false) {
+            for (const child of bag.getNodes()) {
+                if (onlyNew && this.#checkedNodes.has(child)) continue;
+                this.#checkedNodes.add(child);
+                if (child.attr.checked === 'disabled:on' || child.attr.checked === 'disabled:off') continue;
+                const children = child.staticValue;
+                if (children instanceof Bag && children.length) {
+                    if (child.resolver !== null) this.#checkedBags.set(child, children);
+                    this.#applyChecked(children, value);
+                    child.setAttr({checked: this.#checkStatus(children)});
+                } else child.setAttr({checked: value});
+            }
+        }
+        #syncChecked(bag, ancestors = new Set(), loaded = []) {
+            if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
+            ancestors.add(bag);
+            let changed = false;
+            for (const node of bag.getNodes()) {
+                this.#checkedNodes.add(node);
+                const children = node.staticValue;
+                if (!(children instanceof Bag)) continue;
+                let childChanged = false;
+                if (node.resolver !== null && this.#checkedBags.get(node) !== children) {
+                    this.#checkedBags.set(node, children);
+                    loaded.push(children);
+                    if (typeof node.attr.checked === 'boolean') {
+                        this.#applyChecked(children, node.attr.checked);
+                        childChanged = true;
+                    }
+                } else if (typeof node.attr.checked === 'boolean' && children.getNodes().some(child => !this.#checkedNodes.has(child))) {
+                    this.#applyChecked(children, node.attr.checked, true);
+                    loaded.push(children);
+                    childChanged = true;
+                }
+                childChanged = this.#syncChecked(children, ancestors, loaded) || childChanged;
+                if (childChanged && children.length && node.attr.checked !== 'disabled:on' && node.attr.checked !== 'disabled:off') {
+                    node.setAttr({checked: this.#checkStatus(children)});
+                }
+                changed ||= childChanged;
+            }
+            ancestors.delete(bag);
+            return changed;
+        }
+        #publishChecked(preservePending = false) {
+            const paths = [];
+            const visit = (bag, prefix) => {
+                for (const child of bag.getNodes()) {
+                    const path = prefix ? `${prefix}.${child.label}` : child.label;
+                    const children = child.staticValue;
+                    if (children instanceof Bag && children.length) {
+                        if (!this.parameters.checkChildren && child.attr.checked === true) paths.push(path);
+                        visit(children, path);
+                    } else if (child.attr.checked === true) paths.push(path);
+                }
+            };
+            visit(this.#store, '');
+            if (preservePending && this.#pathsEnabled) {
+                for (const path of (this.parameters.checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {
+                    if (!paths.includes(path) && this.#pendingCheckedPath(path)) paths.push(path);
+                }
+            }
+            this.#checkedPaths = paths.join(this.parameters.checkedPaths_joiner);
+            this.#context.writeParameter('checkedPaths', this.#checkedPaths);
+            this.#schedule();
+        }
+        #pendingCheckedPath(path) {
+            const parts = path.split('.');
+            let bag = this.#store;
+            for (let index = 0; index < parts.length; index++) {
+                const node = bag.getNode(parts[index]);
+                if (!node) return false;
+                if (index === parts.length - 1) return false;
+                if (node.resolver !== null && !(node.staticValue instanceof Bag)) return true;
+                if (!(node.staticValue instanceof Bag)) return false;
+                bag = node.staticValue;
+            }
+            return false;
+        }
+        #checkStatus(bag) {
+            const values = bag.getNodes().map(child => child.attr.checked === 'disabled:on' ? true
+                : child.attr.checked === 'disabled:off' || child.attr.checked == null ? false : child.attr.checked);
+            return values.every(value => value === true) ? true
+                : values.every(value => value === false) ? false : -1;
         }
         #classes(value) {
             if (typeof value !== 'string') throw new TypeError('Tree classes must be a string');
             return value.split(/\s+/).filter(Boolean);
+        }
+        #rowActions() {
+            const bars = this.querySelectorAll(':scope > gramlot-row-actions');
+            if (bars.length > 1) throw new Error('tree accepts one rowActions bar');
+            return bars[0] ?? null;
+        }
+        #showRowActions(row, item, path) {
+            const bar = this.#rowActions();
+            if (!bar || bar.contains(this.ownerDocument.activeElement)) return;
+            const hostBox = this.getBoundingClientRect(), rowBox = row.getBoundingClientRect();
+            bar.setRowContext(item, path);
+            bar.style.position = 'absolute';
+            bar.style.top = `${rowBox.top - hostBox.top}px`;
+            bar.style.left = bar.parameters.position === 'start' ? `${rowBox.left - hostBox.left}px` : 'auto';
+            bar.style.right = bar.parameters.position === 'end' ? `${hostBox.right - rowBox.right}px` : 'auto';
+            bar.style.zIndex = '1';
+            bar.hidden = false;
         }
         #call(name, keywords) {
             const result = this.#context.callLogic(this.parameters[name], keywords);
@@ -450,4 +840,4 @@ export const Tree = defineComponent({
         }
     }
 });
-export default defineCollection({name: 'tree', components: [Tree]});
+export default defineCollection({name: 'tree', components: [Tree, RowActions]});

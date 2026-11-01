@@ -2331,3 +2331,47 @@ existing Bags. registerNavigator/focusField connect field paths to mounted
 presentations without owning values, drafts or validation. A navigator's disposer
 belongs to the presentation lifecycle. No history alias or duplicate change Bag
 is introduced; “Changes” names the PoC's outstanding-change summary accurately.
+Tree checkbox naming — owner, 2026-10-30: legacy-first checkbox work retains legacy `checked`, `onChecked`, `checkChildren`, `eagerCheck`, `checkedPaths`, `checkedPaths_joiner` and node attribute `checked`. Owner explicitly confirms `checkedPaths` uses the existing two-way Gramlot binding, e.g. `^.checked` (GC-197 §105). Names carry no additional approved compatibility aliases.
+
+Tree checkbox rendering uses `checkbox` for the native input and its CSS part, following the existing HTML control and tree CSS-part vocabulary; `aria-checked` uses the standard treeitem state. The private check helpers follow the legacy checked-state terms above.
+
+**Tree store naming — 2026-11-01.** Owner: “ok, procedi con lo store generico e l’albero delle relazioni Asqueel/Kajenn”. `TreeStore` names the generic hierarchy owner, following the existing tree and store vocabulary; `TreeStoreResolver` names its lazy Bag resolver, following `DirectoryResolver`. Python module spelling is `tree_store`, with JavaScript module `tree-store`. These names carry no Asqueel or host dependency.
+
+The Python Source composition `tree_store` and its `TreeStoreLogic` follow the existing `file_system_tree`/`FileSystemLogic` pattern.
+
+The Kajenn/Asqueel integration uses the existing `relation_tree` endpoint and Python composition name, and `AsqueelRelations` for the opt-in page mixin.
+
+**Tree loop confirmation — 2026-11-01.** Owner proposed the node attribute `loop` and confirmed the tree asks before expanding an Asqueel-detected cycle. `loop` is boolean Bag-node metadata. Internal Source-context `ask` reuses the existing dialog vocabulary and Source lifetime; no new proxy.
+
+**Relation-tree adapter enrichment — 2026-11-01.** Owner places group, virtual-field and explorer enrichment in the adapter. Reuse PoC Bag-node names `caption`, `fullcaption`, `fieldpath`, `node_kind`, `column_kind`, `relation_direction`, `root_table_caption`, `dtype`. Domain mapping remains in the adapter; no new generic tree proxy. Constitution amendment 11.96.
+
+**Tree badges — 2026-11-01.** Owner: “Sì, usa badge e badge_color e procedi anche con preferiti e ispettore degli attributi”. Generic Bag-node metadata `badge` and `badge_color` follows tabs; badge is text/number before caption, null/empty hidden, zero visible. Adapter maps Asqueel types/directions.
+
+**Tree row-action trial — 2026-11-01.** Earlier owner approvals “proviamola” / “si per ora si” accept one Source `rowActions(position='start'|'end')` bar with `item`, `path`, `event` row context; owner now asks for favorites and attribute inspection. `rowActions` / `RowActions` / `gramlot-row-actions` follow component conventions; internal `setRowContext` / `getRowContext` are not Data/Source proxies. Trial, not finalized public API.
+
+Generic Logic methods `treeInspect`/`treeInspectClose` follow `treeStoreMount`; `treeInspectors` owns cleanup on the Logic group and `tree_inspect_` identifies temporary Source dialogs like `ask_`, not Data/DOM proxies.
+
+**Relation-tree favorites — 2026-11-01.** Owner: “Nel browser, come nel PoC”. Reuse `gramlot.relationTree.favorites.v1:<table>` and `fieldpath`, `path`, `caption`, `attrs` records. Logic `treeFavoritesMount` / `treeFavoriteToggle` / `treeFavoriteSelect`, `setTreeFavorites`, opaque `favoriteKey`, Data `favorites`, `favoritesEmpty`, `favoriteSelection`, node `favoriteEntry` / `originalPath` follow tree and PoC naming. Data Bag is the live state.
+
+**Per-row action presentation — 2026-11-01.** Owner: “Sì, estendi le azioni di riga”: show the heart on fields and indicate saved state. `rowActions` gets named `actionState` and reactive `state`; buttons use `rowAction`. Callback receives `item`, `path`, `action`, `state`, returns `hidden`, `icon`, `title`. `treeFavoriteActionState` follows `treeFavoriteToggle`; `setActionPresentation` follows projection naming. No row Data proxy or Asqueel rule in tree.
+
+**Lazy selection — 2026-11-01.** Owner: “Sì, procedi con il caricamento automatico dei rami quando seleziono un preferito, mantenendo la conferma in caso di anello.” Existing `selectedPath` loads missing ancestors; private `#loadSelection` follows `#revealSelection` and reuses `loop`, resolver and selection lifetime. No new authoring attribute or Data proxy.
+
+`retrySelection` repeats the current `selectedPath`; favorite invocation clears transient `favoriteSelection` so the same favorite can retry after cancel. No new Source or Data proxy.
+
+**Tree search and loops — 2026-11-01.** Owner: “Fermarsi sull’anello (consigliato)”. Search does not traverse or resolve nodes marked `loop`; explicit branch opening and selected-path traversal retain loop confirmation.
+
+The private `#requestCheck` follows `#check` and mediates the existing loop confirmation before a checkbox action resolves a marked node. A canceled bound `checkedPaths` update restores its previous value.
+
+**Lazy checkbox propagation — 2026-11-01.** Owner: “procedi anche con la propagazione delle checkbox ai discendenti non ancora caricati, mantenendo la conferma sugli anelli”. Existing Bag-node `checked` remains the state. Private `#checkedBags` tracks only processed resolved Bag identity; `#applyChecked`, `#syncChecked`, `#publishChecked` follow check helpers. No alternate checkbox state or new Bag-node attribute.
+
+Owner confirms “Sì, usa il percorso del ramo (consigliato)”: `checkedPaths` carries a checked unresolved branch path until loaded, then checked descendant paths.
+Private `#pendingCheckedPath` preserves a bound path while ancestors are unresolved or await confirmation.
+Private `#sameCheckedPaths` compares path sets during asynchronous confirmation.
+Private `#checkedNodes` tracks processed identities for later inserted descendants without reapplying state to existing nodes.
+
+**Loop prompts and provisional captions — 2026-11-01.** Owner: “togli ask ... e togli !! come filtro provvisorio fino a quando non esaminiamo localizzazione”. Supersedes loop prompts for expansion, selection and checking; `loop` metadata and search stopping there remain. Asqueel adapter `_display_caption` removes only a leading `!!` from displayed captions; model attributes remain intact. Localization design pending.
+
+**Favorites inside tree — 2026-11-01.** Owner requests favorites in the same tree as PoC. `favorites` Bag parameter, `favoritesLabel`, private `#favoritesOpen`, `#favoriteRows`, `#buildFavorites` / `#selectFavorite` follow existing tree vocabulary. Existing `favoriteEntry` / `originalPath` remain; no second tree or duplicated selection Data.
+
+**Owner direction 2026-11-01:** “togli tutto il pattern di localizzazione” and requests the PoC choice between label and `name_long`. The PoC calls this option `Internal names`: it shows the node label for model fields and the `fieldpath` for favorites; normal mode shows captions. Expose the reactive tree parameter `internalNames`, use a Source checkbox bound to `.internalNames`, and remove the leading `!!` plus optional `[language]` marker only from displayed captions, including restored favorites. Preserve raw model metadata. This supersedes the earlier temporary `!!`-only display filter.

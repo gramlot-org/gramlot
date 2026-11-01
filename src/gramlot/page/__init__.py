@@ -8,3 +8,6 @@ __all__ = ["Page", "endpoint", "source", "GramlotBuilder", "code_mirror_with_opt
 from .filesystem import file_system_tree
 from .ide_page import IdePage
 __all__ += ["file_system_tree", "IdePage"]
+
+from .tree_store import tree_store
+__all__ += ['tree_store']

@@ -122,6 +122,9 @@ export class ButtonBinding {
             event.stopPropagation();
             return target.activateCommand(event);
         }
+        const rowActions = this.element.closest('gramlot-row-actions');
+        const rowContext = rowActions ? rowActions.getRowContext() : null;
+        if (rowActions && rowContext === null) return;
         if (!this.element.prepareCommand(event)) return;
         const mechanism = this.mechanism;
         if (!mechanism) return;
@@ -143,7 +146,7 @@ export class ButtonBinding {
                 release();
                 this.#cancelDelay = null;
                 this.#pendingCount = 0;
-                this.#execute(event, count, activation);
+                this.#execute(event, count, activation, rowContext);
             }, delay);
             const release = this.binding.track(() => this.#cancelDelay?.());
             this.#cancelDelay = () => {
@@ -156,7 +159,7 @@ export class ButtonBinding {
             return;
         }
         this.#cancelDelay?.();
-        return this.#execute(event, counter, activation);
+        return this.#execute(event, counter, activation, rowContext);
     }
 
     async #executeRegistered(activation) {
@@ -175,7 +178,7 @@ export class ButtonBinding {
     }
 
     /** Deliver the last event once; arguments are read when the mechanism executes. */
-    #execute(event, counter, activation = null) {
+    #execute(event, counter, activation = null, rowContext = null) {
         if (activation) return this.#executeRegistered(activation);
         if (this.binding.closed || this.element.disabled) return;
         const mechanism = this.mechanism;
@@ -184,12 +187,12 @@ export class ButtonBinding {
         const modifiers = eventToString(event);
         if (mechanism === 'controller') {
             const provider = this.binding.runtime.bindingFor(this.controllers[0])?.providers[0];
-            provider?.invoke({kind: 'click', event, counter});
+            provider?.invoke({kind: 'click', event, counter, rowContext});
         } else if (mechanism === 'action') {
             const read = () => {
                 const [, attrs] = node.rootBuilder.runtimeValues(node);
                 const authored = Object.fromEntries(Object.entries(attrs).filter(([name]) => name !== 'ask'));
-                return {...this.binding.runtime.renderer.references.resolveArguments(authored), event, _counter: counter, modifiers};
+                return {...this.binding.runtime.renderer.references.resolveArguments(authored), ...rowContext, event, _counter: counter, modifiers};
             };
             const execute = result => {
                 if (this.binding.closed || this.element.disabled || result === null) return;

@@ -474,6 +474,7 @@ test('sync: the asynchronous load of a changed ^ param records the parameters: t
     assert.equal(byId('menu').textContent, 'a');
     assert.deepEqual([requests.sync.length, requests.async.length], [1, 0]);
     // The new resolver loads at once, asynchronously, and its consumer receives the value.
+    data.getNode('menu').setAttr({checked: true, __checked: true});
     data.setItem('table', 'b');
     await settle();
     assert.equal(byId('menu').textContent, 'b');

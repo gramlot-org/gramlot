@@ -226,7 +226,10 @@ export class HtmlElement {
         }
         if (this.definition(node).meta.gramlot_component) {
             if (this.definition(node).meta.gramlot_component.bagStore) {
-                element.setStoreBag(node.getRelativeData(node.getAttr('storepath')));
+                const path = node.absDatapath(node.getAttr('storepath'));
+                if (!change || change.path === path || change.path.startsWith(`${path}.`) || path.startsWith(`${change.path}.`)) {
+                    element.setStoreBag(node.getRelativeData(node.getAttr('storepath')));
+                }
             }
             if (this.definition(node).meta.gramlot_component.bagStruct) {
                 const path = node.absDatapath(node.getAttr('structpath'));

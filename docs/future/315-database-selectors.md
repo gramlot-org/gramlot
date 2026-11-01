@@ -1391,3 +1391,22 @@ restrictions, bound parameters, condition reversal, missing/ineligible identity,
 zero/one/two candidates despite a display limit of one, typed zero identity,
 current-value races, async-validation cancellation, removal, unchanged widget
 identity, and combo free text. Gallery uses the Base dataset, not Invoice.
+
+
+### Common-base consolidation — 2026-11-01
+
+The dedicated selector package's completed browser behavior and regression cases
+are already present in the common base, including templates, keyboard/free-text
+handling, empty choice, projected fields and stale request cancellation. Preserve
+the later condition/weakCondition, auxColumns and shared Form editing behavior.
+
+The Asqueel provider now accepts omitted registration `caption` and uses the
+table model's `caption_field`; explicit registration wins. Missing or invalid
+configuration fails rather than falling back to rowcaption. Real Asqueel SQLite
+queries test search, lookup, ordering and formula captions.
+
+The owner's later name decision is `caption_field` throughout the widget/server
+contract (selector chat 01a18169-f8b7-7d43-8618-dea9169e8b9f,
+“teniamo ovunque caption_field”). That explicit widget-to-server parameter is
+not implemented by this consolidation. Full legacy rowcaption construction and
+search parity remain separate; model queryfields was explicitly rejected.

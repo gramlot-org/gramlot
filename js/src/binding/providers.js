@@ -243,7 +243,10 @@ export class Provider {
         kwargs._node = change ? change.node : null;
         kwargs._triggerpars = {kw: change, trigger_reason: reason};
         kwargs._reason = reason;
-        if (trigger.kind === 'click') Object.assign(kwargs, clickArguments(trigger));
+        if (trigger.kind === 'click') {
+            Object.assign(kwargs, clickArguments(trigger));
+            if (trigger.rowContext) Object.assign(kwargs, trigger.rowContext, {event: trigger.event});
+        }
         return kwargs;
     }
 
