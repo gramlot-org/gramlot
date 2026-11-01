@@ -18417,3 +18417,36 @@ The optional chat provider is Python-hosted; Node/Bun have document editing but 
 live chat PageStore. Preview invokes saved Page.main, without target endpoints or
 companion Logic. Undo/redo, Source-to-code rewriting and inspector embedding remain
 separate work. Invoice stays excluded; Python compiled-page export stays suspended.
+
+
+<a id="gc-070-mobile-source-close-20261101"></a>
+## Mobile SQLite source consolidation — 2026-11-01
+
+Owner: “ok allora procedi”, confirming consolidation of the Source-owned SQLite
+correction in gramlot-capacitor and requalification with the current common base.
+The previously isolated 51c5953 is now included in Capacitor 993a040, published by
+an atomic fast-forward to its main and develop source branches. Original working
+copies remain untouched (836 recorded file hashes unchanged). Invoice is excluded.
+There is no gallery deployment, package release, native build or TestFlight upload.
+
+Verified together: core 33dfdd12, Python host e7e887e, gallery b7dd1bb and the
+Capacitor correction. The provider was rebuilt with supported Node 24 and the
+current core device-frame implementation. Public module preparation copies only
+45 allowlisted files, with no private configuration or LAN URL. The prepared
+artifact and test logs are retained at /private/tmp/gramlot-mobile-close-20261101/.
+
+Checks: 75 Capacitor provider/page tests; 92 core device/frame/motion/environment
+tests; 3 module Python tests plus 17 subtests; 1 host staging test; 3 gallery module
+JS tests; 4 gallery Python tests plus 8 subtests. Chromium and WebKit render all
+15 eligible pages, keep the native branch hidden in an ordinary browser and
+verify that attempting SQLite without its native plugin reports an error and
+permits retry. The first smoke used catalogue short names as page headings; its
+locator was corrected to use the actual rendered h1, then both engines passed.
+GCP-005 and GCP-110 record the requalification with matching compact mirrors.
+
+Limits: no new physical-device/persistence acceptance; native HTTPS iframe behavior
+is covered by broker tests, not the HTTP rendering smoke. Server push remains
+unavailable without its backend. Public activation must ship the matching runtime,
+provider, catalogue and pages and remains a separately authorized operation.
+Next separate decision: explicit dbSelect caption_field wiring or full release
+qualification. Python compiled-page export remains suspended; Invoice remains out.
