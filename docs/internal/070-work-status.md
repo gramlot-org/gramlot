@@ -19739,3 +19739,18 @@ eight dataSetter calls; six additional database page modules. These counts ident
 review candidates, not automatically removable code. Audit data is in
 /private/tmp/gramlot-release-20261101/gallery-code-audit.json and
 /private/tmp/gramlot-release-20261101/gallery-database-code-audit.json.
+
+
+### Release candidate replacement and example variants — 2026-11-01
+
+The 0.3.25 publication stopped before package creation: the inspector structure
+fixture's broad core alias also captured the newly deferred Markdown subpath.
+Explicitly mapping that subpath in both affected fixture builds fixes qualification;
+local structure/undo/redo and theme-style checks pass Chromium/WebKit. Core CI tests
+and runtime browser checks passed. The failed 0.3.25 tag is retained, not rewritten.
+Use 0.3.26 for the corrected aligned release; no 0.3.25 package was published.
+
+For the post-release gallery revision, the owner additionally requests dedicated
+blocks/tabs where a feature has many variants or parameters. Keep full demonstration
+coverage and reusable methods on independent datapaths, rather than replacing rich
+examples with a minimal example which no longer teaches those variants.
