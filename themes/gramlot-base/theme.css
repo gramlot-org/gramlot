@@ -331,3 +331,102 @@
     --gramlot-grid-column-min-width: 40px;
     --gramlot-grid-column-width: 10rem;
 }
+
+/* Reusable VisualEditor composition. */
+.visual-search-toolbar { flex:none;min-width:0;padding:4px 7px 6px;box-sizing:border-box; }
+.visual-search-field { display:flex;align-items:center;gap:6px;width:100%;min-width:0;box-sizing:border-box;
+  min-height:var(--gramlot-field-height,28px);padding:0 7px;border:1px solid transparent;
+  border-radius:999px;background:var(--gramlot-field-background,var(--gramlot-surface));color:var(--gramlot-ink); }
+.visual-search-field:focus-within { border-color:var(--gramlot-action);box-shadow:inset 0 0 0 1px var(--gramlot-action); }
+.visual-search-icon { flex:none;display:block;width:15px;height:15px;background:currentColor;opacity:.6;
+  mask:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='10' cy='10' r='6.5' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='m15 15 6 6' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); }
+.visual-search-field input[type=search] { flex:1;width:100%;min-width:0;box-sizing:border-box;min-height:0;
+  margin:0;padding:3px 0;border:0;border-radius:0;outline:0;box-shadow:none;background:transparent;color:inherit;font:inherit; }
+.visual-search-field input[type=search]:focus,
+.visual-search-field input[type=search]:focus-visible { outline:none;box-shadow:none;background:transparent; }
+.visual-search-field input[type=search]::-webkit-search-cancel-button,
+.visual-search-field input[type=search]::-webkit-search-decoration { -webkit-appearance:none; }
+.visual-search-field .visual-search-clear { display:grid;place-items:center;flex:none;width:24px;min-width:24px;height:24px;min-height:24px;
+  padding:0;margin:0;border:0;border-radius:50%;background:transparent;color:inherit;box-shadow:none;cursor:pointer; }
+.visual-search-clear::before { content:'';width:14px;height:14px;background:currentColor;opacity:.6;
+  mask:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill-rule='evenodd' d='M10 1a9 9 0 1 0 0 18a9 9 0 0 0 0-18z M6 7.2L7.2 6L10 8.8L12.8 6L14 7.2L11.2 10L14 12.8L12.8 14L10 11.2L7.2 14L6 12.8L8.8 10z'/%3E%3C/svg%3E"); }
+.visual-search-clear:hover { background:var(--gramlot-selected); }
+.visual-search-clear:focus-visible { outline:2px solid var(--gramlot-action);outline-offset:1px; }
+.visual-search-clear[hidden] { display:none; }
+
+.visual-editor-fields {
+  --gramlot-field-padding:3px 7px;
+  --gramlot-formlet-gap:6px;
+  --gramlot-label-size:12px;
+  --gramlot-label-gap:4px;
+  font-size:12px;
+}
+.visual-editor-destination { margin:8px 10px 2px; font-size:11px; overflow-wrap:anywhere; }
+.visual-editor-widget { margin:0 10px 8px; font-size:14px; }
+.visual-editor-hint { margin:0 0 8px; font-size:11px; color:var(--gramlot-text-secondary); }
+.visual-parameter-field { display:grid;gap:4px;min-width:0; }
+.visual-validation-advanced { margin-top:12px; }
+.visual-validation-advanced summary { cursor:pointer; margin-bottom:8px; font-weight:600; }
+.visual-editor-fields select { min-height:var(--gramlot-field-height,28px);padding:3px 7px;font:inherit; }
+.visual-editor-fields .label-box label { margin:0;font-size:12px;font-weight:500;line-height:1.35; }
+.visual-editor-fields .visual-editor-hint { margin:0;line-height:1.5; }
+.visual-editor-fields .visual-labelbox-heading { align-items:end; }
+.visual-editor-fields .visual-labelbox-heading > gramlot-button { margin-bottom:2px; }
+.visual-editor-fields .label-box label { overflow-wrap:anywhere; }
+
+/* Workbench chrome uses the selected canonical palette and density. */
+.visual-editor-shell { position:relative;min-width:0;isolation:isolate;background:var(--gramlot-background);color:var(--gramlot-ink);
+  font-size:var(--gramlot-field-font-size,13px);line-height:1.4;
+  --gramlot-region-header-background:transparent;--gramlot-region-header-padding:0 8px;
+  --gramlot-region-header-border:transparent;--gramlot-region-title-size:11px;
+  --gramlot-splitter-background:color-mix(in srgb,var(--gramlot-border) 60%,transparent); }
+.visual-editor-layout { width:calc(100% - 42px);margin-left:42px; }
+.visual-editor-rail { position:absolute;inset:0 auto 0 0;width:42px;padding:7px 4px;gap:8px;
+  background:var(--gramlot-background);border-right:1px solid var(--gramlot-splitter-background); }
+.visual-editor-tool { --gramlot-button-padding:5px;--gramlot-button-gap:0px; }
+.visual-tool-icon { width:17px;height:17px;display:block;flex:none;background:currentColor;mask-position:center;mask-repeat:no-repeat;mask-size:contain; }
+.visual-editor-rail .visual-tool-icon { width:19px;height:19px; }
+.visual-editor-rail .visual-editor-tool { --gramlot-button-padding:6px; }
+.visual-editor-rail,.visual-editor-toolbar { --gramlot-action:var(--gramlot-text-secondary);--gramlot-action-hover:var(--gramlot-ink); }
+.visual-editor-toolbar { height:38px;box-sizing:border-box;padding:3px 10px;gap:5px;border-bottom:1px solid var(--gramlot-splitter-background);
+  background:var(--gramlot-background); --gramlot-button-padding:3px 7px; --gramlot-button-gap:4px; }
+.visual-editor-brand { font-size:12px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;margin-right:8px; }
+.visual-toolbar-divider { width:1px;height:16px;background:var(--gramlot-border);margin:0 5px; }
+.visual-editor-filename { font-size:11px;color:var(--gramlot-text-secondary);padding:0 4px;white-space:nowrap; }
+.visual-editor-sidebar,.visual-editor-chat { background:color-mix(in srgb,var(--gramlot-background) 65%,var(--gramlot-surface)); }
+.visual-editor-sidebar .visual-search-field { background:color-mix(in srgb,var(--gramlot-surface) 65%,transparent); }
+.visual-editor-workspace { background:var(--gramlot-surface); }
+.visual-editor-canvas { box-sizing:border-box;min-height:100%;padding:8px;display:flex;flex-direction:column; }
+.visual-editor-canvas > div { flex:1;min-height:180px;box-sizing:border-box;background:var(--gramlot-surface); }
+.visual-editor-canvas > div.gramlot-source-selected { outline:1px dashed color-mix(in srgb,var(--gramlot-action) 35%,transparent)!important;outline-offset:-1px!important; }
+.visual-editor-file-status { margin:0;padding:0 6px;font-size:11px;color:var(--gramlot-text-secondary);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.visual-editor-destination { margin:2px 10px 4px;opacity:.65;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.visual-editor-error { position:absolute;bottom:8px;left:320px;max-width:calc(100% - 340px);margin:0;padding:6px 10px;background:var(--gramlot-error-background);color:var(--gramlot-error);border-radius:4px; }
+.visual-editor-chat select { height:26px;min-height:26px;padding:2px 5px;border-color:transparent;background:transparent;font-size:11px;text-overflow:ellipsis; }
+.visual-editor-chat select { flex-shrink:0; }
+.visual-editor-chat .gramlot-chat-editor { border-color:var(--gramlot-border);background:var(--gramlot-surface);font-size:12px; }
+@media (max-width:900px) { .visual-editor-brand { display:none; }.visual-editor-file-status{max-width:110px;} }
+
+.visual-labelbox-section { display:grid;gap:6px;min-width:0; }
+.visual-labelbox-heading { display:grid;grid-template-columns:minmax(0,1fr) 28px;align-items:center;gap:6px; }
+.visual-labelbox-heading > gramlot-button { --gramlot-button-padding:4px;font-size:15px; }
+.visual-labelbox-title { font-weight:600;color:var(--gramlot-text-secondary); }
+.visual-labelbox-attribute { display:grid;grid-template-columns:150px minmax(0,1fr);align-items:start;gap:8px;
+  padding:7px;border:1px solid var(--gramlot-border);border-radius:5px; }
+.visual-labelbox-attribute[hidden] { display:none; }
+
+/* Selection is a view-only decoration: no border, padding, size or Source writes. */
+.visual-editor-canvas .gramlot-source-selected {
+  outline:2px solid var(--gramlot-action, #456bc4) !important;
+  outline-offset:-2px !important;
+}
+.visual-source-tree::part(selected-row),
+.visual-clipboard-tree::part(selected-row) {
+  color:var(--gramlot-ink);
+  background:var(--gramlot-selected);
+  box-shadow:inset 3px 0 var(--gramlot-action, #456bc4);
+}
+
+.visual-clipboard { padding:8px; gap:4px; border-top:1px solid var(--gramlot-border); }
+.visual-clipboard-title { font-weight:600; }
+.visual-clipboard .visual-editor-hint { font-size:12px; }

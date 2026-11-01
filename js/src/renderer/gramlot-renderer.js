@@ -271,6 +271,21 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this.#validateBlock(block, replacingNode ? replacingNode.nodeTag : null);
         requireInstallable(block);
         this.references?.validate(block, excluded);
+        const nodeIds = new Set();
+        const validateNodeIds = bag => {
+            for (const node of bag.getNodes()) {
+                const nodeId = node.getAttr('nodeId');
+                if (nodeId != null) {
+                    const mounted = this.binding.nodeIds.get(nodeId);
+                    if (nodeIds.has(nodeId) || (mounted && mounted !== node && !excluded.has(mounted))) {
+                        throw new Error(`Duplicate nodeId '${nodeId}'`);
+                    }
+                    nodeIds.add(nodeId);
+                }
+                if (node.value instanceof SourceBag) validateNodeIds(node.value);
+            }
+        };
+        validateNodeIds(block);
         return block;
     }
 
@@ -379,6 +394,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
                     if (!errors.length) throw error;
                     errors.push(error);
                 }
+                this.binding.refreshSourceTrees();
                 if (errors.length) throw errors.length === 1 ? errors[0] : new AggregateError(errors, 'Source cleanup failed');
             }
         } catch (error) {

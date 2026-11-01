@@ -1744,3 +1744,56 @@ Where the browser exposes screen capture, **Capture screen** opens its screen, w
 `attachmentManager` composes the shared upload queue with application endpoints. Supply `storepath` and `contextPath` Bags, a bound `ready` flag, `operation` for upload, and `listMethod`, `readMethod`, `removeMethod` for application endpoints. While `ready` is false, files stay queued in the browser. On save, update the context Bag before setting `ready` true. `selectedPath` can bind an application form to the selected upload row’s metadata.
 
 The list endpoint receives `context` and returns a Bag whose node labels are opaque attachment IDs and whose `caption` attributes are display text. Read and remove receive `context` and `selected`. Read returns a Bag with `kind` (`text`, `image`, or `message`) and a corresponding `text` or `src` value. The remove endpoint returns true after deletion; a false result retains the selection and reports an error. Applications own record access, storage and transaction behavior. Changing context clears the previous displayed selection and ignores late results.
+
+<a id="gc-105-visual-editor"></a>
+## Visual Source editor
+
+`VisualEditor` composes the existing frame, trees, menus, fields and upload widget.
+It edits live Source; it is not a second renderer. Install the component collections
+in the environment as usual, then compose it in Python:
+
+```python
+from gramlot import Page as BasePage, SourceImport, VisualEditor, upload
+
+class Page(BasePage):
+    def main(self, root):
+        VisualEditor(root, datapath="__editor", height="100dvh")
+
+    @upload
+    def import_source(self, metadata):
+        return SourceImport()
+```
+
+The page's Logic module delegates to `VisualEditorLogic` from `@gramlot/gramlot`.
+The gallery's **Tools → Advanced tools → Visual editor** supplies a complete
+Python/JavaScript pair. Ordinary environment collections remain available; the
+heavy external editors are still loaded only when needed.
+
+The catalogue uses installed widget metadata and the destination's child metadata.
+Drop a widget onto Source; only required values are asked before creation. Select
+an existing node to edit its properties. Inputs in the preview remain editable;
+commands and links are intercepted for selection. Source/Data trees share the
+actual Bags. Editor UI state lives under `__editor`, omitted from Data inspection.
+Use distinct editor IDs/datapaths and data roots for independent editors.
+
+New resets the edited Source/Data. Download and Copy Source export only pageRoot
+as TYTX (`.grmlt`), not collections, Logic or editor state. Open uses SourceImport
+and the shared uploader (5 MiB maximum); malformed Source leaves the design intact.
+Only open trusted Source: its page behavior may execute. Clipboard errors are
+reported; there is no alternate clipboard path.
+
+The properties, Source/Data and optional Code regions can detach; closing the
+floating restores their DOM without rebuilding content. Moving a Source branch
+inside another node is a different operation and rebuilds the moved control.
+
+Code editing requires an explicitly configured host document. It starts read-only;
+Save checks revision and syntax, and Preview executes only saved Page.main. It
+neither installs that page's RPC endpoints/companion Logic nor converts Source
+back to Python/JS. Optional chat is application-owned and does not save files
+implicitly. See the adapter guides for the host boundary.
+
+Known limits: scalar metadata editors do not cover every object/callback type;
+undo/redo and sibling reordering are not implemented. WebKit automatic bottom
+region sizing remains a documented layout issue. WebKit cannot read uploaded
+Files in a file-origin Worker in the qualified environment; Chromium file export
+and WebKit HTTP use the shared uploader without an alternate transport.

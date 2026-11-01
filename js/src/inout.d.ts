@@ -38,6 +38,8 @@ export class InOut {
     restore(path: string): Promise<Bag>;
     /** Export the data at `path` as `'json'` or `'xml'`; types become text. */
     download(path: string, filename: string, format: 'json' | 'xml'): void;
+    /** Copy exact text to the browser clipboard. Requires browser permission; failures reject. */
+    copyText(text: string): Promise<void>;
     /** Hand `text` to the browser as a file named `filename`. */
     saveText(text: string, filename: string, type: string): void;
     /** Follow `url` through a link, as a download when `filename` is given. */

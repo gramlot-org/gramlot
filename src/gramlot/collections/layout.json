@@ -1412,6 +1412,14 @@
           "dataScope": false,
           "command": false,
           "childParameters": {
+            "detachable": {
+              "dtype": "B",
+              "default": false
+            },
+            "title": {
+              "dtype": "T",
+              "default": ""
+            },
             "region": {
               "required": true,
               "enum": [
@@ -2005,6 +2013,14 @@
           "dataScope": false,
           "command": false,
           "childParameters": {
+            "detachable": {
+              "dtype": "B",
+              "default": false
+            },
+            "title": {
+              "dtype": "T",
+              "default": ""
+            },
             "region": {
               "required": true,
               "enum": [
@@ -2126,6 +2142,15 @@
           "dataScope": false,
           "command": false,
           "childParameters": {
+            "pageName": {
+              "dtype": "T",
+              "nullable": true,
+              "unique": true
+            },
+            "title": {
+              "dtype": "T",
+              "default": ""
+            },
             "onClose": {
               "inline": []
             }
@@ -2295,6 +2320,16 @@
           "dataScope": false,
           "command": false,
           "childParameters": {
+            "pageName": {
+              "dtype": "T",
+              "nullable": true,
+              "unique": true
+            },
+            "title": {
+              "dtype": "T",
+              "default": "",
+              "required": true
+            },
             "onClose": {
               "inline": []
             },

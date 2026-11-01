@@ -143,3 +143,20 @@ test('restore cancellation settles without changing Data, including an empty cha
         } finally {app.dispose();window.close();}
     }
 });
+
+
+test('copyText preserves exact text, rejects non-text and propagates clipboard denial', async t => {
+    const {app, window} = page();
+    t.after(() => { app.dispose(); window.close(); });
+    const copied = [];
+    Object.defineProperty(window.navigator, 'clipboard', {value:{async writeText(text) {copied.push(text);}}});
+    const text = 'typed Source\n\"value\": 1';
+    await app.utl.inout.copyText(text);
+    await app.utl.inout.copyText('');
+    assert.deepEqual(copied, [text, '']);
+    await assert.rejects(app.utl.inout.copyText(1), TypeError);
+    const denied = new window.DOMException('Clipboard permission denied', 'NotAllowedError');
+    window.navigator.clipboard.writeText = async () => { throw denied; };
+    await assert.rejects(app.utl.inout.copyText(text), error => error === denied);
+    assert.deepEqual(copied, [text, '']);
+});

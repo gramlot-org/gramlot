@@ -11,3 +11,6 @@ from .page.index_page import IndexPage
 
 from .page.chat import ChatPane, ChatPageStore
 __all__ += ['ChatPane', 'ChatPageStore']
+
+from .page.visual_editor import VisualEditor, SourceImport
+__all__ += ['VisualEditor', 'SourceImport']

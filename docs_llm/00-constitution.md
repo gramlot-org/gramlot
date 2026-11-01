@@ -5026,3 +5026,44 @@ Browser camera — owner, 2026-11-01: “Sì, anche nel browser” confirms brow
 
 
 Browser screen image — owner, 2026-11-01: “Sì, usa lo stesso editor” confirms choosing a screen, window or tab through the browser and framing the desired area in the existing image editor. Capture follows the configured browser or application upload destination and uses the editor’s configured aspect ratio. The browser owns source selection and permission.
+
+<a id="gc-000-visual-editor-consolidation"></a>
+### Visual Editor consolidation — owner, 2026-11-01
+
+Owner: “Lasciamo documentato il limite WebKit e passiamo al Visual Editor:
+verifica il lavoro rimasto e integra quello che approvi nella base comune, con
+i test. Preserva gli originali e lascia Invoice fuori.” This authorizes the
+bounded integration of the reviewed editor and its Python/Node/Bun/Worker
+consumers, not a release or deployment. PORT-0029 records inputs and verification.
+
+The original decisions are retained from the Visual Editor chat
+01a18910-bc12-7bd0-a921-3e26ce63c53c (2026-10-30 through 2026-11-01):
+“usa i metadati del widget e i parametri richiesti dal contenitore”,
+“chiedi solo i parametri obbligatori”, “Sì, aggiungi copyText”,
+“procediamo con l’estrazione dell’editor come componente riutilizzabile e
+mettiamolo nella gallery con la chat”, “Sì, bozza Python e Salva”,
+“Sì, pannello comune e supporto Node/Bun”, and “Sì, allinea anche serverless”.
+The Source composition and delegated Logic follow ChatPane/IdeLogic conventions;
+page edits remain Source mutations, UI drafts remain Data, native picker resources
+have a disposal lifetime. No state is placed on Logic. SourcePicker is the shared
+selection helper approved as “Sì, funzione riutilizzabile”. Imported Source is
+validated before replacement, including nodeId collisions with the mounted page.
+
+The owner's docked-panel request (“poi tutti sono detachable”) covers the editor's
+frame regions. Detachment moves their DOM presentation, retaining Source, Data,
+bindings and control instances; closing docks it again. It does not relocate Source
+or introduce a general persisted window-layout model. Root Data inspection excludes
+reserved __editor state (owner “ok”); this supersedes the initial pageData-only
+editor presentation, while explicit scoped data roots remain supported.
+
+Host editing is explicitly configured per document, read-only by default, with
+revision and syntax checks. Save is explicit; preview executes the saved Page.main.
+It is not a sandbox for untrusted code and does not install target endpoints or
+companion Logic. The optional chat provider and filesystem stay outside core;
+Source-to-code rewriting and automatic saving are excluded.
+
+The WebKit automatic bottom-region layout defect remains documented as requested
+(“Lascia il difetto segnalato”). File-origin Worker uploads retain the separately
+confirmed WebKit limitation; no compatibility transport is added. These decisions
+supersede the trial-only placement of this bounded editor, not §§13–14 or dependency
+ownership. Invoice and Python compiled-page export are not included.

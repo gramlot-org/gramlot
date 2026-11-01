@@ -143,6 +143,26 @@
             "default": false
           },
           {
+            "name": "excludeRoot",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "labelCb",
             "kind": "keyword_only",
             "role": "attribute",
@@ -463,6 +483,12 @@
             "hideValues": {
               "dtype": "B",
               "default": false,
+              "binding": "read"
+            },
+            "excludeRoot": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null,
               "binding": "read"
             },
             "labelCb": {

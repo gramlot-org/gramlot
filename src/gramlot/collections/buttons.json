@@ -22,6 +22,26 @@
       "attributes": {
         "parameters": [
           {
+            "name": "action",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "disabled",
             "kind": "keyword_only",
             "role": "attribute",
@@ -90,6 +110,10 @@
         "render_tag": "gramlot-button",
         "gramlot_component": {
           "parameters": {
+            "action": {
+              "dtype": "T",
+              "nullable": true
+            },
             "disabled": {
               "dtype": "B",
               "default": false,
@@ -122,6 +146,26 @@
       "collection_key": null,
       "attributes": {
         "parameters": [
+          {
+            "name": "action",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
           {
             "name": "disabled",
             "kind": "keyword_only",
@@ -251,6 +295,10 @@
         "render_tag": "gramlot-toggle-button",
         "gramlot_component": {
           "parameters": {
+            "action": {
+              "dtype": "T",
+              "nullable": true
+            },
             "disabled": {
               "dtype": "B",
               "default": false,
@@ -293,6 +341,26 @@
       "collection_key": null,
       "attributes": {
         "parameters": [
+          {
+            "name": "action",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
           {
             "name": "disabled",
             "kind": "keyword_only",
@@ -373,6 +441,10 @@
         "render_tag": "gramlot-drop-down-button",
         "gramlot_component": {
           "parameters": {
+            "action": {
+              "dtype": "T",
+              "nullable": true
+            },
             "disabled": {
               "dtype": "B",
               "default": false,
@@ -615,6 +687,26 @@
       "collection_key": null,
       "attributes": {
         "parameters": [
+          {
+            "name": "action",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
           {
             "name": "disabled",
             "kind": "keyword_only",
@@ -917,6 +1009,10 @@
         "render_tag": "gramlot-menu-line",
         "gramlot_component": {
           "parameters": {
+            "action": {
+              "dtype": "T",
+              "nullable": true
+            },
             "disabled": {
               "dtype": "B",
               "default": false,

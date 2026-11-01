@@ -271,3 +271,48 @@ test('literal, read-only, CSS string and transformed dimensions never acquire wr
         app.dispose();
     }
 });
+
+for (const tag of ['borderContainer', 'framePane']) test(`${tag} detach and dock retain Source, Data and uncommitted controls`, async () => {
+    const {app,window,element}=await fixture((root,app)=>{
+        app.data.setItem('draft','Saved');
+        const frame=root[tag]({node_label:'frame',id:'frame',height:'500px'});
+        const left=tag==='framePane'?frame.left:frame.contentPane({node_label:'left',region:'left'});
+        left.setAttr({title:'Properties',detachable:true,width:'280px'});
+        left.textbox({id:'draft',value:'^draft'});
+        if(tag==='borderContainer')frame.contentPane({region:'center'});
+    });
+    window.HTMLDialogElement.prototype.show=function(){this.open=true;};
+    window.HTMLDialogElement.prototype.close=function(){this.open=false;};
+    try {
+        const frame=element('frame'), field=element('draft'), source=app.src.source.getNode('main.frame.left');
+        const before={...source.getAttr()}, bag=source.value;
+        field.control.value='Uncommitted';
+        frame.shadowRoot.querySelector('[aria-label="Detach Properties"]').click();
+        await new Promise(resolve=>setTimeout(resolve,0));
+        assert.ok(frame.shadowRoot.querySelector('dialog[open]'));
+        assert.equal(element('draft'),field);
+        assert.equal(field.control.value,'Uncommitted');
+        assert.equal(app.data.getItem('draft'),'Saved');
+        assert.deepEqual(source.getAttr(),before);
+        assert.equal(source.value,bag);
+        assert.equal(frame.control.style.getPropertyValue('--left'),'0px');
+        frame.shadowRoot.querySelector('[aria-label="Close window"]').click();
+        await new Promise(resolve=>setTimeout(resolve,0));
+        assert.equal(frame.shadowRoot.querySelector('dialog'),null);
+        assert.equal(field.control.value,'Uncommitted');
+        assert.equal(viewport(frame,'left').parentNode.dataset.side,'left');
+        assert.equal(frame.control.style.getPropertyValue('--left'),'280px');
+        frame.detachRegion('left'); source.setAttr({title:'Renamed'});
+        await new Promise(resolve=>setTimeout(resolve,0));
+        assert.equal(frame.shadowRoot.querySelector('dialog').getAttribute('aria-label'),'Renamed');
+        source.setAttr({hidden:true});
+        assert.equal(frame.shadowRoot.querySelector('dialog'),null);
+        source.setAttr({hidden:false}); frame.detachRegion('left'); source.setAttr({detachable:false});
+        assert.equal(frame.shadowRoot.querySelector('dialog'),null);
+        source.setAttr({detachable:true}); frame.detachRegion('left');
+        app.src.source.getNode('main.frame').value.popNode('left');
+        await new Promise(resolve=>setTimeout(resolve,0));
+        assert.equal(frame.shadowRoot.querySelector('dialog'),null);
+        assert.equal(element('draft'),null);
+    } finally {app.dispose();window.close();}
+});

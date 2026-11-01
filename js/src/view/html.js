@@ -228,9 +228,12 @@ export class HtmlElement {
         }
         if (this.definition(node).meta.gramlot_component) {
             if (this.definition(node).meta.gramlot_component.bagStore) {
-                const path = node.absDatapath(node.getAttr('storepath'));
-                if (!change || change.path === path || change.path.startsWith(`${path}.`) || path.startsWith(`${change.path}.`)) {
-                    element.setStoreBag(node.getRelativeData(node.getAttr('storepath')));
+                if (node.nodeTag === 'tree') element.setStoreBag(node.rootBuilder.binding.treeStore(node));
+                else {
+                    const path = node.absDatapath(node.getAttr('storepath'));
+                    if (!change || change.path === path || change.path.startsWith(`${path}.`) || path.startsWith(`${change.path}.`)) {
+                        element.setStoreBag(node.getRelativeData(node.getAttr('storepath')));
+                    }
                 }
             }
             if (this.definition(node).meta.gramlot_component.bagStruct) {

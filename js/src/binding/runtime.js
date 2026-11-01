@@ -45,6 +45,8 @@ export class BindingRuntime {
     #subscriptions;
     #subscription = `gramlot-data-${randomId()}`;
     #disposed = false;
+    #sourceTrees = new Set();
+    #dataRootTrees = new Set();
     #collectionStores = new WeakMap();
 
     constructor(gramlot, {subscriptions}) {
@@ -66,6 +68,28 @@ export class BindingRuntime {
     get logicRegistry() { return this.gramlot.src.logicRegistry; }
     /** The document Data Bag. */
     get data() { return this.builder.data; }
+    /** Resolve a tree store against the selected live root. */
+    treeStore(node) {
+        const path = node.getAttr('storepath');
+        if (path === '*S' || path.startsWith('*S.')) {
+            const root = this.renderer.source.getItem('main');
+            return path === '*S' ? root : root.getItem(path.slice(3));
+        }
+        if (path === '*D' || path.startsWith('*D.')) {
+            return path === '*D' ? this.data : this.data.getItem(path.slice(3));
+        }
+        return node.getRelativeData(path);
+    }
+    registerTreeRoot(binding, source) {
+        const trees = source ? this.#sourceTrees : this.#dataRootTrees;
+        trees.add(binding);
+        return {close: () => trees.delete(binding)};
+    }
+    refreshSourceTrees() {
+        for (const binding of [...this.#sourceTrees]) {
+            if (!binding.closed && this.renderer.attached(binding.node)) this.renderer.project(binding.node);
+        }
+    }
     /** Builder's Data wrapper `_dataroot`: `root.getItem('_root_') === data`. */
     get root() { return this.data.parent; }
     /** Number of open NodeBindings. */
@@ -118,6 +142,9 @@ export class BindingRuntime {
             bag = value;
         }
         this.router.deliver(event);
+        for (const binding of [...this.#dataRootTrees]) {
+            if (!binding.closed && this.renderer.attached(binding.node)) this.renderer.project(binding.node);
+        }
     }
 
     /** The open NodeBinding of `node`, or null. */
@@ -469,7 +496,16 @@ export class NodeBinding {
             if (typeof value !== 'string' || !value || /^[\^=]/.test(value) || value.includes('?')) {
                 throw new TypeError(`${attribute} requires a plain Bag data path`);
             }
-            const path = node.absDatapath(value);
+            if (capability === 'bagStore' && node.nodeTag === 'tree' && (value === '*S' || value.startsWith('*S.'))) {
+                this.#registrations.push(this.runtime.registerTreeRoot(this, true));
+                continue;
+            }
+            if (capability === 'bagStore' && node.nodeTag === 'tree' && value === '*D') {
+                this.#registrations.push(this.runtime.registerTreeRoot(this, false));
+                continue;
+            }
+            const path = capability === 'bagStore' && node.nodeTag === 'tree' && value.startsWith('*D.')
+                ? value.slice(3) : node.absDatapath(value);
             const registration = this.runtime.router.register({path, recipient: this, subtree: true});
             this.#registrations.push(registration);
             // Grid receives store invalidations separately. Other Bag consumers

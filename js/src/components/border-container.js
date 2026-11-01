@@ -1,6 +1,8 @@
 /** Parent-owned regions. Layout changes never move or recreate slotted content. */
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
+import {WindowSurface} from './window-surface.js';
+import {SVG_NS} from '../renderer/attributes.js';
 import {createDOMPurify} from '@gramlot/gramlot';
 
 const SIDES = ['top', 'bottom', 'left', 'right'];
@@ -19,6 +21,8 @@ function projectBorderChild(element, attrs, {adapt, invoke, publish, publishPare
         }
     }
     const region = rest.region;
+    const detachable = rest.detachable ?? false;
+    if (typeof detachable !== 'boolean') throw new TypeError('detachable must be a boolean');
     if (!REGIONS.includes(region)) throw new TypeError(`Invalid border region: ${region}`);
     const min = rest.minSize ?? 0, max = rest.maxSize ?? Infinity;
     if (typeof min !== 'number' || typeof max !== 'number' || !Number.isFinite(min) || min < 0 || max < min || Number.isNaN(max)) {
@@ -46,7 +50,7 @@ function projectBorderChild(element, attrs, {adapt, invoke, publish, publishPare
     const background = drawerProbe.style.backgroundColor;
     if (background) drawerProbe.style.setProperty('--gramlot-drawer-background', background);
     if (drawerAttrs.style != null) drawerAttrs.style = drawerProbe.style.cssText;
-    const config = {region, size, min, max, splitter: rest.splitter === true,
+    const config = {region, size, min, max, detachable, title:rest.title ?? '', splitter: rest.splitter === true,
         drawer: rest.drawer, hidden: rest.hidden === true,
         splitterAttrs: adapt(splitter), drawerAttrs, label, icon, minimize,
         writeParameter: size => { if (numeric) writeParameter(dimension, size); }, notifications: {
@@ -54,7 +58,7 @@ function projectBorderChild(element, attrs, {adapt, invoke, publish, publishPare
             splitterResize: payload => publishParent('splitter_resize', payload),
         },
         onToggle: onclick ? (evt, show) => invoke('drawer_onclick', onclick, {evt, show}) : null};
-    for (const key of ['region', 'splitter', 'drawer', 'minSize', 'maxSize']) delete rest[key];
+    for (const key of ['region', 'splitter', 'drawer', 'minSize', 'maxSize', 'detachable', 'title']) delete rest[key];
     rest.slot = region;
     return {rest, config};
 }
@@ -98,7 +102,7 @@ export const ContentPane = defineComponent({
 
 export const BorderContainer = defineComponent({
     name: 'borderContainer', tag: 'gramlot-border-container', base: Container, subTags: '*',
-    childParameters: {region: {required: true, enum: REGIONS, unique: true}, width: {}, height: {}, drawer_onclick: {inline: ['evt', 'show']}},
+    childParameters: {detachable:{dtype:'B',default:false}, title:{dtype:'T',default:''}, region: {required: true, enum: REGIONS, unique: true}, width: {}, height: {}, drawer_onclick: {inline: ['evt', 'show']}},
     parameters: {
         design: {dtype: 'T', default: 'headline', binding: 'read', enum: ['headline', 'sidebar']},
         persist: {dtype: 'B', default: false, binding: 'read'},
@@ -145,6 +149,18 @@ export const BorderContainer = defineComponent({
                 .region[data-side=top]>.viewport{padding-bottom:var(--region-splitter,0px)}
                 .region[data-side=bottom]>.viewport{padding-top:var(--region-splitter,0px)}
                 .viewport[hidden]{display:none}
+                .viewport.has-tools{flex-direction:column;overflow:hidden}
+                .viewport.has-tools:not([hidden]){display:flex}
+                .viewport.has-tools>slot{display:block;flex:1;min-height:0;overflow:auto}
+                .region-tools{display:flex;flex:none;align-items:center;gap:6px;padding:var(--gramlot-region-header-padding,3px 7px);
+                    border-bottom:1px solid var(--gramlot-region-header-border,var(--gramlot-border,#d5dce5));background:var(--gramlot-region-header-background,var(--gramlot-surface-subtle,var(--gramlot-surface,#fff)))}
+                .region-tools[hidden]{display:none}
+                .region-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--gramlot-region-title-size,12px);font-weight:600}
+                .detach{display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;
+                    color:inherit;background:transparent;border:0;border-radius:4px;padding:3px;min-width:24px;min-height:24px}
+                .detach:hover{background:var(--gramlot-selected,#e8f1fc)}
+                .detach:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:-2px}
+                .detach svg{width:16px;height:16px;pointer-events:none}
                 .control-box[data-drawer-motion] .viewport{transition:opacity var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out);opacity:1;visibility:visible}
                 .control-box[data-drawer-motion] .viewport[hidden]{display:block;opacity:0;visibility:hidden;
                     transition:opacity var(--gramlot-drawer-duration,.24s) var(--gramlot-drawer-easing,ease-out),visibility 0s var(--gramlot-drawer-duration,.24s)}::slotted(*){min-height:0}
@@ -232,7 +248,31 @@ export const BorderContainer = defineComponent({
                 const cell = doc.createElement('div'); cell.className = 'region'; cell.style.gridArea = side;
                 const viewport = doc.createElement('div'); viewport.className = 'viewport'; cell.dataset.side = side; viewport.id = `region-${side}`;
                 const slot = doc.createElement('slot'); slot.name = side; viewport.append(slot); cell.append(viewport);
-                const state = {cell, viewport, child:null, config:null, visibility:null, closed:false, suppressDrawerClick:false, size:null, splitterAttrs:{}, drawerAttrs:{}};
+                const state = {cell, viewport, child:null, config:null, visibility:null, closed:false, suppressDrawerClick:false, size:null, splitterAttrs:{}, drawerAttrs:{}, surface:null};
+                const tools = doc.createElement('div'), title = doc.createElement('span'), detach = doc.createElement('button');
+                tools.className = 'region-tools'; tools.hidden = true; title.className = 'region-title';
+                detach.type = 'button'; detach.className = 'detach';
+                const svg = doc.createElementNS(SVG_NS,'svg'), path = doc.createElementNS(SVG_NS,'path');
+                svg.setAttribute('viewBox','0 0 20 20'); svg.setAttribute('aria-hidden','true');
+                path.setAttribute('d','M11 3h6v6M17 3l-8 8M8 4H4v12h12v-4');
+                path.setAttribute('fill','none'); path.setAttribute('stroke','currentColor'); path.setAttribute('stroke-width','1.8');
+                path.setAttribute('stroke-linecap','round'); path.setAttribute('stroke-linejoin','round'); svg.append(path); detach.append(svg);
+                tools.append(title,detach); viewport.prepend(tools); Object.assign(state,{tools,title,detach});
+                let gesture = null, dragged = false;
+                detach.addEventListener('pointerdown', event => {
+                    if (event.button !== 0) return;
+                    gesture = {id:event.pointerId,x:event.clientX,y:event.clientY}; dragged = false;
+                    detach.setPointerCapture(event.pointerId);
+                });
+                detach.addEventListener('pointerup', event => {
+                    if (!gesture || gesture.id !== event.pointerId) return;
+                    const start = gesture; gesture = null;
+                    if (detach.hasPointerCapture(event.pointerId)) detach.releasePointerCapture(event.pointerId);
+                    dragged = Math.hypot(event.clientX-start.x,event.clientY-start.y) > 5;
+                    if (dragged) this.detachRegion(side,{left:event.clientX,top:event.clientY});
+                });
+                detach.addEventListener('pointercancel', () => {gesture=null;dragged=false;});
+                detach.addEventListener('click', () => {if (!dragged) this.detachRegion(side); dragged=false;});
                 if (side !== 'center') {
                     const separator = doc.createElement('div'); separator.className = 'separator';
                     separator.dataset.side = side; separator.dataset.axis = horizontal(side) ? 'y' : 'x';
@@ -283,7 +323,7 @@ export const BorderContainer = defineComponent({
             for (const state of this.#regions.values()) if (state.drawerContent) this.#contentObserver.observe(state.drawerContent);
             this.#sync();
         }
-        disconnectedCallback() { this.#observer.disconnect(); this.#contentObserver.disconnect(); this.#stopDrag(); }
+        disconnectedCallback() { this.#observer.disconnect(); this.#contentObserver.disconnect(); this.#stopDrag(); for (const side of REGIONS) this.reattachRegion(side, false); }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
             if (!['headline', 'sidebar'].includes(this.parameters.design)) throw new TypeError('Invalid border design');
@@ -304,6 +344,7 @@ export const BorderContainer = defineComponent({
                 const child = children.get(side) ?? null;
                 if (state.child !== child) {
                     if (this.#drag?.side === side) this.#stopDrag();
+                    this.reattachRegion(side, false);
                     state.child = child; state.config = null; state.visibility = null; state.size = null; state.closed = false;
                 }
                 if (child) this.projectRegion(child);
@@ -323,6 +364,8 @@ export const BorderContainer = defineComponent({
             }
             if (!before || before.drawer !== config.drawer) state.closed = config.drawer === 'close';
             state.config = config;
+            if (!config.detachable || config.hidden || state.closed) this.reattachRegion(side, false);
+            if (state.surface) state.surface.configure({...state.surface.parameters, title:config.title || side});
             if (side !== 'center') {
                 state.splitterAttrs = applyAttributes(state.separator, config.splitterAttrs, state.splitterAttrs);
                 state.drawerAttrs = applyAttributes(state.drawer, config.drawerAttrs, state.drawerAttrs);
@@ -357,9 +400,14 @@ export const BorderContainer = defineComponent({
                 }
             }
             state.viewport.hidden = !visible;
+            state.viewport.classList.toggle('has-tools', !!c?.detachable);
+            state.tools.hidden = !c?.detachable || !!state.surface;
+            state.title.textContent = c?.title || side;
+            state.detach.setAttribute('aria-label', `Detach ${c?.title || side}`);
+            state.detach.title = state.detach.getAttribute('aria-label');
             if (side === 'center') return;
-            this.control.style.setProperty(`--${side}`, visible ? state.size : '0px');
-            state.separator.hidden = !c || c.hidden || (!c.splitter && !c.drawer);
+            this.control.style.setProperty(`--${side}`, visible && !state.surface ? state.size : '0px');
+            state.separator.hidden = !!state.surface || !c || c.hidden || (!c.splitter && !c.drawer);
             const draggable = visible && c.splitter;
             state.cell.style.setProperty('--region-splitter', draggable ? (state.separator.style[horizontal(side) ? 'height' : 'width'] || 'var(--gramlot-splitter-size,1px)') : '0px');
             state.separator.dataset.draggable = String(!!draggable);
@@ -377,6 +425,36 @@ export const BorderContainer = defineComponent({
             if (c && previous && (previous.drawer || c.drawer) && previous.open !== visible) {
                 c.notifications.closableChange({open: visible, region: side});
             }
+        }
+        detachRegion(side, position = null) {
+            const state = this.#regions.get(side), config = state.config;
+            if (!config?.detachable || config.hidden || state.closed) return;
+            if (state.surface) {state.surface.focus();return;}
+            const rect = state.viewport.getBoundingClientRect(), mount = this.ownerDocument.createElement('div');
+            this.shadowRoot.append(mount);
+            const surface = new WindowSurface(this,mount,{modal:false,validateContent:()=>{
+                if (state.viewport.parentNode !== surface.body) throw new Error('Detached region lost its presentation');
+            }});
+            state.surface = surface; state.mount = mount;
+            surface.body.replaceChildren(state.viewport);
+            state.viewport.style.cssText = 'flex:1;min-width:0;height:100%;';
+            surface.setSourceContext({writeParameter:(name,value)=>{surface.parameters[name]=value;},
+                publish:topic=>{if(topic==='closed')this.reattachRegion(side);}});
+            surface.configure({title:config.title || side,open:true,movable:true,resizable:true,
+                collapsible:false,maximizable:false,maximized:false,collapsed:false,closable:true,beforeClose:null,
+                width:`${Math.max(320,Math.min(rect.width,720))}px`,height:`${Math.max(240,Math.min(rect.height,560))}px`,
+                left:position ? `${position.left}px` : null,top:position ? `${position.top}px` : null,
+                minWidth:'220px',minHeight:'140px'});
+            this.#render(side); surface.connect();
+        }
+        reattachRegion(side, focus = true) {
+            const state = this.#regions.get(side);
+            if (!state.surface) return;
+            const surface = state.surface; state.surface = null;
+            state.cell.prepend(state.viewport); state.viewport.style.cssText = '';
+            surface.disconnect(); state.mount.remove(); state.mount = null;
+            this.#render(side);
+            if (focus && state.child?.isConnected && !state.closed) state.detach.focus();
         }
         #extent(side) { const box = this.#regions.get(side).cell.getBoundingClientRect(); return horizontal(side) ? box.height : box.width; }
         #resize(side, desired) {

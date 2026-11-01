@@ -122,6 +122,12 @@ export class InOut {
         }
     }
 
+    /** Copy exact text through the browser clipboard; permission failures reject. */
+    async copyText(text) {
+        if (typeof text !== 'string') throw new TypeError('gramlot.utl.inout.copyText: text must be a string');
+        await this.document.defaultView.navigator.clipboard.writeText(text);
+    }
+
     /** Hand text to the browser as a file named filename. */
     saveText(text, filename, type) {
         const window = this.document.defaultView;

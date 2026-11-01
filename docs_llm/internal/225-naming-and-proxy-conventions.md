@@ -2418,3 +2418,34 @@ Browser screen image — 2026-11-01: the image uploader’s visible action is �
 
 
 **Uploader consolidation — 2026-11-01.** Internal Source-owned `attachmentState` and `imageCropState` follow `formState` and `ideContext`: component state belongs to its Source node, never Logic. The attachment Bag holds `items`, `selected`, `preview`, `message` and the current `contextKey`. The image Bag holds `initial` and `transform` framing values. These are internal ownership names, not new public bindings or alternate upload stores. Native files, decoded images, requests and object URLs remain browser resources.
+
+<a id="gc-225-visual-editor-consolidation"></a>
+## Visual Editor names — consolidated 2026-11-01
+
+Authority: GC-000 visual-editor-consolidation and the original Visual Editor chat
+01a18910-bc12-7bd0-a921-3e26ce63c53c. These are existing approved names imported
+with the component, not alternate spellings.
+
+- `VisualEditor` is a Source composition; `VisualEditorLogic` is delegated Logic.
+  `SourceImport` is an UploadTarget; `SourcePicker` selects rendered descendants.
+- `editor_id` / `editorId`, `data_root` / `dataRoot` and `code_document` /
+  `codeDocument` follow the existing Python/JS argument convention.
+  `visualEditorId` identifies the owning Source ancestor; pane, frame, toolbar,
+  rail and design expose composition nodes.
+- `__editor` is reserved Data for the root-page editor. `tree.excludeRoot` excludes
+  one root label from inspection/search; it is not authorization. `*S` and `*D`
+  trees observe Source/Data, without duplicating their model.
+- `PageCodeDocument` carries key, path, language, content, revision and writable.
+  Python uses `editor_document`, `editor_document_save`, `editor_document_preview`;
+  Node/Bun use `VisualEditorDocuments` with document/save/preview and the same
+  save/preview endpoint names. `editorPython` is not introduced: the Python
+  staging argument is `editor_python`, Node's option is `editorJavaScript`.
+- `openCode`, `codeSave`, `codePreview` and `codeLoadPreview` operate on the draft;
+  they do not write implicitly. `detachRegion` / `reattachRegion` extend the
+  existing detachPanel/reattachPanel presentation convention.
+- `gramlot.utl.inout.copyText(text)` returns the native Clipboard Promise.
+  `gramlot-source-selected` marks a SourcePicker presentation. `visual-editor-*`
+  classes scope editor styling; canonical appearance/palette definitions are reused.
+
+Application-local DocumentationIndex/read_gramlot_doc and assess_request remain
+in the optional provider harness, not new core services.

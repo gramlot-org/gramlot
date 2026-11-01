@@ -89,6 +89,7 @@ function Command(HTMLElement) {
     };
 }
 Command.parameters = {
+    action: {dtype: 'T', nullable: true},
     disabled: {dtype: 'B', default: false, binding: 'read'},
     icon: {dtype: 'T', default: '', binding: 'read'},
     iconSrc: {dtype: 'T', default: '', binding: 'read'}

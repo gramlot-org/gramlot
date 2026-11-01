@@ -199,7 +199,11 @@ SelectedContainer.parameters = {
     selected: {dtype:'L', default:null, nullable:true, binding:'twoWay'},
 };
 
-const selectionChildParameters = {onClose: {inline: []}};
+const selectionChildParameters = {
+    pageName: {dtype:'T', nullable:true, unique:true},
+    title: {dtype:'T', default:''},
+    onClose: {inline: []},
+};
 
 export const StackContainer = defineComponent({
     name:'stackContainer', tag:'gramlot-stack-container', base:SelectedContainer, subTags:'*',
@@ -209,7 +213,7 @@ export const StackContainer = defineComponent({
 
 export const TabContainer = defineComponent({
     name:'tabContainer', tag:'gramlot-tab-container', base:SelectedContainer, subTags:'*',
-    sourceContext: true, childParameters: {...selectionChildParameters, detachable:{dtype:'B'}},
+    sourceContext: true, childParameters: {...selectionChildParameters, title:{...selectionChildParameters.title, required:true}, detachable:{dtype:'B'}},
     parameters: {
         tabMode: {dtype:'T', default:'tabs', binding:'read', enum:['tabs','underline']},
         tabPosition: {dtype:'T', default:'top', binding:'read', enum:['top','bottom','left','right']},

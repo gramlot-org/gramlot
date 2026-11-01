@@ -1418,3 +1418,108 @@ test('search stops at loop nodes without loading or exposing matching descendant
     assert.equal(f.row('cached.needle').hidden, true);
     assert.equal(f.row('cached').getAttribute('aria-expanded'), 'false');
 });
+
+test('excludeRoot omits only its root branch from rendering and resolver search', async t => {
+    const f=fixture(t,{attrs:{excludeRoot:'__editor'}});
+    let resolutions=0;
+    class PrivateBranch extends BagResolver {
+        load(){resolutions++;return new Bag({private:'secret'});}
+    }
+    f.store.setItem('__editor',new Bag({catalogue:new PrivateBranch()}));
+    f.store.setItem('folder.__editor','ordinary nested data');
+    await tick();
+    assert.equal(f.row('__editor'),undefined);
+    assert.ok(f.row('folder.__editor'));
+    f.source.setAttr({searchText:'secret'});
+    await new Promise(resolve=>setTimeout(resolve,250));
+    assert.equal(resolutions,0);
+    assert.equal(f.row('__editor'),undefined);
+    assert.ok(f.store.getNode('__editor'), 'exclusion must not modify the store');
+    f.source.setAttr({excludeRoot:null,searchText:''});
+    await tick();
+    assert.ok(f.row('__editor'));
+});
+
+test('tree observes the live Source root and nested Source bags', async t => {
+    const f = fixture(t, {attrs: {storepath: '*S.pane'}});
+    await tick();
+    assert.ok(f.row('tree'));
+    const pane = f.app.src.source.getItem('main.pane');
+    f.app.src.builder.wrapSource(pane).span('Hello', {node_label: 'newNode'});
+    await tick();
+    assert.ok(f.row('newNode'));
+    pane.getNode('newNode').setAttr({caption: 'Changed'});
+    await tick();
+    assert.match(f.row('newNode').textContent, /Changed/);
+    pane.popNode('newNode');
+    await tick();
+    assert.equal(f.row('newNode'), undefined);
+    f.source.setAttr({storepath: '*S'});
+    await tick();
+    assert.ok(f.row('pane'));
+});
+
+test('tree switches from a live Source subtree back to relative Data', async t => {
+    const f = fixture(t, {attrs: {storepath: '*S.pane', labelAttribute: null}});
+    const pane = f.app.src.source.getItem('main.pane');
+    const preview = f.app.src.builder.wrapSource(pane).div({node_label: 'preview'});
+    preview.span('First', {node_label: 'first'});
+    f.source.setAttr({storepath: '*S.pane.preview'});
+    await tick();
+    assert.ok(f.row('first'));
+    preview.getValue(true).popNode('first');
+    await tick();
+    assert.equal(f.row('first'), undefined);
+    preview.span('Second', {node_label: 'second'});
+    await tick();
+    assert.ok(f.row('second'));
+    f.source.setAttr({storepath: '.nodes'});
+    let treeProjections = 0;
+    const project = f.app.src.renderer.project.bind(f.app.src.renderer);
+    f.app.src.renderer.project = (node, ...args) => {
+        if (node === f.source) treeProjections++;
+        return project(node, ...args);
+    };
+    pane.getNode('preview').setAttr({title: 'Changed outside Data'});
+    assert.equal(treeProjections, 0);
+    f.store.setItem('liveData', 'Value');
+    await tick();
+    assert.ok(f.row('liveData'));
+    assert.ok(treeProjections > 0);
+});
+
+test('tree observes Data root and absolute subpaths selected with *D', async t => {
+    const f = fixture(t, {attrs: {storepath: '*D', labelAttribute: null}});
+    await tick();
+    assert.ok(f.row('model'));
+    f.app.data.setItem('another', 'Value');
+    await tick();
+    assert.ok(f.row('another'));
+    f.source.setAttr({storepath: '*D.model.nodes'});
+    await tick();
+    assert.ok(f.row('folder'));
+    f.store.setItem('later', 'Value');
+    await tick();
+    assert.ok(f.row('later'));
+    f.app.data.setItem('model.nodes', new Bag({replacement: 'Value'}));
+    await tick();
+    assert.ok(f.row('replacement'));
+    assert.equal(f.row('later'), undefined);
+});
+
+test('search and selection use real Source nodes, and removing the tree releases it', async t => {
+    const f = fixture(t, {attrs: {storepath: '*S', labelAttribute: null, searchText: '^.search'}});
+    const pane = f.app.src.source.getItem('main.pane');
+    f.app.src.builder.wrapSource(pane).span('Hello', {node_label: 'uniqueSourceNode'});
+    f.app.data.setItem('model.search', 'uniqueSourceNode');
+    await new Promise(resolve => setTimeout(resolve, 250));
+    assert.ok(f.row('pane.uniqueSourceNode'));
+    assert.equal(f.row('pane.uniqueSourceNode').querySelector('mark').textContent, 'uniqueSourceNode');
+    const row = f.row('pane.uniqueSourceNode');
+    row.querySelector('.row').click();
+    await tick();
+    assert.equal(f.app.data.getItem('model.selection'), 'pane.uniqueSourceNode');
+    pane.popNode('tree');
+    f.app.src.builder.wrapSource(pane).span('Later', {node_label: 'later'});
+    assert.equal(f.host.isConnected, false);
+});

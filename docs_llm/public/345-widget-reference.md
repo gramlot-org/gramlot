@@ -336,7 +336,7 @@ Collection: buttons. An application action button using the existing action/Logi
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-No additional component-specific parameters.
+Specific parameters: `action`.
 
 
 <a id="gc-345-115"></a>
@@ -347,7 +347,7 @@ Collection: buttons. A command button with a bound Boolean selected state.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-No additional component-specific parameters.
+Specific parameters: `action`.
 
 
 <a id="gc-345-120"></a>
@@ -358,7 +358,7 @@ Collection: buttons. Separate main-action and submenu surfaces; distinct from a 
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-Specific parameters: `persist`.
+Specific parameters: `action`, `persist`.
 
 
 <a id="gc-345-125"></a>
@@ -380,7 +380,7 @@ Collection: buttons. A command, separator, submenu parent or indivisible toolbar
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-Specific parameters: `command`, `caption`, `code`, `checked`, `tooltip`, `group`, `priority`, `overflowable`, `parameters`, `favorite`.
+Specific parameters: `action`, `command`, `caption`, `code`, `checked`, `tooltip`, `group`, `priority`, `overflowable`, `parameters`, `favorite`.
 
 
 <a id="gc-345-135"></a>
@@ -532,7 +532,7 @@ No additional component-specific parameters.
 
 Collection: tree. Hierarchical Bag presentation with selection, disclosure and declared drag behavior.
 
-Specific parameters: `storepath`, `draggable`, `labelAttribute`, `internalNames`, `hideValues`, `labelCb`, `getLabel`, `getLabelClass`, `getIconClass`, `selectedLabelClass`, `searchText`, `favorites`, `favoritesLabel`, `autoCollapse`, `selectedPath`, `onChecked`, `checkedPaths`, `checkedPaths_joiner`, `checkChildren`.
+Specific parameters: `storepath`, `draggable`, `labelAttribute`, `internalNames`, `hideValues`, `excludeRoot`, `labelCb`, `getLabel`, `getLabelClass`, `getIconClass`, `selectedLabelClass`, `searchText`, `favorites`, `favoritesLabel`, `autoCollapse`, `selectedPath`, `onChecked`, `checkedPaths`, `checkedPaths_joiner`, `checkChildren`.
 
 
 <a id="gc-345-360"></a>

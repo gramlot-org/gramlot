@@ -94,3 +94,6 @@ export {IdeLogic} from "../ide-runtime.js";
 
 export {TreeStore, TreeStoreResolver, TreeStoreLogic} from '../tree-store.js';
 export {UploadTarget} from './upload.js';
+
+export {VisualEditor} from './visual-editor.js';
+export {SourceImport} from './source-import.js';

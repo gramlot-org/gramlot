@@ -19483,3 +19483,60 @@ storage. Product/visual acceptance and publication remain separate.
 Evidence: /private/tmp/gramlot-upload-consolidation-review/ and PORT-0028-uploader.
 Next independent candidate: Visual Editor. Python compiled-page export remains
 suspended and Invoice remains excluded.
+
+<a id="gc-070-visual-editor-consolidation-20261101"></a>
+## Visual Editor common-base consolidation — 2026-11-01
+
+Owner: “Lasciamo documentato il limite WebKit e passiamo al Visual Editor:
+verifica il lavoro rimasto e integra quello che approvi nella base comune, con
+i test. Preserva gli originali e lascia Invoice fuori.” PORT-0029 records the
+bounded destination review. No publication/deployment is included.
+
+Integrated VisualEditor (Python/JS Source composition), VisualEditorLogic,
+SourceImport, shared SourcePicker and copyText; metadata-driven insertion and
+properties; Source/Data trees and reserved editor state; clipboard and validated
+.grmlt import/export; configured Python and Node/Bun code-document services;
+the ordinary gallery tool and optional Python ChatPane/provider harness.
+Frame regions detach by moving DOM only, retaining Source/Data and input instances.
+
+Destination review retained current Grid invalidation and shared sanitizer code,
+reused SourcePicker instead of a second selector, added preflight nodeId collision
+checks and aligned Worker SourceImport validation with Python. The optional chat
+launcher enables writes only for its configured document page; other gallery pages
+remain read-only. Serverless already exposes shared runtime exports; no compatibility
+bridge was added. Environment collections replace per-page collection imports.
+The provider's original live-trial results remain explicitly historical.
+
+Verification recorded under /private/tmp/gramlot-visual-consolidation-review/:
+- Core JavaScript: 1,692 passed. Python: 388 passed, 5 expected failures,
+  397 subtests. Earlier failures caused by the wrong Python/Node environment and
+  a stale generated runtime were rerun successfully with the supported toolchain.
+- Border/selected-container/editor subset: 61 passed; two-editor independence,
+  Source/Data ownership, clipboard/import validation and native input editing covered.
+- Python host editor/gallery: 17 passed. Node host full: 45 passed; Bun editor
+  service: 3 passed. Revision conflicts, syntax, configured paths and saved previews
+  exercised; saving does not execute submitted code.
+- Worker suite: 58 passed; final export-bridge subset: 11 passed, including the
+  VisualEditorLogic identity check against the window core.
+- Gallery Python upload/chat/documentation/staging: 36 passed; focused JS index,
+  coverage and editor: 10 passed. Full gallery run initially exposed missing Python
+  environment and a test expecting an inline Logic class for a tool; affected
+  parity/Code suites pass with the corrected environment: Source parity 133,
+  layout parity 23, final gallery/Code subset 52. Endpoint parity exceeded its
+  timeout while broad suites ran concurrently, then passed alone in 32 seconds.
+  All failures from that initial full run are accounted for by these reruns.
+- Chromium/WebKit HTTP: widget drop, required title, reactive properties and
+  detach/dock preserving the input instance. Chromium directory export opened
+  from file: same interactions without HTTP requests, plus valid upload/download
+  and invalid file rejection. Uvicorn upload/download also passes.
+- Core public docs: strict Sphinx build, 19-page links/anchors; both adapter docs
+  build strictly. Widget reference regenerated from current metadata.
+- Original-worktree preservation: all 342 recorded file hashes unchanged.
+
+Known limits retained: WebKit automatic bottom-region layout issue; WebKit
+file-origin Worker uploads (NotReadableError). No fallback transport/layout shim.
+No fresh live-provider request or physical-device qualification in this integration.
+The optional chat provider is Python-hosted; Node/Bun have document editing but no
+live chat PageStore. Preview invokes saved Page.main, without target endpoints or
+companion Logic. Undo/redo, Source-to-code rewriting and inspector embedding remain
+separate work. Invoice stays excluded; Python compiled-page export stays suspended.

@@ -50,6 +50,7 @@ export const Tree = defineComponent({
         labelAttribute: {dtype: 'T', nullable: true, default: null, binding: 'read'},
         internalNames: {dtype: 'B', default: false, binding: 'read'},
         hideValues: {dtype: 'B', default: false, binding: 'read'},
+        excludeRoot: {dtype: 'T', nullable: true, default: null, binding: 'read'},
         labelCb: {dtype: 'T', nullable: true, default: null},
         getLabel: {dtype: 'T', nullable: true, default: null},
         getLabelClass: {dtype: 'T', nullable: true, default: null},
@@ -87,6 +88,7 @@ export const Tree = defineComponent({
         #loading = new Set();
         #errors = new Map();
         #searchInput = '';
+        #excludedRoot = null;
         #searchText = '';
         #searchTimer = null;
         #searchVersion = 0;
@@ -178,6 +180,11 @@ export const Tree = defineComponent({
             this.#pathsEnabled = Object.hasOwn(attrs, 'checkedPaths');
             this.#checksEnabled = this.#pathsEnabled || Boolean(attrs.onChecked);
             const rest = super.projectAttributes(attrs, adapt);
+            if (this.#excludedRoot !== this.parameters.excludeRoot) {
+                this.#excludedRoot = this.parameters.excludeRoot;
+                this.#resetSearch();
+                this.#searchText = this.#searchInput.toLowerCase();
+            }
             const text = this.parameters.searchText.trim();
             if (text !== this.#searchInput) {
                 this.#resetSearch();
@@ -210,6 +217,7 @@ export const Tree = defineComponent({
                 if (ancestors.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
                 const next = new Set(ancestors).add(bag);
                 for (const node of bag.getNodes()) {
+                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
                     if (!current()) return;
                     if (node.attr.loop === true) continue;
                     if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node)) {
@@ -262,6 +270,7 @@ export const Tree = defineComponent({
                 if (seen.has(bag)) throw new TypeError('tree requires an acyclic Bag store');
                 seen.add(bag);
                 for (const node of bag.getNodes()) {
+                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
                     const path = prefix ? `${prefix}.${node.label}` : node.label;
                     const value = node.staticValue; // Rendering never evaluates resolvers.
                     items.set(path, {node, ancestors, children: value instanceof Bag ? value : null});
@@ -336,6 +345,7 @@ export const Tree = defineComponent({
                 list.className = 'group'; list.setAttribute('part', 'group');
                 list.setAttribute('role', 'group');
                 for (const node of bag.getNodes()) {
+                    if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
                     const path = prefix ? `${prefix}.${node.label}` : node.label;
                     const {children} = items.get(path);
                     const scalar = children === null && !this.parameters.hideValues && (node.resolver === null || !node.resolver.expired);

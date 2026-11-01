@@ -664,8 +664,9 @@ Collection: **buttons**. Browser element: `gramlot-button`.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Allowed |
+| --- | --- | --- | --- | --- |
+| `action` | T or None | — | — | — |
 
 Child grammar: `*`. This is a grammar expression, not a list of browser tags.
 
@@ -681,8 +682,9 @@ Collection: **buttons**. Browser element: `gramlot-toggle-button`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Allowed |
+| --- | --- | --- | --- | --- |
+| `action` | T or None | — | — | — |
 
 Child grammar: `*`. This is a grammar expression, not a list of browser tags.
 
@@ -700,6 +702,7 @@ Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [
 
 | Specific parameter | Type | Default | Binding | Allowed |
 | --- | --- | --- | --- | --- |
+| `action` | T or None | — | — | — |
 | `persist` | B | False | — | — |
 
 Child grammar: `*`. This is a grammar expression, not a list of browser tags.
@@ -741,6 +744,7 @@ Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [
 
 | Specific parameter | Type | Default | Binding | Allowed |
 | --- | --- | --- | --- | --- |
+| `action` | T or None | — | — | — |
 | `command` | T or None | — | — | — |
 | `caption` | T or None | — | — | — |
 | `code` | T or None | — | — | — |
@@ -857,6 +861,8 @@ Child grammar: `*`. This is a grammar expression, not a list of browser tags.
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
+| `detachable` | {"default": false, "dtype": "B"} |
+| `title` | {"default": "", "dtype": "T"} |
 | `region` | {"enum": ["top", "bottom", "left", "right", "center"], "required": true, "unique": true} |
 | `width` | Declared by parent |
 | `height` | Declared by parent |
@@ -882,6 +888,8 @@ Child grammar: `contentPane`. This is a grammar expression, not a list of browse
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
+| `detachable` | {"default": false, "dtype": "B"} |
+| `title` | {"default": "", "dtype": "T"} |
 | `region` | {"enum": ["top", "bottom", "left", "right", "center"], "required": true, "unique": true} |
 | `width` | Declared by parent |
 | `height` | Declared by parent |
@@ -907,6 +915,8 @@ Child grammar: `*`. This is a grammar expression, not a list of browser tags.
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
+| `pageName` | {"dtype": "T", "nullable": true, "unique": true} |
+| `title` | {"default": "", "dtype": "T"} |
 | `onClose` | {"inline": []} |
 
 <a id="gc-345-180"></a>
@@ -932,6 +942,8 @@ Child grammar: `*`. This is a grammar expression, not a list of browser tags.
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
+| `pageName` | {"dtype": "T", "nullable": true, "unique": true} |
+| `title` | {"default": "", "dtype": "T", "required": true} |
 | `onClose` | {"inline": []} |
 | `detachable` | {"dtype": "B"} |
 
@@ -1044,6 +1056,7 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 | `labelAttribute` | T or None | None | read | — |
 | `internalNames` | B | False | read | — |
 | `hideValues` | B | False | read | — |
+| `excludeRoot` | T or None | None | read | — |
 | `labelCb` | T or None | None | — | — |
 | `getLabel` | T or None | None | — | — |
 | `getLabelClass` | T or None | None | — | — |

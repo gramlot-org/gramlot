@@ -56,3 +56,8 @@ export {chatRender, chatSend, chatCompleted, chatReset, chatResize, chatPickAtta
 export {sourceTarget} from '@genrojs/builders';
 export {TreeStore, TreeStoreResolver, TreeStoreLogic} from './tree-store.js';
 export {UploadTarget} from './server/upload.js';
+
+export {VisualEditorLogic, visualEditorScope} from './visual-editor.js';
+export {VisualEditor} from './server/visual-editor.js';
+export {SourceImport} from './server/source-import.js';
+export {SourcePicker} from './source-picker.js';
