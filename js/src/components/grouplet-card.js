@@ -2,7 +2,6 @@
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
 import {labelboxContent} from '../view/labelbox.js';
-import {markdownRenderer} from './markdown-document.js';
 import {positionPopup} from './popup.js';
 
 export const GroupletCard = defineComponent({
@@ -26,6 +25,7 @@ export const GroupletCard = defineComponent({
         #ownMenu;
         #docEvents;
         #docText;
+        #markdown;
         constructor() {
             super();
             const doc = this.ownerDocument;
@@ -359,9 +359,16 @@ export const GroupletCard = defineComponent({
             this.docButton.hidden = !present;
             this.docButton.setAttribute('aria-label', `Guide for ${this.parameters.title || 'card'}`);
             this.docTitle.textContent = this.parameters.title || 'Card guide';
-            if (this.#docText !== content) {
+            if (this.#docEvents && !this.#markdown && !this.docReady) {
+                this.docReady = import('./markdown-document.js').then(module => {
+                    this.#markdown = module.markdownRenderer;
+                    if (this.isConnected && this.#docEvents) this.refreshDoc();
+                });
+                this.docReady.catch(error => console.error(error));
+            }
+            if (this.#docEvents && this.#markdown && this.#docText !== content) {
                 // The shared Markdown renderer escapes raw HTML and rejects unsafe URL schemes.
-                this.docBody.innerHTML = markdownRenderer.render(content);
+                this.docBody.innerHTML = this.#markdown.render(content);
                 this.#docText = content;
             }
             if (this.#docEvents) positionPopup(this.docPopup, this.docButton, {align: 'end'});
@@ -373,6 +380,7 @@ export const GroupletCard = defineComponent({
             if (this.#docEvents) return;
             this.docPopup.showPopover();
             this.#docEvents = new this.ownerDocument.defaultView.AbortController();
+            this.refreshDoc();
             const options = {signal: this.#docEvents.signal};
             const place = () => positionPopup(this.docPopup, this.docButton, {align: 'end'});
             this.ownerDocument.addEventListener('keydown', event => {

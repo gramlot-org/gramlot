@@ -1,6 +1,5 @@
 /** Bag hierarchy, lazy branch expansion, captions and path selection. */
-import {Bag} from '@gramlot/gramlot';
-import createDOMPurify from 'dompurify';
+import {Bag, createDOMPurify} from '@gramlot/gramlot';
 import {defineComponent, defineCollection} from './registry.js';
 import {Container} from './container.js';
 import {SVG_NS} from '../renderer/attributes.js';

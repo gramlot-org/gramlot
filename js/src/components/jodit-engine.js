@@ -1,6 +1,6 @@
 /** Locally bundled optional Jodit engine, initialized only by htmlEditor. */
 import {Jodit} from 'jodit';
-import createDOMPurify from 'dompurify';
+import {createDOMPurify} from '@gramlot/gramlot';
 import 'jodit/esm/plugins/clean-html/clean-html.js';
 import 'jodit/esm/plugins/clipboard/clipboard.js';
 import 'jodit/esm/plugins/paste/paste.js';

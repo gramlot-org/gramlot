@@ -18836,3 +18836,145 @@ The former `invoice_demo` database and previous generation are retained for
 rollback. Restricted privileges and Remote Edit disabled are unchanged.
 Deployment changes are consolidated in examples `f776939`; no new package tag
 or TestFlight build was created.
+
+
+<a id="gc-070-shared-dompurify-20261030"></a>
+
+## Shared DOMPurify in the runtime — 2026-10-30
+
+Owner approval: “Sì, procedi prima con DOMPurify condiviso nel runtime,
+mantenendo separate le configurazioni dei componenti. Aggiungi i test e verifica
+anche il serverless aperto da file, poi passiamo a Markdown.”
+
+Implemented: the runtime directly re-exports `createDOMPurify`, using the existing
+library-factory name (GC-225). Inputs, layout, tree, editors and grouplets import
+that factory from `@gramlot/gramlot`. Each consumer still constructs its own
+sanitizer with its own document, configuration and hooks. The gallery prose
+renderer uses the same export. No sanitizer policy, HTML/Data semantics or
+Markdown parser changed. The file exporter exposes the factory through its
+existing verified-artifact/window-runtime bridge; no new loader is introduced.
+
+Measured with the same minified esbuild options, gzip level 6 summed per JS file
+(not an HTTP transfer benchmark; decimal bytes):
+
+| Artifact | Before JS / gzip | After JS / gzip |
+| --- | ---: | ---: |
+| Inputs | 448,512 / 123,740 | 416,941 / 111,146 |
+| Layout | 469,973 / 128,119 | 438,408 / 116,271 |
+| Tree | 387,588 / 106,509 | 355,987 / 94,638 |
+| Editors, including lazy chunks | 2,582,063 / 748,443 | 2,550,952 / 736,470 |
+| Grouplets | 201,946 / 69,911 | 170,668 / 58,163 |
+| Runtime | 674,701 / 187,448 | 706,424 / 200,125 |
+| Gallery browser entry | 233,382 / 62,264 | 201,901 / 50,511 |
+
+Grid, chat and Typst are unchanged. Net saving across the core collection bundles
+and runtime is **125,403 bytes JS / 47,357 gzip**; with gallery, **156,884 / 59,110**.
+The runtime itself grows by 31,723 / 12,677: a page using no sanitizing component
+pays this increase. External editor engines remain lazy. These figures do not
+claim that all lazy chunks download at page startup.
+
+Verified: 1,469 core JS tests pass across the full run and the eight conformance
+checks rerun with local socket access; the first sandbox run blocked those
+servers. The new regressions check configuration/hook/document isolation and
+bundle ownership. Real editor tests pass on Chromium and WebKit, including
+identity, bindings, undo/redo and hostile paste/drop. Serverless has 52 passing
+unit tests; the new file-origin browser probe passes on both engines with
+prepared layout/editor collections, lazy Jodit, reactive sanitized drawer labels
+and Markdown preview, no HTTP(S) requests and no browser errors. The existing
+single-file and directory quick-start probe also passes on Chromium. Gallery qualification adds 353
+passing tests: 199 in the full run and 154 Python-dependent checks rerun with
+`GRAMLOT_TEST_PYTHON` and `PYTHONPATH` pointing at the active checkouts (the initial
+system Python lacked Gramlot). Paired documentation anchors and JavaScript syntax
+checks pass.
+
+Implementation and local verification only; no package publication or deployment.
+Markdown deduplication and the separate tab-loading feedback proposal remain
+unimplemented, to be considered in their own subsequent steps.
+
+
+<a id="gc-070-shared-markdown-20261030"></a>
+## Lazy shared Markdown — 2026-10-30
+
+Owner approval: “ok allora puoi procedere ?”, following the discussion of the
+shared parser and DOMPurify's separate sanitization responsibility. This closes
+the Markdown step left open in the preceding DOMPurify entry. The tab-loading
+feedback proposal remains separate and unimplemented.
+
+Implemented: one optional `@gramlot/gramlot/markdown` module re-exports
+markdown-it. `loadMarkdown()` imports it on demand. The collection generator
+externalizes all markdown-it imports, including ProseMirror's dependency;
+previews and Grouplet guides defer their renderer import until use. Consumers
+retain their existing parser configurations and sanitizer policies. Gallery
+prose replaces Marked with that same engine. Python/JS bootstrap import maps and
+hosts expose its packaged asset next to the runtime URL. The file exporter embeds
+one library and loads a local blob on use, sharing it with verified collection
+bundles. No Source/Data or editor identity/history contract changes.
+
+Actual JavaScript artifact bytes and gzip level 6, summed per file (not a timing
+or first-page transfer measurement), against the completed DOMPurify step:
+
+| Artifact | Before JS / gzip | After JS / gzip |
+| --- | ---: | ---: |
+| Editors, including lazy chunks | 2,550,952 / 736,470 | 2,401,974 / 684,099 |
+| Grouplets, including lazy chunks | 170,668 / 58,163 | 22,634 / 6,233 |
+| Runtime | 706,424 / 200,125 | 706,500 / 200,158 |
+| Shared optional Markdown asset | 0 / 0 | 149,650 / 52,854 |
+| Gallery production entry | 1,141,057 / 232,624 | 1,078,647 / 216,839 |
+
+The gallery row uses its actual production build options, unlike the minified
+external-subpath measurement in the earlier DOMPurify table. Its before version
+already uses the shared DOMPurify factory. Net core saving: **147,286 JS / 51,414
+gzip bytes**; including gallery: **209,696 / 67,199**. The optional library is
+absent from initial HTTP requests on pages that do not use Markdown. Offline
+exports include its bytes but do not instantiate it until requested. Existing
+non-Markdown gallery bundle duplication is outside this bounded change.
+
+Verified so far: 82 focused core tests, 35 Node HTTP tests, 16 Python/ASGI tests,
+52 serverless tests, and five gallery lazy-content checks pass. Two standalone
+gallery Markdown tests also pass. All 150 Markdown companion files retain the
+same sanitized DOM structure (normalizing whitespace and equivalent DEL/S).
+Browser checks: Chromium hosted requests the parser exactly once on first use;
+Chromium and WebKit file-origin exports request no network, create one shared
+Markdown blob, retain editor identity and undo. WebKit's full editor probe also
+passes. The full core run covered 1,472 tests: three initially failed because
+IDE preview assertions still assumed synchronous rendering, the import-map
+expectation lacked the new asset, and the license inventory missed hyphenated
+license filenames. Those tests and inventory handling were corrected; the
+35-test affected rerun passes. A further 21-test shared-module/bootstrap check
+and declaration check pass. Python core server/resource verification passes
+22 tests plus 29 subtests. The existing Chromium single-file/directory quickstart
+also passes with no HTTP(S) requests.
+The shared asset's license inventory now climbs past module-format-only package
+manifests, so entities is attributed with its actual package license.
+
+No publication, release or deployment performed. Original local work is retained.
+
+
+<a id="gc-070-shared-runtime-close-20261101"></a>
+### Shared sanitizer and lazy Markdown consolidation — 2026-11-01
+
+Owner confirmed “ok procedi” after the cross-chat audit. The first integration
+checkpoint contains shared DOMPurify with separate component policies, one lazy
+Markdown implementation, matching Python/JS hosts and verified file-origin exports.
+Grid/Form editing is qualified separately; Invoice and Python compiled-page export
+remain outside this checkpoint. No package or application publication is performed.
+
+The isolated snapshot was built from the common reference without Grid/Form edits.
+Core JavaScript: 1,472 tests; the four Python-fixture setup failures and the
+calendar fixture's wall-clock dependency were resolved, and all 34 affected tests
+passed on rerun. Python server/assets: 22 tests and 29 subtests; bootstrap and
+collection preparation: 43 tests and 37 subtests. The bootstrap import-map
+expectation now includes the lazy Markdown mapping. The calendar test fixes its
+clock instead of depending on the month of execution.
+
+Consumers: Node 42, Bun 41, serverless 52; Python adapters 322 passed, one skipped.
+Chromium and WebKit file-origin probes passed without HTTP(S) requests, retaining
+editor identity and undo. Hosted Chromium confirmed no Markdown request before use
+and one shared module thereafter. Core public documentation (19 pages) and both
+server documentation builds passed. Gallery: 355 tests, with the two synchronous Markdown expectations updated
+to await the lazy renderer; both affected cases passed on rerun. The full suite
+passed its other 353 cases.
+
+The earlier measured saving including the gallery remains 209,696 raw bytes /
+67,199 gzip bytes for Markdown; this checkpoint does not combine Grid growth
+with that before/after comparison. Localization marker `!!` remains future design.

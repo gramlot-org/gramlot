@@ -128,6 +128,7 @@ export async function generate(request) {
             format:'esm',platform:'browser',target:'es2022',logLevel:'silent',legalComments:'inline',loader:{'.css':'text'},
             plugins:[{name:'collection-linking',setup(b){
                 b.onResolve({filter:/.*/},async args=>{
+                    if(args.path==='markdown-it') return {path:'@gramlot/gramlot/markdown',external:true};
                     if(args.path==='@gramlot/gramlot/components' || (args.path.startsWith('.') && path.resolve(args.resolveDir,args.path)===coreRegistry)) return args.namespace==='collection-authoring'
                         ? {path:'@gramlot/gramlot/components',external:true} : {path:'@gramlot/gramlot/components',namespace:'collection-authoring'};
                     if(args.kind==='entry-point') return;

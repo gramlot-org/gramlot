@@ -105,6 +105,8 @@ const prefixed = (prefix, url) => url.startsWith('/') && !url.startsWith('//') ?
  * owner move the expiry to now plus `pageTtl` (GC-230 §010).
  */
 export class GramlotServer {
+    get markdownUrl() { return this.runtimeUrl.replace(/[^/]+$/, 'gramlot-markdown.js'); }
+
     constructor({runtimeUrl = '/assets/gramlot.js', rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close',
                  rootId = 'gramlot-root', pageTtl = 1800, maxPages = 1000, collections = [],
                  cssTheme = 'gramlot-base'} = {}) {
@@ -329,6 +331,7 @@ export class GramlotServer {
             head.script(scriptJson({imports: {'@gramlot/gramlot/page': prefixed(prefix, this.runtimeUrl),
                 '@gramlot/gramlot': prefixed(prefix, this.runtimeUrl),
                 '@gramlot/gramlot/components':prefixed(prefix,this.runtimeUrl),
+                '@gramlot/gramlot/markdown':prefixed(prefix,this.markdownUrl),
                 ...Object.fromEntries((resources.collections ?? []).map(({name,url})=>[`@gramlot/collections/${encodeURIComponent(name)}`,prefixed(prefix,url)]))}}),
                 {type: 'importmap', nonce});
             const body = root.body();

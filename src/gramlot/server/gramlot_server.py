@@ -123,6 +123,10 @@ class GramlotServer:
     it for its owner move the expiry to now plus ``page_ttl`` (GC-230 §010).
     """
 
+    @property
+    def markdown_url(self):
+        return self.runtime_url[:self.runtime_url.rfind("/") + 1] + "gramlot-markdown.js"
+
     def __init__(self, *, runtime_url="/assets/gramlot.js",
                  rpc_url="/gramlot/rpc", close_url="/gramlot/close",
                  root_id="gramlot-root",
@@ -440,6 +444,7 @@ class GramlotServer:
             head.script(_script_json({"imports": {"@gramlot/gramlot/page": _prefixed(prefix, self.runtime_url),
                                                 "@gramlot/gramlot": _prefixed(prefix, self.runtime_url),
                                                 "@gramlot/gramlot/components": _prefixed(prefix, self.runtime_url),
+                                                "@gramlot/gramlot/markdown": _prefixed(prefix, self.markdown_url),
                                                 **{"@gramlot/collections/" + quote(item["name"], safe="-_.!~*'()"):
                                                    item["url"] for item in collection_records}}}),
                         type="importmap", nonce=nonce)

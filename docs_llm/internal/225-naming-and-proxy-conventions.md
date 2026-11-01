@@ -2208,3 +2208,33 @@ Release packaging — 2026-10-30: the approved complete release packages the exi
 selection_trial collection at gramlot.collections.selection_trial and
 @gramlot/gramlot/components/selection_trial. No new authoring alias is added;
 selectionTrial and windowSelection retain their experimental names and scope.
+
+
+<a id="gc-225-shared-dompurify"></a>
+
+## Shared DOMPurify factory — 2026-10-30
+
+Owner: “Sì, procedi prima con DOMPurify condiviso nel runtime, mantenendo separate
+le configurazioni dei componenti. Aggiungi i test e verifica anche il serverless
+aperto da file, poi passiamo a Markdown.”
+
+Following §040's library re-export convention, the runtime exports DOMPurify's
+factory as `createDOMPurify`, the existing name at every component call site.
+Consumers import it from `@gramlot/gramlot`; this is the same factory, without
+a wrapper or shared mutable sanitizer instance. Each consumer still creates its
+own window-bound sanitizer and owns its configuration, hooks and cleanup. The
+serverless shared-runtime bridge exposes the same export. Markdown is unchanged.
+
+
+<a id="gc-225-shared-markdown"></a>
+## Shared Markdown loader — 2026-10-30
+
+Owner approval: “ok allora puoi procedere ?”, confirming one lazy markdown-it
+module for editors, grouplets and gallery prose, including the file-origin
+export. `loadMarkdown` follows the existing `load` verb for optional engines;
+it returns the module of the package subpath `@gramlot/gramlot/markdown`.
+That subpath re-exports the upstream constructor without a parser wrapper.
+`gramlot-markdown.js` is the packaged runtime asset; hosts map the subpath to
+`markdownUrl`, a sibling of `runtimeUrl`. Parser configuration, sanitization and
+rendering policy stay with consumers. The exporter substitutes the loader with
+an embedded blob module, retaining a single module instance per window.

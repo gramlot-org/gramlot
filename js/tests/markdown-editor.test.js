@@ -43,7 +43,7 @@ test('Markdown preview renders syntax while keeping active HTML and unsafe links
     assert.doesNotMatch(html,/<script/);assert.doesNotMatch(html,/<a href="javascript/);assert.match(html,/default-src 'none'/);
 });
 test('live edits update Data and preview; undo restores exact source, external updates retain the engine and history',async()=>{
-    const original='# Original\n\nA paragraph.\n',f=fixture(original);await f.host.ready;
+    const original='# Original\n\nA paragraph.\n',f=fixture(original);await f.host.ready;await f.preview.ready;
     assert.equal(f.preview.parameters.allowHtml,false);
     const engine=f.host.engine,view=engine.view;
     let inputs=0;f.host.addEventListener('input',()=>inputs++);
@@ -52,7 +52,7 @@ test('live edits update Data and preview; undo restores exact source, external u
     assert.match(f.preview.frame.srcdoc,/<h1>Changed Original<\/h1>/);assert.equal(f.preview.frame.getAttribute('sandbox'),'');
     assert.equal(f.host.undo(),true);assert.equal(f.app.data.getItem('source'),original);
     assert.equal(f.host.redo(),true);assert.match(f.app.data.getItem('source'),/Changed/);
-    f.app.data.setItem('source','## Replaced\n');await f.host.ready;
+    f.app.data.setItem('source','## Replaced\n');await f.host.ready;await f.preview.ready;
     assert.equal(f.host.engine,engine);assert.equal(engine.view,view);
     assert.equal(view.state.doc.firstChild.textContent,'Replaced');
     assert.equal(inputs,3); // typing, undo, redo; external Data never echoes an input
@@ -63,22 +63,22 @@ test('live edits update Data and preview; undo restores exact source, external u
     f.stop();await tick();assert.equal(f.host.engine,null);
 });
 test('toolbar formatting uses the same Markdown Data and read-only rejects document changes',async()=>{
-    const f=fixture('Hello world\n',{readonly:'^locked'});f.app.data.setItem('locked',false);await f.host.ready;
+    const f=fixture('Hello world\n',{readonly:'^locked'});f.app.data.setItem('locked',false);await f.host.ready;await f.preview.ready;
     const view=f.host.engine.view;view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc,1,6)));
     f.host.shadowRoot.querySelector('.markdown-tools button').click();assert.match(f.app.data.getItem('source'),/\*\*Hello\*\* world/);
     const saved=f.app.data.getItem('source');f.app.data.setItem('locked',true);
     assert.equal(f.host.shadowRoot.querySelector('.markdown-tools button').disabled,true);
     view.dispatch(view.state.tr.insertText('Blocked',1));assert.equal(f.app.data.getItem('source'),saved);assert.equal(f.host.undo(),false);
-    f.app.data.setItem('source','External update');await f.host.ready;assert.equal(f.host.engine.view.state.doc.textContent,'External update');f.stop();
+    f.app.data.setItem('source','External update');await f.host.ready;await f.preview.ready;assert.equal(f.host.engine.view.state.doc.textContent,'External update');f.stop();
 });
 test('deferred writes commit on blur and disabled controls remain noneditable',async()=>{
-    const f=fixture('Before',{live:false,disabled:'^disabled'});f.app.data.setItem('disabled',false);await f.host.ready;
+    const f=fixture('Before',{live:false,disabled:'^disabled'});f.app.data.setItem('disabled',false);await f.host.ready;await f.preview.ready;
     f.host.engine.view.dispatch(f.host.engine.view.state.tr.insertText('After ',1));assert.equal(f.app.data.getItem('source'),'Before');
     f.host.engine.view.dom.dispatchEvent(new window.FocusEvent('blur'));assert.equal(f.app.data.getItem('source'),'After Before');
     f.app.data.setItem('disabled',true);assert.equal(f.host.engine.view.dom.getAttribute('contenteditable'),'false');assert.equal(f.host.engine.view.dom.getAttribute('tabindex'),'-1');f.stop();
 });
 test('native contenteditable mutations pass through the same ProseMirror model into Data',async()=>{
-    const f=fixture('# Original\n');await f.host.ready;
+    const f=fixture('# Original\n');await f.host.ready;await f.preview.ready;
     f.host.engine.view.dom.querySelector('h1').firstChild.nodeValue='Typed in browser';
     f.host.engine.view.domObserver.flush();
     assert.equal(f.app.data.getItem('source'),'# Typed in browser');
@@ -93,7 +93,7 @@ test('rich paste parsing excludes unsafe link and image targets',async()=>{
     assert.deepEqual(links,['https://example.com']);assert.deepEqual(images,[]);
 });
 test('disposing during lazy startup does not leave an editor or late writes',async()=>{
-    const f=fixture('Draft');f.stop();await f.host.ready;await tick();
+    const f=fixture('Draft');f.stop();await f.host.ready;await f.preview.ready;await tick();
     assert.equal(f.host.engine,null);assert.equal(f.host.isConnected,false);
 });
 
@@ -118,7 +118,7 @@ test('optional embedded HTML preserves formatting but strips executable content'
 
 test('allowHtml binding changes only the preview, retaining Markdown and rich-editor history',async()=>{
     const original='A paragraph.\n\n<div class="note"><em>Embedded HTML</em></div>\n';
-    const f=fixture(original,{}, {allowHtml:'^allowHtml'});f.app.data.setItem('allowHtml',false);await f.host.ready;
+    const f=fixture(original,{}, {allowHtml:'^allowHtml'});f.app.data.setItem('allowHtml',false);await f.host.ready;await f.preview.ready;
     const engine=f.host.engine;
     assert.equal(f.preview.parameters.allowHtml,false);
     assert.match(f.preview.frame.srcdoc,/&lt;div/);
@@ -138,7 +138,7 @@ test('allowHtml binding changes only the preview, retaining Markdown and rich-ed
 
 
 test('Data updates retain ProseMirror plugins and mapped selection without an input echo',async()=>{
-    const f=fixture('# Heading\n\nParagraph.\n');await f.host.ready;
+    const f=fixture('# Heading\n\nParagraph.\n');await f.host.ready;await f.preview.ready;
     const engine=f.host.engine,view=engine.view,key=new PluginKey('retained');
     const plugin=new Plugin({key,state:{init:()=>({retained:true}),apply:(_tr,value)=>value}});
     view.updateState(view.state.reconfigure({plugins:[...view.state.plugins,plugin]}));

@@ -109,6 +109,8 @@ export interface OpenedPage {
 export class GramlotServer {
     /** URL of the runtime bundle. */
     runtimeUrl: string;
+    /** Shared optional Markdown module, alongside the runtime. */
+    readonly markdownUrl: string;
     /** URL of the request envelopes. */
     rpcUrl: string;
     /** URL of the page close endpoint. */

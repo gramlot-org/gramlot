@@ -215,7 +215,7 @@ print(b.to_tytx())
     const mdKey=app.data.getItem('ide.active'),mdDoc=app.data.getItem(`ide.documents.${mdKey}`);
     const htmlOption=window.document.querySelector('.gramlot-ide-allow-html').control;
     const mdPreview=window.document.querySelector('gramlot-markdown-preview');
-    assert.equal(htmlOption.checked,false);assert.match(mdPreview.frame.srcdoc,/&lt;div/);
+    await mdPreview.ready;assert.equal(htmlOption.checked,false);assert.match(mdPreview.frame.srcdoc,/&lt;div/);
     htmlOption.click();await new Promise(resolve=>setTimeout(resolve,0));
     assert.equal(mdDoc.getItem('allowHtml'),true);
     assert.match(mdPreview.frame.srcdoc,/<div><strong>HTML<\/strong><\/div>/);

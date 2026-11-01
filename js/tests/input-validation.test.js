@@ -81,6 +81,8 @@ test('floating error expires without clearing invalid state, reopens and cleans 
 });
 
 test('typed editor and calendar reject null before accepting it internally or overwriting Data',t=>{
+    // Clearing the calendar displays the current month; keep this fixture in October.
+    t.mock.timers.enable({apis:['Date'],now:new Date('2026-10-16T12:00:00Z')});
     const f=fixture(t,(r,a)=>{a.data.setItem('date',new Date('2026-10-16T00:00:00Z'));a.data.setItem('n',0);
         r.dateTextBox({id:'date',value:'^date',validate_notnull:true});
         r.dateCalendar({id:'calendar',value:'^date',validate_notnull:true});

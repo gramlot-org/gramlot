@@ -21,7 +21,7 @@ def runtime_asset(name=None):
     """
     if name is None:
         name = "gramlot.js" if gramlot_dev() == "DEBUG" else "gramlot.min.js"
-    if name not in {"gramlot.js", "gramlot.min.js", "runtime-notices.json"}:
+    if name not in {"gramlot.js", "gramlot.min.js", "gramlot-markdown.js", "runtime-notices.json"}:
         raise ValueError(f"Unknown Gramlot runtime asset: {name}")
     asset = files("gramlot").joinpath("resources", name)
     if not asset.is_file():

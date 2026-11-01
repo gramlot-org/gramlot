@@ -736,6 +736,14 @@ mixin teardown order beyond the implemented class chain.
 The runtime maintains typed Source and Data. There is no approved formal “Live
 Object Tree” model to substitute for those contracts.
 
+For component HTML sanitization, import `createDOMPurify` from
+`@gramlot/gramlot`. It is the upstream DOMPurify factory shared by the runtime,
+not a shared mutable sanitizer. Create a separate instance with
+`createDOMPurify(this.ownerDocument.defaultView)` for the consumer, retaining its
+own configuration and hooks. Prepared collections externalize the runtime import;
+they should not bundle their own DOMPurify implementation. This does not replace
+the component's HTML policy or enable HTML in plain-text fields.
+
 <a id="gc-340-095"></a>
 ## 095 · Common failures and what they mean
 
@@ -800,3 +808,35 @@ qualification remains a separate activity.
 
 For application loading, use the prepared-package path in this guide.
 The lower-level Builder grammar API remains useful for authoring and serialization tools.
+
+
+<a id="gc-340-shared-markdown"></a>
+## Optional Markdown engine
+
+The runtime exports `loadMarkdown()`, which resolves the module exported by
+`@gramlot/gramlot/markdown`. That module re-exports the markdown-it constructor:
+
+```javascript
+import {loadMarkdown} from '@gramlot/gramlot';
+const {default: MarkdownIt} = await loadMarkdown();
+const parser = new MarkdownIt({html: false});
+const html = parser.render('# Heading');
+```
+
+The library code loads once per window, only when requested. Each consumer owns
+its parser options, rules and sanitizer policy; do not mutate another consumer's
+parser. The collection generator maps imports of `markdown-it`, including those
+inside ProseMirror, to this shared subpath. Core Markdown previews and Grouplet
+guides load their rendering module on use; an unopened guide does not request
+the parser. `markdownPreview.ready` and `groupletCard.docReady` settle after their
+first asynchronous load. Subsequent Data updates keep the existing content host.
+
+The Python and JavaScript hosts map the subpath to the packaged
+`gramlot-markdown.js` asset beside the runtime URL. It must be served together
+with the corresponding runtime and prepared collections. The file-origin
+serverless exporter embeds the library in the runtime output once, then imports
+it through a local blob on first use. No CDN or network access is required.
+
+Parsing is not sanitization: consumers allowing HTML must still sanitize the
+rendered output before inserting it into the DOM. The shared engine does not
+change `allowHtml`, safe URL checks, editor history or component Data semantics.

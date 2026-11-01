@@ -40,6 +40,8 @@ await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/gramlot-to
     outfile: path('tools/gramlot-tools-inspector.js'), bundle: true, format: 'esm',
     target: 'es2022', external: ['@gramlot/gramlot'], loader: {'.css': 'text'}});
 const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist/gramlot.js')});
+const markdown = await build({absWorkingDir:path(''), entryPoints:[path('src/markdown.js')], outfile:path('dist/gramlot-markdown.js'),
+    bundle:true, minify:true, format:'esm', platform:'browser', target:'es2022', legalComments:'inline', metafile:true});
 // Both distributions ship the same prepared collection artifacts and fingerprint.
 const staging = await mkdtemp(join(tmpdir(),'gramlot-core-collections-'));
 try {
@@ -66,6 +68,7 @@ await writeFile(path('dist/gramlot.d.ts'), `${moduleDoc}\nexport * from '../src/
 await rm(path('dist/standalone.js'), {force: true});
 await rm(path('../src/gramlot/resources/standalone.js'), {force: true});
 Object.assign(hosted.metafile.inputs, typstInputs);
+Object.assign(hosted.metafile.inputs, markdown.metafile.inputs);
 const packages = new Map();
 for (const input of new Set(Object.keys(hosted.metafile.inputs))) {
     let directory = dirname(resolve(runtimeOptions['gramlot.js'].absWorkingDir, input));
@@ -73,6 +76,9 @@ for (const input of new Set(Object.keys(hosted.metafile.inputs))) {
         let metadata;
         try { metadata = JSON.parse(await readFile(resolve(directory, 'package.json'), 'utf8')); }
         catch { directory = dirname(directory); continue; }
+        // Module-format markers (for example entities/lib/esm/package.json)
+        // are not package identities and do not own the dependency license.
+        if (!metadata.name) { directory = dirname(directory); continue; }
         // A package may also carry a manifest in its JS subdirectory. Use the
         // outer package root when both manifests identify the same package, so
         // its LICENSE and NOTICE remain attached to the bundled source.
@@ -94,7 +100,7 @@ packages.delete(resolve(path('')));
 packages.set(path('../'), {name: 'Gramlot', license: 'Apache-2.0'});
 const notices = [];
 for (const [directory, {name, license}] of packages) {
-    const names = (await readdir(directory)).filter(name => /^(licen[cs]e|notice|copying)(\..*)?$/i.test(name)).sort();
+    const names = (await readdir(directory)).filter(name => /^(licen[cs]e|notice|copying)([.-].*)?$/i.test(name)).sort();
     const text = names.length
         ? (await Promise.all(names.map(name => readFile(resolve(directory, name), 'utf8')))).join('\n\n')
         : `Package metadata declares license: ${license ?? 'unspecified'}. No LICENSE/NOTICE file is included in the installed package.`;
@@ -105,6 +111,6 @@ await writeFile(path('dist/runtime-notices.json'), JSON.stringify(notices, null,
 await mkdir(path('../build/assets/'), {recursive: true});
 await copyFile(path('dist/gramlot.js'), path('../build/assets/gramlot.js'));
 await mkdir(path('../src/gramlot/resources/'), {recursive: true});
-for (const name of ['gramlot.js', 'gramlot.min.js', 'runtime-notices.json']) {
+for (const name of ['gramlot.js', 'gramlot.min.js', 'gramlot-markdown.js', 'runtime-notices.json']) {
     await copyFile(path(`dist/${name}`), path(`../src/gramlot/resources/${name}`));
 }

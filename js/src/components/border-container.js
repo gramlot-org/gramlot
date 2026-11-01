@@ -1,7 +1,7 @@
 /** Parent-owned regions. Layout changes never move or recreate slotted content. */
 import {defineComponent} from './registry.js';
 import {Container} from './container.js';
-import createDOMPurify from 'dompurify';
+import {createDOMPurify} from '@gramlot/gramlot';
 
 const SIDES = ['top', 'bottom', 'left', 'right'];
 const REGIONS = [...SIDES, 'center'];

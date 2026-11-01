@@ -20,6 +20,8 @@ export {GramlotRenderer} from './renderer/gramlot-renderer.js';
 export {GramlotHtmlRenderer} from './renderer/gramlot-html-renderer.js';
 export {GramlotSvgRenderer} from './renderer/gramlot-svg-renderer.js';
 export {Bag, BagNode} from '@genrojs/bag';
+export {default as createDOMPurify} from 'dompurify';
+export {loadMarkdown} from './markdown-loader.js';
 export {createDecimal, toTytx, fromTytx, fromTytxIter} from '@genrojs/tytx';
 export {References} from './references.js';
 export type {SourceReference} from './references.js';

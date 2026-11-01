@@ -1,4 +1,4 @@
-import createDOMPurify from 'dompurify';
+import {createDOMPurify} from '@gramlot/gramlot';
 
 /** Database suggestions share the choice editor and the ordinary data RPC. */
 export const databaseParameters = {

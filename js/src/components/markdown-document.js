@@ -1,5 +1,5 @@
-import MarkdownIt from 'markdown-it';
-import createDOMPurify from 'dompurify';
+import MarkdownIt from '@gramlot/gramlot/markdown';
+import {createDOMPurify} from '@gramlot/gramlot';
 
 // Keep the rich-editor codec and ordinary previews in HTML-as-text mode.
 export const markdownRenderer = new MarkdownIt({html:false});

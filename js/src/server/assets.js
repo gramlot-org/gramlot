@@ -18,7 +18,7 @@ export function gramlotDev() {
     return value;
 }
 
-const RUNTIME_ASSETS = ['gramlot.js', 'gramlot.min.js', 'runtime-notices.json'];
+const RUNTIME_ASSETS = ['gramlot.js', 'gramlot.min.js', 'gramlot-markdown.js', 'runtime-notices.json'];
 
 /** URL of a packaged browser asset in dist: a file: URL from npm (read with fs.readFile).
  * Without a name, the runtime to serve at the runtime URL: gramlot.js when

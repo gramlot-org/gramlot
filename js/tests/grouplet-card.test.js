@@ -316,7 +316,7 @@ test('card guides render Markdown safely and remain usable while folded without 
     });
     const card = element('guide');
     assert.equal(card.controlBox.hidden, true);
-    card.docButton.click();
+    card.docButton.click(); await card.docReady;
     assert.equal(card.docButton.getAttribute('aria-expanded'), 'true');
     assert.equal(card.docTitle.textContent, '<b>Delivery</b>');
     assert.equal(card.docTitle.querySelector('b'), null);
@@ -340,13 +340,14 @@ test('bound guide content/title refresh live and empty content hides the opener 
         root.groupletCard({id:'other', doc:'Unchanged guide'});
         root.groupletCard({id:'empty', doc:'   '});
     });
-    const card=element('guide'); card.openDoc();
+    const card=element('guide'); card.openDoc(); await card.docReady;
     app.data.setItem('guide.text', 'Send to **Bath**.');
     app.data.setItem('guide.title', 'Workshop address');
     assert.equal(card.docBody.querySelector('strong').textContent, 'Bath');
     assert.equal(card.docTitle.textContent, 'Workshop address');
     assert.equal(card.docButton.getAttribute('aria-expanded'), 'true');
-    assert.equal(element('other').docBody.textContent.trim(), 'Unchanged guide');
+    assert.equal(element('other').docBody.textContent.trim(), '');
+    assert.equal(element('other').docReady, undefined, 'closed guides do not load Markdown');
     assert.equal(element('other').docButton.getAttribute('aria-expanded'), 'false');
     assert.equal(element('empty').docButton.hidden, true);
     app.data.setItem('guide.text', '');
@@ -369,7 +370,7 @@ test('guide cleanup releases document events and remote rebuild uses current Dat
     assert.equal(old.docButton.getAttribute('aria-expanded'), 'false');
     old.openDoc();
     assert.equal(old.docButton.getAttribute('aria-expanded'), 'false');
-    const current=element('guide'); current.openDoc();
+    const current=element('guide'); current.openDoc(); await current.docReady;
     assert.equal(current.docBody.textContent.trim(), 'Updated guide');
     window.document.dispatchEvent(new window.MouseEvent('pointerdown', {bubbles:true}));
     assert.equal(current.docButton.getAttribute('aria-expanded'), 'false');
@@ -383,7 +384,7 @@ test('guide opening and menu opening close the other presentation and preserve n
         parent.groupletCard({id:'inner', doc:'Inner guide', collapsible:true, collapsed:true});
     });
     const outer=element('outer'), inner=element('inner');
-    inner.openDoc();
+    inner.openDoc(); await inner.docReady;
     assert.equal(inner.controlBox.hidden, true);
     assert.equal(outer.controlBox.hidden, false);
     outer.openDoc();
