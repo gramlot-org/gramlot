@@ -35352,6 +35352,17 @@
             "default": null
           },
           {
+            "name": "caption_field",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "condition",
             "kind": "keyword_only",
             "role": "attribute",
@@ -36111,6 +36122,10 @@
               "qualification": "intl_str"
             },
             "dbtable": {
+              "dtype": "T",
+              "binding": "read"
+            },
+            "caption_field": {
               "dtype": "T",
               "binding": "read"
             },
@@ -37950,6 +37965,17 @@
             "default": null
           },
           {
+            "name": "caption_field",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "condition",
             "kind": "keyword_only",
             "role": "attribute",
@@ -38676,6 +38702,10 @@
               "qualification": "intl_str"
             },
             "dbtable": {
+              "dtype": "T",
+              "binding": "read"
+            },
+            "caption_field": {
               "dtype": "T",
               "binding": "read"
             },

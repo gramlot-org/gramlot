@@ -2454,3 +2454,13 @@ with the component, not alternate spellings.
 
 Application-local DocumentationIndex/read_gramlot_doc and assess_request remain
 in the optional provider harness, not new core services.
+
+
+<a id="gc-225-selector-caption-field"></a>
+### Selector caption field — 2026-11-01
+
+Use `caption_field` for the optional field-name input on dbSelect/dbComboBox and
+its RPC request, matching the owner's final naming decision and Asqueel metadata.
+No `captionField` alias. `caption` remains the response's field-name key and the
+existing trusted provider registration option; `selectedCaption` remains the
+selected text output. See GC-000 selector-caption-field.

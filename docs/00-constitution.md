@@ -5263,3 +5263,17 @@ The WebKit automatic bottom-region layout defect remains documented as requested
 confirmed WebKit limitation; no compatibility transport is added. These decisions
 supersede the trial-only placement of this bounded editor, not §§13–14 or dependency
 ownership. Invoice and Python compiled-page export are not included.
+
+
+<a id="gc-000-selector-caption-field"></a>
+### Explicit selector caption field — owner, 2026-11-01
+
+Owner in selector chat 01a18169-f8b7-7d43-8618-dea9169e8b9f:
+“teniamo ovunque caption_field”. Owner in the common-base consolidation chat:
+“1 completa”, referring to the missing widget-to-server caption_field wiring.
+Use caption_field for the optional reactive dbSelect/dbComboBox request parameter,
+without a captionField alias or dependency rename. An explicit widget value wins;
+otherwise retain the configured server caption, including the Asqueel table-model
+default. The response caption key and selectedCaption output are unchanged.
+This completes the bounded selector increment; composite legacy rowcaption and
+full legacy search parity are not included. Invoice remains excluded.

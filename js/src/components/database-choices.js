@@ -3,6 +3,7 @@ import {createDOMPurify} from '@gramlot/gramlot';
 /** Database suggestions share the choice editor and the ordinary data RPC. */
 export const databaseParameters = {
     dbtable: {dtype:'T', binding:'read'},
+    caption_field: {dtype:'T', binding:'read'},
     condition: {dtype:'T', binding:'read'},
     weakCondition: {dtype:['B','T'], default:false, binding:'read'},
     method: {dtype:'T', default:'dbSelect', binding:'read'},
@@ -21,7 +22,7 @@ export const databaseParameters = {
     selectedRecord: {dtype:'T'},
     selectedCb: {dtype:'T'}
 };
-const requestParameters = ['dbtable','method','columns','hiddenColumns','auxColumns','order_by','limit','ignoreCase','condition','weakCondition'];
+const requestParameters = ['dbtable','method','caption_field','columns','hiddenColumns','auxColumns','order_by','limit','ignoreCase','condition','weakCondition'];
 
 export function databaseChoices(Base) {
     return class extends Base {
@@ -79,6 +80,7 @@ export function databaseChoices(Base) {
             }
             this.choices.style.minWidth = this.#template
                 ? 'min(var(--gramlot-choice-popup-min-width,28rem),var(--gramlot-popup-available-width,100vw))' : '';
+            if (this.parameters.caption_field != null && !this.parameters.caption_field.trim()) throw new TypeError('caption_field must be a nonempty field name.');
             if (this.parameters.condition != null && !this.parameters.condition.trim()) throw new TypeError('condition must be a nonempty expression.');
             if (typeof this.parameters.weakCondition !== 'boolean' &&
                 (typeof this.parameters.weakCondition !== 'string' || !this.parameters.weakCondition.trim())) {

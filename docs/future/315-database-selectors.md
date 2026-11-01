@@ -1410,3 +1410,29 @@ contract (selector chat 01a18169-f8b7-7d43-8618-dea9169e8b9f,
 “teniamo ovunque caption_field”). That explicit widget-to-server parameter is
 not implemented by this consolidation. Full legacy rowcaption construction and
 search parity remain separate; model queryfields was explicitly rejected.
+
+
+<a id="gc-315-caption-field-wiring"></a>
+### Widget-to-server caption_field — 2026-11-01
+
+The missing wiring identified in the common-base checkpoint above is implemented.
+`caption_field` is an optional reactive input shared by dbSelect and dbComboBox.
+It travels on search and identity lookup, including requests to a custom `method`.
+Changing it invalidates old requests and refreshes the selected caption without
+changing the selected identity or recreating the control. Combo free text retains
+its existing behavior. Omission sends no override; blank field names are invalid.
+
+The built-in Asqueel provider resolves explicit request → registered caption →
+model caption_field (the last two are resolved at registration). An explicit
+request must name a field already exposed by that registration; auxColumns cannot
+implicitly widen this boundary. Unknown, unexposed or expression-like overrides
+are rejected, not silently replaced. Formula fields can be registered and used.
+Default search/order follow the resolved caption; explicit server search/order
+and request order_by retain their existing precedence. Registration is immutable;
+one widget's override cannot change another widget's defaults. Identifier, hard/
+weak conditions, fixed server predicates and the response envelope remain intact.
+
+Model defaults are Asqueel-specific. Custom method endpoints receive the field
+parameter and own its implementation; the SQLAlchemy/Django providers are not
+extended by this bounded Asqueel increment. Composite rowcaption and the complete
+legacy search service remain separate work. No ORM dependency is modified.

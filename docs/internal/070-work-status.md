@@ -19573,3 +19573,32 @@ unavailable without its backend. Public activation must ship the matching runtim
 provider, catalogue and pages and remains a separately authorized operation.
 Next separate decision: explicit dbSelect caption_field wiring or full release
 qualification. Python compiled-page export remains suspended; Invoice remains out.
+
+
+<a id="gc-070-caption-field-complete-20261101"></a>
+## Selector caption_field completion — 2026-11-01
+
+Owner: “1 completa”, completing the previously agreed caption_field wiring.
+Implemented in the common base: dbSelect/dbComboBox forward the reactive
+caption_field request parameter. AsqueelSelect validates it against exposed
+selection fields; omission retains the registration/model default. Default search
+and ordering follow the chosen caption; explicit search/order retain their meaning.
+The response envelope and selectedCaption stay unchanged. No captionField alias,
+new field exposure, dependency modification or full legacy-parity expansion.
+Custom methods receive the parameter; SQLAlchemy/Django builtins are not extended.
+
+Verified: 48 JS selector/choice tests; 75 provider/endpoint tests; 6 Python component
+tests and 9 subtests (one existing expected failure); 4 gallery declaration tests.
+Runtime build and generated widget reference succeed. Chromium and WebKit over the
+read-only local PostgreSQL gallery change Full name → Code → Full name while
+preserving the state key and native input instance, with no page errors. Regression
+tests also reject stale responses and unexposed fields. The initial smoke compared
+a Shadow DOM input through document.querySelector; the test now compares actual
+Playwright element handles. No runtime workaround was introduced.
+
+Paired contract, naming, component/reference and gallery coverage docs are updated.
+Evidence: /private/tmp/gramlot-caption-completion/. Local trial:
+http://127.0.0.1:61520/pages/81-asqueel/01-state_customers .
+Original worktrees preserved. No package publication or deployment in this tranche.
+Invoice remains excluded; Python compiled-page export remains suspended. Next:
+separate release qualification; this completion does not claim full legacy parity.

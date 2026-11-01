@@ -1797,3 +1797,20 @@ undo/redo and sibling reordering are not implemented. WebKit automatic bottom
 region sizing remains a documented layout issue. WebKit cannot read uploaded
 Files in a file-origin Worker in the qualified environment; Chromium file export
 and WebKit HTTP use the shared uploader without an alternate transport.
+
+
+<a id="gc-105-selector-caption-field"></a>
+### Choosing a database selector's caption
+
+```python
+pane.dbSelect(value='^.state', dbtable='states', caption_field='code')
+```
+
+`caption_field` chooses the record field used as its displayed text. It also
+accepts a Data binding, for example `caption_field='^.state_caption'`. The selected
+identifier stays in `value`; `selectedCaption` receives the resulting text.
+Omit the parameter to use the server default. The Asqueel provider accepts fields
+already exposed by the selection registration, including registered formula
+fields. Its default search/order use that caption; explicitly configured search
+and ordering remain independent. Custom method endpoints own the same request
+parameter's implementation. This is not a composite legacy rowcaption expression.

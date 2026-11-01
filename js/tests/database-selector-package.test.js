@@ -498,3 +498,49 @@ test('clearing or removing a selector still cancels its pending selected-value l
         if (!remove) assert.equal(host.control.value,'');
     }
 });
+
+
+test('bound caption_field refreshes selected caption without replacing the widget or its identity', async t => {
+    const calls=[];
+    const f=fixture(t,(root, app)=>{
+        app.data.setItem('choice',0); app.data.setItem('captionField','name');
+        root.dbSelect({id:'choice',value:'^choice',caption_field:'^captionField',selectedCaption:'caption',searchDelay:0});
+    }, (method,kw)=>{
+        calls.push(kw);
+        return {rows: rows.filter(r=>'_id' in kw ? r.id===kw._id : r[kw.caption_field].includes(kw._querystring)),identifier:'id',caption:kw.caption_field};
+    });
+    await settle();
+    const widget=f.host('choice'), control=widget.control;
+    assert.equal(control.value,'Zero');
+    f.app.data.setItem('captionField','email'); await settle();
+    assert.equal(f.host('choice'),widget); assert.equal(widget.control,control);
+    assert.equal(control.value,'zero@test'); assert.equal(f.app.data.getItem('choice'),0);
+    assert.equal(f.app.data.getItem('caption'),'zero@test');
+    assert.ok(calls.some(kw=>kw._id===0 && kw.caption_field==='email'));
+    f.type('choice','ada@');await settle();
+    assert.ok(calls.some(kw=>kw._querystring==='ada@' && kw.caption_field==='email'));
+    f.key('choice','Enter'); assert.equal(f.app.data.getItem('choice'),2);
+});
+
+test('dbComboBox forwards caption_field to a custom method and keeps free text', async t=>{
+    const calls=[];
+    const f=fixture(t,root=>root.dbComboBox({id:'combo',value:'^value',method:'people',caption_field:'email',searchDelay:0}),
+        (method,kw)=>{calls.push({method,...kw});return {rows:[rows[1]],identifier:'id',caption:'email'};});
+    f.type('combo','custom');await settle(); f.key('combo','Enter');
+    assert.equal(f.app.data.getItem('value'),'custom');
+    assert.ok(calls.some(kw=>kw.method==='people' && kw.caption_field==='email' && kw._querystring==='custom'));
+});
+
+test('a caption_field change rejects a late lookup from the previous caption', async t=>{
+    let release;
+    const f=fixture(t,(root,app)=>{
+        app.data.setItem('choice',0); app.data.setItem('field','name');
+        root.dbSelect({id:'choice',value:'^choice',caption_field:'^field',selectedCaption:'caption'});
+    }, (method,kw)=>kw.caption_field==='name' ? new Promise(resolve=>{release=resolve;}) :
+        {rows:[rows[0]],identifier:'id',caption:'email'});
+    await settle(); f.app.data.setItem('field','email');await settle();
+    release(reply([rows[0]]));await settle();
+    assert.equal(f.host('choice').control.value,'zero@test');
+    assert.equal(f.app.data.getItem('caption'),'zero@test');
+    assert.equal(f.app.data.getItem('choice'),0);
+});
