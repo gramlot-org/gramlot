@@ -38,7 +38,7 @@ window.fixture={app,tree,data};
 `;
 const output = await build({stdin:{contents:fixture,resolveDir:fileURLToPath(new URL('./',import.meta.url)),sourcefile:'tree-fixture.js'},
     bundle:true,format:'esm',platform:'browser',target:'es2022',write:false,loader:{'.css':'text'},
-    alias:{'@gramlot/gramlot':`${repo}/js/src/index.js`}});
+    alias:{'@gramlot/gramlot/markdown':fileURLToPath(new URL('../../../js/src/markdown.js',import.meta.url)), '@gramlot/gramlot':`${repo}/js/src/index.js`}});
 const html=`<!doctype html><html><head><meta charset="utf-8"><title>Gramlot provisional tree qualification</title>
 <style>body{margin:20px;background:#fff;color:#38414b;font:13px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .inspector-editor{width:440px;border:1px solid #d3dbe7;display:flex;flex-direction:column;min-height:360px}

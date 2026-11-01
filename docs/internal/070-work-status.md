@@ -19720,3 +19720,22 @@ the lazy Markdown module have identical hashes in the wheel and npm archive.
 The installed Python and npm catalogues expose 132 lessons at version 0.3.25.
 Evidence: /private/tmp/gramlot-release-20261101/. Publication and deployed verification
 are still pending; local success is not a claim of registry or public-site availability.
+
+
+### Follow-up: essential gallery examples — owner, 2026-11-01
+
+Owner: “riguarda tutti gli esempi ... codice python assolutamente essenziale ...
+metti le spiegazioni ... nella parte spiegazioni. ogni cosa inutile va tolta”.
+Review the full common catalogue and host-only lessons after the release checkpoint.
+Keep demonstrations and their observable behavior; move explanatory prose into each
+lesson's Explanation document. Remove duplicate titles, redundant setup and controls
+which do not teach the feature. Retain HTML/SVG content where that content is the
+subject of the lesson, live output, meaningful labels and necessary interaction.
+Use reusable Python methods and datapath-relative composition where it reduces
+repetition; keep the JavaScript twin and behavior checks aligned. Do not replace
+real coverage with fewer assertions or a wholesale generated rewrite.
+Initial read-only inventory: 132 common examples, 669 literal h1/h2/h3/p calls,
+eight dataSetter calls; six additional database page modules. These counts identify
+review candidates, not automatically removable code. Audit data is in
+/private/tmp/gramlot-release-20261101/gallery-code-audit.json and
+/private/tmp/gramlot-release-20261101/gallery-database-code-audit.json.
