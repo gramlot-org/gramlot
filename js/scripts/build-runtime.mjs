@@ -45,7 +45,7 @@ const markdown = await build({absWorkingDir:path(''), entryPoints:[path('src/mar
 // Both distributions ship the same prepared collection artifacts and fingerprint.
 const staging = await mkdtemp(join(tmpdir(),'gramlot-core-collections-'));
 try {
-    const names = ['inputs','layout','tree','grid','editors','typst','grouplets','chat','selection_trial'];
+    const names = ['inputs','layout','tree','grid','editors','typst','grouplets','chat','selection_trial','uploads'];
     const config = {output:'../src', collections:names.map(name=>({
         entry:name === 'selection_trial' ? './src/experiments/selection-trial.js' : `./src/components/${name}.js`,pythonPackage:`gramlot.collections.${name}`}))};
     const result = await generate({protocolVersion:1,operation:'build',

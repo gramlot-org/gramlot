@@ -7,7 +7,7 @@ from .builder import GramlotBuilder
 from .databases import _PageDatabases
 from .name_syntax import NAME_SYNTAX
 
-MARKERS = {"__gramlot_source__": "@source", "__gramlot_endpoint__": "@endpoint"}
+MARKERS = {"__gramlot_source__": "@source", "__gramlot_endpoint__": "@endpoint", "__gramlot_upload__": "@upload"}
 # The name of a declared method, one segment of NAME_SYNTAX, as in JS page-base.js: an ASCII letter, then
 # ASCII letters, digits and ``_``.
 DECLARED_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
@@ -40,6 +40,11 @@ def endpoint(function=None, *, auth=None):
     return _mark(function, "__gramlot_endpoint__", auth)
 
 
+def upload(function=None, *, auth=None):
+    """Mark an application operation for upload preparation."""
+    return _mark(function, "__gramlot_upload__", auth)
+
+
 class Page(_PageDatabases):
     gramlots = ()
     title = "Gramlot"
@@ -48,6 +53,11 @@ class Page(_PageDatabases):
     time_zone = None
     installable = False
     app_icon = None
+
+    @property
+    def request_identity(self):
+        """Trusted host identity for this Page invocation, or None."""
+        return self._request_identity
 
     def manifest(self, *, base_url="./"):
         """Describe the root app. app_icon is a 512px square PNG below the app root.
@@ -88,7 +98,7 @@ def _declared(page_class, marker):
                 continue
             marks = [key for key in MARKERS if getattr(value, key, None) is not None]
             if len(marks) > 1:
-                raise TypeError(f"{name} is declared both as Source method and endpoint")
+                raise TypeError(f"{name} is declared both as Source method and endpoint" if set(marks) == {"__gramlot_source__", "__gramlot_endpoint__"} else f"{name} has conflicting declarations")
             if marks == [marker]:
                 methods[name] = value
     return methods
@@ -100,6 +110,10 @@ def source_methods(page_class):
 
 def endpoint_methods(page_class):
     return _declared(page_class, "__gramlot_endpoint__")
+
+
+def upload_methods(page_class):
+    return _declared(page_class, "__gramlot_upload__")
 
 
 def resolve_declared(page, name, marker):

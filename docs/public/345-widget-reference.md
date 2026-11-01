@@ -2,7 +2,7 @@
 
 Document ID: **GC-345**.
 
-This reference covers all **43 component declarations** in the six packaged
+This reference covers all **48 component declarations** in seven selected packaged
 component grammars. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
@@ -54,12 +54,13 @@ connects these controls to runnable lessons and screenshots.
 
 | Collection | Components |
 | --- | --- |
-| `inputs` | [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar) |
+| `inputs` | [editingStatus](#gc-345-editingstatus), [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar) |
 | `buttons` | [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menu](#gc-345-menu), [menuline](#gc-345-menuline), [spacer](#gc-345-spacer) |
 | `layout` | [transformPane](#gc-345-transformpane), [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane), [framePane](#gc-345-framepane), [trayPane](#gc-345-traypane), [formlet](#gc-345-formlet), [groupBox](#gc-345-groupbox), [contentPane](#gc-345-contentpane), [borderContainer](#gc-345-bordercontainer), [stackContainer](#gc-345-stackcontainer), [tabContainer](#gc-345-tabcontainer) |
-| `tree` | [tree](#gc-345-tree) |
+| `tree` | [tree](#gc-345-tree), [rowActions](#gc-345-rowactions) |
 | `editors` | [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview) |
 | `typst` | [typstPreview](#gc-345-typstpreview) |
+| `uploads` | [uploader](#gc-345-uploader), [imageUploader](#gc-345-imageuploader), [attachmentManager](#gc-345-attachmentmanager) |
 
 ## Shared parameter contracts
 
@@ -72,7 +73,7 @@ Each widget below links only the shared contracts it supports. A shared name can
 
 The value type and writeback behavior depend on the control. Use a Data pointer for binding; see [Data binding](097-data-binding.md).
 
-Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [toggleButton](#gc-345-togglebutton), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview).
+Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [toggleButton](#gc-345-togglebutton), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview), [imageUploader](#gc-345-imageuploader).
 
 | Parameter | Type | Default | Binding | Allowed | Applies to |
 | --- | --- | --- | --- | --- | --- |
@@ -87,6 +88,7 @@ Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButt
 | `value` | T / L or None | — | twoWay | — | [dbSelect](#gc-345-dbselect) |
 | `value` | T | '' | twoWay | — | [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor) |
 | `value` | T | '' | read | — | [htmlPreview](#gc-345-htmlpreview), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview) |
+| `value` | T or None | None | twoWay | — | [imageUploader](#gc-345-imageuploader) |
 
 <a id="gc-345-225"></a>
 <a id="gc-345-shared-state"></a>
@@ -94,7 +96,7 @@ Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButt
 
 Disabled prevents interaction; readonly preserves reading without accepting edits. live controls when edits reach Data. See [Field behavior](105-components.md#gc-105-040).
 
-Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menuline](#gc-345-menuline), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor).
+Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menuline](#gc-345-menuline), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor), [uploader](#gc-345-uploader), [imageUploader](#gc-345-imageuploader), [attachmentManager](#gc-345-attachmentmanager).
 
 | Parameter | Type | Default | Binding | Allowed | Applies to |
 | --- | --- | --- | --- | --- | --- |
@@ -771,6 +773,19 @@ Collection: **buttons**. Browser element: `gramlot-spacer`.
 ## Forms and containers
 
 
+<a id="gc-345-355"></a>
+<a id="gc-345-editingstatus"></a>
+### `editingStatus`
+
+Changes and validation feedback from the nearest Source form state.
+
+Collection: **inputs**. Browser element: `gramlot-editing-status`.
+
+[Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
+
+
 <a id="gc-345-155"></a>
 <a id="gc-345-formlet"></a>
 ### `formlet`
@@ -1027,6 +1042,7 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 | `storepath` | T | — | — | — |
 | `draggable` | B | False | read | — |
 | `labelAttribute` | T or None | None | read | — |
+| `internalNames` | B | False | read | — |
 | `hideValues` | B | False | read | — |
 | `labelCb` | T or None | None | — | — |
 | `getLabel` | T or None | None | — | — |
@@ -1034,10 +1050,111 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 | `getIconClass` | T or None | None | — | — |
 | `selectedLabelClass` | T | '' | read | — |
 | `searchText` | T | '' | read | — |
+| `favorites` | X or None | None | read | — |
+| `favoritesLabel` | T | 'Favorites' | read | — |
 | `autoCollapse` | B | False | read | — |
 | `selectedPath` | T or None | None | twoWay | — |
+| `onChecked` | B / T or None | None | — | — |
+| `checkedPaths` | T or None | None | twoWay | — |
+| `checkedPaths_joiner` | T | ',' | — | — |
+| `checkChildren` | B | True | read | — |
+
+Child grammar: `rowActions[:1]`. This is a grammar expression, not a list of browser tags.
+
+<a id="gc-345-360"></a>
+<a id="gc-345-rowactions"></a>
+### `rowActions`
+
+Shared contextual row actions for the tree presentation.
+
+Collection: **tree**. Browser element: `gramlot-row-actions`.
+
+[Tree stores, labels and selection](105-components.md#gc-105-120).
+
+| Specific parameter | Type | Default | Binding | Allowed |
+| --- | --- | --- | --- | --- |
+| `position` | T | 'end' | — | — |
+| `actionState` | T or None | None | — | — |
+| `state` | X or None | None | read | — |
+
+Child grammar: `button,dropDownButton`. This is a grammar expression, not a list of browser tags.
 
 <a id="gc-345-335"></a>
+## File uploads
+
+
+<a id="gc-345-340"></a>
+<a id="gc-345-uploader"></a>
+### `uploader`
+
+Shared file queue with progress, preview, selected-file metadata and application-owned upload targets.
+
+Collection: **uploads**. Browser element: `gramlot-uploader`.
+
+[File uploads and metadata](105-components.md#gc-105-uploader).
+
+Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
+
+| Specific parameter | Type | Default | Binding | Allowed |
+| --- | --- | --- | --- | --- |
+| `operation` | T | — | — | — |
+| `storepath` | T | — | — | — |
+| `contextPath` | T or None | None | — | — |
+| `accept` | T | '' | read | — |
+| `multiple` | B | False | read | — |
+| `autoUpload` | B | True | read | — |
+| `manualUpload` | B | True | read | — |
+| `selectedPath` | T or None | None | twoWay | — |
+| `onComplete` | T or None | None | — | — |
+
+<a id="gc-345-345"></a>
+<a id="gc-345-imageuploader"></a>
+### `imageUploader`
+
+Editable image value with local crop or an application-owned upload destination.
+
+Collection: **uploads**. Browser element: `gramlot-image-uploader`.
+
+[File uploads and metadata](105-components.md#gc-105-uploader).
+
+Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state).
+
+| Specific parameter | Type | Default | Binding | Allowed |
+| --- | --- | --- | --- | --- |
+| `storepath` | T | — | — | — |
+| `contextPath` | T or None | None | — | — |
+| `operation` | T or None | None | — | — |
+| `cropWidth` | L | 256 | — | — |
+| `cropHeight` | L | 256 | — | — |
+| `outputWidth` | L | 512 | — | — |
+| `outputHeight` | L | 512 | — | — |
+| `onComplete` | T or None | None | — | — |
+
+<a id="gc-345-350"></a>
+<a id="gc-345-attachmentmanager"></a>
+### `attachmentManager`
+
+Reusable attachment queue and list backed by application operations.
+
+Collection: **uploads**. Browser element: `gramlot-attachment-manager`.
+
+[File uploads and metadata](105-components.md#gc-105-uploader).
+
+Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
+
+| Specific parameter | Type | Default | Binding | Allowed |
+| --- | --- | --- | --- | --- |
+| `operation` | T | — | — | — |
+| `storepath` | T | — | — | — |
+| `contextPath` | T | — | — | — |
+| `ready` | B | False | read | — |
+| `listMethod` | T | — | — | — |
+| `readMethod` | T | — | — | — |
+| `removeMethod` | T | — | — | — |
+| `accept` | T | '' | read | — |
+| `selectedPath` | T or None | None | twoWay | — |
+
+<a id="gc-345-340"></a>
 ## Editors and document previews
 
 

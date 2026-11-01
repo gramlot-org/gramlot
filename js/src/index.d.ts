@@ -51,6 +51,7 @@ export type {CommandDefinition,CommandGroupMetadata} from './commands.js';
 export {collectionBuildId, verifyCollectionArtifact} from './collection-artifact.js';
 
 export {DeviceHandler} from './handlers/device-handler.js';
+export {BrowserCameraProvider} from './browser-camera-provider.js';
 export type {DeviceProvider, DeviceClipboard, DeviceName, DeviceAudio, DeviceAudioSession, DeviceNetwork, DeviceLifecycleEvent, DeviceHapticStyle, AppInfo, DeviceLocation, DevicePhoto, DeviceBarcode, DeviceBiometrics, DeviceNotificationRequest, DeviceNotificationSchedule, DeviceNotificationEvent, DevicePushRegistration, DevicePushEvent, DeviceShortcutRequest, DeviceLinkRequest} from './handlers/device-handler.js';
 
 export {MobileEnvironment} from './mobile-environment.js';
@@ -60,3 +61,4 @@ export {chatRender, chatSend, chatCompleted, chatReset, chatResize, chatPickAtta
 // Preserve fluent Source identity across separately prepared collection bundles.
 export {sourceTarget} from '@genrojs/builders';
 export {TreeStore, TreeStoreResolver, TreeStoreLogic} from './tree-store.js';
+export {UploadTarget} from './server/upload.js';

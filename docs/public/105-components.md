@@ -1652,3 +1652,95 @@ Saving is an application Data operation: copy the layout Bag with `deepcopy()`,
 then assign a copy back to restore it. Persist its TYTX through your application's
 storage when durability is needed. The gallery's **Tray workspace** lesson shows
 an in-page snapshot, four different live cards and matching Python/JS code.
+
+<a id="gc-105-uploader"></a>
+## Uploader and attachments
+
+Include the `uploads` collection in the environment base page and initialize its
+`storepath` with a Bag before rendering. The page declares an application
+operation with `@upload`; that method returns an `UploadTarget` with its own
+limit, incremental writes, finalization, cancellation and status. The server,
+not the browser, chooses the destination.
+
+```python
+from genro_bag import Bag
+
+root.dataSetter("uploads", Bag())
+root.uploader(operation="import_source", storepath="uploads",
+              accept=".grmlt", multiple=False, autoUpload=False,
+              onComplete="sourceUploaded")
+```
+
+`autoUpload=True` starts on selection or drop; `False` waits for Upload when `manualUpload=True`. Set `manualUpload=False` to hide and disable manual start while allowing file selection; the application can enable automatic start after a record is saved. When a bound `autoUpload` becomes true, already queued files also start. Applications that defer uploads until a record is saved must set and validate their record metadata before enabling it.
+`onComplete` names page Logic and receives `item` and `result`. The queue supports removal and safe local text/raster previews. Its summary derives bytes and state counts from the queue. It contains
+metadata and progress, not browser File objects or the temporary authorization. Each row contains a `metadata` Bag that application bindings may edit before upload; its values are sent as the `fields` mapping and validated by the server operation.
+For an application-defined metadata form, bind `selectedPath` to the selected
+queue row and use a reactive datapath for ordinary Gramlot controls. For example:
+
+```python
+from genro_bag import Bag
+
+pane = root.div(datapath="uploadDemo")
+pane.dataSetter(".queue", Bag())
+pane.dataSetter(".empty", Bag({"status": "empty"}))
+pane.dataSetter(".editPath", "uploadDemo.empty")
+pane.uploader(operation="receive", storepath=".queue", selectedPath="^.selected",
+              multiple=True, autoUpload=False)
+pane.dataFormula(".editPath", "selected ? 'uploadDemo.queue.' + selected : 'uploadDemo.empty'",
+                 selected="^.selected", _init=True)
+form = pane.div(datapath="^.editPath")
+form.textbox(value="^.metadata.title", lbl="Title", live=True,
+             disabled="^.status:={} !== 'queued'")
+```
+
+`selectedPath` is the row label relative to `storepath`; removing the selected
+row clears it. The idle branch keeps the form outside the queue when nothing is
+selected. The application declares and validates its fields and can disable them
+once the selected row is no longer queued. Manual start gives the user time to
+edit; automatic start takes its snapshot immediately.
+
+A connection failure after an upload is reconciled with the server before a
+retry; Check status is available while the outcome is unknown.
+
+The first server implementation is Uvicorn/ASGI and stores transfer state in
+one process. It does not offer restart or multi-worker recovery. The serverless
+Worker transfers files locally in bounded chunks; its status does not survive
+Worker termination. Chromium supports this transfer from a local HTML file;
+WebKit currently fails to read File objects inside file-origin Workers
+([upstream issue](https://bugs.webkit.org/show_bug.cgi?id=258443)). Serving the same
+export over HTTP works in the tested WebKit engine. Other adapters do not yet provide this transfer. The application's target
+retains responsibility for validating content, storage and cleanup.
+
+
+### Editable images
+
+`imageUploader` edits one image and writes its confirmed PNG to a bound `value`. Initialize its `storepath` with a Bag. With no `operation`, the value is a browser data URL. With an upload operation, the application target stores the PNG in its chosen database or file storage and returns the displayable URL written to the value. The same queue tracks progress and an uncertain upload can be checked before proceeding.
+
+```python
+pane.dataSetter(".imageQueue", Bag())
+pane.imageUploader(value="^.image", storepath=".imageQueue", operation="save_image")
+```
+
+Set `cropWidth`, `cropHeight`, `outputWidth` and `outputHeight` to positive integers with matching crop/output aspect ratios. PNG, JPEG and WebP input is accepted through selection or file drop; output is PNG. The original and framing are retained while the component is mounted. An existing value can be edited if its URL permits canvas access (CORS); after a reload it is the source image. Clear changes the value and does not delete an application-owned file.
+
+In the crop dialog, drag to move the image, Shift-drag vertically to zoom, and Alt-drag vertically to rotate. On touch, use one finger to move or two fingers to move, pinch and rotate. The focused preview responds to arrow keys for movement.
+
+A trackpad pinch over the crop frame changes zoom. In browsers exposing gesture scale and rotation, the trackpad gesture also rotates. Availability depends on the browser; Alt-drag and the rotation handle remain available.
+
+Alt plus two-finger trackpad scrolling over the crop frame rotates the image without a click, including in browsers that do not expose native trackpad rotation. Ordinary scrolling is unchanged.
+
+Drag the rotation or zoom handle beside the preview for direct adjustment; focused handles also respond to arrow keys.
+
+
+The optional `contextPath` on `uploader` or `imageUploader` identifies an application-owned Data Bag shared by files in that component. At the start of each preparation, its current contents are sent to the upload operation as `metadata["context"]`, separate from the file’s `metadata["fields"]`. For example, the application can set the saved record ID in that Bag before enabling automatic upload. Without `contextPath`, the context is an empty mapping. A configured path must resolve to a Bag. The context is client input, not host identity.
+
+When the page has an attached device provider with the `camera` capability, `imageUploader` also offers **Take photo**. Capture uses the existing device camera command; the resulting photo opens in the same crop dialog and is saved using the component’s configured destination. Cancellation or a failed capture preserves the current image. The application explicitly attaches `BrowserCameraProvider` for browser capture; it does not replace an already attached provider. Browser capture needs a secure context and camera permission.
+
+Where the browser exposes screen capture, **Capture screen** opens its screen, window or tab picker. One frame is captured and the stream is stopped before the same crop editor opens. The frame uses the configured crop aspect ratio and follows the same browser or application destination on confirmation. A secure context and browser/operating-system permission are required; cancellation preserves the current image.
+
+
+### Reusable attachment manager
+
+`attachmentManager` composes the shared upload queue with application endpoints. Supply `storepath` and `contextPath` Bags, a bound `ready` flag, `operation` for upload, and `listMethod`, `readMethod`, `removeMethod` for application endpoints. While `ready` is false, files stay queued in the browser. On save, update the context Bag before setting `ready` true. `selectedPath` can bind an application form to the selected upload row’s metadata.
+
+The list endpoint receives `context` and returns a Bag whose node labels are opaque attachment IDs and whose `caption` attributes are display text. Read and remove receive `context` and `selected`. Read returns a Bag with `kind` (`text`, `image`, or `message`) and a corresponding `text` or `src` value. The remove endpoint returns true after deletion; a false result retains the selection and reports an error. Applications own record access, storage and transaction behavior. Changing context clears the previous displayed selection and ignores late results.

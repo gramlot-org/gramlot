@@ -17,7 +17,7 @@ test('a Gramlot instance has lifecycle, Data, formatting context, the server ada
     assert.equal(app.subscriptions, undefined);
     assert.deepEqual(Object.keys(app).sort(),
         ['abort', 'capabilities', 'commands', 'data', 'devices', 'dom', 'dvc', 'locale', 'logic', 'pageId', 'rpc', 'serverAdapter', 'src', 'state',
-            'timeZone', 'utl']);
+            'timeZone', 'uploadUrl', 'utl']);
 });
 
 test('each proxy is an instance of its handler and of Handler, pointing back to the page', () => {

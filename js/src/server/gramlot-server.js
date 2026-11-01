@@ -10,7 +10,8 @@ import {fromTytx, toTytx} from '@genrojs/tytx';
 import {GramlotBuilder} from '../builder/gramlot-builder.js';
 import {NAME_SYNTAX} from '../builder/name-syntax.js';
 import {gramlotDev} from './assets.js';
-import {ENDPOINT_METHOD, Page, SOURCE_METHOD, resolveDeclared} from './page.js';
+import {ENDPOINT_METHOD, Page, SOURCE_METHOD, UPLOAD_METHOD, resolveDeclared} from './page.js';
+import {UploadRegistry, UploadTarget} from './upload.js';
 import {InvalidResourceName, SEGMENT, loadOrder} from './resources.js';
 
 export class PageExpired extends Error { name = 'PageExpired'; }
@@ -68,8 +69,8 @@ function parseRequest(text) {
     for (const field of ['id', 'pageId', 'contentType', 'name']) {
         if (typeof request[field] !== 'string') throw new InvalidRequest(`Request ${field} must be a string`);
     }
-    if (!['source', 'data'].includes(request.contentType)) {
-        throw new InvalidRequest('Request contentType must be source or data');
+    if (!['source', 'data', 'upload'].includes(request.contentType)) {
+        throw new InvalidRequest('Request contentType must be source, data or upload');
     }
     if (!isMapping(request.params)) throw new InvalidRequest('Request params must be a mapping');
     return request;
@@ -108,7 +109,7 @@ export class GramlotServer {
     get markdownUrl() { return this.runtimeUrl.replace(/[^/]+$/, 'gramlot-markdown.js'); }
 
     constructor({runtimeUrl = '/assets/gramlot.js', rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close',
-                 rootId = 'gramlot-root', pageTtl = 1800, maxPages = 1000, collections = [],
+                 rootId = 'gramlot-root', pageTtl = 1800, maxPages = 1000, collections = [], uploadsEnabled = false,
                  cssTheme = 'gramlot-base'} = {}) {
         if (cssTheme !== false && !isThemeName(cssTheme)) {
             throw new TypeError(`The base theme must be a theme name or false, not ${JSON.stringify(cssTheme)}`);
@@ -120,6 +121,7 @@ export class GramlotServer {
         }
         Object.assign(this, {runtimeUrl, rpcUrl, closeUrl, rootId, pageTtl, maxPages, cssTheme});
         this.pages = new Map();
+        this.uploads = uploadsEnabled ? new UploadRegistry() : null;
         this.collections = [...collections];
         this.preparedGrammars = new WeakMap();
         this.environmentPages = new WeakMap();
@@ -237,7 +239,10 @@ export class GramlotServer {
 
     prune() {
         const now = performance.now();
-        for (const [id, record] of this.pages) if (record.expires <= now) this.pages.delete(id);
+        for (const [id, record] of this.pages) if (record.expires <= now) {
+            this.pages.delete(id);
+            void this.uploads?.closePage(id, record.owner);
+        }
     }
 
     /** Describe the root application without registering a page session. */
@@ -360,7 +365,7 @@ export class GramlotServer {
     /** Answer the request envelope `text` (TYTX) with the response envelope (TYTX).
      * Throws only InvalidRequest; every other failure is an outcome in the response,
      * a value that TYTX cannot serialise included. `identity` is the identity of this call (for
-     * example the avatar of a login), read only by evaluateAuth; the server keeps nothing of it. */
+     * example the avatar of a login), supplied by the host to the fresh Page and evaluateAuth; the server keeps nothing of it between calls. */
     async call(text, {owner = null, identity = null} = {}) {
         const request = parseRequest(text);
         const response = {id: request.id, contentType: request.contentType};
@@ -398,6 +403,8 @@ export class GramlotServer {
         record.expires = this.#expiry();
         const page = new record.PageClass();
         page.pageId = pageId;
+        Object.defineProperty(page, 'requestIdentity', {value:identity, writable:false});
+        if (contentType === 'upload') return this.#uploadControl(page, pageId, owner, identity, name, params);
         const source = contentType === 'source';
         let instance = page;
         let callable = page.main;
@@ -426,6 +433,68 @@ export class GramlotServer {
         return builder.toTytx();
     }
 
+    #uploadOperation(page, operation, owner, identity) {
+        const declared = this.nameSyntax.matches(operation) ? resolveDeclared(page, operation, UPLOAD_METHOD) : null;
+        if (!declared) throw new EndpointNotFound(`Unknown upload operation: ${operation}`);
+        const refused = this.#authOutcome(declared.method[UPLOAD_METHOD].auth, owner, identity);
+        if (refused) throw new (refused === 'not_authenticated' ? NotAuthenticated : NotAuthorized)(`Access refused: ${operation}`);
+        return declared;
+    }
+
+    async #uploadControl(page, pageId, owner, identity, name, params) {
+        if (!this.uploads) throw new EndpointNotFound('Upload is unavailable');
+        await this.uploads.expire();
+        this.prune();
+        if (this.pages.get(pageId)?.owner !== owner) throw new PageExpired('Unknown, expired or unowned page');
+        if (name === 'prepare') {
+            if (Object.keys(params).sort().join(',') !== 'metadata,operation') throw new TypeError('Invalid upload preparation');
+            const {operation, metadata} = params;
+            if (typeof operation !== 'string' || !isMapping(metadata) ||
+                Object.keys(metadata).sort().join(',') !== 'context,fields,mediaType,name,size' ||
+                typeof metadata.name !== 'string' || typeof metadata.mediaType !== 'string' ||
+                !Number.isSafeInteger(metadata.size) || metadata.size < 0 || !isMapping(metadata.fields) || !isMapping(metadata.context)) {
+                throw new TypeError('Invalid upload metadata');
+            }
+            const {instance, method} = this.#uploadOperation(page, operation, owner, identity);
+            const target = await method.call(instance, metadata);
+            let registered = false;
+            try {
+                this.prune();
+                if (this.pages.get(pageId)?.owner !== owner) throw new PageExpired('Unknown, expired or unowned page');
+                this.#uploadOperation(page, operation, owner, identity);
+                const grant = await this.uploads.prepare({pageId, owner, operation, target, size:metadata.size});
+                registered = true;
+                this.prune();
+                if (this.pages.get(pageId)?.owner !== owner) {
+                    await this.uploads.closePage(pageId, owner);
+                    throw new PageExpired('Unknown, expired or unowned page');
+                }
+                return grant;
+            } catch (error) {
+                if (target instanceof UploadTarget && !registered) await target.abort();
+                throw error;
+            }
+        }
+        if (!['status','cancel'].includes(name) || Object.keys(params).join(',') !== 'transferId') throw new TypeError('Invalid upload control');
+        const record = this.uploads.record(params.transferId, pageId, owner);
+        this.#uploadOperation(page, record.operation, owner, identity);
+        return name === 'status' ? record.transfer.status() : record.transfer.abort();
+    }
+
+    /** Admit a single binary upload; adapters provide the current request identity. */
+    admitUpload({pageId, owner = null, identity = null, transferId, authorization}) {
+        this.prune();
+        if (!this.uploads) throw new EndpointNotFound('Upload is unavailable');
+        const record = this.pages.get(pageId);
+        if (!record || record.owner !== owner) throw new PageExpired('Unknown, expired or unowned page');
+        const page = new record.PageClass();
+        page.pageId = pageId;
+        Object.defineProperty(page, 'requestIdentity', {value:identity, writable:false});
+        const upload = this.uploads.record(transferId, pageId, owner);
+        this.#uploadOperation(page, upload.operation, owner, identity);
+        return this.uploads.admit(transferId, pageId, owner, authorization);
+    }
+
     /** Close the page named by the close message `text`, `{"pageId": string}` as JSON, when `owner`
      * owns it (GC-230 §125); an unknown or unowned page is left as it is. A text that is not JSON, or
      * whose pageId is not a string, is an InvalidRequest. */
@@ -443,11 +512,15 @@ export class GramlotServer {
     }
 
     closePage(pageId, {owner = null} = {}) {
-        if (this.pages.get(pageId)?.owner === owner) this.pages.delete(pageId);
+        if (this.pages.get(pageId)?.owner === owner) {
+            this.pages.delete(pageId);
+            void this.uploads?.closePage(pageId, owner);
+        }
     }
 
     /** Forget every registered page; adapters call it on shutdown. */
     closeAll() {
+        for (const [pageId, record] of this.pages) void this.uploads?.closePage(pageId, record.owner);
         this.pages = new Map();
     }
 

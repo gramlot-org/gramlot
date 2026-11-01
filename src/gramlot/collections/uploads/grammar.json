@@ -1,0 +1,789 @@
+{
+  "abstracts": {},
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "elements": {
+    "attachmentManager": {
+      "_meta": {
+        "gramlot_component": {
+          "bagStore": true,
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "accept": {
+              "binding": "read",
+              "default": "",
+              "dtype": "T"
+            },
+            "contextPath": {
+              "dtype": "T"
+            },
+            "disabled": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
+            },
+            "listMethod": {
+              "dtype": "T"
+            },
+            "operation": {
+              "dtype": "T"
+            },
+            "readMethod": {
+              "dtype": "T"
+            },
+            "ready": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
+            },
+            "removeMethod": {
+              "dtype": "T"
+            },
+            "selectedPath": {
+              "binding": "twoWay",
+              "default": null,
+              "dtype": "T",
+              "nullable": true
+            },
+            "storepath": {
+              "dtype": "T"
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-attachment-manager"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "operation",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "storepath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "contextPath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "ready",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "listMethod",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "readMethod",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "removeMethod",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "accept",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "disabled",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "selectedPath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    },
+    "imageUploader": {
+      "_meta": {
+        "gramlot_component": {
+          "bagStore": true,
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "contextPath": {
+              "default": null,
+              "dtype": "T",
+              "nullable": true
+            },
+            "cropHeight": {
+              "default": 256,
+              "dtype": "L"
+            },
+            "cropWidth": {
+              "default": 256,
+              "dtype": "L"
+            },
+            "disabled": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
+            },
+            "onComplete": {
+              "default": null,
+              "dtype": "T",
+              "nullable": true
+            },
+            "operation": {
+              "default": null,
+              "dtype": "T",
+              "nullable": true
+            },
+            "outputHeight": {
+              "default": 512,
+              "dtype": "L"
+            },
+            "outputWidth": {
+              "default": 512,
+              "dtype": "L"
+            },
+            "storepath": {
+              "dtype": "T"
+            },
+            "value": {
+              "binding": "twoWay",
+              "default": null,
+              "dtype": "T",
+              "nullable": true
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-image-uploader"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "value",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "storepath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "contextPath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "operation",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "L",
+              "kind": "dtype"
+            },
+            "default": 256,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "cropWidth",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "L",
+              "kind": "dtype"
+            },
+            "default": 256,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "cropHeight",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "L",
+              "kind": "dtype"
+            },
+            "default": 512,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "outputWidth",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "L",
+              "kind": "dtype"
+            },
+            "default": 512,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "outputHeight",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "disabled",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "onComplete",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    },
+    "uploader": {
+      "_meta": {
+        "gramlot_component": {
+          "bagStore": true,
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "accept": {
+              "binding": "read",
+              "default": "",
+              "dtype": "T"
+            },
+            "autoUpload": {
+              "binding": "read",
+              "default": true,
+              "dtype": "B"
+            },
+            "contextPath": {
+              "default": null,
+              "dtype": "T",
+              "nullable": true
+            },
+            "disabled": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
+            },
+            "manualUpload": {
+              "binding": "read",
+              "default": true,
+              "dtype": "B"
+            },
+            "multiple": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
+            },
+            "onComplete": {
+              "default": null,
+              "dtype": "T",
+              "nullable": true
+            },
+            "operation": {
+              "dtype": "T"
+            },
+            "selectedPath": {
+              "binding": "twoWay",
+              "default": null,
+              "dtype": "T",
+              "nullable": true
+            },
+            "storepath": {
+              "dtype": "T"
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-uploader"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "operation",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "storepath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "contextPath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "accept",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "multiple",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": true,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "autoUpload",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": true,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "manualUpload",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "disabled",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "selectedPath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "onComplete",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    }
+  },
+  "grammar": {
+    "description": null,
+    "name": "uploads",
+    "title": "uploads",
+    "version": null
+  }
+}

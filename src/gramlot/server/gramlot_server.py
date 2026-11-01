@@ -22,6 +22,7 @@ from ..page.name_syntax import NAME_SYNTAX
 from .assets import gramlot_dev
 from .files import THEMES, file_below
 from .resources import SEGMENT, InvalidResourceName, load_order
+from .upload import _UploadRegistry, _invoke
 
 
 class PageExpired(LookupError):
@@ -97,8 +98,8 @@ def _parse_request(text):
     for field in ("id", "pageId", "contentType", "name"):
         if not isinstance(request.get(field), str):
             raise InvalidRequest(f"Request {field} must be a string")
-    if request["contentType"] not in ("source", "data"):
-        raise InvalidRequest("Request contentType must be source or data")
+    if request["contentType"] not in ("source", "data", "upload"):
+        raise InvalidRequest("Request contentType must be source, data or upload")
     if not isinstance(request.get("params"), dict):
         raise InvalidRequest("Request params must be a mapping")
     return request
@@ -149,6 +150,7 @@ class GramlotServer:
         self._database_access = None
         self._page_channels = {}
         self.websocket_url = websocket_url
+        self._uploads = None
         self.collections = collection_graph(collections)
         self._environment_pages = {}
         self._collection_documents = {}
@@ -295,7 +297,7 @@ class GramlotServer:
     @property
     def capabilities(self):
         """The capabilities announced in the bootstrap; none in the base server."""
-        return []
+        return ["upload"] if self._uploads is not None else []
 
     @property
     def name_syntax(self):
@@ -422,6 +424,7 @@ class GramlotServer:
                            "capabilities": self.capabilities, "nameSyntax": self.name_syntax.to_dict(),
                            **({"websocketUrl": _prefixed(prefix, self.websocket_url)}
                               if self.websocket_url is not None else {}),
+                           **({"uploadUrl": _prefixed(prefix, "/gramlot/upload")} if self._uploads is not None else {}),
                            **({"devices": list(cls.devices)} if cls.devices else {}),
                            **({"locale": cls.locale} if cls.locale is not None else {}),
                            **({"timeZone": cls.time_zone} if cls.time_zone is not None else {})},
@@ -470,8 +473,8 @@ class GramlotServer:
         """Answer the request envelope ``text`` (TYTX) with the response envelope (TYTX).
         Raises only ``InvalidRequest``; every other failure is an outcome in the response,
         a value that TYTX cannot serialise included. ``identity`` is the identity of this
-        call (for example the avatar of a login), read only by ``evaluate_auth``; the server
-        keeps nothing of it."""
+        call (for example the avatar of a login), supplied by the host to the fresh Page and
+        ``evaluate_auth``; the server keeps nothing of it between calls."""
         request = _parse_request(text)
         response = {"id": request["id"], "contentType": request["contentType"]}
         try:
@@ -511,7 +514,10 @@ class GramlotServer:
         page = record[1]()
         page._database_access = self._database_access
         page.page_id = request["pageId"]
+        page._request_identity = identity
         name, params = request["name"], request["params"]
+        if request["contentType"] == "upload":
+            return await self._upload_control(page, request["pageId"], owner, identity, name, params)
         source = request["contentType"] == "source"
         if source and name == "main":
             function, rule = page.main, None
@@ -537,6 +543,78 @@ class GramlotServer:
         if result is not None:
             raise TypeError("Source methods must build into root and return None")
         return builder.to_tytx()
+
+    def _upload_operation(self, page, name, owner, identity):
+        declared = resolve_declared(page, name, "__gramlot_upload__")
+        if declared is None:
+            raise EndpointNotFound(f"Unknown upload operation: {name}")
+        instance, method = declared
+        rule = getattr(method, "__gramlot_upload__")["auth"]
+        refused = self._auth_outcome(rule, owner, identity)
+        if refused is not None:
+            raise {OUTCOME_CODES[cls]: cls for cls in (NotAuthenticated, NotAuthorized)}[refused](
+                f"Access refused: {name}")
+        return method.__get__(instance, type(instance)), rule
+
+    async def _upload_control(self, page, page_id, owner, identity, name, params):
+        if self._uploads is None:
+            raise EndpointNotFound("Upload is unavailable")
+        await self._uploads.expire()
+        self._prune()
+        page_record = self._pages.get(page_id)
+        if page_record is None or page_record[2] != owner:
+            raise PageExpired("Unknown, expired or unowned page")
+        if name == "prepare":
+            if set(params) != {"operation", "metadata"}:
+                raise ValueError("Invalid upload preparation")
+            operation, metadata = params["operation"], params["metadata"]
+            if (not isinstance(operation, str) or not isinstance(metadata, dict)
+                    or set(metadata) != {"name", "size", "mediaType", "fields", "context"}
+                    or not isinstance(metadata["name"], str)
+                    or not isinstance(metadata["mediaType"], str)
+                    or not isinstance(metadata["fields"], dict)
+                    or not isinstance(metadata["context"], dict)
+                    or type(metadata["size"]) is not int or metadata["size"] < 0):
+                raise ValueError("Invalid upload metadata")
+            method, rule = self._upload_operation(page, operation, owner, identity)
+            target = await _invoke(method, metadata)
+            try:
+                self._prune()
+                current = self._pages.get(page_id)
+                if current is None or current[2] != owner:
+                    raise PageExpired("Unknown, expired or unowned page")
+                self._upload_operation(page, operation, owner, identity)
+                grant = await self._uploads.prepare(page_id=page_id, owner=owner,
+                    operation=operation, rule=rule, target=target, size=metadata["size"])
+            except BaseException:
+                from .upload import UploadTarget
+                if isinstance(target, UploadTarget):
+                    await _invoke(target.abort)
+                raise
+            self._prune()
+            current = self._pages.get(page_id)
+            if current is None or current[2] != owner:
+                await self._uploads.close_page(page_id, owner)
+                raise PageExpired("Unknown, expired or unowned page")
+            return grant
+        if name not in ("status", "cancel") or set(params) != {"transferId"}:
+            raise ValueError("Invalid upload control operation")
+        record = self._uploads.record(params["transferId"], page_id, owner)
+        self._upload_operation(page, record["operation"], owner, identity)
+        return await (record["transfer"].status() if name == "status" else
+                      self._uploads.cancel(params["transferId"], page_id, owner))
+
+    def _upload_admit(self, *, page_id, owner, identity, transfer_id, token):
+        self._prune()
+        page_record = self._pages.get(page_id)
+        if self._uploads is None or page_record is None or page_record[2] != owner:
+            raise PageExpired("Unknown, expired or unowned page")
+        page = page_record[1]()
+        page.page_id = page_id
+        page._request_identity = identity
+        record = self._uploads.record(transfer_id, page_id, owner)
+        self._upload_operation(page, record["operation"], owner, identity)
+        return self._uploads.admit(transfer_id, page_id, owner, token)
 
     def close(self, text, *, owner=None):
         """Close the page named by the close message ``text``, ``{"pageId": str}`` as JSON, when

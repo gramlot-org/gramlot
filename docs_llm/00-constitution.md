@@ -4911,3 +4911,118 @@ empty-field search, alternate editor or new editing state.
 ### Amendment 11.105 — Asqueel relation-tree enrichment in the adapter — 2026-11-01
 
 The owner rejects adding the explorer enrichment to the Asqueel resolver and directs “no. er ora fallo nel nostro adapter”, in response to the explicit question whether the resolver itself should return groups, virtual columns and explorer metadata. For this bounded relation-tree increment, `gramlot-py-server` may enrich the Asqueel relation resolver's output using the Asqueel model to supply those explorer features. This is a temporary exception to §13's ownership of a missing explorer capability; it supersedes that ownership rule only for this adapter enrichment. Core remains host/database independent. This decision does not authorize editing Asqueel, changing unrelated dependency boundaries, bypassing application authorization, publication or release.
+<a id="gc-000-uploader-design-direction"></a>
+
+### Shared uploader design direction — owner, 2026-10-29; resumed 2026-10-30
+
+Retrievable decision record: Codex chat **Inventaria gli uploader legacy di
+Genropy**, `01a1876d-e384-7c92-8abb-8599c230162d`. The owner states:
+“Progettiamo il contratto per entrambi, ma realizziamo prima il percorso con
+server. Prepariamo il piano completo per step. faremo tutto in worktree separato”.
+They answer “si” to Python ASGI/Uvicorn through gramlot-py-server, and “ok” to each
+of: a dedicated binary channel coordinated with Gramlot; destination resolved by
+an authorized server application operation; preparation with temporary
+authorization followed by binary transfer; retry only after an unsaved outcome,
+reconciliation of uncertain outcomes and cancellation with cleanup/actual result.
+
+On 2026-10-30 the owner requests a delegated implementation for the visual Source
+editor after “no serve un uploader”, rejecting a separate readText proposal. This
+authorizes resuming that shared uploader workstream; it does not turn unanswered
+API, state, wire, token-lifetime or storage choices into approved decisions.
+The dedicated channel is a confirmed design direction; the exact bounded addition
+to GC-230/11.58 must be agreed before transport code. Existing inout and RPC
+contracts remain unchanged until then. GC-385 separates confirmed direction from
+the concrete proposal and its pending decisions. No local-file substitute is
+introduced in the editor.
+
+
+Uploader start modes — owner, 2026-10-30: “Sì, entrambe le modalità” confirms
+immediate transfer after file selection/drop and explicit transfer started by
+Upload, using the same queue and engine. Supersedes the pending UI-mode decision
+recorded in GC-385 §005. It does not by itself confirm the proposed public API
+spelling, transfer URLs or server-operation declaration.
+
+
+Uploader server boundary — owner, 2026-10-31: in Codex chat Inventaria gli
+uploader legacy di Genropy, the owner answered “ok” to the concrete client
+`uploader` declaration, then “ok” to the server boundary: `@upload(auth=...)`
+returns an application-owned `UploadTarget` with max_bytes and write, finish,
+abort and status operations; the server authorizes admission, and transfer
+results support reconciliation. The first implementation is ASGI/Uvicorn.
+This adds a dedicated binary channel to 11.58/GC-230: typed control and outcome
+messages retain the existing envelope, while binary bytes travel separately.
+The existing RPC and close contracts remain valid. Other adapter implementations
+are delivered separately; capability must not be claimed before implementation.
+Precise control and binary wire conventions remain to be specified consistently
+for server and serverless without inventing unapproved alternatives.
+
+
+Per-file uploader metadata — owner, 2026-11-01: “Sì, confermo. Procedi con i metadati per file e poi con le altre funzionalità mancanti.” The owner confirms GC-385 §050: each queue row owns an editable metadata Data Bag; preparation snapshots it as the always-present `fields` mapping alongside `name`, `size` and `mediaType`. The application operation validates its fields. This extends the previously fixed three-field preparation record for the shared server and serverless contract; files, grants and destinations remain outside Data. No editable-grid contract is approved by this decision.
+
+
+il controllo nel core”, in reply to the concrete clipboard regression: a duplicate
+nodeId is rejected only after live Source insertion. Approves a bounded extension
+of `validateCandidate` to reject nodeId conflicts before mutation. Validate nested
+candidate duplicates and mounted conflicts, retaining replacement-descendant
+exclusions and protecting the retained target/outside nodes. No nodeId rewriting,
+new clipboard/core API or consumer workaround is authorized by this correction.
+
+
+Serverless uploader operation — owner, 2026-11-01: “ok” following the explanation of the proposed operation executed in the Worker confirms that the browser passes the selected file and its metadata to the Worker, where the application upload operation chooses its destination and returns its outcome to the shared queue. Serverless execution does not itself provide persistent storage. The transport details and full verification remain open.
+
+
+Worker uploader transport — owner, 2026-11-01: “ok” confirms GC-385 §055: the browser passes the selected File to the Worker, which reads bounded chunks, reports progress and returns the target outcome. Cancellation and status follow the shared semantics; a terminated Worker cannot establish that an external write was unsaved. This extends the shared uploader binary channel to the Worker; it adds no persistence guarantee.
+
+
+Per-file metadata form — owner, 2026-11-01: “Sì, va bene. Procedi così e poi continua con le altre funzionalità mancanti.” confirms a file list and a form for the selected file, with fields declared by the application and ordinary Gramlot bindings. The form edits the selected queue row metadata before manual upload. This does not define editable grid cells or introduce a second metadata store.
+
+
+Attachments for a new record — owner, 2026-11-01: “Sì, carichiamoli dopo il salvataggio” confirms that files selected for an unsaved parent remain in the browser queue and are uploaded after the parent is saved. Closing the page beforehand loses those selected files. This does not select a database model, storage backend, service API or a temporary server-side attachment lifecycle.
+
+
+Per-request application identity — owner, 2026-11-01: “Sì, identità fornita dall’host (consigliato)” confirms that the host provides the authenticated identity of the individual request to the application method and the application checks access to the particular record. The identity is host-supplied, not client metadata; absent identity is None/null. A fresh Page receives it per invocation, never on the shared server. This extends GC-230 §030, where the per-call identity previously reached only the auth evaluator. Application login, user model, storage and record permissions remain outside Gramlot.
+
+
+Uploader target authorization recheck — owner, 2026-11-01: “ma nondai... questa è paranoia” rejects a mandatory application-target authorization hook invoked by the framework before binary admission and before completion. The application performs its record authorization using the host identity at preparation and may implement any further checks it needs. The existing declared operation rule at admission remains unchanged. This rejects the proposed addition to UploadTarget; it does not weaken existing page ownership or operation authorization.
+
+
+Editable image direction — owner, 2026-11-01: “si il ritaglio nell'url per certi versi era comodo ma forse troppo complicato” confirms keeping the original and the framing parameters separately while editing, and generating the cropped image on confirmation. Crop parameters encoded in the image URL are not the chosen primary representation. This confirms that bounded direction; it does not fix the public widget API, output format, persistence or camera contract.
+
+
+Image storage destinations — owner, 2026-11-01: “certe immagini ma vanno bene di fatto nel database e altre invcce su server”. The application may store the confirmed image in its database or as a server file, using the application-owned upload target; Gramlot does not impose base64 or a database/storage technology. Browser-only persistence remains a separate question.
+
+
+Browser-only image editing — owner, 2026-11-01: “Sì, anche nel browser” confirms that the crop editor also works entirely in the browser, in addition to application-owned database and server-file destinations. The representation of a browser-only result in Data is not fixed by this answer.
+
+
+Image result binding — owner, 2026-11-01: “Sì, va bene” confirms that browser-only editing writes a data URL to the bound Data value, while an application upload target returns a displayable URL for an image stored in its database or as a server file. “procedi” confirms implementation of this direction. The application owns storage.
+
+
+Editable image direct manipulation — owner, 2026-11-01: “ma non posso draggare ? l’immagine e avere lo zoom e rotazoione con modificatori ?” requests direct image manipulation as in the legacy control. “se s0ono nella app mobile o col touch potrtei anche fare rotate e zoom da gesture” requests touch zoom and rotation as well. The image editor uses mouse drag, Shift-drag zoom, Alt-drag rotation, one-finger movement and two-finger movement/zoom/rotation. Sliders and confirmation remain available; this does not restore crop parameters in URLs.
+
+
+Editable image trackpad — owner, 2026-11-01: “ok” confirms trackpad pinch to zoom and rotation where browser gesture events expose it, retaining Alt-drag as an available rotation control. This extends direct manipulation in the crop dialog; it does not introduce URL-encoded crop or change storage.
+
+
+Trackpad rotation in Chrome — owner, 2026-11-01: “ok” confirms Alt plus two-finger trackpad scrolling over the image crop frame to rotate without clicking. Ordinary scrolling remains available and pinch continues to zoom.
+
+
+Image editor controls — owner, 2026-11-01: “lo slider di traslazione verticale dovrebbe essere verticale” requests vertical orientation for vertical translation. “mettere un quadratino da afferrare ... per ruotare o per ingrandire ... come nel traycontainer” requests visible direct manipulation handles. The crop editor places translation controls along their axes and provides separate rotation and zoom handles; the existing gestures and crop result contract remain.
+
+
+Image editor presentation — owner, 2026-11-01: “togli slidere che son brutti. e le icone ruota e ridimensioan dovrebbero essete piu leggere e trasoarenti e/o esterne per non infastidire” removes the crop dialog sliders and requests lighter, translucent and/or external rotation and zoom handles. The handles now sit outside the image; direct gestures and keyboard operation remain. This supersedes the preceding slider-placement decision.
+
+
+Shared upload context — owner, 2026-11-01: “Sì, contesto condiviso” confirms that an application supplies context shared by queued files, such as the saved parent record identifier, separately from each file’s own metadata. The application owns storage and the record. Files selected before save are uploaded after save under the confirmed deferred-upload behavior.
+
+
+Image camera acquisition — owner, 2026-11-01: “Sì, usa lo stesso editor” confirms offering a take-photo action when the attached device provider supplies camera capability, opening the existing crop editor after capture and using the image uploader’s configured browser or application destination. The existing device camera command and provider own acquisition; cancellation and failure do not replace the image.
+
+
+Reusable attachment manager — owner, 2026-11-01: “Sì, operazioni dell’applicazione” confirms a reusable component using the shared uploader, with application-provided operations to list, read and remove attachments; the existing application upload operation stores them. Application ownership of storage, records and authorization remains unchanged. Files chosen before parent save remain in the browser queue.
+
+
+Browser camera — owner, 2026-11-01: “Sì, anche nel browser” confirms browser camera capture in the image uploader and gallery, reusing the existing device-provider camera contract and crop editor. Browser acquisition is explicitly installed by the application; capture starts only from the user action, and camera resources stop on completion or cancellation. This extends the native-provider camera direction to browser execution without changing storage ownership.
+
+
+Browser screen image — owner, 2026-11-01: “Sì, usa lo stesso editor” confirms choosing a screen, window or tab through the browser and framing the desired area in the existing image editor. Capture follows the configured browser or application upload destination and uses the editor’s configured aspect ratio. The browser owns source selection and permission.

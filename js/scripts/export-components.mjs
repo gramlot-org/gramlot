@@ -28,3 +28,5 @@ await writeFile(new URL('../../src/gramlot/collections/chat.json', import.meta.u
 
 import grouplets from '../src/components/grouplets.js';
 await writeFile(new URL('../../src/gramlot/collections/grouplets.json', import.meta.url), JSON.stringify(grouplets.toDocument(), null, 2) + '\n');
+import uploads from '../src/components/uploads.js';
+await writeFile(new URL('../../src/gramlot/collections/uploads.json', import.meta.url), JSON.stringify(uploads.toDocument(), null, 2) + '\n');

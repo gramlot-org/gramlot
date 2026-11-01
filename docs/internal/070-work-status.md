@@ -19433,3 +19433,53 @@ files in the original integration inputs are unchanged.
 Evidence: /private/tmp/gramlot-tree-consolidation/. Visual/product acceptance and
 public release remain separate. Next planned review: uploader, then Visual Editor.
 Python compiled-page export stays suspended; Invoice stays outside this integration.
+
+
+<a id="gc-070-uploader-consolidation-20261101"></a>
+## Uploader common-base consolidation — 2026-11-01
+
+Owner: “iniziamo da uploadeer”, following the common-base integration review.
+Integrated the bounded uploader candidates into core, Python Uvicorn, JavaScript
+Worker and the examples environment. Original candidate worktrees are preserved;
+all 144 input-file hashes match. Visual Editor and Invoice remain outside this
+integration. No package publication or deployment was performed.
+
+Included: shared queue and per-file metadata, application-owned UploadTarget,
+request identity, deferred attachment uploads after parent save, list/preview/
+remove operations, image crop, explicit browser camera provider and screen capture.
+Review placed attachment presentation and crop transforms on the owning Source
+node; queued Files and native media resources remain component-owned resources.
+Synchronous DOM relocation into a floating no longer disposes these resources.
+New lessons inherit collections from the examples environment. Feature coverage
+includes all three lessons. A pre-existing missing Grid editing feature mapping
+and missing editingStatus/rowActions reference-generator entries were also repaired.
+
+Verification:
+- Core JS: 1,645 passed; Python: 386 passed, 5 expected failures, 397 subtests.
+- Final lifecycle/state subset: 43 passed after the relocation correction.
+- Python adapters: 342 passed, one skipped; Node server: 42 passed;
+  serverless: 58 passed.
+- Gallery full JS: 369/371 initially passed; two failures (route count and an
+  existing unmapped Grid editing lesson) corrected; all 20 index/build tests pass.
+- Gallery full Python: 101 passed, one skipped, 200 subtests, two failures
+  (route count and page collection imports) corrected; affected suites: 11 passed.
+  Upload/feature/build subset: 18 passed.
+- Core public documentation: strict Sphinx build and 19-page link/anchor checks.
+- Chromium and WebKit: real Uvicorn attachment queue, deferred upload, preview,
+  removal and repeat upload. Chromium also verifies independent per-file metadata.
+- Crop pixels and controls: Chromium and WebKit. Simulated camera/screen streams
+  verify confirmed results and cleanup; physical cameras/trackpads are not qualified.
+- Worker from file: Chromium passes. The same export served over local HTTP passes
+  on WebKit. WebKit from file fails before reading bytes with NotReadableError;
+  a standalone File/Worker probe reproduces it without Gramlot. This matches
+  upstream WebKit bug 258443. No alternate transport was introduced.
+
+Known limit: file-origin Worker upload is not qualified on WebKit. The application
+owns durable storage and authorization; the Uvicorn transfer registry is single-
+process and does not survive restart. Other HTTP adapters do not implement binary
+uploads. The gallery attachment store is an in-memory demonstration, not production
+storage. Product/visual acceptance and publication remain separate.
+
+Evidence: /private/tmp/gramlot-upload-consolidation-review/ and PORT-0028-uploader.
+Next independent candidate: Visual Editor. Python compiled-page export remains
+suspended and Invoice remains excluded.

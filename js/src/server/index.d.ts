@@ -17,3 +17,5 @@ export {InvalidResourceName, parseRequires} from './resources.js';
 export type {Resources} from './resources.js';
 export {NAME_SYNTAX, NameSyntax} from '../builder/name-syntax.js';
 export type {NameSyntaxDescriptor} from '../builder/name-syntax.js';
+
+export {UploadTarget} from './upload.js';

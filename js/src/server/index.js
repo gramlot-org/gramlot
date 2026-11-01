@@ -15,3 +15,5 @@ export {gramlotDev, runtimeAsset} from './assets.js';
 export {checkProtocol} from './conformance.js';
 export {InvalidResourceName, parseRequires} from './resources.js';
 export {NAME_SYNTAX, NameSyntax} from '../builder/name-syntax.js';
+
+export {UploadTarget} from './upload.js';

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst')
+COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads')
 # Human explanations complement the executable parameter contract.
 DESCRIPTIONS = {
  'textbox': 'Single-line text with label, validation and optional live updates.',
@@ -44,6 +44,11 @@ DESCRIPTIONS = {
  'stackContainer': 'One selected panel at a time, without a tab strip.',
  'tabContainer': 'Selected panels with shaped or underlined tabs on any side.',
  'tree': 'Hierarchical Bag presentation with selection, disclosure and declared drag behavior.',
+ 'editingStatus': 'Changes and validation feedback from the nearest Source form state.',
+ 'rowActions': 'Shared contextual row actions for the tree presentation.',
+ 'attachmentManager': 'Reusable attachment queue and list backed by application operations.',
+ 'imageUploader': 'Editable image value with local crop or an application-owned upload destination.',
+ 'uploader': 'Shared file queue with progress, preview, selected-file metadata and application-owned upload targets.',
  'codeMirror': 'Code/text editor with composed language and editor options.',
  'htmlEditor': 'Rich HTML editing using the supported engine configuration.',
  'htmlPreview': 'Read-only HTML preview with the component sanitization contract.',
@@ -56,6 +61,7 @@ DETAILS = {
  'buttons': ('350-menus-toolbars-and-windows.md', 'Commands, hierarchy and toolbar layout'),
  'layout': ('105-components.md#gc-105-085', 'Forms, borders, panels and tabs'),
  'tree': ('105-components.md#gc-105-120', 'Tree stores, labels and selection'),
+ 'uploads': ('105-components.md#gc-105-uploader', 'File uploads and metadata'),
  'editors': ('105-components.md#gc-105-125', 'Editor composition and document behavior'),
  'typst': ('105-components.md#gc-105-145', 'Typst compiler and resource ownership'),
 }
@@ -84,9 +90,10 @@ FAMILIES = {
     'Numbers, dates and time': ('numberTextBox', 'horizontalSlider', 'verticalSlider',
                               'dateTextBox', 'dateCalendar', 'timeTextBox'),
     'Buttons, menus and toolbars': ('button', 'toggleButton', 'dropDownButton', 'menu', 'menuline', 'spacer'),
-    'Forms and containers': ('formlet', 'groupBox', 'contentPane', 'borderContainer', 'framePane', 'stackContainer', 'tabContainer', 'trayPane', 'transformPane'),
+    'Forms and containers': ('editingStatus', 'formlet', 'groupBox', 'contentPane', 'borderContainer', 'framePane', 'stackContainer', 'tabContainer', 'trayPane', 'transformPane'),
     'Dialogs and floating windows': ('dialog', 'floatingPane'),
-    'Trees': ('tree',),
+    'Trees': ('tree', 'rowActions'),
+    'File uploads': ('uploader', 'imageUploader', 'attachmentManager'),
     'Editors and document previews': ('codeMirror', 'htmlEditor', 'htmlPreview', 'markdownEditor', 'markdownPreview', 'typstPreview'),
 }
 SHARED = {
@@ -147,7 +154,7 @@ def render():
 
 Document ID: **GC-345**.
 
-This reference covers all **{count} component declarations** in the six packaged
+This reference covers all **{count} component declarations** in seven selected packaged
 component grammars. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
@@ -201,7 +208,7 @@ connects these controls to runnable lessons and screenshots.
 | --- | --- |"""]
     entries = {key: (name, element) for name, doc in docs for key, element in doc['elements'].items()}
     # Numeric block IDs were allocated in collection order before the purpose-based grouping.
-    stable = {'textbox': 'gc-345-015', 'passwordbox': 'gc-345-035', 'textBoxArea': 'gc-345-030', 'checkbox': 'gc-345-020', 'radioButton': 'gc-345-040', 'radioButtonText': 'gc-345-025', 'checkBoxText': 'gc-345-100', 'colorpicker': 'gc-345-045', 'filteringSelect': 'gc-345-075', 'callbackSelect': 'gc-345-080', 'comboBox': 'gc-345-085', 'dbSelect': 'gc-345-090', 'dbComboBox': 'gc-345-095', 'numberTextBox': 'gc-345-060', 'horizontalSlider': 'gc-345-050', 'verticalSlider': 'gc-345-055', 'dateTextBox': 'gc-345-065', 'dateCalendar': 'gc-345-105', 'timeTextBox': 'gc-345-070', 'button': 'gc-345-110', 'toggleButton': 'gc-345-115', 'dropDownButton': 'gc-345-120', 'menu': 'gc-345-125', 'menuline': 'gc-345-130', 'spacer': 'gc-345-135', 'formlet': 'gc-345-155', 'groupBox': 'gc-345-160', 'contentPane': 'gc-345-165', 'borderContainer': 'gc-345-170', 'framePane': 'gc-345-150', 'stackContainer': 'gc-345-175', 'tabContainer': 'gc-345-180', 'dialog': 'gc-345-140', 'floatingPane': 'gc-345-145', 'tree': 'gc-345-185', 'codeMirror': 'gc-345-190', 'htmlEditor': 'gc-345-195', 'htmlPreview': 'gc-345-200', 'markdownEditor': 'gc-345-205', 'markdownPreview': 'gc-345-210', 'typstPreview': 'gc-345-215', 'trayPane': 'gc-345-220', 'transformPane': 'gc-345-225'}
+    stable = {'textbox': 'gc-345-015', 'passwordbox': 'gc-345-035', 'textBoxArea': 'gc-345-030', 'checkbox': 'gc-345-020', 'radioButton': 'gc-345-040', 'radioButtonText': 'gc-345-025', 'checkBoxText': 'gc-345-100', 'colorpicker': 'gc-345-045', 'filteringSelect': 'gc-345-075', 'callbackSelect': 'gc-345-080', 'comboBox': 'gc-345-085', 'dbSelect': 'gc-345-090', 'dbComboBox': 'gc-345-095', 'numberTextBox': 'gc-345-060', 'horizontalSlider': 'gc-345-050', 'verticalSlider': 'gc-345-055', 'dateTextBox': 'gc-345-065', 'dateCalendar': 'gc-345-105', 'timeTextBox': 'gc-345-070', 'button': 'gc-345-110', 'toggleButton': 'gc-345-115', 'dropDownButton': 'gc-345-120', 'menu': 'gc-345-125', 'menuline': 'gc-345-130', 'spacer': 'gc-345-135', 'formlet': 'gc-345-155', 'groupBox': 'gc-345-160', 'contentPane': 'gc-345-165', 'borderContainer': 'gc-345-170', 'framePane': 'gc-345-150', 'stackContainer': 'gc-345-175', 'tabContainer': 'gc-345-180', 'dialog': 'gc-345-140', 'floatingPane': 'gc-345-145', 'tree': 'gc-345-185', 'codeMirror': 'gc-345-190', 'htmlEditor': 'gc-345-195', 'htmlPreview': 'gc-345-200', 'markdownEditor': 'gc-345-205', 'markdownPreview': 'gc-345-210', 'typstPreview': 'gc-345-215', 'trayPane': 'gc-345-220', 'transformPane': 'gc-345-225', 'uploader': 'gc-345-340', 'imageUploader': 'gc-345-345', 'attachmentManager': 'gc-345-350', 'editingStatus': 'gc-345-355', 'rowActions': 'gc-345-360'}
     if set(stable) != set(entries):
         raise ValueError('Allocate a stable documentation ID for every new component')
     grouped = [key for widgets in FAMILIES.values() for key in widgets]
@@ -211,7 +218,7 @@ connects these controls to runnable lessons and screenshots.
         out.append(f'| `{name}` | {widget_links(doc["elements"])} |')
     brief = ['# Widget and parameter reference\n\nDocument ID: **GC-345**.\n\n'
              'Grouped by purpose; shared parameters are documented once. The full counterpart\n'
-             'preserves types, defaults, bindings and child contracts from all six packaged grammars.\n'
+             'preserves types, defaults, bindings and child contracts from seven selected packaged grammars.\n'
              'Development reference; no maturity or release acceptance is implied.\n',
              '<a id="gc-345-005"></a>\n<a id="gc-345-010"></a>\n',
              'Ordinary Source/CSS attributes remain in Writing pages and Themes and CSS.\n'
@@ -284,6 +291,6 @@ def main():
         if args.check:
             if not path.exists() or path.read_text()!=text:raise SystemExit(f'Stale widget reference: {path}')
         else:path.write_text(text)
-    print('Widget reference matches all six packaged component grammars.')
+    print('Widget reference matches its seven selected component grammars.')
 
 if __name__=='__main__':main()

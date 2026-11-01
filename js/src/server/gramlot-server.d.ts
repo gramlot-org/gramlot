@@ -1,3 +1,4 @@
+import type {UploadTransfer} from './upload.js';
 /**
  * The neutral server: registers pages and builds their Sources, with no HTTP engine.
  *
@@ -73,6 +74,8 @@ export interface GramlotServerOptions {
     maxPages?: number;
     /** Application collections: generated Builder grammar and root-relative browser module URL. */
     collections?: PreparedCollection[];
+    /** Enable upload control only when the adapter provides a binary transport. */
+    uploadsEnabled?: boolean;
     /** The base theme of every page, a folder of the core themes, or false for none; default `gramlot-base`. */
     cssTheme?: string | false;
 }
@@ -160,8 +163,10 @@ export class GramlotServer {
     openPage(path: string, options?: {owner?: unknown; prefix?: string}): Promise<OpenedPage>;
     /** The text of a request body: UTF-8, a leading byte order mark removed; other bytes throw `InvalidRequest`. */
     decodeBody(data: ArrayBuffer | ArrayBufferView): string;
-    /** Answer the request envelope `text` (TYTX) with the response envelope (TYTX); throws only `InvalidRequest`. `identity` is the identity of this call, read only by `evaluateAuth`. */
+    /** Answer the request envelope `text` (TYTX) with the response envelope (TYTX); throws only `InvalidRequest`. `identity` is the trusted identity of this call, supplied to the fresh Page and `evaluateAuth`. */
     call(text: string, options?: {owner?: unknown; identity?: unknown}): Promise<string>;
+    /** Admit a one-use upload after owner and operation authorization checks. */
+    admitUpload(options: {pageId: string; transferId: string; authorization: string; owner?: unknown; identity?: unknown}): UploadTransfer;
     /** Close the page named by the close message `text` (`{"pageId": string}` as JSON) when `owner` owns it; throws `InvalidRequest`. */
     close(text: string, options?: {owner?: unknown}): void;
     /** Forget a registered page when `owner` owns it. */

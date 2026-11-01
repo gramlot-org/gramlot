@@ -39,8 +39,9 @@ function domPropertyName(name) {
  * names and style arrive adapted by the renderers (GramlotHtmlRenderer, GramlotSvgRenderer).
  */
 export class HtmlElement {
-    constructor({format, metadataAttributes = [], invokeScript = null, callLogic = null, reportError = null} = {}) {
+    constructor({format, metadataAttributes = [], invokeScript = null, callLogic = null, reportError = null, uploadContext = null} = {}) {
         this.format = format;
+        this.uploadContext = uploadContext;
         this.invokeScript = invokeScript;
         this.callLogic = callLogic;
         this.reportError = reportError;
@@ -131,6 +132,7 @@ export class HtmlElement {
                 timeZone: node.rootBuilder.binding.gramlot.timeZone,
                 collectionView: (bag, rowMode) => node.rootBuilder.binding.collectionView(node, bag, rowMode),
                 format: this.format,
+                upload: () => this.uploadContext(),
                 reportError: (error, title) => this.reportError(node, error, title),
                 publish: (topic, payload) => node.publish(topic, payload),
                 writeParameter: (name, value) => this.writeParameter(node, name, value),

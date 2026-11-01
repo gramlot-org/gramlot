@@ -3,7 +3,7 @@
 Document ID: **GC-345**.
 
 Grouped by purpose; shared parameters are documented once. The full counterpart
-preserves types, defaults, bindings and child contracts from all six packaged grammars.
+preserves types, defaults, bindings and child contracts from seven selected packaged grammars.
 Development reference; no maturity or release acceptance is implied.
 
 <a id="gc-345-005"></a>
@@ -19,7 +19,7 @@ Page.gramlots selects prepared collections; buttons are built in.
 
 The value type and writeback behavior depend on the control. Use a Data pointer for binding; see [Data binding](097-data-binding.md).
 
-Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [toggleButton](#gc-345-togglebutton), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview).
+Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [toggleButton](#gc-345-togglebutton), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview), [imageUploader](#gc-345-imageuploader).
 
 
 <a id="gc-345-225"></a>
@@ -28,7 +28,7 @@ Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButt
 
 Disabled prevents interaction; readonly preserves reading without accepting edits. live controls when edits reach Data. See [Field behavior](105-components.md#gc-105-040).
 
-Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menuline](#gc-345-menuline), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor).
+Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menuline](#gc-345-menuline), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor), [uploader](#gc-345-uploader), [imageUploader](#gc-345-imageuploader), [attachmentManager](#gc-345-attachmentmanager).
 
 
 <a id="gc-345-230"></a>
@@ -396,6 +396,15 @@ Specific parameters: `size`, `flex`.
 ## Forms and containers
 
 
+<a id="gc-345-355"></a>
+<a id="gc-345-editingstatus"></a>
+### `editingStatus`
+
+Collection: inputs. Changes and validation feedback from the nearest Source form state.
+
+No additional component-specific parameters.
+
+
 <a id="gc-345-155"></a>
 <a id="gc-345-formlet"></a>
 ### `formlet`
@@ -523,10 +532,56 @@ No additional component-specific parameters.
 
 Collection: tree. Hierarchical Bag presentation with selection, disclosure and declared drag behavior.
 
-Specific parameters: `storepath`, `draggable`, `labelAttribute`, `hideValues`, `labelCb`, `getLabel`, `getLabelClass`, `getIconClass`, `selectedLabelClass`, `searchText`, `autoCollapse`, `selectedPath`.
+Specific parameters: `storepath`, `draggable`, `labelAttribute`, `internalNames`, `hideValues`, `labelCb`, `getLabel`, `getLabelClass`, `getIconClass`, `selectedLabelClass`, `searchText`, `favorites`, `favoritesLabel`, `autoCollapse`, `selectedPath`, `onChecked`, `checkedPaths`, `checkedPaths_joiner`, `checkChildren`.
+
+
+<a id="gc-345-360"></a>
+<a id="gc-345-rowactions"></a>
+### `rowActions`
+
+Collection: tree. Shared contextual row actions for the tree presentation.
+
+Specific parameters: `position`, `actionState`, `state`.
 
 
 <a id="gc-345-335"></a>
+## File uploads
+
+
+<a id="gc-345-340"></a>
+<a id="gc-345-uploader"></a>
+### `uploader`
+
+Collection: uploads. Shared file queue with progress, preview, selected-file metadata and application-owned upload targets.
+
+Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
+
+Specific parameters: `operation`, `storepath`, `contextPath`, `accept`, `multiple`, `autoUpload`, `manualUpload`, `selectedPath`, `onComplete`.
+
+
+<a id="gc-345-345"></a>
+<a id="gc-345-imageuploader"></a>
+### `imageUploader`
+
+Collection: uploads. Editable image value with local crop or an application-owned upload destination.
+
+Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state).
+
+Specific parameters: `storepath`, `contextPath`, `operation`, `cropWidth`, `cropHeight`, `outputWidth`, `outputHeight`, `onComplete`.
+
+
+<a id="gc-345-350"></a>
+<a id="gc-345-attachmentmanager"></a>
+### `attachmentManager`
+
+Collection: uploads. Reusable attachment queue and list backed by application operations.
+
+Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
+
+Specific parameters: `operation`, `storepath`, `contextPath`, `ready`, `listMethod`, `readMethod`, `removeMethod`, `accept`, `selectedPath`.
+
+
+<a id="gc-345-340"></a>
 ## Editors and document previews
 
 

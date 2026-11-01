@@ -1,0 +1,22 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
+import {captureScreen} from '../src/components/screen-capture.js';
+const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
+test('display stream stops before encoding and an aborted late encoding cannot commit',async t=>{
+    const {window}=new JSDOM('<body></body>');t.after(()=>window.close());
+    const track=new window.EventTarget();track.stopped=0;track.stop=()=>{track.stopped++;};
+    let requested=0,encode;
+    Object.defineProperty(window.navigator,'mediaDevices',{value:{getDisplayMedia(){requested++;return Promise.resolve({getTracks:()=>[track]});}}});
+    window.HTMLMediaElement.prototype.play=async function(){};
+    Object.defineProperty(window.HTMLVideoElement.prototype,'videoWidth',{get(){return 4;}});
+    Object.defineProperty(window.HTMLVideoElement.prototype,'videoHeight',{get(){return 4;}});
+    Object.defineProperty(window.HTMLVideoElement.prototype,'readyState',{get(){return 2;}});
+    window.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){}});
+    window.HTMLCanvasElement.prototype.toBlob=callback=>{encode=callback;};
+    const controller=new AbortController();const result=captureScreen({document:window.document,signal:controller.signal});
+    assert.equal(requested,1);await tick();assert.equal(track.stopped,1);assert.equal(typeof encode,'function');
+    controller.abort();await assert.rejects(result,error=>error.name==='AbortError');
+    encode(new window.Blob(['late'],{type:'image/png'}));await tick();assert.equal(track.stopped,1);
+    assert.equal(window.document.querySelector('video'),null);
+});

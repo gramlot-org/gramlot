@@ -15,3 +15,4 @@ export {fileSystemTree, FileSystemLogic, FileSystemController, DirectoryResolver
 export {IdeLogic} from "../ide-runtime.js";
 
 export {TreeStore, TreeStoreResolver, TreeStoreLogic} from '../tree-store.js';
+export {UploadTarget} from './upload.js';

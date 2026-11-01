@@ -12,7 +12,8 @@ import {NAME_SYNTAX} from '../builder/name-syntax.js';
  * `__gramlot_source__` and `__gramlot_endpoint__` attributes. */
 export const SOURCE_METHOD = Symbol('gramlot.source');
 export const ENDPOINT_METHOD = Symbol('gramlot.endpoint');
-const MARKERS = new Map([[SOURCE_METHOD, 'registerSource'], [ENDPOINT_METHOD, 'registerEndpoint']]);
+export const UPLOAD_METHOD = Symbol('gramlot.upload');
+const MARKERS = new Map([[SOURCE_METHOD, 'registerSource'], [ENDPOINT_METHOD, 'registerEndpoint'], [UPLOAD_METHOD, 'registerUpload']]);
 
 // The name of a declared method, one segment of NAME_SYNTAX: an ASCII letter, then ASCII letters, digits and `_`.
 const DECLARED_NAME = /^[A-Za-z][A-Za-z0-9_]*$/;
@@ -32,6 +33,10 @@ export function sourceMethod(page, name) {
 
 export function endpointMethod(page, name) {
     return declaredMethod(page, name, ENDPOINT_METHOD);
+}
+
+export function uploadMethod(page, name) {
+    return declaredMethod(page, name, UPLOAD_METHOD);
 }
 
 /**
@@ -62,10 +67,13 @@ function declare(PageClass, methodName, marker, auth) {
         throw new TypeError(`${register} requires an own method of ${PageClass.name}: ${String(methodName)}`);
     }
     if (method[marker]) {
-        throw new TypeError(`${marker === SOURCE_METHOD ? 'Source method' : 'Endpoint'} already registered: ${methodName}`);
+        throw new TypeError(`${marker === SOURCE_METHOD ? 'Source method' : marker === ENDPOINT_METHOD ? 'Endpoint' : 'Upload operation'} already registered: ${methodName}`);
     }
-    if (method[SOURCE_METHOD] || method[ENDPOINT_METHOD]) {
-        throw new TypeError(`${methodName} is declared both as Source method and endpoint`);
+    if ([SOURCE_METHOD, ENDPOINT_METHOD, UPLOAD_METHOD].some(existing => method[existing])) {
+        const message = marker !== UPLOAD_METHOD && !method[UPLOAD_METHOD]
+            ? `${methodName} is declared both as Source method and endpoint`
+            : `${methodName} has conflicting declarations`;
+        throw new TypeError(message);
     }
     method[marker] = {auth};
 }
@@ -91,6 +99,11 @@ export class Exposed {
      * `contentType: 'data'`, equivalent to Python `@endpoint`; call it after the class. */
     static registerEndpoint(methodName, {auth = null} = {}) {
         declare(this, methodName, ENDPOINT_METHOD, auth);
+    }
+
+    /** Mark an application operation for upload preparation. */
+    static registerUpload(methodName, {auth = null} = {}) {
+        declare(this, methodName, UPLOAD_METHOD, auth);
     }
 }
 

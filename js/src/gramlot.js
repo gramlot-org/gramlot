@@ -28,7 +28,7 @@ import {formatValue} from './format.js';
  */
 export class Gramlot {
     #mobileEnvironment;
-    constructor({pageId, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
+    constructor({pageId, uploadUrl = null, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
                  element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = [],
                  locale = null, timeZone = null, devices = [], serverAdapter = new ServerAdapter(), nameSyntax = null,
                  websocketUrl = null} = {}) {
@@ -38,6 +38,7 @@ export class Gramlot {
         }
         this.commands = new CommandRegistry();
         this.pageId = pageId;
+        this.uploadUrl = uploadUrl;
         const browserContext = locale == null || timeZone == null
             ? document.defaultView.Intl.DateTimeFormat().resolvedOptions() : null;
         this.devices = Object.freeze([...devices]);

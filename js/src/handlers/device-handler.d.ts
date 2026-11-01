@@ -6,6 +6,7 @@ export interface DeviceDatabase {
 }
 import type {Handler} from './handler.js';
 import type {Gramlot} from '../gramlot.js';
+import type {BrowserCameraProvider} from '../browser-camera-provider.js';
 
 export type DeviceName = 'appinfo' | 'location';
 export interface AppInfo { id: string; name: string; version: string; build: string; }
@@ -67,7 +68,7 @@ export interface DeviceProvider {
 /** Owns device resolvers, Data attributes and native operation cleanup for one page. */
 export class DeviceHandler extends Handler {
     constructor(gramlot: Gramlot);
-    attach(provider: DeviceProvider, options?: {dispose?: () => void | Promise<void>}): void;
+    attach(provider: DeviceProvider | BrowserCameraProvider, options?: {dispose?: () => void | Promise<void>}): void;
     openDatabase(name: string): Promise<DeviceDatabase>;
     invalidate(name: DeviceName): void;
     refresh(name: DeviceName): void;

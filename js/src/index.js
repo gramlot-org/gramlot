@@ -46,6 +46,7 @@ export * from './components/index.js';
 export {collectionBuildId, verifyCollectionArtifact} from './collection-artifact.js';
 
 export {DeviceHandler} from './handlers/device-handler.js';
+export {BrowserCameraProvider} from './browser-camera-provider.js';
 
 export {MobileEnvironment} from './mobile-environment.js';
 
@@ -54,3 +55,4 @@ export {chatRender, chatSend, chatCompleted, chatReset, chatResize, chatPickAtta
 // Preserve fluent Source identity across separately prepared collection bundles.
 export {sourceTarget} from '@genrojs/builders';
 export {TreeStore, TreeStoreResolver, TreeStoreLogic} from './tree-store.js';
+export {UploadTarget} from './server/upload.js';

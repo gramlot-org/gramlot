@@ -30,6 +30,7 @@ export interface GramlotOptions {
     /** The id of the server page, as registered by the server. */
     pageId?: string;
     /** The URL of the rpc endpoint that receives the envelopes. */
+    uploadUrl?: string | null;
     rpcUrl?: string;
     /** The URL of the page close endpoint. */
     closeUrl?: string;
@@ -82,6 +83,7 @@ export class Gramlot {
     timeZone: string;
     /** The id of the server page. */
     pageId: string | undefined;
+    uploadUrl: string | null;
     /** The capabilities announced by the server in the bootstrap, frozen. */
     capabilities: readonly string[];
     /** The server-dependent behaviour the core consults (the transport); not a proxy, page authors do not call it. */

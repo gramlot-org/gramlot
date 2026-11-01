@@ -222,7 +222,11 @@ Block ID: **GC-101-030**.
 - `identity` is the identity the adapter passes with the call,
   `call(text, owner=…, identity=…)` (JavaScript `call(text, {owner, identity})`), for
   example the user of a login. The server keeps nothing of it between calls, so an
-  adapter never stores a per-request identity on the shared server object.
+  adapter never stores a per-request identity on the shared server object. The
+  fresh Page for this invocation exposes the same trusted value read-only as
+  `request_identity` (Python) or `requestIdentity` (JavaScript), or None/null
+  when absent. Application code can use it to check access to a specific record;
+  request parameters and metadata are not authentication.
 - The base evaluator knows no identity: every rule answers `not_authenticated`. A
   server with an identity system overrides it and announces the `auth` capability
   (§040).

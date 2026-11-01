@@ -88,3 +88,9 @@ void loadMarkdown().then(({default: Parser}) => {
     const html: string = parser.render(renderedMarkdown);
     return html;
 });
+import {BrowserCameraProvider} from '../../../src/index.js';
+declare const cameraDocument: Document;
+const browserCamera = new BrowserCameraProvider({document:cameraDocument});
+page.dvc.attach(browserCamera);
+const cameraPhoto: Promise<{url:string;format:string}> = browserCamera.takePhoto(new AbortController().signal);
+void cameraPhoto;

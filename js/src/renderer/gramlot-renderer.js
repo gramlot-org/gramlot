@@ -50,7 +50,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         this._binding = binding;
         this.source = source;
         this.destination = destination;
-        this.html = new HtmlElement({metadataAttributes: ['__ref'],
+        this.html = new HtmlElement({uploadContext: () => ({gramlot: binding.gramlot, window: destination.ownerDocument.defaultView}), metadataAttributes: ['__ref'],
             format: (value, options) => binding.gramlot.format(value, options),
             reportError: (node, error, title) => { if (this.records.has(node)) binding.reportError(error, title); },
             callLogic: (node, name, keywords) => {

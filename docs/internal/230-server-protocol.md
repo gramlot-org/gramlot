@@ -243,7 +243,11 @@ Block ID: **GC-230-030**.
   (`call(text, owner=…, identity=…)`, JS `call(text, {owner, identity})`), for
   example the avatar of a login; `None`/`null` when it passes none. The server keeps
   nothing of it between calls, so an adapter never stores a per-request identity on
-  the shared server object. The base evaluator knows no identity: any `auth` rule
+  the shared server object. Owner confirmed 2026-11-01 that the fresh Page also
+  receives this trusted per-call value as read-only `request_identity` (Python)
+  or `requestIdentity` (JavaScript); it is `None`/`null` when absent. An
+  application can use it for record-specific authorization. Values from request
+  parameters or upload metadata are not authentication. The base evaluator knows no identity: any `auth` rule
   answers `not_authenticated` (closed by default). Kajenn evaluates the avatar tags.
   An evaluator answers `None`/`null`, `not_authenticated` or `not_authorized`; any
   other result is a `TypeError`, answered as `application_error`; endpoints and
@@ -698,3 +702,40 @@ field for Worker hosts; standalone startup forwards it into GramlotOptions.
 The client freezes its own copy as gramlot.devices. This is informational metadata,
 not a permission, redirect rule or responsive transformation. Transport hosts do
 not interpret its contents.
+
+
+<a id="gc-230-uploader-preview"></a>
+
+## Upload channel — first ASGI implementation (2026-10-31)
+
+The owner requested a complete first implementation, followed by review and
+consolidation. This is an initial implementation, not a claim that other
+adapters implement uploads. It extends the existing envelope with contentType
+`upload` and operations `prepare`, `status`, `cancel`. Preparation names the
+marked application operation and supplies `name`, `size`, `mediaType`, the always-present per-file `fields` mapping and the always-present shared `context` mapping; the application validates these untrusted values. It
+returns `transferId` and temporary `authorization`. Status and cancellation
+name `transferId`. All control results continue in the existing TYTX envelope.
+
+ASGI advertises the `upload` capability and the mount-prefixed `uploadUrl`.
+The one-use binary request is POST `application/octet-stream` with headers
+`X-Gramlot-Page-Id`, `X-Gramlot-Transfer-Id`, `X-Gramlot-Upload-Token`. The
+server checks page ownership and operation authorization again before reading.
+The adapter sends chunks to an application-owned UploadTarget, enforcing the
+declared size; it returns a TYTX outcome. Tokens and browser File objects do
+not enter Data. Failure to confirm a result requires status reconciliation.
+
+The first registry is process-local: it does not survive restart or coordinate
+workers. One-use grants expire after 300 seconds; retained records have a
+1,800-second idle expiry and the registry accepts at most 1,000 records.
+Uncertain outcomes are not evicted to make space. An expired or closed page
+may no longer query an upload; recovery then belongs to the application. A
+30-second ASGI cleanup task handles expiry and page closure while it is running.
+Cross-process durability is not implemented.
+
+The serverless Worker adapter advertises the same capability and uses the same
+control envelope. It receives the selected File by structured cloning and reads
+it in bounded 256 KiB chunks. Progress and the authoritative outcome return to
+the queue. Worker termination loses its in-memory status; it cannot establish
+whether an external write succeeded. Closing a page requests target cleanup,
+but immediate Worker termination may interrupt it. Registry expiration is checked on upload control operations. No retry is automatic while
+the outcome remains uncertain.

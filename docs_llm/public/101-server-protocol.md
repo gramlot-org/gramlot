@@ -118,7 +118,7 @@ children left out of the serialised fragment; accepted ones sent without `auth`;
 non-string rule → `application_error`; a builder without evaluator keeps everything. Evaluator:
 `evaluate_auth(rule, *, owner, identity)`/`evaluateAuth(rule, {owner, identity})` → `None`/`null` (allow),
 `not_authenticated`, `not_authorized`; other results → `application_error`. `identity` travels with the call
-(`call(text, owner=…, identity=…)`/`call(text, {owner, identity})`), never stored on the shared server. Base
+(`call(text, owner=…, identity=…)`/`call(text, {owner, identity})`), never stored on the shared server. The fresh Page exposes this trusted value read-only as `request_identity`/`requestIdentity`, or None/null if absent. Applications use it for record checks; client fields are not authentication. Base
 evaluator: every rule `not_authenticated`; identity-aware servers override it and announce `auth`. `auth`
 protects what the server builds, not page source: a JS page module served for its `Logic` is readable; a
 Worker page runs in the browser.

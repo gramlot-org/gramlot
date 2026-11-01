@@ -2375,3 +2375,46 @@ Private `#checkedNodes` tracks processed identities for later inserted descendan
 **Favorites inside tree — 2026-11-01.** Owner requests favorites in the same tree as PoC. `favorites` Bag parameter, `favoritesLabel`, private `#favoritesOpen`, `#favoriteRows`, `#buildFavorites` / `#selectFavorite` follow existing tree vocabulary. Existing `favoriteEntry` / `originalPath` remain; no second tree or duplicated selection Data.
 
 **Owner direction 2026-11-01:** “togli tutto il pattern di localizzazione” and requests the PoC choice between label and `name_long`. The PoC calls this option `Internal names`: it shows the node label for model fields and the `fieldpath` for favorites; normal mode shows captions. Expose the reactive tree parameter `internalNames`, use a Source checkbox bound to `.internalNames`, and remove the leading `!!` plus optional `[language]` marker only from displayed captions, including restored favorites. Preserve raw model metadata. This supersedes the earlier temporary `!!`-only display filter.
+Uploader client declaration — owner, 2026-10-30: `uploader` with `operation`, `storepath`, `accept`, `multiple`, `autoUpload` and `onComplete` was confirmed in Codex chat Inventaria gli uploader legacy di Genropy. `Uploader` and `gramlot-uploader` follow component naming conventions. The subsequent server and protocol decisions are recorded below.
+
+Uploader server declaration — owner, 2026-10-31: `@upload(auth=...)`, `UploadTarget` with `max_bytes`, `write`, `finish`, `abort` and `status`, and the dedicated binary-channel addition to GC-230 are confirmed. First adapter ASGI/Uvicorn; other transports follow.
+
+
+Uploader implementation names — owner requests first complete version,
+2026-10-31: collection `uploads`, component `uploader` / `Uploader` /
+`gramlot-uploader`, bootstrap `uploadUrl`, capability `upload`, GC-230 control
+contentType `upload` and control operations `prepare`, `status`, `cancel`.
+The HTTP binary resource and headers are recorded in GC-230. `_Transfer` and
+`_UploadRegistry` are internal implementation classes, not application proxies.
+
+
+Uploader selection — 2026-11-01: the per-file selection parameter is `selectedPath`, matching the existing Tree two-way selection convention; its value is the selected queue row label relative to `storepath`, or null. The application declares the form fields and binds them to the selected row metadata through the existing reactive datapath mechanism. Owner confirmed the form direction (“Sì, va bene. Procedi così e poi continua con le altre funzionalità mancanti.”).
+
+
+Per-request application identity — owner 2026-11-01: the host-supplied identity is exposed to a fresh Page as `request_identity` in Python and `requestIdentity` in JavaScript, following the established mechanical snake_case/camelCase rule and the GC-230 term identity. A Uvicorn `identity_provider` is the host-configured provider of that identity. No client metadata is trusted as identity.
+
+
+Deferred attachment queue — 2026-11-01: `manualUpload` is the Boolean counterpart of the existing `autoUpload`, using the established camelCase parameter convention. `manualUpload=False` hides and disables manual start while retaining file selection, allowing the owner-confirmed queue-before-record-save behavior. Once the application sets `autoUpload=True`, queued items start.
+
+
+Editable image component — 2026-11-01: `imageUploader` / `ImageUploader` / `gramlot-image-uploader` follows the established component naming and the `uploader` vocabulary. `value`, `operation`, `storepath`, `disabled`, `onComplete`, `cropWidth`, `cropHeight`, `outputWidth` and `outputHeight` follow existing parameter conventions.
+
+
+Uploader shared context — 2026-11-01: `contextPath` follows existing `storepath`/`selectedPath` datapath vocabulary for the optional application-provided context Bag; `context` names its mapping in upload preparation metadata. `fields` remains the per-file metadata mapping.
+
+
+Image camera acquisition — 2026-11-01: the image uploader reuses `gramlot.device.camera?capture`, the existing camera capability, photo `url` and status/error names; no second provider API or camera parameter is introduced. The visible action is “Take photo”.
+
+
+Reusable attachment manager — 2026-11-01: `attachmentManager` / `AttachmentManager` / `gramlot-attachment-manager` follows the existing component conventions and attachment vocabulary. `operation`, `storepath`, `contextPath`, `ready`, `listMethod`, `readMethod`, `removeMethod`, `accept` and `disabled` use the established operation/datapath and method naming vocabulary.
+
+`selectedPath` on `attachmentManager` forwards the existing queue selection binding, allowing the application to compose its file metadata form without a second metadata store.
+
+
+Browser camera provider — 2026-11-01: `BrowserCameraProvider` follows the existing `DeviceProvider` / `CapacitorDeviceProvider` naming and implements the existing camera capability methods `takePhoto` and `choosePhoto` with the `DevicePhoto` result. Its explicit attachment uses the existing `gramlot.dvc.attach` API; no second camera command is introduced.
+
+
+Browser screen image — 2026-11-01: the image uploader’s visible action is “Capture screen”. Internal `captureScreen` and `captureVideoFrame` follow the existing camelCase capture vocabulary; no new public device capability, proxy or authoring parameter is introduced.
+
+
+**Uploader consolidation — 2026-11-01.** Internal Source-owned `attachmentState` and `imageCropState` follow `formState` and `ideContext`: component state belongs to its Source node, never Logic. The attachment Bag holds `items`, `selected`, `preview`, `message` and the current `contextKey`. The image Bag holds `initial` and `transform` framing values. These are internal ownership names, not new public bindings or alternate upload stores. Native files, decoded images, requests and object URLs remain browser resources.
