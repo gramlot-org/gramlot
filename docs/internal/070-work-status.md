@@ -20232,3 +20232,25 @@ checked (notLoaded), but this is not evidence that the old workspace is detached
 The current preview core/Python host and chat remain preserved. Issue #81 and
 existing WebKit limits remain open; Invoice stays excluded.
 Evidence: gramlot-cleanup-20261102/visual-editor-consolidation/continued-verification/.
+
+<a id="gc-070-cleanup-sixth-pass-20261102"></a>
+## Recoverable cleanup continued — 2026-11-02
+
+Owner asked to continue rather than stop at the remaining retirement hold.
+Fresh process/cwd and dependency checks found the old Visual Editor JavaScript
+host unused. Its files still match the accepted review and verified full archive;
+automatic approval accepted its targeted retirement. The chat's distinct core,
+current clipboard/icon copy and Python preview host remain intact.
+
+Also retired the clean temporary mobile gallery release copy already contained
+in origin/main, after verifying its 9,210-entry full archive. Branches and history
+bundles remain recoverable. The registered inventory decreases from 38 to 36;
+Invoice remains excluded. No source, runtime behavior or public deployment changed.
+
+The other temporary gallery copy is retained because Python and Node previews
+still use its cwd. Uploader/Editable grids route changes remain unreviewed in their
+original copy. A separate historical examples clone has a dangling dependency
+link into the already retired old core; record it for ownership/history review,
+not speculative repair or deletion. No active preview was interrupted and no chat
+was archived. Full evidence, retained-copy reasons and fresh inventory are in
+private gramlot-cleanup-20261102/SIXTH-PASS.md and inventory-sixth-pass-after.json.
