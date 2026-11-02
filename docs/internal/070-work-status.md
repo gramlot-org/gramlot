@@ -20254,3 +20254,27 @@ link into the already retired old core; record it for ownership/history review,
 not speculative repair or deletion. No active preview was interrupted and no chat
 was archived. Full evidence, retained-copy reasons and fresh inventory are in
 private gramlot-cleanup-20261102/SIXTH-PASS.md and inventory-sixth-pass-after.json.
+
+<a id="gc-070-uploader-gallery-retirement-20261102"></a>
+## Uploader gallery residual changes consolidated — 2026-11-02
+
+Continued the authorized cleanup into the remaining gallery organization changes.
+The owner requested separate Uploader and Editable grids sections in chat
+01a1876d-e384-7c92-8abb-8599c230162d. Reviewed and integrated that bounded delta into
+the common examples base. Current simplified lessons are moved byte-for-byte,
+not replaced by older versions from the candidate. Stable keys and feature links
+remain; URLs move to 01-uploader and 05-grid_editable. Two extra browser-script
+references were corrected, and paired feature/lesson documentation remains aligned.
+
+Verification: 156 JavaScript tests; 27 Python tests and 179 subtests, including
+all common pages opening and returning Source, passed. The candidate applied over
+unrelated local mobile/tree work without committing it. No new runtime behavior,
+public upload capability, publication, database access or Invoice change is claimed.
+
+The full original uploader-gallery archive (1,158 entries plus history/index) was
+verified; no process or dependency-link reference used the copy. It was retired,
+with its original branch and recovery files retained. This continuation retired
+three checkouts in total, reducing 38 to 35 registered worktrees. Current Python/
+Node gallery previews and Visual Editor copies remain. Other uploader core/host
+copies need their independent residual review. Evidence: private
+gramlot-cleanup-20261102/uploader-gallery-consolidation/ and SEVENTH-PASS.md.
