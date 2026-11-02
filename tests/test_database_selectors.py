@@ -35,3 +35,13 @@ def test_default_endpoint_delegates_without_a_database_dependency():
     assert Example().dbSelect(dbtable='customers', _id=0) == {'dbtable':'customers', '_id':0}
     with pytest.raises(ValueError, match='dedicated'):
         Example().dbSelect(dbtable='customers', _id=0, where='SQL')
+
+
+def test_selector_template_is_a_declared_read_bound_presentation_parameter():
+    grammar = json.loads(files('gramlot').joinpath('collections/inputs.json').read_text())
+    builder = GramlotBuilder(collections=[grammar])
+    for name in ('dbSelect', 'dbComboBox'):
+        for template in ('<b>{name}</b><br>{city}', '^.template'):
+            node = getattr(builder.root, name)(value='^.choice', template=template, hiddenColumns='city')
+            assert node.attr['template'] == template
+    assert builder.to_tytx()

@@ -19898,3 +19898,35 @@ This is local consolidation only: no push, package release or public deployment.
 Recovery and checks are recorded in the private cleanup archive's
 grid-form-consolidation/README.md; temporary qualification root:
 /private/tmp/gramlot-grid-form-20261102.
+
+
+<a id="gc-070-chat-selectors-retirement-20261102"></a>
+## Chat and selector originals reviewed for retirement — 2026-11-02
+
+Owner: “procedi ij quesat opera”, continuing the authorized consolidation and
+recoverable cleanup. Invoice remains excluded; no publication is authorized.
+
+The two historical conversation checkouts match all 48 original working-file
+hashes and both HEADs from the accepted 2026-11-01 audit. Their runtime and examples
+are already represented in the common base; no old runner or provider prototype
+was reintroduced. Fresh common-base checks: eight JavaScript and eleven Python
+chat tests pass. Complete private archives include ignored/untracked files and
+Git history; original branches are preserved. The historical chat's voice/API
+and additional-model discussions remain proposals, not accepted implementations.
+
+The selector checkpoint contains 23 JavaScript cases, all present in the common
+base's database component/package suites. Fresh execution passes 49 selector
+JavaScript cases and 22 Python selector/model-caption cases. Current fixture and
+browser script preserve the original behavior with English labels. Chromium and
+WebKit checks pass Enter/blur, typed zero, projections, null/required selection,
+touch and narrow popup layout. The later caption_field wiring and model default
+precedence are retained; do not restore the superseded camel-case proposal.
+
+Recovered the one missing Python authoring regression for literal/bound template
+on both dbSelect and dbComboBox; all three selector authoring tests pass after its
+restoration. No runtime behavior changed. Historical mixed baseline commits and
+unaccepted provider proposals are preserved in archives/history, not merged as a
+blanket patch. Primary copies, active previews, Visual Editor and Invoice remain.
+
+Private recovery evidence, final retirement outcomes and pending work:
+/Users/gporcari/.codex/visualizations/2026/10/22/01a16296-c60f-7240-b811-74da51d068fe/gramlot-cleanup-20261102/FOURTH-PASS.md.
