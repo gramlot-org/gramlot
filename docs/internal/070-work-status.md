@@ -19754,3 +19754,68 @@ For the post-release gallery revision, the owner additionally requests dedicated
 blocks/tabs where a feature has many variants or parameters. Keep full demonstration
 coverage and reusable methods on independent datapaths, rather than replacing rich
 examples with a minimal example which no longer teaches those variants.
+
+
+### Release publication and teaching revision — 2026-11-01
+
+Core 0.3.26 is published on npm/PyPI with its GitHub release; qualification
+workflow 41349482348 passed. Examples workflow 41350261318 passed all tests,
+including the 132 Python/JavaScript browser lessons. Its initial documentation
+build used the old public serverless exporter and rejected createDOMPurify.
+Consolidating the already-qualified JavaScript host/exporter on main and rerunning
+the failed job resolved that build-order issue. Registry publication and host
+release/deployment verification are still in progress; do not claim public gallery
+convergence yet. Remote Edit remains disabled and Invoice application excluded.
+
+The owner-requested essential-code revision is in a separate examples worktree,
+/private/tmp/gramlot-gallery-essential-20261101, outside the frozen release assets.
+It removes duplicated instructional prose, keeps explanations in Markdown and
+provides dedicated validation/window variant blocks. PageStore/database examples
+retain their operational contracts. Sample card-guide Markdown lives in the TYTX
+Data Bag. Four validation blocks fit desktop/touch layouts without horizontal
+overflow, checked in Chromium/WebKit. Python tests, strict docs and host SQLite/
+PageStore browser checks pass; final JS/full browser rechecks are still running.
+The corresponding detailed record is GE-015, mirrored in examples docs_llm.
+
+
+### Publication checkpoint — 2026-11-01, 21:35 UTC
+
+Core and examples 0.3.26 are published. Examples workflow 41350261318 completed
+successfully after the documentation-only rerun. Both server tags are pushed and
+publication is running: Python 41351965184; JavaScript/serverless/create 41351969303.
+At this checkpoint the remaining jobs are the Python browser gallery qualification
+and JavaScript serverless file/browser qualifications. No server publication or
+final public deployment convergence is claimed yet. Monitor these runs and the
+automatic Update hosted galleries workflows before closing the release.
+
+The separate teaching revision is saved in the examples worktree at
+/private/tmp/gramlot-gallery-essential-20261101. Verification completed: 374 JS,
+130 Python + 201 subtests (one skip), 132+132 browser lessons, strict documentation,
+Chromium/WebKit variant layouts and PageStore/SQLite integration; final TYTX guide
+parity and Chromium file export also pass. 121 common Python examples changed;
+nonblank Python lines across the 132 lessons decreased from 4418 to 4037.
+Twenty-one endpoint/PageStore bodies in seventeen edited modules are unchanged.
+This revision is local and deliberately outside the published 0.3.26 artifact set.
+Local review gallery: http://127.0.0.1:61527/py/ (Remote Edit disabled).
+
+### Server publication and teaching-release authorization — 2026-11-01
+
+Python server 0.3.26 publication completed successfully (41351965184); JavaScript server, serverless exporter and create package 0.3.26 completed successfully (41351969303). Their full release verification jobs passed. The owner now explicitly authorized completing the public gallery update and publishing the simplified examples: “Completa i controlli e la pubblicazione dei server, poi verifica che le gallery pubbliche siano aggiornate. Vorrei pubblicare anche la semplificazione degli esempi.”
+
+The verified teaching revision is prepared as examples 0.3.27, without rewriting the published 0.3.26 artifacts or changing the core/server versions. Publication workflow 41353400574 repeats the release gates. Public reconciliation is running; an earlier examples-triggered attempt failed before promotion because the previous published serverless exporter lacked the shared createDOMPurify export. The newly published serverless 0.3.26 contains that already-qualified fix. Preserve mobile hosting, Remote Edit disabled and the Invoice application exclusion. Final registry/deployment verification is still pending.
+
+### Hosted catalogue correction and examples 0.3.28 — 2026-11-01
+
+Server 0.3.26 release workflows succeeded. Hosted candidate checks subsequently exposed a separate examples navigation defect: the Tools topic is composed from common pages and a host IDE catalogue, but nested common branches were incorrectly checked only under the last host directory. Both failed deployments stopped before promotion, preserving the previous live generation.
+
+Examples 0.3.27 publication was cancelled before package publication. Examples 0.3.28 includes the essential-code revision and the bounded Python/JS catalogue merge correction. Root containment remains enforced for every participating directory; missing paths, traversal and escaping symlinks remain rejected. Six Python/four subtest and six JavaScript navigation checks pass; recursive traversal of all 43 directories in the actual public database + IDE catalogue passes. Full release checks and hosted activation remain pending. No core or server runtime change is needed.
+
+### Public release closed — 2026-11-02
+
+Core and Python/JavaScript/serverless/create packages 0.3.26 are published. Examples 0.3.28 publishes the essential-code revision and the nested catalogue overlay correction; 0.3.27 was cancelled before package publication and its tag was not rewritten. Examples publication 41353925684 passed all 13 jobs: 375 Node/Bun tests, Python 3.11/3.12 and main-core verification (100 tests plus 201 subtests per Python run), 132 Python and 132 JavaScript browser lessons, strict documentation and package contents checks.
+
+Hosted reconciliation 41355687474 succeeded. Active generation 20261101T221241Z records core/servers 0.3.26 and examples 0.3.28. Candidate and public HTTPS checks passed on both hosts; the file-based serverless export passed the 25-page component/binding/validation smoke checks. Public Asqueel checks passed dependent selectors, resident grids, JSONL and cached selection/search/sort, including 410429 server rows with 200 rows in the browser. Proxy trust, restricted database access, independent cache owners and cleanup also passed.
+
+The public Python and JavaScript validation pages visibly show the four reusable variant blocks. The public Tools/Advanced tools branch opens correctly alongside the host IDE. Mobile catalogue and SQLite page return HTTP 200 over HTTPS; the catalogue remains native-only and includes SQLite. Remote Edit stays disabled. No TestFlight publication or Invoice application integration was performed. Native plugin behavior on a physical iPhone is not claimed by these web checks.
+
+Evidence: /private/tmp/gramlot-release-20261101/ (publication JSON/logs, deploy-0328-complete.log, public-0328-receipt.json and public-mobile-0328.json). Both public galleries are ready; reload existing browser pages after the generation change.
