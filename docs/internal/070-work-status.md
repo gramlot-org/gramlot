@@ -20204,3 +20204,31 @@ existing grammar integration paths; replacing private metadata access needs the
 owning Builder API, not a Gramlot fallback. CSS iframe and catalogue scope are not
 security sandboxes. Original live-preview/provider results are not new acceptance.
 Recovery and full logs: gramlot-cleanup-20261102/visual-editor-consolidation/.
+
+<a id="gc-070-visual-editor-cleanup-followup-20261102"></a>
+## Visual Editor cleanup verification follow-up — 2026-11-02
+
+Owner: “continua con le verifiche”. A fresh directory serverless export was built
+with the reviewed core and inputs/layout/tree/uploads collections. Chromium and
+WebKit passed file-origin widget insertion, required tab parameters, property
+editing, detach/dock input identity and scoped Data checks. No HTTP requests or
+page errors occurred. This adds file-origin evidence to the earlier HTTP tests;
+it does not qualify file uploads, AI providers or physical devices. The build
+retains the existing IIFE import.meta warning; no compatibility path was added.
+
+The two recovery archives were rechecked against every entry (1,690 core and 580
+JavaScript-host entries), SHA-256 digests and valid Git history bundles. The latest
+authored Visual Editor copy and old JavaScript host still match their snapshots.
+Correction to the preceding retirement report: the old core is already absent
+from Git's worktree registry, and its directory contains only .DS_Store. The same
+absence is recorded in the previous inventory despite the removal command's
+nonzero exit. The core source is preserved in its verified archive, not in that
+residual directory. The JavaScript host remains registered and unchanged.
+
+No new retirement was attempted. Automatic approval review previously rejected
+retrying removal over managed-chat ownership risk; that hold remains unresolved
+for the related JavaScript host. The Visual Editor chat was not running when
+checked (notLoaded), but this is not evidence that the old workspace is detached.
+The current preview core/Python host and chat remain preserved. Issue #81 and
+existing WebKit limits remain open; Invoice stays excluded.
+Evidence: gramlot-cleanup-20261102/visual-editor-consolidation/continued-verification/.
