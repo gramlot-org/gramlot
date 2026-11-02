@@ -5277,3 +5277,16 @@ otherwise retain the configured server caption, including the Asqueel table-mode
 default. The response caption key and selectedCaption output are unchanged.
 This completes the bounded selector increment; composite legacy rowcaption and
 full legacy search parity are not included. Invoice remains excluded.
+
+
+<a id="gc-000-public-collection-llm-20261102"></a>
+### Public collection LLM documentation — 2026-11-02
+
+Owner explicitly authorizes publishing the updated Read the Docs manual and the
+LLM guides for each collection so agents can use them. This narrowly supersedes
+GC-005 §020's blanket exclusion of concise mirrors: publish the agent index and
+the ten GC-410–455 compact collection guides as directly readable Markdown.
+Keep the exact types, defaults, bindings and constraints aligned with human guides
+and the accepted component metadata. Internal records and future proposals remain
+excluded. Public documentation follows main; this authorizes documentation
+publication, not a runtime/package release. Details: GC-005 §040.

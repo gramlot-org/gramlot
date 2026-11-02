@@ -2,8 +2,8 @@
 
 Document ID: **GC-345**.
 
-This reference covers all **48 component declarations** in seven selected packaged
-component grammars. It is regenerated from their effective
+This reference covers all **53 component declarations** in the 10 packaged
+component collections covered here. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
 It does not assign a maturity level or imply that every component is production-ready.
@@ -13,11 +13,12 @@ It does not assign a maturity level or imply that every component is production-
 
 - `T`: text; `B`: Boolean; `L`: integer; `R`: real number; other codes are TYTX types.
 - **read**: a reactive parameter; `^path` updates the presentation from Data.
+- **write**: the component publishes state through the bound path.
 - **twoWay**: the component also writes accepted edits/state back through the binding.
 - **—**: no binding/default declared in component metadata. This is not a claim that
   the surrounding Source binding system has no behavior for the attribute.
 - **None** is a declared nullable/default value, not the text `"None"`.
-- **Allowed** lists only enumerations explicitly present in metadata. Extra semantic
+- **Constraints** preserves enumerations, qualifications and annotation restrictions declared in metadata. Extra semantic
   validation is explained in the linked family guide and enforced by the runtime.
 
 Ordinary Source attributes (such as `id`, `class_`, `hidden`, `datapath`, `color`,
@@ -29,7 +30,13 @@ Dynamic families such as `lbl_*`, `box_*`, `validate_*`, `resolver_*` and
 `condition_*` have additional contracts in the narrative guides.
 
 <a id="gc-345-010"></a>
-## 010 · Select the right collection
+## 010 · Use the environment collections
+
+Declare collections once on your environment's Page base. Pages inherit its
+grammars and browser descriptors. `Page.gramlots` adds collections missing from
+that environment; merely installing a package does not activate it.
+
+The following is environment setup, not boilerplate to repeat in every lesson:
 
 ```python
 from gramlot import Page as GramlotPage
@@ -54,13 +61,16 @@ connects these controls to runnable lessons and screenshots.
 
 | Collection | Components |
 | --- | --- |
-| `inputs` | [editingStatus](#gc-345-editingstatus), [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar) |
-| `buttons` | [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menu](#gc-345-menu), [menuline](#gc-345-menuline), [spacer](#gc-345-spacer) |
-| `layout` | [transformPane](#gc-345-transformpane), [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane), [framePane](#gc-345-framepane), [trayPane](#gc-345-traypane), [formlet](#gc-345-formlet), [groupBox](#gc-345-groupbox), [contentPane](#gc-345-contentpane), [borderContainer](#gc-345-bordercontainer), [stackContainer](#gc-345-stackcontainer), [tabContainer](#gc-345-tabcontainer) |
-| `tree` | [tree](#gc-345-tree), [rowActions](#gc-345-rowactions) |
-| `editors` | [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview) |
-| `typst` | [typstPreview](#gc-345-typstpreview) |
-| `uploads` | [uploader](#gc-345-uploader), [imageUploader](#gc-345-imageuploader), [attachmentManager](#gc-345-attachmentmanager) |
+| [inputs](410-inputs.md) | [editingStatus](#gc-345-editingstatus), [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar) |
+| [buttons](415-buttons.md) | [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menu](#gc-345-menu), [menuline](#gc-345-menuline), [spacer](#gc-345-spacer) |
+| [layout](420-layout.md) | [transformPane](#gc-345-transformpane), [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane), [framePane](#gc-345-framepane), [trayPane](#gc-345-traypane), [formlet](#gc-345-formlet), [groupBox](#gc-345-groupbox), [contentPane](#gc-345-contentpane), [borderContainer](#gc-345-bordercontainer), [stackContainer](#gc-345-stackcontainer), [tabContainer](#gc-345-tabcontainer) |
+| [tree](425-tree.md) | [tree](#gc-345-tree), [rowActions](#gc-345-rowactions) |
+| [editors](430-editors.md) | [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview) |
+| [typst](435-typst.md) | [typstPreview](#gc-345-typstpreview) |
+| [uploads](440-uploads.md) | [uploader](#gc-345-uploader), [imageUploader](#gc-345-imageuploader), [attachmentManager](#gc-345-attachmentmanager) |
+| [grid](445-grid.md) | [grid](#gc-345-grid), [searchBox](#gc-345-searchbox) |
+| [chat](450-chat.md) | [chatMessages](#gc-345-chatmessages) |
+| [grouplets](455-grouplets.md) | [grouplet](#gc-345-grouplet), [groupletCard](#gc-345-groupletcard) |
 
 ## Shared parameter contracts
 
@@ -75,7 +85,7 @@ The value type and writeback behavior depend on the control. Use a Data pointer 
 
 Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [toggleButton](#gc-345-togglebutton), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview), [imageUploader](#gc-345-imageuploader).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
 | `value` | T or None | — | twoWay | — | [textbox](#gc-345-textbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext) |
 | `value` | B | — | twoWay | — | [checkbox](#gc-345-checkbox) |
@@ -98,7 +108,7 @@ Disabled prevents interaction; readonly preserves reading without accepting edit
 
 Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menuline](#gc-345-menuline), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor), [uploader](#gc-345-uploader), [imageUploader](#gc-345-imageuploader), [attachmentManager](#gc-345-attachmentmanager).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
 | `disabled` | B | False | read | — | All listed above |
 | `readonly` | B | False | read | — | [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [toggleButton](#gc-345-togglebutton), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor) |
@@ -113,10 +123,10 @@ lbl supplies a field label; lbl_position places it. The lbl_* and box_* style fa
 
 Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [groupBox](#gc-345-groupbox), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
-| `lbl` | T or None | — | read | — | All listed above |
-| `lbl_position` | T | 'TL' | read | 'TL', 'TC', 'TR', 'L', 'R', 'BL', 'BC', 'BR' | All listed above |
+| `lbl` | T or None | — | read | qualification="intl_str" | All listed above |
+| `lbl_position` | T | 'TL' | read | enum=['TL', 'TC', 'TR', 'L', 'R', 'BL', 'BC', 'BR'] | All listed above |
 
 <a id="gc-345-235"></a>
 <a id="gc-345-shared-placeholder"></a>
@@ -126,9 +136,9 @@ Placeholder text is a hint, not a value or a replacement for a field label.
 
 Applies to: [textbox](#gc-345-textbox), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
-| `placeholder` | T | '' | — | — | All listed above |
+| `placeholder` | T | '' | — | qualification="intl_str"; target="control" | All listed above |
 
 <a id="gc-345-240"></a>
 <a id="gc-345-shared-validation"></a>
@@ -138,12 +148,12 @@ The validate_* family belongs to the shared validation contract, not to each wid
 
 Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
 | `validate_select` | B or None | — | read | — | All listed above |
 | `validate_notnull` | B or None | False | read | — | All listed above |
 | `validate_empty` | T / L / N / R / B / D / H / DH / DHZ or None | — | read | — | All listed above |
-| `validate_case` | T or None | — | read | 'upper', 'lower', 'title', 'capitalize', 'u', 'l', 't', 'c' | All listed above |
+| `validate_case` | T or None | — | read | enum=['upper', 'lower', 'title', 'capitalize', 'u', 'l', 't', 'c'] | All listed above |
 | `validate_len` | T or None | — | read | — | All listed above |
 | `validate_min` | T / L / N / R / B / D / H / DH / DHZ or None | — | read | — | All listed above |
 | `validate_max` | T / L / N / R / B / D / H / DH / DHZ or None | — | read | — | All listed above |
@@ -157,48 +167,48 @@ Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButt
 | `validate_timeout` | L or None | — | read | — | All listed above |
 | `validate_select_if` | T / B or None | — | — | — | All listed above |
 | `validate_select_iswarning` | B or None | — | read | — | All listed above |
-| `validate_select_error` | T or None | — | read | — | All listed above |
-| `validate_select_warning` | T or None | — | read | — | All listed above |
+| `validate_select_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_select_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_notnull_if` | T / B or None | — | — | — | All listed above |
 | `validate_notnull_iswarning` | B or None | — | read | — | All listed above |
-| `validate_notnull_error` | T or None | — | read | — | All listed above |
-| `validate_notnull_warning` | T or None | — | read | — | All listed above |
+| `validate_notnull_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_notnull_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_empty_if` | T / B or None | — | — | — | All listed above |
 | `validate_empty_iswarning` | B or None | — | read | — | All listed above |
-| `validate_empty_error` | T or None | — | read | — | All listed above |
-| `validate_empty_warning` | T or None | — | read | — | All listed above |
+| `validate_empty_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_empty_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_case_if` | T / B or None | — | — | — | All listed above |
 | `validate_case_iswarning` | B or None | — | read | — | All listed above |
-| `validate_case_error` | T or None | — | read | — | All listed above |
-| `validate_case_warning` | T or None | — | read | — | All listed above |
+| `validate_case_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_case_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_len_if` | T / B or None | — | — | — | All listed above |
 | `validate_len_iswarning` | B or None | — | read | — | All listed above |
-| `validate_len_error` | T or None | — | read | — | All listed above |
-| `validate_len_warning` | T or None | — | read | — | All listed above |
+| `validate_len_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_len_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_min_if` | T / B or None | — | — | — | All listed above |
 | `validate_min_iswarning` | B or None | — | read | — | All listed above |
-| `validate_min_error` | T or None | — | read | — | All listed above |
-| `validate_min_warning` | T or None | — | read | — | All listed above |
+| `validate_min_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_min_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_max_if` | T / B or None | — | — | — | All listed above |
 | `validate_max_iswarning` | B or None | — | read | — | All listed above |
-| `validate_max_error` | T or None | — | read | — | All listed above |
-| `validate_max_warning` | T or None | — | read | — | All listed above |
+| `validate_max_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_max_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_email_if` | T / B or None | — | — | — | All listed above |
 | `validate_email_iswarning` | B or None | — | read | — | All listed above |
-| `validate_email_error` | T or None | — | read | — | All listed above |
-| `validate_email_warning` | T or None | — | read | — | All listed above |
+| `validate_email_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_email_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_regex_if` | T / B or None | — | — | — | All listed above |
 | `validate_regex_iswarning` | B or None | — | read | — | All listed above |
-| `validate_regex_error` | T or None | — | read | — | All listed above |
-| `validate_regex_warning` | T or None | — | read | — | All listed above |
+| `validate_regex_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_regex_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_call_if` | T / B or None | — | — | — | All listed above |
 | `validate_call_iswarning` | B or None | — | read | — | All listed above |
-| `validate_call_error` | T or None | — | read | — | All listed above |
-| `validate_call_warning` | T or None | — | read | — | All listed above |
+| `validate_call_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_call_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 | `validate_remote_if` | T / B or None | — | — | — | All listed above |
 | `validate_remote_iswarning` | B or None | — | read | — | All listed above |
-| `validate_remote_error` | T or None | — | read | — | All listed above |
-| `validate_remote_warning` | T or None | — | read | — | All listed above |
+| `validate_remote_error` | T or None | — | read | qualification="intl_str" | All listed above |
+| `validate_remote_warning` | T or None | — | read | qualification="intl_str" | All listed above |
 
 <a id="gc-345-245"></a>
 <a id="gc-345-shared-icons"></a>
@@ -208,13 +218,13 @@ icon holds text or an emoji; iconSrc loads an image such as SVG. iconSize sizes 
 
 Applies to: [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menu](#gc-345-menu), [menuline](#gc-345-menuline).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
 | `icon` | T | '' | read | — | [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menuline](#gc-345-menuline) |
 | `iconSrc` | T | '' | read | — | [button](#gc-345-button), [toggleButton](#gc-345-togglebutton), [dropDownButton](#gc-345-dropdownbutton), [menuline](#gc-345-menuline) |
-| `labelPosition` | T | 'beside' | read | 'beside', 'below', 'tooltip' | [menu](#gc-345-menu) |
+| `labelPosition` | T | 'beside' | read | enum=['beside', 'below', 'tooltip'] | [menu](#gc-345-menu) |
 | `iconSize` | R | 24 | read | — | [menu](#gc-345-menu) |
-| `labelPosition` | T or None | — | read | 'beside', 'below', 'tooltip' | [menuline](#gc-345-menuline) |
+| `labelPosition` | T or None | — | read | enum=['beside', 'below', 'tooltip'] | [menuline](#gc-345-menuline) |
 | `iconSize` | R or None | — | read | — | [menuline](#gc-345-menuline) |
 
 <a id="gc-345-250"></a>
@@ -225,7 +235,7 @@ Data retains its typed value; locale and format affect presentation and parsing.
 
 Applies to: [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [dateCalendar](#gc-345-datecalendar).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
 | `locale` | T or None | — | read | — | All listed above |
 | `format` | T or None | — | read | — | [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox) |
@@ -239,7 +249,7 @@ Dialog and floatingPane share controls, geometry and state. Their movement, resi
 
 Applies to: [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
 | `title` | T | '' | read | — | All listed above |
 | `open` | B | False | twoWay | — | All listed above |
@@ -269,9 +279,9 @@ BorderContainer and framePane share region arrangement and persistence. Child re
 
 Applies to: [framePane](#gc-345-framepane), [borderContainer](#gc-345-bordercontainer).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
-| `design` | T | 'headline' | read | 'headline', 'sidebar' | All listed above |
+| `design` | T | 'headline' | read | enum=['headline', 'sidebar'] | All listed above |
 | `persist` | B | False | read | — | All listed above |
 
 <a id="gc-345-265"></a>
@@ -282,10 +292,121 @@ StackContainer and tabContainer select one child panel; selectedPage uses its pa
 
 Applies to: [stackContainer](#gc-345-stackcontainer), [tabContainer](#gc-345-tabcontainer).
 
-| Parameter | Type | Default | Binding | Allowed | Applies to |
+| Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
 | `selectedPage` | T or None | None | twoWay | — | All listed above |
 | `selected` | L or None | None | twoWay | — | All listed above |
+
+<a id="gc-345-430"></a>
+## Grids and search
+
+
+<a id="gc-345-365"></a>
+<a id="gc-345-grid"></a>
+### `grid`
+
+Virtualized Bag rows with a declarative column structure; database access belongs to the store/provider.
+
+Collection: **grid**. Browser element: `gramlot-grid`.
+
+[Bag rows, column structure and selection stores](445-grid.md#gc-445-start).
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `windowInfo` | X or None | None | read | — |
+| `loading` | B | False | read | — |
+| `viewport` | X or None | None | write | — |
+| `sortRequest` | T | '' | write | — |
+| `storepath` | T | — | — | — |
+| `structpath` | T | — | — | — |
+| `rowMode` | T | — | — | — |
+| `rowHeaders` | B | False | read | — |
+| `rowResize` | B | False | read | — |
+| `selfDragRows` | B | False | read | — |
+| `sortedBy` | T | '' | read | — |
+| `filter` | dict or None | None | read | annotation={"kind": "type", "module": "builtins", "name": "dict"} |
+
+Child grammar: `struct,div`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-370"></a>
+<a id="gc-345-searchbox"></a>
+### `searchBox`
+
+Search control connected to the enclosing grid Source context.
+
+Collection: **grid**. Browser element: `gramlot-search-box`.
+
+[Bag rows, column structure and selection stores](445-grid.md#gc-445-start).
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `searchOn` | B / T | True | read | — |
+| `searchTime` | R or None | None | write | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-435"></a>
+## Conversations
+
+
+<a id="gc-345-375"></a>
+<a id="gc-345-chatmessages"></a>
+### `chatMessages`
+
+Scrollable live Source message viewport; ChatPane composes the conversation interface around it.
+
+Collection: **chat**. Browser element: `gramlot-chat-messages`.
+
+[ChatPane composition and server responsibilities](450-chat.md#gc-450-start).
+
+No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
+
+
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-440"></a>
+## Reusable fragments
+
+
+<a id="gc-345-380"></a>
+<a id="gc-345-grouplet"></a>
+### `grouplet`
+
+Reusable Source fragment loaded through the existing remote binding.
+
+Collection: **grouplets**. Browser element: `gramlot-grouplet`.
+
+[Reusable remote fragments and cards](455-grouplets.md#gc-455-start).
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `remote` | T or None | — | read | — |
+
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-385"></a>
+<a id="gc-345-groupletcard"></a>
+### `groupletCard`
+
+A titled, foldable remote-content card with bound controls and an optional Markdown guide.
+
+Collection: **grouplets**. Browser element: `gramlot-grouplet-card`.
+
+[Reusable remote fragments and cards](455-grouplets.md#gc-455-start).
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `remote` | T or None | — | read | — |
+| `title` | T | '' | read | qualification="intl_str" |
+| `chromeSide` | T | 'top' | read | enum=['top', 'left', 'right'] |
+| `collapsible` | B | False | read | — |
+| `collapsed` | B | False | twoWay | — |
+| `checkbox` | B or None | None | twoWay | — |
+| `checkboxLabel` | T | '' | read | qualification="intl_str" |
+| `delitem` | B or None | None | read | — |
+| `doc` | T | '' | read | — |
+
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-300"></a>
 ## Text fields
@@ -306,6 +427,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-035"></a>
 <a id="gc-345-passwordbox"></a>
 ### `passwordbox`
@@ -321,6 +444,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-030"></a>
 <a id="gc-345-textboxarea"></a>
 ### `textBoxArea`
@@ -333,10 +458,12 @@ Collection: **inputs**. Browser element: `gramlot-text-box-area`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `rows` | L | 4 | read | — |
-| `cols` | L | 24 | read | — |
+| `rows` | L | 4 | read | target="control" |
+| `cols` | L | 24 | read | target="control" |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-305"></a>
 ## Choices and selectors
@@ -354,11 +481,13 @@ Collection: **inputs**. Browser element: `gramlot-checkbox`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `mode` | T | 'checkbox' | read | 'checkbox', 'switch' |
+| `mode` | T | 'checkbox' | read | enum=['checkbox', 'switch'] |
 | `switch_color` | T or None | None | read | — |
-| `label` | T | '' | — | — |
+| `label` | T | '' | — | qualification="intl_str"; target="optionCaption" |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-040"></a>
 <a id="gc-345-radiobutton"></a>
@@ -372,10 +501,12 @@ Collection: **inputs**. Browser element: `gramlot-radio-button`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `label` | T | '' | — | — |
+| `label` | T | '' | — | qualification="intl_str"; target="optionCaption" |
 | `group` | T or None | — | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-025"></a>
 <a id="gc-345-radiobuttontext"></a>
@@ -389,10 +520,12 @@ Collection: **inputs**. Browser element: `gramlot-radio-button-text`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `values` | T | — | read | — |
 | `cols` | L | 1 | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-100"></a>
 <a id="gc-345-checkboxtext"></a>
@@ -406,10 +539,12 @@ Collection: **inputs**. Browser element: `gramlot-check-box-text`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `values` | T | — | read | — |
 | `cols` | L | 1 | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-045"></a>
 <a id="gc-345-colorpicker"></a>
@@ -426,6 +561,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-075"></a>
 <a id="gc-345-filteringselect"></a>
 ### `filteringSelect`
@@ -438,10 +575,12 @@ Collection: **inputs**. Browser element: `gramlot-filtering-select`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `values` | T | '' | read | — |
 | `separator` | T | ',' | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-080"></a>
 <a id="gc-345-callbackselect"></a>
@@ -455,9 +594,11 @@ Collection: **inputs**. Browser element: `gramlot-callback-select`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `callback` | T | — | — | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-085"></a>
 <a id="gc-345-combobox"></a>
@@ -471,17 +612,19 @@ Collection: **inputs**. Browser element: `gramlot-combo-box`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `values` | T | '' | read | — |
 | `separator` | T | ',' | read | — |
 | `store` | X or None | None | read | — |
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-090"></a>
 <a id="gc-345-dbselect"></a>
 ### `dbSelect`
 
-Endpoint-backed choices. Requires an application endpoint implementing the choice response contract; it supplies no database adapter.
+Remote choices through an application method or the configured Asqueel integration; the component itself supplies no database adapter.
 
 Collection: **inputs**. Browser element: `gramlot-db-select`.
 
@@ -489,7 +632,7 @@ Collection: **inputs**. Browser element: `gramlot-db-select`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `dbtable` | T | — | read | — |
 | `caption_field` | T | — | read | — |
@@ -506,17 +649,19 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 | `searchDelay` | L | 300 | read | — |
 | `ignoreCase` | B | True | read | — |
 | `hasDownArrow` | B | True | read | — |
-| `emptyLabel` | T | 'Clear selection' | read | — |
+| `emptyLabel` | T | 'Clear selection' | read | qualification="intl_str" |
 | `selectedCaption` | T | — | — | — |
 | `selectedRecord` | T | — | — | — |
 | `selectedCb` | T | — | — | — |
 | `autoSelect` | B | False | read | — |
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-095"></a>
 <a id="gc-345-dbcombobox"></a>
 ### `dbComboBox`
 
-Endpoint-backed suggestions with free text; the application owns the endpoint and persistence.
+Remote suggestions with free text; the application owns authorization and persistence.
 
 Collection: **inputs**. Browser element: `gramlot-db-combo-box`.
 
@@ -524,7 +669,7 @@ Collection: **inputs**. Browser element: `gramlot-db-combo-box`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `dbtable` | T | — | read | — |
 | `caption_field` | T | — | read | — |
@@ -541,10 +686,12 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 | `searchDelay` | L | 300 | read | — |
 | `ignoreCase` | B | True | read | — |
 | `hasDownArrow` | B | True | read | — |
-| `emptyLabel` | T | 'Clear selection' | read | — |
+| `emptyLabel` | T | 'Clear selection' | read | qualification="intl_str" |
 | `selectedCaption` | T | — | — | — |
 | `selectedRecord` | T | — | — | — |
 | `selectedCb` | T | — | — | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-310"></a>
 ## Numbers, dates and time
@@ -562,11 +709,13 @@ Collection: **inputs**. Browser element: `gramlot-number-text-box`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `dtype` | T | 'R' | — | — |
 | `min` | R or None | — | read | — |
 | `max` | R or None | — | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-050"></a>
 <a id="gc-345-horizontalslider"></a>
@@ -580,11 +729,13 @@ Collection: **inputs**. Browser element: `gramlot-horizontal-slider`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `min` | R | 0 | read | — |
-| `max` | R | 100 | read | — |
-| `step` | R | 1 | read | — |
+| `min` | R | 0 | read | target="control" |
+| `max` | R | 100 | read | target="control" |
+| `step` | R | 1 | read | target="control" |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-055"></a>
 <a id="gc-345-verticalslider"></a>
@@ -598,11 +749,13 @@ Collection: **inputs**. Browser element: `gramlot-vertical-slider`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `min` | R | 0 | read | — |
-| `max` | R | 100 | read | — |
-| `step` | R | 1 | read | — |
+| `min` | R | 0 | read | target="control" |
+| `max` | R | 100 | read | target="control" |
+| `step` | R | 1 | read | target="control" |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-065"></a>
 <a id="gc-345-datetextbox"></a>
@@ -616,9 +769,11 @@ Collection: **inputs**. Browser element: `gramlot-date-text-box`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `calendar` | B | True | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-105"></a>
 <a id="gc-345-datecalendar"></a>
@@ -635,6 +790,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-070"></a>
 <a id="gc-345-timetextbox"></a>
 ### `timeTextBox`
@@ -649,6 +806,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-315"></a>
 ## Buttons, menus and toolbars
@@ -666,11 +825,11 @@ Collection: **buttons**. Browser element: `gramlot-button`.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `action` | T or None | — | — | — |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-115"></a>
 <a id="gc-345-togglebutton"></a>
@@ -684,11 +843,11 @@ Collection: **buttons**. Browser element: `gramlot-toggle-button`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `action` | T or None | — | — | — |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-120"></a>
 <a id="gc-345-dropdownbutton"></a>
@@ -702,12 +861,12 @@ Collection: **buttons**. Browser element: `gramlot-drop-down-button`.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `action` | T or None | — | — | — |
 | `persist` | B | False | — | — |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-125"></a>
 <a id="gc-345-menu"></a>
@@ -721,16 +880,16 @@ Collection: **buttons**. Browser element: `gramlot-menu`.
 
 Shared contracts: [Icons and label presentation](#gc-345-shared-icons).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `presentation` | T | 'popup' | — | 'popup', 'bar' |
-| `orientation` | T | 'horizontal' | — | 'horizontal', 'vertical' |
+| `presentation` | T | 'popup' | — | enum=['popup', 'bar'] |
+| `orientation` | T | 'horizontal' | — | enum=['horizontal', 'vertical'] |
 | `modifiers` | T or None | — | — | — |
 | `resolver` | T or None | — | — | — |
 | `cacheTime` | R | -1 | — | — |
 | `sync` | B | False | — | — |
 
-Child grammar: `menuline,spacer,contentPane`. This is a grammar expression, not a list of browser tags.
+Child grammar: `menuline,spacer,contentPane`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-130"></a>
 <a id="gc-345-menuline"></a>
@@ -744,7 +903,7 @@ Collection: **buttons**. Browser element: `gramlot-menu-line`.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `action` | T or None | — | — | — |
 | `command` | T or None | — | — | — |
@@ -755,10 +914,10 @@ Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [
 | `group` | B | False | — | — |
 | `priority` | R | 0 | — | — |
 | `overflowable` | B | True | — | — |
-| `parameters` | dict or None | — | — | — |
+| `parameters` | dict or None | — | — | annotation={"kind": "type", "module": "builtins", "name": "dict"} |
 | `favorite` | B | False | — | — |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-135"></a>
 <a id="gc-345-spacer"></a>
@@ -770,10 +929,12 @@ Collection: **buttons**. Browser element: `gramlot-spacer`.
 
 [Commands, hierarchy and toolbar layout](350-menus-toolbars-and-windows.md).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `size` | R or None | — | — | — |
 | `flex` | R or None | — | — | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-320"></a>
 ## Forms and containers
@@ -792,6 +953,8 @@ Collection: **inputs**. Browser element: `gramlot-editing-status`.
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-155"></a>
 <a id="gc-345-formlet"></a>
 ### `formlet`
@@ -802,12 +965,12 @@ Collection: **layout**. Browser element: `gramlot-formlet`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `columns` | L / T | 1 | read | — |
 | `col_min_width` | T or None | — | read | — |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-160"></a>
 <a id="gc-345-groupbox"></a>
@@ -821,12 +984,12 @@ Collection: **layout**. Browser element: `gramlot-group-box`.
 
 Shared contracts: [Labels and field presentation](#gc-345-shared-labels).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `copy` | B | False | read | — |
-| `lbl_variant` | T | 'bar' | read | 'bar', 'underline', 'card' |
+| `lbl_variant` | T | 'bar' | read | enum=['bar', 'underline', 'card'] |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-165"></a>
 <a id="gc-345-contentpane"></a>
@@ -841,7 +1004,7 @@ Collection: **layout**. Browser element: `gramlot-content-pane`.
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-170"></a>
 <a id="gc-345-bordercontainer"></a>
@@ -858,17 +1021,17 @@ Shared contracts: [Border and frame regions](#gc-345-shared-regions).
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
-| `detachable` | {"default": false, "dtype": "B"} |
-| `title` | {"default": "", "dtype": "T"} |
-| `region` | {"enum": ["top", "bottom", "left", "right", "center"], "required": true, "unique": true} |
-| `width` | Declared by parent |
-| `height` | Declared by parent |
-| `drawer_onclick` | {"inline": ["evt", "show"]} |
+| `detachable` | `{"default": false, "dtype": "B"}` |
+| `title` | `{"default": "", "dtype": "T"}` |
+| `region` | `{"enum": ["top", "bottom", "left", "right", "center"], "required": true, "unique": true}` |
+| `width` | `{}` |
+| `height` | `{}` |
+| `drawer_onclick` | `{"inline": ["evt", "show"]}` |
 
 <a id="gc-345-150"></a>
 <a id="gc-345-framepane"></a>
@@ -885,17 +1048,17 @@ Shared contracts: [Border and frame regions](#gc-345-shared-regions).
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
-Child grammar: `contentPane`. This is a grammar expression, not a list of browser tags.
+Child grammar: `contentPane`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
-| `detachable` | {"default": false, "dtype": "B"} |
-| `title` | {"default": "", "dtype": "T"} |
-| `region` | {"enum": ["top", "bottom", "left", "right", "center"], "required": true, "unique": true} |
-| `width` | Declared by parent |
-| `height` | Declared by parent |
-| `drawer_onclick` | {"inline": ["evt", "show"]} |
+| `detachable` | `{"default": false, "dtype": "B"}` |
+| `title` | `{"default": "", "dtype": "T"}` |
+| `region` | `{"enum": ["top", "bottom", "left", "right", "center"], "required": true, "unique": true}` |
+| `width` | `{}` |
+| `height` | `{}` |
+| `drawer_onclick` | `{"inline": ["evt", "show"]}` |
 
 <a id="gc-345-175"></a>
 <a id="gc-345-stackcontainer"></a>
@@ -912,14 +1075,14 @@ Shared contracts: [Panel selection](#gc-345-shared-selection).
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
-| `pageName` | {"dtype": "T", "nullable": true, "unique": true} |
-| `title` | {"default": "", "dtype": "T"} |
-| `onClose` | {"inline": []} |
+| `pageName` | `{"dtype": "T", "nullable": true, "unique": true}` |
+| `title` | `{"default": "", "dtype": "T"}` |
+| `onClose` | `{"inline": []}` |
 
 <a id="gc-345-180"></a>
 <a id="gc-345-tabcontainer"></a>
@@ -933,23 +1096,23 @@ Collection: **layout**. Browser element: `gramlot-tab-container`.
 
 Shared contracts: [Panel selection](#gc-345-shared-selection).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `tabMode` | T | 'tabs' | read | 'tabs', 'underline' |
-| `tabPosition` | T | 'top' | read | 'top', 'bottom', 'left', 'right' |
-| `tabAlign` | T | 'start' | read | 'start', 'center', 'end' |
+| `tabMode` | T | 'tabs' | read | enum=['tabs', 'underline'] |
+| `tabPosition` | T | 'top' | read | enum=['top', 'bottom', 'left', 'right'] |
+| `tabAlign` | T | 'start' | read | enum=['start', 'center', 'end'] |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
-| `pageName` | {"dtype": "T", "nullable": true, "unique": true} |
-| `title` | {"default": "", "dtype": "T", "required": true} |
-| `onClose` | {"inline": []} |
-| `detachable` | {"dtype": "B"} |
+| `pageName` | `{"dtype": "T", "nullable": true, "unique": true}` |
+| `title` | `{"default": "", "dtype": "T", "required": true}` |
+| `onClose` | `{"inline": []}` |
+| `detachable` | `{"dtype": "B"}` |
 
-<a id="gc-345-220"></a>
+<a id="gc-345-405"></a>
 <a id="gc-345-traypane"></a>
 ### `trayPane`
 
@@ -959,7 +1122,7 @@ Collection: **layout**. Browser element: `gramlot-tray-pane`.
 
 [Tray workspaces and shared Labelboxes](105-components.md#gc-105-970).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `storepath` | T | — | — | — |
 | `locked` | B | False | read | — |
@@ -967,16 +1130,16 @@ Collection: **layout**. Browser element: `gramlot-tray-pane`.
 | `gridVisible` | B | False | read | — |
 | `rotationStep` | N | 15 | read | — |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 Parameters projected by this parent from its children:
 | Child parameter | Contract |
 | --- | --- |
-| `closable` | {"default": false, "dtype": "B"} |
-| `minWidth` | {"default": 100, "dtype": "N"} |
-| `minHeight` | {"default": 64, "dtype": "N"} |
+| `closable` | `{"default": false, "dtype": "B"}` |
+| `minWidth` | `{"default": 100, "dtype": "N"}` |
+| `minHeight` | `{"default": 64, "dtype": "N"}` |
 
-<a id="gc-345-225"></a>
+<a id="gc-345-410"></a>
 <a id="gc-345-transformpane"></a>
 ### `transformPane`
 
@@ -986,7 +1149,7 @@ Collection: **layout**. Browser element: `gramlot-transform-pane`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `x` | R | 0 | read | — |
 | `y` | R | 0 | read | — |
@@ -997,7 +1160,7 @@ Collection: **layout**. Browser element: `gramlot-transform-pane`.
 | `step` | R | 0.01 | read | — |
 | `onEnd` | T or None | — | — | — |
 
-Child grammar: `*`. This is a grammar expression, not a list of browser tags.
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-325"></a>
 ## Dialogs and floating windows
@@ -1018,7 +1181,7 @@ Shared contracts: [Window behavior and geometry](#gc-345-shared-windows).
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
-Child grammar: `framePane`. This is a grammar expression, not a list of browser tags.
+Child grammar: `framePane`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-145"></a>
 <a id="gc-345-floatingpane"></a>
@@ -1035,7 +1198,7 @@ Shared contracts: [Window behavior and geometry](#gc-345-shared-windows).
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
-Child grammar: `framePane`. This is a grammar expression, not a list of browser tags.
+Child grammar: `framePane`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-330"></a>
 ## Trees
@@ -1051,7 +1214,7 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 
 [Tree stores, labels and selection](105-components.md#gc-105-120).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `storepath` | T | — | — | — |
 | `draggable` | B | False | read | — |
@@ -1074,7 +1237,7 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 | `checkedPaths_joiner` | T | ',' | — | — |
 | `checkChildren` | B | True | read | — |
 
-Child grammar: `rowActions[:1]`. This is a grammar expression, not a list of browser tags.
+Child grammar: `rowActions[:1]`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-360"></a>
 <a id="gc-345-rowactions"></a>
@@ -1086,13 +1249,13 @@ Collection: **tree**. Browser element: `gramlot-row-actions`.
 
 [Tree stores, labels and selection](105-components.md#gc-105-120).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `position` | T | 'end' | — | — |
 | `actionState` | T or None | None | — | — |
 | `state` | X or None | None | read | — |
 
-Child grammar: `button,dropDownButton`. This is a grammar expression, not a list of browser tags.
+Child grammar: `button,dropDownButton`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-335"></a>
 ## File uploads
@@ -1110,7 +1273,7 @@ Collection: **uploads**. Browser element: `gramlot-uploader`.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `operation` | T | — | — | — |
 | `storepath` | T | — | — | — |
@@ -1121,6 +1284,8 @@ Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
 | `manualUpload` | B | True | read | — |
 | `selectedPath` | T or None | None | twoWay | — |
 | `onComplete` | T or None | None | — | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-345"></a>
 <a id="gc-345-imageuploader"></a>
@@ -1134,7 +1299,7 @@ Collection: **uploads**. Browser element: `gramlot-image-uploader`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `storepath` | T | — | — | — |
 | `contextPath` | T or None | None | — | — |
@@ -1144,6 +1309,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 | `outputWidth` | L | 512 | — | — |
 | `outputHeight` | L | 512 | — | — |
 | `onComplete` | T or None | None | — | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-350"></a>
 <a id="gc-345-attachmentmanager"></a>
@@ -1157,7 +1324,7 @@ Collection: **uploads**. Browser element: `gramlot-attachment-manager`.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `operation` | T | — | — | — |
 | `storepath` | T | — | — | — |
@@ -1169,7 +1336,9 @@ Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
 | `accept` | T | '' | read | — |
 | `selectedPath` | T or None | None | twoWay | — |
 
-<a id="gc-345-340"></a>
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-425"></a>
 ## Editors and document previews
 
 
@@ -1185,9 +1354,9 @@ Collection: **editors**. Browser element: `gramlot-code-mirror`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `language` | T | 'text' | read | 'text', 'python', 'javascript', 'typescript', 'json', 'html', 'css', 'xml', 'markdown', 'sql', 'typst' |
+| `language` | T | 'text' | read | enum=['text', 'python', 'javascript', 'typescript', 'json', 'html', 'css', 'xml', 'markdown', 'sql', 'typst'] |
 | `lineNumbers` | B | True | read | — |
 | `lineWrapping` | B | True | read | — |
 | `indentUnit` | L | 4 | read | — |
@@ -1200,6 +1369,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 | `autocompletion` | B | True | read | — |
 | `highlightActiveLine` | B | True | read | — |
 | `highlightSelectionMatches` | B | True | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-195"></a>
 <a id="gc-345-htmleditor"></a>
@@ -1216,6 +1387,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-200"></a>
 <a id="gc-345-htmlpreview"></a>
 ### `htmlPreview`
@@ -1230,6 +1403,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-205"></a>
 <a id="gc-345-markdowneditor"></a>
@@ -1246,6 +1421,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
 <a id="gc-345-210"></a>
 <a id="gc-345-markdownpreview"></a>
 ### `markdownPreview`
@@ -1258,9 +1435,11 @@ Collection: **editors**. Browser element: `gramlot-markdown-preview`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `allowHtml` | B | False | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-215"></a>
 <a id="gc-345-typstpreview"></a>
@@ -1274,6 +1453,52 @@ Collection: **typst**. Browser element: `gramlot-typst-preview`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value).
 
-| Specific parameter | Type | Default | Binding | Allowed |
+| Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `filename` | T | 'document.pdf' | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-390"></a>
+## Grid structure declarations
+
+These are Source declarations, not additional browser components. Parameters below are the complete Python authoring signature; annotations retain regex restrictions. A missing default denotes a required argument.
+
+### `struct`
+
+Children: `column,colgroup`. Parents: `grid`.
+
+Additional positional arguments: `False`; additional keyword arguments: `False`.
+
+No parameters.
+
+
+### `column`
+
+Children: `''`. Parents: `struct,colgroup`.
+
+Additional positional arguments: `False`; additional keyword arguments: `False`.
+
+| Parameter | Passing | Type | Default | Constraints |
+| --- | --- | --- | --- | --- |
+| `field` | positional_or_keyword | T | **required** | [{"kind":"regex","pattern":"^[A-Za-z_][A-Za-z0-9_]*$","flags":0}] |
+| `name` | keyword_only | T | None | [] |
+| `dtype` | keyword_only | T | None | [{"kind":"regex","pattern":"^(T&#124;B&#124;L&#124;R&#124;N&#124;D&#124;H&#124;DHZ)$","flags":0}] |
+| `width` | keyword_only | T | None | [{"kind":"regex","pattern":"^[0-9]+([.][0-9]+)?(px&#124;em&#124;rem&#124;ch&#124;%)$","flags":0}] |
+| `align` | keyword_only | T | None | [{"kind":"regex","pattern":"^(start&#124;center&#124;end)$","flags":0}] |
+| `format` | keyword_only | T | None | [] |
+| `white_space` | keyword_only | T | None | [{"kind":"regex","pattern":"^(normal&#124;nowrap&#124;pre-wrap)$","flags":0}] |
+| `edit` | keyword_only | B / dict | False | [] |
+
+### `colgroup`
+
+Children: `column`. Parents: `struct`.
+
+Additional positional arguments: `False`; additional keyword arguments: `False`.
+
+| Parameter | Passing | Type | Default | Constraints |
+| --- | --- | --- | --- | --- |
+| `code` | positional_or_keyword | T | **required** | [{"kind":"regex","pattern":"^[A-Za-z_][A-Za-z0-9_]*$","flags":0}] |
+| `name` | keyword_only | T | None | [] |
+| `background` | keyword_only | T | None | [] |
+| `color` | keyword_only | T | None | [] |

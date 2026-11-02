@@ -4,9 +4,21 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads')
+COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets')
+from widget_reference_content import COLLECTION_GUIDES
+
+COLLECTION_IDS = {
+    'inputs': 410, 'buttons': 415, 'layout': 420, 'tree': 425, 'editors': 430,
+    'typst': 435, 'uploads': 440, 'grid': 445, 'chat': 450, 'grouplets': 455,
+}
+
 # Human explanations complement the executable parameter contract.
 DESCRIPTIONS = {
+ 'grid': 'Virtualized Bag rows with a declarative column structure; database access belongs to the store/provider.',
+ 'searchBox': 'Search control connected to the enclosing grid Source context.',
+ 'chatMessages': 'Scrollable live Source message viewport; ChatPane composes the conversation interface around it.',
+ 'grouplet': 'Reusable Source fragment loaded through the existing remote binding.',
+ 'groupletCard': 'A titled, foldable remote-content card with bound controls and an optional Markdown guide.',
  'textbox': 'Single-line text with label, validation and optional live updates.',
  'passwordbox': 'Masked text entry; masking does not encrypt or persist the value.',
  'textBoxArea': 'Multiline plain text with the same field and validation contract.',
@@ -22,8 +34,8 @@ DESCRIPTIONS = {
  'filteringSelect': 'Search a closed set of local choices; Data stores the selected code.',
  'callbackSelect': 'Choices supplied by a page callback.',
  'comboBox': 'Suggestions with free text allowed.',
- 'dbSelect': 'Endpoint-backed choices. Requires an application endpoint implementing the choice response contract; it supplies no database adapter.',
- 'dbComboBox': 'Endpoint-backed suggestions with free text; the application owns the endpoint and persistence.',
+ 'dbSelect': 'Remote choices through an application method or the configured Asqueel integration; the component itself supplies no database adapter.',
+ 'dbComboBox': 'Remote suggestions with free text; the application owns authorization and persistence.',
  'checkBoxText': 'A local multi-choice group storing the selected codes.',
  'dateCalendar': 'An inline civil-date calendar.',
  'button': 'An application action button using the existing action/Logic contract.',
@@ -57,6 +69,9 @@ DESCRIPTIONS = {
  'typstPreview': 'Typst document preview and optional client PDF compilation; compiler resources are separate from ordinary forms.',
 }
 DETAILS = {
+ 'grid': ('445-grid.md#gc-445-start', 'Bag rows, column structure and selection stores'),
+ 'chat': ('450-chat.md#gc-450-start', 'ChatPane composition and server responsibilities'),
+ 'grouplets': ('455-grouplets.md#gc-455-start', 'Reusable remote fragments and cards'),
  'inputs': ('105-components.md#gc-105-040', 'Field behavior, typed values, choices and validation'),
  'buttons': ('350-menus-toolbars-and-windows.md', 'Commands, hierarchy and toolbar layout'),
  'layout': ('105-components.md#gc-105-085', 'Forms, borders, panels and tabs'),
@@ -68,6 +83,9 @@ DETAILS = {
 
 def cell(value):
     return str(value).replace('|', '&#124;').replace('\n', ' ')
+
+def grammar_expression(value):
+    return "''" if value == '' else cell(value)
 
 def literal(value):
     if value is None: return 'None'
@@ -84,6 +102,9 @@ def type_name(spec):
     return str(value) + (' or None' if spec.get('nullable') else '')
 
 FAMILIES = {
+    'Grids and search': ('grid', 'searchBox'),
+    'Conversations': ('chatMessages',),
+    'Reusable fragments': ('grouplet', 'groupletCard'),
     'Text fields': ('textbox', 'passwordbox', 'textBoxArea'),
     'Choices and selectors': ('checkbox', 'radioButton', 'radioButtonText', 'checkBoxText',
                               'colorpicker', 'filteringSelect', 'callbackSelect', 'comboBox', 'dbSelect', 'dbComboBox'),
@@ -139,23 +160,45 @@ def shared_group(widget, parameter):
 
 def parameter_cells(parameter, spec):
     default = literal(spec['default']) if 'default' in spec else '—'
-    allowed = ', '.join(literal(v) for v in spec.get('enum', [])) or '—'
+    constraints = []
+    if 'enum' in spec:
+        constraints.append('enum=' + repr(spec['enum']))
+    constraints.extend(f'{key}={json.dumps(value, sort_keys=True)}'
+                       for key, value in spec.items()
+                       if key not in ('dtype', 'nullable', 'binding', 'default', 'enum'))
+    allowed = '; '.join(constraints) or '—'
     return f'`{parameter}` | {cell(type_name(spec))} | {cell(default)} | {spec.get("binding", "—")} | {cell(allowed)}'
+
+
+def compact_table(rows, *, scoped=False):
+    """Factor identical contracts without abbreviating or discarding their fields."""
+    contracts = {}
+    for parameter, spec, scope in rows:
+        key = (json.dumps(spec, separators=(',', ':'), sort_keys=True), tuple(scope))
+        contracts.setdefault(key, []).append(parameter)
+    result = ['\n| Parameters | Contract |' + (' Applies to |' if scoped else ''),
+              '| --- | --- |' + (' --- |' if scoped else '')]
+    for (contract, scope), parameters in contracts.items():
+        row = f'| `{", ".join(parameters)}` | `{cell(contract)}` |'
+        result.append(row + (' ' + ', '.join(scope) + ' |' if scoped else ''))
+    return result
 
 
 def widget_links(widgets):
     return ', '.join(f'[{key}](#gc-345-{key.lower()})' for key in widgets)
 
 
-def render():
-    docs = [(name, json.loads((ROOT / f'src/gramlot/collections/{name}.json').read_text())) for name in COLLECTIONS]
-    count = sum(len(doc['elements']) for _, doc in docs)
+def render(collections=COLLECTIONS, document_id=345):
+    docs = [(name, json.loads((ROOT / f'src/gramlot/collections/{name}.json').read_text())) for name in collections]
+    entries = {key: (name, element) for name, doc in docs for key, element in doc['elements'].items()
+               if element.get('_meta', {}).get('gramlot_component') is not None}
+    count = len(entries)
     out = [f"""# Widget and parameter reference
 
 Document ID: **GC-345**.
 
-This reference covers all **{count} component declarations** in seven selected packaged
-component grammars. It is regenerated from their effective
+This reference covers all **{count} component declarations** in the {len(collections)} packaged
+component collections covered here. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
 It does not assign a maturity level or imply that every component is production-ready.
@@ -165,11 +208,12 @@ It does not assign a maturity level or imply that every component is production-
 
 - `T`: text; `B`: Boolean; `L`: integer; `R`: real number; other codes are TYTX types.
 - **read**: a reactive parameter; `^path` updates the presentation from Data.
+- **write**: the component publishes state through the bound path.
 - **twoWay**: the component also writes accepted edits/state back through the binding.
 - **—**: no binding/default declared in component metadata. This is not a claim that
   the surrounding Source binding system has no behavior for the attribute.
 - **None** is a declared nullable/default value, not the text `"None"`.
-- **Allowed** lists only enumerations explicitly present in metadata. Extra semantic
+- **Constraints** preserves enumerations, qualifications and annotation restrictions declared in metadata. Extra semantic
   validation is explained in the linked family guide and enforced by the runtime.
 
 Ordinary Source attributes (such as `id`, `class_`, `hidden`, `datapath`, `color`,
@@ -181,7 +225,13 @@ Dynamic families such as `lbl_*`, `box_*`, `validate_*`, `resolver_*` and
 `condition_*` have additional contracts in the narrative guides.
 
 <a id="gc-345-010"></a>
-## 010 · Select the right collection
+## 010 · Use the environment collections
+
+Declare collections once on your environment's Page base. Pages inherit its
+grammars and browser descriptors. `Page.gramlots` adds collections missing from
+that environment; merely installing a package does not activate it.
+
+The following is environment setup, not boilerplate to repeat in every lesson:
 
 ```python
 from gramlot import Page as GramlotPage
@@ -206,23 +256,35 @@ connects these controls to runnable lessons and screenshots.
 
 | Collection | Components |
 | --- | --- |"""]
-    entries = {key: (name, element) for name, doc in docs for key, element in doc['elements'].items()}
     # Numeric block IDs were allocated in collection order before the purpose-based grouping.
-    stable = {'textbox': 'gc-345-015', 'passwordbox': 'gc-345-035', 'textBoxArea': 'gc-345-030', 'checkbox': 'gc-345-020', 'radioButton': 'gc-345-040', 'radioButtonText': 'gc-345-025', 'checkBoxText': 'gc-345-100', 'colorpicker': 'gc-345-045', 'filteringSelect': 'gc-345-075', 'callbackSelect': 'gc-345-080', 'comboBox': 'gc-345-085', 'dbSelect': 'gc-345-090', 'dbComboBox': 'gc-345-095', 'numberTextBox': 'gc-345-060', 'horizontalSlider': 'gc-345-050', 'verticalSlider': 'gc-345-055', 'dateTextBox': 'gc-345-065', 'dateCalendar': 'gc-345-105', 'timeTextBox': 'gc-345-070', 'button': 'gc-345-110', 'toggleButton': 'gc-345-115', 'dropDownButton': 'gc-345-120', 'menu': 'gc-345-125', 'menuline': 'gc-345-130', 'spacer': 'gc-345-135', 'formlet': 'gc-345-155', 'groupBox': 'gc-345-160', 'contentPane': 'gc-345-165', 'borderContainer': 'gc-345-170', 'framePane': 'gc-345-150', 'stackContainer': 'gc-345-175', 'tabContainer': 'gc-345-180', 'dialog': 'gc-345-140', 'floatingPane': 'gc-345-145', 'tree': 'gc-345-185', 'codeMirror': 'gc-345-190', 'htmlEditor': 'gc-345-195', 'htmlPreview': 'gc-345-200', 'markdownEditor': 'gc-345-205', 'markdownPreview': 'gc-345-210', 'typstPreview': 'gc-345-215', 'trayPane': 'gc-345-220', 'transformPane': 'gc-345-225', 'uploader': 'gc-345-340', 'imageUploader': 'gc-345-345', 'attachmentManager': 'gc-345-350', 'editingStatus': 'gc-345-355', 'rowActions': 'gc-345-360'}
-    if set(stable) != set(entries):
+    stable = {'textbox': 'gc-345-015', 'passwordbox': 'gc-345-035', 'textBoxArea': 'gc-345-030', 'checkbox': 'gc-345-020', 'radioButton': 'gc-345-040', 'radioButtonText': 'gc-345-025', 'checkBoxText': 'gc-345-100', 'colorpicker': 'gc-345-045', 'filteringSelect': 'gc-345-075', 'callbackSelect': 'gc-345-080', 'comboBox': 'gc-345-085', 'dbSelect': 'gc-345-090', 'dbComboBox': 'gc-345-095', 'numberTextBox': 'gc-345-060', 'horizontalSlider': 'gc-345-050', 'verticalSlider': 'gc-345-055', 'dateTextBox': 'gc-345-065', 'dateCalendar': 'gc-345-105', 'timeTextBox': 'gc-345-070', 'button': 'gc-345-110', 'toggleButton': 'gc-345-115', 'dropDownButton': 'gc-345-120', 'menu': 'gc-345-125', 'menuline': 'gc-345-130', 'spacer': 'gc-345-135', 'formlet': 'gc-345-155', 'groupBox': 'gc-345-160', 'contentPane': 'gc-345-165', 'borderContainer': 'gc-345-170', 'framePane': 'gc-345-150', 'stackContainer': 'gc-345-175', 'tabContainer': 'gc-345-180', 'dialog': 'gc-345-140', 'floatingPane': 'gc-345-145', 'tree': 'gc-345-185', 'codeMirror': 'gc-345-190', 'htmlEditor': 'gc-345-195', 'htmlPreview': 'gc-345-200', 'markdownEditor': 'gc-345-205', 'markdownPreview': 'gc-345-210', 'typstPreview': 'gc-345-215', 'trayPane': 'gc-345-405', 'transformPane': 'gc-345-410', 'uploader': 'gc-345-340', 'imageUploader': 'gc-345-345', 'attachmentManager': 'gc-345-350', 'editingStatus': 'gc-345-355', 'rowActions': 'gc-345-360'}
+    stable.update(grid='gc-345-365', searchBox='gc-345-370', chatMessages='gc-345-375',
+                  grouplet='gc-345-380', groupletCard='gc-345-385')
+    if not set(entries) <= set(stable):
         raise ValueError('Allocate a stable documentation ID for every new component')
-    grouped = [key for widgets in FAMILIES.values() for key in widgets]
+    families = {family: tuple(key for key in widgets if key in entries)
+                for family, widgets in FAMILIES.items()}
+    families = {family: widgets for family, widgets in families.items() if widgets}
+    grouped = [key for widgets in families.values() for key in widgets]
     if len(grouped) != len(entries) or set(grouped) != set(entries):
         raise ValueError('Every component must occur in exactly one purpose family')
     for name, doc in docs:
-        out.append(f'| `{name}` | {widget_links(doc["elements"])} |')
+        number = COLLECTION_IDS[name]
+        keys = [key for key, (collection, _) in entries.items() if collection == name]
+        out.append(f'| [{name}]({number}-{name}.md) | {widget_links(keys)} |')
     brief = ['# Widget and parameter reference\n\nDocument ID: **GC-345**.\n\n'
              'Grouped by purpose; shared parameters are documented once. The full counterpart\n'
-             'preserves types, defaults, bindings and child contracts from seven selected packaged grammars.\n'
+             'and this compact view both preserve types, defaults, bindings and child contracts.\n'
              'Development reference; no maturity or release acceptance is implied.\n',
              '<a id="gc-345-005"></a>\n<a id="gc-345-010"></a>\n',
              'Ordinary Source/CSS attributes remain in Writing pages and Themes and CSS.\n'
-             'Page.gramlots selects prepared collections; buttons are built in.\n']
+             'Pages inherit environment collections; Page.gramlots adds missing ones. Buttons are built in.\n'
+             'Contract JSON omits only undeclared keys: no default is not the same as null. '
+             'dtype: T text, B Boolean, L integer, R real, X structured value; remaining codes are TYTX. '
+             'binding: read = Data to widget, write = widget to Data, twoWay = both. '
+             'nullable permits None; enum restricts values; annotation preserves type/regex constraints. '
+             'Parameters sharing a table row have exactly the same contract. Child grammar: * allows '
+             'arbitrary Source children; empty permits none. Parent None means no declared restriction.\n']
     out.append('\n## Shared parameter contracts\n\nEach widget below links only the shared contracts it supports. '
                'A shared name can have different types, defaults or bindings; separate rows preserve those differences.\n')
     for index, (group, (title, explanation)) in enumerate(SHARED.items()):
@@ -235,16 +297,26 @@ connects these controls to runnable lessons and screenshots.
                 identity = (parameter, json.dumps(spec, sort_keys=True))
                 if identity not in rows: rows[identity] = (spec, [])
                 rows[identity][1].append(widget)
+        if not rows:
+            continue
         heading = f'\n<a id="gc-345-{220 + index * 5:03d}"></a>\n<a id="gc-345-shared-{group}"></a>\n## {title}\n'
         out += [heading, explanation, '\nApplies to: ' + widget_links(scope) + '.\n',
-                '| Parameter | Type | Default | Binding | Allowed | Applies to |',
+                '| Parameter | Type | Default | Binding | Constraints | Applies to |',
                 '| --- | --- | --- | --- | --- | --- |']
         for (parameter, _), (spec, widgets) in rows.items():
             applies = 'All listed above' if widgets == scope else widget_links(widgets)
             out.append(f'| {parameter_cells(parameter, spec)} | {applies} |')
-        brief += [heading, explanation, '\nApplies to: ' + widget_links(scope) + '.\n']
-    for index, (family, widgets) in enumerate(FAMILIES.items()):
-        heading = f'\n<a id="gc-345-{300 + index * 5:03d}"></a>\n## {family}\n'
+        brief += [heading, explanation]
+        brief += compact_table(((parameter, spec, widgets) for (parameter, _), (spec, widgets) in rows.items()), scoped=True)
+    family_ids = {
+        'Grids and search': 430, 'Conversations': 435, 'Reusable fragments': 440,
+        'Text fields': 300, 'Choices and selectors': 305, 'Numbers, dates and time': 310,
+        'Buttons, menus and toolbars': 315, 'Forms and containers': 320,
+        'Dialogs and floating windows': 325, 'Trees': 330, 'File uploads': 335,
+        'Editors and document previews': 425,
+    }
+    for family, widgets in families.items():
+        heading = f'\n<a id="gc-345-{family_ids[family]:03d}"></a>\n## {family}\n'
         out.append(heading)
         brief.append(heading)
         for key in widgets:
@@ -268,29 +340,118 @@ connects these controls to runnable lessons and screenshots.
             specific = {parameter: spec for parameter, spec in meta['parameters'].items()
                         if shared_group(key, parameter) is None}
             if specific:
-                out += ['| Specific parameter | Type | Default | Binding | Allowed |', '| --- | --- | --- | --- | --- |']
+                out += ['| Specific parameter | Type | Default | Binding | Constraints |', '| --- | --- | --- | --- | --- |']
                 out += [f'| {parameter_cells(parameter, spec)} |' for parameter, spec in specific.items()]
-                brief.append('Specific parameters: ' + ', '.join(f'`{parameter}`' for parameter in specific) + '.\n')
+                brief += compact_table((parameter, spec, ()) for parameter, spec in specific.items())
             else:
                 out.append('No additional component-specific parameters. Use the shared contracts above '
                            'and ordinary Source/CSS attributes.\n')
                 brief.append('No additional component-specific parameters.\n')
-            children = element.get('sub_tags')
-            if children:
-                out.append(f'\nChild grammar: `{cell(children)}`. This is a grammar expression, not a list of browser tags.')
+            contract = [f'\nChild grammar: `{grammar_expression(element.get("sub_tags"))}`; '
+                        f'parent grammar: `{grammar_expression(element.get("parent_tags"))}`. '
+                        '`*` permits arbitrary Source children; an empty expression permits none; '
+                        '`None` means no parent restriction declared.']
             if meta.get('childParameters'):
-                out += ['\nParameters projected by this parent from its children:', '| Child parameter | Contract |', '| --- | --- |']
+                contract += ['\nParameters projected by this parent from its children:',
+                             '| Child parameter | Contract |', '| --- | --- |']
                 for parameter, spec in meta['childParameters'].items():
-                    out.append(f'| `{parameter}` | {cell(json.dumps(spec, sort_keys=True)) if spec else "Declared by parent"} |')
-    return '\n'.join(out) + '\n', '\n'.join(brief) + '\n'
+                    contract.append(f'| `{parameter}` | `{cell(json.dumps(spec, sort_keys=True))}` |')
+            out.extend(contract)
+            brief.append(f'\nChild grammar: `{grammar_expression(element.get("sub_tags"))}`; '
+                         f'parent grammar: `{grammar_expression(element.get("parent_tags"))}`.')
+            if meta.get('childParameters'):
+                brief.append('\nChild parameters projected by the parent:')
+                brief += compact_table((parameter, spec, ()) for parameter, spec in meta['childParameters'].items())
+    if 'grid' in collections:
+        out.extend(structural_reference(dict(docs)['grid']))
+        brief.extend(structural_reference(dict(docs)['grid'], compact=True))
+    if len(collections) == 1:
+        name = collections[0]
+        title, introduction, example, notes = COLLECTION_GUIDES[name]
+        header = (f'# {title}\n\nDocument ID: **GC-{document_id}**.\n\n'
+                  f'<a id="gc-{document_id}-start"></a>\n## Start here\n\n{introduction}\n\n'
+                  'The environment Page base supplies the collections used below. '
+                  '[Configure them once](340-components-and-collections-guide.md#gc-340-050). '
+                  'Example body for `main(self, root)`:\n\n'
+                  f'```python\n{example}\n```\n\n{notes}\n\n'
+                  '[All collections](345-widget-reference.md) · '
+                  '[Shared labels and validation](105-components.md#gc-105-020) · '
+                  '[Bindings](097-data-binding.md)\n\n')
+        # The component/parameter bodies remain generated, never maintained separately.
+        out = [header, '<a id="gc-345-005"></a>\n<a id="gc-345-010"></a>\n'
+               'Types: T text, B Boolean, L integer, R real, X structured value; other codes are TYTX. '
+               'Binding: read = Data to widget; write = widget to Data; twoWay = both. '
+               'A dash means no declared default/binding. None is a declared value. '
+               'Constraints include enum, qualification, target and annotations. '
+               'Tables describe component contracts; ordinary Source/CSS attributes are shared.\n',
+               *out[1 + len(docs):]]
+        brief = [header, *brief[1:]]
+    return tuple(('\n'.join(view) + '\n').replace('gc-345-', f'gc-{document_id}-')
+                 for view in (out, brief))
+
+
+def annotation_type(annotation):
+    kind = annotation['kind']
+    if kind == 'dtype':
+        return annotation['dtype']
+    if kind == 'type':
+        return annotation['name']
+    if kind == 'union':
+        return ' / '.join(annotation_type(item) for item in annotation['items'])
+    return json.dumps(annotation, separators=(',', ':'))
+
+
+def structural_reference(grammar, *, compact=False):
+    result = ['\n<a id="gc-345-390"></a>\n## Grid structure declarations\n',
+              'These are Source declarations, not additional browser components. '
+              'Parameters below are the complete Python authoring signature; annotations '
+              'retain regex restrictions. A missing default denotes a required argument.']
+    for name, element in grammar['elements'].items():
+        if element.get('_meta', {}).get('gramlot_component') is not None:
+            continue
+        signature = element['attributes']
+        result += [f'\n### `{name}`\n',
+                   f'Children: `{grammar_expression(element.get("sub_tags"))}`. Parents: `{grammar_expression(element.get("parent_tags"))}`.\n']
+        if compact:
+            result.append(f'```json\n{json.dumps(signature, separators=(",", ":"))}\n```')
+            continue
+        result.append(f'Additional positional arguments: `{signature["accepts_var_positional"]}`; '
+                      f'additional keyword arguments: `{signature["accepts_var_keyword"]}`.\n')
+        if not signature['parameters']:
+            result.append('No parameters.\n')
+            continue
+        result += ['| Parameter | Passing | Type | Default | Constraints |', '| --- | --- | --- | --- | --- |']
+        for parameter in signature['parameters']:
+            annotation = parameter['annotation']
+            base = annotation['base'] if annotation['kind'] == 'annotated' else annotation
+            dtype = annotation_type(base)
+            constraints = json.dumps(annotation.get('metadata', []), separators=(',', ':'))
+            default = literal(parameter['default']) if parameter['has_default'] else '**required**'
+            result.append(f'| `{parameter["name"]}` | {parameter["kind"]} | {cell(dtype)} | '
+                          f'{cell(default)} | {cell(constraints)} |')
+    return result
+
+
+def generated_documents():
+    for view, text in zip(('docs', 'docs_llm'), render()):
+        yield ROOT / view / 'public/345-widget-reference.md', text
+    for collection in COLLECTIONS:
+        number = COLLECTION_IDS[collection]
+        for view, text in zip(('docs', 'docs_llm'), render((collection,), number)):
+            yield ROOT / view / f'public/{number}-{collection}.md', text
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check',action='store_true');args=parser.parse_args()
-    for view,text in zip(('docs','docs_llm'),render()):
-        path=ROOT/view/'public/345-widget-reference.md'
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--check', action='store_true')
+    args = parser.parse_args()
+    for path, text in generated_documents():
         if args.check:
-            if not path.exists() or path.read_text()!=text:raise SystemExit(f'Stale widget reference: {path}')
-        else:path.write_text(text)
-    print('Widget reference matches its seven selected component grammars.')
+            if not path.exists() or path.read_text() != text:
+                raise SystemExit(f'Stale widget reference: {path}')
+        else:
+            path.write_text(text)
+    print('Widget and collection references match all ten packaged component grammars.')
 
-if __name__=='__main__':main()
+
+if __name__ == '__main__':
+    main()
