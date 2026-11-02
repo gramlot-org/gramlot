@@ -10,7 +10,7 @@ import {VisualEditor} from '../src/server/visual-editor.js';
 import {VisualEditorLogic as Logic} from '../src/visual-editor.js';
 import {SourceImport} from '../src/server/source-import.js';
 class Page {
-    main(root) { new VisualEditor(root, {datapath:this.dataRoot === '' ? '__editor' : 'visualEditor', dataRoot:this.dataRoot}); }
+    main(root) { new VisualEditor(root, {datapath:this.dataRoot === '' ? '__editor' : 'visualEditor', dataRoot:this.dataRoot, catalogue:this.catalogue}); }
     import_source(metadata) {
         if (!metadata.name.toLowerCase().endsWith('.grmlt')) throw new Error('Expected a .grmlt file');
         return new SourceImport();
@@ -19,7 +19,7 @@ class Page {
 
 const rootPath = 'main.visual.layout.center.design.pageRoot';
 const tick = () => new Promise(resolve => setTimeout(resolve, 30));
-function fixture(t, dataRoot = 'pageData', seed = true, second = false) {
+function fixture(t, dataRoot = 'pageData', seed = true, second = false, catalogue = null) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>', {pretendToBeVisual:true});
     window.ResizeObserver = class {observe() {} unobserve() {} disconnect() {}};
     Object.defineProperty(window.document, 'fonts', {value:new window.EventTarget()});
@@ -32,6 +32,7 @@ function fixture(t, dataRoot = 'pageData', seed = true, second = false) {
     const builder = new GramlotBuilder(null, {collections});
     const page = new Page();
     page.dataRoot = dataRoot;
+    page.catalogue = catalogue;
     page.main(builder.root);
     if (second) new VisualEditor(builder.root.section({node_label:'workspace'}), {editorId:'second', datapath:'otherEditor', dataRoot:'otherData'});
     app.src.startSource(builder.toTytx());
@@ -105,7 +106,7 @@ test('selection hydrates properties without changing existing nodes and edits on
     await tick();
     assert.equal(f.app.data.getItem('visualEditor.properties.parameters._text.T'), text);
     assert.deepEqual(heading.getAttr(), attrs);
-    f.app.data.setItem('visualEditor.properties.parameters.color.T', 'navy');
+    addAttribute(f, 'pageRoot.h2_0', 'color', 'string', 'navy');
     await tick();
     assert.equal(heading.getAttr('color'), 'navy');
     f.app.data.setItem('visualEditor.selection', 'pageRoot.p_0');
@@ -116,8 +117,8 @@ test('selection hydrates properties without changing existing nodes and edits on
     assert.equal(f.source.getNode(rootPath + '.p_0').value, 'Updated paragraph');
     f.app.data.setItem('visualEditor.selection', 'pageRoot.h2_0');
     await tick();
-    assert.equal(f.app.data.getItem('visualEditor.properties.parameters.color.T'), 'navy');
-    f.app.data.setItem('visualEditor.properties.parameters.color.T', '');
+    assert.equal(f.node.GET(`.properties.attributeRows.${attributeRow(f, 'color')}.text`), 'navy');
+    f.call('removeAttribute', {attributeRow:attributeRow(f, 'color'), editingPath:'pageRoot.h2_0'});
     await tick();
     assert.equal(Object.hasOwn(heading.getAttr(), 'color'), false);
     f.app.data.setItem('visualEditor.selection', 'pageRoot');
@@ -616,7 +617,7 @@ test('standard clipboard shortcuts remain native even on non-editable chat text'
     }
 });
 
-test('native tree drag to the clipboard moves by default, copies with Option and pastes saved branches', async t => {
+for (const target of ['panel', 'icon']) test(`native tree drag to clipboard ${target} moves by default, copies with Option and pastes saved branches`, async t => {
     const f = fixture(t), data = f.app.data, doc = f.window.document;
     await tick();
     const transfer = {effectAllowed:'all', dropEffect:'none', wires:new Map(),
@@ -629,14 +630,18 @@ test('native tree drag to the clipboard moves by default, copies with Option and
     const sourceRow = path => doc.getElementById('visual-source-tree').shadowRoot.querySelector(`[data-path="${path}"] .row`);
     data.setItem('visualEditor.selection', 'pageRoot.h2_0');
     await tick();
-    const shelf = doc.querySelector('.visual-clipboard');
+    const shelf = target === 'panel' ? doc.querySelector('.visual-clipboard') :
+        doc.querySelector('.visual-editor-rail [aria-label="Clipboard"]');
+    assert.equal(data.getItem('visualEditor.clipboardVisible'), false);
     fire(sourceRow('pageRoot.h2_0'), 'dragstart');
     fire(shelf, 'dragover', true);
     fire(shelf, 'drop', true);
     await tick();
     assert.equal(data.getItem('visualEditor.clipboardOpen'), true);
     assert.equal(data.getItem('visualEditor.clipboardDraft.copy'), true);
+    assert.equal(data.getItem('visualEditor.clipboardVisible'), false);
     f.call('saveClipboard');
+    assert.equal(data.getItem('visualEditor.clipboardVisible'), true);
     assert.ok(f.source.getNode(rootPath + '.h2_0'));
     fire(sourceRow('pageRoot.h2_0'), 'dragend');
     fire(sourceRow('pageRoot.p_0'), 'dragstart');
@@ -936,4 +941,325 @@ test('whole-page Data stays at the real root and New preserves reserved editor s
     assert.equal(tree.shadowRoot.querySelectorAll('[role=treeitem]').length,0);
     const wire=f.source.getNode(rootPath).parentBag.toTytx();
     assert.ok(!wire.includes('__editor'), 'export contains only authored page Source');
+});
+
+function attributeRow(f, name) {
+    return f.node.GET('.properties.attributeRows').getNodes().find(row => row.value.getItem('name') === name).label;
+}
+function addAttribute(f, path, name, type, text) {
+    f.node.SET('.properties.attributeDraft', new Bag({name, type, text}));
+    f.call('addAttribute', {editingPath:path});
+}
+
+test('More attributes edits HTML/custom values and retains children, bindings and typed Source export', async t => {
+    const f = fixture(t), path = 'pageRoot';
+    await tick();
+    const root = f.source.getNode(rootPath), children = root.value;
+    for (const [name,type,text,expected] of [
+        ['kpress_slot','string','body','body'], ['data-title','string','^page.title','^page.title'],
+        ['href','string','/contact','/contact'], ['id','string','site-page','site-page'],
+        ['data-count','integer','3',3], ['data-visible','boolean','false',false],
+        ['data-empty','string','',''], ['data-null','null','',null]
+    ]) {
+        addAttribute(f,path,name,type,text);
+        assert.equal(f.node.GET('.propertyError'), '');
+        assert.ok(Object.hasOwn(root.getAttr(),name));
+        assert.equal(root.getAttr(name),expected);
+        assert.equal(f.node.GET('.parameterTab'),'attributes');
+    }
+    assert.equal(root.value,children);
+    assert.equal(root.value.getNodes().length,2);
+    // Exercise the bound input controller, not just the write helper.
+    const key = attributeRow(f,'kpress_slot');
+    const attributeInput = f.window.document.querySelector('[aria-label="kpress_slot attribute value"]');
+    assert.ok(attributeInput);
+    f.node.SET(`.properties.attributeRows.${key}.text`, 'sidebar');
+    await tick();
+    assert.equal(root.getAttr('kpress_slot'),'sidebar');
+    assert.equal(f.window.document.querySelector('[aria-label="kpress_slot attribute value"]'), attributeInput);
+    f.call('removeAttribute',{attributeRow:attributeRow(f,'href'),editingPath:path});
+    assert.equal(Object.hasOwn(root.getAttr(),'href'),false);
+    const exported=f.app.src.prepareSource(root.parentBag.toTytx(),root.builder).getNode('pageRoot');
+    assert.equal(exported.getAttr('kpress_slot'),'sidebar');
+    assert.equal(exported.getAttr('data-title'),'^page.title');
+    assert.equal(exported.getAttr('data-count'),3);
+    assert.equal(exported.getAttr('data-visible'),false);
+    assert.equal(exported.getAttr('data-null'),null);
+    assert.equal(exported.value.getNodes().length,2);
+});
+
+test('More attributes rejects invalid names, duplicates, invalid scalars and conflicting nodeIds before mutation', async t => {
+    const f=fixture(t); await tick();
+    const root=f.source.getNode(rootPath);
+    addAttribute(f,'pageRoot','id','string','first');
+    const before=root.parentBag.toTytx();
+    for (const [name,type,text] of [['id','string','second'],['bad name','string','x'],
+        ['_meta','string','x'],['__proto__','string','x'],['data-number','integer','1.5']]) {
+        addAttribute(f,'pageRoot',name,type,text);
+        assert.ok(f.node.GET('.propertyError'));
+        assert.equal(root.parentBag.toTytx(),before);
+    }
+    f.app.src.builder.wrapSource(root).div({node_label:'other',nodeId:'taken'});
+    const beforeId=root.parentBag.toTytx();
+    addAttribute(f,'pageRoot','nodeId','string','taken');
+    assert.match(f.node.GET('.propertyError'),/nodeId/);
+    assert.equal(root.parentBag.toTytx(),beforeId);
+});
+
+test('More attributes respects container rules and updates specialized forms', async t => {
+    const f=fixture(t), root=f.app.src.builder.wrapSource(f.source.getNode(rootPath));
+    const tabs=root.tabContainer({node_label:'tabs'});
+    tabs.formlet({node_label:'form',title:'Contact',pageName:'contact'});
+    tabs.formlet({node_label:'other',title:'Other',pageName:'other'});
+    const path='pageRoot.tabs.form';f.node.SET('.selection',path);await tick();
+    const form=f.source.getNode(rootPath+'.tabs.form');
+    f.call('removeAttribute',{attributeRow:attributeRow(f,'title'),editingPath:path});
+    assert.match(f.node.GET('.propertyError'),/Choose title/);
+    assert.equal(form.getAttr('title'),'Contact');
+    f.call('changeAttribute',{attributeRow:attributeRow(f,'pageName'),editingPath:path,value:'other'});
+    assert.match(f.node.GET('.propertyError'),/already in use/);
+    assert.equal(form.getAttr('pageName'),'contact');
+    f.call('changeAttribute',{attributeRow:attributeRow(f,'title'),editingPath:path,value:'Updated'});
+    assert.equal(form.getAttr('title'),'Updated');
+    assert.equal(f.node.GET('.properties.parameters.title.T'),'Updated');
+});
+
+test('More attributes protects stale edits and preserves unsupported values', async t => {
+    const f=fixture(t), root=f.source.getNode(rootPath);
+    root.setAttr({'data-state':'before'});
+    const command=f.app.src.builder.wrapSource(root).menu({node_label:'commands'}).menuline({node_label:'entry',parameters:{nested:true}});
+    f.call('showProperties',{path:'pageRoot'});await tick();
+    const key=attributeRow(f,'data-state');
+    root.setAttr({'data-state':'outside'});
+    f.call('changeAttribute',{attributeRow:key,editingPath:'pageRoot',value:'stale'});
+    assert.match(f.node.GET('.propertyError'),/Attribute changed/);
+    assert.equal(root.getAttr('data-state'),'outside');
+    f.node.SET('.selection','pageRoot.commands.entry');await tick();
+    const entry=f.source.getNode(rootPath+'.commands.entry'), parameters=entry.getAttr('parameters');
+    f.call('removeAttribute',{attributeRow:attributeRow(f,'parameters'),editingPath:'pageRoot.commands.entry'});
+    assert.match(f.node.GET('.propertyError'),/not editable/);
+    assert.equal(entry.getAttr('parameters'),parameters);
+    f.node.SET('.selection','pageRoot.h2_0');await tick();
+    f.call('changeAttribute',{attributeRow:key,editingPath:'pageRoot',value:'wrong node'});
+    assert.equal(root.getAttr('data-state'),'outside');
+});
+
+
+function catalogueTags(f) {
+    const tags=[];
+    const visit=bag=>{for(const entry of bag.getNodes()) {
+        if(entry.value instanceof Bag) visit(entry.value); else tags.push(entry.getAttr('tag'));
+    }};
+    visit(f.node.GET('.catalogue'));return tags.sort();
+}
+
+test('HTML catalogue uses grammar membership and excludes components, webcomponent and empty categories', t => {
+    const f=fixture(t,'pageData',false,false,'html'), tags=catalogueTags(f);
+    for(const tag of ['a','img','div','input','html_button','html_dialog']) assert.ok(tags.includes(tag),tag);
+    for(const tag of ['button','dialog','webcomponent','grid','dataController','svg']) assert.ok(!tags.includes(tag),tag);
+    assert.equal(f.node.GET('.catalogue').getNode('components'),null);
+});
+
+test('explicit catalogue lists remain local and reject disallowed direct and AI insertions atomically', async t => {
+    const f=fixture(t,'pageData',false,true,['div','a']);await tick();
+    assert.deepEqual(catalogueTags(f),['a','div']);
+    assert.ok(f.app.data.getItem('otherEditor.catalogue').getNode('components.commands.button'));
+    const before=f.source.getNode(rootPath).parentBag.toTytx();
+    f.drop('img');assert.match(f.node.GET('.error'),/outside the editor catalogue/);
+    f.node.SET('.insertion',new Bag({parentPath:'pageRoot',tag:'button'}));f.call('insertWidget');
+    assert.match(f.node.GET('.error'),/outside the editor catalogue/);
+    assert.throws(()=>f.call('applySourceEdit',{operation:'insert',path:'pageRoot',tag:'button',label:'bad'}),/outside the editor catalogue/);
+    assert.equal(f.source.getNode(rootPath).parentBag.toTytx(),before);
+    f.drop('a');assert.equal(f.node.GET('.error'),'');assert.ok(f.source.getNode(rootPath+'.a_0'));
+});
+
+test('catalogue validates nested upload and clipboard branches before changing the current page', t => {
+    const f=fixture(t,'pageData',false,false,'html');
+    const b=new GramlotBuilder(), page=b.root.div({node_label:'pageRoot'});
+    page.div({node_label:'nested'}).button('Not HTML');
+    const wire=b.toTytx(), before=f.source.getNode(rootPath).parentBag.toTytx();
+    assert.throws(()=>f.call('sourceUploaded',{item:{value:new Bag({name:'bad.grmlt'})},result:wire}),/button.*pageRoot.nested.button_0/);
+    assert.equal(f.node.GET('.filename'),'page.grmlt');
+    f.node.GET('.clipboard').setItem('saved',wire,{name:'Mixed branch',parentTag:'div'});
+    f.node.SET('.clipboardSelection','saved');f.call('pasteBranch');
+    assert.match(f.node.GET('.error'),/button.*pageRoot.nested.button_0/);
+    assert.equal(f.source.getNode(rootPath).parentBag.toTytx(),before);
+    assert.equal(f.node.GET('.clipboard').getItem('saved'),wire);
+    const good=new GramlotBuilder();good.root.div({node_label:'pageRoot'}).a('Home',{href:'/'});
+    f.call('sourceUploaded',{item:{value:new Bag({name:'good.grmlt'})},result:good.toTytx()});
+    assert.equal(f.node.GET('.filename'),'good.grmlt');
+});
+
+test('SourceImport enforces the configured scope before completing an upload', t => {
+    for(const [tag,allowed] of [['a',true],['button',false],['webcomponent',false]]) {
+        const b=new GramlotBuilder();b.root.div({node_label:'pageRoot'})[tag]({...(tag==='webcomponent'?{code:'custom-element'}:{})});
+        const upload=new SourceImport({catalogue:'html'});upload.write(new TextEncoder().encode(b.toTytx()));
+        if(allowed) assert.equal(upload.finish().state,'completed');
+        else {assert.throws(()=>upload.finish(),/outside the editor catalogue/);assert.notEqual(upload.status().state,'completed');}
+    }
+    for(const scope of ['all',{},['a']]) assert.throws(()=>new SourceImport({catalogue:scope}),/catalogue/);
+});
+
+test('saved code preview cannot bypass the catalogue constraint', async t => {
+    const f=fixture(t,'pageData',false,false,'html'), before=f.source.getNode(rootPath).parentBag.toTytx();
+    f.node.setAttr({codeDocumentKey:'page'});
+    f.node.SET('.codeDocument',new Bag({language:'javascript',content:'draft',saved:'draft',revision:'r1',writable:true,busy:false}));
+    const b=new GramlotBuilder();b.root.div({node_label:'pageRoot'}).button('Wrong widget');
+    f.app.rpc.call=async()=>b.toTytx();
+    await assert.rejects(f.call('codeLoadPreview',new AbortController()),/outside the editor catalogue/);
+    assert.equal(f.source.getNode(rootPath).parentBag.toTytx(),before);
+});
+
+test('host load/currentSource/markSaved track only the page Source and survive replacement', async t => {
+    const f=fixture(t,'pageData',false,true,'html');await tick();
+    assert.equal(f.node.GET('.modified'),false);
+    f.node.SET('.sourceSearch','example');f.app.data.setItem('pageData.title','Sample');
+    assert.equal(f.node.GET('.modified'),false);
+    const b=new GramlotBuilder();b.root.div({node_label:'pageRoot'}).a('Home',{node_label:'home',href:'/'});
+    f.call('loadSource',{source:b.toTytx(),filename:'host-template.grmlt'});
+    await tick();
+    assert.equal(f.node.GET('.modified'),false);
+    assert.equal(f.node.GET('.filename'),'host-template.grmlt');
+    assert.equal(f.node.GET('.sourceSearch'),'');
+    const link=f.source.getNode(rootPath+'.home');link.setAttr({href:'/updated'});
+    assert.equal(f.node.GET('.modified'),true);
+    assert.equal(f.app.data.getItem('otherEditor.modified'),false);
+    assert.match(f.call('currentSource'),/updated/);
+    assert.ok(!f.call('currentSource').includes('catalogueScope'));
+    f.call('markSaved');assert.equal(f.node.GET('.modified'),false);
+    link.parentBag.popNode(link.label);assert.equal(f.node.GET('.modified'),true);
+    f.call('loadSource',{source:b.toTytx(),filename:'again.grmlt'});
+    f.source.getNode(rootPath+'.home').setValue('Changed text');
+    assert.equal(f.node.GET('.modified'),true);
+    f.call('markSaved');f.call('newPage');assert.equal(f.node.GET('.modified'),true);
+});
+
+test('failed host loads preserve source, filename, selection and modified state', async t => {
+    const f=fixture(t,'pageData',false,false,'html');await tick();
+    f.drop('a');const before=f.call('currentSource'), selected=f.node.GET('.selection');
+    const b=new GramlotBuilder();b.root.div({node_label:'pageRoot'}).button('Disallowed');
+    for(const source of ['bad TYTX',b.toTytx()]) {
+        assert.throws(()=>f.call('loadSource',{source,filename:'rejected.grmlt'}));
+        assert.equal(f.call('currentSource'),before);
+        assert.equal(f.node.GET('.filename'),'page.grmlt');
+        assert.equal(f.node.GET('.selection'),selected);
+        assert.equal(f.node.GET('.modified'),true);
+    }
+    assert.throws(()=>f.call('loadSource',{source:before,filename:''}),/filename/);
+});
+
+test('document tracking unsubscribes when its editor is removed', async t => {
+    const f=fixture(t,'pageData',false);await tick();
+    const unsubscribed=[], original=f.source.unsubscribe.bind(f.source);
+    f.source.unsubscribe=(name,events)=>{unsubscribed.push(name);return original(name,events);};
+    f.node.parentBag.popNode(f.node.label);await tick();
+    assert.ok(unsubscribed.includes('visual-document'));
+});
+
+test('isolated canvas keeps live bindings and selection while CSS stays in its own document', async t => {
+    const f=fixture(t,'pageData',false,false,'html');await tick();
+    const page=f.app.src.builder.wrapSource(f.source.getNode(rootPath));
+    page.input({node_label:'name',value:'^.name'});
+    page.a('Home',{node_label:'home',href:'/'});
+    f.app.data.setItem('pageData.name','Ada');await tick();
+    const inputNode=f.source.getNode(rootPath+'.name');
+    const before=f.call('currentSource');f.call('markSaved');
+    f.call('setCanvasCss',['body { background: rgb(255, 0, 0); } a { color: rgb(0, 128, 0); }']);
+    const frame=f.window.document.querySelector('iframe.visual-editor-canvas-frame');
+    assert.ok(frame);
+    const input=f.app.src.renderer.records.get(inputNode).element;
+    assert.equal(input.ownerDocument,frame.contentDocument);
+    assert.equal(f.source.getNode(rootPath+'.name'),inputNode);
+    assert.equal(input.value,'Ada');
+    assert.equal(frame.contentWindow.getComputedStyle(frame.contentDocument.body).backgroundColor,'rgb(255, 0, 0)');
+    assert.notEqual(f.window.getComputedStyle(f.window.document.body).backgroundColor,'rgb(255, 0, 0)');
+    input.value='Grace';input.dispatchEvent(new frame.contentWindow.Event('change',{bubbles:true}));
+    assert.equal(f.app.data.getItem('pageData.name'),'Grace');
+    const linkNode=f.source.getNode(rootPath+'.home'), link=f.app.src.renderer.records.get(linkNode).element;
+    assert.ok(frame.contentDocument.body.contains(link));
+    const ev=new frame.contentWindow.MouseEvent('click',{bubbles:true,cancelable:true,composed:true});
+    assert.equal(link.dispatchEvent(ev),false);
+    assert.equal(f.node.GET('.selection'),'pageRoot.home');
+    assert.equal(f.node.GET('.modified'),false);
+    assert.equal(f.call('currentSource'),before);
+    f.call('setCanvasCss',['body { background: rgb(0, 0, 255); }']);
+    assert.equal(frame.contentWindow.getComputedStyle(frame.contentDocument.body).backgroundColor,'rgb(0, 0, 255)');
+    assert.equal(f.window.document.querySelectorAll('iframe.visual-editor-canvas-frame').length,1);
+    assert.equal(f.app.src.renderer.records.get(inputNode).element, input);
+    assert.equal(f.app.src.renderer.records.get(linkNode).element, link);
+    assert.equal(input.value, 'Grace');
+});
+
+test('isolated destination survives page replacement and registers components for new controls', async t => {
+    const f=fixture(t,'pageData',false);await tick();
+    f.call('setCanvasCss',[]);
+    const frame=f.window.document.querySelector('iframe.visual-editor-canvas-frame');
+    const b=new GramlotBuilder(null,{collections:[inputs]});
+    b.root.div({node_label:'pageRoot',datapath:'pageData'}).textbox({node_label:'name',value:'^.name'});
+    f.call('loadSource',{source:b.toTytx(),filename:'form.grmlt'});await tick();
+    const field=f.source.getNode(rootPath+'.name'), element=f.app.src.renderer.records.get(field).element;
+    assert.equal(element.ownerDocument,frame.contentDocument);
+    assert.ok(element.constructor.gramlotComponent);
+    f.app.data.setItem('pageData.name','In frame');await tick();
+    assert.equal(element.control.value,'In frame');
+    f.call('newPage');f.drop('textbox');await tick();
+    const inserted=f.app.src.renderer.records.get(f.source.getNode(rootPath+'.textbox_0')).element;
+    assert.equal(inserted.ownerDocument,frame.contentDocument);
+    assert.ok(inserted.constructor.gramlotComponent);
+    f.node.parentBag.popNode(f.node.label);await tick();
+    assert.equal(f.window.document.querySelector('iframe.visual-editor-canvas-frame'),null);
+});
+
+
+test('Styles and More attributes share edits and add free names with the compact row', async t => {
+    const f = fixture(t), document = f.window.document;
+    await tick();
+    const root = f.source.getNode(rootPath);
+    f.node.SET('.parameterTab', 'styles');
+    const styleGrid = () => document.querySelector('[aria-label="Style attributes"]');
+    const nodeGrid = () => document.querySelector('[aria-label="Node attributes"]');
+    const click = (grid, label) => grid.querySelector(`gramlot-button[aria-label="${label}"]`).shadowRoot.querySelector('button').click();
+    const enter = (grid, label, value) => {
+        const input = grid.querySelector(`input[aria-label="${label}"]`);
+        input.value = value;
+        input.dispatchEvent(new f.window.Event('input', {bubbles:true}));
+        return input;
+    };
+    click(styleGrid(), 'Add style attribute');
+    assert.equal(f.node.GET('.properties.attributeDraftHidden'), false);
+    enter(styleGrid(), 'New attribute name', 'border_radius');
+    const value = enter(styleGrid(), 'New attribute value', '12px');
+    value.dispatchEvent(new f.window.KeyboardEvent('keydown', {key:'Enter', bubbles:true, cancelable:true}));
+    await tick();
+    assert.equal(root.getAttr('border_radius'), '12px');
+    assert.equal(f.app.src.renderer.records.get(root).element.style.borderRadius, '12px');
+    assert.equal(f.node.GET('.parameterTab'), 'styles');
+    assert.equal(f.node.GET('.properties.attributeDraftHidden'), true);
+    const styleInput = styleGrid().querySelector('[aria-label="border_radius attribute value"]');
+    styleInput.value = '24px';
+    styleInput.dispatchEvent(new f.window.Event('change', {bubbles:true}));
+    await tick();
+    assert.equal(root.getAttr('border_radius'), '24px');
+    assert.equal(nodeGrid().querySelector('[aria-label="border_radius attribute value"]').value, '24px');
+    assert.equal(styleGrid().querySelector('[aria-label="border_radius attribute value"]'), styleInput);
+    assert.equal(f.node.GET('.propertyError'), '');
+    f.node.SET('.parameterTab', 'attributes');
+    click(nodeGrid(), 'Add attribute');
+    enter(nodeGrid(), 'New attribute name', 'kpress_slot');
+    enter(nodeGrid(), 'New attribute value', 'body');
+    click(nodeGrid(), 'Apply new attribute');
+    await tick();
+    assert.equal(root.getAttr('kpress_slot'), 'body');
+    assert.equal(styleGrid().querySelector('[aria-label="kpress_slot attribute value"]'), null);
+    assert.ok(nodeGrid().querySelector('[aria-label="kpress_slot attribute value"]'));
+    click(nodeGrid(), 'Add attribute');
+    enter(nodeGrid(), 'New attribute name', 'discarded');
+    enter(nodeGrid(), 'New attribute value', 'nothing').dispatchEvent(
+        new f.window.KeyboardEvent('keydown', {key:'Escape', bubbles:true, cancelable:true}));
+    assert.equal(root.getAttr('discarded'), null);
+    assert.equal(f.node.GET('.properties.attributeDraftHidden'), true);
+    click(nodeGrid(), 'Remove border_radius attribute');
+    await tick();
+    assert.equal(Object.hasOwn(root.getAttr(), 'border_radius'), false);
+    assert.equal(styleGrid().querySelector('[aria-label="border_radius attribute value"]'), null);
 });

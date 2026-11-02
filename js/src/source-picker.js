@@ -2,9 +2,8 @@
 export class SourcePicker {
     #renderer; #root; #canvas; #onSelect; #observer; #selectedPath = null;
     #highlighted = null; #release = null; #disposed = false;
-    constructor({renderer, root, onSelect}) {
+    constructor({renderer, root, onSelect, canvas = renderer.records.get(root.parentNode)?.presentation}) {
         if (!root?.parentNode || typeof onSelect !== 'function') throw new TypeError('SourcePicker requires a mounted Source root and onSelect');
-        const canvas = renderer.records.get(root.parentNode)?.presentation;
         if (!canvas || canvas.nodeType !== 1) throw new TypeError('SourcePicker requires a mounted preview');
         this.#renderer = renderer; this.#root = root; this.#canvas = canvas; this.#onSelect = onSelect;
         canvas.addEventListener('pointerdown', this, true);

@@ -524,6 +524,17 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         throw errors.length === 1 ? error : new AggregateError(errors, 'Source build and cleanup failed');
     }
 
+    /** Mount the same Source and bindings in a new document's element realm. */
+    mountDestination(node, destination) {
+        const record = this.records.get(node);
+        if (!record?.presentation || destination?.nodeType !== 1)
+            throw new TypeError('mountDestination requires a mounted element and an HTML destination');
+        if (record.presentation.contains(destination)) throw new Error('Destination cannot be inside the moved presentation');
+        const parent = record.parent;
+        this.remove(node);
+        return this.buildNode(node, destination, null, parent);
+    }
+
     assignContainer(record, container) {
         record.container = container;
         const childContainer = record.element ?? container;

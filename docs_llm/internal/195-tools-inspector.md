@@ -105,6 +105,10 @@ A changed/removed node blocks stale drafts. Unedited values retain their identit
 There is no multi-operation transaction: a runtime error during application is
 reported, and Escape reloads any already accepted changes.
 
+The scalar conversion implementation lives in core `js/src/editor-values.js`,
+shared with the Visual Editor's More attributes tab. The optional inspector
+imports that implementation without changing its editing contract.
+
 Editable scalar types are string, finite number, safe integer, boolean, null and
 Date values (native date/time/datetime inputs interpreted in UTC). A second
 Backspace in an empty cell sets null; in a boolean cell Backspace sets null.

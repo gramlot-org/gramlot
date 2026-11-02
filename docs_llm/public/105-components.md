@@ -1776,11 +1776,63 @@ commands and links are intercepted for selection. Source/Data trees share the
 actual Bags. Editor UI state lives under `__editor`, omitted from Data inspection.
 Use distinct editor IDs/datapaths and data roots for independent editors.
 
+The workbench uses a DevTools-style desktop density: a 30 px command bar, 32 px
+activity rail, 240 px initial sidebar, and 24 px tree/property rows. Search remains
+rounded and sits above each tree. Tool controls, tab strips, forms and catalogue
+spacing are compact; panels remain resizable and detachable. Density overrides
+are scoped to editor tools, so they do not shrink authored canvas widgets. Color,
+focus and selection continue to follow the selected Gramlot theme.
+
+Limit the available tags with `VisualEditor(..., catalogue="html")` or an explicit
+list such as `catalogue=["div", "a", "img"]`. Omission keeps the full catalogue.
+Lists use exact Source tag names and include `div` for the fixed pageRoot.
+The HTML scope follows the HTML grammar, excludes runtime components and
+`webcomponent`, and retains plain controls such as `html_button`. SVG dialects
+and Data/controller declarations are not part of this HTML-only scope.
+
+The scope is checked recursively before insertion, clipboard paste, imported
+Source, AI edits and code preview. Rejection identifies the offending tag/path
+and preserves the current page. Configure the upload target with the same scope,
+for example `return SourceImport(catalogue="html")`; the client checks it again
+before mounting. This constrains tags, not arbitrary scripts or attributes: open
+trusted Source only. Editor tools remain available regardless of canvas scope.
+
+The **Styles** and **More attributes** tabs use the same compact, inspector-like
+attribute table: **Attribute** and **Value** columns, with a **+** command in the
+header. Only attributes present on the selected node occupy rows. Styles shows
+style contributions recognized by the renderer and widget style metadata; More
+attributes shows all node attributes. Both views share values and stay synchronized.
+
+Press **+** to open a new row, enter any valid attribute name and its value, and
+choose a scalar type when needed (string by default). **Enter** or **✓** applies
+the new row; **Escape** or **×** cancels it. Existing values apply on change;
+**×** beside an existing value removes that attribute. Add styles such as
+`border_radius` and `margin_top`, HTML attributes such as `href` or `src`, custom
+names such as `kpress_slot` and `data-*`, or binding strings such as `^page.title`.
+Names are not limited to the widget's declared parameters.
+
+Addition uses the inspector's scalar conversions; writes still pass destination
+metadata and renderer validation before changing live Source. Duplicate names
+and stale edits are rejected. `_meta` is hidden; non-scalar values remain read-only.
+Attributes use normal Source serialization, including its null semantics, and
+unedited attributes and child nodes are preserved.
+
 New resets the edited Source/Data. Download and Copy Source export only pageRoot
 as TYTX (`.grmlt`), not collections, Logic or editor state. Open uses SourceImport
 and the shared uploader (5 MiB maximum); malformed Source leaves the design intact.
 Only open trusted Source: its page behavior may execute. Clipboard errors are
 reported; there is no alternate clipboard path.
+
+The named branch Clipboard is distinct from Copy Source. Open it from the left
+rail, or drop a Source branch directly onto its Clipboard icon even while the
+panel is closed. The icon and panel accept only this editor's Source branches:
+drop moves, Option/Alt at drop copies. Both ask for a name; Save branch stores the
+snapshot before a cut removes the original, and Cancel preserves it. Select a
+saved entry and destination, then Paste branch (F9), or drag the entry onto Source.
+Repeated paste retains the entry and its authored bindings; destination metadata
+and nodeId validation still apply. Cut branch uses F8. Standard clipboard shortcuts
+remain native. Entries survive New/Open within the session, but not reload, and
+are excluded from .grmlt exports.
 
 The properties, Source/Data and optional Code regions can detach; closing the
 floating restores their DOM without rebuilding content. Moving a Source branch
@@ -1791,6 +1843,75 @@ Save checks revision and syntax, and Preview executes only saved Page.main. It
 neither installs that page's RPC endpoints/companion Logic nor converts Source
 back to Python/JS. Optional chat is application-owned and does not save files
 implicitly. See the adapter guides for the host boundary.
+
+### Host-owned documents
+
+Delegate the page Logic to `VisualEditorLogic`. The host calls
+`loadSource(node, {source, filename})` with TYTX to open a stored document, reads
+`currentSource(node)` to save the current pageRoot TYTX, then calls
+`markSaved(node)` only after its storage operation succeeds. Loading uses the same
+shape, catalogue and renderer validation as upload; a rejected load preserves the
+Source, filename, selection and modified state. A successful load resets selection
+to pageRoot, clears the Source search and marks the document clean.
+
+`.modified` belongs to the editor Data subtree: it is false after initial mounting,
+a successful load or `markSaved`, and true after page Source changes, including
+nested attributes, text, insertion, removal and AI edits. Selection, editor UI
+state and sample Data changes do not affect it. New creates an unsaved document;
+Download and Copy Source do not acknowledge host persistence. “Unsaved changes”
+remains visible until the host marks the document saved.
+
+`editor.toolbar` is the extension point for host commands. For example:
+
+```python
+editor = VisualEditor(root, catalogue="html", file_commands=False)
+editor.toolbar.menuline(caption="Save", action="saveTemplate")
+```
+
+`file_commands=False` (`fileCommands:false` in JavaScript) hides the standard
+New/Open/Download/Copy Source command group. The host's `saveTemplate` Logic owns
+its storage request, calls `currentSource(node)` for the payload and `markSaved`
+after success. The host must guard against a concurrent edit while saving: if
+`currentSource(node)` changed since the submitted payload, do not clear `.modified`.
+There is no automatic save, storage backend or close/navigation prompt in core.
+
+### Isolated canvas styles
+
+Pass `canvas_css=["body { background: white; color: #222; }"]`
+(`canvasCss` in JavaScript) to render the canvas in its own iframe document.
+Omit the option to retain the ordinary editor canvas. CSS strings are stylesheet
+text, not URL descriptors; the host owns retrieval of external stylesheets.
+`setCanvasCss(node, texts)` replaces the styles at runtime; an empty list clears
+the site styles while retaining the isolated document.
+
+Selectors including `html` and `body` apply inside that document without styling
+the editor panels. The iframe uses the same Source, Data and NodeBindings, not a
+copied page model. On first isolation the presentation is rebuilt in the new
+document realm; subsequent CSS replacements retain the controls. Existing
+collections are registered in that realm, so later Source inserts and page loads
+continue to render components. Selection and native input bindings remain active.
+Styles live in editor state and are not included in the exported `.grmlt` Source.
+This is style isolation for trusted pages, not an execution/security sandbox.
+
+### Sample Data for template previews
+
+Use `data_root` to give the canvas a dedicated Data subtree. Populate it with
+ordinary Data declarations; the Data tree shows that subtree and omits unrelated
+host/editor state:
+
+```python
+root.dataSetter("preview.page.title", "Example site")
+root.dataSetter("preview.texts.nav_home", "Home")
+editor = VisualEditor(root, data_root="preview", height="100dvh")
+```
+
+Inside that page, bind template text to `^.page.title` or `^.texts.nav_home`.
+The leading dot makes these paths relative to the page's `preview` datapath.
+Absolute bindings such as `^page.title` still address the actual Data root:
+for an existing template using those paths, keep the default `data_root=""`
+and populate `page.title` / `texts.nav_home` there. The editor never rewrites
+bindings when choosing a Data root. Sample Data is not part of the `.grmlt`
+Source export; the publishing host supplies its own values.
 
 Known limits: scalar metadata editors do not cover every object/callback type;
 undo/redo and sibling reordering are not implemented. WebKit automatic bottom

@@ -1,9 +1,12 @@
+import {validateCatalogue, validateCatalogueSource} from '../visual-editor-catalogue.js';
 import {fromTytx} from '@genrojs/tytx';
 import {SourceBag} from '@genrojs/builders';
 import {UploadTarget} from './upload.js';
 export class SourceImport extends UploadTarget {
-    constructor() {
+    constructor({catalogue = null} = {}) {
         super({maxBytes:5 * 1024 * 1024});
+        validateCatalogue(catalogue);
+        this.catalogue = catalogue;
         this.decoder = new TextDecoder('utf-8', {fatal:true});
         this.parts = [];
         this.outcome = {state:'pending'};
@@ -17,6 +20,7 @@ export class SourceImport extends UploadTarget {
         if (!(source instanceof SourceBag) || source.length !== 1 || source.getNodes()[0].label !== 'pageRoot') {
             throw new TypeError('Expected one pageRoot Source');
         }
+        validateCatalogueSource(this.catalogue, source);
         this.outcome = {state:'completed', result:wire};
         return this.outcome;
     }

@@ -1,6 +1,6 @@
 /** Explicit page/panel bridge. No frame discovery or extension API. */
 import {Bag} from '@gramlot/gramlot';
-import {scalarType} from './editor-values.js';
+import {scalarType} from '../../../js/src/editor-values.js';
 export {attachInspectorAgent} from './inspector-agent.js';
 
 const roots = ['data', 'source'];

@@ -28,14 +28,13 @@ import {formatValue} from './format.js';
  */
 export class Gramlot {
     #mobileEnvironment;
+    #collections;
     constructor({pageId, uploadUrl = null, rpcUrl = '/gramlot/rpc', closeUrl = '/gramlot/close', rootId = 'gramlot-root', capabilities = [],
                  element = null, document = element?.ownerDocument ?? globalThis.document, transport = null, collections = [],
                  locale = null, timeZone = null, devices = [], serverAdapter = new ServerAdapter(), nameSyntax = null,
                  websocketUrl = null} = {}) {
-        buttons.register(document.defaultView);
-        for (const collection of collections) {
-            if (collection instanceof ComponentCollection) collection.register(document.defaultView);
-        }
+        this.#collections = [buttons, ...collections.filter(collection => collection instanceof ComponentCollection)];
+        this.registerDocument(document);
         this.commands = new CommandRegistry();
         this.pageId = pageId;
         this.uploadUrl = uploadUrl;
@@ -68,6 +67,10 @@ export class Gramlot {
         }
     }
     publish(topic, payload = {}) { return this._subscriptions.publish(topic, payload); }
+    /** Register this page's activated collections in an additional rendering realm. */
+    registerDocument(document) {
+        for (const collection of this.#collections) collection.register(document.defaultView);
+    }
     subscribe(topic, callback) { return this._subscriptions.subscribe(topic, callback); }
     unsubscribe(registration) { this._subscriptions.unsubscribe(registration); }
     format(value, options) { return formatValue(value, options, {locale: this.locale, timeZone: this.timeZone}); }

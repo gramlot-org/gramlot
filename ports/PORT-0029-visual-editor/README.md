@@ -56,3 +56,15 @@ Test the real consuming page and its packaged artifacts, not just JSDOM. Import
 only the prerequisite hunks from an older branch. Keep tool pages out of tests
 that assume a teaching Code tab with locally authored Logic. Separate a saved
 trusted Page.main preview from filesystem authorization and from an execution sandbox.
+
+
+## Residual consolidation — 2026-11-02
+
+The owner authorized review and retirement of superseded Visual Editor copies.
+The bounded catalogue/host-document/iframe/attribute-table and compact UI changes
+are qualified on the common base. GC-070 visual-editor-cleanup-20261102 records
+fresh tests, recovery evidence, original preservation and the #81 remainder.
+Keep the current preview and Python host. Full archives of the unchanged older
+core and JavaScript-host copies are verified, but retirement is pending: automatic
+approval review rejected core removal because another chat may still manage it.
+No bypass or other removal followed. No Invoice or public deployment.

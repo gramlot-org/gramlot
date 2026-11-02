@@ -18807,3 +18807,277 @@ blanket patch. Primary copies, active previews, Visual Editor and Invoice remain
 
 Private recovery evidence, final retirement outcomes and pending work:
 /Users/gporcari/.codex/visualizations/2026/10/22/01a16296-c60f-7240-b811-74da51d068fe/gramlot-cleanup-20261102/FOURTH-PASS.md.
+
+
+<a id="gc-070-visual-editor-clipboard-icon-20261101"></a>
+## Visual Editor Clipboard icon drop target - 2026-11-01
+
+Owner, Visual Editor chat 01a18910-bc12-7bd0-a921-3e26ce63c53c:
+“aggiungi anche il pannello clipboard nel documento, con uno screenshot e
+spiegando come salvare e riutilizzare i rami” and “potremmo lasciar fare il drop
+anche sull icona clipborad”. This bounded follow-up adds the existing Clipboard
+panel drop contract to the rail icon in Python and JavaScript composition.
+It reuses dropClipboard/clipboardModifiers and editor-specific Source drag tags;
+there is no new state, handler, persistence mechanism or dependency change.
+The click action still toggles the panel. A drop opens the naming dialog even
+while the shelf is closed; Save branch reveals the shelf. Option/Alt copies;
+the default move removes the source only after saving the snapshot.
+
+Implemented in an isolated worktree based on bcd87ba7. Verification: 39 editor
+JavaScript tests, including the same native-event move/copy/paste contract for
+panel and icon; 2 Python composition tests; runtime/collection build passed.
+The initial Python run lacked generated collection metadata; the normal runtime
+build supplied it and the rerun passed. The private illustrated PDF/HTML guide
+now has a Clipboard screenshot and session-lifetime instructions. The existing
+local gallery was used to verify capture/name/paste and screenshot the panel;
+that service has not been replaced by this worktree. No release, deployment,
+merge or owner visual acceptance is claimed.
+
+
+<a id="gc-070-visual-editor-more-attributes"></a>
+## Visual Editor More attributes — 2026-11-01
+
+Owner, Visual Editor chat 01a18910-bc12-7bd0-a921-3e26ce63c53c, following issue
+[81](https://github.com/gramlot-org/gramlot/issues/81): “si: la mia idea è che
+forse potremmo mostrare un tab morte attibutes con il sistema che usaimo per
+l'inspector cioe un mdo per aggiunfere qualunque attributo”. This authorizes the
+bounded More attributes increment in the separate worktree; it does not approve
+unsettled public hook names or a canvas CSS isolation design.
+
+Implemented: every selection offers an inspector-style name/type/value tab for
+ordinary scalar attributes, including href/src, kpress_slot, data-* and binding
+strings. The existing inspector scalar conversion module moved unchanged into
+core and both editors import it. Private UI state remains in the editor Data Bag.
+Add, edit and remove validate a candidate before live Source mutation, retaining
+children and unedited attributes. Duplicate names, reserved metadata names,
+invalid typed values, conflicting nodeIds and stale edits are rejected. Declared
+required/enum/unique rules remain enforced. Specialized tabs and raw rows stay
+synchronized; editing a raw value retains its input DOM. Non-scalar values are
+read-only; normal Source null serialization semantics remain unchanged.
+
+Verified: 43 Visual Editor tests, 45 inspector tests, runtime/collection build and
+inspector bundle build passed. The browser fixture verified href updates, custom
+attribute addition, duplicate rejection, removal and keyboard focus retention.
+An isolated HTTP preview on 51262 uses the actual component and shared Logic;
+it has no application chat or host-document service. Existing gallery services
+were not replaced. Maintained public/internal docs and mirrors are updated.
+
+Issue 81 remains open: per-element HTML metadata, catalogue scope/insertion
+policy, host load/save/change hooks, canvas CSS isolation and sample Data guidance
+are separate pending items. No merge, publication or owner visual acceptance is
+claimed for this increment.
+
+
+<a id="gc-070-visual-editor-catalogue-scope-review"></a>
+## Visual Editor catalogue scope review — 2026-11-01
+
+Owner accepted More attributes with “ok”, then requested: “procedi con gli altri
+punti della #81, partendo dal filtro del catalogo, sempre nel worktree separato”.
+Work continues in the same isolated worktree. Reviewed issue 81 and all entry
+paths: catalogue drop, insertion confirmation, nested clipboard paste, upload,
+AI Source operations and saved-code preview. HTML membership must come from the
+HTML grammar, not merely absence of component metadata (webcomponent would pass).
+The proposed public `catalogue="html"` / explicit tag-list contract is awaiting
+the owner's answer to the API naming question; no filter implementation is claimed.
+
+Independently completed the requested sample Data guidance in GC-105 and its
+mirror: dedicated data_root, relative versus absolute bindings, and exclusion of
+sample Data from Source export. It follows the existing qualified Data-root
+binding contract. Remaining host load/save and canvas CSS contracts are pending.
+
+
+<a id="gc-070-visual-editor-template-host"></a>
+## Visual Editor template scope, host documents and isolated CSS — 2026-11-02
+
+Owner confirmed the catalogue contract (“Sì, confermo”), the host Logic contract
+(“Sì, confermo”) and iframe isolation (“Sì, canvas isolato in iframe”) in Visual
+Editor chat 01a18910-bc12-7bd0-a921-3e26ce63c53c. Work remains in the separate
+worktree based on bcd87ba7; the previously accepted More attributes and Clipboard
+icon work is retained.
+
+Implemented issue 81 catalogue scope in Python/JS: `catalogue="html"` or exact
+Source tag list; omission retains the full catalogue. The fixed div pageRoot
+must be included in explicit lists. HTML membership uses the HTML grammar plus
+resolved metadata, excluding Gramlot components and webcomponent. Display groups
+and AI schema follow the scope. Recursive checks cover insertion, paste, upload,
+AI and code preview before live mutation. SourceImport takes the same scope for
+server-side validation; it does not replace the client's candidate validation.
+
+Host Logic `loadSource`, `currentSource`, `markSaved` shares the upload validation
+path. `.modified` observes only canvas Source events, survives replacement and is
+released with the editor. Load/markSaved clears it; New creates an unsaved page.
+The toolbar shows Unsaved changes; file_commands/fileCommands hides standard
+file actions, and the existing toolbar accepts host commands. Storage, concurrent
+save policy and navigation prompts remain host responsibilities.
+
+`canvas_css`/canvasCss and `setCanvasCss` accept CSS texts. An optional iframe owns
+an isolated document; renderer mountDestination rebuilds the existing Source
+presentation there with the same NodeBindings and Data, and existing collections
+are registered in that realm. Later CSS replacements retain DOM; Source imports,
+New and later component inserts retain the destination. SourcePicker observes the
+iframe body. This is CSS isolation, not a security sandbox. No CSS URL descriptor
+or new fetch service is introduced. Sample Data guidance is documented as well.
+
+Verification: 79 JavaScript tests across editor (53), renderer, components and
+TypeScript declarations passed after the component cross-language tests were
+rerun with GRAMLOT_TEST_PYTHON pointing to the existing environment (the first
+combined run had two ENOENT setup errors because this worktree has no .venv).
+Three Python composition/import tests and the runtime/collection build passed.
+Browser verification on the isolated 51262 fixture: HTML-only catalogue, Source
+selection in the iframe, native input updates visible in Data, Source changes
+visible in the canvas and Unsaved changes, and site CSS visually isolated from
+the dark editor. The fixture is not a gallery/chat/host persistence deployment.
+
+Issue 81 is not closed: automatic per-element HTML metadata and the requested
+host parameter-spec hook are not claimed by this increment. HTML grammar metadata
+still lacks the enumerated href/src/etc. declarations; More attributes covers
+ordinary explicit authoring without modifying the Builder dependency. No merge,
+package publication or owner acceptance of this increment is claimed.
+
+
+<a id="gc-070-visual-editor-attribute-grid"></a>
+## Visual Editor attribute tables — 2026-11-02
+
+Owner request: use the inspector's compact name/value table, with a plus command
+and arbitrary attribute names, for both Styles and More attributes.
+
+Implemented in the existing separate Visual Editor worktree: two-column tables
+with shared bound rows; Styles filters using renderer style classification and
+widget metadata, More attributes exposes all scalar attributes. The header plus
+opens a draft row with free name, scalar type and value; Enter/check applies,
+Escape/cancel discards. Existing values retain their controls during edits; remove
+and add preserve the active tab. Non-scalar values stay read-only. Existing
+validation, duplicate-name checks, binding strings and Source serialization remain.
+
+Verified: all 54 Visual Editor tests pass, including actual plus/input/Enter,
+Escape, style rendering, cross-tab synchronization, custom attributes and removal;
+runtime build passes. Browser proof at the local preview verifies border_radius
+on the canvas and kpress_slot in More attributes, with compact theme-aware rows.
+Documentation and GC-225 mirrors updated. Implementation verified; owner visual
+acceptance remains pending. This does not close the other pending issue #81 items
+(automatic HTML metadata and the custom specification hook).
+
+
+<a id="gc-070-visual-editor-devtools-density"></a>
+## Visual Editor DevTools density — 2026-11-02
+
+Owner requested Chrome DevTools as the density reference, prioritizing canvas
+space over large interface elements. Applied to the shared editor composition in
+Python and JavaScript: 28 px top toolbar, 32 px activity rail, 240 px initial
+sidebar, 22 px property/tree rows, tighter forms/tabs/search/catalogue spacing,
+and compact code-drawer chrome. Properties retain a usable initial height and
+panels remain resizable/detachable. Attribute row commands keep inline targets.
+
+Density uses existing component tokens and tree parts scoped to editor tools;
+authored canvas controls keep their own sizes and theme colors remain canonical.
+The normal canvas surround is reduced from 8 to 2 px. No new public option,
+component behavior, provider integration or dependency change is introduced.
+
+Verified: 54 Visual Editor JS tests, 14 component/declaration JS tests and 3 Python
+VisualEditor tests pass; runtime build and whitespace checks pass. Browser review
+covers docked properties, expanded Source/Data, the smaller catalogue, selection
+and native canvas input updating Data. The local preview remains the HTML-catalogue
+fixture without an AI provider; no full chat end-to-end verification is claimed.
+Implementation verified; visual acceptance remains with the owner. Other pending
+issue #81 items (automatic HTML metadata and custom specification hook) remain open.
+
+
+<a id="gc-070-visual-editor-complete-preview"></a>
+## Complete Visual Editor preview — 2026-11-02
+
+Owner requested the complete gallery editor with AI chat rather than the reduced
+HTML-only fixture, and slightly larger controls while retaining compact density.
+Adjusted shared workbench tools to 12 px text, 24 px rows/controls and a 30 px
+command bar; rail/sidebar widths remain 32/240 px. The HTML fixture remains a
+separate diagnostic preview. Full gallery launch uses the existing chat trial,
+all declared collections, and a disposable Python page for explicit remote-edit
+Save. Provider credentials are read through the already authorized 1Password
+reference and remain process-only. Verified: 54 editor tests and the runtime build pass. The complete gallery is
+running at http://127.0.0.1:51263/pages/07-tools/02-advanced/01-visual_source using
+the existing chat and remote-edit adapter worktree, with a disposable staging
+copy of gramlot-examples. Its menu collection was regenerated against this core;
+all nine collection fingerprints validate. The gallery browser build used a
+local Node resolver for the same @gramlot/collections names as the host import map.
+No original gallery/adapter sources or credentials were written.
+
+Browser verification: HTML and Gramlot catalogue groups are present; the chat
+performed four acknowledged Source inserts (heading, two-column formlet, two
+bound textboxes); the Python CodeMirror drawer opens with explicit Save controls.
+The chat is open in Source mode, with the generated example visible. Screenshot:
+visual-editor-guide/complete-editor-chat-preview.jpg in the chat artifact directory.
+No file save or deployment was performed. The earlier HTML-only fixture on 51262
+is diagnostic, not the complete result. The current complete preview is 51263.
+
+
+<a id="gc-070-chat-composer-geometry"></a>
+## Chat composer geometry — 2026-11-02
+
+Owner reported a clipped message-field focus outline and a distorted send icon
+in the complete editor. The shared ChatPane now reserves vertical padding inside
+its measured composer body; the textarea focus outline is painted inward. The
+send control uses a 16 px SVG arrow and existing button sizing tokens to produce
+a 36 px circular control instead of a narrow Unicode-glyph button. No chat action,
+provider contract or public component option changed. GC-225 records the private
+icon class in both documentation trees.
+
+Verified: 11 Python chat tests and 8 JavaScript chat tests pass; the runtime build
+and whitespace check pass. Chrome review of the complete gallery covers a focused
+one-line draft and a multiline draft with both 340 px and 520 px chat panels.
+The field outline, toolbar and circular send button remain fully visible. The
+owner's original unsent draft was restored after the local server restart and
+was not submitted. The complete preview remains on port 51263. Screenshot:
+visual-editor-guide/chat-composer-fixed.jpg in the chat artifact directory.
+Implementation verified; owner visual acceptance remains pending. This focused
+correction does not close the other pending issue #81 items.
+
+
+<a id="gc-070-visual-editor-cleanup-20261102"></a>
+## Visual Editor residual consolidation and retirement — 2026-11-02
+
+Owner: “Bene, passa al Visual Editor: verifica le differenze rimaste, integra quelle
+valide nella base comune e ritira le copie superate, preservando gli originali e
+lasciando Invoice fuori.” Existing feature confirmations were reread in Visual
+Editor chat 01a18910-bc12-7bd0-a921-3e26ce63c53c, including catalogue scope, host
+load/currentSource/markSaved and CSS iframe isolation. No new feature contract,
+publication, remote push or deployment is authorized by this cleanup.
+
+Accepted the bounded changes from /private/tmp/gramlot-clipboard-icon: Clipboard
+icon drop, shared Inspector scalar editing in Styles/More attributes, recursive
+catalogue constraints, host-owned document commands and dirty state, isolated CSS
+canvas, compact tool presentation and the chat composer/SVG arrow correction.
+The destination adds an explicit regression asserting retained input/link identity
+and current value after changing iframe CSS. Only initial realm mounting rebuilds
+presentation; Source, Data and bindings remain shared. Later CSS changes preserve
+controls. The Python HTML catalogue retains only an immutable tag set, not a
+module-owned Builder instance. No Invoice code or dependency source was changed.
+
+Verification on the isolated current common baseline:
+- 1,726 JavaScript tests passed; 14 focused Python editor/chat tests passed.
+- 45 Inspector tests passed, covering the scalar helper relocation.
+- Runtime build, strict Sphinx build and public documentation link checks passed.
+- Chromium and WebKit: widget drag/drop, required parameters, property editing,
+  detach/dock input identity, scoped Data tree, iframe component registration,
+  two-way binding, CSS isolation and control identity, Source dirty/export/save,
+  selection and resource disposal passed. No live AI provider request was made.
+- Final identity regression and three Python editor tests passed after the small
+  destination review changes. Initial qualification used an incomplete temporary
+  dependency setup and the wrong Python package; reruns used the generated assets,
+  candidate PYTHONPATH and supported local-server permissions and passed.
+
+The 181 original core, 15 Python-host and 43 JavaScript-host recorded file hashes
+still match the previously accepted PORT-0029 review. Full archive/index/history
+verification succeeded for the old visual-editor-chat core and JavaScript-server
+checkouts. Retirement remains pending: the core removal failed and automatic
+approval review rejected the direct retry because another chat may still manage
+the checkout. No bypass was attempted; the JavaScript-host removal was deferred
+as part of the same old workspace. Both copies, branches and archives remain. Keep the current
+clipboard/icon checkout, its Python preview host and the Visual Editor chat.
+Unrelated documentation/tree work in the common checkout remains untouched.
+
+Remaining separately: issue #81 automatic HTML parameter metadata/custom host
+specification hook; existing WebKit file-upload/bottom-region limits. Python HTML
+catalogue inspection currently reads Builder's schema without modifying it, as do
+existing grammar integration paths; replacing private metadata access needs the
+owning Builder API, not a Gramlot fallback. CSS iframe and catalogue scope are not
+security sandboxes. Original live-preview/provider results are not new acceptance.
+Recovery and full logs: gramlot-cleanup-20261102/visual-editor-consolidation/.

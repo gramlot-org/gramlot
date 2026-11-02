@@ -2,7 +2,7 @@
 import {Bag, Gramlot, GramlotBuilder} from '@gramlot/gramlot';
 import {InspectorConnection, encodeScalar} from './inspector-bridge.js';
 export {InspectorConnection, attachInspectorAgent} from './inspector-bridge.js';
-import {editorTypes, scalarType, scalarText, parseScalar, readParameterEnums} from './editor-values.js';
+import {editorTypes, scalarType, scalarText, parseScalar, readParameterEnums} from '../../../js/src/editor-values.js';
 import {InspectorHistory} from './inspector-history.js';
 import {InspectorStyles} from './inspector-styles.js';
 import inspectorStyle from './gramlot-tools-inspector.css';

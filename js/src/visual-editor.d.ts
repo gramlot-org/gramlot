@@ -1,6 +1,11 @@
 import type {SourceBagNode} from '@genrojs/builders';
 export function visualEditorScope(node:SourceBagNode):SourceBagNode;
 export class VisualEditorLogic {
+    setCanvasCss(node:SourceBagNode, texts:string[]):void;
+    loadSource(node:SourceBagNode, document:{source:string; filename:string}):void;
+    currentSource(node:SourceBagNode):string;
+    markSaved(node:SourceBagNode):void;
+    initializeDocument(node:SourceBagNode):void;
     chatRender(node:SourceBagNode, ...args:unknown[]):unknown;
     chatCompleted(node:SourceBagNode, ...args:unknown[]):unknown;
     chatReset(node:SourceBagNode, ...args:unknown[]):unknown;

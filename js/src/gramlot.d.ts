@@ -117,6 +117,7 @@ export class Gramlot {
     publish(topic: {topic: string; server: true; pageId?: string}, payload?: Record<string, unknown>): Promise<'ok'>;
     publish(topic: Publication, payload?: Record<string, unknown>): void | Promise<'ok'>;
     /** Subscribe to a local page topic, synchronously in registration order. */
+    registerDocument(document:Document):void;
     subscribe(topic: string, callback: (payload: Record<string, unknown>, metadata: {pageId?: string}) => unknown): SubscriptionHandle;
     /** Remove a registration; repeating removal of an owned handle is harmless. */
     unsubscribe(registration: SubscriptionHandle): void;

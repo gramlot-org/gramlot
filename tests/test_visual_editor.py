@@ -38,3 +38,29 @@ def test_default_editor_uses_real_data_root_and_excludes_reserved_state():
     assert data_tree.attr['excludeRoot']=='__editor'
     with pytest.raises(ValueError,match='__editor'):
         VisualEditor(builder.root,datapath='outside')
+
+
+def test_catalogue_scope_is_serialized_and_upload_rejects_nested_components():
+    from gramlot import SourceImport
+    root=Path(__file__).parents[1]/'src/gramlot/collections'
+    builder=GramlotBuilder(collections=[json.loads((root/name/'grammar.json').read_text()) for name in ('inputs','layout','tree','uploads')])
+    editor=VisualEditor(builder.root,catalogue='html',file_commands=False,canvas_css=['body { color: red; }'])
+    assert any(n.attr.get('hidden') is True for n in editor.toolbar.static_value.nodes)
+    scope=next(n for n in editor.pane.static_value.nodes if n.attr.get('destination_path')=='.catalogueScope')
+    assert scope.attr['value']=='html'
+    assert 'catalogueScope' not in editor.design.static_value.get_node('pageRoot').attr
+    for tag,allowed in [('a',True),('button',False)]:
+        source=GramlotBuilder()
+        page=source.root.div(node_label='pageRoot')
+        getattr(page.div(node_label='nested'),tag)('Example')
+        upload=SourceImport(catalogue='html')
+        upload.write(source.to_tytx().encode())
+        if allowed:
+            assert upload.finish()['state']=='completed'
+        else:
+            with pytest.raises(ValueError,match='outside the editor catalogue'):
+                upload.finish()
+            assert upload.status()['state']!='completed'
+    for scope in ('all',{},['a']):
+        with pytest.raises((ValueError,TypeError),match='catalogue'):
+            SourceImport(catalogue=scope)

@@ -1,5 +1,5 @@
 /** Shared page-side inspector; the supplied page owns its Bag and runtime. */
-import {scalarType, readParameterEnums} from './editor-values.js';
+import {scalarType, readParameterEnums} from '../../../js/src/editor-values.js';
 import {InspectorHistory} from './inspector-history.js';
 import {InspectorStyles} from './inspector-styles.js';
 

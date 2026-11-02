@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseScalar, scalarType, scalarText} from '../src/editor-values.js';
+import {parseScalar, scalarType, scalarText} from '../../../js/src/editor-values.js';
 
 test('typed scalar edits validate without coercing invalid or empty values', () => {
     for (const [type, text, expected] of [['string', '^literal', '^literal'], ['integer', '42', 42],

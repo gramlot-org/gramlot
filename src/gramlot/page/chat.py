@@ -40,7 +40,7 @@ class ChatPane:
         self.composer.top.set_attr(height='2px', **{'data-chat-top': True})
         self.composer.bottom.set_attr(height='44px')
         pane = self.composer.center.contentPane(overflow='hidden')
-        center = pane.div(display='flex', flex_direction='column', padding='0 12px 2px', gap='4px')
+        center = pane.div(display='flex', flex_direction='column', padding='4px 10px', gap='4px')
         center.dataFormula('.status', 'pending ? (feedback || "Sending to the server…") : ""',
                            pending='^.pending', feedback='^.conversation.feedback', _init=True)
         center.div('^.status', node_label='chatFeedback',
@@ -67,12 +67,13 @@ class ChatPane:
                        picking='^.picking', disabled='^.pending:={} || {picking}').dataController(func='chatPickAttachments')
         self.toolbar = actions.div(display='flex', align_items='center', gap='10px',
                                    flex=1, min_width=0, overflow_x='auto')
-        self.sendButton = actions.button(icon='↑', aria_label='Send', title='Send message',
-                       class_='gramlot-chat-send', font_size='22px', flex_shrink=0,
-                       style='--gramlot-radius-sm:50%;--gramlot-button-padding:0;--gramlot-field-height:36px;',
+        self.sendButton = actions.button(aria_label='Send', title='Send message',
+                       class_='gramlot-chat-send', font_size='16px', flex_shrink=0,
+                       style='--gramlot-radius-sm:50%;--gramlot-button-padding:9px;--gramlot-button-gap:0px;--gramlot-field-height:36px;--gramlot-touch-target:36px;',
                        width='36px', height='36px', chat_id=chat_id,
                        ready='^.conversation.ready', draft='^.draft', attachments='^.attachments', picking='^.picking',
                        disabled='^.pending:={} || {picking} || !{ready} || (!{draft}.trim() && !{attachments}.length)')
+        self.sendButton.span(class_='gramlot-chat-send-icon', aria_hidden='true')
         self.sendButton.dataController(func='chatSend', chat_id=chat_id)
 
 

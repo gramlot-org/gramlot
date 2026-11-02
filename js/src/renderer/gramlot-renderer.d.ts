@@ -88,6 +88,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         end?: DomNode;
     };
     /** Set the container of a render record and of its children. */
+    mountDestination(node:SourceBagNode, destination:DomElement):unknown;
     assignContainer(record: unknown, container: DomNode): void;
     /** Apply a Source update event to the DOM of a node. */
     update(node: SourceBagNode, event: string): void;

@@ -1,17 +1,24 @@
+import {validateCatalogue} from '../visual-editor-catalogue.js';
 import {Bag} from '@genrojs/bag';
 import {sourceTarget} from '@genrojs/builders';
 import {toolIcons} from '../visual-editor-icons.js';
 
 export class VisualEditor {
-    constructor(root, {datapath = '__editor', dataRoot = '', editorId = 'visual', uploadOperation = 'import_source', codeDocument = null, ...attributes} = {}) {
+    constructor(root, {datapath = '__editor', dataRoot = '', editorId = 'visual', uploadOperation = 'import_source', codeDocument = null, catalogue = null, fileCommands = true, canvasCss = null, ...attributes} = {}) {
         if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(editorId)) throw new Error('editorId must be a literal identifier');
         if (!dataRoot && datapath !== '__editor' && !datapath.startsWith('__editor.')) throw new Error('Root Data editing requires an __editor datapath');
+        validateCatalogue(catalogue);
+        if (canvasCss != null && (!Array.isArray(canvasCss) || canvasCss.some(text => typeof text !== 'string')))
+            throw new TypeError('canvasCss must be a list of CSS texts');
         this.dataRoot = dataRoot;
         const pane = this.pane = root.main({node_label:editorId, datapath, visualEditorId:editorId, ...attributes, nodeId:`${editorId}Editor`, class:`visual-editor-shell ${attributes.class ?? ''}`, overflow:'hidden', tabindex:0, connect_onkeydown:'clipboardShortcut'});
+        pane.dataSetter({destination_path:'.catalogueScope', value:catalogue});
+        pane.dataSetter({destination_path:'.canvasCss', value:canvasCss});
         pane.dataSetter({destination_path:'.uploadQueue', value:new Bag()});
         pane.dataController({func:'initializeEditor', dataRoot:this.dataRoot, _init:true});
         pane.dataController({func:'showProperties', path:'^.selection', _init:true});
         pane.dataController({func:'initializeCanvasSelection', _onBuilt:true});
+        pane.dataController({func:'initializeDocument', _onBuilt:true});
         pane.dataController({func:'highlightSelection', path:'^.selection', _init:true});
         pane.style('^.appearanceCss');
         pane.dataController({func:'initializeEditorAppearance', _onBuilt:true});
@@ -20,14 +27,16 @@ export class VisualEditor {
         this.toolButton(rail.menuline({group:true, overflowable:false}), 'Source / Data', 'toggleNavigation', toolIcons.navigation);
         this.toolButton(rail.menuline({group:true, overflowable:false}), 'Catalogue', 'openCatalogue', toolIcons.catalogue);
         this.toolButton(rail.menuline({group:true, overflowable:false}), 'Properties', 'openProperties', toolIcons.properties);
-        this.toolButton(rail.menuline({group:true, overflowable:false}), 'Clipboard', "this.SET('.clipboardVisible', !this.GET('.clipboardVisible'))", toolIcons.paste);
+        this.toolButton(rail.menuline({group:true, overflowable:false}), 'Clipboard', "this.SET('.clipboardVisible', !this.GET('.clipboardVisible'))", toolIcons.paste,
+            {dropTarget:true, dropTypes:'app/source', dropTags:`${editorId}Source`, dropEffect:'^.clipboardDropEffect',
+                connect_ondragover:'clipboardModifiers', connect_ondrop:'clipboardModifiers', onDrop:'dropClipboard'});
         rail.spacer({flex:1});
         this.toolButton(rail.menuline({group:true, overflowable:false}), 'Appearance', "this.SET('.appearanceOpen', !this.GET('.appearanceOpen'))", toolIcons.appearance);
         const layoutRoot = pane.framePane({node_label:'layout', height:'100%', id:`${editorId}-editor-frame`, class:'visual-editor-layout'});
-        layoutRoot.top.setAttr({height:'38px'});
+        layoutRoot.top.setAttr({height:'30px'});
         const toolbar = layoutRoot.top.menu({presentation:'bar', aria_label:'Editor tools', class:'visual-editor-toolbar'});
         toolbar.menuline({group:true, overflowable:false}).span('Source editor', {class:'visual-editor-brand'});
-        const files = toolbar.menuline({group:true, overflowable:false, gap:'4px'});
+        const files = toolbar.menuline({group:true, overflowable:false, gap:'4px', hidden:!fileCommands});
         for (const [caption,action,icon] of [['New','newPage','new'],['Open','openUpload','open'],['Download','downloadPage','download'],['Copy Source','copySource','copy']])
             this.toolButton(files,caption,action,toolIcons[icon],{id:`${editorId}-${icon}`});
         toolbar.menuline({group:true, overflowable:false}).span({class:'visual-toolbar-divider', aria_hidden:'true'});
@@ -36,10 +45,11 @@ export class VisualEditor {
         this.toolButton(edit,'Copy branch','copyBranch',toolIcons.copy);
         this.toolButton(edit,'Paste branch','pasteBranch',toolIcons.paste,{title:'Paste branch (F9)'});
         toolbar.spacer({flex:1});
+        toolbar.menuline({group:true, overflowable:false, hidden:'^.modified:=!{}'}).span('Unsaved changes', {role:'status', class:'visual-editor-hint'});
         toolbar.menuline({group:true, overflowable:false}).span('^.fileStatus', {role:'status', class:'visual-editor-file-status'});
         toolbar.menuline({group:true, overflowable:false}).span('^.filename', {class:'visual-editor-filename'});
         const left = layoutRoot.left;
-        left.setAttr({width:'min(260px, 34vw)', splitter:true,
+        left.setAttr({width:'min(240px, 34vw)', splitter:true,
             drawer:'^.navigationOpen', default_drawer:true, drawer_label:'Source / Data',
             drawer_onclick:"this.SET('.navigationOpen', show ? true : 'close')",
             display:'flex', flex_direction:'column', min_height:0, class:'visual-editor-sidebar'});
@@ -69,36 +79,36 @@ export class VisualEditor {
         center.setAttr({overflow:'auto', class:'visual-editor-workspace'});
         const design = center.div({node_label:'design', class:'visual-editor-canvas'});
         design.div({node_label:'pageRoot', ...(this.dataRoot ? {datapath:this.dataRoot} : {})});
-        const window = pane.floatingPane({title:'Widget catalogue', open:'^.catalogueOpen', default_open:false, width:'320px', height:'480px', movable:true, resizable:true});
+        const window = pane.floatingPane({title:'Widget catalogue', open:'^.catalogueOpen', default_open:false, width:'280px', height:'400px', class:'visual-editor-popup', movable:true, resizable:true});
         this.search(window.frame.top, 'catalogueSearch', 'Search widgets');
         window.frame.center.tree({storepath:'.catalogue', hideValues:true, labelAttribute:'caption', searchText:'^.catalogueSearch',
             draggable:true, dragTags:'widget', effectAllowed:'all', onDrag:'prepareWidget', id:`${editorId}-widget-tree`});
-        const properties = sidebar.contentPane({region:'bottom', height:'^.propertiesHeight', default_height:'240px', minSize:140, splitter:true,
+        const properties = sidebar.contentPane({region:'bottom', height:'^.propertiesHeight', default_height:'200px', minSize:140, splitter:true,
             title:'^.propertiesTitle', detachable:true, hidden:'^.propertiesOpen:=!{}',
             display:'flex', flex_direction:'column', overflow:'hidden', min_height:0});
         properties.div({nodeId:`${editorId}EditorFields`, class:'visual-editor-fields', display:'flex', flex_direction:'column', flex:1, min_height:0}).span('');
-        properties.p('^.propertyError', {role:'alert', class:'visual-editor-hint', margin:'8px'});
-        const uploader = pane.dialog({title:'Open Source', open:'^.uploadOpen', width:'480px', height:'300px', movable:true, resizable:true});
+        properties.p('^.propertyError', {role:'alert', class:'visual-editor-hint', margin:'3px'});
+        const uploader = pane.dialog({class:'visual-editor-popup', title:'Open Source', open:'^.uploadOpen', width:'480px', height:'300px', movable:true, resizable:true});
         uploader.frame.center.uploader({operation:uploadOperation, storepath:'.uploadQueue', accept:'.grmlt',
             multiple:false, autoUpload:true, onComplete:'sourceUploaded', id:`${editorId}-uploader`});
-        const naming = pane.dialog({title:'Save branch to clipboard', open:'^.clipboardOpen', width:'380px', height:'210px'});
+        const naming = pane.dialog({class:'visual-editor-popup', title:'Save branch to clipboard', open:'^.clipboardOpen', width:'380px', height:'210px'});
         naming.frame.center.textbox({value:'^.clipboardDraft.name', lbl:'Name', margin:'12px'});
         naming.frame.center.p('^.error', {role:'alert', margin:'12px'});
-        const namingBar = naming.frame.bottom.menu({presentation:'bar', aria_label:'Clipboard commands', padding:'8px 12px'});
+        const namingBar = naming.frame.bottom.menu({presentation:'bar', aria_label:'Clipboard commands', padding:'3px 6px'});
         namingBar.spacer({flex:1});
         const namingButtons = namingBar.menuline({group:true, overflowable:false, gap:'8px'});
         namingButtons.button('Cancel', {action:"this.SET('.clipboardOpen', false)"});
         namingButtons.button('Save branch', {action:'saveClipboard'});
-        const dialog = pane.dialog({title:'Required parameters', open:'^.insertionOpen', width:'400px', height:'280px', movable:true, resizable:true});
-        dialog.frame.center.div({nodeId:`${editorId}InsertFields`, class:'visual-editor-fields', padding:'12px'}).span('');
+        const dialog = pane.dialog({class:'visual-editor-popup', title:'Required parameters', open:'^.insertionOpen', width:'400px', height:'280px', movable:true, resizable:true});
+        dialog.frame.center.div({nodeId:`${editorId}InsertFields`, class:'visual-editor-fields', padding:'6px'}).span('');
         dialog.frame.center.p('^.error', {role:'alert'});
-        const bar = dialog.frame.bottom.menu({presentation:'bar', aria_label:'Insertion commands', padding:'8px 12px', border_top:'1px solid var(--gramlot-border)'});
+        const bar = dialog.frame.bottom.menu({presentation:'bar', aria_label:'Insertion commands', padding:'3px 6px', border_top:'1px solid var(--gramlot-border)'});
         bar.spacer({flex:1});
         const buttons = bar.menuline({group:true, overflowable:false, gap:'8px'});
         buttons.button('Cancel', {action:"this.SET('.insertionOpen', false)"});
         buttons.button('Insert', {action:'insertWidget'});
-        const settings = pane.floatingPane({title:'Appearance', open:'^.appearanceOpen', default_open:false, width:'280px', height:'260px', movable:true, resizable:true});
-        const form = settings.frame.center.formlet({columns:1, lbl_position:'TL', gap:'10px', padding:'12px'});
+        const settings = pane.floatingPane({class:'visual-editor-popup', title:'Appearance', open:'^.appearanceOpen', default_open:false, width:'280px', height:'260px', movable:true, resizable:true});
+        const form = settings.frame.center.formlet({columns:1, lbl_position:'TL', gap:'4px', padding:'6px'});
         form.filteringSelect({validate_notnull:true, lbl:'Theme', value:'^.appearanceProfile', values:'base:Base,compact:Compact,mimi:Mimi,joanna:Joanna,mela:Mela'});
         form.filteringSelect({validate_notnull:true, lbl:'Colors', value:'^.appearancePalette', values:'default:Theme default,compact:Blue & slate,mimi:Sage & green,joanna:Warm gray & blue'});
         form.filteringSelect({validate_notnull:true, lbl:'Mode', value:'^.appearanceMode', values:'light:Light,dark:Dark'});
@@ -120,16 +130,16 @@ export class VisualEditor {
         const opener = frame === this.frame ? this.toolbar : frame.top.menu({presentation:'bar', aria_label:'Code drawer'});
         opener.menuline({group:true, overflowable:false}).button('Code', {action:'openCode', class:'button--quiet'});
         const drawer = frame.right;
-        drawer.setAttr({datapath:anchor, title:'Page code', detachable:true, width:'60%', minSize:240, splitter:true,
+        drawer.setAttr({class:'visual-editor-code', datapath:anchor, title:'Page code', detachable:true, width:'60%', minSize:240, splitter:true,
             drawer:'^.codeOpen', default_drawer:'close', drawer_label:'Code', drawer_minimize:false,
             drawer_onclick:"this.SET('.codeOpen', show ? true : 'close')", min_height:0, overflow:'hidden'});
         const code = drawer.framePane({height:'100%', width:'100%', min_width:0, flex:1});
-        code.top.setAttr({height:'32px'}); code.bottom.setAttr({height:'58px'});
+        code.top.setAttr({height:'26px'}); code.bottom.setAttr({height:'48px'});
         code.center.setAttr({display:'flex', flex_direction:'column', min_height:0, overflow:'hidden'});
-        code.top.div(document.path, {padding:'8px 12px', font_size:'12px', overflow:'hidden', text_overflow:'ellipsis', white_space:'nowrap'});
+        code.top.div(document.path, {padding:'3px 6px', font_size:'12px', overflow:'hidden', text_overflow:'ellipsis', white_space:'nowrap'});
         code.center.codeMirror({value:'^.codeDocument.content', language:document.language, live:true, readonly:'^.codeDocument.writable:=!{}', height:'100%', box_height:'100%', box_c_height:'100%', box_min_height:0, box_c_min_height:0, fontSize:13, flex:1, min_height:0});
         code.bottom.div('^.codeDocument.status', {role:'status', font_size:'12px', padding:'4px 10px'});
-        const bar = code.bottom.menu({presentation:'bar', aria_label:'Page code commands', padding:'6px 10px'});
+        const bar = code.bottom.menu({presentation:'bar', aria_label:'Page code commands', padding:'3px 6px'});
         bar.spacer({flex:1});
         const commands = bar.menuline({group:true, overflowable:false, gap:'6px'});
         commands.button('Close', {action:"this.SET('.codeOpen', 'close')"});

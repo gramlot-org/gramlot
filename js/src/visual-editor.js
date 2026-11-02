@@ -1,3 +1,6 @@
+import {VisualEditorCanvas} from './visual-editor-canvas.js';
+import {validateCatalogue, catalogueAllows, validateCatalogueSource} from './visual-editor-catalogue.js';
+import {editorTypes, scalarType, scalarText, parseScalar} from './editor-values.js';
 import {SourcePicker} from './source-picker.js';
 import {appearanceStyles, paletteStyles} from './index-page-styles.js';
 import {toolIcons} from './visual-editor-icons.js';
@@ -70,6 +73,7 @@ const specifications = (node, tag, current = null) => {
 
 // Editor-local view resources; selection itself remains in the Data Bag.
 const canvasSelections = new WeakMap();
+const canvasDocuments = new WeakMap();
 
 export class VisualEditorLogic {
     chatRender(node, params) { return chatRender(this.page, node, params); }
@@ -90,8 +94,10 @@ export class VisualEditorLogic {
         const content = mode === 'code' ? editor.GET('.codeDocument.content') : wire;
         if (mode === 'code' && !editor.GET('.codeDocument.writable')) { node.SET('.error', 'Page code editing is disabled by the host'); return; }
         const run = (editor.GET('.assistantRun.run') ?? 0) + 1;
+        const scope = editor.GET('.catalogueScope');
         const schema = {commonParameters:styleParameters, labelboxParameters, widgets:{}};
         for (const [tag, info] of Object.entries(node.builder.schema)) {
+            if (!catalogueAllows(scope, tag, info._meta ?? {})) continue;
             if (info._meta?.data_element || info._meta?.subbuilder || info._meta?.container) continue;
             const component = info._meta?.gramlot_component;
             schema.widgets[tag] = {parameters:component?.parameters ?? {}, labelbox:!!component?.labelbox,
@@ -205,6 +211,7 @@ export class VisualEditorLogic {
             }
         };
         candidate.getNodes().forEach(validateChildren);
+        validateCatalogueSource(visualEditorScope(node).GET('.catalogueScope'), candidate);
         app.src.renderer.validateCandidate(candidate, {replacingNode:design});
         const current = node.builder.source.getNode(`${sourceRoot(node)}.${path}`);
         let selected = path;
@@ -229,13 +236,38 @@ export class VisualEditorLogic {
     initializeCanvasSelection(node) {
         const renderer = node.rootBuilder.binding.renderer;
         const design = node.builder.source.getNode(sourceRoot(node));
-        const picker = new SourcePicker({renderer, root:design, onSelect:selected => {
-            node.SET('.sourceSearch', '');
-            node.SET('.selection', selected.fullpath.slice(design.fullpath.length + 1));
-        }});
+        const editor = visualEditorScope(node), css = editor.GET('.canvasCss');
+        if (css != null) this.applyCanvasCss(editor, css);
+        const previous = canvasSelections.get(design);
+        previous?.dispose();
+        const picker = new SourcePicker({renderer, root:design,
+            ...(canvasDocuments.has(design) ? {canvas:canvasDocuments.get(design).body} : {}),
+            onSelect:selected => {
+                node.SET('.sourceSearch', '');
+                node.SET('.selection', selected.fullpath.slice(design.fullpath.length + 1));
+            }});
         canvasSelections.set(design, picker);
-        renderer.onDispose(design.parentNode, () => canvasSelections.delete(design));
+        if (!previous) renderer.onDispose(design.parentNode, () => {
+            canvasSelections.delete(design); canvasDocuments.delete(design);
+        });
         this.highlightSelection(node);
+    }
+    applyCanvasCss(node, texts) {
+        if (!Array.isArray(texts) || texts.some(text => typeof text !== 'string'))
+            throw new TypeError('canvas CSS must be a list of CSS texts');
+        const editor = visualEditorScope(node), design = editor.builder.source.getNode(sourceRoot(editor));
+        let canvas = canvasDocuments.get(design);
+        if (!canvas) {
+            canvas = new VisualEditorCanvas({app:editor.rootBuilder.binding.gramlot, editor, design});
+            canvasDocuments.set(design, canvas);
+        }
+        canvas.setCss(texts);
+    }
+    setCanvasCss(node, texts) {
+        const editor = visualEditorScope(node);
+        this.applyCanvasCss(editor, texts);
+        editor.SET('.canvasCss', texts);
+        this.initializeCanvasSelection(editor);
     }
     highlightSelection(node) {
         const design = node.builder.source.getNode(sourceRoot(node));
@@ -330,6 +362,7 @@ export class VisualEditorLogic {
         const parent = path ? node.builder.source.getNode(`${sourceRoot(node)}.${path}`) : null;
         if (!parent) throw new Error('Choose a destination in the Source tree');
         const source = node.rootBuilder.binding.gramlot.src.prepareSource(saved.getValue(true), parent.builder);
+        validateCatalogueSource(visualEditorScope(node).GET('.catalogueScope'), source);
         const branch = source.getNodes()[0];
         parent.builder.validateParent(branch.nodeTag, parent.nodeTag);
         const body = parent.getValue(true);
@@ -349,7 +382,7 @@ export class VisualEditorLogic {
         fields.getValue(true).clear();
         const root = node.builder.wrapSource(fields);
         root.p(`Paste ${saved.getAttr('name')} into ${parent.label} [${parent.nodeTag}]`, {class:'visual-editor-hint'});
-        const form = root.formlet({columns:2, gap:'8px 10px', lbl_position:'TL', box_c_width:'100%', align_items:'start'});
+        const form = root.formlet({columns:2, gap:'4px 6px', lbl_position:'TL', box_c_width:'100%', align_items:'start'});
         for (const [name, spec] of required) this.parameterField(node, form, branch.nodeTag, name, spec, 'insertion', spec.default);
         node.SET('.insertionOpen', true);
     }
@@ -372,6 +405,7 @@ export class VisualEditorLogic {
         if (!parent) throw new Error('The destination no longer exists');
         const app = node.rootBuilder.binding.gramlot;
         const source = app.src.prepareSource(node.GET('.insertion.clipboard'), parent.builder);
+        validateCatalogueSource(visualEditorScope(node).GET('.catalogueScope'), source);
         const branch = source.getNodes()[0];
         const attrs = {...branch.getAttr()};
         for (const [name, spec] of Object.entries(specifications(parent, branch.nodeTag))) {
@@ -394,6 +428,7 @@ export class VisualEditorLogic {
         candidateParent.builder.validateChildren(candidateParent.nodeTag, [...(children instanceof node.builder.source.constructor
             ? children.getNodes().map(child => child.nodeTag) : []), branch.nodeTag]);
         const inserted = this.appendBranch(candidateParent, branch, label);
+        validateCatalogueSource(visualEditorScope(node).GET('.catalogueScope'), candidate);
         app.src.renderer.validateCandidate(candidate, {replacingNode:design});
         this.appendBranch(parent, inserted, label);
         node.SET('.insertionOpen', false);
@@ -453,6 +488,7 @@ export class VisualEditorLogic {
         if (request.signal.aborted) return;
         if (design.value.toTytx() !== before) throw new Error('Source changed while preparing preview; it was retained');
         const candidate = this.page.src.prepareSource(wire, design.builder);
+        validateCatalogueSource(editor.GET('.catalogueScope'), candidate);
         this.page.src.renderer.validateCandidate(candidate, {replacingNode:design});
         if (editor.GET('.assistantRun')) editor.SET('.assistantRun.blocked', true);
         editor.SET('.selection', null);
@@ -482,35 +518,59 @@ export class VisualEditorLogic {
     async copySource(node) {
         node.SET('.fileStatus', '');
         try {
-            const page = node.builder.source.getNode(sourceRoot(node)).getValue(true);
-            await node.rootBuilder.binding.gramlot.utl.inout.copyText(page.toTytx());
+            await node.rootBuilder.binding.gramlot.utl.inout.copyText(this.currentSource(node));
             node.SET('.fileStatus', 'Source copied');
         } catch (error) { node.SET('.fileStatus', `Copy failed: ${error.message}`); }
     }
     downloadPage(node) {
-        const page = node.builder.source.getNode(sourceRoot(node)).getValue(true);
-        node.rootBuilder.binding.gramlot.utl.inout.saveText(page.toTytx(), node.GET('.filename'), 'application/json');
+        node.rootBuilder.binding.gramlot.utl.inout.saveText(this.currentSource(node), node.GET('.filename'), 'application/json');
     }
 
     openUpload(node) { node.SET('.uploadOpen', true); }
     sourceUploaded(node, {item, result}) {
         try {
-            const app = node.rootBuilder.binding.gramlot;
-            const target = node.builder.source.getNode(sourceRoot(node));
-            const source = app.src.prepareSource(result, target.builder);
-            const roots = source.getNodes();
-            if (roots.length !== 1 || roots[0].label !== 'pageRoot') throw new Error('Expected one pageRoot Source');
-            app.src.renderer.validateCandidate(source, {replacingNode:target});
-            if (node.GET('.assistantRun')) node.SET('.assistantRun.blocked', true);
-            target.setValue(source, true, {_text:null}, true);
-            node.SET('.filename', item.value.getItem('name'));
-            node.SET('.selection', 'pageRoot');
+            this.loadSource(node, {source:result, filename:item.value.getItem('name')});
             node.SET('.fileStatus', 'Source opened');
             node.SET('.uploadOpen', false);
         } catch (error) {
             node.SET('.fileStatus', `Open failed: ${error.message}`);
             throw error;
         }
+    }
+    initializeDocument(node) {
+        const editor = visualEditorScope(node), source = editor.builder.source;
+        const prefix = sourceRoot(editor).split('.');
+        const subscription = `${editor.getAttr('visualEditorId')}-document`;
+        editor.SET('.modified', false);
+        source.subscribe(subscription, {any:event => {
+            if (prefix.every((part, index) => event.pathlist[index] === part)) editor.SET('.modified', true);
+        }});
+        editor.rootBuilder.binding.renderer.onDispose(editor, () => source.unsubscribe(subscription, {any:true}));
+    }
+    currentSource(node) {
+        const editor = visualEditorScope(node);
+        return editor.builder.source.getNode(sourceRoot(editor)).getValue(true).toTytx();
+    }
+    markSaved(node) { visualEditorScope(node).SET('.modified', false); }
+    loadSource(node, {source, filename}) {
+        const editor = visualEditorScope(node);
+        if (typeof source !== 'string') throw new TypeError('source must be Source TYTX');
+        if (typeof filename !== 'string' || !filename.trim()) throw new TypeError('filename must be a non-empty string');
+        const app = editor.rootBuilder.binding.gramlot;
+        const target = editor.builder.source.getNode(sourceRoot(editor));
+        const candidate = app.src.prepareSource(source, target.builder);
+        const roots = candidate.getNodes();
+        if (roots.length !== 1 || roots[0].label !== 'pageRoot') throw new Error('Expected one pageRoot Source');
+        validateCatalogueSource(editor.GET('.catalogueScope'), candidate);
+        app.src.renderer.validateCandidate(candidate, {replacingNode:target});
+        if (editor.GET('.assistantRun')) editor.SET('.assistantRun.blocked', true);
+        editor.SET('.selection', null);
+        target.setValue(candidate, true, {_text:null}, true);
+        editor.SET('.filename', filename);
+        editor.SET('.insertionOpen', false);
+        editor.SET('.sourceSearch', '');
+        editor.SET('.selection', 'pageRoot');
+        this.markSaved(editor);
     }
     toggleNavigation(node) { node.SET('.navigationOpen', node.GET('.navigationOpen') === 'close' ? true : 'close'); }
     openCatalogue(node) { node.SET(`${editorData(node)}.catalogueOpen`, true); }
@@ -542,6 +602,11 @@ export class VisualEditorLogic {
         node.rootBuilder.binding.renderer.destination.ownerDocument.documentElement.setAttribute('data-theme', mode);
     }
     initializeEditor(node, {dataRoot}) {
+        const scope = node.GET('.catalogueScope');
+        validateCatalogue(scope);
+        if (Array.isArray(scope)) for (const tag of scope) {
+            if (!node.builder.schema[tag]) throw new Error(`Unknown catalogue tag: ${tag}`);
+        }
         node.SET('.editingMode', 'source');
         node.SET('.clipboard', new Bag());
         node.SET('.clipboardVisible', false);
@@ -572,9 +637,10 @@ export class VisualEditorLogic {
             return bag;
         };
         for (const [path, caption, tags] of catalogueSections) {
-            if (tags.split(' ').some(tag => node.builder.schema[tag])) ensureGroup(path, caption);
+            if (tags.split(' ').some(tag => node.builder.schema[tag] && catalogueAllows(scope, tag, node.builder.schema[tag]._meta ?? {}))) ensureGroup(path, caption);
         }
         for (const [tag, info] of Object.entries(node.builder.schema).sort(([a], [b]) => a.localeCompare(b))) {
+            if (!catalogueAllows(scope, tag, info._meta ?? {})) continue;
             if (info._meta?.data_element || info._meta?.subbuilder || info._meta?.container) continue;
             const root = info._meta?.gramlot_component ? 'components' : 'html';
             const section = catalogueSections.find(([path, , tags]) => path.startsWith(root + '.') && tags.split(' ').includes(tag));
@@ -602,6 +668,7 @@ export class VisualEditorLogic {
             const targetPath = `${sourceRoot(node)}.${path}`;
             const moving = node.builder.source.getNode(sourcePath);
             if (!moving || sourcePath === `${sourceRoot(node)}.pageRoot`) throw new Error('The page root cannot be moved');
+            validateCatalogueSource(visualEditorScope(node).GET('.catalogueScope'), moving.parentBag);
             if (moving.resolver) throw new Error('Resolver-backed Source nodes cannot be moved in this trial');
             if (sourcePath === targetPath || targetPath.startsWith(sourcePath + '.')) throw new Error('A node cannot be moved into itself');
             const parent = item, origin = moving.parentBag, Source = node.builder.source.constructor;
@@ -631,6 +698,7 @@ export class VisualEditorLogic {
             return;
         }
         const tag = dropValues['app/widget'].tag;
+        this.validateCatalogueTag(node, tag);
         item.builder.validateParent(tag, item.nodeTag);
         const body = item.getValue(true);
         item.builder.validateChildren(item.nodeTag, [...(body instanceof node.builder.source.constructor ? body.getNodes().map(child => child.nodeTag) : []), tag]);
@@ -644,7 +712,7 @@ export class VisualEditorLogic {
         fields.getValue(true).clear();
         const root = node.builder.wrapSource(fields);
         root.p(`Insert ${tag} into ${item.label} [${item.nodeTag}]`, {class:'visual-editor-hint'});
-        const form = root.formlet({columns:2, gap:'8px 10px', lbl_position:'TL', box_c_width:'100%', align_items:'start'});
+        const form = root.formlet({columns:2, gap:'4px 6px', lbl_position:'TL', box_c_width:'100%', align_items:'start'});
         for (const [name, spec] of required) this.parameterField(node, form, tag, name, spec, 'insertion', spec.default);
         node.SET('.insertionOpen', true);
     }
@@ -659,8 +727,9 @@ export class VisualEditorLogic {
         const parent = current.parentNode;
         const entries = specifications(parent, current.nodeTag, current);
         node.SET('.properties.path', path);
+        this.attributeRows(node, current);
         node.SET('.propertiesTitle', `${current.label} [${current.nodeTag}]`);
-        node.SET('.propertiesHeight', `${Math.min(340, 120 + Math.ceil(Object.keys(entries).filter(name => parameterTheme(name, new Set()) === 'general').length / 2) * 48)}px`);
+        node.SET('.propertiesHeight', `${Math.min(300, Math.max(180, 80 + Math.ceil(Object.keys(entries).filter(name => parameterTheme(name, new Set()) === 'general').length / 2) * 38))}px`);
         const root = node.builder.wrapSource(fields);
         if (path !== 'pageRoot') root.p(path, {class:'visual-editor-destination'});
         const parentFields = new Set(Object.keys(parent._getMeta('gramlot_component')?.childParameters ?? {}));
@@ -671,11 +740,13 @@ export class VisualEditorLogic {
             tabMode:'underline', height:'100%', min_height:0, flex:1});
         for (const [key, title] of parameterThemes) {
             if (!groups.get(key).length) continue;
-            const panel = tabs.contentPane({pageName:key, title, overflow:'auto', padding:'10px', min_height:0});
+            const panel = tabs.contentPane({pageName:key, title, overflow:'auto', padding:'4px', min_height:0,
+                ...(key === 'styles' ? {nodeId:visualEditorScope(node).getAttr('visualEditorId') + 'StyleAttributes'} : {})});
+            if (key === 'styles') { this.attributeFields(node, panel, current, 'styles'); continue; }
             if (key === 'container') panel.p(`Child parameters of ${parent.nodeTag}`, {class:'visual-editor-hint'});
             if (key === 'behaviour' && Object.hasOwn(entries, 'action')) panel.p('action: use a named Logic method, for example openCatalogue.', {class:'visual-editor-hint'});
             if (key === 'behaviour' && current.nodeTag === 'borderContainer') panel.p('persist remembers splitter sizes and requires a stable container id.', {class:'visual-editor-hint'});
-            const form = panel.formlet({columns:2, gap:'8px 10px', lbl_position:'TL', box_c_width:'100%', align_items:'start'});
+            const form = panel.formlet({columns:2, gap:'4px 6px', lbl_position:'TL', box_c_width:'100%', align_items:'start'});
             if (key === 'general' && current._getMeta('gramlot_component')?.labelbox) {
                 this.labelboxFields(node, form, current, entries);
             }
@@ -692,7 +763,7 @@ export class VisualEditorLogic {
                     if (!advanced) {
                         const details = panel.details({class:'visual-validation-advanced'});
                         details.summary('Conditions and messages');
-                        advanced = details.formlet({columns:2, gap:'8px 10px', lbl_position:'TL', box_c_width:'100%', align_items:'start'});
+                        advanced = details.formlet({columns:2, gap:'4px 6px', lbl_position:'TL', box_c_width:'100%', align_items:'start'});
                     }
                     target = advanced;
                 }
@@ -700,7 +771,141 @@ export class VisualEditorLogic {
                 this.parameterField(node, target, current.nodeTag, name, spec, 'properties', value ?? spec.default);
             }
         }
+        const more = tabs.contentPane({nodeId:visualEditorScope(node).getAttr('visualEditorId') + 'MoreAttributes', pageName:'attributes', title:'More attributes', overflow:'auto', padding:'4px', min_height:0});
+        this.attributeFields(node, more, current);
         node.SET('.propertiesOpen', true);
+    }
+    attributeRows(node, current) {
+        const rows = new Bag();
+        for (const [name, value] of Object.entries(current.getAttr())) {
+            if (name === '_meta') continue;
+            const type = scalarType(value);
+            const text = type ? scalarText(value, type) : '[non-scalar value]';
+            rows.setItem(`r${rows.length}`, new Bag({name, type:type ?? 'readonly', text, original:text}));
+        }
+        node.SET('.properties.attributeRows', rows);
+        node.SET('.properties.attributeDraft', new Bag({name:'', type:'string', text:''}));
+        node.SET('.properties.attributeDraftHidden', true);
+    }
+    attributeFields(node, panel, current, scope = 'attributes') {
+        const path = node.GET('.properties.path');
+        const base = `${editorData(node)}.properties`;
+        const renderer = node.rootBuilder.binding.gramlot.src.renderer;
+        const parentFields = new Set(Object.keys(current.parentNode._getMeta('gramlot_component')?.childParameters ?? {}));
+        const list = panel.div({class:'visual-editor-attribute-list', 'aria-label':scope === 'styles' ? 'Style attributes' : 'Node attributes'});
+        const heading = list.div({class:'visual-editor-attribute-row visual-editor-attribute-heading'});
+        heading.span('Attribute', {class:'visual-editor-attribute-name'});
+        const headingValue = heading.div({class:'visual-editor-attribute-value'});
+        headingValue.span('Value');
+        headingValue.button('+', {action:'beginAttribute', editingPath:path,
+            'aria-label':scope === 'styles' ? 'Add style attribute' : 'Add attribute', title:'Add attribute', class:'visual-editor-attribute-command'});
+        for (const row of node.GET('.properties.attributeRows').getNodes()) {
+            const name = row.value.getItem('name'), type = row.value.getItem('type'), key = row.label;
+            if (scope === 'styles' && parameterTheme(name, parentFields) !== 'styles' && !renderer._isStyleContribution(name)) continue;
+            const editable = type !== 'readonly';
+            const line = list.div({class:'visual-editor-attribute-row'});
+            line.span(name, {class:'visual-editor-attribute-name', title:name});
+            const cell = line.div({class:'visual-editor-attribute-value'});
+            cell.input({value:`^${base}.attributeRows.${key}.text`, disabled:!editable,
+                'aria-label':`${name} attribute value`, title:editable ? type : 'Non-scalar values are read-only'});
+            cell.button('×', {action:'removeAttribute', attributeRow:key, editingPath:path, disabled:!editable,
+                'aria-label':`Remove ${name} attribute`, title:`Remove ${name}`, class:'visual-editor-attribute-command'});
+            // Both tabs bind the same row; one controller owns each write.
+            if (editable && scope === 'attributes') line.dataController({func:'changeAttribute', value:`^${base}.attributeRows.${key}.text`,
+                attributeRow:key, editingPath:path, _userChanges:true});
+        }
+        const add = list.div({class:'visual-editor-attribute-row', hidden:`^${base}.attributeDraftHidden`,
+            connect_onkeydown:'attributeDraftKey'});
+        const nameCell = add.div({class:'visual-editor-attribute-name'});
+        nameCell.input({value:`^${base}.attributeDraft.name`, live:true, 'aria-label':'New attribute name', placeholder:'Attribute name'});
+        const valueCell = add.div({class:'visual-editor-attribute-value'});
+        valueCell.input({value:`^${base}.attributeDraft.text`, live:true, 'aria-label':'New attribute value', placeholder:'Value'});
+        const types = valueCell.select({value:`^${base}.attributeDraft.type`, 'aria-label':'New attribute type'});
+        for (const type of editorTypes) types.option(type, {value:type});
+        valueCell.button('✓', {action:'addAttribute', editingPath:path, 'aria-label':'Apply new attribute', title:'Apply (Enter)', class:'visual-editor-attribute-command'});
+        valueCell.button('×', {action:'cancelAttribute', 'aria-label':'Cancel new attribute', title:'Cancel (Escape)', class:'visual-editor-attribute-command'});
+    }
+    beginAttribute(node, {editingPath}) {
+        const editor = visualEditorScope(node);
+        if (editingPath !== editor.GET('.selection')) return;
+        editor.SET('.properties.attributeDraft', new Bag({name:'', type:'string', text:''}));
+        editor.SET('.properties.attributeDraftHidden', false);
+        editor.SET('.propertyError', '');
+    }
+    cancelAttribute(node) {
+        visualEditorScope(node).SET('.properties.attributeDraftHidden', true);
+    }
+    attributeDraftKey(node, event) {
+        if (event.isComposing || !['Enter', 'Escape'].includes(event.key)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const editor = visualEditorScope(node);
+        if (event.key === 'Escape') this.cancelAttribute(editor);
+        else this.addAttribute(editor, {editingPath:editor.GET('.properties.path')});
+    }
+    addAttribute(node, {editingPath}) {
+        const editor = visualEditorScope(node);
+        if (editingPath !== editor.GET('.selection')) return;
+        editor.SET('.propertyError', '');
+        try {
+            const draft = editor.GET('.properties.attributeDraft');
+            const name = draft.getItem('name');
+            if (!name || !/^[^\s"'<>/=]+$/.test(name)) throw new Error('Enter a valid attribute name.');
+            if (['_meta', '__proto__', 'constructor', 'prototype'].includes(name)) throw new Error('Unsupported attribute name.');
+            const current = editor.builder.source.getNode(`${sourceRoot(editor)}.${editingPath}`);
+            if (!current) throw new Error('The selected Source node no longer exists');
+            if (Object.hasOwn(current.getAttr(), name)) throw new Error(`Duplicate attribute: ${name}`);
+            const value = parseScalar(draft.getItem('type'), String(draft.getItem('text') ?? ''));
+            this.writeAttribute(editor, current, editingPath, name, value, false);
+        } catch (error) { editor.SET('.propertyError', error.message); }
+    }
+    changeAttribute(node, {attributeRow, editingPath, value}) {
+        this.editAttribute(node, {attributeRow, editingPath, value, remove:false});
+    }
+    removeAttribute(node, {attributeRow, editingPath}) {
+        this.editAttribute(node, {attributeRow, editingPath, remove:true});
+    }
+    editAttribute(node, {attributeRow, editingPath, value, remove}) {
+        const editor = visualEditorScope(node);
+        if (editingPath !== editor.GET('.selection')) return;
+        editor.SET('.propertyError', '');
+        try {
+            const row = editor.GET('.properties.attributeRows').getItem(attributeRow);
+            if (!row || row.getItem('type') === 'readonly') throw new Error('This attribute is not editable');
+            const name = row.getItem('name');
+            if (['_meta', '__proto__', 'constructor', 'prototype'].includes(name)) throw new Error('Unsupported attribute name.');
+            const current = editor.builder.source.getNode(`${sourceRoot(editor)}.${editingPath}`);
+            if (!current) throw new Error('The selected Source node no longer exists');
+            const attrs = current.getAttr(), type = scalarType(attrs[name]);
+            if (!Object.hasOwn(attrs, name) || type !== row.getItem('type') || scalarText(attrs[name], type) !== row.getItem('original'))
+                throw new Error('Attribute changed; select the node again before editing.');
+            const parsed = remove ? null : parseScalar(type, String(value ?? ''));
+            this.writeAttribute(editor, current, editingPath, name, parsed, remove, row);
+        } catch (error) { editor.SET('.propertyError', error.message); }
+    }
+    writeAttribute(editor, current, path, name, value, remove, row = null) {
+        const attrs = {...current.getAttr()};
+        if (remove) delete attrs[name]; else attrs[name] = value;
+        const specs = specifications(current.parentNode, current.nodeTag, current);
+        if (specs[name]) this.validateParameter(current.parentNode, current, name, specs[name], remove ? null : value);
+        const design = editor.builder.source.getNode(sourceRoot(editor)), app = editor.rootBuilder.binding.gramlot;
+        const candidate = app.src.prepareSource(design.getValue(true).toTytx(), design.builder);
+        candidate.getNode(path).setAttr(attrs, true, false, false);
+        validateCatalogueSource(editor.GET('.catalogueScope'), candidate);
+        app.src.renderer.validateCandidate(candidate, {replacingNode:design});
+        current.setAttr(attrs, true, false, false);
+        if (row && !remove) {
+            const text = scalarText(value, row.getItem('type'));
+            row.setItem('original', text);
+            row.setItem('text', text);
+            const type = editor.GET(`.properties.types.${name}`);
+            if (specs[name]?.enum) editor.SET(`.properties.parameters.${name}`, value);
+            else if (type) editor.SET(`.properties.parameters.${name}.${type}`, value);
+        } else {
+            const tab = editor.GET('.parameterTab') === 'styles' ? 'styles' : 'attributes';
+            this.showProperties(editor, {path});
+            editor.SET('.parameterTab', tab);
+        }
     }
     toggleLabelboxAttributes(node, {prefix}) {
         node.SET(`.properties.${prefix}Hidden`, !node.GET(`.properties.${prefix}Hidden`));
@@ -803,6 +1008,7 @@ export class VisualEditorLogic {
         try {
             const current = node.builder.source.getNode(`${sourceRoot(node)}.${editingPath}`);
             if (!current) throw new Error('The selected Source node no longer exists');
+            if (parameterName !== '_text' && Object.is(current.getAttr(parameterName), value)) return;
             const specs = specifications(current.parentNode, current.nodeTag, current);
             const spec = specs[parameterName];
             if (!spec) throw new Error(`Unknown parameter: ${parameterName}`);
@@ -814,6 +1020,12 @@ export class VisualEditorLogic {
                 else attrs[parameterName] = value;
                 current.setAttr(attrs, true, false, false);
             }
+            this.attributeRows(node, current);
+            for (const [field, scope] of [['MoreAttributes', 'attributes'], ['StyleAttributes', 'styles']]) {
+                const panel = editorField(node, field);
+                panel.getValue(true).clear();
+                this.attributeFields(node, node.builder.wrapSource(panel), current, scope);
+            }
         } catch (error) { node.SET('.propertyError', error.message); }
     }
     validateParameter(parent, current, name, spec, value) {
@@ -824,12 +1036,18 @@ export class VisualEditorLogic {
         if (!empty && spec.unique && children instanceof parent.builder.source.constructor &&
             children.getNodes().some(child => child !== current && child.getAttr(name) === value)) throw new Error(`${name} is already in use`);
     }
+    validateCatalogueTag(node, tag) {
+        const scope = visualEditorScope(node).GET('.catalogueScope');
+        if (!catalogueAllows(scope, tag, node.builder.schema[tag]?._meta ?? {}))
+            throw new Error(`Tag ${tag} is outside the editor catalogue`);
+    }
     applyInsert(node) {
         if (node.GET('.insertion.clipboard')) { this.finishPaste(node); return; }
         const path = node.GET('.insertion.parentPath');
         const parent = node.builder.source.getNode(`${sourceRoot(node)}.${path}`);
         if (!parent) throw new Error('The target Source node is no longer available');
         const tag = node.GET('.insertion.tag');
+        this.validateCatalogueTag(node, tag);
         const attrs = {};
         for (const [name, spec] of Object.entries(specifications(parent, tag)).filter(([, spec]) => spec.required)) {
             const type = node.GET(`.insertion.types.${name}`);

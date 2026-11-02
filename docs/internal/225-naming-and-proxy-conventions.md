@@ -2452,6 +2452,23 @@ with the component, not alternate spellings.
   `gramlot-source-selected` marks a SourcePicker presentation. `visual-editor-*`
   classes scope editor styling; canonical appearance/palette definitions are reused.
 
+- More attributes (owner request in the same Visual Editor chat, 2026-11-01)
+  reuses inspector `editor-values.js` names in core. Private Logic methods
+  `attributeFields`, `addAttribute`, `changeAttribute`, `removeAttribute`,
+  `editAttribute` and `writeAttribute` follow existing camelCase editor actions.
+  `MoreAttributes` follows the instance-prefixed `EditorFields` marker convention;
+  `attributeRows` and `attributeDraft` are Data Bag state under `properties`.
+  `visual-editor-attribute-*` follows the editor CSS scope. No public constructor
+  argument, proxy or alternate serialization is introduced.
+  Owner follow-up (2026-11-02): “facciamo cosi sia gli attributo di stile
+  che i more attributes” authorizes the same two-column inspector-style table
+  with a plus command and free names in both tabs. Private `attributeRows`,
+  `beginAttribute`, `cancelAttribute` and `attributeDraftKey` follow the existing
+  camelCase Logic convention; `attributeDraftHidden` is state below `properties`.
+  Instance-prefixed `StyleAttributes` follows `MoreAttributes`. Style membership
+  reuses the renderer's existing style contribution classification and widget
+  parameter themes; no parallel CSS property registry is introduced.
+
 Application-local DocumentationIndex/read_gramlot_doc and assess_request remain
 in the optional provider harness, not new core services.
 
@@ -2496,3 +2513,62 @@ Internal trackValidationDependency/clearValidationDependencies retain only uniqu
 rule/struct dependency subscriptions for the current coverage, without retaining
 clean per-cell Sources. parameterValues shares descriptor default resolution with
 normal control projection; it does not introduce input coercion or fallback types.
+
+
+### Visual Editor catalogue scope — 2026-11-01
+
+Owner confirmed “Sì, confermo” to `catalogue="html"` or an explicit tag list,
+with the complete catalogue when omitted and the same constraint on insertion,
+paste, import and AI. `catalogue` has identical Python/JavaScript spelling on
+VisualEditor and SourceImport. Internal `.catalogueScope` is editor configuration in the Data Bag,
+separate from the existing `.catalogue` display Bag. `validateCatalogue`,
+`catalogueAllows`, `validateCatalogueSource` follow the existing validation and
+camelCase helper conventions; Python equivalents use snake_case. The pure helper
+module `visual-editor-catalogue.js` / `visual_editor_catalogue.py` follows the
+Visual Editor module convention. This is a tag constraint, not a script sandbox.
+
+
+### Visual Editor host documents — 2026-11-02
+
+Owner confirmed “Sì, confermo” to Logic `loadSource(node, {source, filename})`,
+`currentSource(node)` and `markSaved(node)`, with `.modified` set on Source changes
+and cleared on loading/saving. Source is TYTX; no alternate document representation
+is introduced. `file_commands` / `fileCommands` follows the existing Python/JS
+constructor convention and controls visibility of the standard file commands.
+The existing exposed `toolbar` hosts application commands. Private
+`initializeDocument` follows existing initializeEditor/initializeCanvasSelection;
+its subscription belongs to the editor Source lifecycle.
+
+
+### Visual Editor isolated canvas — 2026-11-02
+
+Owner: “Sì, canvas isolato in iframe”, confirming `canvas_css` and
+`setCanvasCss(node, texts)` with shared Source/bindings and an isolated document.
+`canvas_css` / `canvasCss` follows the existing Python/JS constructor convention;
+`.canvasCss` stores CSS texts in editor Data. `VisualEditorCanvas` owns the iframe
+and stylesheet DOM resources, following SourcePicker's internal resource pattern.
+Renderer `mountDestination` builds an existing Source branch in the destination
+document realm while retaining Source and NodeBindings. Gramlot `registerDocument` registers
+its existing collections in the additional document realm. These are core
+implementation collaborators, not a second application, Data store or renderer.
+
+
+<a id="gc-225-visual-editor-tool-density"></a>
+### Visual Editor tool density — 2026-11-02
+
+Owner: “il nostro riferimento è piu simile ai dev tools di chrome … la compattezza
+è importante”. This authorizes compact workbench geometry and tool styling.
+Private CSS classes `visual-editor-popup` and `visual-editor-code` follow the
+existing `visual-editor-*` convention, scoping density to auxiliary windows and
+the code drawer. Existing component tokens and tree parts supply tool density;
+no public density parameter or change to authored canvas widget sizing is added.
+
+
+<a id="gc-225-chat-send-icon"></a>
+### Chat send icon — 2026-11-02
+
+Owner reported the clipped chat composer and distorted send arrow in the complete
+Visual Editor. The bounded presentation fix uses `gramlot-chat-send-icon`, following
+the existing `gramlot-chat-send`/`gramlot-chat-editor` private CSS scope. A masked SVG
+inherits theme foreground color; existing button sizing tokens reserve a circular
+36 px target. No new public chat parameter, action or transport is introduced.
