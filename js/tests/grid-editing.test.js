@@ -7,7 +7,7 @@ import grid from '../src/components/grid.js';
 import {layoutWindow} from './helpers/layout-window.js';
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
-async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i=>`Item ${i}`} = {}) {
+async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i=>`Item ${i}`,count=1000} = {}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const layout = layoutWindow(window);
     for (const name of ['showPopover','hidePopover','scrollIntoView']) window.HTMLElement.prototype[name] = function() {};
@@ -15,7 +15,7 @@ async function fixture(t, {mode='values', form=false, nameColumn={}, nameValue=i
     window.addEventListener('error', e => { failures.push(e.error); });
     const app = new Gramlot({document:window.document,transport:false,collections:[inputs,grid],locale:'en-GB'});
     const rows = new Bag();
-    for (let i=0;i<1000;i++) rows.setItem(`r${i}`,mode==='values' ? new Bag({name:nameValue(i),amount:i+1}) : null,mode==='attributes' ? {name:nameValue(i),amount:i+1} : {});
+    for (let i=0;i<count;i++) rows.setItem(`r${i}`,mode==='values' ? new Bag({name:nameValue(i),amount:i+1}) : null,mode==='attributes' ? {name:nameValue(i),amount:i+1} : {});
     app.data.setItem('record',new Bag({title:'Invoice',rows}));
     const builder = new GramlotBuilder(null,{collections:[inputs,grid]});
     const pane = builder.root.div({node_label:'pane',datapath:'record',form});
@@ -45,7 +45,7 @@ for (const mode of ['values','attributes']) {
         assert.equal(mode==='values'?f.rows.getItem('r0.amount'):f.rows.getNode('r0').getAttr('amount'),-3);
         assert.equal(session.accept(),false);
         f.edit(editor,'7',true);await tick();assert.equal(session.status.valid,true);
-        assert.equal(session.accept(),true);
+        assert.equal(await session.validate(),true);assert.equal(session.accept(),true);
         f.edit(editor,'9',true);await tick();session.restore();await tick();
         const data=f.app.data.getItem('record.rows');
         assert.equal(mode==='values'?data.getItem('r0.amount'):data.getNode('r0').getAttr('amount'),7);
@@ -68,7 +68,7 @@ for (const mode of ['values','attributes']) {
         assert.equal(session.registers.getItem('errors').length,1);
         await f.scroll(0);assert.equal(f.cell('r0','amount').getAttribute('aria-invalid'),'true');
         editor=await f.open();f.edit(editor,'6',true);await tick();
-        assert.equal(session.status.valid,true);assert.equal(session.accept(),true);
+        assert.equal(session.status.valid,true);assert.equal(await session.validate(),true);assert.equal(session.accept(),true);
         assert.ok(f.host.shadowRoot.querySelectorAll('tbody tr').length<40);
     });
 }
@@ -145,7 +145,8 @@ for (const mode of ['values','attributes']) {
         assert.equal(session.accept(),false);
         request.resolve({value:100});await tick();await tick();
         assert.equal(mode==='values'?f.rows.getItem('r0.amount'):f.rows.getNode('r0').getAttr('amount'),100);
-        assert.equal(session.status.pending,false);assert.equal(session.accept(),true);
+        f.app.rpc.call=async()=>true;
+        assert.equal(session.status.pending,false);assert.equal(await session.validate(),true);assert.equal(session.accept(),true);
         assert.equal(calls.length,count,'completion does not restart validation');
         assert.equal(f.host.querySelector('[slot=cell-editor]'),null,'completion does not revive the view');
         assert.equal(session.validations.size,0,'clean suspended field releases semantic resources');
@@ -371,4 +372,145 @@ test('editors without a text caret keep their horizontal keys',async t=>{
         host.control.dispatchEvent(event);await tick();
         assert.equal(event.defaultPrevented,false);assert.equal(f.host.querySelector('gramlot-checkbox'),host);
     }
+});
+
+
+test('column max_height reaches the display and editor through the same struct projection',async t=>{
+    const f=await fixture(t,{nameColumn:{white_space:'pre-wrap',max_height:'6rem',edit:{tag:'textBoxArea'}},nameValue:()=>Array(20).fill('Long text').join('\n')});
+    const cell=f.cell('r0','name');
+    assert.equal(cell.style.getPropertyValue('--grid-cell-max-height'),'6rem');
+    assert.equal(cell.firstElementChild.textContent.split('\n').length,20);
+    cell.dispatchEvent(new f.window.MouseEvent('dblclick',{bubbles:true}));await tick();
+    const layer=f.host.shadowRoot.querySelector('.cell-editor');
+    assert.equal(layer.style.getPropertyValue('--grid-cell-max-height'),'6rem');
+    const editor=f.host.querySelector('gramlot-text-box-area');
+    assert.equal(editor.control.value.split('\n').length,20);
+    f.source.formState.focusField('record.rows.r0.amount');await tick();
+    assert.equal(layer.style.getPropertyValue('--grid-cell-max-height'),'','uncapped editors do not inherit the previous column limit');
+});
+
+for (const mode of ['values','attributes']) {
+    test(`${mode}: full validation covers unopened offscreen cells without constructing input elements`,async t=>{
+        const f=await fixture(t,{mode,form:true,nameValue:i=>i===800?'':`Item ${i}`});
+        const session=f.source.formState;
+        const create=f.window.document.createElement.bind(f.window.document);
+        let editors=0;
+        t.mock.method(f.window.document,'createElement',(tag,...args)=>{
+            if (['gramlot-textbox','gramlot-number-text-box','input','textarea'].includes(tag)) editors++;
+            return create(tag,...args);
+        });
+        assert.equal(session.accept(),false,'collection coverage is required even before any editor opens');
+        assert.equal(await session.validate(),false);
+        assert.equal(editors,0);
+        const path='record.rows.r800'+(mode==='values'?'.':'?')+'name';
+        assert.deepEqual(session.errorEntries.map(item=>item.path),[path]);
+        assert.equal(f.host.querySelector('[slot=cell-editor]'),null);
+        assert.equal(session.validations.size,2,'only the existing form field and invalid grid field remain');
+        f.app.data.setItem(path,'Corrected');await tick();
+        assert.equal(session.errorEntries.length,0);
+        assert.equal(await session.validate(),true);
+        assert.equal(session.accept(),true);
+        assert.equal(editors,0);
+    });
+}
+test('complete validation uses shared typed normalization without a view',async t=>{
+    const f=await fixture(t,{nameColumn:{edit:{validate_case:'upper'}}});
+    assert.equal(await f.source.formState.validate(),true);
+    assert.equal(f.rows.getItem('r999.name'),'ITEM 999');
+    assert.equal(f.source.formState.accept(),true);
+    assert.equal(f.host.querySelector('[slot=cell-editor]'),null);
+});
+test('full validation bounds remote requests, awaits every check and refuses a changed snapshot',async t=>{
+    const f=await fixture(t);f.rows.clear();
+    for(let i=0;i<20;i++)f.rows.setItem(`r${i}`,new Bag({name:`Item ${i}`,amount:i+1}));
+    const calls=await remoteField(f);const session=f.source.formState;
+    const promise=session.validate();await tick();
+    assert.equal(session.validate(),promise,'concurrent confirmations share one pass');
+    assert.equal(session.status.pending,true);assert.equal(session.accept(),false);
+    assert.ok(calls.length>0&&calls.length<=8);
+    f.rows.getItem('r19').setItem('amount',99);
+    for(const request of calls)request.resolve(true);
+    assert.equal(await promise,false);assert.equal(session.accept(),false);
+    let active=0,peak=0,count=0;
+    f.app.rpc.call=async()=>{active++;peak=Math.max(peak,active);count++;await tick();active--;return true;};
+    assert.equal(await session.validate(),true);assert.equal(count,20);assert.ok(peak<=8);
+    assert.equal(session.accept(),true);
+    f.rows.getItem('r19').setItem('amount',100);
+    assert.equal(session.accept(),false,'coverage expires after any Data change');
+});
+
+test('full validation includes filtered rows and watches rule dependencies after clean Sources are released',async t=>{
+    const f=await fixture(t,{count:5,nameColumn:{edit:{validate_notnull:'^required'}},nameValue:i=>i===4?'':`Item ${i}`});
+    f.app.data.setItem('required',false);
+    f.source.setAttr({filter:{value:'Item',columns:['name'],dtype:'T'}});await tick();f.layout.flush();
+    const session=f.source.formState;
+    assert.equal(await session.validate(),true);
+    assert.equal(f.host.querySelector('[slot=cell-editor]'),null);
+    f.app.data.setItem('required',true);
+    assert.equal(session.accept(),false,'a dependency outside the session invalidates completed coverage');
+    assert.equal(await session.validate(),false);
+    assert.equal(session.errorEntries[0].path,'record.rows.r4.name');
+    assert.equal(f.cell('r4','name'),null,'filtered-out rows participate');
+});
+for (const tag of ['filteringSelect','callbackSelect','dbSelect']) {
+    test(`${tag}: unopened choice cells resolve identity through the shared provider`,async t=>{
+        const options={tag,validate_select:true,...(tag==='filteringSelect'?{values:'good:Good'}:tag==='callbackSelect'?{callback:'choices'}:{dbtable:'test.items'})};
+        const f=await fixture(t,{count:2,nameColumn:{edit:options},nameValue:i=>i?'missing':'good'});
+        if(tag==='dbSelect')f.app.rpc.call=async(_kind,_method,params)=>({rows:params._id==='good'?[{id:'good',caption:'Good'}]:[],identifier:'id',caption:'caption'});
+        if(tag==='callbackSelect')t.mock.method(f.source.rootBuilder.binding.logicRegistry,'resolve',()=>({group:{},method:(_node,params)=>({rows:params._id==='good'?[{id:'good',caption:'Good'}]:[],identifier:'id',caption:'caption'})}));
+        assert.equal(await f.source.formState.validate(),false);
+        assert.deepEqual(f.source.formState.errorEntries.map(e=>e.path),['record.rows.r1.name']);
+        assert.match(f.source.formState.errorEntries[0].message,/Choose/);
+        assert.equal(f.host.querySelector('[slot=cell-editor]'),null);
+    });
+}
+test('changed struct rules replace retained field rules and invalidate completed coverage',async t=>{
+    const f=await fixture(t,{count:3});const session=f.source.formState;
+    f.rows.getItem('r2').setItem('amount',-1);
+    assert.equal(await session.validate(),false);
+    const struct=f.source.getRelativeData(f.source.getAttr('structpath'));
+    struct.getNode('view_0.rows_0.cell_amount').setAttr({edit:{validate_min:-2}});
+    await tick();await tick();f.layout.flush();
+    assert.equal(await session.validate(),true);assert.equal(session.accept(),true);
+    struct.getNode('view_0.rows_0.cell_amount').setAttr({edit:{validate_min:0}});
+    assert.equal(session.accept(),false,'struct edits invalidate coverage before the next paint');
+    await tick();await tick();f.layout.flush();
+    assert.equal(await session.validate(),false);
+});
+for(const action of ['restore','dispose']) {
+    test(`full validation cancels pending requests on ${action}`,async t=>{
+        const f=await fixture(t,{count:20});const calls=await remoteField(f);
+        const session=f.source.formState,pending=session.validate();await tick();
+        assert.ok(calls.length>0);
+        if(action==='restore')session.restore();else f.app.dispose();
+        assert.equal(await pending,false);
+        for(const call of calls){assert.equal(call.signal.aborted,true);call.resolve({value:999});}
+        await tick();
+        if(action==='restore')assert.equal(f.app.data.getItem('record.rows.r0.amount'),1);
+    });
+}
+
+test('failed field declaration releases temporary Source and does not leave confirmation pending',async t=>{
+    const f=await fixture(t,{count:2,nameColumn:{edit:{tag:'missingEditor'}}});
+    const session=f.source.formState;
+    await assert.rejects(session.validate(),/requires the missingEditor input collection/);
+    assert.equal(session.status.pending,false);
+    assert.equal(session.accept(),false);
+    assert.equal(f.source.value.getNodes().filter(node=>node.label.startsWith('grid-cell-')).length,0);
+    const struct=f.source.getRelativeData(f.source.getAttr('structpath'));
+    struct.getNode('view_0.rows_0.cell_name').setAttr({edit:{validate_notnull:true}});
+    await tick();await tick();f.layout.flush();
+    assert.equal(await session.validate(),true);assert.equal(session.accept(),true);
+});
+
+test('an unopened choice error follows changes to its bound choices without mounting a widget',async t=>{
+    const f=await fixture(t,{count:2,nameColumn:{edit:{tag:'filteringSelect',values:'^choices'}},nameValue:i=>i?'new':'good'});
+    f.app.data.setItem('choices','good:Good');
+    const session=f.source.formState;
+    assert.equal(await session.validate(),false);
+    assert.equal(session.errorEntries.length,1);
+    f.app.data.setItem('choices','good:Good,new:New');await tick();await tick();
+    assert.equal(session.errorEntries.length,0,'selection configuration is semantic, not dependent on widget projection');
+    assert.equal(await session.validate(),true);assert.equal(session.accept(),true);
+    assert.equal(f.host.querySelector('[slot=cell-editor]'),null);
 });

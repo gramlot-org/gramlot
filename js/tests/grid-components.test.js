@@ -972,3 +972,26 @@ test('external loading and missing windows share one indicator without clearing 
     assert.equal(f.host.control.hasAttribute('aria-busy'),false);
     assert.deepEqual(f.cells(),['No rows']);
 });
+
+
+test('max_height limits cell content from struct Data without replacing its scroll viewport',t=>{
+    const f=fixture(t),bag=f.app.data.getItem('model.structure');
+    const column=bag.getNode('view_0.rows_0.code');
+    column.setAttr({white_space:'pre-wrap',max_height:'96px'});f.flush();
+    const td=f.host.shadowRoot.querySelector('td[data-field=code]'),content=td.firstElementChild;
+    assert.equal(td.style.getPropertyValue('--grid-cell-max-height'),'96px');
+    assert.ok(content.classList.contains('cell-scroll'));assert.equal(content.tabIndex,0);
+    content.scrollTop=20;
+    f.rows.getNode('r1').setAttr({amount:25});f.flush();
+    assert.equal(td.firstElementChild,content);assert.equal(content.scrollTop,20);
+    f.rows.getNode('r1').setAttr({code:'First\nSecond'});f.flush();
+    assert.equal(td.firstElementChild,content);assert.equal(content.textContent,'First\nSecond');
+    column.setAttr({max_height:null});f.flush();
+    assert.equal(td.style.getPropertyValue('--grid-cell-max-height'),'');
+    assert.equal(content.classList.contains('cell-scroll'),false);
+    assert.equal(content.hasAttribute('tabindex'),false);
+    for (const max_height of ['-1px','50%','auto','calc(2rem)',12]) {
+        column.setAttr({max_height});
+        assert.throws(()=>new GridStructure(bag),/max_height/);
+    }
+});

@@ -307,8 +307,13 @@ export const Grid = defineComponent({
             if (top < this.#bodyViewport.scrollTop) this.#scrollTo(top);
             else if (bottom > this.#bodyViewport.scrollTop + this.#bodyViewport.clientHeight) this.#scrollTo(Math.max(0,bottom-this.#bodyViewport.clientHeight));
             this.#renderWindow(true);
+            // An unseen row still has an estimated height. Measure the materialized window
+            // before revealing its cell, so opening an error cannot leave it below the viewport.
+            this.#layoutWindow();
             const cell = this.#rows.get(next).querySelector(`td[data-field="${column.field}"]`);
             const rect = cell.getBoundingClientRect(), viewport = this.#bodyViewport.getBoundingClientRect();
+            if (rect.top < viewport.top) this.#scrollTo(Math.floor(this.#bodyViewport.scrollTop + rect.top-viewport.top));
+            else if (rect.bottom > viewport.bottom) this.#scrollTo(Math.ceil(this.#bodyViewport.scrollTop + Math.min(rect.top-viewport.top,rect.bottom-viewport.bottom)));
             if (rect.left < viewport.left) this.#bodyViewport.scrollLeft += rect.left-viewport.left;
             else if (rect.right > viewport.right) this.#bodyViewport.scrollLeft += Math.min(rect.left-viewport.left,rect.right-viewport.right);
             this.#headerViewport.scrollLeft = this.#bodyViewport.scrollLeft;
@@ -613,8 +618,17 @@ export const Grid = defineComponent({
                     if (!td) {
                         td = this.ownerDocument.createElement('td'); td.setAttribute('part', 'cell');
                         td.dataset.field = column.field; td.setAttribute('role', 'cell');
+                        const content = this.ownerDocument.createElement('div');
+                        content.className = 'cell-content'; content.setAttribute('part','cell-content');
+                        td.append(content);
                     }
                     if (column.edit) td.tabIndex = 0; else td.removeAttribute('tabindex');
+                    const content = td.firstElementChild;
+                    const capped = column.max_height != null;
+                    if (capped) td.style.setProperty('--grid-cell-max-height',column.max_height);
+                    else td.style.removeProperty('--grid-cell-max-height');
+                    content.classList.toggle('cell-scroll',capped);
+                    if (capped) content.tabIndex = 0; else content.removeAttribute('tabindex');
                     td.style.textAlign = column.align;
                     td.style.whiteSpace = column.white_space ?? '';
                     td.style.overflowWrap = column.white_space === 'pre-wrap' || column.white_space === 'normal' ? 'anywhere' : '';
@@ -643,7 +657,8 @@ export const Grid = defineComponent({
         #renderCells(row, cells) {
             const offset = Number(this.#rowHeaders);
             cells.forEach((text, index) => {
-                if (row.cells[index + offset].textContent !== text) row.cells[index + offset].textContent = text;
+                const content = row.cells[index + offset].firstElementChild;
+                if (content.textContent !== text) content.textContent = text;
             });
         }
     }

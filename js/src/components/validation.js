@@ -72,7 +72,7 @@ function remoteArguments(parameters) {
 }
 function fail(errorcode, message, extra = {}) { return {errorcode, message, ...extra}; }
 function localRule(rule, param, value, context) {
-    if (rule === 'select') return context.selection(value);
+    if (rule === 'select') return context.selection(value,context.signal);
     if (rule === 'notnull') return empty(value) && param ? fail('notnull', 'A value is required.', {required:true}) : null;
     if (rule === 'empty') return empty(value) ? {value:param} : null;
     if (rule === 'len') {

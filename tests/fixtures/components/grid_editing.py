@@ -20,7 +20,7 @@ for mode in ('values', 'attributes'):
     form = root.div(node_label=mode, form=True, datapath=mode)
     form.h2(f'Editing · {mode}')
     form.textbox(value='^.title', id=f'title-{mode}', validate_notnull=True)
-    form.button('Accept locally', id=f'accept-{mode}', action='this.formState.accept();')
+    form.button('Accept locally', id=f'accept-{mode}', action='this.formState.validate().then(valid=>{if(valid)this.formState.accept();});')
     form.button('Restore', id=f'restore-{mode}', action='this.formState.restore();')
     g = form.grid(id=f'grid-{mode}', node_label='grid', storepath='.rows', rowMode=mode,
                   height='330px', rowHeaders=True, rowResize=True)

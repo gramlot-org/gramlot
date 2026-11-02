@@ -1,6 +1,7 @@
 import {validateInput, validationParameters} from './validation.js';
 import {ValidationRun} from '../validation-run.js';
 import {positionPopup} from './popup.js';
+import {parameterValues} from './parameters.js';
 
 const MESSAGE_DURATION = 1800;
 const MESSAGE_FADE_DURATION = 200;
@@ -9,7 +10,13 @@ const MESSAGE_FADE_DURATION = 200;
 export function FieldState(Base) {
     return class extends Base {
         get supportsFormValidation() { return true; }
-        get validationExecutor() { return validateInput; }
+        static validationParameters(attrs) {
+            const parameters = {...parameterValues(this.gramlotComponent,attrs),...attrs};
+            if (this.constrained && parameters.validate_select == null) parameters.validate_select = true;
+            return parameters;
+        }
+        static get validationExecutor() { return validateInput; }
+        get validationExecutor() { return this.constructor.validationExecutor; }
         connectedCallback() { super.connectedCallback(); if (this.pageContext?.form) this.pageContext.formValidate(); }
         #rejected = false;
         #projected;

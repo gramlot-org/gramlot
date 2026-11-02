@@ -41,7 +41,8 @@ try {
     await scroll(0);assert.equal(await cell.getAttribute('aria-invalid'),'true');
     await cell.dblclick();await input.fill('8');await input.press('Enter');await settle();
     assert.equal((await state()).valid,true);
-    await page.locator(`#accept-${mode} button`).click();await settle();
+    await page.locator(`#accept-${mode} button`).click();
+    await page.waitForFunction(mode=>!app.src.source.getNode('main.page.'+mode).formState.status.dirty,mode);
     assert.equal((await state()).dirty,false);
     await cell.dblclick();await input.fill('11');await input.press('Enter');await settle();
     await page.locator(`#restore-${mode} button`).click();await settle();
@@ -59,7 +60,12 @@ try {
     assert.equal(await g.locator('[slot=cell-editor]').count(),0);
     assert.equal(await page.evaluate(()=>validationRequests.at(-1).signal.aborted),false);
     await page.evaluate(()=>validationRequests.at(-1).resolve({value:23}));await settle();
-    assert.equal(await page.evaluate(mode=>app.src.source.getNode('main.page.'+mode).formState.accept(),mode),true);
+    assert.equal(await page.evaluate(async mode=>{
+      const session=app.src.source.getNode('main.page.'+mode).formState,remote=app.rpc.call;
+      let count=0;app.rpc.call=async()=>{count++;return true;};
+      try{return {accepted:await session.validate() && session.accept(),count};}
+      finally{app.rpc.call=remote;}
+    },mode).then(result=>result.accepted && result.count===1000),true);
     assert.equal(await page.evaluate(()=>validationRequests.length),requests);
     assert.equal(await g.locator('[slot=cell-editor]').count(),0);
     await scroll(0);assert.equal(await cell.textContent(),'23');

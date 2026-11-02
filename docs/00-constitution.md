@@ -5277,3 +5277,29 @@ otherwise retain the configured server caption, including the Asqueel table-mode
 default. The response caption key and selectedCaption output are unchanged.
 This completes the bounded selector increment; composite legacy rowcaption and
 full legacy search parity are not included. Invoice remains excluded.
+
+
+<a id="gc-000-grid-cell-max-height-20261102"></a>
+### Shared display/editor cell height limit — 2026-11-02
+
+Owner requests max height for textarea editors and the same limit for textual
+cell contents, with internal scrolling. The column struct carries max_height;
+its text viewport and editor share that CSS limit. Content is never truncated in
+Data. Other columns or manual row sizing can require a taller row; the capped
+content/editor does not expand to that additional height. Without max_height,
+existing natural cell heights and editor fit remain. This does not add automatic
+textarea growth, a separate editor height policy, or new editing state.
+
+
+<a id="gc-000-complete-validation-20261102"></a>
+### Complete session validation — 2026-11-02
+
+Owner: “ora procediamo con la validazione di tutte le celle, anche quelle mai
+aperte, sempre nella sessione comune e senza creare gli editor”. Timing confirmed:
+“Alla conferma/salvataggio”. The shared session validates every declared editable
+cell in the resident Bag, including filtered and offscreen rows, before local
+acceptance. Modified cells continue immediate validation. Execution uses existing
+rules, typed policies, Source callback scope and error registers, without creating
+editor elements. Asynchronous checks must finish before acceptance; changed Data,
+load/restore, removed rows and disposal invalidate obsolete checks. No DB save is
+added. This supersedes the whole-selection omission of the earlier editing tranche.

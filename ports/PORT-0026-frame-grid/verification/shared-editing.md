@@ -79,3 +79,41 @@ text, dataset edges, incomplete drafts and non-text controls). Live Chromium and
 WebKit checks cover native caret/selection behavior, adjacent-cell movement,
 restored invalid drafts, reports and asynchronous validation. Core/gallery builds
 passed; the updated lesson is active on port 61509.
+
+
+## Bounded text content and textarea — 2026-11-02
+
+GC-000 grid-cell-max-height-20261102 authorizes one column max_height for text
+presentation and the editor, with internal scroll. Structural validation and
+Source projection share the attribute. The display viewport is stable across
+updates and does not duplicate Data; the editor reuses the same CSS limit.
+101 focused JS tests, full 1,697-test JS suite and 28 Python authoring tests passed.
+Core/gallery builds passed. Chromium/WebKit live checks verify genuine inner
+wheel scroll, the shared 96px limit, complete committed text, taller manually
+resized rows, virtualization and editing/report regressions. Existing FrameGrid
+qualification passed both engines and its 10 theme/mode combinations.
+
+
+## Complete validation at confirmation — 2026-11-02
+
+Scope/provenance: GC-000 complete-validation-20261102, owner timing confirmation
+“Alla conferma/salvataggio”. Session.validate() scans the complete resident data
+and form fields using existing ValidationRun, policies and registers. Lazy real
+Source declarations preserve scope and are never mounted for unopened cells;
+clean declarations are released and errors remain navigable. No hidden editors,
+synthetic Source contexts or independent grid validation journal were added.
+
+Acceptance requires a current successful complete pass; changed Data, choice/rule
+bindings or struct invalidate coverage. Eight workers bound asynchronous work;
+restore/dispose cancel stale requests. Selector providers and type policies are
+shared with mounted controls. Error reveal now measures previously unseen rows
+and accounts for fractional geometry when setting the scroll position.
+
+Verified final full core suite: 1,710 JS tests passed; 28 Python authoring tests.
+Chromium/WebKit running-gallery tests instrument element creation and observe zero
+unopened editors; they report row 801, navigate/correct it, then accept successfully.
+Core values/attributes editing, reports/arrows and cell-height browser regression
+checks passed both engines. Evidence: js/tests/grid-editing.test.js,
+tools/gramlot-tools-inspector/tests/grid-editing-browser.mjs and connected gallery
+scripts/verify_complete_grid_validation_browser.mjs. Gallery remains active at
+61509/pages/05-grid/10_editing. Implemented/verified; no owner acceptance inferred.

@@ -1,7 +1,7 @@
 import {Bag} from '@gramlot/gramlot';
 
 const TYPES = new Set(['T', 'B', 'L', 'R', 'N', 'D', 'H', 'DHZ']);
-const COLUMN_KEYS = new Set(['tag', 'field', 'name', 'dtype', 'width', 'align', 'format', 'columnset', 'white_space', 'edit']);
+const COLUMN_KEYS = new Set(['tag', 'field', 'name', 'dtype', 'width', 'align', 'format', 'columnset', 'white_space', 'max_height', 'edit']);
 const GROUP_KEYS = new Set(['tag', 'code', 'name', 'background', 'color']);
 
 /** Legacy Data contract: ordered cells and independent columnset definitions. */
@@ -38,6 +38,9 @@ export class GridStructure {
             if (attrs.align != null && !['start', 'center', 'end'].includes(attrs.align)) throw new TypeError('grid align requires start, center or end');
             if (attrs.width != null && (typeof attrs.width !== 'string' || !/^(?:\d+(?:\.\d+)?)(?:px|em|rem|ch|%)$/.test(attrs.width))) {
                 throw new TypeError('grid width requires a nonnegative CSS length (px, em, rem, ch or %)');
+            }
+            if (attrs.max_height != null && (typeof attrs.max_height !== 'string' || !/^(?:\d+(?:\.\d+)?)(?:px|em|rem)$/.test(attrs.max_height))) {
+                throw new TypeError('grid max_height requires a nonnegative CSS length (px, em or rem)');
             }
             if (attrs.white_space != null && !['normal','nowrap','pre-wrap'].includes(attrs.white_space)) throw new TypeError('grid white_space requires normal, nowrap or pre-wrap');
             for (const key of ['name', 'format']) if (attrs[key] != null && typeof attrs[key] !== 'string') throw new TypeError(`grid ${key} must be text`);

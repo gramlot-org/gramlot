@@ -198,7 +198,7 @@ export const ComboBox = defineComponent({
     parameters: {values: {dtype: 'T', default: '', binding: 'read'}, separator: {dtype: 'T', default: ',', binding: 'read'},
         store: {dtype: 'X', nullable: true, default: null, binding: 'read'}},
     implementation: Base => class extends localChoices(Base) {
-        get constrained() { return false; }
+        static get constrained() { return false; }
     }
 });
 export const DbSelect = defineComponent({
@@ -209,7 +209,7 @@ export const DbSelect = defineComponent({
 export const DbComboBox = defineComponent({
     name:'dbComboBox', tag:'gramlot-db-combo-box', base:ChoiceEditor, mixins:[Labelbox, FieldState],
     parameters:databaseParameters, implementation:Base => class extends databaseChoices(Base) {
-        get constrained() { return false; }
+        static get constrained() { return false; }
     }
 });
 export const CheckBoxText = defineComponent({

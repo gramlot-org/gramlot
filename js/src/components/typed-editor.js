@@ -119,8 +119,8 @@ TypedEditor.parameters = {...NativeControl.parameters,
 
 export const numberEditor = Base => class extends Base {
     createControl() { const control = super.createControl(); control.inputMode = 'decimal'; return control; }
-    validationValueCheck() {
-        const isDecimal = this.pageContext.isDecimal;
+    static validationValueCheck(context) {
+        const isDecimal = context.isDecimal;
         return value => checkNumber(value,isDecimal);
     }
     checkValue(value) { checkNumber(value,this.pageContext.isDecimal); }
@@ -231,7 +231,7 @@ export const dateEditor = Base => class extends Base {
     }
     releaseControl() { this.closeCalendar(); super.releaseControl(); }
     context() { return {...super.context(), dtype: 'D', pattern: this.parameters.format ?? 'short'}; }
-    validationValueCheck() { return checkCivilDate; }
+    static validationValueCheck() { return checkCivilDate; }
     checkValue(value) { checkCivilDate(value); }
     editText(value, context) { return this.pageContext.format(value, {...context, pattern: 'short'}); }
     parse(text, context) {
@@ -248,7 +248,7 @@ export const dateEditor = Base => class extends Base {
 
 export const timeEditor = Base => class extends Base {
     context() { return {...super.context(), dtype: 'H', pattern: this.parameters.format ?? 'short'}; }
-    validationValueCheck() { return checkTime; }
+    static validationValueCheck() { return checkTime; }
     checkValue(value) { checkTime(value); }
     editText(value) {
         return `${pad(value.getUTCHours())}:${pad(value.getUTCMinutes())}:${pad(value.getUTCSeconds())}` +

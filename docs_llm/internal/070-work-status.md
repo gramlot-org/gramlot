@@ -18696,3 +18696,82 @@ Hosted reconciliation 41355687474 succeeded. Active generation 20261101T221241Z 
 The public Python and JavaScript validation pages visibly show the four reusable variant blocks. The public Tools/Advanced tools branch opens correctly alongside the host IDE. Mobile catalogue and SQLite page return HTTP 200 over HTTPS; the catalogue remains native-only and includes SQLite. Remote Edit stays disabled. No TestFlight publication or Invoice application integration was performed. Native plugin behavior on a physical iPhone is not claimed by these web checks.
 
 Evidence: /private/tmp/gramlot-release-20261101/ (publication JSON/logs, deploy-0328-complete.log, public-0328-receipt.json and public-mobile-0328.json). Both public galleries are ready; reload existing browser pages after the generation change.
+
+
+<a id="gc-070-grid-cell-max-height-20261102"></a>
+### Shared text-cell and textarea height limit — 2026-11-02
+
+Owner requested the same max height for textual cells and textarea editors, with
+internal scrolling. Column max_height now reaches struct Data, the stable text
+viewport and the existing editor. No data truncation, duplicate editor setting,
+auto-grow mechanism or editing-state owner was added. Other columns or manual
+resizing can require a taller row; the bounded content/editor remains capped.
+The grid-10 gallery lesson now includes a twelve-line note with a 96px limit.
+
+Verified: 101 focused JS tests, all 1,697 core JS tests and 28 Python authoring
+tests passed. The first broad run had two tree-store failures from direct system
+python3 invocation; the full rerun with the project venv in PATH passed. Core and
+gallery builds passed. Chromium and WebKit passed inner-scroll/height/commit/
+manual-row/virtualization checks, existing FrameGrid qualification (including
+10 theme/mode combinations), and shared editing/report/navigation regressions.
+Implemented and verified; gallery on port 61509 ready for owner trial. No database
+writes, dependency modifications or publication/deployment.
+
+
+<a id="gc-070-complete-validation-20261102"></a>
+### Complete shared-session validation — 2026-11-02
+
+Owner requested every cell, including unopened cells, without editors; confirmed
+execution “Alla conferma/salvataggio”. Implemented async session.validate(), bounded
+checks, coverage guard in synchronous accept(), shared typed/choice providers and
+lazy real Source declarations. Unopened errors use the common report. Data, rule
+and struct changes invalidate coverage; restore/dispose cancel checks. No DB save.
+
+Verified: final full core suite 1,710 JS tests passed; 28 Python authoring tests
+passed. Complete validation in the running gallery passed Chromium and WebKit:
+zero unopened editor elements, offscreen error detection/navigation/correction and
+acceptance. Existing core editing, reports/arrows and bounded-height browser
+qualifications also passed both engines. An unseen variable-height row is measured
+before reveal; outward scroll rounding keeps its editor within the viewport.
+Bound choice configuration changes revalidate retained errors without a widget.
+
+Implemented and verified; owner acceptance remains separate. Gallery lesson:
+pages/05-grid/10_editing, port 61509. “Test unopened cell” introduces an invalid
+quantity on row 801; “Accept locally” finds it through the shared session. No DB
+save, package release or application deployment. Next owner review: try the live
+lesson, including correcting the reported cell and confirming again.
+
+
+<a id="gc-070-grid-form-consolidation-20261102"></a>
+## Grid/Form consolidation review — 2026-11-02
+
+Owner: “parti da Grid e Form: verifica le differenze rimaste, consolida quelle
+valide nella base comune e poi ritira le copie superate. Preserva il lavoro
+originale e lascia Invoice fuori”. Accepted for this local consolidation:
+shared max_height for cell/editor and complete resident-session validation at
+confirmation, with the already approved Source-owned state and existing policies.
+No DB saving, windowed editing, row commands or undo/redo is added.
+
+The active grids chat wrote these changes directly into the common integration
+checkout; its nominal primary checkout is not the latest implementation. Review
+isolated exactly this scope from concurrent Tree, documentation, mobile and uploader
+work. Original patches, selected untracked example files and self-contained Git
+bundles were preserved before changes. The gallery keeps its published minimal
+Python/JS example; obsolete inline guide text is not reintroduced.
+
+Fresh isolated qualification: 1,710 JavaScript tests, 29 Python authoring tests,
+core/gallery builds and grid-10 Python/JavaScript Source parity passed. Chromium
+and WebKit passed form/grid registers, drafts, async validation after unmount,
+full-Bag validation with zero unopened editors, offscreen error correction and
+local acceptance, capped display/textarea scrolling and virtualization.
+Initial restricted execution could not open fixture localhost ports; qualification
+was rerun with those ports permitted after build completion and passed in full.
+
+No dedicated obsolete Grid/Form checkout remains: the source checkout is the
+common base, the examples checkout also serves other work, and the primary checkout
+contains unrelated work. None was removed or its chat archived. Retiring shared
+copies now would discard or disrupt other tasks. Invoice checkouts are untouched.
+This is local consolidation only: no push, package release or public deployment.
+Recovery and checks are recorded in the private cleanup archive's
+grid-form-consolidation/README.md; temporary qualification root:
+/private/tmp/gramlot-grid-form-20261102.

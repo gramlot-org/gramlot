@@ -1,6 +1,6 @@
 import {Bag} from '@genrojs/bag';
 import {isDecimal} from '@genrojs/tytx';
-import {invokeHook} from './hooks.js';
+import {invokeHook, callLogic} from './hooks.js';
 
 /** Source-scoped validation services, retained independently of the control view. */
 export function validationContext(binding) {
@@ -12,6 +12,7 @@ export function validationContext(binding) {
     };
     return {
         isDecimal, invoke,
+        callLogic:(method,keywords) => callLogic(binding.runtime,node,method,keywords),
         remote:(method, keywords, signal) => app.rpc.call('data', method, keywords, {signal}),
         reportError:(error, title) => { if (!binding.closed) binding.runtime.reportError(error,title); },
         validationCurrent:() => {

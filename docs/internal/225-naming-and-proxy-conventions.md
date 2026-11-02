@@ -2464,3 +2464,35 @@ its RPC request, matching the owner's final naming decision and Asqueel metadata
 No `captionField` alias. `caption` remains the response's field-name key and the
 existing trusted provider registration option; `selectedCaption` remains the
 selected text output. See GC-000 selector-caption-field.
+
+
+<a id="gc-225-grid-cell-max-height-20261102"></a>
+### Cell content height limit — 2026-11-02
+
+Under GC-000 grid-cell-max-height-20261102, column max_height follows existing
+CSS-style struct names such as white_space. It accepts nonnegative px/em/rem
+lengths, with no percentage-height dependency on the table row. Private
+--grid-cell-max-height projects this struct value onto the display viewport and
+editor layer. cell-content names their display wrapper/part; cell-scroll marks
+the optional internally scrolling presentation. Theme padding and typography
+remain shared; no new application state or editor-only alias is introduced.
+
+
+<a id="gc-225-complete-validation-20261102"></a>
+### Complete session validation — 2026-11-02
+
+Under GC-000 complete-validation-20261102, EditingSession.validate() is the async
+full-scope validation operation, returning a boolean; accept() retains its
+synchronous snapshot contract and refuses incomplete collection coverage.
+Internal registerValidationSource supplies lazy real Source field declarations;
+registerField separates semantic validation from register(adapter) presentation.
+Component class validationExecutor, validationValueCheck and validationSelection
+provide the same DOM-free policies used by mounted inputs. GridCellEditor declares
+unmounted Source fields in bounded batches and releases clean declarations;
+errors/drafts retain their existing Source ownership. No synthetic Source context,
+second rule engine, parallel error register or hidden editor is introduced.
+
+Internal trackValidationDependency/clearValidationDependencies retain only unique
+rule/struct dependency subscriptions for the current coverage, without retaining
+clean per-cell Sources. parameterValues shares descriptor default resolution with
+normal control projection; it does not introduce input coercion or fallback types.

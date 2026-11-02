@@ -41,14 +41,16 @@ export function controlElement(HTMLElement) {
             return {ok:true, value, isCurrent:() => this.pageContext.isActive()};
         }
         finishValidation() {}
-        validationValueCheck() {
-            const nullable = this.constructor.gramlotComponent.parameters.value.nullable;
+        validationValueCheck() { return this.constructor.validationValueCheck(this.pageContext); }
+        static validationValueCheck() {
+            const nullable = this.gramlotComponent.parameters.value.nullable;
             return (value, original) => {
                 if (value == null && !nullable) throw new TypeError('This component requires a non-null value.');
                 if (value != null && original != null && typeof value !== typeof original) throw new TypeError('Validation must preserve the component value type.');
             };
         }
-        validationSelection() {
+        validationSelection() { return this.constructor.validationSelection(this.parameters,this.pageContext); }
+        static validationSelection() {
             return () => { throw new TypeError('validate_select requires a constrained choice editor.'); };
         }
         validateSelection(value) { return this.validationSelection()(value); }

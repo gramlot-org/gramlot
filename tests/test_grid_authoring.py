@@ -66,3 +66,16 @@ def test_local_editors_use_boolean_or_dictionary_options():
     assert s.column('amount', dtype='L', edit=dict(validate_min=0)).attr['edit'] == {'validate_min': 0}
     with pytest.raises((TypeError, ValueError)):
         s.column('bad', edit='yes')
+
+
+@pytest.mark.parametrize("height", ["96px", "6rem", "4.5em"])
+def test_column_max_height_is_a_shared_struct_option(height):
+    column = builder().root.grid(storepath="rows", rowMode="values").struct().column(
+        "notes", white_space="pre-wrap", max_height=height, edit={"tag": "textBoxArea"})
+    assert column.attr["max_height"] == height
+
+
+@pytest.mark.parametrize("height", ["-1px", "50%", "auto", "calc(2rem)", 96])
+def test_column_max_height_rejects_unsupported_lengths(height):
+    with pytest.raises((TypeError, ValueError)):
+        builder().root.grid(storepath="rows", rowMode="values").struct().column("notes", max_height=height)

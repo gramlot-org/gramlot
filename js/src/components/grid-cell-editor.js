@@ -1,4 +1,4 @@
-import {sourceTarget} from '@gramlot/gramlot';
+import {sourceTarget, toTytx} from '@gramlot/gramlot';
 
 /** Grid navigation and temporary Source controls; all editing registers belong to the shared session. */
 export class GridCellEditor {
@@ -12,6 +12,8 @@ export class GridCellEditor {
         this.focusField = focusField;
         this.retained = new Map();
         this.declarations = new Map();
+        this.checking = new Set();
+        this.columns = [];
         this.layer = grid.ownerDocument.createElement('div');
         this.layer.className = 'cell-editor'; this.layer.hidden = true;
         const slot = grid.ownerDocument.createElement('slot'); slot.name = 'cell-editor'; this.layer.append(slot);
@@ -77,44 +79,100 @@ export class GridCellEditor {
         return this.context.sourceNode.absDatapath(this.context.sourceNode.getAttr('storepath')) + '.' + row.label + (mode === 'attributes' ? '?' : '.') + field;
     }
     configure(columns) {
-        if (!columns.some(column => column.edit)) return;
-        if (this.store().window !== null) throw new Error('Editing requires a fully resident Bag; remote windows are read-only.');
-        const owner = this.context.sourceNode;
-        this.session = owner.editCollection(owner.absDatapath(owner.getAttr('storepath')));
+        const editable = columns.filter(column => column.edit);
+        if (editable.length) {
+            if (this.store().window !== null) throw new Error('Editing requires a fully resident Bag; remote windows are read-only.');
+            const owner = this.context.sourceNode;
+            this.session = owner.editCollection(owner.absDatapath(owner.getAttr('storepath')));
+        }
+        const signature = toTytx(editable.map(({field,dtype,edit}) => ({field,dtype,edit})));
+        if (signature === this.validationSignature) return;
+        this.validationSignature = signature;
+        this.columns = editable;
+        for (const [path,declaration] of this.declarations) {
+            const column = editable.find(column => column.field === declaration.field);
+            if (!column) {
+                if (this.active?.path === path) this.close();
+                this.releaseField(path);
+            } else {
+                const {tag,options} = this.definition(column);
+                if (tag !== declaration.tag) {
+                    if (this.active?.path === path) this.close();
+                    this.releaseField(path);
+                } else {
+                    declaration.source.setAttr({...Object.fromEntries(Object.keys(declaration.options).map(key => [key,null])),...options});
+                    declaration.options = options;
+                }
+            }
+        }
+        if (!editable.length) {
+            this.releaseValidation?.(); this.releaseValidation = null;
+            return;
+        }
         if (!this.releaseStatus) this.releaseStatus = this.session.subscribe(() => this.refresh());
         if (!this.releaseNavigator) this.releaseNavigator = this.session.registerNavigator(this.focusField);
+        if (!this.releaseValidation) this.releaseValidation = this.session.registerValidationSource(() => this.validationFields());
+        else this.session.invalidateValidation();
+    }
+    definition(column) {
+        const options = column.edit === true ? {} : {...column.edit};
+        const tag = options.tag ?? ({L:'numberTextBox',R:'numberTextBox',N:'numberTextBox',D:'dateTextBox',H:'timeTextBox',B:'checkBox'}[column.dtype] ?? 'textbox');
+        if (column.dtype === 'DHZ' && !options.tag) throw new Error('A datetime column requires an explicitly declared supported editor.');
+        delete options.tag;
+        return {tag,options:{...options,dtype:column.dtype ?? 'T'}};
+    }
+    *validationFields() {
+        const owner = this.context.sourceNode;
+        this.session.trackValidationDependency(owner.absDatapath(owner.getAttr('structpath')));
+        const bag = this.store().bag;
+        for (const row of bag.getNodes()) for (const column of this.columns) {
+            if (row.parentBag !== bag) continue;
+            const path = this.path(row,column.field);
+            this.checking.add(path);
+            try {
+                const declaration = this.declare(row,column,false);
+                yield {node:declaration.source,release:() => {
+                    this.checking.delete(path);
+                    if (path !== this.active?.path) this.releaseCleanField(path);
+                }};
+            } catch (error) { this.checking.delete(path); this.releaseCleanField(path); throw error; }
+        }
     }
     open(row, column, cell) {
         if (this.store().window !== null) throw new Error('Editing requires a fully resident Bag; remote windows are read-only.');
         if (this.active?.row === row && this.active.column.field === column.field) { this.active.element.control.focus(); return; }
         this.close();
+        const path = this.path(row,column.field), declaration = this.declare(row,column,true);
+        const element = this.grid.ownerDocument.getElementById(declaration.id);
+        this.active = {row,column,path,...declaration,element};
+        this.layer.hidden = false;
+        this.position(cell);
+        element.control.focus();
+    }
+    declare(row,column,mount) {
         const owner = this.context.sourceNode, path = this.path(row,column.field);
         if (!this.retained.has(path)) { this.session.retainField(path); this.retained.set(path,row); }
         let declaration = this.declarations.get(path);
         if (!declaration) {
-            const options = column.edit === true ? {} : {...column.edit};
-            const tag = options.tag ?? ({L:'numberTextBox', R:'numberTextBox', N:'numberTextBox', D:'dateTextBox', H:'timeTextBox', B:'checkBox'}[column.dtype] ?? 'textbox');
-            delete options.tag;
-            if (column.dtype === 'DHZ' && !column.edit.tag) throw new Error('A datetime column requires an explicitly declared supported editor.');
+            const {tag,options} = this.definition(column);
             if (!owner.rootBuilder.schemaTag(tag)) throw new Error(`Grid editor requires the ${tag} input collection.`);
             const builder = owner.rootBuilder, id = `grid-cell-${crypto.randomUUID()}`;
             const container = builder.wrapSource(owner).div({node_label:id, slot:'cell-editor'});
+            // Unmount the branch before declaring a control: no editor element is constructed.
+            if (!mount) builder.binding.renderer.unmountView(sourceTarget(container));
             try {
-                const control = container[tag]({...options, value:'^'+path, dtype:column.dtype ?? 'T', id, width:'100%', margin:'0'});
-                declaration = {container:sourceTarget(container),source:sourceTarget(control),id};
-                if (!this.grid.ownerDocument.getElementById(id).supportsFormValidation) throw new TypeError('Grid editors require a Gramlot input with shared form validation.');
+                const control = container[tag]({...options, value:'^'+path, id, width:'100%', margin:'0'});
+                declaration = {container:sourceTarget(container),source:sourceTarget(control),id,tag,options,field:column.field};
+                const component = this.grid.ownerDocument.defaultView.customElements.get(declaration.source._getMeta('render_tag'));
+                this.session.registerField(declaration.source,component,mount);
                 this.declarations.set(path,declaration);
             } catch (error) {
                 const node = sourceTarget(container); node.parentBag.popNode(node.label);
                 this.releaseCleanField(path);
                 throw error;
             }
-        } else owner.rootBuilder.binding.renderer.mountView(declaration.container);
-        const element = this.grid.ownerDocument.getElementById(declaration.id);
-        this.active = {row,column,path,...declaration,element};
-        this.layer.hidden = false;
-        this.position(cell);
-        element.control.focus();
+        } else if (mount) owner.rootBuilder.binding.renderer.mountView(declaration.container);
+        return declaration;
     }
     close() {
         const active = this.active;
@@ -125,6 +183,7 @@ export class GridCellEditor {
         }
     }
     releaseCleanField(path) {
+        if (this.checking.has(path)) return;
         const state = this.session.fieldStatus(path);
         if (state.error === null && state.pending === null && state.draft === null && this.retained.has(path)) {
             this.releaseField(path);
@@ -142,12 +201,16 @@ export class GridCellEditor {
         if (!cell) { this.close(); return; }
         const rect = cell.getBoundingClientRect(), host = this.grid.control.getBoundingClientRect();
         const viewport = this.grid.shadowRoot.querySelector('.body-viewport').getBoundingClientRect();
-        if (viewport.height && (rect.top < viewport.top || rect.bottom > viewport.bottom || rect.right <= viewport.left || rect.left >= viewport.right)) { this.close(); return; }
         Object.assign(this.layer.style,{
             left:`${rect.left-host.left-this.grid.control.clientLeft}px`,
             top:`${rect.top-host.top-this.grid.control.clientTop}px`,width:`${rect.width}px`
         });
         this.layer.style.setProperty('--grid-editor-height',`${rect.height}px`);
+        const maxHeight = cell.style.getPropertyValue('--grid-cell-max-height');
+        if (maxHeight) this.layer.style.setProperty('--grid-cell-max-height',maxHeight);
+        else this.layer.style.removeProperty('--grid-cell-max-height');
+        const editor = this.layer.getBoundingClientRect();
+        if (viewport.height && (editor.top < viewport.top || editor.bottom > viewport.bottom || editor.right <= viewport.left || editor.left >= viewport.right)) this.close();
     }
     decorate(tr, row) {
         if (!this.session) return;
@@ -176,6 +239,7 @@ export class GridCellEditor {
         }
     }
     dispose() {
+        this.releaseValidation?.(); this.releaseValidation = null;
         this.disconnect(); this.replaceData(); this.releaseStatus?.(); this.layer.remove();
     }
 }

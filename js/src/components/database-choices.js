@@ -94,10 +94,7 @@ export function databaseChoices(Base) {
             for (const key of Object.keys(rest)) if (key.startsWith('condition_') || key.startsWith('selected_')) delete rest[key];
             return rest;
         }
-        async loadChoices(keywords, signal) {
-            const parameters = Object.fromEntries(requestParameters.filter(key => key !== 'method' && this.parameters[key] != null)
-                .map(key => [key, this.parameters[key]]));
-            if (parameters.weakCondition === false) delete parameters.weakCondition;
+        loadChoices(keywords, signal) {
             const required = new Set(Object.entries(this.#outputs).filter(([, path]) => path).map(([name]) => name.slice(9)));
             if (this.#template) {
                 const walker = this.ownerDocument.createTreeWalker(this.#template, 4);
@@ -105,17 +102,23 @@ export function databaseChoices(Base) {
                     for (const match of walker.currentNode.data.matchAll(/\{([A-Za-z0-9_]+)\}/g)) required.add(match[1]);
                 }
             }
+            return this.constructor.loadChoices({...this.parameters,...this.#configuration},this.pageContext,keywords,signal,required);
+        }
+        static async loadChoices(configuration,context,keywords,signal,required = new Set()) {
+            const parameters = Object.fromEntries(requestParameters.filter(key => key !== 'method' && configuration[key] != null)
+                .map(key => [key, configuration[key]]));
+            if (parameters.weakCondition === false) delete parameters.weakCondition;
             if (required.size) parameters.hiddenColumns = [...new Set([
                 ...(parameters.hiddenColumns ?? '').split(',').map(name => name.trim()).filter(Boolean), ...required
             ])].join(',');
-            for (const [key, value] of Object.entries(this.#configuration)) {
+            for (const [key, value] of Object.entries(configuration)) {
                 if (key.startsWith('condition_')) {
                     const name = key.slice(10);
                     if (!name || name.startsWith('_') || requestParameters.includes(name)) throw new TypeError('Invalid condition parameter.');
                     parameters[name] = value;
                 }
             }
-            const result = await this.pageContext.remote(this.parameters.method, {...parameters, ...keywords}, signal);
+            const result = await context.remote(configuration.method, {...parameters, ...keywords}, signal);
             if (!result || !Array.isArray(result.rows) || typeof result.identifier !== 'string' || typeof result.caption !== 'string') {
                 throw new TypeError('Database selectors require {rows, identifier, caption}.');
             }

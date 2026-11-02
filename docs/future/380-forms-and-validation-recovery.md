@@ -492,7 +492,7 @@ there is no implicit datetime-to-text coercion.
 Net changes reconcile only the affected subtree. Changes retain previous/current
 values and attributes, including insertion/deletion identity. Initial snapshots
 and explicit load/accept/restore still copy the whole local scope. Validation
-continues to be field-driven, not a new whole-dataset schema-validation service.
+uses field declarations; complete resident collection coverage is defined in §075.
 The session owns each started validation through ValidationRun, independently of
 mounted adapters. A grid field keeps its real Source declaration while its view
 is unmounted: callbacks retain their original scope and activated-code rules,
@@ -501,8 +501,7 @@ without reopening the cell; reopening attaches to the same request/result.
 New candidates, external Data or rule changes, row removal/replacement,
 load/restore and disposal invalidate obsolete work. Timeouts and typed result
 checks also operate without a view. Ordinary form fields use this same mechanism;
-standalone inputs share the pure execution lifecycle. This is not whole-selection
-schema validation or undo/redo. The previously reported requirement to reopen a
+standalone inputs share the pure execution lifecycle. Whole-selection validation is extended by §075; undo/redo remains deferred. The previously reported requirement to reopen a
 cancelled check was explicitly rejected and superseded by the owner on 2026-11-01
 (GC-000 session-validation-20261101).
 
@@ -540,3 +539,36 @@ when the text selection is collapsed at the beginning/end. Inside text or with
 a selection, caret behavior remains native. Multiline, date/time
 and choice controls retain their own arrow behavior. DB writes, autosave, audit
 persistence and undo/redo remain outside this tranche.
+
+
+<a id="gc-380-075"></a>
+## 075 · Complete validation before local acceptance — 2026-11-02
+
+Owner: GC-000 complete-validation-20261102.
+
+Complete validation runs at confirmation, not Bag load. `await session.validate()`
+checks declared editable cells across the resident Bag, including filtered and
+unopened rows, and existing form fields. It returns false for invalid/incomplete
+fields, cancelled checks or a changed snapshot. `accept()` remains synchronous;
+with collection validation sources it refuses a snapshot lacking current complete
+coverage. Ordinary field edits still validate immediately. No database save is added.
+
+The session owns the scan and existing ValidationRun instances. At most eight
+checks run concurrently, with a browser task yield every twenty cells per worker.
+Repeated validate calls share the active promise. Restore/disposal/Data changes
+cancel obsolete work. Normalization uses the existing binding writer; callbacks
+retain real Source scope. Bound dependencies and struct changes invalidate previous
+coverage, including after clean field Sources are released.
+
+GridCellEditor supplies lazy unmounted real Source declarations. It never constructs
+an input element for an unopened cell. Clean declarations are released as checks
+finish; errors and drafts retain the existing semantic field. Mounted inputs attach
+to that same record. Component classes expose DOM-free typed/selection policies;
+local, callback and database choice identity checks reuse their normal providers.
+No second rule engine, grid journal, hidden widget or synthetic Source is used.
+
+Verification includes both row representations, filtered/unopened rows, typed
+normalization, local/callback/database choices, bound choice changes, external
+rule dependencies, struct edits, bounded remote requests, cancellation and failed
+declaration cleanup. Full suite: 1,710 JS tests; Python authoring: 28 passed.
+Chromium/WebKit complete-validation and existing editing/report/height checks pass.

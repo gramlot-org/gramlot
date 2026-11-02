@@ -82,7 +82,8 @@ export function ChoiceEditor(HTMLElement) {
             input.setAttribute('aria-controls', 'choices'); input.setAttribute('aria-expanded', 'false');
             input.autocomplete = 'off'; return input;
         }
-        get constrained() { return true; }
+        static get constrained() { return true; }
+        get constrained() { return this.constructor.constrained; }
         get revalidateDraftOnSourceChange() { return false; }
         get autoHighlight() { return true; }
         get matchTypedChoice() { return true; }
@@ -129,10 +130,18 @@ export function ChoiceEditor(HTMLElement) {
             this.#value = value; this.#dirty = false; this.#picked = null;
             this.closeChoices({cancelLookup:true}); this.resolveValue();
         }
-        validationValueCheck() {
+        static validationValueCheck() {
             const constrained = this.constrained;
             return (value, original) => {
                 if (constrained && value !== original) throw new Error('Validation cannot replace a selected code; update the Data explicitly.');
+            };
+        }
+        static validationSelection(parameters,context) {
+            if (!this.constrained) return super.validationSelection(parameters,context);
+            return async (value,signal) => {
+                if (value == null) return true;
+                const rows = await this.loadChoices(parameters,context,{_id:value},signal);
+                return selectionResult(rows.find(row => row.id === value),value);
             };
         }
         validationSelection() {
@@ -141,9 +150,7 @@ export function ChoiceEditor(HTMLElement) {
             const picked = this.#picked ? {id:this.#picked.id,error:this.#picked.error} : null;
             return value => {
                 const row = picked?.id === value ? picked : rows.find(row => row.id === value);
-                if (row?.error) return {errorcode:'condition',message:row.error};
-                if (value == null || row) return true;
-                return {errorcode:'missing',message:'Choose a value from the list.'};
+                return selectionResult(row,value);
             };
         }
         acceptControlValue() {
@@ -290,19 +297,20 @@ ChoiceEditor.parameters = {...NativeControl.parameters,
 
 export function localChoices(Base) {
     return class extends Base {
-        loadChoices(keywords) {
+        loadChoices(keywords) { return this.constructor.loadChoices(this.parameters,this.pageContext,keywords); }
+        static loadChoices(parameters,context,keywords) {
             let rows;
-            if (this.parameters.store != null) {
-                if (!(this.parameters.store instanceof Bag)) throw new TypeError('store must be a Bag');
-                if (this.parameters.values) throw new TypeError('store and values are mutually exclusive');
+            if (parameters.store != null) {
+                if (!(parameters.store instanceof Bag)) throw new TypeError('store must be a Bag');
+                if (parameters.values) throw new TypeError('store and values are mutually exclusive');
                 const ids = new Set();
-                rows = this.parameters.store.getNodes().map(node => {
+                rows = parameters.store.getNodes().map(node => {
                     const id = node.staticValue, caption = node.attr.caption;
                     if (typeof id !== 'string' || !id || typeof caption !== 'string' || ids.has(id)) throw new TypeError('Invalid or duplicate store choice');
                     ids.add(id);
                     return {id, caption};
                 });
-            } else rows = parseChoices(this.parameters.values ?? '', this.parameters.separator);
+            } else rows = parseChoices(parameters.values ?? '', parameters.separator);
             return rows.filter(row => Object.hasOwn(keywords, '_id') ? row.id === keywords._id
                 : row.caption.toLocaleLowerCase().includes(keywords._querystring.toLocaleLowerCase()));
         }
@@ -310,8 +318,9 @@ export function localChoices(Base) {
 }
 export function callbackChoices(Base) {
     return class extends Base {
-        async loadChoices(keywords) {
-            const result = await this.pageContext.callLogic(this.parameters.callback, keywords);
+        loadChoices(keywords) { return this.constructor.loadChoices(this.parameters,this.pageContext,keywords); }
+        static async loadChoices(parameters,context,keywords) {
+            const result = await context.callLogic(parameters.callback, keywords);
             if (!result || !Array.isArray(result.rows) || typeof result.identifier !== 'string' || typeof result.caption !== 'string') {
                 throw new TypeError('callbackSelect requires {rows, identifier, caption}');
             }
@@ -323,4 +332,10 @@ export function callbackChoices(Base) {
             });
         }
     };
+}
+
+function selectionResult(row,value) {
+    if (row?.error) return {errorcode:'condition',message:row.error};
+    if (value == null || row) return true;
+    return {errorcode:'missing',message:'Choose a value from the list.'};
 }

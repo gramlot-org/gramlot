@@ -4,10 +4,10 @@
 export const gridStyles = `
 .control-box{position:relative}
 .cell-editor{
-    position:absolute;z-index:4;height:var(--grid-editor-height);
+    position:absolute;z-index:4;height:min(var(--grid-editor-height),var(--grid-cell-max-height,var(--grid-editor-height)));
     background:var(--gramlot-grid-background,var(--gramlot-surface,Canvas));
     --gramlot-field-height:0px;
-    --gramlot-field-block-size:var(--grid-editor-height);
+    --gramlot-field-block-size:min(var(--grid-editor-height),var(--grid-cell-max-height,var(--grid-editor-height)));
     --gramlot-field-padding:var(--gramlot-grid-cell-padding,.3rem .6rem);
     --gramlot-field-font-size:1em;
     --gramlot-field-line-height:var(--gramlot-grid-line-height,1.35);
@@ -140,6 +140,15 @@ export const gridStyles = `
         block-size: var(--gramlot-grid-row-height, 2rem);
         border-block-end: 1px solid var(--gramlot-grid-row-border-color, var(--gramlot-border, ButtonBorder));
     }
+    td[data-field] { padding: 0; }
+    .cell-content {
+        padding: var(--gramlot-grid-cell-padding, .3rem .6rem);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height: var(--grid-cell-max-height, none);
+    }
+    .cell-scroll { overflow: auto; overscroll-behavior: contain; }
+    .cell-scroll:focus-visible { outline: 1px solid var(--gramlot-focus-ring, Highlight); outline-offset: -1px; }
     tbody tr { background: var(--gramlot-grid-background, var(--gramlot-surface, Canvas)); }
     tbody tr.alternate { background: var(--gramlot-grid-row-alt-background, var(--gramlot-surface-subtle, Canvas)); }
     tbody tr:hover { background: var(--gramlot-grid-row-hover-background, var(--gramlot-selected, Highlight)); }

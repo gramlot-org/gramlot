@@ -1486,7 +1486,7 @@ session-owned validation. Pending completion and callbacks do not require a view
 values and attributes are supported; row identity never uses the visible index.
 Existing sort, filters, variable heights, headers, resizing and read-only windows
 retain their responsibilities. Deferred: Asqueel–Kajenn autosave/save, row status
-indicators, whole-selection schema validation, configurator and DB acknowledgement protocol.
+indicators, configurator and DB acknowledgement protocol. Complete local validation is covered by §170.
 
 
 <a id="gc-375-160"></a>
@@ -1498,3 +1498,46 @@ GridEditor-owned error/change Bags were copied from the PoC. Report navigation
 and Tab/vertical-arrow navigation share the grid's row reveal/open path, using
 its sorted/filtered view and variable-height layout. Owner-confirmed Up/Down
 behavior preserves drafts and session-owned pending validations.
+
+
+<a id="gc-375-165"></a>
+## 165 · Shared cell/editor height limit — 2026-11-02
+
+Owner request: GC-000 grid-cell-max-height-20261102. `max_height` is a column
+struct attribute with matching Python/JS authoring validation and runtime Data
+validation. It accepts nonnegative px/em/rem lengths; percentage/intrinsic/calc
+heights are not part of this contract. Source-to-Data struct projection preserves
+it. Private --grid-cell-max-height carries the limit to both presentations.
+
+Every data cell has one stable cell-content viewport. It owns the existing theme
+padding and text overflow; capped viewports scroll internally and are keyboard
+focusable. Row updates replace only changed text, preserving the viewport and
+its scroll when other fields change. No row data is copied. The textarea editor
+is constrained by min(row height, column cap), and its ordinary native scrolling
+keeps the whole draft accessible. Editor visibility uses its actual bounded
+rectangle, so a tall manual row does not falsely hide a visible capped editor.
+Manual/natural row sizing and virtual row measurements keep their existing owner.
+
+Verified: 101 focused JS tests; full core suite 1,697 passed; 28 Python authoring
+tests. Full-suite setup uses the project venv in PATH as well as
+GRAMLOT_TEST_PYTHON, since tree-store tests invoke python3 directly. Browser
+qualification in Chromium and WebKit covers shared 96px caps, genuine inner wheel
+scroll without moving the grid, full-value commit, tall manual rows, editor
+reopening after virtualization and no page errors. Existing FrameGrid theme,
+scroll/sort/filter/drag/resize/loading qualification and shared editing/report
+browser checks also passed in both engines.
+
+
+<a id="gc-375-170"></a>
+## 170 · Complete validation — 2026-11-02
+
+GC-380 §075 defines complete validation at confirmation in the shared editing
+session. The grid enumerates resident row identities and editable column rules,
+independently of sorting/filtering/virtualization. No editor elements are created.
+Error navigation measures the materialized row window before aligning the cell;
+unseen variable-height rows therefore remain visible when their editor opens.
+
+Qualification: 1,710 full-core JS tests and 28 Python authoring tests passed.
+Live Chromium/WebKit verified complete scans without editor construction,
+unopened/filtered rows, common errors, offscreen navigation and successful
+acceptance. Existing editing, reports/arrows and capped-cell browser checks passed.

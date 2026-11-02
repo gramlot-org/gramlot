@@ -20,6 +20,7 @@ export class EditingSession {
     focusField(path: string): boolean;
     registerNavigator(navigate: (path: string) => boolean): () => void;
     load(data: Bag): void;
+    validate(): Promise<boolean>;
     accept(): boolean;
     restore(): void;
 }

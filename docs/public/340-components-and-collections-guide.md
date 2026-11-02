@@ -854,7 +854,7 @@ grid = form.grid(storepath='.rows', rowMode='values', height='320px')
 struct = grid.struct()
 struct.column('description', edit=True)
 struct.column('quantity', dtype='L', edit=dict(validate_min=0))
-form.button('Accept locally', action='this.formState.accept();')
+form.button('Accept locally', action='validateAndAccept')
 form.button('Restore', action='this.formState.restore();')
 ```
 
@@ -881,7 +881,7 @@ does not repeat the request. A new candidate, changed rules, removed/replaced ro
 or session reset invalidates obsolete replies.
 
 The first tranche does not add DB writes, autosave, remote-window editing,
-whole-selection schema validation, a configurator, or undo/redo.
+a configurator or undo/redo. Complete resident-cell validation is described in §125.
 See [the editing contract](https://github.com/gramlot-org/gramlot/blob/main/docs/future/380-forms-and-validation-recovery.md#gc-380-065).
 
 
@@ -911,3 +911,55 @@ Selected text and controls without a text caret keep their own keys.
 Tab/Shift+Tab advances through editable cells. Textareas,
 date/time fields and open choice menus retain their own vertical arrows; Down
 opens a choice menu. IME composition and modified arrow keys are not intercepted.
+
+
+<a id="gc-340-120"></a>
+## 120 · Bounded text cells and textarea editors
+
+Declare one limit on the column struct for display and editing:
+
+```python
+struct.column('notes', name='Notes', white_space='pre-wrap', max_height='96px',
+              edit=dict(tag='textBoxArea'))
+```
+
+`max_height` accepts a nonnegative CSS length in px, em or rem. Omit it for the
+existing natural-height behavior. Wrapped text uses a stable internal viewport
+with automatic scrollbars; the complete value remains in the Bag. The textarea
+uses the same maximum and scrolls internally when its value exceeds its visible
+height. The limit also works for noneditable text columns.
+
+The limit bounds the content box (including its padding), rather than forcing all
+cells in the row to the same maximum. Another column or manual row sizing can
+make the row taller, while this column's display/editor remains bounded. Opening
+an editor does not grow its row; adding text uses the editor's internal scroll.
+Theme padding and typography still apply. No separate editor-only max-height
+setting or additional editing state is needed.
+
+
+<a id="gc-340-125"></a>
+## 125 · Validate every declared cell before acceptance
+
+The development editing session validates the complete resident Bag at confirmation,
+including cells never opened and rows hidden by a filter. Define the named Logic
+method used by the Python `action='validateAndAccept'` button:
+
+```javascript
+export class Logic {
+    async validateAndAccept(node) {
+        const session = node.formState;
+        if (await session.validate()) session.accept();
+    }
+}
+```
+
+`validate()` awaits local and asynchronous rules without constructing cell editors.
+Errors appear in the same `editingStatus` report used by form fields. Correct a
+reported cell and confirm again. Unparseable drafts continue to block acceptance.
+`accept()` records a local baseline only when complete validation is current;
+it does not save to a database. Changes during validation invalidate that attempt,
+so the user must confirm again. Edited cells still validate immediately.
+
+Remote rules run for each applicable cell, with bounded concurrency; validation
+cost therefore depends on row count and endpoint latency. No remote batch protocol
+or cross-cell result cache is introduced.
