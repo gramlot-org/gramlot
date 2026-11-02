@@ -19187,3 +19187,27 @@ and detached histories remain recoverable. Active previews, Invoice, unrelated
 local work and chat records are preserved. No publication or deployment.
 Evidence: private gramlot-cleanup-20261102/EIGHTH-PASS.md, inventory-eighth-pass.json
 and uploader-core-server-consolidation/ (per-file review, logs and receipts).
+
+
+<a id="gc-070-runtime-bridge-20261102"></a>
+## Serverless collection/runtime bridge verified — 2026-11-02
+
+Owner accepted fixing the separate grid export failure reported at the Uploader
+retirement checkpoint. The common JavaScript server now derives each collection
+bridge from the installed public core/components/page exports. The grid receives
+`toTytx` from the single window runtime. Artifact verification and declared
+collection dependencies remain enforced; invalid imports from another entry fail.
+
+All 62 serverless tests pass, including the three previously blocked checks.
+New regressions verify codec/class identity, typed Bag round trips and entry
+boundaries. The gallery inventory assertion compares exact route membership
+without depending on locale collation. Fresh file-origin exports pass in Chromium
+and WebKit: grid cell editing reaches Data, editor identity/undo remain intact,
+Markdown stays lazy/shared, and no HTTP(S) request is made. Both server documentation
+views build strictly. The previously recorded esbuild import.meta warning and the
+separate WebKit file-origin Uploader limitation are unchanged.
+
+This closes the serverless failure recorded in the preceding Uploader checkpoint.
+Original worktrees, unrelated local changes, active trials and Invoice are preserved.
+No package publication or deployment. Evidence: private
+gramlot-cleanup-20261102/runtime-bridge-consolidation/.
