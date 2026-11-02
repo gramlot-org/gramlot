@@ -98,7 +98,7 @@ Block ID: **GC-005-020**.
 Owner direction, 2026-09-18: the public manual addresses developers deciding
 whether and how to try Gramlot. Architecture decisions, working documents,
 concise mirrors and port records remain repository documentation rather than
-public manual pages. This does not make files in a public repository private.
+public manual pages, except the selected collection LLM guides authorized in §040. This does not make files in a public repository private.
 
 Core now uses Sphinx with the classic Read the Docs theme. The staging script's
 explicit page and asset allowlists define the site boundary, including search
@@ -150,3 +150,35 @@ Two readings: keep "native" only if the sentence names the opposed alternative
 (custom element, style conversion, snapshot, browser behavior); else use the precise
 term ("HTML elements", "typed SourceBag", "attribute projection"). Dated records keep
 their text with a naming note (§025). See [constitution](00-constitution.md) 11.51.
+
+
+<a id="gc-005-035"></a>
+## 035 · Collection references — 2026-11-02
+
+Owner direction: complete the component reference and coherent learning route,
+with paired compact LLM cards retaining types, defaults, bindings and constraints.
+GC-410 through GC-455 (steps of five) are the paired per-collection references:
+inputs, buttons, layout, tree, editors, typst, uploads, grid, chat and grouplets.
+They are generated from the same packaged contracts as GC-345; teaching notes
+explain usage and boundaries. Human pages join the public Sphinx allowlist.
+The first tranche kept LLM counterparts repository-only; §040 records the subsequent
+owner authorization to publish the selected collection guides.
+
+Repair of pre-existing duplicate GC-345 anchors: 220 remains Values, 225 remains
+Field state, and 340 remains uploader (their first targets). trayPane now uses
+405, transformPane 410, and the Editors family 425 within GC-345. Semantic
+component anchors are unchanged. No previously unique target was removed.
+
+
+<a id="gc-005-040"></a>
+## 040 · Public collection LLM guides — 2026-11-02
+
+Owner instruction: “pubblica la documentazione aggiornata su Read the Docs” and
+“rendere accessibili anche le guide LLM per collezione, così possono usarle gli agenti”.
+This supersedes §020's exclusion only for the public index and the ten collection
+cards GC-410–455. The explicit staging allowlist publishes their Markdown at
+`llm/<number>-<collection>.md`, with discovery through `llms.txt` and the human
+agent index. Links are rewritten for the published layout; API contracts are unchanged.
+Internal records, future plans, other LLM mirrors and credentials remain excluded.
+The human manual stays on the classic Read the Docs theme. No runtime change,
+package release or application deployment is authorized by this documentation task.

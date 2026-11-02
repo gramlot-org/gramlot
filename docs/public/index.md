@@ -9,7 +9,7 @@ in **Data Bags**. Bindings update the browser when those values change.
 2. [Declare HTML and SVG](095-writing-pages.md#gc-095-005): familiar elements,
    nesting, labels and separate style attributes.
 3. [Use components](105-components.md#gc-105-010): richer fields and containers,
-   selected through `Page.gramlots`.
+   inherited from the environment Page base.
 4. [Connect Data](097-data-binding.md#gc-095-040): relative paths, defaults,
    formulas and browser Logic.
 5. [Call the server](098-server-calls.md): distinguish a returned value from
@@ -22,13 +22,12 @@ Read a section, try its example, then change one value or declaration.
 
 ## A field and its result
 
+The environment Page base supplies the inputs collection. Configure it once as
+shown in [Collection setup](340-components-and-collections-guide.md#gc-340-050).
+The example below belongs in a page inheriting that base:
+
 ```python
-from gramlot import Page as GramlotPage
-from gramlot.collections.inputs import mygramlot as inputs
-
-class Page(GramlotPage):
-    gramlots = [inputs]
-
+class Page(EnvironmentPage):
     def main(self, root):
         pane = root.div(datapath="demo")
         pane.textbox(value="^.name", lbl="Name", live=True,
@@ -44,6 +43,7 @@ block a different `datapath` to keep its values independent.
 
 | Need | Guide |
 | --- | --- |
+| A collection and its minimal example | [Inputs](410-inputs.md), [Layout](420-layout.md), [Grids](445-grid.md), [all collections](345-widget-reference.md#gc-345-010) |
 | Widget-specific parameters | [Widget reference](345-widget-reference.md) |
 | Shared labels, field state and validation | [Components](105-components.md) |
 | Density, palettes, light/dark mode and CSS | [Themes and CSS](096-themes-and-css.md) |
@@ -51,6 +51,12 @@ block a different `datapath` to keep its values independent.
 | Custom components, collections and overrides | [Components and collections](340-components-and-collections-guide.md) |
 | Page files, hosts and bootstrap | [Classes and hosts](090-classes-and-hosts.md) |
 | Transport and adapter contracts | [Server protocol](101-server-protocol.md) |
+
+## Guides for agents
+
+[Open the collection guide index](llm/index.md) for direct Markdown cards and the
+`llms.txt` discovery entry. Each card preserves the component contract and links
+to shared authoring rules.
 
 ## Choose the right manual
 

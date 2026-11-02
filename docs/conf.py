@@ -10,7 +10,8 @@ extensions = ["myst_parser"]
 myst_enable_extensions = ["colon_fence"]
 source_suffix = {".md": "markdown"}
 root_doc = "index"
-exclude_patterns = []
+exclude_patterns = ["downloads/**"]
+html_extra_path = ["downloads"]
 nitpicky = True
 # Links to the explicit block anchors of another page (`page.md#gc-095-100`) are raw HTML
 # ids that MyST cannot resolve; scripts/check_public_docs.py verifies every local link and

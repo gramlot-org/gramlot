@@ -19,6 +19,35 @@ release, which the repository README states, and name what is not provided.
 [Evaluate](public/020-evaluate.md), [Try](public/025-try.md) and
 [Quality](public/030-quality.md) distinguish the core from the experimental PoC.
 
+## Read one collection at a time
+
+Each collection has paired human and compact LLM pages, generated from the same
+contracts. Pick the collection needed for the task; do not load all guides at once.
+Shared parameter rows retain distinct contracts and list the widgets they apply to.
+The compact JSON rows group parameters only when their contracts are identical.
+A missing default is not `None`; binding direction and child grammar are explicit.
+
+| Task | Collection guide |
+| --- | --- |
+| Fields, choices, validation | [Inputs](public/410-inputs.md) |
+| Commands and hierarchy | [Buttons and menus](public/415-buttons.md) |
+| Forms, tabs, windows, tray | [Layout](public/420-layout.md) |
+| Hierarchical Bags | [Tree](public/425-tree.md) |
+| Code, HTML, Markdown | [Editors](public/430-editors.md) |
+| Document compilation | [Typst](public/435-typst.md) |
+| Files and attachments | [Uploads](public/440-uploads.md) |
+| Rows, columns, search | [Grid](public/445-grid.md) |
+| Conversation composition | [Chat](public/450-chat.md) |
+| Reusable remote fragments | [Grouplets](public/455-grouplets.md) |
+
+For agent authoring, use the corresponding `docs_llm` guide plus only the relevant
+sections of Writing pages/Data binding. Load extension internals only when creating
+a collection. Source owns structure/widget lifecycle; Data owns current values;
+Logic contains behavior, never an application-state registry. Relative datapaths
+make reusable blocks independent. Server endpoints own authorization/persistence.
+The following repository/archive map is for framework maintenance, not required
+context for writing a page.
+
 ## Repository map
 
 [GC-140 · Agreed integrations and examples](internal/140-integrations-and-examples.md):
@@ -49,8 +78,8 @@ Start with the [internal operating guide](internal/085-operating-guide.md).
 Keep the [work status](internal/070-work-status.md) current. Follow the
 [constitution](00-constitution.md) and the [documentation policy](005-documentation-policy.md).
 The remaining internal guides retain decisions and investigation evidence;
-the class inventory is not an implementation plan. Internal guides and concise
-mirrors are excluded from the public Sphinx manual.
+the class inventory is not an implementation plan. Internal guides remain excluded from the public manual. The selected compact
+collection guides are published as Markdown for agents; other mirrors stay in the repository.
 
 [Python/JavaScript Builder differences](internal/106-builder-python-js-differences.md): explicit exceptions, open gaps and corrected differences.
 
@@ -60,8 +89,9 @@ mirrors are excluded from the public Sphinx manual.
 ## Maintain the public manual
 
 The public site starts at `docs/public/index.md`. Keep `scripts/prepare_docs.py`'s
-page/asset allowlists explicit; internal records and `docs_llm` are not published.
-The widget reference comes from the six packaged component grammars, including
+page/asset/LLM allowlists explicit; only the selected public collection mirrors
+are published. Internal records and other mirrors remain excluded.
+The widget reference comes from the ten packaged component grammars, including
 inherited parameters. After updating those grammars, run:
 
 ```sh
@@ -76,3 +106,6 @@ Install the documentation requirements first. The freshness check runs in the
 documentation CI. Keep human explanations, screenshots and example links aligned
 with runtime behavior; generated signatures alone do not explain semantics.
 The examples repository owns its playground exports and documentation build.
+
+The [agent index](public/llm/index.md) documents the published Markdown collection
+cards and `llms.txt` discovery endpoint.

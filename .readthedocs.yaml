@@ -5,6 +5,7 @@ build:
     python: "3.12"
   jobs:
     pre_build:
+      - python scripts/generate_widget_reference.py --check
       - python scripts/prepare_docs.py
 sphinx:
   configuration: build/docs-source/conf.py

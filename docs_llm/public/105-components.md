@@ -6,9 +6,15 @@ Use the [widget and parameter reference](345-widget-reference.md) to find a cont
 its collection, defaults and bindings. Read [menus, toolbars and windows](350-menus-toolbars-and-windows.md)
 for the shared command model and complete frame composition.
 
-> Input components require the selected `inputs` collection; importing a definition
-> alone does not activate it. The gallery uses the application configuration below.
-> The command family in §095 is built in; layout uses its separate collection.
+For local dirty state, errors, pending validation, undo/redo and accepting or
+restoring a baseline, read [Form editing state](340-components-and-collections-guide.md#gc-340-110).
+For concise per-collection recipes and complete parameter contracts, start at the
+[collection index](345-widget-reference.md#gc-345-010).
+
+> The environment Page base supplies its configured collections to every page.
+> Importing a definition alone does not activate it; `Page.gramlots` adds missing
+> collections. Buttons are built in; layout and inputs are separate collections.
+> See [one-time setup](340-components-and-collections-guide.md#gc-340-050).
 
 <a id="gc-105-005"></a>
 ## 005 · One definition, two authoring languages
@@ -30,17 +36,13 @@ metadata; text is not translated.
 <a id="gc-105-010"></a>
 ## 010 · Author the controls in Python
 
-Select the collection on the Page. The host loads its Python grammar and browser
-implementation together; application code does not assemble a Builder or load
-its grammar JSON by hand.
+Inherit the Page base configured by your environment. The host loads its Python
+grammars and browser implementations together; individual pages need no collection
+imports. Application code does not assemble a Builder or load grammar JSON.
+`EnvironmentPage` below denotes that configured base, not a Gramlot class name.
 
 ```python
-from gramlot import Page as GramlotPage
-from gramlot.collections.inputs import mygramlot as inputs
-
-class Page(GramlotPage):
-    gramlots = [inputs]
-
+class Page(EnvironmentPage):
     def main(self, root):
         pane = root.div(datapath="preferences")
         pane.textbox(value="^.name", lbl="Name", live=True,
@@ -65,7 +67,7 @@ escaped in that shorthand.
 <a id="gc-105-015"></a>
 ## 015 · Activate the browser collection
 
-For a hosted Page, `Page.gramlots` is sufficient: the normal bootstrap loads the
+For a hosted Page, inherited collections plus any `Page.gramlots` additions are sufficient: the normal bootstrap loads the
 selected collections before rendering. You do not write the following startup
 code in an application page.
 
@@ -85,8 +87,8 @@ app.src.startSource(wire); // TYTX Source supplied by the embedding host
 ```
 
 Bundle this entry point as one module graph. The existing application/runtime
-bootstrap owns loading that entry point; this is a low-level runtime example. For hosted Python pages, use
-`Page.gramlots` as shown in section 035. Each selected collection
+bootstrap owns loading that entry point; this is a low-level runtime example. For hosted Python pages, use the configured environment Page base.
+Declare `Page.gramlots` only for additional collections. Each selected collection
 registers its custom-element classes in the destination document's realm before
 rendering. Reusing the same collection there is harmless. A conflicting tag
 registration raises an error. There is no per-widget `customElements.define`
@@ -204,7 +206,9 @@ isolation. WebKit qualification is not a claim of testing the Safari application
 <a id="gc-105-035"></a>
 ## 035 · Activate collections in a Python page
 
-Select prepared collection descriptors through `Page.gramlots`. The import supplies
+For a new environment, select prepared descriptors once on its Page base using
+`gramlots`. The self-contained example below also works for a page outside such an
+environment; do not repeat these imports in pages that already inherit them. The import supplies
 both grammar metadata and verified browser resources; the host resolves dependencies
 and sends the matching descriptors in the bootstrap.
 

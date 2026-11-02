@@ -20334,3 +20334,49 @@ This closes the serverless failure recorded in the preceding Uploader checkpoint
 Original worktrees, unrelated local changes, active trials and Invoice are preserved.
 No package publication or deployment. Evidence: private
 gramlot-cleanup-20261102/runtime-bridge-consolidation/.
+
+
+<a id="gc-070-component-reference-20261102"></a>
+### Component reference and compact collection guides — 2026-11-02
+
+Owner approved the first documentation tranche: complete component contracts,
+consistent environment inheritance and paired human/LLM collection guides.
+GC-345 covers all 53 components in ten collections plus grid structure declarations;
+GC-410–455 provide independently readable collection recipes and generated contracts.
+Shared facts retain exact widget applicability. Compact grouping preserves types,
+defaults, binding, nullability, enums, qualification, targets, annotations and child
+contracts. Home/Components/maps link the collection route and form editing state.
+GC-005 records repaired duplicate anchors and the new public human-page allowlist;
+LLM counterparts stay repository-only. No runtime or deployment changed in this task.
+
+Verified: 14 focused Python tests including all ten minimal recipes building Source;
+generation freshness; strict Sphinx; all 29 public pages' links, search, downloadable
+sources and mirrored anchors. Reference costs 20,601 human / 13,534 LLM o200k_base
+tokens (-34.3%); per-collection cards avoid loading the full reference. Grid compact
+retains full signature JSON and is slightly larger than its human table.
+[GC-405 §040](405-documentation-usability-audit.md#gc-405-040) records scope/evidence.
+Implemented and locally verified; no new interaction or agent success benchmark.
+Next separate phase: simplify long narrative chapters/variants, reconcile example
+coverage and test learning/agent authoring. No publication requested for this tranche.
+
+
+<a id="gc-070-public-llm-docs-20261102"></a>
+### Public manual and collection LLM cards — 2026-11-02
+
+Owner explicitly authorized Read the Docs publication including compact collection
+cards for agents. Prepared on an isolated copy of accepted main, without the open
+runtime changes in the integration worktree. Generated references use main's
+packaged grammars; unreleased grid max_height is not included in this publication.
+
+GC-005 §040 and the paired constitution record the bounded publication exception.
+The ten collection cards have direct version-relative Markdown URLs under llm/;
+llms.txt is the discovery entry and the human manual has a Guides for agents page.
+Only the explicit collection allowlist is exported, not internal/future LLM archives.
+Links resolve to compact peers or accepted public human contracts. Sphinx retains
+the classic theme. No package or application deployment belongs to this task.
+
+Verification before publication: 17 focused tests, including ten Python recipes,
+lossless contract/scoping checks, raw-download boundary and link rewriting;
+generation freshness; strict Sphinx; 30 human pages and 11 exact agent downloads
+with local links, anchors, search, source and mirror checks. Public activation is
+verified separately against the published commit and actual HTTPS content.
