@@ -19155,3 +19155,35 @@ three checkouts in total, reducing 38 to 35 registered worktrees. Current Python
 Node gallery previews and Visual Editor copies remain. Other uploader core/host
 copies need their independent residual review. Evidence: private
 gramlot-cleanup-20261102/uploader-gallery-consolidation/ and SEVENTH-PASS.md.
+
+
+<a id="gc-070-uploader-host-retirement-20261102"></a>
+## Uploader core and host copies retired — 2026-11-02
+
+Owner explicitly requested review and consolidation of the remaining Uploader
+core/server copies, preserving originals and active trials, excluding Invoice.
+All five original HEADs are ancestors of the common base. Residual authored files
+were compared against common code, accepted Uploader input and reviewed Visual
+Editor work. Runtime functionality is already integrated or superseded; restoring
+old renderer/host/generated files would regress the common implementation.
+
+Recovered three missing Worker browser checks in the JavaScript server: chunked
+transfer, manual widget upload, and upload after record save. All pass in Chromium
+from fresh file-origin exports. Also passed: 60 core JS tests, 21 core Python tests,
+31 Python adapter tests and both server documentation builds. WebKit file-origin
+Worker File reading retains its documented limitation; no fallback is added.
+
+The wider serverless suite is **not a passing release gate**: 56/59 pass, with
+three failures reproduced on the unchanged common baseline. The derived grid
+imports `toTytx`, missing from the collection/runtime bridge export list, which
+also breaks two static-gallery tests. This separate defect remains to be fixed;
+no new runtime change is concealed in this cleanup.
+
+Verified complete originals/history/index archives contain 4,046 entries. Fresh
+process/cwd/launcher and dependency checks found no active consumer; the one
+internal JS-to-core link was handled by retiring JS first. Five obsolete copies
+were retired, reducing the registered inventory from 35 to 30. Original branches
+and detached histories remain recoverable. Active previews, Invoice, unrelated
+local work and chat records are preserved. No publication or deployment.
+Evidence: private gramlot-cleanup-20261102/EIGHTH-PASS.md, inventory-eighth-pass.json
+and uploader-core-server-consolidation/ (per-file review, logs and receipts).
