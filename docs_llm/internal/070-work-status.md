@@ -19257,3 +19257,32 @@ lossless contract/scoping checks, raw-download boundary and link rewriting;
 generation freshness; strict Sphinx; 30 human pages and 11 exact agent downloads
 with local links, anchors, search, source and mirror checks. Public activation is
 verified separately against the published commit and actual HTTPS content.
+
+
+<a id="gc-070-security-retirement-20261102"></a>
+## Security audit copy reconciled; retirement blocked — 2026-11-02
+
+Owner requested reviewing remaining audit differences, integrating valid work and
+retiring the superseded checkout while preserving originals and excluding Invoice.
+The current audit checkout is clean at 05927514. Security corrections 8131c020 and
+1b93036b are already in the common base; no missing runtime correction was found.
+The only unique commit contains the previously published collection reference and
+compact guides. Its 46 files were reviewed and merged with both histories retained;
+append-only records retain both sides. Generated contracts were refreshed for the
+common grid max_height attribute. Existing local working files remain unchanged.
+
+Fresh verification: 101 JavaScript tests; 51 Python tests and 37 subtests; 17
+reference/public-guide tests; strict Sphinx and public links/boundaries for 30
+pages and 11 downloads. Python checks explicitly use this checkout's src; the
+first invocation used the older installed package, and both logs are preserved.
+This is the existing audit's reconciliation, not a fresh full vulnerability scan.
+
+A new complete verified archive preserves 15,180 entries, including ignored files,
+symlinks, permissions, Git history and index/admin data. The earlier audit archive
+is also retained. No running process/cwd or surviving non-Invoice dependency link
+requires this checkout. However, Codex refuses archive_worktree with "Another
+active task still uses this worktree." The shared-worktree guard is not bypassed.
+The checkout remains; inventory stays 30. Resolve its remaining chat attachment
+before retrying retirement. No chat archival, preview restart, Invoice change,
+publication or deployment. Evidence: private gramlot-cleanup-20261102/
+security-audit-retirement/ and inventory-security-pass.json.
