@@ -21193,3 +21193,21 @@ with 5 expected failures using Node 22; the JavaScript suite passed 1,734 tests.
 The Python server 0.3.27 is published. The examples release remains blocked
 until the Grid features in this core are published and its complete CI passes.
 The public website update is staged, not yet active.
+<a id="gc-070-rtd-audit-20261103"></a>
+### Four-site documentation audit — 2026-11-03
+
+Read-only review of the four public latest sites and representative current repository sources: the core exposes ten collection guides and compact agent cards; the local generated references match all ten packaged grammars. Public Grid includes max_height; the JavaScript serverless reference includes the current shared-runtime collection bridge. Python server latest identifies 0.3.27 and documents local gallery source editing. Examples latest identified 0.3.30 while the current main README identifies 0.3.32; the published source-checkout warning refers to core 0.3.26 and needs reconciliation with the current release. The examples home and README still describe five old page families, although the current pages directory has reorganized and expanded families. GE-035 explicitly retains unreconciled selector quarantine and missing teaching exercises; do not infer component maturity from this difference. Collection prose, catalogue and publication allowlists are centrally maintained in core, not supplied by independently installed collections. Site commit identities, complete cross-repository semantic parity and all interactive lessons were not verified. No publication or runtime change was authorized by this audit.
+
+## 2026-11-03 · Local editable gallery and public release
+
+The owner authorized the core, examples and server releases and the website update.
+Gramlot 0.3.27, gramlot-py-server 0.3.27, gramlot-examples 0.3.32 and the
+JavaScript host/serverless/create 0.3.27 packages are published. The hosted
+Python and JavaScript galleries and the offline export passed the deployment
+checks. Public Python gallery source writes were explicitly rejected.
+
+The gallery setup guide is linked from the public website. A clean source clone
+with Node 22 and a Python virtual environment installed and built successfully;
+a local source save and the editable Grid Source were verified. Local Remote Edit
+writes the user's source copy; public Remote Edit remains disabled.
+The earlier WebKit file-origin upload limitation remains documented.

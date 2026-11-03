@@ -20070,3 +20070,21 @@ with 5 expected failures using Node 22; the JavaScript suite passed 1,734 tests.
 The Python server 0.3.27 is published. The examples release remains blocked
 until the Grid features in this core are published and its complete CI passes.
 The public website update is staged, not yet active.
+<a id="gc-070-rtd-audit-20261103"></a>
+### Four-site documentation audit — 2026-11-03
+
+Sampled four public latest sites against current sources. Ten core collection references and compact agent cards exist; generator check matches all ten packaged grammars. Public Grid has max_height; serverless reference has the shared-runtime collection bridge; Python latest identifies 0.3.27 and local gallery editing. Examples latest showed 0.3.30 versus main README 0.3.32, and a core 0.3.26 warning needs reconciliation. Examples home/README describes five old families despite the expanded, reorganized pages directory. GE-035 has unreconciled selector quarantine and teaching gaps. Collection prose, catalogue and public allowlists are maintained centrally, not by independent collection packages. Exact site commits, exhaustive semantic parity and all interactive lessons remain unchecked. Audit only; no publication or runtime change.
+
+## 2026-11-03 · Local editable gallery and public release
+
+The owner authorized the core, examples and server releases and the website update.
+Gramlot 0.3.27, gramlot-py-server 0.3.27, gramlot-examples 0.3.32 and the
+JavaScript host/serverless/create 0.3.27 packages are published. The hosted
+Python and JavaScript galleries and the offline export passed the deployment
+checks. Public Python gallery source writes were explicitly rejected.
+
+The gallery setup guide is linked from the public website. A clean source clone
+with Node 22 and a Python virtual environment installed and built successfully;
+a local source save and the editable Grid Source were verified. Local Remote Edit
+writes the user's source copy; public Remote Edit remains disabled.
+The earlier WebKit file-origin upload limitation remains documented.
