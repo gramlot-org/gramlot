@@ -20917,3 +20917,32 @@ Remaining work is explicit: other distinct DB/uploader/server previews, the old
 shared-chat archive guards and final retirement of this task's common worktree.
 Invoice remains excluded. Originals and recovery receipts remain preserved;
 no package release, deployment or source push was performed.
+
+
+<a id="gc-070-eight-previews-transferred-20261103"></a>
+## Eight previews transferred; adapter qualification gates — 2026-11-03
+
+The owner explicitly approved restarting old previews after replacement qualification.
+Three additional listeners now use primary sources: Python FileServer 61521,
+JavaScript FileServer 61522 and Django database gallery 61503. Original launcher
+copies and restart receipts are preserved. Both FileServers passed checkbox-tree
+binding interaction and lazy CodeMirror loading in the browser; CodeMirror also
+renders after transfer on the original ports. Django passed database dropdown,
+selection/caption/locality/state checks before transfer and returned 11 options
+after transfer. These are read-only database checks, not save qualification.
+Eight previews have now transferred in total. Temporary qualification listeners
+61543 through 61547 were stopped; no original unqualified listener was stopped.
+
+Two additional adapter gates were discovered rather than hidden: the current
+preview virtualenv cannot import Asqueel, and the primary SQLAlchemy selector
+shows `Dict key must be str` when opening options. Their original listeners
+61501 and 61502 remain active. Root cause and correction are not yet accepted.
+The missing original launcher of 61505 was not recovered: an archived namesake
+matches the primary release launcher but has no provenance proving equivalence.
+That listener also remains active. No database contents, dependency source,
+Invoice application, package publication or public deployment were changed.
+
+Evidence: private cleanup/preview-fileserver-migration and
+cleanup/preview-adapters-migration receipts and logs. Remaining work is unchanged
+except for the three transferred previews: resolve adapter gates, qualify broad
+DB/host trials and standalone tool export, then retire only unused preserved copies.
