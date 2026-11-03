@@ -94,3 +94,11 @@ const browserCamera = new BrowserCameraProvider({document:cameraDocument});
 page.dvc.attach(browserCamera);
 const cameraPhoto: Promise<{url:string;format:string}> = browserCamera.takePhoto(new AbortController().signal);
 void cameraPhoto;
+
+// The package root preserves the public native database and sensor types.
+import type {DeviceDatabase, DeviceOrientation, DeviceMotionEvent} from '../../../src/index.js';
+declare const deviceDatabase: DeviceDatabase;
+const deviceRows: Promise<Record<string, unknown>[]> = deviceDatabase.query('select 1');
+const orientation: DeviceOrientation = {type: 'portrait', direction: 'primary', timestamp: 0};
+const motion: DeviceMotionEvent = {kind: 'sample', x: 0, y: 0, z: 0, timestamp: 0};
+void [deviceRows, orientation, motion];

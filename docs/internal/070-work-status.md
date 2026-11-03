@@ -20775,3 +20775,25 @@ The app's shared-task archive guard still applies to the audit checkout. Invoice
 is excluded. No package, site, remote branch or TestFlight publication occurred.
 Private recovery and exact receipts: gramlot-cleanup-20261102/
 main-consolidation-20261103; classifications: main-comparison-20261103/.
+
+
+<a id="gc-070-mobile-residual-types-20261103"></a>
+## Mobile residual review: public device types — 2026-11-03
+
+Owner authorized residual core/mobile consolidation, followed by preview migration
+and recoverable retirement, with Invoice excluded. Comparing the preserved device
+checkout against current main found a real declaration regression: DeviceDatabase,
+DeviceOrientation and DeviceMotionEvent still exist in the device handler but had
+lost their package-root type exports. Restore those exports without changing the
+runtime or adding aliases. The TypeScript consumer fixture imports and uses all
+three from the public root; strict compilation passes. The six focused device,
+frame broker, motion, mobile environment, Mela contrast and transform suites pass
+111 tests on the common implementation.
+
+Reviewed runtime differences in layout, transform callbacks, MobileEnvironment,
+renderer event/URL handling and Mela are superseded by existing main changes;
+copying the old files back would remove shared Labelbox/Tray, CSP and security
+improvements. Package exports also contain later chat/upload/Visual Editor work.
+This review does not yet close historical documentation or every primary-core
+delta. No preview was stopped or migrated and no worktree was retired in this
+bounded correction. Original files remain intact. No publication or Invoice work.

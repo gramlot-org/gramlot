@@ -52,7 +52,7 @@ export {collectionBuildId, verifyCollectionArtifact} from './collection-artifact
 
 export {DeviceHandler} from './handlers/device-handler.js';
 export {BrowserCameraProvider} from './browser-camera-provider.js';
-export type {DeviceProvider, DeviceClipboard, DeviceName, DeviceAudio, DeviceAudioSession, DeviceNetwork, DeviceLifecycleEvent, DeviceHapticStyle, AppInfo, DeviceLocation, DevicePhoto, DeviceBarcode, DeviceBiometrics, DeviceNotificationRequest, DeviceNotificationSchedule, DeviceNotificationEvent, DevicePushRegistration, DevicePushEvent, DeviceShortcutRequest, DeviceLinkRequest} from './handlers/device-handler.js';
+export type {DeviceDatabase, DeviceOrientation, DeviceMotionEvent, DeviceProvider, DeviceClipboard, DeviceName, DeviceAudio, DeviceAudioSession, DeviceNetwork, DeviceLifecycleEvent, DeviceHapticStyle, AppInfo, DeviceLocation, DevicePhoto, DeviceBarcode, DeviceBiometrics, DeviceNotificationRequest, DeviceNotificationSchedule, DeviceNotificationEvent, DevicePushRegistration, DevicePushEvent, DeviceShortcutRequest, DeviceLinkRequest} from './handlers/device-handler.js';
 
 export {MobileEnvironment} from './mobile-environment.js';
 
