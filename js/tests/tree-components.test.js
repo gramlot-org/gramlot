@@ -86,6 +86,25 @@ test('row action presentation follows the focused row and reactive state', async
     assert.equal(button.control.getAttribute('aria-label'), 'Remove favorite');
 });
 
+test('reselecting a favorite retries a failed lazy path', async t => {
+    let attempts = 0;
+    class Section extends BagResolver {
+        load() { if (++attempts === 1) return Promise.reject(new Error('Try again')); return new Bag({child: 1}); }
+    }
+    const f = fixture(t, {attrs: {favorites: '^.favorites'}}); await tick();
+    f.store.setItem('lazy', new Section({cacheTime: -1}));
+    const favorites = new Bag();
+    favorites.setItem('one', null, {favoriteEntry: true, originalPath: 'lazy.child', fullcaption: 'Lazy child'});
+    f.app.data.setItem('model.favorites', favorites); await settle();
+    f.host.shadowRoot.querySelector('[data-favorites-group] button').click();
+    f.host.shadowRoot.querySelector('[data-favorite-path] .row').click(); await settle(); await settle();
+    assert.equal(attempts, 1);
+    assert.ok(f.row('lazy').classList.contains('error'));
+    f.host.shadowRoot.querySelector('[data-favorite-path] .row').click(); await settle(); await settle();
+    assert.equal(attempts, 2);
+    assert.equal(f.row('lazy.child').getAttribute('aria-selected'), 'true');
+});
+
 test('favorites are an expandable group in the same tree and select their original path', async t => {
     const f = fixture(t, {attrs: {favorites: '^.favorites', checkedPaths: '^.checked', internalNames: '^.internalNames'}}); await tick();
     const favorites = new Bag();

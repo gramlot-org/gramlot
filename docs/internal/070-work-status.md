@@ -21059,3 +21059,31 @@ other snapshots have nonidentical local files. Preserve all originals and do not
 mark these copies obsolete based on byte-level comparison alone. The previous
 bulk archive move remains blocked by automatic approval review; no workaround or
 move was executed. See private nested-review-followup-20261103.md.
+
+
+### Individual preserved checkout retirement — 2026-11-03
+
+Following the owner's request to compare and retire copies individually, eight
+standalone repositories were moved one at a time into the private recovery area:
+three relation-tree core/server copies plus the recovered Tree snapshot; the
+clean 20261026 Python and JavaScript server copies; and two clean 20261024 docs
+build dependency copies. Their complete contents, links and Git histories were
+preserved with verified SHA-256 manifests. Each had one Git worktree, no active
+process references, and a verified registry path and `git fsck` after moving.
+The first individual attempt was rejected over Git registry safety; a separate
+standalone Git experiment and explicit before/after registry checks addressed
+that concern. The earlier rejected bulk operation was not retried.
+
+The old Tree loop-confirmation tests reflect a superseded decision: GC-225 records
+that the owner removed those prompts, while search continues to stop at loops.
+GC-197 historical checkpoints now point to that later decision in both editions.
+The old favorite retry behavior was checked in the current component; a new
+regression test clicks the same favorite again after a failed lazy read and
+confirms successful selection. All 104 Tree/TreeStore tests pass with the local
+Python environment. The initial test run used system Python and failed two tests
+because genro_bag was missing; the environment-correct rerun passed all tests.
+
+Further individual comparison and retirement remain, especially old gallery
+lessons, linked Grid/Visual Editor copies, release repositories and the non-Git
+performance-py directory. The audit copy is still reported as owned by another
+app task. Invoice remains excluded; no publication was performed.
