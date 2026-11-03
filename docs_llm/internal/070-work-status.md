@@ -19915,3 +19915,24 @@ by automatic approval review because it could break absolute Git references and
 external consumers. That move was not performed. Individual nested checkouts,
 external references, their environment and app ownership require further review;
 no guard should be bypassed. No package or site was published.
+
+
+### Nested checkout individual inventory — 2026-11-03
+
+The owner explicitly accepted preservation and restoration at the original paths,
+subject to checking every checkout, with Invoice excluded. A fresh individual
+inventory covers 18 Git checkouts and two non-Git directories; machine-readable
+status, Git registries, comparison with primary main and main-history blob checks
+are in the private cleanup evidence. Exact historical-blob presence is evidence,
+not proof that a feature remains covered. One aligned Asqueel relation-server
+copy has been compared in detail: its only source difference is the historical
+Italian Favorites label; the primary also has newer documentation and packaging.
+
+Further semantic review remains: a relation-tree snapshot commit is not a main
+ancestor, a separate gallery commit f70539c is absent from the primary object
+database and changes 20 form/container teaching files, and the non-Git old
+performance-py directory contains server source, tests and documentation. Several
+other snapshots have nonidentical local files. Preserve all originals and do not
+mark these copies obsolete based on byte-level comparison alone. The previous
+bulk archive move remains blocked by automatic approval review; no workaround or
+move was executed. See private nested-review-followup-20261103.md.
