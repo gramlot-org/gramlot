@@ -21106,3 +21106,25 @@ The active cleanup evidence contains exact per-copy receipts. Original snapshots
 Invoice and public deployment remain untouched. Individual review continues for
 Visual Source core, the older gallery and server checkouts, the historical
 performance-py directory and the app-owned audit worktree.
+
+
+### Visual Source checks and historical candidates — 2026-11-03
+
+Three useful nodeId validation tests absent from primary were recovered from the
+nested Visual Source core: duplicate candidates do not mutate mounted state,
+replacement permits only former descendant IDs, and frozen replacement does not
+reserve them. All 14 renderer tests pass. The Visual Source core worktree was
+then fully archived and retired through its owning Git registry. The 20261026
+core clone was separately preserved after its linked children were retired;
+its two working differences were historical status notes, including a reused
+GC-070 anchor, not changes to copy over current documentation.
+
+The non-Git performance-py residue contains an old Typst recipe executor; the
+owner's IDE authorization explicitly excludes native Python/Typst execution,
+so it must not be restored as a feature. Its old database-selector guide reuses
+GP-025, now assigned to gallery modules. Original evidence is preserved; resolve
+any documentation reuse under the documentation migration policy. The older
+gallery's three browser-verifier scripts contain route fixes and a bottom-splitter
+assumption not present in its current events lesson; assess and adapt rather than
+copying blindly. Other per-checkout comparisons and the app-owned audit copy
+remain open. No Invoice or public deployment was touched.

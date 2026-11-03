@@ -303,3 +303,78 @@ test('DOM creation and updates share generic tag resolution', () => {
     assert.strictEqual(document.getElementById('prefixed'), group);
     renderer.dispose();
 });
+
+test('candidate nodeIds reject nested duplicates and mounted conflicts without changing Source, DOM or bindings', t => {
+    const {document, builder, source, renderer} = setup();
+    t.after(() => renderer.dispose());
+    const mounted = sourceTarget(builder.root.section({nodeId:'existing'}));
+    const before = source.toTytx();
+    const beforeDom = document.getElementById('root').innerHTML;
+    const beforeIds = [...renderer.binding.nodeIds];
+    let events = 0;
+    source.subscribe('nodeid-preflight', {any:() => events++});
+    const conflicts = [
+        sourceBlock(builder, root => root.div().span('conflict').attr.nodeId = 'existing'),
+        sourceBlock(builder, root => {
+            root.div().attr.nodeId = 'repeated';
+            root.section().span('conflict').attr.nodeId = 'repeated';
+        }),
+        sourceBlock(builder, root => {
+            root.dataController({script:''}).attr.nodeId = 'logic';
+            root.div().attr.nodeId = 'logic';
+        }),
+    ];
+    for (const candidate of conflicts) {
+        assert.throws(() => renderer.validateCandidate(candidate), /Duplicate nodeId/);
+        assert.equal(source.toTytx(), before);
+        assert.equal(document.getElementById('root').innerHTML, beforeDom);
+        assert.deepEqual([...renderer.binding.nodeIds], beforeIds);
+        assert.equal(events, 0);
+    }
+    assert.equal(renderer.binding.nodeIds.get('existing'), mounted);
+    assert.equal(renderer.validateCandidate(source), source, 'validating the mounted nodes themselves is allowed');
+});
+
+test('replacement candidates may reuse descendant nodeIds but cannot claim the target or outside nodes', t => {
+    const {builder, source, renderer} = setup();
+    t.after(() => renderer.dispose());
+    const target = sourceTarget(builder.root.section({nodeId:'target'}));
+    const child = sourceTarget(builder.wrapSource(target).span('old', {nodeId:'child'}));
+    builder.wrapSource(target).dataController({nodeId:'oldLogic', script:''});
+    builder.root.aside({nodeId:'outside'});
+    const candidate = sourceBlock(builder, root => {
+        root.strong('new').attr.nodeId = 'child';
+        root.dataController({script:''}).attr.nodeId = 'oldLogic';
+    });
+    const before = source.toTytx();
+    assert.equal(renderer.validateCandidate(candidate, {replacingNode:target}), candidate);
+    assert.equal(renderer.binding.nodeIds.get('child'), child, 'validation does not reserve IDs');
+    for (const nodeId of ['target', 'outside']) {
+        const conflict = sourceBlock(builder, root => root.div().attr.nodeId = nodeId);
+        assert.throws(() => renderer.validateCandidate(conflict, {replacingNode:target}), /Duplicate nodeId/);
+    }
+    const duplicate = sourceBlock(builder, root => {
+        root.span().attr.nodeId = 'child';
+        root.div().span().attr.nodeId = 'child';
+    });
+    assert.throws(() => renderer.validateCandidate(duplicate, {replacingNode:target}), /Duplicate nodeId/);
+    assert.equal(source.toTytx(), before);
+    target.setValue(candidate);
+    assert.notEqual(renderer.binding.nodeIds.get('child'), child);
+    assert.equal(renderer.binding.nodeIds.get('child').value, 'new');
+});
+
+test('frozen replacement validation permits former descendant nodeIds without reserving them', t => {
+    const {builder, renderer} = setup();
+    t.after(() => renderer.dispose());
+    const target = sourceTarget(builder.root.section({nodeId:'target'}));
+    const old = sourceTarget(builder.wrapSource(target).span('old', {nodeId:'retained'}));
+    renderer.freeze(target);
+    target.setValue(sourceBlock(builder, root => root.span('pending')));
+    assert.ok(renderer.records.has(old));
+    assert.equal(renderer.binding.nodeIds.has('retained'), false);
+    const replacement = sourceBlock(builder, root => root.span('new').attr.nodeId = 'retained');
+    assert.equal(renderer.validateCandidate(replacement, {replacingNode:target}), replacement);
+    assert.ok(renderer.records.has(old));
+    assert.equal(renderer.binding.nodeIds.has('retained'), false);
+});
