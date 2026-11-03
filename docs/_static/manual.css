@@ -1,4 +1,25 @@
 /* Keep the classic RTD theme while leaving room for navigation and API tables. */
 .wy-side-nav-search > a img.logo { max-height: 112px; width: auto; }
-.wy-table-responsive td, .wy-table-responsive th { white-space: normal; }
-.wy-table-responsive td code { overflow-wrap: anywhere; }
+
+/* Wrap explanatory prose, but keep API names and pointer expressions intact. */
+.rst-content .wy-table-responsive table td,
+.rst-content .wy-table-responsive table th { white-space: normal; }
+.rst-content code.literal {
+    color: #263445;
+    background: #f1f4f7;
+    border-color: #dce2e8;
+    font-size: 1em;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+.rst-content a code.literal { color: inherit; }
+.rst-content .wy-table-responsive { overflow-x: auto; }
+.rst-content pre {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
+    overflow-x: auto;
+}
