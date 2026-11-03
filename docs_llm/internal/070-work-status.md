@@ -19964,3 +19964,22 @@ Further individual comparison and retirement remain, especially old gallery
 lessons, linked Grid/Visual Editor copies, release repositories and the non-Git
 performance-py directory. The audit copy is still reported as owned by another
 app task. Invoice remains excluded; no publication was performed.
+
+
+### Additional Grid and gallery cleanup — 2026-11-03
+
+The 20261024 JavaScript server checkout contained only two test route updates;
+those routes are already in primary. FrameGrid's 10 FrameGrid, 26 Grid and four
+Bag store named tests remain in the primary suite, and its component changes were
+compared with the integrated implementation. The FrameGrid gallery's seven Python
+lessons retain their operations; explicit collection imports were removed by the
+approved environment mechanism, and its named gallery tests remain. Visual Source
+gallery changes were compared against the previously reviewed Visual Editor
+archive and primary gallery; uploader examples retain their options with Data
+moved into companion files. Each of these four copies was individually preserved
+with verified manifests and retired using its owning Git registry where linked.
+
+The active cleanup evidence contains exact per-copy receipts. Original snapshots,
+Invoice and public deployment remain untouched. Individual review continues for
+Visual Source core, the older gallery and server checkouts, the historical
+performance-py directory and the app-owned audit worktree.
