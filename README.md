@@ -25,7 +25,7 @@ Gramlot is intended for Python developers building interactive forms, data tools
 and application interfaces. Server adapters connect it to a web server; the core is
 independent of server and database technology.
 
-> **Release status.** The current release is **0.3.26**, distributed through
+> **Release status.** The current release is **0.3.27**, distributed through
 > [PyPI](https://pypi.org/project/gramlot/) (`gramlot`), on
 > [npm](https://www.npmjs.com/package/@gramlot/gramlot) (`@gramlot/gramlot`) and as the
 > [GitHub release v0.3.26](https://github.com/gramlot-org/gramlot/releases/tag/v0.3.26).

@@ -21184,3 +21184,12 @@ not identify that owner and the guard was not bypassed. In the five primary
 product registries, only this audit worktree remains in addition to primary and
 explicitly excluded Invoice worktrees. See private nested-review-followup evidence.
 No package, push or public deployment was performed in this pass.
+
+## 2026-11-03 · Core release preparation
+
+The owner explicitly authorized publication of the consolidated core, followed
+by the examples and the public site. The local Python suite passed 417 tests
+with 5 expected failures using Node 22; the JavaScript suite passed 1,734 tests.
+The Python server 0.3.27 is published. The examples release remains blocked
+until the Grid features in this core are published and its complete CI passes.
+The public website update is staged, not yet active.
