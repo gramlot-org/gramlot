@@ -2572,3 +2572,17 @@ Visual Editor. The bounded presentation fix uses `gramlot-chat-send-icon`, follo
 the existing `gramlot-chat-send`/`gramlot-chat-editor` private CSS scope. A masked SVG
 inherits theme foreground color; existing button sizing tokens reserve a circular
 36 px target. No new public chat parameter, action or transport is introduced.
+
+
+<a id="gc-225-device-database"></a>
+## Device database connection — 2026-10-25
+
+Owner confirms “ok” to gramlot.dvc.openDatabase('notes'), returning an Asqueel-compatible query/execute/close connection, also through trusted iframes; state/errors live in gramlot.device.database and page controllers own example Data. One connection per page, closed on disposal; persistent files survive page/app closure. DeviceProvider.openDatabase follows the same explicit capability/resource convention. Core owns connection lifecycle, not SQL compilation, models or SQLite. Native system SQLite without SQLCipher and Asqueel JS are explicitly approved. This is a bounded iOS PoC; scalar parameters only (null, strings, finite safe numeric values), no BLOB/BigInt codec or browser fallback.
+
+
+<a id="gc-225-device-motion"></a>
+### Device orientation and motion — 2026-10-25
+
+Owner confirms “ok” to the concrete contract proposed in this chat: gramlot.device.orientation holds screen type (portrait/landscape), direction (primary/secondary) and timestamp; gramlot.device.gyroscope and gramlot.device.accelerometer hold x/y/z/timestamp samples, in rad/s and g including gravity respectively. Sensor node attributes enabled (default false) and watching distinguish intent from effective native updates; status/error retain existing device conventions. Updates target 100 ms, suspend in background and release on page/frame disposal. Orientation starts with the provider. Native iOS integration uses Apple APIs without another external dependency; Android is unqualified.
+
+Under the established Provider/camelCase conventions, bounded methods are startOrientationEvents, startGyroscopeUpdates and startAccelerometerUpdates, each taking a callback and AbortSignal and returning an async stop function. Orientation emits {type,direction,timestamp}. Motion emits {kind:'state',watching}, {kind:'sample',x,y,z,timestamp}, or {kind:'error',error}; timestamps are Unix milliseconds, axes are device-fixed. DeviceHandler owns Data writes; the existing frame allowlist carries these streams and cleanup. No public watch/unwatch, configurable frequency or browser fallback is added. Native plugin GramlotMotionPlugin / JS name GramlotMotion follows the existing GramlotLinksPlugin convention.

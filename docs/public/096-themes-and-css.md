@@ -1259,3 +1259,13 @@ floating windows remain nonmodal. The gallery lesson **Containers → Mela: desk
 and touch** compares a hierarchical menu, toolbar, fields and both window types
 using shared draft Data. Narrow windows scroll their content rather than clipping
 the form permanently. Try both modes at your intended viewport and input size.
+
+
+<a id="gc-096-mela-mobile"></a>
+## Mela on touch devices
+
+Mela uses the system font stack, grouped light/dark surfaces and existing primary, `button--secondary` and `button--quiet` variants. Load Base, Compact and Mela in order. Its mobile sizing grows with text and maintains touch targets; WebKit can use its system body text style. Explicit `data-theme="light"`/`"dark"` continues to override the OS preference. Shared command components use `--gramlot-button-color` beside the existing background/hover tokens so the Shadow DOM remains themeable without per-application styles.
+
+The shared MobileEnvironment owns outer safe-area clearance; do not repeat it in iframe content. The theme supplies `--gramlot-chrome-background` for the corresponding surface. Toolbar translucency is a CSS treatment, not native Liquid Glass, and becomes opaque for increased contrast/reduced transparency when available. The component retains focus, disabled, press and forced-color handling. Actual Dynamic Type coverage and native viewport behavior require device testing.
+
+Design references: [Apple buttons](https://developer.apple.com/design/human-interface-guidelines/buttons), [typography](https://developer.apple.com/design/human-interface-guidelines/typography), [materials](https://developer.apple.com/design/human-interface-guidelines/materials) and [touch sizing](https://developer.apple.com/design/tips/). The mobile demonstration belongs to gramlot-capacitor, separately from the core and general gallery.

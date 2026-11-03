@@ -5331,3 +5331,39 @@ cleanup and host prerequisite filtering. Browser panels identify native-only
 features, without simulating plugins. State belongs to gallery Data and its
 existing preference persistence; hiding the catalogue preserves open examples.
 This increment authorizes local implementation and verification, not deployment.
+
+
+<a id="gc-000-device-database"></a>
+
+> Historical record — recovered from the preserved mobile checkout. Later approved mobile integration and publication decisions retain precedence.
+
+Device database PoC — owner, 2026-10-25: “ok procedi con SQLite nativo senza SQLCipher e Asqueel JS, sempre passando dai dati Gramlot. Poi completiamo la beta TestFlight senza caricarla ancora.” The owner subsequently confirms “ok” to openDatabase/query/execute/close and its Data/lifecycle contract (GC-225 device database). Bounded changes in core and gramlot-capacitor are authorized: core remains database-technology-independent, native SQLite and Asqueel integration belong to gramlot-capacitor. Python demonstration creates its database from the app and verifies persistent notes after reopening. No Asqueel/Bag/Builder edits, publication, deployment or TestFlight upload are authorized.
+
+
+<a id="gc-000-english-mobile-ui"></a>
+
+> Historical record — recovered from the preserved mobile checkout. Later approved mobile integration and publication decisions retain precedence.
+
+## English application pages — owner, 2026-10-25
+
+Owner explicitly requires all application pages to be English and no Italian pages. Apply this to the mobile app, its examples/catalogue and gallery integration, including authored labels, help and messages. This adds a product-language requirement to the existing English code/documentation rule; it does not authorize changes to device-wide language settings or publication. The connected implementation and handoff are GCP-110 §055.
+
+
+<a id="gc-000-mobile-device-frames"></a>
+
+> Historical record — recovered from the preserved mobile checkout. Later approved mobile integration and publication decisions retain precedence.
+
+## Mobile environment and device frames — owner, 2026-10-25
+
+Owner: “Sì, procedi con l’adattamento mobile automatico nel framework e il collegamento ai plugin dagli iframe, così eliminiamo il doppio passaggio nella gallery.” Authorizes moving automatic touch/edge treatment into shared Gramlot infrastructure and delegating child-frame device provider operations to the native-capable top page. Existing device Data/commands remain the application interface. The integration owns the trusted origins and native providers; core remains Capacitor-independent. Child requests require both an allowed origin and an actual Source-owned iframe, with a dedicated connection released on navigation/removal/disposal. Native SDK injection into every arbitrary iframe is not the selected path. Existing iframe/session authentication and host cookies are not weakened. Bounded gallery and Capacitor integration/build/deployment changes necessary for the iPhone PoC are authorized; Android, login, preference persistence and ActivityKit are separate.
+
+
+<a id="gc-000-mobile-examples-module"></a>
+
+> Historical record — recovered from the preserved mobile checkout. Later approved mobile integration and publication decisions retain precedence.
+
+### Mobile example module ownership — 2026-10-25
+
+Owner: “ok separiamo gli esempi mobile in gramlot-capacitor e prepara il contratto di integrazione da passare alla chat che sta sistemando la gallery. inoltre dato che si possono fare temi in gramlot vorrei che seguendo le linee guida apple tu riudscissi a fare un thema che risulti il piu nativo possibile ovviamente con gli adattamenti perf gramlot”.
+
+Bounded exception to §7 / 11.56: the mobile demonstration module (Python pages, companion Logic, assets and catalogue) belongs to gramlot-capacitor; the general examples and gallery remain in gramlot-examples. The host mounts the module, and the gallery consumes a catalogue contract prepared here for the separate gallery work. No gallery edits, publication or messaging another chat are implied. Reusable device and viewport behavior remains core-owned. The existing Apple-inspired Mela theme may be refined in core and exercised by the mobile module. Native plugins remain in the app/provider. Private APNs configuration is not part of the public module. This supersedes only the requirement that these bounded mobile demonstrations live in gramlot-examples, not the general repository dependency direction.

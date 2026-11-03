@@ -19674,3 +19674,20 @@ improvements. Package exports also contain later chat/upload/Visual Editor work.
 This review does not yet close historical documentation or every primary-core
 delta. No preview was stopped or migrated and no worktree was retired in this
 bounded correction. Original files remain intact. No publication or Invoice work.
+
+
+<a id="gc-070-mobile-contract-recovery-20261103"></a>
+## Mobile contract provenance recovered — 2026-11-03
+
+Residual comparison found seven missing document anchors (and their LLM peers):
+module ownership, trusted device frames, English UI, native database, motion names
+and Mela touch styling. Preserve the original dated contracts and qualification
+limits, with an explicit historical banner on constitutional records so later
+approved deployment decisions retain precedence. Existing implementation already
+contains these APIs; this recovery adds no runtime path or permission.
+
+The previous 111 mobile checks and strict TypeScript consumer compilation passed.
+This documentation recovery was checked for paired anchors and whitespace only.
+Primary core's mixed residuals and preview dependency migration remain unfinished;
+no additional copy has been retired. Invoice and original working files remain
+untouched. No publication or deployment.
