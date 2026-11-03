@@ -21159,3 +21159,28 @@ historical identifier collision also needs proper documentation migration rather
 than copying over the current guide. The original remains preserved in place and
 in the verified pre-cleanup archive. The managed audit checkout is owned by
 another task according to the app and has not been force-removed.
+
+
+### Nested Git checkout retirement completed — 2026-11-03
+
+All 18 inventoried nested Git checkouts were reviewed and individually retired
+with original files, history, Git metadata and links preserved: 14 independent
+repositories have verified whole-tree manifests in the private single-checkouts
+archive, and four linked worktrees have verified archives and explicit removal
+through their owning Git registries. The inactive prepared-page environment and
+old conflict-trial residue were also individually preserved; empty containers
+were removed. No bulk move was used. Invoice worktrees were excluded.
+
+The recovered gallery event splitter and verifier routes are in examples local
+main. Four Python/JS Source parity tests and four JSDOM example checks pass;
+the three browser verifier scripts pass syntax checks and their routes return
+HTTP 200. Full browser interaction was not rerun; do not claim that verification.
+
+Remaining cleanup: the non-Git performance-py residue remains in place pending
+the owner's decision on whether to recover opt-in gallery source saving. Its
+originals are also in the verified pre-cleanup archive. The core audit worktree
+remains attached to another task according to the app; visible chat history did
+not identify that owner and the guard was not bypassed. In the five primary
+product registries, only this audit worktree remains in addition to primary and
+explicitly excluded Invoice worktrees. See private nested-review-followup evidence.
+No package, push or public deployment was performed in this pass.
