@@ -1250,6 +1250,8 @@ pane.tree(storepath=".items", hideValues=True, searchText="^.search",
 `checkedPaths` enables checkboxes and binds the comma-separated checked paths
 (`checkedPaths_joiner` changes the separator). State lives in each Bag node's
 `checked` attribute: true, false, -1 (mixed), `disabled:on`, or `disabled:off`.
+An empty initial or updated `checkedPaths` clears editable checks only. Disabled
+checks retain their state, including when their paths appear in a new value.
 `checkChildren=True` propagates to loaded descendants; unresolved descendants
 inherit when loaded. A checked unresolved branch is represented by its own path
 until its checked descendants replace it. A synchronous named `onChecked` callback

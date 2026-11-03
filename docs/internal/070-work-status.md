@@ -20466,3 +20466,15 @@ worktree. Visual Editor/mobile copies and the running gallery-essential preview
 remain. No guard bypass, preview shutdown, publication or Invoice change.
 Evidence: private gramlot-cleanup-20261102/remaining-worktrees-20261103/,
 retired-worktrees/ and inventory-20261103-after-retirement.json.
+
+
+<a id="gc-070-primary-consolidation-20261103"></a>
+## Primary main consolidation and retained copies — 2026-11-03
+
+Owner: "continua a classificare le differenze residue e consolida quelle valide nel main del checkout principale. Poi ritira le copie superate, preservando gli originali e lasciando Invoice fuori."
+
+The reviewed common core retains resident Grid/Form validation, bounded cell editors, selector authoring regression and Visual Editor catalogue/isolated-canvas work. Fresh committed-snapshot qualification passed 148 focused tests. The pending Tree correction now preserves disabled:on/off during initial empty and external checkedPaths replacement; all 92 Tree tests passed. Public component guidance and its compact mirror record this invariant. Other pending local documentation is not silently included.
+
+The JavaScript server primary checkout is on main at 49699547 after reviewing its two unpublished commits; all 62 serverless tests passed with a single Bag/TYTX dependency identity. The Python server primary checkout is on main at c2ce3739, identical to the published implementation. Verified history bundles preserve previous refs. The examples merge is being qualified against current public lessons, not replaced by its seven-commits-behind integration snapshot.
+
+The primary core contains a preserved older working copy and is still used by other processes. Advancing its main reference does not mean its checked-out files have been replaced. Two incomplete temporary host/examples directories are still process working directories; the remaining incomplete JS host is referenced by the examples dependency link. They cannot yet be retired while preserving active previews. No preview shutdown, Invoice integration, package publication or deployment. Detailed per-path classification, test logs and recovery receipts remain in the private gramlot-cleanup-20261102 evidence directory.

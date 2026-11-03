@@ -295,6 +295,7 @@ export const Tree = defineComponent({
                 const initial = this.#checkedPaths === undefined;
                 this.#checkedPaths = this.parameters.checkedPaths;
                 for (const {node} of items.values()) {
+                    if (node.attr.checked === 'disabled:on' || node.attr.checked === 'disabled:off') continue;
                     if (!initial || this.#checkedPaths !== null) node.setAttr({checked: false});
                 }
                 for (const path of (this.#checkedPaths || '').split(this.parameters.checkedPaths_joiner).filter(Boolean)) {

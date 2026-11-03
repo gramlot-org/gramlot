@@ -32,7 +32,7 @@ function nativeDrag(f, type, path, dataTransfer) {
     (path === null ? f.host : f.row(path).querySelector('.row')).dispatchEvent(event);
     return event;
 }
-function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, logic = null, actions = null, barAttrs = {}, initialChecked = null} = {}) {
+function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, logic = null, actions = null, barAttrs = {}, initialChecked = null, initialPaths = null} = {}) {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     window.HTMLElement.prototype.showPopover = function () {};
     const app = new Gramlot({document: window.document, transport: false, collections: [collection]});
@@ -42,6 +42,7 @@ function fixture(t, {collection = tree, tag = 'tree', two = false, attrs = {}, l
     if (initialChecked !== null) store.getNode('other').setAttr({checked: initialChecked});
     app.data.setItem('model.nodes', store);
     app.data.setItem('model.selection', null);
+    app.data.setItem('model.checked', initialPaths);
     app.data.setItem('model.search', '');
     app.data.setItem('model.favorites', new Bag());
     const b = new GramlotBuilder(null, {collections: [collection]});
@@ -1406,6 +1407,34 @@ test('initial absent checkedPaths preserves preexisting disabled node state', as
     assert.equal(f.row('other').querySelector('input').checked, true);
     assert.equal(f.row('other').querySelector('input').disabled, true);
 });
+
+for (const state of ['disabled:on', 'disabled:off']) {
+    test(`empty initial checkedPaths preserves ${state}`, async t => {
+        const f = fixture(t, {attrs: {checkedPaths: '^.checked'}, initialChecked: state, initialPaths: ''});
+        await tick();
+        assert.equal(f.store.getNode('other').attr.checked, state);
+        assert.equal(f.row('other').querySelector('input').disabled, true);
+        assert.equal(f.row('other').querySelector('input').checked, state === 'disabled:on');
+        assert.equal(f.app.data.getItem('model.checked'), '');
+    });
+
+    test(`external checkedPaths replacement preserves ${state} on nested nodes`, async t => {
+        const f = fixture(t, {attrs: {checkedPaths: '^.checked'}, initialChecked: state});
+        await tick();
+        f.store.getNode('folder.beta').setAttr({checked: state});
+        await tick();
+        for (const paths of ['folder.alpha,folder.beta,other', '', 'folder.alpha', null]) {
+            f.app.data.setItem('model.checked', paths);
+            await tick(); await tick();
+            for (const path of ['other', 'folder.beta']) {
+                assert.equal(f.store.getNode(path).attr.checked, state);
+                assert.equal(f.row(path).querySelector('input').disabled, true);
+                assert.equal(f.row(path).querySelector('input').checked, state === 'disabled:on');
+            }
+            assert.equal(f.store.getNode('folder.alpha').attr.checked, Boolean(paths));
+        }
+    });
+}
 
 test('search stops at loop nodes without loading or exposing matching descendants', async t => {
     let calls = 0;
