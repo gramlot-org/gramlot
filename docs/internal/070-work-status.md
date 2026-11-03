@@ -20432,3 +20432,37 @@ checkout retirement: the previous 30-checkout inventory is not reduced by this s
 No runtime change, test execution, publication or deployment was performed.
 Evidence and recovery instructions: private gramlot-cleanup-20261102/
 merged-branches-20261103/ (manifest, verified history bundle and deletion receipts).
+
+
+<a id="gc-070-worktree-retirement-20261103"></a>
+## Two superseded worktrees retired — 2026-11-03
+
+Owner resumed the approved cleanup: "torniamo ai work tree da pulire". Invoice
+remains excluded. Retired chat-feedback-adapter and examples-room-estimate after
+content review, process/cwd checks and a scan of 73,814 directories for incoming
+symlink and Python path dependencies (no matches). Complete archives preserve
+16,717 and 4,377 entries respectively, including ignored files, file hashes,
+permissions, links, index/admin data and verified Git history bundles. Original
+branches and historical reports remain recoverable.
+
+Chat feedback's store channel, Kajenn adapter and page-store regression files
+match the committed common base. Uvicorn's store-worker method is unchanged;
+subsequent destination differences implement previously integrated uploads and
+identity. The paired verification note is retained in the destination. The room
+lesson retains fields, seven formulas and summary behavior in its current path;
+initial values moved to the companion TYTX Bag. All three browser verification
+scripts match after the route rename. Historical cache/profile reports are
+preserved in the original archive, not reintroduced as current documentation.
+No runtime change or new runtime test run was needed for this retirement.
+
+Registered checkouts decreased from 30 to 28. This count includes three stale
+registrations under /private/tmp/gramlot-db-local (Python server, JavaScript server,
+examples): their .git files are missing and the directories retain only partial
+contents. Do not prune them or use those residual directories as the reference
+for a content comparison; inspect committed refs and preserve residual/index data
+before repair. This preexisting anomaly was discovered, not caused by retirement.
+The audit archive retry remains refused by Codex: another active task uses that
+worktree. Visual Editor/mobile copies and the running gallery-essential preview
+remain. No guard bypass, preview shutdown, publication or Invoice change.
+Evidence: private gramlot-cleanup-20261102/remaining-worktrees-20261103/,
+retired-worktrees/ and inventory-20261103-after-retirement.json.
