@@ -21128,3 +21128,34 @@ gallery's three browser-verifier scripts contain route fixes and a bottom-splitt
 assumption not present in its current events lesson; assess and adapt rather than
 copying blindly. Other per-checkout comparisons and the app-owned audit copy
 remain open. No Invoice or public deployment was touched.
+
+
+### Individual cleanup and gallery teaching recovery — 2026-11-03
+
+The inactive prepared-page-env was preserved individually (18,119 manifest
+entries) after confirming no open files, processes or symlinks from active
+checkout/preview environments. Its historical .pth references are preserved;
+restore the original path before using that environment. The working preview venv
+was not moved. The 20261024 Python server, examples and core, plus the 20261026
+examples clone and merge-conflict residue, were individually preserved after
+comparison and dependency checks. Each independent Git checkout was checked for
+one self-owned worktree, no external registry consumers, file hashes and Git
+integrity after movement. Linked worktree retirements used their own Git registry.
+Invoice remains excluded. Historical learning and conflict artifacts remain in
+private recovery evidence; no bulk relocation was performed.
+
+The old learning gallery supplied a bottom splitter in the border event lesson and
+corrected browser-verifier routes. Those were recovered into primary examples;
+four Python/JS Source parity tests, four JSDOM lesson checks and JavaScript syntax
+checks pass. The three complete browser scripts have not been re-run, so no new
+Chromium/WebKit acceptance is claimed. No public site or package was published.
+
+The remaining non-Git performance-py residue contains a prior gallery source-save
+implementation that permits saving original lessons when remote_edit is enabled;
+the current gallery source is read-only and the IDE is separate. Owner input is
+pending on whether to recover local gallery editing; public Remote Edit remains
+disabled. Its old native Typst Python executor remains unauthorized. A GP-025
+historical identifier collision also needs proper documentation migration rather
+than copying over the current guide. The original remains preserved in place and
+in the verified pre-cleanup archive. The managed audit checkout is owned by
+another task according to the app and has not been force-removed.
