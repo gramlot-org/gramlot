@@ -21015,3 +21015,26 @@ their ownership remains unresolved. The audit archive attempt still reports
 "Another active task still uses this worktree". No filesystem workaround was used.
 The independent nested repositories still have the external Visual Editor examples
 consumer, so their Git parent remains in place. Invoice remains excluded.
+
+
+### Coordinator migrated and further copies retired — 2026-11-03
+
+The official app handoff moved the coordinator to primary main. Its previous common
+worktree was archived through the app after a complete verified private archive of
+15,707 entries, including ignored files. The Visual Editor Python-server worktree
+was confirmed unmanaged, its 15 authored differences matched the recorded review,
+and it was retired after a fresh verified archive. The unmanaged Visual Editor
+examples worktree was retired after its existing complete archive and current
+contents were reverified; the full-panel docs export had already been integrated.
+
+Two prunable nested registry entries referred to partial directories without .git.
+Their residual generated files and links were classified and preserved in full
+(1,276 and 497 entries) before the two specific registry entries were removed.
+No Invoice worktree was touched. All original archives remain recoverable.
+
+The app reports the audit worktree is owned by another task. A proposed bulk move
+of the 12 nested checkout directories and their Python environment was rejected
+by automatic approval review because it could break absolute Git references and
+external consumers. That move was not performed. Individual nested checkouts,
+external references, their environment and app ownership require further review;
+no guard should be bypassed. No package or site was published.
