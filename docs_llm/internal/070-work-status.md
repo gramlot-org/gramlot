@@ -19718,3 +19718,47 @@ archive and migration of 19 listening local trials are still in progress. The
 physical primary core has not yet switched to main. Shared-chat archive guards
 must not be bypassed. Recovery receipts and the execution plan are under private
 `gramlot-cleanup-20261102/`; no original worktree has been removed in this pass.
+
+
+<a id="gc-070-primary-restored-previews-20261103"></a>
+## Primary checkout restored and previews moving — 2026-11-03
+
+The owner approved restart after replacement qualification, accepting loss of
+in-memory PageStore/chat sessions. Preserve files, databases and original copies;
+Invoice remains excluded. This does not authorize publication.
+
+The old physical primary core is preserved in a verified 163,339-entry archive
+and all-ref history bundle. Its authored untracked files are recoverably archived.
+The physical primary now runs main, including recovered CLI/Typst historical
+contracts. Core build passes; 269 focused checks are covered by passing runs
+(the first index ownership check needed the correct Python environment).
+
+Capacitor primary is consolidated on main after 75 passing tests and paired-doc
+repair. Its local core-path now names primary core; provider compilation passes.
+The old device worktree was retired after a verified 15,335-entry archive and
+consumer checks. Native device/build qualification and publication are not claimed.
+
+Tree checkbox lesson recovery is committed in primary examples. Three Python
+checks pass; two failures in the 138-case JS run were corrected and all three
+relevant checks pass on rerun. Browser checks verify lazy child propagation,
+partial parent state and disabled:on/off preservation on empty checkedPaths.
+
+Trials 61530 and 61531 now import primary core/examples/Python server. Their old
+stages were preserved and verified before restart. Port 61530 uses the official
+stage/serve API because the old venv metadata lacks the current CLI entry points;
+no runtime fallback was added. Both ports were verified in-browser after restart.
+The mobile navigation expands; fresh parent/child startup has no console errors.
+Earlier PageStore parent errors were associated with the stopped server session.
+
+The PageStore/chat replacement on 61541 passed browser bidirectional quantity,
+server total and echo checks. Port 61532 was then restarted on primary sources;
+post-transfer verification remains pending. Old stages and launcher are archived.
+Other active previews still need transfer; do not retire their source copies.
+
+A further nested-clone registry was discovered below primary core/worktrees.
+The earlier 27 count covers only primary registries, not every independent clone.
+Three external linked copies depend on a nested examples Git directory, so moving
+that parent alone would break them. Thirty-three tracked Visual Editor differences
+are classified: hosted presentation=tool recovery is under test; docs file-export
+and untracked-file review remain open. Original evidence is preserved. Shared-chat
+archive guards remain in force. See private consolidation plan and receipts.
