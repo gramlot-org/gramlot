@@ -5316,3 +5316,18 @@ Keep the exact types, defaults, bindings and constraints aligned with human guid
 and the accepted component metadata. Internal records and future proposals remain
 excluded. Public documentation follows main; this authorizes documentation
 publication, not a runtime/package release. Details: GC-005 §040.
+
+
+<a id="gc-000-mobile-catalogue-opt-in-20261102"></a>
+### Optional mobile catalogue visibility — 2026-11-02
+
+Owner: “possiamo opzionalmente fa comunquue comparire quella parte sempre?”
+and “si” to the proposed Show mobile examples setting, saved with the gallery
+preferences. This supersedes native-only catalogue visibility in GE-020/GCP-110
+for an explicit browser/PWA opt-in. Capacitor iOS and Android still show the
+branch automatically. Catalogue visibility does not enable device capabilities:
+retain the same-origin, owned-iframe broker, native HTTPS requirement, resource
+cleanup and host prerequisite filtering. Browser panels identify native-only
+features, without simulating plugins. State belongs to gallery Data and its
+existing preference persistence; hiding the catalogue preserves open examples.
+This increment authorizes local implementation and verification, not deployment.

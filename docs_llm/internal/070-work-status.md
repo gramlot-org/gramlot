@@ -18698,6 +18698,15 @@ The public Python and JavaScript validation pages visibly show the four reusable
 Evidence: /private/tmp/gramlot-release-20261101/ (publication JSON/logs, deploy-0328-complete.log, public-0328-receipt.json and public-mobile-0328.json). Both public galleries are ready; reload existing browser pages after the generation change.
 
 
+### Documentation teaching, reference and LLM audit — 2026-11-02
+
+Owner requested an accurate assessment of learning usability, reference completeness and token-efficient agent authoring. [GC-405](405-documentation-usability-audit.md) records the audit and proposed sequence; its paired concise view preserves findings, metrics, limitations and open decisions. No runtime, public manual, package or deployment changed.
+
+Verified: 48 of 53 component-metadata declarations appear in the generated reference; grid/searchBox, chatMessages and grouplet/groupletCard are missing. Both current reference files exactly match their generator, so this is selection/contract-output debt rather than a stale generated file. All 95 Markdown files have mirrors, but public LLM text costs 89538 o200k_base tokens versus 125825 expanded; Components saves only three tokens. The compact reference drops types/defaults/binding/enums and child contracts. Representative task walkthrough found form lifecycle under extension authoring and inconsistent environment collection setup. Examples home/family counts and GE-035 need reconciliation.
+
+Audit checks: root grammar metadata inventory, generated-output equality, local tokenizer measurements, selected source/public-page walkthrough, audit counterpart links and seven matching anchors, whitespace check. No fresh novice study, agent authoring experiment or full browser regression suite is claimed. Proposed next phase: reconcile inventory/setup and complete discoverable reference, then prepare task-routed LLM contracts and evaluate authoring success/token cost. Public exposure of LLM content needs the GC-005 publication boundary explicitly updated; existing internal archives remain separate.
+
+
 <a id="gc-070-grid-cell-max-height-20261102"></a>
 ### Shared text-cell and textarea height limit — 2026-11-02
 
@@ -18716,6 +18725,76 @@ manual-row/virtualization checks, existing FrameGrid qualification (including
 10 theme/mode combinations), and shared editing/report/navigation regressions.
 Implemented and verified; gallery on port 61509 ready for owner trial. No database
 writes, dependency modifications or publication/deployment.
+
+
+<a id="gc-070-component-reference-20261102"></a>
+### Component reference and compact collection guides — 2026-11-02
+
+Owner approved the first documentation tranche: complete component contracts,
+consistent environment inheritance and paired human/LLM collection guides.
+GC-345 covers all 53 components in ten collections plus grid structure declarations;
+GC-410–455 provide independently readable collection recipes and generated contracts.
+Shared facts retain exact widget applicability. Compact grouping preserves types,
+defaults, binding, nullability, enums, qualification, targets, annotations and child
+contracts. Home/Components/maps link the collection route and form editing state.
+GC-005 records repaired duplicate anchors and the new public human-page allowlist;
+LLM counterparts stay repository-only. No runtime or deployment changed in this task.
+
+Verified: 14 focused Python tests including all ten minimal recipes building Source;
+generation freshness; strict Sphinx; all 29 public pages' links, search, downloadable
+sources and mirrored anchors. Reference costs 20,601 human / 13,534 LLM o200k_base
+tokens (-34.3%); per-collection cards avoid loading the full reference. Grid compact
+retains full signature JSON and is slightly larger than its human table.
+[GC-405 §040](405-documentation-usability-audit.md#gc-405-040) records scope/evidence.
+Implemented and locally verified; no new interaction or agent success benchmark.
+Next separate phase: simplify long narrative chapters/variants, reconcile example
+coverage and test learning/agent authoring. No publication requested for this tranche.
+
+
+<a id="gc-070-public-llm-docs-20261102"></a>
+### Public manual and collection LLM cards — 2026-11-02
+
+Owner explicitly authorized Read the Docs publication including compact collection
+cards for agents. Prepared on an isolated copy of accepted main, without the open
+runtime changes in the integration worktree. Generated references use main's
+packaged grammars; unreleased grid max_height is not included in this publication.
+
+GC-005 §040 and the paired constitution record the bounded publication exception.
+The ten collection cards have direct version-relative Markdown URLs under llm/;
+llms.txt is the discovery entry and the human manual has a Guides for agents page.
+Only the explicit collection allowlist is exported, not internal/future LLM archives.
+Links resolve to compact peers or accepted public human contracts. Sphinx retains
+the classic theme. No package or application deployment belongs to this task.
+
+Verification before publication: 17 focused tests, including ten Python recipes,
+lossless contract/scoping checks, raw-download boundary and link rewriting;
+generation freshness; strict Sphinx; 30 human pages and 11 exact agent downloads
+with local links, anchors, search, source and mirror checks. Public activation is
+verified separately against the published commit and actual HTTPS content.
+
+<a id="gc-070-rtd-llm-published-20261102"></a>
+### Read the Docs publication verified — 2026-11-02
+
+Owner authorized publishing the updated manual and collection LLM guides.
+The isolated documentation consolidation is on main at 0592751458d91e014fedc1e12d7ef09ccc4584b8.
+Read the Docs build 35574080 succeeded for that exact commit; GitHub Documentation
+run 41409119030 also passed. Public HTTPS checks verified all 30 human pages and
+all 11 raw downloads (ten collection cards plus llms.txt), with exact compact
+content matching the qualified build. Evidence: /private/tmp/gramlot-public-llm-receipt.json;
+local checks: /private/tmp/gramlot-public-llm-tests.log and gramlot-public-llm-sphinx.log.
+
+Entry points: https://gramlot.readthedocs.io/en/latest/ and
+https://gramlot.readthedocs.io/en/latest/docs/public/llm/index.html;
+agent discovery: https://gramlot.readthedocs.io/en/latest/llms.txt.
+The cards live at llm/410-inputs.md through llm/455-grouplets.md (five-step IDs).
+GC-005 §040 and the paired constitutional amendment authorize this limited export.
+
+Publication uses accepted main grammars, excluding concurrent runtime changes.
+Original integration work is preserved; the publication checkout is
+/private/tmp/gramlot-publish-collection-docs-20261102. The original worktree's
+references can additionally describe its local grammar changes and must be
+regenerated from the accepted destination before the next publication. No package
+release, application deployment, TestFlight upload or Invoice integration occurred.
 
 
 <a id="gc-070-complete-validation-20261102"></a>
@@ -18740,6 +18819,228 @@ pages/05-grid/10_editing, port 61509. “Test unopened cell” introduces an inv
 quantity on row 801; “Accept locally” finds it through the shared session. No DB
 save, package release or application deployment. Next owner review: try the live
 lesson, including correcting the reported cell and confirming again.
+
+
+<a id="gc-070-tree-checkbox-gallery-20261102"></a>
+## Tree checkbox gallery lesson — 2026-11-02
+
+Owner requested a minimal checkbox Tree lesson with lazy inheritance and disabled
+nodes, available locally. Implemented in gramlot-examples as
+`01-inputs/09-tree/05-checkboxes`, with Python/JS twins, TYTX sample Data, mirrored
+explanation and catalogue/feature coverage. Core unchanged. Verified Source parity,
+16 navigation/feature tests and Chromium/WebKit against the real Python endpoint.
+The local Uvicorn gallery runs on port 61530, Remote Edit disabled. Publication and
+visual owner acceptance remain separate.
+
+Follow-up identified, not fixed in this examples-only scope: an explicit empty
+initial checkedPaths resets disabled node attributes; leaving the output binding
+unset preserves them. Review external checked-path replacement and the bulk-toggle
+UX of mixed parents containing permanently checked/unchecked children. Evidence:
+/private/tmp/tree-checkbox-browser.log and GE-015 tree-checkboxes-20261102.
+
+
+<a id="gc-070-tree-locked-checks-fixed-20261102"></a>
+## Preserve disabled checks during checkedPaths replacement — 2026-11-02
+
+Owner: “correggi anche il difetto di checkedPaths vuoto nel core: i nodi
+ disabilitati devono mantenere il loro stato. Aggiungi i test e verifica
+ l’esempio nella gallery.”
+
+The checked-path reset now skips disabled:on and disabled:off nodes, just as
+clicks and parent propagation already do. This applies to initial empty values,
+subsequent empty/null values and replacements containing a disabled node's path.
+No alternate input format, new API or application workaround was added.
+
+Four regressions reproduced the original failure before the one-line fix;
+all 92 Tree tests now pass. Rebuilt the core and gallery artifacts. The example
+starts with an explicit empty checked Data value and includes Clear checks.
+Source parity passes; Chromium and WebKit pass initial disabled states, binding
+clear, partial selection, lazy inheritance, resolver caching and no page errors.
+The local preview remains at http://127.0.0.1:61530/, Remote Edit disabled.
+
+This resolves the empty/replaced checkedPaths finding in the preceding gallery
+record. The separate UX question for bulk toggles of mixed parents remains open.
+No release or public deployment performed. Evidence: /private/tmp/tree-locked-*
+logs; gallery script scripts/verify_tree_checkboxes_browser.mjs.
+
+
+<a id="gc-070-mobile-visibility-20261102"></a>
+## Gallery mobile visibility preference — 2026-11-02
+
+Implemented in the connected examples repository: optional Show mobile examples
+in Settings, backed by gallery Data and persisted with gallery preferences.
+Native iOS/Android visibility remains automatic; browser opt-in uses the existing
+same-origin, Source-owned iframe broker without granting native capabilities.
+Hiding the catalogue preserves open frames; root disposal releases resources.
+Verified locally: nine module/persistence tests, ten Python gallery tests plus
+eight subtests, and actual browser opt-in/reload/hide with preserved Notes and
+native appinfo reported UNAVAILABLE. The broader gallery/module regression run also passes: 48 tests. Preview http://127.0.0.1:61531/; Remote Edit disabled. No public deployment
+or physical-device verification. See GE-020 and GE-015's matching dated entry.
+
+
+<a id="gc-070-mobile-catalogue-publication-20261102"></a>
+## Mobile catalogue publication authorized — 2026-11-02
+
+Owner: “possimo aggirnare cosi la gallery pubblica ?”, followed by explicit
+approval: “Sì, pubblica la release degli esempi e aggiorna le gallery”. The
+initial automatic approval review blocked package publication as broader than
+site deployment; nothing was published by the rejected action. The owner then
+explicitly approved npm/PyPI, GitHub tag/release and gallery deployment.
+
+An isolated examples checkout at /private/tmp/gramlot-mobile-gallery-public-20261102
+starts from public main and contains only the optional mobile catalogue change.
+Concurrent grid and checkbox work is preserved outside this release. Local
+verification against published dependencies: browser bundle build, 9 module/
+persistence tests, 10 Python tests plus 8 subtests. Examples 0.3.29 is on public
+main/tag a3b1a9e; publication workflow 41431829187 is running. Core/server versions
+remain unchanged. The normal deployment pipeline preserves the independent
+mobile module and keeps Remote Edit disabled. Public activation is not yet
+verified; do not claim completion until publication, deployment and live checks pass.
+
+
+<a id="gc-070-mobile-catalogue-published-20261102"></a>
+## Mobile catalogue published; public catalogue extension — 2026-11-02
+
+Examples 0.3.29 is published on npm/PyPI and GitHub. Release workflow
+41431829187 and deployment 41434679584 succeeded. Active public generation:
+20261102T111606Z. Both-host and offline checks passed; PostgreSQL cached selection
+verified 410429 server rows and 200 browser rows. Public browser verification
+shows Show mobile examples, its navigation branch and the native-required notice;
+App information reports UNAVAILABLE in an ordinary browser. Core/server 0.3.26,
+Remote Edit disabled; no physical-device claim or TestFlight upload.
+
+Owner then requested PageStore and all available examples, including upload/grid
+editing; those latter examples already belong to the public common catalogue.
+Approved database direction: “usa sempre qyel db : sono dati inventati”, referring
+to test_invoice_pg_xl on Hetzner. Prepare PageStore, Kajenn/Asqueel and base Chat
+catalogues with the existing WebSocket and Asqueel handler. The save demo maps
+app.customer to invc.invc_customer; only name/account_name and email writes are
+needed. Existing performance selectors retain read-only sessions. Verification
+and publication of this additional configuration are still in progress.
+
+
+<a id="gc-070-public-server-lessons-20261102"></a>
+## Public server lesson qualification — 2026-11-02
+
+Owner requested PageStore and all available gallery examples, using the existing
+invented test_invoice_pg_xl database, and explicitly approved UPDATE of
+account_name/email only for gramlot_gallery (“Sì, abilita nome ed email”).
+That grant is installed; real PostgreSQL/Asqueel update and rollback verification
+passed, other business writes and administrative reads remain denied.
+
+An isolated examples 0.3.30 checkout prepares the existing PageStore, Kajenn
+customer and base Chat catalogues for the public Python host. No core/server
+API changes, Invoice application or TestFlight upload. Remote Edit stays off.
+Gallery Python tests passed (14 tests, 183 subtests), deployment tests passed
+(32, one skipped), and 8 targeted Chat/upload/attachment tests passed. Local
+browser checks passed Chat echo/interactive Source/reset and independently bound
+direct/nested PageStore frames. Candidate and public deployment browser gates
+now include save/reload/restoration and linked-window checks. Publication pending.
+
+
+Browser qualification update: the isolated Hetzner candidate passed selectors,
+resident/JSONL/cached grids (410,429 records, 200 resident), PageStore binding and
+validation, direct/nested frames, connected-window cleanup, customer save/reload
+with original values restored, unknown-ID preservation, Chat echo/Source/reset.
+The local parity retest with the correct virtualenv passed all 156 cases plus
+three API/editing cases; the initial shell lacked Python dependencies.
+
+Open host capability gap: manual upload of a three-byte disposable file reports
+“Upload is unavailable in this environment” on the published Kajenn setup and
+public JavaScript gallery. Page existence and component mount tests are not
+proof of binary transfer. Kajenn 0.3.26 advertises auth only; Uvicorn implements
+an upload registry/route. Do not enable a capability flag without an owning
+adapter implementation and tests. This release does not claim uploads work on
+those two public hosts. Track separately from PageStore/customer/Chat activation.
+
+
+### Publication verified — 2026-11-02
+
+Examples 0.3.30 is published on npm, PyPI and GitHub. Publication workflow
+41474224564 passed every required job. Deployment 41477287849 succeeded on retry:
+the first attempt stopped before promotion because npm metadata preceded tarball
+availability. No package version or tag was rewritten.
+
+Active public generation: 20261102T161146Z, examples 0.3.30 and core/servers
+0.3.26. Candidate and public HTTPS checks passed on both galleries; the file-based
+export passed its browser checks. PageStore binding/validation, direct/nested
+frames and connected windows passed. Customer validation, save/reload, restoration
+of original values and unknown-ID preservation passed against test_invoice_pg_xl.
+Chat echo, interactive Source and reset passed. XL cached selection verified
+410429 server records and 200 browser rows. Manual public browser navigation
+shows all three new catalogues; typing quantity 4 updates both client copies and
+the server total to 50. Remote Edit remains disabled; mobile resources preserved.
+
+Known remaining gap: real binary uploads are unavailable on the published Kajenn
+and JavaScript hosts. Documented in gramlot-examples GE-030 §045; component mount tests do not
+qualify host upload transport. Invoice application and TestFlight remain outside
+this publication. Deployment evidence: workflow 41477287849 and local
+/private/tmp/public-lessons-deploy-success.log.
+
+
+<a id="gc-070-workspace-retirement-20261102"></a>
+## Workspace retirement and chat cleanup — 2026-11-02
+
+Owner requests: “52 sono un numero pazzesco. proviamo a fare ulizia prima di
+soccombwre” and “esamiana anche le chat per vedere se si pssono archiviare pure loro”.
+This is reversible workspace retirement, not feature acceptance or integration.
+
+After the first conservative cleanup (4 clean audit checkouts, 3 stale
+registrations, 21 merged local branches and 4 chats), this pass retires 23 more
+historical checkouts into complete, hash-verified private archives and archives
+18 more chats. Codex additionally retires 3 managed checkouts associated with
+archived chats; their Git snapshots were verified and saved in a separate bundle.
+Those managed snapshots exclude ignored dependency/build outputs; issue-80 had
+no ignored files. The 23 explicit archives include ignored files, untracked files,
+symlinks, Git history, original index and staged/unstaged patches. No symlinks were
+followed. One complete extraction and independent bundle restoration were tested.
+
+Overall worktree registrations: 79 → 46. Dirty working copies: 52 → 37.
+The remaining copies include primary repositories, current development, running
+local galleries and the six preserved Invoice checkouts. Remaining differences
+are not declared obsolete or accepted. Original branches of the explicitly
+retired copies remain available, including unintegrated experiments. No public
+branch, package, runtime behavior, database or deployment changed.
+
+Recovery inventory, chat conclusions, suspended points, checksums and restoration
+instructions are kept at:
+/Users/gporcari/.codex/visualizations/2026/10/22/01a16296-c60f-7240-b811-74da51d068fe/gramlot-cleanup-20261102/SECOND-PASS.md.
+The archives are local and private; ignored configuration must not be published.
+Checks before removal covered process references, open working directories,
+unchanged file hashes, modes, link targets, Git index and HEAD. Final checks
+confirmed all 23 archives, preserved branches and unchanged HEAD/status lists in
+surviving checkouts before this paired documentation update. Runtime tests were
+not rerun for archive-only changes. Next consolidation remains a separate review
+of active grid/form, Visual Editor, Tree/selectors, uploader, mobile and site work.
+
+<a id="gc-070-workspace-retirement-round3-20261102"></a>
+## Workspace retirement, third pass — 2026-11-02
+
+Owner instruction: “continua con pazienza a pulire o a proporre di pulire”.
+Retired four more historical checkouts (Capacitor integration, Grouplets core,
+Kajenn selector core and WebSocket core) after complete private backup and
+verification of file hashes, modes, symlinks, Git history and original index.
+Their branches remain unchanged. Archived two associated chats after preserving
+their conclusions and open points. Experiments in the backups remain unaccepted.
+
+Codex refused retirement of audit-runtime-security because another active task
+uses that worktree. Its verified backup exists; the checkout remains, and the
+shared-worktree guard was not bypassed. The selector-package original also remains
+pending a complete residual comparison. Running previews, current development
+and all six Invoice checkouts are preserved.
+
+Overall registrations: 79 → 42; dirty working copies: 52 → 34; chats archived: 24.
+There are now 28 explicit complete archives, 27 retired and one retained audit.
+Final checks verified the five new archive/bundle checksums, bundle integrity,
+preserved branch heads and the four directory removals. No runtime, release,
+database or deployment changed; runtime tests were not rerun for archive-only work.
+
+Next proposals: bounded consolidation of active grid/form changes, recent Visual
+Editor/chat fixes, uploader gallery organization, then residual selector contracts.
+Do not merge old primary working directories wholesale or treat archival as feature
+acceptance. Details, recovery and pending decisions:
+/Users/gporcari/.codex/visualizations/2026/10/22/01a16296-c60f-7240-b811-74da51d068fe/gramlot-cleanup-20261102/THIRD-PASS.md.
+
 
 
 <a id="gc-070-grid-form-consolidation-20261102"></a>
@@ -19213,52 +19514,6 @@ No package publication or deployment. Evidence: private
 gramlot-cleanup-20261102/runtime-bridge-consolidation/.
 
 
-<a id="gc-070-component-reference-20261102"></a>
-### Component reference and compact collection guides — 2026-11-02
-
-Owner approved the first documentation tranche: complete component contracts,
-consistent environment inheritance and paired human/LLM collection guides.
-GC-345 covers all 53 components in ten collections plus grid structure declarations;
-GC-410–455 provide independently readable collection recipes and generated contracts.
-Shared facts retain exact widget applicability. Compact grouping preserves types,
-defaults, binding, nullability, enums, qualification, targets, annotations and child
-contracts. Home/Components/maps link the collection route and form editing state.
-GC-005 records repaired duplicate anchors and the new public human-page allowlist;
-LLM counterparts stay repository-only. No runtime or deployment changed in this task.
-
-Verified: 14 focused Python tests including all ten minimal recipes building Source;
-generation freshness; strict Sphinx; all 29 public pages' links, search, downloadable
-sources and mirrored anchors. Reference costs 20,601 human / 13,534 LLM o200k_base
-tokens (-34.3%); per-collection cards avoid loading the full reference. Grid compact
-retains full signature JSON and is slightly larger than its human table.
-[GC-405 §040](405-documentation-usability-audit.md#gc-405-040) records scope/evidence.
-Implemented and locally verified; no new interaction or agent success benchmark.
-Next separate phase: simplify long narrative chapters/variants, reconcile example
-coverage and test learning/agent authoring. No publication requested for this tranche.
-
-
-<a id="gc-070-public-llm-docs-20261102"></a>
-### Public manual and collection LLM cards — 2026-11-02
-
-Owner explicitly authorized Read the Docs publication including compact collection
-cards for agents. Prepared on an isolated copy of accepted main, without the open
-runtime changes in the integration worktree. Generated references use main's
-packaged grammars; unreleased grid max_height is not included in this publication.
-
-GC-005 §040 and the paired constitution record the bounded publication exception.
-The ten collection cards have direct version-relative Markdown URLs under llm/;
-llms.txt is the discovery entry and the human manual has a Guides for agents page.
-Only the explicit collection allowlist is exported, not internal/future LLM archives.
-Links resolve to compact peers or accepted public human contracts. Sphinx retains
-the classic theme. No package or application deployment belongs to this task.
-
-Verification before publication: 17 focused tests, including ten Python recipes,
-lossless contract/scoping checks, raw-download boundary and link rewriting;
-generation freshness; strict Sphinx; 30 human pages and 11 exact agent downloads
-with local links, anchors, search, source and mirror checks. Public activation is
-verified separately against the published commit and actual HTTPS content.
-
-
 <a id="gc-070-security-retirement-20261102"></a>
 ## Security audit copy reconciled; retirement blocked — 2026-11-02
 
@@ -19355,3 +19610,45 @@ The reviewed common core retains resident Grid/Form validation, bounded cell edi
 The JavaScript server primary checkout is on main at 49699547 after reviewing its two unpublished commits; all 62 serverless tests passed with a single Bag/TYTX dependency identity. The Python server primary checkout is on main at c2ce3739, identical to the published implementation. Verified history bundles preserve previous refs. The examples merge is being qualified against current public lessons, not replaced by its seven-commits-behind integration snapshot.
 
 The primary core contains a preserved older working copy and is still used by other processes. Advancing its main reference does not mean its checked-out files have been replaced. Two incomplete temporary host/examples directories are still process working directories; the remaining incomplete JS host is referenced by the examples dependency link. They cannot yet be retired while preserving active previews. No preview shutdown, Invoice integration, package publication or deployment. Detailed per-path classification, test logs and recovery receipts remain in the private gramlot-cleanup-20261102 evidence directory.
+
+
+<a id="gc-070-primary-examples-verified-20261103"></a>
+## Primary examples and remaining checkout boundaries — 2026-11-03
+
+The examples primary checkout is now clean on local main at
+5b09d6e6164d3dc6c8b9579d3e9fbcb1b065d0b1. The merge retains the seven newer public
+commits and the two reviewed grid/Uploader commits; both review-log additions
+survive, and the compact coverage guide links the four relocated lessons.
+Verification: 100 Python cases; all 379 JavaScript cases covered by the full run
+and the corrected 160-case Python-backed rerun. The initial full run's 158
+failures were confined to four Python-backed files and used an interpreter
+without Bag/TYTX. Browser build passed. Chromium and WebKit verified full resident
+validation with no unopened editors, offscreen error correction/acceptance,
+capped cells/editors, inner scrolling and virtualization on the Uvicorn gallery.
+The twelve relocated Uploader source/data/lesson files match published content.
+
+The primary JS and Python server checkouts remain clean on main. Core's local
+main includes the reviewed common commits and disabled-Tree correction; its
+physical primary directory still contains the preserved older mixed work and
+active consumers. Updating a branch reference did not replace that directory.
+
+Further residual classification: the clipboard/Visual Editor copy has 26 paths
+identical to main, two absorbed deltas and a dependency symlink. Remaining code
+differences are whitespace, an equivalent temporary variable and fewer assertions
+than current tests; naming additions are already included, while status records
+require historical reconciliation. No missing functional change was identified.
+It remains because the complete-editor preview references it. The device copy
+has ten exact and three absorbed paths; twenty overlaps and six independently
+added files still need semantic review. Do not promote or delete them wholesale.
+Primary-core mechanically clean candidates include obsolete duplicate selectors,
+DeviceHandler declarations and grid theme tokens, translation-only changes to
+owner quotes, an obsolete Slotbar deferral and a separate legacy Inspector target.
+Those are not automatically accepted merely because a text merge succeeds.
+
+The three incomplete temporary checkouts have not been retired: examples and
+Python host still have live preview consumers; the examples dependency symlink
+also reaches the incomplete JS host. Preserve all originals and active trials.
+The app's shared-task archive guard still applies to the audit checkout. Invoice
+is excluded. No package, site, remote branch or TestFlight publication occurred.
+Private recovery and exact receipts: gramlot-cleanup-20261102/
+main-consolidation-20261103; classifications: main-comparison-20261103/.
