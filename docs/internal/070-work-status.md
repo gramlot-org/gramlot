@@ -20885,3 +20885,35 @@ that parent alone would break them. Thirty-three tracked Visual Editor differenc
 are classified: hosted presentation=tool recovery is under test; docs file-export
 and untracked-file review remain open. Original evidence is preserved. Shared-chat
 archive guards remain in force. See private consolidation plan and receipts.
+
+
+<a id="gc-070-five-previews-consolidated-20261103"></a>
+## Five previews transferred and hosted tool recovery qualified — 2026-11-03
+
+Following owner approval, five old listeners now use primary source imports and
+primary cwd: Tree 61530, optional-mobile gallery 61531, mobile closure 61519,
+PageStore/chat 61532 and Visual Editor 61518. Each original launcher/stage was
+preserved before restart. In-memory sessions were intentionally reset. PageStore
+post-transfer quantity 2 -> 3 updates its second copy and server total to 37.5;
+Tree lazy RPC and locked checks, mobile controls and Visual Editor render passed
+browser checks. Hardware native plugins were not requalified. Temporary
+qualification listeners 61540/61541/61542 were stopped after successful migration.
+
+Hosted tool presentation is recovered in primary examples: a catalogue tool opens
+in one full-panel Source iframe instead of teaching chrome. All 40 JS gallery and
+eight Python gallery-page tests, build and browser checks pass. Ordinary examples
+retain their tabs. The docs-export candidate is preserved but unapplied until
+file:// qualification; do not treat this remaining candidate as integrated.
+
+Two nested external consumers, /private/tmp/gramlot-uploader-examples and
+/private/tmp/gramlot-visual-examples, were recoverably retired after 1,238/1,258
+archive entries verified and unused checks. The remaining external Visual Editor
+copy has 33 tracked and 70 untracked authored differences classified; its complete
+3,697-entry archive verifies. Its nested Git parent must remain until that last
+consumer and export residual are closed. Do not move a Git parent alone.
+
+Remaining work is explicit: other distinct DB/uploader/server previews, the old
+61505 listener whose launcher is missing, standalone tool export qualification,
+shared-chat archive guards and final retirement of this task's common worktree.
+Invoice remains excluded. Originals and recovery receipts remain preserved;
+no package release, deployment or source push was performed.
