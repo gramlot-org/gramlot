@@ -20992,3 +20992,14 @@ parents remain until their registered external consumers can be retired. This
 chat's active common checkout must be retired last, after moving the chat. Do not
 bypass app guards or remove a Git parent while a consumer still references it.
 Originals, manifests and receipts remain in the private cleanup evidence directory.
+
+
+### Visual Editor chat handoff — 2026-11-03
+
+Owner explicitly approved moving the Visual Editor chat to the primary checkout.
+The official app handoff succeeded (operation exec-6889d76a-0740-4d7b-bc6d-99a1f94b7822,
+destination chat 01a1a113-98bd-7310-af6c-f9b073d5a094). The app selected the old
+Visual Editor branch during handoff; primary main was restored immediately and
+verified clean. Originals remain preserved. Archiving visual-source-core from this
+coordinator was refused because that worktree is not attached to this task. Its
+retirement must be performed from the owning chat/app; it is not yet retired.
