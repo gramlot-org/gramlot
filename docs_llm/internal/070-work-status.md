@@ -19880,3 +19880,15 @@ Visual Editor branch during handoff; primary main was restored immediately and
 verified clean. Originals remain preserved. Archiving visual-source-core from this
 coordinator was refused because that worktree is not attached to this task. Its
 retirement must be performed from the owning chat/app; it is not yet retired.
+
+
+### Visual Editor core retired; app attachment gates — 2026-11-03
+
+At the owner's explicit request the coordinator sent retirement instructions to
+Visual Editor. That chat completed official archival of visual-source-core/gramlot
+after clean/ancestor/no-process checks. Primary main remains clean. Its examples
+and Python-server copies are not attached to the migrated Visual Editor chat;
+their ownership remains unresolved. The audit archive attempt still reports
+"Another active task still uses this worktree". No filesystem workaround was used.
+The independent nested repositories still have the external Visual Editor examples
+consumer, so their Git parent remains in place. Invoice remains excluded.
