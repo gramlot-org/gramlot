@@ -20814,3 +20814,30 @@ This documentation recovery was checked for paired anchors and whitespace only.
 Primary core's mixed residuals and preview dependency migration remain unfinished;
 no additional copy has been retired. Invoice and original working files remain
 untouched. No publication or deployment.
+
+
+<a id="gc-070-checkout-plan-20261103"></a>
+## Ordered checkout consolidation — 2026-11-03
+
+Owner requested an organic plan and execution, with delegation only where useful.
+Order: classify residuals against main; consolidate and qualify; migrate active
+trials to primary repositories; retire redundant copies only after verified
+recovery and consumer checks. Invoice remains excluded. No publication is implied.
+
+Read-only mobile review covered 39 authored paths and found no further missing
+runtime behavior after the recovered public device types. The provider compiles
+against consolidated core. Original device status sections 1975–2095 collide with
+current IDs: preserve them in the verified original archive, not by merging their
+anchors. The mobile archive verifies 15,335 entries. Capacitor still references
+the old checkout through its local core-path and must migrate before retirement.
+
+Core functional review found the preliminary Grid and older filesystem, validation
+and bootstrap implementations superseded. Documentation review recovered two
+owner-confirmed design records: CLI in GC-225 and Typst in the constitution, under
+explicit historical anchors. Recovery does not claim implementation. Deferred
+Grid/Bag research, port evidence and the excluded legacy/Invoice experiment remain
+original archived evidence rather than newly approved API. The full old primary
+archive and migration of 19 listening local trials are still in progress. The
+physical primary core has not yet switched to main. Shared-chat archive guards
+must not be bypassed. Recovery receipts and the execution plan are under private
+`gramlot-cleanup-20261102/`; no original worktree has been removed in this pass.

@@ -5171,3 +5171,23 @@ Owner: “Sì, procedi con l’adattamento mobile automatico nel framework e il 
 Owner: “ok separiamo gli esempi mobile in gramlot-capacitor e prepara il contratto di integrazione da passare alla chat che sta sistemando la gallery. inoltre dato che si possono fare temi in gramlot vorrei che seguendo le linee guida apple tu riudscissi a fare un thema che risulti il piu nativo possibile ovviamente con gli adattamenti perf gramlot”.
 
 Bounded exception to §7 / 11.56: the mobile demonstration module (Python pages, companion Logic, assets and catalogue) belongs to gramlot-capacitor; the general examples and gallery remain in gramlot-examples. The host mounts the module, and the gallery consumes a catalogue contract prepared here for the separate gallery work. No gallery edits, publication or messaging another chat are implied. Reusable device and viewport behavior remains core-owned. The existing Apple-inspired Mela theme may be refined in core and exercised by the mobile module. Native plugins remain in the app/provider. Private APNs configuration is not part of the public module. This supersedes only the requirement that these bounded mobile demonstrations live in gramlot-examples, not the general repository dependency direction.
+
+
+<a id="gc-000-typst-design-recovery-20261103"></a>
+## Historical record — Typst design recovered on 2026-11-03
+
+Recovered verbatim from the old primary checkout. The original amendment number
+belongs to that historical document and does not renumber current amendments.
+This retains confirmed design and its local-trial limits; it does not certify
+implementation, supersede later decisions or authorize deployment. Reconcile
+optional packaging and package-policy implementation before reopening this work.
+
+### Original amendment 11.91 — Separate Typst compilation and requested PDF — 2026-10-22
+
+Owner confirms: “si procediamo così: typst separato, compilazione via dataRpc sul server e nel worker per serverless offline, e pdf solo su richiesta”. Move Typst into optional packaging independent of the core. Server preview compilation uses declarative dataRpc; serverless offline compilation uses a Worker with local compiler/font assets. PDF compilation occurs only on explicit export. Preserve draft binding, lifecycle cancellation and stale-result rejection. This supersedes the initial Typst port’s browser-only compilation and automatic combined SVG/PDF output. Owner placement confirmation: “Pacchetti separati nel repository Gramlot”. Python and JavaScript packages remain optional and live in this repository; the core must not depend on them. No new publication is implied by this implementation step.
+
+
+Package availability follow-up — owner, 2026-10-22: “al limite decidiamo in configurazione del server i pacchetti disponibili e rifiutiamo gi altri”. The server configuration controls the available Typst packages; compilation rejects every package outside that configured set. Apply the rule at package resolution, including transitive and dynamically constructed imports. This supersedes the initial blanket exclusion of external packages for server compilation, without permitting unrestricted automatic downloads. The document cannot extend the server's package policy. The previously proposed Node requirement for Python hosting remains unapproved.
+
+
+Local native compiler trial — owner, 2026-10-22: “Sì, solo per la prova locale”, answering the explicit request to try gallery/IDE with native Python compilation before package-policy enforcement is available. Allows native package resolution only in this opt-in local trial; the configured-package restriction remains mandatory before publication. No production enablement, release or Node requirement is approved.
