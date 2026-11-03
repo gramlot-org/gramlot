@@ -19,9 +19,95 @@ pane.numberTextBox(value="^.seats", lbl="Seats")
 
 For typed fields, incomplete text belongs to Source editing state; Data retains the last typed value. A parseable value can be invalid under validation rules: the form tracks the error and blocks saving. See [form editing state](340-components-and-collections-guide.md#gc-340-110) and [field behavior](105-components.md#gc-105-040).
 
-`dbSelect` and `dbComboBox` describe remote choices, not a built-in database. The generic `method` contract uses an application endpoint; Asqueel query capabilities require its server integration. They are not available in a file-only export without a server.
+`dbSelect` and `dbComboBox` describe remote choices, not a built-in database. The generic `method` contract uses an application endpoint; Asqueel query capabilities require its server integration. A file-only export cannot execute Python endpoints or provide a database integration; a JavaScript Worker endpoint may supply its own values.
 
 [All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
+
+## Choose the value contract before the appearance
+
+Use `textbox` for a single string, `textBoxArea` for multiline plain text and
+`passwordbox` for masked text. All bind their value to Data; password masking is
+only visual and does not encrypt that value. `checkbox` stores a Boolean, including
+when `mode="switch"` changes its appearance. A single `radioButton` also stores a
+Boolean: its Source-scoped `group` clears the other member values. In contrast,
+`radioButtonText` stores the chosen option code in one string, and `checkBoxText`
+stores comma-separated codes, or null for no selection. Their captions are not
+record values. Use `cols` to arrange these inline option groups; `checkBoxText`
+does not provide a popup selection mode. See [native variants](105-components.md#gc-105-040)
+and [multiple choices](105-components.md#gc-105-065).
+
+`filteringSelect` is for a closed local set, `callbackSelect` for a set supplied by
+a named browser Logic method, and `comboBox` for suggestions that also allow free
+text. Local `values` uses `code:Caption` pairs. The constrained selectors store a
+code; `comboBox` stores the caption/text itself, including unlisted text. A query
+in a constrained field is an editing draft and never becomes Data merely because
+`live=True`. The callback receives `_querystring` or `_id` and returns
+`{rows, identifier, caption}`, synchronously or as a Promise. It owns filtering;
+the control discards obsolete replies. Selection can use mouse or keyboard;
+Escape cancels the draft, and an arbitrary unmatched caption remains invalid.
+See [choice editing](105-components.md#gc-105-055) and
+[free text suggestions](105-components.md#gc-105-060).
+
+`dbSelect` and `dbComboBox` obtain remote suggestions through `method`; they do
+not add a database to the core. `dbSelect` stores the selected key (text or integer),
+while `dbComboBox` accepts free text. `caption_field` controls display separately
+from identity; `selectedCaption`, `selectedRecord` and `selectedCb` expose the
+selection contract. Database query features require the relevant server
+integration. A file-only export cannot execute a Python endpoint or provide a
+database integration; a JavaScript Worker endpoint may supply its own values. Declare the provider
+and its authorization in the host rather than introducing application requests.
+
+`numberTextBox`, `dateTextBox` and `timeTextBox` separate localized editing text
+from typed Data. Numbers use finite real values by default; `dtype="L"` requests
+safe integers and `dtype="N"` exact Decimal support. Dates are civil `D` values,
+times civil `H` values; formatting does not change them into strings. Incomplete
+or unparseable drafts retain the last typed Data value. Enter/change/blur commits
+valid text, `live=True` commits valid input as it is entered, Escape restores the
+accepted value, and clearing writes null. `dateCalendar` edits the same date type
+inline; `dateTextBox` provides its calendar popup unless `calendar=False`.
+`workdate` sets the reference day for relative date editing, not the field value.
+See [typed editors](105-components.md#gc-105-045) and
+[calendar interaction](105-components.md#gc-105-070).
+
+`colorpicker` uses the browser's color chooser and stores a color string.
+`horizontalSlider` and `verticalSlider` store numbers within `min`, `max`, `step`.
+The native range also corrects finite incoming Data to that grid through a plain
+reactive value pointer; controls sharing a path need compatible ranges. This
+correction is independent of `live`. Native range keyboard details can vary by
+browser. Use `disabled` to lock radios, colors and ranges: native `readonly` does
+not lock those controls. Text, password, multiline, color and range controls commit
+on change by default and on input with `live=True`.
+
+Bind `value="^.field"` within the intended datapath, load record values into Data,
+and reserve `default` for interface defaults. Labels (`lbl`, `lbl_position`) and
+`validate_*` are shared field services, not persistence. Parseable values can still
+fail validation and block form saving. `editingStatus` presents the nearest shared
+editing session's errors and changes; it requires that session and creates neither
+a record store nor a save implementation. See [editing sessions](340-components-and-collections-guide.md#gc-340-110),
+[validation](105-components.md#gc-105-076) and the parameter contracts below.
+
+## Choose a component
+
+- [`editingStatus`](#gc-410-editingstatus): Changes and validation feedback from the nearest Source form state.
+- [`textbox`](#gc-410-textbox): Single-line text with label, validation and optional live updates.
+- [`checkbox`](#gc-410-checkbox): Boolean value, displayed as a checkbox or a switch.
+- [`radioButtonText`](#gc-410-radiobuttontext): A group of local radio choices storing one option code.
+- [`textBoxArea`](#gc-410-textboxarea): Multiline plain text with the same field and validation contract.
+- [`passwordbox`](#gc-410-passwordbox): Masked text entry; masking does not encrypt or persist the value.
+- [`radioButton`](#gc-410-radiobutton): One Boolean radio option; the Source-scoped group keeps its members mutually exclusive.
+- [`colorpicker`](#gc-410-colorpicker): Browser color input, with a bound color value.
+- [`horizontalSlider`](#gc-410-horizontalslider): A bounded numeric range displayed horizontally.
+- [`verticalSlider`](#gc-410-verticalslider): A bounded numeric range displayed vertically.
+- [`numberTextBox`](#gc-410-numbertextbox): Locale-aware numeric editing; Data keeps the declared numeric type.
+- [`dateTextBox`](#gc-410-datetextbox): Civil date editing with an optional calendar popup.
+- [`timeTextBox`](#gc-410-timetextbox): Civil time editing with locale-aware text parsing.
+- [`filteringSelect`](#gc-410-filteringselect): Search a closed set of local choices; Data stores the selected code.
+- [`callbackSelect`](#gc-410-callbackselect): Choices supplied by a page callback.
+- [`comboBox`](#gc-410-combobox): Suggestions with free text allowed.
+- [`dbSelect`](#gc-410-dbselect): Remote choices through an application method or the configured Asqueel integration; the component itself supplies no database adapter.
+- [`dbComboBox`](#gc-410-dbcombobox): Remote suggestions with free text; the application owns authorization and persistence.
+- [`checkBoxText`](#gc-410-checkboxtext): A local multi-choice group storing the selected codes.
+- [`dateCalendar`](#gc-410-datecalendar): An inline civil-date calendar.
 
 
 <a id="gc-410-005"></a>

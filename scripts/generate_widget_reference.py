@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets')
 from widget_reference_content import COLLECTION_GUIDES
+from widget_manual_content import COLLECTION_EXPLANATIONS
 
 COLLECTION_IDS = {
     'inputs': 410, 'buttons': 415, 'layout': 420, 'tree': 425, 'editors': 430,
@@ -47,7 +48,7 @@ DESCRIPTIONS = {
  'dialog': 'A modal window containing a framePane; remains modal when collapsed or maximized.',
  'floatingPane': 'A nonmodal window containing a framePane.',
  'trayPane': 'Data-owned arrangement of labelled live cards with selection, movement, resize, layers, rotation, zoom and snapping.',
- 'transformPane': 'Applies bound translation, rotation and scale to its retained content.',
+ 'transformPane': 'Applies translation, rotation and scale to retained content. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.',
  'framePane': 'A border composition exposing top, bottom, left, right and center region builders.',
  'formlet': 'Responsive field layout with shared label alignment.',
  'groupBox': 'A labelled content group, optionally collapsible, with an optional Data copy command.',
@@ -368,6 +369,10 @@ connects these controls to runnable lessons and screenshots.
     if len(collections) == 1:
         name = collections[0]
         title, introduction, example, notes = COLLECTION_GUIDES[name]
+        selection = '\n'.join(
+            f'- [`{key}`](#gc-{document_id}-{key.lower()}): {DESCRIPTIONS[key]}'
+            for key, (owner, _) in entries.items() if owner == name
+        )
         header = (f'# {title}\n\nDocument ID: **GC-{document_id}**.\n\n'
                   f'<a id="gc-{document_id}-start"></a>\n## Start here\n\n{introduction}\n\n'
                   'The environment Page base supplies the collections used below. '
@@ -377,8 +382,10 @@ connects these controls to runnable lessons and screenshots.
                   '[All collections](345-widget-reference.md) · '
                   '[Shared labels and validation](105-components.md#gc-105-020) · '
                   '[Bindings](097-data-binding.md)\n\n')
+        detailed_header = (header + f'{COLLECTION_EXPLANATIONS[name].strip()}\n\n'
+                           f'## Choose a component\n\n{selection}\n\n')
         # The component/parameter bodies remain generated, never maintained separately.
-        out = [header, '<a id="gc-345-005"></a>\n<a id="gc-345-010"></a>\n'
+        out = [detailed_header, '<a id="gc-345-005"></a>\n<a id="gc-345-010"></a>\n'
                'Types: T text, B Boolean, L integer, R real, X structured value; other codes are TYTX. '
                'Binding: read = Data to widget; write = widget to Data; twoWay = both. '
                'A dash means no declared default/binding. None is a declared value. '

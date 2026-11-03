@@ -16,7 +16,7 @@ chat = ChatPane(root, datapath="assistant", height="480px")
 chat.frame.top.strong("Assistant")
 ```
 
-The environment needs both chat and layout. This body is the UI part; sending also requires the Page Logic delegates and PageStore below. `ChatPane` accepts a required `datapath`, optional `chat_id="main"` (a literal identifier starting with a letter, then letters/digits/underscores), and frame attributes. Each conversation uses its own Data scope. `.frame`, `.composer`, `.messages` and `.toolbar` expose existing Source containers for composition.
+The environment needs both chat and layout. This body is the UI part; sending also requires the Page Logic delegates and PageStore below, plus a host with PageStore WebSocket enabled. For Uvicorn, pass `websocket=True` to `create_application(pages, websocket=True)`; the default HTTP-only setup is insufficient. Kajenn also supports its explicit WebSocket option. `ChatPane` accepts a required `datapath`, optional `chat_id="main"` (a literal identifier starting with a letter, then letters/digits/underscores), and frame attributes. Each conversation uses its own Data scope. `.frame`, `.composer`, `.messages` and `.toolbar` expose existing Source containers for composition.
 
 Companion page JavaScript:
 

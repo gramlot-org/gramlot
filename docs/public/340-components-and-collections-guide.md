@@ -791,6 +791,23 @@ The sample's focused checks are recorded in GC-070; they are not a blanket claim
 that every custom component or every browser has been qualified. Broader release
 qualification remains a separate activity.
 
+### Document a collection
+
+Maintain a guide with the collection's source and distribution. Identify the
+importable descriptor, required collections and host services, then show a small
+page and its environment setup. For each public component explain its purpose,
+parameters and defaults, Data paths and writeback, events or callbacks, children,
+resource needs and error or lifecycle behavior. Distinguish implemented behavior
+from proposals and state which browsers and hosts were actually checked.
+
+The built-in [collection guides](345-widget-reference.md#gc-345-010) combine
+manually maintained explanations with parameter tables generated from the packaged
+grammars. That generator and the manual's publication list live in the Gramlot
+core repository. Preparing or installing a third-party collection does not
+automatically add its documentation to this site. Publish and link its own guide
+through its owning project; the explicit collection preparation and activation
+steps in this chapter still apply.
+
 <a id="gc-340-105"></a>
 ## 105 · Where to read next
 

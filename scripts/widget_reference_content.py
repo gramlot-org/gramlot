@@ -20,7 +20,8 @@ COLLECTION_GUIDES = {
         '[field behavior](105-components.md#gc-105-040).\n\n'
         '`dbSelect` and `dbComboBox` describe remote choices, not a built-in database. '
         'The generic `method` contract uses an application endpoint; Asqueel query capabilities '
-        'require its server integration. They are not available in a file-only export without a server.'),
+        'require its server integration. A file-only export cannot execute Python endpoints '
+        'or provide a database integration; a JavaScript Worker endpoint may supply its own values.'),
     'buttons': (
         'Menus and buttons',
         'One command hierarchy can appear as a popup or a toolbar. A toolbar is '
@@ -53,6 +54,8 @@ COLLECTION_GUIDES = {
         'A `trayPane` owns card geometry and selection through its `storepath` Bag; '
         'moving/resizing its DOM must retain content and bindings. '
         '[Tray workspaces](105-components.md#gc-105-970). '
+        '`transformPane` metadata declares read bindings, but user gestures write simple reactive '
+        '`^` pointers during interaction; `onEnd` receives final values. '
         '[Form state and editingStatus](340-components-and-collections-guide.md#gc-340-110) '
         'track local changes/errors/pending validation; accepting a local baseline is not a server save.'),
     'tree': (
@@ -136,7 +139,7 @@ COLLECTION_GUIDES = {
         'chat = ChatPane(root, datapath="assistant", height="480px")\n'
         'chat.frame.top.strong("Assistant")',
         'The environment needs both chat and layout. This body is the UI part; sending also '
-        'requires the Page Logic delegates and PageStore below. `ChatPane` accepts a required '
+        'requires the Page Logic delegates and PageStore below, plus a host with PageStore WebSocket enabled. For Uvicorn, pass `websocket=True` to `create_application(pages, websocket=True)`; the default HTTP-only setup is insufficient. Kajenn also supports its explicit WebSocket option. `ChatPane` accepts a required '
         '`datapath`, optional `chat_id="main"` (a literal identifier starting with a letter, '
         'then letters/digits/underscores), and frame attributes. Each conversation uses its own '
         'Data scope. `.frame`, `.composer`, `.messages` and `.toolbar` expose existing Source '

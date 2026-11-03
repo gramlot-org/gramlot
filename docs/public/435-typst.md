@@ -17,6 +17,27 @@ Load `document.source` as text before rendering, or bind an editor to the same p
 
 [All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
 
+## Choosing and using the preview
+
+`typstPreview` is a document reader/compiler surface, rather than a text editor. Use it when a Data string already contains Typst source and the user needs to inspect the document or download its PDF. To edit that string, place `codeMirror` from the separate `editors` collection beside the preview and bind both to the same Data path. The editor writes the draft; `typstPreview.value` reads it. `filename` controls the download name and can also read a binding; downloading does not save the source document.
+
+```python
+pane.codeMirror(value="^.content", language="typst", height="360px")
+pane.typstPreview(value="^.content", filename="report.pdf", height="480px")
+```
+
+Initialize `.content` as text. Include both collections in the environment Page when using this pair; importing a collection descriptor alone does not activate it. See [collection setup](340-components-and-collections-guide.md#gc-340-050) and [the Typst contract](105-components.md#gc-105-145).
+
+### Updates, diagnostics and resource limits
+
+Changes to the Typst text schedule browser compilation after a short pause. The widget immediately hides the previous SVG and disables the previous PDF link, so a user cannot download an apparently current document while a newer draft is compiling. Diagnostics appear in the widget. Late compilation results cannot replace a newer revision. There is no declared completion callback or Data writeback parameter: use the bound source as application state, rather than treating the downloaded PDF as a saved Data value.
+
+The collection bundles its compiler, renderer and five fonts, and shares a browser Worker between previews. Self-contained documents can compile offline; the initial component does not supply includes, custom assets or external packages. Missing resources produce diagnostics. Removing the last preview releases the Worker. The module is large, so select this optional collection only where needed. A browser preview declaration does not create a server compilation endpoint or execute Python recipes. Compiler-version differences and export restrictions are documented in [compiler and resource ownership](105-components.md#gc-105-145).
+
+## Choose a component
+
+- [`typstPreview`](#gc-435-typstpreview): Typst document preview and optional client PDF compilation; compiler resources are separate from ordinary forms.
+
 
 <a id="gc-435-005"></a>
 <a id="gc-435-010"></a>

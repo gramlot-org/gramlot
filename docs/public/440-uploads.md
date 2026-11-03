@@ -18,6 +18,46 @@ Initialize `uploads` as an empty Data Bag before rendering. This body requires t
 
 [All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
 
+## Choose the control by the stored result
+
+Use `uploader` for a file queue whose progress and per-file metadata matter; use `imageUploader` for one editable image value; use `attachmentManager` for queued uploads combined with an existing attachment list, preview and removal. All three read `disabled`. Initialize each `storepath` as a Data Bag before rendering. A queue contains serializable metadata and progress, not browser File objects or upload authorization. Storage destinations, access checks and cleanup belong to the application's upload operation, not to a browser-selected path. See [upload operations and metadata](105-components.md#gc-105-uploader).
+
+### `uploader`: prepare metadata before starting
+
+`operation` names the application's upload operation and `storepath` identifies the queue. `accept` guides file selection, while `multiple` enables several files; server validation remains necessary. Selection and drop start uploads when `autoUpload=True`. With `autoUpload=False`, `manualUpload=True` leaves an Upload action for the user. Setting `manualUpload=False` hides and disables that action; a later transition of `autoUpload` to true starts queued files too.
+
+`selectedPath` is a two-way binding to a row label relative to `storepath`, not an absolute filesystem path. Removing that selected row clears the selection. Each row's `metadata` Bag can back ordinary bound controls. Give an unselected metadata editor its own empty Data scope, so it does not create accidental queue rows. Edit metadata while a row is queued: automatic upload takes its snapshot immediately.
+
+```python
+pane.uploader(operation="receive", storepath=".queue",
+              selectedPath="^.selected", multiple=True,
+              autoUpload=False, onComplete="fileReceived")
+```
+
+Here `.queue` must already be a Bag and `receive` must be implemented by the application. `onComplete` names a Page Logic method receiving `item` and `result`; it is not Python source embedded in the attribute. Optional `contextPath` resolves to another Data Bag whose current contents are sent as `metadata["context"]` during preparation, separately from the row's `metadata["fields"]`. Set record context before enabling deferred uploads. Context is client input, not proof of identity.
+
+The queue supports removal, progress and safe local text/raster previews. A connection failure with an uncertain outcome requires status reconciliation before retry; Check status exposes that step. Host recovery capabilities vary. In particular, file-origin WebKit Workers have a documented File-reading limitation; browser automation does not establish universal native chooser support. See [host and browser limitations](105-components.md#gc-105-uploader).
+
+### `imageUploader`: confirm one cropped PNG
+
+Bind `value` two ways to the displayed image. Without `operation`, confirmation writes a browser data URL. With an operation, the application stores the PNG and returns the displayable URL written to `value`. The required queue Bag still tracks transfer state; `contextPath` and `onComplete` serve the same upload-context/completion roles described above.
+
+PNG, JPEG and WebP input can be selected or dropped, but confirmed output is PNG. Set positive integer `cropWidth`, `cropHeight`, `outputWidth` and `outputHeight` with matching aspect ratios. The crop editor supports moving, zooming and rotating, with keyboard and touch alternatives described in [editable images](105-components.md#gc-105-uploader). Original image/framing are retained while mounted. Editing an existing remote image requires canvas-compatible URL access, including CORS where applicable. Clearing `value` does not delete the application's stored image.
+
+Camera capture appears only with an attached device provider supporting `camera`; browser capture requires an explicitly attached browser provider, a secure context and permission. Screen capture depends on browser support and permission. Both feed the same crop/confirmation path; cancellation preserves the current image. These are capabilities to configure, not guarantees created by an `imageUploader` declaration.
+
+### `attachmentManager`: gate transfer on saved context
+
+Supply `operation`, queue `storepath`, context Bag `contextPath`, and the three application endpoint names `listMethod`, `readMethod`, `removeMethod`. Bind `ready` to whether the record is ready for attachment operations. While false, selected files stay queued; update the context Bag before setting it true. The manager internally uses multiple-file automatic upload gated by `ready`, and refreshes the attachment list after completion. It has no public `onComplete` parameter. Its `selectedPath` concerns the upload queue's metadata editor, not an arbitrary persisted attachment identifier.
+
+The list endpoint receives `context` and returns a Bag: node labels are opaque attachment IDs and `caption` attributes provide display text. Read and remove receive `context` and `selected`. Read returns a Bag with `kind` equal to `text`, `image` or `message`, plus the appropriate `text` or `src`; remove returns true after deletion. A false remove result retains selection and reports an error. Context changes clear the previous displayed selection and invalidate late results. Application endpoints own authorization, transactions and durable storage. See [the complete attachment endpoint contract](105-components.md#gc-105-uploader).
+
+## Choose a component
+
+- [`uploader`](#gc-440-uploader): Shared file queue with progress, preview, selected-file metadata and application-owned upload targets.
+- [`imageUploader`](#gc-440-imageuploader): Editable image value with local crop or an application-owned upload destination.
+- [`attachmentManager`](#gc-440-attachmentmanager): Reusable attachment queue and list backed by application operations.
+
 
 <a id="gc-440-005"></a>
 <a id="gc-440-010"></a>

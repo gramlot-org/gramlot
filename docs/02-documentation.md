@@ -13,18 +13,16 @@ current version, without release history or process material (review plan of the
 0.3.5 releases, decision d-course and phase p8, 2026-10-19). The README states the
 current release version.
 
-`scripts/prepare_docs.py` stages the README as the home page, an explicit
-`PUBLIC_PAGES` allowlist and explicit logo/theme-guide image assets in `build/docs-source/`. The
-fourteen guides under `docs/public/` are selected. Add a page explicitly
-when it is suitable for users; merely adding a file under `docs/` does not publish it.
+`scripts/prepare_docs.py` stages `docs/public/index.md` as the home page,
+explicit `PUBLIC_PAGES` and logo/theme assets in `build/docs-source/`. Add a page
+explicitly when it is suitable for users; adding a file alone does not publish it.
 
-Architecture decisions, constitution, port records, working documents and
-`docs_llm/` remain repository material. They are absent from generated pages,
-downloadable Sphinx sources and site search. This is an editorial boundary, not
-access control: files in the public Git repository remain publicly readable.
-All guides still require paired documents and stable IDs. Public pages do not
-link their internal concise counterparts.
-
+Internal records, constitution, ports and future proposals are excluded from the
+site and its search. The owner-authorized agent index and ten compact collection
+guides are published as direct Markdown downloads, alongside the human pages.
+Other `docs_llm` material remains outside the site. This is an editorial boundary,
+not access control: files in the public Git repository remain publicly readable.
+All guides still require paired documents and stable IDs.
 
 A link to the explicit anchor of another public page (`098-server-calls.md#gc-095-100`)
 is a raw HTML id that MyST cannot resolve: `docs/conf.py` suppresses that MyST warning
@@ -124,6 +122,5 @@ an item does not approve implementation or reopen a completed phase.
 [GC-340 · How components and collections work](public/340-components-and-collections-guide.md)
 explains definitions, Builder grammar, Source/Data, bases and mixins, complete JS
 and Python examples, prepared packages, resources, dependencies and explicit
-override rules. It describes the current development implementation, including
-provisional prepared-collection behavior. It is a repository guide, outside the
-public site's allowlist; adding it does not publish or promote a stable API.
+override rules. It is included in the public page allowlist; building a local copy
+does not itself publish a site or establish a stable compatibility promise.

@@ -20088,3 +20088,21 @@ with Node 22 and a Python virtual environment installed and built successfully;
 a local source save and the editable Grid Source were verified. Local Remote Edit
 writes the user's source copy; public Remote Edit remains disabled.
 The earlier WebKit file-origin upload limitation remains documented.
+
+
+<a id="gc-070-manual-direction-20261103"></a>
+### Manual direction — 2026-11-03
+
+Owner: “Mettiamo gli esempi in appendice e concentriamoci su un manuale completo che spieghi Gramlot, la libreria, i server e tutti i widget.” First increment in an isolated draft: new introduction explains Page, Source, Data, Logic and host responsibilities; the core manual navigation places the visual examples tour in an appendix. Expanded and concise home pages are paired. The full library, server and widget manual remains to be developed and reviewed; no publication or package release is authorized by this instruction.
+
+The first draft now expands the family guide with Source/Data, behavior, collection activation and host boundaries; the quickstart begins with a Python project, and the Try guide records local opt-in gallery source editing. Strict Sphinx and the public checker passed: 30 pages and 11 agent downloads. The complete manual and integration into the primary development worktree remain outstanding.
+
+Owner authorized parallel Sol agents and independent review. The draft expands the ten collection introductions with usage, Data, interaction and stated limitations, and adds a generated selection list for all 53 component declarations. It also expands the core/server introduction, documents third-party collection documentation ownership, corrects obsolete gallery-editing and form undo/redo statements, and moves the examples routes to an appendix. Review corrected transformPane gesture writeback despite read metadata and distinguished JavaScript Worker endpoints from absent Python/database services in file-only exports. Verified: reference generation freshness; 17 focused tests; strict Sphinx and public checker for 30 pages and 11 agent downloads; five added Python fragments parse. Agents reviewed their peers against code, not through a full browser qualification. This is a verified documentation draft in an isolated development clone; exhaustive semantic review, primary development integration, owner acceptance and publication remain separate.
+
+
+<a id="gc-070-manual-integrated-20261103"></a>
+### Complete manual baseline integrated into develop — 2026-11-03
+
+Owner requested behavioral verification and integration into develop, explicitly permitting parallel Sol agents followed by review. The clean develop checkout was fast-forwarded to consolidated main before applying the documentation work. The maintained manual now introduces the core and hosts, starts with a Python project, provides explanatory guidance and generated contracts for all ten packaged widget collections (53 declarations), and places gallery routes in the appendix. Third-party collection documentation ownership and current publication mechanics are explicit. Independent review corrected transform gesture writeback, Worker endpoint scope, Node prerequisites and the ChatPane PageStore WebSocket requirement.
+
+Verification: 316 JS tests for controls/layout/tree/editors passed; the other collection suites covered 176 JS cases (one environment-only grouplet failure resolved by rerunning its seven cases with the project Python). Python behavioral checks passed 64 with four expected upstream Boolean-validation xfails. Direct develop checks passed 17 documentation tests, strict Sphinx and the public checker for 30 pages and 11 agent downloads, generation freshness and whitespace. No fresh complete real-browser/native-dialog qualification is claimed. The four xfails remain dependency limitations, not accepted Gramlot workarounds. Documentation is integrated locally into develop; owner acceptance, main consolidation and Read the Docs publication are separate. The temporary copy is no longer the sole delivery location.

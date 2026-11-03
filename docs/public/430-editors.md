@@ -21,6 +21,61 @@ A serverless export opened from file must include the required engine resources 
 
 [All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
 
+## Keep the document in Data and the editing engine retained
+
+`codeMirror` edits source text, `htmlEditor` edits rich HTML and `markdownEditor`
+edits Markdown. All store a string with a two-way `value` binding. `htmlPreview`
+and `markdownPreview` read that value without editing it. Connect editor and
+preview to the same Data path rather than copying content between engine instances.
+Engines/resources are bundled in the optional editors collection and load when
+needed. Include that graph in a serverless export; no CDN or Python endpoint is
+implied. See [editor composition](105-components.md#gc-105-125).
+
+Editors write live by default; `live=False` commits on blur. `readonly` retains
+reading/selection while preventing edits, and `disabled` also prevents focus.
+Incoming Data still updates the existing engine through supported transactions or
+setters, preserving its configuration/history instead of rebuilding the widget.
+`undo()`, `redo()` and `historyChanged` expose editor history; Ctrl/Cmd+S publishes
+local `save` with the current value. The application owns persistence, permissions,
+server errors and a saved/dirty record baseline.
+
+Choose `codeMirror` when exact code/text editing is needed. `language` selects a
+supported language, while line numbers, wrapping, folding, indentation, completion
+and font settings affect editing/presentation without reformatting the document.
+Completion uses local language support rather than an LSP. Ctrl/Cmd+F opens
+search/replace; readonly disables replacement. Tab indents, Shift+Tab outdents,
+and Escape then Tab leaves the editor. After `ready`, diagnostics and position
+revelation use the documented engine API. Unknown language names fail explicitly.
+
+`htmlEditor` uses the supported Jodit engine and protects active/embedded document
+content outside the editable DOM. It edits the body while retaining head, doctype
+and document attributes. Removing or duplicating protected placeholders rejects
+the edit: use Code for those changes. Rich serialization can normalize markup;
+undo to the initial snapshot restores the original source. `htmlPreview` uses an
+empty-sandbox iframe where scripts do not run. The editor's document guard,
+sanitization and content policy are essential; these components are HTML views,
+not execution previews for Python applications. See
+[HTML behavior](105-components.md#gc-105-135).
+
+`markdownEditor` uses ProseMirror for the supported rich schema: paragraphs,
+headings, lists, quotes, fenced code, links/images and basic emphasis. Tables,
+embedded HTML, strikethrough and task lists remain preserved source blocks whose
+internals are edited in Code. Frontmatter/reference definitions preserve the
+whole document as a source block. This is not full GitHub-flavored Markdown visual
+editing, and rich edits may normalize supported syntax. `markdownPreview` renders
+Markdown in a sandboxed iframe. `allowHtml=False` shows embedded HTML as text;
+True sanitizes rendered HTML before insertion, without rewriting original Markdown.
+External image requests remain blocked by preview policy. See
+[Markdown behavior](105-components.md#gc-105-140).
+
+## Choose a component
+
+- [`codeMirror`](#gc-430-codemirror): Code/text editor with composed language and editor options.
+- [`htmlEditor`](#gc-430-htmleditor): Rich HTML editing using the supported engine configuration.
+- [`htmlPreview`](#gc-430-htmlpreview): Read-only HTML preview with the component sanitization contract.
+- [`markdownEditor`](#gc-430-markdowneditor): Markdown editing with the supported editor modes.
+- [`markdownPreview`](#gc-430-markdownpreview): Rendered Markdown preview.
+
 
 <a id="gc-430-005"></a>
 <a id="gc-430-010"></a>

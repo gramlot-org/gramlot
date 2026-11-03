@@ -22,6 +22,56 @@ The same guide covers resolver submenus, context/modifier opening, grouped overf
 
 [All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
 
+## Separate commands, selected state and command presentation
+
+Choose `button` for an application action, `toggleButton` when that action also has
+a bound Boolean state, and `dropDownButton` for separate main-action and submenu
+surfaces. Actions use Gramlot's existing action/Logic services. These components
+do not implicitly submit an HTML form; use `html_button` for native submit/reset.
+A toggle updates Data before its optional action; confirmation of that action does
+not reverse the toggle. `readonly` and `disabled` prevent user toggling while
+external Data continues to update its LED. See [button behavior](105-components.md#gc-105-095).
+
+A dropdown's main surface runs its current command; its arrow opens choices.
+Ordinary selection executes a command. Shift+selection executes it and installs
+it as the new default, including through the keyboard. Each actionable entry needs
+a unique `code`; `menuline("-")` declares a separator. With `persist=True`, provide
+a stable explicit `id`: browser storage remembers the selected code for this page
+URL/id, not application Data or command results. An absent saved code falls back
+to the authored default. Changing the default on touch still requires Shift.
+
+Use `menu` for the command hierarchy and `menuline` for commands, submenu parents,
+separators or toolbar groups. `presentation="bar"` makes the first level a toolbar;
+`orientation="vertical"` makes a rail. The same hierarchy can be authored separately
+for a context popup and a toolbar. A normal context menu opens by right-click or
+keyboard context action; `modifiers` declares click-based opening. Opening modifiers
+are distinct from command activation modifiers. A named registry command inherits
+its label/icon and publishes to its frame recipient; it does not itself save Data.
+The message contains `sender`, `target`, `command`, resolved `parameters` and
+activation `modifiers`. Mark exactly one central descendant `frameTarget=True`;
+a nested frame has its own scope. Missing/ambiguous targets are rejected, rather
+than dispatched to an implicit global action. See [command registration and routing](350-menus-toolbars-and-windows.md#gc-350-010).
+
+Use `spacer(size=...)` for fixed separation or `spacer(flex=1)` for elastic space.
+It has no command or Data write. A `menuline(group=True)` keeps embedded controls
+and commands together during overflow; lower `priority` moves first and
+`overflowable=False` retains a unit. Retained content can force scrolling.
+`icon` is text/emoji; use `iconSrc` for an SVG/image URL. `labelPosition` and
+`iconSize` govern presentation independently of command identity. Bind `disabled`,
+`checked` and ordinary visibility to Data as needed; `checked` on a menuline is
+presentation, not an implicit toggle writer. Resolver menus require an application
+endpoint and own their loading/cache contract. See [groups and overflow](350-menus-toolbars-and-windows.md#gc-350-025)
+and [resolver submenus](350-menus-toolbars-and-windows.md#gc-350-030).
+
+## Choose a component
+
+- [`button`](#gc-415-button): An application action button using the existing action/Logic contract.
+- [`toggleButton`](#gc-415-togglebutton): A command button with a bound Boolean selected state.
+- [`dropDownButton`](#gc-415-dropdownbutton): Separate main-action and submenu surfaces; distinct from a menu bar.
+- [`menu`](#gc-415-menu): A hierarchy presented as a popup or a permanent horizontal/vertical toolbar.
+- [`menuline`](#gc-415-menuline): A command, separator, submenu parent or indivisible toolbar group.
+- [`spacer`](#gc-415-spacer): Fixed or elastic space in a menu/toolbar; it does not publish a command.
+
 
 <a id="gc-415-005"></a>
 <a id="gc-415-010"></a>

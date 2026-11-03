@@ -18,9 +18,79 @@ for key, title in (("details", "Details"), ("notes", "Notes")):
 
 This example also uses the inputs collection. Distinct relative datapaths isolate each panel's Data. `title` is a child parameter projected by the tab container, not a textbox parameter. See [containers](105-components.md#gc-105-085).
 
-Use the shared Labelbox (`lbl`, `lbl_*`, `box_*`) around HTML or components. A `trayPane` owns card geometry and selection through its `storepath` Bag; moving/resizing its DOM must retain content and bindings. [Tray workspaces](105-components.md#gc-105-970). [Form state and editingStatus](340-components-and-collections-guide.md#gc-340-110) track local changes/errors/pending validation; accepting a local baseline is not a server save.
+Use the shared Labelbox (`lbl`, `lbl_*`, `box_*`) around HTML or components. A `trayPane` owns card geometry and selection through its `storepath` Bag; moving/resizing its DOM must retain content and bindings. [Tray workspaces](105-components.md#gc-105-970). `transformPane` metadata declares read bindings, but user gestures write simple reactive `^` pointers during interaction; `onEnd` receives final values. [Form state and editingStatus](340-components-and-collections-guide.md#gc-340-110) track local changes/errors/pending validation; accepting a local baseline is not a server save.
 
 [All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
+
+## Compose retained content and bind only the state you need
+
+`formlet` arranges labelled fields on a grid; choose a positive `columns` count,
+a CSS track list or `col_min_width` for fitting columns. It controls presentation,
+not record persistence. `groupBox` supplies a labelled Data scope and visual grouping
+with bar, underline or card headers; its `copy` capability is separate from saving
+a record. `contentPane` is the general content holder used by region compositions.
+See [forms and groups](105-components.md#gc-105-085).
+
+`borderContainer` arranges content panes in unique top, bottom, left, right and
+center regions. `framePane` adds convenient region builders (`frame.top`,
+`frame.center`, etc.) and is the frame used for command recipients. Put `region`
+and the relevant width/height on its children. Splitters and drawers belong to
+this shared layout, preserving child Source and bindings during resizing or
+opening. `design="headline"` and `design="sidebar"` select region precedence;
+`persist` concerns layout state, not the application document. See
+[border layout](105-components.md#gc-105-100) and
+[frames](350-menus-toolbars-and-windows.md#gc-350-035).
+
+Choose `stackContainer` to show one panel without a tab strip, or `tabContainer`
+to expose the selection as tabs. Bind `selectedPage` to a child's unique
+`pageName`, or `selected` to its index. Normal selection preserves Source, editor
+instances and Data. Tabs add titles, `tabPosition`, `tabAlign` and `tabMode`.
+Selection publications use the same contract for clicks, keyboard and Data-driven
+changes. A closable direct panel may provide synchronous Boolean `onClose`:
+false vetoes the close. An accepted close removes the panel Source, keeps its
+application Data and emits `closing`/`closed`; ordinary switching does not remove
+it. An asynchronous close guard is not provided. See
+[panel lifecycle](105-components.md#gc-105-110).
+
+Use `dialog` for a modal window and `floatingPane` for a nonmodal window; each
+contains a `framePane`. Bind `open`, `collapsed`, `maximized` and geometry when
+application state must reflect those operations. A dialog remains modal when
+collapsed or maximized. Floating panes default to movable/resizable/collapsible;
+dialogs do not. `closable`, `maximizable`, minimum dimensions and `beforeClose`
+express the window contract; closing a window is not a record save. See
+[windows](350-menus-toolbars-and-windows.md) and the shared window parameters below.
+
+`trayPane` is a workspace for labelled direct children with stable `node_label`
+keys. Its `storepath` points to a layout Bag containing position, dimensions,
+layer, selection, rotation and scale. The tray owns move/resize; do not add a
+second movable/resizable system to the cards. Pointer operations retain content
+and editor bindings. Same-layer transformed rectangles stop at contact; separate
+layers may overlap. Shift enables `gridStep` and `rotationStep` snapping;
+`gridVisible` only changes presentation. `locked` disables layout editing while
+keeping card contents usable. Closing a closable card removes its Source and its
+layout row. Saving/restoring the layout is an explicit application Data operation.
+See [tray workspaces](105-components.md#gc-105-970).
+
+`transformPane` applies `x`, `y`, `rotate` and `zoom` to retained content. Their
+metadata declares read bindings, but gestures also write changes through simple
+reactive `^` pointers as they happen. `onEnd` receives `{x, y, rotate, zoom}` after
+a changed gesture completes; it is not required for those Data updates. `min`,
+`max` and `step` configure zoom. Use the component for transformed content and the
+tray for multi-card arrangement; neither implies automatic durable persistence.
+
+## Choose a component
+
+- [`transformPane`](#gc-420-transformpane): Applies translation, rotation and scale to retained content. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.
+- [`dialog`](#gc-420-dialog): A modal window containing a framePane; remains modal when collapsed or maximized.
+- [`floatingPane`](#gc-420-floatingpane): A nonmodal window containing a framePane.
+- [`framePane`](#gc-420-framepane): A border composition exposing top, bottom, left, right and center region builders.
+- [`trayPane`](#gc-420-traypane): Data-owned arrangement of labelled live cards with selection, movement, resize, layers, rotation, zoom and snapping.
+- [`formlet`](#gc-420-formlet): Responsive field layout with shared label alignment.
+- [`groupBox`](#gc-420-groupbox): A labelled content group, optionally collapsible, with an optional Data copy command.
+- [`contentPane`](#gc-420-contentpane): A content area or a child region/panel of a layout container.
+- [`borderContainer`](#gc-420-bordercontainer): Five regions with optional splitters, drawers and nested layouts.
+- [`stackContainer`](#gc-420-stackcontainer): One selected panel at a time, without a tab strip.
+- [`tabContainer`](#gc-420-tabcontainer): Selected panels with shaped or underlined tabs on any side.
 
 
 <a id="gc-420-005"></a>
@@ -294,7 +364,7 @@ Parameters projected by this parent from its children:
 <a id="gc-420-transformpane"></a>
 ### `transformPane`
 
-Applies bound translation, rotation and scale to its retained content.
+Applies translation, rotation and scale to retained content. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.
 
 Collection: **layout**. Browser element: `gramlot-transform-pane`.
 

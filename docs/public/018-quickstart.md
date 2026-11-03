@@ -2,44 +2,33 @@
 
 Document ID: **GC-018**.
 
-Start with a running page. You can learn the architecture after seeing a value change.
+Create a small Python page and see how its declarations share a Data value.
 
 <a id="gc-018-005"></a>
-## 005 · Open the gallery
+## 005 · Prepare a Python environment
 
-Open the [Python gallery](https://gallery-py.gramlot.dev/) with no installation.
-Choose a lesson in the navigation tree. **Example** runs it, **Explanation** tells
-you what to try, and **Code** shows the source files. The **Inspector** in the
-navigation toolbar shows the current page's Data and Source.
-
-To run the same gallery locally, use Python 3.11 or later in a virtual environment:
+You need Python 3.11 or later, a text editor and a browser. Create and activate a
+virtual environment, then install the Uvicorn adapter:
 
 ```sh
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install 'gramlot-py-server[uvicorn,gallery]'
-gramlot uvicorn gallery
+python -m pip install 'gramlot-py-server[uvicorn]'
 ```
 
-Open the address printed in the terminal and leave the process running.
-The Python wheel includes the browser runtime; Node.js is not needed for this route.
-For Windows activation and other hosts, follow the
+On Windows, activate with `.venv\Scripts\activate` in Command Prompt. The
+adapter installs the core; Node.js is not needed to serve this Python page.
+For other environments, see the
 [Python CLI guide](https://gramlot-py-server.readthedocs.io/en/latest/020-command.html).
-JavaScript authors can use the [Node/Bun guide](https://gramlot-js-server.readthedocs.io/en/latest/010-tutorial.html)
-or [serverless exporter](https://gramlot-js-server.readthedocs.io/en/latest/135-serverless-tutorial.html).
+JavaScript authors can follow the [Node/Bun guide](https://gramlot-js-server.readthedocs.io/en/latest/010-tutorial.html)
+or [serverless guide](https://gramlot-js-server.readthedocs.io/en/latest/135-serverless-tutorial.html).
 
 <a id="gc-018-010"></a>
-## 010 · Try three ideas
+## 010 · What the page will show
 
-1. **HTML, SVG and page structure:** compare a heading and paragraph with the
-   Python declarations. Each call adds a Source node.
-2. **Fields and input widgets:** type in a labelled field. A Gramlot component
-   adds editing, labels and validation to a browser control.
-3. **Data and bindings:** edit one value and watch another part of the page
-   update. The two declarations share a Data path.
-
-Use the search box to find a topic. You do not need to read every lesson in order;
-[the learning route](025-try.md#gc-025-015) names the next concept for each section.
+The page below declares an input and a paragraph. They share a Data path: typing
+in the field changes the Data value, and the paragraph follows it. The declarations
+are part of Source; the browser runtime renders them and maintains the binding.
 
 <a id="gc-018-015"></a>
 ## 015 · Make a page of your own

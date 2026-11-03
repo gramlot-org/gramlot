@@ -24,6 +24,36 @@ Columns are described below, including nested column groups and validation const
 
 [All collections](345-widget-reference.md) · [Shared labels and validation](105-components.md#gc-105-020) · [Bindings](097-data-binding.md)
 
+## Separate rows, columns and the data provider
+
+`grid` renders a Bag through a virtualized viewport. Choose it for tabular rows requiring declarative columns, ordering, filtering or local cell editing. It does not load database records by itself. Initialize `storepath` with the appropriate Bag and explicitly select `rowMode="values"` for nested row Bags or `rowMode="attributes"` for fields stored on row-node attributes. The representation is required and is not inferred.
+
+Columns come from one inline `struct` or a structure Bag addressed by `structpath`; do not declare both. `struct`, `column` and `colgroup` are Source declarations, not additional browser widgets. A `column` requires its `field`; `name` is its caption and `dtype` describes field type. Widths, alignment and formatting configure presentation. A `colgroup` groups columns beneath a named header and may set group colors. The [structure reference](445-grid.md#gc-445-390) lists the exact permitted names and value formats.
+
+```python
+grid = pane.grid(storepath=".customers", rowMode="values", height="280px")
+struct = grid.struct()
+struct.column("name", name="Customer")
+struct.column("seats", name="Seats", dtype="L", edit=True)
+```
+
+### Viewport outputs and editing events
+
+`rowHeaders`, `rowResize` and `selfDragRows` enable their respective row affordances. `sortedBy` and `filter` are read inputs. For a windowed store, `windowInfo` and `loading` describe provider state, while bound `viewport` writes requested `{start, count}` and `sortRequest` writes an ordering request. Wire these outputs to the intended store/provider rather than loading every record in response to scrolling. A resident Bag, a cached remote selection and an authorized database query have different capabilities. Neither the grid nor an ordinary endpoint implies SQL or Asqueel access.
+
+Enable local editing with `column(..., edit=True)` or an editor-options dictionary. Cells use ordinary Source controls and share the enclosing form session; a standalone editable grid owns its session. Double-click or Enter/F2 opens a cell; Enter confirms, Tab/Shift+Tab moves and Escape discards unfinished text. Scrolling can release editor DOM while preserving drafts, validation errors and pending checks in the session. Local `load`, `accept` and `restore` do not save database records. This remains a development-preview contract: remote-window editing, autosave, undo/redo and DB writes are not supplied by this local editing slice. See [forms and grids editing](340-components-and-collections-guide.md#gc-340-110).
+
+### `searchBox` and `frameGrid`
+
+Use `searchBox` for the grid's filtering UI. It requires a FrameGrid target resolved through Source context; it is not a free-standing text field with a `value` binding. The Python `frameGrid(...)` composition exposes `.grid`, `.top`, `.bottom`, `.left` and `.right`; put the search control in its toolbar. `frameGrid` is a helper, not another widget tag.
+
+`searchOn=True` exposes the available columns. An explicit column list can restrict choices; unknown fields are rejected. Typing applies filtering after a short pause and Enter applies immediately. Escape or the clear button clears it, and changing column clears the query. Invalid/incomplete expressions report an error and preserve the last accepted filter. Bind `searchTime` if the application wants the measured filter duration; this is an output, not the search text. The active view owns filtering and supplies the rows, so this control does not independently issue application database requests. Start with [grid composition and store responsibilities](445-grid.md#gc-445-start).
+
+## Choose a component
+
+- [`grid`](#gc-445-grid): Virtualized Bag rows with a declarative column structure; database access belongs to the store/provider.
+- [`searchBox`](#gc-445-searchbox): Search control connected to the enclosing grid Source context.
+
 
 <a id="gc-445-005"></a>
 <a id="gc-445-010"></a>

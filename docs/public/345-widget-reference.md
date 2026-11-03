@@ -1143,7 +1143,7 @@ Parameters projected by this parent from its children:
 <a id="gc-345-transformpane"></a>
 ### `transformPane`
 
-Applies bound translation, rotation and scale to its retained content.
+Applies translation, rotation and scale to retained content. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.
 
 Collection: **layout**. Browser element: `gramlot-transform-pane`.
 

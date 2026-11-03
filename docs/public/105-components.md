@@ -6,7 +6,7 @@ Use the [widget and parameter reference](345-widget-reference.md) to find a cont
 its collection, defaults and bindings. Read [menus, toolbars and windows](350-menus-toolbars-and-windows.md)
 for the shared command model and complete frame composition.
 
-For local dirty state, errors, pending validation, undo/redo and accepting or
+For local dirty state, errors, pending validation, and accepting or
 restoring a baseline, read [Form editing state](340-components-and-collections-guide.md#gc-340-110).
 For concise per-collection recipes and complete parameter contracts, start at the
 [collection index](345-widget-reference.md#gc-345-010).
@@ -444,7 +444,7 @@ select* declares the component and a startup controller;
 shared browser Logic creates and searches the random records. There is no server
 request and repeated searches preserve the records. Cards and fields have bounded
 widths. Free-text comboBox and multiple selections follow in §§060–065.
-Store and database providers are not provided.
+`filteringSelect` and `callbackSelect` do not provide a database query. `dbSelect` and `dbComboBox` use the separate remote-choice contract; database integration remains host-owned.
 
 
 <a id="gc-105-060"></a>

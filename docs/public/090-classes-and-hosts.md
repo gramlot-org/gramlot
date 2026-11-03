@@ -13,6 +13,68 @@ repositories. Adapter authors find the protocol a server exposes in
 [Server protocol](101-server-protocol.md). Richer examples in gramlot-poc use an
 experimental runtime and do not establish features in this core.
 
+Before choosing a server, separate the application from its execution environment.
+A page declares Source in `main(root)`; the browser runtime renders that Source and
+runs bindings and controllers against Data. Installing the core gives you these
+libraries and the neutral server contracts. To open pages over HTTP, install the
+integration for your host as well.
+
+| Your application | Core library | Execution package | Where page methods run |
+| --- | --- | --- | --- |
+| Python pages in a Python web application | `gramlot` | `gramlot-py-server`, with the extra for Uvicorn/ASGI, Django, Flask, FastAPI or Kajenn | Python server |
+| JavaScript pages served by Node.js or Bun | `@gramlot/gramlot` | `@gramlot/gramlot-js-server` | Node.js or Bun server |
+| JavaScript pages distributed as static files | `@gramlot/gramlot` | `@gramlot/gramlot-serverless` | Browser Web Worker |
+
+The browser interface uses the JavaScript runtime in all three cases. A Python
+server does not run JavaScript page modules, and serverless export takes JavaScript
+pages. The serverless package belongs to the `gramlot-js-server` repository; it
+bundles a local Worker host rather than requiring a running Node.js HTTP server
+(section 025). Database access and host services remain application and host
+responsibilities.
+
+For a first Python project, use Python 3.11 or later in a virtual environment.
+The integration provides a project generator:
+
+```sh
+python -m pip install "gramlot-py-server[uvicorn]"
+gramlot uvicorn new hello
+cd hello
+uvicorn app:application
+```
+
+Open `http://127.0.0.1:8000/`. The generated `pages/index.py` authors the page;
+`app.py` passes the pages folder to
+`gramlot_py_server.uvicorn.create_application`. Replace that integration with the
+module for your existing framework when embedding pages in an application.
+
+For JavaScript hosting with Node.js, use Node.js 22 or later. Install `@gramlot/gramlot` and
+`@gramlot/gramlot-js-server`, author `pages/index.js` as a `Page` subclass
+([Writing pages](095-writing-pages.md)), and start the host from `serve.mjs`:
+
+```javascript
+import {fileURLToPath} from 'node:url';
+import {startServer} from '@gramlot/gramlot-js-server/node';
+
+const app = await startServer({
+    pages: fileURLToPath(new URL('./pages/', import.meta.url)),
+    port: 8080,
+});
+console.log(app.url);
+```
+
+Run `node serve.mjs` and open the printed URL. For Bun, import `startServer` from
+`@gramlot/gramlot-js-server/bun` and run `bun serve.mjs`. For static distribution,
+use Node.js 22 or later, install `@gramlot/gramlot-serverless` alongside the core and run
+`npx gramlot-serverless build page.js -o hello.html`; a pages folder uses
+`npx gramlot-serverless build pages -o dist`. Read section 025 for the Worker
+lifecycle and static export constraints before choosing that environment.
+
+The integration repositories maintain the complete setup and framework tutorials:
+[Python server documentation](https://gramlot-py-server.readthedocs.io/en/latest/)
+and [JavaScript server documentation](https://gramlot-js-server.readthedocs.io/en/latest/).
+Continue below for the core classes, the shared server boundary and package entry
+points; application authoring starts in [Writing pages](095-writing-pages.md).
+
 <a id="gc-090-010"></a>
 
 ## 010 · A small repository

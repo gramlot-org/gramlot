@@ -27,6 +27,22 @@ use `person.name`; the input writes Data and the paragraph follows it. `lbl`
 uses the shared Labelbox presentation, also available to components. No formula
 or initialization script is needed here. See [Data binding](097-data-binding.md).
 
+Source declares the interface; the separate Data Bag stores values. Relative `^`
+paths follow the enclosing datapath and subscribe; `=` reads without subscription.
+Write/two-way behavior depends on the component contract. The runtime renders
+Source to DOM; rendering requires SourceBag and SourceBagNode, not a plain Data
+Bag. See [writing pages](095-writing-pages.md) and [widget reference](345-widget-reference.md).
+
+`dataFormula` derives Data, `dataController` reacts, and named Logic methods run
+in the browser. `dataRpc` calls an exposed server endpoint; remote Source and lazy
+Data have separate contracts. A static export does not execute Python endpoints.
+The server owns any authorization it enforces. Components are grouped into
+collections configured by the environment Page or added by pages; installation
+alone does not activate them. A grid is not a database and upload controls do not
+provide storage. See [components](105-components.md),
+[collection setup](340-components-and-collections-guide.md#gc-340-050),
+[server calls](098-server-calls.md) and [remote content](099-remote-content.md).
+
 <a id="gc-055-010"></a>
 
 ## 010 · The repositories
@@ -50,3 +66,10 @@ Python pages: core + the adapter of your framework in gramlot-py-server. JavaScr
 
 The [examples manual](https://gramlot-examples.readthedocs.io/en/latest/)
 presents the shared lessons by topic, with Python and JavaScript source.
+
+A Python host resolves the Page and returns bootstrap information; the browser
+runtime obtains and renders Source, manages Data and sends calls through the
+adapter. JavaScript pages use Node/Bun hosting or the serverless Worker exporter.
+The latter does not supply a Python process or application database. Setup and
+deployment belong to the [Python](https://gramlot-py-server.readthedocs.io/en/latest/)
+and [JavaScript](https://gramlot-js-server.readthedocs.io/en/latest/) host guides.

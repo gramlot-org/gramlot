@@ -10,6 +10,31 @@ Map of the core: folders, classes, server boundary, packages. Published on PyPI 
 (`@gramlot/gramlot`); adapters are tested in their own repositories. Protocol for adapter authors:
 [Server protocol](101-server-protocol.md). Richer PoC behavior is not core evidence.
 
+Choose the host separately from page authoring: `main(root)` creates Source; the
+JavaScript browser runtime renders it and runs bindings/controllers against Data.
+Core installation provides libraries and neutral contracts; HTTP needs an integration.
+
+| Application | Core | Execution package | Page execution |
+| --- | --- | --- | --- |
+| Python pages | `gramlot` | `gramlot-py-server` with Uvicorn/ASGI, Django, Flask, FastAPI or Kajenn extra | Python server |
+| Hosted JS pages | `@gramlot/gramlot` | `@gramlot/gramlot-js-server` | Node.js/Bun |
+| Static JS pages | `@gramlot/gramlot` | `@gramlot/gramlot-serverless` (in gramlot-js-server) | Browser Worker |
+
+Python hosting does not run JS pages; serverless takes JS pages. Database/host services
+remain application/host responsibilities. Python start (Python 3.11+ in a virtual environment): install
+`"gramlot-py-server[uvicorn]"`; `gramlot uvicorn new hello`; `cd hello`;
+`uvicorn app:application`; open localhost:8000. Generated `pages/index.py` authors Source;
+`app.py` calls `gramlot_py_server.uvicorn.create_application(pages)`.
+JS: use Node.js 22+ for Node hosting; install core and JS server, create `pages/index.js` (`Page` subclass), call
+`startServer({pages: fileURLToPath(new URL('./pages/', import.meta.url)), port: 8080})`
+from `@gramlot/gramlot-js-server/node` in `serve.mjs` (import `fileURLToPath` from
+`node:url`), run `node serve.mjs`. Bun: `/bun` import, `bun serve.mjs`.
+Static: use Node.js 22+ and install serverless alongside core;
+`npx gramlot-serverless build page.js -o hello.html` or `build pages -o dist`;
+see 025 for Worker lifecycle/constraints. Full setup:
+[Python](https://gramlot-py-server.readthedocs.io/en/latest/) and
+[JS](https://gramlot-js-server.readthedocs.io/en/latest/); page authoring: 095.
+
 <a id="gc-090-010"></a>
 
 ## 010 · A small repository

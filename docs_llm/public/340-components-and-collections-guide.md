@@ -212,13 +212,20 @@ runtime two-way edits/defaults/cleanup, replacement ordering/isolation, real-bro
 layout/focus and wheel package data. The guide's focused checks are recorded in
 GC-070; they do not qualify arbitrary extensions or all browsers.
 
+Document each collection with its source: descriptor, dependencies, setup,
+component purpose, parameters/defaults, bindings/writeback, events, children,
+resources, lifecycle, limits and actual verification. Core's collection guides
+combine maintained explanations with generated grammar tables. The core owns its
+generator and publication list; preparing or installing a third-party collection
+does not automatically publish its guide on this site. Its owner publishes and
+links its own documentation.
+
 <a id="gc-340-105"></a>
 ## 105 · Further reading
 
 See GC-105 for existing components, GC-097 for binding, GC-096 for styles, GC-325
 §150 for implemented preparation, GC-335 for provisional menus and GC-225 for
-naming. In this development checkout GC-325 §150 and this guide supersede GC-105's
-older URL-only collection activation paragraphs; no stable-release claim follows.
+naming. Use the prepared-package activation path in this guide.
 
 
 Environment collections (2026-10-30): declare once on the environment Page base

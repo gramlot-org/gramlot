@@ -4,12 +4,12 @@
 
 ## 1. Audience and sources
 
-Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Chapters cover classes, server adapters and their protocol, page authoring, data binding, server calls, remote Source and lazy Data, components, themes/CSS and extension gaps. Public guides describe the current version, without release history or process material (review plan of the 0.3.5 releases, d-course and p8, 2026-10-19). Only the README
-states the current release version. `prepare_docs.py` stages README, fourteen explicit `PUBLIC_PAGES`
-guides and explicit logo/theme-guide image assets. New files are not automatically public. Constitution,
-architecture, ports and docs_llm are excluded from pages, source downloads and
-search, but remain readable in the public Git repository. Pair guides and preserve
-IDs; public guides do not link internal mirrors.
+Sphinx + MyST + sphinx_rtd_theme build a developer evaluation manual. Chapters cover classes, server adapters and their protocol, page authoring, data binding, server calls, remote Source and lazy Data, components, themes/CSS and extension gaps. Public guides describe the current version, without release history or process material (review plan of the 0.3.5 releases, d-course and p8, 2026-10-19). Only the README states the current release version. `prepare_docs.py` stages
+`docs/public/index.md`, explicit `PUBLIC_PAGES` and logo/theme assets. New files
+are not automatically public. Constitution, internal and future records remain
+outside the site. The approved agent index and ten compact collection guides are
+published as Markdown; other `docs_llm` files remain outside. This is not access
+control for the public repository. Pair guides and preserve IDs.
 
 
 Cross-page anchor links (`page.md#gc-…`) are raw HTML ids MyST cannot resolve: `docs/conf.py`
@@ -77,6 +77,5 @@ an item does not approve implementation or reopen a completed phase.
 [GC-340 · How components and collections work](public/340-components-and-collections-guide.md)
 explains definitions, Builder grammar, Source/Data, bases and mixins, complete JS
 and Python examples, prepared packages, resources, dependencies and explicit
-override rules. It describes the current development implementation, including
-provisional prepared-collection behavior. It is a repository guide, outside the
-public site's allowlist; adding it does not publish or promote a stable API.
+override rules. It is included in the public page allowlist; building a local copy
+does not itself publish a site or establish a stable compatibility promise.
