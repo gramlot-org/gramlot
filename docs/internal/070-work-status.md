@@ -20946,3 +20946,49 @@ Evidence: private cleanup/preview-fileserver-migration and
 cleanup/preview-adapters-migration receipts and logs. Remaining work is unchanged
 except for the three transferred previews: resolve adapter gates, qualify broad
 DB/host trials and standalone tool export, then retire only unused preserved copies.
+
+
+<a id="gc-070-adapters-and-retirement-20261103"></a>
+## Adapter recovery and preserved retirement — 2026-11-03
+
+This checkpoint supersedes the open adapter gates above. Asqueel was restored by
+refreshing the preview environment, without dependency source changes or pins.
+SQLAlchemy projected rows now use the registered plain projection keys instead
+of SQLAlchemy label objects. Search and identity results pass TYTX round-trip
+regressions; the Python server suite passes 355 tests with one skip. Both adapter
+previews were browser-qualified and transferred to primary sources on 61501 and
+61502. Django remains on primary sources at 61503.
+
+The broken old 61505 returned page 404s and its launcher could not be recovered.
+Its logs and responses were preserved. A qualified primary release gallery now
+serves 61505, replacing both that listener and the duplicate 61523. Catalogue,
+PageStore updates, chat echo and customer save on an isolated SQLite copy were
+verified. A fresh database copy is used for the live replacement. Remote Edit
+remains disabled. The Invoice application was not included or changed.
+
+Duplicate previews 61515/61516/61524 now consolidate into 61518; 61525/61526 into
+61521/61522; caption preview 61520 into 61501. Their stages and launchers were
+preserved. Host lessons 61527 and static artifact 61517 were transferred, keeping
+the original database and artifact respectively. Static provenance is preserved,
+not presented as a newly rebuilt application. Replacement qualification listeners
+were stopped after transfer. Final HTTP checks passed for 61501/61502/61505/61517;
+61527 has no root route, with its lesson qualified separately before transfer.
+
+Primary examples now include full-panel Visual Editor documentation export with
+all collections. Focused regression, 133 playground exports, Sphinx and link checks
+pass. The existing automated Chromium/WebKit file verifier passed; CUA refused
+file URLs, so no CUA file qualification is claimed. Wider test runs were stopped
+and are not recorded as passing. No publication or deployment was performed.
+
+Clipboard and essential-gallery worktrees were retired after complete verified
+archives. Three damaged temporary repositories were moved intact into the recovery
+archive (4,139 examples, 273 Python-server and 529 JavaScript-server entries), then
+removed individually from Git worktree registries. The shared virtualenv was kept.
+
+Remaining retirement is administrative, not declared complete: app ownership
+protects audit and Visual Editor worktrees. Visual Editor chat handoff was rejected
+by automatic approval review and specific owner approval is pending. Nested Git
+parents remain until their registered external consumers can be retired. This
+chat's active common checkout must be retired last, after moving the chat. Do not
+bypass app guards or remove a Git parent while a consumer still references it.
+Originals, manifests and receipts remain in the private cleanup evidence directory.
