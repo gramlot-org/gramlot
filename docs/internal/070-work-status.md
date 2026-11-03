@@ -20409,3 +20409,26 @@ The checkout remains; inventory stays 30. Resolve its remaining chat attachment
 before retrying retirement. No chat archival, preview restart, Invoice change,
 publication or deployment. Evidence: private gramlot-cleanup-20261102/
 security-audit-retirement/ and inventory-security-pass.json.
+
+
+<a id="gc-070-merged-branch-cleanup-20261103"></a>
+## Merged branch retirement — 2026-11-03
+
+Owner approved the verified cleanup: "intanto procedi con quello che puoi fare".
+Ten unoccupied local branches and fourteen remote branches were removed after
+checking ancestry against freshly fetched origin/main, current worktree ownership,
+open pull requests and workflow references. A verified 28,635,553-byte Git bundle
+preserves every removed ref and its history; the manifest retains exact SHAs and
+branch tracking configuration. Remote deletion was atomic with expected-SHA leases.
+Post-deletion checks confirm the refs are absent and checkout files, index and
+worktree registrations were unchanged by retirement.
+
+origin retains main, develop, codex/release-database-local-20261029 and
+docs/section-reference-links (open PR 54, one commit outside main).
+Invoice, including its merged preservation branch, remains excluded. The audit
+checkout still requires resolution of Codex's shared-task guard; Visual Editor
+remains attached to its chat. Neither was removed. This is branch cleanup, not
+checkout retirement: the previous 30-checkout inventory is not reduced by this step.
+No runtime change, test execution, publication or deployment was performed.
+Evidence and recovery instructions: private gramlot-cleanup-20261102/
+merged-branches-20261103/ (manifest, verified history bundle and deletion receipts).
