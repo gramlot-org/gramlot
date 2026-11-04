@@ -235,8 +235,8 @@ COVERAGE = {
         'Bind the child presentation separately to apply a CSS transform from those Data values.',
         'Parameters must be finite, min and step positive, and max at least min. An external parameter '
         'change cancels the gesture. A stationary gesture or cancellation does not call onEnd.',
-        (_JS + 'transform-pane.js',), ('transform-pane',), (),
-        'No dedicated gesture lesson was identified.',
+        (_JS + 'transform-pane.js',), ('transform-pane',), (_CONTAINERS + '09-transform_pane',),
+        'The dedicated lesson shares pose Data between gestures and numeric controls, applies a separate child CSS transform, records onEnd and preserves editable content on reset.',
     ),
     'dialog': _record(
         _WINDOW_DATA, _WINDOW_EVENTS + ' Escape requests closure through the same guard.',
@@ -281,7 +281,7 @@ COVERAGE = {
         'dropDownButton children. Use rowAction to identify an action for presentation Logic.',
         'The bar hides when it has no row context. Invalid position or an incomplete actionState '
         'result raises an error. Menu commands use the same active row context as the bar.',
-        (_JS + 'tree.js', 'js/src/view/button.js'), ('tree-components',), (),
-        'No dedicated lesson was identified for the shared row command bar.',
+        (_JS + 'tree.js', 'js/src/view/button.js'), ('tree-components',), (_TREES + '06-row_actions',),
+        'The dedicated lesson contrasts selected and acted-on paths, changes action presentation per row, and demonstrates both a button and a menu command.',
     ),
 }

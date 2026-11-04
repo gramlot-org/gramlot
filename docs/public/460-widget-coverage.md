@@ -5,7 +5,7 @@ Document ID: **GC-460**.
 <a id="gc-460-005"></a>
 ## Scope and evidence
 
-This audit covers all **53 component declarations in 10 packaged collections**. The reviewed core baseline is `2b1f2d80`; lesson references use examples `4cb18a9`. Local uncommitted work is excluded. The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.
+This audit covers all **53 component declarations in 10 packaged collections**. The reviewed core baseline is `2b1f2d80`; lesson references use examples `c59a19c`. Local uncommitted work is excluded. The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.
 
 Parameter coverage is checked mechanically against metadata. Behavioral coverage is a source review, not proof that every possible interaction, failure, accessibility requirement or host/browser combination has been tested. Test files below are inspected evidence: their presence is not a new test-run result or a maturity rating. A statement that no callback is declared concerns component-specific callback parameters; ordinary Source event handling remains available. Example links are confined to the appendix and are teaching evidence, not a substitute for behavioral qualification.
 
@@ -16,7 +16,7 @@ HTML/SVG tags and ordinary Source/CSS attributes are shared grammar rather than 
 
 Every linked reference contains the named dimensions. “Reviewed” means the prose exists and has source evidence, not that all edge cases have been independently exercised.
 
-No dedicated catalogue lesson was identified for `transformPane` or `rowActions`. Their contracts and tests are documented; the appendix records the remaining teaching gap.
+Dedicated catalogue lessons now cover `transformPane` and `rowActions`; their explanations and links remain in the appendix.
 
 | Component | Purpose and parameters | Data and events | Composition and limits |
 | --- | --- | --- | --- |

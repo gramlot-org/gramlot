@@ -17,7 +17,7 @@ for records in (INPUTS, LAYOUT, SPECIALIZED):
     COVERAGE.update(records)
 
 REPOSITORY = 'https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/'
-EXAMPLES = 'https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/'
+EXAMPLES = 'https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/'
 DIMENSIONS = (('data', 'Data contract'), ('events', 'Interaction and events'),
               ('children', 'Composition'), ('limits', 'Limits and lifecycle'))
 
@@ -38,7 +38,7 @@ def coverage_documents(root, collections, ids, guides):
     manual = ['# Widget coverage matrix\n\nDocument ID: **GC-460**.\n',
               '<a id="gc-460-005"></a>\n## Scope and evidence\n',
               f'This audit covers all **{len(entries)} component declarations in {len(collections)} packaged collections**. '
-              'The reviewed core baseline is `2b1f2d80`; lesson references use examples `4cb18a9`. Local uncommitted work is excluded. '
+              'The reviewed core baseline is `2b1f2d80`; lesson references use examples `c59a19c`. Local uncommitted work is excluded. '
               'The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. '
               'The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. '
               'An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.\n',
@@ -54,7 +54,7 @@ def coverage_documents(root, collections, ids, guides):
               '<a id="gc-460-010"></a>\n## Manual coverage by component\n',
               'Every linked reference contains the named dimensions. “Reviewed” means the prose exists and has source evidence, '
               'not that all edge cases have been independently exercised.\n',
-              'No dedicated catalogue lesson was identified for `transformPane` or `rowActions`. Their contracts and tests are documented; the appendix records the remaining teaching gap.\n',
+              'Dedicated catalogue lessons now cover `transformPane` and `rowActions`; their explanations and links remain in the appendix.\n',
               '| Component | Purpose and parameters | Data and events | Composition and limits |\n'
               '| --- | --- | --- | --- |']
     for widget, collection in entries.items():

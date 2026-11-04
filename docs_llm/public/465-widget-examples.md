@@ -48,142 +48,142 @@ For typed fields, incomplete text belongs to Source editing state; Data retains 
 
 Shows shared form and grid reports, offscreen editor recovery and filtered rows.
 
-- [10_editing](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-grid_editable/10_editing.md)
+- [10_editing](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid_editable/10_editing.md)
 
 <a id="gc-465-textbox"></a>
 ### `textbox`
 
 Compares the component with a native HTML input and shows shared labels and styles.
 
-- [01-textbox](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/01-text/01-textbox.md)
+- [01-textbox](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/01-text/01-textbox.md)
 
 <a id="gc-465-checkbox"></a>
 ### `checkbox`
 
 Shows Boolean binding in the standard checkbox and switch presentations.
 
-- [01-checkbox](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/02-checks_and_switches/01-checkbox.md)
-- [03-switch](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/02-checks_and_switches/03-switch.md)
+- [01-checkbox](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/02-checks_and_switches/01-checkbox.md)
+- [03-switch](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/02-checks_and_switches/03-switch.md)
 
 <a id="gc-465-radiobuttontext"></a>
 ### `radioButtonText`
 
 Shows one selected code behind a group of captions.
 
-- [01-radio_button_text](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/03-selection/01-radio_button_text.md)
+- [01-radio_button_text](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/03-selection/01-radio_button_text.md)
 
 <a id="gc-465-textboxarea"></a>
 ### `textBoxArea`
 
 Demonstrates a multiline string and textarea dimensions.
 
-- [02-text_box_area](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/01-text/02-text_box_area.md)
+- [02-text_box_area](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/01-text/02-text_box_area.md)
 
 <a id="gc-465-passwordbox"></a>
 ### `passwordbox`
 
 Shows masked entry and the bound string.
 
-- [03-passwordbox](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/01-text/03-passwordbox.md)
+- [03-passwordbox](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/01-text/03-passwordbox.md)
 
 <a id="gc-465-radiobutton"></a>
 ### `radioButton`
 
 Demonstrates individually declared radios with Boolean bindings.
 
-- [02-radio_button](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/03-selection/02-radio_button.md)
+- [02-radio_button](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/03-selection/02-radio_button.md)
 
 <a id="gc-465-colorpicker"></a>
 ### `colorpicker`
 
 Demonstrates a native color choice reflected in bound Data.
 
-- [04-colorpicker](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/04-colorpicker.md)
+- [04-colorpicker](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/04-colorpicker.md)
 
 <a id="gc-465-horizontalslider"></a>
 ### `horizontalSlider`
 
 Shows a horizontal numeric range and its step size.
 
-- [01-horizontal_slider](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/05-numbers_and_sliders/01-horizontal_slider.md)
+- [01-horizontal_slider](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/05-numbers_and_sliders/01-horizontal_slider.md)
 
 <a id="gc-465-verticalslider"></a>
 ### `verticalSlider`
 
 Shows the vertical presentation and its numeric value.
 
-- [02-vertical_slider](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/05-numbers_and_sliders/02-vertical_slider.md)
+- [02-vertical_slider](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/05-numbers_and_sliders/02-vertical_slider.md)
 
 <a id="gc-465-numbertextbox"></a>
 ### `numberTextBox`
 
 Demonstrates numeric formats and bounds. Typed-editor tests cover exact Decimal entry.
 
-- [03-number_textbox](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/05-numbers_and_sliders/03-number_textbox.md)
+- [03-number_textbox](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/05-numbers_and_sliders/03-number_textbox.md)
 
 <a id="gc-465-datetextbox"></a>
 ### `dateTextBox`
 
 Shows formatted date entry and the shared calendar presentation.
 
-- [01-date_textbox](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/06-dates_and_times/01-date_textbox.md)
-- [03-date_calendar](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/06-dates_and_times/03-date_calendar.md)
+- [01-date_textbox](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/06-dates_and_times/01-date_textbox.md)
+- [03-date_calendar](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/06-dates_and_times/03-date_calendar.md)
 
 <a id="gc-465-timetextbox"></a>
 ### `timeTextBox`
 
 Shows civil times with different display formats.
 
-- [02-time_textbox](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/06-dates_and_times/02-time_textbox.md)
+- [02-time_textbox](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/06-dates_and_times/02-time_textbox.md)
 
 <a id="gc-465-filteringselect"></a>
 ### `filteringSelect`
 
 Shows caption search and the stored identity from a closed local set.
 
-- [03-filtering_select](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/03-selection/03-filtering_select.md)
+- [03-filtering_select](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/03-selection/03-filtering_select.md)
 
 <a id="gc-465-callbackselect"></a>
 ### `callbackSelect`
 
 Shows a named browser Logic provider. Choice tests cover request races and failures.
 
-- [04-callback_select](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/03-selection/04-callback_select.md)
+- [04-callback_select](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/03-selection/04-callback_select.md)
 
 <a id="gc-465-combobox"></a>
 ### `comboBox`
 
 Shows suggestions alongside free text. Choice tests cover the Bag-backed provider.
 
-- [05-combo_box](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/03-selection/05-combo_box.md)
+- [05-combo_box](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/03-selection/05-combo_box.md)
 
 <a id="gc-465-dbselect"></a>
 ### `dbSelect`
 
 Shows search, clearing, projected locality and state, and auxiliary columns in a database-backed gallery.
 
-- [01-customers](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/base/pages/80-database/01-customers.md)
+- [01-customers](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/base/pages/80-database/01-customers.md)
 
 <a id="gc-465-dbcombobox"></a>
 ### `dbComboBox`
 
 Shows Enter accepting free text and arrows or clicking choosing a customer suggestion.
 
-- [01-customers](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/base/pages/80-database/01-customers.md)
+- [01-customers](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/base/pages/80-database/01-customers.md)
 
 <a id="gc-465-checkboxtext"></a>
 ### `checkBoxText`
 
 Shows an inline multiple-choice group and its bound code list.
 
-- [02-checkbox_text](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/02-checks_and_switches/02-checkbox_text.md)
+- [02-checkbox_text](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/02-checks_and_switches/02-checkbox_text.md)
 
 <a id="gc-465-datecalendar"></a>
 ### `dateCalendar`
 
 Shows inline and popup calendars sharing typed date Data.
 
-- [03-date_calendar](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/06-dates_and_times/03-date_calendar.md)
+- [03-date_calendar](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/06-dates_and_times/03-date_calendar.md)
 
 <a id="gc-465-setup-buttons"></a>
 ## Menus and buttons: setup
@@ -207,46 +207,46 @@ The same guide covers resolver submenus, context/modifier opening, grouped overf
 
 Covers commands and the difference between native form submission and delayed Gramlot activation.
 
-- [01-button](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/08-buttons/01-button.md)
-- [03-plain_and_delayed_buttons](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/03-controllers/02-actions/03-plain_and_delayed_buttons.md)
+- [01-button](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/08-buttons/01-button.md)
+- [03-plain_and_delayed_buttons](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/03-controllers/02-actions/03-plain_and_delayed_buttons.md)
 
 <a id="gc-465-togglebutton"></a>
 ### `toggleButton`
 
 Demonstrates the boolean binding and LED.
 
-- [02-toggle_button](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/08-buttons/02-toggle_button.md)
+- [02-toggle_button](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/08-buttons/02-toggle_button.md)
 
 <a id="gc-465-dropdownbutton"></a>
 ### `dropDownButton`
 
 Demonstrates main versus menu activation, Shift selection and persistence.
 
-- [03-dropdown_button](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/08-buttons/03-dropdown_button.md)
+- [03-dropdown_button](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/08-buttons/03-dropdown_button.md)
 
 <a id="gc-465-menu"></a>
 ### `menu`
 
 Shows bar and popup composition, then resolver-owned entries and their refresh behavior.
 
-- [02_toolbar](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/02_toolbar.md)
-- [04_menu_bar](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/04_menu_bar.md)
-- [07_resolver](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/07_resolver.md)
+- [02_toolbar](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/02_toolbar.md)
+- [04_menu_bar](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/04_menu_bar.md)
+- [07_resolver](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/07_resolver.md)
 
 <a id="gc-465-menuline"></a>
 ### `menuline`
 
 Shows submenu composition and live command state. Resolver and overflow cases are covered in the menu lessons.
 
-- [04_menu_bar](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/04_menu_bar.md)
-- [05_live_states](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/05_live_states.md)
+- [04_menu_bar](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/04_menu_bar.md)
+- [05_live_states](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/05_live_states.md)
 
 <a id="gc-465-spacer"></a>
 ### `spacer`
 
 Uses spacing in a toolbar composition.
 
-- [02_toolbar](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/02_toolbar.md)
+- [02_toolbar](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/02_toolbar.md)
 
 <a id="gc-465-setup-layout"></a>
 ## Layout and windows: setup
@@ -268,85 +268,84 @@ Use the shared Labelbox (`lbl`, `lbl_*`, `box_*`) around HTML or components. A `
 <a id="gc-465-transformpane"></a>
 ### `transformPane`
 
-No dedicated gesture lesson was identified.
+The dedicated lesson shares pose Data between gestures and numeric controls, applies a separate child CSS transform, records onEnd and preserves editable content on reset.
 
-No dedicated lesson identified in the reviewed catalogue.
-
+- [09-transform_pane](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/09-transform_pane.md)
 
 <a id="gc-465-dialog"></a>
 ### `dialog`
 
 Shows modal composition and a dialog hosting a mounted editor.
 
-- [04-dialog](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/04-dialog.md)
-- [10_dialog_editor](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/10_dialog_editor.md)
+- [04-dialog](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/04-dialog.md)
+- [10_dialog_editor](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/10_dialog_editor.md)
 
 <a id="gc-465-floatingpane"></a>
 ### `floatingPane`
 
 Shows a floating window alongside its working page and an editor hosted inside it.
 
-- [05-floating](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/05-floating.md)
-- [14_floating_editor](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/14_floating_editor.md)
+- [05-floating](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/05-floating.md)
+- [14_floating_editor](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/14_floating_editor.md)
 
 <a id="gc-465-framepane"></a>
 ### `framePane`
 
 Shows frame regions as both layout and command boundaries.
 
-- [06_frame_pane](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/06_frame_pane.md)
+- [06_frame_pane](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/06_frame_pane.md)
 
 <a id="gc-465-traypane"></a>
 ### `trayPane`
 
 Shows geometry Data, editable cards and a larger gallery composition.
 
-- [07-tray](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/07-tray.md)
-- [08-gallery_tray](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/08-gallery_tray.md)
+- [07-tray](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/07-tray.md)
+- [08-gallery_tray](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/08-gallery_tray.md)
 
 <a id="gc-465-formlet"></a>
 ### `formlet`
 
 Shows field layout and inherited presentation defaults.
 
-- [02-formlet](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/07-forms_and_validation/02-formlet.md)
+- [02-formlet](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/07-forms_and_validation/02-formlet.md)
 
 <a id="gc-465-groupbox"></a>
 ### `groupBox`
 
 Shows labeled grouping and scoped copy.
 
-- [06-group_box](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/06-group_box.md)
+- [06-group_box](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/06-group_box.md)
 
 <a id="gc-465-contentpane"></a>
 ### `contentPane`
 
 Shows panes in frame and border regions. The lessons teach the enclosing layouts.
 
-- [06_frame_pane](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-menus/06_frame_pane.md)
-- [01-border](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/01-border/01-border.md)
+- [06_frame_pane](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-menus/06_frame_pane.md)
+- [01-border](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/01-border/01-border.md)
 
 <a id="gc-465-bordercontainer"></a>
 ### `borderContainer`
 
 Shows regional layout, sizing and region notifications.
 
-- [01-border](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/01-border/01-border.md)
-- [06-border_events](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/01-border/06-border_events.md)
+- [01-border](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/01-border/01-border.md)
+- [06-border_events](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/01-border/06-border_events.md)
 
 <a id="gc-465-stackcontainer"></a>
 ### `stackContainer`
 
 Shows selection driven outside a tab strip.
 
-- [03-stack](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/03-stack.md)
+- [03-stack](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/03-stack.md)
 
 <a id="gc-465-tabcontainer"></a>
 ### `tabContainer`
 
 Shows tab navigation and selection. Detachment and closure are covered by the component tests.
 
-- [02-tabs](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-containers/02-tabs.md)
+- [02-tabs](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-containers/02-tabs.md)
 
 <a id="gc-465-setup-tree"></a>
 ## Trees: setup
@@ -367,19 +366,18 @@ The example also uses inputs and expects `catalog.items` to contain a Bag, loade
 
 Covers hierarchy, labels, callbacks, internal drag and checking. The tests also inspect resolver errors, live Source stores and favorites.
 
-- [01-basics](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/09-tree/01-basics.md)
-- [02-labels_and_classes](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/09-tree/02-labels_and_classes.md)
-- [03-callbacks_and_icons](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/09-tree/03-callbacks_and_icons.md)
-- [04-internal_drag](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/09-tree/04-internal_drag.md)
-- [05-checkboxes](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-inputs/09-tree/05-checkboxes.md)
+- [01-basics](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/09-tree/01-basics.md)
+- [02-labels_and_classes](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/09-tree/02-labels_and_classes.md)
+- [03-callbacks_and_icons](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/09-tree/03-callbacks_and_icons.md)
+- [04-internal_drag](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/09-tree/04-internal_drag.md)
+- [05-checkboxes](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/09-tree/05-checkboxes.md)
 
 <a id="gc-465-rowactions"></a>
 ### `rowActions`
 
-No dedicated lesson was identified for the shared row command bar.
+The dedicated lesson contrasts selected and acted-on paths, changes action presentation per row, and demonstrates both a button and a menu command.
 
-No dedicated lesson identified in the reviewed catalogue.
-
+- [06-row_actions](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/09-tree/06-row_actions.md)
 
 <a id="gc-465-setup-editors"></a>
 ## Editors and previews: setup
@@ -402,36 +400,36 @@ A serverless export opened from file must include the required engine resources 
 
 Text editing and runtime options.
 
-- [01-base](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/06-editors/01-base.md)
-- [02-options](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/06-editors/02-options.md)
+- [01-base](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/01-base.md)
+- [02-options](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/02-options.md)
 
 <a id="gc-465-htmleditor"></a>
 ### `htmlEditor`
 
 Rich editing, source and preview in one lesson.
 
-- [03-html](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/06-editors/03-html.md)
+- [03-html](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/03-html.md)
 
 <a id="gc-465-htmlpreview"></a>
 ### `htmlPreview`
 
 Preview of the shared HTML source.
 
-- [03-html](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/06-editors/03-html.md)
+- [03-html](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/03-html.md)
 
 <a id="gc-465-markdowneditor"></a>
 ### `markdownEditor`
 
 Editing and preview of a shared draft.
 
-- [04-markdown](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/06-editors/04-markdown.md)
+- [04-markdown](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/04-markdown.md)
 
 <a id="gc-465-markdownpreview"></a>
 ### `markdownPreview`
 
 Preview of a shared Markdown draft.
 
-- [04-markdown](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/06-editors/04-markdown.md)
+- [04-markdown](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/04-markdown.md)
 
 <a id="gc-465-setup-typst"></a>
 ## Typst previews: setup
@@ -457,7 +455,7 @@ pane.typstPreview(value="^.content", filename="report.pdf", height="480px")
 
 Source editing, browser preview and PDF download.
 
-- [05-typst](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/06-editors/05-typst.md)
+- [05-typst](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/05-typst.md)
 
 <a id="gc-465-setup-uploads"></a>
 ## Uploads and attachments: setup
@@ -485,21 +483,21 @@ pane.uploader(operation="receive", storepath=".queue",
 
 Deferred transfer and row metadata.
 
-- [02-upload_queue](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-uploader/02-upload_queue.md)
+- [02-upload_queue](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-uploader/02-upload_queue.md)
 
 <a id="gc-465-imageuploader"></a>
 ### `imageUploader`
 
 Crop confirmation. Device capture depends on the environment.
 
-- [04-editable_image](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-uploader/04-editable_image.md)
+- [04-editable_image](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-uploader/04-editable_image.md)
 
 <a id="gc-465-attachmentmanager"></a>
 ### `attachmentManager`
 
 Queued files before record save and attachment operations after the context becomes ready.
 
-- [03-attachment_manager](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/01-uploader/03-attachment_manager.md)
+- [03-attachment_manager](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-uploader/03-attachment_manager.md)
 
 <a id="gc-465-setup-grid"></a>
 ## Grids: setup
@@ -534,17 +532,17 @@ struct.column("seats", name="Seats", dtype="L", edit=True)
 
 Basic resident grid, independent shared-store views, virtualization and local editing.
 
-- [01_basic](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-grid/01_basic.md)
-- [05_shared_store](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-grid/05_shared_store.md)
-- [08_virtual_scroll](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-grid/08_virtual_scroll.md)
-- [10_editing](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-grid_editable/10_editing.md)
+- [01_basic](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/01_basic.md)
+- [05_shared_store](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/05_shared_store.md)
+- [08_virtual_scroll](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/08_virtual_scroll.md)
+- [10_editing](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid_editable/10_editing.md)
 
 <a id="gc-465-searchbox"></a>
 ### `searchBox`
 
 FrameGrid search and filter syntax.
 
-- [07_search](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/05-grid/07_search.md)
+- [07_search](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/07_search.md)
 
 <a id="gc-465-setup-chat"></a>
 ## Chat: setup
@@ -604,7 +602,7 @@ chat.frame.top.strong("Assistant")
 
 The opt-in echo trial demonstrates the composed recipe and PageStore.
 
-- [01-echo](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/trials/chat_base/pages/92-chat/01-echo.md)
+- [01-echo](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/trials/chat_base/pages/92-chat/01-echo.md)
 
 <a id="gc-465-setup-grouplets"></a>
 ## Grouplets: setup
@@ -644,15 +642,15 @@ root.groupletCard(title="Billing", remote="address", datapath="billing",
 
 Reusable remote Source, independent scopes and nesting.
 
-- [01-remote_fragment](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/09-grouplets/01-remote_fragment.md)
-- [02-independent_instances](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/09-grouplets/02-independent_instances.md)
-- [03-nested_fragments](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/09-grouplets/03-nested_fragments.md)
+- [01-remote_fragment](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/01-remote_fragment.md)
+- [02-independent_instances](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/02-independent_instances.md)
+- [03-nested_fragments](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/03-nested_fragments.md)
 
 <a id="gc-465-groupletcard"></a>
 ### `groupletCard`
 
 Independent state, header actions, Clear and inline guides.
 
-- [04-order_cards](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/09-grouplets/04-order_cards.md)
-- [05-card_actions](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/09-grouplets/05-card_actions.md)
-- [06-card_guides](https://github.com/gramlot-org/gramlot-examples/blob/4cb18a914a1e1f42c0d6cd13b1f8f41ac3476563/src/gramlot_examples/pages/09-grouplets/06-card_guides.md)
+- [04-order_cards](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/04-order_cards.md)
+- [05-card_actions](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/05-card_actions.md)
+- [06-card_guides](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/06-card_guides.md)
