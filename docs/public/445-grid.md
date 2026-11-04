@@ -7,14 +7,7 @@ Document ID: **GC-445**.
 
 A grid displays rows from a Bag and columns from a Source struct or a separate structure Bag. Loading records is the responsibility of a selection store/provider. The grid itself is independent of SQL and Asqueel.
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). Example body for `main(self, root)`:
-
-```python
-grid = root.grid(storepath="customers", rowMode="values", height="280px")
-columns = grid.struct()
-columns.column("name", name="Customer")
-columns.column("seats", name="Seats", dtype="L")
-```
+The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-grid).
 
 Load `customers` with a Bag whose row nodes contain Bags with `name` and `seats` fields. `storepath` and `rowMode` are required. Use `values` for nested row Bags or `attributes` for rows whose fields are node attributes; these representations are explicit, not guessed. Declare an inline `struct` or use `structpath`, not both.
 
@@ -30,12 +23,7 @@ Columns are described below, including nested column groups and validation const
 
 Columns come from one inline `struct` or a structure Bag addressed by `structpath`; do not declare both. `struct`, `column` and `colgroup` are Source declarations, not additional browser widgets. A `column` requires its `field`; `name` is its caption and `dtype` describes field type. Widths, alignment and formatting configure presentation. A `colgroup` groups columns beneath a named header and may set group colors. The [structure reference](445-grid.md#gc-445-390) lists the exact permitted names and value formats.
 
-```python
-grid = pane.grid(storepath=".customers", rowMode="values", height="280px")
-struct = grid.struct()
-struct.column("name", name="Customer")
-struct.column("seats", name="Seats", dtype="L", edit=True)
-```
+[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-grid).
 
 ### Viewport outputs and editing events
 
@@ -79,6 +67,21 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 
 [Bag rows, column structure and selection stores](445-grid.md#gc-445-start).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-grid).
+
+
+**Data contract.** storepath identifies the row Bag. Explicit rowMode selects nested value Bags or row-node attributes. Resident grids share row identity and own independent order and filter. A windowed provider supplies windowInfo and loading and can consume viewport and sortRequest writes.
+
+
+**Interaction and events.** Headers support ordering and column manipulation. Optional row headers, resizing and self-drag expose row operations. Double-click or Enter/F2 opens an editable cell, Enter commits, Tab moves and Escape discards unfinished text.
+
+
+**Composition.** Provide one inline struct or an external structure Bag via structpath. The frameGrid recipe supplies toolbar and search composition. Local editors use ordinary Source controls in an enclosing form session or a standalone session.
+
+
+**Limits and lifecycle.** Resident virtualization bounds rendered rows while the Bag stays resident. Windowed data needs a provider and local editing is resident-only. Local changes, drafts and errors survive viewport recycling. Database queries and durable writes belong to the application integration.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `windowInfo` | X or None | None | read | — |
@@ -106,6 +109,21 @@ Collection: **grid**. Browser element: `gramlot-search-box`.
 
 [Bag rows, column structure and selection stores](445-grid.md#gc-445-start).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-searchbox).
+
+
+**Data contract.** searchOn chooses eligible columns. Accepted queries update the target view's filter. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.
+
+
+**Interaction and events.** Typing starts a short debounce and Enter applies immediately. Changing columns, Escape or Clear removes the filter. Invalid or incomplete expressions retain the last accepted filter.
+
+
+**Composition.** Leaf control that resolves the grid through its FrameGrid recipient. Put it in the FrameGrid search composition.
+
+
+**Limits and lifecycle.** Works against the resident view. Number and date syntax depends on the column type and locale. Removal cancels the timer and releases view subscriptions.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `searchOn` | B / T | True | read | — |
@@ -122,6 +140,18 @@ These are Source declarations, not additional browser components. Parameters bel
 
 Children: `column,colgroup`. Parents: `grid`.
 
+
+**Data contract.** An inline declaration projects to a structure Bag before rendering. Use structpath to read a separately maintained structure instead.
+
+
+**Interaction and events.** Grid header interactions can update the projected structure. Other grids sharing that Bag observe its changes. The declaration has no callback.
+
+
+**Composition.** Grid declaration containing columns and column groups. It has no separate browser element.
+
+
+**Limits and lifecycle.** Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected.
+
 Additional positional arguments: `False`; additional keyword arguments: `False`.
 
 No parameters.
@@ -130,6 +160,18 @@ No parameters.
 ### `column`
 
 Children: `''`. Parents: `struct,colgroup`.
+
+
+**Data contract.** The required field identifies a row field under the chosen rowMode. Metadata configures caption, type and presentation. Enable local editing with edit=True or an editor options dictionary.
+
+
+**Interaction and events.** The grid handles header and cell interactions. The column supplies configuration for the projected header, cells and optional editor.
+
+
+**Composition.** Leaf declaration inside struct or colgroup, without a separate browser element.
+
+
+**Limits and lifecycle.** Field identity must be unique. Attribute names and values are validated. Formulas are outside the structure contract.
 
 Additional positional arguments: `False`; additional keyword arguments: `False`.
 
@@ -148,6 +190,18 @@ Additional positional arguments: `False`; additional keyword arguments: `False`.
 ### `colgroup`
 
 Children: `column`. Parents: `struct`.
+
+
+**Data contract.** Supplies identity, caption and optional colors for a header band. Column membership belongs to the structure Bag.
+
+
+**Interaction and events.** Moving columns can split or join contiguous header bands while preserving group membership. The group declares no callback.
+
+
+**Composition.** Place directly under struct and put column declarations inside. The grid renders the group.
+
+
+**Limits and lifecycle.** Groups cannot nest. Each member column still identifies its own row field.
 
 Additional positional arguments: `False`; additional keyword arguments: `False`.
 

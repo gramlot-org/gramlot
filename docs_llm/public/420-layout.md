@@ -7,14 +7,7 @@ Document ID: **GC-420**.
 
 Choose `formlet` for aligned fields, `borderContainer` for regions, `tabContainer` for selectable panels and `framePane` for reusable toolbar/content compositions. `dialog` is modal; `floatingPane` keeps the rest of the page usable.
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). Example body for `main(self, root)`:
-
-```python
-tabs = root.tabContainer(height="240px")
-for key, title in (("details", "Details"), ("notes", "Notes")):
-    panel = tabs.contentPane(node_label=key, title=title, datapath=key)
-    panel.textbox(value="^.text", lbl=title)
-```
+The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-layout).
 
 This example also uses the inputs collection. Distinct relative datapaths isolate each panel's Data. `title` is a child parameter projected by the tab container, not a textbox parameter. See [containers](105-components.md#gc-105-085).
 
@@ -93,6 +86,21 @@ StackContainer and tabContainer select one child panel; selectedPage uses its pa
 Collection: layout. Responsive field layout with shared label alignment.
 
 
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-formlet).
+
+
+**Data contract.** Fields retain their own Data bindings. Resolved lbl_* and box_* defaults are inherited by descendants from the declaring scope, and explicit child values override them.
+
+
+**Interaction and events.** The grid and label projection update when presentation inputs change, keeping field drafts and focus with their existing controls.
+
+
+**Composition.** Place fields or nested layout children inside the formlet. columns can specify a positive integer or CSS track list. col_min_width switches to an auto-fitting grid.
+
+
+**Limits and lifecycle.** Invalid numeric column counts raise an error. This layout does not create an editing session. Label measurement observers are released on detach.
+
+
 | Parameters | Contract |
 | --- | --- |
 | `columns` | `{"binding":"read","default":1,"dtype":["L","T"]}` |
@@ -104,7 +112,22 @@ Child grammar: `*`; parent grammar: `None`.
 <a id="gc-420-groupbox"></a>
 ### `groupBox`
 
-Collection: layout. A labelled content group, optionally collapsible, with an optional Data copy command.
+Collection: layout. A labelled content group with an optional scoped Data copy command.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-groupbox).
+
+
+**Data contract.** Descendants use the enclosing Source Data scope. Copy reads the current scoped Bag. TYTX retains types and attributes, and JSON contains values only.
+
+
+**Interaction and events.** With copy enabled, the header action copies TYTX and the format menu offers TYTX or JSON. The header reports clipboard success or failure.
+
+
+**Composition.** Place arbitrary Source content under the labeled group. Choose bar, underline or card presentation through lbl_variant.
+
+
+**Limits and lifecycle.** Copy requires a usable browser clipboard. The box disables its copy actions while a copy is pending and ignores late feedback after detaching. The heading has no collapse control or state.
 
 Shared contracts: [Labels and field presentation](#gc-420-shared-labels).
 
@@ -122,6 +145,21 @@ Child grammar: `*`; parent grammar: `None`.
 
 Collection: layout. A content area or a child region/panel of a layout container.
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-contentpane).
+
+
+**Data contract.** The pane has no value binding. Content and its Data scope follow the Source composition. Authored flex layout is projected into the wrapper containing the slotted children.
+
+
+**Interaction and events.** The pane scrolls its content when needed. In a frame or border container the parent owns region events and chrome.
+
+
+**Composition.** Accepts arbitrary Source children. Use it as a direct framePane region or as a standalone scrollable pane.
+
+
+**Limits and lifecycle.** Flex projection covers direction, wrapping, alignment and gaps. Region sizing and splitter writeback are provided by the owning container.
+
 No additional component-specific parameters.
 
 
@@ -132,6 +170,21 @@ Child grammar: `*`; parent grammar: `None`.
 ### `borderContainer`
 
 Collection: layout. Five regions with optional splitters, drawers and nested layouts.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-bordercontainer).
+
+
+**Data contract.** Numeric regional width or height with a writable binding receives live splitter updates. Literal, read-only, CSS string and transformed dimensions do not gain writeback. With persist enabled, sizes can be restored by stable container id.
+
+
+**Interaction and events.** Splitters support pointer and keyboard resizing. Drawer activation can call drawer_onclick with evt and show. Region events include closable_change on the child and splitter_resize on the parent.
+
+
+**Composition.** Give each direct child a distinct top, bottom, left, right or center region. Side children can opt into splitters, drawers or detachment while retaining their Source content.
+
+
+**Limits and lifecycle.** Splitters are always live. Invalid or duplicate regions, inconsistent size limits and persistence without a stable id raise errors.
 
 Shared contracts: [Border and frame regions](#gc-420-shared-regions).
 
@@ -156,6 +209,21 @@ Child parameters projected by the parent:
 
 Collection: layout. A border composition exposing top, bottom, left, right and center region builders.
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-framepane).
+
+
+**Data contract.** Uses the border layout sizing and persistence contract. Frame regions keep their field bindings, and a nested frame keeps an independent command recipient boundary.
+
+
+**Interaction and events.** Regional splitters and drawers behave as in borderContainer. Commands composed in a frame can address its own recipient.
+
+
+**Composition.** Direct children are contentPane regions. Frame helpers create or retrieve Source regions without duplicating them. Compose toolbars or working content inside those regions.
+
+
+**Limits and lifecycle.** There is at most one direct contentPane per region. Frame sizing and persistence follow the same validation and stable-id requirements as borderContainer.
+
 Shared contracts: [Border and frame regions](#gc-420-shared-regions).
 
 No additional component-specific parameters.
@@ -179,6 +247,21 @@ Child parameters projected by the parent:
 
 Collection: layout. One selected panel at a time, without a tab strip.
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-stackcontainer).
+
+
+**Data contract.** selectedPage identifies a panel by its Source pageName. selected is its zero-based position among direct panels. Both support two-way binding, and a valid named selection takes precedence when both values change together.
+
+
+**Interaction and events.** On a selection change, hiding and showing announce the outgoing and incoming panels before selected reports their resulting active states. A close uses the child onClose guard and publishes closing and closed when accepted.
+
+
+**Composition.** Direct Source children are panels. Give panels stable pageName values when selecting by name. The stack has no built-in tab strip. External controls can set its selection.
+
+
+**Limits and lifecycle.** Duplicate non-null page names and negative or noninteger indices raise errors. An out-of-range index leaves the current available panel selected or uses the normal fallback. Inactive panels stay mounted, and closing a panel removes its Source while retaining application Data.
+
 Shared contracts: [Panel selection](#gc-420-shared-selection).
 
 No additional component-specific parameters.
@@ -199,6 +282,21 @@ Child parameters projected by the parent:
 ### `tabContainer`
 
 Collection: layout. Selected panels with shaped or underlined tabs on any side.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-tabcontainer).
+
+
+**Data contract.** selectedPage identifies a panel by its Source pageName. selected is its zero-based position among direct panels. Both support two-way binding, and a valid named selection takes precedence when both values change together.
+
+
+**Interaction and events.** On a selection change, hiding and showing announce the outgoing and incoming panels before selected reports their resulting active states. A close uses the child onClose guard and publishes closing and closed when accepted. The tab strip adds pointer and keyboard selection. An eligible detachable tab can open in a floating window and reattach when that window closes.
+
+
+**Composition.** Author a titled direct Source child for each tab. Child metadata can supply a name, icon, badge, closability and detachment. Inactive panel controls remain mounted.
+
+
+**Limits and lifecycle.** Hidden, disabled and detached panels are skipped for strip selection. onClose must return a synchronous boolean. Detaching moves the slot presentation while preserving the controls.
 
 Shared contracts: [Panel selection](#gc-420-shared-selection).
 
@@ -227,6 +325,21 @@ Child parameters projected by the parent:
 Collection: layout. Data-owned arrangement of labelled live cards with selection, movement, resize, layers, rotation, zoom and snapping.
 
 
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-traypane).
+
+
+**Data contract.** storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds x, y, width, height, rotation, scale, selected and layer. Gesture changes write geometry and selection to those rows while the existing controls stay mounted.
+
+
+**Interaction and events.** Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click and marquee gestures select blocks, and selected blocks can move together. Opt-in close removes the block Source and its geometry row.
+
+
+**Composition.** Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight and closable. A tray can contain interactive fields and nested trays.
+
+
+**Limits and lifecycle.** Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data still projects. Cancellation restores the gesture state, and store replacement ends the old gesture without overwriting the replacement.
+
+
 | Parameters | Contract |
 | --- | --- |
 | `storepath` | `{"dtype":"T"}` |
@@ -248,7 +361,22 @@ Child parameters projected by the parent:
 <a id="gc-420-transformpane"></a>
 ### `transformPane`
 
-Collection: layout. Applies translation, rotation and scale to retained content. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.
+Collection: layout. Tracks translation, rotation and scale gestures; child Source bindings own the visual transform. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-transformpane).
+
+
+**Data contract.** x and y express translation, rotate is an angle in degrees, and zoom is a scale factor. Gestures write these values to Data through plain reactive pointers without a transform. min, max and step constrain zoom.
+
+
+**Interaction and events.** One pointer translates. Two touches also rotate and zoom. When the last pointer is released after a changed gesture, onEnd Logic receives x, y, rotate and zoom.
+
+
+**Composition.** Place arbitrary Source content inside the gesture surface. The pane tracks gesture values. Bind the child presentation separately to apply a CSS transform from those Data values.
+
+
+**Limits and lifecycle.** Parameters must be finite, min and step positive, and max at least min. An external parameter change cancels the gesture. A stationary gesture or cancellation does not call onEnd.
 
 
 | Parameters | Contract |
@@ -272,6 +400,21 @@ Child grammar: `*`; parent grammar: `None`.
 
 Collection: layout. A modal window containing a framePane; remains modal when collapsed or maximized.
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-dialog).
+
+
+**Data contract.** Bind open, collapsed and maximized to retain window state in Data. Width, height, left and top accept CSS lengths and support writeback for user geometry changes. The expanded geometry is retained across collapse and maximize.
+
+
+**Interaction and events.** The window publishes opened and closed. A close request calls the optional beforeClose Logic with reason and waits for its boolean decision. A pending decision deduplicates close requests, and an obsolete decision cannot close a later window session. Escape requests closure through the same guard.
+
+
+**Composition.** Provide exactly one framePane child. Closing and reopening preserves the mounted frame, its controls and bindings.
+
+
+**Limits and lifecycle.** The window remains modal while collapsed or maximized. Movement, resizing, collapse and maximize are opt-in. A non-boolean guard result leaves the dialog open and reports a diagnostic.
+
 Shared contracts: [Window behavior and geometry](#gc-420-shared-windows).
 
 No additional component-specific parameters.
@@ -284,6 +427,21 @@ Child grammar: `framePane`; parent grammar: `None`.
 ### `floatingPane`
 
 Collection: layout. A nonmodal window containing a framePane.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-floatingpane).
+
+
+**Data contract.** Bind open, collapsed and maximized to retain window state in Data. Width, height, left and top accept CSS lengths and support writeback for user geometry changes. The expanded geometry is retained across collapse and maximize.
+
+
+**Interaction and events.** The window publishes opened and closed. A close request calls the optional beforeClose Logic with reason and waits for its boolean decision. A pending decision deduplicates close requests, and an obsolete decision cannot close a later window session. Activating a floating window raises it above its peers.
+
+
+**Composition.** Provide exactly one framePane child. Closing and reopening preserves the mounted frame, its controls and bindings.
+
+
+**Limits and lifecycle.** This window is nonmodal. Movement, resize and collapse default on, while maximize is opt-in. Disposal invalidates pending close decisions and releases interaction resources.
 
 Shared contracts: [Window behavior and geometry](#gc-420-shared-windows).
 

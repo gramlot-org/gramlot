@@ -7,13 +7,7 @@ Document ID: **GC-425**.
 
 A tree presents a Data Bag. Nodes can carry captions and child resolvers; the tree owns disclosure and selection, while the Bag remains the data source.
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). Example body for `main(self, root)`:
-
-```python
-pane = root.div(datapath="catalog")
-pane.textbox(value="^.search", placeholder="Search", live=True)
-pane.tree(storepath=".items", searchText="^.search", height="280px")
-```
+The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-tree).
 
 The example also uses inputs and expects `catalog.items` to contain a Bag, loaded by the page or a resolver. `searchText` filters the tree, including resolvable branches; clearing it restores the prior tree view. Resolver work may involve server requests. [Tree data, selection and drag/drop](105-components.md#gc-105-120). `rowActions` supplies contextual commands; it is not a second data store.
 
@@ -92,6 +86,21 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 
 [Tree stores, labels and selection](105-components.md#gc-105-120).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-tree).
+
+
+**Data contract.** storepath selects a live Bag in Data or a Source tree through the store routing contract. Bind selectedPath two ways for selection and checkedPaths for joined checkbox paths. Selection paths are relative to the store. External selection can resolve missing ancestors.
+
+
+**Interaction and events.** Disclosure, keyboard navigation and selection operate on visible rows. Named label and icon Logic can customize row presentation. onChecked receives item and path and can veto the change. Optional drag callbacks prepare a typed snapshot for the internal drop pipeline.
+
+
+**Composition.** The Bag supplies the hierarchy and can contain lazy resolver nodes. Source may declare one rowActions child for shared commands. A rendered scalar child selects its owning Bag node.
+
+
+**Limits and lifecycle.** Ordinary rendering does not evaluate unloaded resolvers. Failed branches remain retryable and stale asynchronous results cannot change later selection. Search stops at marked loops, and drag preparation is opt-in, synchronous and does not evaluate a lazy row.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `storepath` | T | — | — | — |
@@ -126,6 +135,21 @@ Shared contextual row actions for the tree presentation.
 Collection: **tree**. Browser element: `gramlot-row-actions`.
 
 [Tree stores, labels and selection](105-components.md#gc-105-120).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-rowactions).
+
+
+**Data contract.** state is an optional read binding passed to actionState. Command context carries the focused or hovered row item and path independently of selectedPath.
+
+
+**Interaction and events.** A child command runs in the current row context without selecting the row. actionState receives item, path, action and state and returns hidden, icon and title for each coded action.
+
+
+**Composition.** Place one shared bar inside tree, at start or end of the row. Compose button and dropDownButton children. Use rowAction to identify an action for presentation Logic.
+
+
+**Limits and lifecycle.** The bar hides when it has no row context. Invalid position or an incomplete actionState result raises an error. Menu commands use the same active row context as the bar.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |

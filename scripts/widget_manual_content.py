@@ -157,7 +157,7 @@ keeping card contents usable. Closing a closable card removes its Source and its
 layout row. Saving/restoring the layout is an explicit application Data operation.
 See [tray workspaces](105-components.md#gc-105-970).
 
-`transformPane` applies `x`, `y`, `rotate` and `zoom` to retained content. Their
+`transformPane` tracks `x`, `y`, `rotate` and `zoom` gestures; child Source bindings apply the visual transform to retained content. Their
 metadata declares read bindings, but gestures also write changes through simple
 reactive `^` pointers as they happen. `onEnd` receives `{x, y, rotate, zoom}` after
 a changed gesture completes; it is not required for those Data updates. `min`,
@@ -270,7 +270,7 @@ Initialize `.content` as text. Include both collections in the environment Page 
 
 ### Updates, diagnostics and resource limits
 
-Changes to the Typst text schedule browser compilation after a short pause. The widget immediately hides the previous SVG and disables the previous PDF link, so a user cannot download an apparently current document while a newer draft is compiling. Diagnostics appear in the widget. Late compilation results cannot replace a newer revision. There is no declared completion callback or Data writeback parameter: use the bound source as application state, rather than treating the downloaded PDF as a saved Data value.
+Changes to the Typst text schedule browser compilation after a short pause. The current Worker compiles both SVG and PDF for every successful revision; downloading retrieves that PDF rather than starting a separate compilation. The widget immediately hides the previous SVG and disables the previous PDF link, so a user cannot download an apparently current document while a newer draft is compiling. Diagnostics appear in the widget. Late compilation results cannot replace a newer revision. There is no declared completion callback or Data writeback parameter: use the bound source as application state, rather than treating the downloaded PDF as a saved Data value.
 
 The collection bundles its compiler, renderer and five fonts, and shares a browser Worker between previews. Self-contained documents can compile offline; the initial component does not supply includes, custom assets or external packages. Missing resources produce diagnostics. Removing the last preview releases the Worker. The module is large, so select this optional collection only where needed. A browser preview declaration does not create a server compilation endpoint or execute Python recipes. Compiler-version differences and export restrictions are documented in [compiler and resource ownership](105-components.md#gc-105-145).
 """,
@@ -357,7 +357,7 @@ ChatPane uses `dataBinder`, which requires a PageStore WebSocket. Enable the hos
 
 A Python PageStore subclassing `ChatPageStore` supplies processing. Its default `process_message(self, text)` echoes text; override it for application behavior. Return a string or Gramlot SourceBag, not HTML or a plain Data Bag. During processing, `request_attachments` exposes the active request's attachments and `feedback(text)` updates transient status. Applications own provider integration, credentials, authorization and persistence. There are no model, provider or temperature widget parameters, and selecting the collection does not supply an AI service.
 
-Use the complete [ChatPane, Logic and PageStore example](450-chat.md#gc-450-start) when assembling the page. It needs the chat and layout collections and the normal supporting controls. A file-only export cannot execute this Python PageStore; a viewport appearing successfully does not establish that sending has a working backend.
+Use the complete [ChatPane, Logic and PageStore example](465-widget-examples.md#gc-465-setup-chat) when assembling the page. It needs the chat and layout collections and the normal supporting controls. A file-only export cannot execute this Python PageStore; a viewport appearing successfully does not establish that sending has a working backend.
 """,
     "grouplets": """
 ## Choose a plain fragment host or a card

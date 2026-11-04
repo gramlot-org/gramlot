@@ -117,3 +117,25 @@ def test_minimal_python_recipe_builds_source(collection):
     code = COLLECTION_GUIDES[collection][2]
     exec(compile(code, f'<{collection}-reference>', 'exec'), {'root': builder.root})
     assert builder.to_tytx()
+
+
+def test_reviewed_behavior_covers_the_packaged_inventory_and_stays_out_of_examples():
+    from widget_coverage import COVERAGE, STRUCTURAL, DIMENSIONS
+    expected = {name for grammar in packaged_collections().values()
+                for name, element in grammar['elements'].items()
+                if element.get('_meta', {}).get('gramlot_component') is not None}
+    assert set(COVERAGE) == expected
+    assert set(STRUCTURAL) == {'struct', 'column', 'colgroup'}
+    for collection in reference.COLLECTIONS:
+        for text in reference.render((collection,), reference.COLLECTION_IDS[collection]):
+            assert not re.search(r'^```(?:python|javascript)', text, re.M)
+    full, brief = reference.render()
+    for widget, record in COVERAGE.items():
+        assert record['sources']
+        for text in (full, brief):
+            section = text.split(f'### `{widget}`\n', 1)[1].split('\n### ', 1)[0]
+            for key, label in DIMENSIONS:
+                assert record[key] in section, (widget, key)
+                assert f'**{label}.**' in section
+        for evidence in (*record['sources'], *record['tests']):
+            assert (ROOT / evidence).is_file(), (widget, evidence)

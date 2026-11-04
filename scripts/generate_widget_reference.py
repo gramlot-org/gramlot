@@ -1,12 +1,14 @@
 """Render the public widget reference from packaged component metadata."""
 import argparse
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets')
 from widget_reference_content import COLLECTION_GUIDES
 from widget_manual_content import COLLECTION_EXPLANATIONS
+from widget_coverage import COVERAGE, behavior_sections, coverage_documents
 
 COLLECTION_IDS = {
     'inputs': 410, 'buttons': 415, 'layout': 420, 'tree': 425, 'editors': 430,
@@ -48,10 +50,10 @@ DESCRIPTIONS = {
  'dialog': 'A modal window containing a framePane; remains modal when collapsed or maximized.',
  'floatingPane': 'A nonmodal window containing a framePane.',
  'trayPane': 'Data-owned arrangement of labelled live cards with selection, movement, resize, layers, rotation, zoom and snapping.',
- 'transformPane': 'Applies translation, rotation and scale to retained content. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.',
+ 'transformPane': 'Tracks translation, rotation and scale gestures; child Source bindings own the visual transform. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.',
  'framePane': 'A border composition exposing top, bottom, left, right and center region builders.',
  'formlet': 'Responsive field layout with shared label alignment.',
- 'groupBox': 'A labelled content group, optionally collapsible, with an optional Data copy command.',
+ 'groupBox': 'A labelled content group with an optional scoped Data copy command.',
  'contentPane': 'A content area or a child region/panel of a layout container.',
  'borderContainer': 'Five regions with optional splitters, drawers and nested layouts.',
  'stackContainer': 'One selected panel at a time, without a tab strip.',
@@ -67,7 +69,7 @@ DESCRIPTIONS = {
  'htmlPreview': 'Read-only HTML preview with the component sanitization contract.',
  'markdownEditor': 'Markdown editing with the supported editor modes.',
  'markdownPreview': 'Rendered Markdown preview.',
- 'typstPreview': 'Typst document preview and optional client PDF compilation; compiler resources are separate from ordinary forms.',
+ 'typstPreview': 'Typst document preview with client SVG and PDF compilation; compiler resources are separate from ordinary forms.',
 }
 DETAILS = {
  'grid': ('445-grid.md#gc-445-start', 'Bag rows, column structure and selection stores'),
@@ -234,17 +236,7 @@ that environment; merely installing a package does not activate it.
 
 The following is environment setup, not boilerplate to repeat in every lesson:
 
-```python
-from gramlot import Page as GramlotPage
-from gramlot.collections.inputs import mygramlot as inputs
-from gramlot.collections.layout import mygramlot as layout
-
-class Page(GramlotPage):
-    gramlots = [inputs, layout]
-
-    def main(self, root):
-        root.textbox(value="^customer.name", lbl="Customer", live=True)
-```
+[Collection setup code](465-widget-examples.md#gc-465-environment) is in the appendix.
 
 Buttons, menu, menuline and spacer belong to the built-in `buttons` grammar.
 The other families have prepared descriptors at `gramlot.collections.<name>`.
@@ -333,6 +325,11 @@ connects these controls to runnable lessons and screenshots.
                     f'\nCollection: **{name}**. Browser element: `{element["_meta"]["render_tag"]}`.\n',
                     f'[{caption}]({guide}).\n']
             brief += [heading, f'Collection: {name}. {DESCRIPTIONS[key]}\n']
+            evidence = f"\n[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-{key.lower()}).\n"
+            out.append(evidence)
+            brief.append(evidence)
+            out.extend(behavior_sections(key))
+            brief.extend(behavior_sections(key))
             groups = {shared_group(key, parameter) for parameter in meta['parameters']} - {None}
             if groups:
                 links = ', '.join(f'[{title}](#gc-345-shared-{group})' for group, (title, _) in SHARED.items() if group in groups)
@@ -373,16 +370,22 @@ connects these controls to runnable lessons and screenshots.
             f'- [`{key}`](#gc-{document_id}-{key.lower()}): {DESCRIPTIONS[key]}'
             for key, (owner, _) in entries.items() if owner == name
         )
+        manual_notes = re.sub(r'```[^\n]*\n.*?```',
+                              f'[See the setup code in the appendix](465-widget-examples.md#gc-465-setup-{name}).',
+                              notes, flags=re.S)
         header = (f'# {title}\n\nDocument ID: **GC-{document_id}**.\n\n'
                   f'<a id="gc-{document_id}-start"></a>\n## Start here\n\n{introduction}\n\n'
                   'The environment Page base supplies the collections used below. '
                   '[Configure them once](340-components-and-collections-guide.md#gc-340-050). '
-                  'Example body for `main(self, root)`:\n\n'
-                  f'```python\n{example}\n```\n\n{notes}\n\n'
+                  f'[Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-{name}).\n\n'
+                  f'{manual_notes}\n\n'
                   '[All collections](345-widget-reference.md) · '
                   '[Shared labels and validation](105-components.md#gc-105-020) · '
                   '[Bindings](097-data-binding.md)\n\n')
-        detailed_header = (header + f'{COLLECTION_EXPLANATIONS[name].strip()}\n\n'
+        explanation = re.sub(r'```[^\n]*\n.*?```',
+                             f'[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-{name}).',
+                             COLLECTION_EXPLANATIONS[name].strip(), flags=re.S)
+        detailed_header = (header + f'{explanation}\n\n'
                            f'## Choose a component\n\n{selection}\n\n')
         # The component/parameter bodies remain generated, never maintained separately.
         out = [detailed_header, '<a id="gc-345-005"></a>\n<a id="gc-345-010"></a>\n'
@@ -419,6 +422,7 @@ def structural_reference(grammar, *, compact=False):
         signature = element['attributes']
         result += [f'\n### `{name}`\n',
                    f'Children: `{grammar_expression(element.get("sub_tags"))}`. Parents: `{grammar_expression(element.get("parent_tags"))}`.\n']
+        result.extend(behavior_sections(name))
         if compact:
             result.append(f'```json\n{json.dumps(signature, separators=(",", ":"))}\n```')
             continue
@@ -442,6 +446,7 @@ def structural_reference(grammar, *, compact=False):
 def generated_documents():
     for view, text in zip(('docs', 'docs_llm'), render()):
         yield ROOT / view / 'public/345-widget-reference.md', text
+    yield from coverage_documents(ROOT, COLLECTIONS, COLLECTION_IDS, COLLECTION_GUIDES)
     for collection in COLLECTIONS:
         number = COLLECTION_IDS[collection]
         for view, text in zip(('docs', 'docs_llm'), render((collection,), number)):

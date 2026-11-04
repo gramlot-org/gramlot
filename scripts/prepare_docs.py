@@ -34,6 +34,8 @@ PUBLIC_PAGES = (
     "docs/public/445-grid.md",
     "docs/public/450-chat.md",
     "docs/public/455-grouplets.md",
+    "docs/public/460-widget-coverage.md",
+    "docs/public/465-widget-examples.md",
 )
 # Owner-approved publication boundary: selected collection cards, not the LLM archive.
 PUBLIC_LLM_PAGES = (
@@ -119,10 +121,10 @@ def main():
     groups = (
         ("Start here", ("055-family", "018-quickstart", "020-evaluate")),
         ("Build applications", ("095-writing-pages", "105-components", "097-data-binding", "098-server-calls", "099-remote-content", "350-menus-toolbars-and-windows")),
-        ("Library reference", ("llm/index", "345-widget-reference", "096-themes-and-css", "090-classes-and-hosts", "030-quality")),
+        ("Library reference", ("llm/index", "345-widget-reference", "460-widget-coverage", "096-themes-and-css", "090-classes-and-hosts", "030-quality")),
         ("Collection reference", ('410-inputs', '415-buttons', '420-layout', '425-tree', '430-editors', '435-typst', '440-uploads', '445-grid', '450-chat', '455-grouplets')),
         ("Extend and integrate", ("340-components-and-collections-guide", "100-extensions", "101-server-protocol")),
-        ("Appendix: examples", ("025-try", "355-examples-and-visual-tour")),
+        ("Appendix: examples", ("025-try", "355-examples-and-visual-tour", "465-widget-examples")),
     )
     for caption, pages in groups:
         home += "\n```{toctree}\n:maxdepth: 1\n:hidden:\n:caption: " + caption + "\n\n"

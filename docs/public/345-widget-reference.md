@@ -38,17 +38,7 @@ that environment; merely installing a package does not activate it.
 
 The following is environment setup, not boilerplate to repeat in every lesson:
 
-```python
-from gramlot import Page as GramlotPage
-from gramlot.collections.inputs import mygramlot as inputs
-from gramlot.collections.layout import mygramlot as layout
-
-class Page(GramlotPage):
-    gramlots = [inputs, layout]
-
-    def main(self, root):
-        root.textbox(value="^customer.name", lbl="Customer", live=True)
-```
+[Collection setup code](465-widget-examples.md#gc-465-environment) is in the appendix.
 
 Buttons, menu, menuline and spacer belong to the built-in `buttons` grammar.
 The other families have prepared descriptors at `gramlot.collections.<name>`.
@@ -311,6 +301,21 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 
 [Bag rows, column structure and selection stores](445-grid.md#gc-445-start).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-grid).
+
+
+**Data contract.** storepath identifies the row Bag. Explicit rowMode selects nested value Bags or row-node attributes. Resident grids share row identity and own independent order and filter. A windowed provider supplies windowInfo and loading and can consume viewport and sortRequest writes.
+
+
+**Interaction and events.** Headers support ordering and column manipulation. Optional row headers, resizing and self-drag expose row operations. Double-click or Enter/F2 opens an editable cell, Enter commits, Tab moves and Escape discards unfinished text.
+
+
+**Composition.** Provide one inline struct or an external structure Bag via structpath. The frameGrid recipe supplies toolbar and search composition. Local editors use ordinary Source controls in an enclosing form session or a standalone session.
+
+
+**Limits and lifecycle.** Resident virtualization bounds rendered rows while the Bag stays resident. Windowed data needs a provider and local editing is resident-only. Local changes, drafts and errors survive viewport recycling. Database queries and durable writes belong to the application integration.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `windowInfo` | X or None | None | read | — |
@@ -338,6 +343,21 @@ Collection: **grid**. Browser element: `gramlot-search-box`.
 
 [Bag rows, column structure and selection stores](445-grid.md#gc-445-start).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-searchbox).
+
+
+**Data contract.** searchOn chooses eligible columns. Accepted queries update the target view's filter. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.
+
+
+**Interaction and events.** Typing starts a short debounce and Enter applies immediately. Changing columns, Escape or Clear removes the filter. Invalid or incomplete expressions retain the last accepted filter.
+
+
+**Composition.** Leaf control that resolves the grid through its FrameGrid recipient. Put it in the FrameGrid search composition.
+
+
+**Limits and lifecycle.** Works against the resident view. Number and date syntax depends on the column type and locale. Removal cancels the timer and releases view subscriptions.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `searchOn` | B / T | True | read | — |
@@ -359,6 +379,21 @@ Collection: **chat**. Browser element: `gramlot-chat-messages`.
 
 [ChatPane composition and server responsibilities](450-chat.md#gc-450-start).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chatmessages).
+
+
+**Data contract.** Displays its Source children. The separate ChatPane recipe creates and binds conversation, message and draft Data. Page Logic renders strings literally and gives Source messages independent scopes.
+
+
+**Interaction and events.** The viewport is a focusable scroll region with polite log announcements. ChatPane Logic owns sending, request correlation, message rendering and conditional follow-on-scroll. ChatPageStore's processing hook may return text or Gramlot Source.
+
+
+**Composition.** Accepts ordinary Source children. Python ChatPane composes the viewport with frame regions, composer, toolbar, actions and controllers.
+
+
+**Limits and lifecycle.** The viewport declares no send, provider or persistence parameters. The recipe needs the supporting collections, Page Logic and a working PageStore. Application code owns authorization and provider integration.
+
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
@@ -378,6 +413,21 @@ Collection: **grouplets**. Browser element: `gramlot-grouplet`.
 
 [Reusable remote fragments and cards](455-grouplets.md#gc-455-start).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-grouplet).
+
+
+**Data contract.** The read-bound remote name selects a reusable Source endpoint. datapath gives each instance a scope for relative child bindings. Shared remote binding governs readiness and caching.
+
+
+**Interaction and events.** Remote loading and replacement use ordinary Source lifecycle. Removal cancels pending work and suppresses late results. It declares no additional completion or save callback.
+
+
+**Composition.** Accepts ordinary authored Source children and remote fragments, including nested fragments. Activate collections used by the children.
+
+
+**Limits and lifecycle.** Uses the standard remote Source endpoint contract. Record loading, editing policy and persistence belong to the composed application.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `remote` | T or None | — | read | — |
@@ -393,6 +443,21 @@ A titled, foldable remote-content card with bound controls and an optional Markd
 Collection: **grouplets**. Browser element: `gramlot-grouplet-card`.
 
 [Reusable remote fragments and cards](455-grouplets.md#gc-455-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-groupletcard).
+
+
+**Data contract.** Bind collapsed and checkbox two ways to retain changes in Data. Null checkbox hides it and false shows it unchecked. Title, label, header side, collapsible, delitem and doc are read inputs. Body bindings use the card's instance scope.
+
+
+**Interaction and events.** Header controls fold and toggle the checkbox. An authored menu can supply actions. Clear asks for confirmation and rechecks its gate before clearing eligible values. The information button opens the Markdown guide. It declares no additional save or completion callback.
+
+
+**Composition.** Accepts authored or remote Source body children, including nested cards. An authored menu supplies header actions.
+
+
+**Limits and lifecycle.** Header side accepts top, left or right. Null delitem hides Clear, false disables it and true enables it. Clear affects direct untransformed reactive body value bindings within scope, preserving header state. Body replacement or removal invalidates pending confirmation.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
@@ -422,6 +487,21 @@ Collection: **inputs**. Browser element: `gramlot-textbox`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-textbox).
+
+
+**Data contract.** A nullable two-way string. Null displays as empty, while clearing an edited field writes an empty string.
+
+
+**Interaction and events.** Change commits the string. With `live=True`, input commits outside IME composition. There is no component-specific change callback.
+
+
+**Composition.** The component renders its own control and optional field label. It takes no Source children.
+
+
+**Limits and lifecycle.** Single-line plain text. Outside an editing session, rejected validation can leave a visible draft while Data retains its previous value. In a shared editing session, parseable edits can update Data while validation records errors and blocks acceptance.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -439,6 +519,21 @@ Collection: **inputs**. Browser element: `gramlot-passwordbox`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-passwordbox).
+
+
+**Data contract.** A nullable two-way string. The native password control masks its display while the binding carries the entered string.
+
+
+**Interaction and events.** Change commits the string. With `live=True`, input commits outside IME composition. There is no component-specific change callback.
+
+
+**Composition.** The component renders its own control and optional field label. It takes no Source children.
+
+
+**Limits and lifecycle.** The component supplies visual masking. Credential handling and storage remain application responsibilities.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -455,6 +550,21 @@ Multiline plain text with the same field and validation contract.
 Collection: **inputs**. Browser element: `gramlot-text-box-area`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-textboxarea).
+
+
+**Data contract.** A nullable two-way string can include line breaks. Reactive row and column counts change the presentation of the same Data.
+
+
+**Interaction and events.** Change commits the string. With `live=True`, input commits outside IME composition. There is no component-specific change callback.
+
+
+**Composition.** The component renders its own control and optional field label. It takes no Source children.
+
+
+**Limits and lifecycle.** The textarea handles plain text. Changing the row count preserves the existing control and caret.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
@@ -479,6 +589,21 @@ Collection: **inputs**. Browser element: `gramlot-checkbox`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-checkbox).
+
+
+**Data contract.** A two-way Boolean is shared by checkbox and switch modes. The option caption and switch color affect presentation.
+
+
+**Interaction and events.** Changing the checked state commits a Boolean. There is no component-specific toggle callback.
+
+
+**Composition.** A field leaf. Use `label` for the inline option caption and `lbl` for the shared field label.
+
+
+**Limits and lifecycle.** Only `checkbox` and `switch` are valid modes. Readonly prevents activation while external Data can still update the check.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -499,6 +624,21 @@ Collection: **inputs**. Browser element: `gramlot-radio-button`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-radiobutton).
+
+
+**Data contract.** Each member owns a two-way Boolean path. Selecting a member of a Source-scoped group clears the other members' Boolean values.
+
+
+**Interaction and events.** Native activation and group keyboard navigation select a member. Writes go through the member bindings. There is no component-specific group callback.
+
+
+**Composition.** A field leaf. Declare group members as separate Source nodes with their own labels and bindings.
+
+
+**Limits and lifecycle.** Use `disabled` to lock interaction. Removing a member releases its group membership.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -517,6 +657,21 @@ A group of local radio choices storing one option code.
 Collection: **inputs**. Browser element: `gramlot-radio-button-text`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-radiobuttontext).
+
+
+**Data contract.** A nullable string stores the selected code from the `code:Caption` pairs in `values`.
+
+
+**Interaction and events.** A native radio change commits the code. There is no component-specific selection callback.
+
+
+**Composition.** The field generates options from `values` and arranges them in `cols` columns. It takes no Source option children.
+
+
+**Limits and lifecycle.** The column count must be positive. Readonly and disabled lock the options. Caption updates can retain the selected code.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
@@ -537,6 +692,21 @@ Collection: **inputs**. Browser element: `gramlot-check-box-text`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-checkboxtext).
+
+
+**Data contract.** A nullable string stores comma-separated codes, or null for no selection. Editing preserves the order of retained codes and appends newly selected ones.
+
+
+**Interaction and events.** A native check change commits the code list. Arrows, Home and End move focus among options. There is no component-specific selection callback.
+
+
+**Composition.** The field generates inline options from `values` and arranges them in `cols` columns. It takes no Source option children.
+
+
+**Limits and lifecycle.** The column count must be positive. Readonly and disabled lock the options. An edit preserves stored codes that have no current visible option.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -556,6 +726,21 @@ Collection: **inputs**. Browser element: `gramlot-colorpicker`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-colorpicker).
+
+
+**Data contract.** A two-way color string projects to a native color input, with `#000000` as the component default.
+
+
+**Interaction and events.** The native chooser commits on change, or on input with `live=True`. There is no component-specific color callback.
+
+
+**Composition.** The component renders its own control and optional field label. It takes no Source children.
+
+
+**Limits and lifecycle.** The browser supplies the chooser and its accepted color representation. Use `disabled` to lock it.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -572,6 +757,21 @@ Search a closed set of local choices; Data stores the selected code.
 Collection: **inputs**. Browser element: `gramlot-filtering-select`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-filteringselect).
+
+
+**Data contract.** A nullable string code resolves to a caption in local `values`. Search matches captions case-insensitively and identity lookup compares codes.
+
+
+**Interaction and events.** Mouse or keyboard choice commits the code. Clearing commits null and Escape cancels the draft. There is no component-specific selection callback.
+
+
+**Composition.** The control builds its own popup. Declare choices through the provider, with no Source option children.
+
+
+**Limits and lifecycle.** An unmatched caption remains a draft even in live mode. Codes must be nonempty and unique. `separator` changes the delimiter between declared options.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
@@ -592,6 +792,21 @@ Collection: **inputs**. Browser element: `gramlot-callback-select`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-callbackselect).
+
+
+**Data contract.** A nullable string code. The named browser Logic provider returns `{rows, identifier, caption}` with unique nonempty string codes and string captions.
+
+
+**Interaction and events.** The provider receives `_querystring` or `_id` and can return a Promise. Mouse or keyboard choice commits the code. There is no component-specific selection notification.
+
+
+**Composition.** The control builds its own popup. Declare choices through the provider, with no Source option children.
+
+
+**Limits and lifecycle.** The provider owns filtering. The editor discards obsolete results on superseding edits and release and reports lookup failures in its choice error state.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -609,6 +824,21 @@ Suggestions with free text allowed.
 Collection: **inputs**. Browser element: `gramlot-combo-box`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-combobox).
+
+
+**Data contract.** A nullable string stores the entered text or selected caption. Supply `values` (which may be empty) or a `store` Bag whose node values are unique string codes and whose `caption` attributes are strings.
+
+
+**Interaction and events.** Mouse or keyboard choice commits the caption. Free text also commits through the editor, including live input outside composition. There is no component-specific selection callback.
+
+
+**Composition.** The control builds its own popup. Declare choices through the provider, with no Source option children.
+
+
+**Limits and lifecycle.** The bound value distinguishes null from an edited empty string. Malformed or duplicate Bag choices are rejected.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
@@ -629,6 +859,21 @@ Remote choices through an application method or the configured Asqueel integrati
 Collection: **inputs**. Browser element: `gramlot-db-select`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-dbselect).
+
+
+**Data contract.** A nullable string or safe integer key identifies the selection. The endpoint returns `{rows, identifier, caption}`. Caption, record and requested `selected_*` projections are separate from the key.
+
+
+**Interaction and events.** The page's remote service uses `method` for searches and identity lookup. Accepted selection writes the outputs and calls optional named Logic `selectedCb` with `{value, record}`. Identity resolution can refresh outputs without notifying that callback.
+
+
+**Composition.** A field leaf with an internal popup. Its optional sanitized row template supports record placeholders in text.
+
+
+**Limits and lifecycle.** Unmatched drafts cannot write a key. `autoSelect` checks for a sole candidate with a two-row request. Selections using `validate_notnull` have a condition-change check. Database behavior and required response fields belong to the provider.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
@@ -666,6 +911,21 @@ Remote suggestions with free text; the application owns authorization and persis
 Collection: **inputs**. Browser element: `gramlot-db-combo-box`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-dbcombobox).
+
+
+**Data contract.** A nullable string stores a selected caption or free text. Selection can populate caption, record and field projections. Free-text or clear commits remove the previous selection outputs.
+
+
+**Interaction and events.** The remote service supplies suggestions. Choosing a row or committing free text goes through validation. Optional named Logic `selectedCb` receives the accepted value and a record or null.
+
+
+**Composition.** A field leaf with an internal suggestion popup and optional sanitized row template.
+
+
+**Limits and lifecycle.** The editor waits for a complete edit even with `live=True`. Condition changes preserve free text and do not auto-select a sole candidate. The provider runs in the configured host.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
@@ -707,6 +967,21 @@ Collection: **inputs**. Browser element: `gramlot-number-text-box`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-numbertextbox).
+
+
+**Data contract.** A nullable typed number. Use the default finite real entry, `dtype='L'` for safe integers or `dtype='N'` for exact Decimal entry. Empty input commits null.
+
+
+**Interaction and events.** Enter, change and blur attempt a commit. Live editing commits parseable input. Escape restores the accepted value. There is no component-specific change callback.
+
+
+**Composition.** The component renders its own control and optional field label. It takes no Source children.
+
+
+**Limits and lifecycle.** Entry accepts the locale decimal symbol but rejects grouping separators, incomplete numbers and input outside configured bounds. Exact editing requires a Decimal backend and also follows an existing Decimal value. A rejected parse leaves the last typed Data value in place.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -726,6 +1001,21 @@ A bounded numeric range displayed horizontally.
 Collection: **inputs**. Browser element: `gramlot-horizontal-slider`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-horizontalslider).
+
+
+**Data contract.** A two-way real number uses the native range grid defined by reactive `min`, `max` and `step`.
+
+
+**Interaction and events.** Native range interaction commits on change, or on input with `live=True`. There is no component-specific slider callback.
+
+
+**Composition.** The component renders its own control and optional field label. It takes no Source children.
+
+
+**Limits and lifecycle.** A finite incoming value that the range clamps or snaps can write a correction through a plain reactive value binding. Shared controls need compatible ranges. Use `disabled` to lock it.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
@@ -747,6 +1037,21 @@ Collection: **inputs**. Browser element: `gramlot-vertical-slider`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-verticalslider).
+
+
+**Data contract.** A two-way real number uses the same range grid as the horizontal slider.
+
+
+**Interaction and events.** Native range interaction commits on change, or on input with `live=True`. There is no component-specific slider callback.
+
+
+**Composition.** A field leaf with an internal range that exposes a vertical accessibility orientation.
+
+
+**Limits and lifecycle.** Browser range rules can clamp or snap incoming finite Data and write the correction through a plain reactive value binding. Use `disabled` to lock it.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -767,6 +1072,21 @@ Collection: **inputs**. Browser element: `gramlot-date-text-box`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-datetextbox).
+
+
+**Data contract.** A nullable civil date (`D`). Formatting and text drafts are separate from Data. Relative entry uses `workdate` or local today as its reference.
+
+
+**Interaction and events.** Enter, change and blur attempt a commit. Live mode commits parseable input, and selecting a calendar day commits the typed date directly. Escape cancels the draft. There is no component-specific date callback.
+
+
+**Composition.** A field leaf with an internal trigger and popup unless `calendar=False`.
+
+
+**Limits and lifecycle.** The parser requires a single date. Empty input commits null, while an invalid expression preserves the typed value. Disabling the calendar or releasing the editor closes its popup.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -785,6 +1105,21 @@ Collection: **inputs**. Browser element: `gramlot-date-calendar`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-datecalendar).
+
+
+**Data contract.** A two-way nullable civil date (`D`). `workdate` can supply the reference day for the calendar view.
+
+
+**Interaction and events.** Month and keyboard navigation move the view or focus without a Data write. Selecting a day or using Clear commits a date or null. There is no component-specific day callback.
+
+
+**Composition.** An inline field leaf with internal navigation, day grid and clear control.
+
+
+**Limits and lifecycle.** Readonly and disabled lock interaction. The control checks for civil dates and locks its view when released.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -801,6 +1136,21 @@ Civil time editing with locale-aware text parsing.
 Collection: **inputs**. Browser element: `gramlot-time-text-box`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-timetextbox).
+
+
+**Data contract.** A nullable civil time (`H`) uses the TYTX time epoch and preserves seconds and milliseconds without a timezone conversion. Clearing commits null.
+
+
+**Interaction and events.** Enter, change and blur attempt a commit. Live editing commits parseable input. Escape restores the accepted value. There is no component-specific change callback.
+
+
+**Composition.** The component renders its own control and optional field label. It takes no Source children.
+
+
+**Limits and lifecycle.** Entry uses a 24-hour clock with minutes, optional seconds and optional fractional seconds. Display formats leave the entry grammar unchanged.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
@@ -823,6 +1173,21 @@ Collection: **buttons**. Browser element: `gramlot-button`.
 
 [Commands, hierarchy and toolbar layout](350-menus-toolbars-and-windows.md).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-button).
+
+
+**Data contract.** A button has no editable value. Disabled state and icon presentation can read Data. A fire action pulses a Data path with the modifier string or true, attaches modifier and _counter metadata, and returns the value to null.
+
+
+**Interaction and events.** Click or keyboard activation runs one command mechanism. Inline action receives _evt, _counter and modifier flags. A nested dataController receives _evt, button_counter and the modifier flags. A confirmation can gate execution, and _delay groups a burst from its last click.
+
+
+**Composition.** Use caption content and optionally one direct dataController as the click mechanism. The controller keeps its own reactive Data inputs and initialization behavior.
+
+
+**Limits and lifecycle.** Competing mechanisms or multiple direct dataControllers raise an error. Disabled or removed buttons drop pending clicks. A Gramlot button never implicitly submits its containing form.
+
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -840,6 +1205,21 @@ A command button with a bound Boolean selected state.
 Collection: **buttons**. Browser element: `gramlot-toggle-button`.
 
 [Commands, hierarchy and toolbar layout](350-menus-toolbars-and-windows.md).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-togglebutton).
+
+
+**Data contract.** Bind the boolean value two ways. Data updates the LED and pressed state. Activation commits the new boolean before invoking the command.
+
+
+**Interaction and events.** Activation flips the boolean and dispatches the change used for binding, then runs the shared button command. Disabled and readonly prevent the flip and command.
+
+
+**Composition.** Uses the same caption and direct controller composition as button. The LED is provided by the component.
+
+
+**Limits and lifecycle.** The value represents two states. Removing the Source releases the button command binding.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
@@ -859,6 +1239,21 @@ Collection: **buttons**. Browser element: `gramlot-drop-down-button`.
 
 [Commands, hierarchy and toolbar layout](350-menus-toolbars-and-windows.md).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-dropdownbutton).
+
+
+**Data contract.** The default command occurrence is local to the button. With persist enabled, local storage saves the occurrence code for the page URL and explicit button id. It does not store command text or a Data value.
+
+
+**Interaction and events.** The main segment runs the default command. The arrow opens the menu. Ordinary item activation runs that item. Shift activation also makes it the main command and updates its caption and icon.
+
+
+**Composition.** Author the main caption and command on the button and place the alternatives in its child menu.
+
+
+**Limits and lifecycle.** Persistent buttons require an explicit id and menu occurrence codes must be unique. A missing saved code falls back to the authored default. Storage failure leaves in-memory selection usable.
+
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -877,6 +1272,21 @@ A hierarchy presented as a popup or a permanent horizontal/vertical toolbar.
 Collection: **buttons**. Browser element: `gramlot-menu`.
 
 [Commands, hierarchy and toolbar layout](350-menus-toolbars-and-windows.md).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-menu).
+
+
+**Data contract.** Menu presentation and resolver inputs can reflect Data. A resolver supplies entries through its named Logic method, with caching governed by cacheTime. The menu has no selected value of its own.
+
+
+**Interaction and events.** A popup can open from its attached owner or a submenu trigger. Keyboard movement skips unavailable entries and separators. A bar distributes eligible units into overflow and returns them as space becomes available.
+
+
+**Composition.** Use menuline for commands or submenus, spacer for spacing and contentPane for grouped or embedded content. A bar can be horizontal or vertical.
+
+
+**Limits and lifecycle.** Opening modifiers match exactly. Popup resolver work can wait for the first opening. Invalid results preserve existing entries and superseded replies cannot replace newer results.
 
 Shared contracts: [Icons and label presentation](#gc-345-shared-icons).
 
@@ -900,6 +1310,21 @@ A command, separator, submenu parent or indivisible toolbar group.
 Collection: **buttons**. Browser element: `gramlot-menu-line`.
 
 [Commands, hierarchy and toolbar layout](350-menus-toolbars-and-windows.md).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-menuline).
+
+
+**Data contract.** A menu occurrence can read disabled, hidden and checked presentation from Data. Checked is a display binding. Application Logic changes its underlying state.
+
+
+**Interaction and events.** A line dispatches its command or opens its submenu. Command occurrences can carry distinct parameters. Delayed delivery captures the parameters at activation and is cancelled if the occurrence becomes unavailable.
+
+
+**Composition.** Use a caption and optional icon, or give the line a child menu for a submenu. A separator or grouped presentation does not dispatch a command from its padding.
+
+
+**Limits and lifecycle.** A command and submenu on the same occurrence are mutually exclusive. An unknown command does not dispatch, and nested frames keep their own command recipients.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [Icons and label presentation](#gc-345-shared-icons).
 
@@ -929,6 +1354,21 @@ Collection: **buttons**. Browser element: `gramlot-spacer`.
 
 [Commands, hierarchy and toolbar layout](350-menus-toolbars-and-windows.md).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-spacer).
+
+
+**Data contract.** size specifies fixed space in pixels. flex assigns a positive share of remaining layout space. Neither parameter represents application Data.
+
+
+**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving overflowable units to its popup.
+
+
+**Composition.** Place it between menu or toolbar items as a leaf.
+
+
+**Limits and lifecycle.** size and flex are mutually exclusive. A fixed size must be finite and nonnegative. A flex factor must be finite and positive.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `size` | R or None | — | — | — |
@@ -950,6 +1390,21 @@ Collection: **inputs**. Browser element: `gramlot-editing-status`.
 
 [Field behavior, typed values, choices and validation](105-components.md#gc-105-040).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-editingstatus).
+
+
+**Data contract.** Reads the nearest shared editing session's errors and baseline-relative changes. It declares no value binding or separate change journal.
+
+
+**Interaction and events.** Errors and Changes open live reports. Selecting an entry asks the session to focus the Data path and closes the report on success. There is no public report callback.
+
+
+**Composition.** Place this leaf within a Source scope that provides a shared editing session. Its internal report controls take no Source children.
+
+
+**Limits and lifecycle.** Mounting without a session raises an error. A field that cannot be focused leaves a notice without changing the grid filter. Disconnecting releases the session subscription and closes the popup.
+
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
@@ -965,6 +1420,21 @@ Collection: **layout**. Browser element: `gramlot-formlet`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-formlet).
+
+
+**Data contract.** Fields retain their own Data bindings. Resolved lbl_* and box_* defaults are inherited by descendants from the declaring scope, and explicit child values override them.
+
+
+**Interaction and events.** The grid and label projection update when presentation inputs change, keeping field drafts and focus with their existing controls.
+
+
+**Composition.** Place fields or nested layout children inside the formlet. columns can specify a positive integer or CSS track list. col_min_width switches to an auto-fitting grid.
+
+
+**Limits and lifecycle.** Invalid numeric column counts raise an error. This layout does not create an editing session. Label measurement observers are released on detach.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `columns` | L / T | 1 | read | — |
@@ -976,11 +1446,26 @@ Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source childre
 <a id="gc-345-groupbox"></a>
 ### `groupBox`
 
-A labelled content group, optionally collapsible, with an optional Data copy command.
+A labelled content group with an optional scoped Data copy command.
 
 Collection: **layout**. Browser element: `gramlot-group-box`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-groupbox).
+
+
+**Data contract.** Descendants use the enclosing Source Data scope. Copy reads the current scoped Bag. TYTX retains types and attributes, and JSON contains values only.
+
+
+**Interaction and events.** With copy enabled, the header action copies TYTX and the format menu offers TYTX or JSON. The header reports clipboard success or failure.
+
+
+**Composition.** Place arbitrary Source content under the labeled group. Choose bar, underline or card presentation through lbl_variant.
+
+
+**Limits and lifecycle.** Copy requires a usable browser clipboard. The box disables its copy actions while a copy is pending and ignores late feedback after detaching. The heading has no collapse control or state.
 
 Shared contracts: [Labels and field presentation](#gc-345-shared-labels).
 
@@ -1001,6 +1486,21 @@ Collection: **layout**. Browser element: `gramlot-content-pane`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-contentpane).
+
+
+**Data contract.** The pane has no value binding. Content and its Data scope follow the Source composition. Authored flex layout is projected into the wrapper containing the slotted children.
+
+
+**Interaction and events.** The pane scrolls its content when needed. In a frame or border container the parent owns region events and chrome.
+
+
+**Composition.** Accepts arbitrary Source children. Use it as a direct framePane region or as a standalone scrollable pane.
+
+
+**Limits and lifecycle.** Flex projection covers direction, wrapping, alignment and gaps. Region sizing and splitter writeback are provided by the owning container.
+
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
 
 
@@ -1015,6 +1515,21 @@ Five regions with optional splitters, drawers and nested layouts.
 Collection: **layout**. Browser element: `gramlot-border-container`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-bordercontainer).
+
+
+**Data contract.** Numeric regional width or height with a writable binding receives live splitter updates. Literal, read-only, CSS string and transformed dimensions do not gain writeback. With persist enabled, sizes can be restored by stable container id.
+
+
+**Interaction and events.** Splitters support pointer and keyboard resizing. Drawer activation can call drawer_onclick with evt and show. Region events include closable_change on the child and splitter_resize on the parent.
+
+
+**Composition.** Give each direct child a distinct top, bottom, left, right or center region. Side children can opt into splitters, drawers or detachment while retaining their Source content.
+
+
+**Limits and lifecycle.** Splitters are always live. Invalid or duplicate regions, inconsistent size limits and persistence without a stable id raise errors.
 
 Shared contracts: [Border and frame regions](#gc-345-shared-regions).
 
@@ -1043,6 +1558,21 @@ Collection: **layout**. Browser element: `gramlot-frame-pane`.
 
 [Window and frame composition](350-menus-toolbars-and-windows.md).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-framepane).
+
+
+**Data contract.** Uses the border layout sizing and persistence contract. Frame regions keep their field bindings, and a nested frame keeps an independent command recipient boundary.
+
+
+**Interaction and events.** Regional splitters and drawers behave as in borderContainer. Commands composed in a frame can address its own recipient.
+
+
+**Composition.** Direct children are contentPane regions. Frame helpers create or retrieve Source regions without duplicating them. Compose toolbars or working content inside those regions.
+
+
+**Limits and lifecycle.** There is at most one direct contentPane per region. Frame sizing and persistence follow the same validation and stable-id requirements as borderContainer.
+
 Shared contracts: [Border and frame regions](#gc-345-shared-regions).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -1070,6 +1600,21 @@ Collection: **layout**. Browser element: `gramlot-stack-container`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-stackcontainer).
+
+
+**Data contract.** selectedPage identifies a panel by its Source pageName. selected is its zero-based position among direct panels. Both support two-way binding, and a valid named selection takes precedence when both values change together.
+
+
+**Interaction and events.** On a selection change, hiding and showing announce the outgoing and incoming panels before selected reports their resulting active states. A close uses the child onClose guard and publishes closing and closed when accepted.
+
+
+**Composition.** Direct Source children are panels. Give panels stable pageName values when selecting by name. The stack has no built-in tab strip. External controls can set its selection.
+
+
+**Limits and lifecycle.** Duplicate non-null page names and negative or noninteger indices raise errors. An out-of-range index leaves the current available panel selected or uses the normal fallback. Inactive panels stay mounted, and closing a panel removes its Source while retaining application Data.
+
 Shared contracts: [Panel selection](#gc-345-shared-selection).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -1093,6 +1638,21 @@ Selected panels with shaped or underlined tabs on any side.
 Collection: **layout**. Browser element: `gramlot-tab-container`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-tabcontainer).
+
+
+**Data contract.** selectedPage identifies a panel by its Source pageName. selected is its zero-based position among direct panels. Both support two-way binding, and a valid named selection takes precedence when both values change together.
+
+
+**Interaction and events.** On a selection change, hiding and showing announce the outgoing and incoming panels before selected reports their resulting active states. A close uses the child onClose guard and publishes closing and closed when accepted. The tab strip adds pointer and keyboard selection. An eligible detachable tab can open in a floating window and reattach when that window closes.
+
+
+**Composition.** Author a titled direct Source child for each tab. Child metadata can supply a name, icon, badge, closability and detachment. Inactive panel controls remain mounted.
+
+
+**Limits and lifecycle.** Hidden, disabled and detached panels are skipped for strip selection. onClose must return a synchronous boolean. Detaching moves the slot presentation while preserving the controls.
 
 Shared contracts: [Panel selection](#gc-345-shared-selection).
 
@@ -1122,6 +1682,21 @@ Collection: **layout**. Browser element: `gramlot-tray-pane`.
 
 [Tray workspaces and shared Labelboxes](105-components.md#gc-105-970).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-traypane).
+
+
+**Data contract.** storepath resolves to a Bag keyed by direct child Source labels. Each position Bag holds x, y, width, height, rotation, scale, selected and layer. Gesture changes write geometry and selection to those rows while the existing controls stay mounted.
+
+
+**Interaction and events.** Drag, resize and rotation handles edit geometry. Shift applies configured snapping. Click and marquee gestures select blocks, and selected blocks can move together. Opt-in close removes the block Source and its geometry row.
+
+
+**Composition.** Give each direct child a Labelbox with lbl. Child options include minWidth, minHeight and closable. A tray can contain interactive fields and nested trays.
+
+
+**Limits and lifecycle.** Bounds and same-layer contact constrain edits. Lock hides editing chrome while external Data still projects. Cancellation restores the gesture state, and store replacement ends the old gesture without overwriting the replacement.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `storepath` | T | — | — | — |
@@ -1143,11 +1718,26 @@ Parameters projected by this parent from its children:
 <a id="gc-345-transformpane"></a>
 ### `transformPane`
 
-Applies translation, rotation and scale to retained content. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.
+Tracks translation, rotation and scale gestures; child Source bindings own the visual transform. Gestures write simple reactive pointers despite read-only binding metadata; onEnd reports final values.
 
 Collection: **layout**. Browser element: `gramlot-transform-pane`.
 
 [Forms, borders, panels and tabs](105-components.md#gc-105-085).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-transformpane).
+
+
+**Data contract.** x and y express translation, rotate is an angle in degrees, and zoom is a scale factor. Gestures write these values to Data through plain reactive pointers without a transform. min, max and step constrain zoom.
+
+
+**Interaction and events.** One pointer translates. Two touches also rotate and zoom. When the last pointer is released after a changed gesture, onEnd Logic receives x, y, rotate and zoom.
+
+
+**Composition.** Place arbitrary Source content inside the gesture surface. The pane tracks gesture values. Bind the child presentation separately to apply a CSS transform from those Data values.
+
+
+**Limits and lifecycle.** Parameters must be finite, min and step positive, and max at least min. An external parameter change cancels the gesture. A stationary gesture or cancellation does not call onEnd.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
@@ -1176,6 +1766,21 @@ Collection: **layout**. Browser element: `gramlot-dialog`.
 
 [Window and frame composition](350-menus-toolbars-and-windows.md).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-dialog).
+
+
+**Data contract.** Bind open, collapsed and maximized to retain window state in Data. Width, height, left and top accept CSS lengths and support writeback for user geometry changes. The expanded geometry is retained across collapse and maximize.
+
+
+**Interaction and events.** The window publishes opened and closed. A close request calls the optional beforeClose Logic with reason and waits for its boolean decision. A pending decision deduplicates close requests, and an obsolete decision cannot close a later window session. Escape requests closure through the same guard.
+
+
+**Composition.** Provide exactly one framePane child. Closing and reopening preserves the mounted frame, its controls and bindings.
+
+
+**Limits and lifecycle.** The window remains modal while collapsed or maximized. Movement, resizing, collapse and maximize are opt-in. A non-boolean guard result leaves the dialog open and reports a diagnostic.
+
 Shared contracts: [Window behavior and geometry](#gc-345-shared-windows).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -1192,6 +1797,21 @@ A nonmodal window containing a framePane.
 Collection: **layout**. Browser element: `gramlot-floating-pane`.
 
 [Window and frame composition](350-menus-toolbars-and-windows.md).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-floatingpane).
+
+
+**Data contract.** Bind open, collapsed and maximized to retain window state in Data. Width, height, left and top accept CSS lengths and support writeback for user geometry changes. The expanded geometry is retained across collapse and maximize.
+
+
+**Interaction and events.** The window publishes opened and closed. A close request calls the optional beforeClose Logic with reason and waits for its boolean decision. A pending decision deduplicates close requests, and an obsolete decision cannot close a later window session. Activating a floating window raises it above its peers.
+
+
+**Composition.** Provide exactly one framePane child. Closing and reopening preserves the mounted frame, its controls and bindings.
+
+
+**Limits and lifecycle.** This window is nonmodal. Movement, resize and collapse default on, while maximize is opt-in. Disposal invalidates pending close decisions and releases interaction resources.
 
 Shared contracts: [Window behavior and geometry](#gc-345-shared-windows).
 
@@ -1213,6 +1833,21 @@ Hierarchical Bag presentation with selection, disclosure and declared drag behav
 Collection: **tree**. Browser element: `gramlot-tree`.
 
 [Tree stores, labels and selection](105-components.md#gc-105-120).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-tree).
+
+
+**Data contract.** storepath selects a live Bag in Data or a Source tree through the store routing contract. Bind selectedPath two ways for selection and checkedPaths for joined checkbox paths. Selection paths are relative to the store. External selection can resolve missing ancestors.
+
+
+**Interaction and events.** Disclosure, keyboard navigation and selection operate on visible rows. Named label and icon Logic can customize row presentation. onChecked receives item and path and can veto the change. Optional drag callbacks prepare a typed snapshot for the internal drop pipeline.
+
+
+**Composition.** The Bag supplies the hierarchy and can contain lazy resolver nodes. Source may declare one rowActions child for shared commands. A rendered scalar child selects its owning Bag node.
+
+
+**Limits and lifecycle.** Ordinary rendering does not evaluate unloaded resolvers. Failed branches remain retryable and stale asynchronous results cannot change later selection. Search stops at marked loops, and drag preparation is opt-in, synchronous and does not evaluate a lazy row.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
@@ -1249,6 +1884,21 @@ Collection: **tree**. Browser element: `gramlot-row-actions`.
 
 [Tree stores, labels and selection](105-components.md#gc-105-120).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-rowactions).
+
+
+**Data contract.** state is an optional read binding passed to actionState. Command context carries the focused or hovered row item and path independently of selectedPath.
+
+
+**Interaction and events.** A child command runs in the current row context without selecting the row. actionState receives item, path, action and state and returns hidden, icon and title for each coded action.
+
+
+**Composition.** Place one shared bar inside tree, at start or end of the row. Compose button and dropDownButton children. Use rowAction to identify an action for presentation Logic.
+
+
+**Limits and lifecycle.** The bar hides when it has no row context. Invalid position or an incomplete actionState result raises an error. Menu commands use the same active row context as the bar.
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
 | `position` | T | 'end' | — | — |
@@ -1270,6 +1920,21 @@ Shared file queue with progress, preview, selected-file metadata and application
 Collection: **uploads**. Browser element: `gramlot-uploader`.
 
 [File uploads and metadata](105-components.md#gc-105-uploader).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-uploader).
+
+
+**Data contract.** Initialize a Bag at storepath for queue rows and progress. selectedPath writes the queue-relative row label and clears when that row is removed. Files and temporary grants stay outside Data. Preparation snapshots row metadata fields and the optional contextPath Bag separately.
+
+
+**Interaction and events.** Selection and drop add files. autoUpload starts queued files, including when enabled after selection. In deferred mode manualUpload controls the Upload action. onComplete names Page Logic receiving item and result after confirmed completion.
+
+
+**Composition.** Leaf control. Place ordinary metadata controls beside it and bind them to the selected row's metadata Bag. Give them an empty scope when no row is selected.
+
+
+**Limits and lifecycle.** The host and application operation own authorization and storage. Check status reconciles uncertain outcomes before retry. Local preview covers safe text and raster images. File-origin WebKit Workers can fail to read selected File objects.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
 
@@ -1297,6 +1962,21 @@ Collection: **uploads**. Browser element: `gramlot-image-uploader`.
 
 [File uploads and metadata](105-components.md#gc-105-uploader).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-imageuploader).
+
+
+**Data contract.** Bind value two ways and initialize a queue Bag at storepath. Crop confirmation writes a PNG data URL in browser-only mode or a displayable URL returned by the application operation in transfer mode. External value changes supersede open edits.
+
+
+**Interaction and events.** Select or drop one image, move, zoom or rotate the crop, then confirm or cancel. Camera and screen capture feed the same crop path when available. Server-mode onComplete receives item and result after confirmed transfer.
+
+
+**Composition.** Leaf control with its own crop dialog. Compose surrounding form controls normally and share contextPath when the upload operation needs it.
+
+
+**Limits and lifecycle.** Input supports PNG, JPEG and WebP. Positive integer crop and output dimensions must have the same aspect ratio. Remote editing requires canvas-compatible URL access. Camera needs a capable device provider and permission, with a secure context for browser capture. Screen capture depends on browser support and permission. Stored files remain under application control after value is cleared.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -1321,6 +2001,21 @@ Reusable attachment queue and list backed by application operations.
 Collection: **uploads**. Browser element: `gramlot-attachment-manager`.
 
 [File uploads and metadata](105-components.md#gc-105-uploader).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-attachmentmanager).
+
+
+**Data contract.** Initialize queue and record context Bags at storepath and contextPath. Update context before ready enables queued uploads. selectedPath addresses a queue row for metadata editing. The list endpoint provides opaque attachment IDs and captions.
+
+
+**Interaction and events.** The manager refreshes its list after confirmed upload, calls readMethod for preview and removeMethod for deletion. Context changes clear the old selection and discard stale responses. Failed removal retains selection and reports an error. It declares no public onComplete.
+
+
+**Composition.** Leaf control composing its own multiple-file queue, list and preview. External metadata fields can bind to the selected queue row.
+
+
+**Limits and lifecycle.** The application supplies operation, listMethod, readMethod and removeMethod and owns authorization and persistence. Preview responses distinguish text, image and message. Removal requires a true result.
 
 Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state).
 
@@ -1352,6 +2047,21 @@ Collection: **editors**. Browser element: `gramlot-code-mirror`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-codemirror).
+
+
+**Data contract.** Bind value two ways to source text. Live writes are the default. Deferred edits commit when focus leaves the editor. External value and configuration changes update the retained CodeMirror state.
+
+
+**Interaction and events.** Undo, redo and historyChanged expose editor history. Ctrl/Cmd+S publishes local save while editable. Ctrl/Cmd+F opens search. Tab indents, Shift+Tab outdents and Escape followed by Tab exits.
+
+
+**Composition.** Leaf control. Place a toolbar or preview beside it. Wait for ready before using engine-dependent methods such as diagnostics and position revelation.
+
+
+**Limits and lifecycle.** Language names are enumerated and completion uses local language support. Readonly prevents changes and replacement. Disabled also prevents focus. The application owns persistence.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -1382,6 +2092,21 @@ Collection: **editors**. Browser element: `gramlot-html-editor`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-htmleditor).
+
+
+**Data contract.** Bind value two ways to HTML source. Live writes are the default and deferred edits commit on blur. Rich edits can normalize markup, while undo to the initial snapshot restores the original source.
+
+
+**Interaction and events.** The rich toolbar edits supported body content. Undo, redo and the local save shortcut follow the editor history contract.
+
+
+**Composition.** Leaf control. Pair it with a preview or source editor through the same Data string.
+
+
+**Limits and lifecycle.** The document head, doctype and protected body regions stay outside the editable content. Removing or duplicating a protected placeholder rejects the edit. Use source editing for protected regions.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -1398,6 +2123,21 @@ Read-only HTML preview with the component sanitization contract.
 Collection: **editors**. Browser element: `gramlot-html-preview`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-htmlpreview).
+
+
+**Data contract.** The read-bound value supplies the HTML string projected to the iframe document. A Data change replaces the displayed document.
+
+
+**Interaction and events.** Displays the iframe document without edit, save or completion callbacks.
+
+
+**Composition.** Leaf control. Bind it to the same Data path as a separate HTML editor.
+
+
+**Limits and lifecycle.** The iframe sandbox has no allow tokens, so scripts cannot execute. The Data string stays intact.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value).
 
@@ -1416,6 +2156,21 @@ Collection: **editors**. Browser element: `gramlot-markdown-editor`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-markdowneditor).
+
+
+**Data contract.** Bind value two ways to Markdown. Live writes are the default and deferred edits commit on blur. Incoming Data updates retain the ProseMirror engine and plugins. Undo to the initial snapshot recovers the exact source.
+
+
+**Interaction and events.** The toolbar and native edits go through the same document model. Undo, redo and local save use the shared editor contract.
+
+
+**Composition.** Leaf control. Pair it with markdownPreview or a source editor through the same text path.
+
+
+**Limits and lifecycle.** Rich editing covers ordinary paragraphs, headings, lists, quotes and fenced code. Tables, embedded HTML, strikethrough and task lists remain opaque source blocks. Frontmatter and reference definitions preserve the whole document as a source block. Rich edits can normalize supported syntax.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -1433,6 +2188,21 @@ Collection: **editors**. Browser element: `gramlot-markdown-preview`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-markdownpreview).
+
+
+**Data contract.** Reads Markdown through value. Changing allowHtml alters rendering only. By default embedded HTML appears as text. With allowHtml enabled, rendered HTML is sanitized.
+
+
+**Interaction and events.** Updates as read inputs change. It declares no save, edit or render-completion callback.
+
+
+**Composition.** Leaf control. Pair it with a Markdown editor through the same Data string.
+
+
+**Limits and lifecycle.** The renderer loads on demand. The sandboxed preview policy blocks external image requests and rendering leaves the source intact.
+
 Shared contracts: [Values and bindings](#gc-345-shared-value).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -1445,11 +2215,26 @@ Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source childr
 <a id="gc-345-typstpreview"></a>
 ### `typstPreview`
 
-Typst document preview and optional client PDF compilation; compiler resources are separate from ordinary forms.
+Typst document preview with client SVG and PDF compilation; compiler resources are separate from ordinary forms.
 
 Collection: **typst**. Browser element: `gramlot-typst-preview`.
 
 [Typst compiler and resource ownership](105-components.md#gc-105-145).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-typstpreview).
+
+
+**Data contract.** Reads the Typst source from value and the download name from filename. SVG, PDF and diagnostics stay inside the browser preview. The current Worker produces SVG and PDF for each successful preview revision.
+
+
+**Interaction and events.** Changes schedule compilation after a short pause. The current result enables download and diagnostics appear in the widget. It declares no completion callback.
+
+
+**Composition.** Leaf control. Pair it with codeMirror from the separate editors collection to edit the same draft.
+
+
+**Limits and lifecycle.** The browser Worker uses a bundled compiler and fonts. Includes, custom assets and external packages are outside the browser preview contract. Source changes invalidate prior output immediately. Removing the last preview releases the shared Worker.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value).
 
@@ -1468,6 +2253,18 @@ These are Source declarations, not additional browser components. Parameters bel
 
 Children: `column,colgroup`. Parents: `grid`.
 
+
+**Data contract.** An inline declaration projects to a structure Bag before rendering. Use structpath to read a separately maintained structure instead.
+
+
+**Interaction and events.** Grid header interactions can update the projected structure. Other grids sharing that Bag observe its changes. The declaration has no callback.
+
+
+**Composition.** Grid declaration containing columns and column groups. It has no separate browser element.
+
+
+**Limits and lifecycle.** Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected.
+
 Additional positional arguments: `False`; additional keyword arguments: `False`.
 
 No parameters.
@@ -1476,6 +2273,18 @@ No parameters.
 ### `column`
 
 Children: `''`. Parents: `struct,colgroup`.
+
+
+**Data contract.** The required field identifies a row field under the chosen rowMode. Metadata configures caption, type and presentation. Enable local editing with edit=True or an editor options dictionary.
+
+
+**Interaction and events.** The grid handles header and cell interactions. The column supplies configuration for the projected header, cells and optional editor.
+
+
+**Composition.** Leaf declaration inside struct or colgroup, without a separate browser element.
+
+
+**Limits and lifecycle.** Field identity must be unique. Attribute names and values are validated. Formulas are outside the structure contract.
 
 Additional positional arguments: `False`; additional keyword arguments: `False`.
 
@@ -1494,6 +2303,18 @@ Additional positional arguments: `False`; additional keyword arguments: `False`.
 ### `colgroup`
 
 Children: `column`. Parents: `struct`.
+
+
+**Data contract.** Supplies identity, caption and optional colors for a header band. Column membership belongs to the structure Bag.
+
+
+**Interaction and events.** Moving columns can split or join contiguous header bands while preserving group membership. The group declares no callback.
+
+
+**Composition.** Place directly under struct and put column declarations inside. The grid renders the group.
+
+
+**Limits and lifecycle.** Groups cannot nest. Each member column still identifies its own row field.
 
 Additional positional arguments: `False`; additional keyword arguments: `False`.
 

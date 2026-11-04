@@ -7,13 +7,7 @@ Document ID: **GC-430**.
 
 Editors bind a retained editing instance to Data; previews display a value without editing it. Engine resources load when needed, independently of collection availability.
 
-The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). Example body for `main(self, root)`:
-
-```python
-pane = root.div(datapath="draft")
-pane.markdownEditor(value="^.text", height="220px")
-pane.markdownPreview(value="^.text")
-```
+The environment Page base supplies the collections used below. [Configure them once](340-components-and-collections-guide.md#gc-340-050). [Setup examples are in the appendix](465-widget-examples.md#gc-465-setup-editors).
 
 Both controls share one value. External Data updates use supported engine setters rather than recreating the editor. Editor instances are not application state. HTML/Markdown rendering uses the runtime sanitization/Markdown services, with component-specific policies; do not bypass them by inserting generated HTML yourself. [Modes and engine options](105-components.md#gc-105-125).
 
@@ -211,6 +205,21 @@ Collection: **editors**. Browser element: `gramlot-code-mirror`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-codemirror).
+
+
+**Data contract.** Bind value two ways to source text. Live writes are the default. Deferred edits commit when focus leaves the editor. External value and configuration changes update the retained CodeMirror state.
+
+
+**Interaction and events.** Undo, redo and historyChanged expose editor history. Ctrl/Cmd+S publishes local save while editable. Ctrl/Cmd+F opens search. Tab indents, Shift+Tab outdents and Escape followed by Tab exits.
+
+
+**Composition.** Leaf control. Place a toolbar or preview beside it. Wait for ready before using engine-dependent methods such as diagnostics and position revelation.
+
+
+**Limits and lifecycle.** Language names are enumerated and completion uses local language support. Readonly prevents changes and replacement. Disabled also prevents focus. The application owns persistence.
+
 Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
 
 | Specific parameter | Type | Default | Binding | Constraints |
@@ -241,6 +250,21 @@ Collection: **editors**. Browser element: `gramlot-html-editor`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-htmleditor).
+
+
+**Data contract.** Bind value two ways to HTML source. Live writes are the default and deferred edits commit on blur. Rich edits can normalize markup, while undo to the initial snapshot restores the original source.
+
+
+**Interaction and events.** The rich toolbar edits supported body content. Undo, redo and the local save shortcut follow the editor history contract.
+
+
+**Composition.** Leaf control. Pair it with a preview or source editor through the same Data string.
+
+
+**Limits and lifecycle.** The document head, doctype and protected body regions stay outside the editable content. Removing or duplicating a protected placeholder rejects the edit. Use source editing for protected regions.
+
 Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -257,6 +281,21 @@ Read-only HTML preview with the component sanitization contract.
 Collection: **editors**. Browser element: `gramlot-html-preview`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-htmlpreview).
+
+
+**Data contract.** The read-bound value supplies the HTML string projected to the iframe document. A Data change replaces the displayed document.
+
+
+**Interaction and events.** Displays the iframe document without edit, save or completion callbacks.
+
+
+**Composition.** Leaf control. Bind it to the same Data path as a separate HTML editor.
+
+
+**Limits and lifecycle.** The iframe sandbox has no allow tokens, so scripts cannot execute. The Data string stays intact.
 
 Shared contracts: [Values and bindings](#gc-430-shared-value).
 
@@ -275,6 +314,21 @@ Collection: **editors**. Browser element: `gramlot-markdown-editor`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
 
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-markdowneditor).
+
+
+**Data contract.** Bind value two ways to Markdown. Live writes are the default and deferred edits commit on blur. Incoming Data updates retain the ProseMirror engine and plugins. Undo to the initial snapshot recovers the exact source.
+
+
+**Interaction and events.** The toolbar and native edits go through the same document model. Undo, redo and local save use the shared editor contract.
+
+
+**Composition.** Leaf control. Pair it with markdownPreview or a source editor through the same text path.
+
+
+**Limits and lifecycle.** Rich editing covers ordinary paragraphs, headings, lists, quotes and fenced code. Tables, embedded HTML, strikethrough and task lists remain opaque source blocks. Frontmatter and reference definitions preserve the whole document as a source block. Rich edits can normalize supported syntax.
+
 Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
 
 No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
@@ -291,6 +345,21 @@ Rendered Markdown preview.
 Collection: **editors**. Browser element: `gramlot-markdown-preview`.
 
 [Editor composition and document behavior](105-components.md#gc-105-125).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-markdownpreview).
+
+
+**Data contract.** Reads Markdown through value. Changing allowHtml alters rendering only. By default embedded HTML appears as text. With allowHtml enabled, rendered HTML is sanitized.
+
+
+**Interaction and events.** Updates as read inputs change. It declares no save, edit or render-completion callback.
+
+
+**Composition.** Leaf control. Pair it with a Markdown editor through the same Data string.
+
+
+**Limits and lifecycle.** The renderer loads on demand. The sandboxed preview policy blocks external image requests and rendering leaves the source intact.
 
 Shared contracts: [Values and bindings](#gc-430-shared-value).
 
