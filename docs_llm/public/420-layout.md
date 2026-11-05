@@ -52,6 +52,7 @@ Dialog and floatingPane share controls, geometry and state. Their movement, resi
 | `width, height, left, top` | `{"binding":"twoWay","dtype":"T","nullable":true}` | dialog, floatingPane |
 | `minWidth, minHeight` | `{"binding":"read","dtype":"T","nullable":true}` | dialog, floatingPane |
 | `movable, resizable, collapsible` | `{"binding":"read","default":true,"dtype":"B"}` | floatingPane |
+| `docked` | `{"binding":"read","default":false,"dtype":"B"}` | floatingPane |
 
 <a id="gc-420-260"></a>
 <a id="gc-420-shared-regions"></a>
@@ -134,6 +135,8 @@ Shared contracts: [Labels and field presentation](#gc-420-shared-labels).
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `copy` | `{"binding":"read","default":false,"dtype":"B"}` |
 | `lbl_variant` | `{"binding":"read","default":"bar","dtype":"T","enum":["bar","underline","card"]}` |
 

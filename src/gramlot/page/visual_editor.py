@@ -79,32 +79,32 @@ class VisualEditor:
         pane.dataController(func='applyEditorAppearance', profile='^.appearanceProfile', palette='^.appearancePalette', mode='^.appearanceMode')
         rail = pane.menu(presentation='bar', orientation='vertical', aria_label='Editor panels', class_='visual-editor-rail')
         self.rail = rail
-        self.tool_button(rail.menuline(group=True, overflowable=False), 'Source / Data', 'toggleNavigation', TOOL_ICONS['navigation'])
-        self.tool_button(rail.menuline(group=True, overflowable=False), 'Catalogue', 'openCatalogue', TOOL_ICONS['catalogue'])
-        self.tool_button(rail.menuline(group=True, overflowable=False), 'Properties', 'openProperties', TOOL_ICONS['properties'])
-        self.tool_button(rail.menuline(group=True, overflowable=False), 'Clipboard', "this.SET('.clipboardVisible', !this.GET('.clipboardVisible'))", TOOL_ICONS['paste'],
+        self.tool_button(rail.menuline(group=True), 'Source / Data', 'toggleNavigation', TOOL_ICONS['navigation'])
+        self.tool_button(rail.menuline(group=True), 'Catalogue', 'openCatalogue', TOOL_ICONS['catalogue'])
+        self.tool_button(rail.menuline(group=True), 'Properties', 'openProperties', TOOL_ICONS['properties'])
+        self.tool_button(rail.menuline(group=True), 'Clipboard', "this.SET('.clipboardVisible', !this.GET('.clipboardVisible'))", TOOL_ICONS['paste'],
                          dropTarget=True, dropTypes="app/source", dropTags=f"{editor_id}Source",
                          dropEffect="^.clipboardDropEffect", connect_ondragover="clipboardModifiers",
                          connect_ondrop="clipboardModifiers", onDrop="dropClipboard")
         rail.spacer(flex=1)
-        self.tool_button(rail.menuline(group=True, overflowable=False), 'Appearance', "this.SET('.appearanceOpen', !this.GET('.appearanceOpen'))", TOOL_ICONS['appearance'])
+        self.tool_button(rail.menuline(group=True), 'Appearance', "this.SET('.appearanceOpen', !this.GET('.appearanceOpen'))", TOOL_ICONS['appearance'])
         layout_root = pane.framePane(node_label="layout", height="100%", id=f"{editor_id}-editor-frame", class_='visual-editor-layout')
         layout_root.top.set_attr(height='30px')
         toolbar = layout_root.top.menu(presentation="bar", aria_label="Editor tools", class_="visual-editor-toolbar")
-        toolbar.menuline(group=True, overflowable=False).span("Source editor", class_="visual-editor-brand")
-        files = toolbar.menuline(group=True, overflowable=False, gap="4px", hidden=not file_commands)
+        toolbar.menuline(group=True).span("Source editor", class_="visual-editor-brand")
+        files = toolbar.menuline(group=True, gap="4px", hidden=not file_commands)
         for caption, action, icon in [('New', 'newPage', 'new'), ('Open', 'openUpload', 'open'),
                                       ('Download', 'downloadPage', 'download'), ('Copy Source', 'copySource', 'copy')]:
             self.tool_button(files, caption, action, TOOL_ICONS[icon], id=f'{editor_id}-{icon}')
-        toolbar.menuline(group=True, overflowable=False).span(class_="visual-toolbar-divider", aria_hidden="true")
-        edit = toolbar.menuline(group=True, overflowable=False, gap="2px")
+        toolbar.menuline(group=True).span(class_="visual-toolbar-divider", aria_hidden="true")
+        edit = toolbar.menuline(group=True, gap="2px")
         self.tool_button(edit, 'Cut branch', 'cutBranch', TOOL_ICONS['cut'], title='Cut branch (F8)')
         self.tool_button(edit, 'Copy branch', 'copyBranch', TOOL_ICONS['copy'])
         self.tool_button(edit, 'Paste branch', 'pasteBranch', TOOL_ICONS['paste'], title='Paste branch (F9)')
         toolbar.spacer(flex=1)
-        toolbar.menuline(group=True, overflowable=False, hidden="^.modified:=!{}").span("Unsaved changes", role="status", class_="visual-editor-hint")
-        toolbar.menuline(group=True, overflowable=False).span("^.fileStatus", role="status", class_="visual-editor-file-status")
-        toolbar.menuline(group=True, overflowable=False).span("^.filename", class_="visual-editor-filename")
+        toolbar.menuline(group=True, hidden="^.modified:=!{}").span("Unsaved changes", role="status", class_="visual-editor-hint")
+        toolbar.menuline(group=True).span("^.fileStatus", role="status", class_="visual-editor-file-status")
+        toolbar.menuline(group=True).span("^.filename", class_="visual-editor-filename")
         left = layout_root.left
         left.setAttr(dict(width="min(240px, 34vw)", splitter=True,
                           drawer="^.navigationOpen", default_drawer=True, drawer_label="Source / Data",
@@ -159,7 +159,7 @@ class VisualEditor:
         naming.frame.center.p("^.error", role="alert", margin="12px")
         naming_bar = naming.frame.bottom.menu(presentation="bar", aria_label="Clipboard commands", padding="3px 6px")
         naming_bar.spacer(flex=1)
-        naming_buttons = naming_bar.menuline(group=True, overflowable=False, gap="8px")
+        naming_buttons = naming_bar.menuline(group=True, gap="8px")
         naming_buttons.button("Cancel", action="this.SET('.clipboardOpen', false)")
         naming_buttons.button("Save branch", action="saveClipboard")
         dialog = pane.dialog(class_="visual-editor-popup", title="Required parameters", open="^.insertionOpen", width="400px", height="280px",
@@ -169,7 +169,7 @@ class VisualEditor:
         bar = dialog.frame.bottom.menu(presentation="bar", aria_label="Insertion commands",
                                        padding="3px 6px", border_top="1px solid var(--gramlot-border)")
         bar.spacer(flex=1)
-        buttons = bar.menuline(group=True, overflowable=False, gap="8px")
+        buttons = bar.menuline(group=True, gap="8px")
         buttons.button("Cancel", action="this.SET('.insertionOpen', false)")
         buttons.button("Insert", action="insertWidget")
         settings = pane.floatingPane(class_="visual-editor-popup", title='Appearance', open='^.appearanceOpen', default_open=False, width='280px', height='260px', movable=True, resizable=True)
@@ -197,7 +197,7 @@ class VisualEditor:
         pane.dataSetter('.codeDocument', Bag(dict(document, saved=document['content'], busy=False, status='')))
         frame = self.frame if frame is None else frame
         opener = self.toolbar if frame is self.frame else frame.top.menu(presentation='bar', aria_label='Code drawer')
-        opener.menuline(group=True, overflowable=False).button('Code', action='openCode', class_='button--quiet')
+        opener.menuline(group=True).button('Code', action='openCode', class_='button--quiet')
         drawer = frame.right
         drawer.set_attr(class_='visual-editor-code', datapath=f"#{pane.attr['visualEditorId']}Editor", title='Page code', detachable=True,
                         width='60%', minSize=240, splitter=True, drawer='^.codeOpen', default_drawer='close',
@@ -214,7 +214,7 @@ class VisualEditor:
         code.bottom.div('^.codeDocument.status', role='status', font_size='12px', padding='4px 10px')
         bar = code.bottom.menu(presentation='bar', aria_label='Page code commands', padding='3px 6px')
         bar.spacer(flex=1)
-        commands = bar.menuline(group=True, overflowable=False, gap='6px')
+        commands = bar.menuline(group=True, gap='6px')
         commands.button('Close', action="this.SET('.codeOpen', 'close')")
         commands.button('Preview saved', action='codePreview', disabled='^.codeDocument.busy')
         commands.button('Save', action='codeSave', disabled='^.codeSaveDisabled')
@@ -224,7 +224,7 @@ class VisualEditor:
 
     def search(self, pane, path, label):
         bar = pane.menu(presentation="bar", aria_label=label, class_="visual-search-toolbar")
-        field = bar.menuline(group=True, overflowable=False, flex=1, min_width=0).div(class_="visual-search-field")
+        field = bar.menuline(group=True, flex=1, min_width=0).div(class_="visual-search-field")
         field.span(class_="visual-search-icon", aria_hidden="true")
         field.input(type="search", value=f"^.{path}", default="", live=True, placeholder=label, aria_label=label)
         field.html_button(type="button", class_="visual-search-clear", aria_label=f"Clear {label.lower()}",

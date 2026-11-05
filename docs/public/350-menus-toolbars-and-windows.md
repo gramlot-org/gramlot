@@ -140,23 +140,22 @@ captured before delivery and the runtime checks that sender and recipient still
 belong to the live frame.
 
 <a id="gc-350-025"></a>
-## 025 · Groups, spacers and overflow priority
+## 025 · Groups, spacers and ordered overflow
 
 ```python
 bar = frame.top.menu(presentation="bar", iconSize=24, labelPosition="tooltip")
-editing = bar.menuline(group=True, priority=80)
+editing = bar.menuline(group=True)
 editing.menuline("documenti:save")
 editing.menuline("documenti:toggleDetails", checked="^document.details")
 bar.spacer(size=12)
 bar.spacer(flex=1)
-search = bar.menuline(group=True, overflowable=False)
+search = bar.menuline(group=True)
 search.input(value="^document.search", placeholder="Search", width="12rem")
 ```
 
-Initialize `document.search` in the Page Data before using this fragment. Lower
-priority units enter overflow first; equal priorities move from the end. A group
-moves as a unit, preserving entry order. `overflowable=False` retains the unit.
-When retained units cannot fit, the bar scrolls without splitting the groups.
+Initialize `document.search` in the Page Data before using this fragment. The visible toolbar is a contiguous prefix. The first non-fitting unit and
+all following units enter the vertical popup in declaration order. A group
+moves as one unit. No per-item priority or retention flag is required.
 Spacers provide layout, not fake commands. Input values and bindings survive
 transfer to overflow. A submenu is a hierarchy; a group is a layout unit.
 

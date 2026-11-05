@@ -203,6 +203,40 @@
             "default": null
           },
           {
+            "name": "labelState",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "getLabelClass",
             "kind": "keyword_only",
             "role": "attribute",
@@ -255,6 +289,47 @@
           },
           {
             "name": "searchText",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
+            "name": "searchEager",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": true
+          },
+          {
+            "name": "searchAttributes",
             "kind": "keyword_only",
             "role": "attribute",
             "annotation": {
@@ -338,6 +413,36 @@
             },
             "has_default": true,
             "default": false
+          },
+          {
+            "name": "resolveLazy",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": true
           },
           {
             "name": "selectedPath",
@@ -501,6 +606,12 @@
               "nullable": true,
               "default": null
             },
+            "labelState": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
+              "binding": "read"
+            },
             "getLabelClass": {
               "dtype": "T",
               "nullable": true,
@@ -521,6 +632,16 @@
               "default": "",
               "binding": "read"
             },
+            "searchEager": {
+              "dtype": "B",
+              "default": true,
+              "binding": "read"
+            },
+            "searchAttributes": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
             "favorites": {
               "dtype": "X",
               "nullable": true,
@@ -535,6 +656,11 @@
             "autoCollapse": {
               "dtype": "B",
               "default": false,
+              "binding": "read"
+            },
+            "resolveLazy": {
+              "dtype": "B",
+              "default": true,
               "binding": "read"
             },
             "selectedPath": {

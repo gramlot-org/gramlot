@@ -2,7 +2,7 @@
 
 from urllib.parse import quote
 from copy import deepcopy
-from ..collection import collection_graph, page_collections
+from ..collection import collection_graph, page_collections, standard_collections
 
 import inspect
 import json
@@ -151,7 +151,7 @@ class GramlotServer:
         self._page_channels = {}
         self.websocket_url = websocket_url
         self._uploads = None
-        self.collections = collection_graph(collections)
+        self.collections = collection_graph((*standard_collections(), *collections))
         self._environment_pages = {}
         self._collection_documents = {}
         self._prepared_grammars = {}
@@ -167,7 +167,8 @@ class GramlotServer:
 
     def collection_url(self, collection, path):
         """Map a registered package resource to a root-relative host URL."""
-        raise NotImplementedError('The host must expose verified collection resources')
+        return (f"/gramlot/collections/{quote(collection.name, safe='')}/{collection.build_id[7:]}/"
+                + '/'.join(quote(part, safe='') for part in path.split('/')))
 
     def page_collections(self, cls):
         return collection_graph((*self.collections, *page_collections(cls)))

@@ -1,6 +1,97 @@
 # 070 · Release and current development status
 
+**Release qualification follow-up (2026-11-06, automatic gates complete):** owner authorized finishing qualification and connected server documentation, without publication. Node 22 core: 1879 passed; core Python: 434 passed, 5 expected failures (60 deprecation warnings); Python server: 384 passed, 1 skipped; JS server/serverless/workspace: 115 passed; Bun server: 45 passed. Gallery Python: all 115 tests passed across the four page/endpoint/fragment checks and the remaining 111. Full gallery JS: 418 passed/1 failed; the sole failure was Drawing's explicit initialization instead of a sample companion. Moved the original empty annotations Bag to 06-drawing_data.tytx, removed Python/JS initialization imports/calls and updated the lesson. All 14 affected catalog/sample-data/mount/source-parity checks passed after correction; the complete JS suite was not repeated after this bounded fix. Automatic-standard-collection fixtures use actual environment inventory/assets; response fixtures read bodies once. Test TTL is three seconds with negative conformance checks retained; core test concurrency is two and Bun CI/documentation set a 30-second test budget. Production TTL is unchanged. Completed Audio/Drawing human/LLM contracts, coverage and discovery links. Core public documentation: 36 pages and 15 agent downloads verified; paired Python and JS server documentation builds passed. Gallery build and four-repository whitespace checks passed. No outstanding automatic-test defect remains. Actual file:// opening of the successfully built single-file/directory chart exports remains unverified because browser URL policy blocked it; no bypass. Physical mobile qualification remains owner-deferred. Hosted publication can proceed after owner confirmation; a fully certified file-export release still needs that manual check. Invoice application remains excluded. No publication/deployment. Evidence: /private/tmp/gramlot-release-qualification-20261106.md. This supersedes the resolved failures in the 2026-11-05 qualification below.
+
+**Release qualification (2026-11-05, owner-authorized server documentation):** not ready for publication. Core and server documentation builds passed (34 public core pages/13 agent downloads; 17 paired server guides/133 identities). Updated the original chart-gallery server guide and corrected conflicting document identities in both mirrors. Excluded standard.json from component grammar test discovery, regenerated existing references, added Charts to the gallery family assertion, and fixed the Asqueel checkbox lesson catalog key; preview startup (3 tests), affected Asqueel navigation (2 tests), and family check passed. Supported Node 22 qualification: core JS 1865 passed/14 failed; core Python 413 passed/19 failed/5 xfailed before the focused reference fix; Python server 369 passed/15 failed/1 skipped before catalog rerun; JS server 40 passed/5 failed; serverless 49 passed/18 failed; workspace creation 3 passed. Bun server 39 passed/2 failed. Two PageStore tests that timed out under full-suite load both passed in isolation. Isolated core protocol conformance remains 6 passed/2 failed, confirming the TTL gate is still unresolved. Focused widget reference remains 15 passed/2 failed: Audio/Drawing reference and behavior coverage are incomplete. Remaining gates include automatic-standard-collection fixture/assertion alignment, gallery parity/mount qualification, TTL/page expiry conformance, and complete documentation coverage. Single-file and directory chart exports built, but file:// browser opening was blocked by tool security policy and is not verified. No publication/deployment. This supersedes the previous server-guide authorization blocker. Detailed local evidence: /private/tmp/gramlot-release-qualification-20261105.md. Gallery sweeps completed: Python 134 passed/14 failed/1 skipped; JavaScript 302 passed/114 failed/1 cancelled on the default Node 23. Many parity fixtures construct builders without standard components (formlet/framePane/etc.); these sweeps are diagnostic, not a supported-Node release pass. Two Python catalog failures and the JS family assertion were separately corrected and verified.
+
+**Original chart reports in gallery (2026-11-05):** owner explicitly requires existing server-backed examples, not substitute portable datasets. Withdrawn the three newly invented substitutes to a temporary preservation folder. Examples now catalog seven original reports with JSON metadata and Markdown: Australian sales, temporal sales, State/suburb drilldown, streaming sine waves, attribute/value fixtures and prepared monthly snapshots. Common Charts has eight lessons grouped into simple/time/3D/maps; directory metadata titles are consumed by Python and JS navigation. Existing Python chart-report launcher can stage the ordinary gallery using its original SalesCharts/SalesGeography providers. Local preview: http://127.0.0.1:61536/. Checks: 22 JS catalog/navigation/features tests, 9 Python navigation tests, 11 server/provider tests passed; examples build passed. Browser confirmed database sales, streaming pause, and Tasmania drilldown (776 boundaries, 97 sales areas, unmatched rows retained). Not a complete release qualification or public deployment. Server guide update was rejected by automatic approval review and remains pending; original providers are unchanged.
+
+**FrameGrid chart command (2026-11-05):** owner requested an icon instead of the text button. Python and JavaScript frameGrid now use the existing menu icon with labelPosition="tooltip", preserving the Chart caption for tooltip/accessibility and the existing action. Python frameGrid tests: 15 passed. No custom CSS or new command implementation. Release qualification remains ongoing.
+
+
+**Self-contained system monitor (2026-11-05):** owner requires each example to contain its own application code unless another page actually reuses it. Moved the psutil collector and PageStore into system_analysis.py beside Page (371 total lines); removed the server-only collector module and launcher import injection. Shared the store-name declaration within the module. Moved collector tests to examples and declared the optional psutil dependency there. Human/compact lessons explain the complete module, server-machine measurements and WebSocket prerequisite. Authoring instructions now prohibit hidden application code in launchers. Eight monitor tests passed, including PageStore discovery and complete gallery source_document contents; four page-qualification tests passed. Chromium live sampling and Stop/Play passed without page errors. Preview 61535 restarted; no publication.
+
+**Relative-path audio authoring (2026-11-05):** owner requested correcting audio with datapath/fixed relative paths, auditing other examples, and teaching the rule. Audio root context is `audio`; reusable chart contexts `.waveform` and `.spectrum` share fixed `.samples`, `^.step`, `^.options`; numeric choices similarly use `.choice`/`.value` in separate contexts. No constructed binding paths remain in audio. Source/data names remain instance-local. Human/LLM authoring guides and AGENTS now require contextualized containers for reusable blocks. Audited dynamic path declarations in 234 authored Python files and JavaScript counterparts; field/schema loops are distinguished from context concatenation. Remaining candidates (system monitor, reports, editor anchor integration) are recorded in examples GE-015 review notes; their shared/server contracts were not rewritten. Four page-qualification tests passed. Chromium synthetic microphone verified waveform/spectrum array sizes, Play/Stop/restart, retained plot DOM and no page errors. Preview 61535 restarted. No publication or claim of eliminating every absolute path.
+
+**Drawing SVG qualification closed (2026-11-05):** after the owner requested completing the failing check, verified six duplicate namespace literals in drawing (one local constant and five icon templates). Drawing now imports the existing SVG_NS constant from renderer/attributes.js and uses it for SVG nodes and icon templates, including bound color/size icons. Added a regression checking SVG parsing/namespaces before and after toolbar changes. Server plus drawing tests: 45/45 passed, including the static namespace uniqueness check; full core build passed and regenerated the prepared artifacts. Final post-build server/drawing/collection-cache qualification: 51/51 passed. This closes the failure noted in the preceding standard-collection qualification; no publication.
+
+**Automatic standard server collections (2026-11-05):** owner confirmed "non la gallery / qualunque sito", "è un compito da gramlot server", "parti". Python and JavaScript GramlotServer now include the same packaged standard inventory, compose the existing environment Page base, and add explicit custom collections. No per-page standard imports or launcher lists are required. JS hosts resolve and verify standard artifacts from core; serverless directory and single-file exports embed them, with a nonce-authorized import map for single-file CSP. Experimental selection_trial/Invoice remains outside the standard inventory. Removed redundant standard declarations from report/system/audio examples and gallery configuration; retained custom menu declarations. Tests: Python server 17/17, prepared collections 13/13, JS collections 12/12, JS server 41/42 (the remaining static SVG constant uniqueness failure belongs to pre-existing drawing changes), JS host 2/2, example qualification 4/4. Single-file suite initially 6/7; corrected the stylesheet assertion to inspect only document head, then its regression passed. Real Chromium file:// checks passed for directory and single HTML with standard textbox/audioAnalyser and no collection imports. Local gallery 61535 restarted; synthetic audio Play/Stop/restart, shared charts and retained plot DOM passed without page errors. Core/gallery builds passed. No package publication, deployment or physical-device qualification.
+
+**Page authoring guidance (2026-11-05):** owner requested making environment-provided standard collections explicit in writer instructions. Repository instructions, human/compact quickstart, collection guide and agent entry guide now prohibit redundant per-page standard collection imports and declarations; custom additions remain explicit. Missing standard components are environment configuration gaps, not a reason for per-example imports. Documentation-only; existing audio example cleanup remains separate.
+
+**Audio example initialization (2026-11-05):** owner requested removing waveform, spectrum, waveStep and frequencyStep dataSetter declarations. Sample chart input now treats an absent/null value as no samples without writing Data; invalid non-null values still fail validation. Step formulas execute with `_init=True`, before rendering. Five chart/audio binding tests passed, including mounting with no sample Data node and later samples on the same component/renderer. Core build and Chromium synthetic-microphone Play/Stop/restart passed without page errors. Preview restarted on 61535; no real microphone/device claim or publication.
+
+**Compact audio example formatting (2026-11-05):** owner requested fewer scrolling lines instead of one parameter per line. Grouped menu/menuline, analyser and control parameters in the gallery microphone example; 122 to 88 lines. Python AST before/after is identical: no behavior or API changes. Preview staging was not restarted.
+
+**Next release — breaking change (owner confirmation, 2026-11-05):** “nella prossima release lo metteremo come change breaking”. Release notes must explicitly announce the system Data namespace migration: `gramlot.device.*` → `_gramlot.device.*`, `gramlot.drawing.*` → `_gramlot.drawing.*`, and `gramlot.grid.*` → `_gramlot.grid.*`. Update application bindings and explicit system-path references; no compatibility aliases exist. For the mobile shell, ship matching Source and embedded runtime together. JavaScript object names, native bridge/plugin names and persistent storage keys do not change. Physical-device testing is deferred to the owner; this confirmation does not authorize publication.
+
+**System Data namespace migration (2026-11-05):** owner approved proceeding with `_gramlot` after distinguishing DeviceHandler from native Capacitor plugins. DeviceHandler and image camera consumers now use `_gramlot.device`; generated drawing and grid structure/filter paths use `_gramlot.drawing` and `_gramlot.grid`. Updated mobile shell/example bindings and tests in the connected Capacitor repository. No alias, Inspector filtering, protocol rename or persistent-key migration. Core device/bridge tests 89/89, drawing/grid/image upload tests 133/133, Capacitor mocked tests 75/75; core build passed. Tests ran on Node 23 (mobile declares Node 24); physical mobile qualification and rebuilding/distributing the embedded shell remain unperformed. Existing local working changes preserved; no consolidation, publication or deployment.
+
 Document ID: **GC-070**. Updated: **2026-10-30**.
+
+**Live examples integration (2026-11-05):** owner requested bringing charts chat audio and psutil demos into a gallery folder for later review. Snapshot copied from docs-code-style into primary examples/server repositories, originals preserved. Optional system-monitor catalogue includes System monitor and Microphone analysis under Live examples, with Markdown and Python Code. Python server owns psutil collector and localhost launcher; no public enablement. Seven provider tests and Chromium simulated audio Play/Stop plus live PageStore/WebSocket sampling passed on temporary 61536; common gallery now runs with this optional catalogue on 61535. Detailed teaching/code review remains next, not claimed complete.
+
+**Compact drawing toolbar revision (2026-11-05):** owner confirms “eh si” to a narrow uniform toolbar, one color indicator opening a palette, stroke preview opening a size menu, and bottom delete command. Implemented with existing Source menu/submenu composition and existing drawing state; removed the permanently exposed palette and inputs. Toolbar width is 48 px. Verified 20 JS IDE/drawing tests and Chromium/WebKit dark-theme popup interaction, geometry and absence of horizontal overflow. Preview: http://127.0.0.1:61987/. This supersedes the previous toolbar presentation; owner visual acceptance pending.
+
+**Drawing toolbar and IDE file filtering (2026-11-05):** owner requests a vertical left toolbar, improved colors and no editor for unknown types. DrawingPane uses the existing vertical menu presentation, six Source-bound color swatches plus the shared custom color input and pen size. IDE document opening admits its supported code/text/image extensions; unknown files, including annotation companions, return without RPC or a tab. Companions remain edited through their image. Verified 20 JS IDE/drawing tests including palette writes and unsupported-file rejection; Chromium visual check of the rebuilt collection. Updated local preview: http://127.0.0.1:61986/. Owner visual acceptance pending; no publication.
+
+**IDE workspace image upload (2026-11-05):** owner confirms uploading to the open workspace. The IDE composes the shared uploader in a dialog, using the host's workspace_upload operation and existing Remote Edit and size limits. The server writes the original PNG/JPEG/WebP atomically without replacing an existing file; after completion the IDE refreshes and opens the image only if that workspace remains active. Verified 19 JS IDE/drawing tests, 9 Python filesystem/image tests, 3 Uvicorn IDE tests, Chromium/WebKit upload, annotate, save and reopen against the updated runtime and server, and reopen after server restart. Local preview: http://127.0.0.1:61985/. Owner visual acceptance remains pending; no publication.
+
+**Labels and boxes gallery presentation (2026-11-05):** owner reported edge-to-edge controls and an oversized Summary. The e06 metadata lacked content presentation; restored the shared wrapper, aligned Labelbox widths and used a rounded theme border. Common gallery CSS keeps native action buttons content-sized. Python/JS source parity and Chromium/WebKit spacing, equal 364px widths, radius and mobile overflow checks passed; screenshot reviewed. Preview 61535 updated, no publication.
+
+**Fundamentals lesson clarity (2026-11-05):** owner requested a wider explanation and the previously discussed simpler example, plus detachable instructions. Gallery lesson CSS no longer centers text in a 68ch column. Children and styles now shows only a themed container, heading and generated list; literal markup and the unrelated link removed in Python/JS. Markdown starts with the learning goal, explains each concept and documents detaching, arranging and docking panels. Source parity passed for e03; Chromium/WebKit verified three list items, the updated instructions and content width 1432px within a 1504px panel. Preview 61535 updated.
+
+**Gallery detachable lesson panels (2026-11-05):** owner requested detachable Example and Explanation alongside Code. Both Python/JavaScript gallery panel declarations now set the existing detachable option, including the shared single-page shell; no new component or CSS. Paired gallery usage instructions updated. Chromium/WebKit verified two floating panels, docking and iframe draft preservation in multipage and single-page modes. Local preview restarted on 61535; no publication.
+
+**Gallery labelled-field width correction (2026-11-05):** shared gallery CSS now caps field Labelboxes as well as bare controls; Labelbox max-width had overridden the previous inner-control limit. Owner requested a 48 px Fundamentals message to make opacity visible; Python/JS and Markdown updated. Chromium/WebKit verified embedded field width 364 px at a 2400 px viewport, computed text size 48 px and computed opacity changing from 0.2 to 1. Preview restarted on 61535.
+
+**Gallery minimal field declarations (2026-11-05):** owner requested defaults instead of field-only dataSetters and lbl instead of repeated aria_label across examples. Common Python/JS lessons and base database/chart examples were reviewed; autonomous Bags/controller state and the explicit setter lesson remain. Fundamentals and menu/tray lessons plus the paired gallery guide explain the changes. Chromium and WebKit verify initial defaults, accessible labels, live value/style bindings and five affected menu/tray pages. All 141 Python/JavaScript Source parity tests passed; catalogue generation check passed. Broader database checks expose two unrelated failures from the existing Asqueel catalogue key format. Local preview: http://127.0.0.1:61535/. No publication.
+
+**IDE image annotations (2026-11-05):** owner confirms drawingPane in the IDE with an unchanged image and chooses `radiografia_png.ant.tytx` for `radiografia.png`; owner confirms the connected Python server integration. IDE opens PNG/JPEG/WebP using the existing host size limit, edits the annotation Bag, and creates or updates the TYTX companion through existing Remote Edit and revision checks. Verified 17 JS IDE/drawing tests, 8 Python filesystem/image tests, 3 Uvicorn IDE tests, and Chromium/WebKit save, unchanged image and reopen against the updated server/runtime, including a server restart. Local preview: http://127.0.0.1:61985/ with a synthetic image. Owner visual acceptance remains pending. Workspace image upload is implemented as recorded above.
+
+The Python server documentation checker is blocked by existing inconsistent identities in its already-modified `010-writing-pages.md` pair; the IDE change did not modify that pair. This does not affect the passing code and browser checks.
+
+**Drawing image and persistence request (2026-11-05):** owner requests image upload and saving/reopening editable annotations, choosing a server-backed demonstration before connecting an application. Owner subsequently selects the IDE workspace as the archive; implementation and verification are recorded above. Application ownership of storage and record association remains in force. The shared generic uploader transfers original files without the imageUploader crop step.
+
+**Drawing shared toolbar (2026-11-05):** owner requested the standard slotbar, elegant SVG icons, smaller text and automatic selection after text. The drawingPane now composes the existing permanent menu and shared color/number inputs in Source, with a private Data Bag for toolbar state. Text sizing is reduced and Enter/blur returns to the selection tool. Verified toolbar, text creation/editing, size and selection in Chromium and WebKit; fixture preview remains at http://127.0.0.1:61983/. Owner visual acceptance remains pending.
+
+**Drawing toolbar refinement (2026-11-05):** owner requested icon tools, in-place text editing, color and pen size. The shared drawingPane toolbar now includes those controls; changing color/size applies to the selected annotation and subsequent marks. Text is created or reopened directly on the image with the Text tool, committed with Enter or blur and cancelled with Escape. Chromium and WebKit verified creation, modification, cancellation and style changes; fixture preview remains at http://127.0.0.1:61983/. Owner visual acceptance remains pending.
+
+**Drawing pane trial (2026-11-05):** owner selected `drawingPane`, approved `image` and `annotations` bindings and a first proof with an integrated image toolbar, text, arrows, circles and freehand strokes, selection, movement and deletion. The clinical-record use case focuses on annotating an image. Owner confirmed a Data Bag with one node per annotation containing type, coordinates and style, plus text or a sequence of freehand points as applicable; coordinates use image pixels, or a 1000 × 1000 logical area without an image. Implemented the shared `drawing` collection and Python-authored core fixture using a synthetic image. Verified 11 JS collection/component tests, 9 Python collection/fixture tests, and Chromium and WebKit drawing, TYTX reload, resizing and deletion. Preview: http://127.0.0.1:61983/ (local fixture, not a gallery deployment). The application is responsible for persistent storage. Owner visual acceptance and any production clinical qualification remain pending.
+
+**Date column filters (2026-11-05):** owner confirmed “ok” after the legacy Da/A and period contract review. Implemented inclusive/open date ranges in the shared popup, period_to on dateTextBox using the existing parser, range AND typed picks, whole-column self-excluding counts and reset semantics. Changing range selects all matching dates; clearing From clears To and preserves checked dates as explicit values. Invalid drafts and inverted bounds preserve the last accepted filter. Civil D/DH and timezone-aware DHZ use their display day convention. Complete resident stores only. Verified 155 core regressions, Python/JS gallery parity, and Chromium/WebKit interaction checks including nested calendar, invalid dates, clear/reset and light/dark. The local Italian preview also accepts “marzo 2026”. The gallery adds only a typed Joined column; all instructions remain in Markdown. Preview: http://127.0.0.1:61535/pages/05-grid/11_column_filters . Not published; owner visual acceptance pending.
+
+**Column filter popup redesign (2026-11-05):** owner confirmed “si” to shared grid/search/toolbar composition. Replaced the custom DOM checkbox list with an ordinary Source grid over a derived Data Bag, native bound search and shared menu toolbar. Columns are checkbox/value/count; value/count sorting uses the grid. Literal popup search preserves hidden checks and is independent of the outer grid search. All/None address all column values; Reset removes only the column criterion. The same popup grid is reused across openings, the outer grid instance remains unchanged, and accepted filters remain in its Source-owned view. Header funnel is inline; popup height is bounded and adapts to the number of values; theme tokens cover light/dark. Verified 141 core regressions and focused final geometry regression; gallery behavior passes (one combined run timed out under concurrent build load, isolated rerun passed). Chromium and WebKit verify search, hidden selections, typed literal query, counts, sets, reset and theme rendering. Local preview 61535; owner visual acceptance and publication remain pending.
+
+**Grid column filters (2026-11-05):** owner confirmed the proposed complete-store facet contract with “ok”. Implemented `columnFilters=True`, a shared header popup and Source-owned `columnFilter`, `applyColumnFilter`, `columnFacets` view operations. OR within a column; AND across base/search/sets/columns. Counts exclude their own column only. Typed scalar identities, one Empty bucket, retained zero-count selections, explicit empty selection versus removal, reactive hidden-row edits and partial-store rejection. Gallery `05-grid/11_column_filters` has minimal Python/JS twins, Markdown and feature metadata. Verified 141 core collection/grid/editing/frame/chart tests, gallery behavior and Python/JS parity, Chromium and WebKit interaction checks. Corrected the new fixture's initial TYTX set values after real-browser testing. Preview: http://127.0.0.1:61535/pages/05-grid/11_column_filters . Implemented and verified locally; visual owner acceptance and publication pending. Date periods, aggregate cells, remote facets, union/difference and bulk remain separate.
+
+**Grid set filters (2026-11-05):** owner approved John, John-and-Fred intersection and All, in AND with other filters, complete stores only. Implemented read-bound `setFilter` (comma-separated external check column fields; empty removes only that criterion). Base `filter`, search and set predicates now remain independent in the Source-owned collection view. Set-string writes recompute the view; windowInfo rejects a nonempty setFilter. The existing chart follower now retains the same complete immutable filter snapshot rather than losing base/set contributions. The gallery uses compact first columns J/M/F, full column.title accessible names/tooltips, three commands and shared FrameGrid search; commands ensure referenced columns exist. FrameGrid toolbar CSS uses the canonical class attribute consistently in Python/JS. Verified 83 collection/grid/frame/chart tests, editing regressions, Python/JS lesson parity, JS lesson behavior, and Chromium/WebKit interaction checks including active search with All, live unchecking, record preservation and column order. Preview: http://127.0.0.1:61535/pages/05-grid/10_check_sets . Implemented/verified locally; owner visual acceptance and publication pending. Other set operations, column facets, bulk and remote predicates remain out of this tranche.
+
+**External checkbox sets (2026-11-05):** owner approved creation and individual toggles before filters, with comma-separated strings in Data and literal wrapped `includes`. Implemented ordinary column attributes `check="multiple"`, `checked="^path"`, `checkedField="id"`; Data router subscriptions synchronize projections, including replacement of an ancestor Bag. Customer records are untouched; removed columns retain their sets. Empty means `""`; IDs are nonempty strings without commas. Python/JS Customer sets gallery lesson adds John, Mark and Fred columns through the reactive structure Bag; Markdown and the feature index explain the contract. Verified 111 grid/editing/frame regressions, plus an added inline-declaration contract test; Python/JS Source parity and JavaScript lesson behavior pass; Chromium/WebKit verify independent memberships and repeated column addition. Local preview port 61535, `/pages/05-grid/10_check_sets`. Implemented and verified locally, awaiting owner visual acceptance; no publication. Next: agree and implement set filters separately.
+
+**Grid checks and filters plan (2026-11-05):** owner requested a plan while charts proceed separately. [GC-475](../future/475-grid-checks-and-filters.md) records legacy evidence, proposed unified checks/ID sets, composable view filters, full-store restrictions, six acceptance-gated phases and chart coordination. This initial plan is superseded for external multiple sets by the checkpoint above; the remaining filter/radio/bulk phases stay proposed.
+
+**Compact checkBoxText groups (2026-11-04):** owner requested compact Inline, Popup and Hierarchy groupBoxes. Python/JS now use one width-limited parent and three shared groupBox components, preserving bindings and IDs; Markdown explains the presentation. Source parity and Chromium/WebKit interaction checks pass, including three compact groups; screenshot inspected. Preview updated on port 61535; not published.
+
+**checkBoxText column control (2026-11-04):** replaced the demonstration slider with a compact comboBox offering 1, 2 and 3 columns in Python/JS, as requested. Its text value is converted with a standard bound expression for numeric cols. Chromium/WebKit verify three-column layout after editing; local preview remains on port 61535. No publication.
+
+**Dedicated checkBoxText lesson and metadata search (2026-11-04):** owner requested completion of the dedicated page and metadata search. Python/JS lessons demonstrate inline choices, editable popup descriptions retaining MI/TO/CO/PV codes, and the shared hierarchical checkbox tree; explanations remain in Markdown and title/search metadata in JSON. Tree `searchAttributes` searches explicitly named text/text-array attributes; gallery navigation preserves description, tags and component and searches them with eager traversal, without changing captions. Verified 101 tree tests, 8 JS and 8 Python navigation tests, two Source parity checks, generated references/catalogue, and Chromium/WebKit actual-gallery search plus inline/popup/hierarchy interactions. Local preview: http://127.0.0.1:61535/ . Implemented and verified locally; owner visual acceptance and publication pending.
+
+**Independent eager tree search (2026-11-04):** owner confirmed `searchEager` separately from `resolveLazy`. Implemented read-bound Boolean, default true preserving prior behavior; false searches only loaded nodes while permitting manual expansion, subject to the general `resolveLazy` prohibition. Reactive changes cancel further search traversal even while a request is pending. Gallery Python/JS explicitly enable eager search. Verified 100 tree tests (including loaded-only, general prohibition and pending-toggle regressions), generated references, and real-gallery search finding unopened Hierarchical choices. Preview restarted at http://127.0.0.1:61535/ . Metadata/tag searching and the dedicated lesson were completed in the subsequent checkpoint above. No publication.
+
+**Integrated dropdown chevrons (2026-11-04):** owner rejected the separate bordered arrow and requested the rule everywhere. Shared `choiceFieldStyles` now places a borderless, transparent chevron inside the trailing edge of checkBoxText, ChoiceEditor selectors (including database choices) and dropDownButton. Datalist's additional visual indicator is suppressed; existing accessible buttons, keyboard handling and actions remain. Verified 40 choice/form tests and 44 button/menu tests; Chromium/WebKit check inset geometry, transparent background, zero border, text edits and popup opening, plus light/dark screenshots. Local trial: http://127.0.0.1:61577/pages/01-inputs/02-checks_and_switches/02-checkbox_text . Not published; visual acceptance pending.
+
+**Editable checkBoxText descriptions (2026-11-04):** owner explicitly requested editable descriptions while retaining codes in Data. Legacy inspection found the caption/code dictionaries but a read-only popup textbox in `gnrjs/gnr_d11/js/genro_components.js` (CheckBoxText); typed-description parity with that revision is not claimed. Implemented a comma-separated editable popup field with native suggestions, exact case-insensitive description resolution, addition/removal, null on clear, Source-owned incomplete drafts and normal field validation. Unknown/ambiguous descriptions do not write Data and block form acceptance; Escape/form restore clear the draft. Hierarchy checks reuse the loaded option index and respect disabled nodes; typing does not eagerly load branches. Updated Python/JS gallery example demonstrates MI/TO/CO/PV. Verified: 154 focused tests, two Python/JS parity checks and Chromium/WebKit real-gallery interactions including the lazy hierarchy. Also removed an overridden duplicate gallery behavior check so the edited-description test actually runs. Local trial: http://127.0.0.1:61576/pages/01-inputs/02-checks_and_switches/02-checkbox_text . Publication and owner visual acceptance pending.
+
+**Hierarchical checkBoxText (2026-11-04):** owner approved reusing the existing checkbox tree and confirmed “Sì, percorsi o identifier esplicito”. Implemented `hierarchical`/`checkChildren`, original-Bag observation, popup/inline tree reuse and path-to-identifier projection; no second propagation engine. Unloaded codes survive lazy resolution, disabled checks keep their fixed state on clear, and binding/validation retain the normal input lifecycle. Inputs declares its tree collection dependency. The gallery adds a minimal Python/JS lesson with a lazy endpoint, fixed on/off nodes, JSON metadata, Markdown explanation and feature-index link. Verified: 141 focused core tests, Python/JS Source parity, generated references/catalogue, and permanent real-gallery behavior checks in Chromium and WebKit. Local gallery: http://127.0.0.1:61575/ ; lesson: /pages/01-inputs/02-checks_and_switches/03-checkbox_tree. Not published; owner visual acceptance pending.
+
+**checkBoxText extension (2026-11-04):** owner requested completion and confirmed complete remote option lists. Local implementation adds popup presentation, original-Bag options, derived `_displayedValue`, and endpoint/configured database options through the existing selector contract. Existing code order, null and missing-code retention remain. Provider `limit=None` supports complete lists in Asqueel, SQLAlchemy and Django without changing positive-limit requests. Core regression checks pass (31); Python provider tests pass (47), including an isolated actual Django complete/filter regression. Chromium/WebKit verify popup multi-selection, synchronization, Escape and outside close on the updated bundles. The common gallery demonstrates inline/popup synchronization; an Asqueel state/customer multi-selection lesson was added but not yet exercised against the Base PostgreSQL deployment. Chromium/WebKit also verified actual RPC/SQLite loading of twelve options, multi-key commits and reactive filtering on port 61574. Local common gallery: port 61573. No publication; hierarchical selection remains outside this increment.
+
+**Inspector component consolidation (2026-11-04):** implemented locally: shared layout, tabs and tree replace the provisional splitter, tabs and tree. The local Inspector tree observes the original Bag through its Source node; remote inspection uses the bridge snapshot. Resolver execution can be disabled, and selection, breakpoints and Source drag/drop remain available. Chromium and WebKit cover local and remote editing; the offline serverless gallery also opens the shared tree. The floating and docked palette now uses the shared floatingPane, retaining its Source, contents and floating geometry. The obsolete row-actions trial is removed; shared tree tests cover row commands and menus. Current guides and DevTools tests use the shared components. Firefox browser qualification is blocked by the local Playwright profile failure. These changes are not published or visually accepted.
+
+**Gallery lesson metadata (2026-11-04):** locally, 151 lesson/support pages have adjacent JSON; bundled common and environment catalogues are generated from lesson metadata and family descriptors; Markdown remains the lesson. The existing nested filesystem lesson also has metadata and Markdown without changing its route. Tag search was subsequently implemented through searchAttributes; see the latest checkpoint. No publication or owner visual acceptance is claimed.
+
+**Fundamentals introduction (2026-11-04):** owner approved renaming the first family and introducing Data, values and attribute bindings with HTML inputs before components. Five concise lessons now include Data and bindings: text and range inputs, reactive paragraph content/title/opacity, and Markdown instructions to observe Data and Source with Inspector. Relative paths and expression bindings are deferred. Python/JavaScript Source parity passes for all five lessons; Chromium and WebKit verify live text and attribute updates and slider opacity. The local gallery is on port 61572; publication and owner visual acceptance remain pending.
 
 **Current release:** all agreed packages are published. The public galleries and offline archive are deployed; the Python gallery also exposes the approved database/Asqueel catalogues alongside ordinary and mobile examples. Public browser and database qualification passed. See [the release checkpoint](#gc-070-common-release-20261030).
 
@@ -20107,6 +20198,62 @@ Owner requested behavioral verification and integration into develop, explicitly
 
 Verification: 316 JS tests for controls/layout/tree/editors passed; the other collection suites covered 176 JS cases (one environment-only grouplet failure resolved by rerunning its seven cases with the project Python). Python behavioral checks passed 64 with four expected upstream Boolean-validation xfails. Direct develop checks passed 17 documentation tests, strict Sphinx and the public checker for 30 pages and 11 agent downloads, generation freshness and whitespace. No fresh complete real-browser/native-dialog qualification is claimed. The four xfails remain dependency limitations, not accepted Gramlot workarounds. Documentation is integrated locally into develop; owner acceptance, main consolidation and Read the Docs publication are separate. The temporary copy is no longer the sole delivery location.
 
+## 2026-11-03 · Gallery-owned content frame
+
+The owner approved moving introductory lesson framing into the shared gallery
+hosts while retaining full-space layouts for grids and editors. A catalogue
+lesson with `presentation: content` receives a themed `main` Source container
+from the Python, JavaScript or serverless host; other lessons retain their
+existing roots and layout. The first lesson now declares its heading and paragraph
+directly on `root`. Further existing lessons have not been migrated.
+
+The Python and JavaScript gallery previews were checked in the browser. Tests
+cover the framed lesson and unframed Grid and editor, as well as catalogue
+parity and serverless output. The browser integration blocked direct `file:`
+navigation; an interactive file-origin browser check remains unverified. Changes
+are local and have not been published.
+
+
+<a id="gc-070-manual-publication-20261103"></a>
+### Manual publication verified — 2026-11-03
+
+Owner explicitly authorized consolidation into main, Read the Docs publication and online verification. Main and develop were published at 8268b8f2e98a816c24b656c027daaf53a400c1c2. Read the Docs latest build 35624177 succeeded for that exact commit. HTTPS verification retrieved all 30 public pages, compared all 30 downloadable sources byte-for-byte with the qualified build and matched all 11 agent downloads. Navigation places both Try Gramlot and the visual tour under Appendix: examples, outside Start here. Receipt: /private/tmp/gramlot-manual-public-receipt.json. Existing local gallery notes were preserved and were not included in publication. No package release or gallery application deployment was performed.
+
+
+<a id="gc-070-manual-readability-20261103"></a>
+### Manual readability verified — 2026-11-03
+
+The owner requested readable code instead of small red text and split identifiers. Inline code now inherits the surrounding text size, uses dark text, and keeps identifiers intact; table prose wraps normally and overflowing code remains scrollable. The classic RTD theme is preserved. The strict Sphinx build and public documentation checker passed (30 pages, 11 downloads). Browser inspection verified the pointer table locally and online. Main and develop include f3a2da7275eb14bc7f442083a5dbefebb3477c28; Read the Docs build 35624685 succeeded for that commit.
+
+
+<a id="gc-070-manual-code-emphasis-20261103"></a>
+### Code emphasis published — 2026-11-03
+
+The owner requested a light background and bold code. Inline code now uses semibold dark text with a light blue-gray background and padding; prose code and highlighted blocks render at 16 px on the home page. Strict Sphinx and public documentation checks passed (30 pages, 11 downloads). Read the Docs build 35625074 succeeded for 2b1f2d80e345ad27a90da36b53171a158a767dcb. The previously open home page retained the old red 12 px style; reloading it after publication verified the new computed styles and appearance online.
+
+
+<a id="gc-070-family-code-style-20261103"></a>
+### Consistent manual code typography — 2026-11-03
+
+Owner requested the same readable code style on the other documentation sites. The Python server, JavaScript/serverless and examples manuals now share the core typography: full-size dark semibold inline code on a light background, link color inheritance, intact identifiers, wrapped table prose and 16 px code blocks. Server concise builds reuse the same static asset; the examples staging script copies it into its public build. All strict documentation builds passed, including 133 lessons and 5 paired examples guides. Asset inclusion was checked on 156 examples HTML pages, 18 pages per JavaScript view and 17 per Python view. Main/develop publication: JavaScript 596240d (RTD 35625224), Python 14fa81c (RTD 35625226), examples 4cb18a9 (RTD 35625240). All three RTD builds succeeded; public CSS matches the core and browser inspection confirmed the rendered styles. Unrelated local gallery work was preserved.
+
+<a id="gc-070-tools-shared-components-20261103"></a>
+### Inspector and Visual Editor component review — 2026-11-03
+
+Owner requested reuse of existing or intermediate shared components across DevTools, Inspector and Visual Editor. DevTools embeds Inspector. Visual Editor already uses shared layout, tree, menus and dialogs, and shares scalar conversion with Inspector. Inspector still uses four PoC-derived elements: tree, palette, tabs and splitter.
+
+Migration must retain direct/remote Bag selection, breakpoints, Source edits and drag positions; the shared tree has rowActions and drag/drop. Shared border splitter has pointer/arrow resizing; the provisional one also supports Home/End. Floating and tabs require equivalent docked, embedded, keyboard and dirty-editor switching behavior. Independently bundling a collection can collide with page custom-element registration: establish one collection identity and test pages with/without the collection, multiple inspectors, standalone and DevTools. No component migration is claimed.
+
+Baseline: 45 Inspector and 159 Visual Editor/tree/border tests passed. Next: verify collection sharing, migrate one component at a time, test behavior in browsers, then remove transferred provisional code.
+
+Owner confirmed proceeding. Shared borderContainer separators now support Home/End at the configured bounds or available space; 13 border tests pass. Inspector still uses the provisional splitter pending shared layout collection identity across hosted pages, extension and serverless.
+
+Owner confirmed base collections are always supplied by the environment. Bootstrap retains the verified objects on Gramlot; `getCollection(name)` lets compiled gallery tools share them. Inspector now imports the canonical layout collection and uses borderContainer; the provisional splitter is removed. Center `minSize` reserves room when resizing. DevTools resolves that collection at build time; serverless preserves the existing collection import and map.
+
+Checks: 45 Inspector, 14 border, 18 bootstrap/collection and 28 serverless tests; docs build/check passed. Chromium/WebKit passed Inspector, Source edits, bridge, styles, local Python gallery and file-origin gallery. DevTools passed 22 browser checks and panel checks. Playwright Firefox could not start its profile; not verified. A broad offline gallery check failed an initial page-count assertion before Inspector; the focused offline Inspector check passed.
+
+Remaining: provisional tree, tabs and palette. Shared tree has rowActions, but its storepath addresses its own Gramlot's Data/Source; Inspector needs the inspected live Bag or bridge snapshot without reparenting/copying the live target, retaining selection, breakpoints, dragging and undo. Resolve ownership/subscription before migration. Tabs need the dirty-edit guard; floatingPane needs embedded/docked and keyboard parity.
+
 
 <a id="gc-070-widget-coverage-20261104"></a>
 ### Widget coverage matrix and completed behavior manual — 2026-11-04
@@ -20117,6 +20264,15 @@ Verified: 18 documentation tests; fresh generated references; strict Sphinx buil
 
 Integrated into develop and main as 696fdc3f17cc91410b58b978cd606f0703e4fa5b. Read the Docs build 35634832 succeeded for that commit. HTTPS verification matched all 32 downloadable public sources and all 11 compact downloads against the local build; browser inspection confirmed 53 matrix rows and the appendix navigation. Unrelated uncommitted work in the primary checkout was preserved.
 
+<a id="gc-070-chart-vision-20261104"></a>
+### Chart vision — 2026-11-04
+
+[GC-470](../future/470-chart-vision.md) records owner-requested reactive data/structure Bags, value/attribute grid data, sophisticated and live charts, client-side preference, Streamlit comparison, PoC evidence and undecided engines. Documentation/research only; no implementation, engine choice, release or PoC deletion readiness. Next: owner review and first decision.
+
+Owner additionally restricts chart-library evaluation to free/open-source licenses and demonstrably serious maintenance; package/extension licenses and project activity remain to be verified per candidate (GC-470 §040).
+
+Chart extension research: GC-470 §040 records ECharts GL license metadata and compatibility reports, Chart.js plugin licenses/version boundaries, and D3 Sankey licensing. External reports not reproduced; selection and qualification remain open.
+
 
 <a id="gc-070-widget-lessons-20261104"></a>
 ### Transform and row action lessons — 2026-11-04
@@ -20124,3 +20280,746 @@ Integrated into develop and main as 696fdc3f17cc91410b58b978cd606f0703e4fa5b. Re
 Owner requested complete transformPane and rowActions lessons, clear gallery examples and appendix links. Examples revision c59a19c adds Python-first pages with equivalent JavaScript, canonical sample Data, shared Logic and guided exercises. Transform controls and gestures share pose Data; a separate child style applies the visual transform, and reset preserves the note. Tree commands report their row independently of selection, including per-row presentation and a dropdown controller. GC-460 and GC-465 now reference these lessons; examples remain in the appendix.
 
 Verified: two Python/JavaScript parity cases, twelve gallery/sample-data tests, strict examples documentation build and checker for 135 lessons; fifteen widget-reference tests and strict core build/checker for 32 pages and 11 compact downloads. Browser interaction checked both Python and JavaScript versions: drag, numeric rotation/zoom, reset preserving content, Checklist command and Archive menu without changing Notes selection. Browser harness cases were added and syntax checked, not executed as a full browser suite. Two-finger physical-device behavior was not newly verified. No framework changes or dependency workarounds were introduced.
+
+Publication verified: examples main/develop c59a19c and core main/develop 9820ae51. Read the Docs builds 35635249 (examples) and 35635306 (core) succeeded. HTTPS comparison matched the two lesson sources, all 32 core sources and 11 compact downloads; both public playgrounds loaded and their drag/row-command behavior was checked in the browser. Unrelated local work was preserved.
+
+Chart trial requested: GC-470 §055 records the owner direction for an independent collection-store chart, grid toolbar and live configuration palette. BagCollectionStore exists with values/attributes; grid filtering belongs to each BagCollectionView. The initial chart’s relationship to grid filtering is awaiting owner choice. No chart implementation or verification claimed.
+
+Chart preparation: temporary ECharts 6.1.0 package outside the repository imported successfully; a two-row headless SVG smoke rendered both labels. This does not test Gramlot, the palette, grid linkage or browser behavior.
+
+Owner chose all or selected rows for the chart trial. Current grid exposes no row selection; selection interaction awaits owner choice. Temporary ECharts SVG probes rendered actual BagCollectionStore rows in both values and attributes modes; no reactive browser/UI integration is claimed.
+
+Chart trial follow-up: owner wants grid checkboxes eventually and expects existing multiple selection. Source review found Shift/Ctrl/Meta multiple-row selection in PoC grid, not in the current core grid or collection view. Restoration contract and selection behavior need owner confirmation; chart and selection are not implemented. See GC-470 §055.
+
+Chart trial: owner proposes using the grid filtered view and highlighting the corresponding chart item upon row selection. A temporary ECharts SVG probe verified filter/apply/clear against the real BagCollectionView in values and attributes modes. No chart UI or grid selection implemented. Filter state is grid-view-owned; shared chart access/lifetime and row selection remain unresolved. See GC-470 §055.
+
+Owner confirms filtered chart first and row highlighting later. GC-470 §055 records the bounded proposed trial and lifecycle issue: filtered BagCollectionView is owned/disconnected by the grid; chart independence after grid close needs a decision. Temporary headless ECharts bar-to-line update passed; no browser/component implementation claimed.
+
+Chart trial 2026-11-04: owner confirms retaining last grid filter after grid closes. Experimental ChartDataView and ChartRenderer implement a locally tested slice: independent view follows filter, explicit detach retains it, ECharts renders bar/line for values/attributes; 19 focused store/chart tests pass. Updates and detach are explicitly invoked by tests, not integrated with browser lifecycle. No palette, toolbar, browser component, public API or owner acceptance. ECharts installed as dependency; distribution notices require review. See GC-470 §055.
+
+Chart investigation follow-up: two focused JSDOM cases use the actual Gramlot grid/runtime and ECharts SVG against values and attributes, including filter, explicit detach, Source removal and subsequent Data insertion. Total focused store/chart checks 21 passed. Browser component, automatic detach/render wiring, toolbar and palette remain unimplemented. npm install reported four moderate audit advisories; the no-lock repository prevented a follow-up npm audit without generating a lockfile, so their attribution is unverified. The trial chart-type scope remains to be confirmed.
+
+Chart visible trial 2026-11-04: owner confirms bars/lines. PORT-0030: Python-authored grid toolbar opens ECharts chart and palette, filtered data update and retain last filter after grid removal. 79 focused Node tests plus Chromium/WebKit pass; trial uses temporary bundles and is not a released chart collection. Local preview is on port 8899. Owner review, general chart/store integration, standalone creation, row selection/highlighting, accessibility and packaging remain open. npm reported four moderate advisories; attribution remains unverified.
+
+Chart trial follow-up 2026-11-04: owner asks for more data/columns, temporal references and chart white independent of theme. PORT-0030 fixture has 12 typed dates and seven columns; palette selects date/order and revenue/units/margin. The ECharts time axis uses UTC; chart background is white in dark theme. 81 focused Node tests and Chromium/WebKit checks pass. Local preview restarted on 8899; no full date/time or product acceptance claim.
+
+Chart trial 2026-11-04: owner requested a gear instead of the Configure button. The Python fixture now uses an accessible gear control; Chromium and WebKit pass. Preview restarted on 8899; owner visual review remains.
+
+Chart trial 2026-11-04: owner suggests CodeMirror-style side drawer, optionally detachable. The local fixture now uses the existing right borderContainer drawer and detachable region; settings retain the same Source/Data and control through detach and reattach. Chromium and WebKit pass open, edits, detachment/reattachment, filtering and grid removal. Preview restarted on 8899; owner visual acceptance pending. See PORT-0030.
+
+Chart trial 2026-11-04: owner requests icon-only drawer and asks about dialog/floating title-bar tools. Fixture has gear only, with tooltip; Chromium/WebKit pass. Current WindowSurface provides title and built-in collapse/maximize/close, but no authorable title-bar tools slot; framePane top is below it. No title-bar API added. Local preview restarted on 8899. See PORT-0030.
+
+
+Chart frame toolbar — 2026-11-04: owner confirms “Sì, proviamo a mettere l’ingranaggio nella toolbar superiore del framePane per aprire il drawer di configurazione.” The private Python trial now places the gear in frame.top; demo.configDrawer binds the existing drawer parameter (true / close). The existing drawer_style hides the edge handle. No new runtime API is introduced. Chromium and WebKit passed opening/closing from the toolbar, configuration changes, detachment/reattachment, filtering and retained-filter updates after grid removal. Earlier runs timed out at existing filter/label assertions; the final full run passed both browsers. Visual owner acceptance remains pending.
+
+
+Shared icon-only defaults — 2026-11-04: owner explicitly requested implementation in the shared component and removal of chart-local corrections. Command now derives icon-only presentation from rendered icon/caption content, updates on caption/icon changes and releases its observer on disconnection/disposal. Defaults are a 24 px icon, 36 px minimum target, transparent border/background at rest, theme hover/focus/selection and the existing touch minimum. Toggle/check/expanded states remain visible; popup menu rows and text commands keep their layout. Toolbar iconSize overrides remain effective. The chart fixture no longer supplies button classes, font size or padding overrides. GC-415 documents the shared tokens and scope.
+
+Verified: 72 command/button/menu tests, canonical npm runtime build, Chromium and WebKit chart trial with real 24 px/36 px geometry, theme size override, 44 px touch minimum, keyboard activation, drawer detachment/reattachment, filtering and updates after grid removal. Full-page screenshots triggered intermittent window geometry collapse during earlier browser runs; viewport screenshots avoid resizing the page and the final runs passed. No window-geometry fix is claimed. Shared implementation and local artifacts are ready for owner visual review; no publication or release.
+
+
+Shared FrameGrid toolbar — 2026-11-04: owner confirms one toolbar with automatic standard searchOn and the chart icon in the same bar. Python/JS frameGrid now compose top.bar once, expose it as frame.toolbar, and populate a retained right-hand search group. Commands use the existing menu system; no slotbar DSL or chart runtime is promoted. Shared search sizing no longer inherits generic field height. The chart uses the reusable packaged SVG via iconSrc. The core frame-grid fixture also uses the shared toolbar. Existing application code that deliberately creates a new top menu needs to use frame.toolbar instead; external galleries were not edited.
+
+Verified: 45 JavaScript frame-grid/menu cases, 10 Python cases, Python/JS Source parity, Chromium/WebKit one-toolbar geometry, command/search alignment, 32 px search sizing independent of an 80 px generic field height, chart activation, drawer configuration/detachment, filters and grid removal. Owner visual acceptance is pending. No release or deployment.
+
+Shared FrameGrid follow-up: canonical runtime build completed successfully; local preview on port 8899 refreshed with the shared toolbar/search and packaged chart SVG.
+
+
+Shared search capsule refinement — 2026-11-04: implemented the owner's rounded compact control, darker selector segment and explicit-only information button. Defaults are 26 px input height, 240 px width and 12 px type, preserving touch target. searchHelp=False is forwarded by frameGrid to searchBox; true opts in and reactive disabling closes the help popover. Hidden help no longer reserves input/clear-button space. Verified 13 JS frame-grid cases, 11 Python cases and Chromium/WebKit geometry, default absence, explicit help opening/closing, chart configuration/filter lifecycle. The local harness now maps the current inputs collection's tree dependency. Owner visual review pending; no release/publication.
+
+
+Toolbar overflow correction — 2026-11-04: owner requests Chart after Search and reports a flashing overflow chevron. Reproduced before the fix with a fractional toolbar width: the auto margin was counted as intrinsic content, causing alternating overflow every animation frame. Shared ToolbarOverflow now measures in an intrinsic-size viewport synchronously before paint, excluding flex-distributed spare space while retaining fixed margins and priority rules. FrameGrid search no longer forces CSS order; subsequent commands follow it in Source order. Verified: 32 menu tests, canonical runtime build, Chromium/WebKit at three viewport widths with 24-frame stability sampling each, genuine narrow-width overflow and recovery, chart/drawer/filter lifecycle. Local implementation complete; owner visual review pending; no release/publication.
+
+
+Multiple chart measures — 2026-11-04: owner confirms multiple curves or bars and says “procedi”. The private chart structure now binds valueFields to shared checkBoxText (comma-separated measure codes or null), replacing the single valueField with no compatibility alias. ECharts receives one named series per selected measure, a distinct palette color, legend and axis tooltip. Bars are unstacked/adjacent; lines share the existing X dimension and Y scale. Initial selection is revenue and margin. Empty selection removes all series; invalid numeric data is still rejected. The chart continues to follow grid filters and retain the final filter after grid removal.
+
+Verified: 11 chart renderer/view/integration tests, Chromium and WebKit selection/deselection, two measures, empty selection and restoration, legend changes, bar/line switching, detached configuration and filtered updates. SVG screenshot inspected after entrance animation to confirm both curves render. Chart API remains experimental; no row selection, independent Y axes or release implied. Local preview refreshed for owner review.
+
+
+Chart per-measure axes and colors — 2026-11-04: implemented owner-confirmed independent right axis for Units and per-measure color/axis controls. The trial starts with revenue, units and margin selected; revenue/margin use left, units right. seriesOptions is a Data Bag keyed by field, with axis and color; the experimental component observes nested changes and releases the subscription on disconnect. ECharts binds each series to its chosen axis with explicit line/item colors and labels each active axis with its measures. Deselection and chart-type changes preserve presentation settings.
+
+Verified: 12 renderer/view/grid tests, Chromium/WebKit changes through actual axis/color controls, deselection/reselection, bar/line switching, drawer detach, filtering and grid removal. A rendered screenshot confirms Units spans its own 0–30 scale alongside Margin's independent scale. Invalid axis/color settings are rejected. All scales remain linear; this does not add normalization, mixed chart types or additional Y axes. Preview refreshed; owner acceptance pending, no publication.
+
+
+Compact chart configuration grid — 2026-11-04: replaced the checkbox list and repeated color/axis controls with a Measures toggle menu and the shared editable grid (Measure, Color, Axis). Per-measure selected in the options Data Bag owns selection; the grid filters selected rows and a dataFormula derives valueFields for the chart. Menu choices add/remove the visible row without losing color/axis settings. Default axes remain Units right, Revenue/Margin left. Existing colorpicker and filteringSelect cell editors open on double-click; the current grid display shows the hex color code (not a custom swatch renderer). Compact layout uses existing field/grid density tokens.
+
+Verified Chromium/WebKit: menu removal/re-addition, empty selection, row counts, actual grid axis/color editing, retained settings, chart updates, drawer detachment and filtered data after source grid removal. Visual screenshot confirms the compact three-column layout and untruncated color codes. No new framework editing capability, DOM wiring, release or deployment. Owner visual review pending.
+
+
+Shared grid color swatches — 2026-11-04: owner requests showing the color instead of the hex value. Grid columns with colorpicker editors now display a swatch at rest, with the original value in tooltip/accessible text; Data and editor lifecycle remain unchanged. Verified 49 grid-editing tests, canonical runtime build and Chromium/WebKit editing, swatch update, selection toggling, chart and detached drawer lifecycle. Visual screenshot checked. Preview refreshed; no publication.
+
+
+Chart exploration — 2026-11-04: implemented the owner-confirmed extension to all store columns as dimensions (including Product/Region), numeric measures discovered from the store, six aggregation choices and nine chart types. Aggregation operates on the filtered view; raw store data is unchanged. Visible configuration messages replace silent failures for incompatible pie/stack/scatter selections. Verified 21 unit/integration renderer/view tests, Chromium and WebKit browser flows (all dimension choices, Product sum, new types, message recovery, measure toggles, axes/colors, detached drawer and source grid removal); screenshot reviewed. Local preview refreshed. The field catalogue is derived at fixture construction, not dynamically rebuilt after schema changes. Experimental API only; owner visual acceptance pending, no publication.
+
+
+Chart full-height resize — 2026-11-04: owner asks “ho ampliato la finestra per migliorar la visualizzazioen e il grafico dovrebbe andare al 100 %”. Removed the experimental chart's fixed 320px drawing height. Host, control box and ECharts surface now fill the available container height; the existing ResizeObserver updates the chart on window/drawer geometry changes. Verified Chromium and WebKit resizing through the actual window resize control: SVG width/height grow with the window and match the chart host within 2px; full chart/filter/drawer regression flows pass. No public API change.
+
+
+Radial chart layout — 2026-11-04: implemented owner-confirmed first-selected-measure behavior for pie/donut without modifying the stored selection. Replaced the overlapping radial legend with a paginated horizontal legend in a reserved bottom band; slice labels use the pie viewport above it. Verified 16 renderer tests, Chromium/WebKit complete flows, twelve date labels staying outside the legend band before/after window resize, and visual screenshot review. Local preview refreshed; owner acceptance pending.
+
+
+Shared chart configurator — 2026-11-04: implemented the owner-authorized reusable ChartPane composition, exported from gramlot, and canonical charts collection/chartView. Renderer/data-view/aggregation code moved from experiments into shared components without aliases. The Python composition owns default configuration, field discovery, toolbar, detachable drawer and measure/color/axis controls; the sales fixture now supplies data/defaults and a window. Added a second, independent values-mode store without grid. Optional gridId retains filter following; standalone charts use their own collection view. Canonical build succeeded and includes charts in Python/JS prepared artifacts and JS exports. Verified 3 Python composition tests, 23 JS chart tests, Chromium/WebKit complete UI flows plus independent configuration and live standalone store updates. Browser tests use the installed charts collection. Fields are discovered at authoring time; schema changes require reconstruction. Implementation and verification complete; owner acceptance pending, no release/publication.
+
+
+Reactive chart schema — 2026-11-04: completed the owner-authorized removal of authoring-time column discovery. Shared chartFields subscribes to the resident collection store, discovers the union of columns and consistently finite numeric measures, and updates standard Source controls plus configuration Data. Existing numeric series retain color/axis/selection. New numeric fields receive defaults; removed/non-numeric fields leave the measures, while textual columns remain dimensions. Removed dimensions select the first available column. Empty stores repopulate without recreating the chart. Full-store discovery is independent of grid filters. Named Logic handles generated measure commands; subscriptions release on disconnect. Verified canonical build, 25 JS tests, 3 Python tests and Chromium/WebKit: both row modes, added columns, retained custom color/deselection, new menu interaction, numeric-to-text change, selected-dimension removal, empty/repopulated store with a different schema, and identical chart DOM instance. Existing chart/drawer/filter/resize flows pass. Preview refreshed; owner acceptance pending. Entire store Bag replacement remains outside this bounded schema-mutation change.
+
+
+3D bars — 2026-11-04: implemented the owner-authorized bar3D chart in shared ChartPane. The drawer exposes reactive second-dimension and single-measure selectors, with Product/Region/Revenue and sum in the sales fixture. Pair aggregation supports all existing aggregation choices without adding zero rows for absent pairs. ECharts GL 2.1.0 uses the same distributed ECharts instance as the renderer; GL loads on demand, Canvas/WebGL switches back to SVG for 2D, and async render revisions protect disposal/type switching. Browser camera controls rotate/zoom; pane resize updates the canvas. ECharts GL BSD LICENSE and ClayGL LICENSE are shipped as collection assets; GL package.json MIT versus BSD LICENSE discrepancy retained in GC-470. Canonical build and 27 JS / 3 Python tests pass. Browser verification covers field selection, GL rendering, rotation, resize, 2D return and previous chart/filter/reactive-schema flows in Chromium and WebKit. Visual 3D screenshots inspected. Preview refreshed; owner visual acceptance pending, no release/publication.
+
+
+Chart measure grid sizing — 2026-11-04: owner reports that the measure grid does not widen with the configurator. Shared ChartPane columns now use existing percentage-width support (40/30/30) instead of fixed pixel widths, filling the available grid viewport in the drawer and detached pane. Verified Chromium/WebKit detached window resizing increases the grid width and keeps its table within 3px of the available viewport; existing editing, chart and drawer flows pass. No grid sizing API change.
+
+
+Grouped 3D measures — 2026-11-04: implemented owner-confirmed multiple measures per dimension pair/plane with adjacent non-overlapping bars, explicit per-measure color, common Z scale and measure legend. Removed the 3D-only measure selector/parameter; shared selection/color grid is the sole control for 2D and 3D measures. Numeric category-center projection provides within-group spacing, with original category labels/tooltips. Legend viewport separation checked visually. Verified canonical build, 29 JS tests and 3 Python tests; Chromium/WebKit flows cover 3D selection toggling, empty selection, color editing, resize/rotation, 2D return, filters, reactive schema and detached configurator. Unit tests verify independent pair aggregation, non-overlapping footprints, same-plane coordinates, color/legend mapping, single/empty selections and filters in both row modes. Preview refreshed; owner acceptance pending, no publication.
+
+
+Additional 3D charts — 2026-11-04: implemented line3D, scatter3D, surface,
+map3D, lines3D and polygons3D in the shared ChartPane/renderer. Numeric/date
+Cartesian coordinates, independent measure colors, surface holes and pair
+aggregation are supported. Geographic input follows the owner's approved GeoJSON
+and store coordinate lists; multiple measures have separate panels. Owner also
+explicitly approved map3D rendering of generated polygon GeoJSON, replacing the
+broken native polygons3D/geo3D path without modifying ECharts GL. Coordinate/name
+validation reports incompatible input visibly. Shared selectors remain reactive;
+geometry selectors and aggregation controls follow chart type.
+
+Verified: canonical build, 31 JavaScript chart tests, 3 Python composition tests,
+and complete Chromium/WebKit browser flows including all six new types, schema
+updates, measures, colors, resize, detached drawer and source-grid removal.
+Reviewed rendered maps, paths, polygons and Cartesian screenshots; polygon
+extrusions are visible in both browsers. The localhost:8899 preview now includes
+numeric fields and synthetic geographic fixtures. Implementation and verification
+complete; owner visual acceptance pending. No package release or deployment.
+
+
+GeoJSON configurator import — 2026-11-04: implemented the owner's requested
+local file loading in shared chartGeoJSON/ChartPane, with two-way configuration
+binding, territory summary, strict FeatureCollection/name/ring validation and
+preservation of the previous map on failure. The existing reactive captionField
+selector is labeled Category / territory field and links store values to
+properties.name. File reading stays client-side; no application DOM or server
+upload was added. Verified canonical build, 32 JavaScript chart tests, 3 Python
+tests and Chromium/WebKit flows. Browser coverage includes importing territories
+into the sales chart, choosing Region + Sum, replacement, malformed JSON retaining
+the old geometry, and retrying the same file. Local preview refreshed on port8899.
+Implementation and verification complete; owner visual acceptance pending.
+No release or publication.
+
+
+Australian sales showcase — 2026-11-04: owner requests a demonstration over the
+large invoice database. Read-only repeatable-read aggregation verified 410,429
+invoice lines, 60,179 invoices, 2,945 invoiced customers and dates 2022–2025.
+Stored invoice totals reconcile exactly with line totals and all monthly,
+state and state/year aggregates; no invoices lack a mapped state. The Python
+composition is kept in gramlot-examples/base/sales-insights and receives aggregate
+records plus Natural Earth GeoJSON. No core application, database dependency,
+customer details or snapshot records were added to the repository.
+Local localhost:8900 preview uses shared ChartPane/FrameGrid and Data bindings:
+monthly line, geography, state bars, top-ten products and filtered state/year 3D.
+Chromium/WebKit checks pass for rendering, standard filtering and configuration;
+visual review corrected KPI contrast for the light theme. This is a full-dataset
+snapshot, not live database querying. Shared automatic 3D framing and geographic
+label contrast remain known limitations, without example-local workarounds.
+Owner visual acceptance pending; no release/deployment.
+
+
+2D choropleth configuration — 2026-11-04: implemented the owner-approved map
+chart type in shared ChartPane/charts. Reactive mapValueField and mapLabelField
+selectors choose a numeric store measure and compact labels; captionField joins
+GeoJSON names. Continuous numeric legend, contrasting borders, outlined labels,
+overlap suppression, tooltip values and native preserved aspect ratio replace
+the unreadable uniform 3D presentation for comparisons. Positive values use a
+sequential scale; signed values use a symmetric zero-centered diverging scale.
+Unmatched geography remains gray, distinct from measured zero. 3D options and
+their multi-series selections remain available independently.
+
+The Australian snapshot defaults to 2025 billed per distinct customer. Its host
+supplies per-state/year customer counts and derives 2025 totals, billed per 2025
+customer and percentage change against 2024. No business arithmetic, inferred
+baseline or database dependency was introduced into core. The store supplies
+numeric columns to the generic map selector. Unsupported zero/missing comparison
+denominators are explicitly rejected in the host helper.
+
+Verified canonical build, 34 JavaScript chart tests, 3 Python composition tests,
+2 business-formula tests, full Chromium/WebKit chart regressions and dedicated
+2D map browser checks. Checks cover negative/zero/constant ranges, absent data,
+SVG rendering in both row modes, file import, measure switching, live column
+addition/removal and 2D/3D return. Screenshots reviewed in both browsers. Local
+previews refreshed on 8899/8900; owner visual acceptance pending. Existing 3D
+framing limitations remain outside this 2D change. No release/publication.
+
+
+Chart integration reuse qualification — 2026-11-04. Owner request: "prova a
+lavorarci per avere qualcosa di riusabile e da testare in vari casi".
+ChartView and chartFields now reconnect when the bound store Bag is replaced by
+an ordinary dataRpc result. The chart view retains its filter and releases old
+subscriptions; column discovery follows the new nonempty schema. Empty results
+show a status and retain configuration and the last field catalogue. A failed
+RPC retains the previous Data result. A linked grid must resolve the same
+storepath. Multiple charts keep independent configuration Bags.
+
+The reusable ChartReportPage and deterministic attributes/values pages live in
+gramlot-examples, base/pages/85-chart-reports. The Python environment owns the
+read-only SalesCharts query and chart_reports launcher; core has no environment,
+database or examples dependency. The live route queries annual state aggregates,
+revenue per customer and annual percentage change, not a saved snapshot.
+Verified 36 JavaScript chart tests, six Python composition/provider/fixture tests,
+and Chromium/WebKit regressions plus three endpoint-driven pages in each engine.
+Cases include store replacement, old-store isolation, shared filtering, independent
+configuration, changed columns, empty recovery and failed-request retention.
+Local preview: localhost:8901/index; fixture routes: /attributes and /values.
+Owner visual acceptance remains pending; no release or publication. Existing 3D
+framing refinements are outside this integration qualification.
+
+Documentation qualification note: the server-wide check_docs.py stops before
+Sphinx on an existing, unrelated GP-010 identity conflict: the checkbox option
+section repeats gp-010-040 and lacks its Block ID. That guide was not changed by
+this chart work. The runtime tests above pass; the global docs build is not a
+passing receipt.
+
+
+Modular chart collection — 2026-11-05. Implemented the owner's approved per-type
+organization and JS configurator. Seventeen descriptor modules share controls,
+rendering helpers and the same catalogue dispatch. chartPane composes ordinary
+Source frame/toolbar/drawer; the Python ChartPane entry only supplies the Data
+Bags and component. Removed aggregation from parameters, GUI and chart data
+projection following the owner's correction; input measures are not calculated.
+Maps/surfaces report duplicate keys requiring upstream preparation. Examples now
+use the shared JS composition and precomputed provider measures. Verified 43 JS
+tests, Python composition/provider/fixture checks, full Chromium/WebKit chart
+regressions, direct JS component creation/disposal, and the three server example
+routes in both engines. Local preview refreshed at localhost:8901/index.
+Implementation is verified; owner visual acceptance remains pending. No release,
+publication or dependency source changes. Prior server documentation identity
+conflict in GP-010 remains outside this change.
+
+
+Targeted chart cleanup — 2026-11-05. Owner approved removal of real duplication
+without additional components. The identical finite 2D/3D coordinate and closed
+polygon-ring checks now live in two pure chart-geometry predicates, shared by
+GeoJSON import, store polygon conversion and geographic paths. Existing validation
+policies/messages and all component interfaces remain unchanged. No configuration,
+rendering, aggregation or Python behavior was added. Verified canonical build,
+43 JavaScript chart tests and full Chromium/WebKit browser regressions, including
+GeoJSON import/replacement/error recovery, 3D types and direct JS creation/disposal.
+Implementation verified; no release/publication.
+
+
+Chart engine adapter qualification — 2026-11-05. EChartsAdapter exposes all 17
+render_<type> methods; PlotlyAdapter exposes bar/line/pie. Capabilities are derived
+from the method inventory. Engine-independent chart descriptors and the shared
+Source configurator use this inventory to disable unavailable choices without
+rewriting the selected type or any existing settings. Adapter validation reports
+incompatible data/options, including Plotly's repeated-pie-label summation, rather
+than silently altering values. Plotly basic 4.2.0 is lazy, MIT license packaged.
+Engine lifecycle, asynchronous update/disposal and shadow-root SVG styles belong
+to the adapters. No aggregation or database logic was added.
+Verified canonical build, 46 JS tests, six Python tests, full ECharts browser
+regressions, engine comparison in Chromium/WebKit and three server-loaded examples
+in both engines' test browsers. Visual inspection confirmed legend and axis titles.
+Local previews refreshed on 8898 and 8901. Plotly coverage is limited to the three
+approved types; owner visual acceptance pending. No release or publication.
+
+Additional integration verification: verify_chart_reports now exercises an
+ECharts map and a Plotly line concurrently on every route (attributes, values,
+Australian invoices) in Chromium and WebKit. All six runs pass shared filtering,
+dataRpc result replacement, empty/error recovery and retained engine/configuration.
+
+
+Vega adapter qualification — 2026-11-05. VegaAdapter adds render_bar,
+render_line and render_pie to the existing shared engine inventory/configurator.
+Vega 6.4.0 is loaded lazily, directly without Vega-Lite; its BSD-3-Clause license
+is packaged with the collection. Raw store values remain unchanged; pie angles
+are graphical layout only. Data-only updates reuse the Vega View; structural
+changes rebuild it, with queued updates, resize and disposal owned by the adapter.
+Lines include points so a filtered single row remains visible. Unsupported chart
+types stay unavailable without rewriting configuration. No Python GUI, business
+aggregation or 3D support was added.
+Verified canonical build and 49 JavaScript tests; three-engine comparisons and
+existing ECharts regressions pass in Chromium/WebKit. All three server examples
+(attributes, values, Australian invoices) pass in both browsers with an ECharts
+map and Vega line, including reload, filtering, empty/error recovery and schema
+changes. Visual inspection confirmed bars and pie labels/legend. Local previews
+refreshed on 8898 and 8901. Implementation verified; owner visual acceptance
+pending. No release or publication.
+
+
+Chart capability choice filtering — 2026-11-05. Owner requested incompatible
+choices not be offered. Shared Source bindings now hide and disable unsupported
+types for the current engine and unsupported engines for the current type, using
+the existing method inventory. External incompatible configuration remains intact
+and reports an error. No new component or automatic configuration rewrite.
+Verified build and Chromium/WebKit three-engine tests, including reactive hiding
+and restoration, the 3D-to-2D engine-selection flow, retained external settings,
+resizing, store replacement and filtering. Local previews refreshed on 8898/8901.
+Implementation verified; owner visual acceptance pending. No publication.
+
+
+uPlot integration and streaming qualification — 2026-11-05. UPlotAdapter adds
+render_line to the shared configurator/capability inventory, with lazy uPlot
+1.6.32 plus CSS, packaged MIT license, numeric/date ascending-X validation,
+shared colors/dual axes, canvas reuse, resizing and disposal. No new shared
+component, fallback, aggregation or WebSocket. The Python-first canonical
+streaming example uses named Logic and dataController _timing with a bounded
+600-row Bag, two sine curves, 2/10/30/60 Hz controls and pause/reset/resume.
+All four engines can be compared with the same settings and data.
+Verified build, 52 JS tests, six Python tests, four-engine Chromium/WebKit checks
+and the streaming example in both browsers. Visual checks confirm plot, legend
+and drawer fit. Observed timer updates: 2 Hz in both, and 62.5/50 Hz at requested
+60 Hz (Chromium/WebKit), not rendered FPS. Preview: localhost:8901/streaming;
+core qualification remains localhost:8898. Implementation verified; owner visual
+acceptance pending. No release, publication or dependency source changes.
+
+
+Streaming line presentation corrections — 2026-11-05. Owner reported ECharts
+coordinate scaling and Vega's point-heavy appearance. Numeric ECharts coordinate
+axes now use scale=true so their visible domain does not force zero; measure
+axes retain their zero baseline. Vega and ECharts lines/areas show markers only
+for an isolated sample, retaining its visibility after filtering. Multi-sample
+curves draw without point markers; data values and configuration are unchanged.
+This refines the earlier always-visible Vega symbol presentation.
+Verified canonical build, 54 JS chart tests (actual ECharts scale extents across
+positive/negative/moving domains and Vega symbol size through data changes),
+Chromium/WebKit moving-window and marker checks, visual screenshots, and all six
+Vega/ECharts server report cases including reload/filter/schema/empty/error
+recovery. Previews on 8898 and 8901 refreshed. Implementation verified; owner
+visual acceptance pending. No release or publication.
+
+
+Plotly native coverage expansion — 2026-11-05. The owner's request for ECharts
+coverage is implemented for 13 native types: bar, line, area, stackedBar,
+stackedArea, horizontalBar, pie, donut, scatter, line3D, scatter3D, surface and
+map. The adapter uses the lazy full Plotly 4.2.0 bundle and the same shared
+configurator, data and measure settings. Unsupported combinations raise explicit
+errors without rewriting configuration. Surface coordinates must be unique;
+stacked areas with negative values and duplicate rendered pie labels are rejected.
+Neutral map-data preparation is shared with ECharts; Plotly receives a render-only
+copy with spherical polygon winding, preserving the input GeoJSON. Maps use no
+external basemap service. The chart layer performs no business aggregation.
+Build and 58 JS chart tests pass. The 13 native types passed Chromium and WebKit,
+including WebGL, GeoJSON, resizing and no external map requests; screenshots were
+inspected. Full parity and end-to-end acceptance are not complete.
+Remaining: bar3D, map3D, lines3D and polygons3D need the pending owner decision on
+mesh geometry instead of native equivalents. The general browser regression also
+revealed a grid-filter integration failure: ChartDataView's bundled
+BagCollectionView calls copyFiltersFrom on a runtime-created view from another
+class instance definition; private #filters access fails across those definitions.
+The grid filters but the chart does not update. This shared integration defect is
+recorded separately and has not been bypassed in the Plotly adapter. No release
+or publication; owner visual acceptance remains pending.
+
+
+Shared chart filter transfer repaired — 2026-11-05. Owner explicitly requested
+“sì procedi a sistemare il trasferimento dei filtri dalla grid al grafico, nel
+componente condiviso e per tutti i motori”. BagCollectionView.copyFiltersFrom now
+reads the immutable filterContributions snapshot instead of accessing another
+view's private #filters. This corrects cross-bundle class identity failures in
+the shared collection view; engine adapters and application examples are unchanged.
+Accepted base/search/set predicates are transferred atomically into an independent
+Map. The chart retains its accepted filters after detachment and continues to
+filter subsequent data; reattachment follows the grid again. No row snapshot,
+normalization fallback or business aggregation was introduced.
+Verified canonical build and 76 chart/collection tests, including separately
+loaded class definitions, both row modes, combined base/search/set criteria,
+immutable snapshots, detachment and reattachment. The four-engine browser suite
+passes Chromium and WebKit, exercising filtering and clearing with ECharts,
+Plotly, Vega and uPlot as well as existing switching/resize/reload checks.
+The previously recorded cross-bundle filter blocker is resolved. Implementation
+verified; owner visual acceptance pending. No release or publication.
+Owner separately answered “Solo tipi nativi per ora”: Plotly scope is the 13
+implemented native types; custom mesh3d geometry is excluded for now, not pending.
+
+
+Optional Vizabi bubble trial — 2026-11-05. Owner explicitly requested a first
+animated bubble trial in a separate collection, supplied by a Gramlot store and
+configuration Bag, with Vizabi loaded optionally. Implemented the experimental
+vizabi collection / vizabiBubble component and VizabiSession lifecycle adapter.
+The host supplies libraryUrl, an ESM module exporting Vizabi, BubbleChart, mobx,
+style and locale. No Vizabi dependency or vendor bundle is added to Gramlot's
+package; the local qualification uses externally installed official browser
+bundles. The Python fixture provides four regions and eleven prepared years.
+Configuration selects entity/time/X/Y/size/color fields and year/playing/speed;
+standard Gramlot controls author these fields, while Vizabi playback projects
+its year/playing state back to the same Bag. The adapter copies row values before
+Vizabi's in-place parsing. The trial requires text entities/colors, integer years,
+finite numeric measures and unique entity/year pairs; name is reserved by the
+Vizabi entity catalogue for its display-name metadata. No aggregation is added.
+Verified build and 79 existing chart/collection tests. Chromium and WebKit verify
+optional loading, rendering, playback and pause, Bag synchronization, field changes,
+resizing and preservation of original year values. Qualification deliberately
+fails its lifecycle gate: after BubbleChart.deconstruct(), deck.gl still references
+the disposed model and logs an availability error. Inspected bubblechart 5.5.5:
+its chart component does not override deconstruct to finalize its Deck renderer.
+The failure is reproduced in both browsers; no dependency source patch or hidden
+consumer workaround was added. Instance recreation on store/field changes is also
+subject to this upstream resource-lifecycle limitation. Not stable or accepted.
+Local preview: http://127.0.0.1:8897/ . Test runner:
+tools/gramlot-tools-inspector/tests/vizabi-trial-browser.mjs; set VIZABI_NODE_MODULES
+to the external installation and VIZABI_DECK_BUNDLE to the official deck.gl 9.0.40
+browser bundle. Packages tested: core 1.38.1, shared-components 1.60.1,
+bubblechart 5.5.5. No gallery integration or publication until lifecycle is resolved.
+Next decision: authorize a bounded upstream Vizabi lifecycle fix outside Gramlot;
+constitution §13 forbids hiding missing owning-library capabilities in a consumer.
+
+
+### Temporal chart snapshots — 2026-11-05
+
+Owner authorized: “Sì procedi con una prova nel configuratore condiviso: scegliamo il campo temporale e facciamo scorrere le fotografie dei dati con slider e Play/Pausa, usando i motori che abbiamo già.” This supersedes the preceding proposed Vizabi follow-up: the owner abandoned that trial; no upstream Vizabi fix is authorized or pursued.
+
+Implemented and verified in the shared charts collection. ChartFields discovers Date columns reactively. ChartTimeline derives the complete store's UTC day/month/year range and keeps the current period, bounds and playback state in the configuration Bag. A standard Source controller advances it; the shared slider pauses on manual input, playback stops at the end and on component removal. Earlier inserted data preserve the selected date. ChartTimeView intersects the current period with the existing grid-filtered view while retaining original row nodes. No aggregation, interpolation, cumulative window or gesture is introduced. Empty periods remain selectable. Existing engine capabilities, including uPlot's numeric-X requirement, remain unchanged.
+
+Verification: canonical build and 83 chart/collection unit tests passed. Chromium and WebKit passed temporal snapshots and playback for ECharts, Plotly, Vega and uPlot, manual pause, calendar period changes, bounds changes, end/restart, Off and removal cleanup. The existing four-engine browser suite also passed filtering, capabilities, incompatible options, resizing and reload. Visual inspection confirmed a full-width slider and visible period label. The Python-first canonical time_snapshots example lives in gramlot-examples; its syntax was checked. Core qualification uses its own independent fixture. Local proof: http://127.0.0.1:8898/#temporal-demo . Implementation verified; owner visual acceptance pending. No release or publication.
+
+
+<a id="temporal-chart-stable-domains-2026-11-05"></a>
+### Stable temporal chart domains — 2026-11-05
+
+Owner: “Sì procedi: assi e colori stabili su tutto l’intervallo temporale, nel componente condiviso e per tutti i motori. Ricalcolali solo quando cambiano dati, filtri o configurazione.” Implemented shared chartDomains cached by ChartTimeView over dated rows in the accepted non-temporal filtered view. Period changes reuse the same domain object. Store/filter notifications invalidate it; relevant configuration changes recompute it. No application state or engine-specific calculation is added to examples.
+
+ECharts, Plotly, Vega and uPlot consume fixed numeric ranges and ordered category domains for their supported charts. Left/right measure scales remain independent; stacked bounds account for positive and negative series totals for drawing only. Cartesian 3D keeps full coordinate domains and Z bounds, including category indices when a category is absent from a frame. Pie/donut category colors use a shared stable palette; configured measure colors remain unchanged. ECharts/Plotly 2D maps share a fixed complete-interval color extent and signed palette. Geographic geometry and camera behavior retain their existing contracts; this does not introduce time interpolation of territories or paths. Empty temporal frames retain Cartesian axes; disabling animation restores ordinary automatic domains. Date intervals remain UTC. Source values are never aggregated or rewritten.
+
+Verified canonical build and 89 chart/collection tests. Tests cover cache reuse, invalidation, independent axes, missing categories, category colors, signed maps, empty periods, stack bounds and 3D coordinate stability. Chromium and WebKit verify fixed axis/legend labels during playback with all four engines, and future data insertion/removal updates Plotly's visible range immediately. Existing four-engine browser regression passed filters, capabilities, incompatible configuration, resize and reload. Local proof remains http://127.0.0.1:8898/#temporal-demo . Implementation verified; owner visual acceptance pending. No release or publication.
+
+<a id="gc-070-label-menu-20261105"></a>
+### Shared selectable labels and grid search — 2026-11-05
+
+Owner approved: “procedi con lbl_value e lbl_values riusando il menu esistente” and included groupBox, external searchBox labels and a small proportional chevron.
+
+Implemented in the renderer-owned Labelbox. `lbl_values` uses the existing choice parser; `lbl_value` binds the selected code to Data or retains it in Source when unbound. Shared menu/menuline components own menu presentation, navigation and closing; no second popup or menu stylesheet. GroupBox and HTML/components retain their contents. Labelbox projection now applies the component's declared label defaults. A shared caption primitive also names shadow controls without requiring a mounted presentation.
+
+SearchBox uses that same Labelbox instead of its private select and column-choice CSS. Its external label and input share a bounded width. The column-filter popup composes frameGrid/searchBox with literal matching in the existing collection filter compiler. A single available search column has one menu entry, avoiding a duplicate All columns choice. Menu teardown tolerates an emptied Labelbox during parent disposal. No application state is placed on Logic.
+
+Verified: canonical core build; 155 core tests across labels, components, layout, menus, grids, search and collection stores; both updated gallery examples mount in JavaScript. Chromium and WebKit verify selectable group headings, preserved note drafts, keyboard opening/closing, external search placement, literal popup search and bounded width in light/dark. Updated Python and JS groupBox example and Markdown explanations. Local preview: http://127.0.0.1:61535/pages/05-containers/06-group_box and /pages/05-grid/11_column_filters. Owner visual acceptance pending; no publication.
+
+
+<a id="gc-070-temporal-granularity"></a>
+
+### Expandable temporal configuration and granular periods — 2026-11-05
+
+Owner authorized “settimane da lunedì a domenica in UTC” and “la sezione espandibile e i passi temporali in funzione del tipo di dato, lasciandoli modificabili”. Implemented standard Source details/summary around the shared temporal controls, initially closed. Slider and Play/Pause remain outside the disclosure. Date columns offer day/week/month/year; Date values classified as time-bearing by the existing TYTX getDateType additionally enable hour/minute. This is observed value precision, not an independent declared schema: all-midnight values generally classify as date-only. Explicit period settings are never silently rewritten.
+
+Absent timeStep now defaults to auto. Automatic selects the finest applicable unit with at most 36 transitions, or year for longer spans; the resolved timeUnit is displayed. Existing explicit month/day/year configurations retain their values. timeHasClock and timeUnit are derived configuration Bag outputs. ChartTimeline caches the precision/range profile until the field or store changes; timer ticks do not rescan it. Weeks use Monday 00:00 through Sunday in UTC, including cross-year and pre-epoch dates. Hour/minute labels show time and UTC; weekly labels show both endpoints. All existing fixed-domain and filter behavior is retained.
+
+Verified build and 92 chart/collection tests. Chromium and WebKit passed disclosure visibility, date-only intraday disabling, timestamp enablement, week/hour/minute/automatic changes, playback/manual pause, fixed axes, data-change invalidation, Off and removal cleanup across the four engines. Existing engine regression also passed filtering, capabilities, resize and reload. Visual inspection confirmed the shared disclosure layout. The independent Python qualification adds recorded_at timestamps to permit direct intraday trials. Local proof: http://127.0.0.1:8898/#temporal-demo . Implemented and verified; owner visual acceptance pending. No release or publication.
+
+### Compact shared popup menus — 2026-11-05
+
+Owner rejected the selectable-label popup as oversized. Removed the shared menu's 16rem minimum width, reduced desktop rows to 24px and popup padding to 3px, and collapsed unused icon/check/submenu tracks while preserving alignment for visible disabled entries. Touch target tokens remain respected. No label-specific menu implementation or stylesheet. Verified 40 menu/Labelbox tests and Chromium/WebKit open-menu geometry (123×56px for the two-note example), selection and keyboard in dark/light. Preview refreshed; no publication.
+
+
+<a id="gc-070-temporal-gaps"></a>
+
+### Sparse temporal periods — 2026-11-05
+
+Owner confirmed keeping the last available snapshot by default, with an explicit Show empty alternative. Implemented timeEmpty=previous/empty in the shared configurator and temporal view. The projection selects the most recent occupied period at or before the cursor from the currently filtered rows; it is deterministic when scrubbing backwards, reacts to inserted data and does not resurrect filtered-out rows. It never borrows future data before the first eligible period, merges entities across periods or interpolates measures. New periods with data replace the whole snapshot. This supersedes blank-by-default gaps.
+
+The slider retains the requested date; a secondary Showing label identifies the retained snapshot's period only when different. The derived timeSnapshotLabel lives in the existing configuration Bag. Explicit empty mode preserves empty-frame axes. Shared fixed domains, UTC granularity, playback and engine capabilities are unchanged.
+
+Verified build, 93 chart/collection tests and the targeted domain tests after explicitly selecting empty policy. Chromium and WebKit passed previous/empty switching on weekly gaps for all four engines, retained-date labeling, existing playback, granular periods, fixed axes, Off and cleanup. The existing engine regression passed filters, resize, reload and compatibility controls. Local proof: http://127.0.0.1:8898/#temporal-demo . Implemented and verified; owner visual acceptance pending. No release or publication.
+
+
+<a id="gc-070-australian-temporal-real-data"></a>
+### Australian temporal qualification — 2026-11-05
+
+Implemented the owner-authorized connected trial in gramlot-examples and gramlot-py-server. The shared chart/search core is unchanged. Source contains 410,429 invoice lines and 60,179 invoices, 2022–2025. Read-only repeatable-read preparation reconciles invoice totals with line totals and grouped revenue/counts, then returns 384 monthly or 11,612 daily territory rows. The Python page uses frameGrid(searchOn=True), shared ChartPane, standard RPC and configuration Bags. Three measures and all four engines pass territory filtering and clearing, temporal changes and store replacement in Chromium/WebKit. Five sales-provider tests pass. No raw invoice/customer records or credentials are persisted in the repository.
+
+Local measurement (20 cursor changes per case; 16 browser/grain/engine cases): initial monthly load 1.58–1.95 s; daily reload 0.81–0.97 s. Daily update median 33–34 ms, p95 up to 51 ms, including two animation-frame callbacks; this is not animation completion or isolated rendering CPU time. Synchronous dispatch median 3–7 ms; daily territorial filtering 259–433 ms. Tests render at most eight territories per frame, so they do not establish throughput for hundreds of thousands of drawn points. The source line count must not be confused with browser store size. Some preliminary SQL timings varied up to 3.63 s; published figures above describe the measured browser run, not a service guarantee.
+
+The search question was answered with a scoped guarantee: shared FrameGrid/searchBox and facet search reuse standard controls; the Australian page uses them without local search code. No whole-gallery migration audit is claimed. Local preview: http://127.0.0.1:8902/australian_timeline . Implementation and qualification complete; owner visual acceptance pending. No release or publication.
+
+### Primary supplier radio — 2026-11-05
+
+Owner confirmed `check="single"`, `checked="^product.primary_supplier_id"`, `checkedField="supplier_id"`, then requested implementation (“perfetto continua”). Implemented through the existing GridCheckSets projection, subscriptions and Data writes. Radio groups use native keyboard behavior. A selected radio does not toggle off; null/empty clears selection. IDs retain text/numeric type. Row records are unchanged; filtered or unloaded selections survive, including partial stores. Existing multiple sets and their complete-store filtering contract remain unchanged. Check controls have zero native margins so narrow columns do not ellipsize them.
+
+Verified: 91 core grid/store/frame regressions, JavaScript gallery behavior, canonical build and regenerated component references. Chromium and WebKit passed selection, repeat click, keyboard, search hiding/restoring the selected supplier, and light/dark. Python/JS minimal example `05-grid/12_primary_supplier` includes shared sample Data, JSON metadata, Markdown instructions and feature-index entry. Preview active at http://127.0.0.1:61535/pages/05-grid/12_primary_supplier . Owner visual acceptance pending; no publication.
+
+Final preview check: the first launch encountered a grid build-wrapper mismatch after runtime artifacts changed on disk. Restarting the local host loaded coherent current artifacts; the in-app browser then displayed the monthly report, source counts, shared search toolbar and both chart measures successfully. Adapter documentation checker still reports an identity inconsistency in unchanged 010-writing-pages.md; that unrelated document was not modified.
+
+
+<a id="gc-070-chart-playback-presentation"></a>
+### Shared playback presentation — 2026-11-05
+
+Owner accepted the visible trial (“direi che va bene”) and requested classic playback icons and improved appearance. ChartPane now uses the shared icon-only button presentation: Play becomes Pause while running; Stop pauses and resets to the first period. Accessible names and tooltips follow state. A compact themed toolbar groups the controls, full-width slider and tabular date label; the retained snapshot date remains secondary. The row can wrap on narrow layouts. No application-local button styling, alternate state or renderer change.
+
+Build passed. Chromium and WebKit passed the temporal suite with all four engines, including accessible Play/Pause names, Stop reset/no subsequent ticking, manual pause, empty-period policy and component cleanup. Visual inspection confirmed proportional monochrome controls and the compact toolbar. The Australian preview was refreshed and the in-app browser verified both controls after loading 384 monthly rows. Local preview remains http://127.0.0.1:8902/australian_timeline . Implemented and verified; no release or publication.
+
+
+### Icon-only grid check cells — 2026-11-05
+
+Owner requested centered radio and checkbox controls without text or ellipsis, including narrow columns. Shared grid check cells now use a centered flex layout with no text padding or ellipsis; accessible names remain. The marker is removed when a column returns to text. This supersedes the earlier margin-only fix.
+
+Verified: 72 grid/frameGrid tests pass, including both check modes and conversion back to text; runtime build passes. Chromium and WebKit verify centered radio and checkbox controls in the gallery's narrow columns at 100% and 200% zoom. Radio selection, keyboard navigation, filtering and light/dark checks pass. Local gallery on port 61535 restarted with the updated runtime; no publication performed.
+
+
+<a id="gc-070-chart-period-arrows"></a>
+### Temporal previous/next controls — 2026-11-05
+
+Owner requested two arrows to move one period without the slider. Shared ChartPane now groups Previous period, Play/Pause, Stop and Next period using the existing icon-only buttons. A step pauses playback, changes timeIndex by exactly one and clamps at the current bounds. Previous is disabled at zero; Next uses derived timeAtEnd, recalculated from both timeIndex and timeMax. Single-period ranges disable both arrows. Empty periods retain their configured previous/empty behavior; arrows do not skip them.
+
+Build and Chromium/WebKit temporal qualification passed, including forward/backward movement, pause-on-step, start/end and single-period disabling, Stop and the existing four-engine checks. The Australian in-app preview was refreshed: Previous is disabled initially and Next is available. No local example implementation, new component or publication.
+
+
+<a id="gc-070-australian-geography"></a>
+### Australian geographic navigation — 2026-11-05
+
+Owner approved the Australia → State → suburbs demo. Shared chartView now writes selectedTerritory on a 2D map click, with ECharts/Plotly adapters and a binding through ChartPane configuration. No application DOM/event wiring is used. Python gallery composition uses ordinary dataRpc, FrameGrid/search and ChartPane; the host owns exact locality matching, read-only invoice aggregation and lazy per-State geometry loading. The year (2022–2025), measure and grid filter remain unchanged across navigation. Suburb names use hover rather than overlapping labels. The shared GeoJSON summary displays a count for large files.
+
+ABS SAL 2021 geometries were downloaded from the official service with outSR=4326, precision=4 and maxAllowableOffset=0.001. Nonspatial ABS records have no displayed geometry. All eight States validate (15,329 spatial features); their 2025 sales totals reconcile with Australia. Exact name matching deliberately leaves unmatched/ambiguous localities in the table and totals, with visible counts. Owner subsequently approved removing only the official State suffix; the updated host index matches within each State and refuses ambiguous results. In 2025, 553 of 681 active locality pairs match; Tasmania improves to 93 of 97. No fuzzy matching, compound-qualifier removal or postal-name inference is used.
+
+Verified: runtime build, 72 chart tests, ten host sales tests; Chromium and WebKit exercise actual map clicks in both engines, back navigation and year/measure/search retention. The browser receives only the selected State's boundaries. Local preview: http://127.0.0.1:8903/australian_geography . No release/publication; implemented and verified, awaiting owner visual acceptance. Host/provider metrics and screenshots are local under /tmp/australian-drilldown; no raw customer identifiers were exported.
+
+Documentation check: gramlot-py-server/scripts/check_docs.py still reports the pre-existing inconsistent identity in 010-writing-pages.md; this unrelated file was not changed. Functional qualification passed. Downloaded public SAL files are retained alongside the existing national GeoJSON in the local visualization assets, with a reproducible downloader in the host repository.
+
+
+### Release scope and deferred grid recovery — 2026-11-05
+
+Owner bounded the next release to current charts, current checkbox work, minor issues and a complete gallery JSON/minimal-code review. Recorded the closure inventory and PoC/legacy evidence in GC-475 release-scope-20261105. Formulas, totals and full configurator remain researched follow-up work. Chart chat reports coloring/zoom labels/3D bars still pending; gallery metadata scan finds 26 unmatched Python files, all indices. No runtime changes or publication in this scope audit.
+
+
+<a id="gc-070-geographic-values-bars"></a>
+### Geographic values and 3D columns — 2026-11-05
+
+Owner approved map color/value verification and overlaid 3D bars, then requested the height baseline as a configuration option. Rendering checks confirmed that the existing grey regions mostly had no matched sales; low-value colors and thick borders made populated regions difficult to distinguish. The shared positive palette now has a visible blue low endpoint and thinner boundaries. mapLabelMode offers none/name/value/nameValue; compact numeric labels retain exact tooltip values and zero remains a value. ECharts uses native overlap layout; Plotly hides overlapping/offscreen text after render/relayout and enables geographic wheel zoom. Large GeoJSON summaries stay compact.
+
+New mapBar3D is ECharts GL-only and appears through render_ capability discovery. Interior display anchors respect polygon holes and choose the largest island. Selected measures have grouped bars, configured colors and one common altitude scale; values are unmodified and unmatched territories have no bar. mapBarScale chooses zero or extent (explicitly truncated baseline). The owner-approved invisible scatter reference fixes the chosen range, including cached temporal extents, and never appears in store, legend or tooltip. No Plotly mesh emulation or data aggregation was added.
+
+Verified: runtime build and 75 chart tests, including actual ECharts color assignment, zero/missing labels, interior anchors, grouped raw measures, and zero/extent references. Chromium and WebKit verified graduated colors, numeric labels and zoom in 2D, Plotly matched rows, ECharts GL two-measure rendering, capability hiding, baseline selection and return to 2D. Screenshots/logs are local under /tmp/map-values. The Australian demo remains at http://127.0.0.1:8903/australian_geography; local data matches 93/97 Tasmania localities with 2025 sales. Core rendering is reusable; the gallery only supplies configuration/data. No release or publication; visual acceptance remains with the owner.
+
+
+<a id="gc-070-checks-gallery-closure-20261105"></a>
+### Checkbox/filter closure and gallery editorial qualification — 2026-11-05
+
+Owner: “procedi con la chiusura di checkbox e filtri e poi con la revisione degli esempi: codice minimo, metadati JSON e spiegazioni nel Markdown, senza perdere funzionalità”. The accepted grid increment is complete locally: external ID strings, John/intersection/All on complete stores, composed search and column/date filters, scalar supplier radio and shared centered icon-only cells. No remote facets, new set operators, formulas, totalization or configurator were introduced.
+
+Core qualification: 145 tests passed across grid components, editing, row layout, FrameGrid and BagCollectionStore. Chromium/WebKit checked narrow radio/checkbox columns at 100%/200%, dates/periods/drafts/reset; WebKit additionally checked live set membership and search composition.
+
+Gallery: 132 common lessons and 14 optional lessons reviewed against the metadata/Markdown convention. Removed redundant page-title declarations, moved 14 purely decorative wrappers into common presentation metadata, shortened 33 titles and preserved functional layout/Data scopes and variants. Initial choices that do not teach initialization now use adjacent TYTX. Source excerpts remain Python-first with JavaScript parity. The ongoing chart reports are a separate integration gate; this review does not certify or publish them. See GE-015 for inventory and GE-030 for authoring rules.
+
+Verification: all 133 common routes (lessons plus index) start in Chromium and WebKit; 20 Python page/navigation/gallery tests pass. Sphinx strict build and links/search/paired-guide checks pass for 132 lessons. Eight representative serverless lessons start from file:// in both engines, including checkBoxText, tree, grid sets/facets/radio and Markdown. Initial full JavaScript qualification (393 cases) found stale expectations and editorial parity defects; failing cases were corrected and rerun rather than suppressed. All 133 Python/JavaScript Source/page-options parity cases pass. The sample-data decoder regression was fixed by emitting TYTX without a trailing newline and all three sample-data checks pass; no decoder fallback was introduced. The inspector test now checks the actual frame bridge and original Bag identity, with save/draft regression checks retained. Preview: http://127.0.0.1:61535/. No package publication or deployment. User visual acceptance and final cross-workstream release qualification remain outstanding.
+
+
+<a id="gc-070-chart-release-qualification-20261105"></a>
+### Chart integration and release qualification — 2026-11-05
+
+Owner explicitly authorized core completion: “Sì, completa anche il core”; no publication and Invoice application excluded. Reviewed the completed chart work from “Confronta Gramlot POC e core”. Common gallery now includes the charts collection and the minimal Python/JS Charts and time lesson, with JSON metadata, adjacent Data and Markdown; host Australian experiments remain separate.
+
+Closed qualification defects: redundant button slotchange listener removed (the existing MutationObserver already observes caption changes); default card alignment now respects the card's centered presentation unless explicitly overridden; prepared-bundle Node qualification supplies the host collection mapping. Full core JavaScript suite passes 1,862 tests. Lifecycle/button/tray regression passes 70 tests. Four-engine and temporal browser suites pass in Chromium/WebKit, and the common gallery switches ECharts to Plotly in both engines. Ten chart-host provider tests pass.
+
+Added generated human/LLM references for packaged charts and specialized Vizabi, preserving grammar types, defaults, bindings and constraints. Vizabi remains a specialized host integration, not another chartPane engine. Strict Sphinx build and public-document checks pass: 34 pages and 13 agent downloads. All 36 reference/collection/frame checks pass. Full Python run reached 425 passing and five expected failures with one obsolete ten-card assertion; all three LLM download tests pass after updating that assertion to twelve cards. Node 22 is required by collection-generation tests; default local Node 23 is unsupported.
+
+Release remains blocked by a real file-origin defect: gramlot-js-server/serverless/src/collection-bundle.js bundles verified collection bytes but leaves relative new URL(..., import.meta.url) asset references in a module later imported from a blob URL. Charts then fails to import before the page starts; the common HTTP gallery works. Do not remove legal assets or add a core fallback. Owner subsequently authorized the owning-server fix: “Sì, correggi anche serverless”. See the qualification result below. No release/deployment performed.
+
+
+<a id="gc-070-serverless-resource-qualification-20261105"></a>
+### File-origin collection resources — 2026-11-05
+
+The prepared artifact retained original resource URL constructors before assigning
+emitted URLs. Preparation now resolves declared resource references to one shared
+emitted resource module, preserving captured URL objects and excluding original
+local paths. No application API or runtime fallback was added. The serverless
+export embeds literal resource URLs from the fingerprint-verified snapshot as
+data URLs; missing/unverified resources still fail the build. License bytes and
+media types are preserved.
+
+Verification: 67 serverless tests pass; two focused resource-lowering tests and
+eight prepared-collection tests pass. Strict gallery documentation build succeeds
+for 133 lessons. The chart lesson opens from file:// and switches ECharts to Plotly
+without page errors in Chromium and WebKit. Eight additional representative lessons pass file-origin startup in both browsers
+(16 checks); all 18 generator integration tests pass. Full Python qualification
+passes 426 tests with five expected failures; the final full JavaScript run passes
+1,864 tests with no failures. Package dry-run includes the asset
+helper; paired server documentation builds pass. Invoice application remains excluded;
+no packages, tags or deployments published.
+
+
+<a id="gc-070-frame-grid-charts-20261105"></a>
+### FrameGrid charts and gallery section — 2026-11-05
+
+Owner confirmed chart=True/type plus chart_* options and instance-owned frame Data.
+Implemented Python/JS frameGrid composition using the existing toolbar, floatingPane
+and chartPane; own datapath required when enabled, ._chart stores configuration and
+open state, gridId follows the original grid's filtered store. configDefaults copies
+missing initial entries only, preserving saved configuration. No parallel rendering,
+filter or state system. Tests: 14 JavaScript frame checks and 18 Python frame/chart
+checks pass. Eight gallery lessons have Python/JS Source parity; all render in
+Chromium/WebKit over HTTP and file://. Behavioral checks cover typed Data changes,
+configuration retention, shared filtering and intact row Bags. Strict gallery
+Sphinx build and route/metadata/feature checks pass. Preview remains port 61535;
+no publication. Invoice application excluded; owner visual acceptance pending.
+
+
+### Gallery lesson preferences — 2026-11-05
+
+Owner approved a default-enabled setting to keep Example/Explanation/Code when
+switching lessons and compact field widths in the common presentation. Implemented
+in gramlot-examples for the Python/JS gallery: selectedPage uses per-lesson Data
+bindings; the existing settings bridge carries the current view on navigation.
+Disabling the preference preserves independent tab choices. Local storage persists
+only the preference; current views remain in Data. Existing iframe instances and
+edited values survive navigation. Common preview CSS bounds ordinary fields and
+horizontal sliders at 28rem without limiting grid/editor containers.
+Focused gallery tests (3) and Python gallery checks (8) pass. Chromium and WebKit
+verify navigation, disabled mode, reload persistence, and retained draft values.
+A 320px viewport has no overflow; a grid retains its 1008px width. All 41 gallery regressions pass; the final re-enable regression also passes
+after the last adjustment. Final Chromium/WebKit checks pass. Local preview:
+port 61535. No publication.
+
+
+### Optional single-page gallery — 2026-11-05
+
+Owner approved Multipage enabled by default and an optional single reusable
+preview, accepting discarded example state on navigation. Implemented in
+gramlot-examples using the existing IndexPage, lesson constructor and content
+loader. The shared shell, teaching tabs and preview iframe retain identity;
+only the iframe URL and teaching contents change. Mode changes retire previous
+panels and reopen the selected entry. Preferences remain in Data with the existing
+local-storage persistence. Source owns the pending shell request and transition
+guard; Logic stores no state. Obsolete Code/Explanation requests are cancelled
+through NodeRequests before reusing targets. The guided lesson uses the existing
+frame-ready signal after iframe navigation.
+Verification: navigation/settings/content regression checks pass, including
+identity, mode toggling and a deliberately delayed old Code response; 8 Python
+gallery checks and 5 guide checks pass. Chromium/WebKit verify iframe/tab identity,
+discarded drafts, preference persistence and return to multipage. The guided
+lesson was checked separately in Chromium. Local preview: port 61535. No release
+or deployment.
+
+
+### Audio array feasibility — 2026-11-05
+
+Owner requested “si prova” after the proposal to store a complete numeric sample
+array as one Data node value and replace it per snapshot. Qualification uses the
+existing Bag and runtime dataController/binding mechanisms, without modifying
+Bag, Builder, the audio producer or the chart API. Two tests pass: 20 successive
+1024-sample arrays retain one samples node and the same bound DOM element, while
+each replacement updates the controller outputs and displayed first sample.
+The current chart collection contract rejects raw arrays: ChartView requires a
+Bag and its collection store expects rows. End-to-end audio/chart integration is
+therefore NOT completed. Next design point: a shared chart input for numeric
+sample arrays with sample interval metadata, without recreating per-sample Bag
+nodes or adding an application workaround. The test is not a browser audio or
+performance benchmark. No publication or deployment.
+
+
+### Shared chart sample input — 2026-11-05
+
+Owner confirmed “ok” to implementing the array input. ChartView now accepts a
+plain numeric array at storepath with rowMode="samples", sampleStep/sampleStart
+and one virtual measure. ChartSampleView projects indices into the existing
+renderer protocol without per-sample Bag nodes. Existing Data invalidation,
+ChartRenderer and engine adapters are reused. Chart collection artifacts and
+paired GC-480 documentation are updated; no release/deployment.
+
+Verification: 20/20 focused tests pass, including actual ECharts SVG changes,
+uPlot data projection, existing row-mode renderer regression checks, array Data
+binding, persistent component/renderer identity and empty/recovery handling.
+The broader chart suite reports 78/79: the map-label test expects "1.2M" while
+the current map label formatter produces "1.2m". Neither map-label implementation
+nor that test was changed in this task; the broader suite is not green.
+Remaining separate work: migrate the audio producer from row Bags to snapshots
+and exercise the microphone gallery in a browser. ChartPane's row configurator
+and temporal/grid filters are not supported for sample arrays. No performance
+benchmark or complete audio redesign is claimed.
+
+
+### Audio snapshots connected to gallery — 2026-11-05
+
+Migrated audioAnalyser to numeric waveform/spectrum arrays, copied from native
+buffers. No per-sample Bag nodes. Restored its existing source/session/tests from
+the preserved original worktree into the primary checkout and included audio in
+the normal collection build. No edits to original worktree or dependencies.
+Gallery Microphone analysis now uses the shared chartView samples input with a
+reusable Python method; coordinate steps are Data formulas. Initialize both steps
+before chart mount: browser qualification caught and resolved a transient invalid
+step before onBuilt formulas ran. Paired lesson Markdown explains the arrays.
+
+Verification: eight focused audio/session/array/chart tests pass. Chromium with
+synthetic microphone verifies 1024/512 numeric arrays, both uPlot charts, Stop,
+restart and retained plot DOM, with no page errors. No real microphone was used;
+WebKit microphone capture was not tested. Preview is running on localhost:61535,
+Live examples → Microphone analysis. No publication or deployment. The broader
+chart map-label mismatch reported earlier remains separate. The proposed
+source/analyser/recorder API redesign is still pending.
+
+
+### Audio fixed axes — 2026-11-05
+
+Owner requested stable axes for readable audio. SampleView uses the existing
+shared chartDomains protocol with explicit sampleMin/sampleMax; waveform is
+-1/+1, spectrum minimumDb/0. X depends only on count, step and start. No new
+engine-specific implementation. Gallery and paired Markdown updated.
+27 focused chart/sample/domain/renderer/uPlot tests pass, including identical
+domains for quiet/loud snapshots and changed X extent after FFT-size changes.
+Chromium synthetic-microphone check passes Play/Stop/restart, two arrays and
+retained plot DOM without page errors; screenshot reviewed confirms waveform
+-1/+1. Preview restarted on 61535. No publication.
+
+
+### Ordered toolbar suffix — 2026-11-05
+
+Removed menuline overflowable and its priority-based selection. ToolbarOverflow
+now retains a contiguous prefix and sends the whole remaining suffix into the
+existing vertical popup, preserving groups, Source, DOM identity and bindings.
+Updated internal consumers, Python/JS gallery declarations and maintained menu
+reference text; original historical contracts remain as evidence, superseded by
+the new owner amendment. Core and gallery browser builds pass.
+60 menu/button/frame-grid regression tests pass, including the large second /
+small third command case, vertical sizing, separators and focused input identity.
+Chromium verifies the real audio toolbar at 250px retains a contiguous prefix,
+plus synthetic-microphone Play/Stop/restart without errors. Gallery preview on
+61535 restarted. No release. A final two obsolete declarations in the standalone
+vertical-toolbar JS example were also removed; that specific page was not browser
+qualified. Owner subsequently proposes an audio datapath with relative bindings;
+that change remains the next step, not implemented by this toolbar correction.
+
+
+### System monitor: timer extension withdrawn — 2026-11-05
+
+The owner rejected the framework timer extension: authorizing the monitor did
+not authorize a new core/server timer API. Removed the incorrectly recorded
+approval from the constitution and GC-225, the related GC-250 reference, Python
+runtime timer code, shared-channel scheduler and their added tests. Preserved
+copies under /private/tmp/gramlot-withdrawn-timer. The four affected framework and
+server source/test files again match their pre-extension HEAD versions; unrelated
+work is preserved.
+
+Owner-approved replacement: a fixed circular list, one position per interval,
+read only when running and a related panel is open, each handler returning a Bag
+for the controller to apply. The example now owns an asyncio task, canceled by
+PageStore.close. It pulses clock.tick; an ordinary bound dataController advances
+clock.index, checks controls and collects at most one family. Closed positions
+remain in the ring. All binder operations are marshalled to the same loop by the
+example to avoid concurrent Bag writes from host workers. No framework API added.
+Page, PageStore and PsutilHandler remain together; human/LLM lesson revised.
+
+Verified: 8 monitor tests and 112 core/PageStore/Uvicorn/Kajenn regressions pass.
+Browser qualification confirms live readings, Stop/Play and no page errors.
+Visible local preview reloaded at 61535. This example targets the asyncio/Uvicorn
+preview; process enumeration remains a potentially heavier synchronous family.
+Implementation verified, awaiting owner trial. No release; Invoice untouched.
+
+
+### 2026-11-05 — Drawing gallery and toolbar indicators
+
+Owner requested a dedicated drawingPane gallery lesson with minimal code, JSON
+metadata and Markdown, annotations kept in a Bag; then requested downward,
+better-spaced Color and Pen size chevrons. Implemented Python/JS lesson under
+Editors (Image annotations), with a self-contained image and relative annotations
+binding. No server persistence. The shared icon-only toolbar indicator now points
+down and participates in layout rather than overlapping its icon; drawing toolbar
+reserves 56px. Existing captioned cascading menu behavior remains intact.
+
+Verified: 38 drawing/menu tests and 2 catalogue tests pass; gallery and core builds
+pass. Local 61535 browser trial confirms drawing an arrow, lesson navigation,
+Markdown rendering and both popup tools. Awaiting owner trial; no publication.
+
+
+### 2026-11-05 — Chart configuration separator
+
+Owner requested fixing the missing light-theme separation between chart and
+configuration panel. chartPane now declares a left border using --gramlot-border
+and a background using --gramlot-surface. No dark-only restriction or new CSS
+implementation. Build and 14 frame-grid tests pass. Local preview 61535 restarted;
+browser confirms the rendered border and settings drawer in the standalone dark
+preview. Light-theme visual verification remains pending; theme tokens define
+both variants. No publication.

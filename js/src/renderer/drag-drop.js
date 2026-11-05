@@ -107,6 +107,7 @@ export class DragDrop {
             type.startsWith('text/') ? session.wires.get(type) : fromTytx(session.wires.get(type))]));
         const context = {dropValues, item: row.item, path: row.path, source: {...session.source},
             selfdrop: record === session.record, dropEffect: policy.dropEffect, dataAvailable: true};
+        if (row.placement !== undefined) context.placement = row.placement;
         const accepted = policy.accepted && this.#renderer.checkDropTarget(record.node, context)
             && this.#renderer.records.get(record.node) === record && row.element.isConnected;
         return {record, element: row.element, accepted, context};

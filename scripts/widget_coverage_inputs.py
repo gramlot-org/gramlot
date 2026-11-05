@@ -56,10 +56,10 @@ _ROWS = {
     "checkBoxText": (
         "A nullable string stores comma-separated codes, or null for no selection. Editing preserves the order of retained codes and appends newly selected ones.",
         "A native check change commits the code list. Arrows, Home and End move focus among options. There is no component-specific selection callback.",
-        "The field generates inline options from `values` and arranges them in `cols` columns. It takes no Source option children.",
+        "The field generates options from text or Bag `values`, or a complete `dbtable`/`method` result. `popup=True` puts the same choices behind a caption button; `cols` arranges them. It takes no Source option children.",
         "The column count must be positive. Readonly and disabled lock the options. An edit preserves stored codes that have no current visible option.",
-        ["bases", "choices"], ["choice-components", "input-validation"], ["02-checks_and_switches/02-checkbox_text.md"],
-        "Shows an inline multiple-choice group and its bound code list.",
+        ["bases", "choices", "check-box-text"], ["choice-components", "input-validation"], ["02-checks_and_switches/02-checkbox_text.md"],
+        "Shows inline and popup choices sharing their bound code list.",
     ),
     "colorpicker": (
         "A two-way color string projects to a native color input, with `#000000` as the component default.",
@@ -95,7 +95,7 @@ _ROWS = {
         "A nullable civil date (`D`). Formatting and text drafts are separate from Data. Relative entry uses `workdate` or local today as its reference.",
         "Enter, change and blur attempt a commit. Live mode commits parseable input, and selecting a calendar day commits the typed date directly. Escape cancels the draft. There is no component-specific date callback.",
         "A field leaf with an internal trigger and popup unless `calendar=False`.",
-        "The parser requires a single date. Empty input commits null, while an invalid expression preserves the typed value. Disabling the calendar or releasing the editor closes its popup.",
+        "The parser requires a single date unless period_to declares a relative Data output path. An accepted period writes its start to value and its end to period_to; ordinary dates leave that output unchanged. Empty input commits null, while an invalid expression preserves both typed values. Disabling the calendar or releasing the editor closes its popup.",
         ["typed-editor", "date-calendar"], ["typed-components", "calendar-components", "form-state"],
         ["06-dates_and_times/01-date_textbox.md", "06-dates_and_times/03-date_calendar.md"],
         "Shows formatted date entry and the shared calendar presentation.",

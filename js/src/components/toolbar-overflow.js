@@ -43,6 +43,7 @@ export class ToolbarOverflow {
           :host([role=toolbar]) .toolbar-viewport{display:flex;align-items:center;gap:var(--gramlot-toolbar-gap,4px);flex:1 1 0%;min-width:0;min-height:0;overflow-x:auto;overflow-y:hidden}
           :host([role=toolbar][aria-orientation=vertical]) .toolbar-viewport{flex-direction:column;align-items:stretch;overflow-x:hidden;overflow-y:auto;width:100%}
           :host([role=toolbar]) ::slotted(*){flex-shrink:0}
+          :host([role=toolbar]) .toolbar-viewport[data-measuring]{flex:none;width:max-content;height:max-content;overflow:visible}
           .toolbar-more{flex:0 0 auto;width:max(var(--gramlot-field-height,32px),var(--gramlot-touch-target,0px));height:max(var(--gramlot-field-height,32px),var(--gramlot-touch-target,0px));padding:0;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit;display:grid;place-items:center}
           .toolbar-more svg{display:block;width:18px;height:18px;pointer-events:none}
           .toolbar-more:hover,.toolbar-more:focus-visible{background:var(--gramlot-selected,Highlight)}
@@ -109,12 +110,16 @@ export class ToolbarOverflow {
         this.#overflow.clear();
         menu.refreshItems();
         for(const item of menu.items)item.refreshAvailability();
+        // Auto margins distribute spare space; they are not intrinsic content.
+        // Measure synchronously without flex allocation, then restore before paint.
+        this.#viewport.setAttribute('data-measuring','');
         const gap=parseFloat(win.getComputedStyle(this.#viewport).gap)||0;
         const lengths=new Map(units.map(unit=>{
             const css=win.getComputedStyle(unit);
             const length=labelboxContent(unit).localName==='gramlot-spacer'?(labelboxContent(unit).parameters.size??0):unit.getBoundingClientRect()[axis];
             return [unit,length+(parseFloat(css[vertical?'marginTop':'marginLeft'])||0)+(parseFloat(css[vertical?'marginBottom':'marginRight'])||0)];
         }));
+        this.#viewport.removeAttribute('data-measuring');
         const separator=unit=>labelboxContent(unit).getAttribute('role')==='separator';
         const tidy=list=>list.filter((unit,index)=>!separator(unit) ||
             list.slice(0,index).some(item=>labelboxContent(item).localName!=='gramlot-spacer'&&!separator(item)) &&
@@ -123,16 +128,15 @@ export class ToolbarOverflow {
         const required=remaining=>remaining.reduce((sum,unit)=>sum+lengths.get(unit),0)+Math.max(0,remaining.length-1)*gap;
         let remaining=tidy(units);
         if(required(remaining)>available){
-            const candidates=units.map((unit,index)=>({unit,index})).filter(({unit})=>labelboxContent(unit).localName==='gramlot-menu-line' && !separator(unit) && labelboxContent(unit).parameters.overflowable)
-                .sort((a,b)=>labelboxContent(a.unit).parameters.priority-labelboxContent(b.unit).parameters.priority || b.index-a.index);
-            for(const {unit} of candidates){
-                if(required(remaining)<=available-32)break;
-                this.#overflow.add(unit);remaining=tidy(remaining.filter(item=>item!==unit));
+            let cut=units.length;
+            while(cut>0 && required(remaining)>available-32) {
+                cut--;
+                remaining=tidy(units.slice(0,cut));
             }
+            const suffix=tidy(units.slice(cut).filter(unit=>labelboxContent(unit).localName!=='gramlot-spacer'));
+            for(const unit of suffix)this.#overflow.add(unit);
         }
-        const overflowRows=tidy(units.filter(unit=>this.#overflow.has(unit)||separator(unit)&&!remaining.includes(unit)));
-        for(const unit of overflowRows)this.#overflow.add(unit);
-        for(const unit of units)if(separator(unit)&&!remaining.includes(unit)&&!this.#overflow.has(unit))unit.slot='suppressed';
+        for(const unit of units)if(!remaining.includes(unit)&&!this.#overflow.has(unit))unit.slot='suppressed';
         for(const unit of this.#overflow){unit.slot='overflow';unit.setAttribute('data-menu-overflow','');}
         this.#button.hidden=this.#overflow.size===0;
         for(const item of menu.items)item.refreshAvailability();

@@ -1,0 +1,1113 @@
+{
+  "abstracts": {},
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "elements": {
+    "chartFields": {
+      "_meta": {
+        "gramlot_component": {
+          "bagStore": true,
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "categoryId": {
+              "dtype": "T"
+            },
+            "configpath": {
+              "dtype": "T"
+            },
+            "geometryId": {
+              "dtype": "T"
+            },
+            "mapLabelId": {
+              "dtype": "T"
+            },
+            "mapMeasureId": {
+              "dtype": "T"
+            },
+            "measureMenuId": {
+              "dtype": "T"
+            },
+            "rowMode": {
+              "dtype": "T"
+            },
+            "secondCategoryId": {
+              "dtype": "T"
+            },
+            "storepath": {
+              "dtype": "T"
+            },
+            "timeFieldId": {
+              "dtype": "T"
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-chart-fields"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "timeFieldId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "storepath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "rowMode",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "configpath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "categoryId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "mapMeasureId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "mapLabelId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "secondCategoryId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "geometryId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "measureMenuId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    },
+    "chartGeoJSON": {
+      "_meta": {
+        "gramlot_component": {
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "value": {
+              "binding": "twoWay",
+              "default": null,
+              "dtype": "X",
+              "nullable": true
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-chart-geo-json"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "value",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    },
+    "chartPane": {
+      "_meta": {
+        "gramlot_component": {
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "configDefaults": {
+              "dtype": "X",
+              "nullable": true
+            },
+            "configpath": {
+              "dtype": "T"
+            },
+            "gridId": {
+              "dtype": "T",
+              "nullable": true
+            },
+            "rowMode": {
+              "default": "attributes",
+              "dtype": "T"
+            },
+            "storepath": {
+              "dtype": "T"
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-chart-pane"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "configDefaults",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "storepath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "configpath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "attributes",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "rowMode",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "gridId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": "*"
+    },
+    "chartTimeline": {
+      "_meta": {
+        "gramlot_component": {
+          "bagStore": true,
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "configpath": {
+              "dtype": "T"
+            },
+            "rowMode": {
+              "dtype": "T"
+            },
+            "storepath": {
+              "dtype": "T"
+            },
+            "timeField": {
+              "binding": "read",
+              "dtype": "T"
+            },
+            "timeIndex": {
+              "binding": "read",
+              "dtype": "R"
+            },
+            "timeStep": {
+              "binding": "read",
+              "dtype": "T"
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-chart-timeline"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "storepath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "rowMode",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "configpath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "timeField",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "timeStep",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "R",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "timeIndex",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    },
+    "chartView": {
+      "_meta": {
+        "gramlot_component": {
+          "bagStore": true,
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "captionField": {
+              "binding": "read",
+              "dtype": "T"
+            },
+            "chartType": {
+              "binding": "read",
+              "dtype": "T"
+            },
+            "configpath": {
+              "dtype": "T"
+            },
+            "engine": {
+              "binding": "read",
+              "default": "echarts",
+              "dtype": "T"
+            },
+            "geoJSON": {
+              "binding": "read",
+              "dtype": "X",
+              "nullable": true
+            },
+            "geometryField": {
+              "binding": "read",
+              "dtype": "T"
+            },
+            "gridId": {
+              "dtype": "T"
+            },
+            "mapBarScale": {
+              "binding": "read",
+              "default": "zero",
+              "dtype": "T"
+            },
+            "mapLabelField": {
+              "binding": "read",
+              "dtype": "T"
+            },
+            "mapLabelMode": {
+              "binding": "read",
+              "default": "value",
+              "dtype": "T"
+            },
+            "mapValueField": {
+              "binding": "read",
+              "dtype": "T"
+            },
+            "rowMode": {
+              "dtype": "T"
+            },
+            "sampleMax": {
+              "binding": "read",
+              "dtype": "R",
+              "nullable": true
+            },
+            "sampleMin": {
+              "binding": "read",
+              "dtype": "R",
+              "nullable": true
+            },
+            "sampleStart": {
+              "binding": "read",
+              "default": 0,
+              "dtype": "R"
+            },
+            "sampleStep": {
+              "binding": "read",
+              "default": 1,
+              "dtype": "R"
+            },
+            "secondCaptionField": {
+              "binding": "read",
+              "dtype": "T"
+            },
+            "selectedTerritory": {
+              "binding": "twoWay",
+              "default": "",
+              "dtype": "T"
+            },
+            "seriesOptions": {
+              "binding": "read",
+              "dtype": "X"
+            },
+            "storepath": {
+              "dtype": "T"
+            },
+            "timeEmpty": {
+              "binding": "read",
+              "default": "previous",
+              "dtype": "T"
+            },
+            "timeField": {
+              "binding": "read",
+              "default": "",
+              "dtype": "T"
+            },
+            "timeStep": {
+              "binding": "read",
+              "default": "month",
+              "dtype": "T"
+            },
+            "timeValue": {
+              "binding": "read",
+              "dtype": "X",
+              "nullable": true
+            },
+            "valueFields": {
+              "binding": "read",
+              "dtype": "T",
+              "nullable": true
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-chart-view"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "R",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "sampleMin",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "R",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "sampleMax",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "R",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": 1,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "sampleStep",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "R",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": 0,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "sampleStart",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "value",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "mapLabelMode",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "zero",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "mapBarScale",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "selectedTerritory",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "configpath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "previous",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "timeEmpty",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "timeField",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "timeValue",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "month",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "timeStep",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "echarts",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "engine",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "mapValueField",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "mapLabelField",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "geoJSON",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "geometryField",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "secondCaptionField",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "seriesOptions",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "storepath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "rowMode",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "gridId",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "chartType",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "captionField",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "valueFields",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    }
+  },
+  "grammar": {
+    "description": null,
+    "name": "charts",
+    "title": "charts",
+    "version": null
+  }
+}

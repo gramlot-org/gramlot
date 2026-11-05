@@ -146,6 +146,10 @@ export class HtmlElement {
             this.validateLabelbox(node);
             const controlBox = document.createElement('div'); controlBox.append(element);
             record.labelbox = createLabelbox(document,controlBox);
+            record.labelbox.choose = value => {
+                if (node.pointerType(node.getAttr('lbl_value'))) this.writeParameter(node, 'lbl_value', value);
+                else node.setAttr({lbl_value:value});
+            };
             record.presentation = record.labelbox.box;
             record.labelId = `gramlot-label-${randomId()}`;
             record.controlId = `gramlot-control-${randomId()}`;
@@ -224,7 +228,12 @@ export class HtmlElement {
         }
         if (record.labelbox) {
             record.labelbox.box.style.visibility = '';
-            projectLabelbox(record.labelbox, attrs, adapt);
+            const parameters = this.definition(node).meta.gramlot_component?.parameters ?? {};
+            const defaults = Object.fromEntries(Object.entries(parameters)
+                .filter(([name, spec]) => name.startsWith('lbl_') && Object.hasOwn(spec, 'default'))
+                .map(([name, spec]) => [name, spec.default]));
+            if (attrs.lbl_variant === 'card' && attrs.lbl_position == null) delete defaults.lbl_position;
+            projectLabelbox(record.labelbox, {...defaults, ...attrs}, adapt);
         }
         if (this.definition(node).meta.gramlot_component) {
             if (this.definition(node).meta.gramlot_component.bagStore) {

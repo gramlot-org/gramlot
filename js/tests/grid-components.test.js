@@ -4,6 +4,8 @@ import {JSDOM} from 'jsdom';
 import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 import {BagResolver} from '@genrojs/bag';
 import grid from '../src/components/grid.js';
+import inputs from '../src/components/inputs.js';
+import layoutComponents from '../src/components/layout.js';
 import {BagCollectionStore} from '../src/stores/bag-collection-store.js';
 import {GridRows} from '../src/components/grid-rows.js';
 import {GridStructure} from '../src/components/grid-structure.js';
@@ -30,13 +32,13 @@ function fixture(t, {mode = 'attributes', inline = false, two = false, empty = f
     const flush = () => t.mock.timers.tick(0);
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const layout = layoutWindow(window);
-    const app = new Gramlot({document: window.document, transport: false, collections: [grid], locale: 'en-US'});
+    const app = new Gramlot({document: window.document, transport: false, collections: [inputs, layoutComponents, grid], locale: 'en-US'});
     t.after(() => {app.dispose(); window.close();});
     const rows = new Bag();
     if (!empty) rows.setItem('r1', mode === 'values' ? new Bag({code: 'A', amount: 12.5}) : null,
         mode === 'attributes' ? {code: 'A', amount: 12.5} : {});
     app.data.setItem('model.rows', rows); app.data.setItem('model.structure', struct());
-    const b = new GramlotBuilder(null, {collections: [grid]});
+    const b = new GramlotBuilder(null, {collections: [inputs, layoutComponents, grid]});
     const pane = b.root.div({datapath: 'model', node_label: 'pane'});
     const add = id => {
         const g = pane.grid({id, node_label: id, storepath: '.rows', rowMode: mode, rowHeaders, rowResize, selfDragRows, ...(inline ? {} : {structpath: '.structure'})});
@@ -357,9 +359,9 @@ test('rendering is read-only and a Source rebuild reuses the installed Data stru
 for (const empty of [false, true]) test(`nested struct (empty=${empty}) and external structpath conflict before Data installation`, t => {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const layout = layoutWindow(window);
-    const app = new Gramlot({document: window.document, transport: false, collections: [grid]});
+    const app = new Gramlot({document: window.document, transport: false, collections: [inputs, layoutComponents, grid]});
     t.after(() => {app.dispose(); window.close();});
-    const b = new GramlotBuilder(null, {collections: [grid]});
+    const b = new GramlotBuilder(null, {collections: [inputs, layoutComponents, grid]});
     b.root.dataSetter({destination_path: 'sentinel', value: true});
     const s = b.root.grid({storepath: 'rows', structpath: 'columns', rowMode: 'values'}).struct();
     if (!empty) s.column({field: 'code'});
@@ -408,9 +410,9 @@ test('struct rejects unknown attributes, duplicate fields and nested groups', ()
 test('invalid inline structure is rejected before preceding Data setters run', t => {
     const {window} = new JSDOM('<main id="gramlot-root"></main>');
     const layout = layoutWindow(window);
-    const app = new Gramlot({document: window.document, transport: false, collections: [grid]});
+    const app = new Gramlot({document: window.document, transport: false, collections: [inputs, layoutComponents, grid]});
     t.after(() => {app.dispose(); window.close();});
-    const b = new GramlotBuilder(null, {collections: [grid]});
+    const b = new GramlotBuilder(null, {collections: [inputs, layoutComponents, grid]});
     b.root.dataSetter({destination_path: 'shouldNotExist', value: true});
     const g = b.root.grid({storepath: 'model.rows', rowMode: 'attributes'});
     const s = g.struct(); s.column({field: 'code'}); s.column({field: 'code'});
@@ -994,4 +996,229 @@ test('max_height limits cell content from struct Data without replacing its scro
         column.setAttr({max_height});
         assert.throws(()=>new GridStructure(bag),/max_height/);
     }
+});
+
+for (const mode of ['values','attributes']) test(`${mode}: dynamic external check sets preserve records and synchronize views`, t => {
+    const f = fixture(t,{mode,two:true});
+    const columns = f.app.data.getItem('model.structure.view_0.rows_0');
+    const originalRow = f.host.shadowRoot.querySelector('tr[data-row="r1"]');
+    f.app.data.setItem('model.sets',new Bag({john:'',mark:'',fred:''}));
+    const recordBefore = f.rows.toTytx();
+    for (const seller of ['john','mark','fred']) columns.setItem(seller,null,
+        {tag:'cell',field:seller,name:seller,check:'multiple',checked:`^.sets.${seller}`,checkedField:'code'});
+    f.flush();
+    assert.equal(f.host.shadowRoot.querySelector('tr[data-row="r1"]'),originalRow);
+    const checkbox = (host,seller) => host.shadowRoot.querySelector(`td[data-field="${seller}"] input`);
+    const john = checkbox(f.host,'john'); john.click(); f.flush();
+    assert.equal(f.app.data.getItem('model.sets.john'),'A');
+    assert(checkbox(f.window.document.getElementById('second'),'john').checked);
+    checkbox(f.host,'fred').click(); f.flush();
+    assert.equal(f.app.data.getItem('model.sets.fred'),'A');
+    f.app.data.setItem('model.sets.john','AA'); f.flush(); assert.equal(john.checked,false);
+    f.app.data.setItem('model.sets.john','A,AA'); f.flush(); assert.equal(john.checked,true);
+    john.click(); f.flush(); assert.equal(f.app.data.getItem('model.sets.john'),'AA');
+    f.app.data.setItem('model.sets.john','A'); f.flush();john.click(); f.flush();
+    assert.equal(f.app.data.getItem('model.sets.john'),'');
+    assert.equal(f.rows.toTytx(),recordBefore);
+    columns.popNode('fred');f.flush();assert.equal(checkbox(f.host,'fred'),null);
+    assert.equal(f.app.data.getItem('model.sets.fred'),'A');
+    f.host.remove(); f.app.data.setItem('model.sets.john','A');
+    f.window.document.getElementById('gramlot-root').append(f.host);f.flush();
+    assert.equal(checkbox(f.host,'john').checked,true);
+});
+
+test('external checks use literal IDs, not regex, and react to replacing their Data branch', t => {
+    const f=fixture(t), columns=f.app.data.getItem('model.structure.view_0.rows_0');
+    f.rows.getNode('r1').setAttr({code:'a.b'});
+    f.app.data.setItem('model.sets',new Bag({john:'axb'}));
+    columns.setItem('john',null,{tag:'cell',field:'john',check:'multiple',checked:'^.sets.john',checkedField:'code'});f.flush();
+    const input=f.host.shadowRoot.querySelector('input.grid-set-check');assert.equal(input.checked,false);
+    input.click();f.flush();assert.equal(f.app.data.getItem('model.sets.john'),'axb,a.b');
+    f.app.data.setItem('model.sets',new Bag({john:''}));f.flush();assert.equal(input.checked,false);
+});
+
+test('inline checkbox declarations keep the binding literal and reject ambiguous columns', t => {
+    t.mock.timers.enable({apis:['setTimeout']});
+    const {window} = new JSDOM('<main id="gramlot-root"></main>');
+    layoutWindow(window);
+    const app = new Gramlot({document:window.document,transport:false,collections:[grid]});
+    t.after(()=>{app.dispose();window.close();});
+    const f = {app,window,flush:()=>t.mock.timers.tick(0)};
+    const rows = new Bag(); rows.setItem('r1',null,{code:'A'});
+    app.data.setItem('model.rows',rows);
+    app.data.setItem('model.john','A');
+    const builder = new GramlotBuilder(null,{collections:[grid]});
+    const host = builder.root.grid({id:'inline-checks',datapath:'model',storepath:'.rows',rowMode:'attributes'});
+    host.struct().column({field:'john',check:'multiple',checked:'^.john',checkedField:'code'});
+    f.app.src.startSource(builder.toTytx()); f.flush();
+    const input = f.window.document.getElementById('inline-checks').shadowRoot.querySelector('input.grid-set-check');
+    assert.equal(input.checked,true);
+    input.click(); assert.equal(f.app.data.getItem('model.john'),'');
+    for (const attributes of [
+        {check:'unknown',checked:'^john',checkedField:'code'},
+        {check:'multiple',checked:'john',checkedField:'code'},
+        {check:'multiple',checked:'^john'},
+        {check:'multiple',checked:'^john',checkedField:'code',edit:true}
+    ]) {
+        const definition = emptyStruct();
+        definition.getItem('view_0.rows_0').setItem('john',null,{tag:'cell',field:'john',...attributes});
+        assert.throws(()=>new GridStructure(definition),TypeError);
+    }
+});
+
+for (const mode of ['values','attributes']) test(`${mode}: set filters react to toggles, external writes and preserve base filters`,t=>{
+    const f=fixture(t,{mode,two:true});
+    f.rows.setItem('r2',mode==='values'?new Bag({code:'B',amount:20}):null,mode==='attributes'?{code:'B',amount:20}:{});
+    f.rows.setItem('r3',mode==='values'?new Bag({code:'C',amount:30}):null,mode==='attributes'?{code:'C',amount:30}:{});
+    f.app.data.setItem('model.sets',new Bag({john:'A,B',fred:'B,C'}));
+    const columns=f.app.data.getItem('model.structure.view_0.rows_0');
+    for(const [field,title] of [['john','John'],['fred','Fred']]) columns.setItem(field,null,
+        {tag:'cell',field,name:title[0],title,check:'multiple',checked:`^.sets.${field}`,checkedField:'code'});
+    f.source.setAttr({setFilter:'john',filter:{value:'> 15',columns:['amount'],dtype:'L'}});f.flush();
+    const labels=()=>[...f.host.shadowRoot.querySelectorAll('tr[data-row]')].map(row=>row.dataset.row);
+    assert.deepEqual(labels(),['r2']);
+    f.source.setAttr({setFilter:'john,fred'});f.flush();assert.deepEqual(labels(),['r2']);
+    f.host.shadowRoot.querySelector('input[aria-label="John: B"]').click();f.flush();
+    assert.deepEqual(labels(),[]);assert.equal(f.app.data.getItem('model.sets.john'),'A');
+    f.source.setAttr({setFilter:''});f.flush();assert.deepEqual(labels(),['r2','r3']);
+    f.source.setAttr({setFilter:'john'});f.flush();
+    f.app.data.setItem('model.sets.john','C');f.flush();assert.deepEqual(labels(),['r3']);
+    assert.equal(f.window.document.getElementById('second').shadowRoot.querySelectorAll('tr[data-row]').length,3);
+    assert.equal(f.rows.getNodes().length,3);
+    const windowInfo=new Bag({start:0,count:3,total:20,revision:1,sortedBy:''});
+    assert.throws(()=>f.source.setAttr({windowInfo}),/complete resident store/);
+});
+
+test('column popup uses a shared grid, isolated literal search and preserved selections',t=>{
+    const f=fixture(t);
+    f.window.HTMLElement.prototype.showPopover=function(){this.setAttribute('data-open','true');};
+    f.window.HTMLElement.prototype.hidePopover=function(){this.removeAttribute('data-open');};
+    f.rows.setItem('r2',null,{code:'B',amount:12.5});f.rows.setItem('r3',null,{code:'C',amount:20});
+    f.source.setAttr({columnFilters:true});f.flush();
+    const root=f.host.shadowRoot;
+    root.querySelector('.column-filter[data-field="code"]').click();f.flush();
+    const panel=root.querySelector('.column-filter-panel'),inner=f.host.querySelector('gramlot-grid');
+    assert.equal(f.host,f.window.document.getElementById('first'));
+    assert.ok(inner,'the popup reuses the grid component');
+    const options=()=>[...inner.shadowRoot.querySelectorAll('tr[data-row]')];
+    const text=()=>options().map(row=>row.textContent);
+    assert.equal(f.source.gridCollectionView.sortedBy,'');
+    assert.deepEqual(text(),['A1','B1','C1']);
+    const input=options()[0].querySelector('input');input.focus();input.click();f.flush();
+    assert.equal(inner.shadowRoot.activeElement,input);
+    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['B','C']);
+    assert.equal(text()[0],'A1');
+    const searchHost=f.host.querySelector('gramlot-search-box');
+    const search=searchHost.shadowRoot.querySelector('input');
+    assert.ok(searchHost.shadowRoot.querySelector('.search-lens'));
+    const searchEvent=()=>{search.dispatchEvent(new f.window.Event('input',{bubbles:true}));t.mock.timers.tick(100);};
+    search.value='B';searchEvent();f.flush();
+    assert.deepEqual(text(),['B1']);
+    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['B','C']);
+    options()[0].querySelector('input').click();f.flush();
+    assert.deepEqual(f.source.gridCollectionView.columnFilter('code'),['C']);
+    search.value='[';searchEvent();f.flush();assert.equal(options().length,0);
+    search.value='';searchEvent();f.flush();assert.equal(options()[2].querySelector('input').checked,true);
+    f.source.gridCollectionView.applyColumnFilter('amount',[12.5]);f.flush();assert.deepEqual(text(),['A1','B1','C0']);
+    f.rows.getNode('r1').setAttr({amount:20});f.flush();assert.equal(text()[0],'A0');
+    const toolbar=f.host.querySelector('[aria-label="Column filter actions"]');
+    const command=text=>[...toolbar.querySelectorAll('[role="menuitem"]')].find(item=>item.control.getAttribute('aria-label')===text).control.click();
+    command('None');f.flush();assert.equal(f.source.gridCollectionView.getRows().length,0);
+    command('Reset');f.flush();assert.deepEqual(f.source.gridCollectionView.getRows(),[f.rows.getNode('r2')]);
+    assert.equal(f.source.gridCollectionView.columnFilter('code'),null);
+    assert.deepEqual(f.source.gridCollectionView.columnFilter('amount'),[12.5]);
+    search.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true}));
+    assert.equal(panel.hasAttribute('data-open'),false);
+    assert.equal(root.activeElement,root.querySelector('.column-filter[data-field="code"]'));
+    root.querySelector('.column-filter[data-field="code"]').click();f.flush();assert.equal(f.host.querySelector('gramlot-grid'),inner);
+    assert.throws(()=>f.source.setAttr({windowInfo:new Bag({start:0,count:3,total:30,revision:1,sortedBy:''})}),/complete resident store/);
+});
+
+test('date popup applies periods atomically, preserves invalid drafts and resets without rebuilding',async t=>{
+    const f=fixture(t,{empty:true});
+    f.window.HTMLElement.prototype.showPopover=function(){this.setAttribute('data-open','true');};
+    f.window.HTMLElement.prototype.hidePopover=function(){this.removeAttribute('data-open');};
+    const date=text=>new Date(text+'T00:00:00Z');
+    for(const [id,day] of [['a','2026-03-05'],['b','2026-03-14'],['c','2026-04-02']])f.rows.setItem(id,null,{day:date(day),code:id});
+    f.app.data.getItem('model.structure.view_0.rows_0').setItem('day',null,{tag:'cell',field:'day',name:'Date',dtype:'D'});
+    f.source.setAttr({columnFilters:true});f.flush();
+    f.host.shadowRoot.querySelector('.column-filter[data-field="day"]').click();f.flush();
+    const [from,to]=f.host.querySelectorAll('gramlot-date-text-box'),inner=f.host.querySelector('gramlot-grid');
+    const view=f.source.gridCollectionView;
+    const edit=async(host,text)=>{host.control.focus();host.control.value=text;
+        for(const type of ['input','change'])host.control.dispatchEvent(new f.window.Event(type,{bubbles:true}));
+        await Promise.resolve();f.flush();};
+    await edit(from,'March 2026');assert.equal(view.getRows().length,2);
+    assert.equal(view.columnRange('day').to.toISOString(),'2026-03-31T00:00:00.000Z');
+    assert.equal(view.columnFilter('day'),null);
+    const checks=()=>[...inner.shadowRoot.querySelectorAll('tr[data-row] input[type=checkbox]')];
+    checks()[1].click();f.flush();assert.equal(view.getRows().length,1);
+    checks()[1].click();f.flush();assert.equal(view.columnFilter('day'),null);
+    checks()[1].click();f.flush();
+    await edit(from,'');assert.equal(view.columnRange('day'),null);
+    assert.equal(to.readControlValue(),null);assert.equal(view.getRows().length,1);
+    await edit(from,'March 2026');assert.equal(view.getRows().length,2);
+    await edit(to,'02/01/2026');assert.equal(view.getRows().length,2);
+    assert.match(f.host.textContent,/From must not be after To/);
+    await edit(to,'03/31/2026');
+    await edit(from,'not a date');assert.equal(view.getRows().length,2);
+    assert.equal(from.control.getAttribute('aria-invalid'),'true');
+    const reset=[...f.host.querySelectorAll('[role=menuitem]')].find(item=>item.control.getAttribute('aria-label')==='Reset');
+    reset.control.click();f.flush();assert.equal(view.columnRange('day'),null);assert.equal(view.getRows().length,3);
+    assert.equal(from.control.value,'');assert.equal(from.control.getAttribute('aria-invalid'),'false');
+    assert.equal(f.host,f.window.document.getElementById('first'));assert.equal(inner,f.host.querySelector('gramlot-grid'));
+});
+
+for (const mode of ['values','attributes']) test(`${mode}: external radio writes the parent ID and survives filtering and partial windows`,t=>{
+ const f=fixture(t,{mode,two:true});
+ f.rows.setItem('r2',mode==='values'?new Bag({code:'B',amount:7}):null,mode==='attributes'?{code:'B',amount:7}:{});
+ f.app.data.setItem('product.primary_supplier_id','A');
+ const before=f.rows.toTytx();
+ f.app.data.getItem('model.structure.view_0.rows_0').setItem('primary',null,
+  {tag:'cell',field:'primary',name:'',title:'Primary supplier',check:'single',checked:'^product.primary_supplier_id',checkedField:'code'});
+ f.flush();
+ const radios=host=>[...host.shadowRoot.querySelectorAll('input[type=radio]')];
+ assert.deepEqual(radios(f.host).map(r=>r.checked),[true,false]);
+ const row=f.host.shadowRoot.querySelector('tr[data-row=r1]');
+ radios(f.host)[1].click();f.flush();
+ assert.equal(f.app.data.getItem('product.primary_supplier_id'),'B');
+ assert.deepEqual(radios(f.window.document.getElementById('second')).map(r=>r.checked),[false,true]);
+ radios(f.host)[1].click();assert.equal(f.app.data.getItem('product.primary_supplier_id'),'B');
+ assert.equal(f.rows.toTytx(),before);assert.equal(f.host.shadowRoot.querySelector('tr[data-row=r1]'),row);
+ f.source.gridCollectionView.applyFilter({value:'^A$',columns:['code'],dtype:'T'});f.flush();
+ assert.equal(radios(f.host).length,1);assert.equal(radios(f.host)[0].checked,false);
+ assert.equal(f.app.data.getItem('product.primary_supplier_id'),'B');
+ f.source.gridCollectionView.applyFilter(null);f.flush();assert.equal(radios(f.host)[1].checked,true);
+ f.app.data.setItem('product.primary_supplier_id',null);f.flush();assert.ok(radios(f.host).every(r=>!r.checked));
+ f.source.setAttr({windowInfo:new Bag({start:0,count:2,total:20,revision:1,sortedBy:''})});f.flush();
+ f.app.data.setItem('product.primary_supplier_id','OFFSCREEN');f.flush();assert.ok(radios(f.host).every(r=>!r.checked));
+ radios(f.host)[0].click();assert.equal(f.app.data.getItem('product.primary_supplier_id'),'A');
+});
+
+test('external radio preserves numeric ID types',t=>{
+ const f=fixture(t);f.rows.getNode('r1').setAttr({code:12});
+ f.app.data.setItem('product.primary_supplier_id','12');
+ f.app.data.getItem('model.structure.view_0.rows_0').setItem('primary',null,
+  {tag:'cell',field:'primary',check:'single',checked:'^product.primary_supplier_id',checkedField:'code'});
+ f.flush();const radio=f.host.shadowRoot.querySelector('input[type=radio]');assert.equal(radio.checked,false);
+ radio.click();assert.equal(f.app.data.getItem('product.primary_supplier_id'),12);
+});
+
+for (const check of ['single', 'multiple']) test(`${check}: narrow check cells contain only the control and reset when changed to text`, t => {
+ const f=fixture(t);
+ f.app.data.setItem('selection','A');
+ const columns=f.app.data.getItem('model.structure.view_0.rows_0');
+ columns.setItem('code',null,{tag:'cell',field:'code',width:'24px',check,checked:'^selection',checkedField:'code'});
+ f.flush();
+ const cell=f.host.shadowRoot.querySelector('td[data-field=code]');
+ assert.equal(cell.classList.contains('check-cell'),true);
+ assert.equal(cell.textContent,'');
+ assert.equal(cell.querySelectorAll('input').length,1);
+ assert.equal(cell.querySelector('input').type,check==='single'?'radio':'checkbox');
+ assert.ok(cell.querySelector('input').getAttribute('aria-label'));
+ columns.setItem('code',null,{tag:'cell',field:'code',width:'24px'});
+ f.flush();
+ const textCell=f.host.shadowRoot.querySelector('td[data-field=code]');
+ assert.equal(textCell.classList.contains('check-cell'),false);
+ assert.equal(textCell.textContent,'A');
 });

@@ -1,3 +1,4 @@
+import './fixtures/standard-collection-imports.mjs';
 // Phase S08: providers (source plan §4.8, §5.1; decisions P20, B7, D2a, R15, Q2, P4, P5, D1).
 // The bodies are named logic registered as the page companion; the end-to-end cases go through
 // the real bootstrap with a Python page.

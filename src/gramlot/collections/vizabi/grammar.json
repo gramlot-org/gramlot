@@ -1,0 +1,128 @@
+{
+  "abstracts": {},
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "elements": {
+    "vizabiBubble": {
+      "_meta": {
+        "gramlot_component": {
+          "bagStore": true,
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "configuration": {
+              "binding": "read",
+              "dtype": "X"
+            },
+            "libraryUrl": {
+              "dtype": "T"
+            },
+            "rowMode": {
+              "default": "attributes",
+              "dtype": "T"
+            },
+            "storepath": {
+              "dtype": "T"
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-vizabi-bubble"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "storepath",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "attributes",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "rowMode",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "configuration",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "libraryUrl",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    }
+  },
+  "grammar": {
+    "description": null,
+    "name": "vizabi",
+    "title": "vizabi",
+    "version": null
+  }
+}

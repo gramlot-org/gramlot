@@ -14,6 +14,8 @@ export class IdeDocuments {
     get state() { return this.source.getRelativeData('.'); }
     get documents() { return this.state.getItem('documents'); }
     async open(root, path) {
+        // Only registered IDE document types may create an editor tab.
+        if (!/\.(?:py|js|mjs|ts|json|html|css|xml|md|markdown|sql|typ|txt|png|jpg|jpeg|webp)$/i.test(path)) return null;
         const key = documentKey(root, path);
         const existing = this.documents.getNodes().find(node => !node.value.getItem('isNew') && node.value.getItem('root') === root && node.value.getItem('path') === path);
         if (existing) return existing.label;
@@ -22,7 +24,13 @@ export class IdeDocuments {
         const promise = this.gramlot.rpc.call('data', 'document_read', {root,path}, {signal:request.signal}).then(result => {
             if (this.disposed || request.signal.aborted) return null;
             const document = new Bag();
-            for (const [name,value] of Object.entries({...result, root, saved:result.content, busy:false})) document.setItem(name,value);
+            const content = result.language === 'image' ? result.content.toTytx() : result.content;
+            for (const [name,value] of Object.entries({...result, content, root, saved:content, busy:false})) document.setItem(name,value);
+            if (result.language === 'image') {
+                const annotations = result.content;
+                document.setItem('annotations',annotations);
+                annotations.subscribe('ide-annotations',{any:()=>document.setItem('content',annotations.toTytx())});
+            }
             this.documents.setItem(key, document);
             return key;
         }).finally(() => this.pending.delete(key));
@@ -104,8 +112,12 @@ export class IdeDocuments {
         if (!doc || doc.getItem('isNew') || !this.dirty(key) || !doc.getItem('writable') || this.pending.has(key)) return false;
         const content = doc.getItem('content'), request = new AbortController();
         doc.setItem('busy',true);
-        const promise = this.gramlot.rpc.call('data','document_save', {
-            root:doc.getItem('root'), path:doc.getItem('path'), content, revision:doc.getItem('revision')
+        const image = doc.getItem('language') === 'image';
+        const path = image ? doc.getItem('annotationPath') : doc.getItem('path');
+        const creating = image && doc.getItem('revision') === null;
+        const promise = this.gramlot.rpc.call('data',creating ? 'document_create' : 'document_save', {
+            root:doc.getItem('root'), path, content:image ? Bag.fromTytx(content) : content,
+            ...(creating ? {} : {revision:doc.getItem('revision')})
         }, {signal:request.signal}).then(result => {
             if (this.disposed || request.signal.aborted) return false;
             doc.setItem('revision',result.revision);
@@ -119,6 +131,10 @@ export class IdeDocuments {
         const doc = this.documents.getItem(key);
         if (!doc || !this.dirty(key) || this.pending.has(key)) return false;
         doc.setItem('content',doc.getItem('saved'));
+        if (doc.getItem('language') === 'image') {
+            doc.getItem('annotations').replace(Bag.fromTytx(doc.getItem('saved')));
+            doc.setItem('content',doc.getItem('saved'));
+        }
         return true;
     }
     canClose(key, discard = false) {

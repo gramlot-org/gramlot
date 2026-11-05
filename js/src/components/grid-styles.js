@@ -2,6 +2,16 @@
  * A JS stylesheet module keeps the same source usable in Node and browser builds.
  */
 export const gridStyles = `
+.column-filter{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:inherit;cursor:pointer;padding:2px;margin-inline-start:4px;vertical-align:middle;line-height:0;opacity:.6}
+th:has(.column-filter){padding-inline-end:28px}
+.column-filter svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.5}
+.column-filter.active{opacity:1;color:var(--gramlot-action,Highlight)}
+.column-filter.active svg{fill:currentColor}
+.column-filtered{box-shadow:inset 0 -2px var(--gramlot-action,Highlight)}
+.column-filter:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight)}
+.column-filter-panel{position:fixed;inset:auto;margin:0;padding:0;border:1px solid var(--gramlot-border,GrayText);border-radius:8px;background:var(--gramlot-surface,Canvas);color:var(--gramlot-ink,CanvasText);font:inherit;box-shadow:0 8px 24px #0003;width:310px;max-width:var(--gramlot-popup-available-width);max-height:var(--gramlot-popup-available-height);overflow:auto}
+.column-filter-panel slot{display:contents}
+
 .control-box{position:relative}
 .cell-editor{
     position:absolute;z-index:4;height:min(var(--grid-editor-height),var(--grid-cell-max-height,var(--grid-editor-height)));
@@ -140,6 +150,9 @@ export const gridStyles = `
         block-size: var(--gramlot-grid-row-height, 2rem);
         border-block-end: 1px solid var(--gramlot-grid-row-border-color, var(--gramlot-border, ButtonBorder));
     }
+    .cell-color-swatch { display:inline-block;vertical-align:middle;width:100%;max-width:48px;height:14px;
+        border:1px solid var(--gramlot-border-control,#888);border-radius:3px; }
+    .cell-color-swatch[hidden] { display:none; }
     td[data-field] { padding: 0; }
     .cell-content {
         padding: var(--gramlot-grid-cell-padding, .3rem .6rem);
@@ -147,6 +160,16 @@ export const gridStyles = `
         text-overflow: ellipsis;
         max-height: var(--grid-cell-max-height, none);
     }
+    td.check-cell { vertical-align: middle; }
+    .check-cell > .cell-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        min-block-size: calc(var(--gramlot-grid-row-height, 2rem) - 1px);
+        text-overflow: clip;
+    }
+    .grid-set-check { margin: 0; flex: none; }
     .cell-scroll { overflow: auto; overscroll-behavior: contain; }
     .cell-scroll:focus-visible { outline: 1px solid var(--gramlot-focus-ring, Highlight); outline-offset: -1px; }
     tbody tr { background: var(--gramlot-grid-background, var(--gramlot-surface, Canvas)); }

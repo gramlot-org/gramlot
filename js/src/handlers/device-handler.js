@@ -43,17 +43,17 @@ export class DeviceHandler extends Handler {
 
     installData() {
         const {gramlot} = this;
-        gramlot.data.setItem('gramlot.device.database', null, {status: 'idle', error: null});
-        gramlot.data.setItem('gramlot.device.orientation', null, {status: 'idle', error: null, listening: false});
+        gramlot.data.setItem('_gramlot.device.database', null, {status: 'idle', error: null});
+        gramlot.data.setItem('_gramlot.device.orientation', null, {status: 'idle', error: null, listening: false});
         for (const name of ['gyroscope', 'accelerometer']) {
-            gramlot.data.setItem(`gramlot.device.${name}`, null,
+            gramlot.data.setItem(`_gramlot.device.${name}`, null,
                 {enabled: false, watching: false, status: 'idle', error: null});
-            gramlot.data.getNode(`gramlot.device.${name}`).setAttr({error: null}, false, true, false);
-            this.#sensors.set(name, {node: gramlot.data.getNode(`gramlot.device.${name}`),
+            gramlot.data.getNode(`_gramlot.device.${name}`).setAttr({error: null}, false, true, false);
+            this.#sensors.set(name, {node: gramlot.data.getNode(`_gramlot.device.${name}`),
                 stream: null, cleanup: Promise.resolve()});
         }
         for (const name of NAMES) {
-            const path = `gramlot.device.${name}`;
+            const path = `_gramlot.device.${name}`;
             const attrs = {status: 'idle', error: null, cacheTime: name === 'appinfo' ? -1 : 5};
             if (name === 'location') Object.assign(attrs, {enabled: false, watching: false});
             gramlot.data.setItem(path, null);
@@ -63,45 +63,45 @@ export class DeviceHandler extends Handler {
             node.resolver = resolver;
             this.resolvers.set(name, resolver);
         }
-        gramlot.data.setItem('gramlot.device.clipboard', null,
+        gramlot.data.setItem('_gramlot.device.clipboard', null,
             {status: 'idle', error: null, text: '', copy: null, paste: null, operation: null});
-        const clipboard = gramlot.data.getNode('gramlot.device.clipboard');
-        gramlot.data.setItem('gramlot.device.camera', null, {status: 'idle', error: null, capture: null, choose: null});
-        const camera = gramlot.data.getNode('gramlot.device.camera');
-        gramlot.data.setItem('gramlot.device.barcode', null, {status: 'idle', error: null, scan: null});
-        const barcode = gramlot.data.getNode('gramlot.device.barcode');
-        gramlot.data.setItem('gramlot.device.biometrics', null, {status: 'idle', error: null, verify: null});
-        const biometrics = gramlot.data.getNode('gramlot.device.biometrics');
+        const clipboard = gramlot.data.getNode('_gramlot.device.clipboard');
+        gramlot.data.setItem('_gramlot.device.camera', null, {status: 'idle', error: null, capture: null, choose: null});
+        const camera = gramlot.data.getNode('_gramlot.device.camera');
+        gramlot.data.setItem('_gramlot.device.barcode', null, {status: 'idle', error: null, scan: null});
+        const barcode = gramlot.data.getNode('_gramlot.device.barcode');
+        gramlot.data.setItem('_gramlot.device.biometrics', null, {status: 'idle', error: null, verify: null});
+        const biometrics = gramlot.data.getNode('_gramlot.device.biometrics');
         const notifications = new Bag();
         notifications.setItem('request', new Bag());
         for (const name of ['scheduled', 'received', 'action']) notifications.setItem(name, null);
-        gramlot.data.setItem('gramlot.device.notifications', notifications,
+        gramlot.data.setItem('_gramlot.device.notifications', notifications,
             {status: 'idle', error: null, schedule: null, listening: false, listenerError: null});
-        const notificationNode = gramlot.data.getNode('gramlot.device.notifications');
+        const notificationNode = gramlot.data.getNode('_gramlot.device.notifications');
         const push = new Bag();
         for (const name of ['registration', 'received', 'action']) push.setItem(name, null);
-        gramlot.data.setItem('gramlot.device.push', push,
+        gramlot.data.setItem('_gramlot.device.push', push,
             {status: 'idle', error: null, register: null, listening: false, listenerError: null});
-        const pushNode = gramlot.data.getNode('gramlot.device.push');
+        const pushNode = gramlot.data.getNode('_gramlot.device.push');
         const links = new Bag();
         links.setItem('request', null);
-        gramlot.data.setItem('gramlot.device.links', links, {listening: false, listenerError: null});
+        gramlot.data.setItem('_gramlot.device.links', links, {listening: false, listenerError: null});
         const shortcuts = new Bag();
         shortcuts.setItem('request', null);
-        gramlot.data.setItem('gramlot.device.shortcuts', shortcuts, {listening: false, listenerError: null});
-        gramlot.data.setItem('gramlot.device.network', null, {status: 'idle', error: null, listening: false});
+        gramlot.data.setItem('_gramlot.device.shortcuts', shortcuts, {listening: false, listenerError: null});
+        gramlot.data.setItem('_gramlot.device.network', null, {status: 'idle', error: null, listening: false});
         const lifecycle = new Bag();
         lifecycle.setItem('active', null);
         lifecycle.setItem('event', null);
         lifecycle.setItem('sequence', 0);
-        gramlot.data.setItem('gramlot.device.lifecycle', lifecycle, {status: 'idle', error: null, listening: false});
-        gramlot.data.setItem('gramlot.device.haptics', null,
+        gramlot.data.setItem('_gramlot.device.lifecycle', lifecycle, {status: 'idle', error: null, listening: false});
+        gramlot.data.setItem('_gramlot.device.haptics', null,
             {status: 'idle', error: null, impact: null, style: 'medium', vibrate: null, duration: 600});
-        const haptics = gramlot.data.getNode('gramlot.device.haptics');
-        gramlot.data.setItem('gramlot.device.audio', null,
+        const haptics = gramlot.data.getNode('_gramlot.device.haptics');
+        gramlot.data.setItem('_gramlot.device.audio', null,
             {status: 'idle', error: null, recording: false, start: null, stop: null, cancel: null,
                 share: null, shareStatus: 'idle', shareError: null, shareActivity: null});
-        const audio = gramlot.data.getNode('gramlot.device.audio');
+        const audio = gramlot.data.getNode('_gramlot.device.audio');
         gramlot.data.subscribe('gramlot.device', {update: event => {
             if (this.disposed) return;
             for (const [name, sensor] of this.#sensors) {
@@ -199,16 +199,16 @@ export class DeviceHandler extends Handler {
             node.setAttr({status: 'success', error: null}, true, true, false);
         });
         if (provider.capabilities.includes('links')) {
-            this.#startLinkEvents(this.gramlot.data.getNode('gramlot.device.links'));
+            this.#startLinkEvents(this.gramlot.data.getNode('_gramlot.device.links'));
         }
         if (provider.capabilities.includes('shortcuts')) {
-            this.#startShortcutEvents(this.gramlot.data.getNode('gramlot.device.shortcuts'));
+            this.#startShortcutEvents(this.gramlot.data.getNode('_gramlot.device.shortcuts'));
         }
         if (provider.capabilities.includes('push')) {
-            this.#startPushEvents(this.gramlot.data.getNode('gramlot.device.push'));
+            this.#startPushEvents(this.gramlot.data.getNode('_gramlot.device.push'));
         }
         if (provider.capabilities.includes('notifications')) {
-            this.#startNotificationEvents(this.gramlot.data.getNode('gramlot.device.notifications'));
+            this.#startNotificationEvents(this.gramlot.data.getNode('_gramlot.device.notifications'));
         }
     }
 
@@ -251,7 +251,7 @@ export class DeviceHandler extends Handler {
 
     // Page-owned state streams share lifetime/error handling, never public dispatch.
     #startStateEvents(name, start, accept) {
-        const node = this.gramlot.data.getNode(`gramlot.device.${name}`);
+        const node = this.gramlot.data.getNode(`_gramlot.device.${name}`);
         if (!this.provider.capabilities.includes(name)) {
             node.setAttr(failureAttributes({code: 'UNAVAILABLE', message: `${name} is unavailable`}), true, true, false);
             return;
@@ -913,7 +913,7 @@ export class DeviceHandler extends Handler {
         this.assertLive();
         if (!/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(name) || typeof name !== 'string') throw new TypeError('Invalid database name');
         if (this.#database) throw new Error('This page already owns a database connection');
-        const node = this.gramlot.data.getNode('gramlot.device.database');
+        const node = this.gramlot.data.getNode('_gramlot.device.database');
         const state = (status, error = null) => {
             if (!this.disposed) node.setAttr({status, error}, true, true, false);
         };

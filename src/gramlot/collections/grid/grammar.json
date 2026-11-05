@@ -251,6 +251,50 @@
             "kind": "keyword_only",
             "name": "edit",
             "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "check",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "checked",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "checkedField",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "title",
+            "role": "attribute"
           }
         ]
       },
@@ -270,6 +314,11 @@
           "command": false,
           "dataScope": false,
           "parameters": {
+            "columnFilters": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
+            },
             "filter": {
               "annotation": {
                 "kind": "type",
@@ -302,6 +351,11 @@
               "binding": "read",
               "default": false,
               "dtype": "B"
+            },
+            "setFilter": {
+              "binding": "read",
+              "default": "",
+              "dtype": "T"
             },
             "sortRequest": {
               "binding": "write",
@@ -341,6 +395,47 @@
         "accepts_var_keyword": true,
         "accepts_var_positional": false,
         "parameters": [
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "columnFilters",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "setFilter",
+            "role": "attribute"
+          },
           {
             "annotation": {
               "items": [
@@ -651,7 +746,39 @@
         "gramlot_component": {
           "command": false,
           "dataScope": false,
+          "labelbox": true,
           "parameters": {
+            "lbl": {
+              "binding": "read",
+              "dtype": "T",
+              "nullable": true,
+              "qualification": "intl_str"
+            },
+            "lbl_position": {
+              "binding": "read",
+              "default": "L",
+              "dtype": "T"
+            },
+            "lbl_value": {
+              "binding": "twoWay",
+              "dtype": "T",
+              "nullable": true
+            },
+            "lbl_values": {
+              "binding": "read",
+              "dtype": "T",
+              "nullable": true
+            },
+            "searchHelp": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
+            },
+            "searchLiteral": {
+              "binding": "read",
+              "default": false,
+              "dtype": "B"
+            },
             "searchOn": {
               "binding": "read",
               "default": true,
@@ -676,6 +803,137 @@
         "accepts_var_keyword": true,
         "accepts_var_positional": false,
         "parameters": [
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "lbl",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "lbl_value",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "lbl_values",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "L",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "lbl_position",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "searchLiteral",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "searchHelp",
+            "role": "attribute"
+          },
           {
             "annotation": {
               "items": [

@@ -1,7 +1,34 @@
 # Gramlot repository instructions
 
+**Self-contained examples:** each example page contains its application-specific
+Page, PageStore, endpoints and helper code. Extract a shared module only when it
+is actually reused by other pages. The Code tab must show the complete example;
+do not inject application classes or imports from launchers. Framework and
+third-party dependencies remain imports and are explained in the lesson.
+
+**Relative-path authoring rule:** give each reusable block a container `datapath`.
+Inside that block use fixed relative paths (`.samples`, `^.step`, `^.options`),
+including controller GET/SET/FIRE paths. Pass the contextualized Source node to
+helper methods; do not pass a base path and concatenate names for each binding.
+Creating distinct instance datapaths in a loop is legitimate; generating field
+names from a schema is also different from rebuilding a block's context. Absolute
+paths require an intentional shared or server-owned contract, explained in the
+lesson. Fundamentals that explicitly introduce root Data paths remain introductory
+examples, not a pattern for reusable blocks.
+
+
 Before changing this repository, read `docs/00-constitution.md`,
 `docs/01-overview.md` and `ports/README.md`. The constitution is authoritative.
+
+- Page-authoring rule (owner clarification, 2026-11-05): standard collections
+  are provided automatically by GramlotServer for every site. Do not repeat `from gramlot.collections...
+  import mygramlot` or `gramlots = [...]` in individual applications/examples for
+  collections the environment provides. Explicit page imports/declarations are
+  for additional custom collections. If a standard collection is unavailable,
+  report/fix the server/package defect rather than hiding the gap with a
+  per-example import. This is not automatic discovery of installed packages.
+  External engines remain loaded on first use under the existing distribution
+  contract; self-contained file exports have their documented packaging limits.
 
 - Owner 2026-10-05, constitution amendment 11.57: the integration repositories are
   gramlot-py-server and gramlot-js-server; the other adapter repositories are

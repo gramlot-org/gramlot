@@ -19,6 +19,14 @@ class IdePage(FramePage):
 
         row.filteringSelect(value="^.newType", values="typst:Typst,typstRecipe:Typst Python recipe,markdown:Markdown,html:HTML,python:Python,javascript:JavaScript,typescript:TypeScript,json:JSON,css:CSS,sql:SQL,xml:XML,text:Text", lbl="Document type", width="160px")
         row.button("New document", class_="button--quiet").dataController(func="ideNew")
+        row.button("Upload image", id=f"{self.shell_id}-upload", disabled="^.upload.disabled",
+                   action="this.SET('.upload.open', true)")
+        window = pane.dialog(title="Upload image", open="^.upload.open", width="520px", height="400px",
+                             movable=True, resizable=True)
+        window.frame.center.uploader(id=f"{self.shell_id}-uploader", operation="workspace_upload",
+                                     storepath=".upload.queue", contextPath=".upload.context",
+                                     accept="image/png,image/jpeg,image/webp", multiple=False,
+                                     onComplete="ideUploadCompleted")
 
     def left(self, pane):
         pane.set_attr(dict(width="300px", splitter=True, drawer=True, drawer_label="Files", overflow="auto"))
@@ -33,6 +41,10 @@ class IdePage(FramePage):
 
     def behavior(self, shell):
         for name, value in {"workspace": "", "recent": Bag(), "documents": Bag(),
-                            "active": None, "newType": "typst", "status": "Choose a workspace directory to begin."}.items():
+                            "active": None, "newType": "typst", "upload": Bag(dict(open=False, disabled=True,
+                            queue=Bag(), context=Bag())), "status": "Choose a workspace directory to begin."}.items():
             shell.dataSetter(f".{name}", value)
+        shell.dataFormula('.upload.context.root', 'root', root='^.browser.root', _init=True)
+        shell.dataFormula('.upload.disabled', '!root || !writable', root='^.browser.root',
+                          writable='^.browser.writable', _init=True)
         shell.dataController(func="ideMount", _onStart=True)

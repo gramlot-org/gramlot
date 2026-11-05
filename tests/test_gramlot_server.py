@@ -266,3 +266,18 @@ class DeclarationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_standard_components_without_page_or_site_collection_declarations():
+    class StandardPage(Page):
+        def main(self, root):
+            root.textbox(value="Ada")
+            root.audioAnalyser(running=False)
+
+    server = memory_server(StandardPage)
+    page_id = open_page(server)
+    result = call(server, page_id, "source", "main")
+    assert "error" not in result
+    assert len(result["value"].nodes) == 2
+    assert "gramlots" not in StandardPage.__dict__
+    assert "selection_trial" not in {c.name for c in server.collections}

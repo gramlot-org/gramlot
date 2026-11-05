@@ -1,6 +1,13 @@
+import {LabelMenu} from './label-menu.js';
+
 /** Shared DOM presentation; instance-owned projection cache, no application state. */
 export const labelboxPositions = ['TL', 'TC', 'TR', 'L', 'R', 'BL', 'BC', 'BR'];
-export const labelboxStyle = `.gramlot-labelbox[hidden]{display:none!important}
+export const labelboxStyle = `.gramlot-labelbox>.label-box>.label-menu-trigger{font:inherit;color:inherit;background:transparent;border:0;padding:0;min-width:0;min-height:var(--gramlot-touch-target,0px);height:auto;display:inline-flex;align-items:center;gap:.4em;cursor:pointer;text-align:inherit;line-height:inherit}
+.gramlot-labelbox>.label-box>.label-menu-trigger::after{content:'';width:.35em;height:.35em;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-.1em) rotate(45deg);flex:none}
+.gramlot-labelbox>.label-box>.label-menu-trigger:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:3px;border-radius:2px}
+.gramlot-labelbox>.label-box>.label-menu-trigger:disabled{opacity:.5;cursor:default}
+.gramlot-labelbox>.label-box>label[hidden]{display:none}
+.gramlot-labelbox[hidden]{display:none!important}
 .gramlot-labelbox{box-sizing:border-box;min-width:0;min-height:0;--gramlot-label-width:initial;--gramlot-formlet-label-width:initial;display:grid;gap:var(--gramlot-label-gap,.25em);grid-template-areas:'label' 'control';grid-template-columns:minmax(0,1fr);grid-template-rows:max-content minmax(0,1fr)}
                 .gramlot-labelbox>.label-box{grid-area:label;color:var(--gramlot-label-color,var(--gramlot-text-secondary,inherit));font-size:var(--gramlot-label-size,1em)} .gramlot-labelbox>.control-box{box-sizing:border-box;grid-area:control;min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
 .gramlot-labelbox>.control-box>*{max-width:100%;box-sizing:border-box}
@@ -59,7 +66,7 @@ export function createLabelbox(document, controlBox) {
 }
 
 export function projectLabelbox(layout, attrs, adapt) {
-    const {lbl, lbl_variant, lbl_position = lbl_variant === 'card' ? 'TC' : 'TL', ...rest} = attrs;
+    const {lbl, lbl_value, lbl_values, lbl_variant, lbl_position = lbl_variant === 'card' ? 'TC' : 'TL', ...rest} = attrs;
     if (!labelboxPositions.includes(lbl_position)) throw new TypeError(`Invalid lbl_position: ${lbl_position}`);
     const groups = {box:{},label:{},labelBox:{},controlBox:{}};
     const prefixes = [['box_l_','labelBox'],['box_c_','controlBox'],['lbl_','label'],['box_','box']];
@@ -85,6 +92,12 @@ export function projectLabelbox(layout, attrs, adapt) {
     else layout.box.dataset.variant = lbl_variant;
     layout.fieldLabel.textContent = lbl ?? '';
     layout.labelBox.hidden = lbl == null || lbl === '';
+    if (lbl_values != null) {
+        layout.menu ??= new LabelMenu(layout, value => layout.choose(value));
+        layout.menu.project(attrs, adapt);
+    } else if (layout.menu) {
+        layout.menu.dispose(); layout.menu = null;
+    }
     layout.box.dispatchEvent(new layout.box.ownerDocument.defaultView.Event('gramlot-label-layout', {bubbles:true}));
     return rest;
 }

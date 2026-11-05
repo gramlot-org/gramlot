@@ -146,6 +146,8 @@ console hits and strict-CSP condition rejection. WebKit does not qualify Safari.
 
 ## 030 · Generic declaration and provisional tree
 
+**Historical record:** the provisional tree and its original fixtures were replaced by the shared tree; current behavior and tests are described in §035.
+
 Block ID: **GC-195-030**. Development work under constitution 11.62. The owner
 accepted proceeding after the first-tree review with "ok" on 2026-10-14. The full
 composition now replaces the previously rejected gallery palette; final owner
@@ -200,16 +202,9 @@ four provisional components and leaves the core external.
 
 Block ID: **GC-195-035**.
 
-The inspector declares four provisional components through `webcomponent`:
+The inspector uses the shared `borderContainer`, `tabContainer` and `tree` components. For local inspection, the tree observes the original Bag through its Source node without copying or reparenting it. A remote page supplies its existing bridge snapshot because its Bag lives in another execution context. Disabling lazy resolution avoids invoking target resolvers. Selection, Source drag/drop and breakpoint indicators remain available for local and remote targets.
 
-- `gramlot-poc-palette`: light floating shell, title/close, pointer and keyboard
-  movement/resizing, collapse to the title bar and restore via `collapsed`. Slotted Source supplies its contents and remains connected while hidden. Size, selection and breakpoints survive collapse. The title is left-aligned, with collapse and close on the right; header and tabs use compact 11px text. No persistence,
-  WidgetLabel, application discovery or PoC runtime.
-- `gramlot-poc-tabs`: compact underline tabs. Source owns button labels, selection
-  and handlers; the component supplies appearance and arrow/Home/End navigation.
-- `gramlot-poc-splitter`: one vertical split, `top`/`bottom` slots, pointer resizing
-  and a keyboard-accessible separator. No general layout manager.
-- `gramlot-poc-tree`: the Bag contract in §030, used for Data and Source.
+`floatingPane` provides the shared window shell. Its `docked` parameter presents the same mounted Source inline, hides window controls and retains the floating geometry and contents when undocked. Pointer and keyboard movement, resizing, collapse and close use the shared window behavior. The embedded DevTools panel uses the same docked window.
 
 The properties grid, breakpoint dialogs/list and path footer remain Source and
 named Logic in `gramlot-tools-inspector`; they do not introduce another generic
@@ -217,9 +212,7 @@ component. Cell edits preserve focus when moving between existing rows. Existing
 scalar coverage is retained; Decimal/object editing is still outside this tool’s
 implemented contract, so this is not a claim of complete DevTools API parity.
 
-Replace provisional components individually against these contracts. The target
-runtime, Python declarations and public `webcomponent(code=...)` vocabulary need
-not change when an implementation is replaced. Qualification is recorded in
+The shared components replace the provisional inspector-specific implementations. Qualification is recorded in
 GC-070 §780 and PORT-0006. Branded Safari qualification and final owner visual
 acceptance are distinct from the tested WebKit engine and implementation checks.
 No package release, deployment, dependency-source change or Chrome extension change

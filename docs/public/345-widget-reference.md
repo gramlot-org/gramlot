@@ -2,7 +2,7 @@
 
 Document ID: **GC-345**.
 
-This reference covers all **53 component declarations** in the 10 packaged
+This reference covers all **61 component declarations** in the 14 packaged
 component collections covered here. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
@@ -61,6 +61,10 @@ connects these controls to runnable lessons and screenshots.
 | [grid](445-grid.md) | [grid](#gc-345-grid), [searchBox](#gc-345-searchbox) |
 | [chat](450-chat.md) | [chatMessages](#gc-345-chatmessages) |
 | [grouplets](455-grouplets.md) | [grouplet](#gc-345-grouplet), [groupletCard](#gc-345-groupletcard) |
+| [charts](480-charts.md) | [chartPane](#gc-345-chartpane), [chartView](#gc-345-chartview), [chartFields](#gc-345-chartfields), [chartGeoJSON](#gc-345-chartgeojson), [chartTimeline](#gc-345-charttimeline) |
+| [vizabi](485-vizabi.md) | [vizabiBubble](#gc-345-vizabibubble) |
+| [audio](490-audio.md) | [audioAnalyser](#gc-345-audioanalyser) |
+| [drawing](495-drawing.md) | [drawingPane](#gc-345-drawingpane) |
 
 ## Shared parameter contracts
 
@@ -73,7 +77,7 @@ Each widget below links only the shared contracts it supports. A shared name can
 
 The value type and writeback behavior depend on the control. Use a Data pointer for binding; see [Data binding](097-data-binding.md).
 
-Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [toggleButton](#gc-345-togglebutton), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview), [imageUploader](#gc-345-imageuploader).
+Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [toggleButton](#gc-345-togglebutton), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [htmlPreview](#gc-345-htmlpreview), [markdownEditor](#gc-345-markdowneditor), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview), [imageUploader](#gc-345-imageuploader), [chartGeoJSON](#gc-345-chartgeojson).
 
 | Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
@@ -89,6 +93,7 @@ Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButt
 | `value` | T | '' | twoWay | — | [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor) |
 | `value` | T | '' | read | — | [htmlPreview](#gc-345-htmlpreview), [markdownPreview](#gc-345-markdownpreview), [typstPreview](#gc-345-typstpreview) |
 | `value` | T or None | None | twoWay | — | [imageUploader](#gc-345-imageuploader) |
+| `value` | X or None | None | twoWay | — | [chartGeoJSON](#gc-345-chartgeojson) |
 
 <a id="gc-345-225"></a>
 <a id="gc-345-shared-state"></a>
@@ -111,12 +116,13 @@ Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButt
 
 lbl supplies a field label; lbl_position places it. The lbl_* and box_* style families are described in [Themes and CSS](096-themes-and-css.md).
 
-Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [groupBox](#gc-345-groupbox), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor).
+Applies to: [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [groupBox](#gc-345-groupbox), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor), [searchBox](#gc-345-searchbox).
 
 | Parameter | Type | Default | Binding | Constraints | Applies to |
 | --- | --- | --- | --- | --- | --- |
 | `lbl` | T or None | — | read | qualification="intl_str" | All listed above |
-| `lbl_position` | T | 'TL' | read | enum=['TL', 'TC', 'TR', 'L', 'R', 'BL', 'BC', 'BR'] | All listed above |
+| `lbl_position` | T | 'TL' | read | enum=['TL', 'TC', 'TR', 'L', 'R', 'BL', 'BC', 'BR'] | [textbox](#gc-345-textbox), [checkbox](#gc-345-checkbox), [radioButtonText](#gc-345-radiobuttontext), [textBoxArea](#gc-345-textboxarea), [passwordbox](#gc-345-passwordbox), [radioButton](#gc-345-radiobutton), [colorpicker](#gc-345-colorpicker), [horizontalSlider](#gc-345-horizontalslider), [verticalSlider](#gc-345-verticalslider), [numberTextBox](#gc-345-numbertextbox), [dateTextBox](#gc-345-datetextbox), [timeTextBox](#gc-345-timetextbox), [filteringSelect](#gc-345-filteringselect), [callbackSelect](#gc-345-callbackselect), [comboBox](#gc-345-combobox), [dbSelect](#gc-345-dbselect), [dbComboBox](#gc-345-dbcombobox), [checkBoxText](#gc-345-checkboxtext), [dateCalendar](#gc-345-datecalendar), [groupBox](#gc-345-groupbox), [codeMirror](#gc-345-codemirror), [htmlEditor](#gc-345-htmleditor), [markdownEditor](#gc-345-markdowneditor) |
+| `lbl_position` | T | 'L' | read | — | [searchBox](#gc-345-searchbox) |
 
 <a id="gc-345-235"></a>
 <a id="gc-345-shared-placeholder"></a>
@@ -260,6 +266,7 @@ Applies to: [dialog](#gc-345-dialog), [floatingPane](#gc-345-floatingpane).
 | `movable` | B | True | read | — | [floatingPane](#gc-345-floatingpane) |
 | `resizable` | B | True | read | — | [floatingPane](#gc-345-floatingpane) |
 | `collapsible` | B | True | read | — | [floatingPane](#gc-345-floatingpane) |
+| `docked` | B | False | read | — | [floatingPane](#gc-345-floatingpane) |
 
 <a id="gc-345-260"></a>
 <a id="gc-345-shared-regions"></a>
@@ -286,6 +293,317 @@ Applies to: [stackContainer](#gc-345-stackcontainer), [tabContainer](#gc-345-tab
 | --- | --- | --- | --- | --- | --- |
 | `selectedPage` | T or None | None | twoWay | — | All listed above |
 | `selected` | L or None | None | twoWay | — | All listed above |
+
+<a id="gc-345-490"></a>
+## Audio and drawing
+
+
+<a id="gc-345-480"></a>
+<a id="gc-345-audioanalyser"></a>
+### `audioAnalyser`
+
+Live microphone waveform and spectrum arrays written into Data.
+
+Collection: **audio**. Browser element: `gramlot-audio-analyser`.
+
+[Microphone samples and lifecycle](490-audio.md#gc-490-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-audioanalyser).
+
+
+**Data contract.** running controls capture; waveform and spectrum write numeric arrays as individual Data values. sampleRate, status and error report the session.
+
+
+**Interaction and events.** Changes to supported configuration update the analyser. Capture failure clears running and reports error.
+
+
+**Composition.** Invisible leaf component; compose ordinary controls and charts around its bindings.
+
+
+**Limits and lifecycle.** Requires microphone permission and a secure context. Stop, pagehide and disposal release resources. No recording or persistence.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `running` | B | False | twoWay | — |
+| `fftSize` | L | 1024 | read | — |
+| `frameRate` | N | 20 | read | — |
+| `minimumDb` | N | -100 | read | — |
+| `spectrum` | X or None | — | twoWay | — |
+| `waveform` | X or None | — | twoWay | — |
+| `sampleRate` | N | 0 | twoWay | — |
+| `status` | T | 'stopped' | twoWay | — |
+| `error` | T | '' | twoWay | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-485"></a>
+<a id="gc-345-drawingpane"></a>
+### `drawingPane`
+
+SVG annotation editing over an original Data Bag.
+
+Collection: **drawing**. Browser element: `gramlot-drawing-pane`.
+
+[Annotation Bags and drawing tools](495-drawing.md#gc-495-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-drawingpane).
+
+
+**Data contract.** annotations reads and mutates the original Data Bag; image reads an optional background URL.
+
+
+**Interaction and events.** Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.
+
+
+**Composition.** Composes a shared Source menu and an SVG drawing surface.
+
+
+**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `image` | T or None | None | read | — |
+| `annotations` | X | — | read | — |
+
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-445"></a>
+## Charts
+
+
+<a id="gc-345-450"></a>
+<a id="gc-345-chartpane"></a>
+### `chartPane`
+
+Shared chart configuration, rendering surface and temporal playback over Data Bags.
+
+Collection: **charts**. Browser element: `gramlot-chart-pane`.
+
+[Shared charts, engines and temporal snapshots](480-charts.md#gc-480-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chartpane).
+
+
+**Data contract.** storepath and configpath identify original Data Bags. rowMode selects attributes or values.
+
+
+**Interaction and events.** Shared settings, playback controls and engines retain configuration in Data.
+
+
+**Composition.** Composes the shared frame and chart controls.
+
+
+**Limits and lifecycle.** Business aggregation stays upstream; unsupported types are not emulated.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `configDefaults` | X or None | — | — | — |
+| `storepath` | T | — | — | — |
+| `configpath` | T | — | — | — |
+| `rowMode` | T | 'attributes' | — | — |
+| `gridId` | T or None | — | — | — |
+
+Child grammar: `*`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-455"></a>
+<a id="gc-345-chartview"></a>
+### `chartView`
+
+Engine adapter rendering the original rows and observing configuration and grid filters.
+
+Collection: **charts**. Browser element: `gramlot-chart-view`.
+
+[Shared charts, engines and temporal snapshots](480-charts.md#gc-480-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chartview).
+
+
+**Data contract.** Reads store and bound chart configuration; selectedTerritory writes the chosen name.
+
+
+**Interaction and events.** Observes rows and grid filtering, updates the engine and releases it on removal.
+
+
+**Composition.** Rendering surface composed by chartPane.
+
+
+**Limits and lifecycle.** Numeric X is required by uPlot; mapBar3D is ECharts-only.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `sampleMin` | R or None | — | read | — |
+| `sampleMax` | R or None | — | read | — |
+| `sampleStep` | R | 1 | read | — |
+| `sampleStart` | R | 0 | read | — |
+| `mapLabelMode` | T | 'value' | read | — |
+| `mapBarScale` | T | 'zero' | read | — |
+| `selectedTerritory` | T | '' | twoWay | — |
+| `configpath` | T | — | — | — |
+| `timeEmpty` | T | 'previous' | read | — |
+| `timeField` | T | '' | read | — |
+| `timeValue` | X or None | — | read | — |
+| `timeStep` | T | 'month' | read | — |
+| `engine` | T | 'echarts' | read | — |
+| `mapValueField` | T | — | read | — |
+| `mapLabelField` | T | — | read | — |
+| `geoJSON` | X or None | — | read | — |
+| `geometryField` | T | — | read | — |
+| `secondCaptionField` | T | — | read | — |
+| `seriesOptions` | X | — | read | — |
+| `storepath` | T | — | — | — |
+| `rowMode` | T | — | — | — |
+| `gridId` | T | — | — | — |
+| `chartType` | T | — | read | — |
+| `captionField` | T | — | read | — |
+| `valueFields` | T or None | — | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-460"></a>
+<a id="gc-345-chartfields"></a>
+### `chartFields`
+
+Store field discovery for the shared chart configuration controls.
+
+Collection: **charts**. Browser element: `gramlot-chart-fields`.
+
+[Shared charts, engines and temporal snapshots](480-charts.md#gc-480-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chartfields).
+
+
+**Data contract.** Reads store metadata and writes available chart fields to configuration.
+
+
+**Interaction and events.** Rebuilds field choices when the original Bag changes.
+
+
+**Composition.** Internal shared chart settings component.
+
+
+**Limits and lifecycle.** Does not query a database or infer business aggregates.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `timeFieldId` | T | — | — | — |
+| `storepath` | T | — | — | — |
+| `rowMode` | T | — | — | — |
+| `configpath` | T | — | — | — |
+| `categoryId` | T | — | — | — |
+| `mapMeasureId` | T | — | — | — |
+| `mapLabelId` | T | — | — | — |
+| `secondCategoryId` | T | — | — | — |
+| `geometryId` | T | — | — | — |
+| `measureMenuId` | T | — | — | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-465"></a>
+<a id="gc-345-chartgeojson"></a>
+### `chartGeoJSON`
+
+Validated GeoJSON input and geographic data summary.
+
+Collection: **charts**. Browser element: `gramlot-chart-geo-json`.
+
+[Shared charts, engines and temporal snapshots](480-charts.md#gc-480-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chartgeojson).
+
+
+**Data contract.** value binds a plain GeoJSON feature collection or null.
+
+
+**Interaction and events.** Validates supplied geography and displays its summary.
+
+
+**Composition.** Shared geography input for chart configuration.
+
+
+**Limits and lifecycle.** Named Polygon/MultiPolygon features only; host owns territorial matching.
+
+Shared contracts: [Values and bindings](#gc-345-shared-value).
+
+No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
+
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-470"></a>
+<a id="gc-345-charttimeline"></a>
+### `chartTimeline`
+
+Prepared calendar snapshots and playback bounds from the original store.
+
+Collection: **charts**. Browser element: `gramlot-chart-timeline`.
+
+[Shared charts, engines and temporal snapshots](480-charts.md#gc-480-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-charttimeline).
+
+
+**Data contract.** Reads store/time parameters and writes timeline state under configpath.
+
+
+**Interaction and events.** Tracks bounds and prepared snapshots; removal releases observation.
+
+
+**Composition.** Used by chartPane with its playback controls.
+
+
+**Limits and lifecycle.** No business aggregation; calendar periods and empty policy are explicit.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `storepath` | T | — | — | — |
+| `rowMode` | T | — | — | — |
+| `configpath` | T | — | — | — |
+| `timeField` | T | — | read | — |
+| `timeStep` | T | — | read | — |
+| `timeIndex` | R | — | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-475"></a>
+<a id="gc-345-vizabibubble"></a>
+### `vizabiBubble`
+
+Specialized host-provided Vizabi bubble session observing Data Bags.
+
+Collection: **vizabi**. Browser element: `gramlot-vizabi-bubble`.
+
+[Host-provided bubble charts](485-vizabi.md#gc-485-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-vizabibubble).
+
+
+**Data contract.** Reads the original rows and configuration Bag.
+
+
+**Interaction and events.** Retains supported session configuration and releases engine resources on removal.
+
+
+**Composition.** Specialized external bubble view.
+
+
+**Limits and lifecycle.** Requires host-supplied libraryUrl; not a chartPane engine.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `storepath` | T | — | — | — |
+| `rowMode` | T | 'attributes' | — | — |
+| `configuration` | X | — | read | — |
+| `libraryUrl` | T | — | — | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
 <a id="gc-345-430"></a>
 ## Grids and search
@@ -318,6 +636,8 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `columnFilters` | B | False | read | — |
+| `setFilter` | T | '' | read | — |
 | `windowInfo` | X or None | None | read | — |
 | `loading` | B | False | read | — |
 | `viewport` | X or None | None | write | — |
@@ -347,7 +667,7 @@ Collection: **grid**. Browser element: `gramlot-search-box`.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-searchbox).
 
 
-**Data contract.** searchOn chooses eligible columns. Accepted queries update the target view's filter. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.
+**Data contract.** searchOn chooses eligible columns. searchLiteral=True uses literal case-insensitive text matching; the default retains regular expressions. Accepted queries update only the target view's search contribution, in AND with its base filter and setFilter; clearing search preserves both. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.
 
 
 **Interaction and events.** Typing starts a short debounce and Enter applies immediately. Changing columns, Escape or Clear removes the filter. Invalid or incomplete expressions retain the last accepted filter.
@@ -358,8 +678,14 @@ Collection: **grid**. Browser element: `gramlot-search-box`.
 
 **Limits and lifecycle.** Works against the resident view. Number and date syntax depends on the column type and locale. Removal cancels the timer and releases view subscriptions.
 
+Shared contracts: [Labels and field presentation](#gc-345-shared-labels).
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
+| `searchLiteral` | B | False | read | — |
+| `searchHelp` | B | False | read | — |
 | `searchOn` | B / T | True | read | — |
 | `searchTime` | R or None | None | write | — |
 
@@ -504,8 +830,10 @@ Collection: **inputs**. Browser element: `gramlot-textbox`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -536,8 +864,10 @@ Collection: **inputs**. Browser element: `gramlot-passwordbox`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -570,6 +900,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `rows` | L | 4 | read | target="control" |
 | `cols` | L | 24 | read | target="control" |
 
@@ -608,6 +940,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `mode` | T | 'checkbox' | read | enum=['checkbox', 'switch'] |
 | `switch_color` | T or None | None | read | — |
 | `label` | T | '' | — | qualification="intl_str"; target="optionCaption" |
@@ -643,6 +977,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `label` | T | '' | — | qualification="intl_str"; target="optionCaption" |
 | `group` | T or None | — | read | — |
 
@@ -677,6 +1013,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `values` | T | — | read | — |
 | `cols` | L | 1 | read | — |
 
@@ -686,7 +1024,7 @@ Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source childr
 <a id="gc-345-checkboxtext"></a>
 ### `checkBoxText`
 
-A local multi-choice group storing the selected codes.
+Multiple choices from text, a Bag, a remote list or the shared checkbox tree.
 
 Collection: **inputs**. Browser element: `gramlot-check-box-text`.
 
@@ -702,7 +1040,7 @@ Collection: **inputs**. Browser element: `gramlot-check-box-text`.
 **Interaction and events.** A native check change commits the code list. Arrows, Home and End move focus among options. There is no component-specific selection callback.
 
 
-**Composition.** The field generates inline options from `values` and arranges them in `cols` columns. It takes no Source option children.
+**Composition.** The field generates options from text or Bag `values`, or a complete `dbtable`/`method` result. `popup=True` puts the same choices behind a caption button; `cols` arranges them. It takes no Source option children.
 
 
 **Limits and lifecycle.** The column count must be positive. Readonly and disabled lock the options. An edit preserves stored codes that have no current visible option.
@@ -711,8 +1049,20 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `values` | T | — | read | — |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
+| `values` | T / X | '' | read | — |
 | `cols` | L | 1 | read | — |
+| `popup` | B | False | read | — |
+| `hierarchical` | B | False | read | — |
+| `checkChildren` | B | True | read | — |
+| `identifier` | T | — | read | — |
+| `labelAttribute` | T | — | read | — |
+| `dbtable` | T | — | read | — |
+| `method` | T | — | read | — |
+| `caption_field` | T | — | read | — |
+| `order_by` | T | — | read | — |
+| `condition` | T | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -743,8 +1093,10 @@ Collection: **inputs**. Browser element: `gramlot-colorpicker`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -777,6 +1129,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `values` | T | '' | read | — |
 | `separator` | T | ',' | read | — |
 
@@ -811,6 +1165,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `callback` | T | — | — | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
@@ -844,6 +1200,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `values` | T | '' | read | — |
 | `separator` | T | ',' | read | — |
 | `store` | X or None | None | read | — |
@@ -879,6 +1237,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `dbtable` | T | — | read | — |
 | `caption_field` | T | — | read | — |
 | `condition` | T | — | read | — |
@@ -931,6 +1291,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `dbtable` | T | — | read | — |
 | `caption_field` | T | — | read | — |
 | `condition` | T | — | read | — |
@@ -986,6 +1348,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `dtype` | T | 'R' | — | — |
 | `min` | R or None | — | read | — |
 | `max` | R or None | — | read | — |
@@ -1021,6 +1385,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `min` | R | 0 | read | target="control" |
 | `max` | R | 100 | read | target="control" |
 | `step` | R | 1 | read | target="control" |
@@ -1056,6 +1422,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `min` | R | 0 | read | target="control" |
 | `max` | R | 100 | read | target="control" |
 | `step` | R | 1 | read | target="control" |
@@ -1085,12 +1453,15 @@ Collection: **inputs**. Browser element: `gramlot-date-text-box`.
 **Composition.** A field leaf with an internal trigger and popup unless `calendar=False`.
 
 
-**Limits and lifecycle.** The parser requires a single date. Empty input commits null, while an invalid expression preserves the typed value. Disabling the calendar or releasing the editor closes its popup.
+**Limits and lifecycle.** The parser requires a single date unless period_to declares a relative Data output path. An accepted period writes its start to value and its end to period_to; ordinary dates leave that output unchanged. Empty input commits null, while an invalid expression preserves both typed values. Disabling the calendar or releasing the editor closes its popup.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
+| `period_to` | T or None | — | — | — |
 | `calendar` | B | True | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
@@ -1122,8 +1493,10 @@ Collection: **inputs**. Browser element: `gramlot-date-calendar`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -1154,8 +1527,10 @@ Collection: **inputs**. Browser element: `gramlot-time-text-box`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -1337,8 +1712,6 @@ Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [
 | `checked` | B or None | — | read | — |
 | `tooltip` | T or None | — | — | — |
 | `group` | B | False | — | — |
-| `priority` | R | 0 | — | — |
-| `overflowable` | B | True | — | — |
 | `parameters` | dict or None | — | — | annotation={"kind": "type", "module": "builtins", "name": "dict"} |
 | `favorite` | B | False | — | — |
 
@@ -1361,7 +1734,7 @@ Collection: **buttons**. Browser element: `gramlot-spacer`.
 **Data contract.** size specifies fixed space in pixels. flex assigns a positive share of remaining layout space. Neither parameter represents application Data.
 
 
-**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving overflowable units to its popup.
+**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving trailing units to its popup.
 
 
 **Composition.** Place it between menu or toolbar items as a leaf.
@@ -1471,6 +1844,8 @@ Shared contracts: [Labels and field presentation](#gc-345-shared-labels).
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `copy` | B | False | read | — |
 | `lbl_variant` | T | 'bar' | read | enum=['bar', 'underline', 'card'] |
 
@@ -1859,13 +2234,17 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 | `excludeRoot` | T or None | None | read | — |
 | `labelCb` | T or None | None | — | — |
 | `getLabel` | T or None | None | — | — |
+| `labelState` | X or None | None | read | — |
 | `getLabelClass` | T or None | None | — | — |
 | `getIconClass` | T or None | None | — | — |
 | `selectedLabelClass` | T | '' | read | — |
 | `searchText` | T | '' | read | — |
+| `searchEager` | B | True | read | — |
+| `searchAttributes` | T | '' | read | — |
 | `favorites` | X or None | None | read | — |
 | `favoritesLabel` | T | 'Favorites' | read | — |
 | `autoCollapse` | B | False | read | — |
+| `resolveLazy` | B | True | read | — |
 | `selectedPath` | T or None | None | twoWay | — |
 | `onChecked` | B / T or None | None | — | — |
 | `checkedPaths` | T or None | None | twoWay | — |
@@ -2066,6 +2445,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `language` | T | 'text' | read | enum=['text', 'python', 'javascript', 'typescript', 'json', 'html', 'css', 'xml', 'markdown', 'sql', 'typst'] |
 | `lineNumbers` | B | True | read | — |
 | `lineWrapping` | B | True | read | — |
@@ -2109,8 +2490,10 @@ Collection: **editors**. Browser element: `gramlot-html-editor`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -2173,8 +2556,10 @@ Collection: **editors**. Browser element: `gramlot-markdown-editor`.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -2263,7 +2648,7 @@ Children: `column,colgroup`. Parents: `grid`.
 **Composition.** Grid declaration containing columns and column groups. It has no separate browser element.
 
 
-**Limits and lifecycle.** Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected.
+**Limits and lifecycle.** Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected. External sets use check=multiple, checked=^DataPath and checkedField=identityField. Initialize the Data value to an empty string; nonempty text IDs without commas are stored as comma-separated strings. Literal comma-wrapped includes checks membership. Each toggle writes Data and refreshes all views without editing records. Dynamic columns observe the structure Bag; removing a column keeps its set. Offscreen IDs survive. External set columns cannot have editors and are excluded from ordinary field sorting/search; check=single uses a radio and writes one scalar ID to checked without editing supplier rows. It supports partial stores, retains filtered/offscreen choices and never toggles off the selected radio. Text and numeric identities retain their type. Bulk actions are not implemented. A read-bound setFilter string names external check columns: john,fred means intersection, empty removes only the set contribution. Base filter, search and setFilter combine with AND. Set Data changes immediately update the view. Nonempty setFilter requires a complete resident store; windowInfo and unknown check columns are rejected. Column title retains the full tooltip/accessibility name when name is abbreviated. columnFilters=True enables distinct-value header popups on complete resident stores: OR within each column, AND across columns/base/search/sets. Counts exclude only their own column selection. Empty groups null and empty text; zero-count selections persist. None differs from Reset. The popup reuses the shared grid and menu toolbar; its literal search filters only the choices and preserves hidden selections. All/None apply to the entire choice list. Accepted criteria live in the Source-owned collection view; row edits update counts. Date columns add inclusive From/To and period entry; range AND values is one column criterion. Changing range selects all matching dates; clearing From clears To but preserves selected dates. Reset clears both. Invalid drafts retain the accepted filter.
 
 Additional positional arguments: `False`; additional keyword arguments: `False`.
 
@@ -2299,6 +2684,10 @@ Additional positional arguments: `False`; additional keyword arguments: `False`.
 | `format` | keyword_only | T | None | [] |
 | `white_space` | keyword_only | T | None | [{"kind":"regex","pattern":"^(normal&#124;nowrap&#124;pre-wrap)$","flags":0}] |
 | `edit` | keyword_only | B / dict | False | [] |
+| `check` | keyword_only | T | None | [] |
+| `checked` | keyword_only | T | None | [] |
+| `checkedField` | keyword_only | T | None | [] |
+| `title` | keyword_only | T | None | [] |
 
 ### `colgroup`
 

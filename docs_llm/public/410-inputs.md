@@ -133,8 +133,11 @@ Collection: inputs. Single-line text with label, validation and optional live up
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Placeholders](#gc-410-shared-placeholder), [Validation](#gc-410-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -161,8 +164,11 @@ Collection: inputs. Masked text entry; masking does not encrypt or persist the v
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Placeholders](#gc-410-shared-placeholder), [Validation](#gc-410-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -192,6 +198,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `rows` | `{"binding":"read","default":4,"dtype":"L","target":"control"}` |
 | `cols` | `{"binding":"read","default":24,"dtype":"L","target":"control"}` |
 
@@ -227,6 +235,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `mode` | `{"binding":"read","default":"checkbox","dtype":"T","enum":["checkbox","switch"]}` |
 | `switch_color` | `{"binding":"read","default":null,"dtype":"T","nullable":true}` |
 | `label` | `{"default":"","dtype":"T","qualification":"intl_str","target":"optionCaption"}` |
@@ -259,8 +269,9 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values, group` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `label` | `{"default":"","dtype":"T","qualification":"intl_str","target":"optionCaption"}` |
-| `group` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -290,6 +301,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `values` | `{"binding":"read","dtype":"T"}` |
 | `cols` | `{"binding":"read","default":1,"dtype":"L"}` |
 
@@ -299,7 +312,7 @@ Child grammar: `''`; parent grammar: `None`.
 <a id="gc-410-checkboxtext"></a>
 ### `checkBoxText`
 
-Collection: inputs. A local multi-choice group storing the selected codes.
+Collection: inputs. Multiple choices from text, a Bag, a remote list or the shared checkbox tree.
 
 
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-checkboxtext).
@@ -311,7 +324,7 @@ Collection: inputs. A local multi-choice group storing the selected codes.
 **Interaction and events.** A native check change commits the code list. Arrows, Home and End move focus among options. There is no component-specific selection callback.
 
 
-**Composition.** The field generates inline options from `values` and arranges them in `cols` columns. It takes no Source option children.
+**Composition.** The field generates options from text or Bag `values`, or a complete `dbtable`/`method` result. `popup=True` puts the same choices behind a caption button; `cols` arranges them. It takes no Source option children.
 
 
 **Limits and lifecycle.** The column count must be positive. Readonly and disabled lock the options. An edit preserves stored codes that have no current visible option.
@@ -321,8 +334,13 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
-| `values` | `{"binding":"read","dtype":"T"}` |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
+| `values` | `{"binding":"read","default":"","dtype":["T","X"]}` |
 | `cols` | `{"binding":"read","default":1,"dtype":"L"}` |
+| `popup, hierarchical` | `{"binding":"read","default":false,"dtype":"B"}` |
+| `checkChildren` | `{"binding":"read","default":true,"dtype":"B"}` |
+| `identifier, labelAttribute, dbtable, method, caption_field, order_by, condition` | `{"binding":"read","dtype":"T"}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -349,8 +367,11 @@ Collection: inputs. Browser color input, with a bound color value.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Validation](#gc-410-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -380,6 +401,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `values` | `{"binding":"read","default":"","dtype":"T"}` |
 | `separator` | `{"binding":"read","default":",","dtype":"T"}` |
 
@@ -411,6 +434,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `callback` | `{"dtype":"T"}` |
 
 Child grammar: `''`; parent grammar: `None`.
@@ -441,6 +466,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `values` | `{"binding":"read","default":"","dtype":"T"}` |
 | `separator` | `{"binding":"read","default":",","dtype":"T"}` |
 | `store` | `{"binding":"read","default":null,"dtype":"X","nullable":true}` |
@@ -473,6 +500,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `dbtable, caption_field, condition, columns, hiddenColumns, auxColumns, template, order_by` | `{"binding":"read","dtype":"T"}` |
 | `weakCondition` | `{"binding":"read","default":false,"dtype":["B","T"]}` |
 | `method` | `{"binding":"read","default":"dbSelect","dtype":"T"}` |
@@ -512,6 +541,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `dbtable, caption_field, condition, columns, hiddenColumns, auxColumns, template, order_by` | `{"binding":"read","dtype":"T"}` |
 | `weakCondition` | `{"binding":"read","default":false,"dtype":["B","T"]}` |
 | `method` | `{"binding":"read","default":"dbSelect","dtype":"T"}` |
@@ -554,6 +585,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `dtype` | `{"default":"R","dtype":"T"}` |
 | `min, max` | `{"binding":"read","dtype":"R","nullable":true}` |
 
@@ -585,6 +618,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `min` | `{"binding":"read","default":0,"dtype":"R","target":"control"}` |
 | `max` | `{"binding":"read","default":100,"dtype":"R","target":"control"}` |
 | `step` | `{"binding":"read","default":1,"dtype":"R","target":"control"}` |
@@ -617,6 +652,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `min` | `{"binding":"read","default":0,"dtype":"R","target":"control"}` |
 | `max` | `{"binding":"read","default":100,"dtype":"R","target":"control"}` |
 | `step` | `{"binding":"read","default":1,"dtype":"R","target":"control"}` |
@@ -642,13 +679,16 @@ Collection: inputs. Civil date editing with an optional calendar popup.
 **Composition.** A field leaf with an internal trigger and popup unless `calendar=False`.
 
 
-**Limits and lifecycle.** The parser requires a single date. Empty input commits null, while an invalid expression preserves the typed value. Disabling the calendar or releasing the editor closes its popup.
+**Limits and lifecycle.** The parser requires a single date unless period_to declares a relative Data output path. An accepted period writes its start to value and its end to period_to; ordinary dates leave that output unchanged. Empty input commits null, while an invalid expression preserves both typed values. Disabling the calendar or releasing the editor closes its popup.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Placeholders](#gc-410-shared-placeholder), [Validation](#gc-410-shared-validation), [Locale and formatting](#gc-410-shared-formatting).
 
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
+| `period_to` | `{"dtype":"T","nullable":true}` |
 | `calendar` | `{"binding":"read","default":true,"dtype":"B"}` |
 
 Child grammar: `''`; parent grammar: `None`.
@@ -676,8 +716,11 @@ Collection: inputs. An inline civil-date calendar.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Validation](#gc-410-shared-validation), [Locale and formatting](#gc-410-shared-formatting).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -704,8 +747,11 @@ Collection: inputs. Civil time editing with locale-aware text parsing.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Placeholders](#gc-410-shared-placeholder), [Validation](#gc-410-shared-validation), [Locale and formatting](#gc-410-shared-formatting).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 

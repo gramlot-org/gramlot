@@ -224,6 +224,8 @@ Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `language` | T | 'text' | read | enum=['text', 'python', 'javascript', 'typescript', 'json', 'html', 'css', 'xml', 'markdown', 'sql', 'typst'] |
 | `lineNumbers` | B | True | read | — |
 | `lineWrapping` | B | True | read | — |
@@ -267,8 +269,10 @@ Collection: **editors**. Browser element: `gramlot-html-editor`.
 
 Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -331,8 +335,10 @@ Collection: **editors**. Browser element: `gramlot-markdown-editor`.
 
 Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 

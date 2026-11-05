@@ -9,9 +9,11 @@ async function artifact() {
     for (const path of ['grammar.json', 'commands.json', ...(await readdir(new URL('assets/', root), {recursive:true})).map(path => 'assets/' + path)]) {
         files.set(path, await readFile(new URL(path, root)));
     }
-    const {buildId} = await import(new URL('assets/index.js', root));
+    // Verify bytes without executing the collection's browser import-map dependencies.
+    const wrapper = files.get('assets/index.js').toString();
+    const buildId = /export const buildId = "(sha256:[a-f0-9]{64})";/.exec(wrapper)[1];
     return {files, metadata:{name:'inputs',grammar:'grammar.json',commands:'commands.json',module:'assets/index.js',
-        css:[],dependencies:[],files:[...files.keys()],buildId}};
+        css:[],dependencies:['tree'],files:[...files.keys()],buildId}};
 }
 test('shared API verifies the same prepared artifact as Python and the generator', async () => {
     const {files, metadata} = await artifact();

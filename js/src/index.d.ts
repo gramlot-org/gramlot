@@ -16,6 +16,7 @@ export {PageBootstrap} from './bootstrap.js';
 export type {PageBootstrapOptions, PageResources} from './bootstrap.js';
 export {Exposed, Page, codeMirrorWithOptions} from './server/page.js';
 export {GramlotBuilder} from './builder/gramlot-builder.js';
+export type {GramlotSourceNode, GramlotSourceBag} from './builder/gramlot-builder.js';
 export {GramlotRenderer} from './renderer/gramlot-renderer.js';
 export {GramlotHtmlRenderer} from './renderer/gramlot-html-renderer.js';
 export {GramlotSvgRenderer} from './renderer/gramlot-svg-renderer.js';

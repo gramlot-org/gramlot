@@ -86,7 +86,7 @@ export class PageBootstrap {
             // Verify the complete graph before activating any component or command.
             for (const collection of collections) collection.register(window);
             app = new Gramlot({...config, document, serverAdapter:this.serverAdapter,
-                collections:[...(config.collections ?? []), ...collections.map(c=>c.toDocument())]});
+                collections:[...(config.collections ?? []), ...collections]});
             window.removeEventListener('pagehide', pagehide);
             for (const collection of collections) collection.registerCommands(app);
             for (const {logicClass,group,resource} of entries) app.src.logicRegistry.register(logicClass,{group,resource});

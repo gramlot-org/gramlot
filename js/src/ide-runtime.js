@@ -65,6 +65,16 @@ export class IdeLogic {
         const root = state.getItem('workspace');
         if (root && root !== state.getItem('browser.root')) state.setItem('browser.requestedRoot',root);
     }
+    async ideUploadCompleted(node, {result}) {
+        const context=ideContext(node), state=context.scope.getRelativeData('.');
+        if (state.getItem('browser.root') !== result.root) return;
+        state.setItem('upload.open',false);
+        const controller=context.scope.value.getNode('frame.left.browser').fileSystemController;
+        if (controller.request) return;
+        const opened=await controller.open(result.root);
+        if (opened === result.root && !context.documents.disposed && state.getItem('browser.root') === result.root)
+            await this.ideOpenDocument(context.scope,result.root,result.path);
+    }
     ideDocumentState(node, key) {
         const context = ideContext(node), {documents} = context;
         const doc = documents.documents.getItem(key);
@@ -147,38 +157,42 @@ export class IdeLogic {
             form.button('Create file',{disabled:'^.busy'}).dataController({func:'ideCreate',documentKey:key});
             form.button('Cancel',{disabled:'^.busy',class:'button--quiet'}).dataController({func:'ideCancelCreate',documentKey:key});
             const editorArea = target.div({flex:'1',min_height:0});
-            const html = doc.getItem('language') === 'html';
-            const markdown = doc.getItem('language') === 'markdown';
-            const rich = html || markdown;
-            const typst = doc.getItem('language') === 'typst';
-            const preview = rich || typst || recipe;
-            const views = preview ? editorArea.tabContainer({height:'100%',selectedPage:`^.documents.${key}.view`}) : null;
-            const code = preview ? views.contentPane({title:'Code',pageName:'code',height:'100%'}) : editorArea;
-            codeMirrorWithOptions(code,{datapath:`.documents.${key}`,value:'^.content',language:doc.getItem('language'),
-                height:'100%', readonly:'^.readonly',nodeId:`${context.editorPrefix}_editor_${key}`,
-                editorView:'code',selfsubscribe_historyChanged:'ideHistoryChanged'});
-            target.dataController({func:'ideSave',documentKey:key,[`subscribe_${context.editorPrefix}_editor_${key}_save`]:true});
-            if (typst) views.contentPane({title:'Preview',pageName:'preview',height:'100%'}).typstPreview({value:`^.documents.${key}.content`,filename:`^.documents.${key}.pdfFilename`,height:'100%'});
-            if (recipe) {
-                const output = views.contentPane({title:'Preview',pageName:'preview',height:'100%',display:'flex',flex_direction:'column'});
-                output.div(`^.documents.${key}.renderStatus`,{role:'status',padding:'8px 12px',white_space:'pre-wrap',overflow:'auto',max_height:'30%'});
-                output.typstPreview({value:`^.documents.${key}.typstSource`,filename:`^.documents.${key}.pdfFilename`,
-                    hidden:`^.documents.${key}.previewHidden`,flex:'1',min_height:0});
-                views.contentPane({title:'Generated Typst',pageName:'generated',height:'100%'})
-                    .codeMirror({value:`^.documents.${key}.typstSource`,language:'typst',readonly:true,height:'100%'});
-            }
-            if (rich) {
-                const previewPane = views.contentPane({title:'Preview',pageName:'preview',height:'100%',display:'flex',flex_direction:'column'});
-                if (markdown) {
-                    doc.setItem('allowHtml',false);
-                    previewPane.checkbox({value:`^.documents.${key}.allowHtml`,label:'Allow embedded HTML',class:'gramlot-ide-allow-html',padding:'8px 12px',flex_shrink:0});
+            if (doc.getItem('language') === 'image') {
+                editorArea.drawingPane({image:`^.documents.${key}.image`,annotations:`^.documents.${key}.annotations`,height:'100%'});
+            } else {
+                const html = doc.getItem('language') === 'html';
+                const markdown = doc.getItem('language') === 'markdown';
+                const rich = html || markdown;
+                const typst = doc.getItem('language') === 'typst';
+                const preview = rich || typst || recipe;
+                const views = preview ? editorArea.tabContainer({height:'100%',selectedPage:`^.documents.${key}.view`}) : null;
+                const code = preview ? views.contentPane({title:'Code',pageName:'code',height:'100%'}) : editorArea;
+                codeMirrorWithOptions(code,{datapath:`.documents.${key}`,value:'^.content',language:doc.getItem('language'),
+                    height:'100%', readonly:'^.readonly',nodeId:`${context.editorPrefix}_editor_${key}`,
+                    editorView:'code',selfsubscribe_historyChanged:'ideHistoryChanged'});
+                target.dataController({func:'ideSave',documentKey:key,[`subscribe_${context.editorPrefix}_editor_${key}_save`]:true});
+                if (typst) views.contentPane({title:'Preview',pageName:'preview',height:'100%'}).typstPreview({value:`^.documents.${key}.content`,filename:`^.documents.${key}.pdfFilename`,height:'100%'});
+                if (recipe) {
+                    const output = views.contentPane({title:'Preview',pageName:'preview',height:'100%',display:'flex',flex_direction:'column'});
+                    output.div(`^.documents.${key}.renderStatus`,{role:'status',padding:'8px 12px',white_space:'pre-wrap',overflow:'auto',max_height:'30%'});
+                    output.typstPreview({value:`^.documents.${key}.typstSource`,filename:`^.documents.${key}.pdfFilename`,
+                        hidden:`^.documents.${key}.previewHidden`,flex:'1',min_height:0});
+                    views.contentPane({title:'Generated Typst',pageName:'generated',height:'100%'})
+                        .codeMirror({value:`^.documents.${key}.typstSource`,language:'typst',readonly:true,height:'100%'});
                 }
-                previewPane[html ? 'htmlPreview' : 'markdownPreview']({value:`^.documents.${key}.content`,flex:'1',min_height:0,
-                    ...(markdown ? {allowHtml:`^.documents.${key}.allowHtml`} : {})});
-                views.contentPane({title:'Rich text',pageName:'rich',height:'100%'})[html ? 'htmlEditor' : 'markdownEditor']({
-                    datapath:`.documents.${key}`,value:'^.content',readonly:'^.readonly',height:'100%',
-                    nodeId:`${context.editorPrefix}_rich_editor_${key}`,editorView:'rich',selfsubscribe_historyChanged:'ideHistoryChanged'});
-                target.dataController({func:'ideSave',documentKey:key,[`subscribe_${context.editorPrefix}_rich_editor_${key}_save`]:true});
+                if (rich) {
+                    const previewPane = views.contentPane({title:'Preview',pageName:'preview',height:'100%',display:'flex',flex_direction:'column'});
+                    if (markdown) {
+                        doc.setItem('allowHtml',false);
+                        previewPane.checkbox({value:`^.documents.${key}.allowHtml`,label:'Allow embedded HTML',class:'gramlot-ide-allow-html',padding:'8px 12px',flex_shrink:0});
+                    }
+                    previewPane[html ? 'htmlPreview' : 'markdownPreview']({value:`^.documents.${key}.content`,flex:'1',min_height:0,
+                        ...(markdown ? {allowHtml:`^.documents.${key}.allowHtml`} : {})});
+                    views.contentPane({title:'Rich text',pageName:'rich',height:'100%'})[html ? 'htmlEditor' : 'markdownEditor']({
+                        datapath:`.documents.${key}`,value:'^.content',readonly:'^.readonly',height:'100%',
+                        nodeId:`${context.editorPrefix}_rich_editor_${key}`,editorView:'rich',selfsubscribe_historyChanged:'ideHistoryChanged'});
+                    target.dataController({func:'ideSave',documentKey:key,[`subscribe_${context.editorPrefix}_rich_editor_${key}_save`]:true});
+                }
             }
         }
     }

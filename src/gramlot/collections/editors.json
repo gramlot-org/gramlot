@@ -132,6 +132,46 @@
             "default": null
           },
           {
+            "name": "lbl_value",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "lbl_values",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "lbl_position",
             "kind": "keyword_only",
             "role": "attribute",
@@ -2115,6 +2155,16 @@
               "nullable": true,
               "binding": "read"
             },
+            "lbl_value": {
+              "dtype": "T",
+              "nullable": true,
+              "binding": "twoWay"
+            },
+            "lbl_values": {
+              "dtype": "T",
+              "nullable": true,
+              "binding": "read"
+            },
             "lbl_position": {
               "dtype": "T",
               "default": "TL",
@@ -2699,6 +2749,46 @@
           },
           {
             "name": "lbl",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "lbl_value",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "lbl_values",
             "kind": "keyword_only",
             "role": "attribute",
             "annotation": {
@@ -4349,6 +4439,16 @@
               "nullable": true,
               "binding": "read"
             },
+            "lbl_value": {
+              "dtype": "T",
+              "nullable": true,
+              "binding": "twoWay"
+            },
+            "lbl_values": {
+              "dtype": "T",
+              "nullable": true,
+              "binding": "read"
+            },
             "lbl_position": {
               "dtype": "T",
               "default": "TL",
@@ -4905,6 +5005,46 @@
           },
           {
             "name": "lbl",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "lbl_value",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "lbl_values",
             "kind": "keyword_only",
             "role": "attribute",
             "annotation": {
@@ -6552,6 +6692,16 @@
             "lbl": {
               "dtype": "T",
               "qualification": "intl_str",
+              "nullable": true,
+              "binding": "read"
+            },
+            "lbl_value": {
+              "dtype": "T",
+              "nullable": true,
+              "binding": "twoWay"
+            },
+            "lbl_values": {
+              "dtype": "T",
               "nullable": true,
               "binding": "read"
             },

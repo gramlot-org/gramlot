@@ -1,5 +1,6 @@
 import {NativeControl} from './bases.js';
 import {parseChoices} from './choices.js';
+import {choiceFieldStyles} from './choice-field-styles.js';
 import {positionPopup} from './popup.js';
 import {Bag} from '@gramlot/gramlot';
 
@@ -23,9 +24,9 @@ export function ChoiceEditor(HTMLElement) {
             super();
             const doc = this.ownerDocument;
             const style = doc.createElement('style');
-            style.textContent = `.option{position:relative} #control{width:100%;padding-right:calc(var(--gramlot-choice-toggle-width,1.6em) + .2em)}
+            style.textContent = choiceFieldStyles + `.option{position:relative} #control{width:100%;padding-right:calc(var(--gramlot-choice-toggle-width,1.6em) + .2em)}
                 #control:focus-visible{outline:1px solid var(--gramlot-border-control,#7a8798);outline-offset:-3px}
-                .toggle{position:absolute;right:0;top:0;bottom:0;width:var(--gramlot-choice-toggle-width,1.6em);min-width:0;min-height:0;font:inherit;font-size:var(--gramlot-field-font-size,1em);padding:0;border:0;background:transparent;color:inherit}
+
                 .choices{min-width:min(var(--gramlot-choice-popup-min-width,0px),var(--gramlot-popup-available-width,100vw));max-width:var(--gramlot-popup-available-width,100vw);position:fixed;inset:auto;margin:0;padding:var(--gramlot-popup-padding,4px);box-sizing:border-box;max-height:min(var(--gramlot-choice-max-height,20rem),var(--gramlot-popup-available-height,100vh));overflow:auto;
                     border:1px solid var(--gramlot-border-control,#aab4c2);border-radius:var(--gramlot-radius-sm,4px);background:var(--gramlot-surface,Canvas);color:var(--gramlot-ink,CanvasText);font:inherit;font-size:var(--gramlot-field-font-size,1em);line-height:1.4;box-shadow:var(--gramlot-shadow,0 3px 9px #0002)}
                 .choices[hidden]{display:none} .choice{min-height:var(--gramlot-touch-target,0px);display:flex;align-items:center;padding:var(--gramlot-choice-item-padding,.25em .5em);border-radius:var(--gramlot-radius-sm,4px);cursor:pointer}
@@ -34,8 +35,9 @@ export function ChoiceEditor(HTMLElement) {
                 .choice-detail{margin-inline-start:var(--gramlot-space-3,.75rem);color:var(--gramlot-text-secondary,GrayText)}
                 .choice[aria-selected=true]{background:var(--gramlot-selected,Highlight);color:var(--gramlot-ink,HighlightText)}`;
             this.toggle = doc.createElement('button');
-            this.toggle.className = 'toggle'; this.toggle.type = 'button'; this.toggle.tabIndex = -1;
-            this.toggle.textContent = '▾'; this.toggle.setAttribute('aria-label', 'Show options');
+            this.toggle.className = 'toggle choice-toggle'; this.toggle.type = 'button'; this.toggle.tabIndex = -1;
+            this.control.parentElement.classList.add('choice-field');
+            this.toggle.setAttribute('aria-label', 'Show options');
             this.control.parentElement.append(this.toggle);
             this.choices = doc.createElement('div');
             this.choices.id = 'choices'; this.choices.className = 'choices'; this.choices.hidden = true;

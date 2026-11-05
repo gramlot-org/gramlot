@@ -5387,3 +5387,237 @@ Package availability follow-up — owner, 2026-10-22: “al limite decidiamo in 
 
 
 Local native compiler trial — owner, 2026-10-22: “Sì, solo per la prova locale”, answering the explicit request to try gallery/IDE with native Python compilation before package-policy enforcement is available. Allows native package resolution only in this opt-in local trial; the configured-package restriction remains mandatory before publication. No production enablement, release or Node requirement is approved.
+
+
+### Shared icon-only command defaults — 2026-11-04
+
+Owner: “Sì, procedi nel componente condiviso: i pulsanti con sola icona devono essere giusti di default ovunque, e togli le correzioni locali dalla prova.” Shared command controls automatically use a quiet, compact presentation when they show an icon without a caption. Theme tokens own icon size and spacing; hover, keyboard focus, disabled/pressed state and touch target remain available. Text buttons and popup menu rows retain their presentation. Remove trial-local button styling. This authorizes implementation and local verification, not publication.
+
+
+### Shared FrameGrid toolbar — 2026-11-04
+
+Owner: “Sì procedi: una sola toolbar della frameGrid, searchOn pronto e standard come nel legacy e icona grafico nella stessa barra. Deve essere il comportamento condiviso, non una correzione dell’esempio.” FrameGrid composes one top toolbar, with a reusable authoring reference for adding commands; searchOn populates its search area automatically. Shared search styling is compact and independent of ordinary form-field height. Search column choice and filtering semantics remain available. The chart trial adds its command to that toolbar using an SVG icon. This supersedes the dedicated search-only toolbar composition; it does not port the legacy slotbar DSL or promote the experimental chart to public API.
+
+
+Search capsule refinement — 2026-11-04: owner requests a fully rounded, lower and more compact shared searchBox, darker column-selector background and no information icon unless explicitly requested. The shared defaults become 26 px input height, 240 px width and 12 px type (touch minimum retained). `searchHelp=False` is the Boolean opt-in on frameGrid/searchBox; it forwards unchanged to the search control and is reactive there. This supersedes the preceding rectangular 32 px default and always-visible help button. No example-local styling.
+
+
+Grid color display — 2026-11-04: owner requests the color itself instead of its textual value in the chart configuration grid. Shared grid columns whose editor tag is colorpicker display a swatch outside editing, preserving the stored text and existing editor. Internal cell-color-swatch follows cell-content naming. The color code remains available as tooltip/accessibility text. This bounded presentation does not introduce a generic cell renderer API.
+
+
+Chart exploration — 2026-11-04: owner confirms “Sì procedi: tutte le colonne dello store, compresi Product e Region, scelta dell’aggregazione e più tipi di grafico. Voglio poter provare davvero le possibilità senza limiti messi nell’esempio.” The trial derives dimension choices from all store attribute names and measure choices from numeric columns, rather than a hand-picked allowlist. Private aggregation uses none/sum/avg/min/max/count (count means rows per category); chartData prepares the filtered view without mutating source rows. Chart types: bar, line, area, stackedBar, stackedArea, horizontalBar, pie, donut, scatter. These names follow existing chartType and ECharts series vocabulary. Configuration remains in Data Bags. Pie/donut require one nonnegative measure, stacked series a common axis, scatter a numeric/date dimension; visible messages explain incompatible selections and recover when configuration changes. This extends the experiment, not the public API. Category discovery runs when the Python fixture is built; it is not a runtime schema observer.
+
+
+Radial chart legend and measure selection — 2026-11-04: owner requests a separate responsive legend area and says “se ci sono grafici cone pye che hanno una solo misura scegli la prima di quelle correntamte selezionate”. Pie/donut now render the first field in valueFields without changing the selection Bag. This supersedes the earlier multi-measure rejection for radial charts; other chart types retain all selected fields. Their horizontal scroll legend occupies a reserved bottom band, while the pie series and outside labels use a separate viewport above it. ECharts recalculates both on resize; long legends paginate instead of wrapping into slice labels. No new API names or public component contract.
+
+
+Shared ChartPane — 2026-11-04: owner: “allora rendiamo riusabile anche il configuratore: voglio un componente condiviso a cui passare store e bag di configurazione, con toolbar e drawer standard. procedi”. Following ChatPane, Python ChartPane composes Source framePane, toolbar, detachable configuration drawer and shared chartView; the charts collection owns browser rendering. Inputs store/configuration are Bags; storepath and datapath identify their Data destinations; rowMode follows grid, optional gridId follows a source grid filter. No grid is required for standalone use. The composition discovers fields from the supplied store at authoring time, defaults missing configuration entries, preserves explicit options and derives valueFields from seriesOptions.selected. Each instance owns its drawer state under its datapath. ChartPane/chartView follow existing Pane/View naming; charts follows collection naming; the former private chartTrial entry is replaced without aliases. This authorizes shared composition and packaging, not release/publication or 3D integration.
+
+
+Reactive chart fields — 2026-11-04: owner requests “rendiamo reattiva anche la lista delle colonne”, including store structure changes without component recreation. Replace ChartPane authoring-time field discovery with shared chartFields, a Source-owned store observer. It updates category options and measure menu through Source nodes, and reconciles seriesOptions in Data. Existing numeric series retain configuration; new numeric fields receive defaults, removed/non-numeric fields leave the selected series. If the dimension disappears, choose the first available field; empty stores have no dimension/series until rows arrive. chartFields follows chartView naming; categoryId/measureMenuId reference existing nodeIds, configpath denotes the configuration Data path. This supersedes the documented rebuild-on-schema-change limitation, without a parallel DOM/state system.
+
+
+3D bars — 2026-11-04: owner requests “ora proviamo anche le barre 3D: Product e Region come dimensioni e Revenue come misura, con scelta dei campi nel configuratore condiviso”. Add bar3D using ECharts GL 2.1.0 (declared peer ECharts 5/6, packaged BSD-3-Clause). captionField is the first dimension; secondCaptionField is the second; measureField explicitly chooses the single 3D measure. Field lists remain reactive. These extend existing captionField/valueFields vocabulary without aliases. ChartFields receives secondCategoryId and measureId Source references. The fixture defaults these fields to Product/Region/Revenue with sum. 3D aggregation groups both dimensions; sparse combinations stay absent. Rendering loads GL on first 3D use and changes to Canvas/WebGL, preserving SVG for 2D. No release or additional 3D chart types are authorized.
+
+
+Grouped 3D measures — 2026-11-04: owner confirms “Sì procedi: anche nel 3D più misure affiancate su ogni piano, con un colore per misura e la stessa griglia di configurazione. Togli il selettore «3D measure».” bar3D uses valueFields and seriesOptions.selected/color just like 2D. Remove measureField, measureId and the dedicated selector without aliases. Each second-dimension plane contains groups along the first dimension, with adjacent non-overlapping bars for selected measures and a common Z scale. chartBar3DOptions follows existing chartData3D naming and remains a private renderer helper. Numeric X positions represent category centers plus bounded within-group measure offsets; labels and tooltips expose category names, never internal offsets. Legend names/colors correspond to measures. Supersedes the earlier single-measure bar3D contract.
+
+
+Additional 3D charts — 2026-11-04: owner says “metti tutto dai” after the list of lines, scatter, surfaces, maps, paths and polygons. Implement the Cartesian line3D/scatter3D/surface types with existing dimension/measure controls first. chartSpatialOptions and spatialChartTypes follow chartBar3DOptions/chartType conventions; no alternative data authority. Lines group by second-dimension plane and measure; scatter uses numeric/date dimensions; surfaces use numeric/date coordinates, explicit pair aggregation and gaps for missing combinations, without interpolation. Geographic input format is awaiting the owner's response to the explicit GeoJSON/coordinate-list question.
+
+
+Geographic chart input — 2026-11-04: owner confirms “Sì, GeoJSON e coordinate nello store”. configuration.geoJSON holds a GeoJSON FeatureCollection as a JSON value, with Polygon/MultiPolygon features and properties.name matching captionField. geometryField selects row coordinate lists: paths use longitude/latitude/altitude points; polygons use closed rings with optional holes. These names follow GeoJSON and existing field/Id conventions; geometryId references the Source selector. Map3D aggregates by name; geographic paths/polygons render each geometry row. Multiple measures receive distinct panels and colors to avoid overlapping geographic geometry. Standard ECharts map registration uses a per-renderer name and clears retained geometry on disposal. Tests use explicitly synthetic territories, not claimed real geography.
+
+
+Polygon rendering — 2026-11-04: owner confirms “Sì, usa map3D per i poligoni”, approving conversion of store coordinate rings to GeoJSON and rendering through map3D instead of native polygons3D with geo3D. chartPolygonGeoJSON follows chartGeographicOptions naming. Each row becomes a named Polygon feature; captions must be unique, rings closed, measure heights nonnegative. This replaces the native polygon rendering path, not a fallback.
+
+
+GeoJSON file configuration — 2026-11-04: owner requests loading GeoJSON and choosing the store field linked to territories in the shared configurator. chartGeoJSON follows chartView/chartFields naming and uses a two-way value binding to configuration.geoJSON. Local file reading and validation belong to this shared charts component; no server upload is required. captionField remains the reactive store-field selector and matches properties.name, without introducing an alias. Invalid files leave the previous configuration intact.
+
+
+2D choropleth maps — 2026-11-04: owner confirms “Sì procedi nel configuratore condiviso: mappa 2D con colori graduati e legenda, scelta della misura anche per cliente e variazione annuale. Teniamo il 3D come opzione.” chartType=map uses one numeric mapValueField, a continuous color scale with numeric legend and contrasting territory borders. mapLabelField optionally selects store captions independently of territory matching. mapMeasureId/mapLabelId follow chartFields Source-reference conventions; chartMapOptions follows chartGeographicOptions naming. All controls live in ChartPane/charts. Business-derived ratios and year changes belong to the supplied store, not a chart-specific business model: the Australian host provides 2025 revenue divided by 2025 distinct customers and (2025/2024 - 1)*100. Signed measures use a zero-centered diverging scale; unmatched territories remain uncolored and are never treated as zero. 3D types and measure configuration remain available.
+
+
+Chart reuse qualification — 2026-11-04: owner requests “prova a lavorarci per avere qualcosa di riusabile e da testare in vari casi” after distinguishing shared charts from the snapshot integration. Qualify existing ChartPane with standard dataRpc loading: replacement Bags at storepath, multiple independent chart configurations over one collection, grid filters, empty/error/recovery cases and both row modes. ChartDataView.bindStore follows BagCollectionView.bindStore and retains its last filter while changing resident data. Empty results convey no schema change: preserve configuration and present an empty status; reconcile actual field removals when nonempty data returns. This supersedes the chartView store-replacement rejection and destructive empty-store reconciliation. Database queries belong to the Python adapter/application, test/example pages to gramlot-examples, and core uses its own fixtures. No alternate transport, database dependency or business model enters core.
+
+
+Modular charts collection — 2026-11-04. Owner: “Sì procedi: riorganizza la
+collection charts in piccoli moduli per tipo, con parti comuni condivise e
+configuratore in Gramlot JS. Manteniamo tutte le funzionalità già fatte e
+verifichiamo gli esempi.” This supersedes Python ownership of the ChartPane UI:
+Python ChartPane seeds the two Data Bags and authors chartPane; the charts
+collection composes standard Source toolbar, drawer and configuration controls.
+chartPane follows framePane naming; configpath follows chartFields and avoids
+using the component's inherited datapath as a second configuration authority.
+Internal chart-types modules declare id, label, controls, threeD, measureLimit,
+buildOptions and optional mapData. chartTypes/chartType follow chartType vocabulary.
+Common controls own Source composition; each chart type selects applicable groups.
+The same descriptor dispatches rendering, without another central type switch.
+Generated child IDs derive from the chartPane ID (view/layout/measures suffixes).
+These are qualification selectors, not a second child-authoring API. Existing
+ChartPane helper remains the Python authoring entry, not a duplicate GUI path.
+No new chart families, server protocols, dependency modifications or publication.
+
+
+Chart data responsibility — 2026-11-04. Owner: “non metterei qui il fato di
+fare aggregaziini, qui dobbiamo mettere quello che trpviamo nella bag dei dati.
+le operaziini maemartiche devono strare fuori”. Remove aggregation from the
+charts parameters, controls and render preparation. Charts project the supplied
+store rows; no sum, average, count, minimum/maximum or business-derived measure
+is calculated here. Upstream stores/providers supply prepared measures. Map
+territories and surface coordinates requiring uniqueness reject duplicate keys
+with an explicit upstream-preparation message. Scale extents, layout geometry
+and date coordinate encoding remain rendering responsibilities. This supersedes
+the earlier chart aggregation selector/algorithms; other chart features remain.
+
+
+Chart engine adapters — 2026-11-05. Owner: “Sì procedi: separiamo l’adattatore
+ECharts con i metodi render_ e proviamo Plotly su barre, linee e torta, usando lo
+stesso configuratore e segnalando le opzioni incompatibili senza cambiarle
+automaticamente.” Confirmed after discussing Vega: Plotly remains the second
+engine. engine (echarts/plotly) is the shared configuration selector, default
+echarts. EChartsAdapter/PlotlyAdapter own instance lifecycle and render_<type>
+translation methods; the render_ inventory is their supported-type authority.
+ChartRenderer coordinates engine selection and current updates; chart-types
+retain only engine-independent labels, controls and measure selection semantics.
+validate(context) checks engine restrictions before rendering without Data writes.
+The type selector disables unsupported choices while preserving a current
+unsupported value and reporting its cause. No fallback engine or silent option
+rewrite is authorized. Existing pie first-selected-measure semantics remain for
+both engines without changing selected measures. Plotly is loaded lazily from a
+MIT basic bundle and initially implements bar/line/pie only. Unsupported types
+and unrepresentable data/options are explicit. No aggregation or business math
+enters charts. Names follow chartType/configuration and the owner's render_
+prefix convention; this supersedes engine functions on chart-type descriptors.
+
+
+Vega adapter — 2026-11-05. Owner: “puoi aggungere vega ?” following the three-type
+Plotly comparison. Add VegaAdapter and engine=vega under the existing engine
+contract, initially render_bar/render_line/render_pie. Use Vega directly, not
+Vega-Lite. The common method inventory, Source configurator and Data Bags remain
+the authorities. Vega parsing, SVG View lifecycle, responsive sizing and disposal
+belong to this adapter. Vega transforms may compute graphical coordinates (pie
+angles), never business aggregates or derived measures. No configuration rewrite,
+engine fallback, new component, 3D support or publication. VegaAdapter follows
+EChartsAdapter/PlotlyAdapter naming; no new configuration names are introduced.
+
+
+Chart capability choices — 2026-11-05. Owner: “nel configuratore se un motore
+bnon supporta non dovrebbe proporlo nella scelta”. The shared configurator now
+hides and disables unsupported chart-type options for the selected engine, and
+unsupported engine options for the current chart type. Source bindings update
+both lists reactively from the existing render_ method inventory. This supersedes
+the earlier visible-but-disabled unsupported choices. External incompatible
+configuration is still retained and reported; no automatic engine/type rewrite.
+
+
+uPlot streaming qualification — 2026-11-05. Owner: “proviamo a integrare anche
+uPlot con lo stesso configuratore e un esempio di sinusoide in streaming, così
+vediamo come si comporta”. Add UPlotAdapter, engine=uplot and render_line under
+the existing adapter/method-inventory contract. Reuse shared Source controls,
+measure colors/axes and raw store data. The example is Python-authored in
+Gramlot examples with named browser Logic and the existing dataController timer;
+it generates sine samples upstream of rendering in a bounded Data Bag window.
+No WebSocket transport or bypass of CollectionStore is introduced in this trial.
+UPlotAdapter follows the existing EngineAdapter naming, uplot the package/engine
+identifier convention; the example's Logic methods use existing named-logic rules.
+No new shared component, aggregation, fallback or publication is authorized.
+
+
+Plotly coverage expansion — 2026-11-05. Owner requested “tutti gli adattamenti
+per plotly per andare alla steessa copertutra di echarts”. Extend the existing
+PlotlyAdapter render_ inventory and shared configurator to the existing chart
+types without changing store values or selected configuration. Engine-owned
+plotlySpatial/plotlyMap helpers follow the existing engine/helper naming rules;
+chartMapData extracts renderer-neutral territory validation/projection shared
+with ECharts. Use Plotly's full lazy bundle for native 2D, Cartesian 3D and
+GeoJSON choropleths. No business aggregation or automatic option conversion.
+The non-native mesh3d construction of bars/extruded territories is a separate
+pending owner decision; do not advertise those capabilities until implemented.
+
+
+Chart scope confirmation — 2026-11-05. Owner answered “Solo tipi nativi per ora” to the proposed mesh3d implementation for Plotly. The accepted scope is 13 native types; custom 3D geometry is excluded for now. Owner then instructed “sì procedi a sistemare il trasferimento dei filtri dalla grid al grafico, nel componente condiviso e per tutti i motori”, authorizing the shared BagCollectionView filter-transfer defect repair across runtime and collection bundles. This does not authorize engine-specific filtering or new data representations.
+
+
+Vizabi bubble trial — 2026-11-05. Owner: “Procedi con una prima prova del bubble chart animato in una collection separata, con store e Bag di configurazione Gramlot e Vizabi caricato come libreria opzionale.” Collection vizabi and component vizabiBubble (gramlot-vizabi-bubble) follow library collection and camelCase component conventions. Storepath, rowMode, configuration and libraryUrl use existing parameter nouns. VizabiSession is the internal library lifecycle adapter. The optional host ESM module exports Vizabi, BubbleChart, mobx, style (CSS text) and locale (English locale object); Gramlot ships none of those third-party libraries. Configuration fields entityField,timeField,xField,yField,sizeField,colorField,year,playing,speed describe the bounded bubble trial. Model state remains a projection of the Gramlot Bag; playback writes year/playing back to it. Prepared entity/year rows require no application aggregation. This authorizes a bounded optional collection and Python-authored qualification; no release or publication.
+
+
+Chart temporal snapshots — 2026-11-05. Owner abandoned the Vizabi trial (“lasciamo perdere”) and authorized “una prova nel configuratore condiviso: scegliamo il campo temporale e facciamo scorrere le fotografie dei dati con slider e Play/Pausa, usando i motori che abbiamo già”. Vizabi work is suspended, with its known upstream lifecycle defect unresolved; no upstream patch is authorized. ChartTimeline / chartTimeline / chart-timeline.js and ChartTimeView derive from existing ChartFields/ChartDataView naming. Configuration timeField (empty disables), timeStep (day/month/year), timeIndex, timeValue (Date), timeMax, timeLabel, timePlaying and timeSpeed (seconds) describe the bounded trial. UTC calendar periods span the complete store's minimum/maximum, including empty periods. Source dataController advances timeIndex, stops at the end; manual slider input pauses. Temporal filtering intersects the chart's existing grid-filtered view and performs no aggregation. Existing adapter capabilities remain unchanged; uPlot still requires a numeric/date X field. No cumulative/window mode, gesture or new engine is implemented in this trial.
+
+
+Temporal chart domains — 2026-11-05. Owner: “Sì procedi: assi e colori stabili su tutto l’intervallo temporale, nel componente condiviso e per tutti i motori. Ricalcolali solo quando cambiano dati, filtri o configurazione.” The shared temporal projection owns cached domains over all dated rows accepted by non-temporal filters. Numeric ranges, ordered category domains and color references remain constant while the selected period advances. Data/filter changes invalidate the cache; relevant chart configuration changes recompute it. Adapters translate these references to their supported chart types without aggregating source measures. This supersedes per-frame automatic domains during temporal playback; non-temporal charts retain existing behavior. Internal chart-domains.js/chartDomains follows chart-data.js/chartData conventions; context.domains carries this derived rendering state, not another application Bag.
+
+
+Expandable temporal controls — 2026-11-05. Owner: “Sì, settimane da lunedì a domenica in UTC. Procedi con la sezione espandibile e i passi temporali in funzione del tipo di dato, lasciandoli modificabili.” Shared chartControls composes ordinary Source details/summary. Calendar steps add week (Monday–Sunday UTC); timestamp fields additionally offer hour/minute. The existing TYTX getDateType classification identifies time-bearing Date values; this resident store has no independent declared column schema. Automatic step selects the finest applicable unit spanning at most 36 transitions, or year for longer intervals. Explicit timeStep remains untouched; derived timeUnit is the concrete unit and timeHasClock drives intraday choices. timeStep defaults to auto only when absent. Existing explicit periods remain valid. Internal timeProfile/timeLabel extend chart-time.js naming. Playback, fixed domains and non-temporal filters retain their contracts.
+
+
+Sparse temporal playback — 2026-11-05. Owner answered “si. nuovi oppure dobbiamo ttrovare un modi diverso” to the explicit proposal to retain the last available snapshot in empty periods by default, with a configurable empty-period mode and displayed snapshot date. timeEmpty (previous/empty, default previous) follows the time configuration prefix. ChartTimeView selects the latest occupied period not later than the cursor from the currently filtered rows; selection is independent of playback direction and does not fill individual missing entities or interpolate measures. No future rows are used before the first eligible period. Optional chartView configpath uses the existing shared configuration path convention to publish derived timeSnapshotLabel for ChartPane's timeline. This supersedes blank-by-default temporal gaps; explicit empty mode preserves the earlier behavior.
+
+
+Australian temporal qualification — 2026-11-05. Owner: “Sì procedi con la prova sulle vendite australiane, usando dati reali, filtri e più misure. Vediamo anche come si comporta come prestazioni.” Authorizes a bounded connected application qualification: SQL read-only aggregation and timing in gramlot-py-server, a Python-authored temporal report in gramlot-examples, and local browser verification against the current core. Monthly/daily per-territory prepared rows, revenue/invoice/quantity measures and shared FrameGrid search exercise existing chart capabilities. No new core behavior, database writes, publication or raw customer data export. Performance results must distinguish source invoice-line count, browser store size, server preparation, page load and render/update latency.
+
+
+Chart playback presentation — 2026-11-05. Owner: “mettiamo magari icone tipo play e stop classici e migliora l’aspetto grafico”. The shared ChartPane timeline uses existing icon-only buttons: a stateful Play/Pause toggle and Stop (pause and return to the first period), accessible names/tooltips and the standard theme tokens. Existing timePlaying/timeIndex fields and action bindings remain authoritative. No example-local button styling, icon framework or additional state is introduced. Stable IDs retain the time-play suffix; time-stop follows that convention.
+
+
+Temporal step controls — 2026-11-05. Owner: “metterei anche due frecce per avanzare o tornare indietro di un periodo, senza dover usare lo slider”. Shared ChartPane adds Previous period / Next period icon buttons, one configured period per click, pausing playback like manual slider input. Controls disable at the corresponding boundary; no wrap or skip of empty periods. IDs time-previous/time-next follow existing time-play/time-stop. Derived timeAtEnd uses the existing time prefix and Source dataFormula so changes to either index or range update the end control.
+
+
+Australian geographic drill-down — 2026-11-05. Owner: “ok procedi” after the proposal for an Australia → State → suburb gallery demo, reusable map selection/loading, retained measure/filters/period and explicit unmatched-locality reporting. Bounded connected work includes the examples page and read-only host provider; SAL 2021 geometries load per selected State. Shared chartView exposes selectedTerritory, a two-way territory key written on a 2D map click, carried through ChartPane configuration. ECharts and Plotly translate their map click events; non-map engines acquire no new capability. selectedTerritory follows selected/key and existing map configuration naming; internal onTerritorySelect is the adapter callback. Geographic data matching uses exact suburb + State names only; unmatched/ambiguous names remain visible, never silently assigned. SQL aggregation and geographic preparation remain upstream, with no business math in core, dependency edits or publication.
+
+
+Australian locality suffix matching — 2026-11-05. Owner explicitly answers “Sì, ignora il suffisso dello Stato” to ignoring only the official State suffix in ABS SAL names while matching within a State and leaving ambiguous cases unmatched. Host matching removes only a terminal parenthesized State label (NSW, Vic., Qld, SA, WA, Tas., NT, ACT as used by SAL 2021). Compound locality/district qualifiers, case differences, postal-centre names and other text are not rewritten. The canonical name index must resolve to exactly one feature. This supersedes the exact-SAL-name-only rule for this geographic provider; no normalization is added to core charts.
+
+
+Geographic values and overlaid bars — 2026-11-05. Owner confirms “si” to repairing/verifying map colors, showing values as zoom permits and adding overlaid 3D bars. Shared mapLabelMode (none/name/value/nameValue, default value) follows mapLabelField; label collision handling is rendering-only. mapBar3D/render_mapBar3D follows map3D/render_map3D and bar3D; ECharts GL implements geographic bars, while the native-only Plotly boundary remains unchanged. chartMapAnchors derives display anchors inside polygon geometry, shared with map labels. Multiple selected measures use adjacent bars, their configured colors and one common height scale. No source measure aggregation or coordinate changes in Data.
+
+Owner answers “opzione in config” to the explicit proposal for an invisible graphic range reference because ECharts GL's native geo3D altitude range starts at data minimum. mapBarScale (zero/extent, default zero) exposes that decision. A silent, invisible renderer-owned scatter3D reference fixes zero/full range or data extent, including stable temporal domains; it is excluded from tooltip and legend and never enters the Data Bag. This is a bounded exception to §13 for this documented engine limitation, not permission for other workarounds.
+
+
+FrameGrid chart options — 2026-11-05. Owner: “Sì, procedi con chart=True o il tipo e le opzioni chart_*, tutto nella Bag della frameGrid. Poi completa la sezione Grafici con esempi semplici e fammela provare in locale.” FrameGrid chart=False omits the command; True enables the shared chartPane, a type string supplies its initial chartType. chart_* supplies initial configuration using existing chart property names. A chart-enabled frame declares its own datapath; its configuration is the relative Data Bag ._chart, while storepath identifies the shared row store. Existing configuration is retained. Source composition reuses menu, floatingPane and chartPane; no parallel chart renderer, toolbar implementation or grid filtering. The new section teaches reactive rows/configuration, engines, simple charts, time, 3D and geographic inputs. No publication authorized.
+
+
+Audio sample chart input — 2026-11-05. Owner confirms “ok” to the shared chart input for numeric arrays and sample interval metadata. ChartView reuses storepath with explicit rowMode="samples"; sampleStep (positive, default 1) and sampleStart (finite, default 0) define X = start + index * step. The array remains the value of one Data node. captionField and the single valueFields name identify the virtual X/Y columns. ChartSampleView follows ChartDataView naming and exposes the existing renderer view protocol without Bag nodes. No grid filters, temporal playback or ChartPane configurator is claimed for this bounded input. Existing row modes and engine adapters remain unchanged.
+
+
+Audio producer snapshot migration — 2026-11-05. Owner confirms “si” to connecting
+the analyser to the shared array chart input and updating the gallery. Existing
+audioAnalyser waveform/spectrum outputs now publish plain numeric arrays, one
+Data node per output, replacing the former per-sample Bag rows. sampleRate and
+fftSize retain their meanings; the producer keeps the minimumDb floor for silent
+FFT bins. Source-owned capture lifecycle is unchanged. This is the bounded
+producer migration, not implementation of the proposed audioSource/audioRecorder
+parent-child redesign. Original audio source and tests remain preserved in the
+audit-runtime-security worktree; primary source now supports reproducible builds.
+
+
+Stable audio chart axes — 2026-11-05. Owner: “gli assi non dovrebbero cambiare : se non no si legge nulla”. Sample input adds optional paired sampleMin/sampleMax real read bindings, following sampleStep/sampleStart naming. When configured, the existing shared domain contract fixes the measure extent and derives X only from sample count, step and start. No per-frame amplitude autoscaling. Audio gallery sets waveform -1/+1 and spectrum minimumDb/0; FFT or sample-rate changes may update X. Other chart modes and absent bounds retain their existing behavior.
+
+
+Ordered toolbar tail — 2026-11-05. Owner: “mi stupirenise il secondo passasse nel menu e il terzo ne prendess eil posto”, then “quindimlo toglerei”. Removes menuline overflowable and priority selection: the visible toolbar is a contiguous prefix in declaration order. From the first non-fitting unit, the complete suffix moves into the existing vertical popup. Groups remain indivisible, original DOM/Source and live bindings remain intact; spacers and orphan separators are decorative and suppressed when inappropriate. Supersedes earlier priority/pinned-unit toolbar behavior. No replacement per-item flag or compatibility alias.
+
+
+### Reserved system Data namespace — owner, 2026-11-05
+
+The owner approved proceeding with the general system-path migration after the
+DeviceHandler audit ("possiamo procedere"). System-owned root Data now uses
+`_gramlot`: device state is `_gramlot.device` and generated drawing state is
+`_gramlot.drawing`; generated grid structure/filter state uses `_gramlot.grid`. This supersedes the earlier `gramlot.device` Data reservation.
+Update producers and consumer bindings together; do not introduce aliases.
+The JavaScript runtime object, native bridge protocol/plugin names and persistent
+storage keys are unchanged. The proposed Inspector root-node exclusion remains
+a future possibility, explicitly not part of this implementation.
+
+
+### Standard collections owned by GramlotServer — owner, 2026-11-05
+
+Owner confirmation: "non la gallery / qualunque sito", "è un compito da gramlot
+server", "parti". Standard packaged collections are automatically included by
+GramlotServer in Python and JavaScript. This supersedes requiring each site or
+launcher to declare the standard collections on its environment Page base.
+The packaged inventory drives both authoring grammar and bootstrap resources.
+Custom collections remain explicit additions; arbitrary installed packages and
+experimental selection_trial are not activated. Adapters serve verified packaged
+assets; they do not maintain a second standard inventory. Hosted external engines
+remain lazy; file exports embed resources for offline use. No Invoice integration
+or publication is authorized by this change.

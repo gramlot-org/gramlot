@@ -26,9 +26,10 @@ function transfer() {
         clearData() { values.clear(); }, setData(type, value) { values.set(type, value); },
         getData(type) { return values.get(type) ?? ''; }, setDragImage(image) { this.image = image; }};
 }
-function nativeDrag(f, type, path, dataTransfer) {
+function nativeDrag(f, type, path, dataTransfer, clientY = 0) {
     const event = new f.window.Event(type, {bubbles: true, composed: true, cancelable: true});
     Object.defineProperty(event, 'dataTransfer', {value: dataTransfer});
+    Object.defineProperty(event, 'clientY', {value: clientY});
     (path === null ? f.host : f.row(path).querySelector('.row')).dispatchEvent(event);
     return event;
 }
@@ -84,6 +85,99 @@ test('row action presentation follows the focused row and reactive state', async
     f.app.data.setItem('model.favorites', favorites); await tick();
     assert.equal(button.icon.textContent, '♥');
     assert.equal(button.control.getAttribute('aria-label'), 'Remove favorite');
+});
+
+test('tree drop reports before, inside and after relative to the destination row', async t => {
+    const placements = [];
+    class Logic { receive(source, {placement}) { placements.push(placement); } }
+    const f = fixture(t, {attrs: {draggable:true, dropTarget:true, dropTypes:'treenode', onDrop:'receive'}, logic:Logic});
+    await tick();
+    f.row('other').querySelector('.row').getBoundingClientRect = () => ({top:100, height:40});
+    for (const y of [105, 120, 135]) {
+        const data = transfer();
+        nativeDrag(f, 'dragstart', 'folder', data);
+        nativeDrag(f, 'dragover', 'other', data, y);
+        nativeDrag(f, 'drop', 'other', data, y);
+        await settle();
+        nativeDrag(f, 'dragend', 'folder', data);
+        await settle();
+    }
+    assert.deepEqual(placements, ['before', 'inside', 'after']);
+});
+
+test('a Source-linked external tree observes the original Bag and releases it on replacement and removal', async t => {
+    const f = fixture(t); await tick();
+    const owner = new Bag();
+    const first = new Bag({first:'Ada'}), second = new Bag({second:'Grace'});
+    const count = bag => Object.keys(bag._updSubscribers).length + Object.keys(bag._insSubscribers).length + Object.keys(bag._delSubscribers).length;
+    owner.setItem('first', first); owner.setItem('second', second);
+    const parent = first.parentNode;
+    f.source.setTreeStore(first);
+    assert.equal(count(first), 3);
+    await tick();
+    assert.equal(first.parentNode, parent);
+    assert.ok(f.row('first'));
+    first.setItem('added', 'New'); await tick();
+    assert.ok(f.row('added'));
+    f.source.setTreeStore(second); await tick();
+    assert.equal(count(first), 0);
+    assert.equal(count(second), 3);
+    assert.equal(first.parentNode, parent);
+    assert.ok(f.row('second'));
+    first.setItem('stale', 'Old'); await tick();
+    assert.equal(f.row('stale'), undefined);
+    second.setItem('live', 'New'); await tick();
+    assert.ok(f.row('live'));
+    const domParent = f.host.parentNode;
+    f.host.remove();
+    second.setItem('whileDetached', 'Still live');
+    domParent.append(f.host); await tick();
+    assert.ok(f.row('whileDetached'));
+    assert.equal(f.host.storeBag, second);
+    f.source.parentBag.popNode(f.source.label);
+    assert.equal(count(second), 0);
+    second.setItem('afterRemoval', 'Safe'); await tick();
+    assert.equal(f.window.document.getElementById('tree'), null);
+});
+
+test('external SourceBag nodes remain live and update the shared tree without copying', async t => {
+    const f = fixture(t); await tick();
+    const source = f.app.src.source;
+    f.source.setTreeStore(source); await tick();
+    assert.equal(f.host.storeBag, source);
+    assert.ok(f.row('main.pane.tree'));
+    f.app.src.builder.wrapSource(source.getNode('main.pane')).div('New', {node_label:'extra'});
+    await tick();
+    assert.ok(f.row('main.pane.extra'));
+});
+
+test('a burst of external Bag writes batches rendering and detachment cancels pending work', async t => {
+    const f = fixture(t); await tick();
+    const store = new Bag(); f.source.setTreeStore(store); await tick();
+    let changes = 0;
+    const observer = new f.window.MutationObserver(records => { changes += records.filter(record => record.type === 'childList').length; });
+    observer.observe(f.host.control, {childList:true});
+    for (let index = 0; index < 100; index++) store.setItem(`item_${index}`, index);
+    await tick(); await tick();
+    assert.equal(changes, 1);
+    assert.ok(f.row('item_99'));
+    store.setItem('after', 'last');
+    f.source.parentBag.popNode(f.source.label); await tick(); await tick();
+    assert.equal(changes, 1);
+    observer.disconnect();
+});
+
+test('a tree can inspect resolver nodes without loading or traversing them', async t => {
+    let calls = 0;
+    class Deferred extends BagResolver { load() { calls++; return new Bag({child:'value'}); } }
+    const f = fixture(t, {attrs:{resolveLazy:false, searchText:'^.search'}});
+    f.store.setItem('deferred', new Deferred({cacheTime:-1})); await settle();
+    const row = f.row('deferred');
+    assert.equal(row.querySelector('.expander'), null);
+    f.app.data.setItem('model.search', 'child');
+    await new Promise(resolve => setTimeout(resolve, 250));
+    assert.equal(calls, 0);
+    assert.equal(f.row('deferred.child'), undefined);
 });
 
 test('reselecting a favorite retries a failed lazy path', async t => {
@@ -1570,4 +1664,46 @@ test('search and selection use real Source nodes, and removing the tree releases
     pane.popNode('tree');
     f.app.src.builder.wrapSource(pane).span('Later', {node_label: 'later'});
     assert.equal(f.host.isConnected, false);
+});
+
+test('searchEager limits search to loaded nodes until enabled, independently from resolveLazy', async t => {
+    let reads=0;
+    class Lazy extends BagResolver {load(){reads++;return new Bag({needle:'found'});}}
+    const f=fixture(t,{attrs:{searchText:'^.search',searchEager:'^.eager',resolveLazy:'^.resolve'}});
+    f.app.data.setItem('model.resolve',true);f.app.data.setItem('model.eager',false);
+    f.store.setItem('lazy',new Lazy({cacheTime:-1}));
+    f.store.setItem('loaded',new Bag({needle:'cached'}));
+    f.app.data.setItem('model.search','needle');await searchWait();
+    assert.equal(reads,0);assert.ok(shownPaths(f).includes('loaded.needle'));
+    f.app.data.setItem('model.resolve',false);f.app.data.setItem('model.eager',true);await searchWait();
+    assert.equal(reads,0);
+    f.app.data.setItem('model.resolve',true);await searchWait();
+    assert.equal(reads,1);assert.ok(shownPaths(f).includes('lazy.needle'));
+    f.app.data.setItem('model.eager',false);await tick();
+    assert.ok(shownPaths(f).includes('lazy.needle'));assert.equal(reads,1);
+});
+
+test('disabling eager search during a request does not resolve its new descendants', async t => {
+    let finish,reads=0;
+    class Inner extends BagResolver {load(){reads++;return new Bag({needle:'found'});}}
+    class Outer extends BagResolver {load(){return new Promise(resolve=>{finish=resolve;});}}
+    const f=fixture(t,{attrs:{searchText:'^.search',searchEager:'^.eager'}});
+    f.app.data.setItem('model.eager',true);f.store.setItem('lazy',new Outer({cacheTime:-1}));
+    f.app.data.setItem('model.search','needle');await searchWait();
+    f.app.data.setItem('model.eager',false);
+    const children=new Bag();children.setItem('inner',new Inner({cacheTime:-1}));finish(children);
+    await searchWait();assert.equal(reads,0);
+    f.app.data.setItem('model.eager',true);await searchWait();assert.equal(reads,1);
+});
+
+test('searchAttributes includes configured text and tag arrays without changing captions or searching unrelated attributes', async t => {
+    const f=fixture(t,{attrs:{searchText:'^.search',searchAttributes:'description,tags,component'}});await tick();
+    f.store.setItem('lesson',null,{description:'Multiple selection',tags:['checkbox','hierarchical'],component:'checkBoxText',privateNote:'secret'});
+    for (const query of ['multiple','hierarchical','checkboxtext']) {
+        f.app.data.setItem('model.search',query);await searchWait();assert.ok(shownPaths(f).includes('lesson'));
+        assert.equal(f.row('lesson').querySelector('.caption').textContent,'lesson');
+    }
+    f.app.data.setItem('model.search','secret');await searchWait();assert.ok(!shownPaths(f).includes('lesson'));
+    f.app.data.setItem('model.search','later');await searchWait();assert.ok(!shownPaths(f).includes('lesson'));
+    f.store.getNode('lesson').setAttr({tags:['later']});await tick();await tick();assert.ok(shownPaths(f).includes('lesson'));
 });

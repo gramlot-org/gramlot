@@ -54,13 +54,13 @@ Collection: tree. Hierarchical Bag presentation with selection, disclosure and d
 | `draggable, internalNames, hideValues, autoCollapse` | `{"binding":"read","default":false,"dtype":"B"}` |
 | `labelAttribute, excludeRoot` | `{"binding":"read","default":null,"dtype":"T","nullable":true}` |
 | `labelCb, getLabel, getLabelClass, getIconClass` | `{"default":null,"dtype":"T","nullable":true}` |
-| `selectedLabelClass, searchText` | `{"binding":"read","default":"","dtype":"T"}` |
-| `favorites` | `{"binding":"read","default":null,"dtype":"X","nullable":true}` |
+| `labelState, favorites` | `{"binding":"read","default":null,"dtype":"X","nullable":true}` |
+| `selectedLabelClass, searchText, searchAttributes` | `{"binding":"read","default":"","dtype":"T"}` |
+| `searchEager, resolveLazy, checkChildren` | `{"binding":"read","default":true,"dtype":"B"}` |
 | `favoritesLabel` | `{"binding":"read","default":"Favorites","dtype":"T"}` |
 | `selectedPath, checkedPaths` | `{"binding":"twoWay","default":null,"dtype":"T","nullable":true}` |
 | `onChecked` | `{"default":null,"dtype":["B","T"],"nullable":true}` |
 | `checkedPaths_joiner` | `{"default":",","dtype":"T"}` |
-| `checkChildren` | `{"binding":"read","default":true,"dtype":"B"}` |
 
 Child grammar: `rowActions[:1]`; parent grammar: `None`.
 

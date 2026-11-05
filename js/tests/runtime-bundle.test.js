@@ -2,6 +2,11 @@
 // readable and minified variants in js/dist (npm) and src/gramlot/resources (Python); all four are
 // gitignored, so nothing but this check tells a stale copy from a current one.
 import test from 'node:test';
+import {register} from 'node:module';
+// Node qualification supplies the same collection mapping as the browser import map.
+register(new URL('./fixtures/prepared-collections-loader.mjs', import.meta.url), {
+    data: {'@gramlot/collections/tree': new URL('../dist/components/tree/assets/index.js', import.meta.url).href}
+});
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';

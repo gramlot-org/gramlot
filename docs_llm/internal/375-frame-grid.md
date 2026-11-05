@@ -1374,3 +1374,30 @@ Qualification: 1,710 full-core JS tests and 28 Python authoring tests passed.
 Live Chromium/WebKit verified complete scans without editor construction,
 unopened/filtered rows, common errors, offscreen navigation and successful
 acceptance. Existing editing, reports/arrows and capped-cell browser checks passed.
+
+
+<a id="gc-375-100"></a>
+## 100 · Chart command and frame Data
+
+Owner confirmed on 2026-11-05: chart=True or a chart type and chart_* options,
+with all configuration in the frame's Data Bag. A chart-enabled frameGrid requires
+an explicit, instance-owned datapath. storepath remains the independent row-store
+reference. chart=False adds no chart command; True uses default chart settings;
+a string supplies initial chartType. chart_* supplies initial chart configuration
+keys, including engine, captionField and secondCaptionField.
+
+The existing menu toolbar opens a shared floatingPane containing chartPane.
+The configuration path is ._chart below the frame datapath; ._chart.open holds
+window visibility. The grid and chart use the same storepath and rowMode; gridId
+connects the chart to the grid's filtered view. No filter implementation is copied.
+chartPane configDefaults is an initialization Bag in Source: missing configuration
+entries are copied into Data, existing entries are retained. Runtime changes occur
+in Data, not in defaults. Different frames must declare different datapaths even
+when their row store is shared. Unknown chart types remain subject to the existing
+chart engine validation; no automatic fallback is added.
+
+```python
+frame = root.frameGrid(datapath="report", storepath=".rows", rowMode="values",
+                       searchOn=True, chart="bar", chart_captionField="region")
+frame.grid.struct().column("region", name="Region")
+```

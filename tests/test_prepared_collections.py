@@ -187,8 +187,8 @@ def test_environment_page_has_all_included_collections_without_changing_module_c
     prepared = left._environment_page(Example)
     assert prepared is left._environment_page(Example)
     assert issubclass(prepared, Example)
-    assert page_collections(prepared) == (inputs, layout)
-    assert page_collections(right._environment_page(Example)) == (layout,)
+    assert page_collections(prepared) == left.collections
+    assert page_collections(right._environment_page(Example)) == right.collections
     assert not page_collections(Example)
     builder = prepared.source_builder('main')
     left._load_collections(builder, left.page_collections(prepared))

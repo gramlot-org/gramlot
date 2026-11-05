@@ -24,6 +24,13 @@ with bar, underline or card headers; its `copy` capability is separate from savi
 a record. `contentPane` is the general content holder used by region compositions.
 See [forms and groups](105-components.md#gc-105-085).
 
+A selectable heading uses `lbl_values="internal:Internal note,public:Public note"`
+and `lbl_value="^note.kind"`. The existing menu displays captions and writes the
+selected code; both attributes can follow Data. Without a binding, the selected
+code is retained on the Source node. A plain `lbl` stays fixed. The same renderer
+Labelbox supplies this capability to HTML, fields and groupBox, without replacing
+their contents. The small chevron inherits the label's size and theme color.
+
 `borderContainer` arranges content panes in unique top, bottom, left, right and
 center regions. `framePane` adds convenient region builders (`frame.top`,
 `frame.center`, etc.) and is the frame used for command recipients. Put `region`
@@ -49,7 +56,7 @@ Use `dialog` for a modal window and `floatingPane` for a nonmodal window; each
 contains a `framePane`. Bind `open`, `collapsed`, `maximized` and geometry when
 application state must reflect those operations. A dialog remains modal when
 collapsed or maximized. Floating panes default to movable/resizable/collapsible;
-dialogs do not. `closable`, `maximizable`, minimum dimensions and `beforeClose`
+dialogs do not. Set `floatingPane.docked` to present its existing contents inline; set it to false to restore its floating geometry. `closable`, `maximizable`, minimum dimensions and `beforeClose`
 express the window contract; closing a window is not a record save. See
 [windows](350-menus-toolbars-and-windows.md) and the shared window parameters below.
 
@@ -138,6 +145,7 @@ Applies to: [dialog](#gc-420-dialog), [floatingPane](#gc-420-floatingpane).
 | `movable` | B | True | read | — | [floatingPane](#gc-420-floatingpane) |
 | `resizable` | B | True | read | — | [floatingPane](#gc-420-floatingpane) |
 | `collapsible` | B | True | read | — | [floatingPane](#gc-420-floatingpane) |
+| `docked` | B | False | read | — | [floatingPane](#gc-420-floatingpane) |
 
 <a id="gc-420-260"></a>
 <a id="gc-420-shared-regions"></a>
@@ -230,6 +238,8 @@ Shared contracts: [Labels and field presentation](#gc-420-shared-labels).
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `copy` | B | False | read | — |
 | `lbl_variant` | T | 'bar' | read | enum=['bar', 'underline', 'card'] |
 

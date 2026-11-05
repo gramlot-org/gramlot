@@ -78,21 +78,21 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
     /** Prepare a local payload snapshot: no DataTransfer writes or native gesture commit. */
     prepareDrag(node, event) { return this.dragPreparation.prepare(node, event); }
     /** Dynamic eligibility only; cannot replace the independent type/tag/effect policy. */
-    checkDropTarget(node, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}) {
+    checkDropTarget(node, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable, placement}) {
         const record = this.records.get(node);
         if (!record) return false;
         if (!record.resolved.dropTargetCb) return true;
         const allowed = this.html.callLogic(node, record.resolved.dropTargetCb,
-            {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable});
+            {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable, ...(placement === undefined ? {} : {placement})});
         if (typeof allowed !== 'boolean') throw new TypeError('dropTargetCb must return a boolean synchronously');
         return allowed;
     }
     /** Invoke only the general action, after acceptance and removal of data handled by typed actions. */
-    async invokeDrop(node, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable}) {
+    async invokeDrop(node, {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable, placement}) {
         const record = this.records.get(node);
         if (!record || !record.resolved.onDrop || Object.keys(dropValues).length === 0) return;
         await this.html.callLogic(node, record.resolved.onDrop,
-            {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable});
+            {dropValues, item, path, source, selfdrop, dropEffect, dataAvailable, ...(placement === undefined ? {} : {placement})});
     }
     /** Notify origin completion independently of application-operation success. */
     async endDrag(node, {source, dropEffect}, topic) {
@@ -206,6 +206,7 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
             ...this.html.create(node, document, tag, attrs, resolved.visible ?? null),
         };
         this.html.compose(record, text, children);
+        if (record.labelbox) record.cleanup.push(() => record.labelbox.menu?.dispose());
         record.shape = ControlAdapter.shape(record.element, resolved);
         // Registered before any listener: a failed first projection leaves a record the failed-build
         // cleanup removes, listeners included (ASTRA-06).

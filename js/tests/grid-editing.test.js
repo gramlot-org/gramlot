@@ -514,3 +514,18 @@ test('an unopened choice error follows changes to its bound choices without moun
     assert.equal(await session.validate(),true);assert.equal(session.accept(),true);
     assert.equal(f.host.querySelector('[slot=cell-editor]'),null);
 });
+
+
+test('colorpicker columns show a swatch and refresh it without replacing Data', async t => {
+    const f=await fixture(t,{count:2,nameColumn:{edit:{tag:'colorpicker'}},nameValue:()=> '#ee6666'});
+    const content=f.cell('r0','name').firstElementChild;
+    assert.equal(content.textContent,'');
+    const swatch=content.querySelector('.cell-color-swatch');
+    assert.equal(swatch.style.backgroundColor,'rgb(238, 102, 102)');
+    assert.equal(swatch.getAttribute('aria-label'),'#ee6666');
+    f.rows.getItem('r0').setItem('name','#3ba272'); await tick();await tick();
+    assert.equal(content.querySelector('.cell-color-swatch'),swatch);
+    assert.equal(swatch.style.backgroundColor,'rgb(59, 162, 114)');
+    assert.equal(swatch.title,'#3ba272');
+    assert.equal(f.rows.getItem('r0.name'),'#3ba272');
+});

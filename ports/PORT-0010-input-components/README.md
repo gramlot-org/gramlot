@@ -231,3 +231,19 @@ Correction follow-up: owner authorized all R1–R10 fixes before further compone
 The review's closing table and GC-070 §1115 record the completed corrections and
 regression checks. The previous review remains historical evidence; no open item
 from that bounded review is deferred. No publication or owner acceptance claimed.
+
+## Editable checkBoxText follow-up — 2026-11-04
+
+Owner explicitly requested text editing and description-based selection with codes
+in Data. Legacy evidence: `Genropy/genropy/gnrjs/gnr_d11/js/genro_components.js`,
+CheckBoxText, lines 5699–6114: code/caption dictionaries and `_displayedValue` are
+present, but the popup textbox is declared read-only. Typed-description parity is
+not claimed for that revision. The destination adds the requested behavior using
+the normal validation lifecycle and Source-owned draft, while preserving the shared
+tree for hierarchy. Unknown or ambiguous descriptions are rejected; duplicate or
+comma-containing captions remain selectable through checkboxes. Lazy descriptions
+are available after loading, without eager resolver traversal.
+
+Verified: 154 focused core tests; Python/JS Source parity for flat and hierarchical
+lessons; real Chromium/WebKit gallery tests. Implementation verified, owner visual
+acceptance pending; no publication.

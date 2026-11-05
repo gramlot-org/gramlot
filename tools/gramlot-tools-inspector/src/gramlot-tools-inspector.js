@@ -1,15 +1,13 @@
 /** Optional in-page inspector. Import the same Gramlot module as the inspected page. */
 import {Bag, Gramlot, GramlotBuilder} from '@gramlot/gramlot';
+import layout from '@gramlot/collections/layout';
+import tree from '@gramlot/collections/tree';
 import {InspectorConnection, encodeScalar} from './inspector-bridge.js';
 export {InspectorConnection, attachInspectorAgent} from './inspector-bridge.js';
 import {editorTypes, scalarType, scalarText, parseScalar, readParameterEnums} from '../../../js/src/editor-values.js';
 import {InspectorHistory} from './inspector-history.js';
 import {InspectorStyles} from './inspector-styles.js';
 import inspectorStyle from './gramlot-tools-inspector.css';
-import '../../poc/gramlot-poc-tree.js';
-import '../../poc/gramlot-poc-palette.js';
-import '../../poc/gramlot-poc-tabs.js';
-import '../../poc/gramlot-poc-splitter.js';
 
 let nextId = 0;
 
@@ -19,7 +17,7 @@ export class GramlotToolsInspector extends HTMLElement {
 
     attributeChangedCallback() {
         if (this.#ui && !this.hasAttribute('embedded')) {
-            this.#ui.src.source.getNode('main.palette').setAttr({docked: this.hasAttribute('docked') ? '' : null});
+            this.#ui.src.source.getNode('main.window').setAttr({docked: this.hasAttribute('docked')});
         }
     }
 
@@ -126,7 +124,7 @@ export class GramlotToolsInspector extends HTMLElement {
         if (!this.#ui) return;
         const builder = new GramlotBuilder();
         for (const entry of this.#targets) builder.root.option(entry.title, {value: entry.id});
-        this.#ui.src.source.getNode('main.palette.targetbar.targets').setValue(this.#ui.src.prepareSource(builder.source));
+        this.#ui.src.source.getNode('main.window.frame.center.palette.targetbar.targets').setValue(this.#ui.src.prepareSource(builder.source));
         this.#ui.data.setItem('singleTarget', this.#targets.length < 2);
         this.#ui.data.setItem('targetId', this.#selectedTarget ?? this.#targets[0]?.id ?? '');
     }
@@ -136,11 +134,11 @@ export class GramlotToolsInspector extends HTMLElement {
     connectedCallback() {
         if (this.#ui) return;
         const inspector = this;
-        const ui = new Gramlot({document: this.ownerDocument, element: this.#mount, transport: false});
+        const ui = new Gramlot({document: this.ownerDocument, element: this.#mount, transport: false, collections: [layout, tree]});
         this.#ui = ui;
         class Logic {
-            close(node, event) {
-                event.stopPropagation();
+            close(node, {open}) {
+                if (open) return;
                 inspector.remove();
                 inspector.dispatchEvent(new inspector.ownerDocument.defaultView.CustomEvent('close'));
             }
@@ -202,10 +200,13 @@ export class GramlotToolsInspector extends HTMLElement {
                 ui.data.setItem('editor.dirty', true);
                 inspector.#applyEdit();
             }
-            selectRoot(node) {
+            selectRoot(node, {tab}) {
+                if (ui.data.getItem('tabSync') || tab === ui.data.getItem('tab')) return;
                 const choose = () => {
-                    const tab = node.getAttr('data-root');
+                    ui.data.setItem('tabSync', true);
+                    ui.data.setItem('requestedTab', tab);
                     ui.data.setItem('tab', tab);
+                    ui.data.setItem('tabSync', false);
                     if (tab !== 'styles') {
                         ui.data.setItem('root', tab);
                         ui.data.setItem('selection', null);
@@ -214,8 +215,16 @@ export class GramlotToolsInspector extends HTMLElement {
                     inspector.#refresh();
                     if (tab === 'styles') inspector.#loadStyles();
                 };
-                if (ui.data.getItem('editor.dirty')) inspector.#applyEdit(choose);
-                else choose();
+                if (ui.data.getItem('editor.dirty')) {
+                    const previous = ui.data.getItem('tab');
+                    inspector.#applyEdit(choose);
+                    queueMicrotask(() => {
+                        if (!inspector.#ui || ui.data.getItem('tab') !== previous) return;
+                        ui.data.setItem('tabSync', true);
+                        ui.data.setItem('requestedTab', previous);
+                        ui.data.setItem('tabSync', false);
+                    });
+                } else choose();
             }
             refreshStyles() { inspector.#loadStyles(); }
             styleChanged(node) { ui.data.setItem(`styles.rows.${node.getAttr('data-row')}.dirty`, true); }
@@ -231,35 +240,62 @@ export class GramlotToolsInspector extends HTMLElement {
             }
             resetStyle(node) { inspector.#loadStyles('resetStyle', {name: ui.data.getItem(`styles.rows.${node.getAttr('data-row')}.name`)}); }
             resetStyles() { inspector.#loadStyles('resetStyles'); }
-            selectNode(node, event) {
+            selectNode(node, {path, root}) {
+                if (ui.data.getItem('selectionSync') || root !== ui.data.getItem('root')) return;
                 const choose = () => {
-                    const entry = inspector.#nodes.find(item => item.node === event.detail.node);
+                    const entry = inspector.#nodes.find(item => item.path.join('.') === path);
+                    ui.data.setItem('selectionSync', true);
+                    ui.data.setItem(`treeSelection.${root}`, entry ? path : null);
+                    ui.data.setItem('selectionSync', false);
                     ui.data.setItem('selection', entry?.id ?? null);
                     inspector.#loadEditor(entry); inspector.#details();
                 };
                 if (ui.data.getItem('editor.dirty')) {
-                    inspector.#trees[ui.data.getItem('root')].selectedPath = inspector.#selected()?.path.join('.') ?? null;
+                    ui.data.setItem('selectionSync', true);
+                    ui.data.setItem(`treeSelection.${root}`, inspector.#selected()?.path.join('.') ?? null);
+                    ui.data.setItem('selectionSync', false);
                     inspector.#applyEdit(choose);
                 } else choose();
             }
-            sourceAction(node, event) {
-                if (event.detail.action === 'breakpoint') { this.openBreakpoint(node, event); return; }
+            actionState(node, {path, action}) {
+                const root = node.parentNode.getAttr('data-root');
+                const breakpoint = inspector.#findBreakpoint(root, path)?.value;
+                if (action === 'breakpoint') return {hidden:false, icon:breakpoint ? (breakpoint.getItem('condition') ? '◉' : '●') : '○', title:'Breakpoint'};
+                if (action === 'insert') return {hidden:root !== 'source', icon:'+', title:'Add child element'};
+                return {hidden:root !== 'source' || !path.includes('.'), icon:'−', title:'Remove branch'};
+            }
+            treeLabel(node, {item, path}) {
+                const breakpoint = inspector.#findBreakpoint(node.getAttr('data-root'), path)?.value;
+                return {text:item.label + (breakpoint ? (breakpoint.getItem('condition') ? ' ◉' : ' ●') : '')};
+            }
+            treeLabelClass(node, {path}) {
+                const breakpoint = inspector.#findBreakpoint(node.getAttr('data-root'), path)?.value;
+                return !breakpoint ? '' : breakpoint.getItem('condition') ? 'inspector-breakpoint-conditional' : 'inspector-breakpoint';
+            }
+            sourceAction(node, {path}) {
+                const root = node.parentNode.parentNode.getAttr('data-root');
+                const action = node.getAttr('rowAction');
+                if (action === 'breakpoint') { this.openBreakpoint(root, path); return; }
                 const run = () => {
-                    if (event.detail.action === 'insert') inspector.#openInsert(event.detail.path);
-                    if (event.detail.action === 'remove') {
-                        try { inspector.#runCommand('remove', inspector.#sourceCommand(event.detail.path)); }
+                    if (action === 'insert') inspector.#openInsert(path);
+                    if (action === 'remove') {
+                        try { inspector.#runCommand('remove', inspector.#sourceCommand(path)); }
                         catch (error) { ui.data.setItem('status', error.message); }
                     }
                 };
                 if (ui.data.getItem('editor.dirty')) inspector.#applyEdit(run); else run();
             }
-            sourceDrop(node, event) {
+            sourceDrag(node, {path}) { return path.includes('.'); }
+            sourceDropAllowed(node, {path, source, selfdrop}) {
+                return selfdrop && source.itemPath !== path && !path.startsWith(source.itemPath + '.');
+            }
+            sourceDrop(node, {path: destination, source, placement}) {
                 const run = () => {
                     try {
-                        const {path, destination, placement} = event.detail;
+                        const path = source.itemPath;
                         const command = inspector.#sourceCommand(path);
                         const target = inspector.#sourceCommand(destination);
-                        inspector.#runCommand('move', {...command, destination, placement, targetId: target.nodeId, targetRevision: target.revision});
+                        inspector.#runCommand('move', {...command, destination, placement:destination.includes('.') ? placement : 'inside', targetId: target.nodeId, targetRevision: target.revision});
                     } catch (error) { ui.data.setItem('status', error.message); }
                 };
                 if (ui.data.getItem('editor.dirty')) inspector.#applyEdit(run); else run();
@@ -276,14 +312,13 @@ export class GramlotToolsInspector extends HTMLElement {
                 if (event.key.toLowerCase() === 'z') { event.preventDefault(); event.shiftKey ? this.redo() : this.undo(); }
                 if (event.key.toLowerCase() === 'y') { event.preventDefault(); this.redo(); }
             }
-            openBreakpoint(node, event) {
-                if (event.detail.action !== 'breakpoint') return;
+            openBreakpoint(root, path) {
                 ui.data.setItem('breakpointDirty', false);
                 ui.data.setItem('breakpointStatus', '');
-                inspector.#breakpointTarget = {root: node.getAttr('data-root'), path: event.detail.path};
+                inspector.#breakpointTarget = {root, path};
                 inspector.#loadBreakpoint();
-                if (!inspector.#findBreakpoint(inspector.#breakpointTarget.root, event.detail.path)) ui.data.setItem('editor.mode', 'debugger');
-                ui.data.setItem('breakpointWhere', `${inspector.#breakpointTarget.root}: ${event.detail.path}`);
+                if (!inspector.#findBreakpoint(root, path)) ui.data.setItem('editor.mode', 'debugger');
+                ui.data.setItem('breakpointWhere', `${root}: ${path}`);
                 inspector.#dialog().showModal();
             }
             closeBreakpoint() { inspector.#dialog().close(); inspector.#breakpointTarget = null; ui.data.setItem('breakpointDirty', false); }
@@ -307,35 +342,47 @@ export class GramlotToolsInspector extends HTMLElement {
             }
         }
         ui.src.logicRegistry.register(Logic, {group: 'inspector', resource: 'gramlot-tools-inspector'});
-        for (const [key, value] of Object.entries({root: 'data', tab: 'data', stylesActive: false, treeActive: true, dataActive: true, sourceActive: false, targetId: '', singleTarget: true, busy: false,
+        for (const [key, value] of Object.entries({inspectorOpen: true, root: 'data', tab: 'data', requestedTab: 'data', tabSync: false, stylesActive: false, treeActive: true, dataActive: true, sourceActive: false, targetId: '', singleTarget: true, busy: false, selectionSync:false,
             selection: null, path: '', error: '', status: '', breakpointWhere: '', breakpointLine: '', breakpointStatus: '', breakpointError: '', breakpointCount: '● 0', noBreakpoints: true})) ui.data.setItem(key, value);
         ui.data.setItem('history', new Bag({noUndo: true, noRedo: true, undo: '', redo: ''}));
         ui.data.setItem('insert', new Bag({kind: 'html', tag: '', html: true, component: false, status: ''}));
         ui.data.setItem('editor', new Bag({dirty: false, disabled: true, status: '', mode: '', condition: ''}));
         ui.data.setItem('breakpoints', new Bag());
+        ui.data.setItem('emptyTree', new Bag());
+        ui.data.setItem('treeSelection', new Bag({data:null, source:null}));
         ui.data.setItem('breakpointDirty', false);
         ui.data.setItem('styles', new Bag({status: '', busy: false, noChanges: true, noDownload: true, downloadUrl: null, rows: new Bag()}));
-        const builder = new GramlotBuilder();
+        const builder = new GramlotBuilder(null, {collections: [layout, tree]});
         const root = builder.root;
         root.style(inspectorStyle);
-        const palette = this.hasAttribute('embedded')
-            ? root.section({node_label: 'palette', class: 'embedded-panel', 'aria-label': 'Gramlot inspector', connect_onkeydown: 'inspector.historyKey'})
-            : root.webcomponent({code: 'gramlot-poc-palette', node_label: 'palette', title: 'Gramlot inspector', docked: this.hasAttribute('docked') ? '' : null, connect_onclose: 'inspector.close', connect_onkeydown: 'inspector.historyKey'});
+        const window = root.floatingPane({node_label: 'window', title: 'Gramlot inspector', open: '^inspectorOpen',
+            docked: this.hasAttribute('embedded') || this.hasAttribute('docked'), width: '480px', height: '620px', left: '16px', top: '16px', minWidth: 'min(280px, calc(100vw - 16px))', minHeight: 'min(200px, calc(100dvh - 16px))'});
+        const palette = window.frame.center.section({node_label: 'palette', class: 'embedded-panel', 'aria-label': 'Gramlot inspector', connect_onkeydown: 'inspector.historyKey'});
+        root.dataController({func: 'inspector.close', open: '^inspectorOpen'});
         const targetbar = palette.div({node_label: 'targetbar', class: 'targetbar', hidden: '^singleTarget'});
         targetbar.select({node_label: 'targets', value: '^targetId', disabled: '^busy', 'aria-label': 'Inspected page', connect_onchange: 'inspector.selectTarget'});
-        const toolbar = palette.webcomponent({code: 'gramlot-poc-tabs', node_label: 'tabs', role: 'tablist', 'aria-label': 'Inspected root'});
-        for (const name of ['Data', 'Source', 'Styles']) toolbar.html_button(name, {node_label: name.toLowerCase(), type: 'button', role: 'tab', 'data-root': name.toLowerCase(),
-            'aria-selected': 'false', connect_onclick: 'inspector.selectRoot'});
+        const toolbar = palette.tabContainer({node_label: 'tabs', class: 'inspector-tabs', tabMode: 'underline', selectedPage: '^requestedTab'});
+        for (const name of ['Data', 'Source', 'Styles']) toolbar.div({node_label: name.toLowerCase(), pageName: name.toLowerCase(), title: name});
+        palette.dataController({func: 'inspector.selectRoot', tab: '^requestedTab'});
         const historybar = palette.div({class: 'history-toolbar', hidden: '^stylesActive'});
         historybar.html_button('↶ Undo', {type: 'button', disabled: '^history.noUndo', title: '^history.undo', connect_onclick: 'inspector.undo'});
         historybar.html_button('↷ Redo', {type: 'button', disabled: '^history.noRedo', title: '^history.redo', connect_onclick: 'inspector.redo'});
         historybar.span('^status', {role: 'status'});
         palette.p('^error', {role: 'alert', class: 'error'});
-        const content = palette.webcomponent({code: 'gramlot-poc-splitter', node_label: 'content', hidden: '^stylesActive'});
-        const trees = content.div({node_label: 'tree', slot: 'top', class: 'tree'});
-        for (const name of ['data', 'source']) trees.webcomponent({code: 'gramlot-poc-tree', node_label: name, 'data-root': name,
-            hidden: name === 'data' ? '^sourceActive' : '^dataActive', connect_onchange: 'inspector.selectNode', 'connect_ontree-action': 'inspector.sourceAction', 'connect_ontree-drop': 'inspector.sourceDrop'});
-        const properties = content.section({node_label: 'properties', slot: 'bottom', class: 'properties', 'aria-label': 'Selected node properties'});
+        const content = palette.borderContainer({node_label: 'content', hidden: '^stylesActive', class: 'inspector-content'});
+        const trees = content.contentPane({node_label: 'tree', region: 'top', height: '45%', minSize: 60,
+            splitter: true, splitter_aria_label: 'Resize tree and properties', class: 'tree'});
+        for (const name of ['data', 'source']) {
+            const sourceTree = trees.tree({node_label:name, 'data-root':name, storepath:'emptyTree', hideValues:true, resolveLazy:false,
+                getLabel:'inspector.treeLabel', getLabelClass:'inspector.treeLabelClass', labelState:'^breakpoints',
+                selectedPath:`^treeSelection.${name}`, hidden:name === 'data' ? '^sourceActive' : '^dataActive',
+                ...(name === 'source' ? {draggable:true, dropTarget:true, dropTypes:'treenode', effectAllowed:'move', dropEffect:'move',
+                    onDrag:'inspector.sourceDrag', dropTargetCb:'inspector.sourceDropAllowed', onDrop:'inspector.sourceDrop'} : {})});
+            const actions = sourceTree.rowActions({position:'end', actionState:'inspector.actionState', state:'^breakpoints'});
+            for (const action of ['breakpoint', 'insert', 'remove']) actions.button({rowAction:action, action:'inspector.sourceAction'});
+            trees.dataController({func:'inspector.selectNode', root:name, path:`^treeSelection.${name}`});
+        }
+        const properties = content.contentPane({node_label: 'properties', region: 'center', minSize: 60, class: 'properties', 'aria-label': 'Selected node properties'});
         const heading = properties.div({class: 'properties-heading'});
         heading.span('Properties', {class: 'heading-label'});
         heading.html_button('^breakpointCount', {type: 'button', class: 'breakpoint-count', hidden: '^noBreakpoints',
@@ -385,13 +432,13 @@ export class GramlotToolsInspector extends HTMLElement {
         insertActions.html_button('Cancel', {type: 'button', connect_onclick: 'inspector.closeInsert'});
         insertActions.html_button('Add', {type: 'button', disabled: '^busy', connect_onclick: 'inspector.addElement'});
         ui.src.startSource(builder.source);
-        for (const name of ['data', 'source']) this.#trees[name] = ui.dom.getDomNode(ui.src.source.getNode(`main.palette.content.tree.${name}`));
+        for (const name of ['data', 'source']) this.#trees[name] = ui.dom.getDomNode(ui.src.source.getNode(`main.window.frame.center.palette.content.tree.${name}`));
         this.#renderTargets();
         this.#subscribe();
         this.#refresh();
     }
 
-    #dialog(name = 'breakpoint') { return this.#ui.dom.getDomNode(this.#ui.src.source.getNode(`main.palette.${name}`)); }
+    #dialog(name = 'breakpoint') { return this.#ui.dom.getDomNode(this.#ui.src.source.getNode(`main.window.frame.center.palette.${name}`)); }
 
     disconnectedCallback() {
         this.#unsubscribe();
@@ -460,9 +507,6 @@ export class GramlotToolsInspector extends HTMLElement {
             const tab = ui.data.getItem('tab');
             ui.data.setItem('stylesActive', tab === 'styles');
             ui.data.setItem('treeActive', tab !== 'styles');
-            for (const name of ['data', 'source', 'styles']) {
-                ui.src.source.getNode(`main.palette.tabs.${name}`).setAttr({'aria-selected': String(tab === name)});
-            }
             if (this.#connection) {
                 const configurations = new Bag();
                 for (const [index, record] of this.#connection.breakpoints.entries()) configurations.setItem(`b${index}`, new Bag(record));
@@ -480,20 +524,13 @@ export class GramlotToolsInspector extends HTMLElement {
             ui.data.setItem('dataActive', root === 'data');
             ui.data.setItem('sourceActive', root === 'source');
             for (const name of ['data', 'source']) {
-                const tree = this.#trees[name];
-                tree.storeBag = (this.#connection || this.#target) ? this.#targetBag(name) : null;
-                const breakpoints = ui.data.getItem('breakpoints').getNodes().filter(node => node.value.getItem('root') === name);
-                tree.dragEnabled = name === 'source';
-                tree.fixedPaths = tree.storeBag?.getNodes().map(node => node.label) ?? [];
-                tree.rowActions = [{id: 'breakpoint', icon: '○', label: 'Breakpoint',
-                    activePaths: breakpoints.map(node => node.value.getItem('path')),
-                    conditionalPaths: breakpoints.filter(node => node.value.getItem('condition').trim()).map(node => node.value.getItem('path'))}, ...(name === 'source' ? [
-                        {id: 'insert', icon: '+', label: 'Add child element', position: 'end'},
-                        {id: 'remove', icon: '−', label: 'Remove branch', position: 'end', hiddenPaths: tree.fixedPaths}
-                    ] : [])];
+                const sourceTree = ui.src.source.getNode(`main.window.frame.center.palette.content.tree.${name}`);
+                sourceTree.setTreeStore((this.#connection || this.#target) ? this.#targetBag(name) : null);
             }
             if (this.#target || this.#connection) this.#index(this.#bag(), []);
-            this.#trees[root].selectedPath = this.#selected()?.path.join('.') ?? null;
+            ui.data.setItem('selectionSync', true);
+            ui.data.setItem(`treeSelection.${root}`, this.#selected()?.path.join('.') ?? null);
+            ui.data.setItem('selectionSync', false);
             ui.data.setItem('error', this.#connection ? this.#connection.error || (this.#state() === 'disposed' ? 'Inspected page disconnected.' : this.#state() === 'connecting' ? 'Connecting…' : '') : this.#target ? '' : 'No Gramlot instance selected.');
             this.#details();
         } catch (error) { ui.data.setItem('error', error.message); }
@@ -555,7 +592,7 @@ export class GramlotToolsInspector extends HTMLElement {
         const groups = new Map();
         if (rebuild) {
             // Release old bindings before replacing their rows, including native color controls.
-            ui.src.source.getNode('main.palette.styles.rows').setValue(ui.src.prepareSource(new GramlotBuilder().source));
+            ui.src.source.getNode('main.window.frame.center.palette.styles.rows').setValue(ui.src.prepareSource(new GramlotBuilder().source));
             ui.data.setItem('styles.rows', new Bag());
         }
         for (const [index, record] of rows.entries()) {
@@ -589,9 +626,9 @@ export class GramlotToolsInspector extends HTMLElement {
             row.html_button('↶', {type: 'button', 'aria-label': `Reset ${record.name}`, title: 'Reset variable',
                 disabled: `^${path}.unchanged`, 'data-row': id, connect_onclick: 'inspector.resetStyle'});
         }
-        if (rebuild) ui.src.source.getNode('main.palette.styles.rows').setValue(ui.src.prepareSource(builder.source));
+        if (rebuild) ui.src.source.getNode('main.window.frame.center.palette.styles.rows').setValue(ui.src.prepareSource(builder.source));
         ui.data.setItem('styles.noChanges', !rows.some(row => row.override));
-        ui.src.source.getNode('main.palette.styles.empty').setAttr({hidden: rows.length !== 0});
+        ui.src.source.getNode('main.window.frame.center.palette.styles.empty').setAttr({hidden: rows.length !== 0});
     }
 
     #index(bag, labels) {
@@ -699,7 +736,7 @@ export class GramlotToolsInspector extends HTMLElement {
                     stroke_linecap: 'round', stroke_linejoin: 'round'}).path({d: 'M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5 6l1 14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1l1-14M10 10v7M14 10v7'});
             }
         }
-        this.#ui.src.source.getNode('main.palette.content.properties.editor.rows').setValue(this.#ui.src.prepareSource(builder.source));
+        this.#ui.src.source.getNode('main.window.frame.center.palette.content.properties.editor.rows').setValue(this.#ui.src.prepareSource(builder.source));
     }
 
     #addAttribute() {
@@ -812,7 +849,7 @@ export class GramlotToolsInspector extends HTMLElement {
                 for (const value of choices) field.option(value, {value});
                 this.#ui.data.setItem(`insert.attrs.${name}`, '');
             }
-            this.#ui.src.source.getNode('main.palette.insert.fields').setValue(this.#ui.src.prepareSource(builder.source));
+            this.#ui.src.source.getNode('main.window.frame.center.palette.insert.fields').setValue(this.#ui.src.prepareSource(builder.source));
             this.#dialog('insert').showModal();
         } catch (error) { if (this.#ui && generation === this.#generation) this.#ui.data.setItem('status', error.message); }
     }
@@ -824,7 +861,7 @@ export class GramlotToolsInspector extends HTMLElement {
         const choices = this.#catalog.filter(item => item.kind === (html ? 'html' : 'component'));
         const builder = new GramlotBuilder();
         for (const item of choices) builder.root.option(item.tag, {value: item.tag});
-        this.#ui.src.source.getNode(`main.palette.insert.${html ? 'tags' : 'components'}`).setValue(this.#ui.src.prepareSource(builder.source));
+        this.#ui.src.source.getNode(`main.window.frame.center.palette.insert.${html ? 'tags' : 'components'}`).setValue(this.#ui.src.prepareSource(builder.source));
         this.#ui.data.setItem('insert.tag', html ? '' : choices[0]?.tag ?? '');
     }
 
@@ -851,11 +888,10 @@ export class GramlotToolsInspector extends HTMLElement {
             ui.data.setItem('editor.dirty', false);
             this.#refresh();
             if (selection) {
-                ui.data.setItem('root', 'source'); ui.data.setItem('tab', 'source');
+                ui.data.setItem('root', 'source'); ui.data.setItem('tabSync', true); ui.data.setItem('tab', 'source'); ui.data.setItem('requestedTab', 'source'); ui.data.setItem('tabSync', false);
                 this.#refresh();
                 const entry = this.#nodes.find(item => item.path.join('.') === selection);
                 ui.data.setItem('selection', entry?.id ?? null);
-                this.#trees.source.revealPath(selection);
                 this.#refresh();
             }
         } catch (error) {
@@ -933,7 +969,7 @@ export class GramlotToolsInspector extends HTMLElement {
             row.html_button('×', {type: 'button', 'aria-label': `Remove breakpoint ${config.getItem('root')}: ${config.getItem('path')}`,
                 'data-breakpoint': node.label, connect_onclick: 'inspector.removeBreakpoint'});
         }
-        this.#ui.src.source.getNode('main.palette.breakpoints.entries').setValue(this.#ui.src.prepareSource(builder.source));
+        this.#ui.src.source.getNode('main.window.frame.center.palette.breakpoints.entries').setValue(this.#ui.src.prepareSource(builder.source));
     }
 
     #checkBreakpoints(root, event) {

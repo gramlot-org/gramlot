@@ -46,11 +46,12 @@ export class GridHeaderInteraction {
     }
     #click = event => {
         if (this.#suppressClick) { this.#suppressClick = false; return; }
-        if (event.target.closest('.column-resize')) return;
+        if (event.target.closest('.column-resize, .column-filter')) return;
         const header = event.target.closest('th[data-field]');
         if (header) this.#sort(header.dataset.field, event.shiftKey);
     };
     #dragStart = event => {
+        if (event.target.closest('.column-filter')) { event.preventDefault(); return; }
         const header = event.target.closest('th[data-field]');
         if (!header || this.#gesture) { event.preventDefault(); return; }
         this.#suppressClick = true;
@@ -149,6 +150,7 @@ export class GridHeaderInteraction {
         this.#focus(gesture.field);
     };
     #key = event => {
+        if (event.target.closest('.column-filter')) return;
         if (event.key === 'Escape' && this.#gesture) {
             this.cancel(); event.preventDefault(); return;
         }

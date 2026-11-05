@@ -9,6 +9,13 @@ export class GridSearch {
         this.view = view; this.#bag = view.bag; this.columns = columns;
         for (const listener of this.#listeners) listener();
     }
+    detach(view) {
+        if (this.view !== view) return;
+        this.view = null;
+        this.#bag = null;
+        this.columns = [];
+        for (const listener of this.#listeners) listener();
+    }
     subscribe(listener) { this.#listeners.add(listener); return () => this.#listeners.delete(listener); }
 }
 
@@ -22,7 +29,7 @@ export function gridSearch(node) {
 export function searchColumns(searchOn, columns) {
     if (searchOn === true || typeof searchOn === 'string' && searchOn.startsWith('*')) {
         const allowed = searchOn === true ? columns : columns.filter(column => searchOn.slice(1).includes(column.dtype ?? 'T'));
-        return allowed.length ? [{field:allowed.map(column => column.field).join('+'), name:'All columns'},
+        return allowed.length ? [...(allowed.length > 1 ? [{field:allowed.map(column => column.field).join('+'), name:'All columns'}] : []),
             ...allowed.map(column => ({field:column.field, name:column.name}))] : [];
     }
     if (typeof searchOn !== 'string' || !searchOn.trim()) throw new TypeError('searchOn requires true or a column list');

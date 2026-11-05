@@ -1,18 +1,19 @@
 import {defineComponent} from './registry.js';
+import {Labelbox} from './labelbox.js';
 import {Container} from './container.js';
 import {gridSearch, searchColumns} from './grid-search.js';
 import {SVG_NS} from '../renderer/attributes.js';
 import {positionPopup} from './popup.js';
-import {gridSearchStyles} from './grid-search-styles.js';
+import {gridSearchStyles, gridSearchLabelStyle} from './grid-search-styles.js';
 
 /** FrameGrid's search slot. The collection view owns the accepted filter. */
 export const SearchBox = defineComponent({
-    name:'searchBox', tag:'gramlot-search-box', base:Container, sourceContext:true,
-    parameters:{searchOn:{dtype:['B','T'], default:true, binding:'read'},
+    name:'searchBox', tag:'gramlot-search-box', base:Container, sourceContext:true, mixins:[Labelbox],
+    parameters:{lbl_position:{dtype:'T',default:'L',binding:'read'},searchLiteral:{dtype:'B',default:false,binding:'read'},searchHelp:{dtype:'B',default:false,binding:'read'},searchOn:{dtype:['B','T'], default:true, binding:'read'},
         searchTime:{dtype:'R', nullable:true, default:null, binding:'write'}},
     implementation:Base => class extends Base {
         #context; #grid; #release; #releaseView; #view; #timer = null;
-        #field; #input; #error; #helpText; #filterSignature; #bag;
+        #input; #error; #info; #help; #helpText; #filterSignature; #bag;
         constructor() {
             super();
             const doc = this.ownerDocument;
@@ -22,22 +23,19 @@ export const SearchBox = defineComponent({
                 const svg = doc.createElementNS(SVG_NS,'svg'); svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('aria-hidden','true');
                 const shape = doc.createElementNS(SVG_NS,'path'); shape.setAttribute('d',path); svg.append(shape); return svg;
             };
-            this.#field = doc.createElement('select'); this.#field.setAttribute('aria-label','Search column');
             this.#input = doc.createElement('input'); this.#input.type = 'text'; this.#input.setAttribute('role','searchbox'); this.#input.setAttribute('aria-label','Filter rows');
             this.#input.setAttribute('aria-describedby','search-error');
             this.#input.placeholder = ' ';
             const clear = doc.createElement('button'); clear.type = 'button'; clear.title = 'Clear filter'; clear.setAttribute('aria-label','Clear filter'); clear.append(icon('M6 6L18 18M18 6L6 18'));
             this.#error = doc.createElement('span'); this.#error.id = 'search-error'; this.#error.className = 'error'; this.#error.setAttribute('role','alert');
-            const choice = doc.createElement('span'); choice.className = 'column-choice';
-            choice.append(this.#field,icon('M7 10L12 15L17 10'));
             const entry = doc.createElement('span'); entry.className = 'search-entry';
             const lens = icon('M21 21L16 16M18 10A8 8 0 1 1 2 10A8 8 0 0 1 18 10'); lens.classList.add('search-lens');
             clear.className = 'clear';
-            const info = doc.createElement('button'); info.type = 'button'; info.className = 'info';
+            const info = this.#info = doc.createElement('button'); info.type = 'button'; info.className = 'info'; info.hidden = true;
             info.setAttribute('aria-label','Search instructions'); info.title = 'Search instructions';
             info.setAttribute('aria-haspopup','dialog'); info.setAttribute('aria-expanded','false'); info.setAttribute('aria-controls','search-help');
             info.append(icon('M21 12A9 9 0 1 1 3 12A9 9 0 0 1 21 12M12 11V17M12 7V7.1'));
-            const help = doc.createElement('div'); help.id = 'search-help'; help.className = 'search-help';
+            const help = this.#help = doc.createElement('div'); help.id = 'search-help'; help.className = 'search-help';
             help.setAttribute('popover','auto'); help.setAttribute('role','dialog'); help.setAttribute('aria-label','Search instructions');
             const heading = doc.createElement('strong'); heading.textContent = 'Search instructions';
             this.#helpText = doc.createElement('p');
@@ -49,7 +47,7 @@ export const SearchBox = defineComponent({
             });
             help.addEventListener('toggle', () => info.setAttribute('aria-expanded',String(help.matches(':popover-open'))));
             entry.append(lens,this.#input,clear,info);
-            this.control.replaceChildren(choice,entry,this.#error);
+            this.control.replaceChildren(entry,this.#error);
             this.shadowRoot.append(style);
             this.#input.addEventListener('input', () => {
                 this.#cancel(); this.#timer = doc.defaultView.setTimeout(() => { this.#timer = null; this.#apply(); },100);
@@ -59,9 +57,17 @@ export const SearchBox = defineComponent({
                 if (event.key === 'Enter') { event.preventDefault(); this.#cancel(); this.#apply(); }
                 if (event.key === 'Escape') { event.preventDefault(); this.#clear(); }
             });
-            this.#field.addEventListener('change', () => this.#clear());
             clear.addEventListener('click', () => {this.#clear(); this.#input.focus();});
         }
+        setLabelbox(layout) {
+            super.setLabelbox(layout);
+            layout.box.classList.add('gramlot-search-labelbox');
+            const style = this.ownerDocument.createElement('style');
+            style.textContent = gridSearchLabelStyle;
+            layout.box.prepend(style);
+        }
+        focus(options) { this.#input.focus(options); }
+        clear() { this.#clear(); }
         setSourceContext(context) {
             this.#context = context;
             const target = context.frameRecipient();
@@ -69,8 +75,16 @@ export const SearchBox = defineComponent({
             this.#grid = gridSearch(target);
         }
         projectAttributes(attrs, adapt) {
+            const previous = this.parameters?.lbl_value;
             const rest = super.projectAttributes(attrs, adapt);
-            if (this.isConnected) this.#configure();
+            const wasVisible = !this.#info.hidden;
+            this.#info.hidden = !this.parameters.searchHelp;
+            if (wasVisible && this.#info.hidden && this.#help.matches(':popover-open')) this.#help.hidePopover();
+            if (this.isConnected) {
+                this.#configure();
+                if (previous != null && previous !== this.parameters.lbl_value
+                    && this.#view?.filter?.columns.join('+') !== this.parameters.lbl_value) this.#clear();
+            }
             return rest;
         }
         connectedCallback() {
@@ -92,12 +106,13 @@ export const SearchBox = defineComponent({
                 this.#filterSignature = undefined;
                 this.#releaseView = this.#view.subscribe(() => this.#sync());
             }
-            const previous = this.#field.value;
             const options = searchColumns(this.parameters.searchOn,this.#grid.columns);
-            this.#field.replaceChildren(...options.map(({field,name}) => {
-                const option = this.ownerDocument.createElement('option'); option.value = field; option.textContent = name; return option;
-            }));
-            if (options.some(option => option.field === previous)) this.#field.value = previous;
+            const node = this.#context.sourceNode;
+            const values = options.map(({field,name}) => `${field}:${name}`).join(',');
+            const value = options.some(option => option.field === this.parameters.lbl_value)
+                ? this.parameters.lbl_value : options[0]?.field ?? '';
+            if (node.getAttr('lbl_values') !== values) node.setAttr({lbl_values:values});
+            if (this.parameters.lbl_value !== value) this.box.labelbox.choose(value);
             this.#input.disabled = !options.length;
             this.#sync(); this.#hint();
         }
@@ -108,17 +123,18 @@ export const SearchBox = defineComponent({
             if (this.#filterSignature === signature) return;
             this.#filterSignature = signature;
             this.#cancel(); this.#input.value = filter?.value ?? '';
-            if (filter) this.#field.value = filter.columns.join('+');
+            if (filter && this.parameters.lbl_value !== filter.columns.join('+'))
+                this.box.labelbox.choose(filter.columns.join('+'));
             this.#error.textContent = ''; this.#input.removeAttribute('aria-invalid'); this.#hint();
         }
         #dtype() {
-            const column = this.#grid.columns.find(column => column.field === this.#field.value);
+            const column = this.#grid.columns.find(column => column.field === this.parameters.lbl_value);
             return ['L','R','N','D'].includes(column?.dtype) ? column.dtype : 'T';
         }
         #hint() {
             const dtype = this.#dtype();
             this.#helpText.textContent = dtype === 'T'
-                ? 'Type a word to find it anywhere. Text is case-insensitive. You can also use expressions: lamp|desk matches either word; ^lamp matches the start.'
+                ? this.parameters.searchLiteral ? 'Type literal text to find it anywhere. Matching is case-insensitive.' : 'Type a word to find it anywhere. Text is case-insensitive. You can also use expressions: lamp|desk matches either word; ^lamp matches the start.'
                 : dtype === 'D'
                     ? 'Compare dates: = 2026-10-15, >= 2026-10-15 or < 2026-10-15. ISO dates and your browser’s local date notation are accepted.'
                     : 'Compare numbers: = 12, > 100, <= 50 or ! 0 (not equal). Decimal punctuation follows your browser locale.';
@@ -129,8 +145,8 @@ export const SearchBox = defineComponent({
             try {
                 const value = this.#input.value;
                 const started = performance.now();
-                this.#view.applyFilter(value.trim() ? {value, columns:this.#field.value.split('+'), dtype:this.#dtype(),
-                    locale:this.#context.locale,
+                this.#view.applyFilter(value.trim() ? {value, columns:this.parameters.lbl_value.split('+'), dtype:this.#dtype(),
+                    ...(this.parameters.searchLiteral ? {literal:true} : {}), locale:this.#context.locale,
                     timeZone:this.#context.timeZone} : null);
                 this.#context.writeParameter('searchTime', performance.now() - started);
                 this.#error.textContent = ''; this.#input.removeAttribute('aria-invalid');

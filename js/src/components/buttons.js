@@ -1,4 +1,5 @@
 import {labelboxContent} from '../view/labelbox.js';
+import {choiceFieldStyles} from './choice-field-styles.js';
 /** Built-in command surfaces. Execution stays in ButtonBinding, state in ControlAdapter. */
 import {defineComponent, defineCollection} from './registry.js';
 import {controlElement} from './bases.js';
@@ -8,6 +9,7 @@ import {MenuContainer, menuLine} from './menus.js';
 function Command(HTMLElement) {
     return class extends controlElement(HTMLElement) {
         #actionPresentation = null;
+        #captionObserver;
         constructor() {
             super();
             const doc = this.ownerDocument;
@@ -49,7 +51,43 @@ function Command(HTMLElement) {
                 :host([role=separator]) button{display:none}
                 @media(forced-colors:active){button,:host(.button--secondary) button,:host(.button--quiet) button{background:ButtonFace;color:ButtonText;border-color:ButtonText;filter:none}}
                 `;
+            style.textContent += `
+                #control.icon-only{gap:0;padding:var(--gramlot-button-icon-padding,5px);
+                    min-width:max(calc(var(--gramlot-button-icon-size,24px) + 12px),var(--gramlot-touch-target,0px));
+                    min-height:max(calc(var(--gramlot-button-icon-size,24px) + 12px),var(--gramlot-touch-target,0px));
+                    background:transparent;border-color:transparent;line-height:1}
+                #control.icon-only .icon{display:inline-flex;align-items:center;justify-content:center;flex:none;
+                    width:var(--gramlot-button-icon-size,24px);height:var(--gramlot-button-icon-size,24px);
+                    font-size:var(--gramlot-button-icon-size,24px);line-height:1}
+                #control.icon-only:hover:not(:disabled){background:var(--gramlot-selected,Highlight)}
+                #control.icon-only:is([aria-pressed=true],[aria-checked=true],[aria-expanded=true]){background:var(--gramlot-selected,Highlight);color:var(--gramlot-action,CanvasText)}
+                #control.icon-only .led{display:none}
+                @media(forced-colors:active){#control.icon-only{background:ButtonFace;color:ButtonText;border-color:ButtonText}
+                    #control.icon-only:is([aria-pressed=true],[aria-checked=true],[aria-expanded=true]){background:Highlight;color:HighlightText}}
+            `;
             this.shadowRoot.append(style);
+            this.#captionObserver = new this.ownerDocument.defaultView.MutationObserver(() => this.refreshIconOnly());
+        }
+        connectedCallback() {
+            super.connectedCallback();
+            const options = {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['hidden','slot']};
+            this.#captionObserver.observe(this, options);
+            this.#captionObserver.observe(this.control, options);
+            this.refreshIconOnly();
+        }
+        disconnectedCallback() { this.#captionObserver.disconnect(); }
+        releaseControl() { this.#captionObserver.disconnect(); super.releaseControl(); }
+        refreshIconOnly() {
+            const hasContent = node => node.nodeType === 3 ? Boolean(node.textContent.trim())
+                : node.nodeType === 1 && !node.hidden && node.getAttribute('slot') !== 'menu';
+            const slottedCaption = !this.caption.hidden && this.caption.assignedNodes().some(hasContent);
+            const extraCaption = [...this.control.children].some(node =>
+                node !== this.icon && node !== this.caption && !node.hidden &&
+                !node.matches('.led,.menu-check,.menu-arrow') &&
+                !(node.matches('.menu-caption') && this.control.classList.contains('toolbar-tooltip')) &&
+                Boolean(node.textContent.trim()));
+            this.control.classList.toggle('icon-only', !this.control.classList.contains('menu-row') &&
+                Boolean(this.icon.textContent || this.icon.firstElementChild) && !slottedCaption && !extraCaption);
         }
         get disabled() { return this.control.disabled; }
         set disabled(value) { this.control.disabled = Boolean(value); }
@@ -64,7 +102,7 @@ function Command(HTMLElement) {
             return rest;
         }
         renderIcon(icon, iconSrc) {
-            if (!iconSrc) { this.icon.textContent = icon ?? ''; return; }
+            if (!iconSrc) { this.icon.textContent = icon ?? ''; this.refreshIconOnly(); return; }
             let image = this.icon.firstElementChild;
             if (!image) {
                 image = this.ownerDocument.createElement('img');
@@ -72,6 +110,7 @@ function Command(HTMLElement) {
                 this.icon.replaceChildren(image);
             }
             if (image.getAttribute('src') !== iconSrc) image.setAttribute('src', iconSrc);
+            this.refreshIconOnly();
         }
         get entryIcon() { return this.parameters.icon; }
         get entryIconSrc() { return this.parameters.iconSrc; }
@@ -81,6 +120,7 @@ function Command(HTMLElement) {
             this.icon.textContent = presentation.icon;
             this.title = presentation.title;
             this.control.setAttribute('aria-label', presentation.title);
+            this.refreshIconOnly();
         }
         attachCommand() {}
         releaseCommand() {}
@@ -136,7 +176,7 @@ export const MenuLine = defineComponent({name:'menuline',tag:'gramlot-menu-line'
         command:{dtype:'T',nullable:true},caption:{dtype:'T',nullable:true},code:{dtype:'T',nullable:true},
         checked:{dtype:'B',nullable:true,binding:'read'},tooltip:{dtype:'T',nullable:true},
         labelPosition:{dtype:'T',binding:'read',nullable:true,enum:['beside','below','tooltip']},iconSize:{dtype:'R',binding:'read',nullable:true},
-        group:{dtype:'B',default:false},priority:{dtype:'R',default:0},overflowable:{dtype:'B',default:true},
+        group:{dtype:'B',default:false},
         parameters:{annotation:{kind:'type',module:'builtins',name:'dict'},nullable:true},favorite:{dtype:'B',default:false}
     },implementation:menuLine});
 export const Spacer = defineComponent({name:'spacer',tag:'gramlot-spacer',base:HTMLElement=>class extends HTMLElement {
@@ -155,8 +195,12 @@ export const DropDownButton = defineComponent({name:'dropDownButton',tag:'gramlo
         constructor() {
             super();const doc=this.ownerDocument;
             this.control.classList.add('split');
+            this.controlBox.classList.add('choice-field');
+            const affordance=doc.createElement('style');
+            affordance.textContent=choiceFieldStyles + '.split{border-radius:var(--gramlot-radius-sm,4px);padding-inline-end:calc(var(--gramlot-choice-toggle-width,1.6em) + .5em)}';
+            this.shadowRoot.append(affordance);
             this.#chosenCaption=doc.createElement('span');this.#chosenCaption.hidden=true;this.control.append(this.#chosenCaption);
-            this.#arrow=doc.createElement('button');this.#arrow.type='button';this.#arrow.className='arrow';this.#arrow.textContent='▾';
+            this.#arrow=doc.createElement('button');this.#arrow.type='button';this.#arrow.className='arrow choice-toggle';
             this.#arrow.setAttribute('aria-label','Open menu');this.#arrow.setAttribute('aria-haspopup','menu');this.#arrow.setAttribute('aria-expanded','false');
             this.controlBox.append(this.#arrow);
             const slot=doc.createElement('slot');slot.name='menu';this.shadowRoot.append(slot);

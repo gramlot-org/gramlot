@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Bag} from '@genrojs/bag';
+import {BagCollectionStore} from '../src/stores/bag-collection-store.js';
+import {chartFields} from '../src/components/chart-fields.js';
+for(const mode of ['attributes','values'])test(`live field discovery: ${mode}`,()=>{
+    const data=new Bag(),rows=new Bag();data.setItem('rows',rows);data.setBackref();
+    const store=new BagCollectionStore(rows,mode);
+    assert.deepEqual(chartFields(store),{fields:[],measures:[],dates:[]});
+    const put=(label,record)=>rows.setItem(label,mode==='values'?new Bag(record):null,mode==='attributes'?record:{});
+    put('a',{name:'A',total:3,active:true});
+    assert.deepEqual(chartFields(store),{fields:['name','total','active'],measures:['total'],dates:[]});
+    put('b',{name:'B',total:5,active:false,extra:8});
+    assert.deepEqual(chartFields(store).fields,['name','total','active','extra']);
+    assert.deepEqual(chartFields(store).measures,['total']);
+    rows.popNode('a');
+    assert.deepEqual(chartFields(store).measures,['total','extra']);
+    rows.popNode('b');put('c',{team:'C',total:'text'});
+    assert.deepEqual(chartFields(store),{fields:['team','total'],measures:[],dates:[]});
+});

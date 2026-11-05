@@ -26,7 +26,7 @@ await writeFile(path('src/index-page-styles.js'), '// Generated from canonical t
 await mkdir(path('dist/'), {recursive: true});
 for (const name of ['LICENSE', 'NOTICE']) await copyFile(path(`../${name}`), path(name));
 // Theme and identity files ship in the npm package (js/) and in the wheel (resources/).
-const shipped = ['themes', 'assets/branding/gramlot-logo.svg', 'assets/branding/gramlot-logo-dark.svg',
+const shipped = ['themes', 'assets/icons', 'assets/branding/gramlot-logo.svg', 'assets/branding/gramlot-logo-dark.svg',
     'assets/branding/app-icon.png', 'assets/branding/gramlot-mark.png', 'assets/branding/gramlot-mark-dark.png', 'assets/branding/svg'];
 for (const target of ['', '../src/gramlot/resources/']) {
     for (const folder of ['themes', 'assets']) await rm(path(`${target}${folder}`), {recursive: true, force: true});
@@ -42,18 +42,20 @@ await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/inspector-
 // Optional inspector artifact: shipped separately, never imported by the runtime entry.
 await build({entryPoints: [path('../tools/gramlot-tools-inspector/src/gramlot-tools-inspector.js')],
     outfile: path('tools/gramlot-tools-inspector.js'), bundle: true, format: 'esm',
-    target: 'es2022', external: ['@gramlot/gramlot'], loader: {'.css': 'text'}});
+    target: 'es2022', external: ['@gramlot/gramlot', '@gramlot/collections/layout', '@gramlot/collections/tree'], loader: {'.css': 'text'}});
 const hosted = await build({...runtimeOptions['gramlot.js'], outfile: path('dist/gramlot.js')});
 const markdown = await build({absWorkingDir:path(''), entryPoints:[path('src/markdown.js')], outfile:path('dist/gramlot-markdown.js'),
     bundle:true, minify:true, format:'esm', platform:'browser', target:'es2022', legalComments:'inline', metafile:true});
 // Both distributions ship the same prepared collection artifacts and fingerprint.
 const staging = await mkdtemp(join(tmpdir(),'gramlot-core-collections-'));
 try {
-    const names = ['inputs','layout','tree','grid','editors','typst','grouplets','chat','selection_trial','uploads'];
+    const standardNames = JSON.parse(await readFile(path('../src/gramlot/collections/standard.json'), 'utf8'));
+    const names = [...standardNames, 'selection_trial'];
     const config = {output:'../src', collections:names.map(name=>({
         entry:name === 'selection_trial' ? './src/experiments/selection-trial.js' : `./src/components/${name}.js`,pythonPackage:`gramlot.collections.${name}`}))};
     const result = await generate({protocolVersion:1,operation:'build',
         configPath:path('gramlot.build.json'),projectRoot:path(''),stagingDirectory:staging,config,externals:[]});
+    const standardDescriptors = [];
     for (const record of result.collections) {
         const prepared = join(staging,...record.pythonPackage.split('.'));
         const python = path(`../src/gramlot/collections/${record.name}`);
@@ -63,7 +65,15 @@ try {
         await mkdir(python,{recursive:true});await mkdir(javascript,{recursive:true});
         await cp(prepared,python,{recursive:true});
         await cp(prepared,javascript,{recursive:true});
+        if (standardNames.includes(record.name)) {
+            const url = `/gramlot/collections/${encodeURIComponent(record.name)}/${record.buildId.slice(7)}/`;
+            standardDescriptors.push({name:record.name,
+                grammar:JSON.parse(await readFile(join(prepared,record.grammar),'utf8')),
+                buildId:record.buildId, module:url+record.module, dependencies:record.dependencies,
+                css:record.css.map(file=>url+file)});
+        }
     }
+    await writeFile(path('dist/standard-collections.js'), '// Generated from the shipped collection inventory; do not edit.\nexport const standardCollections = '+JSON.stringify(standardDescriptors)+';\n');
 } finally { await rm(staging,{recursive:true,force:true}); }
 // The minified runtime is served in deploy and in development without GRAMLOT_DEV=DEBUG.
 await build({...runtimeOptions['gramlot.min.js'], outfile: path('dist/gramlot.min.js')});

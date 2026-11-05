@@ -1,5 +1,14 @@
 # Your first page
 
+**Page-authoring rule:** GramlotServer automatically provides every packaged
+standard collection to every site's Page base, in Python and JavaScript. Do not
+import `gramlot.collections.*` or repeat `gramlots = [...]` for these collections.
+Write component declarations directly. Explicit imports and collection declarations
+are for custom additions. A missing standard component is a server/package defect,
+not a reason for a one-off page import. The packaged inventory drives grammar and
+bootstrap resources; it does not scan installed packages. External engines load on
+first use in hosted pages. File exports embed the required resource bytes.
+
 Document ID: **GC-018**.
 
 Create a small Python page and see how its declarations share a Data value.

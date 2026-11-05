@@ -5,6 +5,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 import {build} from 'esbuild';
+import {lowerResourceReferences} from './resource-references.js';
 import {wrapper, initializer} from './artifact.js';
 
 const canonical = value => {
@@ -89,7 +90,7 @@ export async function generate(request) {
         const directory = path.join(request.stagingDirectory,...row.pythonPackage.split('.'));
         const assets = path.join(directory,'assets');
         await mkdir(assets,{recursive:true});
-        const css = [], named = {};
+        const css = [], named = {}, resources = {};
         const localFile = url => {
             if (!(url instanceof URL) || url.protocol !== 'file:') throw new Error(`Expected local resource URL: ${url}`);
             return fileURLToPath(url);
@@ -102,22 +103,24 @@ export async function generate(request) {
                     b.onLoad({filter:/.*/},async args => args.path.endsWith('.css') ? undefined :
                         {contents:await readFile(args.path),loader:'file'});
                 }}]});
-            css.push(relative);
+            css.push(relative); resources[url.href] = relative;
         }
         for (const [key,url] of Object.entries(c.assets)) {
             const filename = localFile(url), bytes = await readFile(filename);
             const relative = `assets/files/${createHash('sha256').update(bytes).digest('hex')}-${path.basename(filename)}`;
             await mkdir(path.dirname(path.join(directory,relative)),{recursive:true});
-            await writeFile(path.join(directory,relative),bytes); named[key]=relative;
+            await writeFile(path.join(directory,relative),bytes); named[key]=relative; resources[url.href] = relative;
         }
         // Lower collection resource metadata at construction time, before callbacks capture the collection.
         // The source remains untouched; the emitted module uses the shared authoring API and emitted URLs.
         const urlExpression = relative => `new URL(${JSON.stringify('./'+relative.slice('assets/'.length))}, import.meta.url)`;
+        const resourceModule = `export default {${Object.entries(resources).map(([key,value]) => `${JSON.stringify(value)}:${urlExpression(value)}`).join(',')}};`;
         const lowered = `export * from '@gramlot/gramlot/components';\n`+
+            `import resources from 'gramlot-collection-resources';\n`+
             `import {defineCollection as create} from '@gramlot/gramlot/components';\n`+
             `export function defineCollection(options) {\n`+
             `if(options.name!==${JSON.stringify(c.name)}) throw new Error('Unexpected bundled collection');\n`+
-            `const css=[${css.map(urlExpression).join(',')}], assets={${Object.entries(named).map(([k,v])=>`${JSON.stringify(k)}:${urlExpression(v)}`).join(',')}};\n`+
+            `const css=[${css.map(relative => `resources[${JSON.stringify(relative)}]`).join(',')}], assets={${Object.entries(named).map(([k,v])=>`${JSON.stringify(k)}:resources[${JSON.stringify(v)}]`).join(',')}};\n`+
             `options.css?.forEach((url,index)=>{url.href=css[index].href;});\n`+
             `for(const [key,url] of Object.entries(options.assets??{})) url.href=assets[key].href;\n`+
             `return create({...options,css,assets});\n}\n`;
@@ -127,6 +130,13 @@ export async function generate(request) {
             bundle:true,splitting:true,chunkNames:'modules/[name]-[hash]',minify:true,
             format:'esm',platform:'browser',target:'es2022',logLevel:'silent',legalComments:'inline',loader:{'.css':'text'},
             plugins:[{name:'collection-linking',setup(b){
+                b.onResolve({filter:/^gramlot-collection-resources$/}, () => ({path:'resources',namespace:'collection-resources'}));
+                b.onLoad({filter:/.*/,namespace:'collection-resources'}, () => ({contents:resourceModule,loader:'js'}));
+                b.onLoad({filter:/\.[cm]?js$/,namespace:'file'}, async args => {
+                    const source = await readFile(args.path, 'utf8');
+                    const contents = lowerResourceReferences(source, pathToFileURL(args.path), resources);
+                    return contents === source ? undefined : {contents,loader:'js'};
+                });
                 b.onResolve({filter:/.*/},async args=>{
                     if(args.path==='markdown-it') return {path:'@gramlot/gramlot/markdown',external:true};
                     if(args.path==='@gramlot/gramlot/components' || (args.path.startsWith('.') && path.resolve(args.resolveDir,args.path)===coreRegistry)) return args.namespace==='collection-authoring'

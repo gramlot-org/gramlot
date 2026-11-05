@@ -105,6 +105,8 @@ Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `language` | `{"binding":"read","default":"text","dtype":"T","enum":["text","python","javascript","typescript","json","html","css","xml","markdown","sql","typst"]}` |
 | `lineNumbers, lineWrapping, folding, bracketMatching, autoCloseBrackets, autoIndent, autocompletion, highlightActiveLine, highlightSelectionMatches` | `{"binding":"read","default":true,"dtype":"B"}` |
 | `indentUnit` | `{"binding":"read","default":4,"dtype":"L"}` |
@@ -136,8 +138,11 @@ Collection: editors. Rich HTML editing using the supported engine configuration.
 
 Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -192,8 +197,11 @@ Collection: editors. Markdown editing with the supported editor modes.
 
 Shared contracts: [Values and bindings](#gc-430-shared-value), [Disabled, readonly and live updates](#gc-430-shared-state), [Labels and field presentation](#gc-430-shared-labels), [Validation](#gc-430-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 

@@ -133,3 +133,35 @@ test('labelled content is the parent-owned panel in tab and border containers',a
     assert.equal(center.presentation.slot,'center');assert.equal(center.presentation.parentElement.id,'border');
     app.dispose();window.close();
 });
+
+test('selectable labels reuse menus and bind codes without recreating HTML or group content',async()=>{
+    const {default:layout}=await import('../src/components/layout.js');
+    const {GramlotBuilder}=await import('../src/index.js');
+    const {layoutWindow}=await import('./helpers/layout-window.js');
+    const {window}=new JSDOM('<main id="gramlot-root"></main>');
+    const scheduling=layoutWindow(window);
+    window.HTMLElement.prototype.showPopover=function(){this.open=true;};
+    window.HTMLElement.prototype.hidePopover=function(){this.open=false;};
+    const app=new Gramlot({document:window.document,transport:false,collections:[layout]});
+    const builder=new GramlotBuilder(null,{collections:[layout]});
+    builder.root.input({id:'native-choice',lbl:'Field',lbl_value:'^field',lbl_values:'^choices',value:'^text'});
+    builder.root.groupBox({id:'group-choice',lbl:'Group',lbl_value:'^field',lbl_values:'^choices'}).input({id:'inside',value:'^text'});
+    app.data.setItem('choices','name:Name,email:Email');app.data.setItem('field','name');app.data.setItem('text','Ada');
+    app.src.startSource(builder.toTytx());scheduling.flush();
+    const doc=window.document, input=doc.getElementById('native-choice'),inside=doc.getElementById('inside');
+    const record=app.src.renderer.elements.get(input),group=doc.getElementById('group-choice');
+    const menu=record.labelbox.menu;
+    assert.equal(menu.menu.localName,'gramlot-menu');
+    assert.equal(menu.button.textContent,'Name');
+    menu.button.click();assert.equal(menu.menu.opened,true);
+    menu.menu.items[1].control.click();
+    assert.equal(app.data.getItem('field'),'email');assert.equal(menu.button.textContent,'Email');
+    assert.equal(group.labelBox.querySelector('.label-menu-trigger').textContent,'Email');
+    assert.equal(menu.menu.opened,false);
+    assert.equal(doc.getElementById('inside'),inside);assert.equal(doc.getElementById('native-choice'),input);
+    app.data.setItem('field','name');assert.equal(menu.button.textContent,'Name');
+    app.data.setItem('choices','name:Customer,email:Mail');assert.equal(menu.button.textContent,'Customer');
+    record.node.setAttr({disabled:true});assert.equal(menu.button.disabled,true);
+    record.node.setAttr({lbl_values:null});assert.equal(record.labelbox.menu,null);assert.equal(record.labelbox.fieldLabel.hidden,false);
+    assert.equal(inside.value,'Ada');app.dispose();
+});

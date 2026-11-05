@@ -41,12 +41,14 @@ export class GramlotRenderer extends GramlotHtmlRenderer {
         dropValues: Record<string, unknown>; item: unknown; path: string | undefined;
         source: Record<string, unknown>; selfdrop: boolean;
         dropEffect: 'copy' | 'move' | 'link'; dataAvailable: boolean;
+        placement?: 'before' | 'inside' | 'after';
     }): boolean;
     /** Invoke the general onDrop action on already accepted data not consumed by typed actions. */
     invokeDrop(node: SourceBagNode, context: {
         dropValues: Record<string, unknown>; item: unknown; path: string | undefined;
         source: Record<string, unknown>; selfdrop: boolean;
         dropEffect: 'copy' | 'move' | 'link'; dataAvailable: boolean;
+        placement?: 'before' | 'inside' | 'after';
     }): Promise<void>;
     /** Origin callback, followed by local endDrag publication even if the callback fails. */
     endDrag(node: SourceBagNode, context: {source: Record<string, unknown>; dropEffect: string}, topic: string): Promise<void>;

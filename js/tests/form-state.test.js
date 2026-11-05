@@ -247,3 +247,16 @@ test('shared reports project form errors and outstanding changes without a secon
     const parent=reports.parentNode;reports.remove();assert.equal(f.state.listeners.size,count-1);
     parent.append(reports);await tick();assert.equal(f.state.listeners.size,count);
 });
+
+test('checkBoxText description drafts block saving and restore/commit keep the code contract', async t => {
+    const f=fixture(t,(form,app)=>{
+        app.data.setItem('record.cities','MI');
+        form.checkBoxText({node_label:'cities',id:'cities',value:'^.cities',values:'MI:Milano,PV:Pavia',popup:true});
+    });await tick();
+    const host=f.host('cities');
+    host.summary.value='pa';f.fire(host.summary,'input');
+    assert.equal(f.state.accept(),false);assert.equal(f.app.data.getItem('record.cities'),'MI');
+    f.state.restore();await tick();assert.equal(host.summary.value,'Milano');
+    host.summary.value='Milano,Pavia';f.fire(host.summary,'input');f.fire(host.summary,'change');await tick();
+    assert.equal(f.app.data.getItem('record.cities'),'MI,PV');assert.equal(f.state.accept(),true);
+});

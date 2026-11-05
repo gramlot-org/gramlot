@@ -22,6 +22,47 @@
       "attributes": {
         "parameters": [
           {
+            "name": "columnFilters",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "setFilter",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": ""
+          },
+          {
             "name": "windowInfo",
             "kind": "keyword_only",
             "role": "attribute",
@@ -324,6 +365,16 @@
         "render_tag": "gramlot-grid",
         "gramlot_component": {
           "parameters": {
+            "columnFilters": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "setFilter": {
+              "dtype": "T",
+              "default": "",
+              "binding": "read"
+            },
             "windowInfo": {
               "dtype": "X",
               "nullable": true,
@@ -405,6 +456,137 @@
       "collection_key": null,
       "attributes": {
         "parameters": [
+          {
+            "name": "lbl",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "lbl_value",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "lbl_values",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "lbl_position",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": "L"
+          },
+          {
+            "name": "searchLiteral",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
+          {
+            "name": "searchHelp",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "B"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": false
+          },
           {
             "name": "searchOn",
             "kind": "keyword_only",
@@ -490,6 +672,37 @@
         "render_tag": "gramlot-search-box",
         "gramlot_component": {
           "parameters": {
+            "lbl": {
+              "dtype": "T",
+              "qualification": "intl_str",
+              "nullable": true,
+              "binding": "read"
+            },
+            "lbl_value": {
+              "dtype": "T",
+              "nullable": true,
+              "binding": "twoWay"
+            },
+            "lbl_values": {
+              "dtype": "T",
+              "nullable": true,
+              "binding": "read"
+            },
+            "lbl_position": {
+              "dtype": "T",
+              "default": "L",
+              "binding": "read"
+            },
+            "searchLiteral": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
+            "searchHelp": {
+              "dtype": "B",
+              "default": false,
+              "binding": "read"
+            },
             "searchOn": {
               "dtype": [
                 "B",
@@ -508,7 +721,8 @@
           "presentationDefaults": [],
           "dataScope": false,
           "command": false,
-          "sourceContext": true
+          "sourceContext": true,
+          "labelbox": true
         }
       }
     },
@@ -707,6 +921,50 @@
             },
             "has_default": true,
             "default": false
+          },
+          {
+            "name": "check",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "checked",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "checkedField",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "title",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": null
           }
         ],
         "accepts_var_keyword": false,

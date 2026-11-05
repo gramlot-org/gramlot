@@ -71,6 +71,8 @@ export class Gramlot {
     registerDocument(document) {
         for (const collection of this.#collections) collection.register(document.defaultView);
     }
+    /** The prepared collection already activated by this page. */
+    getCollection(name) { return this.#collections.find(collection => collection.name === name); }
     subscribe(topic, callback) { return this._subscriptions.subscribe(topic, callback); }
     unsubscribe(registration) { this._subscriptions.unsubscribe(registration); }
     format(value, options) { return formatValue(value, options, {locale: this.locale, timeZone: this.timeZone}); }

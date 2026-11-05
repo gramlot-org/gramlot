@@ -100,7 +100,7 @@ COVERAGE = {
         "Basic resident grid, independent shared-store views, virtualization and local editing.",
     ),
     "searchBox": _record(
-        "searchOn chooses eligible columns. Accepted queries update the target view's filter. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.",
+        "searchOn chooses eligible columns. searchLiteral=True uses literal case-insensitive text matching; the default retains regular expressions. Accepted queries update only the target view's search contribution, in AND with its base filter and setFilter; clearing search preserves both. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.",
         "Typing starts a short debounce and Enter applies immediately. Changing columns, Escape or Clear removes the filter. Invalid or incomplete expressions retain the last accepted filter.",
         "Leaf control that resolves the grid through its FrameGrid recipient. Put it in the FrameGrid search composition.",
         "Works against the resident view. Number and date syntax depends on the column type and locale. Removal cancels the timer and releases view subscriptions.",
@@ -112,7 +112,7 @@ COVERAGE = {
         "An inline declaration projects to a structure Bag before rendering. Use structpath to read a separately maintained structure instead.",
         "Grid header interactions can update the projected structure. Other grids sharing that Bag observe its changes. The declaration has no callback.",
         "Grid declaration containing columns and column groups. It has no separate browser element.",
-        "Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected.",
+        "Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected. External sets use check=multiple, checked=^DataPath and checkedField=identityField. Initialize the Data value to an empty string; nonempty text IDs without commas are stored as comma-separated strings. Literal comma-wrapped includes checks membership. Each toggle writes Data and refreshes all views without editing records. Dynamic columns observe the structure Bag; removing a column keeps its set. Offscreen IDs survive. External set columns cannot have editors and are excluded from ordinary field sorting/search; check=single uses a radio and writes one scalar ID to checked without editing supplier rows. It supports partial stores, retains filtered/offscreen choices and never toggles off the selected radio. Text and numeric identities retain their type. Bulk actions are not implemented. A read-bound setFilter string names external check columns: john,fred means intersection, empty removes only the set contribution. Base filter, search and setFilter combine with AND. Set Data changes immediately update the view. Nonempty setFilter requires a complete resident store; windowInfo and unknown check columns are rejected. Column title retains the full tooltip/accessibility name when name is abbreviated. columnFilters=True enables distinct-value header popups on complete resident stores: OR within each column, AND across columns/base/search/sets. Counts exclude only their own column selection. Empty groups null and empty text; zero-count selections persist. None differs from Reset. The popup reuses the shared grid and menu toolbar; its literal search filters only the choices and preserves hidden selections. All/None apply to the entire choice list. Accepted criteria live in the Source-owned collection view; row edits update counts. Date columns add inclusive From/To and period entry; range AND values is one column criterion. Changing range selects all matching dates; clearing From clears To but preserves selected dates. Reset clears both. Invalid drafts retain the accepted filter.",
         "js/src/binding/grid-struct.js js/src/components/grid-structure.js js/src/components/grid-grammar.json",
         "tests/test_grid_authoring.py js/tests/grid-components.test.js",
         "pages/05-grid/01_basic.md pages/05-grid/03_colgroups.md",
@@ -167,3 +167,31 @@ COVERAGE = {
         "Independent state, header actions, Clear and inline guides.",
     ),
 }
+
+COVERAGE['chartPane'] = _record('storepath and configpath identify original Data Bags. rowMode selects attributes or values.', 'Shared settings, playback controls and engines retain configuration in Data.', 'Composes the shared frame and chart controls.', 'Business aggregation stays upstream; unsupported types are not emulated.', 'js/src/components/chart-pane.js', 'js/tests/chart-engines.test.js', 'pages/05-grid/13_charts.md', 'Shared chart configuration and time.')
+
+COVERAGE['chartView'] = _record('Reads store and bound chart configuration; selectedTerritory writes the chosen name.', 'Observes rows and grid filtering, updates the engine and releases it on removal.', 'Rendering surface composed by chartPane.', 'Numeric X is required by uPlot; mapBar3D is ECharts-only.', 'js/src/components/charts.js', 'js/tests/chart-renderer.test.js', 'pages/05-grid/13_charts.md', 'Shared chart configuration and time.')
+
+COVERAGE['chartFields'] = _record('Reads store metadata and writes available chart fields to configuration.', 'Rebuilds field choices when the original Bag changes.', 'Internal shared chart settings component.', 'Does not query a database or infer business aggregates.', 'js/src/components/chart-fields.js', 'js/tests/chart-fields.test.js', 'pages/05-grid/13_charts.md', 'Shared chart configuration and time.')
+
+COVERAGE['chartGeoJSON'] = _record('value binds a plain GeoJSON feature collection or null.', 'Validates supplied geography and displays its summary.', 'Shared geography input for chart configuration.', 'Named Polygon/MultiPolygon features only; host owns territorial matching.', 'js/src/components/chart-geojson.js', 'js/tests/chart-geojson.test.js', 'pages/05-grid/13_charts.md', 'Shared chart configuration and time.')
+
+COVERAGE['chartTimeline'] = _record('Reads store/time parameters and writes timeline state under configpath.', 'Tracks bounds and prepared snapshots; removal releases observation.', 'Used by chartPane with its playback controls.', 'No business aggregation; calendar periods and empty policy are explicit.', 'js/src/components/chart-timeline.js', 'js/tests/chart-time.test.js', 'pages/05-grid/13_charts.md', 'Shared chart configuration and time.')
+
+COVERAGE['vizabiBubble'] = _record('Reads the original rows and configuration Bag.', 'Retains supported session configuration and releases engine resources on removal.', 'Specialized external bubble view.', 'Requires host-supplied libraryUrl; not a chartPane engine.', 'js/src/components/vizabi.js', 'tools/gramlot-tools-inspector/tests/vizabi-trial-browser.mjs', '', 'Host-only integration; no common gallery lesson.')
+
+COVERAGE['audioAnalyser'] = _record(
+    'running controls capture; waveform and spectrum write numeric arrays as individual Data values. sampleRate, status and error report the session.',
+    'Changes to supported configuration update the analyser. Capture failure clears running and reports error.',
+    'Invisible leaf component; compose ordinary controls and charts around its bindings.',
+    'Requires microphone permission and a secure context. Stop, pagehide and disposal release resources. No recording or persistence.',
+    'js/src/components/audio.js js/src/components/audio-analysis-session.js',
+    'js/tests/audio-component.test.mjs js/tests/audio-analysis-session.test.mjs', '',
+    'Microphone analysis is an optional live gallery example.')
+COVERAGE['drawingPane'] = _record(
+    'annotations reads and mutates the original Data Bag; image reads an optional background URL.',
+    'Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.',
+    'Composes a shared Source menu and an SVG drawing surface.',
+    'Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.',
+    'js/src/components/drawing.js', 'js/tests/drawing.test.js tests/test_drawing_pane.py',
+    'pages/06-editors/06-drawing.md', 'Drawing annotations retained in Data.')

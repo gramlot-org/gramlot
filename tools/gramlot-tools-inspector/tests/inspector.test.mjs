@@ -2,16 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {Bag, Gramlot, GramlotBuilder} from '@gramlot/gramlot';
-import {createRequire} from 'node:module';
+import {createRequire, register} from 'node:module';
 import {MessageChannel} from 'node:worker_threads';
+import {layoutWindow} from '../../../js/tests/helpers/layout-window.js';
 const require = createRequire(import.meta.url);
 const coreRequire = createRequire(require.resolve('@gramlot/gramlot'));
 const {BagResolver} = await import(coreRequire.resolve('@genrojs/bag'));
 
 const {window} = new JSDOM('<main></main>', {url: 'https://inspector.test/'});
+layoutWindow(window);
 Object.assign(globalThis, {HTMLElement: window.HTMLElement, customElements: window.customElements});
+register(new URL('./layout-loader.mjs', import.meta.url), import.meta.url);
 const {InspectorConnection, attachInspectorAgent} = await import('../dist/gramlot-tools-inspector.js');
 window.HTMLDialogElement.prototype.showModal = function () {this.open = true;};
+window.HTMLDialogElement.prototype.show = function () {this.open = true;};
 window.HTMLDialogElement.prototype.close = function () {this.open = false;};
 const tick = () => new Promise(resolve => queueMicrotask(resolve));
 function target() {
@@ -33,15 +37,16 @@ function inspector(app) {
     return element;
 }
 function button(element, text) {
-    return [...element.shadowRoot.querySelectorAll('button')].find(node => node.textContent === text || node.getAttribute('aria-label') === text);
+    const tabs = element.shadowRoot.querySelector('gramlot-tab-container')?.shadowRoot;
+    return [...element.shadowRoot.querySelectorAll('button'), ...(tabs?.querySelectorAll('button') ?? [])].find(node => node.textContent === text || node.getAttribute('aria-label') === text);
 }
-function tree(element) { return element.shadowRoot.querySelector('gramlot-poc-tree:not([hidden])'); }
-function row(element, path) { return tree(element).shadowRoot.querySelector(`[data-node-path="${path}"]`); }
-function select(element, path) { const node = row(element, path); assert.ok(node, path); node.click(); }
+function tree(element) { return element.shadowRoot.querySelector('gramlot-tree:not([hidden])'); }
+function row(element, path) { return tree(element).shadowRoot.querySelector(`[role="treeitem"][data-path="${path}"]`); }
+async function select(element, path) { await tick(); const node = row(element, path); assert.ok(node, path); node.querySelector('.row').click(); await tick(); }
 function field(element, label = 'Value') { return element.shadowRoot.querySelector(`[aria-label="${label}"]`); }
 function save(element, label = 'Value') { field(element, label).dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Enter', bubbles: true})); }
 function revert(element) { field(element).dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Escape', bubbles: true})); }
-function openBreakpoint(element, path) { row(element, path).querySelector('[data-action=breakpoint]').click(); }
+async function openBreakpoint(element, path) { await tick(); row(element, path).querySelector('.row').dispatchEvent(new window.Event('pointerenter')); tree(element).querySelector('[rowaction=breakpoint]').control.click(); await tick(); }
 function subscriberCount(bag) {
     return Object.keys(bag._updSubscribers).length + Object.keys(bag._insSubscribers).length + Object.keys(bag._delSubscribers).length;
 }
@@ -56,7 +61,7 @@ test('clearing connected targets detaches the view; local assignment removes the
         element.targets = [];
         assert.equal(element.selectedTarget, null);
         assert.equal(element.gramlot, null);
-        assert.equal(tree(element).storeBag, null);
+        assert.equal(tree(element).storeBag.getNodes().length, 0);
         element.targets = [{id:'page', title:'Page', connection}];
         element.gramlot = local;
         assert.deepEqual(element.targets, []);
@@ -68,7 +73,7 @@ test('clearing connected targets detaches the view; local assignment removes the
 test('Data and Source are live; literal pointer and markup values remain text', async () => {
     const app = target();
     const element = inspector(app);
-    select(element, 'name');
+    await select(element, 'name');
     assert.equal(field(element)?.value ?? '', 'Ada');
     assert.equal(field(element, 'description value').value, 'Name');
     app.data.setItem('name', '<img src=x onerror=alert(1)>');
@@ -76,8 +81,8 @@ test('Data and Source are live; literal pointer and markup values remain text', 
     assert.equal(row(element, 'name').querySelector('.caption').textContent, 'name');
     assert.equal(element.shadowRoot.querySelectorAll('img').length, 0);
     assert.equal(field(element)?.value ?? '', '<img src=x onerror=alert(1)>');
-    button(element, 'Source').click();
-    select(element, 'main.greeting');
+    await tick(); button(element, 'Source').click();
+    await select(element, 'main.greeting');
     assert.equal(field(element)?.value ?? '', '^name');
     app.src.source.getNode('main.greeting').setAttr({title: 'Updated'});
     await tick();
@@ -93,17 +98,17 @@ test('retargeting, closing, reconnecting and multiple palettes release independe
     app.data.setItem('name', 'Queued');
     first.gramlot = second;
     await tick();
-    select(first, 'name'); assert.equal(field(first).value, 'Ada');
-    first.shadowRoot.querySelector('gramlot-poc-palette').shadowRoot.querySelector('.close').click();
+    await select(first, 'name'); assert.equal(field(first).value, 'Ada');
+    first.shadowRoot.querySelector('gramlot-floating-pane').closeButton.click(); await tick();
     assert.equal(first.isConnected, false);
     window.document.body.append(first);
-    select(first, 'name'); assert.equal(field(first).value, 'Ada');
+    await select(first, 'name'); assert.equal(field(first).value, 'Ada');
     first.remove(); other.remove();
     assert.equal(subscriberCount(app.data) + subscriberCount(app.src.source), baseline);
     app.dispose(); second.dispose();
 });
 
-test('inspection reads resolver caches without running resolvers and does not mutate the target', () => {
+test('inspection reads resolver caches without running resolvers and does not mutate the target', async () => {
     const app = target();
     let calls = 0;
     class Deferred extends BagResolver { load() { calls++; return 99; } }
@@ -112,7 +117,7 @@ test('inspection reads resolver caches without running resolvers and does not mu
     const changes = [];
     app.data.subscribe('inspection-proof', {any: event => changes.push(event)});
     const element = inspector(app);
-    select(element, 'deferred');
+    await select(element, 'deferred');
     assert.equal(calls, 0);
     assert.deepEqual(app.data.getNodes().map(node => [node, node.getValue(true), node.resolver]), before);
     assert.deepEqual(changes, []);
@@ -120,7 +125,7 @@ test('inspection reads resolver caches without running resolvers and does not mu
     element.remove(); app.dispose();
 });
 
-test('the target is explicit and rejects lookalikes and disposed instances', () => {
+test('the target is explicit and rejects lookalikes and disposed instances', async () => {
     const element = inspector(null);
     assert.match(element.shadowRoot.textContent, /No Gramlot instance selected/);
     assert.throws(() => { element.gramlot = {data: new Bag(), src: {source: new Bag()}}; }, /live Gramlot/);
@@ -133,7 +138,7 @@ test('the target is explicit and rejects lookalikes and disposed instances', () 
 test('selection follows node identity across siblings and clears when that node is deleted', async () => {
     const app = target();
     const element = inspector(app);
-    select(element, 'name');
+    await select(element, 'name');
     app.data.popNode('nested');
     app.data.setItem('new', 'Another');
     await tick();
@@ -148,13 +153,13 @@ test('selection follows node identity across siblings and clears when that node 
 test('a collapsed branch stays collapsed after a target update', async () => {
     const app = target();
     const element = inspector(app);
-    const branch = tree(element).shadowRoot.querySelector('details');
-    branch.open = false;
-    branch.dispatchEvent(new window.Event('toggle'));
+    await tick();
+    const branch = row(element, 'nested');
+    assert.equal(branch.getAttribute('aria-expanded'), 'false');
     app.data.setItem('nested.count', 43);
     await tick();
-    assert.equal(tree(element).shadowRoot.querySelector('details').open, false);
-    button(element, 'Source').click();
+    assert.equal(row(element, 'nested').getAttribute('aria-expanded'), 'false');
+    await tick(); button(element, 'Source').click();
     assert.equal(button(element, 'Source').getAttribute('aria-selected'), 'true');
     element.remove(); app.dispose();
 });
@@ -170,7 +175,7 @@ const breakpointStatus = element => element.shadowRoot.querySelector('.breakpoin
 
 test('grid edits cells on leaving the row; names stay fixed; new attributes are typed and removable', async () => {
     const app = target(); const element = inspector(app);
-    select(element, 'name');
+    await select(element, 'name');
     assert.equal(field(element, 'description name'), null);
     assert.equal(field(element, 'description type'), null);
     edit(element, 'Value', '^literal');
@@ -193,7 +198,7 @@ test('grid edits cells on leaving the row; names stay fixed; new attributes are 
 
 test('invalid typed cells and conflicts never overwrite the target', async () => {
     const app = target(); const element = inspector(app);
-    select(element, 'nested.count');
+    await select(element, 'nested.count');
     edit(element, 'Value', '4.5'); save(element);
     assert.match(status(element), /Invalid integer/);
     assert.equal(app.data.getItem('nested.count'), 42);
@@ -210,9 +215,24 @@ test('invalid typed cells and conflicts never overwrite the target', async () =>
     element.remove(); app.dispose();
 });
 
-test('Source editing updates the rendered page and preserves schema metadata', () => {
+test('shared tabs retain an invalid draft and switch after a valid edit', async () => {
     const app = target(); const element = inspector(app);
-    button(element, 'Source').click(); select(element, 'main.greeting');
+    await select(element, 'nested.count');
+    edit(element, 'Value', '4.5');
+    button(element, 'Source').click(); await tick();
+    assert.equal(button(element, 'Data').getAttribute('aria-selected'), 'true');
+    assert.equal(app.data.getItem('nested.count'), 42);
+    assert.match(status(element), /Invalid integer/);
+    edit(element, 'Value', '6');
+    button(element, 'Source').click(); await tick();
+    assert.equal(button(element, 'Source').getAttribute('aria-selected'), 'true');
+    assert.equal(app.data.getItem('nested.count'), 6);
+    element.remove(); app.dispose();
+});
+
+test('Source editing updates the rendered page and preserves schema metadata', async () => {
+    const app = target(); const element = inspector(app);
+    await tick(); button(element, 'Source').click(); await select(element, 'main.greeting');
     const node = app.src.source.getNode('main.greeting');
     const metadata = node.getAttr('_meta');
     edit(element, 'Value', 'Changed in inspector');
@@ -226,18 +246,18 @@ test('Source editing updates the rendered page and preserves schema metadata', (
     element.remove(); app.dispose();
 });
 
-test('resolver values and containers are not replaced by editing; inspection never resolves them', () => {
+test('resolver values and containers are not replaced by editing; inspection never resolves them', async () => {
     const app = target(); let calls = 0;
     class Deferred extends BagResolver { load() { calls++; return 99; } }
     const resolver = new Deferred(); app.data.setItem('deferred', resolver);
-    const element = inspector(app); select(element, 'deferred');
+    const element = inspector(app); await select(element, 'deferred');
     assert.equal(field(element).disabled, true);
     button(element, 'Add attribute').click();
     edit(element, 'New attribute name', 'hint'); edit(element, 'New attribute value', 'Lazy');
     save(element);
     assert.equal(calls, 0);
     assert.equal(app.data.getNode('deferred').resolver, resolver);
-    select(element, 'nested');
+    await select(element, 'nested');
     assert.equal(field(element), null);
     element.remove(); app.dispose();
 });
@@ -247,8 +267,8 @@ test('path breakpoints are synchronous, conditional, root-specific and removed o
     const hits = []; const log = window.console.log;
     window.console.log = (...args) => hits.push(args);
     try {
-        select(element, 'name');
-        openBreakpoint(element, 'name');
+        await select(element, 'name');
+        await openBreakpoint(element, 'name');
         edit(element, 'Breakpoint mode', 'console');
         edit(element, 'Breakpoint condition', 'value === "Grace"');
         button(element, 'Save').click();
@@ -258,7 +278,7 @@ test('path breakpoints are synchronous, conditional, root-specific and removed o
         assert.equal(hits[0][2].path, 'name');
         assert.equal(hits[0][2].oldvalue, 'Ada');
         await tick();
-        openBreakpoint(element, 'name');
+        await openBreakpoint(element, 'name');
         edit(element, 'Breakpoint condition', '(()');
         button(element, 'Save').click();
         assert.match(breakpointStatus(element), /not saved/);
@@ -278,14 +298,14 @@ test('Source attribute breakpoints and condition errors stay in their inspected 
     const app = target(); const second = target(); const element = inspector(app);
     const hits = []; const log = window.console.log; window.console.log = (...args) => hits.push(args);
     try {
-        button(element, 'Source').click(); select(element, 'main.greeting');
-        openBreakpoint(element, 'main.greeting');
+        await tick(); button(element, 'Source').click(); await select(element, 'main.greeting');
+        await openBreakpoint(element, 'main.greeting');
         edit(element, 'Breakpoint mode', 'console');
         edit(element, 'Breakpoint condition', 'evt === "upd_attrs"'); button(element, 'Save').click();
         app.src.source.getNode('main.greeting').setAttr({title: 'Hit'});
         assert.equal(hits.length, 1); assert.equal(hits[0][2].path, 'main.greeting');
         await tick();
-        openBreakpoint(element, 'main.greeting');
+        await openBreakpoint(element, 'main.greeting');
         edit(element, 'Breakpoint condition', 'missingName.value'); button(element, 'Save').click();
         assert.doesNotThrow(() => app.src.source.getNode('main.greeting').setAttr({title: 'Error'}));
         assert.match(breakpointStatus(element), /Condition failed/);
@@ -297,10 +317,10 @@ test('Source attribute breakpoints and condition errors stay in their inspected 
     } finally { window.console.log = log; element.remove(); app.dispose(); second.dispose(); }
 });
 
-test('attribute edits preserve an unedited Date identity and reject internal metadata injection', () => {
+test('attribute edits preserve an unedited Date identity and reject internal metadata injection', async () => {
     const app = target(); const date = new Date('2026-09-30T00:00:00.000Z');
     app.data.setItem('when', date);
-    const element = inspector(app); select(element, 'when');
+    const element = inspector(app); await select(element, 'when');
     button(element, 'Add attribute').click();
     edit(element, 'New attribute name', '_meta'); edit(element, 'New attribute value', 'invalid');
     save(element);
@@ -314,12 +334,14 @@ test('attribute edits preserve an unedited Date identity and reject internal met
 });
 
 
-test('a breakpoint action targets its own row; the active list removes deleted paths', () => {
+test('a breakpoint action targets its own row; the active list removes deleted paths', async () => {
     const app = target(); const element = inspector(app);
-    select(element, 'name'); openBreakpoint(element, 'nested.count');
+    await select(element, 'name'); await openBreakpoint(element, 'nested.count');
     edit(element, 'Breakpoint mode', 'console'); button(element, 'Save').click();
     assert.equal(field(element).value, 'Ada');
-    assert.ok(row(element, 'nested.count').querySelector('button.active'));
+    await tick(); row(element, 'nested.count').querySelector('.row').dispatchEvent(new window.Event('pointerenter'));
+    assert.equal(tree(element).querySelector('[rowaction=breakpoint]').icon.textContent, '●');
+    assert.match(row(element, 'nested.count').querySelector('.caption').textContent, /●/);
     app.data.popNode('nested.count');
     button(element, 'Active breakpoints').click();
     button(element, 'Remove breakpoint data: nested.count').click();
@@ -348,7 +370,7 @@ for (const remote of [false, true]) test(`enum editors use component metadata an
     };
     try {
         if (remote) { element.targets = [{id: 'page', title: 'Page', connection}]; await wait(() => connection.state === 'started'); }
-        button(element, 'Source').click(); select(element, 'main.check');
+        await tick(); button(element, 'Source').click(); await select(element, 'main.check');
         const mode = field(element, 'mode value');
         assert.equal(mode.tagName, 'SELECT');
         assert.deepEqual([...mode.options].map(option => option.value), ['checkbox', 'switch']);
@@ -374,14 +396,14 @@ for (const remote of [false, true]) test(`enum editors use component metadata an
 test('docking keeps the inspector, selected path and unfinished editor value alive', async () => {
     const app = target(), element = inspector(app);
     await tick();
-    select(element, 'name');
-    const palette = element.shadowRoot.querySelector('gramlot-poc-palette');
+    await select(element, 'name');
+    const palette = element.shadowRoot.querySelector('gramlot-floating-pane');
     const editor = field(element);
     editor.value = 'Uncommitted';
     for (const docked of [true, false, true]) {
         element.toggleAttribute('docked', docked);
-        assert.equal(element.shadowRoot.querySelector('gramlot-poc-palette'), palette);
-        assert.equal(palette.hasAttribute('docked'), docked);
+        assert.equal(element.shadowRoot.querySelector('gramlot-floating-pane'), palette);
+        await tick(); assert.equal(palette.shell.hasAttribute('data-docked'), docked);
         assert.equal(field(element), editor);
         assert.equal(editor.value, 'Uncommitted');
         assert.equal(app.data.getItem('name'), 'Ada');
@@ -418,8 +440,8 @@ for (const remote of [false, true]) for (const kind of ['value', 'data attribute
                 element.targets = [{id: 'page', title: 'Page', connection}];
                 await wait(() => connection.state === 'started');
             }
-            if (source) button(element, 'Source').click();
-            select(element, source ? 'main.greeting' : 'enabled');
+            if (source) { await tick(); button(element, 'Source').click(); }
+            await select(element, source ? 'main.greeting' : 'enabled');
             assert.equal(field(element, label).type, 'checkbox');
             field(element, label).focus();
             field(element, label).click();

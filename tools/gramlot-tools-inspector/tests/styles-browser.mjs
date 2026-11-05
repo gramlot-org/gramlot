@@ -30,7 +30,7 @@ window.app = app; window.inspector = inspector; window.sourceBefore = app.src.so
 window.ready = true;`;
 const html = `<!doctype html><meta charset="utf-8"><title>Inspector CSS variable trial</title>
 <link rel="stylesheet" href="/theme.css"><style>:root {--unrelated-token: 5px}</style>
-<script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js"}}</script>
+<script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js","@gramlot/collections/layout":"/layout/index.js","@gramlot/collections/tree":"/tree/index.js"}}</script>
 <main></main><script type="module" src="/fixture.js"></script>`;
 const files = new Map([
     ['/', ['text/html', html]], ['/fixture.js', ['text/javascript', fixture]],
@@ -40,7 +40,13 @@ const files = new Map([
     ['/theme.css', ['text/css', await readFile(new URL('../../../themes/gramlot-base/theme.css', import.meta.url))]],
     ['/compact.css', ['text/css', await readFile(new URL('../../../themes/gramlot-compact/theme.css', import.meta.url))]]
 ]);
-const server = createServer((request, response) => {
+const server = createServer(async (request, response) => {
+    if (request.url.startsWith('/layout/') || request.url.startsWith('/tree/')) {
+        const [, collection, ...parts] = request.url.split('/');
+        try { response.writeHead(200, {'Content-Type':'text/javascript'}).end(await readFile(new URL(`../../../src/gramlot/collections/${collection}/assets/${parts.join('/')}`, import.meta.url))); }
+        catch { response.writeHead(404).end(); }
+        return;
+    }
     const entry = files.get(request.url);
     if (!entry) {response.writeHead(404).end(); return;}
     response.writeHead(200, {'Content-Type': entry[0], 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-fixture'; style-src 'self' 'unsafe-inline'"});
@@ -73,7 +79,7 @@ if (process.argv.includes('--serve')) {
                     assert.equal(await field(`--gramlot-header-${token}`).count(), 1);
                 }
                 assert.equal(await tool.locator('.styles-empty').isVisible(), false);
-                assert.equal(await tool.locator('gramlot-poc-splitter').isVisible(), false);
+                assert.equal(await tool.locator('gramlot-border-container').isVisible(), false);
                 assert.equal(await tool.getByRole('heading', {name: 'Spacing', exact: true}).count(), 1);
                 await field('--gramlot-action').fill('#cc2244'); await field('--gramlot-action').press('Enter');
                 await page.waitForFunction(() => getComputedStyle(document.querySelector('main button')).backgroundColor === 'rgb(204, 34, 68)');
@@ -124,7 +130,7 @@ if (process.argv.includes('--serve')) {
                 assert.equal(await field('--gramlot-space-4').inputValue(), '8px');
                 await field('--gramlot-space-4').fill('3rem'); await field('--gramlot-space-4').press('Enter');
                 await tool.getByRole('tab', {name: 'Data', exact: true}).click();
-                await tool.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]').click();
+                await tool.locator('gramlot-tree[data-root=data] [data-path=name]').click();
                 assert.equal(await tool.getByLabel('Value', {exact: true}).inputValue(), 'Gramlot');
                 await tool.getByRole('tab', {name: 'Styles', exact: true}).click();
                 assert.equal(await field('--gramlot-space-4').inputValue(), '3rem');
@@ -135,7 +141,7 @@ if (process.argv.includes('--serve')) {
                     first.set('--gramlot-action', '#111111'); second.set('--gramlot-action', '#222222'); first.dispose(); second.dispose();
                 });
                 assert.equal(await field('--gramlot-action').inputValue(), '#235db2');
-                await tool.getByRole('button', {name: 'Close inspector', exact: true}).click();
+                await tool.getByRole('button', {name: 'Close window', exact: true}).click();
                 assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--gramlot-space-4').trim()), '8px');
                 await page.evaluate(() => document.body.append(inspector));
                 await tool.getByRole('tab', {name: 'Styles', exact: true}).click();

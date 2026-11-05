@@ -15,7 +15,7 @@ function author(root, name) {
     const frame = root.frameGrid({node_label: name, datapath: name, storepath: '.rows', rowMode: 'attributes', height: '300px'});
     frame.grid.setAttr({id: `${name}-grid`, selfsubscribe_refresh: 'refresh'});
     frame.grid.struct().column({field: 'name'});
-    frame.top.menu({presentation: 'bar'}).menuline('gridDemo:refresh', {id: `${name}-refresh`});
+    frame.toolbar.menuline('gridDemo:refresh', {id: `${name}-refresh`});
     frame.bottom.menu({presentation: 'bar'}).menuline({group: true}).span('Read only');
     return frame;
 }
@@ -92,12 +92,12 @@ from importlib.resources import files
 import json
 b=GramlotBuilder(collections=[json.loads(files('gramlot').joinpath('collections/'+name+'.json').read_text()) for name in ['layout','grid']])
 f=b.root.frameGrid(node_label='demo',storepath='rows',rowMode='attributes',structpath='columns',searchOn=True,height='300px')
-f.top.menu(presentation='bar').menuline('gridDemo:refresh')
+f.toolbar.menuline('gridDemo:refresh')
 print(b.to_tytx())
 `], {encoding: 'utf8'}).trim();
     const b = new GramlotBuilder(null, {collections});
     const f = b.root.frameGrid({node_label: 'demo', storepath: 'rows', rowMode: 'attributes', structpath: 'columns', searchOn:true, height: '300px'});
-    f.top.menu({presentation: 'bar'}).menuline('gridDemo:refresh');
+    f.toolbar.menuline('gridDemo:refresh');
     const shape = bag => bag.getNodes().map(node => ({label: node.label, tag: node.nodeTag,
         attrs: node.getAttr(), children: node.staticValue instanceof SourceBag ? shape(node.staticValue) : node.staticValue}));
     assert.deepEqual(shape(fromTytx(wire)), shape(b.source));
@@ -121,7 +121,7 @@ function searchFixture(t, {mode='attributes',searchOn=true}={}) {
     app.src.startSource(b.toTytx()); t.mock.timers.tick(0);
     const gridElement=window.document.getElementById('search-grid');
     const box=window.document.querySelector('gramlot-search-box');
-    const input=box.shadowRoot.querySelector('input'), select=box.shadowRoot.querySelector('select');
+    const input=box.shadowRoot.querySelector('input'), select=box.box.labelbox.menu;
     const labels=()=>[...gridElement.shadowRoot.querySelectorAll('tbody tr[data-row]')].map(row=>row.dataset.row);
     const type=value=>{input.value=value;input.dispatchEvent(new window.Event('input'));};
     const flush=()=>t.mock.timers.tick(100);
@@ -132,13 +132,15 @@ function searchFixture(t, {mode='attributes',searchOn=true}={}) {
 for(const mode of ['values','attributes']) {
     test(`${mode}: FrameGrid search selects all or a typed column and reacts to Data changes`,t=>{
         const f=searchFixture(t,{mode});
-        assert.deepEqual([...f.select.options].map(option=>option.textContent),['All columns','Name','Quantity']);
+        assert.equal(f.box.shadowRoot.querySelector('.info').hidden,true);
+        assert.equal(f.box.box.dataset.position,'L');
+        assert.deepEqual(f.select.menu.items.map(item=>item.parameters.caption),['All columns','Name','Quantity']);
         f.type('^Al'); assert.equal(f.labels().length,3); f.flush();
         assert.deepEqual(f.labels(),['r0','r2']);
         const update=(key,value)=>mode==='values'?f.rows.getItem(key).setItem('name',value):f.rows.getNode(key).setAttr({name:value});
         update('r1','Albatross'); f.flush(); assert.equal(f.labels().length,3);
         update('r0','Hidden'); f.flush(); assert.deepEqual(f.labels(),['r1','r2']);
-        f.select.value='qty';f.select.dispatchEvent(new f.window.Event('change'));f.flush();
+        f.select.menu.items.find(item=>item.parameters.code==='qty').control.click();f.flush();
         assert.equal(f.labels().length,3); assert.equal(f.input.placeholder,' '); assert.match(f.box.shadowRoot.querySelector('#search-help').textContent,/> 100/);
         f.type('> 2');f.flush();assert.deepEqual(f.labels(),['r0','r1']);
         f.gridElement.shadowRoot.querySelector('th[data-field=qty]').click();f.flush();
@@ -155,7 +157,9 @@ for(const mode of ['values','attributes']) {
 
 test('search menu accepts legacy caption/field lists and dtype restriction',t=>{
     const f=searchFixture(t,{searchOn:'*L'});
-    assert.deepEqual([...f.select.options].map(option=>option.textContent),['All columns','Quantity']);
+    assert.equal(f.box.shadowRoot.querySelector('.info').hidden,true);
+        assert.equal(f.box.box.dataset.position,'L');
+        assert.deepEqual(f.select.menu.items.map(item=>item.parameters.caption),['Quantity']);
     f.type('<= 3');f.flush();assert.deepEqual(f.labels(),['r0','r2']);
 });
 
@@ -173,7 +177,9 @@ test('search timer is cancelled on removal and hidden row heights survive filter
 
 test('explicit legacy menu captions select only the declared fields',t=>{
     const f=searchFixture(t,{searchOn:'Product:name,Stock:qty'});
-    assert.deepEqual([...f.select.options].map(option=>[option.textContent,option.value]),[['Product','name'],['Stock','qty']]);
+    assert.equal(f.box.shadowRoot.querySelector('.info').hidden,true);
+        assert.equal(f.box.box.dataset.position,'L');
+        assert.deepEqual(f.select.menu.items.map(item=>[item.parameters.caption,item.parameters.code]),[['Product','name'],['Stock','qty']]);
     f.type('[');f.flush();
     assert.equal(f.input.getAttribute('aria-invalid'),'true');assert.equal(f.labels().length,3);
     f.type('^Al');f.flush();assert.deepEqual(f.labels(),['r0','r2']);
@@ -223,8 +229,8 @@ test('two search bars and declarative requests remain independent on one Bag', t
     const boxes=[...window.document.querySelectorAll('gramlot-search-box')];
     const labels=i=>[...hosts[i].shadowRoot.querySelectorAll('tbody tr[data-row]')].map(row=>row.dataset.row);
     assert.deepEqual(labels(0),['a','c']);assert.deepEqual(labels(1),['b','a']);
-    assert.equal(boxes[0].shadowRoot.querySelector('input').value,'^Al');
-    assert.equal(boxes[1].shadowRoot.querySelector('input').value,'> 2');
+    assert.equal(boxes[0].shadowRoot.querySelector('input').value,'');
+    assert.equal(boxes[1].shadowRoot.querySelector('input').value,'');
     hosts[0].shadowRoot.querySelector('th[data-field=name]').click();t.mock.timers.tick(0);
     sources[0].setAttr({rowHeaders:true});t.mock.timers.tick(0);
     assert.equal(sources[0].gridCollectionView.sortedBy,'name:d');
@@ -232,12 +238,47 @@ test('two search bars and declarative requests remain independent on one Bag', t
     const input=boxes[0].shadowRoot.querySelector('input');
     input.value='Beta';input.dispatchEvent(new window.Event('input'));t.mock.timers.tick(100);
     sources[0].setAttr({height:'400px'});t.mock.timers.tick(0);
-    assert.deepEqual(labels(0),['b']);assert.deepEqual(labels(1),['b','a']);
+    assert.deepEqual(labels(0),[]);assert.deepEqual(labels(1),['b','a']);
     assert.equal(app.data.getItem('filter').value,'^Al','interactive filtering does not write back requests');
     app.data.setItem('order','qty:a');app.data.setItem('filter',null);t.mock.timers.tick(0);
-    assert.deepEqual(labels(0),['c','a','b']);assert.deepEqual(labels(1),['b','a']);
+    assert.deepEqual(labels(0),['b']);assert.deepEqual(labels(1),['b','a']);
     rows.getNode('b').setAttr({qty:0});t.mock.timers.tick(0);
+    assert.deepEqual(labels(0),['b']);
+    input.value=''; input.dispatchEvent(new window.Event('input')); t.mock.timers.tick(100);
     assert.deepEqual(labels(0),['b','c','a']);assert.deepEqual(labels(1),['a']);
-    assert.equal(boxes[1].shadowRoot.querySelector('input').value,'> 2');
+    assert.equal(boxes[1].shadowRoot.querySelector('input').value,'');
     assert.deepEqual(rows.getNodes().map(node=>node.label),['a','b','c']);
+});
+
+
+test('shared toolbar is singular with and without search and keeps ordinary command nodes', () => {
+    for (const searchOn of [false, true]) {
+        const b = new GramlotBuilder(null, {collections});
+        const frame = b.root.frameGrid({storepath:'rows',rowMode:'values',searchOn});
+        const bar = frame.toolbar;
+        bar.menuline({caption:'Chart',icon:'▥'});
+        assert.equal(frame.toolbar,bar);
+        assert.equal(frame.top.staticValue.getNodes().length,1);
+        assert.equal(bar.getAttr('class'),'gramlot-grid-toolbar');
+        assert.equal(Boolean(bar.staticValue.getNode('search')),searchOn);
+    }
+    const b = new GramlotBuilder(null,{collections});
+    assert.throws(()=>b.root.framePane().toolbar,/no toolbar/);
+});
+
+test('chart options use the frame Data scope and shared chartPane', async () => {
+    const {default:charts} = await import('../src/components/charts.js');
+    const b = new GramlotBuilder(null,{collections:[layout,grid,charts]});
+    const frame = b.root.frameGrid({datapath:'report',storepath:'.rows',rowMode:'values',
+        searchOn:true,chart:'bar',chart_engine:'plotly'});
+    assert.ok(frame.toolbar.value.getNode('chart'));
+    assert.ok(frame.grid.getAttr('nodeId'));
+    const wire=b.toTytx();
+    assert.match(wire,/configDefaults/); assert.match(wire,/\._chart/);
+    assert.doesNotMatch(wire,/chart_engine/);
+    for(const options of [{chart:true},{chart:42,datapath:'r'},{chart:false,chart_engine:'echarts'}]) {
+        const invalid=new GramlotBuilder(null,{collections:[layout,grid,charts]});
+        assert.throws(()=>invalid.root.frameGrid({storepath:'rows',rowMode:'values',...options}));
+        assert.equal(invalid.source.getNodes().length,0);
+    }
 });

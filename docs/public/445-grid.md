@@ -25,6 +25,32 @@ Columns come from one inline `struct` or a structure Bag addressed by `structpat
 
 [Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-grid).
 
+### External checkbox sets
+
+A column can project an external Data string instead of editing a record:
+
+[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-grid).
+
+Initialize `assignments.john` to `""`. `checked` is a required reactive Data path, resolved relative to the grid Source; `checkedField` is the row identity field. IDs are nonempty strings without commas. Each click adds or removes the ID in comma-separated text using literal wrapped `includes` membership; ordinary Data writes refresh all views. There is no regex or parallel Set cache. Customer records and their editing history are unchanged. A checked column cannot also declare an editor.
+
+Add columns at runtime by inserting ordinary cell nodes with these attributes into the structure Bag. Removing a column retains its set. Offscreen and unloaded IDs remain in the string; individual-row toggles do not require a complete store. Ordinary search and field sorting exclude these external columns. Radio selection and bulk actions are not part of this increment. Set column `title` to the full name when `name` uses a compact caption such as J.
+
+### Filter by external sets
+
+Bind `setFilter` to a text value: `john` selects members of that checkbox column, `john,fred` intersects both sets, and an empty string removes only the set contribution. Names refer to external check column fields already declared in the structure. The view applies base `filter` AND the current search AND every selected set. Clearing search keeps the base and set criteria; clearing `setFilter` keeps base and search. Changes to a bound set immediately recompute the view without modifying records or memberships.
+
+Set filtering requires a complete resident store: a grid with `windowInfo` rejects nonempty `setFilter`. There is no implicit fetch-all or filtering of only a loaded window. Unknown check columns are configuration errors. Unions, differences and remote set predicates remain outside this increment.
+
+### Column value filters
+
+Date columns additionally provide From/To using the shared date editor. Both bounds are inclusive, open ends are allowed, and From accepts periods through `period_to`. Changing the range selects all dates inside it; checkboxes refine that range. Clearing From clears To and preserves checked dates as explicit values. Reset removes both range and values. Invalid drafts and reversed bounds retain the accepted criterion. Datetime days follow the display convention (D/DH civil, DHZ page timezone).
+
+Set `columnFilters=True` to add a compact filter button to ordinary column headers. The compact popup composes a shared grid (checkbox, value, row count), a search field and a shared menu toolbar. Search values filters only the inner grid using literal case-insensitive text; it never changes hidden selections or the main grid search. Click Value or Rows to sort the choices. Multiple values in one column combine with OR; columns combine with AND, together with the base filter, search and external set criteria.
+
+Counts apply all criteria except the popup column's own selection. Selected values remain available even at zero rows. Null and empty text share the Empty choice. None accepts an empty selection (zero rows); Reset removes only that column's restriction. All explicitly selects all column values, including those hidden by the popup search. Row edits and set changes update counts without editing source records or rebuilding the grid.
+
+Selections live in the Source-owned collection view: `columnFilter(field)` reads them, `applyColumnFilter(field, values)` accepts an array or null to remove the criterion, and `columnFacets(field)` returns `{key, value, count, selected}` entries. Numeric and text identities remain distinct. Only loaded scalar fields in complete resident stores are supported; windowed grids are rejected. Date periods, aggregate-cell membership and remote facets remain separate work.
+
 ### Viewport outputs and editing events
 
 `rowHeaders`, `rowResize` and `selfDragRows` enable their respective row affordances. `sortedBy` and `filter` are read inputs. For a windowed store, `windowInfo` and `loading` describe provider state, while bound `viewport` writes requested `{start, count}` and `sortRequest` writes an ordering request. Wire these outputs to the intended store/provider rather than loading every record in response to scrolling. A resident Bag, a cached remote selection and an authorized database query have different capabilities. Neither the grid nor an ordinary endpoint implies SQL or Asqueel access.
@@ -34,6 +60,10 @@ Enable local editing with `column(..., edit=True)` or an editor-options dictiona
 ### `searchBox` and `frameGrid`
 
 Use `searchBox` for the grid's filtering UI. It requires a FrameGrid target resolved through Source context; it is not a free-standing text field with a `value` binding. The Python `frameGrid(...)` composition exposes `.grid`, `.top`, `.bottom`, `.left` and `.right`; put the search control in its toolbar. `frameGrid` is a helper, not another widget tag.
+
+`searchLiteral=True` treats text punctuation literally instead of as a regular expression; accepted queries keep their original text. The column-filter popup uses this same searchBox and its shared theme CSS inside a frameGrid, without a separate input or search handler.
+
+The column caption is an external Labelbox menu, not part of the input capsule. It uses the shared `lbl_value`/`lbl_values` mechanism.
 
 `searchOn=True` exposes the available columns. An explicit column list can restrict choices; unknown fields are rejected. Typing applies filtering after a short pause and Enter applies immediately. Escape or the clear button clears it, and changing column clears the query. Invalid/incomplete expressions report an error and preserve the last accepted filter. Bind `searchTime` if the application wants the measured filter duration; this is an output, not the search text. The active view owns filtering and supplies the rows, so this control does not independently issue application database requests. Start with [grid composition and store responsibilities](445-grid.md#gc-445-start).
 
@@ -52,6 +82,19 @@ Types: T text, B Boolean, L integer, R real, X structured value; other codes are
 
 Each widget below links only the shared contracts it supports. A shared name can have different types, defaults or bindings; separate rows preserve those differences.
 
+
+<a id="gc-445-230"></a>
+<a id="gc-445-shared-labels"></a>
+## Labels and field presentation
+
+lbl supplies a field label; lbl_position places it. The lbl_* and box_* style families are described in [Themes and CSS](096-themes-and-css.md).
+
+Applies to: [searchBox](#gc-445-searchbox).
+
+| Parameter | Type | Default | Binding | Constraints | Applies to |
+| --- | --- | --- | --- | --- | --- |
+| `lbl` | T or None | — | read | qualification="intl_str" | All listed above |
+| `lbl_position` | T | 'L' | read | — | All listed above |
 
 <a id="gc-445-430"></a>
 ## Grids and search
@@ -84,6 +127,8 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `columnFilters` | B | False | read | — |
+| `setFilter` | T | '' | read | — |
 | `windowInfo` | X or None | None | read | — |
 | `loading` | B | False | read | — |
 | `viewport` | X or None | None | write | — |
@@ -113,7 +158,7 @@ Collection: **grid**. Browser element: `gramlot-search-box`.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-searchbox).
 
 
-**Data contract.** searchOn chooses eligible columns. Accepted queries update the target view's filter. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.
+**Data contract.** searchOn chooses eligible columns. searchLiteral=True uses literal case-insensitive text matching; the default retains regular expressions. Accepted queries update only the target view's search contribution, in AND with its base filter and setFilter; clearing search preserves both. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.
 
 
 **Interaction and events.** Typing starts a short debounce and Enter applies immediately. Changing columns, Escape or Clear removes the filter. Invalid or incomplete expressions retain the last accepted filter.
@@ -124,8 +169,14 @@ Collection: **grid**. Browser element: `gramlot-search-box`.
 
 **Limits and lifecycle.** Works against the resident view. Number and date syntax depends on the column type and locale. Removal cancels the timer and releases view subscriptions.
 
+Shared contracts: [Labels and field presentation](#gc-445-shared-labels).
+
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
+| `searchLiteral` | B | False | read | — |
+| `searchHelp` | B | False | read | — |
 | `searchOn` | B / T | True | read | — |
 | `searchTime` | R or None | None | write | — |
 
@@ -150,7 +201,7 @@ Children: `column,colgroup`. Parents: `grid`.
 **Composition.** Grid declaration containing columns and column groups. It has no separate browser element.
 
 
-**Limits and lifecycle.** Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected.
+**Limits and lifecycle.** Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected. External sets use check=multiple, checked=^DataPath and checkedField=identityField. Initialize the Data value to an empty string; nonempty text IDs without commas are stored as comma-separated strings. Literal comma-wrapped includes checks membership. Each toggle writes Data and refreshes all views without editing records. Dynamic columns observe the structure Bag; removing a column keeps its set. Offscreen IDs survive. External set columns cannot have editors and are excluded from ordinary field sorting/search; check=single uses a radio and writes one scalar ID to checked without editing supplier rows. It supports partial stores, retains filtered/offscreen choices and never toggles off the selected radio. Text and numeric identities retain their type. Bulk actions are not implemented. A read-bound setFilter string names external check columns: john,fred means intersection, empty removes only the set contribution. Base filter, search and setFilter combine with AND. Set Data changes immediately update the view. Nonempty setFilter requires a complete resident store; windowInfo and unknown check columns are rejected. Column title retains the full tooltip/accessibility name when name is abbreviated. columnFilters=True enables distinct-value header popups on complete resident stores: OR within each column, AND across columns/base/search/sets. Counts exclude only their own column selection. Empty groups null and empty text; zero-count selections persist. None differs from Reset. The popup reuses the shared grid and menu toolbar; its literal search filters only the choices and preserves hidden selections. All/None apply to the entire choice list. Accepted criteria live in the Source-owned collection view; row edits update counts. Date columns add inclusive From/To and period entry; range AND values is one column criterion. Changing range selects all matching dates; clearing From clears To but preserves selected dates. Reset clears both. Invalid drafts retain the accepted filter.
 
 Additional positional arguments: `False`; additional keyword arguments: `False`.
 
@@ -186,6 +237,10 @@ Additional positional arguments: `False`; additional keyword arguments: `False`.
 | `format` | keyword_only | T | None | [] |
 | `white_space` | keyword_only | T | None | [{"kind":"regex","pattern":"^(normal&#124;nowrap&#124;pre-wrap)$","flags":0}] |
 | `edit` | keyword_only | B / dict | False | [] |
+| `check` | keyword_only | T | None | [] |
+| `checked` | keyword_only | T | None | [] |
+| `checkedField` | keyword_only | T | None | [] |
+| `title` | keyword_only | T | None | [] |
 
 ### `colgroup`
 

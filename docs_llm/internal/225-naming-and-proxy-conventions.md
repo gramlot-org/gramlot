@@ -3,6 +3,49 @@
 Document ID: **GC-225**. Started: **2026-10-06**. Each rule names the owner
 decision it comes from. Sections marked **Open** record a question, not a rule.
 
+Drawing pane — 2026-11-05: owner chose `drawingPane` and confirmed parameters
+`image` and `annotations`, an image toolbar, and one Data Bag node per annotation
+with type, coordinates and style. Text additionally carries its text; freehand
+strokes carry their points. Component spelling follows `chartPane`; the class
+`DrawingPane` and tag `gramlot-drawing-pane` follow the existing component
+conventions. Image coordinates use original image pixels; without an image the
+logical area is 1000 × 1000. The initial tools are text, arrow, circle and
+freehand, with selection, movement and deletion. This records the owner's design
+confirmation, not an implementation or clinical acceptance claim.
+
+Drawing toolbar — owner 2026-11-05 requested an icon toolbar, in-place text
+editing, and color and pen size. The existing annotation `color` and `width`
+fields carry the chosen style; text font size derives from width. Editing uses
+the Text tool on the image or an existing text annotation; Enter commits and
+Escape cancels. These are changes to the existing drawingPane, not new API names.
+
+Drawing shared toolbar — owner 2026-11-05 requested the standard slotbar,
+SVG icons, smaller text and the selection cursor after text entry. The toolbar
+uses the existing permanent `menu`/`menuline` presentation and shared input
+components; no slotBar alias is introduced. `drawingController` follows the
+existing `gridColumnFilters` Source-owned controller pattern; `drawingState`
+and `drawingStatePath` identify its private state Bag under `gramlot.drawing`.
+Text uses 12 + 2 × pen width, at least 14 image units. Committing text selects
+the cursor tool. These are implementation details of the existing component.
+
+Image annotation companion — 2026-11-05: owner chose `radiografia_png.ant.tytx`
+as the companion name for `radiografia.png`, superseding the proposed
+`radiografia.png.annotations.tytx`. The companion contains the TYTX annotation
+Bag beside the unchanged image. Owner subsequently confirms the IDE and
+gramlot-py-server integration. `document_read` reuses `language`, `content`,
+`revision` and `writable`, with `image` and `annotationPath` identifying the
+display URL and companion path for image documents. A null revision denotes a
+missing companion; the existing document_create/document_save operations create
+or update its typed Bag, with the existing write gate and revision checks.
+
+IDE image upload — 2026-11-05: owner confirms uploading image files to the
+currently open workspace. `workspace_upload` follows the existing
+`workspace_open` host-operation family; `WorkspaceImageTarget` follows the
+existing upload-target class convention. `ideUploadCompleted` follows existing
+IDE Logic naming, and the private `upload` Data branch holds the shared uploader
+queue, context and dialog state. The existing uploader and upload protocol carry
+the original file; Remote Edit remains the host write gate.
+
 <a id="gc-225-005"></a>
 
 ## 005 · Names come from written conventions
@@ -2617,3 +2660,297 @@ CLI entry-point replacement confirmed — 2026-10-22. Owner replied “si” to 
 CLI site-name namespaces confirmed — 2026-10-22. Owner replied “ok” to independent Python and JavaScript site names in the personal registry. pygramlot lists and manages Python sites; jsgramlot lists and manages JavaScript sites. The same site name may exist independently in both namespaces without conflict. This confirms logical ownership and name separation, not a shared file format, separate physical registry files, their location, or cross-language dispatch. No runtime implementation is claimed.
 
 CLI automatic new-project setup confirmed — 2026-10-22. Owner replied “ok” to automatic preparation of new projects: a dedicated Python virtual environment or project-local JavaScript dependency installation, followed by run <name>. New creates the project, prepares its required dependencies for the selected engine and registers the prepared site. This approval applies to new projects; it does not authorize automatic installation during register, run or gallery, global dependency installation, dependency pinning, or fallback environments. Python environment association and first-party dependency policy remain in force. Exact setup commands, directory layout and partial-failure handling remain to be specified. No runtime implementation is claimed.
+
+Shared collection lookup — 2026-11-03: `Gramlot.getCollection(name)` follows `get` + noun camel case and returns the page's activated collection object. It exposes the existing Gramlot-owned registry without a new proxy. Owner requested sharing base collections with Inspector and confirmed they are always provided.
+
+External tree store — 2026-11-04: `treeStore` and `setTreeStore` follow the existing tree/store and camel-case getter/setter vocabulary. The reference belongs to the tree's Source node, not attributes, Data or a serialised copy. Owner requested observing the original Bag without moving or copying it.
+
+Inspector tree migration — 2026-11-04: `resolveLazy` controls resolver expansion, search and selection; `placement` uses the existing Inspector `before`/`inside`/`after` drag vocabulary; `storeBag` pairs with existing `setStoreBag`. Owner requested shared tree parity.
+
+`labelState` follows `rowActions.state`: its reactive value is passed as `state` to label presentation callbacks, without writing to the inspected Bag.
+
+Floating window docking — 2026-11-04: `floatingPane.docked` reuses the existing Inspector `docked` vocabulary. It presents the same Source inline and retains the floating geometry; false restores the window. Owner requested replacing the provisional palette while preserving docking and its state.
+
+Chart trial, 2026-11-04: private experimental classes `ChartDataView` and `ChartRenderer` derive from the existing chart, collection-view and renderer nouns and the PascalCase class convention. They are not public authoring names or a finalized API. Owner confirms that the chart retains the last filter when the grid closes; no further chart naming or selection policy is implied.
+
+Chart visible trial 2026-11-04: `chartTrial` / `gramlot-chart-trial` and the private `gridId` reference follow existing component and node-identity naming. `chartType`, `captionField` and `valueField` reuse PoC chart vocabulary. These names are confined to an experimental fixture, not approved public API. Owner confirms bars and lines for the first visible trial.
+
+
+Shared icon-only commands — 2026-11-04: internal `icon-only` control class and `refreshIconOnly` method derive from the existing command presentation conventions. `--gramlot-button-icon-size` and `--gramlot-button-icon-padding` follow existing button CSS tokens. The existing toolbar icon-size parameter remains authoritative for authored toolbar overrides. These names implement the owner-confirmed shared defaults, without a new authoring flag.
+
+
+### checkBoxText completion — 2026-11-04
+
+Owner: "ok allora completiamolo" after the legacy/PoC comparison; complete remote
+lists confirmed with "Sì, elenco completo come nel legacy". Reuse `popup`,
+`identifier`, `labelAttribute` and `_displayedValue` from the inspected legacy,
+and `dbtable`, `method`, `caption_field`, `order_by`, `condition_*` from current
+selectors. `limit=None` denotes the complete option list. Internal camelCase
+helpers `choiceOptions` and `selectionDisplay` follow existing component/context
+conventions. No hierarchy or search contract is added.
+
+
+Shared FrameGrid toolbar — 2026-11-04: `toolbar` follows the existing toolbar noun and the `grid` frame accessor convention: it returns the existing menu at `top.bar`, without creating another toolbar. `bar` reuses the legacy toolbar label, while `search` names its retained search group. `gramlot-grid-toolbar` / `gramlot-grid-search` follow component class prefixes. `--gramlot-search-height`, `--gramlot-search-width` and `--gramlot-search-font-size` follow existing CSS token conventions. `assets/icons/chart.svg` is a reusable chart command image, consumed through existing iconSrc. These apply the owner-confirmed shared composition; no new layout engine or slotbar grammar.
+
+### Hierarchical checkBoxText — 2026-11-04
+
+Owner: “completiamo anche la variante gerarchica riusando il tree con checkbox che abbiamo già, senza duplicare codice”; identity confirmation: “Sì, percorsi o identifier esplicito”. `hierarchical=True` uses the original `values` Bag and shared tree. `checkChildren` retains the tree parameter name and default True. Values are comma-separated paths, or explicit node-attribute `identifier` codes. Every loaded node, including branches, needs a unique comma-free text identifier when configured. Lazy identifiers become resolvable only after their branch loads. `CheckBoxTree` is the internal identity/caption adapter, not a second checking engine. Remote hierarchical Bags use existing dataRemote; flat dbSelect option rows are not converted into a hierarchy.
+
+### Editable checkBoxText descriptions — 2026-11-04
+
+Owner: “completa checkBoxText anche con testo editabile e selezione per descrizione, mantenendo i codici nei Data”. `CheckBoxTextEditor` follows the component editor naming; `sourceNode.checkBoxTextState.draft` owns incomplete text and its code baseline, following existing Source-owned component state. Popup text accepts a comma-separated description list with case-insensitive exact resolution; native datalist suggestions complete the last description. Enter/change commits through existing field validation; unknown/ambiguous text is not committed and blocks form acceptance. Escape and form restore discard the draft. Checkbox selection remains authoritative, and remote/hierarchical choices reuse the existing option index without extra queries. Legacy evidence: `Genropy/genropy/gnrjs/gnr_d11/js/genro_components.js`, CheckBoxText lines 5699–6114, uses caption/value dictionaries but declares the popup textbox `readOnly:true`; no typed-description resolver was found there. The edited-description behavior is explicitly owner-requested, not claimed as verified legacy parity. No new authoring parameter.
+
+
+Search capsule refinement — 2026-11-04: owner requests a fully rounded, lower and more compact shared searchBox, darker column-selector background and no information icon unless explicitly requested. The shared defaults become 26 px input height, 240 px width and 12 px type (touch minimum retained). `searchHelp=False` is the Boolean opt-in on frameGrid/searchBox; it forwards unchanged to the search control and is reactive there. This supersedes the preceding rectangular 32 px default and always-visible help button. No example-local styling.
+
+### Integrated dropdown chevrons — 2026-11-04
+
+Owner: “mai e poi mai la freccia separata e bordata: deve essere uno chevron al termine del campo ... come modalità per tutto”. Dropdown affordances use a transparent, borderless chevron inside the trailing edge, with one outer field border. `choiceFieldStyles`, `choice-field` and `choice-toggle` follow the existing choice component/style vocabulary and reuse `--gramlot-choice-toggle-width`. Shared by ChoiceEditor selectors, checkBoxText and dropDownButton; keep the separate accessible action and existing keyboard behavior, without a separate visual box. The native datalist indicator is visually suppressed to avoid a second arrow.
+
+
+Toolbar overflow intrinsic measurement — 2026-11-04: owner reports a flashing overflow chevron with ample space and requests Chart after Search. Reproduced at a fractional toolbar width: the auto margin is measured as required content and alternates command overflow every animation frame. Measure toolbar items in a synchronous intrinsic-size viewport before restoring layout; retain fixed margins, normal overflow and existing priority rules. The private `data-measuring` marker follows existing transient layout markers. FrameGrid search retains its auto margin but no forced CSS order, so subsequent commands appear after it in Source order.
+
+
+Chart multiple measures — 2026-11-04: owner clarifies “intendo piu curve o piu barre” and says “procedi”. The experimental chart uses checkBoxText to bind multiple measure codes to one structure Bag; each measure renders a separate named line or adjacent bar series with its own palette color and legend. Private `valueFields` is the plural of the former `valueField`, replacing it without an alias. Its value is the checkBoxText comma-separated string or null; no selection renders no series. This is not row selection or a public chart API.
+
+
+Chart series presentation — 2026-11-04: owner says “procedi” to per-measure axis/color configuration and a separate right Y axis for Units. Private `seriesOptions` follows ECharts series vocabulary; it is a Data Bag keyed by field with `axis` (left/right) and `color` (six-digit hex). Units defaults right, revenue/margin left. The chart subscribes to that Bag and releases subscriptions with its lifecycle. Settings survive measure deselection and bar/line switching. This remains an experimental chart contract.
+
+### Eager tree search — 2026-11-04
+
+Owner confirmed “ok” to separate `searchEager` from `resolveLazy`. `searchEager` is a Boolean read-binding parameter following `searchText`; true resolves unloaded branches during search, false searches only loaded nodes. Default true retains existing behavior; gallery Python/JS explicitly set true. `resolveLazy=False` remains the general resolver prohibition. No alias or searchOn option is introduced.
+
+
+Chart configuration grid — 2026-11-04: owner requests a compact editable measure/color/axis grid populated by a toggle menu. The existing per-measure options Bag gains `selected` and `caption`; selected is the single selection authority. A standard filtered grid shows selected rows, and a Data formula derives the renderer's valueFields. Menu entries toggle selected; hidden options retain edits and axis defaults. Existing grid colorpicker/filteringSelect editors perform changes; no application DOM/event wiring or new grid renderer is introduced.
+
+### Searchable navigation metadata — 2026-11-04
+
+Owner: “completa la pagina dedicata a checkBoxText e la ricerca anche nei metadati”. `searchAttributes` extends the tree's `searchText`/`searchEager` vocabulary: comma-separated BagNode attribute names, default empty, read-bound. Explicitly selected string attributes and arrays of strings supplement the displayed caption; unrelated attributes are not searched. Gallery opts into `description,tags,component`, supplied by adjacent lesson JSON in both navigation implementations. `component` identifies the documented component; titles stay short. No parallel search state, caption injection or implicit traversal of arbitrary objects.
+
+
+Grid color display — 2026-11-04: owner requests the color itself instead of its textual value in the chart configuration grid. Shared grid columns whose editor tag is colorpicker display a swatch outside editing, preserving the stored text and existing editor. Internal cell-color-swatch follows cell-content naming. The color code remains available as tooltip/accessibility text. This bounded presentation does not introduce a generic cell renderer API.
+
+
+Chart exploration — 2026-11-04: owner confirms “Sì procedi: tutte le colonne dello store, compresi Product e Region, scelta dell’aggregazione e più tipi di grafico. Voglio poter provare davvero le possibilità senza limiti messi nell’esempio.” The trial derives dimension choices from all store attribute names and measure choices from numeric columns, rather than a hand-picked allowlist. Private aggregation uses none/sum/avg/min/max/count (count means rows per category); chartData prepares the filtered view without mutating source rows. Chart types: bar, line, area, stackedBar, stackedArea, horizontalBar, pie, donut, scatter. These names follow existing chartType and ECharts series vocabulary. Configuration remains in Data Bags. Pie/donut require one nonnegative measure, stacked series a common axis, scatter a numeric/date dimension; visible messages explain incompatible selections and recover when configuration changes. This extends the experiment, not the public API. Category discovery runs when the Python fixture is built; it is not a runtime schema observer.
+
+
+Shared ChartPane — 2026-11-04: owner: “allora rendiamo riusabile anche il configuratore: voglio un componente condiviso a cui passare store e bag di configurazione, con toolbar e drawer standard. procedi”. Following ChatPane, Python ChartPane composes Source framePane, toolbar, detachable configuration drawer and shared chartView; the charts collection owns browser rendering. Inputs store/configuration are Bags; storepath and datapath identify their Data destinations; rowMode follows grid, optional gridId follows a source grid filter. No grid is required for standalone use. The composition discovers fields from the supplied store at authoring time, defaults missing configuration entries, preserves explicit options and derives valueFields from seriesOptions.selected. Each instance owns its drawer state under its datapath. ChartPane/chartView follow existing Pane/View naming; charts follows collection naming; the former private chartTrial entry is replaced without aliases. This authorizes shared composition and packaging, not release/publication or 3D integration.
+
+
+Reactive chart fields — 2026-11-04: owner requests “rendiamo reattiva anche la lista delle colonne”, including store structure changes without component recreation. Replace ChartPane authoring-time field discovery with shared chartFields, a Source-owned store observer. It updates category options and measure menu through Source nodes, and reconciles seriesOptions in Data. Existing numeric series retain configuration; new numeric fields receive defaults, removed/non-numeric fields leave the selected series. If the dimension disappears, choose the first available field; empty stores have no dimension/series until rows arrive. chartFields follows chartView naming; categoryId/measureMenuId reference existing nodeIds, configpath denotes the configuration Data path. This supersedes the documented rebuild-on-schema-change limitation, without a parallel DOM/state system.
+
+
+Reactive chart fields — 2026-11-04: chartFields observes BagCollectionStore and reconciles category options and measure menus as real Source children. Named chart Logic toggleMeasure uses selectionPath on menu Source nodes; runtime-generated inline actions are not used. The Logic group is shared per binding runtime with no instance/store closure. This follows existing ask/error Logic registration conventions. Store subscriptions are released on disconnect. Existing controls remain in place and existing options are retained, preserving the selected dimension during additions.
+
+
+3D bars — 2026-11-04: owner requests “ora proviamo anche le barre 3D: Product e Region come dimensioni e Revenue come misura, con scelta dei campi nel configuratore condiviso”. Add bar3D using ECharts GL 2.1.0 (declared peer ECharts 5/6, packaged BSD-3-Clause). captionField is the first dimension; secondCaptionField is the second; measureField explicitly chooses the single 3D measure. Field lists remain reactive. These extend existing captionField/valueFields vocabulary without aliases. ChartFields receives secondCategoryId and measureId Source references. The fixture defaults these fields to Product/Region/Revenue with sum. 3D aggregation groups both dimensions; sparse combinations stay absent. Rendering loads GL on first 3D use and changes to Canvas/WebGL, preserving SVG for 2D. No release or additional 3D chart types are authorized.
+
+
+Grouped 3D measures — 2026-11-04: owner confirms “Sì procedi: anche nel 3D più misure affiancate su ogni piano, con un colore per misura e la stessa griglia di configurazione. Togli il selettore «3D measure».” bar3D uses valueFields and seriesOptions.selected/color just like 2D. Remove measureField, measureId and the dedicated selector without aliases. Each second-dimension plane contains groups along the first dimension, with adjacent non-overlapping bars for selected measures and a common Z scale. chartBar3DOptions follows existing chartData3D naming and remains a private renderer helper. Numeric X positions represent category centers plus bounded within-group measure offsets; labels and tooltips expose category names, never internal offsets. Legend names/colors correspond to measures. Supersedes the earlier single-measure bar3D contract.
+
+
+Additional 3D charts — 2026-11-04: owner says “metti tutto dai” after the list of lines, scatter, surfaces, maps, paths and polygons. Implement the Cartesian line3D/scatter3D/surface types with existing dimension/measure controls first. chartSpatialOptions and spatialChartTypes follow chartBar3DOptions/chartType conventions; no alternative data authority. Lines group by second-dimension plane and measure; scatter uses numeric/date dimensions; surfaces use numeric/date coordinates, explicit pair aggregation and gaps for missing combinations, without interpolation. Geographic input format is awaiting the owner's response to the explicit GeoJSON/coordinate-list question.
+
+
+Geographic chart input — 2026-11-04: owner confirms “Sì, GeoJSON e coordinate nello store”. configuration.geoJSON holds a GeoJSON FeatureCollection as a JSON value, with Polygon/MultiPolygon features and properties.name matching captionField. geometryField selects row coordinate lists: paths use longitude/latitude/altitude points; polygons use closed rings with optional holes. These names follow GeoJSON and existing field/Id conventions; geometryId references the Source selector. Map3D aggregates by name; geographic paths/polygons render each geometry row. Multiple measures receive distinct panels and colors to avoid overlapping geographic geometry. Standard ECharts map registration uses a per-renderer name and clears retained geometry on disposal. Tests use explicitly synthetic territories, not claimed real geography.
+
+
+Polygon rendering — 2026-11-04: owner confirms “Sì, usa map3D per i poligoni”, approving conversion of store coordinate rings to GeoJSON and rendering through map3D instead of native polygons3D with geo3D. chartPolygonGeoJSON follows chartGeographicOptions naming. Each row becomes a named Polygon feature; captions must be unique, rings closed, measure heights nonnegative. This replaces the native polygon rendering path, not a fallback.
+
+
+GeoJSON file configuration — 2026-11-04: owner requests loading GeoJSON and choosing the store field linked to territories in the shared configurator. chartGeoJSON follows chartView/chartFields naming and uses a two-way value binding to configuration.geoJSON. Local file reading and validation belong to this shared charts component; no server upload is required. captionField remains the reactive store-field selector and matches properties.name, without introducing an alias. Invalid files leave the previous configuration intact.
+
+
+2D choropleth maps — 2026-11-04: owner confirms “Sì procedi nel configuratore condiviso: mappa 2D con colori graduati e legenda, scelta della misura anche per cliente e variazione annuale. Teniamo il 3D come opzione.” chartType=map uses one numeric mapValueField, a continuous color scale with numeric legend and contrasting territory borders. mapLabelField optionally selects store captions independently of territory matching. mapMeasureId/mapLabelId follow chartFields Source-reference conventions; chartMapOptions follows chartGeographicOptions naming. All controls live in ChartPane/charts. Business-derived ratios and year changes belong to the supplied store, not a chart-specific business model: the Australian host provides 2025 revenue divided by 2025 distinct customers and (2025/2024 - 1)*100. Signed measures use a zero-centered diverging scale; unmatched territories remain uncolored and are never treated as zero. 3D types and measure configuration remain available.
+
+
+Chart reuse qualification — 2026-11-04: owner requests “prova a lavorarci per avere qualcosa di riusabile e da testare in vari casi” after distinguishing shared charts from the snapshot integration. Qualify existing ChartPane with standard dataRpc loading: replacement Bags at storepath, multiple independent chart configurations over one collection, grid filters, empty/error/recovery cases and both row modes. ChartDataView.bindStore follows BagCollectionView.bindStore and retains its last filter while changing resident data. Empty results convey no schema change: preserve configuration and present an empty status; reconcile actual field removals when nonempty data returns. This supersedes the chartView store-replacement rejection and destructive empty-store reconciliation. Database queries belong to the Python adapter/application, test/example pages to gramlot-examples, and core uses its own fixtures. No alternate transport, database dependency or business model enters core.
+
+
+Modular charts collection — 2026-11-04. Owner: “Sì procedi: riorganizza la
+collection charts in piccoli moduli per tipo, con parti comuni condivise e
+configuratore in Gramlot JS. Manteniamo tutte le funzionalità già fatte e
+verifichiamo gli esempi.” This supersedes Python ownership of the ChartPane UI:
+Python ChartPane seeds the two Data Bags and authors chartPane; the charts
+collection composes standard Source toolbar, drawer and configuration controls.
+chartPane follows framePane naming; configpath follows chartFields and avoids
+using the component's inherited datapath as a second configuration authority.
+Internal chart-types modules declare id, label, controls, threeD, measureLimit,
+buildOptions and optional mapData. chartTypes/chartType follow chartType vocabulary.
+Common controls own Source composition; each chart type selects applicable groups.
+The same descriptor dispatches rendering, without another central type switch.
+Generated child IDs derive from the chartPane ID (view/layout/measures suffixes).
+These are qualification selectors, not a second child-authoring API. Existing
+ChartPane helper remains the Python authoring entry, not a duplicate GUI path.
+No new chart families, server protocols, dependency modifications or publication.
+
+
+Chart data responsibility — 2026-11-04. Owner: “non metterei qui il fato di
+fare aggregaziini, qui dobbiamo mettere quello che trpviamo nella bag dei dati.
+le operaziini maemartiche devono strare fuori”. Remove aggregation from the
+charts parameters, controls and render preparation. Charts project the supplied
+store rows; no sum, average, count, minimum/maximum or business-derived measure
+is calculated here. Upstream stores/providers supply prepared measures. Map
+territories and surface coordinates requiring uniqueness reject duplicate keys
+with an explicit upstream-preparation message. Scale extents, layout geometry
+and date coordinate encoding remain rendering responsibilities. This supersedes
+the earlier chart aggregation selector/algorithms; other chart features remain.
+
+
+Targeted chart deduplication — 2026-11-05. Owner: “sì procedi con una pulizia
+mirata delle duplicazioni vere, senza aggiungere componenti inutili e mantenendo
+tutto funzionante”. Extract only repeated coordinate and polygon-ring predicates.
+Internal isChartCoordinate/isChartPolygon follow Boolean is-prefixed predicates
+and chart helper naming; chart-geometry groups these pure geometry checks.
+Keep validation policies, error messages, component contracts and UI unchanged.
+No additional component or chart-side calculation is introduced.
+
+
+Chart engine adapters — 2026-11-05. Owner: “Sì procedi: separiamo l’adattatore
+ECharts con i metodi render_ e proviamo Plotly su barre, linee e torta, usando lo
+stesso configuratore e segnalando le opzioni incompatibili senza cambiarle
+automaticamente.” Confirmed after discussing Vega: Plotly remains the second
+engine. engine (echarts/plotly) is the shared configuration selector, default
+echarts. EChartsAdapter/PlotlyAdapter own instance lifecycle and render_<type>
+translation methods; the render_ inventory is their supported-type authority.
+ChartRenderer coordinates engine selection and current updates; chart-types
+retain only engine-independent labels, controls and measure selection semantics.
+validate(context) checks engine restrictions before rendering without Data writes.
+The type selector disables unsupported choices while preserving a current
+unsupported value and reporting its cause. No fallback engine or silent option
+rewrite is authorized. Existing pie first-selected-measure semantics remain for
+both engines without changing selected measures. Plotly is loaded lazily from a
+MIT basic bundle and initially implements bar/line/pie only. Unsupported types
+and unrepresentable data/options are explicit. No aggregation or business math
+enters charts. Names follow chartType/configuration and the owner's render_
+prefix convention; this supersedes engine functions on chart-type descriptors.
+
+
+Vega adapter — 2026-11-05. Owner: “puoi aggungere vega ?” following the three-type
+Plotly comparison. Add VegaAdapter and engine=vega under the existing engine
+contract, initially render_bar/render_line/render_pie. Use Vega directly, not
+Vega-Lite. The common method inventory, Source configurator and Data Bags remain
+the authorities. Vega parsing, SVG View lifecycle, responsive sizing and disposal
+belong to this adapter. Vega transforms may compute graphical coordinates (pie
+angles), never business aggregates or derived measures. No configuration rewrite,
+engine fallback, new component, 3D support or publication. VegaAdapter follows
+EChartsAdapter/PlotlyAdapter naming; no new configuration names are introduced.
+
+
+Grid external check sets — 2026-11-05: owner confirms “Sì, partiamo da creazione degli insiemi e spunte, con stringa nei Data e includes come deciso”. Implement only ordinary column attributes check="multiple", checked="^path", checkedField="id", as proposed in GC-475. checked is a reactive external Data path, resolved relative to the grid Source; checkedField names the row identity field. Strings use comma delimiters, empty string for empty set, literal wrapped includes membership. IDs are nonempty text without commas. No Set cache, regex, row edits, filters, scalar radio or bulk actions in this increment. Columns are added through the existing reactive structure Bag.
+
+
+uPlot streaming qualification — 2026-11-05. Owner: “proviamo a integrare anche
+uPlot con lo stesso configuratore e un esempio di sinusoide in streaming, così
+vediamo come si comporta”. Add UPlotAdapter, engine=uplot and render_line under
+the existing adapter/method-inventory contract. Reuse shared Source controls,
+measure colors/axes and raw store data. The example is Python-authored in
+Gramlot examples with named browser Logic and the existing dataController timer;
+it generates sine samples upstream of rendering in a bounded Data Bag window.
+No WebSocket transport or bypass of CollectionStore is introduced in this trial.
+UPlotAdapter follows the existing EngineAdapter naming, uplot the package/engine
+identifier convention; the example's Logic methods use existing named-logic rules.
+No new shared component, aggregation, fallback or publication is authorized.
+
+Grid set filters — 2026-11-05: owner confirms “John, John e Fred e Tutti, in AND con gli altri filtri e solo su store completo. Metti le checkbox come prime colonne con titoli abbreviati”. `grid.setFilter` is a read-bound text parameter, default empty string; comma-separated external check column fields mean intersection, empty means no set contribution. `column.title` carries the full accessible name/tooltip while `name` may abbreviate it. The Source-owned collection view retains separate base, search and set contributions in AND. Resident Bags are the supported complete store; windowInfo rejects nonempty setFilter. No remote fallback, union, difference or bulk action is introduced.
+
+
+Plotly coverage expansion — 2026-11-05. Owner requested “tutti gli adattamenti
+per plotly per andare alla steessa copertutra di echarts”. Extend the existing
+PlotlyAdapter render_ inventory and shared configurator to the existing chart
+types without changing store values or selected configuration. Engine-owned
+plotlySpatial/plotlyMap helpers follow the existing engine/helper naming rules;
+chartMapData extracts renderer-neutral territory validation/projection shared
+with ECharts. Use Plotly's full lazy bundle for native 2D, Cartesian 3D and
+GeoJSON choropleths. No business aggregation or automatic option conversion.
+The non-native mesh3d construction of bars/extruded territories is a separate
+pending owner decision; do not advertise those capabilities until implemented.
+
+
+Chart filter transfer repair — 2026-11-05. Owner: “sì procedi a sistemare il trasferimento dei filtri dalla grid al grafico, nel componente condiviso e per tutti i motori”. BagCollectionView.filterContributions derives from the existing filter contribution vocabulary and getter convention. It exposes an immutable snapshot of accepted named criteria and predicates for copyFiltersFrom, without exposing the private mutable Map. This internal view contract works across independently bundled class definitions; no engine-specific filter path is introduced.
+
+Column facets — 2026-11-05: owner confirmed “ok” to distinct scalar values/counts, OR within one column, AND across base/search/sets/columns, self-excluding counts, explicit empty selection, blank bucket, retained zero-count selections and active headers, complete stores only. `grid.columnFilters` is a read-bound Boolean opt-in (default false). Source-owned collection-view methods `columnFilter(field)`, `applyColumnFilter(field, values)` and `columnFacets(field)` expose the accepted criteria and computed counts; null means no restriction, [] means no rows. Nonempty facet criteria require a resident grid. Captions do not replace typed values; null/undefined/empty text share the Empty bucket. No remote or aggregated-cell filtering is added.
+
+
+Vizabi bubble trial — 2026-11-05. Owner: “Procedi con una prima prova del bubble chart animato in una collection separata, con store e Bag di configurazione Gramlot e Vizabi caricato come libreria opzionale.” Collection vizabi and component vizabiBubble (gramlot-vizabi-bubble) follow library collection and camelCase component conventions. Storepath, rowMode, configuration and libraryUrl use existing parameter nouns. VizabiSession is the internal library lifecycle adapter. The optional host ESM module exports Vizabi, BubbleChart, mobx, style (CSS text) and locale (English locale object); Gramlot ships none of those third-party libraries. Configuration fields entityField,timeField,xField,yField,sizeField,colorField,year,playing,speed describe the bounded bubble trial. Model state remains a projection of the Gramlot Bag; playback writes year/playing back to it. Prepared entity/year rows require no application aggregation. This authorizes a bounded optional collection and Python-authored qualification; no release or publication.
+
+Column filter composition — 2026-11-05: owner confirms “si” to replacing the custom list with shared Source search/grid/toolbar. GridColumnFilters remains the internal controller; gridColumnFilters on its toolbar Source delegates commands, not application state. Its derived facet rows, selection and search draft live under gramlot.grid.<instance>.columnFilter in Data, following the existing private grid namespace. The outer Source-owned collection view remains authoritative for accepted column filters. The popup grid has its own view/search, uses existing external check columns and cannot open nested column filters. No new public syntax.
+
+Date column ranges — 2026-11-05: owner confirmed “ok” to inclusive Da/A and periods in the existing facet popup. `dateTextBox.period_to` is an optional relative Data output path, following the legacy parameter spelling; periods use the existing parser and write their end only on accepted edits. `columnRange(field)` and the optional range argument of `applyColumnFilter(field, values, range)` extend the existing view criterion, with civil from/to days and the column dtype/timeZone. Range and values compose with AND; counts exclude the entire own criterion. Changing a range selects all dates in it; clearing Da clears A and preserves checked dates; Reset removes both. Invalid drafts retain the last accepted filter. Complete stores only.
+
+
+Chart temporal snapshots — 2026-11-05. Owner abandoned the Vizabi trial (“lasciamo perdere”) and authorized “una prova nel configuratore condiviso: scegliamo il campo temporale e facciamo scorrere le fotografie dei dati con slider e Play/Pausa, usando i motori che abbiamo già”. Vizabi work is suspended, with its known upstream lifecycle defect unresolved; no upstream patch is authorized. ChartTimeline / chartTimeline / chart-timeline.js and ChartTimeView derive from existing ChartFields/ChartDataView naming. Configuration timeField (empty disables), timeStep (day/month/year), timeIndex, timeValue (Date), timeMax, timeLabel, timePlaying and timeSpeed (seconds) describe the bounded trial. UTC calendar periods span the complete store's minimum/maximum, including empty periods. Source dataController advances timeIndex, stops at the end; manual slider input pauses. Temporal filtering intersects the chart's existing grid-filtered view and performs no aggregation. Existing adapter capabilities remain unchanged; uPlot still requires a numeric/date X field. No cumulative/window mode, gesture or new engine is implemented in this trial.
+
+Shared facet search — 2026-11-05: owner requires reuse of all existing components and CSS, explicitly approving replacement of the popup search and verification against legacy styling. The popup now composes frameGrid/searchBox, with no private input, CSS or search controller. `searchLiteral` follows the searchOn/searchHelp parameter family (read-bound Boolean, false by default); the popup enables it to preserve its already approved literal search. Accepted view criteria carry `literal: true`; the shared compiler owns matching. SearchBox.focus and clear reuse its existing focus/clear lifecycle. No change to ordinary regex searches. Legacy CSS evidence: 61e8a9d989, gnrjs/gnr_d11/css/gnrbase_css/15_gnr_grid_extended.css, gcf_searchbox/gcf_search; theme colours, 26px control and inset icon, but separate popup rules are not ported.
+
+
+Temporal chart domains — 2026-11-05. Owner: “Sì procedi: assi e colori stabili su tutto l’intervallo temporale, nel componente condiviso e per tutti i motori. Ricalcolali solo quando cambiano dati, filtri o configurazione.” The shared temporal projection owns cached domains over all dated rows accepted by non-temporal filters. Numeric ranges, ordered category domains and color references remain constant while the selected period advances. Data/filter changes invalidate the cache; relevant chart configuration changes recompute it. Adapters translate these references to their supported chart types without aggregating source measures. This supersedes per-frame automatic domains during temporal playback; non-temporal charts retain existing behavior. Internal chart-domains.js/chartDomains follows chart-data.js/chartData conventions; context.domains carries this derived rendering state, not another application Bag.
+
+### Selectable labels (owner confirmation, 2026-11-05)
+
+Owner: “procedi con lbl_value e lbl_values riusando il menu esistente”; scope includes groupBox and searchBox external labels, with a small proportional chevron. `lbl_value` is the selected choice code (two-way binding); `lbl_values` uses the existing comma-separated code:caption choice syntax (read binding). The renderer-owned Labelbox projects the common menu; choices and selection remain in Source/Data. No separate search selector or menu CSS.
+
+
+Expandable temporal controls — 2026-11-05. Owner: “Sì, settimane da lunedì a domenica in UTC. Procedi con la sezione espandibile e i passi temporali in funzione del tipo di dato, lasciandoli modificabili.” Shared chartControls composes ordinary Source details/summary. Calendar steps add week (Monday–Sunday UTC); timestamp fields additionally offer hour/minute. The existing TYTX getDateType classification identifies time-bearing Date values; this resident store has no independent declared column schema. Automatic step selects the finest applicable unit spanning at most 36 transitions, or year for longer intervals. Explicit timeStep remains untouched; derived timeUnit is the concrete unit and timeHasClock drives intraday choices. timeStep defaults to auto only when absent. Existing explicit periods remain valid. Internal timeProfile/timeLabel extend chart-time.js naming. Playback, fixed domains and non-temporal filters retain their contracts.
+
+
+Sparse temporal playback — 2026-11-05. Owner answered “si. nuovi oppure dobbiamo ttrovare un modi diverso” to the explicit proposal to retain the last available snapshot in empty periods by default, with a configurable empty-period mode and displayed snapshot date. timeEmpty (previous/empty, default previous) follows the time configuration prefix. ChartTimeView selects the latest occupied period not later than the cursor from the currently filtered rows; selection is independent of playback direction and does not fill individual missing entities or interpolate measures. No future rows are used before the first eligible period. Optional chartView configpath uses the existing shared configuration path convention to publish derived timeSnapshotLabel for ChartPane's timeline. This supersedes blank-by-default temporal gaps; explicit empty mode preserves the earlier behavior.
+
+### Single external grid choice — 2026-11-05
+
+Owner confirmed the proposed `check="single"`, `checked="^product.primary_supplier_id"`, `checkedField="supplier_id"` contract (“ok”, then “perfetto continua”). Reuse the external check-column implementation: radio presentation, scalar ID in the parent Data record, no Boolean added to supplier rows, no clearing on filtering or partial-store paging, no toggle-off on the selected radio. No automatic remote save.
+
+
+Chart playback presentation — 2026-11-05. Owner: “mettiamo magari icone tipo play e stop classici e migliora l’aspetto grafico”. The shared ChartPane timeline uses existing icon-only buttons: a stateful Play/Pause toggle and Stop (pause and return to the first period), accessible names/tooltips and the standard theme tokens. Existing timePlaying/timeIndex fields and action bindings remain authoritative. No example-local button styling, icon framework or additional state is introduced. Stable IDs retain the time-play suffix; time-stop follows that convention.
+
+
+Temporal step controls — 2026-11-05. Owner: “metterei anche due frecce per avanzare o tornare indietro di un periodo, senza dover usare lo slider”. Shared ChartPane adds Previous period / Next period icon buttons, one configured period per click, pausing playback like manual slider input. Controls disable at the corresponding boundary; no wrap or skip of empty periods. IDs time-previous/time-next follow existing time-play/time-stop. Derived timeAtEnd uses the existing time prefix and Source dataFormula so changes to either index or range update the end control.
+
+
+Australian geographic drill-down — 2026-11-05. Owner: “ok procedi” after the proposal for an Australia → State → suburb gallery demo, reusable map selection/loading, retained measure/filters/period and explicit unmatched-locality reporting. Bounded connected work includes the examples page and read-only host provider; SAL 2021 geometries load per selected State. Shared chartView exposes selectedTerritory, a two-way territory key written on a 2D map click, carried through ChartPane configuration. ECharts and Plotly translate their map click events; non-map engines acquire no new capability. selectedTerritory follows selected/key and existing map configuration naming; internal onTerritorySelect is the adapter callback. Geographic data matching uses exact suburb + State names only; unmatched/ambiguous names remain visible, never silently assigned. SQL aggregation and geographic preparation remain upstream, with no business math in core, dependency edits or publication.
+
+
+Geographic values and overlaid bars — 2026-11-05. Owner confirms “si” to repairing/verifying map colors, showing values as zoom permits and adding overlaid 3D bars. Shared mapLabelMode (none/name/value/nameValue, default value) follows mapLabelField; label collision handling is rendering-only. mapBar3D/render_mapBar3D follows map3D/render_map3D and bar3D; ECharts GL implements geographic bars, while the native-only Plotly boundary remains unchanged. chartMapAnchors derives display anchors inside polygon geometry, shared with map labels. Multiple selected measures use adjacent bars, their configured colors and one common height scale. No source measure aggregation or coordinate changes in Data.
+
+Owner answers “opzione in config” to the explicit proposal for an invisible graphic range reference because ECharts GL's native geo3D altitude range starts at data minimum. mapBarScale (zero/extent, default zero) exposes that decision. A silent, invisible renderer-owned scatter3D reference fixes zero/full range or data extent, including stable temporal domains; it is excluded from tooltip and legend and never enters the Data Bag. This is a bounded exception to §13 for this documented engine limitation, not permission for other workarounds.
+
+
+FrameGrid chart composition — 2026-11-05: chart follows searchOn's declarative option role; chart_* uses the established component-prefixed authoring convention. The reserved ._chart Data path belongs to the frame datapath. chartPane configDefaults names an initial configuration Bag; fields follow the existing chart configuration vocabulary. This is initialization, not a second live state store. Owner confirmation: “chart=True o il tipo e le opzioni chart_*, tutto nella Bag della frameGrid”.
+
+
+Drawing toolbar presentation — 2026-11-05. Owner requests “la barra dei toll puo stare in verticale a sinistra” and “l'ide per i tipi non conoscut bon dovrebbe dare nulla”, together with improved color selection. Reuse menu orientation=vertical and Source button/SVG color swatches bound to the existing drawingState color. No new component, state or public API name. Unsupported extensions do not open an IDE document; .ant.tytx remains a companion accessed through its image.
+
+
+Compact drawing toolbar — 2026-11-05. Owner “eh si” confirms a narrow uniform icon toolbar, single color indicator opening a palette, stroke preview opening a size menu, and delete at the bottom. Existing menu/menuline submenus and existing color/size bindings implement this presentation; no new API or state. This supersedes the permanently exposed swatches and inputs.
+
+
+Audio sample chart input — 2026-11-05. Owner confirms “ok” to the shared chart input for numeric arrays and sample interval metadata. ChartView reuses storepath with explicit rowMode="samples"; sampleStep (positive, default 1) and sampleStart (finite, default 0) define X = start + index * step. The array remains the value of one Data node. captionField and the single valueFields name identify the virtual X/Y columns. ChartSampleView follows ChartDataView naming and exposes the existing renderer view protocol without Bag nodes. No grid filters, temporal playback or ChartPane configurator is claimed for this bounded input. Existing row modes and engine adapters remain unchanged.
+
+
+Stable audio chart axes — 2026-11-05. Owner: “gli assi non dovrebbero cambiare : se non no si legge nulla”. Sample input adds optional paired sampleMin/sampleMax real read bindings, following sampleStep/sampleStart naming. When configured, the existing shared domain contract fixes the measure extent and derives X only from sample count, step and start. No per-frame amplitude autoscaling. Audio gallery sets waveform -1/+1 and spectrum minimumDb/0; FFT or sample-rate changes may update X. Other chart modes and absent bounds retain their existing behavior.
+
+
+### Reserved system Data namespace — owner, 2026-11-05
+
+The owner approved proceeding with the general system-path migration after the
+DeviceHandler audit ("possiamo procedere"). System-owned root Data now uses
+`_gramlot`: device state is `_gramlot.device` and generated drawing state is
+`_gramlot.drawing`; generated grid structure/filter state uses `_gramlot.grid`. This supersedes the earlier `gramlot.device` Data reservation.
+Update producers and consumer bindings together; do not introduce aliases.
+The JavaScript runtime object, native bridge protocol/plugin names and persistent
+storage keys are unchanged. The proposed Inspector root-node exclusion remains
+a future possibility, explicitly not part of this implementation.
+
+
+### Standard server collections — 2026-11-05
+
+Owner: "è un compito da gramlot server", then "parti". GramlotServer owns
+standard collection availability for every site; page/host collections add custom
+packages. `standard_collections` (Python) and generated `standardCollections`
+(JavaScript) follow the existing collection vocabulary. The packaged
+`collections/standard.json` inventory drives both distributions. Experimental
+selection_trial is outside the standard set; no Invoice integration is included.
+
+`standardCollectionAssets()` exposes the packaged standard entry URL/file pairs
+through the existing server assets API; adapters retain artifact hash validation.
+The generated JavaScript inventory lives in `dist/standard-collections.js`.

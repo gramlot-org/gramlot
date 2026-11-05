@@ -135,3 +135,102 @@ for (const mode of ['values','attributes']) test(`${mode}: all-column search ret
     assert.deepEqual(f.labels(), [], 'no stale text is cached after a value update');
     assert.deepEqual(f.labels(f.second), ['r1']);
 });
+
+for (const mode of ['values','attributes']) test(`${mode}: base, search and ID sets compose without erasing each other`,()=>{
+    const f=fixture(mode,[{id:'C1',city:'Milan',active:1},{id:'C2',city:'Milan',active:1},
+        {id:'C3',city:'Rome',active:1},{id:'C10',city:'Milan',active:0}]);
+    const before=f.bag.toTytx();
+    f.first.applyFilter({value:'= 1',columns:['active'],dtype:'L',locale:'en-US'},'base');
+    f.first.applyFilter({value:'Milan',columns:['city'],dtype:'T'});
+    f.first.applySetFilter([{field:'id',value:'C1,C3,C10'},{field:'id',value:'C1,C2'}]);
+    assert.deepEqual(f.labels(),['r0']);
+    f.first.applySetFilter(null); assert.deepEqual(f.labels(),['r0','r1']);
+    f.first.applySetFilter([{field:'id',value:'C1,C3'}]);
+    f.first.applyFilter(null); assert.deepEqual(f.labels(),['r0','r2']);
+    f.first.applyFilter({value:'= 0',columns:['active'],dtype:'L',locale:'en-US'},'base');
+    assert.deepEqual(f.labels(),[]);
+    f.first.applySetFilter([{field:'id',value:'C10'}]);assert.deepEqual(f.labels(),['r3']);
+    f.first.applyFilter(null,'base');assert.deepEqual(f.labels(),['r3']);
+    assert.throws(()=>f.first.applySetFilter([{field:'id',value:null}]),/string/);
+    assert.deepEqual(f.labels(),['r3']);
+    assert.deepEqual(f.labels(f.second),['r0','r1','r2','r3']);
+    assert.equal(f.bag.toTytx(),before);
+    f.first.applySetFilter(null);f.first.applyFilter({value:' ',columns:['city'],dtype:'T'});
+    assert.deepEqual(f.labels(),['r0','r1','r2','r3']);
+    f.first.disconnect();f.second.disconnect();
+});
+
+for(const mode of ['values','attributes']) test(`${mode}: column facets exclude their own criterion and compose with all other filters`,()=>{
+    const f=fixture(mode,[{id:'1',city:'Milan',kind:'A'},{id:'2',city:'Turin',kind:'A'},
+        {id:'3',city:'Milan',kind:'B'},{id:'4',city:'Rome',kind:'B'},{id:'5',city:'',kind:'A'}]);
+    const original=f.bag.toTytx();
+    const counts=field=>f.first.columnFacets(field).map(({value,count})=>[value,count]);
+    assert.deepEqual(counts('city'),[['Milan',2],['Turin',1],['Rome',1],[null,1]]);
+    f.first.applyColumnFilter('city',['Milan','Turin']);
+    assert.deepEqual(f.labels(),['r0','r1','r2']);
+    assert.deepEqual(counts('city'),[['Milan',2],['Turin',1],['Rome',1],[null,1]]);
+    f.first.applyColumnFilter('kind',['A']);assert.deepEqual(f.labels(),['r0','r1']);
+    assert.deepEqual(counts('city'),[['Milan',1],['Turin',1],['Rome',0],[null,1]]);
+    assert.deepEqual(counts('kind'),[['A',2],['B',1]]);
+    f.first.applySetFilter([{field:'id',value:'1,3,4'}]);
+    f.first.applyFilter({value:'Milan',columns:['city'],dtype:'T'});
+    assert.deepEqual(f.labels(),['r0']);assert.deepEqual(counts('city'),[['Milan',1],['Turin',0],['Rome',0],[null,0]]);
+    assert(f.first.columnFacets('city').find(item=>item.value==='Turin').selected);
+    f.first.applyColumnFilter('city',[]);assert.deepEqual(f.labels(),[]);
+    assert.equal(counts('city')[0][1],1);
+    f.first.applyColumnFilter('city',null);assert.deepEqual(f.labels(),['r0']);
+    assert.equal(f.first.filter.value,'Milan');
+    f.first.applyFilter(null);f.first.applySetFilter(null);f.first.applyColumnFilter('kind',null);
+    f.first.applyColumnFilter('city',[null]);assert.deepEqual(f.labels(),['r4']);
+    assert.equal(f.bag.toTytx(),original);assert.equal(f.labels(f.second).length,5);
+    f.first.disconnect();f.second.disconnect();
+});
+
+test('facets keep typed identities, missing selections and notify on hidden record edits',()=>{
+    const f=fixture('attributes',[{value:1},{value:'1'},{value:new Date('2026-01-01')},{value:null},{value:''}]);
+    assert.equal(f.first.columnFacets('value').length,4);
+    f.first.applyColumnFilter('value',[1]);assert.deepEqual(f.labels(),['r0']);
+    f.first.applyColumnFilter('value',[new Date('2026-01-01')]);assert.deepEqual(f.labels(),['r2']);
+    f.first.applyColumnFilter('value',['missing']);assert.deepEqual(f.labels(),[]);
+    assert.deepEqual(f.first.columnFacets('value').at(-1),{key:'"missing"',value:'missing',count:0,selected:true});
+    let events=0;f.first.subscribe(()=>events++);
+    f.bag.getNode('r0').setAttr({value:2});f.parent.receiveData({},f.bag.getNode('r0'));assert.equal(events,1);
+    assert.equal(f.first.columnFacets('value')[0].value,2);
+    assert.throws(()=>f.first.applyColumnFilter('value',[{}]),/scalar/);
+    assert.deepEqual(f.first.columnFilter('value'),['missing']);
+    f.first.disconnect();f.second.disconnect();
+});
+
+test('date column ranges are inclusive, self-excluding and intersect typed picks and other filters',()=>{
+    const d=text=>new Date(text);
+    const f=fixture('attributes',[
+        {day:d('2026-03-01T00:00:00Z'),group:'A'},
+        {day:d('2026-03-31T23:59:59Z'),group:'A'},
+        {day:d('2026-04-01T00:00:00Z'),group:'A'},
+        {day:null,group:'A'},
+        {day:d('2026-03-01T00:00:00Z'),group:'B'}]);
+    const range={from:d('2026-03-01'),to:d('2026-03-31'),dtype:'DH'};
+    f.first.applyColumnFilter('group',['A']);
+    f.first.applyColumnFilter('day',null,range);
+    assert.deepEqual(f.labels(),['r0','r1']);
+    assert.deepEqual(f.first.columnFacets('day').map(v=>[v.count,v.selected]),[[1,true],[1,true]]);
+    f.first.applyColumnFilter('day',[d('2026-03-01')]);assert.deepEqual(f.labels(),['r0']);
+    f.first.applyColumnFilter('day',null);assert.deepEqual(f.labels(),['r0','r1']);
+    assert.throws(()=>f.first.applyColumnFilter('day',null,{...range,from:d('2026-04-01')}),/From/);
+    assert.deepEqual(f.labels(),['r0','r1']);
+    const snapshot=f.first.columnRange('day');snapshot.from.setFullYear(2000);
+    assert.equal(f.first.columnRange('day').from.getUTCFullYear(),2026);
+    f.second.copyFiltersFrom(f.first);assert.deepEqual(f.labels(f.second),['r0','r1']);
+    f.first.applyColumnFilter('day',[],range);assert.deepEqual(f.labels(),[]);
+    f.first.applyColumnFilter('day',null,null);assert.deepEqual(f.labels(),['r0','r1','r2','r3']);
+    f.first.applyColumnFilter('day',null,{from:null,to:d('2026-03-01'),dtype:'DHZ',timeZone:'America/Los_Angeles'});
+    assert.deepEqual(f.labels(),['r0']);
+});
+
+test('literal search retains raw query and treats regex punctuation as ordinary text',()=>{
+    const f=fixture('attributes',[{name:'A[B].*'},{name:'ab'},{name:'a|b'}]);
+    const filter={value:'[b].*',columns:['name'],dtype:'T',literal:true};
+    f.first.applyFilter(filter);assert.deepEqual(f.labels(),['r0']);assert.deepEqual(f.first.filter,filter);
+    f.first.applyFilter({...filter,value:'a|b'});assert.deepEqual(f.labels(),['r2']);
+    f.first.applyFilter({...filter,value:'a|b',literal:false});assert.equal(f.labels().length,3);
+});

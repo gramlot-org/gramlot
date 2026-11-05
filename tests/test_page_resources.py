@@ -368,8 +368,14 @@ class BootstrapTests(unittest.IsolatedAsyncioTestCase):
         for prefix, runtime in (("", "/static/gramlot.js"), ("/app", "/app/static/gramlot.js")):
             with self.subTest(prefix=prefix):
                 opened = await server.open_page("/", prefix=prefix)
-                self.assertIn(f'<script type="importmap" nonce="{opened.nonce}">'
-                              f'{{"imports":{{"@gramlot/gramlot/page":"{runtime}","@gramlot/gramlot":"{runtime}","@gramlot/gramlot/components":"{runtime}","@gramlot/gramlot/markdown":"{prefix}/static/gramlot-markdown.js"}}}}</script></head>', opened.html)
+                match = re.search(r'<script type="importmap" nonce="([^"]+)">(.*?)</script>', opened.html)
+                self.assertEqual(match[1], opened.nonce)
+                imports = json.loads(match[2])["imports"]
+                for key in ("page", "components", ""):
+                    self.assertEqual(imports["@gramlot/gramlot" + ("/" + key if key else "")], runtime)
+                self.assertEqual(imports["@gramlot/gramlot/markdown"], prefix + "/static/gramlot-markdown.js")
+                for collection in server.collections:
+                    self.assertIn("@gramlot/collections/" + collection.name, imports)
                 self.assertLess(opened.html.index('type="importmap"'), opened.html.index('type="module"'))
 
     async def test_js_url_with_two_groups_fails_before_registration(self):

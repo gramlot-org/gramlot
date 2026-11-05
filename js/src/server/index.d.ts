@@ -11,7 +11,7 @@ export type {GramlotServerOptions, OpenedPage, RegisteredPage} from './gramlot-s
 export {GramlotBuilder} from '../builder/gramlot-builder.js';
 export {GramlotFileServer} from './gramlot-file-server.js';
 export type {GramlotFileServerOptions} from './gramlot-file-server.js';
-export {gramlotDev, runtimeAsset} from './assets.js';
+export {gramlotDev, runtimeAsset, standardCollectionAssets} from './assets.js';
 export {checkProtocol} from './conformance.js';
 export {InvalidResourceName, parseRequires} from './resources.js';
 export type {Resources} from './resources.js';

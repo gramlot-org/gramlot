@@ -221,3 +221,11 @@ def page_collections(page_class):
         for cls in reversed(page_class.__mro__)
         for item in cls.__dict__.get("gramlots", ())
     )
+
+
+def standard_collections():
+    """Prepared standard packages shipped with this Gramlot distribution."""
+    from importlib import import_module
+    from importlib.resources import files
+    names = json.loads(files("gramlot").joinpath("collections/standard.json").read_text())
+    return tuple(import_module(f"gramlot.collections.{name}").mygramlot for name in names)

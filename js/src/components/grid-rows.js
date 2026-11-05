@@ -8,11 +8,11 @@ export class GridRows {
     }
     read(columns, nodes = this.store.getRows()) {
         return nodes.map(node => ({node, cells:columns.map(column =>
-            cellText(this.store.value(node, column.field), column, this.format))}));
+            column.check ? '' : cellText(this.store.value(node, column.field), column, this.format))}));
     }
 }
 
-function cellText(value, column, format) {
+export function cellText(value, column, format) {
     if (value == null) return '';
     const {dtype, format: pattern} = column;
     if (dtype === 'T' && typeof value !== 'string' || dtype === 'B' && typeof value !== 'boolean') throw new TypeError(`grid ${column.field} does not match ${dtype}`);

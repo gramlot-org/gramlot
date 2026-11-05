@@ -174,7 +174,7 @@ Shows Enter accepting free text and arrows or clicking choosing a customer sugge
 <a id="gc-465-checkboxtext"></a>
 ### `checkBoxText`
 
-Shows an inline multiple-choice group and its bound code list.
+Shows inline and popup choices sharing their bound code list.
 
 - [02-checkbox_text](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/01-inputs/02-checks_and_switches/02-checkbox_text.md)
 
@@ -526,6 +526,13 @@ struct.column("seats", name="Seats", dtype="L", edit=True)
 ```
 
 
+A column can project an external Data string instead of editing a record:
+```python
+struct.column("john", name="John", check="multiple",
+              checked="^assignments.john", checkedField="id")
+```
+
+
 
 <a id="gc-465-grid"></a>
 ### `grid`
@@ -654,3 +661,115 @@ Independent state, header actions, Clear and inline guides.
 - [04-order_cards](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/04-order_cards.md)
 - [05-card_actions](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/05-card_actions.md)
 - [06-card_guides](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/09-grouplets/06-card_guides.md)
+
+<a id="gc-465-setup-charts"></a>
+## Charts: setup
+
+[Collection manual](480-charts.md). The environment must supply the collection and the services described in that manual. The following body belongs in `main(self, root)`; it is not a standalone application.
+
+```python
+root.chartPane(storepath="sales.rows", configpath="sales.chart", height="500px")
+```
+
+Supply rows and a configuration Bag in Data. chartPane composes the shared controls; chartView renders supported types using ECharts, Plotly, Vega or uPlot. Temporal playback selects prepared rows; it does not calculate business aggregates. Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.
+
+
+<a id="gc-465-chartpane"></a>
+### `chartPane`
+
+Shared chart configuration and time.
+
+- [13_charts](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/13_charts.md)
+
+<a id="gc-465-chartview"></a>
+### `chartView`
+
+Shared chart configuration and time.
+
+- [13_charts](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/13_charts.md)
+
+<a id="gc-465-chartfields"></a>
+### `chartFields`
+
+Shared chart configuration and time.
+
+- [13_charts](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/13_charts.md)
+
+<a id="gc-465-chartgeojson"></a>
+### `chartGeoJSON`
+
+Shared chart configuration and time.
+
+- [13_charts](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/13_charts.md)
+
+<a id="gc-465-charttimeline"></a>
+### `chartTimeline`
+
+Shared chart configuration and time.
+
+- [13_charts](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/13_charts.md)
+
+<a id="gc-465-setup-vizabi"></a>
+## Vizabi: setup
+
+[Collection manual](485-vizabi.md). The environment must supply the collection and the services described in that manual. The following body belongs in `main(self, root)`; it is not a standalone application.
+
+```python
+root.vizabiBubble(storepath="rows", configuration="^vizabi", libraryUrl="/assets/vizabi.js", height="500px")
+```
+
+Supply a configuration Bag and the compatible external library URL. The host owns library delivery. This specialized integration is not a chartPane engine and is not enabled by the common gallery environment.
+
+
+<a id="gc-465-vizabibubble"></a>
+### `vizabiBubble`
+
+Host-only integration; no common gallery lesson.
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-setup-audio"></a>
+## Audio analysis: setup
+
+[Collection manual](490-audio.md). The environment must supply the collection and the services described in that manual. The following body belongs in `main(self, root)`; it is not a standalone application.
+
+```python
+pane = root.div(datapath="audio")
+pane.checkbox(value="^.running", lbl="Microphone")
+pane.audioAnalyser(running="^.running", waveform="^.waveform", spectrum="^.spectrum",
+                   sampleRate="^.sampleRate", status="^.status", error="^.error")
+```
+
+Microphone access requires permission and a secure browser context. Waveform and spectrum are arrays stored as Bag values, not a node per sample. Bind status and error to display feedback. Stopping, pagehide and disposal release the microphone and audio context.
+
+
+<a id="gc-465-audioanalyser"></a>
+### `audioAnalyser`
+
+Microphone analysis is an optional live gallery example.
+
+No dedicated lesson identified in the reviewed catalogue.
+
+
+<a id="gc-465-setup-drawing"></a>
+## Drawing and annotations: setup
+
+[Collection manual](495-drawing.md). The environment must supply the collection and the services described in that manual. The following body belongs in `main(self, root)`; it is not a standalone application.
+
+```python
+from genro_bag import Bag
+pane = root.div(datapath="drawing")
+pane.dataSetter(".annotations", Bag())
+pane.drawingPane(annotations="^.annotations", height="360px")
+```
+
+Initialize the annotations Bag before mounting. image supplies an optional image URL. The component observes and edits the original Bag; saving to a server is a separate application operation. Its shared menu offers selection, arrows, circles, freehand, text, color, pen width and deletion.
+
+
+<a id="gc-465-drawingpane"></a>
+### `drawingPane`
+
+Drawing annotations retained in Data.
+
+- [06-drawing](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/06-editors/06-drawing.md)

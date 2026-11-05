@@ -15,8 +15,8 @@ test('page selection accumulates base declarations and orders named dependencies
  class Parent extends Page {static gramlots=[a];}
  class Child extends Parent {static gramlots=[b,a];}
  const server=new GramlotServer();
- assert.deepEqual(server.pageCollections(Child),[a,b]);
- assert.deepEqual(server.pageCollections(Page),[]);
+ assert.deepEqual(server.pageCollections(Child),[...server.collections,a,b]);
+ assert.deepEqual(server.pageCollections(Page),server.collections);
  assert.throws(()=>server.collectionGraph([b]),/Missing collection dependency/);
  assert.throws(()=>server.collectionGraph([a,{...a,buildId:'sha256:'+'b'.repeat(64)}]),/Conflicting/);
  assert.throws(()=>server.collectionGraph([{...a,dependencies:['b']},b]),/cycle/);
@@ -101,8 +101,8 @@ test('environment Page includes host collections without mutating imported class
  const bound=left.environmentPage(Example);
  assert.equal(bound,left.environmentPage(Example));
  assert.ok(new bound() instanceof Example);
- assert.deepEqual(bound.gramlots,[a,b]);
- assert.deepEqual(right.environmentPage(Example).gramlots,[b]);
+ assert.deepEqual(bound.gramlots,left.collections);
+ assert.deepEqual(right.environmentPage(Example).gramlots,right.collections);
  assert.deepEqual(Example.gramlots,[]);
- assert.deepEqual(left.pageCollections(bound),[a,b]);
+ assert.deepEqual(left.pageCollections(bound),left.collections);
 });

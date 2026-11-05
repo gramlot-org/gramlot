@@ -1,3 +1,4 @@
+import './fixtures/standard-collection-imports.mjs';
 // Phase S07: the browser bootstrap of a page (source plan §4.12; decisions D8, D9, C02, Q12.2)
 // with real imports of logic files in jsdom. The §4.9 rules themselves are in named-logic.test.js.
 //
@@ -345,8 +346,8 @@ test('CSP without unsafe-eval: the bootstrap and logic graph and the runtime bun
     const bundle = await build({entryPoints: [join(source, 'index.js')], bundle: true, platform: 'browser', target: 'es2022',
         format: 'esm', write: false, legalComments: 'inline', logLevel: 'silent'});
     const sections = bundle.outputFiles[0].text.split(/^(?=\/\/ \S+\.m?js$)/m);
-    assert.equal(sections.filter(section => section.startsWith('// src/binding/inline.js\n')).length, 1);
-    const text = sections.filter(section => !section.startsWith('// src/binding/inline.js\n')).join('');
+    assert.equal(sections.filter(section =>  /^\/\/ (?:js\/)?src\/binding\/inline\.js\n/.test(section)).length, 1);
+    const text = sections.filter(section => ! /^\/\/ (?:js\/)?src\/binding\/inline\.js\n/.test(section)).join('');
     assert.match(text, /PageBootstrap/);
     for (const pattern of EVALUATION) assert.doesNotMatch(text, pattern, `bundle: ${pattern}`);
 });
@@ -384,20 +385,25 @@ test('CSP without unsafe-eval: a page with named logic only never calls the inli
 });
 
 test('application collection grammar and browser module load before Source, including fragments', () => folder(async root => {
-    const {default: inputs} = await import('../src/components/inputs.js');
-    const moduleUrl = new URL('../src/components/inputs.js', import.meta.url).href;
     const buildId='sha256:'+'a'.repeat(64);
+    const registry = new URL('../src/components/registry.js', import.meta.url).href;
+    const container = new URL('../src/components/container.js', import.meta.url).href;
+    await write(root, 'trial.js', `import {defineCollection,defineComponent} from ${JSON.stringify(registry)};
+import {Container} from ${JSON.stringify(container)};
+export default defineCollection({name:'trial',components:[defineComponent({name:'trialPanel',tag:'gramlot-trial-panel',base:Container,subTags:'*',implementation:Base=>class extends Base {}})]});
+export const buildId=${JSON.stringify(buildId)};`);
+    const {default: trial} = await import(pathToFileURL(root+'/trial.js').href);
     await write(root, 'index.js', `import {Page as Base} from ${JSON.stringify(PAGE_MODULE)};
 export class Page extends Base {
-    main(root) { root.textbox({id:'customer', value:'^customer', lbl:'Customer'}); root.dataSetter({destination_path:'customer',value:'Ada'}); }
-    more(root) { root.checkbox({value:false, lbl:'Contact'}); }
+    main(root) { root.trialPanel().textbox({id:'customer', value:'^customer', lbl:'Customer'}); root.dataSetter({destination_path:'customer',value:'Ada'}); }
+    more(root) { root.trialPanel().checkbox({value:false, lbl:'Contact'}); }
 }
 Page.registerSource('more');`);
-    await write(root, 'inputs.js', `export {default} from ${JSON.stringify(moduleUrl)}; export const buildId=${JSON.stringify(buildId)};`);
-    const server = new GramlotFileServer(root, {collections:[{name:'inputs',grammar:inputs.toDocument(), module:'/inputs.js',buildId,css:[],dependencies:[]}]});
+    const server = new GramlotFileServer(root, {collections:[{name:'trial',grammar:trial.toDocument(), module:'/trial.js',buildId,css:[],dependencies:[]}]});
     const opened = await server.openPage('/', {prefix:root});
     const args = bootstrapArguments(opened.html);
-    assert.deepEqual(args.resources.collections,[{name:'inputs',url:root+'/inputs.js',buildId}]);
+    assert.deepEqual(args.resources.collections.find(item=>item.name==='trial'),{name:'trial',url:root+'/trial.js',buildId});
+    assert.ok(args.resources.collections.some(item=>item.name==='inputs'));
     const wire = await sourceText(server, opened.pageId);
     assert.match(await sourceText(server, opened.pageId, 'more'), /gramlot-checkbox/);
     const {window} = browser(EMPTY_PAGE, pathToFileURL(root+'/index.html').href);
@@ -410,4 +416,13 @@ Page.registerSource('more');`);
         assert.equal(app.data.getItem('customer'),'Grace');
         app.dispose();
     });
+}));
+
+test('hosted browser modules can import the prepared layout collection', () => folder(async root => {
+    await write(root, 'index.js', `import {Page as Base} from ${JSON.stringify(PAGE_MODULE)}; export class Page extends Base { main(root) { root.p('Hello'); } }`);
+    const server = new GramlotFileServer(root);
+    const opened = await server.openPage('/', {prefix:root});
+    const match = opened.html.match(/<script type="importmap" nonce="[^"]+">(.*?)<\/script>/s);
+    const imports = JSON.parse(match[1]).imports;
+    assert.equal(imports['@gramlot/collections/layout'], root + server.collections.find(item=>item.name==='layout').module);
 }));

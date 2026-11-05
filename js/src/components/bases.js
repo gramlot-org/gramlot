@@ -133,11 +133,13 @@ export function ChoiceGroup(HTMLElement) {
                 items[next].focus();
             });
         }
+        choiceOptions() { return parseChoices(this.parameters.values ?? ""); }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
-            const values = this.parameters.values ?? '';
-            if (values !== this.#values) {
-                const options = parseChoices(values);
+            const values = this.choiceOptions();
+            const signature = JSON.stringify(values);
+            if (signature !== this.#values) {
+                const options = values;
                 const retained = new Set();
                 let previous = null;
                 for (const {id: code, caption} of options) {
@@ -159,7 +161,7 @@ export function ChoiceGroup(HTMLElement) {
                 for (const [code, item] of this.#options) if (!retained.has(code)) {
                     item.label.remove(); this.#options.delete(code);
                 }
-                this.#values = values;
+                this.#values = signature;
             }
             const cols = this.parameters.cols;
             if (!Number.isInteger(cols) || cols < 1) throw new TypeError('cols must be a positive integer');

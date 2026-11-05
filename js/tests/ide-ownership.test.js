@@ -11,9 +11,26 @@ import layout from '../src/components/layout.js';
 import inputs from '../src/components/inputs.js';
 import tree from '../src/components/tree.js';
 import editors from '../src/components/editors.js';
+import uploads from '../src/components/uploads.js';
 
 const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 const deferred = () => {let resolve;const promise = new Promise(r => {resolve = r;});return {promise,resolve};};
+
+test('an upload only refreshes and opens its own still-active workspace', async () => {
+    const state = new Bag({browser:new Bag({root:'/first'}),upload:new Bag({open:true})});
+    const calls=[];
+    const controller={open:async root=>{calls.push(['refresh',root]);return root;}};
+    const scope={getRelativeData:()=>state,value:{getNode:()=>({fileSystemController:controller})}};
+    scope.ideContext={scope,documents:{disposed:false}};
+    const logic={ideOpenDocument:async(node,root,path)=>calls.push(['open',root,path])};
+    await IdeLogic.prototype.ideUploadCompleted.call(logic,scope,{result:{root:'/second',path:'image.png'}});
+    assert.deepEqual(calls,[]);assert.equal(state.getItem('upload.open'),true);
+    await IdeLogic.prototype.ideUploadCompleted.call(logic,scope,{result:{root:'/first',path:'image.png'}});
+    assert.deepEqual(calls,[['refresh','/first'],['open','/first','image.png']]);assert.equal(state.getItem('upload.open'),false);
+    controller.request={};calls.length=0;
+    await IdeLogic.prototype.ideUploadCompleted.call(logic,scope,{result:{root:'/first',path:'other.png'}});
+    assert.deepEqual(calls,[]);
+});
 
 test('two Python IDEs share Logic but retain independent Source ownership, relative Data and DOM-only detachment', async t => {
     const source = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? 'python3', ['-c', `
@@ -21,7 +38,7 @@ import json
 from pathlib import Path
 from gramlot import GramlotBuilder
 from gramlot.page import IdePage
-b = GramlotBuilder(collections=[json.loads(Path(f'src/gramlot/collections/{name}.json').read_text()) for name in ['inputs','layout','tree','editors']])
+b = GramlotBuilder(collections=[json.loads(Path(f'src/gramlot/collections/{name}.json').read_text()) for name in ['inputs','layout','tree','editors','uploads']])
 tabs = b.root.tabContainer(node_label='editors', datapath='workbench', height='600px')
 for name in ('one','two'):
     pane = tabs.contentPane(node_label=name, title=name, pageName=name, detachable=True)
@@ -41,7 +58,7 @@ print(b.to_tytx())
     window.HTMLElement.prototype.showPopover = function(){};
     const errors = [];
     window.addEventListener('error', event => errors.push(event.error));
-    const app = new Gramlot({document:window.document,transport:false,collections:[layout,inputs,tree,editors]});
+    const app = new Gramlot({document:window.document,transport:false,collections:[layout,inputs,tree,editors,uploads]});
     t.after(() => {app.dispose();window.close();});
     app.src.logicRegistry.register(IdeLogic, {resource:'test:two-ides'});
     const reads = [], saves = [], workspaces = [];

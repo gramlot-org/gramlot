@@ -217,8 +217,6 @@ Shared contracts: [Disabled, readonly and live updates](#gc-415-shared-state), [
 | `action, command, caption, code, tooltip` | `{"dtype":"T","nullable":true}` |
 | `checked` | `{"binding":"read","dtype":"B","nullable":true}` |
 | `group, favorite` | `{"default":false,"dtype":"B"}` |
-| `priority` | `{"default":0,"dtype":"R"}` |
-| `overflowable` | `{"default":true,"dtype":"B"}` |
 | `parameters` | `{"annotation":{"kind":"type","module":"builtins","name":"dict"},"nullable":true}` |
 
 Child grammar: `*`; parent grammar: `None`.
@@ -236,7 +234,7 @@ Collection: buttons. Fixed or elastic space in a menu/toolbar; it does not publi
 **Data contract.** size specifies fixed space in pixels. flex assigns a positive share of remaining layout space. Neither parameter represents application Data.
 
 
-**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving overflowable units to its popup.
+**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving trailing units to its popup.
 
 
 **Composition.** Place it between menu or toolbar items as a leaf.

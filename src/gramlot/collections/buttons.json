@@ -939,28 +939,6 @@
             "default": false
           },
           {
-            "name": "priority",
-            "kind": "keyword_only",
-            "role": "attribute",
-            "annotation": {
-              "kind": "dtype",
-              "dtype": "R"
-            },
-            "has_default": true,
-            "default": 0
-          },
-          {
-            "name": "overflowable",
-            "kind": "keyword_only",
-            "role": "attribute",
-            "annotation": {
-              "kind": "dtype",
-              "dtype": "B"
-            },
-            "has_default": true,
-            "default": true
-          },
-          {
             "name": "parameters",
             "kind": "keyword_only",
             "role": "attribute",
@@ -1067,14 +1045,6 @@
             "group": {
               "dtype": "B",
               "default": false
-            },
-            "priority": {
-              "dtype": "R",
-              "default": 0
-            },
-            "overflowable": {
-              "dtype": "B",
-              "default": true
             },
             "parameters": {
               "annotation": {

@@ -5,18 +5,27 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets')
+COLLECTIONS = ('inputs', 'buttons', 'layout', 'tree', 'editors', 'typst', 'uploads', 'grid', 'chat', 'grouplets', 'charts', 'vizabi', 'audio', 'drawing')
 from widget_reference_content import COLLECTION_GUIDES
 from widget_manual_content import COLLECTION_EXPLANATIONS
 from widget_coverage import COVERAGE, behavior_sections, coverage_documents
 
 COLLECTION_IDS = {
     'inputs': 410, 'buttons': 415, 'layout': 420, 'tree': 425, 'editors': 430,
-    'typst': 435, 'uploads': 440, 'grid': 445, 'chat': 450, 'grouplets': 455,
+    'typst': 435, 'uploads': 440, 'grid': 445, 'chat': 450, 'grouplets': 455, 'charts': 480, 'vizabi': 485, 'audio': 490, 'drawing': 495,
 }
 
 # Human explanations complement the executable parameter contract.
 DESCRIPTIONS = {
+ 'chartPane': 'Shared chart configuration, rendering surface and temporal playback over Data Bags.',
+ 'chartView': 'Engine adapter rendering the original rows and observing configuration and grid filters.',
+ 'chartFields': 'Store field discovery for the shared chart configuration controls.',
+ 'chartGeoJSON': 'Validated GeoJSON input and geographic data summary.',
+ 'chartTimeline': 'Prepared calendar snapshots and playback bounds from the original store.',
+ 'audioAnalyser': 'Live microphone waveform and spectrum arrays written into Data.',
+ 'drawingPane': 'SVG annotation editing over an original Data Bag.',
+ 'vizabiBubble': 'Specialized host-provided Vizabi bubble session observing Data Bags.',
+
  'grid': 'Virtualized Bag rows with a declarative column structure; database access belongs to the store/provider.',
  'searchBox': 'Search control connected to the enclosing grid Source context.',
  'chatMessages': 'Scrollable live Source message viewport; ChatPane composes the conversation interface around it.',
@@ -39,7 +48,7 @@ DESCRIPTIONS = {
  'comboBox': 'Suggestions with free text allowed.',
  'dbSelect': 'Remote choices through an application method or the configured Asqueel integration; the component itself supplies no database adapter.',
  'dbComboBox': 'Remote suggestions with free text; the application owns authorization and persistence.',
- 'checkBoxText': 'A local multi-choice group storing the selected codes.',
+ 'checkBoxText': 'Multiple choices from text, a Bag, a remote list or the shared checkbox tree.',
  'dateCalendar': 'An inline civil-date calendar.',
  'button': 'An application action button using the existing action/Logic contract.',
  'toggleButton': 'A command button with a bound Boolean selected state.',
@@ -72,6 +81,10 @@ DESCRIPTIONS = {
  'typstPreview': 'Typst document preview with client SVG and PDF compilation; compiler resources are separate from ordinary forms.',
 }
 DETAILS = {
+ 'audio': ('490-audio.md#gc-490-start', 'Microphone samples and lifecycle'),
+ 'drawing': ('495-drawing.md#gc-495-start', 'Annotation Bags and drawing tools'),
+ 'charts': ('480-charts.md#gc-480-start', 'Shared charts, engines and temporal snapshots'),
+ 'vizabi': ('485-vizabi.md#gc-485-start', 'Host-provided bubble charts'),
  'grid': ('445-grid.md#gc-445-start', 'Bag rows, column structure and selection stores'),
  'chat': ('450-chat.md#gc-450-start', 'ChatPane composition and server responsibilities'),
  'grouplets': ('455-grouplets.md#gc-455-start', 'Reusable remote fragments and cards'),
@@ -105,6 +118,8 @@ def type_name(spec):
     return str(value) + (' or None' if spec.get('nullable') else '')
 
 FAMILIES = {
+    'Audio and drawing': ('audioAnalyser', 'drawingPane'),
+    'Charts': ('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble'),
     'Grids and search': ('grid', 'searchBox'),
     'Conversations': ('chatMessages',),
     'Reusable fragments': ('grouplet', 'groupletCard'),
@@ -253,6 +268,7 @@ connects these controls to runnable lessons and screenshots.
     stable = {'textbox': 'gc-345-015', 'passwordbox': 'gc-345-035', 'textBoxArea': 'gc-345-030', 'checkbox': 'gc-345-020', 'radioButton': 'gc-345-040', 'radioButtonText': 'gc-345-025', 'checkBoxText': 'gc-345-100', 'colorpicker': 'gc-345-045', 'filteringSelect': 'gc-345-075', 'callbackSelect': 'gc-345-080', 'comboBox': 'gc-345-085', 'dbSelect': 'gc-345-090', 'dbComboBox': 'gc-345-095', 'numberTextBox': 'gc-345-060', 'horizontalSlider': 'gc-345-050', 'verticalSlider': 'gc-345-055', 'dateTextBox': 'gc-345-065', 'dateCalendar': 'gc-345-105', 'timeTextBox': 'gc-345-070', 'button': 'gc-345-110', 'toggleButton': 'gc-345-115', 'dropDownButton': 'gc-345-120', 'menu': 'gc-345-125', 'menuline': 'gc-345-130', 'spacer': 'gc-345-135', 'formlet': 'gc-345-155', 'groupBox': 'gc-345-160', 'contentPane': 'gc-345-165', 'borderContainer': 'gc-345-170', 'framePane': 'gc-345-150', 'stackContainer': 'gc-345-175', 'tabContainer': 'gc-345-180', 'dialog': 'gc-345-140', 'floatingPane': 'gc-345-145', 'tree': 'gc-345-185', 'codeMirror': 'gc-345-190', 'htmlEditor': 'gc-345-195', 'htmlPreview': 'gc-345-200', 'markdownEditor': 'gc-345-205', 'markdownPreview': 'gc-345-210', 'typstPreview': 'gc-345-215', 'trayPane': 'gc-345-405', 'transformPane': 'gc-345-410', 'uploader': 'gc-345-340', 'imageUploader': 'gc-345-345', 'attachmentManager': 'gc-345-350', 'editingStatus': 'gc-345-355', 'rowActions': 'gc-345-360'}
     stable.update(grid='gc-345-365', searchBox='gc-345-370', chatMessages='gc-345-375',
                   grouplet='gc-345-380', groupletCard='gc-345-385')
+    stable.update({name: f'gc-345-{450 + index * 5}' for index, name in enumerate(('chartPane', 'chartView', 'chartFields', 'chartGeoJSON', 'chartTimeline', 'vizabiBubble', 'audioAnalyser', 'drawingPane'))})
     if not set(entries) <= set(stable):
         raise ValueError('Allocate a stable documentation ID for every new component')
     families = {family: tuple(key for key in widgets if key in entries)
@@ -302,6 +318,7 @@ connects these controls to runnable lessons and screenshots.
         brief += [heading, explanation]
         brief += compact_table(((parameter, spec, widgets) for (parameter, _), (spec, widgets) in rows.items()), scoped=True)
     family_ids = {
+        'Charts': 445, 'Audio and drawing': 490,
         'Grids and search': 430, 'Conversations': 435, 'Reusable fragments': 440,
         'Text fields': 300, 'Choices and selectors': 305, 'Numbers, dates and time': 310,
         'Buttons, menus and toolbars': 315, 'Forms and containers': 320,
@@ -462,7 +479,7 @@ def main():
                 raise SystemExit(f'Stale widget reference: {path}')
         else:
             path.write_text(text)
-    print('Widget and collection references match all ten packaged component grammars.')
+    print('Widget and collection references match all packaged component grammars.')
 
 
 if __name__ == '__main__':

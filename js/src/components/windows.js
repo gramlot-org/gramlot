@@ -52,4 +52,4 @@ WindowShell.parameters={
 };
 export const Dialog=defineComponent({name:'dialog',tag:'gramlot-dialog',base:WindowShell,sourceContext:true,subTags:'framePane',implementation:Base=>class extends Base{}});
 export const FloatingPane=defineComponent({name:'floatingPane',tag:'gramlot-floating-pane',base:WindowShell,sourceContext:true,subTags:'framePane',
-    parameters:{movable:bool(true),resizable:bool(true),collapsible:bool(true)},implementation:Base=>class extends Base{}});
+    parameters:{movable:bool(true),resizable:bool(true),collapsible:bool(true),docked:bool(false)},implementation:Base=>class extends Base{}});

@@ -1,3 +1,4 @@
+import {GridColumnFilters} from './grid-column-filters.js';
 import {Bag} from '@gramlot/gramlot';
 import {SVG_NS} from '../renderer/attributes.js';
 import {defineComponent, ComponentCollection} from './registry.js';
@@ -5,6 +6,7 @@ import {Container} from './container.js';
 import {parseSort} from '../stores/bag-collection-view.js';
 import inputs from './inputs.js';
 import {GridCellEditor} from './grid-cell-editor.js';
+import {GridCheckSets} from './grid-check-sets.js';
 import {GridRows} from './grid-rows.js';
 import {GridStructure} from './grid-structure.js';
 import {GridHeaderInteraction} from './grid-header-interaction.js';
@@ -18,7 +20,7 @@ import structureGrammar from './grid-grammar.json' with {type: 'json'};
 /** First grid: explicit Bag row representation and a separately observable Data struct. */
 export const Grid = defineComponent({
     name: 'grid', tag: 'gramlot-grid', base: Container, bagStore: true, bagStruct: true, sourceContext: true, subTags: 'struct,div',
-    parameters: {windowInfo: {dtype:'X', nullable:true, default:null, binding:'read'},
+    parameters: {columnFilters: {dtype:'B', default:false, binding:'read'}, setFilter: {dtype:'T', default:'', binding:'read'}, windowInfo: {dtype:'X', nullable:true, default:null, binding:'read'},
         loading: {dtype:'B', default:false, binding:'read'},
         viewport: {dtype:'X', nullable:true, default:null, binding:'write'},
         sortRequest: {dtype:'T', default:'', binding:'write'},
@@ -30,6 +32,8 @@ export const Grid = defineComponent({
         filter: {annotation:{kind:'type',module:'builtins',name:'dict'}, nullable:true, default:null, binding:'read'}},
     implementation: Base => class extends Base {
         #store;
+        #checkSets;
+        #columnFilters;
         #cellEditor;
         #editCell = event => {
             if (event.type === 'keydown' && !['Enter','F2'].includes(event.key)) return;
@@ -145,6 +149,7 @@ export const Grid = defineComponent({
             spinner.append(track, arc); this.#loadingStatus.append(spinner);
             bodyFrame.append(this.#bodyViewport, this.#loadingStatus);
             this.control.replaceChildren(headerFrame, bodyFrame); this.shadowRoot.append(style);
+            this.#columnFilters = new GridColumnFilters(this, this.#head);
             this.#interaction = new GridHeaderInteraction(this.#head, this.control, () => this.#structure, (field, multiple) => this.#sort(field, multiple),
                 () => this.#rowLayout, () => this.#scheduleLayout());
             this.#rowInteraction = new GridRowInteraction(this.#body, this.control, () => this.#rowLayout, row => {
@@ -157,6 +162,8 @@ export const Grid = defineComponent({
             this.#body.addEventListener('dblclick', this.#editCell);
             this.#body.addEventListener('keydown', this.#editCell);
             this.#cellEditor?.connect();
+            this.#checkSets?.connect();
+            this.#columnFilters.connect();
             this.#observeStore();
             if (this.#collectionView) this.#invalidate({full:true, rows:[]});
             this.#interaction.connect();
@@ -171,7 +178,10 @@ export const Grid = defineComponent({
             this.#body.removeEventListener('dblclick', this.#editCell);
             this.#body.removeEventListener('keydown', this.#editCell);
             this.#cellEditor?.disconnect();
+            this.#checkSets?.disconnect();
+            this.#columnFilters.disconnect();
             this.#cancelRefresh();
+            gridSearch(this.#context.sourceNode).detach(this.#collectionView);
             this.#collectionView?.disconnect();
             this.#unsubscribeStore?.(); this.#unsubscribeStore = null;
             this.#interaction.disconnect();
@@ -334,6 +344,13 @@ export const Grid = defineComponent({
         }
         setSourceContext(context) {
             this.#context = context;
+            this.#columnFilters.setSourceContext(context);
+            this.#checkSets = new GridCheckSets(context.sourceNode, this.#body,
+                () => this.#structure?.columns ?? [],
+                element => [...this.#rows].find(([,tr]) => tr === element)?.[0],
+                (node,field) => this.#collectionView.value(node,field),
+                () => this.parameters.setFilter, () => this.#collectionView);
+            if (this.isConnected) this.#checkSets.connect();
             this.#cellEditor = new GridCellEditor(this, context, (row, field) => this.#rows.get(row)?.querySelector(`td[data-field="${field}"]`), () => ({bag:this.#store, mode:this.parameters.rowMode, window:this.parameters.windowInfo}), () => this.#rows, (row,field,step) => this.#nextEditor(row,field,step), path => this.#focusField(path));
             const node = context.sourceNode;
             if (!Object.hasOwn(node, 'gridRowLayout')) {
@@ -350,6 +367,8 @@ export const Grid = defineComponent({
         setStructBag(bag) { this.#structBag = bag; this.#structureDirty = true; }
         projectAttributes(attrs, adapt) {
             const rest = super.projectAttributes(attrs, adapt);
+            if (this.#windowInfo() && (this.parameters.columnFilters || this.#collectionView?.filterContributions.some(([name]) => name.startsWith('column:')))) throw new TypeError('grid columnFilters requires a complete resident store');
+            if (this.#windowInfo() && this.parameters.setFilter !== '') throw new TypeError('grid setFilter requires a complete resident store');
             const store = this.#context.collectionView(this.#store, this.parameters.rowMode);
             if (this.#collectionView !== store) {
                 this.#cancelRefresh();
@@ -364,7 +383,7 @@ export const Grid = defineComponent({
             const filter = this.parameters.filter;
             const signature = JSON.stringify(filter);
             if (!this.#windowInfo() && this.#requestedFilter !== signature) {
-                this.#collectionView.applyFilter(filter === null ? null : {locale:this.#context.locale,timeZone:this.#context.timeZone,...filter});
+                this.#collectionView.applyFilter(filter === null ? null : {locale:this.#context.locale,timeZone:this.#context.timeZone,...filter}, 'base');
                 this.#requestedFilter = signature;
             }
             this.#invalidate({full:true, rows:[]});
@@ -407,12 +426,14 @@ export const Grid = defineComponent({
             for (const node of nodes) this.#rowLayout.forget(node);
             const rows = new GridRows(this.#collectionView, this.#context.format).read(this.#structure.columns, nodes.filter(node => this.#rows.has(node)));
             this.#rowInteraction.cancel();
-            for (const {node, cells} of rows) this.#renderCells(this.#rows.get(node), cells);
+            for (const {node, cells} of rows) this.#renderCells(this.#rows.get(node), cells, node);
             this.#scheduleLayout();
         }
         #project() {
             const model = this.#structureDirty ? new GridStructure(this.#structBag) : this.#structure;
             this.#cellEditor.configure(model.columns);
+            this.#structure = model;
+            this.#checkSets.configure();
             const nodes = this.#collectionView.getRows();
             this.#rowInteraction.cancel(); this.#rowInteraction.cancelDrag();
             this.#rowLayout.retain(this.#store.getNodes());
@@ -427,16 +448,16 @@ export const Grid = defineComponent({
                 this.#windowRequest = null;
             }
             this.#windowRevision = info?.revision;
-            this.#structure = model;
             this.#structureDirty = false;
-            gridSearch(this.#context.sourceNode).update(this.#collectionView, model.columns);
+            gridSearch(this.#context.sourceNode).update(this.#collectionView, model.columns.filter(column => !column.check));
             const rowHeaders = this.parameters.rowHeaders || this.parameters.rowResize;
-            const signature = JSON.stringify([model.groups, rowHeaders]);
+            const signature = JSON.stringify([model.groups, rowHeaders, this.parameters.columnFilters]);
             this.#rowHeaders = rowHeaders;
             if (signature !== this.#signature) {
                 this.#renderHeader(model);
                 this.#signature = signature;
             }
+            this.#columnFilters.update(this.#collectionView, model.columns, this.parameters.columnFilters, this.#context.format);
             this.#renderSort();
             this.#renderWindow(true);
             this.control.setAttribute('aria-colcount', String(model.columns.length + Number(this.#rowHeaders)));
@@ -444,6 +465,7 @@ export const Grid = defineComponent({
             this.#scheduleLayout();
         }
         #sort(field, multiple) {
+            if (this.#structure.columns.find(column => column.field === field)?.check) return;
             try {
                 const criteria = this.#windowInfo() ? parseSort(this.#windowInfo().sortedBy) : this.#collectionView.criteria;
                 const current = criteria.find(item => item.field === field);
@@ -497,12 +519,14 @@ export const Grid = defineComponent({
                     const column = model.columns[index];
                     cell.dataset.field = column.field;
                     cell.draggable = true; cell.tabIndex = 0;
-                    cell.title = 'Click: ascending / descending · Shift-click: add or reverse this column without changing the others · Numbers show sort priority · Drag to reorder';
+                    cell.setAttribute('aria-label', column.title ?? column.name);
+                    cell.title = column.check ? (column.title ?? column.name) + ' · Drag to reorder' : 'Click: ascending / descending · Shift-click: add or reverse this column without changing the others · Numbers show sort priority · Drag to reorder';
                     const indicator = doc.createElementNS(SVG_NS, 'svg');
                     indicator.classList.add('sort-indicator'); indicator.setAttribute('viewBox', '0 0 16 16');
                     indicator.setAttribute('aria-hidden', 'true');
                     const arrow = doc.createElementNS(SVG_NS, 'path');
                     arrow.setAttribute('d', 'M4 10L8 6L12 10'); indicator.append(arrow); cell.append(indicator);
+                    if (this.parameters.columnFilters && !column.check) cell.append(this.#columnFilters.button(column));
                     const handle = doc.createElement('span');
                     handle.className = 'column-resize'; handle.tabIndex = 0;
                     handle.setAttribute('role', 'separator');
@@ -639,7 +663,7 @@ export const Grid = defineComponent({
                 }
                 for (const td of existing.values()) td.remove();
                 tr.setAttribute('aria-rowindex', String(this.#headerRows + start + keep.size + 1));
-                this.#renderCells(tr, cells);
+                this.#renderCells(tr, cells, node);
                 this.#cellEditor.decorate(tr, node);
                 const next = previous ? previous.nextSibling : this.#body.firstChild;
                 if (next !== tr) this.#body.insertBefore(tr, next);
@@ -654,11 +678,29 @@ export const Grid = defineComponent({
                 td.className = 'empty'; td.colSpan = columns.length + Number(this.#rowHeaders); td.textContent = 'No rows'; tr.append(td); this.#body.append(tr);
             }
         }
-        #renderCells(row, cells) {
+        #renderCells(row, cells, node) {
             const offset = Number(this.#rowHeaders);
             cells.forEach((text, index) => {
                 const content = row.cells[index + offset].firstElementChild;
-                if (content.textContent !== text) content.textContent = text;
+                const column = this.#structure.columns[index];
+                content.parentElement.classList.toggle('check-cell', Boolean(column.check));
+                if (column.check) {
+                    this.#checkSets.project(content,node,column);
+                    return;
+                }
+                const color = column.edit?.tag === 'colorpicker';
+                if (color) {
+                    let swatch = content.querySelector('.cell-color-swatch');
+                    if (!swatch) {
+                        swatch = this.ownerDocument.createElement('span');
+                        swatch.className = 'cell-color-swatch'; swatch.setAttribute('role','img');
+                        content.replaceChildren(swatch);
+                    }
+                    swatch.hidden = text === '';
+                    swatch.style.backgroundColor = text;
+                    swatch.title = text;
+                    swatch.setAttribute('aria-label',text);
+                } else if (content.firstElementChild || content.textContent !== text) content.textContent = text;
             });
         }
     }

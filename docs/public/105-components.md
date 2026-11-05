@@ -471,34 +471,75 @@ See the gallery lesson *Combo box* for two fields bound to the same city text.
 <a id="gc-105-065"></a>
 ## 065 · Multiple choices with checkBoxText
 
-`checkBoxText` uses the same option-group structure and labelbox as radioButtonText,
-with independent checkboxes instead of exclusive radio buttons:
+Dropdown fields share one outer border. Their chevron sits inside the trailing
+edge, without a separate border or background, and inherits the theme text color.
+The same convention applies to choice selectors and dropdown command buttons.
+
 
 ```python
-pane.checkBoxText(value="^channels", values="email:Email,sms:SMS,push:Push",
-                  lbl="Notifications", cols=2, readonly="^locked")
+root.checkBoxText(value="^channels", values="email:Email,sms:SMS,push:Push",
+                  popup=True, lbl="Notifications")
 ```
 
-The value is a comma-separated string of codes, such as `email,push`, or null when
-no choice is selected. Captions are presentation;
-they are not written into Data. Existing selected codes keep their order, new
-selections are appended, and deselection removes that code. Two groups bound to
-the same Data path synchronize through the existing binding adapter.
+The value is a comma-separated string of codes or null. Existing selections keep
+ their order; new selections append. Unknown codes survive option changes and
+are displayed literally until their captions become available again. No automatic
+clearing is performed when a condition changes.
 
-`values` uses the same comma-separated `code:Caption` syntax as radioButtonText;
-`cols` controls the grid. Both can be Data pointers. Option, column or label
-updates preserve retained controls and selection; presentation does not rewrite
-Data. `readonly` or `disabled` locks the native checkboxes. Tab/arrows move focus,
-Space toggles a checkbox, and Home/End focus the first/last available choice.
-The group is labelled through labelbox, with the same `lbl_`, `box_`, `box_l_`
-and `box_c_` routing.
+`popup=False` (default) displays the options inline in `cols` columns (default 1).
+`popup=True` shows an editable description field and an arrow opening the same controls in a popup. Checks
+commit immediately through the existing field binding and validation lifecycle;
+the popup stays open for further choices. Escape closes it and returns focus to
+the button; outside click or focus closes it. Readonly/disabled lock both views.
+Changing presentation does not recreate the group or retained checkbox controls.
 
-The value remains dtype T with independent nullability and two-way binding,
-identical in Python and JS. There is no list representation or separate Data
-writer. The gallery lesson *Checkbox group* shows two bound groups, reactive
-columns, label positions and a readonly switch in compact cards. The group is
-inline: a popup mode and options from a Bag or a store are not provided.
+`values` accepts `code:Caption` text or a Bag. For a Bag the node label is the
+code and default caption; `identifier` and `labelAttribute` select fields from a
+child Bag or attributes from a scalar row. Codes must be unique, nonempty,
+comma-free strings. The component observes the original Bag, including in-place
+changes, and releases subscriptions on replacement or disposal. Selected captions
+are written to `_displayedValue` on the bound value node (not an attribute binding).
 
+For database options use `dbtable` with the configured DatabaseSelectors service,
+or `method` for an application endpoint. The method receives `_querystring=""`,
+`limit=None` and the declared `dbtable`, `caption_field`, `order_by`, `condition`
+and resolved `condition_*` parameters. It returns `{rows, identifier, caption}`.
+A null limit requests the **complete** eligible list, not remote search or paging.
+Database integer identities become decimal text codes in the multi-value string.
+Condition SQL is an Asqueel capability; other providers keep their registered
+filter/endpoint contract. Providers retain table and column authorization.
+`values` and remote options are mutually exclusive. Stale requests are aborted
+and ignored; errors are visible without overwriting the stored selection.
+
+With `hierarchical=True`, `values` is the original hierarchical Bag. The shared
+`tree` handles propagation, lazy resolvers and `checked="disabled:on"` /
+`checked="disabled:off"` nodes. `checkChildren=True` is the default; `cols` applies
+only to flat choices. Inline and popup views use the same tree instance.
+
+The saved string contains paths (for example `documents.guide`) unless
+`identifier="code"` selects a node attribute. In that case every loaded node,
+including branches, must have a unique, nonempty, comma-free text code. Captions
+come from `labelAttribute`, or the node label. Unloaded identifier codes remain
+in the value and are recognized when their lazy branch loads; indexing never
+loads branches itself. Disabled checks keep their state when the value is cleared,
+as in the shared tree. Their fixed states are not added to the editable selection.
+
+```python
+root.checkBoxText(values="^options", value="^selected", hierarchical=True,
+                  popup=True, labelAttribute="caption", lbl="Documents")
+```
+
+The popup text is a comma-separated description list. For example Data
+`MI,TO,CO` displays `Milano,Torino,Como`; append `,Pavia` and confirm to add `PV`.
+Native suggestions complete the last description. Enter or change commits an
+exact, case-insensitive match for each description through existing validation.
+Deleting a description removes its code; empty text writes null. Unknown or
+ambiguous text stays on Source and blocks form acceptance without changing Data.
+Escape restores the current selection. Use checkboxes for duplicate captions or
+captions containing commas. Explicit external Data changes supersede a draft.
+
+Load remote hierarchy into a Bag with `dataRemote`; `dbtable`/`method` supply flat
+choices and cannot be combined with `hierarchical`. Typing searches descriptions of loaded options; it does not fetch unloaded branches.
 
 <a id="gc-105-070"></a>
 ## 070 · Inline calendar and date field popup
@@ -981,6 +1022,8 @@ have no inverse conversion. Regional numeric dimensions are distinct from the
 separator's own thickness (`splitter_width` / `splitter_height`).
 
 `splitter=True` enables continuous pointer/touch resizing and arrow-key resizing.
+Home and End move the separator to its minimum and maximum permitted region size.
+A `minSize` on the center region reserves that much space while a side is resized.
 `minSize` and `maxSize` are numeric pixel drag limits. There is no `liveSplitters`
 option: resizing is always live. `splitter_width` sets a vertical separator's
 thickness, `splitter_height` a horizontal separator's thickness;
@@ -1220,7 +1263,17 @@ pane.tree(storepath=".items", hideValues=False,
 
 Caption precedence is `getLabel`, then `labelAttribute`, then `labelCb`, then the BagNode label. A configured labelAttribute falls back to the node label when that attribute is absent. Attribute labels are always text.
 
-`labelCb`, `getLabel`, `getLabelClass` and `getIconClass` name synchronous browser Logic methods. Each receives `(sourceNode, {item, path, opened, selected})`; item is the real BagNode. Label callbacks return exactly one of `{text: string}` and `{html: string}`. HTML is sanitized with DOMPurify; scripts, event handlers, unsafe URLs, styles and form controls cannot supply application behavior. Use Gramlot commands for actions. There is no `innerHTML:` string sentinel.
+`resolveLazy=False` prevents expansion, search and programmatic selection from
+loading resolver-backed nodes; this is useful for an inspector. The default is
+`True`. Bind `labelState` when label callbacks need reactive presentation state:
+they receive its value as `state` alongside the real node and path.
+
+Browser tools can call `treeSourceNode.setTreeStore(bag)` to observe an existing
+Bag owned elsewhere. The reference stays on the Source node; the Bag is neither
+reparented nor copied. Replacement or Source removal releases the subscription.
+`setTreeStore(null)` returns the tree to its declared `storepath`.
+
+`labelCb`, `getLabel`, `getLabelClass` and `getIconClass` name synchronous browser Logic methods. Each receives `(sourceNode, {item, path, opened, selected, state})`; item is the real BagNode and state is `labelState`. Label callbacks return exactly one of `{text: string}` and `{html: string}`. HTML is sanitized with DOMPurify; scripts, event handlers, unsafe URLs, styles and form controls cannot supply application behavior. Use Gramlot commands for actions. There is no `innerHTML:` string sentinel.
 
 ```javascript
 export class Logic {
@@ -1265,6 +1318,8 @@ hovered or focused row. Optional `actionState` is a named synchronous callback
 returning `{hidden, icon, title}` for each identified `rowAction`, with reactive
 `state` supplied by a binding. `favorites` is a Bag rendered as a collapsible
 group; entries retain `originalPath` and selection loads that original path.
+Tree drop callbacks receive `placement`: `before`, `inside` or `after`, according
+to the pointer's position over the destination row.
 
 For one endpoint serving every level, use `from gramlot.page import tree_store`:
 `tree_store(root, datapath="catalog", method="children")`. The endpoint returns a
@@ -1598,6 +1653,13 @@ groupBox detachment and drag-to-dock targets are not implemented.
 <a id="gc-105-965"></a>
 ## 965 · Searching a tree
 
+`searchAttributes="description,tags,component"` additionally searches those node
+attributes. Each may be text or an array of text; matching remains literal and
+case-insensitive. Default `""` searches only the displayed caption. Metadata-only
+matches preserve that caption without adding hidden text or false highlights.
+The gallery supplies these attributes from each lesson's JSON and enables eager
+search so unopened directories are included.
+
 Bind `searchText` to a text field to filter displayed captions, case-insensitively and literally (not as a regular expression). Initialize that text with the field's `default`. For example:
 
 ```python
@@ -1607,7 +1669,9 @@ pane.tree(storepath="navigation.items", labelAttribute="title", hideValues=True,
           searchText="^navigation.search")
 ```
 
-After 200 ms without a new query, search reads previously unloaded resolver branches and keeps matching nodes and their ancestor path visible. It highlights text within sanitized captions. Ordinary rendering still does not load branches. Results update as reads finish; an unavailable branch stays visible with its error and can be expanded to retry. Large remote trees can require many branch reads; this parameter is not a server-side search endpoint or pagination API.
+With `searchEager=True` (default), after 200 ms without a new query, search reads previously unloaded resolver branches and keeps matching nodes and their ancestor path visible. It highlights text within sanitized captions. Ordinary rendering still does not load branches. Results update as reads finish; an unavailable branch stays visible with its error and can be expanded to retry. Large remote trees can require many branch reads; this parameter is not a server-side search endpoint or pagination API.
+
+`searchEager=False` searches only already loaded nodes, without executing resolvers. Manual expansion is still allowed when `resolveLazy=True`. `resolveLazy=False` prevents resolver execution even when `searchEager=True`. Both parameters accept reactive bindings. Turning eager search off stops further traversal; an already running request may still populate its cache. The gallery explicitly enables `searchEager=True`.
 
 Clearing the field removes highlighting and restores the previous expansion set. Search does not select a result, replace the Bag or change its node identities. Selecting a result uses the ordinary `selectedPath` binding. A late response after clear may fill the resolver cache, but does not reopen branches or restore the old filter. Closing the tree cancels pending search scheduling; resolver lifetime remains with its owner.
 
@@ -1941,3 +2005,15 @@ already exposed by the selection registration, including registered formula
 fields. Its default search/order use that caption; explicitly configured search
 and ordering remain independent. Custom method endpoints own the same request
 parameter's implementation. This is not a composite legacy rowcaption expression.
+
+<a id="gc-105-selectable-labels"></a>
+## Selectable labels
+
+`lbl` is a fixed caption. Add `lbl_values="name:Name,email:Email"` and
+`lbl_value="^search.field"` to make it a menu: captions are visible, codes go to
+Data. Both attributes accept reactive bindings. An unbound `lbl_value` stays in
+Source. Choices use the existing unique comma-separated `code:caption` syntax.
+The shared renderer Labelbox provides this for HTML, components and groupBox;
+changing the label never replaces the content. The searchBox uses it for its
+external column label. Menu behavior and styles are shared; the small chevron
+inherits the label color and size. Disabled or read-only content disables its label menu.

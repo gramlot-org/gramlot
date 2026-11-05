@@ -11,7 +11,7 @@ const deferred = () => { let resolve, reject; const promise = new Promise((a,b) 
 const info = {id:'test.device', name:'Device test', version:'1', build:'1'};
 const position = timestamp => ({latitude:45, longitude:9, accuracy:12, timestamp});
 const photo = {url:'capacitor://localhost/_capacitor_file_/test.jpg', format:'jpeg'};
-const capture = f => sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.camera?capture');
+const capture = f => sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.camera?capture');
 function fixture(t, overrides={}) {
     const {window} = new JSDOM('<main></main>');
     const app = new Gramlot({document:window.document, element:window.document.querySelector('main'), transport:false, collections:[inputs]});
@@ -22,7 +22,7 @@ function fixture(t, overrides={}) {
         async readLocation() { reads++; return position(100); },
         async startLocationUpdates(cb) { starts++; callback=cb; return async () => {stops++;}; }, ...overrides};
     app.dvc.attach(provider);
-    const node=name => app.data.getNode(`gramlot.device.${name}`);
+    const node=name => app.data.getNode(`_gramlot.device.${name}`);
     return {app, node, window, data:app.data, provider,
         get reads(){return reads;}, get starts(){return starts;}, get stops(){return stops;},
         emit(value,error=null){callback(value,error);}};
@@ -31,6 +31,8 @@ function fixture(t, overrides={}) {
 test('initialization is lazy; first read is nonblocking and pending reads deduplicate', async t => {
     const pending=deferred(); let calls=0;
     const f=fixture(t,{readAppInfo(){calls++; return pending.promise;}});
+    assert.equal(f.data.getNode('gramlot.device'), null);
+    assert.ok(f.data.getNode('_gramlot.device'));
     assert.equal(f.node('appinfo').staticValue,null);
     assert.equal(f.node('appinfo').attr.status,'idle');
     assert.deepEqual(f.node('location').attr,{status:'idle',error:null,cacheTime:5,enabled:false,watching:false});
@@ -134,8 +136,8 @@ test('unavailable capability and bad names are explicit, without simulated data'
 test('real Source bindings reflect location fields and write enabled attributes', async t => {
     const f=fixture(t);
     const b=new GramlotBuilder(null,{collections:[inputs]});
-    b.root.checkbox({value:'^gramlot.device.location?enabled',id:'enabled'});
-    b.root.span('^gramlot.device.location.latitude',{id:'latitude'});
+    b.root.checkbox({value:'^_gramlot.device.location?enabled',id:'enabled'});
+    b.root.span('^_gramlot.device.location.latitude',{id:'latitude'});
     f.app.src.startSource(b.source);
     await flush();
     const input=f.window.document.getElementById('enabled').control;
@@ -192,17 +194,17 @@ test('invalidation during a pending read leaves its accepted value stale',async 
 test('camera reads and ordinary attribute writes never open camera; only capture FIRE does', async t => {
     let calls=0;
     const f=fixture(t,{capabilities:['camera'], async takePhoto(){calls++;return photo;}});
-    assert.equal(f.data.getItem('gramlot.device.camera'),null);
-    assert.equal(f.data.getItem('gramlot.device.camera.url'),null);
+    assert.equal(f.data.getItem('_gramlot.device.camera'),null);
+    assert.equal(f.data.getItem('_gramlot.device.camera.url'),null);
     assert.equal(f.node('camera').resolver,null);
     f.node('camera').setAttr({capture:true});
-    sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.camera?other');
+    sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.camera?other');
     await flush(); assert.equal(calls,0);
     assert.throws(()=>f.app.dvc.refresh('camera'),/Unknown device value/);
     capture(f); assert.equal(f.node('camera').attr.status,'pending');
     assert.equal(f.node('camera').getAttr('capture')??null,null);
     await flush();assert.equal(calls,1);
-    assert.deepEqual(Object.fromEntries(['url','format'].map(key=>[key,f.data.getItem('gramlot.device.camera').getItem(key)])),photo);
+    assert.deepEqual(Object.fromEntries(['url','format'].map(key=>[key,f.data.getItem('_gramlot.device.camera').getItem(key)])),photo);
     assert.equal(f.node('camera').attr.status,'success');
 });
 
@@ -212,9 +214,9 @@ test('capture result updates ordinary image binding and pending disables the com
     class Logic { pending({status}){return status==='pending';} }
     f.app.src.logicRegistry.register(Logic,{group:null,resource:'/test.js'});
     const b=new GramlotBuilder(null,{collections:[inputs]});
-    b.root.dataFormula({result_path:'view.pending',func:'pending',status:'^gramlot.device.camera?status'});
+    b.root.dataFormula({result_path:'view.pending',func:'pending',status:'^_gramlot.device.camera?status'});
     b.root.button({id:'camera-command',innerHTML:'Capture',disabled:'^view.pending'});
-    b.root.img({src:'^gramlot.device.camera.url'});
+    b.root.img({src:'^_gramlot.device.camera.url'});
     f.app.src.startSource(b.source);
     capture(f);capture(f);await flush();assert.equal(calls,1);
     const button=f.window.document.getElementById('camera-command').control;
@@ -234,7 +236,7 @@ test('camera cancellation, permission denial and failure retain the last photo; 
         assert.equal(f.node('camera').attr.status,status);
         assert.deepEqual(Object.fromEntries(['url','format'].map(key=>[key,f.node('camera').staticValue.getItem(key)])),photo);
         assert.equal(f.node('camera').attr.error?.code??null,code==='CANCELLED'?null:code);
-        f.data.getItem('gramlot.device.camera.url');await flush();
+        f.data.getItem('_gramlot.device.camera.url');await flush();
     }
     assert.equal(calls,4);error=null;capture(f);await flush();
     assert.equal(calls,5);assert.equal(f.node('camera').attr.status,'success');assert.equal(f.node('camera').attr.error,null);
@@ -259,19 +261,19 @@ test('closing a page aborts pending capture and ignores its late result or error
     }
 });
 
-const choosePhoto = f => sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.camera?choose');
+const choosePhoto = f => sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.camera?choose');
 
 test('photo selection requires explicit FIRE and updates the same photo binding as capture', async t => {
     let calls=0;
     const selected={url:'capacitor://localhost/_capacitor_file_/selected.png',format:'png'};
     const f=fixture(t,{capabilities:['camera'],async choosePhoto(){calls++;return selected;}});
     f.node('camera').setAttr({choose:true});
-    f.data.getItem('gramlot.device.camera.url');await flush();assert.equal(calls,0);
+    f.data.getItem('_gramlot.device.camera.url');await flush();assert.equal(calls,0);
     const b=new GramlotBuilder(null,{collections:[inputs]});
-    b.root.img({src:'^gramlot.device.camera.url'});f.app.src.startSource(b.source);
+    b.root.img({src:'^_gramlot.device.camera.url'});f.app.src.startSource(b.source);
     choosePhoto(f);assert.equal(f.node('camera').attr.status,'pending');
     await flush();assert.equal(calls,1);assert.equal(f.node('camera').attr.status,'success');
-    assert.equal(f.data.getItem('gramlot.device.camera.format'),'png');
+    assert.equal(f.data.getItem('_gramlot.device.camera.format'),'png');
     assert.equal(f.window.document.querySelector('img').getAttribute('src'),selected.url);
 });
 
@@ -293,12 +295,12 @@ test('selection failures retain the last captured photo and allow explicit retry
     for(const [code,status] of [['CANCELLED','cancelled'],['PERMISSION_DENIED','denied'],['FAILED','error']]){
         error=Object.assign(new Error('Synthetic selection outcome'),{code});
         choosePhoto(f);await flush();assert.equal(f.node('camera').attr.status,status);
-        assert.equal(f.data.getItem('gramlot.device.camera.url'),photo.url);
+        assert.equal(f.data.getItem('_gramlot.device.camera.url'),photo.url);
         assert.equal(f.node('camera').attr.error?.code??null,code==='CANCELLED'?null:code);
     }
     error=null;choosePhoto(f);await flush();
     assert.equal(f.node('camera').attr.status,'success');assert.equal(f.node('camera').attr.error,null);
-    assert.equal(f.data.getItem('gramlot.device.camera.format'),'png');
+    assert.equal(f.data.getItem('_gramlot.device.camera.format'),'png');
 });
 
 test('photo selection reports absent capability and malformed provider results',async t=>{
@@ -318,20 +320,20 @@ test('disposed pages ignore late photo selection success and failure',async t=>{
     }
 });
 
-const verifyBiometrics = f => sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.biometrics?verify');
+const verifyBiometrics = f => sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.biometrics?verify');
 
 test('biometric verification requires an explicit FIRE, never a read or ordinary attribute write',async t=>{
     let calls=0;
     const f=fixture(t,{capabilities:['biometrics'],async verifyBiometrics(){calls++;}});
-    assert.equal(f.data.getItem('gramlot.device.biometrics'),null);
-    assert.equal(f.data.getItem('gramlot.device.biometrics.verified'),null);
+    assert.equal(f.data.getItem('_gramlot.device.biometrics'),null);
+    assert.equal(f.data.getItem('_gramlot.device.biometrics.verified'),null);
     f.node('biometrics').setAttr({verify:true});
-    sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.biometrics?other');
+    sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.biometrics?other');
     await flush();assert.equal(calls,0);
     assert.throws(()=>f.app.dvc.refresh('biometrics'),/Unknown device value/);
     verifyBiometrics(f);assert.equal(f.node('biometrics').attr.status,'pending');
     await flush();assert.equal(calls,1);assert.equal(f.node('biometrics').attr.status,'success');
-    assert.equal(f.data.getItem('gramlot.device.biometrics.verified'),true);
+    assert.equal(f.data.getItem('_gramlot.device.biometrics.verified'),true);
     assert.equal(f.node('biometrics').getAttr('verify')??null,null);
 });
 
@@ -355,9 +357,9 @@ test('biometric result and pending state update real bindings; pending commands 
     class Logic { pending({status}){return status==='pending';} }
     f.app.src.logicRegistry.register(Logic,{group:null,resource:'/test.js'});
     const b=new GramlotBuilder(null,{collections:[inputs]});
-    b.root.dataFormula({result_path:'view.pending',func:'pending',status:'^gramlot.device.biometrics?status'});
+    b.root.dataFormula({result_path:'view.pending',func:'pending',status:'^_gramlot.device.biometrics?status'});
     b.root.button({id:'verify-command',innerHTML:'Verify',disabled:'^view.pending'});
-    b.root.span('^gramlot.device.biometrics.verified',{id:'verified'});
+    b.root.span('^_gramlot.device.biometrics.verified',{id:'verified'});
     f.app.src.startSource(b.source);
     verifyBiometrics(f);verifyBiometrics(f);await flush();assert.equal(calls,1);
     const button=f.window.document.getElementById('verify-command').control;
@@ -395,13 +397,13 @@ test('disposing synchronously on biometric pending does not start a native promp
 });
 
 const notificationRequest={id:1,title:'Synthetic title',body:'Synthetic body',delay:5};
-const scheduleNotification=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.notifications?schedule');
+const scheduleNotification=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.notifications?schedule');
 function notificationFixture(t,overrides={}){
     let callback,stops=0,reads=0;
     const f=fixture(t,{capabilities:['notifications'],
         async startNotificationEvents(cb){callback=cb;return async()=>{stops++;};},
         async scheduleNotification(request){reads++;return {id:request.id,at:10000};},...overrides});
-    for(const [key,value] of Object.entries(notificationRequest))f.data.setItem(`gramlot.device.notifications.request.${key}`,value);
+    for(const [key,value] of Object.entries(notificationRequest))f.data.setItem(`_gramlot.device.notifications.request.${key}`,value);
     return {...f,get schedules(){return reads;},get eventStops(){return stops;},event:e=>callback(e)};
 }
 
@@ -409,18 +411,18 @@ test('notifications attach listeners without scheduling; only FIRE snapshots req
     let captured;const pending=deferred();
     const f=notificationFixture(t,{scheduleNotification(input){captured=input;return pending.promise;}});
     const node=f.node('notifications');await flush();assert.equal(node.attr.listening,true);assert.equal(node.attr.status,'idle');
-    f.data.getItem('gramlot.device.notifications.request.title');node.setAttr({schedule:true});await flush();assert.equal(captured,undefined);
-    scheduleNotification(f);scheduleNotification(f);f.data.setItem('gramlot.device.notifications.request.title','Changed after command');
+    f.data.getItem('_gramlot.device.notifications.request.title');node.setAttr({schedule:true});await flush();assert.equal(captured,undefined);
+    scheduleNotification(f);scheduleNotification(f);f.data.setItem('_gramlot.device.notifications.request.title','Changed after command');
     await flush();assert.deepEqual(captured,notificationRequest);assert.equal(node.attr.status,'pending');
     pending.resolve({id:1,at:10000});await flush();assert.equal(node.attr.status,'success');
-    assert.equal(f.data.getItem('gramlot.device.notifications.scheduled.at'),10000);
-    assert.equal(f.data.getItem('gramlot.device.notifications.received'),null);
+    assert.equal(f.data.getItem('_gramlot.device.notifications.scheduled.at'),10000);
+    assert.equal(f.data.getItem('_gramlot.device.notifications.received'),null);
 });
 
 test('notification received and action events update real bindings independently of scheduling status',async t=>{
     const f=notificationFixture(t);const b=new GramlotBuilder(null,{collections:[inputs]});
-    b.root.span('^gramlot.device.notifications.received.title',{id:'received-title'});
-    b.root.span('^gramlot.device.notifications.action.actionId',{id:'notification-action'});
+    b.root.span('^_gramlot.device.notifications.received.title',{id:'received-title'});
+    b.root.span('^_gramlot.device.notifications.action.actionId',{id:'notification-action'});
     f.app.src.startSource(b.source);await flush();
     scheduleNotification(f);await flush();
     f.event({kind:'received',id:1,title:'Received',body:'Synthetic'});
@@ -433,13 +435,13 @@ test('notification received and action events update real bindings independently
 test('notification validation rejects malformed request before scheduling; denial never acknowledges success',async t=>{
     const f=notificationFixture(t);
     for(const [key,value] of [['id',1.5],['id',2147483648],['title',''],['body',false],['delay',0],['delay','5']]){
-        f.data.setItem(`gramlot.device.notifications.request.${key}`,value);scheduleNotification(f);await flush();
+        f.data.setItem(`_gramlot.device.notifications.request.${key}`,value);scheduleNotification(f);await flush();
         assert.equal(f.node('notifications').attr.status,'error');assert.equal(f.schedules,0);
-        f.data.setItem(`gramlot.device.notifications.request.${key}`,notificationRequest[key]);
+        f.data.setItem(`_gramlot.device.notifications.request.${key}`,notificationRequest[key]);
     }
     f.provider.scheduleNotification=async()=>{throw Object.assign(new Error('Denied'),{code:'PERMISSION_DENIED'});};
     scheduleNotification(f);await flush();assert.equal(f.node('notifications').attr.status,'denied');
-    assert.equal(f.data.getItem('gramlot.device.notifications.scheduled'),null);
+    assert.equal(f.data.getItem('_gramlot.device.notifications.scheduled'),null);
 });
 
 test('failed listener startup is visible and can retry on an explicit schedule request',async t=>{
@@ -467,7 +469,7 @@ test('late scheduling acknowledgement cannot write after disposal; native accept
     const f=notificationFixture(t,{scheduleNotification(input,s){signal=s;return pending.promise;}});
     scheduleNotification(f);await flush();f.app.dispose();assert.equal(signal.aborted,true);
     pending.resolve({id:1,at:10000});await flush();await f.app.dvc.cleanup;
-    assert.equal(f.data.getItem('gramlot.device.notifications.scheduled'),null);assert.equal(f.eventStops,1);
+    assert.equal(f.data.getItem('_gramlot.device.notifications.scheduled'),null);assert.equal(f.eventStops,1);
 });
 
 test('listener cleanup errors are observed and do not modify a disposed Data Bag',async t=>{
@@ -479,10 +481,10 @@ test('listener cleanup errors are observed and do not modify a disposed Data Bag
 test('unavailable notification scheduling has no fabricated acknowledgement',async t=>{
     const f=fixture(t,{capabilities:[]});scheduleNotification(f);await flush();
     assert.equal(f.node('notifications').attr.status,'unavailable');
-    assert.equal(f.data.getItem('gramlot.device.notifications.scheduled'),null);
+    assert.equal(f.data.getItem('_gramlot.device.notifications.scheduled'),null);
 });
 
-const registerPush=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.push?register');
+const registerPush=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.push?register');
 function pushFixture(t,overrides={}){
     let callback,registrations=0,stops=0;
     const f=fixture(t,{capabilities:['push'],async startPushEvents(cb){callback=cb;return async()=>{stops++;};},
@@ -493,21 +495,21 @@ const pushMessage={kind:'received',id:'native-test-id',title:'Synthetic title',b
 
 test('push listeners attach without registration; SDK register acknowledgement is not token success',async t=>{
     const f=pushFixture(t);await flush();assert.equal(f.node('push').attr.listening,true);
-    f.data.getItem('gramlot.device.push.registration');f.node('push').setAttr({register:true});await flush();assert.equal(f.registrations,0);
+    f.data.getItem('_gramlot.device.push.registration');f.node('push').setAttr({register:true});await flush();assert.equal(f.registrations,0);
     registerPush(f);registerPush(f);await flush();assert.equal(f.registrations,1);
-    assert.equal(f.node('push').attr.status,'pending');assert.equal(f.data.getItem('gramlot.device.push.registration'),null);
+    assert.equal(f.node('push').attr.status,'pending');assert.equal(f.data.getItem('_gramlot.device.push.registration'),null);
     f.event({kind:'registration',token:'SYNTHETIC_TOKEN_1'});
-    assert.equal(f.node('push').attr.status,'success');assert.equal(f.data.getItem('gramlot.device.push.registration.token'),'SYNTHETIC_TOKEN_1');
+    assert.equal(f.node('push').attr.status,'success');assert.equal(f.data.getItem('_gramlot.device.push.registration.token'),'SYNTHETIC_TOKEN_1');
     f.event({kind:'registration',token:'SYNTHETIC_TOKEN_2'});
-    assert.equal(f.data.getItem('gramlot.device.push.registration.token'),'SYNTHETIC_TOKEN_2');
+    assert.equal(f.data.getItem('_gramlot.device.push.registration.token'),'SYNTHETIC_TOKEN_2');
 });
 
 test('native push token drives a real dataRpc parameter; received and tapped fields update bindings',async t=>{
     const f=pushFixture(t);const calls=[];f.app.rpc.transport={close(){},dispose(){},async call(text){const request=fromTytx(text);calls.push(request);return toTytx({id:request.id,contentType:request.contentType,value:new Bag({registered:true})});}};
     const b=new GramlotBuilder(null,{collections:[inputs]});
-    b.root.dataRpc({method:'pushRegister',result_path:'server.registration',token:'^gramlot.device.push.registration.token',_if:'token'});
-    b.root.span('^gramlot.device.push.received.body',{id:'push-body'});
-    b.root.span('^gramlot.device.push.action.destination',{id:'push-destination'});
+    b.root.dataRpc({method:'pushRegister',result_path:'server.registration',token:'^_gramlot.device.push.registration.token',_if:'token'});
+    b.root.span('^_gramlot.device.push.received.body',{id:'push-body'});
+    b.root.span('^_gramlot.device.push.action.destination',{id:'push-destination'});
     f.app.src.startSource(b.source);await flush();
     f.event({kind:'registration',token:'SYNTHETIC_TOKEN'});await flush();
     assert.equal(calls.length,1);assert.equal(calls[0].name,'pushRegister');assert.equal(calls[0].params.token,'SYNTHETIC_TOKEN');assert.equal(f.data.getItem('server.registration.registered'),true);
@@ -519,7 +521,7 @@ test('native push token drives a real dataRpc parameter; received and tapped fie
 test('push registration errors, denial and unavailability cannot report a registered token',async t=>{
     const f=pushFixture(t);registerPush(f);await flush();
     f.event({kind:'registrationError',error:new Error('Synthetic native registration failure')});
-    assert.equal(f.node('push').attr.status,'error');assert.equal(f.data.getItem('gramlot.device.push.registration'),null);
+    assert.equal(f.node('push').attr.status,'error');assert.equal(f.data.getItem('_gramlot.device.push.registration'),null);
     f.provider.registerPush=async()=>{throw Object.assign(new Error('Denied'),{code:'PERMISSION_DENIED'});};
     registerPush(f);await flush();assert.equal(f.node('push').attr.status,'denied');
     const missing=fixture(t,{capabilities:[]});registerPush(missing);await flush();assert.equal(missing.node('push').attr.status,'unavailable');
@@ -557,7 +559,7 @@ test('shortcut requests reach real Data controllers once per id; unknown destina
     class Logic { recordShortcut(node,{request}) { if(request)seen.push(request.getItem('destination')); } }
     f.app.src.logicRegistry.register(Logic,{group:null,resource:'/test-shortcuts.js'});
     const b=new GramlotBuilder(null,{collections:[inputs]});
-    b.root.dataController({func:'recordShortcut',request:'^gramlot.device.shortcuts.request'});
+    b.root.dataController({func:'recordShortcut',request:'^_gramlot.device.shortcuts.request'});
     f.app.src.startSource(b.source);
     await flush();
     assert.equal(f.node('shortcuts').attr.listening,true);
@@ -565,9 +567,9 @@ test('shortcut requests reach real Data controllers once per id; unknown destina
     emit({id:'one',destination:'gallery'});
     emit({id:'two',destination:'other'});
     assert.deepEqual(seen,['gallery','other']);
-    const saved=f.data.getItem('gramlot.device.shortcuts.request');
+    const saved=f.data.getItem('_gramlot.device.shortcuts.request');
     emit({id:'bad',destination:7});
-    assert.equal(f.data.getItem('gramlot.device.shortcuts.request'),saved);
+    assert.equal(f.data.getItem('_gramlot.device.shortcuts.request'),saved);
     assert.equal(f.node('shortcuts').attr.listenerError.code,'FAILED');
     f.app.dispose();await flush();assert.equal(stops,1);
     emit({id:'late',destination:'gallery'});assert.deepEqual(seen,['gallery','other']);
@@ -578,23 +580,23 @@ test('shortcut startup disposal removes late listener and setup errors are expli
     const f=fixture(t,{capabilities:['shortcuts'],startShortcutEvents(cb,s){emit=cb;signal=s;return ready.promise;}});
     await flush();f.app.dispose();assert.equal(signal.aborted,true);
     ready.resolve(async()=>{stops++;});await flush();assert.equal(stops,1);
-    emit({id:'late',destination:'gallery'});assert.equal(f.data.getItem('gramlot.device.shortcuts.request'),null);
+    emit({id:'late',destination:'gallery'});assert.equal(f.data.getItem('_gramlot.device.shortcuts.request'),null);
     const failed=fixture(t,{capabilities:['shortcuts'],async startShortcutEvents(){throw new Error('setup failed');}});
     await flush();assert.equal(failed.node('shortcuts').attr.listening,false);
     assert.equal(failed.node('shortcuts').attr.listenerError.message,'setup failed');
 });
 
 
-const scanBarcode=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.barcode?scan');
+const scanBarcode=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.barcode?scan');
 test('barcode scan requires FIRE, deduplicates pending and updates real bound fields',async t=>{
  const pending=deferred();let scans=0;
  const f=fixture(t,{capabilities:['barcode'],scanBarcode(){scans++;return pending.promise;}});
  const b=new GramlotBuilder(null,{collections:[inputs]});
  class Logic { pending({status}){return status==='pending';} }
  f.app.src.logicRegistry.register(Logic,{group:null,resource:'/barcode-test.js'});
- b.root.dataFormula({result_path:'view.barcode.pending',func:'pending',status:'^gramlot.device.barcode?status'});
+ b.root.dataFormula({result_path:'view.barcode.pending',func:'pending',status:'^_gramlot.device.barcode?status'});
  b.root.button({id:'scan-command',disabled:'^view.barcode.pending'});
- b.root.span('^gramlot.device.barcode.text',{id:'scanned-text'});
+ b.root.span('^_gramlot.device.barcode.text',{id:'scanned-text'});
  f.app.src.startSource(b.source);
  void f.node('barcode').value;
  f.node('barcode').setAttr({scan:true});await flush();assert.equal(scans,0);
@@ -603,7 +605,7 @@ test('barcode scan requires FIRE, deduplicates pending and updates real bound fi
  const text='<script>not executable</script>';
  pending.resolve({text,format:'QR_CODE'});await flush();
  assert.equal(f.node('barcode').attr.status,'success');
- assert.equal(f.data.getItem('gramlot.device.barcode.format'),'QR_CODE');
+ assert.equal(f.data.getItem('_gramlot.device.barcode.format'),'QR_CODE');
  assert.equal(f.window.document.getElementById('scanned-text').textContent,text);
  assert.equal(f.window.document.querySelector('script'),null);
  assert.equal(f.window.document.getElementById('scan-command').control.disabled,false);
@@ -636,18 +638,18 @@ test('network events update bound Data, reject malformed state and recover',asyn
  let emit,stops=0;
  const f=fixture(t,{capabilities:['network'],async startNetworkEvents(cb){emit=cb;cb({connected:true,type:'wifi'});return async()=>{stops++;};}});
  const b=new GramlotBuilder(null,{collections:[inputs]});
- b.root.span('^gramlot.device.network.type',{id:'network-type'});
+ b.root.span('^_gramlot.device.network.type',{id:'network-type'});
  f.app.src.startSource(b.source);
  await flush();assert.equal(f.node('network').attr.listening,true);
  assert.equal(f.window.document.getElementById('network-type').textContent,'wifi');
  emit({connected:false,type:'none'});await flush();
- assert.equal(f.data.getItem('gramlot.device.network.connected'),false);
+ assert.equal(f.data.getItem('_gramlot.device.network.connected'),false);
  assert.equal(f.window.document.getElementById('network-type').textContent,'none');
  emit({connected:'yes',type:'wifi'});assert.equal(f.node('network').attr.status,'error');
- assert.equal(f.data.getItem('gramlot.device.network.connected'),false);
+ assert.equal(f.data.getItem('_gramlot.device.network.connected'),false);
  emit({connected:true,type:'cellular'});assert.equal(f.node('network').attr.status,'success');
  f.app.dispose();await f.app.dvc.cleanup;assert.equal(stops,1);
- emit({connected:false,type:'none'});assert.equal(f.data.getItem('gramlot.device.network.type'),'cellular');
+ emit({connected:false,type:'none'});assert.equal(f.data.getItem('_gramlot.device.network.type'),'cellular');
 });
 
 test('lifecycle state is independent of pause/resume and repeated events are reactive',async t=>{
@@ -657,18 +659,18 @@ test('lifecycle state is independent of pause/resume and repeated events are rea
  const observed=[];
  class Logic { observe(node,{sequence,event}) {if(sequence) observed.push([sequence,event]);} }
  f.app.src.logicRegistry.register(Logic,{group:null,resource:'/lifecycle-test.js'});
- b.root.dataController({func:'observe',sequence:'^gramlot.device.lifecycle.sequence',event:'=gramlot.device.lifecycle.event'});
- b.root.span('^gramlot.device.lifecycle.active',{id:'active-state'});
+ b.root.dataController({func:'observe',sequence:'^_gramlot.device.lifecycle.sequence',event:'=_gramlot.device.lifecycle.event'});
+ b.root.span('^_gramlot.device.lifecycle.active',{id:'active-state'});
  f.app.src.startSource(b.source);await flush();
  emit({kind:'state',active:false});await flush();assert.deepEqual(observed,[]);
- assert.equal(f.data.getItem('gramlot.device.lifecycle.sequence'),0);
+ assert.equal(f.data.getItem('_gramlot.device.lifecycle.sequence'),0);
  emit({kind:'pause'});emit({kind:'resume'});await flush();
  emit({kind:'pause'});await flush();emit({kind:'resume'});await flush();
  emit({kind:'state',active:true});await flush();
  assert.deepEqual(observed,[[1,'pause'],[2,'resume'],[3,'pause'],[4,'resume']]);
- assert.equal(f.data.getItem('gramlot.device.lifecycle.active'),true);
+ assert.equal(f.data.getItem('_gramlot.device.lifecycle.active'),true);
  emit({kind:'state',active:'yes'});assert.equal(f.node('lifecycle').attr.status,'error');
- assert.equal(f.data.getItem('gramlot.device.lifecycle.active'),true);
+ assert.equal(f.data.getItem('_gramlot.device.lifecycle.active'),true);
 });
 
 test('state setup failure, absent capabilities and disposal during setup are explicit',async t=>{
@@ -680,17 +682,17 @@ test('state setup failure, absent capabilities and disposal during setup are exp
  const f=fixture(t,{capabilities:['lifecycle'],startLifecycleEvents(cb,s){emit=cb;signal=s;return pending.promise;}});
  await flush();f.app.dispose();assert.equal(signal.aborted,true);
  pending.resolve(async()=>{stops++;});await f.app.dvc.cleanup;
- emit({kind:'state',active:true});assert.equal(f.data.getItem('gramlot.device.lifecycle.active'),null);assert.equal(stops,1);
+ emit({kind:'state',active:true});assert.equal(f.data.getItem('_gramlot.device.lifecycle.active'),null);assert.equal(stops,1);
 });
 
-const impact=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.haptics?impact');
+const impact=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.haptics?impact');
 test('haptics requires FIRE, snapshots style and deduplicates pending commands',async t=>{
  const pending=deferred();const calls=[];
  const f=fixture(t,{capabilities:['haptics'],impact(style){calls.push(style);return pending.promise;}});
  void f.node('haptics').value;f.node('haptics').setAttr({impact:true,style:'light'});await flush();assert.deepEqual(calls,[]);
  impact(f);f.node('haptics').setAttr({style:'heavy'});impact(f);await flush();assert.deepEqual(calls,['light']);
  assert.equal(f.node('haptics').attr.status,'pending');pending.resolve();await flush();
- assert.equal(f.data.getItem('gramlot.device.haptics.style'),'light');assert.equal(f.data.getItem('gramlot.device.haptics.acknowledged'),true);
+ assert.equal(f.data.getItem('_gramlot.device.haptics.style'),'light');assert.equal(f.data.getItem('_gramlot.device.haptics.acknowledged'),true);
  f.node('haptics').setAttr({style:'invalid'});impact(f);await flush();
  assert.equal(f.node('haptics').staticValue,null);assert.equal(f.node('haptics').attr.status,'error');assert.deepEqual(calls,['light']);
 });
@@ -704,16 +706,16 @@ test('haptic failures and disposed completions never fabricate acknowledgement',
 });
 
 
-const vibrate=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('gramlot.device.haptics?vibrate');
+const vibrate=f=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE('_gramlot.device.haptics?vibrate');
 test('vibration requires FIRE, snapshots milliseconds and shares the pending gate with impact',async t=>{
  const pending=deferred();const calls=[];
  const f=fixture(t,{capabilities:['haptics'],vibrate(duration){calls.push(duration);return pending.promise;},async impact(){calls.push('impact');}});
  f.node('haptics').setAttr({vibrate:true});void f.node('haptics').value;await flush();assert.deepEqual(calls,[]);
  vibrate(f);f.node('haptics').setAttr({duration:900});vibrate(f);impact(f);await flush();assert.deepEqual(calls,[600]);
  pending.resolve();await flush();assert.equal(f.node('haptics').attr.status,'success');
- assert.equal(f.data.getItem('gramlot.device.haptics.duration'),600);assert.equal(f.data.getItem('gramlot.device.haptics.acknowledged'),true);
+ assert.equal(f.data.getItem('_gramlot.device.haptics.duration'),600);assert.equal(f.data.getItem('_gramlot.device.haptics.acknowledged'),true);
  impact(f);assert.equal(f.node('haptics').staticValue,null);await flush();assert.deepEqual(calls,[600,'impact']);
- assert.equal(f.data.getItem('gramlot.device.haptics.duration'),null);assert.equal(f.data.getItem('gramlot.device.haptics.style'),'medium');
+ assert.equal(f.data.getItem('_gramlot.device.haptics.duration'),null);assert.equal(f.data.getItem('_gramlot.device.haptics.style'),'medium');
 });
 test('vibration rejects invalid duration, reports native failures and ignores disposed results',async t=>{
  let calls=0,run=async()=>{};
@@ -729,21 +731,21 @@ test('vibration rejects invalid duration, reports native failures and ignores di
 });
 
 
-const audioCommand=(f,command)=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE(`gramlot.device.audio?${command}`);
+const audioCommand=(f,command)=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE(`_gramlot.device.audio?${command}`);
 const audioResult={url:'capacitor://localhost/_capacitor_file_/test.m4a',mimeType:'audio/mp4',duration:1200};
 test('audio starts only on FIRE, deduplicates and exposes a real bound player after stop',async t=>{
  let starts=0,stops=0,closes=0;
  const pending=deferred();
  const f=fixture(t,{capabilities:['audio'],async startAudioRecording(){starts++;return {stop(){stops++;return pending.promise;},async dispose(){closes++;}};}});
  const b=new GramlotBuilder(null,{collections:[inputs]});
- b.root.audio({src:'^gramlot.device.audio.url',controls:true,id:'audio-player'});
+ b.root.audio({src:'^_gramlot.device.audio.url',controls:true,id:'audio-player'});
  f.app.src.startSource(b.source);
  f.node('audio').setAttr({start:true});void f.node('audio').value;await flush();assert.equal(starts,0);
  audioCommand(f,'start');audioCommand(f,'start');await flush();assert.equal(starts,1);
  assert.equal(f.node('audio').attr.recording,true);assert.equal(f.node('audio').attr.status,'recording');
  audioCommand(f,'stop');audioCommand(f,'stop');await flush();assert.equal(stops,1);
  pending.resolve(audioResult);await flush();assert.equal(f.node('audio').attr.recording,false);
- assert.equal(f.node('audio').attr.status,'success');assert.equal(f.data.getItem('gramlot.device.audio.duration'),1200);
+ assert.equal(f.node('audio').attr.status,'success');assert.equal(f.data.getItem('_gramlot.device.audio.duration'),1200);
  assert.equal(f.window.document.getElementById('audio-player').getAttribute('src'),audioResult.url);
  audioCommand(f,'start');await flush();assert.equal(closes,1);assert.equal(starts,2);assert.equal(f.node('audio').staticValue,null);
 });
@@ -812,7 +814,7 @@ test('page disposal ignores late audio sharing result and awaits session cleanup
 });
 
 
-const clipboardCommand=(f,operation)=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE(`gramlot.device.clipboard?${operation}`);
+const clipboardCommand=(f,operation)=>sourceTarget(f.app.src.builder.root.dataController({})).FIRE(`_gramlot.device.clipboard?${operation}`);
 test('clipboard is explicit, snapshots copy input and deduplicates competing commands',async t=>{
  const pending=deferred(),copies=[];let pastes=0;
  const f=fixture(t,{capabilities:['clipboard'],copyText(text){copies.push(text);return pending.promise;},async pasteText(){pastes++;return {text:'paste'};}});
@@ -850,7 +852,7 @@ test('link requests reach real Data controllers once per id; unknown urls remain
     class Logic { recordLink(node,{request}) { if(request)seen.push(request.getItem('url')); } }
     f.app.src.logicRegistry.register(Logic,{group:null,resource:'/test-links.js'});
     const b=new GramlotBuilder(null,{collections:[inputs]});
-    b.root.dataController({func:'recordLink',request:'^gramlot.device.links.request'});
+    b.root.dataController({func:'recordLink',request:'^_gramlot.device.links.request'});
     f.app.src.startSource(b.source);
     await flush();
     assert.equal(f.node('links').attr.listening,true);
@@ -858,9 +860,9 @@ test('link requests reach real Data controllers once per id; unknown urls remain
     emit({id:'one',url:'gallery'});
     emit({id:'two',url:'other'});
     assert.deepEqual(seen,['gallery','other']);
-    const saved=f.data.getItem('gramlot.device.links.request');
+    const saved=f.data.getItem('_gramlot.device.links.request');
     emit({id:'bad',url:7});
-    assert.equal(f.data.getItem('gramlot.device.links.request'),saved);
+    assert.equal(f.data.getItem('_gramlot.device.links.request'),saved);
     assert.equal(f.node('links').attr.listenerError.code,'FAILED');
     f.app.dispose();await flush();assert.equal(stops,1);
     emit({id:'late',url:'gallery'});assert.deepEqual(seen,['gallery','other']);
@@ -871,7 +873,7 @@ test('link startup disposal removes late listener and setup errors are explicit'
     const f=fixture(t,{capabilities:['links'],startLinkEvents(cb,s){emit=cb;signal=s;return ready.promise;}});
     await flush();f.app.dispose();assert.equal(signal.aborted,true);
     ready.resolve(async()=>{stops++;});await flush();assert.equal(stops,1);
-    emit({id:'late',url:'gallery'});assert.equal(f.data.getItem('gramlot.device.links.request'),null);
+    emit({id:'late',url:'gallery'});assert.equal(f.data.getItem('_gramlot.device.links.request'),null);
     const failed=fixture(t,{capabilities:['links'],async startLinkEvents(){throw new Error('setup failed');}});
     await flush();assert.equal(failed.node('links').attr.listening,false);
     assert.equal(failed.node('links').attr.listenerError.message,'setup failed');

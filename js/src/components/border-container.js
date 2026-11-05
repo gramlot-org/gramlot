@@ -462,7 +462,8 @@ export const BorderContainer = defineComponent({
             const state = this.#regions.get(side), c = state.config;
             const opposite = {left:'right',right:'left',top:'bottom',bottom:'top'}[side];
             const box = this.control.getBoundingClientRect();
-            const available = Math.max(0, (horizontal(side) ? box.height : box.width) - this.#extent(opposite));
+            const centerMin = this.#regions.get('center').config?.min ?? 0;
+            const available = Math.max(0, (horizontal(side) ? box.height : box.width) - this.#extent(opposite) - centerMin);
             const size = Math.max(Math.min(c.min, available), Math.min(desired, c.max, available));
             state.size = `${size}px`; this.#render(side);
             c.writeParameter(size);
@@ -471,11 +472,13 @@ export const BorderContainer = defineComponent({
             const state = this.#regions.get(side);
             if (evt.target !== state.separator || !state.config?.splitter || state.closed) return;
             const keys = horizontal(side) ? ['ArrowUp','ArrowDown'] : ['ArrowLeft','ArrowRight'];
-            if (!keys.includes(evt.key)) return;
+            if (!keys.includes(evt.key) && !['Home', 'End'].includes(evt.key)) return;
             evt.preventDefault();
             const sign = ['left','top'].includes(side) ? 1 : -1;
             const previousSize = this.#extent(side);
-            this.#resize(side, previousSize + (evt.key === keys[0] ? -1 : 1) * sign);
+            const desired = evt.key === 'Home' ? state.config.min : evt.key === 'End' ? state.config.max
+                : previousSize + (evt.key === keys[0] ? -1 : 1) * sign;
+            this.#resize(side, desired);
             this.#commitResize(side, previousSize);
         }
         #startDrag(side, evt) {

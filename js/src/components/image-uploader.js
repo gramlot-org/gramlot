@@ -101,7 +101,7 @@ export const ImageUploader = defineComponent({
         #syncCamera(event = null) {
             const {gramlot} = this.#context.upload();
             const available = Boolean(gramlot.dvc.provider && gramlot.dvc.provider.capabilities.includes('camera'));
-            const camera = gramlot.data.getNode('gramlot.device.camera');
+            const camera = gramlot.data.getNode('_gramlot.device.camera');
             const status = camera?.attr.status;
             if (available !== this.#cameraAvailable || status !== this.#cameraStatus) {
                 this.#cameraAvailable = available; this.#cameraStatus = status; this.#render();
@@ -116,7 +116,7 @@ export const ImageUploader = defineComponent({
         #capture() {
             if (!this.#cameraAvailable || this.#cameraStatus === 'pending' || this.parameters.disabled || this.#pending || this.#cameraToken !== null || this.#screenRequest) return;
             this.#cameraToken = ++this.#generation; this.#cameraPending = false;
-            try { this.#context.sourceNode.FIRE('gramlot.device.camera?capture'); }
+            try { this.#context.sourceNode.FIRE('_gramlot.device.camera?capture'); }
             catch (error) { this.#cameraToken = null; this.message.textContent = `Camera failed: ${error.message}`; this.#render(); }
         }
         #captureScreen() {

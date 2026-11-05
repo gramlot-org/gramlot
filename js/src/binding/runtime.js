@@ -70,6 +70,7 @@ export class BindingRuntime {
     get data() { return this.builder.data; }
     /** Resolve a tree store against the selected live root. */
     treeStore(node) {
+        if (node.treeStore !== null) return node.treeStore;
         const path = node.getAttr('storepath');
         if (path === '*S' || path.startsWith('*S.')) {
             const root = this.renderer.source.getItem('main');
@@ -492,6 +493,15 @@ export class NodeBinding {
         const component = node._getMeta('gramlot_component');
         for (const [capability, attribute] of [['bagStore', 'storepath'], ['bagStruct', 'structpath']]) {
             if (!component?.[capability]) continue;
+            if (capability === 'bagStore' && node.nodeTag === 'tree' && node.treeStore !== null) {
+                const store = node.treeStore;
+                const subscription = `gramlot-tree-${randomId()}`;
+                store.subscribe(subscription, {any: () => {
+                    if (!this.closed && this.runtime.renderer.attached(node)) this.runtime.renderer.project(node);
+                }});
+                this.#registrations.push({close: () => store.unsubscribe(subscription, {any: true})});
+                continue;
+            }
             const value = node.getAttr(attribute);
             if (typeof value !== 'string' || !value || /^[\^=]/.test(value) || value.includes('?')) {
                 throw new TypeError(`${attribute} requires a plain Bag data path`);

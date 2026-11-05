@@ -10,3 +10,6 @@ export function gramlotDev(): 'YES' | 'DEBUG' | null;
  * URL from JSR (read with `fetch`). Without a name, the runtime to serve at the runtime URL: `gramlot.js`
  * when `GRAMLOT_DEV=DEBUG`, `gramlot.min.js` otherwise. Another name throws a `TypeError`. */
 export function runtimeAsset(name?: 'gramlot.js' | 'gramlot.min.js' | 'gramlot-markdown.js' | 'runtime-notices.json' | null): URL;
+
+/** Packaged standard collection entry points for host artifact verification. */
+export function standardCollectionAssets(): Array<{url: string; file: URL}>;

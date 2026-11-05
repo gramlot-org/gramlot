@@ -225,9 +225,14 @@ test('bootstrap: the import map shares one runtime for page and component import
     const server = new MemoryServer({css: [], js: []}, {runtimeUrl: '/static/gramlot.js'});
     for (const [prefix, runtime] of [['', '/static/gramlot.js'], ['/app', '/app/static/gramlot.js']]) {
         const opened = await server.openPage('/', {prefix});
-        const map = `<script type="importmap" nonce="${opened.nonce}">` +
-            `{"imports":{"@gramlot/gramlot/page":"${runtime}","@gramlot/gramlot":"${runtime}","@gramlot/gramlot/components":"${runtime}","@gramlot/gramlot/markdown":"${prefix}/static/gramlot-markdown.js"}}</script></head>`;
-        assert.ok(opened.html.includes(map), prefix);
+        const match = opened.html.match(/<script type="importmap" nonce="([^"]+)">(.*?)<\/script>/s);
+        assert.equal(match[1], opened.nonce);
+        const imports = JSON.parse(match[2]).imports;
+        for (const key of ['page', 'components', ''])
+            assert.equal(imports[`@gramlot/gramlot${key ? '/' + key : ''}`], runtime);
+        assert.equal(imports['@gramlot/gramlot/markdown'], `${prefix}/static/gramlot-markdown.js`);
+        for (const collection of server.collections)
+            assert.equal(imports[`@gramlot/collections/${collection.name}`], prefix + collection.module);
         assert.ok(opened.html.indexOf('type="importmap"') < opened.html.indexOf('type="module"'));
     }
 });

@@ -114,3 +114,21 @@ print(b.to_tytx())
     assert.equal(host('calendar').control.querySelector('[aria-pressed="true"]').dataset.date,'2026-10-16');
     assert.equal(host('h').readControlValue().toISOString(),'1970-01-01T09:30:15.000Z');
 });
+
+test('period_to writes accepted period bounds relative to the editor, never from invalid drafts',t=>{
+    const f=fixture(t,(r,a)=>{
+        const pane=r.div({datapath:'range'});
+        pane.dateTextBox({id:'from',value:'^.from',period_to:'.to',workdate:'2026-09-11'});
+        pane.dateTextBox({id:'single',value:'^single',workdate:'2026-09-11'});
+    });
+    f.type('from','mese scorso');
+    assert.equal(f.app.data.getItem('range.from').toISOString(),'2026-08-01T00:00:00.000Z');
+    assert.equal(f.app.data.getItem('range.to').toISOString(),'2026-08-31T00:00:00.000Z');
+    f.type('from','31/02/2026');
+    assert.equal(f.app.data.getItem('range.to').toISOString(),'2026-08-31T00:00:00.000Z');
+    assert.equal(f.host('from').control.getAttribute('aria-invalid'),'true');
+    f.type('single','mese scorso');assert.equal(f.app.data.getItem('single'),null);
+    assert.equal(f.host('single').control.getAttribute('aria-invalid'),'true');
+    f.type('from','domani');assert.equal(f.app.data.getItem('range.from').toISOString(),'2026-09-12T00:00:00.000Z');
+    assert.equal(f.app.data.getItem('range.to').toISOString(),'2026-08-31T00:00:00.000Z');
+});

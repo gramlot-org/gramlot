@@ -12,3 +12,8 @@ export function parseChoices(values, separator = ',') {
         return {id, caption};
     });
 }
+
+/** Resolve the visible caption without changing the selected code. */
+export function choiceCaption(choices, value, placeholder = '') {
+    return choices.find(choice => choice.id === value)?.caption ?? placeholder ?? '';
+}

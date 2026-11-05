@@ -11,7 +11,7 @@ function fixture(t, overrides={}) {
     app.dvc.attach({capabilities:['orientation','gyroscope','accelerometer'],startOrientationEvents:stream('orientation'),
         startGyroscopeUpdates:stream('gyroscope'),startAccelerometerUpdates:stream('accelerometer'),...overrides});
     t.after(async()=>{app.dispose();await app.dvc.cleanup;window.close();});
-    return {app,callbacks,starts,stops,node:name=>app.data.getNode(`gramlot.device.${name}`)};
+    return {app,callbacks,starts,stops,node:name=>app.data.getNode(`_gramlot.device.${name}`)};
 }
 test('screen state is automatic while physical sensors remain opt-in',async t=>{
     const f=fixture(t);await flush();
@@ -74,8 +74,8 @@ test('a Data controller can disable the sensor synchronously when pending is wri
 
 test('delayed native activation updates watching and the displayed axis bindings',async t=>{
     const f=fixture(t),b=new GramlotBuilder();
-    b.root.span('^gramlot.device.gyroscope.x',{id:'motion-x'});
-    b.root.span('^gramlot.device.gyroscope?watching',{id:'motion-watching'});
+    b.root.span('^_gramlot.device.gyroscope.x',{id:'motion-x'});
+    b.root.span('^_gramlot.device.gyroscope?watching',{id:'motion-watching'});
     f.app.src.startSource(b.source);
     const node=f.node('gyroscope');node.setAttr({enabled:true});await flush();
     const document=f.app.src.renderer.destination.ownerDocument;

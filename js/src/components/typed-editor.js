@@ -90,12 +90,14 @@ export function TypedEditor(HTMLElement) {
                 this.checkValue(value);
                 return this.validateCandidate(value, accepted => {
                     this.checkValue(accepted);
+                    this.acceptDraft(accepted, this.#selection ? null : this.control.value, this.#policy ?? this.context());
                     this.#value = accepted; this.#selection = null; this.#dirty = false;
                     // Preserve accepted spelling unless validation normalized the candidate.
                     if (!this.#focused || !this.sameControlValue(value, accepted)) { this.#policy = null; this.display(); }
                 });
             } catch (error) { if (this.pageContext.form) this.pageContext.formParseError(error.message); this.error(error.message); return {ok: false}; }
         }
+        acceptDraft(value, text, context) {}
         restoreFormDraft(text) { this.#dirty = true; this.#policy = this.context(); this.control.value = text; }
         restoreFormValue(value) { this.#dirty = false; this.#policy = null; this.#selection = null; this.error(''); this.writeControlValue(value); this.display(); }
         display() {
@@ -234,14 +236,23 @@ export const dateEditor = Base => class extends Base {
     static validationValueCheck() { return checkCivilDate; }
     checkValue(value) { checkCivilDate(value); }
     editText(value, context) { return this.pageContext.format(value, {...context, pattern: 'short'}); }
-    parse(text, context) {
+    dateExpression(text, context) {
         const now = new Date();
         const workdate = this.parameters.workdate ?? `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
         const options = {locale: context.locale, workdate};
         const result = parseDateExpression(text, options);
         if (!result.ok) throw new Error(result.error.message);
-        if (result.kind !== 'date') throw new Error('Enter one complete date, not a period.');
-        const [y, m, d] = result.date.split('-').map(Number);
+        if (result.kind !== 'date' && !this.parameters.period_to) throw new Error('Enter one complete date, not a period.');
+        return result;
+    }
+    acceptDraft(value, text, context) {
+        if (!text?.trim() || !this.parameters.period_to) return;
+        const result = this.dateExpression(text, context);
+        if (result.kind === 'period') this.pageContext.periodOutput(this.parameters.period_to, new Date(result.end + 'T00:00:00Z'));
+    }
+    parse(text, context) {
+        const result = this.dateExpression(text, context);
+        const [y, m, d] = (result.kind === 'date' ? result.date : result.start).split('-').map(Number);
         const value = new Date(0); value.setUTCFullYear(y, m - 1, d); return value;
     }
 };

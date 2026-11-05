@@ -9,6 +9,7 @@ export class IdeLogic {
     fileSystemOpen(node:SourceBagNode,args:{root:string|null}):Promise<string|null>|undefined;
     ideMount(node:SourceBagNode):void;
     ideOpenWorkspace(node:SourceBagNode):void;
+    ideUploadCompleted(node:SourceBagNode,args:{result:{root:string,path:string}}):Promise<void>;
     ideDocumentState(node:SourceBagNode,key:string):void;
     ideOpenDocument(node:SourceBagNode,root:string,path:string):Promise<void>;
     ideNew(node:SourceBagNode):void;

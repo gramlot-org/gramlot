@@ -114,7 +114,7 @@ COVERAGE = {
         'size specifies fixed space in pixels. flex assigns a positive share of remaining layout space. '
         'Neither parameter represents application Data.',
         'The spacer is decorative and has no activation. A toolbar consumes elastic space before moving '
-        'overflowable units to its popup.',
+        'trailing units to its popup.',
         'Place it between menu or toolbar items as a leaf.',
         'size and flex are mutually exclusive. A fixed size must be finite and nonnegative. A flex '
         'factor must be finite and positive.',

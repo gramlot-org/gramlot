@@ -1,3 +1,5 @@
+import './fixtures/standard-collection-imports.mjs';
+import {standardCollections} from '../dist/standard-collections.js';
 // Phase S16: the end-to-end story of source plan §8.1 (GC-210 §065) on `fixtures/qualification/09_end_to_end`,
 // once from the Python page and once from the JavaScript page, through the real path: the GramlotFileServer of each
 // language opens the page, the browser document is the bootstrap HTML the server wrote, PageBootstrap imports
@@ -173,7 +175,7 @@ async function runStory(t, server) {
         assert.equal(app.state, 'started');
         assert.equal(window.gramlot, app);
         // Page.css then the same-name stylesheet, both with the mount prefix; the page module 09_end_to_end.js gives the Logic.
-        assert.deepEqual(args.resources, {collections:[],css: [`${PAGES}/themes/gramlot-base/theme.css`, `${PAGES}/09_end_to_end.css`],
+        assert.deepEqual(args.resources, {collections:standardCollections.map(({name,module,buildId})=>({name,url:PAGES+module,buildId})),css: [`${PAGES}/themes/gramlot-base/theme.css`, `${PAGES}/09_end_to_end.css`],
             js: [{url: `${PAGES}/09_end_to_end.js`, group: null}]});
         assert.deepEqual([...document.head.querySelectorAll('link[rel="stylesheet"]')].map(link => link.getAttribute('href')),
             args.resources.css);

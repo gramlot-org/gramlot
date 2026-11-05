@@ -1,11 +1,19 @@
 # 340 · How components and collections work
 
+**Page-authoring rule:** GramlotServer automatically provides every packaged
+standard collection to every site's Page base, in Python and JavaScript. Do not
+import `gramlot.collections.*` or repeat `gramlots = [...]` for these collections.
+Write component declarations directly. Explicit imports and collection declarations
+are for custom additions. A missing standard component is a server/package defect,
+not a reason for a one-off page import. The packaged inventory drives grammar and
+bootstrap resources; it does not scan installed packages. External engines load on
+first use in hosted pages. File exports embed the required resource bytes.
+
 Document ID: **GC-340**.
 
 
-Declare prepared collections once on the environment Page base (or in the host
-`collections` option). Individual pages inherit them. `Page.gramlots` is needed
-only to add a collection outside that environment selection.
+Standard prepared collections need no declaration. Add custom collections once
+with the host `collections` option, or use `Page.gramlots` for page-specific additions.
 Read this guide when you need to **create, package or deliberately override** a
 component. It describes the implemented contract; experimental plans and past
 release decisions are kept in internal documents.
@@ -433,11 +441,9 @@ The paragraph and input share one Data path. Typing updates Data through the
 existing binding machinery, and the paragraph displays the same value. The Python
 page contains no JS registration code and does not need to know the asset URL.
 
-For prepared built-in collections, put the same declaration on the environment
-base, for example `from gramlot.collections.inputs import mygramlot`. The gallery
-already includes its standard collections: its examples import only `Page`, not
-`inputs`, `layout` or `grid`. The host integration must use the matching
-prepared-collection implementation. A grammar-only JSON file
+Prepared built-in collections are automatic for every GramlotServer site: pages
+import only `Page`, not `inputs`, `layout` or `grid`. The host integration serves
+the matching verified prepared artifacts. A grammar-only JSON file
 is not a substitute for this package descriptor in `Page.gramlots`.
 
 <a id="gc-340-055"></a>
@@ -705,6 +711,11 @@ pipeline: it does not discover dependencies, host their assets, load their CSS o
 invoke every collection command hook for you. `PageBootstrap` owns that orchestration.
 Use the low-level API for an explicit test/integration fixture; use Page selection
 for the Python application path taught here.
+
+`gramlot.getCollection(name)` returns the component collection activated for that
+page, or `undefined` if it was not activated. An optional tool can pass that same
+object to its own Gramlot instance and reuse the document's existing registrations.
+Prepared-page bootstrap retains the verified objects for this purpose.
 
 <a id="gc-340-090"></a>
 ## 090 · Lifecycle and ownership when behavior grows

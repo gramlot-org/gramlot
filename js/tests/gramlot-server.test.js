@@ -458,7 +458,10 @@ test('registerPage registers a page without writing its HTML', async () => {
     assert.deepEqual(Object.keys(registered).sort(), ['nameSyntax', 'pageId', 'resources', 'title']);
     assert.match(registered.pageId, /^[0-9a-f]{32}$/);
     assert.equal(registered.title, 'Titled');
-    assert.deepEqual(registered.resources, {collections:[],css: ['/themes/gramlot-base/theme.css'], js: []});
+    assert.deepEqual(registered.resources.collections.map(item=>item.name), server.collections.map(item=>item.name));
+    assert.ok(registered.resources.collections.some(item=>item.name === 'audio'));
+    assert.ok(registered.resources.css.includes('/themes/gramlot-base/theme.css'));
+    assert.deepEqual(registered.resources.js, []);
     assert.deepEqual(registered.nameSyntax, NAME_SYNTAX.toJSON());
     assert.equal(server.pages.get(registered.pageId).owner, 'one');
     assert.equal((await main(server, registered.pageId, {owner: 'one'})).value.getNodes().length, 0);
@@ -688,4 +691,18 @@ test('page expiry: a call renews only the page it names', async t => {
     clock.now += 2000;
     assert.equal((await main(server, first, {owner: 'one'})).error, undefined);
     assert.ok(expired(await main(server, second, {owner: 'one'})));
+});
+
+
+test('ordinary pages receive standard component grammars without page declarations', async () => {
+    class StandardPage extends EmptyPage {
+        main(root) { root.textbox({value:'Ada'}); root.audioAnalyser({running:false}); }
+    }
+    const server = memoryServer(StandardPage);
+    const {pageId} = await server.openPage('/');
+    const result = await main(server,pageId);
+    assert.equal(result.error, undefined);
+    assert.equal(result.value.getNodes().length,2);
+    assert.equal(Object.hasOwn(StandardPage,'gramlots'),false);
+    assert.ok(!server.collections.some(item=>item.name==='selection_trial'));
 });

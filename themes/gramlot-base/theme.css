@@ -36,6 +36,8 @@
     --gramlot-error: #b13d48;
     --gramlot-error-background: #fceef0;
 
+    --gramlot-button-icon-size: 24px;
+    --gramlot-button-icon-padding: 5px;
     --gramlot-field-height: 2.75rem;
     --gramlot-field-padding: .55rem .75rem;
     --gramlot-field-font-size: .875rem;
@@ -472,3 +474,7 @@
 .visual-clipboard { padding:3px; gap:2px; border-top:1px solid var(--gramlot-border); }
 .visual-clipboard-title { font-weight:600; }
 .visual-clipboard .visual-editor-hint { font-size:11px; }
+
+/* FrameGrid owns its single command/search toolbar. */
+.gramlot-grid-toolbar { padding:2px 6px; min-height:40px; background:var(--gramlot-surface-subtle); }
+.gramlot-grid-toolbar > .gramlot-grid-search { margin-inline-start:auto; }

@@ -75,6 +75,26 @@ test('save errors retain revision and draft, disposal rejects pending read resul
     pending.resolve({content:'late'});assert.equal(await loading,null);assert.equal(docs.documents.getNode(documentKey('/root','late.py')),null);
 });
 
+test('image annotations create and update the companion, retain drafts and revert',async()=>{
+    const data=state(),calls=[],empty=new Bag().toTytx();
+    const app={rpc:{call:async(type,method,args)=>{
+        calls.push({method,args});
+        if(method==='document_read')return {path:args.path,language:'image',image:'data:image/png;base64,AA==',annotationPath:'radiografia_png.ant.tytx',content:Bag.fromTytx(empty),revision:null,writable:true};
+        return {revision:method==='document_create'?'r1':'r2'};
+    }}};
+    const docs=new IdeDocuments(app,dataOwner(data)),key=await docs.open('/root','radiografia.png');
+    const doc=docs.documents.getItem(key),annotations=doc.getItem('annotations');
+    annotations.setItem('item',new Bag({type:'text',x:2,y:3,text:'Test'}));
+    assert.equal(docs.dirty(key),true);await docs.save(key);
+    assert.equal(calls.at(-1).method,'document_create');assert.equal(calls.at(-1).args.path,'radiografia_png.ant.tytx');
+    assert.equal(doc.getItem('revision'),'r1');assert.equal(docs.dirty(key),false);
+    annotations.setItem('item.text','Changed');assert.equal(docs.dirty(key),true);
+    assert.equal(docs.revert(key),true);assert.equal(annotations.getItem('item.text'),'Test');assert.equal(docs.dirty(key),false);
+    annotations.setItem('item.text','Again');await docs.save(key);
+    assert.equal(calls.at(-1).method,'document_save');assert.equal(calls.at(-1).args.revision,'r1');
+    docs.dispose();
+});
+
 test('filesystem composition mounts through Logic and Data and loads a root',async t=>{
     const {window}=new JSDOM('<main id="gramlot-root"></main>');
     const app=new Gramlot({document:window.document,transport:false,collections:[tree]});
@@ -97,12 +117,13 @@ test('Python IDE closes Source before document Data and retains edits when closu
     const {default:layout}=await import('../src/components/layout.js');
     const {default:inputs}=await import('../src/components/inputs.js');
     const {default:editors}=await import('../src/components/editors.js');
+    const {default:uploads}=await import('../src/components/uploads.js');
     const source=execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? 'python3',['-c',`
 import json
 from pathlib import Path
 from gramlot import GramlotBuilder
 from gramlot.page import IdePage
-b = GramlotBuilder(collections=[json.loads(Path(f'src/gramlot/collections/{name}.json').read_text()) for name in ['inputs','layout','tree','editors']])
+b = GramlotBuilder(collections=[json.loads(Path(f'src/gramlot/collections/{name}.json').read_text()) for name in ['inputs','layout','tree','editors','uploads']])
 IdePage().main(b.root)
 print(b.to_tytx())
 `],{cwd:fileURLToPath(new URL('../..',import.meta.url)),encoding:'utf8'}).trim();
@@ -112,7 +133,7 @@ print(b.to_tytx())
     window.Range.prototype.getClientRects=()=>[];
     window.Range.prototype.getBoundingClientRect=()=>({left:0,right:0,top:0,bottom:0,width:0,height:0});
     const errors=[];window.addEventListener('error',event=>errors.push(event.error));
-    const app=new Gramlot({document:window.document,transport:false,collections:[layout,inputs,tree,editors]});
+    const app=new Gramlot({document:window.document,transport:false,collections:[layout,inputs,tree,editors,uploads]});
     app.src.logicRegistry.register(IdeLogic,{resource:'test:ide'});
     const calls=[];
     app.rpc.call=async(type,method,args)=>{
@@ -328,5 +349,12 @@ test('new IDE documents use random bytes even when randomUUID is unavailable', t
     assert.match(first,/^new_[a-f0-9]{32}$/);
     assert.notEqual(first,second);
     assert.equal(docs.documents.getItem(first).getItem('content'),'');
+    docs.dispose();
+});
+
+ test('unsupported files and annotation companions do not request or create IDE documents',async()=>{
+    const docs=new IdeDocuments({rpc:{call:()=>{throw new Error('Unexpected read');}}},dataOwner(state()));
+    for(const path of ['sample.bin','image_png.ant.tytx','README','archive.zip']) assert.equal(await docs.open('/root',path),null);
+    assert.equal(docs.documents.getNodes().length,0);
     docs.dispose();
 });

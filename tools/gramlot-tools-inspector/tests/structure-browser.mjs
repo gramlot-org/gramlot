@@ -9,7 +9,7 @@ import {chromium, webkit} from 'playwright';
 const fixture = `
 import {Gramlot, GramlotBuilder} from '@gramlot/gramlot';
 import inputs from '@gramlot/gramlot/components/inputs';
-import layout from '@gramlot/gramlot/components/layout';
+import layout from '@gramlot/collections/layout';
 import {attachInspectorAgent, InspectorConnection} from '../src/gramlot-tools-inspector.js';
 const app = new Gramlot({element:document.getElementById('app'),transport:false,collections:[inputs,layout]});
 const b = new GramlotBuilder(null,{collections:[inputs,layout]});
@@ -22,7 +22,7 @@ if(location.search==='?remote'){
 }else inspector.gramlot=app;
 document.body.append(inspector);window.app=app;window.inspector=inspector;`;
 const output=await build({stdin:{contents:fixture,resolveDir:fileURLToPath(new URL('./',import.meta.url)),sourcefile:'structure-fixture.js'},
- bundle:true,format:'esm',platform:'browser',target:'es2022',write:false,loader:{'.css':'text'},alias:{'@gramlot/gramlot/markdown':fileURLToPath(new URL('../../../js/src/markdown.js',import.meta.url)), '@gramlot/gramlot':fileURLToPath(new URL('../../../js/src/index.js',import.meta.url)), '@gramlot/gramlot/components/inputs':fileURLToPath(new URL('../../../js/src/components/inputs.js',import.meta.url)), '@gramlot/gramlot/components/layout':fileURLToPath(new URL('../../../js/src/components/layout.js',import.meta.url))}});
+ bundle:true,format:'esm',platform:'browser',target:'es2022',write:false,loader:{'.css':'text'},alias:{'@gramlot/gramlot/markdown':fileURLToPath(new URL('../../../js/src/markdown.js',import.meta.url)), '@gramlot/gramlot':fileURLToPath(new URL('../../../js/src/index.js',import.meta.url)), '@gramlot/gramlot/components/inputs':fileURLToPath(new URL('../../../js/src/components/inputs.js',import.meta.url)), '@gramlot/collections/layout':fileURLToPath(new URL('../../../js/src/components/layout.js',import.meta.url)), '@gramlot/collections/tree':fileURLToPath(new URL('../../../js/src/components/tree.js',import.meta.url))}});
 const server=createServer((request,response)=>{
  response.setHeader('Content-Type',request.url==='/fixture.js'?'text/javascript':'text/html');
  response.end(request.url==='/fixture.js'?output.outputFiles[0].text:'<!doctype html><meta charset="utf-8"><title>Inspector Source editing</title><main id="app" style="margin-left:530px"></main><script type="module" src="/fixture.js"></script>');
@@ -35,13 +35,13 @@ try {
    const page=await browser.newPage({viewport:{width:1250,height:950}}),errors=[];
    page.setDefaultTimeout(7000);page.on('pageerror',e=>{errors.push(e.message);console.error(e.message)});
    await page.goto(`http://127.0.0.1:${server.address().port}/${remote?'?remote':''}`);
-   const palette=page.locator('gramlot-tools-inspector'), tree=palette.locator('gramlot-poc-tree[data-root=source]');
-   const row=path=>tree.locator(`[data-node-path="${path}"]`);
+   const palette=page.locator('gramlot-tools-inspector'), tree=palette.locator('gramlot-tree[data-root=source]');
+   const row=path=>tree.locator(`[data-path="${path}"] > .row`);
    const undo=palette.getByRole('button',{name:'↶ Undo',exact:true}),redo=palette.getByRole('button',{name:'↷ Redo',exact:true});
    await palette.getByRole('tab',{name:'Source',exact:true}).click();
-   await row('main').click();await row('main.left').click();
-   assert.equal(await row('main').getByRole('button',{name:'Remove branch',exact:true}).count(),0);
-   assert.equal(await row('main').getAttribute('draggable'),'false');
+   await row('main').locator('.expander').click();await row('main.left').locator('.expander').click();
+   await row('main').hover();
+   assert.equal(await tree.getByRole('button',{name:'Remove branch',exact:true}).count(),0);
    assert.equal(await row('main.left.text').getAttribute('draggable'),'true');
    // Source attribute + undo/redo retain the original Data pointer.
    await row('main.left.text').click();await palette.getByRole('button',{name:'Add attribute',exact:true}).click();
@@ -52,13 +52,13 @@ try {
    await undo.click();await page.waitForFunction(()=>!app.src.renderer.destination.querySelector('p').style.color);
    await redo.click();await page.waitForFunction(()=>app.src.renderer.destination.querySelector('p').style.color==='crimson');
    // Keyboard history outside text inputs uses the same journal.
-   await row('main.left.text').focus();await page.keyboard.press('Control+z');
+   await row('main.left.text').locator('..').focus();await page.keyboard.press('Control+z');
    await page.waitForFunction(()=>!app.src.renderer.destination.querySelector('p').style.color);
    await page.keyboard.press('Control+Shift+z');
    await page.waitForFunction(()=>app.src.renderer.destination.querySelector('p').style.color==='crimson');
    // Add actual HTML, installed widget and installed container through the same dialog.
    const add=async(kind,tag)=>{
-    await row('main.right').hover();await row('main.right').getByRole('button',{name:'Add child element',exact:true}).click();
+    await row('main.right').hover();await tree.getByRole('button',{name:'Add child element',exact:true}).click();
     const dialog=palette.getByRole('dialog',{name:'Add Source element',exact:true});
     if(kind==='component'){
      await dialog.getByLabel('Element kind',{exact:true}).selectOption('component');
@@ -66,7 +66,7 @@ try {
     }else await dialog.getByLabel('HTML tag',{exact:true}).fill(tag);
     await dialog.getByRole('button',{name:'Add',exact:true}).click();await dialog.waitFor({state:'hidden'});
    };
-   await row('main.right').hover();await row('main.right').getByRole('button',{name:'Add child element',exact:true}).click();
+   await row('main.right').hover();await tree.getByRole('button',{name:'Add child element',exact:true}).click();
    const invalid=palette.getByRole('dialog',{name:'Add Source element',exact:true});
    await invalid.getByLabel('HTML tag',{exact:true}).fill('inventedWidget');
    await invalid.getByRole('button',{name:'Add',exact:true}).click();
@@ -87,7 +87,7 @@ try {
    await add('component', 'borderContainer');
    const borderPath = 'main.right.borderContainer_0';
    await row(borderPath).hover();
-   await row(borderPath).getByRole('button', {name: 'Add child element', exact: true}).click();
+   await tree.getByRole('button', {name: 'Add child element', exact: true}).click();
    const regionDialog = palette.getByRole('dialog', {name: 'Add Source element', exact: true});
    await regionDialog.getByLabel('Element kind', {exact: true}).selectOption('component');
    await regionDialog.getByLabel('Widget or container', {exact: true}).selectOption('contentPane');
@@ -111,7 +111,7 @@ try {
    await page.waitForFunction(()=>app.src.source.getItem('main.left').getNodes()[0].label==='input');
    await undo.click();await page.waitForFunction(()=>app.src.source.getItem('main.left').getNodes()[0].label==='text');
    // Remove an entire branch; undo restores both nodes and two-way binding.
-   await row('main.left').hover();await row('main.left').getByRole('button',{name:'Remove branch',exact:true}).click();
+   await row('main.left').hover();await tree.getByRole('button',{name:'Remove branch',exact:true}).click();
    await page.waitForFunction(()=>!app.src.source.getNode('main.left'));
    await undo.click();await page.waitForFunction(()=>!!app.src.source.getNode('main.left.input'));
    await page.locator('#app input').first().fill('Grace');await page.locator('#app input').first().press('Tab');

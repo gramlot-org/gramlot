@@ -80,17 +80,36 @@ export class GramlotBuilder extends HtmlBuilder {
     static { this.defineGrammar(buttons.toDocument()); }
 
     /** Compose real Source nodes; frame/grid/menu retain their existing runtime owners. */
-    frameGrid(parent, {storepath, rowMode, structpath, searchOn = false, ...attrs} = {}) {
+    frameGrid(parent, {storepath, rowMode, structpath, searchOn = false, searchHelp = false, chart = false, ...attrs} = {}) {
         for (const tag of ['framePane', 'grid']) {
             if (!this.schemaTag(tag)) throw new TypeError(`frameGrid requires the ${tag} collection`);
         }
+        const chartOptions = {};
+        for (const key of Object.keys(attrs)) if (key.startsWith('chart_')) {
+            chartOptions[key.slice(6)] = attrs[key]; delete attrs[key];
+        }
+        if (chart !== false) {
+            if (chart !== true && (typeof chart !== 'string' || !chart)) throw new TypeError('chart requires a boolean or chart type');
+            if (!attrs.datapath) throw new TypeError('A chart frameGrid requires its own datapath');
+            if (!this.schemaTag('chartPane')) throw new TypeError('frameGrid requires the chartPane collection');
+            if (typeof chart === 'string') chartOptions.chartType = chart;
+        } else if (Object.keys(chartOptions).length) throw new TypeError('chart_* options require chart');
         const gridAttrs = {storepath, rowMode, ...(structpath == null ? {} : {structpath}),
             node_label: 'grid', frameTarget: true, height: '100%', width: '100%'};
+        if (chart !== false) gridAttrs.nodeId = randomId();
         this.validateNodeValues('grid', null, gridAttrs);
-        if (searchOn !== false) this.validateNodeValues('searchBox', null, {searchOn});
+        if (searchOn !== false) this.validateNodeValues('searchBox', null, {searchOn, searchHelp});
         const frame = parent.framePane(attrs);
         frame.center.grid(gridAttrs);
-        if (searchOn !== false) frame.top.menu({presentation:'bar', node_label:'search', aria_label:'Grid search', padding:'4px 8px', background:'var(--gramlot-surface-subtle)'}).menuline({group:true}).searchBox({searchOn});
+        const bar = frame.top.menu({presentation:'bar', node_label:'bar', aria_label:'Grid toolbar', class:'gramlot-grid-toolbar'});
+        if (searchOn !== false) bar.menuline({group:true, node_label:'search', class:'gramlot-grid-search'}).searchBox({searchOn, searchHelp});
+        if (chart !== false) {
+            bar.menuline({caption:'Chart', icon:'▥', labelPosition:'tooltip', node_label:'chart', action:"this.SET('._chart.open',true)"});
+            const window = frame.center.floatingPane({title:'Chart', open:'^._chart.open', width:'820px', height:'560px',
+                movable:true, resizable:true, maximizable:true, node_label:'chartWindow'});
+            window.frame.center.chartPane({storepath,rowMode,gridId:gridAttrs.nodeId,configpath:'._chart',
+                configDefaults:new Bag(chartOptions),height:'100%'});
+        }
         return frame;
     }
 

@@ -194,3 +194,36 @@ test('floating windows stay above layout chrome when opened and raised', async t
  assert.equal(f.element('retained'),input);assert.equal(input.value,'Still here');
  assert.equal(first.shell.dataset.modal,undefined);
 });
+
+test('docking a floatingPane retains its content, geometry and collapsed state',async t=>{
+ const f=await fixture(t,(root,app)=>{
+  app.data.setItem('open',true);app.data.setItem('docked',false);app.data.setItem('draft','Before');
+  root.floatingPane({id:'float',open:'^open',docked:'^docked',collapsed:'^collapsed',width:'360px',height:'240px',left:'60px',top:'80px'}).frame.center.input({id:'draft',value:'^draft'});
+ });
+ const w=f.element('float'),input=f.element('draft');
+ w.shell.getBoundingClientRect=()=>Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(w.shell.style[k])||0]));
+ w.titlebar.getBoundingClientRect=()=>({height:36});
+ const before=w.shell.style.cssText, geometry=['left','top','width','height'].map(k=>w.shell.style[k]);
+ f.app.data.setItem('docked',true);await settle();
+ assert.equal(w.shell.hasAttribute('data-docked'),true);assert.equal(w.opened,true);
+ assert.equal(f.element('draft'),input);f.app.data.setItem('draft','Still here');
+ w.titlebar.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+ assert.equal(w.shell.style.cssText,before);
+ f.app.data.setItem('docked',false);await settle();
+ assert.equal(w.shell.hasAttribute('data-docked'),false);assert.equal(f.element('draft'),input);assert.equal(input.value,'Still here');
+ assert.deepEqual(['left','top','width','height'].map(k=>w.shell.style[k]),geometry);
+ w.collapseButton.click();await settle();f.app.data.setItem('docked',true);await settle();assert.equal(w.body.hidden,false);
+ f.app.data.setItem('docked',false);await settle();assert.equal(w.body.hidden,true);
+});
+
+test('a floatingPane first opened docked restores its configured geometry when undocked',async t=>{
+ const f=await fixture(t,(root,app)=>{
+  app.data.setItem('docked',true);root.floatingPane({id:'float',open:true,docked:'^docked',width:'360px',height:'240px',left:'60px',top:'80px'}).frame.center.input({id:'draft'});
+ });
+ const w=f.element('float'),input=f.element('draft');
+ w.shell.getBoundingClientRect=()=>Object.fromEntries(['left','top','width','height'].map(k=>[k,parseFloat(w.shell.style[k])||0]));
+ assert.equal(w.shell.hasAttribute('data-docked'),true);
+ f.app.data.setItem('docked',false);await settle();
+ assert.equal(w.shell.hasAttribute('data-docked'),false);assert.equal(f.element('draft'),input);
+ assert.deepEqual(['left','top','width','height'].map(k=>w.shell.style[k]),['60px','80px','360px','240px']);
+});

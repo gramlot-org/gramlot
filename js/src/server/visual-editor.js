@@ -24,30 +24,30 @@ export class VisualEditor {
         pane.dataController({func:'initializeEditorAppearance', _onBuilt:true});
         pane.dataController({func:'applyEditorAppearance', profile:'^.appearanceProfile', palette:'^.appearancePalette', mode:'^.appearanceMode'});
         const rail = this.rail = pane.menu({presentation:'bar', orientation:'vertical', aria_label:'Editor panels', class:'visual-editor-rail'});
-        this.toolButton(rail.menuline({group:true, overflowable:false}), 'Source / Data', 'toggleNavigation', toolIcons.navigation);
-        this.toolButton(rail.menuline({group:true, overflowable:false}), 'Catalogue', 'openCatalogue', toolIcons.catalogue);
-        this.toolButton(rail.menuline({group:true, overflowable:false}), 'Properties', 'openProperties', toolIcons.properties);
-        this.toolButton(rail.menuline({group:true, overflowable:false}), 'Clipboard', "this.SET('.clipboardVisible', !this.GET('.clipboardVisible'))", toolIcons.paste,
+        this.toolButton(rail.menuline({group:true}), 'Source / Data', 'toggleNavigation', toolIcons.navigation);
+        this.toolButton(rail.menuline({group:true}), 'Catalogue', 'openCatalogue', toolIcons.catalogue);
+        this.toolButton(rail.menuline({group:true}), 'Properties', 'openProperties', toolIcons.properties);
+        this.toolButton(rail.menuline({group:true}), 'Clipboard', "this.SET('.clipboardVisible', !this.GET('.clipboardVisible'))", toolIcons.paste,
             {dropTarget:true, dropTypes:'app/source', dropTags:`${editorId}Source`, dropEffect:'^.clipboardDropEffect',
                 connect_ondragover:'clipboardModifiers', connect_ondrop:'clipboardModifiers', onDrop:'dropClipboard'});
         rail.spacer({flex:1});
-        this.toolButton(rail.menuline({group:true, overflowable:false}), 'Appearance', "this.SET('.appearanceOpen', !this.GET('.appearanceOpen'))", toolIcons.appearance);
+        this.toolButton(rail.menuline({group:true}), 'Appearance', "this.SET('.appearanceOpen', !this.GET('.appearanceOpen'))", toolIcons.appearance);
         const layoutRoot = pane.framePane({node_label:'layout', height:'100%', id:`${editorId}-editor-frame`, class:'visual-editor-layout'});
         layoutRoot.top.setAttr({height:'30px'});
         const toolbar = layoutRoot.top.menu({presentation:'bar', aria_label:'Editor tools', class:'visual-editor-toolbar'});
-        toolbar.menuline({group:true, overflowable:false}).span('Source editor', {class:'visual-editor-brand'});
-        const files = toolbar.menuline({group:true, overflowable:false, gap:'4px', hidden:!fileCommands});
+        toolbar.menuline({group:true}).span('Source editor', {class:'visual-editor-brand'});
+        const files = toolbar.menuline({group:true, gap:'4px', hidden:!fileCommands});
         for (const [caption,action,icon] of [['New','newPage','new'],['Open','openUpload','open'],['Download','downloadPage','download'],['Copy Source','copySource','copy']])
             this.toolButton(files,caption,action,toolIcons[icon],{id:`${editorId}-${icon}`});
-        toolbar.menuline({group:true, overflowable:false}).span({class:'visual-toolbar-divider', aria_hidden:'true'});
-        const edit = toolbar.menuline({group:true, overflowable:false, gap:'2px'});
+        toolbar.menuline({group:true}).span({class:'visual-toolbar-divider', aria_hidden:'true'});
+        const edit = toolbar.menuline({group:true, gap:'2px'});
         this.toolButton(edit,'Cut branch','cutBranch',toolIcons.cut,{title:'Cut branch (F8)'});
         this.toolButton(edit,'Copy branch','copyBranch',toolIcons.copy);
         this.toolButton(edit,'Paste branch','pasteBranch',toolIcons.paste,{title:'Paste branch (F9)'});
         toolbar.spacer({flex:1});
-        toolbar.menuline({group:true, overflowable:false, hidden:'^.modified:=!{}'}).span('Unsaved changes', {role:'status', class:'visual-editor-hint'});
-        toolbar.menuline({group:true, overflowable:false}).span('^.fileStatus', {role:'status', class:'visual-editor-file-status'});
-        toolbar.menuline({group:true, overflowable:false}).span('^.filename', {class:'visual-editor-filename'});
+        toolbar.menuline({group:true, hidden:'^.modified:=!{}'}).span('Unsaved changes', {role:'status', class:'visual-editor-hint'});
+        toolbar.menuline({group:true}).span('^.fileStatus', {role:'status', class:'visual-editor-file-status'});
+        toolbar.menuline({group:true}).span('^.filename', {class:'visual-editor-filename'});
         const left = layoutRoot.left;
         left.setAttr({width:'min(240px, 34vw)', splitter:true,
             drawer:'^.navigationOpen', default_drawer:true, drawer_label:'Source / Data',
@@ -96,7 +96,7 @@ export class VisualEditor {
         naming.frame.center.p('^.error', {role:'alert', margin:'12px'});
         const namingBar = naming.frame.bottom.menu({presentation:'bar', aria_label:'Clipboard commands', padding:'3px 6px'});
         namingBar.spacer({flex:1});
-        const namingButtons = namingBar.menuline({group:true, overflowable:false, gap:'8px'});
+        const namingButtons = namingBar.menuline({group:true, gap:'8px'});
         namingButtons.button('Cancel', {action:"this.SET('.clipboardOpen', false)"});
         namingButtons.button('Save branch', {action:'saveClipboard'});
         const dialog = pane.dialog({class:'visual-editor-popup', title:'Required parameters', open:'^.insertionOpen', width:'400px', height:'280px', movable:true, resizable:true});
@@ -104,7 +104,7 @@ export class VisualEditor {
         dialog.frame.center.p('^.error', {role:'alert'});
         const bar = dialog.frame.bottom.menu({presentation:'bar', aria_label:'Insertion commands', padding:'3px 6px', border_top:'1px solid var(--gramlot-border)'});
         bar.spacer({flex:1});
-        const buttons = bar.menuline({group:true, overflowable:false, gap:'8px'});
+        const buttons = bar.menuline({group:true, gap:'8px'});
         buttons.button('Cancel', {action:"this.SET('.insertionOpen', false)"});
         buttons.button('Insert', {action:'insertWidget'});
         const settings = pane.floatingPane({class:'visual-editor-popup', title:'Appearance', open:'^.appearanceOpen', default_open:false, width:'280px', height:'260px', movable:true, resizable:true});
@@ -128,7 +128,7 @@ export class VisualEditor {
         pane.dataSetter({destination_path:'.codeDocument', value:new Bag({...document, saved:document.content, busy:false, status:''})});
         const anchor = `#${pane.getAttr('visualEditorId')}Editor`;
         const opener = frame === this.frame ? this.toolbar : frame.top.menu({presentation:'bar', aria_label:'Code drawer'});
-        opener.menuline({group:true, overflowable:false}).button('Code', {action:'openCode', class:'button--quiet'});
+        opener.menuline({group:true}).button('Code', {action:'openCode', class:'button--quiet'});
         const drawer = frame.right;
         drawer.setAttr({class:'visual-editor-code', datapath:anchor, title:'Page code', detachable:true, width:'60%', minSize:240, splitter:true,
             drawer:'^.codeOpen', default_drawer:'close', drawer_label:'Code', drawer_minimize:false,
@@ -141,7 +141,7 @@ export class VisualEditor {
         code.bottom.div('^.codeDocument.status', {role:'status', font_size:'12px', padding:'4px 10px'});
         const bar = code.bottom.menu({presentation:'bar', aria_label:'Page code commands', padding:'3px 6px'});
         bar.spacer({flex:1});
-        const commands = bar.menuline({group:true, overflowable:false, gap:'6px'});
+        const commands = bar.menuline({group:true, gap:'6px'});
         commands.button('Close', {action:"this.SET('.codeOpen', 'close')"});
         commands.button('Preview saved', {action:'codePreview', disabled:'^.codeDocument.busy'});
         commands.button('Save', {action:'codeSave', disabled:'^.codeSaveDisabled'});
@@ -150,7 +150,7 @@ export class VisualEditor {
     }
     search(pane, path, label) {
         const bar = pane.menu({presentation:'bar', aria_label:label, class:'visual-search-toolbar'});
-        const field = bar.menuline({group:true, overflowable:false, flex:1, min_width:0}).div({class:'visual-search-field'});
+        const field = bar.menuline({group:true, flex:1, min_width:0}).div({class:'visual-search-field'});
         field.span({class:'visual-search-icon', aria_hidden:'true'});
         field.input({type:'search', value:`^.${path}`, default:'', live:true, placeholder:label, aria_label:label});
         field.html_button({type:'button', class:'visual-search-clear', aria_label:`Clear ${label.toLowerCase()}`,

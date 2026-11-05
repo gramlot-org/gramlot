@@ -8,18 +8,18 @@ class WebcomponentTests(unittest.TestCase):
     def test_nested_tag_attributes_children_and_wire(self):
         builder = GramlotBuilder()
         node = builder.root.div(node_label="pane").webcomponent(
-            code="gramlot-poc-tree", node_label="tree", id="tree", title="A & B",
+            code="example-gauge", node_label="tree", id="tree", title="A & B",
             connect_onchange="inspector.select")
         node.span("Fallback <text>")
         html = builder.render()
-        self.assertIn('<gramlot-poc-tree id="tree" title="A &amp; B">', html)
-        self.assertIn('<span>Fallback &lt;text&gt;</span></gramlot-poc-tree>', html)
+        self.assertIn('<example-gauge id="tree" title="A &amp; B">', html)
+        self.assertIn('<span>Fallback &lt;text&gt;</span></example-gauge>', html)
         self.assertNotIn('code=', html)
         self.assertNotIn('connect_onchange=', html)
         copy = from_tytx(builder.to_tytx())
         tree = copy.get_node("pane.tree")
         self.assertEqual(tree.node_tag, "webcomponent")
-        self.assertEqual(tree.attr["code"], "gramlot-poc-tree")
+        self.assertEqual(tree.attr["code"], "example-gauge")
 
     def test_code_is_required_literal_and_tag_safe(self):
         for code in [None, 42, "", "div", "Tree-node", "tree-x\n", "^tree-code", "=tree-code",
@@ -38,7 +38,7 @@ class WebcomponentTests(unittest.TestCase):
 
     def test_mutated_code_is_checked_by_static_renderer(self):
         builder = GramlotBuilder()
-        node = builder.root.webcomponent(code="gramlot-poc-tree")
+        node = builder.root.webcomponent(code="example-gauge")
         node.set_attr({"code": "^some-path"})
         with self.assertRaisesRegex(ValueError, "literal"):
             builder.render()

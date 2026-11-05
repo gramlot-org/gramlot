@@ -138,6 +138,43 @@ test('all four separators resize with consistent limits and no Data changes; fix
     app.dispose();
 });
 
+test('Home and End resize each separator to its configured bounds', async () => {
+    const {app, window, element} = await fixture(root => {
+        const border = root.borderContainer({id:'border', height:'500px'});
+        for (const region of ['left', 'right', 'top', 'bottom']) {
+            border.contentPane({region, width:'100px', height:'100px', splitter:true, minSize:60, maxSize:160});
+        }
+        border.contentPane({region:'center'});
+    });
+    try {
+        const border = element('border');
+        geometry(border);
+        for (const side of ['left', 'right', 'top', 'bottom']) {
+            const handle = separator(border, side);
+            for (const [key, expected] of [['Home', '60px'], ['End', '160px']]) {
+                const event = new window.KeyboardEvent('keydown', {key, bubbles:true, cancelable:true});
+                handle.dispatchEvent(event);
+                assert.equal(border.control.style.getPropertyValue(`--${side}`), expected);
+                assert.equal(event.defaultPrevented, true);
+            }
+        }
+    } finally { app.dispose(); window.close(); }
+});
+
+test('resizing a side reserves the configured minimum size of the center', async () => {
+    const {app, window, element} = await fixture(root => {
+        const border = root.borderContainer({id:'border', height:'500px'});
+        border.contentPane({region:'top', height:'100px', splitter:true, minSize:60});
+        border.contentPane({region:'center', minSize:60});
+    });
+    try {
+        const border = element('border');
+        geometry(border);
+        separator(border, 'top').dispatchEvent(new window.KeyboardEvent('keydown', {key:'End'}));
+        assert.equal(border.control.style.getPropertyValue('--top'), '440px');
+    } finally { app.dispose(); window.close(); }
+});
+
 test('nested border, fixed drawer, placement style precedence and callback use Source context',async()=>{
     const {app,element}=await fixture(root=>{
         const bc=root.borderContainer({id:'border',height:'400px'});
@@ -220,11 +257,19 @@ test('numeric regional bindings keep sliders synchronized during drag and keyboa
         assert.equal(events.length,count+1);
         sep.dispatchEvent(new window.KeyboardEvent('keydown',{key:vertical?'ArrowDown':'ArrowRight'}));
         assert.equal(app.data.getItem(`layout.${side}`),expected+(['left','top'].includes(side)?1:-1));
+        sep.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Home'}));
+        assert.equal(app.data.getItem(`layout.${side}`),90);
+        assert.equal(Number(element(`slider-${side}`).control.value),90);
+        assert.equal(events.at(-1).data,90);
+        sep.dispatchEvent(new window.KeyboardEvent('keydown',{key:'End'}));
+        assert.equal(app.data.getItem(`layout.${side}`),110);
+        assert.equal(Number(element(`slider-${side}`).control.value),110);
+        assert.equal(events.at(-1).data,110);
         const slider=element(`slider-${side}`).control;
         slider.value='102';slider.dispatchEvent(new window.Event('input',{bubbles:true}));
         assert.equal(app.data.getItem(`layout.${side}`),102);
         assert.equal(border.control.style.getPropertyValue(`--${side}`),'102px');
-        assert.equal(events.length,count+2,'only drag completion and keyboard resize publish');
+        assert.equal(events.length,count+4,'only drag completion and keyboard resize publish');
         assert.equal(app.dom.getBaseSourceNode(element(side)).getAttr(vertical?'height':'width'),`^.${side}`);
     }
     assert.equal(element('draft'),draft);

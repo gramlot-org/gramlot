@@ -11,7 +11,8 @@ export function compileFilter(filter) {
         !['T', 'L', 'R', 'N', 'D'].includes(dtype)) throw new TypeError('Invalid collection filter');
     if (!value.trim()) return null;
     if (dtype === 'T') {
-        const expression = new RegExp(value, 'i');
+        const pattern = filter.literal === true ? value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') : value;
+        const expression = new RegExp(pattern, 'i');
         return read => expression.test(columns.map(field => searchText(read(field), locale, filter.timeZone)).join(' '));
     }
     if (columns.length !== 1) throw new TypeError('Typed filters require one column');

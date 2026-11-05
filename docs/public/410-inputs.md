@@ -27,7 +27,7 @@ Boolean: its Source-scoped `group` clears the other member values. In contrast,
 `radioButtonText` stores the chosen option code in one string, and `checkBoxText`
 stores comma-separated codes, or null for no selection. Their captions are not
 record values. Use `cols` to arrange these inline option groups; `checkBoxText`
-does not provide a popup selection mode. See [native variants](105-components.md#gc-105-040)
+also offers `popup=True`, Bag options and complete remote option lists. See [native variants](105-components.md#gc-105-040)
 and [multiple choices](105-components.md#gc-105-065).
 
 `filteringSelect` is for a closed local set, `callbackSelect` for a set supplied by
@@ -60,6 +60,8 @@ valid text, `live=True` commits valid input as it is entered, Escape restores th
 accepted value, and clearing writes null. `dateCalendar` edits the same date type
 inline; `dateTextBox` provides its calendar popup unless `calendar=False`.
 `workdate` sets the reference day for relative date editing, not the field value.
+Set `period_to=".end"` to accept periods too: the start becomes the value and the
+end is written to that relative Data path after acceptance. Invalid drafts write neither bound.
 See [typed editors](105-components.md#gc-105-045) and
 [calendar interaction](105-components.md#gc-105-070).
 
@@ -100,7 +102,7 @@ a record store nor a save implementation. See [editing sessions](340-components-
 - [`comboBox`](#gc-410-combobox): Suggestions with free text allowed.
 - [`dbSelect`](#gc-410-dbselect): Remote choices through an application method or the configured Asqueel integration; the component itself supplies no database adapter.
 - [`dbComboBox`](#gc-410-dbcombobox): Remote suggestions with free text; the application owns authorization and persistence.
-- [`checkBoxText`](#gc-410-checkboxtext): A local multi-choice group storing the selected codes.
+- [`checkBoxText`](#gc-410-checkboxtext): Multiple choices from text, a Bag, a remote list or the shared checkbox tree.
 - [`dateCalendar`](#gc-410-datecalendar): An inline civil-date calendar.
 
 
@@ -288,8 +290,10 @@ Collection: **inputs**. Browser element: `gramlot-textbox`.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Placeholders](#gc-410-shared-placeholder), [Validation](#gc-410-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -320,8 +324,10 @@ Collection: **inputs**. Browser element: `gramlot-passwordbox`.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Placeholders](#gc-410-shared-placeholder), [Validation](#gc-410-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -354,6 +360,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `rows` | L | 4 | read | target="control" |
 | `cols` | L | 24 | read | target="control" |
 
@@ -392,6 +400,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `mode` | T | 'checkbox' | read | enum=['checkbox', 'switch'] |
 | `switch_color` | T or None | None | read | — |
 | `label` | T | '' | — | qualification="intl_str"; target="optionCaption" |
@@ -427,6 +437,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `label` | T | '' | — | qualification="intl_str"; target="optionCaption" |
 | `group` | T or None | — | read | — |
 
@@ -461,6 +473,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `values` | T | — | read | — |
 | `cols` | L | 1 | read | — |
 
@@ -470,7 +484,7 @@ Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source childr
 <a id="gc-410-checkboxtext"></a>
 ### `checkBoxText`
 
-A local multi-choice group storing the selected codes.
+Multiple choices from text, a Bag, a remote list or the shared checkbox tree.
 
 Collection: **inputs**. Browser element: `gramlot-check-box-text`.
 
@@ -486,7 +500,7 @@ Collection: **inputs**. Browser element: `gramlot-check-box-text`.
 **Interaction and events.** A native check change commits the code list. Arrows, Home and End move focus among options. There is no component-specific selection callback.
 
 
-**Composition.** The field generates inline options from `values` and arranges them in `cols` columns. It takes no Source option children.
+**Composition.** The field generates options from text or Bag `values`, or a complete `dbtable`/`method` result. `popup=True` puts the same choices behind a caption button; `cols` arranges them. It takes no Source option children.
 
 
 **Limits and lifecycle.** The column count must be positive. Readonly and disabled lock the options. An edit preserves stored codes that have no current visible option.
@@ -495,8 +509,20 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
-| `values` | T | — | read | — |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
+| `values` | T / X | '' | read | — |
 | `cols` | L | 1 | read | — |
+| `popup` | B | False | read | — |
+| `hierarchical` | B | False | read | — |
+| `checkChildren` | B | True | read | — |
+| `identifier` | T | — | read | — |
+| `labelAttribute` | T | — | read | — |
+| `dbtable` | T | — | read | — |
+| `method` | T | — | read | — |
+| `caption_field` | T | — | read | — |
+| `order_by` | T | — | read | — |
+| `condition` | T | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -527,8 +553,10 @@ Collection: **inputs**. Browser element: `gramlot-colorpicker`.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Validation](#gc-410-shared-validation).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -561,6 +589,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `values` | T | '' | read | — |
 | `separator` | T | ',' | read | — |
 
@@ -595,6 +625,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `callback` | T | — | — | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
@@ -628,6 +660,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `values` | T | '' | read | — |
 | `separator` | T | ',' | read | — |
 | `store` | X or None | None | read | — |
@@ -663,6 +697,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `dbtable` | T | — | read | — |
 | `caption_field` | T | — | read | — |
 | `condition` | T | — | read | — |
@@ -715,6 +751,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `dbtable` | T | — | read | — |
 | `caption_field` | T | — | read | — |
 | `condition` | T | — | read | — |
@@ -770,6 +808,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `dtype` | T | 'R' | — | — |
 | `min` | R or None | — | read | — |
 | `max` | R or None | — | read | — |
@@ -805,6 +845,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `min` | R | 0 | read | target="control" |
 | `max` | R | 100 | read | target="control" |
 | `step` | R | 1 | read | target="control" |
@@ -840,6 +882,8 @@ Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readon
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 | `min` | R | 0 | read | target="control" |
 | `max` | R | 100 | read | target="control" |
 | `step` | R | 1 | read | target="control" |
@@ -869,12 +913,15 @@ Collection: **inputs**. Browser element: `gramlot-date-text-box`.
 **Composition.** A field leaf with an internal trigger and popup unless `calendar=False`.
 
 
-**Limits and lifecycle.** The parser requires a single date. Empty input commits null, while an invalid expression preserves the typed value. Disabling the calendar or releasing the editor closes its popup.
+**Limits and lifecycle.** The parser requires a single date unless period_to declares a relative Data output path. An accepted period writes its start to value and its end to period_to; ordinary dates leave that output unchanged. Empty input commits null, while an invalid expression preserves both typed values. Disabling the calendar or releasing the editor closes its popup.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Placeholders](#gc-410-shared-placeholder), [Validation](#gc-410-shared-validation), [Locale and formatting](#gc-410-shared-formatting).
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
+| `period_to` | T or None | — | — | — |
 | `calendar` | B | True | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
@@ -906,8 +953,10 @@ Collection: **inputs**. Browser element: `gramlot-date-calendar`.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Validation](#gc-410-shared-validation), [Locale and formatting](#gc-410-shared-formatting).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
@@ -938,8 +987,10 @@ Collection: **inputs**. Browser element: `gramlot-time-text-box`.
 
 Shared contracts: [Values and bindings](#gc-410-shared-value), [Disabled, readonly and live updates](#gc-410-shared-state), [Labels and field presentation](#gc-410-shared-labels), [Placeholders](#gc-410-shared-placeholder), [Validation](#gc-410-shared-validation), [Locale and formatting](#gc-410-shared-formatting).
 
-No additional component-specific parameters. Use the shared contracts above and ordinary Source/CSS attributes.
-
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `lbl_value` | T or None | — | twoWay | — |
+| `lbl_values` | T or None | — | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 

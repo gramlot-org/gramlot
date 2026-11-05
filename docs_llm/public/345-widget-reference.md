@@ -34,6 +34,7 @@ The value type and writeback behavior depend on the control. Use a Data pointer 
 | `value` | `{"binding":"twoWay","default":"","dtype":"T"}` | codeMirror, htmlEditor, markdownEditor |
 | `value` | `{"binding":"read","default":"","dtype":"T"}` | htmlPreview, markdownPreview, typstPreview |
 | `value` | `{"binding":"twoWay","default":null,"dtype":"T","nullable":true}` | imageUploader |
+| `value` | `{"binding":"twoWay","default":null,"dtype":"X","nullable":true}` | chartGeoJSON |
 
 <a id="gc-345-225"></a>
 <a id="gc-345-shared-state"></a>
@@ -56,8 +57,9 @@ lbl supplies a field label; lbl_position places it. The lbl_* and box_* style fa
 
 | Parameters | Contract | Applies to |
 | --- | --- | --- |
-| `lbl` | `{"binding":"read","dtype":"T","nullable":true,"qualification":"intl_str"}` | textbox, checkbox, radioButtonText, textBoxArea, passwordbox, radioButton, colorpicker, horizontalSlider, verticalSlider, numberTextBox, dateTextBox, timeTextBox, filteringSelect, callbackSelect, comboBox, dbSelect, dbComboBox, checkBoxText, dateCalendar, groupBox, codeMirror, htmlEditor, markdownEditor |
+| `lbl` | `{"binding":"read","dtype":"T","nullable":true,"qualification":"intl_str"}` | textbox, checkbox, radioButtonText, textBoxArea, passwordbox, radioButton, colorpicker, horizontalSlider, verticalSlider, numberTextBox, dateTextBox, timeTextBox, filteringSelect, callbackSelect, comboBox, dbSelect, dbComboBox, checkBoxText, dateCalendar, groupBox, codeMirror, htmlEditor, markdownEditor, searchBox |
 | `lbl_position` | `{"binding":"read","default":"TL","dtype":"T","enum":["TL","TC","TR","L","R","BL","BC","BR"]}` | textbox, checkbox, radioButtonText, textBoxArea, passwordbox, radioButton, colorpicker, horizontalSlider, verticalSlider, numberTextBox, dateTextBox, timeTextBox, filteringSelect, callbackSelect, comboBox, dbSelect, dbComboBox, checkBoxText, dateCalendar, groupBox, codeMirror, htmlEditor, markdownEditor |
+| `lbl_position` | `{"binding":"read","default":"L","dtype":"T"}` | searchBox |
 
 <a id="gc-345-235"></a>
 <a id="gc-345-shared-placeholder"></a>
@@ -130,6 +132,7 @@ Dialog and floatingPane share controls, geometry and state. Their movement, resi
 | `width, height, left, top` | `{"binding":"twoWay","dtype":"T","nullable":true}` | dialog, floatingPane |
 | `minWidth, minHeight` | `{"binding":"read","dtype":"T","nullable":true}` | dialog, floatingPane |
 | `movable, resizable, collapsible` | `{"binding":"read","default":true,"dtype":"B"}` | floatingPane |
+| `docked` | `{"binding":"read","default":false,"dtype":"B"}` | floatingPane |
 
 <a id="gc-345-260"></a>
 <a id="gc-345-shared-regions"></a>
@@ -152,6 +155,267 @@ StackContainer and tabContainer select one child panel; selectedPage uses its pa
 | --- | --- | --- |
 | `selectedPage` | `{"binding":"twoWay","default":null,"dtype":"T","nullable":true}` | stackContainer, tabContainer |
 | `selected` | `{"binding":"twoWay","default":null,"dtype":"L","nullable":true}` | stackContainer, tabContainer |
+
+<a id="gc-345-490"></a>
+## Audio and drawing
+
+
+<a id="gc-345-480"></a>
+<a id="gc-345-audioanalyser"></a>
+### `audioAnalyser`
+
+Collection: audio. Live microphone waveform and spectrum arrays written into Data.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-audioanalyser).
+
+
+**Data contract.** running controls capture; waveform and spectrum write numeric arrays as individual Data values. sampleRate, status and error report the session.
+
+
+**Interaction and events.** Changes to supported configuration update the analyser. Capture failure clears running and reports error.
+
+
+**Composition.** Invisible leaf component; compose ordinary controls and charts around its bindings.
+
+
+**Limits and lifecycle.** Requires microphone permission and a secure context. Stop, pagehide and disposal release resources. No recording or persistence.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `running` | `{"binding":"twoWay","default":false,"dtype":"B"}` |
+| `fftSize` | `{"binding":"read","default":1024,"dtype":"L"}` |
+| `frameRate` | `{"binding":"read","default":20,"dtype":"N"}` |
+| `minimumDb` | `{"binding":"read","default":-100,"dtype":"N"}` |
+| `spectrum, waveform` | `{"binding":"twoWay","dtype":"X","nullable":true}` |
+| `sampleRate` | `{"binding":"twoWay","default":0,"dtype":"N"}` |
+| `status` | `{"binding":"twoWay","default":"stopped","dtype":"T"}` |
+| `error` | `{"binding":"twoWay","default":"","dtype":"T"}` |
+
+Child grammar: `''`; parent grammar: `None`.
+
+<a id="gc-345-485"></a>
+<a id="gc-345-drawingpane"></a>
+### `drawingPane`
+
+Collection: drawing. SVG annotation editing over an original Data Bag.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-drawingpane).
+
+
+**Data contract.** annotations reads and mutates the original Data Bag; image reads an optional background URL.
+
+
+**Interaction and events.** Shared toolbar actions select, draw, edit text and delete shapes. Bag changes redraw the surface.
+
+
+**Composition.** Composes a shared Source menu and an SVG drawing surface.
+
+
+**Limits and lifecycle.** Requires an initialized annotation Bag. Coordinates follow image dimensions or a 1000 by 1000 empty surface. Disposal releases subscriptions; persistence belongs to the application.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `image` | `{"binding":"read","default":null,"dtype":"T","nullable":true}` |
+| `annotations` | `{"binding":"read","dtype":"X"}` |
+
+Child grammar: `*`; parent grammar: `None`.
+
+<a id="gc-345-445"></a>
+## Charts
+
+
+<a id="gc-345-450"></a>
+<a id="gc-345-chartpane"></a>
+### `chartPane`
+
+Collection: charts. Shared chart configuration, rendering surface and temporal playback over Data Bags.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chartpane).
+
+
+**Data contract.** storepath and configpath identify original Data Bags. rowMode selects attributes or values.
+
+
+**Interaction and events.** Shared settings, playback controls and engines retain configuration in Data.
+
+
+**Composition.** Composes the shared frame and chart controls.
+
+
+**Limits and lifecycle.** Business aggregation stays upstream; unsupported types are not emulated.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `configDefaults` | `{"dtype":"X","nullable":true}` |
+| `storepath, configpath` | `{"dtype":"T"}` |
+| `rowMode` | `{"default":"attributes","dtype":"T"}` |
+| `gridId` | `{"dtype":"T","nullable":true}` |
+
+Child grammar: `*`; parent grammar: `None`.
+
+<a id="gc-345-455"></a>
+<a id="gc-345-chartview"></a>
+### `chartView`
+
+Collection: charts. Engine adapter rendering the original rows and observing configuration and grid filters.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chartview).
+
+
+**Data contract.** Reads store and bound chart configuration; selectedTerritory writes the chosen name.
+
+
+**Interaction and events.** Observes rows and grid filtering, updates the engine and releases it on removal.
+
+
+**Composition.** Rendering surface composed by chartPane.
+
+
+**Limits and lifecycle.** Numeric X is required by uPlot; mapBar3D is ECharts-only.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `sampleMin, sampleMax` | `{"binding":"read","dtype":"R","nullable":true}` |
+| `sampleStep` | `{"binding":"read","default":1,"dtype":"R"}` |
+| `sampleStart` | `{"binding":"read","default":0,"dtype":"R"}` |
+| `mapLabelMode` | `{"binding":"read","default":"value","dtype":"T"}` |
+| `mapBarScale` | `{"binding":"read","default":"zero","dtype":"T"}` |
+| `selectedTerritory` | `{"binding":"twoWay","default":"","dtype":"T"}` |
+| `configpath, storepath, rowMode, gridId` | `{"dtype":"T"}` |
+| `timeEmpty` | `{"binding":"read","default":"previous","dtype":"T"}` |
+| `timeField` | `{"binding":"read","default":"","dtype":"T"}` |
+| `timeValue, geoJSON` | `{"binding":"read","dtype":"X","nullable":true}` |
+| `timeStep` | `{"binding":"read","default":"month","dtype":"T"}` |
+| `engine` | `{"binding":"read","default":"echarts","dtype":"T"}` |
+| `mapValueField, mapLabelField, geometryField, secondCaptionField, chartType, captionField` | `{"binding":"read","dtype":"T"}` |
+| `seriesOptions` | `{"binding":"read","dtype":"X"}` |
+| `valueFields` | `{"binding":"read","dtype":"T","nullable":true}` |
+
+Child grammar: `''`; parent grammar: `None`.
+
+<a id="gc-345-460"></a>
+<a id="gc-345-chartfields"></a>
+### `chartFields`
+
+Collection: charts. Store field discovery for the shared chart configuration controls.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chartfields).
+
+
+**Data contract.** Reads store metadata and writes available chart fields to configuration.
+
+
+**Interaction and events.** Rebuilds field choices when the original Bag changes.
+
+
+**Composition.** Internal shared chart settings component.
+
+
+**Limits and lifecycle.** Does not query a database or infer business aggregates.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `timeFieldId, storepath, rowMode, configpath, categoryId, mapMeasureId, mapLabelId, secondCategoryId, geometryId, measureMenuId` | `{"dtype":"T"}` |
+
+Child grammar: `''`; parent grammar: `None`.
+
+<a id="gc-345-465"></a>
+<a id="gc-345-chartgeojson"></a>
+### `chartGeoJSON`
+
+Collection: charts. Validated GeoJSON input and geographic data summary.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-chartgeojson).
+
+
+**Data contract.** value binds a plain GeoJSON feature collection or null.
+
+
+**Interaction and events.** Validates supplied geography and displays its summary.
+
+
+**Composition.** Shared geography input for chart configuration.
+
+
+**Limits and lifecycle.** Named Polygon/MultiPolygon features only; host owns territorial matching.
+
+Shared contracts: [Values and bindings](#gc-345-shared-value).
+
+No additional component-specific parameters.
+
+
+Child grammar: `''`; parent grammar: `None`.
+
+<a id="gc-345-470"></a>
+<a id="gc-345-charttimeline"></a>
+### `chartTimeline`
+
+Collection: charts. Prepared calendar snapshots and playback bounds from the original store.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-charttimeline).
+
+
+**Data contract.** Reads store/time parameters and writes timeline state under configpath.
+
+
+**Interaction and events.** Tracks bounds and prepared snapshots; removal releases observation.
+
+
+**Composition.** Used by chartPane with its playback controls.
+
+
+**Limits and lifecycle.** No business aggregation; calendar periods and empty policy are explicit.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `storepath, rowMode, configpath` | `{"dtype":"T"}` |
+| `timeField, timeStep` | `{"binding":"read","dtype":"T"}` |
+| `timeIndex` | `{"binding":"read","dtype":"R"}` |
+
+Child grammar: `''`; parent grammar: `None`.
+
+<a id="gc-345-475"></a>
+<a id="gc-345-vizabibubble"></a>
+### `vizabiBubble`
+
+Collection: vizabi. Specialized host-provided Vizabi bubble session observing Data Bags.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-vizabibubble).
+
+
+**Data contract.** Reads the original rows and configuration Bag.
+
+
+**Interaction and events.** Retains supported session configuration and releases engine resources on removal.
+
+
+**Composition.** Specialized external bubble view.
+
+
+**Limits and lifecycle.** Requires host-supplied libraryUrl; not a chartPane engine.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `storepath, libraryUrl` | `{"dtype":"T"}` |
+| `rowMode` | `{"default":"attributes","dtype":"T"}` |
+| `configuration` | `{"binding":"read","dtype":"X"}` |
+
+Child grammar: `''`; parent grammar: `None`.
 
 <a id="gc-345-430"></a>
 ## Grids and search
@@ -181,12 +445,12 @@ Collection: grid. Virtualized Bag rows with a declarative column structure; data
 
 | Parameters | Contract |
 | --- | --- |
+| `columnFilters, loading, rowHeaders, rowResize, selfDragRows` | `{"binding":"read","default":false,"dtype":"B"}` |
+| `setFilter, sortedBy` | `{"binding":"read","default":"","dtype":"T"}` |
 | `windowInfo` | `{"binding":"read","default":null,"dtype":"X","nullable":true}` |
-| `loading, rowHeaders, rowResize, selfDragRows` | `{"binding":"read","default":false,"dtype":"B"}` |
 | `viewport` | `{"binding":"write","default":null,"dtype":"X","nullable":true}` |
 | `sortRequest` | `{"binding":"write","default":"","dtype":"T"}` |
 | `storepath, structpath, rowMode` | `{"dtype":"T"}` |
-| `sortedBy` | `{"binding":"read","default":"","dtype":"T"}` |
 | `filter` | `{"annotation":{"kind":"type","module":"builtins","name":"dict"},"binding":"read","default":null,"nullable":true}` |
 
 Child grammar: `struct,div`; parent grammar: `None`.
@@ -201,7 +465,7 @@ Collection: grid. Search control connected to the enclosing grid Source context.
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-searchbox).
 
 
-**Data contract.** searchOn chooses eligible columns. Accepted queries update the target view's filter. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.
+**Data contract.** searchOn chooses eligible columns. searchLiteral=True uses literal case-insensitive text matching; the default retains regular expressions. Accepted queries update only the target view's search contribution, in AND with its base filter and setFilter; clearing search preserves both. Bind searchTime to record elapsed filter evaluation time. The input draft stays local until it can be applied.
 
 
 **Interaction and events.** Typing starts a short debounce and Enter applies immediately. Changing columns, Escape or Clear removes the filter. Invalid or incomplete expressions retain the last accepted filter.
@@ -212,9 +476,14 @@ Collection: grid. Search control connected to the enclosing grid Source context.
 
 **Limits and lifecycle.** Works against the resident view. Number and date syntax depends on the column type and locale. Removal cancels the timer and releases view subscriptions.
 
+Shared contracts: [Labels and field presentation](#gc-345-shared-labels).
+
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
+| `searchLiteral, searchHelp` | `{"binding":"read","default":false,"dtype":"B"}` |
 | `searchOn` | `{"binding":"read","default":true,"dtype":["B","T"]}` |
 | `searchTime` | `{"binding":"write","default":null,"dtype":"R","nullable":true}` |
 
@@ -344,8 +613,11 @@ Collection: inputs. Single-line text with label, validation and optional live up
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -372,8 +644,11 @@ Collection: inputs. Masked text entry; masking does not encrypt or persist the v
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -403,6 +678,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `rows` | `{"binding":"read","default":4,"dtype":"L","target":"control"}` |
 | `cols` | `{"binding":"read","default":24,"dtype":"L","target":"control"}` |
 
@@ -438,6 +715,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `mode` | `{"binding":"read","default":"checkbox","dtype":"T","enum":["checkbox","switch"]}` |
 | `switch_color` | `{"binding":"read","default":null,"dtype":"T","nullable":true}` |
 | `label` | `{"default":"","dtype":"T","qualification":"intl_str","target":"optionCaption"}` |
@@ -470,8 +749,9 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values, group` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `label` | `{"default":"","dtype":"T","qualification":"intl_str","target":"optionCaption"}` |
-| `group` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -501,6 +781,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `values` | `{"binding":"read","dtype":"T"}` |
 | `cols` | `{"binding":"read","default":1,"dtype":"L"}` |
 
@@ -510,7 +792,7 @@ Child grammar: `''`; parent grammar: `None`.
 <a id="gc-345-checkboxtext"></a>
 ### `checkBoxText`
 
-Collection: inputs. A local multi-choice group storing the selected codes.
+Collection: inputs. Multiple choices from text, a Bag, a remote list or the shared checkbox tree.
 
 
 [Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-checkboxtext).
@@ -522,7 +804,7 @@ Collection: inputs. A local multi-choice group storing the selected codes.
 **Interaction and events.** A native check change commits the code list. Arrows, Home and End move focus among options. There is no component-specific selection callback.
 
 
-**Composition.** The field generates inline options from `values` and arranges them in `cols` columns. It takes no Source option children.
+**Composition.** The field generates options from text or Bag `values`, or a complete `dbtable`/`method` result. `popup=True` puts the same choices behind a caption button; `cols` arranges them. It takes no Source option children.
 
 
 **Limits and lifecycle.** The column count must be positive. Readonly and disabled lock the options. An edit preserves stored codes that have no current visible option.
@@ -532,8 +814,13 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
-| `values` | `{"binding":"read","dtype":"T"}` |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
+| `values` | `{"binding":"read","default":"","dtype":["T","X"]}` |
 | `cols` | `{"binding":"read","default":1,"dtype":"L"}` |
+| `popup, hierarchical` | `{"binding":"read","default":false,"dtype":"B"}` |
+| `checkChildren` | `{"binding":"read","default":true,"dtype":"B"}` |
+| `identifier, labelAttribute, dbtable, method, caption_field, order_by, condition` | `{"binding":"read","dtype":"T"}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -560,8 +847,11 @@ Collection: inputs. Browser color input, with a bound color value.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -591,6 +881,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `values` | `{"binding":"read","default":"","dtype":"T"}` |
 | `separator` | `{"binding":"read","default":",","dtype":"T"}` |
 
@@ -622,6 +914,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `callback` | `{"dtype":"T"}` |
 
 Child grammar: `''`; parent grammar: `None`.
@@ -652,6 +946,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `values` | `{"binding":"read","default":"","dtype":"T"}` |
 | `separator` | `{"binding":"read","default":",","dtype":"T"}` |
 | `store` | `{"binding":"read","default":null,"dtype":"X","nullable":true}` |
@@ -684,6 +980,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `dbtable, caption_field, condition, columns, hiddenColumns, auxColumns, template, order_by` | `{"binding":"read","dtype":"T"}` |
 | `weakCondition` | `{"binding":"read","default":false,"dtype":["B","T"]}` |
 | `method` | `{"binding":"read","default":"dbSelect","dtype":"T"}` |
@@ -723,6 +1021,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `dbtable, caption_field, condition, columns, hiddenColumns, auxColumns, template, order_by` | `{"binding":"read","dtype":"T"}` |
 | `weakCondition` | `{"binding":"read","default":false,"dtype":["B","T"]}` |
 | `method` | `{"binding":"read","default":"dbSelect","dtype":"T"}` |
@@ -765,6 +1065,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `dtype` | `{"default":"R","dtype":"T"}` |
 | `min, max` | `{"binding":"read","dtype":"R","nullable":true}` |
 
@@ -796,6 +1098,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `min` | `{"binding":"read","default":0,"dtype":"R","target":"control"}` |
 | `max` | `{"binding":"read","default":100,"dtype":"R","target":"control"}` |
 | `step` | `{"binding":"read","default":1,"dtype":"R","target":"control"}` |
@@ -828,6 +1132,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `min` | `{"binding":"read","default":0,"dtype":"R","target":"control"}` |
 | `max` | `{"binding":"read","default":100,"dtype":"R","target":"control"}` |
 | `step` | `{"binding":"read","default":1,"dtype":"R","target":"control"}` |
@@ -853,13 +1159,16 @@ Collection: inputs. Civil date editing with an optional calendar popup.
 **Composition.** A field leaf with an internal trigger and popup unless `calendar=False`.
 
 
-**Limits and lifecycle.** The parser requires a single date. Empty input commits null, while an invalid expression preserves the typed value. Disabling the calendar or releasing the editor closes its popup.
+**Limits and lifecycle.** The parser requires a single date unless period_to declares a relative Data output path. An accepted period writes its start to value and its end to period_to; ordinary dates leave that output unchanged. Empty input commits null, while an invalid expression preserves both typed values. Disabling the calendar or releasing the editor closes its popup.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
+| `period_to` | `{"dtype":"T","nullable":true}` |
 | `calendar` | `{"binding":"read","default":true,"dtype":"B"}` |
 
 Child grammar: `''`; parent grammar: `None`.
@@ -887,8 +1196,11 @@ Collection: inputs. An inline civil-date calendar.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -915,8 +1227,11 @@ Collection: inputs. Civil time editing with locale-aware text parsing.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Placeholders](#gc-345-shared-placeholder), [Validation](#gc-345-shared-validation), [Locale and formatting](#gc-345-shared-formatting).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -1078,8 +1393,6 @@ Shared contracts: [Disabled, readonly and live updates](#gc-345-shared-state), [
 | `action, command, caption, code, tooltip` | `{"dtype":"T","nullable":true}` |
 | `checked` | `{"binding":"read","dtype":"B","nullable":true}` |
 | `group, favorite` | `{"default":false,"dtype":"B"}` |
-| `priority` | `{"default":0,"dtype":"R"}` |
-| `overflowable` | `{"default":true,"dtype":"B"}` |
 | `parameters` | `{"annotation":{"kind":"type","module":"builtins","name":"dict"},"nullable":true}` |
 
 Child grammar: `*`; parent grammar: `None`.
@@ -1097,7 +1410,7 @@ Collection: buttons. Fixed or elastic space in a menu/toolbar; it does not publi
 **Data contract.** size specifies fixed space in pixels. flex assigns a positive share of remaining layout space. Neither parameter represents application Data.
 
 
-**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving overflowable units to its popup.
+**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving trailing units to its popup.
 
 
 **Composition.** Place it between menu or toolbar items as a leaf.
@@ -1197,6 +1510,8 @@ Shared contracts: [Labels and field presentation](#gc-345-shared-labels).
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `copy` | `{"binding":"read","default":false,"dtype":"B"}` |
 | `lbl_variant` | `{"binding":"read","default":"bar","dtype":"T","enum":["bar","underline","card"]}` |
 
@@ -1545,13 +1860,13 @@ Collection: tree. Hierarchical Bag presentation with selection, disclosure and d
 | `draggable, internalNames, hideValues, autoCollapse` | `{"binding":"read","default":false,"dtype":"B"}` |
 | `labelAttribute, excludeRoot` | `{"binding":"read","default":null,"dtype":"T","nullable":true}` |
 | `labelCb, getLabel, getLabelClass, getIconClass` | `{"default":null,"dtype":"T","nullable":true}` |
-| `selectedLabelClass, searchText` | `{"binding":"read","default":"","dtype":"T"}` |
-| `favorites` | `{"binding":"read","default":null,"dtype":"X","nullable":true}` |
+| `labelState, favorites` | `{"binding":"read","default":null,"dtype":"X","nullable":true}` |
+| `selectedLabelClass, searchText, searchAttributes` | `{"binding":"read","default":"","dtype":"T"}` |
+| `searchEager, resolveLazy, checkChildren` | `{"binding":"read","default":true,"dtype":"B"}` |
 | `favoritesLabel` | `{"binding":"read","default":"Favorites","dtype":"T"}` |
 | `selectedPath, checkedPaths` | `{"binding":"twoWay","default":null,"dtype":"T","nullable":true}` |
 | `onChecked` | `{"default":null,"dtype":["B","T"],"nullable":true}` |
 | `checkedPaths_joiner` | `{"default":",","dtype":"T"}` |
-| `checkChildren` | `{"binding":"read","default":true,"dtype":"B"}` |
 
 Child grammar: `rowActions[:1]`; parent grammar: `None`.
 
@@ -1720,6 +2035,8 @@ Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readon
 
 | Parameters | Contract |
 | --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 | `language` | `{"binding":"read","default":"text","dtype":"T","enum":["text","python","javascript","typescript","json","html","css","xml","markdown","sql","typst"]}` |
 | `lineNumbers, lineWrapping, folding, bracketMatching, autoCloseBrackets, autoIndent, autocompletion, highlightActiveLine, highlightSelectionMatches` | `{"binding":"read","default":true,"dtype":"B"}` |
 | `indentUnit` | `{"binding":"read","default":4,"dtype":"L"}` |
@@ -1751,8 +2068,11 @@ Collection: editors. Rich HTML editing using the supported engine configuration.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -1807,8 +2127,11 @@ Collection: editors. Markdown editing with the supported editor modes.
 
 Shared contracts: [Values and bindings](#gc-345-shared-value), [Disabled, readonly and live updates](#gc-345-shared-state), [Labels and field presentation](#gc-345-shared-labels), [Validation](#gc-345-shared-validation).
 
-No additional component-specific parameters.
 
+| Parameters | Contract |
+| --- | --- |
+| `lbl_value` | `{"binding":"twoWay","dtype":"T","nullable":true}` |
+| `lbl_values` | `{"binding":"read","dtype":"T","nullable":true}` |
 
 Child grammar: `''`; parent grammar: `None`.
 
@@ -1891,7 +2214,7 @@ Children: `column,colgroup`. Parents: `grid`.
 **Composition.** Grid declaration containing columns and column groups. It has no separate browser element.
 
 
-**Limits and lifecycle.** Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected.
+**Limits and lifecycle.** Use one inline struct or an external structpath. Duplicate fields, unknown attributes and nested groups are rejected. External sets use check=multiple, checked=^DataPath and checkedField=identityField. Initialize the Data value to an empty string; nonempty text IDs without commas are stored as comma-separated strings. Literal comma-wrapped includes checks membership. Each toggle writes Data and refreshes all views without editing records. Dynamic columns observe the structure Bag; removing a column keeps its set. Offscreen IDs survive. External set columns cannot have editors and are excluded from ordinary field sorting/search; check=single uses a radio and writes one scalar ID to checked without editing supplier rows. It supports partial stores, retains filtered/offscreen choices and never toggles off the selected radio. Text and numeric identities retain their type. Bulk actions are not implemented. A read-bound setFilter string names external check columns: john,fred means intersection, empty removes only the set contribution. Base filter, search and setFilter combine with AND. Set Data changes immediately update the view. Nonempty setFilter requires a complete resident store; windowInfo and unknown check columns are rejected. Column title retains the full tooltip/accessibility name when name is abbreviated. columnFilters=True enables distinct-value header popups on complete resident stores: OR within each column, AND across columns/base/search/sets. Counts exclude only their own column selection. Empty groups null and empty text; zero-count selections persist. None differs from Reset. The popup reuses the shared grid and menu toolbar; its literal search filters only the choices and preserves hidden selections. All/None apply to the entire choice list. Accepted criteria live in the Source-owned collection view; row edits update counts. Date columns add inclusive From/To and period entry; range AND values is one column criterion. Changing range selects all matching dates; clearing From clears To but preserves selected dates. Reset clears both. Invalid drafts retain the accepted filter.
 
 ```json
 {"parameters":[],"accepts_var_keyword":false,"accepts_var_positional":false}
@@ -1914,7 +2237,7 @@ Children: `''`. Parents: `struct,colgroup`.
 **Limits and lifecycle.** Field identity must be unique. Attribute names and values are validated. Formulas are outside the structure contract.
 
 ```json
-{"parameters":[{"name":"field","kind":"positional_or_keyword","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^[A-Za-z_][A-Za-z0-9_]*$","flags":0}]},"has_default":false},{"name":"name","kind":"keyword_only","role":"attribute","annotation":{"kind":"dtype","dtype":"T"},"has_default":true,"default":null},{"name":"dtype","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^(T|B|L|R|N|D|H|DHZ)$","flags":0}]},"has_default":true,"default":null},{"name":"width","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^[0-9]+([.][0-9]+)?(px|em|rem|ch|%)$","flags":0}]},"has_default":true,"default":null},{"name":"max_height","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^[0-9]+([.][0-9]+)?(px|em|rem)$","flags":0}]},"has_default":true,"default":null},{"name":"align","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^(start|center|end)$","flags":0}]},"has_default":true,"default":null},{"name":"format","kind":"keyword_only","role":"attribute","annotation":{"kind":"dtype","dtype":"T"},"has_default":true,"default":null},{"name":"white_space","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^(normal|nowrap|pre-wrap)$","flags":0}]},"has_default":true,"default":null},{"name":"edit","kind":"keyword_only","role":"attribute","annotation":{"kind":"union","items":[{"kind":"dtype","dtype":"B"},{"kind":"type","module":"builtins","name":"dict"}]},"has_default":true,"default":false}],"accepts_var_keyword":false,"accepts_var_positional":false}
+{"parameters":[{"name":"field","kind":"positional_or_keyword","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^[A-Za-z_][A-Za-z0-9_]*$","flags":0}]},"has_default":false},{"name":"name","kind":"keyword_only","role":"attribute","annotation":{"kind":"dtype","dtype":"T"},"has_default":true,"default":null},{"name":"dtype","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^(T|B|L|R|N|D|H|DHZ)$","flags":0}]},"has_default":true,"default":null},{"name":"width","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^[0-9]+([.][0-9]+)?(px|em|rem|ch|%)$","flags":0}]},"has_default":true,"default":null},{"name":"max_height","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^[0-9]+([.][0-9]+)?(px|em|rem)$","flags":0}]},"has_default":true,"default":null},{"name":"align","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^(start|center|end)$","flags":0}]},"has_default":true,"default":null},{"name":"format","kind":"keyword_only","role":"attribute","annotation":{"kind":"dtype","dtype":"T"},"has_default":true,"default":null},{"name":"white_space","kind":"keyword_only","role":"attribute","annotation":{"kind":"annotated","base":{"kind":"dtype","dtype":"T"},"metadata":[{"kind":"regex","pattern":"^(normal|nowrap|pre-wrap)$","flags":0}]},"has_default":true,"default":null},{"name":"edit","kind":"keyword_only","role":"attribute","annotation":{"kind":"union","items":[{"kind":"dtype","dtype":"B"},{"kind":"type","module":"builtins","name":"dict"}]},"has_default":true,"default":false},{"name":"check","kind":"keyword_only","role":"attribute","annotation":{"kind":"dtype","dtype":"T"},"has_default":true,"default":null},{"name":"checked","kind":"keyword_only","role":"attribute","annotation":{"kind":"dtype","dtype":"T"},"has_default":true,"default":null},{"name":"checkedField","kind":"keyword_only","role":"attribute","annotation":{"kind":"dtype","dtype":"T"},"has_default":true,"default":null},{"name":"title","kind":"keyword_only","role":"attribute","annotation":{"kind":"dtype","dtype":"T"},"has_default":true,"default":null}],"accepts_var_keyword":false,"accepts_var_positional":false}
 ```
 
 ### `colgroup`

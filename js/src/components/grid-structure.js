@@ -1,7 +1,7 @@
 import {Bag} from '@gramlot/gramlot';
 
 const TYPES = new Set(['T', 'B', 'L', 'R', 'N', 'D', 'H', 'DHZ']);
-const COLUMN_KEYS = new Set(['tag', 'field', 'name', 'dtype', 'width', 'align', 'format', 'columnset', 'white_space', 'max_height', 'edit']);
+const COLUMN_KEYS = new Set(['tag', 'field', 'name', 'title', 'dtype', 'width', 'align', 'format', 'columnset', 'white_space', 'max_height', 'edit', 'check', 'checked', 'checkedField']);
 const GROUP_KEYS = new Set(['tag', 'code', 'name', 'background', 'color']);
 
 /** Legacy Data contract: ordered cells and independent columnset definitions. */
@@ -43,8 +43,16 @@ export class GridStructure {
                 throw new TypeError('grid max_height requires a nonnegative CSS length (px, em or rem)');
             }
             if (attrs.white_space != null && !['normal','nowrap','pre-wrap'].includes(attrs.white_space)) throw new TypeError('grid white_space requires normal, nowrap or pre-wrap');
-            for (const key of ['name', 'format']) if (attrs[key] != null && typeof attrs[key] !== 'string') throw new TypeError(`grid ${key} must be text`);
+            for (const key of ['name', 'title', 'format']) if (attrs[key] != null && typeof attrs[key] !== 'string') throw new TypeError(`grid ${key} must be text`);
             if (attrs.edit != null && typeof attrs.edit !== 'boolean' && (typeof attrs.edit !== 'object' || Array.isArray(attrs.edit))) throw new TypeError('grid edit requires a boolean or editor options');
+            if (attrs.check != null || attrs.checked != null || attrs.checkedField != null) {
+                if (!['multiple','single'].includes(attrs.check) || typeof attrs.checked !== 'string' ||
+                    !attrs.checked.startsWith('^') || attrs.checked.length < 2 || attrs.checked.includes('?')) {
+                    throw new TypeError('grid check requires single or multiple and checked=^DataPath');
+                }
+                requireIdentity(attrs.checkedField, 'checkedField');
+                if (attrs.edit) throw new TypeError('external check sets cannot edit row fields');
+            }
             const column = Object.freeze({...attrs, name: attrs.name ?? attrs.field,
                 align: attrs.align ?? (['L', 'R', 'N'].includes(attrs.dtype) ? 'end' : 'start')});
             this.columns.push(column);

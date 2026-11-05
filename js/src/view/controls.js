@@ -623,6 +623,14 @@ function componentContext(adapter) {
         callLogic:(name, keywords) => callLogic(binding.runtime, node, name, keywords),
         format:(value, options) => app.format(value, options),
         ...validationContext(binding),
+        selectionDisplay:(caption, value) => {
+            if (binding.closed) return;
+            const pointer = node.getAttr('value');
+            if (node.pointerType(pointer) !== '^' || pointer.includes('?') || !Object.is(node.getRelativeData(pointer), value)) return;
+            const path = pointer.slice(1) + '?_displayedValue';
+            if (node.getRelativeData(path) !== caption) node.setRelativeData(path, caption);
+        },
+        periodOutput:(path, value) => node.setRelativeData(path, value),
         selectionOutputs:({selectedCaption, selectedRecord, fields}, row) => {
             if (binding.closed) return;
             if (selectedCaption) node.setRelativeData(selectedCaption, row?.caption ?? null);

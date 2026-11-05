@@ -1,3 +1,5 @@
+import tree from './tree.js';
+import {checkBoxChoices} from './check-box-text.js';
 import {EditingStatus} from './editing-status.js';
 import {defineComponent, defineCollection} from './registry.js';
 import {NativeControl, ChoiceGroup} from './bases.js';
@@ -175,6 +177,7 @@ export const DateTextBox = defineComponent({
     name: 'dateTextBox', tag: 'gramlot-date-text-box', base: TypedEditor, mixins: [Labelbox, FieldState],
     parameters: {value: {dtype: 'D', nullable: true, binding: 'twoWay'},
         workdate: {dtype: 'T', nullable: true, binding: 'read'},
+        period_to: {dtype: 'T', nullable: true},
         calendar: {dtype: 'B', default: true, binding: 'read'}}, implementation: dateEditor
 });
 export const DateCalendar = defineComponent({
@@ -213,17 +216,23 @@ export const DbComboBox = defineComponent({
     }
 });
 export const CheckBoxText = defineComponent({
-    name: 'checkBoxText', tag: 'gramlot-check-box-text', base: ChoiceGroup, mixins: [Labelbox, FieldState],
+    name: 'checkBoxText', tag: 'gramlot-check-box-text', sourceContext:true, base: ChoiceGroup, mixins: [Labelbox, FieldState],
     parameters: {
         value: {dtype: 'T', nullable: true, binding: 'twoWay'},
-        values: {dtype: 'T', binding: 'read'},
-        cols: {dtype: 'L', default: 1, binding: 'read'}
-    },
-    implementation: Base => class extends Base {
-        get choiceType() { return 'checkbox'; }
-        get multiple() { return true; }
-    }
+        values: {dtype: ['T','X'], default: '', binding: 'read'},
+        cols: {dtype: 'L', default: 1, binding: 'read'},
+        popup: {dtype: 'B', default: false, binding: 'read'},
+        hierarchical: {dtype: 'B', default: false, binding: 'read'},
+        checkChildren: {dtype: 'B', default: true, binding: 'read'},
+        identifier: {dtype: 'T', binding: 'read'},
+        labelAttribute: {dtype: 'T', binding: 'read'},
+        dbtable: {dtype: 'T', binding: 'read'},
+        method: {dtype: 'T', binding: 'read'},
+        caption_field: {dtype: 'T', binding: 'read'},
+        order_by: {dtype: 'T', binding: 'read'},
+        condition: {dtype: 'T', binding: 'read'}
+    }, implementation: checkBoxChoices
 });
-export default defineCollection({name: 'inputs', components: [EditingStatus, Textbox, Checkbox, RadioButtonText,
+export default defineCollection({name: 'inputs', dependencies:[tree], components: [EditingStatus, Textbox, Checkbox, RadioButtonText,
     TextBoxArea, Passwordbox, RadioButton, Colorpicker, HorizontalSlider, VerticalSlider,
     NumberTextBox, DateTextBox, TimeTextBox, FilteringSelect, CallbackSelect, ComboBox, DbSelect, DbComboBox, CheckBoxText, DateCalendar]});

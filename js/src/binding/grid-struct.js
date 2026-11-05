@@ -13,7 +13,7 @@ function structureData(source) {
         node.builder.validateNode(node);
         if (node.nodeTag !== 'column' || node.staticValue != null) throw new TypeError('grid column must be a scalar declaration');
         const attrs = {tag:'cell'};
-        for (const key of ['field', 'name', 'dtype', 'width', 'align', 'format', 'white_space', 'max_height', 'edit']) {
+        for (const key of ['field', 'name', 'title', 'dtype', 'width', 'align', 'format', 'white_space', 'max_height', 'edit', 'check', 'checked', 'checkedField']) {
             if (node.getAttr(key) != null) attrs[key] = node.getAttr(key);
         }
         const label = `cell_${attrs.field}`;
@@ -56,7 +56,7 @@ export function validateGridDeclaration(node) {
 export function installGridStruct(node, data) {
     const value = structureData(node.staticValue);
     new GridStructure(value);
-    const path = `gramlot.grid.${crypto.randomUUID().replaceAll('-', '')}.struct`;
+    const path = `_gramlot.grid.${crypto.randomUUID().replaceAll('-', '')}.struct`;
     data.setItem(path, value, null, '>', false, true, node);
     node.parentNode.setAttr({structpath: path}, false);
     node.setValue(null, false);

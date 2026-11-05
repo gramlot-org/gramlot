@@ -111,4 +111,4 @@ def coverage_documents(root, collections, ids, guides):
                'Focused behavioral verification covered 76 cases in the CodeMirror, form-state, input-validation, layout, selected-container, transformPane and Typst suites. An initial checkout dependency mismatch and a missing local Python path were corrected before the affected checks passed. This run does not qualify all widgets or real-browser/native-dialog behavior; the other linked suites are inspected evidence only.\n']
     for number, name, content in ((460, 'widget-coverage', manual), (465, 'widget-examples', appendix)):
         for view in ('docs', 'docs_llm'):
-            yield root / view / 'public' / f'{number}-{name}.md', '\n'.join(content) + '\n'
+            yield root / view / 'public' / f'{number}-{name}.md', '\n'.join(content).rstrip() + '\n'

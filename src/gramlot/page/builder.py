@@ -129,23 +129,44 @@ class GramlotBuilder(HtmlBuilder):
         return call
 
     @container
-    def frameGrid(self, parent, *, storepath, rowMode, structpath=None, searchOn=False, **attrs):
+    def frameGrid(self, parent, *, storepath, rowMode, structpath=None, searchOn=False, searchHelp=False, chart=False, **attrs):
         """Compose a real framePane with one central, command-target grid."""
         for tag in ("framePane", "grid"):
             if self.schema_tag(tag) is None:
                 raise ValueError(f"frameGrid requires the {tag} collection")
+        chart_options = {key[6:]: attrs.pop(key) for key in list(attrs) if key.startswith("chart_")}
+        if chart is not False:
+            if chart is not True and (not isinstance(chart, str) or not chart):
+                raise ValueError("chart requires a boolean or chart type")
+            if not attrs.get("datapath"):
+                raise ValueError("A chart frameGrid requires its own datapath")
+            if self.schema_tag("chartPane") is None:
+                raise ValueError("frameGrid requires the chartPane collection")
+            if isinstance(chart, str):
+                chart_options["chartType"] = chart
+        elif chart_options:
+            raise ValueError("chart_* options require chart")
         grid_attrs = dict(storepath=storepath, rowMode=rowMode, node_label="grid",
                           frameTarget=True, height="100%", width="100%")
+        if chart is not False:
+            grid_attrs["nodeId"] = uuid4().hex
         if structpath is not None:
             grid_attrs["structpath"] = structpath
         self._validate_call_args(self._get_schema_info("grid"), None, grid_attrs, "grid")
         if searchOn is not False:
-            self._validate_call_args(self._get_schema_info("searchBox"), None, dict(searchOn=searchOn), "searchBox")
+            self._validate_call_args(self._get_schema_info("searchBox"), None, dict(searchOn=searchOn, searchHelp=searchHelp), "searchBox")
         frame = parent.framePane(**attrs)
         frame.center.grid(**grid_attrs)
+        bar = frame.top.menu(presentation="bar", node_label="bar", aria_label="Grid toolbar",
+                             **{"class": "gramlot-grid-toolbar"})
         if searchOn is not False:
-            frame.top.menu(presentation="bar", node_label="search", aria_label="Grid search",
-                           padding="4px 8px", background="var(--gramlot-surface-subtle)").menuline(group=True).searchBox(searchOn=searchOn)
+            bar.menuline(group=True, node_label="search", **{"class": "gramlot-grid-search"}).searchBox(searchOn=searchOn, searchHelp=searchHelp)
+        if chart is not False:
+            bar.menuline(caption="Chart", icon="▥", labelPosition="tooltip", node_label="chart", action="this.SET('._chart.open',true)")
+            window = frame.center.floatingPane(title="Chart", open="^._chart.open", width="820px", height="560px",
+                                        movable=True, resizable=True, maximizable=True, node_label="chartWindow")
+            window.frame.center.chartPane(storepath=storepath, rowMode=rowMode, gridId=grid_attrs["nodeId"],
+                                          configpath="._chart", configDefaults=Bag(chart_options), height="100%")
         return frame
 
     @property

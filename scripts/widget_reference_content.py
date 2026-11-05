@@ -190,3 +190,42 @@ COLLECTION_GUIDES = {
         'Card folding, remote fragments and a full form/save lifecycle are distinct responsibilities; '
         'do not infer legacy GroupletForm APIs from this card.'),
 }
+
+
+COLLECTION_GUIDES.update({
+    'charts': ('Charts', 'Configure a chart over an existing Data Bag; engines load on demand.',
+        'root.chartPane(storepath="sales.rows", configpath="sales.chart", height="500px")',
+        'Supply rows and a configuration Bag in Data. chartPane composes the shared controls; '
+        'chartView renders supported types using ECharts, Plotly, Vega or uPlot. '
+        'Temporal playback selects prepared rows; it does not calculate business aggregates. '
+        'Map territories must match GeoJSON names. Geographic 3D bars are ECharts-only.'),
+    'vizabi': ('Vizabi', 'Host-provided Vizabi bubble integration; separate from chartPane engines.',
+        'root.vizabiBubble(storepath="rows", configuration="^vizabi", libraryUrl="/assets/vizabi.js", height="500px")',
+        'Supply a configuration Bag and the compatible external library URL. '
+        'The host owns library delivery. This specialized integration is not a chartPane engine '
+        'and is not enabled by the common gallery environment.'),
+})
+
+COLLECTION_GUIDES.update({
+    'audio': ('Audio analysis',
+        'Capture microphone samples through audioAnalyser and bind its outputs to Data. '
+        'This component analyses live audio; it does not record or save an audio file.',
+        'pane = root.div(datapath="audio")\n'
+        'pane.checkbox(value="^.running", lbl="Microphone")\n'
+        'pane.audioAnalyser(running="^.running", waveform="^.waveform", spectrum="^.spectrum",\n'
+        '                   sampleRate="^.sampleRate", status="^.status", error="^.error")',
+        'Microphone access requires permission and a secure browser context. Waveform and spectrum '
+        'are arrays stored as Bag values, not a node per sample. Bind status and error to display '
+        'feedback. Stopping, pagehide and disposal release the microphone and audio context.'),
+    'drawing': ('Drawing and annotations',
+        'Annotate an image or an empty surface using the shared drawingPane. '
+        'Annotation records stay in the supplied Data Bag.',
+        'from genro_bag import Bag\n'
+        'pane = root.div(datapath="drawing")\n'
+        'pane.dataSetter(".annotations", Bag())\n'
+        'pane.drawingPane(annotations="^.annotations", height="360px")',
+        'Initialize the annotations Bag before mounting. image supplies an optional image URL. '
+        'The component observes and edits the original Bag; saving to a server is a separate '
+        'application operation. Its shared menu offers selection, arrows, circles, freehand, '
+        'text, color, pen width and deletion.'),
+})

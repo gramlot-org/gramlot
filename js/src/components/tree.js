@@ -53,13 +53,17 @@ export const Tree = defineComponent({
         excludeRoot: {dtype: 'T', nullable: true, default: null, binding: 'read'},
         labelCb: {dtype: 'T', nullable: true, default: null},
         getLabel: {dtype: 'T', nullable: true, default: null},
+        labelState: {dtype: 'X', nullable: true, default: null, binding: 'read'},
         getLabelClass: {dtype: 'T', nullable: true, default: null},
         getIconClass: {dtype: 'T', nullable: true, default: null},
         selectedLabelClass: {dtype: 'T', default: '', binding: 'read'},
         searchText: {dtype: 'T', default: '', binding: 'read'},
+        searchEager: {dtype: 'B', default: true, binding: 'read'},
+        searchAttributes: {dtype: 'T', default: '', binding: 'read'},
         favorites: {dtype: 'X', nullable: true, default: null, binding: 'read'},
         favoritesLabel: {dtype: 'T', default: 'Favorites', binding: 'read'},
         autoCollapse: {dtype: 'B', default: false, binding: 'read'},
+        resolveLazy: {dtype: 'B', default: true, binding: 'read'},
         selectedPath: {dtype: 'T', nullable: true, default: null, binding: 'twoWay'},
         onChecked: {dtype: ['B', 'T'], nullable: true, default: null},
         checkedPaths: {dtype: 'T', nullable: true, default: null, binding: 'twoWay'},
@@ -146,13 +150,17 @@ export const Tree = defineComponent({
             });
         }
         setSourceContext(context) { this.#context = context; }
+        get storeBag() { return this.#store; }
         /** Read only the rendered row and its BagNode; never request a resolver value. */
         getDragContext(event) {
             for (const element of event.composedPath()) {
                 const row = this.#dragRows.get(element);
                 if (!row) continue;
                 const {item, path, caption} = row;
-                return {element, item, path, dragValues: {
+                const rect = element.getBoundingClientRect();
+                const fraction = rect.height ? (event.clientY - rect.top) / rect.height : 0.5;
+                const placement = fraction < 0.25 ? 'before' : fraction > 0.75 ? 'after' : 'inside';
+                return {element, item, path, placement, dragValues: {
                     'text/plain': caption.textContent,
                     nodeattr: {...item.getAttr()},
                     treenode: {fullpath: item.fullpath, relpath: path}
@@ -179,7 +187,13 @@ export const Tree = defineComponent({
         projectAttributes(attrs, adapt) {
             this.#pathsEnabled = Object.hasOwn(attrs, 'checkedPaths');
             this.#checksEnabled = this.#pathsEnabled || Boolean(attrs.onChecked);
+            const previousEager = this.parameters?.searchEager;
+            const previousResolve = this.parameters?.resolveLazy;
             const rest = super.projectAttributes(attrs, adapt);
+            if (previousEager !== this.parameters.searchEager || previousResolve !== this.parameters.resolveLazy) {
+                this.#resetSearch();
+                this.#searchText = this.#searchInput.toLowerCase();
+            }
             if (this.#excludedRoot !== this.parameters.excludeRoot) {
                 this.#excludedRoot = this.parameters.excludeRoot;
                 this.#resetSearch();
@@ -210,7 +224,8 @@ export const Tree = defineComponent({
         #opened(node) { return this.#searchText ? this.#searchOpen.has(node) : this.#expanded.has(node); }
         async #searchBranches() {
             const version = this.#searchVersion, store = this.#store;
-            const current = () => this.isConnected && version === this.#searchVersion && store === this.#store;
+            const current = () => this.isConnected && version === this.#searchVersion && store === this.#store
+                && this.parameters.searchEager && this.parameters.resolveLazy;
             this.#searching = true;
             const visit = async (bag, ancestors = new Set()) => {
                 if (!current()) return;
@@ -220,6 +235,7 @@ export const Tree = defineComponent({
                     if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
                     if (!current()) return;
                     if (node.attr.loop === true) continue;
+                    if (node.resolver !== null && !this.parameters.resolveLazy) continue;
                     if (node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node)) {
                         this.#searchAttempted.add(node);
                         await this.#resolve(node, true);
@@ -272,14 +288,14 @@ export const Tree = defineComponent({
                 for (const node of bag.getNodes()) {
                     if (bag === this.#store && node.label === this.parameters.excludeRoot) continue;
                     const path = prefix ? `${prefix}.${node.label}` : node.label;
-                    const value = node.staticValue; // Rendering never evaluates resolvers.
+                    const value = node.resolver !== null && !this.parameters.resolveLazy ? null : node.staticValue;
                     items.set(path, {node, ancestors, children: value instanceof Bag ? value : null});
                     if (value instanceof Bag) visit(value, path, [...ancestors, node]);
                 }
                 seen.delete(bag);
             };
             visit(this.#store, '', []);
-            if (this.#searchText && this.#searchTimer === null && !this.#searching && [...items.values()].some(({node}) =>
+            if (this.parameters.searchEager && this.parameters.resolveLazy && this.#searchText && this.#searchTimer === null && !this.#searching && [...items.values()].some(({node}) =>
                 node.attr.loop !== true && node.resolver !== null && node.resolver.expired && !this.#searchAttempted.has(node))) {
                 void this.#searchBranches();
             }
@@ -351,7 +367,7 @@ export const Tree = defineComponent({
                     const {children} = items.get(path);
                     const scalar = children === null && !this.parameters.hideValues && (node.resolver === null || !node.resolver.expired);
                     const branch = children !== null ? children.length > 0
-                        : scalar || (node.resolver !== null && node.attr.child_count !== 0);
+                        : scalar || (node.resolver !== null && this.parameters.resolveLazy && node.attr.child_count !== 0);
                     const entry = this.ownerDocument.createElement('li');
                     entry.className = `node ${branch ? 'branch' : 'leaf'}`;
                     entry.setAttribute('part', `node ${branch ? 'branch' : 'leaf'}`);
@@ -453,7 +469,7 @@ export const Tree = defineComponent({
                         badge.hidden = value == null || value === '';
                         badge.style.backgroundColor = color ?? '';
                         badge.toggleAttribute('data-colored', color != null && color !== '');
-                        const keywords = {item: node, path, opened, selected};
+                        const keywords = {item: node, path, opened, selected, state: this.parameters.labelState};
                         const attribute = this.parameters.labelAttribute;
                         const label = this.parameters.internalNames && node.getAttr('fieldpath') ? node.label
                             : this.parameters.getLabel !== null ? this.#call('getLabel', keywords)
@@ -549,7 +565,12 @@ export const Tree = defineComponent({
                 for (const [path, row] of this.#rows) {
                     const caption = row.firstElementChild.querySelector('.caption'), item = items.get(path);
                     if (item.ancestors.some(ancestor => ancestor.attr.loop === true)) continue;
-                    const match = caption.textContent.toLowerCase().includes(this.#searchText);
+                    const metadata = this.parameters.searchAttributes.split(',').map(name => name.trim()).filter(Boolean)
+                        .flatMap(name => {
+                            const value = item.node.getAttr(name);
+                            return Array.isArray(value) ? value.filter(part => typeof part === 'string') : typeof value === 'string' ? [value] : [];
+                        });
+                    const match = [caption.textContent, ...metadata].some(text => text.toLowerCase().includes(this.#searchText));
                     if (match) matches.push(caption);
                     if (match || this.#errors.has(item.node) || this.#loading.has(item.node)) {
                         visible.add(item.node);
@@ -648,6 +669,7 @@ export const Tree = defineComponent({
                 if (!current()) return;
                 const node = bag.getNode(part);
                 if (!node) return;
+                if (node.resolver !== null && !this.parameters.resolveLazy) return;
                 if (node.resolver === null && !(node.staticValue instanceof Bag)) return;
                 if (!current() || bag.getNode(part) !== node) return;
                 this.#expand(node);
@@ -774,7 +796,7 @@ export const Tree = defineComponent({
             return value.split(/\s+/).filter(Boolean);
         }
         #rowActions() {
-            const bars = this.querySelectorAll(':scope > gramlot-row-actions');
+            const bars = [...this.children].filter(child => child.localName === 'gramlot-row-actions');
             if (bars.length > 1) throw new Error('tree accepts one rowActions bar');
             return bars[0] ?? null;
         }

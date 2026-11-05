@@ -13,9 +13,9 @@ export function MenuContainer(HTMLElement) {
             const doc = this.ownerDocument, shadow = this.attachShadow({mode: 'open'});
             const style = doc.createElement('style');
             style.textContent = `:host{box-sizing:border-box;color:var(--gramlot-ink,CanvasText)}
-                :host([role=menu]){position:fixed;inset:auto;margin:0;padding:5px;min-width:min(16rem,var(--gramlot-popup-available-width));width:max-content;font:inherit;
+                :host([role=menu]){position:fixed;inset:auto;margin:0;padding:3px;min-width:0;width:max-content;font:inherit;
                   max-width:min(28rem,var(--gramlot-popup-available-width));max-height:var(--gramlot-popup-available-height);overflow:auto;
-                  background:var(--gramlot-field-background,Canvas);border:1px solid var(--gramlot-border-control,#888);border-radius:var(--gramlot-radius-lg,9px);box-shadow:0 8px 28px #0004}
+                  background:var(--gramlot-field-background,Canvas);border:1px solid var(--gramlot-border-control,#888);border-radius:var(--gramlot-radius-sm,5px);box-shadow:0 4px 14px #0003}
                 :host([role=toolbar][aria-orientation=vertical]){flex-direction:column;align-items:stretch}
                 :host([role=toolbar]){display:flex;gap:var(--gramlot-toolbar-gap,4px);align-items:center}
                 :host([role=menu]) ::slotted([role=separator]){margin:5px 7px 5px 2.5rem;border-top:1px solid var(--gramlot-border-control,#888)}
@@ -39,7 +39,8 @@ export function MenuContainer(HTMLElement) {
         get items() { return [...this.querySelectorAll('gramlot-menu-line')].filter(item => item.menuOwner===this && !item.parameters.group); }
         get overflow() { return this.#overflow; }
         isOverflowed(item) { return this.#overflow.contains(item); }
-        get usableItems() { return this.items.filter(item => labelboxPresentation(item).slot!=='suppressed' && !item.disabled && !item.hidden && !item.closest('[hidden]') && item.getAttribute('role') !== 'separator'); }
+        get visibleItems() { return this.items.filter(item => labelboxPresentation(item).slot!=='suppressed' && !item.hidden && !item.closest('[hidden]') && item.getAttribute('role') !== 'separator'); }
+        get usableItems() { return this.visibleItems.filter(item => !item.disabled); }
         get parentMenu() { return this.parentElement?.closest('gramlot-menu') ?? null; }
         connectedCallback() {
             this.#observer = new this.ownerDocument.defaultView.MutationObserver(() => {this.refreshItems();this.#overflow.schedule();});
@@ -114,6 +115,12 @@ export function MenuContainer(HTMLElement) {
             for(const group of this.querySelectorAll('gramlot-menu-line'))if(group.menuOwner===this && group.parameters.group)group.refreshAvailability();
             for(const item of this.items)item.refreshAvailability();
             const usable = this.usableItems;
+            // Reserve only the adornments used by this menu; keep captions aligned.
+            for (const [part, present, width] of [
+                ['check', this.visibleItems.some(item => item.parameters.checked != null), '1.4em'],
+                ['icon', this.visibleItems.some(item => item.entryIcon || item.entryIconSrc), '1.5em'],
+                ['arrow', this.visibleItems.some(item => item.submenu), '.9em'],
+            ]) this.style.setProperty(`--gramlot-menu-${part}-track`, present ? width : '0px');
             if (this.#active && !usable.includes(this.#active)) {
                 const index = this.#previous.indexOf(this.#active);
                 const next = this.#previous.slice(index+1).find(item => usable.includes(item))
@@ -208,10 +215,10 @@ export function menuLine(Base) {
             const style=doc.createElement('style');
             style.textContent=`:host{color:var(--gramlot-ink,CanvasText)} .control-box{color:inherit;height:100%} :host button{color:inherit}
                 .menu-check:empty,.menu-arrow:empty{display:none}
-                button.menu-row{display:grid;grid-template-columns:1em 1.15em minmax(0,1fr) .7em;column-gap:.5em;
-                  align-items:center;width:100%;min-height:max(min(var(--gramlot-field-height,28px),28px),var(--gramlot-touch-target,0px));padding:var(--gramlot-button-padding,3px 8px);
+                button.menu-row{display:grid;grid-template-columns:var(--gramlot-menu-check-track,0px) var(--gramlot-menu-icon-track,0px) minmax(0,1fr) var(--gramlot-menu-arrow-track,0px);column-gap:0;
+                  align-items:center;width:100%;min-height:max(24px,var(--gramlot-touch-target,0px));padding:2px 7px;
                   line-height:1.3;text-align:left;border:0;border-radius:var(--gramlot-radius-sm,5px);background:transparent;cursor:default}
-                .menu-row .menu-check,.menu-row .icon,.menu-row .menu-arrow{display:flex;align-items:center;justify-content:center;min-width:0}
+                .menu-row .menu-check,.menu-row .icon,.menu-row .menu-arrow{display:flex;align-items:center;justify-content:start;min-width:0}
                 .menu-row .menu-check{grid-column:1}.menu-row .icon{grid-column:2}
                 .menu-row .menu-caption{grid-column:3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
                 .menu-row .menu-arrow{grid-column:4;font-size:1.2em;line-height:1}
@@ -223,6 +230,7 @@ export function menuLine(Base) {
                   background:transparent;cursor:pointer;line-height:1.2;white-space:nowrap}
                 :host button.toolbar-button .icon{display:inline-flex;align-items:center;justify-content:center;
                   width:var(--gramlot-toolbar-icon-size);height:var(--gramlot-toolbar-icon-size);font-size:var(--gramlot-toolbar-icon-size);line-height:1}
+                #control.toolbar-button.icon-only{--gramlot-button-icon-size:var(--gramlot-toolbar-icon-size)}
                 :host button.toolbar-button .icon:empty{display:none}
                 :host button.toolbar-button:hover:not(:disabled){background:color-mix(in srgb,currentColor 10%,transparent)}
                 :host button.toolbar-button:focus-visible{outline:2px solid var(--gramlot-focus-ring,Highlight);outline-offset:-2px}
@@ -232,7 +240,7 @@ export function menuLine(Base) {
                 :host button.toolbar-below .menu-caption{font-size:11px;line-height:1.2}
                 :host button.toolbar-tooltip .menu-caption{display:none}
                 :host button.toolbar-button .menu-check{display:none}
-                :host button.toolbar-tooltip .menu-arrow{position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:12px}
+                :host button.toolbar-tooltip .menu-arrow{position:static;flex:0 0 8px;margin-inline-start:2px;font-size:12px;line-height:1}
                 :host button.toolbar-below .menu-arrow{position:absolute;inset:4px 3px auto auto;font-size:12px}`;
             style.textContent+=`
                 :host([role=group]){display:block;min-width:0}
@@ -263,7 +271,7 @@ export function menuLine(Base) {
             this.addEventListener('pointerleave',()=>clearTimeout(this.#hover));
         }
         get menuOwner() { return this.parentElement?.closest('gramlot-menu') ?? null; }
-        get submenu() { return [...this.children].map(labelboxContent).find(child=>child.localName==='gramlot-menu') ?? null; }
+        get submenu() { return [...this.children].map(labelboxContent).find(child=>child?.localName==='gramlot-menu') ?? null; }
         get entryCaption() { return this.parameters.caption ?? this.#registry?.label ?? ''; }
         get entryIcon() { return this.parameters.icon || this.parameters.iconSrc ? this.parameters.icon : this.#registry?.icon; }
         get entryIconSrc() { return this.parameters.icon || this.parameters.iconSrc ? this.parameters.iconSrc : this.#registry?.iconSrc; }
@@ -275,9 +283,8 @@ export function menuLine(Base) {
             const rest=super.projectAttributes(attrs,adapt);
             this.#accessibleLabel=attrs['aria-label'];
             if(this.parameters.iconSize!=null&&(!Number.isFinite(this.parameters.iconSize)||this.parameters.iconSize<=0))throw new TypeError('menuline iconSize must be positive');
-            if(!Number.isFinite(this.parameters.priority))throw new TypeError('menuline priority must be finite');
             this.#authoredDisabled=Boolean(this.parameters.disabled);
-            this.#render(); this.menuOwner?.overflow.schedule(); return rest;
+            this.#render(); this.menuOwner?.refreshItems(); this.menuOwner?.overflow.schedule(); return rest;
         }
         #render() {
             const separator=[...this.childNodes].filter(node=>node.nodeType===3)
@@ -318,12 +325,13 @@ export function menuLine(Base) {
             else this.control.style.removeProperty('--gramlot-toolbar-icon-size');
             this.toggleAttribute('data-menu-group-rows',Boolean(popup || owner?.parameters.orientation==='vertical'));
             this.control.classList.toggle('menu-row', popup);
-            this.#arrow.textContent = this.submenu ? (popup || owner?.parameters.orientation==='vertical' ? '›' : '▾') : '';
+            this.#arrow.textContent = this.submenu ? (toolbar && labelPosition==='tooltip' ? '⌄' : popup || owner?.parameters.orientation==='vertical' ? '›' : '▾') : '';
             const disabled=this.#authoredDisabled || this.getAttribute('role')==='separator'
                 || Boolean(this.parameters.command && !this.#registry)
                 || ['loading','error'].includes(owner?.status)
                 || Boolean(this.closest('gramlot-drop-down-button')?.parameters.disabled);
             if(this.control.disabled!==disabled)this.control.disabled=disabled;
+            this.refreshIconOnly();
         }
         get disabled() {
             for(let p=this.parentElement;p && p!==this.menuOwner;p=p.parentElement)if(p.localName==='gramlot-menu-line' && p.parameters.disabled)return true;

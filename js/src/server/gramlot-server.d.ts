@@ -72,7 +72,7 @@ export interface GramlotServerOptions {
     pageTtl?: number;
     /** Maximum number of registered pages. */
     maxPages?: number;
-    /** Application collections: generated Builder grammar and root-relative browser module URL. */
+    /** Custom collections added to the packaged standards: Builder grammar and root-relative module URL. */
     collections?: PreparedCollection[];
     /** Enable upload control only when the adapter provides a binary transport. */
     uploadsEnabled?: boolean;

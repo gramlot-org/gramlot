@@ -4,10 +4,23 @@
  * @module
  */
 import {HtmlBuilder} from '@genrojs/builders';
+import type {Bag} from '@genrojs/bag';
 import type {SourceAttributes, SourceBag, SourceBagNode, ValidateNodeOptions} from '@genrojs/builders';
 import type {GramlotHtmlRenderer} from '../renderer/gramlot-html-renderer.js';
 import type {SourceReference} from '../references.js';
 import type {NameSyntax} from './name-syntax.js';
+
+/** Gramlot Source node, with a non-serialized external Bag reference for a tree. */
+export interface GramlotSourceNode extends SourceBagNode {
+    /** Existing shared top toolbar of a frameGrid; never creates a second bar. */
+    readonly toolbar: GramlotSourceNode;
+    readonly treeStore: Bag | null;
+    setTreeStore(bag: Bag | null): void;
+}
+
+export interface GramlotSourceBag extends SourceBag {
+    getNode(path: string | number, isStatic?: boolean, autocreate?: boolean, defaultValue?: unknown): GramlotSourceNode | null;
+}
 
 /** Gramlot vocabulary and inert authoring on the shared builder grammar. */
 export class GramlotBuilder extends HtmlBuilder {
@@ -16,7 +29,7 @@ export class GramlotBuilder extends HtmlBuilder {
     static containers: string[];
     /** Build an ordinary framePane containing center.grid; requires layout and grid. */
     frameGrid(parent: SourceBag | SourceBagNode, options: SourceAttributes & {
-        storepath: string; rowMode: 'values' | 'attributes'; structpath?: string; searchOn?: boolean | string;
+        storepath: string; rowMode: 'values' | 'attributes'; structpath?: string; searchOn?: boolean | string; searchHelp?: boolean; chart?: boolean | string;
     }): SourceBagNode;
     /** Tag prefixes of the parent dialects, from the names of the classes above `GramlotBuilder`. */
     static get dialectPrefixes(): string[];
@@ -30,7 +43,7 @@ export class GramlotBuilder extends HtmlBuilder {
     /** The binding runtime of the Gramlot page that owns this builder, or null for authoring alone; set by `Gramlot` right after creating the builder. */
     binding: unknown;
     /** The node with `nodeId`; inside a Gramlot page it reads the node ids of the binding runtime. */
-    nodeById(nodeId: string): SourceBagNode;
+    nodeById(nodeId: string): GramlotSourceNode;
     /** Load a grammar document into the builder. */
     loadCollection(document: unknown): this;
     /** The schema tag of an authored name, or null; the `gramlot_` prefix and excluded declarations raise. */

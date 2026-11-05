@@ -12,15 +12,15 @@ test('Python and JS ship identical webcomponent grammar', () => {
 test('static and live rendering use code as a tag, and existing binding and events work', () => {
     const {window} = new JSDOM('<main></main>');
     class Tree extends window.HTMLElement {}
-    window.customElements.define('gramlot-poc-tree', Tree);
+    window.customElements.define('test-probe-tree', Tree);
     const app = new Gramlot({document: window.document, element: window.document.querySelector('main'), transport: false});
     class Logic { selected(node, event) { app.data.setItem('selection', event.detail.path); } }
     app.src.logicRegistry.register(Logic, {group: 'inspector', resource: 'test'});
     const builder = new GramlotBuilder();
-    const node = builder.root.div({node_label:'pane'}).webcomponent({code:'gramlot-poc-tree',
+    const node = builder.root.div({node_label:'pane'}).webcomponent({code:'test-probe-tree',
         node_label:'tree', id:'tree', title:'^caption', connect_onchange:'inspector.selected'});
     node.span('Fallback <text>');
-    assert.match(builder.render(), /<gramlot-poc-tree[^>]*><span>Fallback &lt;text&gt;<\/span><\/gramlot-poc-tree>/);
+    assert.match(builder.render(), /<test-probe-tree[^>]*><span>Fallback &lt;text&gt;<\/span><\/test-probe-tree>/);
     app.data.setItem('caption', 'Tree');
     app.src.startSource(builder.source);
     const tree = window.document.querySelector('#tree');

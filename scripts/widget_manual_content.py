@@ -12,7 +12,7 @@ Boolean: its Source-scoped `group` clears the other member values. In contrast,
 `radioButtonText` stores the chosen option code in one string, and `checkBoxText`
 stores comma-separated codes, or null for no selection. Their captions are not
 record values. Use `cols` to arrange these inline option groups; `checkBoxText`
-does not provide a popup selection mode. See [native variants](105-components.md#gc-105-040)
+also offers `popup=True`, Bag options and complete remote option lists. See [native variants](105-components.md#gc-105-040)
 and [multiple choices](105-components.md#gc-105-065).
 
 `filteringSelect` is for a closed local set, `callbackSelect` for a set supplied by
@@ -45,6 +45,8 @@ valid text, `live=True` commits valid input as it is entered, Escape restores th
 accepted value, and clearing writes null. `dateCalendar` edits the same date type
 inline; `dateTextBox` provides its calendar popup unless `calendar=False`.
 `workdate` sets the reference day for relative date editing, not the field value.
+Set `period_to=".end"` to accept periods too: the start becomes the value and the
+end is written to that relative Data path after acceptance. Invalid drafts write neither bound.
 See [typed editors](105-components.md#gc-105-045) and
 [calendar interaction](105-components.md#gc-105-070).
 
@@ -98,8 +100,8 @@ than dispatched to an implicit global action. See [command registration and rout
 
 Use `spacer(size=...)` for fixed separation or `spacer(flex=1)` for elastic space.
 It has no command or Data write. A `menuline(group=True)` keeps embedded controls
-and commands together during overflow; lower `priority` moves first and
-`overflowable=False` retains a unit. Retained content can force scrolling.
+and commands together. The visible prefix stays in declaration order; the
+complete non-fitting suffix enters the vertical popup.
 `icon` is text/emoji; use `iconSrc` for an SVG/image URL. `labelPosition` and
 `iconSize` govern presentation independently of command identity. Bind `disabled`,
 `checked` and ordinary visibility to Data as needed; `checked` on a menuline is
@@ -116,6 +118,13 @@ not record persistence. `groupBox` supplies a labelled Data scope and visual gro
 with bar, underline or card headers; its `copy` capability is separate from saving
 a record. `contentPane` is the general content holder used by region compositions.
 See [forms and groups](105-components.md#gc-105-085).
+
+A selectable heading uses `lbl_values="internal:Internal note,public:Public note"`
+and `lbl_value="^note.kind"`. The existing menu displays captions and writes the
+selected code; both attributes can follow Data. Without a binding, the selected
+code is retained on the Source node. A plain `lbl` stays fixed. The same renderer
+Labelbox supplies this capability to HTML, fields and groupBox, without replacing
+their contents. The small chevron inherits the label's size and theme color.
 
 `borderContainer` arranges content panes in unique top, bottom, left, right and
 center regions. `framePane` adds convenient region builders (`frame.top`,
@@ -142,7 +151,7 @@ Use `dialog` for a modal window and `floatingPane` for a nonmodal window; each
 contains a `framePane`. Bind `open`, `collapsed`, `maximized` and geometry when
 application state must reflect those operations. A dialog remains modal when
 collapsed or maximized. Floating panes default to movable/resizable/collapsible;
-dialogs do not. `closable`, `maximizable`, minimum dimensions and `beforeClose`
+dialogs do not. Set `floatingPane.docked` to present its existing contents inline; set it to false to restore its floating geometry. `closable`, `maximizable`, minimum dimensions and `beforeClose`
 express the window contract; closing a window is not a record save. See
 [windows](350-menus-toolbars-and-windows.md) and the shared window parameters below.
 
@@ -323,6 +332,35 @@ struct.column("name", name="Customer")
 struct.column("seats", name="Seats", dtype="L", edit=True)
 ```
 
+### External checkbox sets
+
+A column can project an external Data string instead of editing a record:
+
+```python
+struct.column("john", name="John", check="multiple",
+              checked="^assignments.john", checkedField="id")
+```
+
+Initialize `assignments.john` to `""`. `checked` is a required reactive Data path, resolved relative to the grid Source; `checkedField` is the row identity field. IDs are nonempty strings without commas. Each click adds or removes the ID in comma-separated text using literal wrapped `includes` membership; ordinary Data writes refresh all views. There is no regex or parallel Set cache. Customer records and their editing history are unchanged. A checked column cannot also declare an editor.
+
+Add columns at runtime by inserting ordinary cell nodes with these attributes into the structure Bag. Removing a column retains its set. Offscreen and unloaded IDs remain in the string; individual-row toggles do not require a complete store. Ordinary search and field sorting exclude these external columns. Radio selection and bulk actions are not part of this increment. Set column `title` to the full name when `name` uses a compact caption such as J.
+
+### Filter by external sets
+
+Bind `setFilter` to a text value: `john` selects members of that checkbox column, `john,fred` intersects both sets, and an empty string removes only the set contribution. Names refer to external check column fields already declared in the structure. The view applies base `filter` AND the current search AND every selected set. Clearing search keeps the base and set criteria; clearing `setFilter` keeps base and search. Changes to a bound set immediately recompute the view without modifying records or memberships.
+
+Set filtering requires a complete resident store: a grid with `windowInfo` rejects nonempty `setFilter`. There is no implicit fetch-all or filtering of only a loaded window. Unknown check columns are configuration errors. Unions, differences and remote set predicates remain outside this increment.
+
+### Column value filters
+
+Date columns additionally provide From/To using the shared date editor. Both bounds are inclusive, open ends are allowed, and From accepts periods through `period_to`. Changing the range selects all dates inside it; checkboxes refine that range. Clearing From clears To and preserves checked dates as explicit values. Reset removes both range and values. Invalid drafts and reversed bounds retain the accepted criterion. Datetime days follow the display convention (D/DH civil, DHZ page timezone).
+
+Set `columnFilters=True` to add a compact filter button to ordinary column headers. The compact popup composes a shared grid (checkbox, value, row count), a search field and a shared menu toolbar. Search values filters only the inner grid using literal case-insensitive text; it never changes hidden selections or the main grid search. Click Value or Rows to sort the choices. Multiple values in one column combine with OR; columns combine with AND, together with the base filter, search and external set criteria.
+
+Counts apply all criteria except the popup column's own selection. Selected values remain available even at zero rows. Null and empty text share the Empty choice. None accepts an empty selection (zero rows); Reset removes only that column's restriction. All explicitly selects all column values, including those hidden by the popup search. Row edits and set changes update counts without editing source records or rebuilding the grid.
+
+Selections live in the Source-owned collection view: `columnFilter(field)` reads them, `applyColumnFilter(field, values)` accepts an array or null to remove the criterion, and `columnFacets(field)` returns `{key, value, count, selected}` entries. Numeric and text identities remain distinct. Only loaded scalar fields in complete resident stores are supported; windowed grids are rejected. Date periods, aggregate-cell membership and remote facets remain separate work.
+
 ### Viewport outputs and editing events
 
 `rowHeaders`, `rowResize` and `selfDragRows` enable their respective row affordances. `sortedBy` and `filter` are read inputs. For a windowed store, `windowInfo` and `loading` describe provider state, while bound `viewport` writes requested `{start, count}` and `sortRequest` writes an ordering request. Wire these outputs to the intended store/provider rather than loading every record in response to scrolling. A resident Bag, a cached remote selection and an authorized database query have different capabilities. Neither the grid nor an ordinary endpoint implies SQL or Asqueel access.
@@ -332,6 +370,10 @@ Enable local editing with `column(..., edit=True)` or an editor-options dictiona
 ### `searchBox` and `frameGrid`
 
 Use `searchBox` for the grid's filtering UI. It requires a FrameGrid target resolved through Source context; it is not a free-standing text field with a `value` binding. The Python `frameGrid(...)` composition exposes `.grid`, `.top`, `.bottom`, `.left` and `.right`; put the search control in its toolbar. `frameGrid` is a helper, not another widget tag.
+
+`searchLiteral=True` treats text punctuation literally instead of as a regular expression; accepted queries keep their original text. The column-filter popup uses this same searchBox and its shared theme CSS inside a frameGrid, without a separate input or search handler.
+
+The column caption is an external Labelbox menu, not part of the input capsule. It uses the shared `lbl_value`/`lbl_values` mechanism.
 
 `searchOn=True` exposes the available columns. An explicit column list can restrict choices; unknown fields are rejected. Typing applies filtering after a short pause and Enter applies immediately. Escape or the clear button clears it, and changing column clears the query. Invalid/incomplete expressions report an error and preserve the last accepted filter. Bind `searchTime` if the application wants the measured filter duration; this is an output, not the search text. The active view owns filtering and supplies the rows, so this control does not independently issue application database requests. Start with [grid composition and store responsibilities](445-grid.md#gc-445-start).
 """,
@@ -380,3 +422,53 @@ Implement `address` as a Page method decorated with `@source`; inside it, contro
 `doc` reads Markdown for the card's information popup; empty text hides the information button. User changes to folding and checkbox state use their declared writeback, while `remote`, `title`, `chromeSide`, `collapsible`, `delitem` and `doc` remain read inputs. There is no additional public completion or save callback declared for these widgets. Use ordinary Source controllers for application behavior that follows bound Data changes. The [card guide](455-grouplets.md#gc-455-start) describes these controls; full form/save lifecycles and legacy GroupletForm APIs are separate responsibilities and must not be inferred from a card.
 """,
 }
+
+
+COLLECTION_EXPLANATIONS.update({
+    'charts': """### Data and configuration
+
+Keep the original rows at storepath and configuration at configpath. Attribute rows and value rows
+use their explicit rowMode. Bind selected measures, colors and axes through the configuration Bag.
+A gridId links the chart to an existing grid view, so filtering remains the grid's responsibility.
+
+### Engines and time
+
+Only supported types are offered. uPlot requires numeric X values. Engine changes recreate the
+external engine, not the Data. Playback uses prepared calendar snapshots with stable domains;
+previous and empty policies distinguish missing periods. Disposal stops playback and subscriptions.
+
+### Geography
+
+GeoJSON requires named Polygon/MultiPolygon features. The host performs matching and aggregation.
+Missing territories are not zero values. ECharts geographic bars offer zero or explicitly truncated
+extent baselines; their invisible range reference is a documented renderer-only exception.
+""",
+    'vizabi': """### Specialized host integration
+
+The host provides the compatible library at libraryUrl and the configuration Bag. A session observes
+rows and writes supported configuration changes into Data. It releases subscriptions and the external
+view on removal. Do not treat this as an additional chartPane engine or infer database access.
+""",
+})
+
+COLLECTION_EXPLANATIONS.update({
+    'audio': """### Sample values and lifecycle
+
+waveform contains fftSize numeric samples; spectrum contains fftSize / 2 decibel values,
+clamped to minimumDb. Each output is one array value in Data. sampleRate is measured in Hz.
+fftSize must be a power of two from 256 to 8192; frameRate must be between 1 and 30. minimumDb must be finite,
+at least -160 and strictly below 0.
+The analyser is invisible; compose controls and charts around its bindings. Starting requests
+microphone permission. Stopping releases browser resources; errors clear running and write error.
+This is not an audio recorder, and no persistence is implied.
+""",
+    'drawing': """### Original annotation Bag
+
+annotations must resolve to a Bag. The component subscribes to that original Bag and writes
+shape records there. image changes the background without replacing the annotation store.
+Without an image, coordinates use a 1000 by 1000 surface; an image uses its natural dimensions.
+The toolbar is a shared menu, with tool state under _gramlot.drawing. Removing the component
+releases event handlers and Bag subscriptions. Save annotations through the application's own
+persistence contract; the drawing component does not perform a server save.
+""",
+})

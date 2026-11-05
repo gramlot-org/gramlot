@@ -34,15 +34,14 @@ for mode in ('values', 'attributes'):
     amounts.column('price', name='Price', dtype='N', format='0.00', width='120px')
     struct.column('updated', name='Updated', dtype='D', format='short', width='120px')
     frame.dataFormula('.count', 'rows.getNodes().length', rows='^.rows', _onBuilt=True)
-    top = frame.top.menu(presentation='bar', aria_label=f'{mode.title()} commands',
-                         padding='6px', background='var(--gramlot-surface-subtle)')
-    top.menuline(group=True, overflowable=False).strong(f'Rows as {mode}')
+    top = frame.toolbar
+    top.menuline(group=True).strong(f'Rows as {mode}')
     top.spacer(flex=1)
     actions = top.menuline(group=True, priority=20)
     actions.menuline('gridDemo:update', id=f'update-{mode}')
     actions.menuline('gridDemo:remove', id=f'remove-{mode}')
     bottom = frame.bottom.menu(presentation='bar', aria_label=f'{mode.title()} status', padding='4px 8px')
-    count = bottom.menuline(group=True, overflowable=False)
+    count = bottom.menuline(group=True)
     count.span('^.count', id=f'count-{mode}')
     count.span('rows · Read only')
     bottom.spacer(flex=1)

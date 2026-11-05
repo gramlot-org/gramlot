@@ -19,7 +19,7 @@ def test_frame_grid_keeps_real_nodes_and_shared_frame_accessors():
     assert frame.grid.attr['frameTarget'] is True
     assert 'storepath' not in frame.attr
     frame.grid.struct().column('name')
-    frame.top.menu(presentation='bar').menuline('orders:refresh')
+    frame.toolbar.menuline('orders:refresh')
     frame.bottom.menu(presentation='bar').menuline(group=True).span('Ready')
     wire = builder.to_tytx()
     assert 'frameGrid' not in wire
@@ -66,3 +66,47 @@ def test_search_on_composes_a_real_toolbar_and_keeps_store_binding_on_the_grid()
     assert 'searchBox' in wire and 'Name:name,Count:qty' in wire
     assert 'searchOn' not in frame.attr
     assert frame.grid.attr['storepath'] == '.rows'
+
+
+def test_frame_grid_owns_one_toolbar_with_optional_search_and_shared_command_access():
+    for search in (False, True):
+        b = GramlotBuilder(collections=COLLECTIONS)
+        frame = b.root.frameGrid(storepath='rows', rowMode='values', searchOn=search)
+        bar = frame.toolbar
+        bar.menuline(caption='Chart', icon='▥')
+        assert frame.toolbar is bar
+        assert len(frame.top.static_value) == 1
+        assert bar.attr['class'] == 'gramlot-grid-toolbar'
+        assert (bar.static_value.get_node('search') is not None) == search
+    with pytest.raises(AttributeError, match='no toolbar'):
+        _ = b.root.framePane().toolbar
+
+
+def test_search_help_requires_explicit_opt_in():
+    b = GramlotBuilder(collections=COLLECTIONS)
+    for enabled in (False, True):
+        frame = b.root.frameGrid(storepath='rows', rowMode='values', searchOn=True, searchHelp=enabled)
+        search = list(frame.toolbar.static_value.get_node('search').static_value)[0]
+        assert search.attr['searchHelp'] is enabled
+
+
+def test_chart_uses_frame_data_scope_and_shared_window():
+    charts = json.loads((Path(__file__).parents[1] / 'src/gramlot/collections/charts.json').read_text())
+    b = GramlotBuilder(collections=[*COLLECTIONS, charts])
+    frame = b.root.frameGrid(datapath='report', storepath='.rows', rowMode='values',
+                            searchOn=True, chart='bar', chart_engine='plotly')
+    assert frame.toolbar.static_value.get_node('chart') is not None
+    assert frame.grid.attr['nodeId']
+    wire = b.to_tytx()
+    assert '._chart' in wire and 'configDefaults' in wire and 'plotly' in wire
+    assert 'chart_engine' not in wire
+    assert frame.attr['datapath'] == 'report'
+
+
+@pytest.mark.parametrize('options', [dict(chart=True), dict(chart=42, datapath='r'),
+                                     dict(chart=False, chart_engine='echarts')])
+def test_chart_invalid_options_leave_no_partial_source(options):
+    b = GramlotBuilder(collections=COLLECTIONS)
+    with pytest.raises(ValueError):
+        b.root.frameGrid(storepath='rows', rowMode='values', **options)
+    assert len(b.source) == 0

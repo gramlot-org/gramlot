@@ -55,6 +55,10 @@ def test_real_generation_check_and_update_preserves_manual_files(project, monkey
     assert not (root / "src").exists()
     assert run("build", config) == 0
     package = root / "src/sample/widgets"
+    emitted = (package / "assets/collection.js").read_text()
+    assert '"./logo.svg"' not in emitted
+    assert '"./style.css"' not in emitted
+    assert "file:///" not in emitted
     before = {
         str(p.relative_to(package)): p.read_bytes()
         for p in package.rglob("*")

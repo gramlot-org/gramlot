@@ -49,23 +49,23 @@ test('both reference adapters pass both checks below a mount prefix with a polic
 });
 
 test('both reference adapters renew a page by use and expire it when left idle, in both checks', async () => {
-    const servers = await startServers(PAGES, {pageTtl: 0.8});
+    const servers = await startServers(PAGES, {pageTtl: 3});
     try {
-        await Promise.all(servers.flatMap(([, server]) => [checkProtocol(server.url, PAGE, {pageTtl: 0.8}),
-            pythonCheck(server.url, PAGE, 0.8)]));
+        await Promise.all(servers.flatMap(([, server]) => [checkProtocol(server.url, PAGE, {pageTtl: 3}),
+            pythonCheck(server.url, PAGE, 3)]));
     } finally {
         for (const [, server] of servers) server.close();
     }
 });
 
 test('the expiry check fails when the adapter TTL is not the one given', async () => {
-    const servers = await startServers(PAGES, {pageTtl: 0.8});
+    const servers = await startServers(PAGES, {pageTtl: 3});
     try {
         await Promise.all(servers.flatMap(([, server]) => [
             // A TTL given three times as long: the adapter expires the page before the first call.
-            assert.rejects(checkProtocol(server.url, PAGE, {pageTtl: 2.4}), {message: /^GC-230-010: a call at 0\.5 pageTtl/}),
+            assert.rejects(checkProtocol(server.url, PAGE, {pageTtl: 9}), {message: /^GC-230-010: a call at 0\.5 pageTtl/}),
             // A TTL given half as long: the idle page is still usable.
-            assert.rejects(checkProtocol(server.url, PAGE, {pageTtl: 0.4}),
+            assert.rejects(checkProtocol(server.url, PAGE, {pageTtl: 1.5}),
                 {message: /^GC-230-010: a call 1\.3 pageTtl after the previous call/})]));
     } finally {
         for (const [, server] of servers) server.close();

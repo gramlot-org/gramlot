@@ -30,3 +30,15 @@ import grouplets from '../src/components/grouplets.js';
 await writeFile(new URL('../../src/gramlot/collections/grouplets.json', import.meta.url), JSON.stringify(grouplets.toDocument(), null, 2) + '\n');
 import uploads from '../src/components/uploads.js';
 await writeFile(new URL('../../src/gramlot/collections/uploads.json', import.meta.url), JSON.stringify(uploads.toDocument(), null, 2) + '\n');
+
+import charts from '../src/components/charts.js';
+await writeFile(new URL('../../src/gramlot/collections/charts.json', import.meta.url), JSON.stringify(charts.toDocument(), null, 2) + '\n');
+
+import drawing from '../src/components/drawing.js';
+await writeFile(new URL('../../src/gramlot/collections/drawing.json', import.meta.url), JSON.stringify(drawing.toDocument(), null, 2) + '\n');
+
+import vizabi from '../src/components/vizabi.js';
+await writeFile(new URL('../../src/gramlot/collections/vizabi.json', import.meta.url), JSON.stringify(vizabi.toDocument(), null, 2) + '\n');
+
+import audio from '../src/components/audio.js';
+await writeFile(new URL('../../src/gramlot/collections/audio.json', import.meta.url), JSON.stringify(audio.toDocument(), null, 2) + '\n');

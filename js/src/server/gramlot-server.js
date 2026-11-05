@@ -1,4 +1,5 @@
 /* @ts-self-types="./gramlot-server.d.ts" */
+import {standardCollections} from '../../dist/standard-collections.js';
 /**
  * The neutral server: registers pages and builds their Sources, with no HTTP engine.
  *
@@ -122,7 +123,7 @@ export class GramlotServer {
         Object.assign(this, {runtimeUrl, rpcUrl, closeUrl, rootId, pageTtl, maxPages, cssTheme});
         this.pages = new Map();
         this.uploads = uploadsEnabled ? new UploadRegistry() : null;
-        this.collections = [...collections];
+        this.collections = this.collectionGraph([...standardCollections, ...collections]);
         this.preparedGrammars = new WeakMap();
         this.environmentPages = new WeakMap();
     }

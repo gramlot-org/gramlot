@@ -18,9 +18,10 @@ npm run test:browser --prefix tools/gramlot-tools-inspector
 Browser checks need the Playwright Chromium, Firefox and WebKit installations.
 To run a named engine, append `-- chromium`, `-- firefox` or `-- webkit`.
 
-The build produces one JS module with its styles embedded. It imports `@gramlot/gramlot`:
-map that name to **the exact runtime URL already used by the page**, so the page
-and tool share the same classes. Do not bundle a second core into the tool.
+The build produces one JS module with its styles embedded. It imports `@gramlot/gramlot`,
+`@gramlot/collections/layout` and `@gramlot/collections/tree`: map these names to
+**the exact runtime and collection URLs already used by the page**, so the page
+and tool share the same classes and collection objects. Do not bundle second copies.
 The core npm package ships the optional `@gramlot/gramlot/tools/inspector` entry.
 Its runtime entry never imports the tool.
 

@@ -61,6 +61,30 @@ class ComponentTests(unittest.TestCase):
         self.assertFalse(_check_type("arbitrary", declaration, strict_json_primitives=True))
 
 class ApplicationCollectionTests(unittest.TestCase):
+    def test_layout_collection_is_available_to_browser_modules(self):
+        import asyncio
+        from gramlot import Page
+        from gramlot.collections.layout import mygramlot
+        from gramlot.server import GramlotServer
+
+        class Lesson(Page):
+            def main(self, root):
+                root.p('Hello')
+
+        class Server(GramlotServer):
+            def resolve_page(self, path):
+                return Lesson
+
+            def resolve_resources(self, path, cls):
+                return {'css': [], 'js': []}
+
+            def collection_url(self, collection, path):
+                return '/collections/' + collection.name + '/' + path
+
+        opened = asyncio.run(Server(collections=[mygramlot]).open_page('/', prefix='/demo'))
+        url = '/demo/collections/layout/assets/index.js'
+        self.assertIn('"@gramlot/collections/layout":"' + url + '"', opened.html)
+
     def test_application_loads_json_for_main_and_fragments_and_announces_browser_module(self):
         import asyncio
         from gramlot import Page, source

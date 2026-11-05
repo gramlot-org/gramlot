@@ -29,11 +29,11 @@ function fixture(t,author,remote=async()=>new Bag()){
  return {app,window,received,element,click(id,options={}){element(id).control.dispatchEvent(new window.MouseEvent('click',{bubbles:true,composed:true,...options}));}};
 }
 function frame(root){const frame=root.framePane({node_label:'frame'});frame.center.contentPane({frameTarget:true,node_label:'editor',selfsubscribe_save:'save'});return frame;}
-test('Labelbox preserves submenu ownership and toolbar overflow priority',async t=>{
+test('Labelbox preserves submenu ownership and ordered toolbar overflow',async t=>{
  const f=fixture(t,(root,app)=>{
   app.data.setItem('label','Actions');const bar=frame(root).top.menu({presentation:'bar',id:'bar'});
-  bar.menuline('documenti:save',{id:'keep',lbl:'Pinned',overflowable:false});
-  const item=bar.menuline({id:'more',caption:'More',lbl:'Group',priority:0});
+  bar.menuline('documenti:save',{id:'keep',lbl:'Pinned'});
+  const item=bar.menuline({id:'more',caption:'More',lbl:'Group'});
   item.menu({id:'submenu',lbl:'^label'}).menuline('documenti:save',{id:'nested'});
  });
  const bar=f.element('bar'),item=f.element('more'),menu=f.element('submenu');
@@ -248,14 +248,14 @@ test('vertical bar submenus open to the side while horizontal bar submenus open 
  assert.equal(f.element('vertical').control.querySelector('.menu-arrow').textContent,'›');
 });
 
-test('toolbar overflow respects priority, end-first ties and indivisible groups without moving Source',t=>{
+test('toolbar overflow keeps a contiguous prefix and indivisible groups without moving Source',t=>{
  const f=fixture(t,root=>{const bar=frame(root).top.menu({presentation:'bar',id:'bar'});
- bar.menuline('documenti:save',{id:'important',priority:20});
- bar.menuline('documenti:save',{id:'early',priority:0});
- const group=bar.menuline({group:true,id:'group',priority:10});
+ bar.menuline('documenti:save',{id:'important'});
+ bar.menuline('documenti:save',{id:'early'});
+ const group=bar.menuline({group:true,id:'group'});
  group.menuline('documenti:save',{id:'group-a'});group.menuline('documenti:save',{id:'group-b'});
- bar.menuline('documenti:save',{id:'late',priority:0});
- bar.menuline('documenti:save',{id:'retained',overflowable:false});});
+ bar.menuline('documenti:save',{id:'late'});
+ bar.menuline('documenti:save',{id:'retained'});});
  const bar=f.element('bar'),group=f.element('group');let width=550;
  Object.defineProperty(bar,'clientWidth',{get:()=>width});
  bar.shadowRoot.querySelector('.toolbar-viewport').style.gap='0px';
@@ -263,15 +263,15 @@ test('toolbar overflow respects priority, end-first ties and indivisible groups 
  group.getBoundingClientRect=()=>({width:group.hasAttribute('data-menu-group-rows')?60:180,height:30});
  const nodes=[...bar.children],groupChildren=[...group.children];
  bar.overflow.layout();
- assert.deepEqual(nodes.filter(n=>n.slot==='overflow').map(n=>n.id),['late']);
+ assert.deepEqual(nodes.filter(n=>n.slot==='overflow').map(n=>n.id),['retained']);
  assert.equal(bar.overflow.button.title,'More commands');
  assert.equal(bar.overflow.button.getAttribute('aria-label'),'More commands');
  assert.equal(bar.overflow.button.querySelector('svg').getAttribute('aria-hidden'),'true');
  width=450;bar.overflow.layout();
- assert.deepEqual(nodes.filter(n=>n.slot==='overflow').map(n=>n.id),['early','late']);
+ assert.deepEqual(nodes.filter(n=>n.slot==='overflow').map(n=>n.id),['late','retained']);
  width=330;bar.overflow.layout();
- assert.deepEqual(nodes.filter(n=>n.slot==='overflow').map(n=>n.id),['early','group','late']);
- bar.overflow.layout();assert.deepEqual(nodes.filter(n=>n.slot==='overflow').map(n=>n.id),['early','group','late']);
+ assert.deepEqual(nodes.filter(n=>n.slot==='overflow').map(n=>n.id),['group','late','retained']);
+ bar.overflow.layout();assert.deepEqual(nodes.filter(n=>n.slot==='overflow').map(n=>n.id),['group','late','retained']);
  assert.deepEqual([...bar.children],nodes);assert.deepEqual([...group.children],groupChildren);
  bar.overflow.open();assert.equal(group.hasAttribute('data-menu-group-rows'),true);f.click('group-b');assert.equal(f.received.length,1);assert.equal(bar.overflow.opened,false);
  assert.equal(f.received[0].sender.parentNode.getAttr('id'),'group');
@@ -280,7 +280,7 @@ test('toolbar overflow respects priority, end-first ties and indivisible groups 
 
 test('overflow keeps a focused input, its live binding and identity through exit and return',t=>{
  const f=fixture(t,root=>{const bar=frame(root).top.menu({presentation:'bar',id:'bar'});
- bar.menuline('documenti:save',{id:'keep',overflowable:false});
+ bar.menuline('documenti:save',{id:'keep'});
  bar.menuline({group:true,id:'search-group'}).input({id:'search',value:'^query',live:true});});
  const bar=f.element('bar'),input=f.element('search'),group=f.element('search-group');let width=400;
  Object.defineProperty(bar,'clientWidth',{get:()=>width});
@@ -296,17 +296,17 @@ test('overflow keeps a focused input, its live binding and identity through exit
  assert.equal(input.value,'updated');assert.equal(bar.overflow.button.hidden,true);
 });
 
-test('retained units never overflow; elastic space is consumed before migration and vertical sizing uses height',t=>{
+test('ordered units use elastic space before migration and vertical sizing uses height',t=>{
  const f=fixture(t,root=>{const bar=frame(root).top.menu({presentation:'bar',orientation:'vertical',id:'bar'});
- bar.menuline('documenti:save',{id:'keep',overflowable:false});bar.spacer({flex:1,id:'space'});
+ bar.menuline('documenti:save',{id:'keep'});bar.spacer({flex:1,id:'space'});
  bar.menuline('documenti:save',{id:'eligible'});});
  const bar=f.element('bar');let height=100;
  Object.defineProperty(bar,'clientHeight',{get:()=>height});bar.shadowRoot.querySelector('.toolbar-viewport').style.gap='0px';
- for(const id of ['keep','eligible'])f.element(id).getBoundingClientRect=()=>({height:40,width:100});
+ for(const id of ['keep','eligible'])f.element(id).getBoundingClientRect=()=>({height:id==='keep'?30:50,width:100});
  f.element('space').getBoundingClientRect=()=>({height:500,width:100});
  bar.overflow.layout();assert.equal(bar.overflow.button.hidden,true);
- height=60;bar.overflow.layout();assert.ok(bar.overflow.button.querySelector('svg'));assert.equal(bar.overflow.button.title,'More commands');assert.equal(f.element('eligible').slot,'overflow');assert.equal(f.element('keep').slot,'');assert.equal(f.element('space').slot,'');
- height=20;bar.overflow.layout();assert.equal(f.element('keep').slot,'');
+ height=70;bar.overflow.layout();assert.ok(bar.overflow.button.querySelector('svg'));assert.equal(bar.overflow.button.title,'More commands');assert.equal(f.element('eligible').slot,'overflow');assert.equal(f.element('keep').slot,'');assert.equal(f.element('space').slot,'');
+ height=20;bar.overflow.layout();assert.equal(f.element('keep').slot,'overflow');
 });
 
 test('overflow keyboard navigation traverses grouped commands and opens their submenu sideways',t=>{
@@ -332,7 +332,7 @@ test('group command ambiguity is rejected and overflow cleanup removes observers
 
 test('overflow suppresses orphan separators and restores declaration order on return',t=>{
  const f=fixture(t,root=>{const bar=frame(root).top.menu({presentation:'bar',id:'bar'});
- bar.menuline('-',{id:'leading'});bar.menuline('documenti:save',{id:'first',overflowable:false});bar.menuline('-',{id:'divider'});
+ bar.menuline('-',{id:'leading'});bar.menuline('documenti:save',{id:'first'});bar.menuline('-',{id:'divider'});
  bar.menuline('documenti:save',{id:'second'});bar.menuline('-',{id:'trailing'});});
  const bar=f.element('bar');let width=150;Object.defineProperty(bar,'clientWidth',{get:()=>width});
  for(const id of ['first','second'])f.element(id).getBoundingClientRect=()=>({width:100,height:30});
@@ -363,15 +363,18 @@ test('toolbar label modes preserve captions, tooltip names and command identity 
   assert.equal(item.control.classList.contains('toolbar-button'),true);
   assert.equal(item.control.classList.contains('toolbar-below'),mode==='below');
   assert.equal(item.control.classList.contains('toolbar-tooltip'),mode==='tooltip');
+  assert.equal(item.control.classList.contains('icon-only'),mode==='tooltip');
   assert.equal(item.control.style.getPropertyValue('--gramlot-toolbar-icon-size'),'28px');
   assert.equal(item.control.getAttribute('aria-label'),'Save');assert.equal(item.control.title,'Save');
   const caption=item.control.querySelector('.menu-caption');assert.equal(caption.textContent,'Save');
   width=60;bar.overflow.layout();bar.overflow.open();
   assert.equal(item.control.classList.contains('menu-row'),true);assert.equal(item.control.classList.contains('toolbar-button'),false);
+  assert.equal(item.control.classList.contains('icon-only'),false);
   assert.equal(item.control.classList.contains('toolbar-tooltip'),false);assert.equal(item.control.classList.contains('toolbar-below'),false);
   assert.equal(item.control.style.getPropertyValue('--gramlot-toolbar-icon-size'),'');assert.equal(caption.textContent,'Save');
   f.click(`save-${mode}`);assert.equal(f.received.at(-1).command,'documenti:save');
   width=200;bar.overflow.layout();assert.equal(item.control.classList.contains('toolbar-tooltip'),mode==='tooltip');
+  assert.equal(item.control.classList.contains('icon-only'),mode==='tooltip');
   assert.equal(item.control.classList.contains('toolbar-below'),mode==='below');assert.equal(item.control.querySelector('.menu-caption'),caption);
  }
 });
@@ -431,4 +434,33 @@ test('Escape in a permanent bar without an open popup reaches the containing win
  const event=new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,composed:true,cancelable:true});
  let reached=false;f.window.document.addEventListener('keydown',()=>reached=true,{once:true});
  f.element('save').control.dispatchEvent(event);assert.equal(event.defaultPrevented,false);assert.equal(reached,true);
+});
+
+test('popup adornment tracks follow visible entries, including disabled choices',async t=>{
+ const f=fixture(t,root=>{
+  const menu=root.menu({id:'compact'});
+  menu.menuline({id:'checked',caption:'First',checked:true});
+  menu.menuline({id:'icon',caption:'Unavailable',icon:'*',disabled:true});
+ });
+ await settle();
+ const menu=f.element('compact');
+ assert.equal(menu.style.getPropertyValue('--gramlot-menu-icon-track'),'1.5em');
+ assert.equal(menu.style.getPropertyValue('--gramlot-menu-check-track'),'1.4em');
+ const node=f.app.src.renderer.getBaseSourceNode(f.element('icon'));
+ node.setAttr({hidden:true});await settle();
+ assert.equal(menu.style.getPropertyValue('--gramlot-menu-icon-track'),'0px');
+ assert.equal(menu.style.getPropertyValue('--gramlot-menu-arrow-track'),'0px');
+});
+
+test('a smaller third command cannot fill the place of the second command',t=>{
+ const f=fixture(t,root=>{const bar=frame(root).top.menu({presentation:'bar',id:'bar'});
+ for(const id of ['first','second','third'])bar.menuline('documenti:save',{id});});
+ const bar=f.element('bar');Object.defineProperty(bar,'clientWidth',{value:200});
+ bar.shadowRoot.querySelector('.toolbar-viewport').style.gap='0px';
+ for(const [id,width] of [['first',90],['second',180],['third',30]])f.element(id).getBoundingClientRect=()=>({width,height:30});
+ bar.overflow.layout();
+ assert.equal(f.element('first').slot,'');
+ assert.equal(f.element('second').slot,'overflow');
+ assert.equal(f.element('third').slot,'overflow');
+ assert.deepEqual([...bar.children].map(n=>n.id),['first','second','third']);
 });

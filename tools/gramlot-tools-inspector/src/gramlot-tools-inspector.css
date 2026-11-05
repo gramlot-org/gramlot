@@ -4,6 +4,9 @@ button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 1px solid var(--gramlot-focus-ring, #3574cb); outline-offset: -1px; }
 .tree { padding: 7px 3px; }
+gramlot-tree::part(inspector-breakpoint) { color: var(--gramlot-error, #b3261e); }
+gramlot-tree::part(inspector-breakpoint-conditional) { color: var(--gramlot-warning, #a56600); }
+.inspector-content { flex: 1; min-height: 126px; min-width: 0; --gramlot-splitter-size: var(--separator-size, 6px); }
 .properties { background: var(--gramlot-surface, white); }
 .properties-heading { font-size: 11px; display: flex; align-items: center; justify-content: space-between; height: 29px; padding: 0 8px; background: var(--gramlot-surface-subtle, #f1f3f5); color: var(--gramlot-text-secondary, #6d7989); border-bottom: 1px solid var(--gramlot-border, #d1d7df); }
 .properties-heading button { background: var(--gramlot-surface, white); border: 1px solid var(--gramlot-border-control, #c5cdda); border-radius: 2px; width: 23px; height: 23px; padding: 0; font-size: 18px; line-height: 20px; }
@@ -75,7 +78,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 
 :host([docked]) { --tree-action-size: 28px; --tree-font-size: 14px; --tree-row-height: 40px; --separator-size: 14px; }
 :host([docked]) .targetbar { height: 44px; }
-:host([docked]) gramlot-poc-tabs > button { height: 44px; font-size: 14px; }
+:host([docked]) .inspector-tabs { height: 44px; }
 :host([docked]) .properties-heading { height: 40px; font-size: 13px; }
 :host([docked]) .properties-heading button { width: 36px; height: 36px; }
 :host([docked]) .property-value select { height: 35px; font-size: 14px; }
@@ -84,3 +87,5 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .history-toolbar button { flex:none; padding:3px 6px; border:1px solid var(--gramlot-border-control, #c5cdda); border-radius:3px; background:var(--gramlot-surface, white); cursor:pointer; }
 .history-toolbar button:disabled { opacity:.45; cursor:default; }
 .history-toolbar span { min-width:0; color:var(--gramlot-error, #a12121); overflow-wrap:anywhere; }
+
+.inspector-tabs { flex: none; height: 30px; min-height: 0; }

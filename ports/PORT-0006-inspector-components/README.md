@@ -1,5 +1,7 @@
 # PORT-0006-inspector-components
 
+**Historical record:** the provisional components and fixtures described below have been replaced by shared Gramlot components and removed. Current Inspector behavior and verification are recorded in GC-195 §035 and GC-070.
+
 - **Status:** full composition implemented and verified; final owner visual acceptance pending
 - **Evidence revision:** `gramlot-org/gramlot-devtools@cdef847616158012c2f6e5f46a5e9a0e35c48523`,
   its vendored `gramlot-poc/js/dom/src/collections/storetree.js` and

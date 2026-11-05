@@ -1,5 +1,14 @@
 # 340 · How components and collections work
 
+**Page-authoring rule:** GramlotServer automatically provides every packaged
+standard collection to every site's Page base, in Python and JavaScript. Do not
+import `gramlot.collections.*` or repeat `gramlots = [...]` for these collections.
+Write component declarations directly. Explicit imports and collection declarations
+are for custom additions. A missing standard component is a server/package defect,
+not a reason for a one-off page import. The packaged inventory drives grammar and
+bootstrap resources; it does not scan installed packages. External engines load on
+first use in hosted pages. File exports embed the required resource bytes.
+
 Document ID: **GC-340**.
 
 [Full guide](../../docs/public/340-components-and-collections-guide.md).
@@ -107,6 +116,10 @@ does not activate it. Selection provides grammar and bootstrap resources; base
 Gramlot remains. The sample uses `searchbox(value='^.query', live=True)` and a
 paragraph sharing that Data path. A raw grammar document is not a prepared Page
 descriptor. Built-in prepared collections use the same selection shape.
+
+`gramlot.getCollection(name)` returns the page's activated component collection,
+or `undefined`. Optional tools can pass that object to their own Gramlot instance
+and reuse the existing registrations; bootstrap retains the verified object.
 
 <a id="gc-340-055"></a>
 ## 055 · Host and bootstrap
@@ -228,8 +241,8 @@ See GC-105 for existing components, GC-097 for binding, GC-096 for styles, GC-32
 naming. Use the prepared-package activation path in this guide.
 
 
-Environment collections (2026-10-30): declare once on the environment Page base
-or host `collections` option; examples inherit all configured collections. Extra
+Standard collections (2026-11-05): GramlotServer includes the packaged inventory
+for every site. Host `collections` supplies custom additions. Extra
 Page.gramlots still accumulate. Both hosts cache environment Page composition and
 grammar without mutating imported classes. Components' dynamic import() boundaries
 produce separate verified ESM files; external engines load on first use, shared

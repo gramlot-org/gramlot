@@ -32,9 +32,15 @@ if(location.pathname==='/child.html') {
  });
  frame.src='/child.html';
 }`;
-const html = child => `<!doctype html><meta charset="utf-8"><style>:root{--gramlot-action:#456bc4;--gramlot-space-4:1rem}main{color:var(--gramlot-action)}</style><script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js"}}</script><main></main>${child?'':'<iframe sandbox="allow-scripts"></iframe>'}<script type="module" src="/fixture.js"></script>`;
+const html = child => `<!doctype html><meta charset="utf-8"><style>:root{--gramlot-action:#456bc4;--gramlot-space-4:1rem}main{color:var(--gramlot-action)}</style><script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js","@gramlot/collections/layout":"/layout/index.js","@gramlot/collections/tree":"/tree/index.js"}}</script><main></main>${child?'':'<iframe sandbox="allow-scripts"></iframe>'}<script type="module" src="/fixture.js"></script>`;
 const files = new Map([['/',html(false)],['/child.html',html(true)],['/fixture.js',bootstrap],['/core.js',core.outputFiles[0].text],['/inspector.js',await readFile(new URL('../dist/gramlot-tools-inspector.js',import.meta.url),'utf8')]]);
-const server=createServer((request,response)=>{
+const server=createServer(async (request,response)=>{
+ if(request.url.startsWith('/layout/') || request.url.startsWith('/tree/')){
+  const [,collection,...parts]=request.url.split('/');
+  try{response.writeHead(200,{'Content-Type':'text/javascript','Access-Control-Allow-Origin':'*'}).end(await readFile(new URL(`../../../src/gramlot/collections/${collection}/assets/${parts.join('/')}`,import.meta.url)));}
+  catch{response.writeHead(404).end();}
+  return;
+ }
  response.writeHead(200,{'Content-Type':request.url.endsWith('.js')?'text/javascript':'text/html','Access-Control-Allow-Origin':'*',
  'Content-Security-Policy':"default-src 'none'; script-src 'self' 'nonce-fixture'; frame-src 'self'; style-src 'unsafe-inline'"});
  response.end(files.get(request.url)??'');
@@ -48,7 +54,7 @@ try {
    await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.waitForFunction(()=>window.ready);
    const child=page.frames().find(frame=>frame.url().endsWith('/child.html'));
    const tool=page.locator('gramlot-tools-inspector'), select=tool.getByLabel('Inspected page');
-   const row=tool.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]');
+   const row=tool.locator('gramlot-tree[data-root=data] [data-path=name]');
    await row.click();assert.equal(await tool.getByLabel('Value',{exact:true}).inputValue(),'Child');
    await tool.getByLabel('Value',{exact:true}).fill('Edited child');await tool.getByLabel('Value',{exact:true}).press('Enter');
    await child.waitForFunction(()=>app.data.getItem('name')==='Edited child');
@@ -60,7 +66,7 @@ try {
    await select.selectOption('top');await row.click();
    await tool.getByLabel('Value',{exact:true}).fill('Edited shell');await tool.getByLabel('Value',{exact:true}).press('Enter');
    await page.waitForFunction(()=>app.data.getItem('name')==='Edited shell');
-   await select.selectOption('child');await row.click();await row.hover();await row.getByLabel('Breakpoint',{exact:true}).click();
+   await select.selectOption('child');await row.click();await row.hover();await tool.locator('gramlot-tree[data-root=data]').getByLabel('Breakpoint',{exact:true}).click();
    await tool.getByLabel('Breakpoint mode').selectOption('console');await tool.getByLabel('Breakpoint condition').fill('true');
    await tool.getByRole('button',{name:'Save',exact:true}).click();
    await tool.locator('.breakpoint-dialog .breakpoint-status').getByText(/Breakpoint not saved/).waitFor();
@@ -71,14 +77,14 @@ try {
    await tool.locator('.breakpoint-line').getByText(/1 hits/).waitFor();
    if(engine===chromium) {
     const session=await page.context().newCDPSession(page);await session.send('Debugger.enable');
-    await row.hover();await row.getByLabel('Breakpoint',{exact:true}).click();await tool.getByLabel('Breakpoint mode').selectOption('debugger');
+    await row.hover();await tool.locator('gramlot-tree[data-root=data]').getByLabel('Breakpoint',{exact:true}).click();await tool.getByLabel('Breakpoint mode').selectOption('debugger');
     await tool.getByRole('button',{name:'Save',exact:true}).click();await tool.locator('dialog[aria-label=Breakpoint]').waitFor({state:'hidden'});
     const paused=new Promise(resolve=>session.once('Debugger.paused',async event=>{assert.ok(event.callFrames.some(frame=>frame.functionName==='childWriter'));await session.send('Debugger.resume');resolve();}));
     await child.evaluate(function childWriter(){app.data.setItem('name','Paused');});await paused;await session.send('Debugger.disable');await session.detach();
    }
    await tool.getByRole('tab',{name:'Source',exact:true}).click();
-   await tool.locator('gramlot-poc-tree[data-root=source] summary[data-node-path=main]').click();
-   await tool.locator('gramlot-poc-tree[data-root=source] [data-node-path="main.greeting"]').click();
+   await tool.locator('gramlot-tree[data-root=source] [data-path=main] > .row .expander').click();
+   await tool.locator('gramlot-tree[data-root=source] [data-path="main.greeting"]').click();
    await tool.getByLabel('Value',{exact:true}).fill('Remote Source');await tool.getByLabel('Value',{exact:true}).press('Enter');
    await child.waitForFunction(()=>app.src.source.getItem('main.greeting')==='Remote Source');
    await tool.getByRole('tab',{name:'Styles',exact:true}).click();

@@ -6,7 +6,7 @@ export class WindowSurface {
         #context; #observer; #scheduled = false; #live = false;
         #open = false; #collapsed = false; #maximized = false; #pending = null; #generation = 0;
         #geometry = null; #gesture = null; #previousFocus = null;
-        #resize = () => { if (this.#open) this.#fit(); };
+        #resize = () => { if (this.#open && !this.parameters.docked) this.#fit(); };
         constructor(host, root, {modal, validateContent}) {
             this.host = host; this.root = root; this.modal = modal;
             this.validateContent = validateContent;
@@ -20,6 +20,10 @@ export class WindowSurface {
                   background:var(--gramlot-surface,Canvas);box-shadow:0 2px 6px #00000014,0 16px 36px #00000029;overflow:hidden;
                   max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}
                 .window-surface dialog[open]{display:flex;flex-direction:column}
+                .window-surface dialog[data-docked]{position:relative!important;inset:0!important;width:100%!important;height:100%!important;
+                  min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+                  border:0;border-radius:0;box-shadow:none;z-index:auto!important}
+                .window-surface dialog[data-docked] .titlebar,.window-surface dialog[data-docked] .resize{display:none!important}
                 .window-surface dialog[data-maximized]{max-width:100vw;max-height:100dvh;border-radius:0}
                 .window-surface dialog::backdrop{background:var(--gramlot-window-backdrop,#0006)}
                 .window-surface .titlebar{display:flex;align-items:center;gap:4px;flex:none;min-height:max(32px,var(--gramlot-tab-height,32px));padding:3px 5px 3px 12px;
@@ -104,7 +108,7 @@ export class WindowSurface {
                     this.#cancelGesture();this.#geometry=null;this.#collapsed=false;this.#maximized=false;
                 }
                 if(previous.open!==this.parameters.open) { this.#generation++;this.#pending=null; }
-                if(previous.movable!==this.parameters.movable || previous.resizable!==this.parameters.resizable)this.#cancelGesture();
+                if(previous.movable!==this.parameters.movable || previous.resizable!==this.parameters.resizable || previous.docked!==this.parameters.docked)this.#cancelGesture();
             }
             this.#schedule();
         }
@@ -118,14 +122,16 @@ export class WindowSurface {
             this.heading.textContent=p.title;this.shell.setAttribute('aria-label',p.title);
             this.closeButton.hidden=!p.closable;this.closeButton.disabled=Boolean(this.#pending);
             this.collapseButton.hidden=!p.collapsible;this.maximizeButton.hidden=!p.maximizable;
+            this.shell.toggleAttribute('data-docked', p.docked === true);
             if(!p.open) { this.#close(false);return; }
             if(!this.#open) {
                 this.#previousFocus=this.#activeElement();
                 this.#collapsed=false;this.#maximized=false;this.body.hidden=false;this.shell.removeAttribute('data-collapsed');
                 if(this.modal)this.shell.showModal();else this.shell.show();
-                this.#open=true;this.#applySize();this.#fit();this.#raise();
+                this.#open=true;if(!p.docked){this.#applySize();this.#fit();this.#raise();}
                 this.#context.publish('opened',{});
-            } else if(!this.#geometry) { this.#applySize();this.#fit(); }
+            } else if(!p.docked && !this.#geometry) { this.#applySize();this.#fit(); }
+            if(p.docked) { this.body.hidden=false;this.resizeButton.hidden=true;return; }
             this.#setMaximized(p.maximizable&&p.maximized,false);
             this.#setCollapsed(p.collapsible&&p.collapsed,false);
             if(!p.maximizable && p.maximized)this.#context.writeParameter('maximized',false);
@@ -156,7 +162,7 @@ export class WindowSurface {
         }
         #paint(rect) { for(const key of ['left','top','width','height'])this.shell.style[key]=`${rect[key]}px`; }
         #raise() {
-            if(this.modal||!this.#open)return;
+            if(this.modal||!this.#open||this.parameters.docked)return;
             // Reserve the page's low stacking levels for layout chrome (splitters/drawers).
             // Modal dialogs and menu popovers remain above these nonmodal windows in the top layer.
             const base=100;
@@ -175,7 +181,7 @@ export class WindowSurface {
             this.#paint(rect);
             const movable=this.parameters.movable&&!this.#maximized;
             this.titlebar.toggleAttribute('data-movable',movable);this.titlebar.tabIndex=movable?0:-1;
-            this.titlebar.setAttribute('aria-label',movable?'Move window: use arrow keys':this.parameters.title);
+            this.titlebar.setAttribute('aria-label',movable?'Move window: use arrow keys, Home to reset':this.parameters.title);
             this.resizeButton.hidden=this.#collapsed||this.#maximized||!this.parameters.resizable;
         }
         #setMaximized(value,write) {
@@ -233,7 +239,7 @@ export class WindowSurface {
             this.#context.publish('closed',{});
         }
         #startGesture(event,kind) {
-            if(event.button!==0||!this.#open||this.#maximized||kind==='move'&&!this.parameters.movable||kind==='resize'&&(!this.parameters.resizable||this.#collapsed))return;
+            if(event.button!==0||!this.#open||this.parameters.docked||this.#maximized||kind==='move'&&!this.parameters.movable||kind==='resize'&&(!this.parameters.resizable||this.#collapsed))return;
             if(kind==='move'&&event.target.closest('button'))return;
             event.preventDefault();this.#cancelGesture();
             const r=this.shell.getBoundingClientRect();
@@ -271,10 +277,15 @@ export class WindowSurface {
             }
         }
         #keyGeometry(event,kind) {
-            if(event.target!==event.currentTarget||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;
-            if(this.#maximized||kind==='move'&&!this.parameters.movable||kind==='resize'&&(!this.parameters.resizable||this.#collapsed))return;
+            if(event.target!==event.currentTarget||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home'].includes(event.key))return;
+            if(this.parameters.docked||this.#maximized||kind==='move'&&!this.parameters.movable||kind==='resize'&&(!this.parameters.resizable||this.#collapsed)||event.key==='Home'&&kind!=='move')return;
             event.preventDefault();event.stopPropagation();
             const r=this.shell.getBoundingClientRect(),step=event.shiftKey?1:10;
+            if(event.key==='Home') {
+                const x=parseFloat(this.parameters.left),y=parseFloat(this.parameters.top);
+                this.#adjust({left:r.left,top:r.top,width:r.width,height:r.height},(Number.isFinite(x)?x:8)-r.left,(Number.isFinite(y)?y:8)-r.top,kind);
+                this.#commitGeometry(kind);return;
+            }
             this.#adjust({left:r.left,top:r.top,width:r.width,height:r.height},event.key==='ArrowLeft'?-step:event.key==='ArrowRight'?step:0,event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0,kind);
             this.#commitGeometry(kind);
         }

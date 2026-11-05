@@ -1,0 +1,335 @@
+{
+  "abstracts": {},
+  "document_format": {
+    "name": "builder_grammar",
+    "version": "1.1"
+  },
+  "elements": {
+    "audioAnalyser": {
+      "_meta": {
+        "gramlot_component": {
+          "command": false,
+          "dataScope": false,
+          "parameters": {
+            "error": {
+              "binding": "twoWay",
+              "default": "",
+              "dtype": "T"
+            },
+            "fftSize": {
+              "binding": "read",
+              "default": 1024,
+              "dtype": "L"
+            },
+            "frameRate": {
+              "binding": "read",
+              "default": 20,
+              "dtype": "N"
+            },
+            "minimumDb": {
+              "binding": "read",
+              "default": -100,
+              "dtype": "N"
+            },
+            "running": {
+              "binding": "twoWay",
+              "default": false,
+              "dtype": "B"
+            },
+            "sampleRate": {
+              "binding": "twoWay",
+              "default": 0,
+              "dtype": "N"
+            },
+            "spectrum": {
+              "binding": "twoWay",
+              "dtype": "X",
+              "nullable": true
+            },
+            "status": {
+              "binding": "twoWay",
+              "default": "stopped",
+              "dtype": "T"
+            },
+            "waveform": {
+              "binding": "twoWay",
+              "dtype": "X",
+              "nullable": true
+            }
+          },
+          "presentationDefaults": [],
+          "sourceContext": true
+        },
+        "render_tag": "gramlot-audio-analyser"
+      },
+      "attributes": {
+        "accepts_var_keyword": true,
+        "accepts_var_positional": false,
+        "parameters": [
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "running",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "L",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": 1024,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "fftSize",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "N",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": 20,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "frameRate",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "N",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": -100,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "minimumDb",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "spectrum",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "X",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "NN",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "waveform",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "N",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": 0,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "sampleRate",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "stopped",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "status",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": "",
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "error",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
+          }
+        ]
+      },
+      "collection_key": null,
+      "doc": null,
+      "inherits_from": null,
+      "node_label": null,
+      "ns": null,
+      "parent_tags": null,
+      "sub_tags": ""
+    }
+  },
+  "grammar": {
+    "description": null,
+    "name": "audio",
+    "title": "audio",
+    "version": null
+  }
+}

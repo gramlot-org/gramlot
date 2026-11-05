@@ -2,6 +2,9 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {PageBootstrap} from '../src/bootstrap.js';
+import {Gramlot} from '../src/gramlot.js';
+import layout from '../src/components/layout.js';
+import {layoutWindow} from './helpers/layout-window.js';
 
 function setup(resources) {
     const {window}=new JSDOM('<!doctype html><div id="gramlot-root"></div>',{url:'http://example.test/'});
@@ -38,4 +41,24 @@ test('closing during CSS loading cancels startup without waiting for a load even
     const running=bootstrap.run();window.dispatchEvent(new window.Event('pagehide'));
     assert.equal(await running,null);assert.equal(closed(),1);
     window.document.querySelector('link').dispatchEvent(new window.Event('error'));
+});
+
+test('bootstrap retains the activated collection object for additional tools in the same document', async () => {
+    const code = `export {default} from ${JSON.stringify(new URL('../src/components/layout.js', import.meta.url).href)}; export const buildId='sha256:${'a'.repeat(64)}';`;
+    const url = 'data:text/javascript,' + encodeURIComponent(code);
+    const {window, bootstrap} = setup({css:[], js:[], collections:[{name:'layout', url, buildId:'sha256:'+'a'.repeat(64)}]});
+    layoutWindow(window);
+    window.navigator.sendBeacon = () => true;
+    const original = Gramlot.prototype.start;
+    Gramlot.prototype.start = async function () { this.state = 'started'; return this; };
+    let app, tool;
+    try {
+        app = await bootstrap.run();
+        assert.equal(app.getCollection('layout'), layout);
+        tool = new Gramlot({document:window.document, element:window.document.createElement('div'), transport:false,
+            collections:[app.getCollection('layout')]});
+        assert.equal(tool.getCollection('layout'), layout);
+    } finally {
+        tool?.dispose(); app?.dispose(); Gramlot.prototype.start = original; window.close();
+    }
 });

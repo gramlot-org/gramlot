@@ -47,8 +47,8 @@ than dispatched to an implicit global action. See [command registration and rout
 
 Use `spacer(size=...)` for fixed separation or `spacer(flex=1)` for elastic space.
 It has no command or Data write. A `menuline(group=True)` keeps embedded controls
-and commands together during overflow; lower `priority` moves first and
-`overflowable=False` retains a unit. Retained content can force scrolling.
+and commands together. The visible prefix stays in declaration order; the
+complete non-fitting suffix enters the vertical popup.
 `icon` is text/emoji; use `iconSrc` for an SVG/image URL. `labelPosition` and
 `iconSize` govern presentation independently of command identity. Bind `disabled`,
 `checked` and ordinary visibility to Data as needed; `checked` on a menuline is
@@ -296,8 +296,6 @@ Shared contracts: [Disabled, readonly and live updates](#gc-415-shared-state), [
 | `checked` | B or None | — | read | — |
 | `tooltip` | T or None | — | — | — |
 | `group` | B | False | — | — |
-| `priority` | R | 0 | — | — |
-| `overflowable` | B | True | — | — |
 | `parameters` | dict or None | — | — | annotation={"kind": "type", "module": "builtins", "name": "dict"} |
 | `favorite` | B | False | — | — |
 
@@ -320,7 +318,7 @@ Collection: **buttons**. Browser element: `gramlot-spacer`.
 **Data contract.** size specifies fixed space in pixels. flex assigns a positive share of remaining layout space. Neither parameter represents application Data.
 
 
-**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving overflowable units to its popup.
+**Interaction and events.** The spacer is decorative and has no activation. A toolbar consumes elastic space before moving trailing units to its popup.
 
 
 **Composition.** Place it between menu or toolbar items as a leaf.

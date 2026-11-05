@@ -111,13 +111,17 @@ Collection: **tree**. Browser element: `gramlot-tree`.
 | `excludeRoot` | T or None | None | read | — |
 | `labelCb` | T or None | None | — | — |
 | `getLabel` | T or None | None | — | — |
+| `labelState` | X or None | None | read | — |
 | `getLabelClass` | T or None | None | — | — |
 | `getIconClass` | T or None | None | — | — |
 | `selectedLabelClass` | T | '' | read | — |
 | `searchText` | T | '' | read | — |
+| `searchEager` | B | True | read | — |
+| `searchAttributes` | T | '' | read | — |
 | `favorites` | X or None | None | read | — |
 | `favoritesLabel` | T | 'Favorites' | read | — |
 | `autoCollapse` | B | False | read | — |
+| `resolveLazy` | B | True | read | — |
 | `selectedPath` | T or None | None | twoWay | — |
 | `onChecked` | B / T or None | None | — | — |
 | `checkedPaths` | T or None | None | twoWay | — |

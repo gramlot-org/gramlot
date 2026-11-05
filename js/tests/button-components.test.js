@@ -143,3 +143,38 @@ test('storage failure does not prevent selecting and executing the in-memory def
     app.data.setItem('result', null); click('export'); assert.equal(app.data.getItem('result'), 'csv');
     app.dispose();
 });
+
+test('icon-only defaults follow glyphs, images and reactive caption content', async () => {
+    const {app, element, window} = fixture(root => {
+        root.button({id:'glyph',icon:'^glyph',aria_label:'Settings'});
+        root.button({id:'image',iconSrc:'/settings.svg',aria_label:'Settings'});
+        root.button('Save', {id:'text',icon:'✓'});
+        root.button({id:'empty'});
+        root.toggleButton({id:'toggle-icon',icon:'✓',value:false,aria_label:'Enabled'});
+    });
+    const tick = () => new Promise(resolve => window.setTimeout(resolve, 0));
+    app.data.setItem('glyph','⚙'); await tick();
+    for (const id of ['glyph','image','toggle-icon']) assert.equal(element(id).control.classList.contains('icon-only'),true,id);
+    for (const id of ['text','empty']) assert.equal(element(id).control.classList.contains('icon-only'),false,id);
+    const caption = window.document.createTextNode('Settings');
+    element('glyph').append(caption); await tick();
+    assert.equal(element('glyph').control.classList.contains('icon-only'),false);
+    caption.textContent=' '; await tick();
+    assert.equal(element('glyph').control.classList.contains('icon-only'),true);
+    app.data.setItem('glyph',''); await tick();
+    assert.equal(element('glyph').control.classList.contains('icon-only'),false);
+    app.dispose(); window.close();
+});
+
+test('dropdown remembered captions replace icon-only presentation', async () => {
+    const {app,element,click,window} = fixture(root => {
+        const drop=root.dropDownButton({id:'drop-icon',icon:'⚙',aria_label:'Export'});
+        drop.menu().menuline({id:'format',code:'csv',caption:'CSV',icon:'▣'});
+    });
+    await new Promise(resolve => window.setTimeout(resolve,0));
+    assert.equal(element('drop-icon').control.classList.contains('icon-only'),true);
+    click('format',true);
+    await new Promise(resolve => window.setTimeout(resolve,0));
+    assert.equal(element('drop-icon').control.classList.contains('icon-only'),false);
+    app.dispose(); window.close();
+});

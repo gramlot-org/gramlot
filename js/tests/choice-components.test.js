@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {Gramlot, GramlotBuilder} from '../src/index.js';
+import {Bag, Gramlot, GramlotBuilder} from '../src/index.js';
 import inputs from '../src/components/inputs.js';
+import tree from '../src/components/tree.js';
 
 const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 function fixture(t, author, Logic = class {}) {
@@ -11,9 +12,9 @@ function fixture(t, author, Logic = class {}) {
     window.HTMLElement.prototype.showPopover = function () {};
     window.HTMLElement.prototype.hidePopover = function () {};
     window.HTMLElement.prototype.scrollIntoView = function () {};
-    const app = new Gramlot({document: window.document, transport: false, collections: [inputs]});
+    const app = new Gramlot({document: window.document, transport: false, collections: [tree, inputs]});
     app.src.logicRegistry.register(Logic, {resource: 'test:choices'});
-    const builder = new GramlotBuilder(null, {collections: [inputs]});
+    const builder = new GramlotBuilder(null, {collections: [tree, inputs]});
     author(builder.root, app); app.src.startSource(builder.toTytx());
     t.after(() => {app.dispose(); window.close();});
     const host = id => window.document.getElementById(id);
@@ -175,4 +176,175 @@ test('local choices accept a newline separator',async t=>{
     const f=fixture(t,r=>r.comboBox({id:'choice',value:'^choice',values:'a,b\nc,d',separator:'\n'}));
     await settle();f.host('choice').control.focus();f.key('choice','ArrowDown');await settle();assert.equal(f.host('choice').choices.children.length,2);
     f.key('choice','Enter');assert.equal(f.app.data.getItem('choice'),'a,b');
+});
+
+test('checkBoxText popup commits repeatedly, displays captions, locks and restores focus', t => {
+    const f=fixture(t,(r,a)=>{a.data.setItem('selection','a');r.checkBoxText({id:'multi',value:'^selection',values:'a:Alpha,b:Beta',popup:'^popup',disabled:'^locked'});a.data.setItem('popup',true);});
+    const host=f.host('multi'), control=host.control, first=control.querySelector('input');
+    assert.equal(host.summary.value,'Alpha');
+    assert.equal(f.app.data.getItem('selection?_displayedValue'),'Alpha');
+    host.summary.click();assert.equal(host.panel.hidden,false);
+    control.querySelector('input[value=b]').click();
+    assert.equal(f.app.data.getItem('selection'),'a,b');
+    assert.equal(f.app.data.getItem('selection?_displayedValue'),'Alpha,Beta');
+    assert.equal(host.panel.hidden,false);
+    control.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    assert.equal(host.panel.hidden,true);assert.equal(host.shadowRoot.activeElement,host.summary);
+    host.summary.click();f.app.data.setItem('locked',true);
+    assert.equal(host.panel.hidden,true);assert.equal(host.summary.disabled,true);
+    f.app.data.setItem('locked',false);f.app.data.setItem('popup',false);
+    assert.equal(host.control,control);assert.equal(control.querySelector('input'),first);
+    assert.equal(host.summary.hidden,true);assert.equal(control.parentElement,host.controlBox);
+});
+
+test('checkBoxText observes the original Bag, preserves missing codes and releases subscriptions', t => {
+    const options=new Bag();options.setItem('a',null,{caption:'Alpha'});options.setItem('b',null,{caption:'Beta'});
+    const f=fixture(t,(r,a)=>{a.data.setItem('options',options);a.data.setItem('selection','a');
+        r.checkBoxText({id:'multi',value:'^selection',values:'^options',labelAttribute:'caption',popup:true});});
+    const host=f.host('multi'), first=host.control.querySelector('input');
+    options.setItem('a',null,{caption:'Updated'});
+    assert.equal(host.summary.value,'Updated');assert.equal(host.control.querySelector('input'),first);
+    options.popNode('a');assert.equal(f.app.data.getItem('selection'),'a');assert.equal(host.summary.value,'a');
+    host.control.querySelector('input[value=b]').click();assert.equal(f.app.data.getItem('selection'),'a,b');
+    const replacement=new Bag();replacement.setItem('a',null,{caption:'Restored'});
+    f.app.data.setItem('options',replacement);assert.equal(host.summary.value,'Restored,b');
+    options.setItem('a',null,{caption:'Old'});assert.equal(host.summary.value,'Restored,b');
+    f.app.dispose();replacement.setItem('a',null,{caption:'After disposal'});assert.equal(host.summary.value,'Restored,b');
+});
+
+
+test('checkBoxText remote options request a complete list and discard obsolete responses', async t => {
+    const f=fixture(t,r=>r.checkBoxText({id:'multi',node_label:'multi',value:'^selection',popup:true}));
+    const host=f.host('multi'), pending=[];
+    host.pageContext.remote=(method,parameters,signal)=>new Promise(resolve=>pending.push({method,parameters,signal,resolve}));
+    f.app.src.source.getNode('main.multi').setAttr({value:'^selection',popup:true,dbtable:'people',condition:'$state=:state',condition_state:'A'});
+    f.app.src.source.getNode('main.multi').setAttr({value:'^selection',popup:true,dbtable:'people',condition:'$state=:state',condition_state:'B'});
+    assert.equal(pending.length,2);assert.equal(pending[0].signal.aborted,true);
+    assert.deepEqual(pending[1].parameters,{dbtable:'people',condition:'$state=:state',state:'B',_querystring:'',limit:null});
+    const result=name=>({rows:[{id:0,name}],identifier:'id',caption:'name'});
+    pending[1].resolve(result('New'));await settle();pending[0].resolve(result('Old'));await settle();
+    assert.equal(host.control.textContent,'New');host.control.querySelector('input').click();
+    assert.equal(f.app.data.getItem('selection'),'0');assert.equal(host.summary.value,'New');
+    f.app.src.source.getNode('main.multi').setAttr({value:'^selection',popup:true,values:'',method:'choices'});
+    f.app.dispose();assert.equal(pending[2].signal.aborted,true);pending[2].resolve(result('Disposed'));await settle();
+    assert.equal(host.control.textContent,'New');
+});
+
+test('checkBoxText remote failures stay visible, keep Data and do not replace validation messages', async t => {
+    const f=fixture(t,(r,a)=>{a.data.setItem('selection','a');r.checkBoxText({id:'multi',node_label:'multi',value:'^selection',values:'a:Alpha',popup:true});});
+    const host=f.host('multi');
+    host.pageContext.remote=async()=>{throw new Error('Options unavailable');};
+    f.app.src.source.getNode('main.multi').setAttr({value:'^selection',popup:true,values:'',method:'choices'});
+    await settle();assert.equal(host.optionsMessage.textContent,'Options unavailable');
+    assert.equal(host.message.id,'field-message');assert.equal(host.summary.disabled,true);
+    assert.equal(f.app.data.getItem('selection'),'a');
+    f.app.src.source.getNode('main.multi').setAttr({value:'^selection',popup:true,method:null,values:'a:^secret'});
+    assert.equal(host.summary.disabled,false);assert.equal(host.summary.value,'^secret');
+    assert.equal(host.optionsMessage.textContent,'');assert.equal(f.app.data.getItem('selection?_displayedValue'),'^secret');
+});
+
+test('hierarchical checkBoxText reuses the tree and original Bag, propagates and preserves disabled nodes', async t => {
+    const children = new Bag({first:null,second:null,locked:null});
+    children.getNode('locked').setAttr({checked:'disabled:on'});
+    const options = new Bag({folder:children,other:null});
+    const f=fixture(t,(r,a)=>{a.data.setItem('options',options);r.checkBoxText({id:'multi',value:'^selection',values:'^options',hierarchical:true,popup:true});});
+    await settle();const host=f.host('multi'), tree=host.control.querySelector('gramlot-tree');
+    assert.equal(tree.storeBag,options);
+    host.summary.click();
+    const check=path=>tree.shadowRoot.querySelector(`[data-path="${path}"] > .row > input`);
+    check('folder').click();await settle();
+    assert.equal(f.app.data.getItem('selection'),'folder.first,folder.second');
+    assert.equal(children.getNode('first').attr.checked,true);
+    assert.equal(children.getNode('locked').attr.checked,'disabled:on');
+    f.app.data.setItem('selection',null);await settle();
+    assert.equal(children.getNode('first').attr.checked,false);
+    assert.equal(children.getNode('locked').attr.checked,'disabled:on');
+    host.closeChoices();host.summary.click();assert.equal(host.control.querySelector('gramlot-tree'),tree);
+});
+
+test('hierarchical identifiers keep unknown codes and follow external values without copying the Bag', async t => {
+    const children = new Bag();children.setItem('first',null,{code:'a',caption:'Alpha'});children.setItem('second',null,{code:'b',caption:'Beta'});
+    const options=new Bag();options.setItem('folder',children,{code:'f',caption:'Folder'});
+    const f=fixture(t,(r,a)=>{a.data.setItem('options',options);a.data.setItem('selection','a,unknown');
+        r.checkBoxText({id:'multi',value:'^selection',values:'^options',identifier:'code',labelAttribute:'caption',hierarchical:true,readonly:'^locked'});});
+    await settle();const host=f.host('multi'),tree=host.control.querySelector('gramlot-tree');
+    assert.equal(children.getNode('first').attr.checked,true);assert.equal(host.summary.value,'Alpha,unknown');
+    tree.shadowRoot.querySelector('[data-path="folder"] > .row > input').click();await settle();
+    assert.equal(f.app.data.getItem('selection'),'a,unknown,b');
+    children.getNode('first').setAttr({caption:'Updated'});await settle();assert.equal(host.summary.value,'Updated,unknown,Beta');
+    f.app.data.setItem('locked',true);await settle();assert.equal(tree.inert,true);
+    const replacement=new Bag();replacement.setItem('leaf',null,{code:'a',caption:'Replacement'});
+    f.app.data.setItem('options',replacement);await settle();assert.equal(tree.storeBag,replacement);
+    children.getNode('first').setAttr({caption:'Old'});await settle();assert.equal(host.summary.value,'Replacement,unknown,b');
+});
+
+test('hierarchical checkBoxText delegates asynchronous lazy propagation to the shared tree', async t => {
+    const {BagResolver}=await import('@genrojs/bag');let finish,calls=0;
+    class Lazy extends BagResolver {load(){calls++;return new Promise(resolve=>{finish=resolve;});}}
+    const options=new Bag();options.setItem('lazy',new Lazy({cacheTime:-1}));
+    const f=fixture(t,(r,a)=>{a.data.setItem('options',options);r.checkBoxText({id:'multi',value:'^selection',values:'^options',hierarchical:true});});
+    await settle();assert.equal(calls,0);
+    const tree=f.host('multi').control.querySelector('gramlot-tree');
+    tree.shadowRoot.querySelector('[data-path="lazy"] > .row > input').click();await settle();
+    assert.equal(calls,1);assert.equal(f.app.data.getItem('selection'),'lazy');
+    finish(new Bag({first:null,second:null}));await settle();await settle();
+    assert.equal(options.getNode('lazy.first').attr.checked,true);
+    assert.equal(f.app.data.getItem('selection'),'lazy.first,lazy.second');
+    assert.equal(tree.storeBag,options);
+});
+
+test('hierarchical explicit codes become checked when lazy children arrive', async t => {
+    const {BagResolver}=await import('@genrojs/bag');let finish,calls=0;
+    class Lazy extends BagResolver {load(){calls++;return new Promise(resolve=>{finish=resolve;});}}
+    const options=new Bag();options.setItem('lazy',new Lazy({cacheTime:-1}),{code:'branch'});
+    const f=fixture(t,(r,a)=>{a.data.setItem('options',options);a.data.setItem('selection','a');
+        r.checkBoxText({id:'multi',value:'^selection',values:'^options',hierarchical:true,identifier:'code'});});
+    await settle();const host=f.host('multi'),tree=host.control.querySelector('gramlot-tree');assert.equal(calls,0);
+    tree.shadowRoot.querySelector('[data-path="lazy"] > .row > .expander').click();await settle();
+    const children=new Bag();children.setItem('first',null,{code:'a'});children.setItem('second',null,{code:'b'});
+    finish(children);await settle();await settle();
+    assert.equal(children.getNode('first').attr.checked,true);assert.notEqual(children.getNode('second').attr.checked,true);
+    assert.equal(f.app.data.getItem('selection'),'a');
+    tree.shadowRoot.querySelector('[data-path="lazy.second"] > .row > input').click();await settle();
+    assert.equal(f.app.data.getItem('selection'),'a,b');
+});
+
+test('checkBoxText edits descriptions, suggests additions and keeps only codes in Data', async t => {
+    const f=fixture(t,(r,a)=>{a.data.setItem('cities','MI,TO,CO');r.checkBoxText({id:'cities',value:'^cities',popup:true,values:'MI:Milano,TO:Torino,CO:Como,PV:Pavia'});});
+    await settle();const host=f.host('cities');
+    assert.equal(host.summary.value,'Milano,Torino,Como');
+    host.summary.value += ',pa';f.event(host.summary,'input');
+    assert.equal(f.app.data.getItem('cities'),'MI,TO,CO');
+    assert.deepEqual([...host.shadowRoot.querySelectorAll('datalist option')].map(n=>n.value),['Milano,Torino,Como,Pavia']);
+    host.summary.value='Milano,Torino,Como,pavia';f.event(host.summary,'input');f.event(host.summary,'change');
+    assert.equal(f.app.data.getItem('cities'),'MI,TO,CO,PV');
+    assert.equal(f.app.data.getItem('cities?_displayedValue'),'Milano,Torino,Como,Pavia');
+    assert.equal(host.control.querySelector('input[value=PV]').checked,true);
+    host.summary.value='Como,Pavia';f.event(host.summary,'input');f.event(host.summary,'change');
+    assert.equal(f.app.data.getItem('cities'),'CO,PV');
+    host.summary.value='';f.event(host.summary,'input');f.event(host.summary,'change');
+    assert.equal(f.app.data.getItem('cities'),null);
+});
+
+test('description drafts stay in Source, reject unknown/ambiguous text and yield to external Data', async t => {
+    const f=fixture(t,(r,a)=>{a.data.setItem('cities','MI');r.checkBoxText({id:'cities',node_label:'cities',value:'^cities',popup:true,values:'MI:Milano,PV:Pavia,XX:Pavia'});});
+    await settle();const host=f.host('cities');const source=f.app.src.source.getNode('main.cities');
+    host.summary.value='Pavia';f.event(host.summary,'input');f.event(host.summary,'change');
+    assert.equal(f.app.data.getItem('cities'),'MI');assert.equal(source.checkBoxTextState.draft.text,'Pavia');
+    assert.match(host.message.textContent,/Ambiguous/);
+    host.summary.value='Unknown';f.event(host.summary,'input');f.event(host.summary,'change');
+    assert.equal(host.summary.getAttribute('aria-invalid'),'true');assert.equal(f.app.data.getItem('cities'),'MI');
+    host.summary.dispatchEvent(new f.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    assert.equal(host.summary.value,'Milano');assert.equal(source.checkBoxTextState.draft,null);
+    host.summary.value='partial';f.event(host.summary,'input');f.app.data.setItem('cities','PV');
+    assert.equal(host.summary.value,'Pavia');assert.equal(source.checkBoxTextState.draft,null);
+});
+
+test('hierarchical descriptions select paths and cannot select disabled nodes', async t => {
+    const options=new Bag();options.setItem('folder.first',null,{caption:'Milano'});options.setItem('folder.fixed',null,{caption:'Fixed',checked:'disabled:on'});
+    const f=fixture(t,(r,a)=>{a.data.setItem('options',options);r.checkBoxText({id:'cities',value:'^cities',values:'^options',hierarchical:true,popup:true,labelAttribute:'caption'});});
+    await settle();const host=f.host('cities');host.summary.value='Milano';f.event(host.summary,'input');f.event(host.summary,'change');await settle();
+    assert.equal(f.app.data.getItem('cities'),'folder.first');assert.equal(options.getNode('folder.first').attr.checked,true);
+    host.summary.value='Fixed';f.event(host.summary,'input');f.event(host.summary,'change');
+    assert.equal(f.app.data.getItem('cities'),'folder.first');assert.equal(options.getNode('folder.fixed').attr.checked,'disabled:on');
 });

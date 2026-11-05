@@ -13,6 +13,11 @@ declare const node: SourceBagNode;
 declare const source: SourceBag;
 declare const renderer: GramlotRenderer;
 const onError = (error: Error) => { throw error; };
+const externalTree = page.src.source.getNode('main.tree');
+externalTree?.setTreeStore(new Bag());
+externalTree?.setTreeStore(null);
+// @ts-expect-error A Source-linked tree requires a Bag, not an arbitrary object.
+externalTree?.setTreeStore({});
 
 const http = new HttpTransport('/rpc', {navigator: {sendBeacon: () => true}});
 http.close('page');

@@ -14,3 +14,6 @@ __all__ += ['ChatPane', 'ChatPageStore']
 
 from .page.visual_editor import VisualEditor, SourceImport
 __all__ += ['VisualEditor', 'SourceImport']
+
+from .page.chart import ChartPane
+__all__ += ['ChartPane']

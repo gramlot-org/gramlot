@@ -7,7 +7,7 @@ import type {Bag} from '@genrojs/bag';
 import type {SourceBag, SourceBagNode} from '@genrojs/builders';
 import type {DomElement} from '../dom.d.ts';
 import type {Gramlot} from '../gramlot.js';
-import type {GramlotBuilder} from '../builder/gramlot-builder.js';
+import type {GramlotBuilder, GramlotSourceBag} from '../builder/gramlot-builder.js';
 import type {NameSyntax} from '../builder/name-syntax.js';
 import type {GramlotRenderer} from '../renderer/gramlot-renderer.js';
 import {Handler} from './handler.js';
@@ -24,7 +24,7 @@ export class SourceHandler extends Handler {
     /** The binding runtime of the page. */
     binding: unknown;
     /** The Source Bag observed by the renderer. */
-    source: SourceBag;
+    source: GramlotSourceBag;
     /** The live renderer of the page. */
     renderer: GramlotRenderer;
     /**

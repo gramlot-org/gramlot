@@ -4,6 +4,8 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
 import {build} from 'esbuild';
 import {chromium, firefox, webkit} from 'playwright';
@@ -12,8 +14,10 @@ const root = new URL('../', import.meta.url);
 const core = await build({entryPoints: [require.resolve('@gramlot/gramlot')], bundle: true,
     format: 'esm', platform: 'browser', target: 'es2022', write: false});
 const fixture = `import {Gramlot, GramlotBuilder} from '@gramlot/gramlot';
+import layout from '@gramlot/collections/layout';
+import tree from '@gramlot/collections/tree';
 import '/gramlot-tools-inspector.js';
-const app = new Gramlot({element: document.getElementById('app'), transport: false});
+const app = new Gramlot({element: document.getElementById('app'), transport: false, collections: [layout, tree]});
 const builder = new GramlotBuilder();
 builder.root.p('^name', {node_label: 'greeting'});
 app.data.setItem('name', 'Ada', {description: 'Name'});
@@ -26,14 +30,24 @@ window.inspector = inspector;
 window.ready = true;`;
 const files = new Map([
     ['/', ['text/html', `<!doctype html><html><head><meta charset="utf-8"><title>Inspector qualification</title>
-<script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js"}}</script></head>
+<script type="importmap" nonce="fixture">{"imports":{"@gramlot/gramlot":"/core.js","@gramlot/gramlot/components":"/core.js","@gramlot/collections/layout":"/layout/index.js","@gramlot/collections/tree":"/tree/index.js"}}</script></head>
 <body style="--gramlot-field-background:#222;--gramlot-ink:#eee;--gramlot-button-background:#222"><main id="app"></main><script type="module" src="/fixture.js"></script></body></html>`]],
     ['/fixture.js', ['text/javascript', fixture]],
     ['/core.js', ['text/javascript', core.outputFiles[0].text]],
     ['/gramlot-tools-inspector.js', ['text/javascript', await readFile(new URL('dist/gramlot-tools-inspector.js', root))]],
 ]);
-const server = createServer((request, response) => {
+const server = createServer(async (request, response) => {
     const requested = new URL(request.url, 'http://fixture');
+    if (requested.pathname.startsWith('/layout/') || requested.pathname.startsWith('/tree/')) {
+        const [, collection, ...parts] = requested.pathname.split('/');
+        const relative = parts.join('/');
+        const base = resolve(fileURLToPath(new URL(`../../../src/gramlot/collections/${collection}/assets/`, import.meta.url)));
+        const target = resolve(base, relative);
+        if (!target.startsWith(base + '/')) { response.writeHead(404).end(); return; }
+        try { response.writeHead(200, {'Content-Type':'text/javascript'}).end(await readFile(target)); }
+        catch { response.writeHead(404).end(); }
+        return;
+    }
     const entry = files.get(requested.pathname);
     if (!entry) { response.writeHead(404).end(); return; }
     response.writeHead(200, {'Content-Type': entry[0],
@@ -60,9 +74,9 @@ try {
             const add = palette.getByRole('button', {name: 'Add attribute', exact: true});
             assert.equal(await add.evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(255, 255, 255)');
             assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).getAttribute('aria-selected'), 'true');
-            assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).evaluate(el => getComputedStyle(el).borderBottomColor), 'rgb(11, 87, 208)');
+            assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).evaluate(el => getComputedStyle(el.parentElement, '::after').content), '""');
             assert.equal(await palette.locator('.error').textContent(), '');
-            await palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]').click();
+            await palette.locator('gramlot-tree[data-root=data] [data-path=name]').click();
             assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), 'Ada');
             const remove = palette.getByRole('button', {name: 'Remove description', exact: true});
             await palette.getByLabel('description value', {exact: true}).focus();
@@ -85,8 +99,8 @@ try {
             assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), 'Grace');
             await palette.getByRole('tab', {name: 'Source', exact: true}).click();
             assert.equal(await palette.getByRole('tab', {name:'Source',exact:true}).getAttribute('aria-selected'), 'true');
-            await palette.locator('gramlot-poc-tree[data-root=source] summary[data-node-path=main]').click();
-            await palette.locator('gramlot-poc-tree[data-root=source] [data-node-path="main.greeting"]').click();
+            await palette.locator('gramlot-tree[data-root=source] [data-path=main] > .row .expander').click();
+            await palette.locator('gramlot-tree[data-root=source] [data-path="main.greeting"]').click();
             assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), '^name');
             await page.evaluate(() => window.app.src.source.getNode('main.greeting').setAttr({title: 'Live Source'}));
             await page.waitForFunction(() => window.inspector.shadowRoot.querySelector('[aria-label="title value"]')?.value === 'Live Source');
@@ -99,7 +113,7 @@ try {
             await palette.getByRole('textbox', {name: 'Value', exact: true}).fill('^name');
             await palette.getByLabel('Value', {exact:true}).press('Enter');
             await palette.getByRole('tab', {name: 'Data', exact: true}).click();
-            await palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]').click();
+            await palette.locator('gramlot-tree[data-root=data] [data-path=name]').click();
             await palette.getByRole('textbox', {name: 'Value', exact: true}).fill('Edited Data');
             await palette.getByLabel('Value', {exact:true}).press('Enter');
             assert.equal(await page.evaluate(() => window.app.data.getItem('name')), 'Edited Data');
@@ -116,20 +130,11 @@ try {
             assert.equal(await page.evaluate(() => window.app.data.getNode('name').getAttr('count')), 43);
             await palette.getByLabel('Remove count', {exact:true}).click();
             assert.equal(await page.evaluate(() => window.app.data.getNode('name').getAttr('count')), null);
-            // An inactive selected row shows only a grey ring on hover.
-            const selectedRow = palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]');
-            await page.mouse.move(900, 800);
-            assert.equal(await selectedRow.locator('.actions').evaluate(el => getComputedStyle(el).opacity), '0');
+            // The shared action bar targets the hovered row.
+            const dataTree = palette.locator('gramlot-tree[data-root=data]');
+            const selectedRow = dataTree.locator('[data-path=name] > .row');
             await selectedRow.hover();
-            assert.equal(await selectedRow.locator('.actions').evaluate(el => getComputedStyle(el).opacity), '1');
-            assert.equal(await selectedRow.locator('.actions button').evaluate(el => getComputedStyle(el).color), 'rgb(128, 134, 139)');
-            assert.equal(await selectedRow.locator('.actions button').evaluate(el => getComputedStyle(el, '::before').backgroundColor), 'rgba(0, 0, 0, 0)');
-            const actionBox = await selectedRow.locator('.actions').boundingBox();
-            const captionBox = await selectedRow.locator('.caption').boundingBox();
-            assert.ok(actionBox.x + actionBox.width <= captionBox.x, 'breakpoint is left of the node caption');
-            // Strict CSP blocks only explicitly authored condition compilation.
-            const dot = palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]').getByRole('button', {name:'Breakpoint', exact:true});
-            await dot.locator('..').locator('..').hover();
+            const dot = dataTree.getByRole('button', {name:'Breakpoint', exact:true});
             await dot.click();
             await palette.getByRole('combobox', {name: 'Breakpoint mode', exact: true}).selectOption('console');
             await palette.getByRole('textbox', {name: 'Breakpoint condition', exact: true}).fill('value === "Grace"');
@@ -138,8 +143,7 @@ try {
             await palette.getByRole('textbox', {name: 'Breakpoint condition', exact: true}).fill('');
             await palette.getByRole('button', {name: 'Save', exact: true}).click();
             await page.mouse.move(900, 800);
-            assert.equal(await selectedRow.locator('.actions').evaluate(el => getComputedStyle(el).opacity), '1', 'active breakpoint stays visible without hover');
-            assert.equal(await dot.evaluate(el => getComputedStyle(el, '::before').backgroundColor), 'rgb(179, 38, 30)');
+            await selectedRow.locator('.caption').getByText(/●/).waitFor();
             const logged = page.waitForEvent('console', {predicate: message => message.text().includes('** Gramlot breakpoint **')});
             await page.evaluate(() => window.app.data.setItem('name', 'Grace'));
             await logged;
@@ -147,7 +151,7 @@ try {
             if (name === 'chromium') {
                 const session = await page.context().newCDPSession(page);
                 await session.send('Debugger.enable');
-                await dot.locator('..').locator('..').hover();
+                await selectedRow.hover();
             await dot.click();
                 await palette.getByRole('combobox', {name: 'Breakpoint mode', exact: true}).selectOption('debugger');
                 await palette.getByRole('button', {name: 'Save', exact: true}).click();
@@ -163,20 +167,28 @@ try {
                 await session.send('Debugger.disable');
                 await session.detach();
             }
-            await dot.locator('..').locator('..').hover();
+            await selectedRow.hover();
             await dot.click();
             await palette.getByRole('combobox', {name: 'Breakpoint mode', exact: true}).selectOption('');
             await palette.getByRole('button', {name: 'Save', exact: true}).click();
             await page.evaluate(() => window.app.data.setItem('name', 'Grace'));
             const splitter = palette.getByRole('separator');
             await splitter.focus(); await page.keyboard.press('ArrowDown');
-            assert.equal(await splitter.getAttribute('aria-valuenow'), '50');
+            const initialSize = Number(await splitter.getAttribute('aria-valuenow'));
+            await page.keyboard.press('ArrowDown');
+            assert.equal(Number(await splitter.getAttribute('aria-valuenow')), initialSize + 1);
             const splitBox = await splitter.boundingBox();
             await page.mouse.move(splitBox.x + 50, splitBox.y + 3); await page.mouse.down();
             await page.mouse.move(splitBox.x + 50, splitBox.y + 43, {steps:4}); await page.mouse.up();
-            assert.ok(Number(await splitter.getAttribute('aria-valuenow')) > 50);
-            const handle = palette.locator('gramlot-poc-palette .bar');
-            const dialog = palette.locator('gramlot-poc-palette');
+            assert.ok(Number(await splitter.getAttribute('aria-valuenow')) > initialSize + 1);
+            await splitter.focus(); await page.keyboard.press('Home');
+            const topSize = await palette.locator('gramlot-border-container').evaluate(el => el.shadowRoot.querySelector('#region-top').getBoundingClientRect().height);
+            assert.ok(topSize >= 60 && topSize <= 61, 'Home keeps the tree at its minimum size');
+            await page.keyboard.press('End');
+            const centerSize = await palette.locator('gramlot-border-container').evaluate(el => el.shadowRoot.querySelector('#region-center').getBoundingClientRect().height);
+            assert.ok(centerSize >= 59, 'End keeps the properties area accessible');
+            const handle = palette.locator('gramlot-floating-pane .titlebar');
+            const dialog = palette.getByRole('dialog', {name:'Gramlot inspector',exact:true});
             const initial = await dialog.boundingBox();
             await handle.focus();
             await page.keyboard.press('ArrowRight');
@@ -190,7 +202,7 @@ try {
             const dragged = await dialog.boundingBox();
             assert.equal(Math.round(dragged.x - moved.x), 60);
             assert.equal(Math.round(dragged.y - moved.y), 40);
-            const grip = await palette.getByLabel('Resize inspector: arrow keys').boundingBox();
+            const grip = await palette.getByLabel('Resize window').boundingBox();
             await page.mouse.move(grip.x + 8, grip.y + 8);
             await page.mouse.down();
             await page.mouse.move(dragged.x + dragged.width + 47, dragged.y + dragged.height + 37, {steps: 4});
@@ -199,57 +211,70 @@ try {
             assert.ok(resized.width > dragged.width + 30, `${name}: native width resize`);
             assert.ok(resized.height > dragged.height + 20, `${name}: native height resize`);
             const titleBox = await dialog.locator('.title').boundingBox();
-            const collapseBox = await dialog.locator('.collapse').boundingBox();
-            const closeBox = await dialog.locator('.close').boundingBox();
-            assert.equal(await dialog.locator('.title').evaluate(el=>getComputedStyle(el).textAlign), 'left');
+            const collapseBox = await dialog.getByRole('button', {name:'Collapse window',exact:true}).boundingBox();
+            const closeBox = await dialog.getByRole('button', {name:'Close window',exact:true}).boundingBox();
+            assert.ok(['left','start'].includes(await dialog.locator('.title').evaluate(el=>getComputedStyle(el).textAlign)));
             assert.ok(titleBox.x < collapseBox.x && collapseBox.x < closeBox.x, 'title left, collapse and close on the right');
-            assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).evaluate(el=>getComputedStyle(el).fontSize), '11px');
-            await palette.getByRole('button', {name:'Collapse inspector',exact:true}).click();
-            assert.equal(await dialog.evaluate(el=>el.collapsed), true);
-            assert.equal(await palette.getByRole('button', {name:'Expand inspector',exact:true}).getAttribute('aria-expanded'), 'false');
-            assert.ok((await dialog.boundingBox()).height < 30);
+            assert.equal(await palette.getByRole('tab', {name:'Data',exact:true}).evaluate(el=>getComputedStyle(el).fontSize), '12px');
+            await palette.getByRole('button', {name:'Collapse window',exact:true}).click();
+            assert.equal(await dialog.evaluate(el=>el.hasAttribute('data-collapsed')), true);
+            assert.equal(await palette.getByRole('button', {name:'Expand window',exact:true}).getAttribute('aria-expanded'), 'false');
+            assert.ok((await dialog.boundingBox()).height < 40);
             assert.equal(await palette.getByLabel('Value',{exact:true}).isVisible(), false);
-            assert.equal(await palette.getByLabel('Resize inspector: arrow keys').isVisible(), false);
+            assert.equal(await palette.getByLabel('Resize window').isVisible(), false);
             await page.evaluate(()=>window.app.data.setItem('name','Updated while collapsed'));
             await handle.focus();await page.keyboard.press('ArrowRight');
-            await palette.getByRole('button', {name:'Expand inspector',exact:true}).focus();await page.keyboard.press('Enter');
+            await palette.getByRole('button', {name:'Expand window',exact:true}).focus();await page.keyboard.press('Enter');
             const restored = await dialog.boundingBox();
             assert.equal(Math.round(restored.height),Math.round(resized.height));
             assert.equal(Math.round(restored.width),Math.round(resized.width));
             assert.equal(Math.round(restored.x - resized.x),10);
             assert.equal(await palette.getByLabel('Value',{exact:true}).inputValue(),'Updated while collapsed');
+            await handle.focus(); await page.keyboard.press('Home');
+            const reset = await dialog.boundingBox();
+            assert.equal(Math.round(reset.x), 16); assert.equal(Math.round(reset.y), 16);
+            const beforeDock = await dialog.boundingBox();
+            await page.evaluate(() => {window.draftElement = window.inspector.shadowRoot.querySelector('[aria-label=Value]'); window.draftElement.value = 'Uncommitted'; window.inspector.setAttribute('docked', '');});
+            await page.waitForFunction(() => document.querySelector('gramlot-tools-inspector').shadowRoot.querySelector('gramlot-floating-pane').shell.hasAttribute('data-docked'));
+            assert.equal(await page.evaluate(() => window.draftElement === window.inspector.shadowRoot.querySelector('[aria-label=Value]') && window.draftElement.value === 'Uncommitted'), true);
+            await page.evaluate(() => window.inspector.removeAttribute('docked'));
+            await page.waitForFunction(() => !document.querySelector('gramlot-tools-inspector').shadowRoot.querySelector('gramlot-floating-pane').shell.hasAttribute('data-docked'));
+            const afterDock = await dialog.boundingBox();
+            for (const key of ['x','y','width','height']) assert.ok(Math.abs(beforeDock[key] - afterDock[key]) < 1, `${name}: ${key} retained after docking`);
             await page.evaluate(()=>window.app.data.setItem('name','Grace'));
-            await palette.getByRole('button', {name: 'Close inspector', exact: true}).click();
+            await palette.getByRole('button', {name: 'Close window', exact: true}).click();
             assert.equal(await palette.count(), 0);
             await page.evaluate(() => document.body.append(window.inspector));
-            await palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]').click();
+            await palette.locator('gramlot-tree[data-root=data] [data-path=name]').click();
             assert.equal(await palette.getByLabel('Value', {exact:true}).inputValue(), 'Grace');
             assert.deepEqual(errors, []);
             if (name === 'chromium') await page.screenshot({path: join(tmpdir(), 'gramlot-tools-inspector.png')});
             await page.goto(`${url}?conditions`);
             await page.waitForFunction(() => window.ready);
-            const conditionalRow = palette.locator('gramlot-poc-tree[data-root=data] [data-node-path=name]');
+            const conditionalRow = palette.locator('gramlot-tree[data-root=data] [data-path=name] > .row');
             await conditionalRow.hover();
-            const conditionalDot = conditionalRow.getByRole('button', {name:'Breakpoint', exact:true});
+            const conditionalDot = palette.locator('gramlot-tree[data-root=data]').getByRole('button', {name:'Breakpoint', exact:true});
             await conditionalDot.click();
             await palette.getByLabel('Breakpoint mode').selectOption('console');
             await palette.getByLabel('Breakpoint condition').fill('value === "Grace"');
             await palette.getByRole('button', {name:'Save',exact:true}).click();
             await page.mouse.move(900,800);
-            assert.equal(await conditionalRow.locator('.actions').evaluate(el => getComputedStyle(el).opacity), '1');
-            assert.equal(await conditionalDot.evaluate(el => getComputedStyle(el, '::before').backgroundColor), 'rgb(249, 171, 0)');
+            assert.match(await conditionalRow.locator('.caption').textContent(), /◉/);
+            await conditionalRow.locator('.caption').getByText(/◉/).waitFor();
+            await conditionalRow.hover();
             await conditionalDot.click();
             await palette.getByLabel('Breakpoint condition').fill('');
             await palette.getByRole('button', {name:'Save',exact:true}).click();
             await page.mouse.move(900,800);
-            assert.equal(await conditionalDot.evaluate(el => getComputedStyle(el, '::before').backgroundColor), 'rgb(179, 38, 30)');
+            await conditionalRow.locator('.caption').getByText(/●/).waitFor();
+            await conditionalRow.hover();
             await conditionalDot.click();
             await palette.getByLabel('Breakpoint mode').selectOption('');
             await palette.getByRole('button', {name:'Save',exact:true}).click();
             await page.mouse.move(900,800);
-            assert.equal(await conditionalRow.locator('.actions').evaluate(el => getComputedStyle(el).opacity), '0');
+            assert.doesNotMatch(await conditionalRow.locator('.caption').textContent(), /[●◉]/);
             await conditionalRow.hover();
-            assert.equal(await conditionalDot.evaluate(el => getComputedStyle(el).color), 'rgb(128, 134, 139)');
+            assert.equal(await conditionalDot.getAttribute('aria-label'), 'Breakpoint');
             assert.deepEqual(errors, []);
             console.log(`${name}: PASS — Data/Source editing, console breakpoints, CSP rejection, keyboard/drag/resize, reconnect${name === 'chromium' ? ', debugger pause with writer stack' : ''}`);
         } finally { await browser.close(); }
