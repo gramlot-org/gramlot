@@ -43,7 +43,10 @@ const files = new Map([
 const server = createServer(async (request, response) => {
     if (request.url.startsWith('/layout/') || request.url.startsWith('/tree/')) {
         const [, collection, ...parts] = request.url.split('/');
-        try { response.writeHead(200, {'Content-Type':'text/javascript'}).end(await readFile(new URL(`../../../src/gramlot/collections/${collection}/assets/${parts.join('/')}`, import.meta.url))); }
+        try {
+            const content = await readFile(new URL(`../../../src/gramlot/collections/${collection}/assets/${parts.join('/')}`, import.meta.url));
+            response.writeHead(200, {'Content-Type':'text/javascript'}).end(content);
+        }
         catch { response.writeHead(404).end(); }
         return;
     }

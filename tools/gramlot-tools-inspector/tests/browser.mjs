@@ -44,7 +44,10 @@ const server = createServer(async (request, response) => {
         const base = resolve(fileURLToPath(new URL(`../../../src/gramlot/collections/${collection}/assets/`, import.meta.url)));
         const target = resolve(base, relative);
         if (!target.startsWith(base + '/')) { response.writeHead(404).end(); return; }
-        try { response.writeHead(200, {'Content-Type':'text/javascript'}).end(await readFile(target)); }
+        try {
+            const content = await readFile(target);
+            response.writeHead(200, {'Content-Type':'text/javascript'}).end(content);
+        }
         catch { response.writeHead(404).end(); }
         return;
     }
