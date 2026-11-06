@@ -139,7 +139,8 @@ export class BindingRuntime {
             const value = bag.node(segment)?.staticValue;
             if (!(value instanceof Bag)) break;
             const store = this.#collectionStores.get(value);
-            store?.receiveData(event, index + 1 < event.pathlist.length ? value.node(event.pathlist[index + 1]) : null);
+            store?.receiveData(event, index + 1 < event.pathlist.length ? value.node(event.pathlist[index + 1]) : null,
+                event.pathlist[index + 2] ?? null);
             bag = value;
         }
         this.router.deliver(event);

@@ -632,7 +632,7 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 **Composition.** Provide one inline struct or an external structure Bag via structpath. The frameGrid recipe supplies toolbar and search composition. Local editors use ordinary Source controls in an enclosing form session or a standalone session.
 
 
-**Limits and lifecycle.** Resident virtualization bounds rendered rows while the Bag stays resident. Windowed data needs a provider and local editing is resident-only. Local changes, drafts and errors survive viewport recycling. Database queries and durable writes belong to the application integration.
+**Limits and lifecycle.** Resident virtualization bounds rendered rows while the Bag stays resident. Windowed data needs a provider and local editing is resident-only. Local changes, drafts and errors survive viewport recycling. footer displays the footer row; column totals cover every resident row. Database queries and durable writes belong to the application integration.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
@@ -646,6 +646,15 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 | `structpath` | T | — | — | — |
 | `rowMode` | T | — | — | — |
 | `rowHeaders` | B | False | read | — |
+| `footer` | B / T | False | read | — |
+| `selectionMode` | T | 'multi' | read | — |
+| `selectedId` | T or None | None | write | — |
+| `selectedIndex` | L or None | None | write | — |
+| `selectedLabel` | T or None | None | write | — |
+| `selectedPkeys` | X or None | None | write | — |
+| `selectedRowidx` | T or None | None | write | — |
+| `selectedNodes` | X or None | None | write | — |
+| `selectedRowData` | X or None | None | write | — |
 | `rowResize` | B | False | read | — |
 | `selfDragRows` | B | False | read | — |
 | `sortedBy` | T | '' | read | — |
@@ -2669,9 +2678,9 @@ Children: `''`. Parents: `struct,colgroup`.
 **Composition.** Leaf declaration inside struct or colgroup, without a separate browser element.
 
 
-**Limits and lifecycle.** Field identity must be unique. Attribute names and values are validated. Formulas are outside the structure contract.
+**Limits and lifecycle.** Field identity must be unique. Attribute names and values are validated. formula, formula_<name>, calculated and hidden compute row fields (# and += per grid on its visible rows, never written; sorting, filtering or searching them is an error); totalize, footer_value and footer_format configure totals. Other unknown keywords are rejected. Formulas and totals are an intermediate implementation whose final placement (data level or grid) is under review.
 
-Additional positional arguments: `False`; additional keyword arguments: `False`.
+Additional positional arguments: `False`; additional keyword arguments: `True`.
 
 | Parameter | Passing | Type | Default | Constraints |
 | --- | --- | --- | --- | --- |
@@ -2688,6 +2697,13 @@ Additional positional arguments: `False`; additional keyword arguments: `False`.
 | `checked` | keyword_only | T | None | [] |
 | `checkedField` | keyword_only | T | None | [] |
 | `title` | keyword_only | T | None | [] |
+| `formula` | keyword_only | T | None | [] |
+| `calculated` | keyword_only | B | None | [] |
+| `hidden` | keyword_only | B | None | [] |
+| `totalize` | keyword_only | B / T | None | [] |
+| `footer_value` | keyword_only | T | None | [] |
+| `footer_format` | keyword_only | T | None | [] |
+| `attr` | var_keyword | {"kind":"any"} | **required** | [] |
 
 ### `colgroup`
 

@@ -54,7 +54,16 @@ th:has(.column-filter){padding-inline-end:28px}
         background: var(--gramlot-grid-header-background, var(--gramlot-surface-subtle, ButtonFace));
         border-block-end: 1px solid var(--gramlot-grid-border-color, var(--gramlot-border, ButtonBorder));
     }
-    .header-viewport { overflow: hidden; min-inline-size: 0; }
+    .header-viewport, .footer-viewport { overflow: hidden; min-inline-size: 0; }
+    .footer-frame {
+        flex: none;
+        min-inline-size: 0;
+        padding-inline-end: var(--grid-scrollbar-width, 0px);
+        background: var(--gramlot-grid-header-background, var(--gramlot-surface-subtle, ButtonFace));
+        border-block-start: 1px solid var(--gramlot-grid-border-color, var(--gramlot-border, ButtonBorder));
+        font-weight: var(--gramlot-grid-header-weight, 600);
+    }
+    .footer-frame td[aria-invalid=true] { color: var(--gramlot-error, #b3261e); }
     .body-frame {
         flex: 1 1 auto;
         min-block-size: 0;
@@ -174,6 +183,7 @@ th:has(.column-filter){padding-inline-end:28px}
     .cell-scroll:focus-visible { outline: 1px solid var(--gramlot-focus-ring, Highlight); outline-offset: -1px; }
     tbody tr { background: var(--gramlot-grid-background, var(--gramlot-surface, Canvas)); }
     tbody tr.alternate { background: var(--gramlot-grid-row-alt-background, var(--gramlot-surface-subtle, Canvas)); }
+    tbody tr[aria-selected=true] { background: var(--gramlot-grid-selected-background, var(--gramlot-selected, Highlight)); }
     tbody tr:hover { background: var(--gramlot-grid-row-hover-background, var(--gramlot-selected, Highlight)); }
     th[data-field] { padding-inline-end: 14px; cursor: grab; user-select: none; }
     th[data-field]:hover { background-color: color-mix(in srgb, var(--gramlot-grid-header-background) 92%, var(--gramlot-grid-header-color)); }
@@ -229,5 +239,8 @@ th:has(.column-filter){padding-inline-end:28px}
     tbody tr[data-row-drop=before] > * { box-shadow: inset 0 2px var(--gramlot-focus-ring, Highlight); }
     tbody tr[data-row-drop=after] > * { box-shadow: inset 0 -2px var(--gramlot-focus-ring, Highlight); }
     .numeric { font-variant-numeric: tabular-nums; }
+    tbody .filtered-numbering {
+        background: var(--gramlot-grid-filtered-numbering-background, var(--gramlot-warning-background, Mark));
+    }
     .empty { text-align: center; color: var(--gramlot-text-secondary, GrayText); }
 `;

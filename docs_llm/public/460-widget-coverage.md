@@ -711,9 +711,9 @@ The three Grid authoring declarations below are additional Source grammar, exclu
 
 ### `column`
 
-**Implementation:** [grid-struct.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/binding/grid-struct.js), [grid-structure.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/grid-structure.js), [grid-grammar.json](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/grid-grammar.json).
+**Implementation:** [grid-struct.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/binding/grid-struct.js), [grid-structure.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/grid-structure.js), [grid-grammar.json](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/grid-grammar.json), [grid-formulas.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/grid-formulas.js), [grid-footer.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/grid-footer.js).
 
-**Tests inspected:** [test_grid_authoring.py](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/tests/test_grid_authoring.py), [grid-components.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/grid-components.test.js), [grid-editing.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/grid-editing.test.js).
+**Tests inspected:** [test_grid_authoring.py](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/tests/test_grid_authoring.py), [grid-components.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/grid-components.test.js), [grid-editing.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/grid-editing.test.js), [grid-formulas.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/grid-formulas.test.js).
 
 ### `colgroup`
 

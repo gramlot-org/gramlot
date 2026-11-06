@@ -13,7 +13,10 @@ function structureData(source) {
         node.builder.validateNode(node);
         if (node.nodeTag !== 'column' || node.staticValue != null) throw new TypeError('grid column must be a scalar declaration');
         const attrs = {tag:'cell'};
-        for (const key of ['field', 'name', 'title', 'dtype', 'width', 'align', 'format', 'white_space', 'max_height', 'edit', 'check', 'checked', 'checkedField']) {
+        const keys = ['field', 'name', 'title', 'dtype', 'width', 'align', 'format', 'white_space', 'max_height', 'edit', 'check', 'checked', 'checkedField',
+            'formula', 'calculated', 'hidden', 'totalize', 'footer_value', 'footer_format',
+            ...Object.keys(node.getAttr()).filter(key => key.startsWith('formula_'))];
+        for (const key of keys) {
             if (node.getAttr(key) != null) attrs[key] = node.getAttr(key);
         }
         const label = `cell_${attrs.field}`;

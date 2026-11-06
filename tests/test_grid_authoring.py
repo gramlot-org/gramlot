@@ -37,10 +37,31 @@ def test_row_representation_and_data_path_are_explicit(attrs):
         builder().root.grid(**attrs)
 
 
-def test_struct_rejects_undeclared_formula_in_this_increment():
+def test_formula_and_totals_are_declared_as_in_javascript():
+    g = builder().root.grid(storepath="rows", rowMode="values", footer="Total")
+    s = g.struct()
+    total = s.column("total", formula="quantity * price * rate", formula_rate="^.rate",
+                     calculated=True, totalize=True, footer_format="#,##0.00")
+    s.column("position", formula="#", hidden=True)
+    s.column("share", formula="%=total", totalize=".summary.share", footer_value="%")
+    assert g.attr["footer"] == "Total"
+    assert total.attr["formula_rate"] == "^.rate"
+    assert total.attr["calculated"] is True
+
+
+@pytest.mark.parametrize("attrs", [{"sum": True}, {"formula-rate": 1}, {"formulas_rate": 1}, {"formula_": 1}])
+def test_column_rejects_unknown_attributes_except_formula_parameters(attrs):
+    s = builder().root.grid(storepath="rows", rowMode="values").struct()
+    assert s.column("total", formula="a * rate", formula_rate=2).attr["formula_rate"] == 2
+    with pytest.raises((TypeError, ValueError), match="unknown attribute"):
+        s.column("other", formula="a * rate", **attrs)
+
+
+@pytest.mark.parametrize("attrs", [{"calculated": "yes"}, {"hidden": 1}, {"totalize": 3}, {"footer_format": 2}])
+def test_formula_options_are_checked_during_authoring(attrs):
     s = builder().root.grid(storepath="rows", rowMode="values").struct()
     with pytest.raises((TypeError, ValueError)):
-        s.column("total", formula="quantity * price")
+        s.column("total", formula="quantity * price", **attrs)
 
 
 @pytest.mark.parametrize("attrs", [{"dtype": "UNKNOWN"}, {"align": "left"}, {"width": "wide"}])
@@ -79,3 +100,10 @@ def test_column_max_height_is_a_shared_struct_option(height):
 def test_column_max_height_rejects_unsupported_lengths(height):
     with pytest.raises((TypeError, ValueError)):
         builder().root.grid(storepath="rows", rowMode="values").struct().column("notes", max_height=height)
+
+
+def test_selection_mode_and_publication_paths_are_declared():
+    g = builder().root.grid(storepath="rows", rowMode="values", selectionMode="multi", selectedId="^.id",
+                            selectedIndex="^.index", selectedPkeys="^.pkeys", selectedNodes="^.nodes")
+    assert g.attr["selectionMode"] == "multi"
+    assert g.attr["selectedNodes"] == "^.nodes"

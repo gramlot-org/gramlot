@@ -51,6 +51,29 @@ Counts apply all criteria except the popup column's own selection. Selected valu
 
 Selections live in the Source-owned collection view: `columnFilter(field)` reads them, `applyColumnFilter(field, values)` accepts an array or null to remove the criterion, and `columnFacets(field)` returns `{key, value, count, selected}` entries. Numeric and text identities remain distinct. Only loaded scalar fields in complete resident stores are supported; windowed grids are rejected. Date periods, aggregate-cell membership and remote facets remain separate work.
 
+### Row formulas and footer totals
+
+This is an intermediate implementation. The final placement of row formulas and totals, at the data level or in the grid, is under review; the attributes below may move.
+
+A data formula computes its field for every resident row and writes the result into the row Bag, so every grid and form on the same Bag sees it. Formula identifiers resolve to row fields and to `formula_<name>` parameters. A parameter written `^path` recalculates the formula when that Data changes; `=path` reads the current value without triggering; any other value is a literal. Paths resolve relative to the grid Source.
+
+[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-grid).
+
+- `calculated=True` computes a data formula when the grid configures; otherwise it first runs when a dependency changes.
+- Formulas run in dependency order; a dependency cycle rejects the structure.
+- A formula recalculates when a committed value reaches the row Bag. Editing drafts do not trigger it.
+- `hidden=True` hides a column; its formula still calculates.
+- `#` (row number, from 1) and `+=field` (running sum) are view values: each grid computes them on the visible rows of its own view, in view order, and never writes them into the row Bag. A formula depending on a `#` or `+=` column is a view value too. While a filter, column filter or search is active, these cells and the `rowHeaders` numbers get the `filtered-numbering` class, with the `--gramlot-grid-filtered-numbering-background` theme color, because the numbering covers only the visible rows.
+- Sorting, column-filtering or searching by a view value is an error: it derives from the order and has no stored field. View columns get no column filter button and are not offered by search. Totals of a view column sum its visible values.
+- `%=field` (percentage of the column total over every resident row) is a data value written into the row Bag.
+- An arithmetic formula (fields, numeric literals, `+ - * / % **` and parentheses) is evaluated without compiling code: with JavaScript number semantics on plain numbers, exactly when a referenced value is a Decimal. It works from an inline `struct` and from a `structpath` Bag.
+- Any other formula is a JavaScript expression compiled as inline code: it runs only when declared in an inline `struct` received with the Source, and a page CSP without `'unsafe-eval'` blocks it. Over Decimal values only arithmetic formulas are supported.
+- Formula results and published totals are derived values: an editing session never counts them as changes, and restoring the session recomputes them.
+- A null referenced value gives null. A failing formula writes null and keeps its error per field (`formulaErrors` of the grid element). An unchanged result is not written.
+- A column accepts its declared attributes and `formula_<name>` keywords only; any other keyword is rejected while authoring.
+
+Set grid `footer=True`, or a caption text, to display a footer row. A column `totalize=True` sums its field over every resident row, not only the displayed ones, and publishes the total to `.totalize.<field>` relative to the grid Source; a text value is the Data path to use. Booleans count as 0/1. Totals are published also without the footer row. `footer_value` is a fixed footer text, `footer_format` the footer number format. A total that cannot be computed is published as null, shows `—` with the error as tooltip and is kept in `totalErrors` of the grid element. Filtered totals are not published.
+
 ### Viewport outputs and editing events
 
 `rowHeaders`, `rowResize` and `selfDragRows` enable their respective row affordances. `sortedBy` and `filter` are read inputs. For a windowed store, `windowInfo` and `loading` describe provider state, while bound `viewport` writes requested `{start, count}` and `sortRequest` writes an ordering request. Wire these outputs to the intended store/provider rather than loading every record in response to scrolling. A resident Bag, a cached remote selection and an authorized database query have different capabilities. Neither the grid nor an ordinary endpoint implies SQL or Asqueel access.
@@ -60,6 +83,30 @@ Enable local editing with `column(..., edit=True)` or an editor-options dictiona
 ### `searchBox` and `frameGrid`
 
 Use `searchBox` for the grid's filtering UI. It requires a FrameGrid target resolved through Source context; it is not a free-standing text field with a `value` binding. The Python `frameGrid(...)` composition exposes `.grid`, `.top`, `.bottom`, `.left` and `.right`; put the search control in its toolbar. `frameGrid` is a helper, not another widget tag.
+
+`frameGrid(...)` routes its keywords by list. An unprefixed keyword that the grid declares as a parameter (`footer`, `rowHeaders`, `rowResize`, `selfDragRows`, `sortedBy`, `filter`, `columnFilters`, `selectionMode`, …) or as a parameter family (`selected_<field>`) goes to the grid; `storepath`, `rowMode` and `structpath` also go to the grid. Every other keyword (`datapath`, `node_label`, `id`, `height`, style attributes, …) goes to the frame, as does a name that the frame also accepts. `grid_<name>` forces any attribute onto the grid (for example `grid_datapath`, `grid_height`, `grid_class` or a style attribute) and `frame_<name>` onto the frame; the prefix is removed. Giving the same name twice (`footer` and `grid_footer`, `storepath` and `grid_storepath`) is an error. `grid_node_label`, `grid_frameTarget` and `grid_nodeId` are errors because frameGrid composes those grid attributes. The list follows the grid's declared parameters, so a new grid parameter is routed without changing `frameGrid`.
+
+[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-grid).
+
+`frameGrid(...)` also composes toolbar tools, each a Boolean switch like `searchOn`. Each tool is a toolbar `menuline` with a command of the `grid` namespace, delivered to the frame's target grid:
+
+- `export=True` (`grid:export`): an Export menu that downloads the visible rows, in view order with the current filter, and the visible columns, as `<grid label>.<extension>`. A list such as `export="csv,json"` restricts the formats. Formats: CSV (column captions, then the values as the grid shows them); JSON (an array of objects keyed by field with raw values, converted as the groupBox Copy JSON); TYTX (a typed Bag of the rows); XML (the same Bag under a `GenRoBag` root, values as text without type markers); Excel (an XLSX sheet with bold captions and typed number, date, boolean and text cells, written by the `write-excel-file` engine loaded on first use). TYTX and XML keep the row labels; values rows become nested Bags, attribute rows keep their fields as attributes.
+- `printRows=True` (`grid:printRows`): prints the visible rows as a plain table.
+- `advancedTools=True`: an "Advanced tools" menu. It contains `grid:lineNumbers`, which shows or hides the row numbers (`rowHeaders`; a `^` pointer writes Data, a literal changes the grid Source), and repeats the Export menu and print when they are enabled.
+- `addrow=True` (`grid:addrow`): appends a row to the store Bag; `addrow_defaults` gives its initial values. Formulas, totals and the editing session see it like any other row change.
+- `gridsemaphore=True`: an `editingStatus` in the toolbar. The frame becomes the form whose session the grid uses, so it requires the frameGrid's own `datapath`.
+
+- `duprow=True` (`grid:duprow`) appends a copy of each selected row with a new identity; `delrow=True` (`grid:delrow`) removes the selected rows. Both go through the store Bag, so formulas, totals and the editing session react.
+
+`addrow`, `duprow`, `delrow` and `gridsemaphore` require at least one editable column; `duprow` and `delrow` also require a selection mode. Otherwise the grid reports an error when it configures. Batch assignment is not available.
+
+### Row selection
+
+`selectionMode` is `none`, `single` or `multi` (default). In `single` mode a click selects a row and Up/Down move the current row. In `multi` mode Ctrl/Cmd+click toggles a row, Shift+click selects the range from the anchor row, Shift+Up/Down extend it and Ctrl/Cmd+A selects every visible row. Double-click, Enter and F2 still open a cell editor; while an editor is open the arrow keys move between editors and do not change the selection. Selected rows carry `aria-selected="true"` and the `selected-row` part; a `multi` grid has `aria-multiselectable`.
+
+The identity of a row is its node label. Each publication path is written only when declared, with the legacy meaning: `selectedId` (current row identity), `selectedIndex` (its view index), `selectedLabel`, `selectedPkeys` (list of the selected identities), `selectedRowidx` (their store positions, comma-separated), `selectedNodes` (a Bag of the selected rows with a `count` attribute), `selectedRowData` (a Bag with the current row values) and `selected_<field>` (distinct values of the field, comma-separated). The grid always writes `.selectionLength` and publishes `onSelectedRow` with `idx`, `selectedId` and `selectedPkeys`. A sort keeps the selection; a row excluded by a filter or removed leaves it. The published selection, like formula results and totals, is never an editing-session change. `frameGrid` sets `selectedId='^.selectedId'` when it has its own `datapath`. `selected_<field>` is a parameter family declared by the grid, so `frameGrid` routes it to the grid without a prefix.
+
+[Code for this composition is in the appendix](465-widget-examples.md#gc-465-setup-grid).
 
 `searchLiteral=True` treats text punctuation literally instead of as a regular expression; accepted queries keep their original text. The column-filter popup uses this same searchBox and its shared theme CSS inside a frameGrid, without a separate input or search handler.
 
@@ -123,7 +170,7 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 **Composition.** Provide one inline struct or an external structure Bag via structpath. The frameGrid recipe supplies toolbar and search composition. Local editors use ordinary Source controls in an enclosing form session or a standalone session.
 
 
-**Limits and lifecycle.** Resident virtualization bounds rendered rows while the Bag stays resident. Windowed data needs a provider and local editing is resident-only. Local changes, drafts and errors survive viewport recycling. Database queries and durable writes belong to the application integration.
+**Limits and lifecycle.** Resident virtualization bounds rendered rows while the Bag stays resident. Windowed data needs a provider and local editing is resident-only. Local changes, drafts and errors survive viewport recycling. footer displays the footer row; column totals cover every resident row. Database queries and durable writes belong to the application integration.
 
 | Specific parameter | Type | Default | Binding | Constraints |
 | --- | --- | --- | --- | --- |
@@ -137,6 +184,15 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 | `structpath` | T | — | — | — |
 | `rowMode` | T | — | — | — |
 | `rowHeaders` | B | False | read | — |
+| `footer` | B / T | False | read | — |
+| `selectionMode` | T | 'multi' | read | — |
+| `selectedId` | T or None | None | write | — |
+| `selectedIndex` | L or None | None | write | — |
+| `selectedLabel` | T or None | None | write | — |
+| `selectedPkeys` | X or None | None | write | — |
+| `selectedRowidx` | T or None | None | write | — |
+| `selectedNodes` | X or None | None | write | — |
+| `selectedRowData` | X or None | None | write | — |
 | `rowResize` | B | False | read | — |
 | `selfDragRows` | B | False | read | — |
 | `sortedBy` | T | '' | read | — |
@@ -222,9 +278,9 @@ Children: `''`. Parents: `struct,colgroup`.
 **Composition.** Leaf declaration inside struct or colgroup, without a separate browser element.
 
 
-**Limits and lifecycle.** Field identity must be unique. Attribute names and values are validated. Formulas are outside the structure contract.
+**Limits and lifecycle.** Field identity must be unique. Attribute names and values are validated. formula, formula_<name>, calculated and hidden compute row fields (# and += per grid on its visible rows, never written; sorting, filtering or searching them is an error); totalize, footer_value and footer_format configure totals. Other unknown keywords are rejected. Formulas and totals are an intermediate implementation whose final placement (data level or grid) is under review.
 
-Additional positional arguments: `False`; additional keyword arguments: `False`.
+Additional positional arguments: `False`; additional keyword arguments: `True`.
 
 | Parameter | Passing | Type | Default | Constraints |
 | --- | --- | --- | --- | --- |
@@ -241,6 +297,13 @@ Additional positional arguments: `False`; additional keyword arguments: `False`.
 | `checked` | keyword_only | T | None | [] |
 | `checkedField` | keyword_only | T | None | [] |
 | `title` | keyword_only | T | None | [] |
+| `formula` | keyword_only | T | None | [] |
+| `calculated` | keyword_only | B | None | [] |
+| `hidden` | keyword_only | B | None | [] |
+| `totalize` | keyword_only | B / T | None | [] |
+| `footer_value` | keyword_only | T | None | [] |
+| `footer_format` | keyword_only | T | None | [] |
+| `attr` | var_keyword | {"kind":"any"} | **required** | [] |
 
 ### `colgroup`
 

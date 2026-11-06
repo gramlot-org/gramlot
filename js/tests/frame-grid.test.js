@@ -282,3 +282,56 @@ test('chart options use the frame Data scope and shared chartPane', async () => 
         assert.equal(invalid.source.getNodes().length,0);
     }
 });
+
+const ROUTED = {storepath:'.rows', rowMode:'values', datapath:'orders', footer:true, rowHeaders:true, sortedBy:'name:a',
+    grid_datapath:'.inner', grid_height:'80%', grid_class:'compact', frame_height:'300px', frame_persist:true};
+
+test('frameGrid routes grid parameters to the grid; grid_ and frame_ force the target', () => {
+    const b = new GramlotBuilder(null, {collections});
+    const frame = b.root.frameGrid({...ROUTED});
+    const attrs = frame.grid.getAttr();
+    assert.deepEqual({footer:attrs.footer, rowHeaders:attrs.rowHeaders, sortedBy:attrs.sortedBy, datapath:attrs.datapath},
+        {footer:true, rowHeaders:true, sortedBy:'name:a', datapath:'.inner'});
+    assert.equal(attrs.height, '80%');
+    assert.equal(attrs.class, 'compact');
+    assert.equal(frame.getAttr('datapath'), 'orders');
+    assert.equal(frame.getAttr('height'), '300px');
+    assert.equal(frame.getAttr('persist'), true);
+    for (const name of ['footer', 'rowHeaders', 'sortedBy']) assert.equal(Object.hasOwn(frame.getAttr(), name), false, name);
+});
+
+test('frameGrid routing rejects duplicates and names composed by frameGrid', () => {
+    const b = new GramlotBuilder(null, {collections});
+    assert.throws(() => b.root.frameGrid({storepath:'rows', rowMode:'values', footer:true, grid_footer:false}), /'footer' is given twice/);
+    assert.throws(() => b.root.frameGrid({storepath:'rows', rowMode:'values', height:'1px', frame_height:'2px'}), /'height' is given twice/);
+    assert.throws(() => b.root.frameGrid({storepath:'rows', rowMode:'values', grid_storepath:'other'}), /'storepath' is given twice/);
+    assert.throws(() => b.root.frameGrid({storepath:'rows', rowMode:'values', structpath:'a', grid_structpath:'b'}), /'structpath' is given twice/);
+    for (const key of ['grid_node_label', 'grid_frameTarget', 'grid_nodeId']) {
+        assert.throws(() => b.root.frameGrid({storepath:'rows', rowMode:'values', [key]:'x'}), new RegExp(`'${key}' is composed by frameGrid`));
+    }
+});
+
+test('Python and JS frameGrid route the same keywords to the same nodes', () => {
+    const wire = execFileSync(process.env.GRAMLOT_TEST_PYTHON ?? 'python3', ['-c', `
+from gramlot import GramlotBuilder
+from importlib.resources import files
+import json
+b=GramlotBuilder(collections=[json.loads(files('gramlot').joinpath('collections/'+name+'.json').read_text()) for name in ['layout','grid']])
+b.root.frameGrid(**json.loads(${JSON.stringify(JSON.stringify(ROUTED))}))
+print(b.to_tytx())
+`], {encoding: 'utf8'}).trim();
+    const b = new GramlotBuilder(null, {collections});
+    b.root.frameGrid({...ROUTED});
+    const shape = bag => bag.getNodes().map(node => ({label: node.label, tag: node.nodeTag,
+        attrs: node.getAttr(), children: node.staticValue instanceof SourceBag ? shape(node.staticValue) : node.staticValue}));
+    assert.deepEqual(shape(fromTytx(wire)), shape(b.source));
+});
+
+test('frameGrid routes the declared selected_<field> family to the grid', () => {
+    const b = new GramlotBuilder(null, {collections});
+    const frame = b.root.frameGrid({datapath:'model', storepath:'.rows', rowMode:'values', selected_kind:'^.kinds', grid_selected_name:'^.names'});
+    assert.equal(frame.grid.getAttr('selected_kind'), '^.kinds');
+    assert.equal(frame.grid.getAttr('selected_name'), '^.names');
+    assert.equal(Object.hasOwn(frame.getAttr(), 'selected_kind'), false);
+    assert.equal(b.schema.grid._meta.parameterPattern, '^selected_[A-Za-z_][A-Za-z0-9_]*$');
+});

@@ -533,6 +533,34 @@ struct.column("john", name="John", check="multiple",
 ```
 
 
+A data formula computes its field for every resident row and writes the result into the row Bag, so every grid and form on the same Bag sees it. Formula identifiers resolve to row fields and to `formula_<name>` parameters. A parameter written `^path` recalculates the formula when that Data changes; `=path` reads the current value without triggering; any other value is a literal. Paths resolve relative to the grid Source.
+```python
+struct.column("quantity", dtype="L", edit=True)
+struct.column("price", dtype="N")
+struct.column("total", dtype="N", formula="quantity * price * (1 + vat / 100)",
+              formula_vat="^.vat", calculated=True, totalize=True)
+struct.column("position", formula="#")
+struct.column("running", dtype="N", formula="+=total")
+struct.column("share", dtype="N", formula="%=total", footer_format="0.00")
+```
+
+
+`frameGrid(...)` routes its keywords by list. An unprefixed keyword that the grid declares as a parameter (`footer`, `rowHeaders`, `rowResize`, `selfDragRows`, `sortedBy`, `filter`, `columnFilters`, `selectionMode`, …) or as a parameter family (`selected_<field>`) goes to the grid; `storepath`, `rowMode` and `structpath` also go to the grid. Every other keyword (`datapath`, `node_label`, `id`, `height`, style attributes, …) goes to the frame, as does a name that the frame also accepts. `grid_<name>` forces any attribute onto the grid (for example `grid_datapath`, `grid_height`, `grid_class` or a style attribute) and `frame_<name>` onto the frame; the prefix is removed. Giving the same name twice (`footer` and `grid_footer`, `storepath` and `grid_storepath`) is an error. `grid_node_label`, `grid_frameTarget` and `grid_nodeId` are errors because frameGrid composes those grid attributes. The list follows the grid's declared parameters, so a new grid parameter is routed without changing `frameGrid`.
+```python
+frame = pane.frameGrid(storepath=".rows", rowMode="values", datapath="orders",
+                       footer=True, rowHeaders=True, grid_class="compact", frame_height="300px")
+```
+
+
+The identity of a row is its node label. Each publication path is written only when declared, with the legacy meaning: `selectedId` (current row identity), `selectedIndex` (its view index), `selectedLabel`, `selectedPkeys` (list of the selected identities), `selectedRowidx` (their store positions, comma-separated), `selectedNodes` (a Bag of the selected rows with a `count` attribute), `selectedRowData` (a Bag with the current row values) and `selected_<field>` (distinct values of the field, comma-separated). The grid always writes `.selectionLength` and publishes `onSelectedRow` with `idx`, `selectedId` and `selectedPkeys`. A sort keeps the selection; a row excluded by a filter or removed leaves it. The published selection, like formula results and totals, is never an editing-session change. `frameGrid` sets `selectedId='^.selectedId'` when it has its own `datapath`. `selected_<field>` is a parameter family declared by the grid, so `frameGrid` routes it to the grid without a prefix.
+```python
+frame = pane.frameGrid(storepath=".rows", rowMode="values", datapath="orders",
+                       export=True, printRows=True, advancedTools=True,
+                       addrow=True, addrow_defaults={"quantity": 1}, duprow=True, delrow=True,
+                       gridsemaphore=True, selectionMode="multi", selectedPkeys="^.selection")
+```
+
+
 
 <a id="gc-465-grid"></a>
 ### `grid`

@@ -33,6 +33,8 @@ export class EditingSession {
         this.validationRevision = 0;
         this.validatedRevision = -1;
         this.fullValidation = null;
+        this.derived = new Set(); // predicates of derived paths, never changes
+
         if (!(this.data instanceof Bag)) throw new TypeError('A form requires a Bag at its datapath.');
         this.registers.setItem('baseline', copy(this.data));
         for (const name of ['changes', 'errors', 'pending', 'drafts']) this.registers.setItem(name, new Bag());
@@ -55,6 +57,32 @@ export class EditingSession {
         }
     }
     get data() { return this.runtime.gramlot.data.getItem(this.path); }
+    /**
+     * Declare derived values (grid formula results, published totals): `match(path)` receives a path
+     * relative to the session, `<path>?<attribute>` for an attribute. Derived values are never changes.
+     * Returns the release.
+     */
+    registerDerived(match) {
+        this.derived.add(match);
+        this.updateChanges();
+        // Releasing recomputes nothing: later Data events reconcile only their own subtree.
+        return () => { this.derived.delete(match); };
+    }
+    isDerived(path) {
+        for (const match of this.derived) if (match(path)) return true;
+        return false;
+    }
+    /** The attributes of the node at `path` that are not derived. */
+    ownAttributes(node, path) {
+        return Object.fromEntries(Object.entries(node.attr).filter(([name]) => !this.isDerived(`${path}?${name}`)));
+    }
+    /** A node, possibly absent, that holds only derived values. */
+    onlyDerived(node, path) {
+        if (!node) return true;
+        if (Object.keys(this.ownAttributes(node, path)).length) return false;
+        if (node.value instanceof Bag) return node.value.getNodes().every(child => this.onlyDerived(child, path ? `${path}.${child.label}` : child.label));
+        return this.isDerived(path);
+    }
     subscribe(listener) { this.listeners.add(listener); return () => this.listeners.delete(listener); }
     /** Read-only reports derived from the canonical registers, never a second journal. */
     get errorEntries() {
@@ -398,13 +426,17 @@ export class EditingSession {
         const relative = changedPath === this.path ? '' : changedPath?.startsWith(this.path + '.')
             ? changedPath.slice(this.path.length + 1).split('?')[0] : '';
         const visit = (a, b, path) => {
-            if (a && b && a.value instanceof Bag && b.value instanceof Bag && same(a.attr,b.attr)) {
+            if (path && this.isDerived(path)) return;
+            const attrsA = a && this.ownAttributes(a, path), attrsB = b && this.ownAttributes(b, path);
+            if (a && b && a.value instanceof Bag && b.value instanceof Bag && same(attrsA,attrsB)) {
                 const labels = new Set([...a.value.getNodes(), ...b.value.getNodes()].map(n => n.label));
                 for (const label of labels) visit(a.value.getNode(label), b.value.getNode(label), path ? path + '.' + label : label);
-            } else if (!a || !b || !same([a.value,a.attr],[b.value,b.attr])) {
+            } else if (a && b ? !same([a.value,attrsA],[b.value,attrsB])
+                // A node appearing or disappearing with derived values only is not an edit.
+                : !(this.onlyDerived(a, path) && this.onlyDerived(b, path))) {
                 changes.setItem(encoded(path), new Bag({path, existed:Boolean(a), exists:Boolean(b),
                     previous:a ? copy(a.value) : null, current:b ? copy(b.value) : null,
-                    previousAttributes:a ? copy(a.attr) : null, currentAttributes:b ? copy(b.attr) : null}));
+                    previousAttributes:a ? copy(attrsA) : null, currentAttributes:b ? copy(attrsB) : null}));
             }
         };
         const baseline = this.registers.getItem('baseline');
