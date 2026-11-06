@@ -46,7 +46,7 @@ export function ChoiceEditor(HTMLElement) {
             this.toggle.addEventListener('mousedown', event => event.preventDefault());
             this.toggle.addEventListener('click', () => {
                 if (this.locked) return;
-                this.control.focus();
+                this.control.focus({preventScroll: true});
                 if (this.#opened) this.closeChoices(); else this.search('');
             });
             this.choices.addEventListener('mousedown', event => event.preventDefault());

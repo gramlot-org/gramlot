@@ -16,7 +16,7 @@ for (const folder of ['js/dist', 'src/gramlot/resources']) {
         runtimes.push(`/${path}`);
     }
     const collectionRoot = folder === 'js/dist' ? 'js/dist/components' : 'src/gramlot/collections';
-    for (const name of ['inputs', 'layout']) {
+    for (const name of ['tree', 'inputs', 'layout']) {
         const assets = `${collectionRoot}/${name}/assets`;
         for (const file of await readdir(new URL(`../${assets}/`, import.meta.url), {recursive: true})) {
             if (!file.endsWith('.js')) continue;
@@ -53,10 +53,11 @@ try {
                 const result = await page.evaluate(async artifact => {
                     const map = document.createElement('script');
                     map.type = 'importmap';
-                    map.textContent = JSON.stringify({imports:{'@gramlot/gramlot':artifact, '@gramlot/gramlot/components':artifact}});
+                    const directory = artifact.startsWith('/js/') ? '/js/dist/components' : '/src/gramlot/collections';
+                    map.textContent = JSON.stringify({imports:{'@gramlot/gramlot':artifact,
+                        '@gramlot/gramlot/components':artifact, '@gramlot/collections/tree':`${directory}/tree/assets/index.js`}});
                     document.head.append(map);
                     const {Gramlot, GramlotBuilder, Bag} = await import(artifact);
-                    const directory = artifact.startsWith('/js/') ? '/js/dist/components' : '/src/gramlot/collections';
                     const {default: inputs} = await import(`${directory}/inputs/assets/index.js`);
                     const {default: layout} = await import(`${directory}/layout/assets/index.js`);
                     inputs.register(window); layout.register(window);

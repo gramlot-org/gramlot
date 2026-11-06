@@ -1,3 +1,4 @@
+import {fixtureCollectionResource} from './fixture_collection_resources.mjs';
 /** Real-browser check of the page logic forms on the JavaScript and Python GramlotFileServer.
  * Usage: node scripts/verify_page_module_browser.mjs PYTHON PLAYWRIGHT_ENTRY [ENGINE …]
  * Build the runtime first (npm --prefix js run build). Both loopback hosts serve the
@@ -64,6 +65,7 @@ import asyncio, json, sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from gramlot.server import GramlotFileServer, PageNotFound
+from fixture_collection_resources import fixture_collection_resource
 pages, runtime, csp = Path(sys.argv[1]), Path(sys.argv[2]).read_bytes(), sys.argv[3]
 # These hosts serve no /themes/: the pages load no base theme.
 server = GramlotFileServer(pages, css_theme=False)
@@ -81,6 +83,9 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == server.runtime_url:
             return self.reply(200, runtime, "text/javascript")
         if self.path.endswith((".js", ".css")):
+            collection = fixture_collection_resource(self.path)
+            if collection is not None:
+                return self.reply(200, collection, "text/javascript" if self.path.endswith(".js") else "text/css")
             filename = (pages / self.path.lstrip("/")).resolve()
             if filename.is_relative_to(pages.resolve()) and filename.is_file():
                 kind = "text/javascript" if self.path.endswith(".js") else "text/css"
@@ -115,6 +120,8 @@ async function nodeHost(pages, runtime) {
         try {
             if (request.method === 'GET' && request.url === server.runtimeUrl) return reply(200, runtime, 'text/javascript');
             if (request.method === 'GET' && /\.(js|css)$/.test(request.url)) {
+                const collection = await fixtureCollectionResource(request.url);
+                if (collection !== null) return reply(200, collection, request.url.endsWith('.js') ? 'text/javascript' : 'text/css');
                 const filename = join(pages, ...request.url.split('/').filter(Boolean));
                 try { await server.url(filename); }
                 catch { return reply(404, 'Not found', 'text/plain'); }
@@ -143,7 +150,7 @@ async function nodeHost(pages, runtime) {
 
 function pythonHost(pages) {
     const child = spawn(python, ['-c', PYTHON_HOST, pages, RUNTIME, CSP], {
-        env: {...process.env, PYTHONPATH: join(root, 'src')}, stdio: ['ignore', 'pipe', 'inherit'],
+        env: {...process.env, PYTHONPATH: [join(root, 'src'), join(root, 'tests')].join(':')}, stdio: ['ignore', 'pipe', 'inherit'],
     });
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(Error('Python host startup timed out')), 10000);

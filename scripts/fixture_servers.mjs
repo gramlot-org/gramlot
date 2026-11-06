@@ -1,3 +1,4 @@
+import {fixtureCollectionResource} from './fixture_collection_resources.mjs';
 /** Loopback reference adapters of the server protocol GC-230 on one fixture pages folder, for the
  * conformance tests and the browser checks: the JavaScript GramlotFileServer below, the Python one in
  * tests/http_server.py. Build the runtime first (npm --prefix js run build). Each server serves the
@@ -65,6 +66,8 @@ async function nodeHost(pages, {prefix = '', csp = null, pageTtl} = {}) {
             if (path === server.runtimeUrl || path.startsWith('/themes/') || kind) {
                 if (!['GET', 'HEAD'].includes(request.method)) return reply(405, 'Method not allowed', undefined, {Allow: 'GET, HEAD'});
                 if (path === server.runtimeUrl) return reply(200, await readFile(runtimeAsset()), MEDIA_TYPES['.js']);
+                const collection = await fixtureCollectionResource(path);
+                if (collection !== null) return reply(200, collection, kind ?? 'application/octet-stream');
                 const filename = await server.themeFile(path) ?? await server.companionFile(path);
                 if (!filename) return reply(404, 'Not found');
                 return reply(200, await readFile(filename), kind ?? 'application/octet-stream');

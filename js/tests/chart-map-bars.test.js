@@ -25,7 +25,7 @@ test('geographic bars preserve values, group measures and expose zero/extent wit
 test('map interior anchors avoid holes and compact labels retain zero',()=>{
  const holes={type:'FeatureCollection',features:[{type:'Feature',properties:{name:'hole'},geometry:{type:'Polygon',coordinates:[[[0,0],[4,0],[4,4],[0,4],[0,0]],[[1,1],[3,1],[3,3],[1,3],[1,1]]]}}]};
  const [x,y]=chartMapAnchors(holes).get('hole');assert.ok(x>0&&x<4&&y>0&&y<4);assert.ok(!(x>1&&x<3&&y>1&&y<3));
- assert.equal(chartMapLabel('A',0),'0');assert.equal(chartMapLabel('A',1200000),'1.2M');assert.equal(chartMapLabel('A',NaN),'');assert.throws(()=>chartMapLabel('A',1,'invalid'),/label mode/);
+ assert.equal(chartMapLabel('A',0),'0');assert.equal(chartMapLabel('A',1200000),new Intl.NumberFormat('en-GB',{notation:'compact',maximumFractionDigits:1}).format(1200000));assert.equal(chartMapLabel('A',NaN),'');assert.throws(()=>chartMapLabel('A',1,'invalid'),/label mode/);
 });
 test('rendered map colors distinguish low, high values and missing territories',()=>{
  echarts.registerMap('colors',geo);const chart=echarts.init(null,null,{renderer:'svg',ssr:true,width:600,height:400});

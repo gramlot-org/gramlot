@@ -348,3 +348,13 @@ test('hierarchical descriptions select paths and cannot select disabled nodes', 
     host.summary.value='Fixed';f.event(host.summary,'input');f.event(host.summary,'change');
     assert.equal(f.app.data.getItem('cities'),'folder.first');assert.equal(options.getNode('folder.fixed').attr.checked,'disabled:on');
 });
+
+test('opening the choice popup focuses its field without scrolling the containing pane', async t => {
+    const f = fixture(t, root => root.filteringSelect({id:'choice', values:'a:Alpha,b:Beta'}));
+    const host = f.host('choice');
+    const focus = t.mock.method(host.control, 'focus');
+    host.toggle.click();
+    await settle();
+    assert.deepEqual(focus.mock.calls[0].arguments, [{preventScroll:true}]);
+    assert.equal(host.choices.hidden, false);
+});

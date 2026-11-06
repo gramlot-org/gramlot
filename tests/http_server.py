@@ -19,6 +19,8 @@ from urllib.parse import unquote, urlsplit
 
 from gramlot.server import GramlotFileServer, InvalidRequest, PageNotFound, ServerCapacity, runtime_asset
 
+from fixture_collection_resources import fixture_collection_resource
+
 OWNER_COOKIE = "gramlot_owner"
 JSON_MEDIA_TYPE = "application/json"
 MEDIA_TYPES = {".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8"}
@@ -59,6 +61,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(405, "Method not allowed", headers=[("Allow", "GET, HEAD")])
             if path == gramlot.runtime_url:
                 return self.reply(200, runtime_asset().read_bytes(), MEDIA_TYPES[".js"])
+            collection = fixture_collection_resource(path)
+            if collection is not None:
+                return self.reply(200, collection, MEDIA_TYPES.get(suffix, "application/octet-stream"))
             filename = gramlot.theme_file(path) or gramlot.companion_file(path)
             if filename is None:
                 return self.reply(404, "Not found")
