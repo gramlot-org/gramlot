@@ -78,10 +78,11 @@
     },
     "column": {
       "_meta": {
-        "data_element": true
+        "data_element": true,
+        "keywordPattern": "^formula_[A-Za-z_$][A-Za-z0-9_$]*$"
       },
       "attributes": {
-        "accepts_var_keyword": false,
+        "accepts_var_keyword": true,
         "accepts_var_positional": false,
         "parameters": [
           {
@@ -295,6 +296,90 @@
             "kind": "keyword_only",
             "name": "title",
             "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "formula",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "B",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "calculated",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "B",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "hidden",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                }
+              ],
+              "kind": "union"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "totalize",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "footer_value",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "dtype": "T",
+              "kind": "dtype"
+            },
+            "default": null,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "footer_format",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "kind": "any"
+            },
+            "has_default": false,
+            "kind": "var_keyword",
+            "name": "attr",
+            "role": "attribute"
           }
         ]
       },
@@ -328,6 +413,14 @@
               "binding": "read",
               "default": null,
               "nullable": true
+            },
+            "footer": {
+              "binding": "read",
+              "default": false,
+              "dtype": [
+                "B",
+                "T"
+              ]
             },
             "loading": {
               "binding": "read",
@@ -614,6 +707,40 @@
             "has_default": true,
             "kind": "keyword_only",
             "name": "rowHeaders",
+            "role": "attribute"
+          },
+          {
+            "annotation": {
+              "items": [
+                {
+                  "dtype": "B",
+                  "kind": "dtype"
+                },
+                {
+                  "dtype": "T",
+                  "kind": "dtype"
+                },
+                {
+                  "base": {
+                    "dtype": "T",
+                    "kind": "dtype"
+                  },
+                  "kind": "annotated",
+                  "metadata": [
+                    {
+                      "flags": 0,
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+"
+                    }
+                  ]
+                }
+              ],
+              "kind": "union"
+            },
+            "default": false,
+            "has_default": true,
+            "kind": "keyword_only",
+            "name": "footer",
             "role": "attribute"
           },
           {

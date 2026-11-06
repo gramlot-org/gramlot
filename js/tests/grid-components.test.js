@@ -399,8 +399,8 @@ test('wrong representations and resolvers fail without reads or writes', () => {
 
 test('struct rejects unknown attributes, duplicate fields and nested groups', () => {
     const bag = struct();
-    bag.getNode('view_0.rows_0.code').setAttr({formula: '1+1'});
-    assert.throws(() => new GridStructure(bag), /Unsupported.*formula/);
+    bag.getNode('view_0.rows_0.code').setAttr({sum: true});
+    assert.throws(() => new GridStructure(bag), /Unsupported.*sum/);
     const duplicate = struct(); duplicate.getItem('view_0.rows_0').setItem('again', null, {tag: 'cell', field: 'code'});
     assert.throws(() => new GridStructure(duplicate), /Duplicate grid field/);
     const nested = struct(); nested.getItem('view_0.rows_0').setItem('bad', struct(), {tag: 'colgroup', code: 'bad'});

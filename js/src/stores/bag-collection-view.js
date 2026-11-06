@@ -62,7 +62,7 @@ export class BagCollectionView {
     }
     synchronize(change = {full:true, rows:[]}) {
         if (!change.full && !this.#sortedBy && !this.#filters.size) {
-            publishCollection(this.#listeners,change);
+            publishCollection(this.#listeners,{full:change.full, rows:change.rows});
             return;
         }
         this.#commit(this.#sorted(this.#orderedNodes(),this.criteria),this.#sortedBy,this.#filters,change);

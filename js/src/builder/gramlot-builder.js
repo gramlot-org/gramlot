@@ -7,7 +7,7 @@
 import buttons from '../components/buttons.js';
 import {ComponentCollection} from '../components/registry.js';
 import {Bag} from '@genrojs/bag';
-import {HtmlBuilder, SourceBagNode, sourceTarget} from '@genrojs/builders';
+import {HtmlBuilder, META_ATTRS, SourceBagNode, sourceTarget} from '@genrojs/builders';
 import {toTytx} from '@genrojs/tytx';
 // Loading the Gramlot Source classes adds GramlotBuilderBag to the TYTX subtype
 // dictionary of X, so every GramlotBuilder user can encode and decode it.
@@ -36,6 +36,24 @@ const DATA_PATH_ATTRIBUTES = {dataSetter: 'destination_path', dataFormula: 'resu
 const DATA_INLINE_ATTRIBUTES = {dataFormula: 'formula', dataController: 'script'};
 
 /** The P18 violation of a data-element's attributes, or null. */
+// Builder's framework call keywords, accepted by every element.
+const FRAMEWORK_ATTRIBUTES = new Set(['node_label', 'node_position', 'nodeId', 'target_id', 'datapath', 'iterate', 'store', '_tag', '_meta', 'ns']);
+// frameGrid composes these grid attributes itself; its own parameters reach the grid too.
+const FRAME_GRID_COMPOSED = new Set(['node_label', 'frameTarget', 'nodeId']);
+const FRAME_GRID_PARAMETERS = new Set(['storepath', 'rowMode', 'structpath']);
+
+/**
+ * An element whose `_meta.keywordPattern` is set accepts, besides its declared attributes, only the
+ * keywords matching that pattern (grid column `formula_<name>`); the error names the first other one.
+ */
+function keywordPatternError(spec, attrs) {
+    const pattern = spec?._meta?.keywordPattern;
+    if (!pattern) return null;
+    const declared = new Set(spec.attributes.parameters.filter(parameter => !parameter.kind.startsWith('var_')).map(parameter => parameter.name));
+    const unknown = Object.keys(attrs).find(name => !declared.has(name) && !FRAMEWORK_ATTRIBUTES.has(name) && !new RegExp(pattern).test(name));
+    return unknown === undefined ? null : `unknown attribute '${unknown}'`;
+}
+
 function dataElementError(tag, attrs) {
     if (['input', 'textarea', 'select', 'webcomponent'].includes(tag) && pointerTransform(attrs.value)) {
         return "'value' does not accept pointer suffixes; use an ordinary value pointer";
@@ -88,18 +106,21 @@ export class GramlotBuilder extends HtmlBuilder {
         for (const key of Object.keys(attrs)) if (key.startsWith('chart_')) {
             chartOptions[key.slice(6)] = attrs[key]; delete attrs[key];
         }
+        const [frameAttrs, routed] = this.frameGridRoute(attrs);
+        const twice = Object.keys(routed).find(name => ['storepath', 'rowMode'].includes(name) || name === 'structpath' && structpath != null);
+        if (twice !== undefined) throw new TypeError(`frameGrid: '${twice}' is given twice`);
         if (chart !== false) {
             if (chart !== true && (typeof chart !== 'string' || !chart)) throw new TypeError('chart requires a boolean or chart type');
-            if (!attrs.datapath) throw new TypeError('A chart frameGrid requires its own datapath');
+            if (!frameAttrs.datapath) throw new TypeError('A chart frameGrid requires its own datapath');
             if (!this.schemaTag('chartPane')) throw new TypeError('frameGrid requires the chartPane collection');
             if (typeof chart === 'string') chartOptions.chartType = chart;
         } else if (Object.keys(chartOptions).length) throw new TypeError('chart_* options require chart');
         const gridAttrs = {storepath, rowMode, ...(structpath == null ? {} : {structpath}),
-            node_label: 'grid', frameTarget: true, height: '100%', width: '100%'};
+            node_label: 'grid', frameTarget: true, height: '100%', width: '100%', ...routed};
         if (chart !== false) gridAttrs.nodeId = randomId();
         this.validateNodeValues('grid', null, gridAttrs);
         if (searchOn !== false) this.validateNodeValues('searchBox', null, {searchOn, searchHelp});
-        const frame = parent.framePane(attrs);
+        const frame = parent.framePane(frameAttrs);
         frame.center.grid(gridAttrs);
         const bar = frame.top.menu({presentation:'bar', node_label:'bar', aria_label:'Grid toolbar', class:'gramlot-grid-toolbar'});
         if (searchOn !== false) bar.menuline({group:true, node_label:'search', class:'gramlot-grid-search'}).searchBox({searchOn, searchHelp});
@@ -111,6 +132,28 @@ export class GramlotBuilder extends HtmlBuilder {
                 configDefaults:new Bag(chartOptions),height:'100%'});
         }
         return frame;
+    }
+
+    /** Split frameGrid keywords: unprefixed grid parameters go to the grid, `grid_`/`frame_` force any attribute. */
+    frameGridRoute(attrs) {
+        const declared = tag => new Set(this.schema[tag].attributes.parameters.filter(parameter => !parameter.kind.startsWith('var_')).map(parameter => parameter.name));
+        const source = new Set([...FRAMEWORK_ATTRIBUTES, ...META_ATTRS]);
+        const gridNames = declared('grid'), frameNames = declared('framePane');
+        // A name the frame also accepts stays on the frame unless forced with grid_.
+        const routed = name => gridNames.has(name) && !frameNames.has(name) && !source.has(name)
+            && !FRAME_GRID_COMPOSED.has(name) && !FRAME_GRID_PARAMETERS.has(name);
+        const frame = {}, grid = {};
+        for (const [key, value] of Object.entries(attrs)) {
+            let name, target;
+            if (key.startsWith('grid_')) {
+                name = key.slice('grid_'.length); target = grid;
+                if (FRAME_GRID_COMPOSED.has(name)) throw new TypeError(`frameGrid: '${key}' is composed by frameGrid`);
+            } else if (key.startsWith('frame_')) { name = key.slice('frame_'.length); target = frame; }
+            else { name = key; target = routed(key) ? grid : frame; }
+            if (Object.hasOwn(target, name)) throw new TypeError(`frameGrid: '${name}' is given twice`);
+            target[name] = value;
+        }
+        return [frame, grid];
     }
 
     /** Tag prefixes of the parent dialects, from the `_name` of the classes above GramlotBuilder. */
@@ -218,7 +261,7 @@ export class GramlotBuilder extends HtmlBuilder {
         if (tag === 'webcomponent') webcomponentCode(attrs);
         const excluded = excludedAttribute(attrs);
         if (excluded) throw new Error(`${tag}: attribute '${excluded}' is excluded from Gramlot`);
-        const error = dataElementError(tag, attrs);
+        const error = dataElementError(tag, attrs) ?? keywordPatternError(this.schema[tag], attrs);
         if (error) throw new Error(`${tag}: ${error}`);
         return super.validateNodeValues(tag, value, attrs);
     }
@@ -231,7 +274,8 @@ export class GramlotBuilder extends HtmlBuilder {
         if (node.nodeTag === 'webcomponent') webcomponentCode(options.attrs ?? node.getAttr());
         const excluded = excludedAttribute(options.attrs ?? node.getAttr());
         if (excluded) throw new Error(`${node.nodeTag} '${node.label}': attribute '${excluded}' is excluded from Gramlot`);
-        const error = dataElementError(node.nodeTag, options.attrs ?? node.getAttr());
+        const error = dataElementError(node.nodeTag, options.attrs ?? node.getAttr())
+            ?? keywordPatternError(this.schema[node.nodeTag], options.attrs ?? node.getAttr());
         if (error) throw new Error(`${node.nodeTag} '${node.label}': ${error}`);
         return super.validateNode(node, options);
     }

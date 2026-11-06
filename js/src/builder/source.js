@@ -177,6 +177,23 @@ function isExpression(value) {
  * the null path rule (Q7): a read gives null, a write is an error. FIRE writes through
  * setRelativeData too, with the Gramlot reset rules.
  */
+/**
+ * The column formulas of a grid's nested struct, as `[struct.<field>.formula, text]`: the struct is
+ * consumed into Data at installation, so its formula texts are activated on the grid node.
+ */
+function structFormulaCode(grid) {
+    const items = [];
+    const visit = bag => {
+        for (const child of bag.getNodes()) {
+            if (child.nodeTag === 'column' && typeof child.getAttr('formula') === 'string') {
+                items.push([`struct.${child.getAttr('field')}.formula`, child.getAttr('formula')]);
+            } else if ((child._getMeta('gridStruct') || child.nodeTag === 'colgroup') && child.staticValue instanceof SourceBag) visit(child.staticValue);
+        }
+    };
+    if (grid.staticValue instanceof SourceBag) visit(grid.staticValue);
+    return items;
+}
+
 export class GramlotBuilderBagNode extends SourceBagNode {
     #formState = null;
     #treeStore = null;
@@ -306,6 +323,7 @@ export class GramlotBuilderBagNode extends SourceBagNode {
             }
         }
         if (isExpression(this.staticValue) || this.nodeTag === 'script' && typeof this.staticValue === 'string') items.push(['', this.staticValue]);
+        if (this._getMeta('gramlot_component')?.bagStruct) items.push(...structFormulaCode(this));
         return items;
     }
 

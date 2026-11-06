@@ -361,6 +361,36 @@ Counts apply all criteria except the popup column's own selection. Selected valu
 
 Selections live in the Source-owned collection view: `columnFilter(field)` reads them, `applyColumnFilter(field, values)` accepts an array or null to remove the criterion, and `columnFacets(field)` returns `{key, value, count, selected}` entries. Numeric and text identities remain distinct. Only loaded scalar fields in complete resident stores are supported; windowed grids are rejected. Date periods, aggregate-cell membership and remote facets remain separate work.
 
+### Row formulas and footer totals
+
+This is an intermediate implementation. The final placement of row formulas and totals, at the data level or in the grid, is under review; the attributes below may move.
+
+A data formula computes its field for every resident row and writes the result into the row Bag, so every grid and form on the same Bag sees it. Formula identifiers resolve to row fields and to `formula_<name>` parameters. A parameter written `^path` recalculates the formula when that Data changes; `=path` reads the current value without triggering; any other value is a literal. Paths resolve relative to the grid Source.
+
+```python
+struct.column("quantity", dtype="L", edit=True)
+struct.column("price", dtype="N")
+struct.column("total", dtype="N", formula="quantity * price * (1 + vat / 100)",
+              formula_vat="^.vat", calculated=True, totalize=True)
+struct.column("position", formula="#")
+struct.column("running", dtype="N", formula="+=total")
+struct.column("share", dtype="N", formula="%=total", footer_format="0.00")
+```
+
+- `calculated=True` computes a data formula when the grid configures; otherwise it first runs when a dependency changes.
+- Formulas run in dependency order; a dependency cycle rejects the structure.
+- A formula recalculates when a committed value reaches the row Bag. Editing drafts do not trigger it.
+- `hidden=True` hides a column; its formula still calculates.
+- `#` (row number, from 1) and `+=field` (running sum) are view values: each grid computes them on the visible rows of its own view, in view order, and never writes them into the row Bag. A formula depending on a `#` or `+=` column is a view value too. While a filter, column filter or search is active, these cells and the `rowHeaders` numbers get the `filtered-numbering` class, with the `--gramlot-grid-filtered-numbering-background` theme color, because the numbering covers only the visible rows.
+- Sorting, column-filtering or searching by a view value is an error: it derives from the order and has no stored field. View columns get no column filter button and are not offered by search. Totals of a view column sum its visible values.
+- `%=field` (percentage of the column total over every resident row) is a data value written into the row Bag.
+- An arithmetic formula (fields, numeric literals, `+ - * / % **` and parentheses) is evaluated without compiling code: with JavaScript number semantics on plain numbers, exactly when a referenced value is a Decimal. It works from an inline `struct` and from a `structpath` Bag.
+- Any other formula is a JavaScript expression compiled as inline code: it runs only when declared in an inline `struct` received with the Source, and a page CSP without `'unsafe-eval'` blocks it. Over Decimal values only arithmetic formulas are supported.
+- A null referenced value gives null. A failing formula writes null and keeps its error per field (`formulaErrors` of the grid element). An unchanged result is not written.
+- A column accepts its declared attributes and `formula_<name>` keywords only; any other keyword is rejected while authoring.
+
+Set grid `footer=True`, or a caption text, to display a footer row. A column `totalize=True` sums its field over every resident row, not only the displayed ones, and publishes the total to `.totalize.<field>` relative to the grid Source; a text value is the Data path to use. Booleans count as 0/1. Totals are published also without the footer row. `footer_value` is a fixed footer text, `footer_format` the footer number format. A total that cannot be computed is published as null, shows `—` with the error as tooltip and is kept in `totalErrors` of the grid element. Filtered totals are not published.
+
 ### Viewport outputs and editing events
 
 `rowHeaders`, `rowResize` and `selfDragRows` enable their respective row affordances. `sortedBy` and `filter` are read inputs. For a windowed store, `windowInfo` and `loading` describe provider state, while bound `viewport` writes requested `{start, count}` and `sortRequest` writes an ordering request. Wire these outputs to the intended store/provider rather than loading every record in response to scrolling. A resident Bag, a cached remote selection and an authorized database query have different capabilities. Neither the grid nor an ordinary endpoint implies SQL or Asqueel access.
@@ -370,6 +400,13 @@ Enable local editing with `column(..., edit=True)` or an editor-options dictiona
 ### `searchBox` and `frameGrid`
 
 Use `searchBox` for the grid's filtering UI. It requires a FrameGrid target resolved through Source context; it is not a free-standing text field with a `value` binding. The Python `frameGrid(...)` composition exposes `.grid`, `.top`, `.bottom`, `.left` and `.right`; put the search control in its toolbar. `frameGrid` is a helper, not another widget tag.
+
+`frameGrid(...)` routes its keywords by list. An unprefixed keyword that the grid declares as a parameter (`footer`, `rowHeaders`, `rowResize`, `selfDragRows`, `sortedBy`, `filter`, `columnFilters`, …) goes to the grid; `storepath`, `rowMode` and `structpath` also go to the grid. Every other keyword (`datapath`, `node_label`, `id`, `height`, style attributes, …) goes to the frame, as does a name that the frame also accepts. `grid_<name>` forces any attribute onto the grid (for example `grid_datapath`, `grid_height`, `grid_class` or a style attribute) and `frame_<name>` onto the frame; the prefix is removed. Giving the same name twice (`footer` and `grid_footer`, `storepath` and `grid_storepath`) is an error. `grid_node_label`, `grid_frameTarget` and `grid_nodeId` are errors because frameGrid composes those grid attributes. The list follows the grid's declared parameters, so a new grid parameter is routed without changing `frameGrid`.
+
+```python
+frame = pane.frameGrid(storepath=".rows", rowMode="values", datapath="orders",
+                       footer=True, rowHeaders=True, grid_class="compact", frame_height="300px")
+```
 
 `searchLiteral=True` treats text punctuation literally instead of as a regular expression; accepted queries keep their original text. The column-filter popup uses this same searchBox and its shared theme CSS inside a frameGrid, without a separate input or search handler.
 

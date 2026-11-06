@@ -14,9 +14,14 @@ export class BagCollectionStore {
         this.#listeners.add(listener);
         return () => this.#listeners.delete(listener);
     }
-    /** Called by the page's single Data subscription. Each view reconciles independently. */
-    receiveData(event, row = null) {
-        publishCollection(this.#listeners, {full:row === null, rows:row ? [row] : []});
+    /**
+     * Called by the page's single Data subscription. Each view reconciles independently.
+     * `row` is the row node the event is inside, null for a change of the row list itself;
+     * `field` is the label directly under the row on the event path, null when the event
+     * targets the row node or inserts/deletes its direct children.
+     */
+    receiveData(event, row = null, field = null) {
+        publishCollection(this.#listeners, {full:row === null, rows:row ? [row] : [], event, field});
     }
     getRows() {
         const nodes = this.bag.getNodes();
@@ -39,10 +44,14 @@ export class BagCollectionStore {
     }
 }
 
-/** One invalidation protocol at both collection levels; failures cannot skip siblings. */
+/**
+ * One invalidation protocol at both collection levels; failures cannot skip siblings.
+ * A store notice also carries its Data `event` and changed `field`; a view notice carries null.
+ */
 export function publishCollection(listeners, change) {
     const errors = [];
-    const notice = Object.freeze({full:change.full, rows:Object.freeze([...change.rows])});
+    const notice = Object.freeze({full:change.full, rows:Object.freeze([...change.rows]),
+        event:change.event ?? null, field:change.field ?? null});
     for (const listener of [...listeners]) {
         if (!listeners.has(listener)) continue;
         try { listener(notice); } catch (error) { errors.push(error); }

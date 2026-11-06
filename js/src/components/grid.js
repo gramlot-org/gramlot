@@ -9,6 +9,8 @@ import {GridCellEditor} from './grid-cell-editor.js';
 import {GridCheckSets} from './grid-check-sets.js';
 import {GridRows} from './grid-rows.js';
 import {GridStructure} from './grid-structure.js';
+import {GridFormulas} from './grid-formulas.js';
+import {GridFooter} from './grid-footer.js';
 import {GridHeaderInteraction} from './grid-header-interaction.js';
 import {GridRowLayout} from './grid-row-layout.js';
 import {GridRowInteraction} from './grid-row-interaction.js';
@@ -26,6 +28,7 @@ export const Grid = defineComponent({
         sortRequest: {dtype:'T', default:'', binding:'write'},
         storepath: {dtype: 'T'}, structpath: {dtype: 'T'}, rowMode: {dtype: 'T'},
         rowHeaders: {dtype:'B', default:false, binding:'read'},
+        footer: {dtype:['B','T'], default:false, binding:'read'},
         rowResize: {dtype:'B', default:false, binding:'read'},
         selfDragRows: {dtype:'B', default:false, binding:'read'},
         sortedBy: {dtype:'T', default:'', binding:'read'},
@@ -35,6 +38,8 @@ export const Grid = defineComponent({
         #checkSets;
         #columnFilters;
         #cellEditor;
+        #formulas;
+        #footer;
         #editCell = event => {
             if (event.type === 'keydown' && !['Enter','F2'].includes(event.key)) return;
             const cell = event.target.closest('td[data-field]');
@@ -98,6 +103,7 @@ export const Grid = defineComponent({
             }
             this.#adjustedScroll = null;
             this.#headerViewport.scrollLeft = this.#bodyViewport.scrollLeft;
+            if (this.#footer) this.#footer.viewport.scrollLeft = this.#bodyViewport.scrollLeft;
             this.#scheduleLayout();
         };
         constructor() {
@@ -180,6 +186,7 @@ export const Grid = defineComponent({
             this.#cellEditor?.disconnect();
             this.#checkSets?.disconnect();
             this.#columnFilters.disconnect();
+            this.#formulas.disconnect();
             this.#cancelRefresh();
             gridSearch(this.#context.sourceNode).detach(this.#collectionView);
             this.#collectionView?.disconnect();
@@ -210,6 +217,7 @@ export const Grid = defineComponent({
                     if (handle) handle.setAttribute('aria-valuenow', String(Math.round(row.getBoundingClientRect().height)));
                 }
                 this.#headerViewport.scrollLeft = this.#bodyViewport.scrollLeft;
+                this.#footer.viewport.scrollLeft = this.#bodyViewport.scrollLeft;
                 if (!this.#structure) return;
                 try { this.#layoutWindow(); this.#cellEditor.position(); }
                 catch (error) { this.#context.reportError(error, 'Grid viewport'); }
@@ -289,7 +297,7 @@ export const Grid = defineComponent({
             if (loading) this.control.setAttribute('aria-busy', 'true');
             else this.control.removeAttribute('aria-busy');
             if (force || start !== this.#windowStart || end !== this.#windowEnd) {
-                const rows = new GridRows(this.#collectionView, this.#context.format)
+                const rows = new GridRows(this.#formulas, this.#context.format)
                     .read(this.#structure.columns, this.#visibleNodes.slice(start-(info?.start ?? 0), end-(info?.start ?? 0)));
                 this.#renderRows(rows, this.#structure.columns, start);
                 this.#windowStart = start; this.#windowEnd = end;
@@ -342,8 +350,14 @@ export const Grid = defineComponent({
             this.#openEditorAt(index,column);
             return true;
         }
+        /** The last error of each formula field, by field name. */
+        get formulaErrors() { return this.#formulas.errors; }
+        /** The last error of each totalized column, by field name. */
+        get totalErrors() { return this.#footer.errors; }
         setSourceContext(context) {
             this.#context = context;
+            this.#formulas = new GridFormulas(context.sourceNode);
+            this.#footer = new GridFooter(context.sourceNode, context.format, this.#bodyViewport.parentElement);
             this.#columnFilters.setSourceContext(context);
             this.#checkSets = new GridCheckSets(context.sourceNode, this.#body,
                 () => this.#structure?.columns ?? [],
@@ -413,7 +427,8 @@ export const Grid = defineComponent({
                 this.#pendingRows.clear();
                 try {
                     if (full) this.#project();
-                    else this.#projectRows(nodes);
+                    // View values (#, += and their dependents) of other rows can change too.
+                    else this.#projectRows(this.#formulas.viewFields.size ? [...this.#rows.keys()] : nodes);
                 } catch (error) {
                     // Keep the last valid DOM. A later change retries a complete pull;
                     // there is no automatic retry loop and no exception in Data delivery.
@@ -424,13 +439,17 @@ export const Grid = defineComponent({
         }
         #projectRows(nodes) {
             for (const node of nodes) this.#rowLayout.forget(node);
-            const rows = new GridRows(this.#collectionView, this.#context.format).read(this.#structure.columns, nodes.filter(node => this.#rows.has(node)));
+            this.#footer.update(this.#formulas, this.#collectionStore().getRows());
+            const rows = new GridRows(this.#formulas, this.#context.format).read(this.#structure.columns, nodes.filter(node => this.#rows.has(node)));
             this.#rowInteraction.cancel();
             for (const {node, cells} of rows) this.#renderCells(this.#rows.get(node), cells, node);
             this.#scheduleLayout();
         }
         #project() {
             const model = this.#structureDirty ? new GridStructure(this.#structBag) : this.#structure;
+            const store = this.#collectionStore();
+            this.#formulas.configure(model, this.#collectionView, store);
+            this.#requireStoredCriteria();
             this.#cellEditor.configure(model.columns);
             this.#structure = model;
             this.#checkSets.configure();
@@ -449,14 +468,18 @@ export const Grid = defineComponent({
             }
             this.#windowRevision = info?.revision;
             this.#structureDirty = false;
-            gridSearch(this.#context.sourceNode).update(this.#collectionView, model.columns.filter(column => !column.check));
+            // View values (#, += and their dependents) derive from the order: they are not searchable.
+            gridSearch(this.#context.sourceNode).update(this.#collectionView,
+                model.columns.filter(column => !column.check && !this.#formulas.viewFields.has(column.field)));
             const rowHeaders = this.parameters.rowHeaders || this.parameters.rowResize;
-            const signature = JSON.stringify([model.groups, rowHeaders, this.parameters.columnFilters]);
+            const signature = JSON.stringify([model.groups, rowHeaders, this.parameters.columnFilters, this.parameters.footer]);
             this.#rowHeaders = rowHeaders;
             if (signature !== this.#signature) {
+                this.#footer.configure(this.parameters.footer, model.columns, rowHeaders);
                 this.#renderHeader(model);
                 this.#signature = signature;
             }
+            this.#footer.update(this.#formulas, store.getRows());
             this.#columnFilters.update(this.#collectionView, model.columns, this.parameters.columnFilters, this.#context.format);
             this.#renderSort();
             this.#renderWindow(true);
@@ -464,9 +487,23 @@ export const Grid = defineComponent({
             this.control.setAttribute('aria-rowcount', String(this.#headerRows + Math.max(this.#rowLayout.count, 1)));
             this.#scheduleLayout();
         }
+        /** The shared resident store under this grid's view. */
+        #collectionStore() {
+            return this.#context.sourceNode.rootBuilder.binding.collectionStore(this.#store, this.parameters.rowMode);
+        }
+        /** Sort, column filter and search criteria apply to stored fields: a view value derives from the order. */
+        #requireStoredCriteria() {
+            const view = this.#collectionView, fields = this.#formulas.viewFields;
+            const used = [...view.criteria.map(({field}) => ['sort by', field]),
+                ...view.filterContributions.flatMap(([name, {definition}]) => name.startsWith('column:') ? [['filter', name.slice('column:'.length)]]
+                    : name === 'sets' ? [] : definition.columns.map(field => ['search', field]))];
+            const [kind, field] = used.find(([, field]) => fields.has(field)) ?? [];
+            if (field !== undefined) throw new TypeError(`grid cannot ${kind} the view value '${field}'`);
+        }
         #sort(field, multiple) {
             if (this.#structure.columns.find(column => column.field === field)?.check) return;
             try {
+                if (this.#formulas.viewFields.has(field)) throw new TypeError(`grid cannot sort by the view value '${field}'`);
                 const criteria = this.#windowInfo() ? parseSort(this.#windowInfo().sortedBy) : this.#collectionView.criteria;
                 const current = criteria.find(item => item.field === field);
                 const direction = current?.direction === 'a' ? 'd' : 'a';
@@ -526,7 +563,7 @@ export const Grid = defineComponent({
                     indicator.setAttribute('aria-hidden', 'true');
                     const arrow = doc.createElementNS(SVG_NS, 'path');
                     arrow.setAttribute('d', 'M4 10L8 6L12 10'); indicator.append(arrow); cell.append(indicator);
-                    if (this.parameters.columnFilters && !column.check) cell.append(this.#columnFilters.button(column));
+                    if (this.parameters.columnFilters && !column.check && !this.#formulas.viewFields.has(column.field)) cell.append(this.#columnFilters.button(column));
                     const handle = doc.createElement('span');
                     handle.className = 'column-resize'; handle.tabIndex = 0;
                     handle.setAttribute('role', 'separator');
@@ -578,7 +615,8 @@ export const Grid = defineComponent({
             if (this.#rowHeaders) widths.unshift('max(var(--grid-row-header-min-width, 0px), var(--grid-row-header-width, var(--gramlot-grid-row-header-width, 44px)))');
             this.control.style.setProperty('--grid-columns-width', `calc(${widths.join(' + ')})`);
             // Identical colgroups and table constraints keep one CSS sizing policy for both areas.
-            for (const table of [this.#headerTable, this.#bodyTable]) {
+            const footer = this.parameters.footer === false ? [] : [this.#footer.table];
+            for (const table of [this.#headerTable, this.#bodyTable, ...footer]) {
                 for (const group of table.querySelectorAll(':scope > colgroup')) group.remove();
                 table.prepend(...model.groups.map(group => {
                     const element = doc.createElement('colgroup');
@@ -610,6 +648,8 @@ export const Grid = defineComponent({
                     this.#rows.set(node, tr);
                 }
                 tr.classList.toggle('alternate', (start + keep.size) % 2 === 1);
+                // Under a filter the numbering covers the visible rows only.
+                const partial = this.#collectionView.isFiltered();
                 tr.draggable = this.parameters.selfDragRows;
                 let heading = tr.querySelector('th[scope=row]');
                 if (this.#rowHeaders) {
@@ -622,6 +662,7 @@ export const Grid = defineComponent({
                         caption.className = 'row-number'; heading.append(caption); tr.prepend(heading);
                     }
                     heading.querySelector('.row-number').textContent = String(start + keep.size + 1);
+                    heading.classList.toggle('filtered-numbering', partial);
                     let handle = heading.querySelector('.row-height-handle');
                     if (this.parameters.rowResize) {
                         if (!handle) {
@@ -647,6 +688,7 @@ export const Grid = defineComponent({
                         td.append(content);
                     }
                     if (column.edit) td.tabIndex = 0; else td.removeAttribute('tabindex');
+                    td.classList.toggle('filtered-numbering', partial && this.#formulas.viewFields.has(column.field));
                     const content = td.firstElementChild;
                     const capped = column.max_height != null;
                     if (capped) td.style.setProperty('--grid-cell-max-height',column.max_height);

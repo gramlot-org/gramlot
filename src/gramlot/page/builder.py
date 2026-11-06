@@ -1,5 +1,6 @@
 """Python authoring for the Gramlot Source dialect."""
 
+import re
 from uuid import uuid4
 
 from genro_bag import Bag
@@ -28,6 +29,27 @@ EXCLUDED_ATTRIBUTE_PREFIXES = ("formsubscribe_",)
 DATA_PATH_ATTRIBUTES = {"dataSetter": "destination_path", "dataFormula": "result_path", "dataRpc": "result_path",
                         "dataRemote": "destination_path"}
 DATA_INLINE_ATTRIBUTES = {"dataFormula": "formula", "dataController": "script"}
+
+
+# Builder's framework call keywords, accepted by every element.
+FRAMEWORK_ATTRIBUTES = frozenset({"node_label", "node_position", "nodeId", "target_id", "datapath",
+                                  "iterate", "store", "_tag", "_meta", "ns"})
+# Source meta attributes of every node (Builder JS META_ATTRS).
+META_ATTRIBUTES = frozenset({"_meta", "datapath", "nodeId", "ns", "form", "formId", "_anchor", "updateOn"})
+# frameGrid composes these grid attributes itself; its own parameters reach the grid too.
+FRAME_GRID_COMPOSED = frozenset({"node_label", "frameTarget", "nodeId"})
+FRAME_GRID_PARAMETERS = frozenset({"storepath", "rowMode", "structpath"})
+
+
+def keyword_pattern_error(info, attrs):
+    """An element with `_meta.keywordPattern` accepts only its declared attributes and matching keywords."""
+    pattern = ((info.get("_meta") or {}).get("keywordPattern"))
+    if not pattern:
+        return None
+    declared = info.get("declared_names", set())
+    unknown = next((name for name in attrs if name not in declared and name not in FRAMEWORK_ATTRIBUTES
+                    and not re.search(pattern, name)), None)
+    return None if unknown is None else f"unknown attribute '{unknown}'"
 
 
 def data_element_error(tag, attrs):
@@ -135,6 +157,11 @@ class GramlotBuilder(HtmlBuilder):
             if self.schema_tag(tag) is None:
                 raise ValueError(f"frameGrid requires the {tag} collection")
         chart_options = {key[6:]: attrs.pop(key) for key in list(attrs) if key.startswith("chart_")}
+        attrs, routed = self._frame_grid_route(attrs)
+        given = {"storepath", "rowMode"} | ({"structpath"} if structpath is not None else set())
+        twice = next((name for name in routed if name in given), None)
+        if twice is not None:
+            raise ValueError(f"frameGrid: '{twice}' is given twice")
         if chart is not False:
             if chart is not True and (not isinstance(chart, str) or not chart):
                 raise ValueError("chart requires a boolean or chart type")
@@ -146,8 +173,8 @@ class GramlotBuilder(HtmlBuilder):
                 chart_options["chartType"] = chart
         elif chart_options:
             raise ValueError("chart_* options require chart")
-        grid_attrs = dict(storepath=storepath, rowMode=rowMode, node_label="grid",
-                          frameTarget=True, height="100%", width="100%")
+        grid_attrs = {**dict(storepath=storepath, rowMode=rowMode, node_label="grid",
+                             frameTarget=True, height="100%", width="100%"), **routed}
         if chart is not False:
             grid_attrs["nodeId"] = uuid4().hex
         if structpath is not None:
@@ -168,6 +195,27 @@ class GramlotBuilder(HtmlBuilder):
             window.frame.center.chartPane(storepath=storepath, rowMode=rowMode, gridId=grid_attrs["nodeId"],
                                           configpath="._chart", configDefaults=Bag(chart_options), height="100%")
         return frame
+
+    def _frame_grid_route(self, attrs):
+        """Split frameGrid keywords: unprefixed grid parameters go to the grid, ``grid_``/``frame_`` force any attribute."""
+        declared = lambda tag: set(self._get_schema_info(tag).get("declared_names", set()))
+        source = FRAMEWORK_ATTRIBUTES | META_ATTRIBUTES
+        # A name the frame also accepts stays on the frame unless forced with grid_.
+        routed_names = declared("grid") - declared("framePane") - source - FRAME_GRID_COMPOSED - FRAME_GRID_PARAMETERS
+        frame, grid = {}, {}
+        for key, value in attrs.items():
+            if key.startswith("grid_"):
+                name, target = key[len("grid_"):], grid
+                if name in FRAME_GRID_COMPOSED:
+                    raise ValueError(f"frameGrid: '{key}' is composed by frameGrid")
+            elif key.startswith("frame_"):
+                name, target = key[len("frame_"):], frame
+            else:
+                name, target = key, grid if key in routed_names else frame
+            if name in target:
+                raise ValueError(f"frameGrid: '{name}' is given twice")
+            target[name] = value
+        return frame, grid
 
     @property
     def renderer_html(self):
@@ -245,7 +293,7 @@ class GramlotBuilder(HtmlBuilder):
                          or name.startswith(EXCLUDED_ATTRIBUTE_PREFIXES)), None)
         if excluded is not None:
             raise ValueError(f"{node_tag}: attribute '{excluded}' is excluded from Gramlot")
-        error = data_element_error(node_tag, attr)
+        error = data_element_error(node_tag, attr) or keyword_pattern_error(info, attr)
         if error is not None:
             raise ValueError(f"{node_tag}: {error}")
         supplied = set(attr)

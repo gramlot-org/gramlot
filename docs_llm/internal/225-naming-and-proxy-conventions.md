@@ -2954,3 +2954,37 @@ selection_trial is outside the standard set; no Invoice integration is included.
 `standardCollectionAssets()` exposes the packaged standard entry URL/file pairs
 through the existing server assets API; adapters retain artifact hash validation.
 The generated JavaScript inventory lives in `dist/standard-collections.js`.
+
+Grid row formulas and totals — 2026-11-06 (intermediate PoC port approved by the
+owner in GC-070). `GridFormulas` / `grid-formulas.js` and `GridFooter` /
+`grid-footer.js` follow the GridStructure/GridHeaderInteraction collaborator
+class/file conventions. Authoring names `formula`, `formula_<name>`,
+`calculated`, `hidden`, `totalize`, `footer`, `footer_value` and
+`footer_format` keep the legacy GenroPy spelling. The grid element's
+`formulaErrors` getter and the collection notice fields `event`/`field` follow
+the existing camelCase property convention. `struct.<field>.formula` is the
+activation name of an inline struct formula on the grid Source node, following
+the dotted `ask._if` code-attribute names. These names add no public proxy.
+
+`GridFooter.errors` and the grid element's `totalErrors` getter follow
+`formulaErrors`. The column grammar metadata `keywordPattern` (regular
+expression of the extra keywords an element accepts, `formula_<identifier>`)
+follows the existing camelCase `_meta` keys (`gridStruct`, `bagStruct`).
+
+The grid cell/row-header class `filtered-numbering` and the theme variable
+`--gramlot-grid-filtered-numbering-background` follow the kebab-case class and
+`--gramlot-grid-<role>` token conventions.
+
+Composite widgets — owner, 2026-11-06: "lasciamo stare: framegrid è troppo
+comodo: direi che l'indirizzamento parametri è come nel legacy a buon senso
+ovvero con liste (ad esempio footer è di grid) e posso forzare con prefissi
+frame e grid se non mi va bene". Convention for a composite helper that builds
+an outer and an inner widget (first case: frameGrid = framePane + grid): an
+unprefixed keyword goes to the inner widget when it is one of the inner
+widget's declared parameters (read from its grammar, never a hand-written
+list) and the outer widget does not also accept it; everything else goes to
+the outer widget. Forcing prefixes are named after the widgets: `grid_<name>`
+and `frame_<name>` force any attribute onto that node, prefix removed. A name
+given twice, or a prefixed name of an attribute the helper composes itself, is
+an error. Python and JavaScript
+helpers route identically.
