@@ -38,6 +38,13 @@ class PageStore(_PageDatabases):
         self._closed = False
         self._started = False
         self._publish_to_page = None
+        self._source_builder = None
+
+    def source_builder(self):
+        """A new builder with the page's collections, loaded by the server, for Source replies."""
+        if self._source_builder is None:
+            raise RuntimeError("source_builder requires a PageStore opened by GramlotServer")
+        return self._source_builder()
 
     def main(self, root):
         """Declare server dataSetter, dataController and dataFormula nodes."""
@@ -173,6 +180,7 @@ class PageStore(_PageDatabases):
             return
         self._closed = True
         self._publish_to_page = None
+        self._source_builder = None
         self.builder._stop_reactivity()
         self.data.unsubscribe("page-store", any=True)
         self._subscribers.clear()

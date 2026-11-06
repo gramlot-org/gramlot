@@ -209,6 +209,12 @@ class GramlotServer:
             builder._schema_tag_names = dict(names)
             builder._collection = deepcopy(collection)
 
+    def _store_source_builder(self, cls):
+        """A builder for Source built by a PageStore, with the collections of its page as for @source."""
+        builder = cls.source_builder(name_syntax=self.name_syntax)
+        self._load_collections(builder, self.page_collections(cls))
+        return builder
+
     def resolve_page_store(self, page_class):
         """The PageStore class of this page; a plain server provides an empty store."""
         return PageStore
@@ -412,6 +418,7 @@ class GramlotServer:
                     raise TypeError("PageStore must subclass gramlot.PageStore")
                 store = store_class()
                 store._database_access = self._database_access
+                store._source_builder = lambda: self._store_source_builder(cls)
                 self._page_stores[page_id] = store
                 store._publish_to_page = lambda topic, payload, target: self.publish_to_page(
                     topic, payload, source_page_id=page_id, page_id=target, owner=owner)

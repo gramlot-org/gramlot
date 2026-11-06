@@ -163,7 +163,7 @@ COLLECTION_GUIDES = {
         '```python\nfrom gramlot import ChatPageStore\n\n'
         'class PageStore(ChatPageStore):\n    pass\n```\n\n'
         'Override `process_message(self, text)` to return a string or Gramlot SourceBag; '
-        'plain Data Bags and HTML response formats are not accepted. Distinct panes need distinct '
+        'plain Data Bags and HTML response formats are not accepted. Build a SourceBag with `self.source_builder()`: in a PageStore opened by GramlotServer it returns a new builder with the collections of the page already loaded, as for `@source` methods, so the store imports no collection. Distinct panes need distinct '
         '`datapath` and `chat_id`; declare allowed IDs in `ChatPageStore.chat_ids` (default `("main",)`). '
         'Application integrations replace the processing hook and own credentials, permissions '
         'and persistence. Logic only delegates behavior; conversation state remains in Data/Source. '
