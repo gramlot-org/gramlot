@@ -38,6 +38,7 @@ extent baselines; their invisible range reference is a documented renderer-only 
 - [`chartFields`](#gc-480-chartfields): Store field discovery for the shared chart configuration controls.
 - [`chartGeoJSON`](#gc-480-chartgeojson): Validated GeoJSON input and geographic data summary.
 - [`chartTimeline`](#gc-480-charttimeline): Prepared calendar snapshots and playback bounds from the original store.
+- [`gauge`](#gc-480-gauge): One value of the node on a needle dial, a progress ring or a half-circle arc.
 
 
 <a id="gc-480-005"></a>
@@ -261,5 +262,41 @@ Collection: **charts**. Browser element: `gramlot-chart-timeline`.
 | `timeField` | T | — | read | — |
 | `timeStep` | T | — | read | — |
 | `timeIndex` | R | — | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-480-500"></a>
+<a id="gc-480-gauge"></a>
+### `gauge`
+
+One value of the node on a needle dial, a progress ring or a half-circle arc.
+
+Collection: **charts**. Browser element: `gramlot-gauge`.
+
+[Shared charts, engines and temporal snapshots](480-charts.md#gc-480-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-gauge).
+
+
+**Data contract.** The node value is the single value, a Data pointer with optional ?attr. min, max, mask, thresholds, presentation and caption read Data. Nothing is written.
+
+
+**Interaction and events.** Redraws when the value or a parameter changes and follows the light or dark theme; removal releases the engine.
+
+
+**Composition.** Leaf rendering surface; no children.
+
+
+**Limits and lifecycle.** One numeric value; an empty value shows an empty dial, never zero. Values outside min and max are clamped on the dial, the text shows the real value. Threshold colors are names or hex codes.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `min` | R | 0 | read | — |
+| `max` | R | 100 | read | — |
+| `mask` | T | '{}' | read | — |
+| `thresholds` | T or None | '' | read | — |
+| `presentation` | T | 'needle' | read | — |
+| `caption` | T or None | '' | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.

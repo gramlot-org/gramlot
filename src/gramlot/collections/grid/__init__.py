@@ -9,6 +9,6 @@ mygramlot = GramlotCollection(
     module="assets/index.js",
     css=(),
     dependencies=(_dependency_0,),
-    build_id="sha256:84518a8f1b1bc21e61557ee3e4885e90c9d7783a23867feebe8e08a51839ead0",
-    files=("assets/collection.js", "assets/files/0a1df3a083d0c010560aa342e87959c8c1070e6fd54545741f083f22d0c8b551-fflate.txt", "assets/files/8cf9b31947daf7adb4a7a00a037459e58241af050cd0a603bfcf1756e533f75e-write-excel-file.txt", "assets/index.js", "assets/modules/browser-LVJHKBBV.js", "assets/modules/chunk-RMRBEYTI.js", "commands.json", "grammar.json",),
+    build_id="sha256:d591b18cbc1883cf9afb0471dda87f6e0515cf1c4980c65b166bdc723de90851",
+    files=("assets/collection.js", "assets/files/0a1df3a083d0c010560aa342e87959c8c1070e6fd54545741f083f22d0c8b551-fflate.txt", "assets/files/8cf9b31947daf7adb4a7a00a037459e58241af050cd0a603bfcf1756e533f75e-write-excel-file.txt", "assets/index.js", "assets/modules/browser-U5K4XS23.js", "assets/modules/chunk-RMRBEYTI.js", "commands.json", "grammar.json",),
 )

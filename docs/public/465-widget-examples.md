@@ -737,6 +737,13 @@ Shared chart configuration and time.
 
 - [13_charts](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/05-grid/13_charts.md)
 
+<a id="gc-465-gauge"></a>
+### `gauge`
+
+Live gauge settings: value, presentation, range, thresholds and mask.
+
+- [gauges](https://github.com/gramlot-org/gramlot-examples/blob/c59a19c92af9a09d243b9547e1b75c02e5096e13/src/gramlot_examples/pages/86-chart-types/gauges.md)
+
 <a id="gc-465-setup-vizabi"></a>
 ## Vizabi: setup
 

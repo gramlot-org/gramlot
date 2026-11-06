@@ -3,6 +3,13 @@
 Document ID: **GC-225**. Started: **2026-10-06**. Each rule names the owner
 decision it comes from. Sections marked **Open** record a question, not a rule.
 
+Gauge element — 2026-11-06: owner approved the element `gauge` in the `charts`
+collection (class `Gauge`, tag `gramlot-gauge`, descriptor file `chart-gauge.js`).
+The node value is the single value. Parameters: `min`, `max`, `mask`, `thresholds`
+(`value:color` pairs separated by commas), `presentation` (`needle`, `ring`, `arc`)
+and `caption`. Pure option builders live in `chart-gauge-options.js`. This records
+the owner's API; the public guide in GC-480 follows the owner's review of the example.
+
 Drawing pane — 2026-11-05: owner chose `drawingPane` and confirmed parameters
 `image` and `annotations`, an image toolbar, and one Data Bag node per annotation
 with type, coordinates and style. Text additionally carries its text; freehand

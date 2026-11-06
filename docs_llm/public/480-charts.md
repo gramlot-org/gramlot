@@ -194,3 +194,35 @@ Collection: charts. Prepared calendar snapshots and playback bounds from the ori
 | `timeIndex` | `{"binding":"read","dtype":"R"}` |
 
 Child grammar: `''`; parent grammar: `None`.
+
+<a id="gc-480-500"></a>
+<a id="gc-480-gauge"></a>
+### `gauge`
+
+Collection: charts. One value of the node on a needle dial, a progress ring or a half-circle arc.
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-gauge).
+
+
+**Data contract.** The node value is the single value, a Data pointer with optional ?attr. min, max, mask, thresholds, presentation and caption read Data. Nothing is written.
+
+
+**Interaction and events.** Redraws when the value or a parameter changes and follows the light or dark theme; removal releases the engine.
+
+
+**Composition.** Leaf rendering surface; no children.
+
+
+**Limits and lifecycle.** One numeric value; an empty value shows an empty dial, never zero. Values outside min and max are clamped on the dial, the text shows the real value. Threshold colors are names or hex codes.
+
+
+| Parameters | Contract |
+| --- | --- |
+| `min` | `{"binding":"read","default":0,"dtype":"R"}` |
+| `max` | `{"binding":"read","default":100,"dtype":"R"}` |
+| `mask` | `{"binding":"read","default":"{}","dtype":"T"}` |
+| `thresholds, caption` | `{"binding":"read","default":"","dtype":"T","nullable":true}` |
+| `presentation` | `{"binding":"read","default":"needle","dtype":"T"}` |
+
+Child grammar: `''`; parent grammar: `None`.

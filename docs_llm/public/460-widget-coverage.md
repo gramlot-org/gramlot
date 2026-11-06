@@ -5,7 +5,7 @@ Document ID: **GC-460**.
 <a id="gc-460-005"></a>
 ## Scope and evidence
 
-This audit covers all **61 component declarations in 14 packaged collections**. The reviewed core baseline is `2b1f2d80`; lesson references use examples `c59a19c`. Local uncommitted work is excluded. The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.
+This audit covers all **62 component declarations in 14 packaged collections**. The reviewed core baseline is `2b1f2d80`; lesson references use examples `c59a19c`. Local uncommitted work is excluded. The inventory comes from packaged grammars; the behavior paragraphs were reviewed against implementation and test assertions on 2026-11-04. The reference documents purpose, parameters/defaults, Data, interaction/events, composition and limits for each declaration. An explicitly absent callback or unsupported behavior is part of the contract, not a missing implementation to invent.
 
 Parameter coverage is checked mechanically against metadata. Behavioral coverage is a source review, not proof that every possible interaction, failure, accessibility requirement or host/browser combination has been tested. Test files below are inspected evidence: their presence is not a new test-run result or a maturity rating. A statement that no callback is declared concerns component-specific callback parameters; ordinary Source event handling remains available. Example links are confined to the appendix and are teaching evidence, not a substitute for behavioral qualification.
 
@@ -78,6 +78,7 @@ Dedicated catalogue lessons now cover `transformPane` and `rowActions`; their ex
 | `chartFields` | [Reference](480-charts.md#gc-480-chartfields) | [Reviewed](480-charts.md#gc-480-chartfields) | [Reviewed](480-charts.md#gc-480-chartfields) |
 | `chartGeoJSON` | [Reference](480-charts.md#gc-480-chartgeojson) | [Reviewed](480-charts.md#gc-480-chartgeojson) | [Reviewed](480-charts.md#gc-480-chartgeojson) |
 | `chartTimeline` | [Reference](480-charts.md#gc-480-charttimeline) | [Reviewed](480-charts.md#gc-480-charttimeline) | [Reviewed](480-charts.md#gc-480-charttimeline) |
+| `gauge` | [Reference](480-charts.md#gc-480-gauge) | [Reviewed](480-charts.md#gc-480-gauge) | [Reviewed](480-charts.md#gc-480-gauge) |
 | `vizabiBubble` | [Reference](485-vizabi.md#gc-485-vizabibubble) | [Reviewed](485-vizabi.md#gc-485-vizabibubble) | [Reviewed](485-vizabi.md#gc-485-vizabibubble) |
 | `audioAnalyser` | [Reference](490-audio.md#gc-490-audioanalyser) | [Reviewed](490-audio.md#gc-490-audioanalyser) | [Reviewed](490-audio.md#gc-490-audioanalyser) |
 | `drawingPane` | [Reference](495-drawing.md#gc-495-drawingpane) | [Reviewed](495-drawing.md#gc-495-drawingpane) | [Reviewed](495-drawing.md#gc-495-drawingpane) |
@@ -666,6 +667,16 @@ These links identify the owning code and test suites examined. Shared suites can
 **Tests inspected:** [chart-time.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-time.test.js).
 
 [Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-charttimeline).
+
+
+<a id="gc-460-gauge"></a>
+### `gauge`
+
+**Implementation:** [chart-gauge.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-gauge.js), [chart-gauge-options.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/src/components/chart-gauge-options.js).
+
+**Tests inspected:** [chart-gauge.test.js](https://github.com/gramlot-org/gramlot/blob/2b1f2d80e345ad27a90da36b53171a158a767dcb/js/tests/chart-gauge.test.js).
+
+[Teaching coverage and remaining exercises](465-widget-examples.md#gc-465-gauge).
 
 
 <a id="gc-460-vizabibubble"></a>

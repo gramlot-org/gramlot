@@ -2,7 +2,7 @@
 
 Document ID: **GC-345**.
 
-This reference covers all **61 component declarations** in the 14 packaged
+This reference covers all **62 component declarations** in the 14 packaged
 component collections covered here. It is regenerated from their effective
 metadata. Widgets are grouped by purpose; inherited and shared parameters are
 documented once and linked from each applicable widget. Use the manual matching your installed packages when comparing available features.
@@ -61,7 +61,7 @@ connects these controls to runnable lessons and screenshots.
 | [grid](445-grid.md) | [grid](#gc-345-grid), [searchBox](#gc-345-searchbox) |
 | [chat](450-chat.md) | [chatMessages](#gc-345-chatmessages) |
 | [grouplets](455-grouplets.md) | [grouplet](#gc-345-grouplet), [groupletCard](#gc-345-groupletcard) |
-| [charts](480-charts.md) | [chartPane](#gc-345-chartpane), [chartView](#gc-345-chartview), [chartFields](#gc-345-chartfields), [chartGeoJSON](#gc-345-chartgeojson), [chartTimeline](#gc-345-charttimeline) |
+| [charts](480-charts.md) | [chartPane](#gc-345-chartpane), [chartView](#gc-345-chartview), [chartFields](#gc-345-chartfields), [chartGeoJSON](#gc-345-chartgeojson), [chartTimeline](#gc-345-charttimeline), [gauge](#gc-345-gauge) |
 | [vizabi](485-vizabi.md) | [vizabiBubble](#gc-345-vizabibubble) |
 | [audio](490-audio.md) | [audioAnalyser](#gc-345-audioanalyser) |
 | [drawing](495-drawing.md) | [drawingPane](#gc-345-drawingpane) |
@@ -568,6 +568,42 @@ Collection: **charts**. Browser element: `gramlot-chart-timeline`.
 | `timeField` | T | — | read | — |
 | `timeStep` | T | — | read | — |
 | `timeIndex` | R | — | read | — |
+
+Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
+
+<a id="gc-345-500"></a>
+<a id="gc-345-gauge"></a>
+### `gauge`
+
+One value of the node on a needle dial, a progress ring or a half-circle arc.
+
+Collection: **charts**. Browser element: `gramlot-gauge`.
+
+[Shared charts, engines and temporal snapshots](480-charts.md#gc-480-start).
+
+
+[Implementation, test and teaching evidence](460-widget-coverage.md#gc-460-gauge).
+
+
+**Data contract.** The node value is the single value, a Data pointer with optional ?attr. min, max, mask, thresholds, presentation and caption read Data. Nothing is written.
+
+
+**Interaction and events.** Redraws when the value or a parameter changes and follows the light or dark theme; removal releases the engine.
+
+
+**Composition.** Leaf rendering surface; no children.
+
+
+**Limits and lifecycle.** One numeric value; an empty value shows an empty dial, never zero. Values outside min and max are clamped on the dial, the text shows the real value. Threshold colors are names or hex codes.
+
+| Specific parameter | Type | Default | Binding | Constraints |
+| --- | --- | --- | --- | --- |
+| `min` | R | 0 | read | — |
+| `max` | R | 100 | read | — |
+| `mask` | T | '{}' | read | — |
+| `thresholds` | T or None | '' | read | — |
+| `presentation` | T | 'needle' | read | — |
+| `caption` | T or None | '' | read | — |
 
 Child grammar: `''`; parent grammar: `None`. `*` permits arbitrary Source children; an empty expression permits none; `None` means no parent restriction declared.
 
