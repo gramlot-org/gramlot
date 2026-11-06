@@ -10,7 +10,8 @@ The README links the current test, documentation and package badges. The tests b
 workflow on `main`: it builds the browser runtime, installs the Python package, and
 runs the Python suite, the core JavaScript suite (with the quiet-write and
 symbolic-attribute contracts) and the browser checks in Chromium on core fixture
-pages, on pushes to `main` and `develop`, pull requests and manual dispatch. It
+pages, only on request: by manual dispatch, or from `Publish release` started with
+`full_tests`. It
 checks out no other repository: the example pages are tested in gramlot-examples. The documentation
 badge reports the documentation build. The two coverage badges report Codecov, one
 per runtime (section 010). The PyPI and npm badges show the published versions.
