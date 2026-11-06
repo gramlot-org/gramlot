@@ -100,3 +100,10 @@ def test_column_max_height_is_a_shared_struct_option(height):
 def test_column_max_height_rejects_unsupported_lengths(height):
     with pytest.raises((TypeError, ValueError)):
         builder().root.grid(storepath="rows", rowMode="values").struct().column("notes", max_height=height)
+
+
+def test_selection_mode_and_publication_paths_are_declared():
+    g = builder().root.grid(storepath="rows", rowMode="values", selectionMode="multi", selectedId="^.id",
+                            selectedIndex="^.index", selectedPkeys="^.pkeys", selectedNodes="^.nodes")
+    assert g.attr["selectionMode"] == "multi"
+    assert g.attr["selectedNodes"] == "^.nodes"

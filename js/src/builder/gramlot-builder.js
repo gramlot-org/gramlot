@@ -38,6 +38,8 @@ const DATA_INLINE_ATTRIBUTES = {dataFormula: 'formula', dataController: 'script'
 /** The P18 violation of a data-element's attributes, or null. */
 // Builder's framework call keywords, accepted by every element.
 const FRAMEWORK_ATTRIBUTES = new Set(['node_label', 'node_position', 'nodeId', 'target_id', 'datapath', 'iterate', 'store', '_tag', '_meta', 'ns']);
+// Export formats of the grid:export command, in menu order, with their captions.
+const EXPORT_FORMATS = {csv:'CSV', json:'JSON', tytx:'TYTX', xml:'XML', xlsx:'Excel'};
 // frameGrid composes these grid attributes itself; its own parameters reach the grid too.
 const FRAME_GRID_COMPOSED = new Set(['node_label', 'frameTarget', 'nodeId']);
 const FRAME_GRID_PARAMETERS = new Set(['storepath', 'rowMode', 'structpath']);
@@ -52,6 +54,16 @@ function keywordPatternError(spec, attrs) {
     const declared = new Set(spec.attributes.parameters.filter(parameter => !parameter.kind.startsWith('var_')).map(parameter => parameter.name));
     const unknown = Object.keys(attrs).find(name => !declared.has(name) && !FRAMEWORK_ATTRIBUTES.has(name) && !new RegExp(pattern).test(name));
     return unknown === undefined ? null : `unknown attribute '${unknown}'`;
+}
+
+/** frameGrid `export`: true for every format, false for none, or a comma-separated list such as 'csv,json'. */
+function frameGridExportFormats(exportRows) {
+    if (typeof exportRows === 'boolean') return exportRows ? Object.keys(EXPORT_FORMATS) : [];
+    if (typeof exportRows !== 'string' || !exportRows.trim()) throw new TypeError('frameGrid export requires a boolean or a list of formats');
+    const formats = exportRows.split(',').map(item => item.trim());
+    const unknown = formats.find(item => !Object.hasOwn(EXPORT_FORMATS, item));
+    if (unknown !== undefined) throw new TypeError(`frameGrid export format '${unknown}' is not one of ${Object.keys(EXPORT_FORMATS).join(', ')}`);
+    return formats;
 }
 
 function dataElementError(tag, attrs) {
@@ -98,7 +110,9 @@ export class GramlotBuilder extends HtmlBuilder {
     static { this.defineGrammar(buttons.toDocument()); }
 
     /** Compose real Source nodes; frame/grid/menu retain their existing runtime owners. */
-    frameGrid(parent, {storepath, rowMode, structpath, searchOn = false, searchHelp = false, chart = false, ...attrs} = {}) {
+    frameGrid(parent, {storepath, rowMode, structpath, searchOn = false, searchHelp = false, chart = false,
+        export: exportRows = false, printRows = false, advancedTools = false, addrow = false, addrow_defaults = null,
+        duprow = false, delrow = false, gridsemaphore = false, ...attrs} = {}) {
         for (const tag of ['framePane', 'grid']) {
             if (!this.schemaTag(tag)) throw new TypeError(`frameGrid requires the ${tag} collection`);
         }
@@ -115,8 +129,22 @@ export class GramlotBuilder extends HtmlBuilder {
             if (!this.schemaTag('chartPane')) throw new TypeError('frameGrid requires the chartPane collection');
             if (typeof chart === 'string') chartOptions.chartType = chart;
         } else if (Object.keys(chartOptions).length) throw new TypeError('chart_* options require chart');
+        const exportFormats = frameGridExportFormats(exportRows);
+        for (const [name, value] of Object.entries({printRows, advancedTools, addrow, duprow, delrow, gridsemaphore})) {
+            if (typeof value !== 'boolean') throw new TypeError(`frameGrid ${name} requires a boolean`);
+        }
+        if (addrow_defaults !== null && (!addrow || typeof addrow_defaults !== 'object' || Array.isArray(addrow_defaults))) {
+            throw new TypeError('addrow_defaults requires addrow and a mapping');
+        }
+        if (gridsemaphore) {
+            if (!frameAttrs.datapath) throw new TypeError('A gridsemaphore frameGrid requires its own datapath');
+            if (!this.schemaTag('editingStatus')) throw new TypeError('frameGrid requires the editingStatus collection');
+            frameAttrs.form = true;
+        }
         const gridAttrs = {storepath, rowMode, ...(structpath == null ? {} : {structpath}),
-            node_label: 'grid', frameTarget: true, height: '100%', width: '100%', ...routed};
+            node_label: 'grid', frameTarget: true, height: '100%', width: '100%',
+            // Legacy frameGrid default: the current row identity at .selectedId of the frame's own datapath.
+            ...(frameAttrs.datapath ? {selectedId: '^.selectedId'} : {}), ...routed};
         if (chart !== false) gridAttrs.nodeId = randomId();
         this.validateNodeValues('grid', null, gridAttrs);
         if (searchOn !== false) this.validateNodeValues('searchBox', null, {searchOn, searchHelp});
@@ -124,6 +152,22 @@ export class GramlotBuilder extends HtmlBuilder {
         frame.center.grid(gridAttrs);
         const bar = frame.top.menu({presentation:'bar', node_label:'bar', aria_label:'Grid toolbar', class:'gramlot-grid-toolbar'});
         if (searchOn !== false) bar.menuline({group:true, node_label:'search', class:'gramlot-grid-search'}).searchBox({searchOn, searchHelp});
+        if (addrow) bar.menuline({command:'grid:addrow', node_label:'addrow', ...(addrow_defaults === null ? {} : {parameters:{defaults:addrow_defaults}})});
+        if (duprow) bar.menuline({command:'grid:duprow', node_label:'duprow'});
+        if (delrow) bar.menuline({command:'grid:delrow', node_label:'delrow'});
+        const exportMenu = parent => {
+            const menu = parent.menuline({caption:'Export', icon:'⇩', labelPosition:'tooltip', node_label:'export'}).menu();
+            for (const name of exportFormats) menu.menuline({command:'grid:export', caption:EXPORT_FORMATS[name], parameters:{format:name}, node_label:name});
+        };
+        if (exportFormats.length) exportMenu(bar);
+        if (printRows) bar.menuline({command:'grid:printRows', node_label:'printRows'});
+        if (advancedTools) {
+            const tools = bar.menuline({caption:'Advanced tools', icon:'…', labelPosition:'tooltip', node_label:'advancedTools'}).menu();
+            tools.menuline({command:'grid:lineNumbers', node_label:'lineNumbers'});
+            if (exportFormats.length) exportMenu(tools);
+            if (printRows) tools.menuline({command:'grid:printRows', node_label:'printRows'});
+        }
+        if (gridsemaphore) bar.menuline({group:true, node_label:'semaphore'}).editingStatus();
         if (chart !== false) {
             bar.menuline({caption:'Chart', icon:'▥', labelPosition:'tooltip', node_label:'chart', action:"this.SET('._chart.open',true)"});
             const window = frame.center.floatingPane({title:'Chart', open:'^._chart.open', width:'820px', height:'560px',
@@ -139,8 +183,9 @@ export class GramlotBuilder extends HtmlBuilder {
         const declared = tag => new Set(this.schema[tag].attributes.parameters.filter(parameter => !parameter.kind.startsWith('var_')).map(parameter => parameter.name));
         const source = new Set([...FRAMEWORK_ATTRIBUTES, ...META_ATTRS]);
         const gridNames = declared('grid'), frameNames = declared('framePane');
+        const pattern = new RegExp(this.schema.grid._meta.parameterPattern);
         // A name the frame also accepts stays on the frame unless forced with grid_.
-        const routed = name => gridNames.has(name) && !frameNames.has(name) && !source.has(name)
+        const routed = name => (gridNames.has(name) || pattern.test(name)) && !frameNames.has(name) && !source.has(name)
             && !FRAME_GRID_COMPOSED.has(name) && !FRAME_GRID_PARAMETERS.has(name);
         const frame = {}, grid = {};
         for (const [key, value] of Object.entries(attrs)) {

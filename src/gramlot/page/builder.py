@@ -36,6 +36,8 @@ FRAMEWORK_ATTRIBUTES = frozenset({"node_label", "node_position", "nodeId", "targ
                                   "iterate", "store", "_tag", "_meta", "ns"})
 # Source meta attributes of every node (Builder JS META_ATTRS).
 META_ATTRIBUTES = frozenset({"_meta", "datapath", "nodeId", "ns", "form", "formId", "_anchor", "updateOn"})
+# Export formats of the grid:export command, in menu order, with their captions.
+EXPORT_FORMATS = {"csv": "CSV", "json": "JSON", "tytx": "TYTX", "xml": "XML", "xlsx": "Excel"}
 # frameGrid composes these grid attributes itself; its own parameters reach the grid too.
 FRAME_GRID_COMPOSED = frozenset({"node_label", "frameTarget", "nodeId"})
 FRAME_GRID_PARAMETERS = frozenset({"storepath", "rowMode", "structpath"})
@@ -151,7 +153,9 @@ class GramlotBuilder(HtmlBuilder):
         return call
 
     @container
-    def frameGrid(self, parent, *, storepath, rowMode, structpath=None, searchOn=False, searchHelp=False, chart=False, **attrs):
+    def frameGrid(self, parent, *, storepath, rowMode, structpath=None, searchOn=False, searchHelp=False, chart=False,
+                  export=False, printRows=False, advancedTools=False, addrow=False, addrow_defaults=None,
+                  duprow=False, delrow=False, gridsemaphore=False, **attrs):
         """Compose a real framePane with one central, command-target grid."""
         for tag in ("framePane", "grid"):
             if self.schema_tag(tag) is None:
@@ -173,8 +177,23 @@ class GramlotBuilder(HtmlBuilder):
                 chart_options["chartType"] = chart
         elif chart_options:
             raise ValueError("chart_* options require chart")
+        export_formats = self._frame_grid_export_formats(export)
+        for name, value in (("printRows", printRows), ("advancedTools", advancedTools),
+                            ("addrow", addrow), ("duprow", duprow), ("delrow", delrow), ("gridsemaphore", gridsemaphore)):
+            if type(value) is not bool:
+                raise ValueError(f"frameGrid {name} requires a boolean")
+        if addrow_defaults is not None and (not addrow or type(addrow_defaults) is not dict):
+            raise ValueError("addrow_defaults requires addrow and a mapping")
+        if gridsemaphore:
+            if not attrs.get("datapath"):
+                raise ValueError("A gridsemaphore frameGrid requires its own datapath")
+            if self.schema_tag("editingStatus") is None:
+                raise ValueError("frameGrid requires the editingStatus collection")
+            attrs["form"] = True
+        # Legacy frameGrid default: the current row identity at .selectedId of the frame's own datapath.
+        selected = {"selectedId": "^.selectedId"} if attrs.get("datapath") else {}
         grid_attrs = {**dict(storepath=storepath, rowMode=rowMode, node_label="grid",
-                             frameTarget=True, height="100%", width="100%"), **routed}
+                             frameTarget=True, height="100%", width="100%"), **selected, **routed}
         if chart is not False:
             grid_attrs["nodeId"] = uuid4().hex
         if structpath is not None:
@@ -188,6 +207,30 @@ class GramlotBuilder(HtmlBuilder):
                              **{"class": "gramlot-grid-toolbar"})
         if searchOn is not False:
             bar.menuline(group=True, node_label="search", **{"class": "gramlot-grid-search"}).searchBox(searchOn=searchOn, searchHelp=searchHelp)
+        if addrow:
+            bar.menuline(command="grid:addrow", node_label="addrow",
+                         **({"parameters": {"defaults": addrow_defaults}} if addrow_defaults is not None else {}))
+        if duprow:
+            bar.menuline(command="grid:duprow", node_label="duprow")
+        if delrow:
+            bar.menuline(command="grid:delrow", node_label="delrow")
+        def export_menu(parent):
+            menu = parent.menuline(caption="Export", icon="⇩", labelPosition="tooltip", node_label="export").menu()
+            for name in export_formats:
+                menu.menuline(command="grid:export", caption=EXPORT_FORMATS[name], parameters={"format": name}, node_label=name)
+        if export_formats:
+            export_menu(bar)
+        if printRows:
+            bar.menuline(command="grid:printRows", node_label="printRows")
+        if advancedTools:
+            tools = bar.menuline(caption="Advanced tools", icon="…", labelPosition="tooltip", node_label="advancedTools").menu()
+            tools.menuline(command="grid:lineNumbers", node_label="lineNumbers")
+            if export_formats:
+                export_menu(tools)
+            if printRows:
+                tools.menuline(command="grid:printRows", node_label="printRows")
+        if gridsemaphore:
+            bar.menuline(group=True, node_label="semaphore").editingStatus()
         if chart is not False:
             bar.menuline(caption="Chart", icon="▥", labelPosition="tooltip", node_label="chart", action="this.SET('._chart.open',true)")
             window = frame.center.floatingPane(title="Chart", open="^._chart.open", width="820px", height="560px",
@@ -196,12 +239,27 @@ class GramlotBuilder(HtmlBuilder):
                                           configpath="._chart", configDefaults=Bag(chart_options), height="100%")
         return frame
 
+    @staticmethod
+    def _frame_grid_export_formats(export):
+        """``export``: True for every format, False for none, or a comma-separated list such as ``"csv,json"``."""
+        if type(export) is bool:
+            return list(EXPORT_FORMATS) if export else []
+        if type(export) is not str or not export.strip():
+            raise ValueError("frameGrid export requires a boolean or a list of formats")
+        formats = [item.strip() for item in export.split(",")]
+        unknown = next((item for item in formats if item not in EXPORT_FORMATS), None)
+        if unknown is not None:
+            raise ValueError(f"frameGrid export format '{unknown}' is not one of {', '.join(EXPORT_FORMATS)}")
+        return formats
+
     def _frame_grid_route(self, attrs):
         """Split frameGrid keywords: unprefixed grid parameters go to the grid, ``grid_``/``frame_`` force any attribute."""
         declared = lambda tag: set(self._get_schema_info(tag).get("declared_names", set()))
         source = FRAMEWORK_ATTRIBUTES | META_ATTRIBUTES
         # A name the frame also accepts stays on the frame unless forced with grid_.
         routed_names = declared("grid") - declared("framePane") - source - FRAME_GRID_COMPOSED - FRAME_GRID_PARAMETERS
+        pattern = self._get_schema_info("grid")["_meta"]["parameterPattern"]
+        excluded = declared("framePane") | source
         frame, grid = {}, {}
         for key, value in attrs.items():
             if key.startswith("grid_"):
@@ -211,7 +269,8 @@ class GramlotBuilder(HtmlBuilder):
             elif key.startswith("frame_"):
                 name, target = key[len("frame_"):], frame
             else:
-                name, target = key, grid if key in routed_names else frame
+                by_pattern = re.search(pattern, key) is not None and key not in excluded
+                name, target = key, grid if key in routed_names or by_pattern else frame
             if name in target:
                 raise ValueError(f"frameGrid: '{name}' is given twice")
             target[name] = value

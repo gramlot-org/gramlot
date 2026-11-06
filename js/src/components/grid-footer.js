@@ -107,6 +107,12 @@ export class GridFooter {
         }
     }
 
+    /** The absolute Data paths of the published totals. */
+    totalPaths() {
+        return this.#columns.filter(column => column.totalize).map(column =>
+            this.source.absDatapath(column.totalize === true ? `.totalize.${column.field}` : column.totalize));
+    }
+
     #publish(column, total) {
         const path = column.totalize === true ? `.totalize.${column.field}` : column.totalize;
         if (!sameValue(this.source.getRelativeData(path), total)) this.source.setRelativeData(path, total);

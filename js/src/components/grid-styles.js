@@ -183,6 +183,7 @@ th:has(.column-filter){padding-inline-end:28px}
     .cell-scroll:focus-visible { outline: 1px solid var(--gramlot-focus-ring, Highlight); outline-offset: -1px; }
     tbody tr { background: var(--gramlot-grid-background, var(--gramlot-surface, Canvas)); }
     tbody tr.alternate { background: var(--gramlot-grid-row-alt-background, var(--gramlot-surface-subtle, Canvas)); }
+    tbody tr[aria-selected=true] { background: var(--gramlot-grid-selected-background, var(--gramlot-selected, Highlight)); }
     tbody tr:hover { background: var(--gramlot-grid-row-hover-background, var(--gramlot-selected, Highlight)); }
     th[data-field] { padding-inline-end: 14px; cursor: grab; user-select: none; }
     th[data-field]:hover { background-color: color-mix(in srgb, var(--gramlot-grid-header-background) 92%, var(--gramlot-grid-header-color)); }

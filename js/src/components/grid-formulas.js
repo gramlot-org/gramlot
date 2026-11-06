@@ -219,6 +219,8 @@ export class GridFormulas {
     /** The last error of each formula field, by field name. */
     get errors() { return new Map(this.#errors); }
     get formulas() { return this.#formulas; }
+    /** The data formula fields: written into the row Bag. */
+    get dataFields() { return new Set(this.formulas.order.filter(field => !this.viewFields.has(field))); }
     /** The view-value fields: computed per grid, never written. */
     get viewFields() { return this.formulas.viewFields; }
 

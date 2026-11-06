@@ -326,3 +326,12 @@ print(b.to_tytx())
         attrs: node.getAttr(), children: node.staticValue instanceof SourceBag ? shape(node.staticValue) : node.staticValue}));
     assert.deepEqual(shape(fromTytx(wire)), shape(b.source));
 });
+
+test('frameGrid routes the declared selected_<field> family to the grid', () => {
+    const b = new GramlotBuilder(null, {collections});
+    const frame = b.root.frameGrid({datapath:'model', storepath:'.rows', rowMode:'values', selected_kind:'^.kinds', grid_selected_name:'^.names'});
+    assert.equal(frame.grid.getAttr('selected_kind'), '^.kinds');
+    assert.equal(frame.grid.getAttr('selected_name'), '^.names');
+    assert.equal(Object.hasOwn(frame.getAttr(), 'selected_kind'), false);
+    assert.equal(b.schema.grid._meta.parameterPattern, '^selected_[A-Za-z_][A-Za-z0-9_]*$');
+});

@@ -3,5 +3,46 @@
     "name": "gramlot_commands",
     "version": "1.0"
   },
-  "groups": {}
+  "groups": {
+    "grid": {
+      "commands": {
+        "addrow": {
+          "icon": "+",
+          "label": "Add row",
+          "publish": "addrow",
+          "tooltip": "Add a row"
+        },
+        "delrow": {
+          "icon": "−",
+          "label": "Delete",
+          "publish": "delrow",
+          "tooltip": "Delete the selected rows"
+        },
+        "duprow": {
+          "icon": "⧉",
+          "label": "Duplicate",
+          "publish": "duprow",
+          "tooltip": "Duplicate the selected rows"
+        },
+        "export": {
+          "icon": "⇩",
+          "label": "Export",
+          "publish": "export",
+          "tooltip": "Export the visible rows"
+        },
+        "lineNumbers": {
+          "label": "Line numbers",
+          "publish": "lineNumbers",
+          "tooltip": "Show or hide the row numbers"
+        },
+        "printRows": {
+          "icon": "⎙",
+          "label": "Print",
+          "publish": "printRows",
+          "tooltip": "Print the visible rows"
+        }
+      },
+      "description": "Grid toolbar tools"
+    }
+  }
 }

@@ -647,6 +647,14 @@ Collection: **grid**. Browser element: `gramlot-grid`.
 | `rowMode` | T | — | — | — |
 | `rowHeaders` | B | False | read | — |
 | `footer` | B / T | False | read | — |
+| `selectionMode` | T | 'multi' | read | — |
+| `selectedId` | T or None | None | write | — |
+| `selectedIndex` | L or None | None | write | — |
+| `selectedLabel` | T or None | None | write | — |
+| `selectedPkeys` | X or None | None | write | — |
+| `selectedRowidx` | T or None | None | write | — |
+| `selectedNodes` | X or None | None | write | — |
+| `selectedRowData` | X or None | None | write | — |
 | `rowResize` | B | False | read | — |
 | `selfDragRows` | B | False | read | — |
 | `sortedBy` | T | '' | read | — |

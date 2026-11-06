@@ -277,6 +277,213 @@
             "default": false
           },
           {
+            "name": "selectionMode",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "dtype",
+              "dtype": "T"
+            },
+            "has_default": true,
+            "default": "multi"
+          },
+          {
+            "name": "selectedId",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "selectedIndex",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "L"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "selectedLabel",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "selectedPkeys",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "selectedRowidx",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "T"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "selectedNodes",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
+            "name": "selectedRowData",
+            "kind": "keyword_only",
+            "role": "attribute",
+            "annotation": {
+              "kind": "union",
+              "items": [
+                {
+                  "kind": "dtype",
+                  "dtype": "X"
+                },
+                {
+                  "kind": "dtype",
+                  "dtype": "NN"
+                },
+                {
+                  "kind": "annotated",
+                  "base": {
+                    "kind": "dtype",
+                    "dtype": "T"
+                  },
+                  "metadata": [
+                    {
+                      "kind": "regex",
+                      "pattern": "^[\\^=].+",
+                      "flags": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "has_default": true,
+            "default": null
+          },
+          {
             "name": "rowResize",
             "kind": "keyword_only",
             "role": "attribute",
@@ -453,6 +660,53 @@
               "default": false,
               "binding": "read"
             },
+            "selectionMode": {
+              "dtype": "T",
+              "default": "multi",
+              "binding": "read"
+            },
+            "selectedId": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
+            },
+            "selectedIndex": {
+              "dtype": "L",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
+            },
+            "selectedLabel": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
+            },
+            "selectedPkeys": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
+            },
+            "selectedRowidx": {
+              "dtype": "T",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
+            },
+            "selectedNodes": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
+            },
+            "selectedRowData": {
+              "dtype": "X",
+              "nullable": true,
+              "default": null,
+              "binding": "write"
+            },
             "rowResize": {
               "dtype": "B",
               "default": false,
@@ -485,7 +739,8 @@
           "sourceContext": true,
           "bagStore": true,
           "bagStruct": true
-        }
+        },
+        "parameterPattern": "^selected_[A-Za-z_][A-Za-z0-9_]*$"
       }
     },
     "searchBox": {

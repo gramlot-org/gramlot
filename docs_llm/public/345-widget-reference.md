@@ -448,10 +448,13 @@ Collection: grid. Virtualized Bag rows with a declarative column structure; data
 | `columnFilters, loading, rowHeaders, rowResize, selfDragRows` | `{"binding":"read","default":false,"dtype":"B"}` |
 | `setFilter, sortedBy` | `{"binding":"read","default":"","dtype":"T"}` |
 | `windowInfo` | `{"binding":"read","default":null,"dtype":"X","nullable":true}` |
-| `viewport` | `{"binding":"write","default":null,"dtype":"X","nullable":true}` |
+| `viewport, selectedPkeys, selectedNodes, selectedRowData` | `{"binding":"write","default":null,"dtype":"X","nullable":true}` |
 | `sortRequest` | `{"binding":"write","default":"","dtype":"T"}` |
 | `storepath, structpath, rowMode` | `{"dtype":"T"}` |
 | `footer` | `{"binding":"read","default":false,"dtype":["B","T"]}` |
+| `selectionMode` | `{"binding":"read","default":"multi","dtype":"T"}` |
+| `selectedId, selectedLabel, selectedRowidx` | `{"binding":"write","default":null,"dtype":"T","nullable":true}` |
+| `selectedIndex` | `{"binding":"write","default":null,"dtype":"L","nullable":true}` |
 | `filter` | `{"annotation":{"kind":"type","module":"builtins","name":"dict"},"binding":"read","default":null,"nullable":true}` |
 
 Child grammar: `struct,div`; parent grammar: `None`.

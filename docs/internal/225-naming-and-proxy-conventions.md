@@ -2993,3 +2993,49 @@ and `frame_<name>` force any attribute onto that node, prefix removed. A name
 given twice, or a prefixed name of an attribute the helper composes itself, is
 an error. Python and JavaScript
 helpers route identically.
+
+Grid toolbar commands — owner, 2026-11-06: "Sì, conferma". The grid collection
+owns the command namespace `grid` (one collection owns a namespace, GC-225-005).
+Command names follow the legacy frameGrid slot names: `grid:export`,
+`grid:printRows`, `grid:lineNumbers` (legacy context-menu "Toggle line number",
+showLineNumber) and `grid:addrow`; each publish topic repeats the command name.
+frameGrid switches keep the legacy slot names (`export`, `printRows`,
+`advancedTools`, `addrow`, `addrow_defaults`, `gridsemaphore`).
+`GridTools` / `grid-tools.js` and `registerGridCommands` follow the existing
+collaborator class/file and registerCommands hook conventions. The print frame
+class `gramlot-grid-print` follows the `gramlot-grid-toolbar` class convention.
+
+`EditingSession.registerDerived(match)` declares derived values (grid formula
+results, published totals) that are never changes; it follows the existing
+`registerNavigator`/`registerValidationSource` method convention.
+
+Grid row selection — owner, 2026-11-06: "va assolutamente aggiunta la selezione
+multipla che è abilitata da una modalità di selezione no select single e multi",
+then "Sì, conferma" to the specification. Authoring names keep the legacy
+spelling: `selectionMode` (`none`/`single`/`multi`), `selectedId`,
+`selectedIndex`, `selectedLabel`, `selectedPkeys`, `selectedRowidx`,
+`selectedNodes`, `selectedRowData`, `selected_<field>`, the always-written
+`.selectionLength` and the topic `onSelectedRow`. Commands `grid:duprow` and
+`grid:delrow` follow the legacy slot names. `GridSelection` /
+`grid-selection.js` follows the collaborator class/file convention; the row part
+`selected-row` follows the `<role>` part convention.
+The selected-row theme variable `--gramlot-grid-selected-background` follows the
+`--gramlot-grid-<role>` token convention.
+
+Declared parameter families — 2026-11-06, applying the composite routing rule
+("the list is what the grid declares"): a component may declare a parameter
+family as `_meta.parameterPattern` (grid: `^selected_[A-Za-z_][A-Za-z0-9_]*$`).
+Composite helpers route unprefixed keywords matching it like declared
+parameters. Unlike the column's `_meta.keywordPattern`, it does not restrict the
+component's other attributes, because the grid keeps generic HTML/style
+attributes. The name follows the existing camelCase `_meta` keys.
+
+Grid export formats — owner, 2026-11-06: "farei csv, json, xml e possibilmente
+excel" and "Sì, con TYTX". `grid:export` takes the command parameter `format`
+(`csv`, `json`, `tytx`, `xml`, `xlsx`, the file extensions); menu captions are
+CSV, JSON, TYTX, XML and Excel. The frameGrid switch `export` keeps its name and
+accepts True or a comma-separated format list, following the `searchOn` list
+convention. `EXPORT_FORMATS` follows the existing upper-case constant
+convention. The XML root `GenRoBag` is the legacy GenroPy root element. The
+license assets `writeExcelFileLicense` and `fflateLicense` follow the charts
+collection `<engine>License` asset names.

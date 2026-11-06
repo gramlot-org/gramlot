@@ -11,6 +11,8 @@ import {GridRows} from './grid-rows.js';
 import {GridStructure} from './grid-structure.js';
 import {GridFormulas} from './grid-formulas.js';
 import {GridFooter} from './grid-footer.js';
+import {GridTools, registerGridCommands} from './grid-tools.js';
+import {GridSelection, SELECTION_MODES} from './grid-selection.js';
 import {GridHeaderInteraction} from './grid-header-interaction.js';
 import {GridRowLayout} from './grid-row-layout.js';
 import {GridRowInteraction} from './grid-row-interaction.js';
@@ -29,6 +31,14 @@ export const Grid = defineComponent({
         storepath: {dtype: 'T'}, structpath: {dtype: 'T'}, rowMode: {dtype: 'T'},
         rowHeaders: {dtype:'B', default:false, binding:'read'},
         footer: {dtype:['B','T'], default:false, binding:'read'},
+        selectionMode: {dtype:'T', default:'multi', binding:'read'},
+        selectedId: {dtype:'T', nullable:true, default:null, binding:'write'},
+        selectedIndex: {dtype:'L', nullable:true, default:null, binding:'write'},
+        selectedLabel: {dtype:'T', nullable:true, default:null, binding:'write'},
+        selectedPkeys: {dtype:'X', nullable:true, default:null, binding:'write'},
+        selectedRowidx: {dtype:'T', nullable:true, default:null, binding:'write'},
+        selectedNodes: {dtype:'X', nullable:true, default:null, binding:'write'},
+        selectedRowData: {dtype:'X', nullable:true, default:null, binding:'write'},
         rowResize: {dtype:'B', default:false, binding:'read'},
         selfDragRows: {dtype:'B', default:false, binding:'read'},
         sortedBy: {dtype:'T', default:'', binding:'read'},
@@ -40,6 +50,37 @@ export const Grid = defineComponent({
         #cellEditor;
         #formulas;
         #footer;
+        #tools;
+        #derivedSession = null;
+        #releaseDerived = null;
+        #selection;
+        /** Click selects (single); Ctrl/Cmd+click toggles and Shift+click extends (multi). Double-click still edits. */
+        #selectRow = event => {
+            const tr = event.target.closest('tr[data-row]');
+            const node = tr && [...this.#rows].find(([, row]) => row === tr)?.[0];
+            if (!node || this.#selection.mode === 'none') return;
+            try {
+                this.#selection.select(node, {toggle:event.ctrlKey || event.metaKey, range:event.shiftKey});
+                this.#renderSelection();
+            } catch (error) { this.#context.reportError(error, 'Grid selection'); }
+        };
+        /** Without an open editor: Up/Down move the current row, Shift extends (multi), Ctrl/Cmd+A selects all visible rows. */
+        #selectionKey = event => {
+            if (this.#selection.mode === 'none' || event.altKey) return;
+            const all = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a';
+            const step = {ArrowUp:-1, ArrowDown:1}[event.key];
+            if (!all && (step === undefined || event.ctrlKey || event.metaKey)) return;
+            event.preventDefault();
+            try {
+                if (all) this.#selection.selectAll();
+                else {
+                    const field = event.target.closest?.('td[data-field]')?.dataset.field;
+                    const node = this.#selection.move(step, event.shiftKey);
+                    if (node) this.#revealRow(node, field);
+                }
+                this.#renderSelection();
+            } catch (error) { this.#context.reportError(error, 'Grid selection'); }
+        };
         #editCell = event => {
             if (event.type === 'keydown' && !['Enter','F2'].includes(event.key)) return;
             const cell = event.target.closest('td[data-field]');
@@ -167,8 +208,11 @@ export const Grid = defineComponent({
         connectedCallback() {
             this.#body.addEventListener('dblclick', this.#editCell);
             this.#body.addEventListener('keydown', this.#editCell);
+            this.#body.addEventListener('click', this.#selectRow);
+            this.#bodyViewport.addEventListener('keydown', this.#selectionKey);
             this.#cellEditor?.connect();
             this.#checkSets?.connect();
+            this.#tools?.connect();
             this.#columnFilters.connect();
             this.#observeStore();
             if (this.#collectionView) this.#invalidate({full:true, rows:[]});
@@ -183,8 +227,12 @@ export const Grid = defineComponent({
         disconnectedCallback() {
             this.#body.removeEventListener('dblclick', this.#editCell);
             this.#body.removeEventListener('keydown', this.#editCell);
+            this.#body.removeEventListener('click', this.#selectRow);
+            this.#bodyViewport.removeEventListener('keydown', this.#selectionKey);
             this.#cellEditor?.disconnect();
             this.#checkSets?.disconnect();
+            this.#tools.disconnect();
+            this.#releaseDerived?.(); this.#releaseDerived = null; this.#derivedSession = null;
             this.#columnFilters.disconnect();
             this.#formulas.disconnect();
             this.#cancelRefresh();
@@ -358,6 +406,13 @@ export const Grid = defineComponent({
             this.#context = context;
             this.#formulas = new GridFormulas(context.sourceNode);
             this.#footer = new GridFooter(context.sourceNode, context.format, this.#bodyViewport.parentElement);
+            this.#selection = new GridSelection(context, {view:() => this.#collectionView, store:() => this.#collectionStore(),
+                mode:() => this.#selectionMode(), rowData:node => this.#rowData(node)});
+            this.#tools = new GridTools(context, {columns:() => this.#structure.columns, rows:() => this.#collectionView.getRows(),
+                selected:() => this.#selection.nodes, selectionMode:() => this.#selectionMode(),
+                reader:() => this.#formulas, store:() => ({bag:this.#store, mode:this.parameters.rowMode}),
+                parameters:() => this.parameters, document:this.ownerDocument});
+            if (this.isConnected) this.#tools.connect();
             this.#columnFilters.setSourceContext(context);
             this.#checkSets = new GridCheckSets(context.sourceNode, this.#body,
                 () => this.#structure?.columns ?? [],
@@ -450,6 +505,9 @@ export const Grid = defineComponent({
             const store = this.#collectionStore();
             this.#formulas.configure(model, this.#collectionView, store);
             this.#requireStoredCriteria();
+            this.#tools.requireEditableTools(model.columns);
+            this.#selection.prune();
+            const structureChanged = this.#structureDirty;
             this.#cellEditor.configure(model.columns);
             this.#structure = model;
             this.#checkSets.configure();
@@ -480,12 +538,71 @@ export const Grid = defineComponent({
                 this.#signature = signature;
             }
             this.#footer.update(this.#formulas, store.getRows());
+            this.#declareDerived(structureChanged);
             this.#columnFilters.update(this.#collectionView, model.columns, this.parameters.columnFilters, this.#context.format);
             this.#renderSort();
             this.#renderWindow(true);
+            this.#renderSelection();
             this.control.setAttribute('aria-colcount', String(model.columns.length + Number(this.#rowHeaders)));
             this.control.setAttribute('aria-rowcount', String(this.#headerRows + Math.max(this.#rowLayout.count, 1)));
             this.#scheduleLayout();
+        }
+        /** Formula results, published totals and the published selection are derived values of the editing session, never changes. */
+        #declareDerived(structureChanged) {
+            const session = this.#context.sourceNode.formState;
+            if (session === this.#derivedSession) {
+                if (structureChanged) session?.updateChanges();
+                return;
+            }
+            this.#releaseDerived?.();
+            this.#derivedSession = session;
+            this.#releaseDerived = session === null ? null : session.registerDerived(path => this.#derivedPath(path));
+        }
+        #derivedPath(path) {
+            const base = this.#derivedSession.path;
+            const relative = absolute => absolute === base ? '' : absolute.startsWith(base + '.') ? absolute.slice(base.length + 1) : null;
+            if (this.#footer.totalPaths().some(total => relative(total) === path)) return true;
+            // A published selection Bag (selectedNodes, selectedRowData) is derived with its content.
+            if (this.#selection.paths().some(selection => {
+                const own = relative(selection);
+                return own !== null && (path === own || path.startsWith(own + '.') || path.startsWith(own + '?'));
+            })) return true;
+            const store = relative(this.#context.sourceNode.absDatapath(this.parameters.storepath));
+            if (store === null || store !== '' && !path.startsWith(store + '.')) return false;
+            const row = store === '' ? path : path.slice(store.length + 1);
+            const field = (this.parameters.rowMode === 'attributes' ? /^[^.?]+\?([^.?]+)$/ : /^[^.?]+\.([^.?]+)$/).exec(row)?.[1];
+            return field !== undefined && this.#formulas.dataFields.has(field);
+        }
+        #selectionMode() {
+            const mode = this.parameters.selectionMode;
+            if (!SELECTION_MODES.includes(mode)) throw new TypeError('grid selectionMode requires none, single or multi');
+            return mode;
+        }
+        /** The plain field values of a row, as published by selectedNodes and selectedRowData. */
+        #rowData(node) {
+            if (this.parameters.rowMode === 'attributes') return {...node.getAttr()};
+            return Object.fromEntries(node.staticValue.getNodes().filter(cell => !(cell.staticValue instanceof Bag)).map(cell => [cell.label, cell.staticValue]));
+        }
+        #renderSelection() {
+            const mode = this.#selectionMode();
+            if (mode === 'multi') this.control.setAttribute('aria-multiselectable', 'true');
+            else this.control.removeAttribute('aria-multiselectable');
+            for (const [node, tr] of this.#rows) {
+                const selected = this.#selection.isSelected(node);
+                if (mode === 'none') tr.removeAttribute('aria-selected');
+                else tr.setAttribute('aria-selected', String(selected));
+                tr.setAttribute('part', selected ? 'row selected-row' : 'row');
+            }
+        }
+        /** Scroll the view row `node` into the viewport; focus the cell of `field` when given. */
+        #revealRow(node, field) {
+            const index = this.#collectionView.getRows().indexOf(node);
+            this.#endPinned = false;
+            const top = this.#rowLayout.offset(index), bottom = this.#rowLayout.offset(index + 1);
+            if (top < this.#bodyViewport.scrollTop) this.#scrollTo(top);
+            else if (bottom > this.#bodyViewport.scrollTop + this.#bodyViewport.clientHeight) this.#scrollTo(Math.max(0, bottom - this.#bodyViewport.clientHeight));
+            this.#renderWindow(true);
+            if (field) this.#rows.get(node)?.querySelector(`td[data-field="${field}"]`)?.focus({preventScroll:true});
         }
         /** The shared resident store under this grid's view. */
         #collectionStore() {
@@ -648,6 +765,9 @@ export const Grid = defineComponent({
                     this.#rows.set(node, tr);
                 }
                 tr.classList.toggle('alternate', (start + keep.size) % 2 === 1);
+                tr.setAttribute('part', this.#selection.isSelected(node) ? 'row selected-row' : 'row');
+                if (this.#selection.mode === 'none') tr.removeAttribute('aria-selected');
+                else tr.setAttribute('aria-selected', String(this.#selection.isSelected(node)));
                 // Under a filter the numbering covers the visible rows only.
                 const partial = this.#collectionView.isFiltered();
                 tr.draggable = this.parameters.selfDragRows;
@@ -759,7 +879,11 @@ class GridCollection extends ComponentCollection {
                 metadata: [{kind: 'regex', pattern: '^(values|attributes)$', flags: 0}]};
         }
         Object.assign(document.elements, structuredClone(structureGrammar.elements));
+        // selected_<field> is a declared parameter family: composites route it to the grid (frameGrid).
+        document.elements.grid._meta.parameterPattern = '^selected_[A-Za-z_][A-Za-z0-9_]*$';
         return document;
     }
 }
-export default new GridCollection({name: 'grid', components: [Grid, SearchBox], dependencies:[inputs]});
+export default new GridCollection({name: 'grid', components: [Grid, SearchBox], dependencies:[inputs], registerCommands:registerGridCommands,
+    // The lazily loaded Excel writer and its compression library ship their licenses with the collection.
+    assets:{writeExcelFileLicense:new URL('./licenses/write-excel-file.txt', import.meta.url), fflateLicense:new URL('./licenses/fflate.txt', import.meta.url)}});
