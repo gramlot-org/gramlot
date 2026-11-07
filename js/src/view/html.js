@@ -136,6 +136,8 @@ export class HtmlElement {
                 reportError: (error, title) => this.reportError(node, error, title),
                 publish: (topic, payload) => node.publish(topic, payload),
                 writeParameter: (name, value) => this.writeParameter(node, name, value),
+                attrDatapath: name => this.attrDatapath(node, name),
+                getStaticData: path => this.getStaticData(node, path),
                 callLogic: (name, keywords) => this.callLogic(node, name, keywords),
             });
         }
@@ -180,6 +182,31 @@ export class HtmlElement {
             && !Object.is(node.getRelativeData(pointer.slice(1)), value)) {
             node.setRelativeData(pointer.slice(1), value);
         }
+    }
+
+    /**
+     * The absolute Data path of the original attribute `name` of `node`, as the legacy
+     * `attrDatapath`: a `^`/`=` pointer loses its symbol, a plain string (`storepath`) is a path;
+     * relative paths and symbolic anchors resolve in the node's context. A missing attribute and a
+     * pointer on a null path (Q7) give null. The path is resolved at each call, never kept.
+     */
+    attrDatapath(node, name) {
+        const value = node.getAttr(name);
+        if (value == null) return null;
+        if (typeof value !== 'string' || value.startsWith('==')) {
+            throw new TypeError(`${node.nodeTag} '${node.label}': attribute '${name}' is not a Data path`);
+        }
+        return node.absDatapath(value);
+    }
+
+    /**
+     * The value at the absolute Data `path`, read without running resolvers (Bag `getItem` with
+     * `isStatic`); null on a null path (Q7). The caller reads at each use and keeps nothing.
+     */
+    getStaticData(node, path) {
+        if (path === null) return null;
+        if (typeof path !== 'string' || !path) throw new TypeError(`A static Data read requires a path: ${path}`);
+        return node.data.getItem(path, null, true);
     }
 
     compose(record, text, children) {

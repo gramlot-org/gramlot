@@ -533,7 +533,14 @@ export class NodeBinding {
             const absolute = context.absDatapath(pointer);
             if (absolute === null) continue;
             const [path, attr = null] = absolute.split('?', 2);
-            const registration = this.runtime.router.register({path, attr, recipient: this});
+            // A component parameter declared with dtype 'X' carries data or structure: a change
+            // inside the Bag and a replacement of the Bag at the path reach the node through the
+            // same subtree registration, as storepath/structpath above. Write-only parameters
+            // are not read by the component and keep the value registration.
+            const spec = component?.parameters?.[name];
+            const subtree = attr === null && spec !== undefined && spec.binding !== 'write'
+                && [spec.dtype].flat().includes('X');
+            const registration = this.runtime.router.register({path, attr, recipient: this, subtree});
             this.#registrations.push(registration);
             if (name === 'datapath') this.#datapathRegistrations.add(registration);
             if (this.remote && (name === 'remote' || name.startsWith('remote_') || remoteDependencies.has(name))) this.#remoteRegistrations.add(registration);
